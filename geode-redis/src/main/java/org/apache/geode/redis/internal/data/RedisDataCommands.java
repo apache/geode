@@ -515,48 +515,18 @@ public class RedisDataCommands implements RedisKeyCommands, RedisSetCommands, Re
 
   @Override
   public long append(ByteArrayWrapper key, ByteArrayWrapper valueToAppend) {
-    return stripedExecutor.execute(key, () -> doappend(key, valueToAppend));
-  }
-
-  private long doappend(ByteArrayWrapper key, ByteArrayWrapper valueToAppend) {
-    RedisString redisString = getRedisString(key);
-
-    if (redisString != null) {
-      return redisString.append(valueToAppend, region, key);
-    } else {
-      region.put(key, new RedisString(valueToAppend));
-      return valueToAppend.length();
-    }
+    return stripedExecutor.execute(key,
+        () -> getRedisStringOrDefault(key).append(valueToAppend, region, key));
   }
 
   @Override
   public ByteArrayWrapper get(ByteArrayWrapper key) {
-    return stripedExecutor.execute(key, () -> doget(key));
-  }
-
-  private ByteArrayWrapper doget(ByteArrayWrapper key) {
-    RedisString redisString = getRedisString(key);
-
-    if (redisString != null) {
-      return redisString.get();
-    } else {
-      return null;
-    }
+    return stripedExecutor.execute(key, () -> getRedisStringOrDefault(key).get());
   }
 
   @Override
   public ByteArrayWrapper mget(ByteArrayWrapper key) {
-    return stripedExecutor.execute(key, () -> domget(key));
-  }
-
-  private ByteArrayWrapper domget(ByteArrayWrapper key) {
-    // like get but does not do a type check
-    RedisData redisData = getRedisData(key);
-    if (redisData instanceof RedisString) {
-      RedisString redisString = (RedisString) redisData;
-      return redisString.get();
-    }
-    return null;
+    return stripedExecutor.execute(key, () -> getRedisStringOrForceDefault(key).get());
   }
 
   @Override
@@ -586,95 +556,53 @@ public class RedisDataCommands implements RedisKeyCommands, RedisSetCommands, Re
     return true;
   }
 
-  @Override
-  public long incr(ByteArrayWrapper key) {
-    return stripedExecutor.execute(key, () -> doincr(key));
+  private boolean setnx(ByteArrayWrapper key, ByteArrayWrapper value, SetOptions options) {
+    if (getRedisData(key) != null) {
+      return false;
+    }
+    RedisString redisString = new RedisString(value);
+    handleSetExpiration(redisString, options);
+    region.put(key, redisString);
+    return true;
   }
 
-  private long doincr(ByteArrayWrapper key) {
-    RedisString redisString = getRedisString(key);
-
-    if (redisString == null) {
-      byte[] newValue = {Coder.NUMBER_1_BYTE};
-      redisString = new RedisString(new ByteArrayWrapper(newValue));
-      region.put(key, redisString);
-      return 1;
+  private void handleSetExpiration(RedisString redisString, SetOptions options) {
+    long setExpiration = options == null ? 0L : options.getExpiration();
+    if (setExpiration != 0) {
+      long now = System.currentTimeMillis();
+      long timestamp = now + setExpiration;
+      redisString.setExpirationTimestampNoDelta(timestamp);
+    } else if (options == null || !options.isKeepTTL()) {
+      redisString.persistNoDelta();
     }
+  }
 
-    return redisString.incr(region, key);
+  @Override
+  public long incr(ByteArrayWrapper key) {
+    return stripedExecutor.execute(key, () -> getRedisStringOrDefault(key).incr(region, key));
   }
 
   @Override
   public long decr(ByteArrayWrapper key) {
-    return stripedExecutor.execute(key, () -> dodecr(key));
-  }
-
-  private long dodecr(ByteArrayWrapper key) {
-    RedisString redisString = getRedisString(key);
-
-    if (redisString == null) {
-      redisString = new RedisString(new ByteArrayWrapper(Coder.stringToBytes("-1")));
-      region.put(key, redisString);
-      return -1;
-    }
-
-    return redisString.decr(region, key);
+    return stripedExecutor.execute(key, () -> getRedisStringOrDefault(key).decr(region, key));
   }
 
   @Override
   public ByteArrayWrapper getset(ByteArrayWrapper key, ByteArrayWrapper value) {
-    return stripedExecutor.execute(key, () -> dogetset(key, value));
-  }
-
-  private ByteArrayWrapper dogetset(ByteArrayWrapper key, ByteArrayWrapper value) {
-    ByteArrayWrapper result = null;
-    RedisString redisString = getRedisString(key);
-
-    if (redisString == null) {
-      region.put(key, new RedisString(value));
-    } else {
-      result = redisString.get();
-      redisString.set(value);
-      redisString.persistNoDelta();
-      region.put(key, redisString);
-    }
-    return result;
+    return stripedExecutor.execute(key,
+        () -> getRedisStringOrDefault(key).getset(region, key, value));
   }
 
   @Override
   public long incrby(ByteArrayWrapper key, long increment) {
-    return stripedExecutor.execute(key, () -> doincrby(key, increment));
-  }
-
-  private long doincrby(ByteArrayWrapper key, long increment) {
-    RedisString redisString = getRedisString(key);
-
-    if (redisString == null) {
-      byte[] newValue = Coder.longToBytes(increment);
-      redisString = new RedisString(new ByteArrayWrapper(newValue));
-      region.put(key, redisString);
-      return increment;
-    }
-
-    return redisString.incrby(region, key, increment);
+    return stripedExecutor.execute(key,
+        () -> getRedisStringOrDefault(key).incrby(region, key, increment));
   }
 
   @Override
   public double incrbyfloat(ByteArrayWrapper key, double increment) {
-    return stripedExecutor.execute(key, () -> doincrbyfloat(key, increment));
-  }
-
-  private double doincrbyfloat(ByteArrayWrapper key, double increment) {
-    RedisString redisString = getRedisString(key);
-
-    if (redisString == null) {
-      byte[] newValue = Coder.doubleToBytes(increment);
-      redisString = new RedisString(new ByteArrayWrapper(newValue));
-      region.put(key, redisString);
-      return increment;
-    }
-
-    return redisString.incrbyfloat(region, key, increment);
+    return stripedExecutor.execute(key,
+        () -> getRedisStringOrDefault(key).incrbyfloat(region, key, increment));
   }
 
   @Override
@@ -823,192 +751,78 @@ public class RedisDataCommands implements RedisKeyCommands, RedisSetCommands, Re
 
   @Override
   public long decrby(ByteArrayWrapper key, long decrement) {
-    return stripedExecutor.execute(key, () -> dodecrby(key, decrement));
-  }
-
-  private long dodecrby(ByteArrayWrapper key, long decrement) {
-    RedisString redisString = getRedisString(key);
-
-    if (redisString == null) {
-      byte[] newValue = Coder.longToBytes(-decrement);
-      redisString = new RedisString(new ByteArrayWrapper(newValue));
-      region.put(key, redisString);
-      return -decrement;
-    }
-
-    return redisString.decrby(region, key, decrement);
+    return stripedExecutor.execute(key,
+        () -> getRedisStringOrDefault(key).decrby(region, key, decrement));
   }
 
   @Override
   public ByteArrayWrapper getrange(ByteArrayWrapper key, long start, long end) {
-    return stripedExecutor.execute(key, () -> dogetrange(key, start, end));
-  }
-
-  private ByteArrayWrapper dogetrange(ByteArrayWrapper key, long start, long end) {
-    RedisString redisString = getRedisString(key);
-
-    if (redisString == null) {
-      return new ByteArrayWrapper(new byte[0]);
-    }
-    return redisString.getrange(start, end);
+    return stripedExecutor.execute(key, () -> getRedisStringOrDefault(key).getrange(start, end));
   }
 
   @Override
   public int setrange(ByteArrayWrapper key, int offset, byte[] value) {
-    return stripedExecutor.execute(key, () -> dosetrange(key, offset, value));
-  }
-
-  private int dosetrange(ByteArrayWrapper key, int offset, byte[] value) {
-    RedisString redisString = getRedisString(key);
-
-    if (redisString == null) {
-      byte[] newBytes = value;
-      if (value.length != 0) {
-        if (offset != 0) {
-          newBytes = new byte[offset + value.length];
-          System.arraycopy(value, 0, newBytes, offset, value.length);
-        }
-        redisString = new RedisString(new ByteArrayWrapper(newBytes));
-        region.put(key, redisString);
-      }
-      return newBytes.length;
-    }
-    return redisString.setrange(region, key, offset, value);
+    return stripedExecutor.execute(key,
+        () -> getRedisStringOrDefault(key).setrange(region, key, offset, value));
   }
 
   @Override
   public int bitpos(ByteArrayWrapper key, int bit, int start, Integer end) {
-    return stripedExecutor.execute(key, () -> dobitpos(key, bit, start, end));
-  }
-
-  private int dobitpos(ByteArrayWrapper key, int bit, int start, Integer end) {
-    RedisString redisString = getRedisString(key);
-
-    if (redisString == null) {
-      if (bit == 0) {
-        return 0;
-      } else {
-        return -1;
-      }
-    }
-    return redisString.bitpos(region, key, bit, start, end);
+    return stripedExecutor.execute(key,
+        () -> getRedisStringOrDefault(key).bitpos(region, key, bit, start, end));
   }
 
   @Override
   public long bitcount(ByteArrayWrapper key, int start, int end) {
-    return stripedExecutor.execute(key, () -> dobitcount(key, start, end));
-  }
-
-  private long dobitcount(ByteArrayWrapper key, int start, int end) {
-    RedisString redisString = getRedisString(key);
-
-    if (redisString == null) {
-      return 0;
-    }
-    return redisString.bitcount(start, end);
+    return stripedExecutor.execute(key, () -> getRedisStringOrDefault(key).bitcount(start, end));
   }
 
   @Override
   public long bitcount(ByteArrayWrapper key) {
-    return stripedExecutor.execute(key, () -> dobitcount(key));
-  }
-
-  private long dobitcount(ByteArrayWrapper key) {
-    RedisString redisString = getRedisString(key);
-
-    if (redisString == null) {
-      return 0;
-    }
-    return redisString.bitcount();
+    return stripedExecutor.execute(key, () -> getRedisStringOrDefault(key).bitcount());
   }
 
   @Override
   public int strlen(ByteArrayWrapper key) {
-    return stripedExecutor.execute(key, () -> dostrlen(key));
-  }
-
-  private int dostrlen(ByteArrayWrapper key) {
-    RedisString redisString = getRedisString(key);
-
-    if (redisString == null) {
-      return 0;
-    }
-    return redisString.strlen();
+    return stripedExecutor.execute(key, () -> getRedisStringOrDefault(key).strlen());
   }
 
   @Override
   public int getbit(ByteArrayWrapper key, int offset) {
-    return stripedExecutor.execute(key, () -> dogetbit(key, offset));
-  }
-
-  private int dogetbit(ByteArrayWrapper key, int offset) {
-    RedisString redisString = getRedisString(key);
-
-    if (redisString == null) {
-      return 0;
-    }
-    return redisString.getbit(offset);
+    return stripedExecutor.execute(key, () -> getRedisStringOrDefault(key).getbit(offset));
   }
 
   @Override
   public int setbit(ByteArrayWrapper key, long offset, int value) {
-    return stripedExecutor.execute(key, () -> dosetbit(key, offset, value));
-  }
-
-  private int dosetbit(ByteArrayWrapper key, long offset, int value) {
-    RedisString redisString = getRedisString(key);
     int byteIndex = (int) (offset / 8);
     byte bitIndex = (byte) (offset % 8);
-
-    if (redisString == null) {
-      RedisString newValue;
-      if (value == 1) {
-        byte[] bytes = new byte[byteIndex + 1];
-        bytes[byteIndex] = (byte) (0x80 >> bitIndex);
-        newValue = new RedisString(new ByteArrayWrapper(bytes));
-      } else {
-        // all bits are 0 so use an empty byte array
-        newValue = new RedisString(new ByteArrayWrapper(new byte[0]));
-      }
-      region.put(key, newValue);
-      return 0;
-    }
-    return redisString.setbit(region, key, value, byteIndex, bitIndex);
+    return stripedExecutor.execute(key,
+        () -> getRedisStringOrDefault(key).setbit(region, key, value, byteIndex, bitIndex));
   }
 
-  private boolean setnx(ByteArrayWrapper key, ByteArrayWrapper value, SetOptions options) {
-    if (getRedisData(key) != null) {
-      return false;
-    }
-    RedisString redisString = new RedisString(value);
-    handleSetExpiration(redisString, options);
-    region.put(key, redisString);
-    return true;
-  }
-
-  private void handleSetExpiration(RedisString redisString, SetOptions options) {
-    long setExpiration = options == null ? 0L : options.getExpiration();
-    if (setExpiration != 0) {
-      long now = System.currentTimeMillis();
-      long timestamp = now + setExpiration;
-      redisString.setExpirationTimestampNoDelta(timestamp);
-    } else if (options == null || !options.isKeepTTL()) {
-      redisString.persistNoDelta();
-    }
-  }
-
-  private RedisString checkStringType(RedisData redisData) {
+  private RedisString checkStringType(RedisData redisData, boolean force) {
     if (redisData == null) {
       return null;
     }
     if (redisData.getType() != REDIS_STRING) {
+      if (force) {
+        return RedisString.NULL;
+      }
       throw new RedisDataTypeMismatchException(RedisConstants.ERROR_WRONG_TYPE);
     }
     return (RedisString) redisData;
   }
 
   private RedisString getRedisString(ByteArrayWrapper key) {
-    return checkStringType(getRedisData(key));
+    return checkStringType(getRedisData(key), false);
+  }
+
+  private RedisString getRedisStringOrDefault(ByteArrayWrapper key) {
+    return checkStringType(getRedisDataOrDefault(key, RedisString.NULL), false);
+  }
+
+  private RedisString getRedisStringOrForceDefault(ByteArrayWrapper key) {
+    return checkStringType(getRedisDataOrDefault(key, RedisString.NULL), true);
   }
 
   private RedisString getRedisStringForSet(ByteArrayWrapper key) {

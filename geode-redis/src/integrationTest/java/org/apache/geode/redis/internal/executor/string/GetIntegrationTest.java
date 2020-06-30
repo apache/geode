@@ -62,11 +62,20 @@ public class GetIntegrationTest {
   }
 
   @Test
-  public void testGET_shouldReturnNil_givenKeyIsEmpty() {
+  public void testGET_shouldReturnNil_givenKeyDoesNotExist() {
     String key = "this key does not exist";
 
     String result = jedis.get(key);
     assertThat(result).isNull();
+  }
+
+  @Test
+  public void testGET_shouldReturnEmptyString_givenKeyIsEmpty() {
+    String key = "emptyKey";
+    jedis.set(key, "");
+
+    String result = jedis.get(key);
+    assertThat(result).isEmpty();
   }
 
   @Test(expected = JedisDataException.class)
