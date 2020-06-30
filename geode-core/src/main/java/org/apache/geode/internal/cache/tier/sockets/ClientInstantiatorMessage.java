@@ -126,7 +126,7 @@ public class ClientInstantiatorMessage extends ClientUpdateMessageImpl {
     message = new Message(instantiatorsLength + 1, clientVersion); // one for eventID
     // Set message type
     message.setMessageType(MessageType.REGISTER_INSTANTIATORS);
-    for (int i = 0; i < instantiatorsLength; i = i + 3) {
+    for (int i = 0; i < instantiatorsLength - 2; i += 3) {
       message.addBytesPart(this.serializedInstantiators[i]);
       message.addBytesPart(this.serializedInstantiators[i + 1]);
       message.addBytesPart(this.serializedInstantiators[i + 2]);

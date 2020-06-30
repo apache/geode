@@ -85,7 +85,7 @@ public class ListJndiBindingCommand extends GfshCommand {
     memberTable.setHeader("Active JNDI bindings found on each member: ");
     for (CliFunctionResult oneResult : rc) {
       Serializable[] serializables = getSerializables(oneResult);
-      for (int i = 0; i < serializables.length; i += 2) {
+      for (int i = 0; i < serializables.length - 1; i += 2) {
         memberTable.accumulate("Member", oneResult.getMemberIdOrName());
         memberTable.accumulate("JNDI Name", (String) serializables[i]);
         memberTable.accumulate("JDBC Driver Class", (String) serializables[i + 1]);

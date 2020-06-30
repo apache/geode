@@ -81,7 +81,7 @@ public class ClientDataSerializerMessage extends ClientUpdateMessageImpl {
     message = new Message(dataSerializerLength + 1, clientVersion); // one for eventID
     // Set message type
     message.setMessageType(MessageType.REGISTER_DATASERIALIZERS);
-    for (int i = 0; i < dataSerializerLength; i = i + 2) {
+    for (int i = 0; i < dataSerializerLength - 1; i += 2) {
       message.addBytesPart(this.serializedDataSerializer[i]);
       message.addBytesPart(this.serializedDataSerializer[i + 1]);
     }

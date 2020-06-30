@@ -93,9 +93,9 @@ public class PartitionMemberInfoImpl implements InternalPartitionDetails, Serial
     if (this.bucketSizes == null) {
       throw new IllegalStateException(this + " has no bucketSizes");
     }
-    if (bucketId < 0 || bucketId > this.bucketSizes.length) {
+    if (bucketId < 0 || bucketId >= this.bucketSizes.length) {
       throw new IllegalArgumentException(
-          "bucketId must be between 0 and " + this.bucketSizes.length);
+          "bucketId must be between 0 and " + (this.bucketSizes.length - 1));
     }
     return this.bucketSizes[bucketId];
   }
