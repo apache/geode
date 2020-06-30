@@ -89,9 +89,9 @@ public class StatusServerExitCodeAcceptanceTest {
         : "lib" + File.separator + "tools.jar";
     toolsJar = javaHomeFile.resolve(toolsPath);
     // apparently tools.jar does not exist in all Java installations we use in CI
-//    assertThat(toolsJar)
-//        .as("Expected tools.jar in " + printDirectoryTree(javaHomeFile.toFile()))
-//        .exists();
+    // assertThat(toolsJar)
+    // .as("Expected tools.jar in " + printDirectoryTree(javaHomeFile.toFile()))
+    // .exists();
   }
 
   @Test
