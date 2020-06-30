@@ -15,8 +15,11 @@
 package org.apache.geode.gradle;
 
 import java.io.File;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.gradle.api.file.FileTree;
 import org.gradle.api.internal.DocumentationRegistry;
@@ -84,19 +87,13 @@ class OverriddenTestExecutor implements TestExecuter<JvmTestExecutionSpec> {
     final WorkerTestClassProcessorFactory testInstanceFactory = testFramework.getProcessorFactory();
     final WorkerLeaseRegistry.WorkerLease currentWorkerLease = workerLeaseRegistry.getCurrentWorkerLease();
     final Set<File> classpath = ImmutableSet.copyOf(testExecutionSpec.getClasspath());
-    final Factory<TestClassProcessor> forkingProcessorFactory = new Factory<TestClassProcessor>() {
-      @Override
-      public TestClassProcessor create() {
-        return new ForkingTestClassProcessor(currentWorkerLease, workerFactory, testInstanceFactory, testExecutionSpec.getJavaForkOptions(),
-            classpath, testFramework.getWorkerConfigurationAction(), moduleRegistry, documentationRegistry);
-      }
-    };
-    final Factory<TestClassProcessor> reforkingProcessorFactory = new Factory<TestClassProcessor>() {
-      @Override
-      public TestClassProcessor create() {
-        return new RestartEveryNTestClassProcessor(forkingProcessorFactory, testExecutionSpec.getForkEvery());
-      }
-    };
+    final Iterable<File> modulePath = ImmutableSet.copyOf(testExecutionSpec.getModulePath());
+    final List<String> testWorkerImplementationModules = ImmutableList.of();
+    final Factory<TestClassProcessor> forkingProcessorFactory =
+        () -> new ForkingTestClassProcessor(currentWorkerLease, workerFactory, testInstanceFactory, testExecutionSpec.getJavaForkOptions(),
+            classpath, modulePath, testWorkerImplementationModules, testFramework.getWorkerConfigurationAction(), moduleRegistry, documentationRegistry);
+    final Factory<TestClassProcessor> reforkingProcessorFactory =
+        () -> new RestartEveryNTestClassProcessor(forkingProcessorFactory, testExecutionSpec.getForkEvery());
     processor =
         new PatternMatchTestClassProcessor(testFilter,
                 new MaxNParallelTestClassProcessor(getMaxParallelForks(testExecutionSpec), reforkingProcessorFactory, actorFactory));
