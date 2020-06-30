@@ -104,6 +104,9 @@ public class Connection implements Runnable {
 
   public static final String THREAD_KIND_IDENTIFIER = "P2P message reader";
 
+  private static final int INITIAL_CAPACITY =
+      Integer.getInteger("p2p.readerBufferSize", 32768).intValue();
+
   @MakeNotStatic
   private static int P2P_CONNECT_TIMEOUT;
   @MakeNotStatic
@@ -483,6 +486,8 @@ public class Connection implements Runnable {
    */
   private volatile boolean hasResidualReaderThread;
 
+  private InputStream inputStream;
+
   /**
    * creates a "reader" connection that we accepted (it was initiated by an explicit connect being
    * done on the other side).
@@ -559,17 +564,15 @@ public class Connection implements Runnable {
   }
 
   private void setSendBufferSize(Socket sock, int requestedSize) {
-    setSocketBufferSize(sock, true, requestedSize);
+    setSocketBufferSize(sock, true, requestedSize, false);
   }
 
   private void setReceiveBufferSize(Socket sock, int requestedSize) {
-    setSocketBufferSize(sock, false, requestedSize);
+    setSocketBufferSize(sock, false, requestedSize, false);
   }
 
-  private void setSocketBufferSize(Socket sock, boolean send, int requestedSize) {
-    if (conduit.useTLSOverOldIO()) {
-      return;
-    }
+  private void setSocketBufferSize(Socket sock, boolean send, int requestedSize,
+      boolean alreadySetInSocket) {
     if (requestedSize > 0) {
       try {
         int currentSize = send ? sock.getSendBufferSize() : sock.getReceiveBufferSize();
@@ -579,10 +582,12 @@ public class Connection implements Runnable {
           }
           return;
         }
-        if (send) {
-          sock.setSendBufferSize(requestedSize);
-        } else {
-          sock.setReceiveBufferSize(requestedSize);
+        if (!alreadySetInSocket) {
+          if (send) {
+            sock.setSendBufferSize(requestedSize);
+          } else {
+            sock.setReceiveBufferSize(requestedSize);
+          }
         }
       } catch (SocketException ignore) {
       }
@@ -1157,14 +1162,24 @@ public class Connection implements Runnable {
     int connectTime = getP2PConnectTimeout(conduit.getDM().getConfig());
     boolean useTLSOverOldIO = getConduit().useTLSOverOldIO();
     if (useTLSOverOldIO) {
-      int socketBufferSize = -1;
-      // sharedResource ? SMALL_BUFFER_SIZE : this.owner.getConduit().tcpBufferSize;
+      // int socketBufferSize = -1;
+      int socketBufferSize =
+          sharedResource ? SMALL_BUFFER_SIZE : this.owner.getConduit().tcpBufferSize;
       socket = getConduit().getSocketCreator().forAdvancedUse().connect(
           new HostAndPort(remoteID.getHostName(), remoteID.getDirectChannelPort()),
           0, null, false, socketBufferSize, true);
+      setSocketBufferSize(this.socket, false, socketBufferSize, true);
     } else {
       SocketChannel channel = SocketChannel.open();
       socket = channel.socket();
+      // If conserve-sockets is false, the socket can be used for receiving responses, so set the
+      // receive buffer accordingly.
+      if (!sharedResource) {
+        setReceiveBufferSize(socket, owner.getConduit().tcpBufferSize);
+      } else {
+        setReceiveBufferSize(socket, SMALL_BUFFER_SIZE); // make small since only
+        // receive ack messages
+      }
     }
     owner.addConnectingSocket(socket, addr.getAddress());
 
@@ -1172,14 +1187,6 @@ public class Connection implements Runnable {
       socket.setTcpNoDelay(true);
       socket.setKeepAlive(SocketCreator.ENABLE_TCP_KEEP_ALIVE);
 
-      // If conserve-sockets is false, the socket can be used for receiving responses, so set the
-      // receive buffer accordingly.
-      if (!sharedResource) {
-        setReceiveBufferSize(socket, owner.getConduit().tcpBufferSize);
-      } else if (!(socket instanceof SSLSocket)) {
-        setReceiveBufferSize(socket, SMALL_BUFFER_SIZE); // make small since only
-        // receive ack messages
-      }
       setSendBufferSize(socket);
       if (!useTLSOverOldIO) {
         socket.getChannel().configureBlocking(true);
@@ -1619,12 +1626,12 @@ public class Connection implements Runnable {
           }
           int amountRead;
           if (!isInitialRead) {
-            amountRead = SocketUtils.readFromSocket(socket, buff, socket.getInputStream());
+            amountRead = SocketUtils.readFromSocket(socket, buff, inputStream);
           } else {
             isInitialRead = false;
             if (!skipInitialRead) {
               conduit.getStats().incFinalCheckResponsesReceived(); // BRUCE: remove stat
-              amountRead = SocketUtils.readFromSocket(socket, buff, socket.getInputStream());
+              amountRead = SocketUtils.readFromSocket(socket, buff, inputStream);
             } else {
               amountRead = buff.position();
             }
@@ -1739,7 +1746,7 @@ public class Connection implements Runnable {
 
   private void createIoFilter(Socket socket, boolean clientSocket) throws IOException {
     SocketChannel channel = socket.getChannel();
-    InputStream inputStream = socket.getInputStream();
+    inputStream = socket.getInputStream();
     if (getConduit().useTLSOverNIO()) {
       InetSocketAddress address = (InetSocketAddress) channel.getRemoteAddress();
       SSLEngine engine =
@@ -1765,9 +1772,12 @@ public class Connection implements Runnable {
           getBufferPool());
     } else {
       if (!clientSocket && getConduit().useSSL()) {
+        // inputStream = new BufferedInputStream(getSocket().getInputStream(),
+        // Connection.INITIAL_CAPACITY);
         getConduit().getSocketCreator().forCluster()
             .handshakeIfSocketIsSSL(socket, getConduit().idleConnectionTimeout);
       }
+
       ioFilter = new NioPlainEngine(getBufferPool(), getConduit().useDirectBuffers(), inputStream);
       ((NioPlainEngine) ioFilter).setStatistics(conduit.getStats());
     }
