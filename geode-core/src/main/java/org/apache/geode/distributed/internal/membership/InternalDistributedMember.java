@@ -441,21 +441,15 @@ public class InternalDistributedMember
   }
 
   @Override
-  public boolean equals(final Object o) {
+  public boolean equals(Object o) {
     if (this == o) {
       return true;
     }
-    if (o == null) {
+    if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    if (o instanceof InternalDistributedMember) {
-      final InternalDistributedMember that = (InternalDistributedMember) o;
-      return memberIdentifier.equals(that.memberIdentifier);
-    } else if (o instanceof MemberIdentifier) {
-      return memberIdentifier.equals(o);
-    } else {
-      return false;
-    }
+    InternalDistributedMember that = (InternalDistributedMember) o;
+    return memberIdentifier.equals(that.memberIdentifier);
   }
 
   @Override

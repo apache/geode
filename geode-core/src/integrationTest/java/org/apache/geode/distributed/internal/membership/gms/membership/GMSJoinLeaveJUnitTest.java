@@ -63,6 +63,7 @@ import org.apache.geode.distributed.internal.membership.api.MemberData;
 import org.apache.geode.distributed.internal.membership.api.MemberDataBuilder;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifierFactory;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifierFactoryImpl;
 import org.apache.geode.distributed.internal.membership.api.MemberStartupException;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfigurationException;
@@ -146,17 +147,7 @@ public class GMSJoinLeaveJUnitTest {
     when(services.getManager()).thenReturn(manager);
     when(services.getHealthMonitor()).thenReturn(healthMonitor);
     when(services.getMemberFactory())
-        .thenReturn(new MemberIdentifierFactory<InternalDistributedMember>() {
-          @Override
-          public InternalDistributedMember create(MemberData memberInfo) {
-            return new InternalDistributedMember(memberInfo);
-          }
-
-          @Override
-          public Comparator<InternalDistributedMember> getComparator() {
-            return InternalDistributedMember::compareTo;
-          }
-        });
+        .thenReturn(new MemberIdentifierFactoryImpl());
 
     gmsJoinLeaveMemberId = services.getMemberFactory().create(
         MemberDataBuilder.newBuilderForLocalHost("localhost")
@@ -173,7 +164,7 @@ public class GMSJoinLeaveJUnitTest {
     Timer t = new Timer(true);
     when(services.getTimer()).thenReturn(t);
 
-    mockMembers = new InternalDistributedMember[4];
+    mockMembers = new MemberIdentifier[4];
     for (int i = 0; i < mockMembers.length; i++) {
       mockMembers[i] = services.getMemberFactory().create(
           MemberDataBuilder.newBuilderForLocalHost("localhost")
@@ -182,7 +173,7 @@ public class GMSJoinLeaveJUnitTest {
     mockOldMember = services.getMemberFactory().create(
         MemberDataBuilder.newBuilderForLocalHost("localhost")
             .setMembershipPort(8700).build());
-    ((InternalDistributedMember) mockOldMember).setVersionObjectForTest(Version.GFE_56);
+    ((MemberIdentifierImpl) mockOldMember).setVersionObjectForTest(Version.GFE_56);
     locatorClient = mock(TcpClient.class);
 
     if (useTestGMSJoinLeave) {
