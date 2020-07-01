@@ -27,7 +27,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.Stack;
 import java.util.StringTokenizer;
@@ -106,7 +105,6 @@ import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.DiskStoreAttributes;
 import org.apache.geode.internal.cache.DiskWriteAttributesImpl;
@@ -122,6 +120,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.services.module.ModuleService;
+import org.apache.geode.services.result.ModuleServiceResult;
 
 /**
  * Parses an XML file and creates a {@link Cache}/{@link ClientCache} and {@link Region}s from it.
@@ -2821,15 +2820,17 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     XmlParser delegate = delegates.get(namespaceUri);
     if (null == delegate) {
       try {
-        final ServiceLoader<XmlParser> serviceLoader =
-            ServiceLoader.load(XmlParser.class, ClassPathLoader.getLatestAsClassLoader());
-        for (final XmlParser xmlParser : serviceLoader) {
-          if (xmlParser.getNamespaceUri().equals(namespaceUri)) {
-            delegate = xmlParser;
-            delegate.setStack(stack);
-            delegate.setDocumentLocator(documentLocator);
-            delegates.put(xmlParser.getNamespaceUri(), xmlParser);
-            break;
+        ModuleServiceResult<Set<XmlParser>> serviceLoadResult =
+            moduleService.loadService(XmlParser.class);
+        if (serviceLoadResult.isSuccessful()) {
+          for (final XmlParser xmlParser : serviceLoadResult.getMessage()) {
+            if (xmlParser.getNamespaceUri().equals(namespaceUri)) {
+              delegate = xmlParser;
+              delegate.setStack(stack);
+              delegate.setDocumentLocator(documentLocator);
+              delegates.put(xmlParser.getNamespaceUri(), xmlParser);
+              break;
+            }
           }
         }
       } catch (final Exception e) {
@@ -2837,6 +2838,11 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       }
     }
     return delegate;
+  }
+
+  @Override
+  public void init(ModuleService moduleService) {
+    super.init(moduleService);
   }
 
   private void startPdx(Attributes atts) {

@@ -773,7 +773,7 @@ public abstract class CacheXml implements GeodeEntityResolver2, ErrorHandler {
   /** the version of the DTD being used by the document being parsed */
   CacheXmlVersion version;
 
-  private ModuleService moduleService;
+  protected ModuleService moduleService;
 
 
   ///////////////////// Instance Methods /////////////////////
