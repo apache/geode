@@ -168,10 +168,11 @@ public class QueueRemovalMessage extends PooledDistributionMessage {
      */
     super.toData(out, context);
     // write the size of the data list
-    DataSerializer.writeInteger(messagesList.size(), out);
+    DataSerializer.writeInteger(this.messagesList.size(), out);
     Iterator iterator = messagesList.iterator();
-    String regionName;
-    Integer numberOfIds;
+    String regionName = null;
+    Integer numberOfIds = null;
+    Object eventId = null;
     int maxVal;
     while (iterator.hasNext()) {
       regionName = (String) iterator.next();
@@ -182,7 +183,6 @@ public class QueueRemovalMessage extends PooledDistributionMessage {
       DataSerializer.writeInteger(numberOfIds, out);
       maxVal = numberOfIds;
       // write the event ids
-      Object eventId;
       for (int i = 0; i < maxVal; i++) {
         eventId = iterator.next();
         DataSerializer.writeObject(eventId, out);
