@@ -32,7 +32,7 @@ import org.apache.geode.redis.internal.RedisStats;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.CommandHelper;
 import org.apache.geode.redis.internal.data.RedisData;
-import org.apache.geode.redis.internal.data.RedisDataCommands;
+import org.apache.geode.redis.internal.data.RedisKeyCommandsFunctionExecutor;
 import org.apache.geode.redis.internal.data.RedisSet;
 import org.apache.geode.redis.internal.executor.SingleResultCollector;
 import org.apache.geode.redis.internal.executor.StripedExecutor;
@@ -44,7 +44,7 @@ public class RenameFunction implements InternalFunction {
 
   private final transient PartitionedRegion partitionedRegion;
   private final transient CommandHelper commandHelper;
-  private final transient RedisDataCommands dataCommands;
+  private final transient RedisKeyCommandsFunctionExecutor keyCommands;
 
   public static void register(Region<ByteArrayWrapper, RedisData> dataRegion,
       StripedExecutor stripedExecutor,
@@ -59,7 +59,7 @@ public class RenameFunction implements InternalFunction {
       RedisStats redisStats) {
     partitionedRegion = (PartitionedRegion) dataRegion;
     commandHelper = new CommandHelper(dataRegion, redisStats, stripedExecutor);
-    dataCommands = new RedisDataCommands(commandHelper);
+    keyCommands = new RedisKeyCommandsFunctionExecutor(commandHelper);
   }
 
   @Override
@@ -146,7 +146,7 @@ public class RenameFunction implements InternalFunction {
   }
 
   private boolean rename(RenameContext context) {
-    return dataCommands.rename(context.getOldKey(), context.getNewKey());
+    return keyCommands.rename(context.getOldKey(), context.getNewKey());
   }
 
   private void markCurrentKeyAsLocked(RenameContext context) {

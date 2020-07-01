@@ -32,7 +32,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.executor.key.RedisKeyCommands;
-import org.apache.geode.redis.internal.executor.key.RedisKeyCommandsFunctionExecutor;
+import org.apache.geode.redis.internal.executor.key.RedisKeyCommandsFunctionInvoker;
 
 public class PassiveExpirationManager {
   private static final Logger logger = LogService.getLogger();
@@ -68,7 +68,7 @@ public class PassiveExpirationManager {
       final long now = System.currentTimeMillis();
       Region<ByteArrayWrapper, RedisData> localPrimaryData =
           PartitionRegionHelper.getLocalPrimaryData(redisData);
-      RedisKeyCommands redisKeyCommands = new RedisKeyCommandsFunctionExecutor(redisData);
+      RedisKeyCommands redisKeyCommands = new RedisKeyCommandsFunctionInvoker(redisData);
       for (Map.Entry<ByteArrayWrapper, RedisData> entry : localPrimaryData.entrySet()) {
         try {
           if (entry.getValue().hasExpired(now)) {

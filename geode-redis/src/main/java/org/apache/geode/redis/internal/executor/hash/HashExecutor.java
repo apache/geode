@@ -25,7 +25,7 @@ public abstract class HashExecutor extends AbstractExecutor {
   static final int FIELD_INDEX = 2;
 
   RedisHashCommands createRedisHashCommands(ExecutionHandlerContext context) {
-    return new RedisHashCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
+    return new RedisHashCommandsFunctionInvoker(context.getRegionProvider().getDataRegion());
   }
 
 }

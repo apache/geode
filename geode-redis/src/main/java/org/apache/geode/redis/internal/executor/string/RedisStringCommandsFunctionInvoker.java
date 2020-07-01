@@ -40,105 +40,110 @@ import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.executor.CommandFunction;
 
-public class RedisStringCommandsFunctionExecutor implements RedisStringCommands {
+/**
+ * This class is used by netty redis string command executors
+ * to invoke a geode function that will run on a
+ * particular server to do the redis command.
+ */
+public class RedisStringCommandsFunctionInvoker implements RedisStringCommands {
   private final Region<ByteArrayWrapper, RedisData> region;
 
-  public RedisStringCommandsFunctionExecutor(Region<ByteArrayWrapper, RedisData> region) {
+  public RedisStringCommandsFunctionInvoker(Region<ByteArrayWrapper, RedisData> region) {
     this.region = region;
   }
 
   @Override
   public long append(ByteArrayWrapper key, ByteArrayWrapper valueToAppend) {
-    return CommandFunction.execute(APPEND, key, valueToAppend, region);
+    return CommandFunction.invoke(APPEND, key, valueToAppend, region);
   }
 
   @Override
   public ByteArrayWrapper get(ByteArrayWrapper key) {
-    return CommandFunction.execute(GET, key, null, region);
+    return CommandFunction.invoke(GET, key, null, region);
   }
 
   @Override
   public boolean set(ByteArrayWrapper key, ByteArrayWrapper value, SetOptions options) {
-    return CommandFunction.execute(SET, key, new Object[] {value, options}, region);
+    return CommandFunction.invoke(SET, key, new Object[] {value, options}, region);
   }
 
   @Override
   public long incr(ByteArrayWrapper key) {
-    return CommandFunction.execute(INCR, key, null, region);
+    return CommandFunction.invoke(INCR, key, null, region);
   }
 
   @Override
   public long decr(ByteArrayWrapper key) {
-    return CommandFunction.execute(DECR, key, null, region);
+    return CommandFunction.invoke(DECR, key, null, region);
   }
 
   @Override
   public ByteArrayWrapper getset(ByteArrayWrapper key, ByteArrayWrapper value) {
-    return CommandFunction.execute(GETSET, key, value, region);
+    return CommandFunction.invoke(GETSET, key, value, region);
   }
 
   @Override
   public long incrby(ByteArrayWrapper key, long increment) {
-    return CommandFunction.execute(INCRBY, key, increment, region);
+    return CommandFunction.invoke(INCRBY, key, increment, region);
   }
 
   @Override
   public long decrby(ByteArrayWrapper key, long decrement) {
-    return CommandFunction.execute(DECRBY, key, decrement, region);
+    return CommandFunction.invoke(DECRBY, key, decrement, region);
   }
 
   @Override
   public ByteArrayWrapper getrange(ByteArrayWrapper key, long start, long end) {
-    return CommandFunction.execute(GETRANGE, key, new Object[] {start, end}, region);
+    return CommandFunction.invoke(GETRANGE, key, new Object[] {start, end}, region);
   }
 
   @Override
   public long bitcount(ByteArrayWrapper key, int start, int end) {
-    return CommandFunction.execute(BITCOUNT, key, new Object[] {start, end}, region);
+    return CommandFunction.invoke(BITCOUNT, key, new Object[] {start, end}, region);
   }
 
   @Override
   public long bitcount(ByteArrayWrapper key) {
-    return CommandFunction.execute(BITCOUNT, key, null, region);
+    return CommandFunction.invoke(BITCOUNT, key, null, region);
   }
 
   @Override
   public int strlen(ByteArrayWrapper key) {
-    return CommandFunction.execute(STRLEN, key, null, region);
+    return CommandFunction.invoke(STRLEN, key, null, region);
   }
 
   @Override
   public int getbit(ByteArrayWrapper key, int offset) {
-    return CommandFunction.execute(GETBIT, key, offset, region);
+    return CommandFunction.invoke(GETBIT, key, offset, region);
   }
 
   @Override
   public int setbit(ByteArrayWrapper key, long offset, int value) {
-    return CommandFunction.execute(SETBIT, key, new Object[] {offset, value}, region);
+    return CommandFunction.invoke(SETBIT, key, new Object[] {offset, value}, region);
   }
 
   @Override
   public double incrbyfloat(ByteArrayWrapper key, double increment) {
-    return CommandFunction.execute(INCRBYFLOAT, key, increment, region);
+    return CommandFunction.invoke(INCRBYFLOAT, key, increment, region);
   }
 
   @Override
   public int bitop(String operation, ByteArrayWrapper destKey, List<ByteArrayWrapper> sources) {
-    return CommandFunction.execute(BITOP, destKey, new Object[] {operation, sources}, region);
+    return CommandFunction.invoke(BITOP, destKey, new Object[] {operation, sources}, region);
   }
 
   @Override
   public int bitpos(ByteArrayWrapper key, int bit, int start, Integer end) {
-    return CommandFunction.execute(BITPOS, key, new Object[] {bit, start, end}, region);
+    return CommandFunction.invoke(BITPOS, key, new Object[] {bit, start, end}, region);
   }
 
   @Override
   public int setrange(ByteArrayWrapper key, int offset, byte[] value) {
-    return CommandFunction.execute(SETRANGE, key, new Object[] {offset, value}, region);
+    return CommandFunction.invoke(SETRANGE, key, new Object[] {offset, value}, region);
   }
 
   @Override
   public ByteArrayWrapper mget(ByteArrayWrapper key) {
-    return CommandFunction.execute(MGET, key, null, region);
+    return CommandFunction.invoke(MGET, key, null, region);
   }
 }

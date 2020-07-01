@@ -28,7 +28,7 @@ import java.util.regex.Pattern;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.executor.set.RedisSetCommands;
-import org.apache.geode.redis.internal.executor.set.RedisSetCommandsFunctionExecutor;
+import org.apache.geode.redis.internal.executor.set.RedisSetCommandsFunctionInvoker;
 
 class NullRedisSet extends RedisSet {
 
@@ -164,7 +164,7 @@ class NullRedisSet extends RedisSet {
       ArrayList<ByteArrayWrapper> setKeys,
       ByteArrayWrapper destination) {
     ArrayList<Set<ByteArrayWrapper>> result = new ArrayList<>(setKeys.size());
-    RedisSetCommands redisSetCommands = new RedisSetCommandsFunctionExecutor(region);
+    RedisSetCommands redisSetCommands = new RedisSetCommandsFunctionInvoker(region);
     for (ByteArrayWrapper key : setKeys) {
       if (key.equals(destination)) {
         result.add(null);
