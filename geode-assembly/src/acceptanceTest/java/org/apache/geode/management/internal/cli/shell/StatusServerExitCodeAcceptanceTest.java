@@ -14,11 +14,10 @@
  */
 package org.apache.geode.management.internal.cli.shell;
 
-import static java.lang.System.lineSeparator;
 import static java.util.Arrays.stream;
 import static org.apache.geode.internal.AvailablePort.SOCKET;
 import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
-import static org.apache.geode.management.internal.cli.shell.StatusServerExitCodeAcceptanceTest.DirectoryTree.printDirectoryTree;
+import static org.apache.geode.management.internal.cli.shell.DirectoryTree.printDirectoryTree;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -28,9 +27,11 @@ import java.nio.file.Path;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.process.PidFile;
+import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
@@ -38,6 +39,7 @@ import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 /**
  * See also org.apache.geode.management.internal.cli.shell.StatusLocatorExitCodeAcceptanceTest
  */
+@Category(GfshTest.class)
 public class StatusServerExitCodeAcceptanceTest {
 
   private static final String LOCATOR_NAME = "myLocator";
@@ -88,10 +90,6 @@ public class StatusServerExitCodeAcceptanceTest {
         ? ".." + File.separator + "lib" + File.separator + "tools.jar"
         : "lib" + File.separator + "tools.jar";
     toolsJar = javaHomeFile.resolve(toolsPath);
-    // apparently tools.jar does not exist in all Java installations we use in CI
-    // assertThat(toolsJar)
-    // .as("Expected tools.jar in " + printDirectoryTree(javaHomeFile.toFile()))
-    // .exists();
   }
 
   @Test
@@ -212,54 +210,5 @@ public class StatusServerExitCodeAcceptanceTest {
             .format("Expected member '%s' to have pid file but could not find it.", memberName)));
 
     return new PidFile(pidFile).readPid();
-  }
-
-  public static class DirectoryTree {
-
-    /**
-     * Pretty print the directory tree and its file names.
-     */
-    public static String printDirectoryTree(File folder) {
-      if (!folder.isDirectory()) {
-        throw new IllegalArgumentException("folder is not a Directory");
-      }
-      int indent = 0;
-      StringBuilder sb = new StringBuilder();
-      printDirectoryTree(folder, indent, sb);
-      return sb.toString();
-    }
-
-    private static void printDirectoryTree(File folder, int indent, StringBuilder sb) {
-      if (!folder.isDirectory()) {
-        throw new IllegalArgumentException("folder is not a Directory");
-      }
-      sb.append(getIndentString(indent));
-      sb.append("+--");
-      sb.append(folder.getName());
-      sb.append("/");
-      sb.append(lineSeparator());
-      for (File file : folder.listFiles()) {
-        if (file.isDirectory()) {
-          printDirectoryTree(file, indent + 1, sb);
-        } else {
-          printFile(file, indent + 1, sb);
-        }
-      }
-    }
-
-    private static void printFile(File file, int indent, StringBuilder sb) {
-      sb.append(getIndentString(indent));
-      sb.append("+--");
-      sb.append(file.getName());
-      sb.append(lineSeparator());
-    }
-
-    private static String getIndentString(int indent) {
-      StringBuilder sb = new StringBuilder();
-      for (int i = 0; i < indent; i++) {
-        sb.append("|  ");
-      }
-      return sb.toString();
-    }
   }
 }

@@ -26,11 +26,14 @@ import java.nio.file.Path;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
+import org.apache.geode.test.junit.categories.LoggingTest;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
+@Category(LoggingTest.class)
 public class LocatorWithCustomLogConfigAcceptanceTest {
 
   private static final String CONFIG_WITH_GEODE_PLUGINS_FILE_NAME =
