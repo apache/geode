@@ -220,6 +220,10 @@ public class NullRedisString extends RedisString {
         () -> doBitOp(helper, operation, key, indexOfSelf, sourceValues));
   }
 
+  private enum BitOp {
+    AND, OR, XOR
+  };
+
   private int doBitOp(CommandHelper helper,
       String operation,
       ByteArrayWrapper key,
@@ -240,13 +244,13 @@ public class NullRedisString extends RedisString {
     ByteArrayWrapper newValue;
     switch (operation) {
       case "AND":
-        newValue = and(sourceValues, maxLength);
+        newValue = doBitOp(BitOp.AND, sourceValues, maxLength);
         break;
       case "OR":
-        newValue = or(sourceValues, maxLength);
+        newValue = doBitOp(BitOp.OR, sourceValues, maxLength);
         break;
       case "XOR":
-        newValue = xor(sourceValues, maxLength);
+        newValue = doBitOp(BitOp.XOR, sourceValues, maxLength);
         break;
       default: // NOT
         newValue = not(sourceValues.get(0), maxLength);
@@ -260,7 +264,7 @@ public class NullRedisString extends RedisString {
     return newValue.length();
   }
 
-  private ByteArrayWrapper and(List<ByteArrayWrapper> sourceValues, int max) {
+  private ByteArrayWrapper doBitOp(BitOp bitOp, List<ByteArrayWrapper> sourceValues, int max) {
     byte[] dest = new byte[max];
     for (int i = 0; i < max; i++) {
       byte b = 0;
@@ -274,51 +278,17 @@ public class NullRedisString extends RedisString {
           b = sourceByte;
           firstByte = false;
         } else {
-          b &= sourceByte;
-        }
-      }
-      dest[i] = b;
-    }
-    return new ByteArrayWrapper(dest);
-  }
-
-  private ByteArrayWrapper or(List<ByteArrayWrapper> sourceValues, int max) {
-    byte[] dest = new byte[max];
-    for (int i = 0; i < max; i++) {
-      byte b = 0;
-      boolean firstByte = true;
-      for (ByteArrayWrapper sourceValue : sourceValues) {
-        byte sourceByte = 0;
-        if (sourceValue != null && i < sourceValue.length()) {
-          sourceByte = sourceValue.toBytes()[i];
-        }
-        if (firstByte) {
-          b = sourceByte;
-          firstByte = false;
-        } else {
-          b |= sourceByte;
-        }
-      }
-      dest[i] = b;
-    }
-    return new ByteArrayWrapper(dest);
-  }
-
-  private ByteArrayWrapper xor(List<ByteArrayWrapper> sourceValues, int max) {
-    byte[] dest = new byte[max];
-    for (int i = 0; i < max; i++) {
-      byte b = 0;
-      boolean firstByte = true;
-      for (ByteArrayWrapper sourceValue : sourceValues) {
-        byte sourceByte = 0;
-        if (sourceValue != null && i < sourceValue.length()) {
-          sourceByte = sourceValue.toBytes()[i];
-        }
-        if (firstByte) {
-          b = sourceByte;
-          firstByte = false;
-        } else {
-          b ^= sourceByte;
+          switch (bitOp) {
+            case AND:
+              b &= sourceByte;
+              break;
+            case OR:
+              b |= sourceByte;
+              break;
+            case XOR:
+              b ^= sourceByte;
+              break;
+          }
         }
       }
       dest[i] = b;

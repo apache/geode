@@ -87,7 +87,7 @@ public class CommandHelper {
     return checkSetType(getRedisData(key, NULL_REDIS_SET));
   }
 
-  RedisSet checkSetType(RedisData redisData) {
+  private RedisSet checkSetType(RedisData redisData) {
     if (redisData == null) {
       return null;
     }
@@ -101,7 +101,7 @@ public class CommandHelper {
     return checkHashType(getRedisData(key, NULL_REDIS_HASH));
   }
 
-  static RedisHash checkHashType(RedisData redisData) {
+  private RedisHash checkHashType(RedisData redisData) {
     if (redisData == null) {
       return null;
     }
@@ -111,7 +111,7 @@ public class CommandHelper {
     return (RedisHash) redisData;
   }
 
-  RedisString checkStringType(RedisData redisData, boolean ignoreTypeMismatch) {
+  private RedisString checkStringType(RedisData redisData, boolean ignoreTypeMismatch) {
     if (redisData == null) {
       return null;
     }
