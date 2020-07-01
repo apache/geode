@@ -16,11 +16,6 @@
 
 package org.apache.geode.redis.internal.data;
 
-import static org.apache.geode.redis.internal.data.RedisData.NULL_REDIS_DATA;
-import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_HASH;
-import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SET;
-import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_STRING;
-import static org.apache.geode.redis.internal.data.RedisHash.NULL_REDIS_HASH;
 import static org.apache.geode.redis.internal.data.RedisSet.NULL_REDIS_SET;
 import static org.apache.geode.redis.internal.data.RedisString.NULL_REDIS_STRING;
 
@@ -28,12 +23,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.redis.internal.RedisConstants;
-import org.apache.geode.redis.internal.RedisStats;
-import org.apache.geode.redis.internal.executor.StripedExecutor;
 import org.apache.geode.redis.internal.executor.hash.RedisHashCommands;
 import org.apache.geode.redis.internal.executor.key.RedisKeyCommands;
 import org.apache.geode.redis.internal.executor.set.RedisSetCommands;
@@ -53,29 +46,41 @@ import org.apache.geode.redis.internal.executor.string.SetOptions;
  */
 public class RedisDataCommands implements RedisKeyCommands, RedisSetCommands, RedisHashCommands,
     RedisStringCommands {
-  private final Region<ByteArrayWrapper, RedisData> region;
-  private final RedisStats redisStats;
-  private final StripedExecutor stripedExecutor;
+  private final CommandHelper helper;
 
-
-  public RedisDataCommands(Region<ByteArrayWrapper, RedisData> region, RedisStats redisStats,
-      StripedExecutor stripedExecutor) {
-    this.region = region;
-    this.redisStats = redisStats;
-    this.stripedExecutor = stripedExecutor;
+  public RedisDataCommands(CommandHelper helper) {
+    this.helper = helper;
   }
 
-  public Region<ByteArrayWrapper, RedisData> getRegion() {
-    return region;
+  private Region<ByteArrayWrapper, RedisData> getRegion() {
+    return helper.getRegion();
   }
 
-  public RedisStats getRedisStats() {
-    return redisStats;
+  private <T> T stripedExecute(Object key,
+      Callable<T> callable) {
+    return helper.getStripedExecutor().execute(key, callable);
   }
 
-  public StripedExecutor getStripedExecutor() {
-    return stripedExecutor;
+  private RedisData getRedisData(ByteArrayWrapper key) {
+    return helper.getRedisData(key);
   }
+
+  private RedisHash getRedisHash(ByteArrayWrapper key) {
+    return helper.getRedisHash(key);
+  }
+
+  private RedisSet getRedisSet(ByteArrayWrapper key) {
+    return helper.getRedisSet(key);
+  }
+
+  private RedisString getRedisString(ByteArrayWrapper key) {
+    return helper.getRedisString(key);
+  }
+
+  private RedisString getRedisStringIgnoringType(ByteArrayWrapper key) {
+    return helper.getRedisStringIgnoringType(key);
+  }
+
 
   ///////////////////////////////////////////////////////////////
   /////////////////////// KEY COMMANDS //////////////////////////
@@ -83,58 +88,39 @@ public class RedisDataCommands implements RedisKeyCommands, RedisSetCommands, Re
 
   @Override
   public boolean del(ByteArrayWrapper key) {
-    return stripedExecutor.execute(key, () -> region.remove(key) != null);
+    return stripedExecute(key, () -> getRegion().remove(key) != null);
   }
 
   @Override
   public boolean exists(ByteArrayWrapper key) {
-    return stripedExecutor.execute(key, () -> getRedisData(key).exists());
+    return stripedExecute(key, () -> getRedisData(key).exists());
   }
 
   @Override
   public long pttl(ByteArrayWrapper key) {
-    return stripedExecutor.execute(key, () -> getRedisData(key).pttl(region, key));
+    return stripedExecute(key, () -> getRedisData(key).pttl(getRegion(), key));
   }
 
   @Override
   public int pexpireat(ByteArrayWrapper key, long timestamp) {
-    return stripedExecutor.execute(key,
-        () -> getRedisData(key).pexpireat(this, key, timestamp));
+    return stripedExecute(key,
+        () -> getRedisData(key).pexpireat(helper, key, timestamp));
   }
 
   @Override
   public int persist(ByteArrayWrapper key) {
-    return stripedExecutor.execute(key, () -> getRedisData(key).persist(region, key));
+    return stripedExecute(key, () -> getRedisData(key).persist(getRegion(), key));
   }
 
   @Override
   public String type(ByteArrayWrapper key) {
-    return stripedExecutor.execute(key, () -> getRedisData(key).type());
+    return stripedExecute(key, () -> getRedisData(key).type());
   }
 
   @Override
   public boolean rename(ByteArrayWrapper oldKey, ByteArrayWrapper newKey) {
     // caller has already done all the stripedExecutor locking
-    return getRedisData(oldKey).rename(region, oldKey, newKey);
-  }
-
-  RedisData getRedisData(ByteArrayWrapper key) {
-    return getRedisData(key, NULL_REDIS_DATA);
-  }
-
-  private RedisData getRedisData(ByteArrayWrapper key, RedisData notFoundValue) {
-    RedisData result = region.get(key);
-    if (result != null) {
-      if (result.hasExpired()) {
-        result.doExpiration(this, key);
-        result = null;
-      }
-    }
-    if (result == null) {
-      return notFoundValue;
-    } else {
-      return result;
-    }
+    return getRedisData(oldKey).rename(getRegion(), oldKey, newKey);
   }
 
   ///////////////////////////////////////////////////////////////
@@ -145,81 +131,70 @@ public class RedisDataCommands implements RedisKeyCommands, RedisSetCommands, Re
   public long sadd(
       ByteArrayWrapper key,
       ArrayList<ByteArrayWrapper> membersToAdd) {
-    return stripedExecutor.execute(key, () -> getRedisSet(key).sadd(membersToAdd, region, key));
+    return stripedExecute(key, () -> getRedisSet(key).sadd(membersToAdd,
+        getRegion(), key));
   }
 
   @Override
   public int sunionstore(ByteArrayWrapper destination,
       ArrayList<ByteArrayWrapper> setKeys) {
-    return NULL_REDIS_SET.sunionstore(this, destination, setKeys);
+    return NULL_REDIS_SET.sunionstore(helper, destination, setKeys);
   }
 
   @Override
   public int sinterstore(ByteArrayWrapper destination,
       ArrayList<ByteArrayWrapper> setKeys) {
-    return NULL_REDIS_SET.sinterstore(this, destination, setKeys);
+    return NULL_REDIS_SET.sinterstore(helper, destination, setKeys);
   }
 
   @Override
   public int sdiffstore(ByteArrayWrapper destination,
       ArrayList<ByteArrayWrapper> setKeys) {
-    return NULL_REDIS_SET.sdiffstore(this, destination, setKeys);
+    return NULL_REDIS_SET.sdiffstore(helper, destination, setKeys);
   }
 
   @Override
   public long srem(
       ByteArrayWrapper key,
       ArrayList<ByteArrayWrapper> membersToRemove) {
-    return stripedExecutor.execute(key, () -> getRedisSet(key).srem(membersToRemove, region, key));
+    return stripedExecute(key, () -> getRedisSet(key).srem(membersToRemove,
+        getRegion(), key));
   }
 
   @Override
   public Set<ByteArrayWrapper> smembers(
       ByteArrayWrapper key) {
-    return stripedExecutor.execute(key, () -> getRedisSet(key).smembers());
+    return stripedExecute(key, () -> getRedisSet(key).smembers());
   }
 
   @Override
   public int scard(ByteArrayWrapper key) {
-    return stripedExecutor.execute(key, () -> getRedisSet(key).scard());
+    return stripedExecute(key, () -> getRedisSet(key).scard());
   }
 
   @Override
   public boolean sismember(
       ByteArrayWrapper key, ByteArrayWrapper member) {
-    return stripedExecutor.execute(key, () -> getRedisSet(key).sismember(member));
+    return stripedExecute(key, () -> getRedisSet(key).sismember(member));
   }
 
   @Override
   public Collection<ByteArrayWrapper> srandmember(
       ByteArrayWrapper key, int count) {
-    return stripedExecutor.execute(key, () -> getRedisSet(key).srandmember(count));
+    return stripedExecute(key, () -> getRedisSet(key).srandmember(count));
   }
 
   @Override
   public Collection<ByteArrayWrapper> spop(
       ByteArrayWrapper key, int popCount) {
-    return stripedExecutor.execute(key, () -> getRedisSet(key).spop(region, key, popCount));
+    return stripedExecute(key, () -> getRedisSet(key)
+        .spop(getRegion(), key, popCount));
   }
 
   @Override
   public List<Object> sscan(
       ByteArrayWrapper key, Pattern matchPattern, int count, int cursor) {
-    return stripedExecutor.execute(key, () -> getRedisSet(key).sscan(matchPattern, count, cursor));
-  }
-
-  RedisSet getRedisSet(ByteArrayWrapper key) {
-    return checkSetType(getRedisData(key, NULL_REDIS_SET));
-  }
-
-  private RedisSet checkSetType(RedisData redisData) {
-    if (redisData == null) {
-      return null;
-    }
-    if (redisData.getType() != REDIS_SET) {
-      throw new RedisDataTypeMismatchException(RedisConstants.ERROR_WRONG_TYPE);
-    }
-    return (RedisSet) redisData;
+    return stripedExecute(key, () -> getRedisSet(key).sscan(matchPattern, count, cursor));
   }
 
   ///////////////////////////////////////////////////////////////
@@ -228,83 +203,73 @@ public class RedisDataCommands implements RedisKeyCommands, RedisSetCommands, Re
 
   @Override
   public int hset(ByteArrayWrapper key, List<ByteArrayWrapper> fieldsToSet, boolean NX) {
-    return stripedExecutor.execute(key, () -> getRedisHash(key).hset(region, key, fieldsToSet, NX));
+    return stripedExecute(key, () -> getRedisHash(key)
+        .hset(getRegion(), key, fieldsToSet, NX));
   }
 
   @Override
   public int hdel(ByteArrayWrapper key, List<ByteArrayWrapper> fieldsToRemove) {
-    return stripedExecutor.execute(key, () -> getRedisHash(key).hdel(region, key, fieldsToRemove));
+    return stripedExecute(key, () -> getRedisHash(key)
+        .hdel(getRegion(), key, fieldsToRemove));
   }
 
   @Override
   public Collection<ByteArrayWrapper> hgetall(ByteArrayWrapper key) {
-    return stripedExecutor.execute(key, () -> getRedisHash(key).hgetall());
+    return stripedExecute(key, () -> getRedisHash(key).hgetall());
   }
 
   @Override
   public int hexists(ByteArrayWrapper key, ByteArrayWrapper field) {
-    return stripedExecutor.execute(key, () -> getRedisHash(key).hexists(field));
+    return stripedExecute(key, () -> getRedisHash(key).hexists(field));
   }
 
   @Override
   public ByteArrayWrapper hget(ByteArrayWrapper key, ByteArrayWrapper field) {
-    return stripedExecutor.execute(key, () -> getRedisHash(key).hget(field));
+    return stripedExecute(key, () -> getRedisHash(key).hget(field));
   }
 
   @Override
   public int hlen(ByteArrayWrapper key) {
-    return stripedExecutor.execute(key, () -> getRedisHash(key).hlen());
+    return stripedExecute(key, () -> getRedisHash(key).hlen());
   }
 
   @Override
   public int hstrlen(ByteArrayWrapper key, ByteArrayWrapper field) {
-    return stripedExecutor.execute(key, () -> getRedisHash(key).hstrlen(field));
+    return stripedExecute(key, () -> getRedisHash(key).hstrlen(field));
   }
 
   @Override
   public List<ByteArrayWrapper> hmget(ByteArrayWrapper key, List<ByteArrayWrapper> fields) {
-    return stripedExecutor.execute(key, () -> getRedisHash(key).hmget(fields));
+    return stripedExecute(key, () -> getRedisHash(key).hmget(fields));
   }
 
   @Override
   public Collection<ByteArrayWrapper> hvals(ByteArrayWrapper key) {
-    return stripedExecutor.execute(key, () -> getRedisHash(key).hvals());
+    return stripedExecute(key, () -> getRedisHash(key).hvals());
   }
 
   @Override
   public Collection<ByteArrayWrapper> hkeys(ByteArrayWrapper key) {
-    return stripedExecutor.execute(key, () -> getRedisHash(key).hkeys());
+    return stripedExecute(key, () -> getRedisHash(key).hkeys());
   }
 
   @Override
   public List<Object> hscan(ByteArrayWrapper key, Pattern matchPattern, int count, int cursor) {
-    return stripedExecutor.execute(key, () -> getRedisHash(key).hscan(matchPattern, count, cursor));
+    return stripedExecute(key, () -> getRedisHash(key).hscan(matchPattern, count, cursor));
   }
 
   @Override
   public long hincrby(ByteArrayWrapper key, ByteArrayWrapper field, long increment) {
-    return stripedExecutor.execute(key,
-        () -> getRedisHash(key).hincrby(region, key, field, increment));
+    return stripedExecute(key,
+        () -> getRedisHash(key)
+            .hincrby(getRegion(), key, field, increment));
   }
 
   @Override
   public double hincrbyfloat(ByteArrayWrapper key, ByteArrayWrapper field, double increment) {
-    return stripedExecutor.execute(key,
-        () -> getRedisHash(key).hincrbyfloat(region, key, field, increment));
-  }
-
-  private RedisHash getRedisHash(ByteArrayWrapper key) {
-    return checkHashType(getRedisData(key, NULL_REDIS_HASH));
-  }
-
-  private static RedisHash checkHashType(RedisData redisData) {
-    if (redisData == null) {
-      return null;
-    }
-    if (redisData.getType() != REDIS_HASH) {
-      throw new RedisDataTypeMismatchException(RedisConstants.ERROR_WRONG_TYPE);
-    }
-    return (RedisHash) redisData;
+    return stripedExecute(key,
+        () -> getRedisHash(key)
+            .hincrbyfloat(getRegion(), key, field, increment));
   }
 
   ///////////////////////////////////////////////////////////////
@@ -313,142 +278,113 @@ public class RedisDataCommands implements RedisKeyCommands, RedisSetCommands, Re
 
   @Override
   public long append(ByteArrayWrapper key, ByteArrayWrapper valueToAppend) {
-    return stripedExecutor.execute(key,
-        () -> getRedisString(key).append(valueToAppend, region, key));
+    return stripedExecute(key,
+        () -> getRedisString(key).append(valueToAppend, getRegion(), key));
   }
 
   @Override
   public ByteArrayWrapper get(ByteArrayWrapper key) {
-    return stripedExecutor.execute(key, () -> getRedisString(key).get());
+    return stripedExecute(key, () -> getRedisString(key).get());
   }
 
   @Override
   public ByteArrayWrapper mget(ByteArrayWrapper key) {
-    return stripedExecutor.execute(key, () -> getRedisStringIgnoringType(key).get());
+    return stripedExecute(key, () -> getRedisStringIgnoringType(key).get());
   }
 
   @Override
   public boolean set(ByteArrayWrapper key, ByteArrayWrapper value, SetOptions options) {
-    return stripedExecutor.execute(key, () -> NULL_REDIS_STRING
-        .set(this, key, value, options));
+    return stripedExecute(key, () -> NULL_REDIS_STRING
+        .set(helper, key, value, options));
   }
 
   @Override
   public long incr(ByteArrayWrapper key) {
-    return stripedExecutor.execute(key, () -> getRedisString(key).incr(region, key));
+    return stripedExecute(key, () -> getRedisString(key).incr(getRegion(), key));
   }
 
   @Override
   public long decr(ByteArrayWrapper key) {
-    return stripedExecutor.execute(key, () -> getRedisString(key).decr(region, key));
+    return stripedExecute(key, () -> getRedisString(key).decr(getRegion(), key));
   }
 
   @Override
   public ByteArrayWrapper getset(ByteArrayWrapper key, ByteArrayWrapper value) {
-    return stripedExecutor.execute(key,
-        () -> getRedisString(key).getset(region, key, value));
+    return stripedExecute(key,
+        () -> getRedisString(key).getset(getRegion(), key, value));
   }
 
   @Override
   public long incrby(ByteArrayWrapper key, long increment) {
-    return stripedExecutor.execute(key,
-        () -> getRedisString(key).incrby(region, key, increment));
+    return stripedExecute(key,
+        () -> getRedisString(key).incrby(getRegion(), key, increment));
   }
 
   @Override
   public double incrbyfloat(ByteArrayWrapper key, double increment) {
-    return stripedExecutor.execute(key,
-        () -> getRedisString(key).incrbyfloat(region, key, increment));
+    return stripedExecute(key,
+        () -> getRedisString(key)
+            .incrbyfloat(getRegion(), key, increment));
   }
 
   @Override
   public int bitop(String operation, ByteArrayWrapper key,
       List<ByteArrayWrapper> sources) {
-    return NULL_REDIS_STRING.bitop(this, operation, key, sources);
+    return NULL_REDIS_STRING.bitop(helper, operation, key, sources);
   }
 
   @Override
   public long decrby(ByteArrayWrapper key, long decrement) {
-    return stripedExecutor.execute(key,
-        () -> getRedisString(key).decrby(region, key, decrement));
+    return stripedExecute(key,
+        () -> getRedisString(key).decrby(getRegion(), key, decrement));
   }
 
   @Override
   public ByteArrayWrapper getrange(ByteArrayWrapper key, long start, long end) {
-    return stripedExecutor.execute(key, () -> getRedisString(key).getrange(start, end));
+    return stripedExecute(key, () -> getRedisString(key).getrange(start, end));
   }
 
   @Override
   public int setrange(ByteArrayWrapper key, int offset, byte[] value) {
-    return stripedExecutor.execute(key,
-        () -> getRedisString(key).setrange(region, key, offset, value));
+    return stripedExecute(key,
+        () -> getRedisString(key)
+            .setrange(getRegion(), key, offset, value));
   }
 
   @Override
   public int bitpos(ByteArrayWrapper key, int bit, int start, Integer end) {
-    return stripedExecutor.execute(key,
-        () -> getRedisString(key).bitpos(region, key, bit, start, end));
+    return stripedExecute(key,
+        () -> getRedisString(key)
+            .bitpos(getRegion(), key, bit, start, end));
   }
 
   @Override
   public long bitcount(ByteArrayWrapper key, int start, int end) {
-    return stripedExecutor.execute(key, () -> getRedisString(key).bitcount(start, end));
+    return stripedExecute(key, () -> getRedisString(key).bitcount(start, end));
   }
 
   @Override
   public long bitcount(ByteArrayWrapper key) {
-    return stripedExecutor.execute(key, () -> getRedisString(key).bitcount());
+    return stripedExecute(key, () -> getRedisString(key).bitcount());
   }
 
   @Override
   public int strlen(ByteArrayWrapper key) {
-    return stripedExecutor.execute(key, () -> getRedisString(key).strlen());
+    return stripedExecute(key, () -> getRedisString(key).strlen());
   }
 
   @Override
   public int getbit(ByteArrayWrapper key, int offset) {
-    return stripedExecutor.execute(key, () -> getRedisString(key).getbit(offset));
+    return stripedExecute(key, () -> getRedisString(key).getbit(offset));
   }
 
   @Override
   public int setbit(ByteArrayWrapper key, long offset, int value) {
     int byteIndex = (int) (offset / 8);
     byte bitIndex = (byte) (offset % 8);
-    return stripedExecutor.execute(key,
-        () -> getRedisString(key).setbit(region, key, value, byteIndex, bitIndex));
+    return stripedExecute(key,
+        () -> getRedisString(key)
+            .setbit(getRegion(), key, value, byteIndex, bitIndex));
   }
 
-  private RedisString checkStringType(RedisData redisData, boolean ignoreTypeMismatch) {
-    if (redisData == null) {
-      return null;
-    }
-    if (redisData.getType() != REDIS_STRING) {
-      if (ignoreTypeMismatch) {
-        return NULL_REDIS_STRING;
-      }
-      throw new RedisDataTypeMismatchException(RedisConstants.ERROR_WRONG_TYPE);
-    }
-    return (RedisString) redisData;
-  }
-
-  RedisString getRedisString(ByteArrayWrapper key) {
-    return checkStringType(getRedisData(key, NULL_REDIS_STRING), false);
-  }
-
-  private RedisString getRedisStringIgnoringType(ByteArrayWrapper key) {
-    return checkStringType(getRedisData(key, NULL_REDIS_STRING), true);
-  }
-
-  RedisString setRedisString(ByteArrayWrapper key, ByteArrayWrapper value) {
-    RedisString result;
-    RedisData redisData = getRedisData(key);
-    if (redisData.isNull() || redisData.getType() != REDIS_STRING) {
-      result = new RedisString(value);
-    } else {
-      result = (RedisString) redisData;
-      result.set(value);
-    }
-    region.put(key, result);
-    return result;
-  }
 }

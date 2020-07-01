@@ -51,9 +51,9 @@ public interface RedisData extends Delta, DataSerializable {
 
   long pttl(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key);
 
-  int pexpireat(RedisDataCommands redisDataCommands, ByteArrayWrapper key, long timestamp);
+  int pexpireat(CommandHelper helper, ByteArrayWrapper key, long timestamp);
 
-  void doExpiration(RedisDataCommands redisDataCommands, ByteArrayWrapper key);
+  void doExpiration(CommandHelper helper, ByteArrayWrapper key);
 
   String type();
 

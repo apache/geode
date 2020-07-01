@@ -60,22 +60,22 @@ public abstract class AbstractRedisData implements RedisData {
   }
 
   @Override
-  public int pexpireat(RedisDataCommands redisDataCommands, ByteArrayWrapper key, long timestamp) {
+  public int pexpireat(CommandHelper helper, ByteArrayWrapper key, long timestamp) {
     long now = System.currentTimeMillis();
     if (now >= timestamp) {
       // already expired
-      doExpiration(redisDataCommands, key);
+      doExpiration(helper, key);
     } else {
-      setExpirationTimestamp(redisDataCommands.getRegion(), key, timestamp);
+      setExpirationTimestamp(helper.getRegion(), key, timestamp);
     }
     return 1;
   }
 
   @Override
-  public void doExpiration(RedisDataCommands redisDataCommands, ByteArrayWrapper key) {
-    long start = redisDataCommands.getRedisStats().startExpiration();
-    redisDataCommands.getRegion().remove(key);
-    redisDataCommands.getRedisStats().endExpiration(start);
+  public void doExpiration(CommandHelper helper, ByteArrayWrapper key) {
+    long start = helper.getRedisStats().startExpiration();
+    helper.getRegion().remove(key);
+    helper.getRedisStats().endExpiration(start);
   }
 
   @Override

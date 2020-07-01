@@ -69,12 +69,12 @@ public class NullRedisData implements RedisData {
   }
 
   @Override
-  public int pexpireat(RedisDataCommands redisDataCommands, ByteArrayWrapper key, long timestamp) {
+  public int pexpireat(CommandHelper helper, ByteArrayWrapper key, long timestamp) {
     return 0;
   }
 
   @Override
-  public void doExpiration(RedisDataCommands redisDataCommands, ByteArrayWrapper key) {
+  public void doExpiration(CommandHelper helper, ByteArrayWrapper key) {
     // nothing needed
   }
 

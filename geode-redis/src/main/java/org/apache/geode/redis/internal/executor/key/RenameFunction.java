@@ -30,6 +30,7 @@ import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.execute.RegionFunctionContextImpl;
 import org.apache.geode.redis.internal.RedisStats;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.CommandHelper;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisDataCommands;
 import org.apache.geode.redis.internal.data.RedisSet;
@@ -42,6 +43,7 @@ public class RenameFunction implements InternalFunction {
   public static final String ID = "REDIS_RENAME_FUNCTION";
 
   private final transient PartitionedRegion partitionedRegion;
+  private final transient CommandHelper commandHelper;
   private final transient RedisDataCommands dataCommands;
 
   public static void register(Region<ByteArrayWrapper, RedisData> dataRegion,
@@ -56,7 +58,8 @@ public class RenameFunction implements InternalFunction {
       StripedExecutor stripedExecutor,
       RedisStats redisStats) {
     partitionedRegion = (PartitionedRegion) dataRegion;
-    dataCommands = new RedisDataCommands(dataRegion, redisStats, stripedExecutor);
+    commandHelper = new CommandHelper(dataRegion, redisStats, stripedExecutor);
+    dataCommands = new RedisDataCommands(commandHelper);
   }
 
   @Override
@@ -93,7 +96,7 @@ public class RenameFunction implements InternalFunction {
   }
 
   private StripedExecutor getStripedExecutor() {
-    return dataCommands.getStripedExecutor();
+    return commandHelper.getStripedExecutor();
   }
 
   private int compare(Object object1, Object object2, RenameContext context) {

@@ -90,36 +90,36 @@ class NullRedisSet extends RedisSet {
     UNION, INTERSECTION, DIFF
   };
 
-  public int sunionstore(RedisDataCommands redisDataCommands, ByteArrayWrapper destination,
+  public int sunionstore(CommandHelper helper, ByteArrayWrapper destination,
       ArrayList<ByteArrayWrapper> setKeys) {
-    return doSetOp(SetOp.UNION, redisDataCommands, destination, setKeys);
+    return doSetOp(SetOp.UNION, helper, destination, setKeys);
   }
 
-  public int sinterstore(RedisDataCommands redisDataCommands, ByteArrayWrapper destination,
+  public int sinterstore(CommandHelper helper, ByteArrayWrapper destination,
       ArrayList<ByteArrayWrapper> setKeys) {
-    return doSetOp(SetOp.INTERSECTION, redisDataCommands, destination, setKeys);
+    return doSetOp(SetOp.INTERSECTION, helper, destination, setKeys);
   }
 
-  public int sdiffstore(RedisDataCommands redisDataCommands, ByteArrayWrapper destination,
+  public int sdiffstore(CommandHelper helper, ByteArrayWrapper destination,
       ArrayList<ByteArrayWrapper> setKeys) {
-    return doSetOp(SetOp.DIFF, redisDataCommands, destination, setKeys);
+    return doSetOp(SetOp.DIFF, helper, destination, setKeys);
   }
 
-  private int doSetOp(SetOp setOp, RedisDataCommands redisDataCommands,
+  private int doSetOp(SetOp setOp, CommandHelper helper,
       ByteArrayWrapper destination, ArrayList<ByteArrayWrapper> setKeys) {
     ArrayList<Set<ByteArrayWrapper>> nonDestinationSets =
-        fetchSets(redisDataCommands.getRegion(), setKeys, destination);
-    return redisDataCommands.getStripedExecutor()
+        fetchSets(helper.getRegion(), setKeys, destination);
+    return helper.getStripedExecutor()
         .execute(destination,
-            () -> doSetOpWhileLocked(setOp, redisDataCommands, destination, nonDestinationSets));
+            () -> doSetOpWhileLocked(setOp, helper, destination, nonDestinationSets));
   }
 
-  private int doSetOpWhileLocked(SetOp setOp, RedisDataCommands redisDataCommands,
+  private int doSetOpWhileLocked(SetOp setOp, CommandHelper helper,
       ByteArrayWrapper destination,
       ArrayList<Set<ByteArrayWrapper>> nonDestinationSets) {
-    RedisSet destinationSet = redisDataCommands.getRedisSet(destination);
+    RedisSet destinationSet = helper.getRedisSet(destination);
     RedisSet redisSet = new RedisSet(computeSetOp(setOp, nonDestinationSets, destinationSet));
-    redisDataCommands.getRegion().put(destination, redisSet);
+    helper.getRegion().put(destination, redisSet);
     return redisSet.scard();
   }
 

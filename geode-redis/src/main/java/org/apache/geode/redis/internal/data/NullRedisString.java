@@ -164,31 +164,31 @@ public class NullRedisString extends RedisString {
    * SET is currently mostly implemented here. It does not have an implementation on
    * RedisString which is a bit odd.
    */
-  public boolean set(RedisDataCommands redisDataCommands, ByteArrayWrapper key,
+  public boolean set(CommandHelper helper, ByteArrayWrapper key,
       ByteArrayWrapper value, SetOptions options) {
     if (options != null) {
       if (options.isNX()) {
-        return setnx(redisDataCommands, key, value, options);
+        return setnx(helper, key, value, options);
       }
 
-      if (options.isXX() && redisDataCommands.getRedisData(key).isNull()) {
+      if (options.isXX() && helper.getRedisData(key).isNull()) {
         return false;
       }
     }
 
-    RedisString redisString = redisDataCommands.setRedisString(key, value);
+    RedisString redisString = helper.setRedisString(key, value);
     redisString.handleSetExpiration(options);
     return true;
   }
 
-  private boolean setnx(RedisDataCommands redisDataCommands, ByteArrayWrapper key,
+  private boolean setnx(CommandHelper helper, ByteArrayWrapper key,
       ByteArrayWrapper value, SetOptions options) {
-    if (redisDataCommands.getRedisData(key).exists()) {
+    if (helper.getRedisData(key).exists()) {
       return false;
     }
     RedisString redisString = new RedisString(value);
     redisString.handleSetExpiration(options);
-    redisDataCommands.getRegion().put(key, redisString);
+    helper.getRegion().put(key, redisString);
     return true;
   }
 
@@ -197,14 +197,14 @@ public class NullRedisString extends RedisString {
    * RedisString which is a bit odd. This implementation only has a couple of places
    * that care if a RedisString for "key" exists.
    */
-  public int bitop(RedisDataCommands redisDataCommands,
+  public int bitop(CommandHelper helper,
       String operation,
       ByteArrayWrapper key, List<ByteArrayWrapper> sources) {
     List<ByteArrayWrapper> sourceValues = new ArrayList<>();
     int selfIndex = -1;
     // Read all the source values, except for self, before locking the stripe.
     RedisStringCommands commander =
-        new RedisStringCommandsFunctionExecutor(redisDataCommands.getRegion());
+        new RedisStringCommandsFunctionExecutor(helper.getRegion());
     for (ByteArrayWrapper sourceKey : sources) {
       if (sourceKey.equals(key)) {
         // get self later after the stripe is locked
@@ -215,18 +215,18 @@ public class NullRedisString extends RedisString {
       }
     }
     int indexOfSelf = selfIndex;
-    StripedExecutor stripedExecutor = redisDataCommands.getStripedExecutor();
+    StripedExecutor stripedExecutor = helper.getStripedExecutor();
     return stripedExecutor.execute(key,
-        () -> doBitOp(redisDataCommands, operation, key, indexOfSelf, sourceValues));
+        () -> doBitOp(helper, operation, key, indexOfSelf, sourceValues));
   }
 
-  private int doBitOp(RedisDataCommands redisDataCommands,
+  private int doBitOp(CommandHelper helper,
       String operation,
       ByteArrayWrapper key,
       int selfIndex,
       List<ByteArrayWrapper> sourceValues) {
     if (selfIndex != -1) {
-      RedisString redisString = redisDataCommands.getRedisString(key);
+      RedisString redisString = helper.getRedisString(key);
       if (!redisString.isNull()) {
         sourceValues.set(selfIndex, redisString.getValue());
       }
@@ -253,9 +253,9 @@ public class NullRedisString extends RedisString {
         break;
     }
     if (newValue.length() == 0) {
-      redisDataCommands.getRegion().remove(key);
+      helper.getRegion().remove(key);
     } else {
-      redisDataCommands.setRedisString(key, newValue);
+      helper.setRedisString(key, newValue);
     }
     return newValue.length();
   }

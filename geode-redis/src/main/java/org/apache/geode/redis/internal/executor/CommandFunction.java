@@ -26,6 +26,7 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.redis.internal.RedisCommandType;
 import org.apache.geode.redis.internal.RedisStats;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.CommandHelper;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisDataCommands;
 import org.apache.geode.redis.internal.executor.string.SetOptions;
@@ -63,7 +64,8 @@ public class CommandFunction extends SingleResultRedisFunction {
       StripedExecutor stripedExecutor,
       RedisStats redisStats) {
     super(dataRegion);
-    dataCommands = new RedisDataCommands(dataRegion, redisStats, stripedExecutor);
+    dataCommands =
+        new RedisDataCommands(new CommandHelper(dataRegion, redisStats, stripedExecutor));
   }
 
   @Override
