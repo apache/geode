@@ -32,7 +32,7 @@ import org.apache.geode.redis.internal.executor.set.RedisSetCommandsFunctionInvo
 
 class NullRedisSet extends RedisSet {
 
-  public NullRedisSet() {
+  NullRedisSet() {
     super(new HashSet<>());
   }
 
@@ -88,7 +88,7 @@ class NullRedisSet extends RedisSet {
 
   private enum SetOp {
     UNION, INTERSECTION, DIFF
-  };
+  }
 
   public int sunionstore(CommandHelper helper, ByteArrayWrapper destination,
       ArrayList<ByteArrayWrapper> setKeys) {

@@ -222,7 +222,7 @@ public class NullRedisString extends RedisString {
 
   private enum BitOp {
     AND, OR, XOR
-  };
+  }
 
   private int doBitOp(CommandHelper helper,
       String operation,

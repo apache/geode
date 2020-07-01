@@ -25,7 +25,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.netty.Coder;
 
 public class NullRedisHash extends RedisHash {
-  public NullRedisHash() {
+  NullRedisHash() {
     super(emptyList());
   }
 
