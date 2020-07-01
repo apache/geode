@@ -17,6 +17,7 @@
 package org.apache.geode.redis.internal.data;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -26,6 +27,8 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.redis.internal.executor.set.RedisSetCommands;
+import org.apache.geode.redis.internal.executor.set.RedisSetCommandsFunctionExecutor;
 
 class NullRedisSet extends RedisSet {
 
@@ -81,5 +84,94 @@ class NullRedisSet extends RedisSet {
   Set<ByteArrayWrapper> smembers() {
     // some callers want to be able to modify the set returned
     return new HashSet<>();
+  }
+
+  private enum SetOp {
+    UNION, INTERSECTION, DIFF
+  };
+
+  public int sunionstore(RedisDataCommands redisDataCommands, ByteArrayWrapper destination,
+      ArrayList<ByteArrayWrapper> setKeys) {
+    return doSetOp(SetOp.UNION, redisDataCommands, destination, setKeys);
+  }
+
+  public int sinterstore(RedisDataCommands redisDataCommands, ByteArrayWrapper destination,
+      ArrayList<ByteArrayWrapper> setKeys) {
+    return doSetOp(SetOp.INTERSECTION, redisDataCommands, destination, setKeys);
+  }
+
+  public int sdiffstore(RedisDataCommands redisDataCommands, ByteArrayWrapper destination,
+      ArrayList<ByteArrayWrapper> setKeys) {
+    return doSetOp(SetOp.DIFF, redisDataCommands, destination, setKeys);
+  }
+
+  private int doSetOp(SetOp setOp, RedisDataCommands redisDataCommands,
+      ByteArrayWrapper destination, ArrayList<ByteArrayWrapper> setKeys) {
+    ArrayList<Set<ByteArrayWrapper>> nonDestinationSets =
+        fetchSets(redisDataCommands.getRegion(), setKeys, destination);
+    return redisDataCommands.getStripedExecutor()
+        .execute(destination,
+            () -> doSetOpWhileLocked(setOp, redisDataCommands, destination, nonDestinationSets));
+  }
+
+  private int doSetOpWhileLocked(SetOp setOp, RedisDataCommands redisDataCommands,
+      ByteArrayWrapper destination,
+      ArrayList<Set<ByteArrayWrapper>> nonDestinationSets) {
+    RedisSet destinationSet = redisDataCommands.getRedisSet(destination);
+    RedisSet redisSet = new RedisSet(computeSetOp(setOp, nonDestinationSets, destinationSet));
+    redisDataCommands.getRegion().put(destination, redisSet);
+    return redisSet.scard();
+  }
+
+  private Set<ByteArrayWrapper> computeSetOp(SetOp setOp,
+      ArrayList<Set<ByteArrayWrapper>> nonDestinationSets,
+      RedisSet redisSet) {
+    Set<ByteArrayWrapper> result = null;
+    if (nonDestinationSets.isEmpty()) {
+      return emptySet();
+    }
+    for (Set<ByteArrayWrapper> set : nonDestinationSets) {
+      if (set == null) {
+        set = redisSet.smembers();
+      }
+      if (result == null) {
+        result = set;
+      } else {
+        switch (setOp) {
+          case UNION:
+            result.addAll(set);
+            break;
+          case INTERSECTION:
+            result.retainAll(set);
+            break;
+          case DIFF:
+            result.removeAll(set);
+            break;
+        }
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Gets the set data for the given keys, excluding the destination if it was in setKeys.
+   * The result will have an element for each corresponding key and a null element if
+   * the corresponding key is the destination.
+   * This is all done outside the striped executor to prevent a deadlock.
+   */
+  private ArrayList<Set<ByteArrayWrapper>> fetchSets(
+      Region<ByteArrayWrapper, RedisData> region,
+      ArrayList<ByteArrayWrapper> setKeys,
+      ByteArrayWrapper destination) {
+    ArrayList<Set<ByteArrayWrapper>> result = new ArrayList<>(setKeys.size());
+    RedisSetCommands redisSetCommands = new RedisSetCommandsFunctionExecutor(region);
+    for (ByteArrayWrapper key : setKeys) {
+      if (key.equals(destination)) {
+        result.add(null);
+      } else {
+        result.add(redisSetCommands.smembers(key));
+      }
+    }
+    return result;
   }
 }

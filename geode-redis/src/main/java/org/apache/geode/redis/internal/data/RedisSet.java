@@ -40,7 +40,7 @@ import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisSet extends AbstractRedisData {
 
-  public static final RedisSet NULL_REDIS_SET = new NullRedisSet();
+  public static final NullRedisSet NULL_REDIS_SET = new NullRedisSet();
   private HashSet<ByteArrayWrapper> members;
 
   @SuppressWarnings("unchecked")
