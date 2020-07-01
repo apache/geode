@@ -616,25 +616,17 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
     vm4.invoke(() -> WANTestBase.stopSender("ln"));
     vm5.invoke(() -> WANTestBase.stopSender("ln"));
 
-
     logger.info("Stopped all the senders. ");
-
-    AsyncInvocation inv1 = vm4.invokeAsync(() -> WANTestBase.startSenderwithCleanQueues("ln"));
-    logger.info("Started the sender in vm 4");
 
     vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 0));
     vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 0));
 
+    vm4.invoke(() -> WANTestBase.startSenderwithCleanQueues("ln"));
     vm5.invoke(() -> WANTestBase.startSenderwithCleanQueues("ln"));
-    logger.info("Started the sender in vm 5");
-    try {
-      inv1.await();
-    } catch (InterruptedException e) {
-      fail("Got interrupted exception while waiting for startSender to finish.");
-    }
 
     vm4.invoke(() -> waitForSenderRunningState("ln"));
     vm5.invoke(() -> waitForSenderRunningState("ln"));
+    logger.info("Started all senders.");
 
     vm4.invoke(() -> checkQueueSize("ln", 0));
     vm5.invoke(() -> checkQueueSize("ln", 0));
