@@ -302,7 +302,7 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
 
       if (groupTransactionEvents && batchConflationEnabled) {
         return ResultModel.createError(
-            "Gateway Sender cannot be created with --group-transaction-events and --enable-batch-conflation.");
+            "Gateway Sender cannot be created with both --group-transaction-events and --enable-batch-conflation.");
       }
 
       return ResultModel.createInfo("");

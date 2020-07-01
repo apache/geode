@@ -180,7 +180,7 @@ public class CreateGatewaySenderCommandTest {
         "create gateway-sender --member=xyz --id=1 --remote-distributed-system-id=1 " +
             "--group-transaction-events --enable-batch-conflation --order-policy=THREAD")
         .statusIsError().containsOutput(
-            "Gateway Sender cannot be created with --group-transaction-events and --enable-batch-conflation");
+            "Gateway Sender cannot be created with both --group-transaction-events and --enable-batch-conflation");
   }
 
   @Test

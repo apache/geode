@@ -250,7 +250,7 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
     if (this.attrs.mustGroupTransactionEvents() && this.attrs.isBatchConflationEnabled()) {
       throw new GatewaySenderException(
           String.format(
-              "GatewaySender %s cannot be created with group transaction events set to true and batch conflation enabled",
+              "GatewaySender %s cannot be created with both group transaction events set to true and batch conflation enabled",
               id));
     }
 

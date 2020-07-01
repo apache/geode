@@ -104,7 +104,7 @@ public class WANConfigurationJUnitTest {
     assertThatThrownBy(() -> fact.create("NYSender", 2))
         .isInstanceOf(GatewaySenderException.class)
         .hasMessageContaining(
-            "GatewaySender NYSender cannot be created with group transaction events set to true and batch conflation enabled");
+            "GatewaySender NYSender cannot be created with both group transaction events set to true and batch conflation enabled");
   }
 
   /**
