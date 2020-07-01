@@ -39,7 +39,7 @@ import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
 import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisHash extends AbstractRedisData {
-  public static final RedisHash EMPTY = new EmptyRedisHash();
+  public static final RedisHash NULL_REDIS_HASH = new NullRedisHash();
   private HashMap<ByteArrayWrapper, ByteArrayWrapper> hash;
 
   public RedisHash(List<ByteArrayWrapper> fieldsToSet) {

@@ -171,7 +171,7 @@ public class NullRedisString extends RedisString {
         return setnx(redisDataCommands, key, value, options);
       }
 
-      if (options.isXX() && redisDataCommands.getNonNullRedisData(key).isNull()) {
+      if (options.isXX() && redisDataCommands.getRedisData(key).isNull()) {
         return false;
       }
     }
@@ -183,7 +183,7 @@ public class NullRedisString extends RedisString {
 
   private boolean setnx(RedisDataCommands redisDataCommands, ByteArrayWrapper key,
       ByteArrayWrapper value, SetOptions options) {
-    if (redisDataCommands.getNonNullRedisData(key).exists()) {
+    if (redisDataCommands.getRedisData(key).exists()) {
       return false;
     }
     RedisString redisString = new RedisString(value);

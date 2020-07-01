@@ -22,7 +22,7 @@ import org.apache.geode.Delta;
 import org.apache.geode.cache.Region;
 
 public interface RedisData extends Delta, DataSerializable {
-  NullRedisData NULL = new NullRedisData();
+  NullRedisData NULL_REDIS_DATA = new NullRedisData();
 
   /**
    * Returns true if this instance does not exist.

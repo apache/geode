@@ -27,9 +27,9 @@ import java.util.regex.Pattern;
 
 import org.apache.geode.cache.Region;
 
-class EmptyRedisSet extends RedisSet {
+class NullRedisSet extends RedisSet {
 
-  public EmptyRedisSet() {
+  public NullRedisSet() {
     super(new HashSet<>());
   }
 
