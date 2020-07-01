@@ -35,7 +35,7 @@ dependencies {
   implementation('org.apache.commons:commons-lang3:3.3.2')
   implementation('org.apache.maven:maven-artifact:3.3.3')
   implementation('com.google.guava:guava:28.2-jre')
-  implementation('com.github.docker-java:docker-java:3.2.5')
+  implementation('com.github.docker-java:docker-java:3.0.14')
   implementation('me.champeau.gradle:japicmp-gradle-plugin:0.2.9')
 
   implementation('junit:junit:4.12')
