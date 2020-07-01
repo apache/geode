@@ -24,10 +24,8 @@ import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.EventLoopGroup;
 import io.netty.handler.codec.DecoderException;
 import org.apache.logging.log4j.Logger;
 
@@ -64,7 +62,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private final Channel channel;
   private final RegionProvider regionProvider;
   private final PubSub pubsub;
-  private final EventLoopGroup subscriberGroup;
   private final ByteBufAllocator byteBufAllocator;
   private final byte[] authPassword;
   private final Supplier<Boolean> allowUnsupportedSupplier;
@@ -80,7 +77,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    * @param password Authentication password for each context, can be null
    */
   public ExecutionHandlerContext(Channel channel, RegionProvider regionProvider, PubSub pubsub,
-      EventLoopGroup subscriberGroup,
       Supplier<Boolean> allowUnsupportedSupplier,
       Runnable shutdownInvoker,
       RedisStats redisStats,
@@ -88,7 +84,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     this.channel = channel;
     this.regionProvider = regionProvider;
     this.pubsub = pubsub;
-    this.subscriberGroup = subscriberGroup;
     this.allowUnsupportedSupplier = allowUnsupportedSupplier;
     this.shutdownInvoker = shutdownInvoker;
     this.redisStats = redisStats;
@@ -215,6 +210,9 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     final long start = redisStats.startCommand(command.getCommandType());
     try {
       response = command.execute(this);
+      if (response == null) {
+        return;
+      }
       logResponse(response);
       writeToChannel(response);
     } finally {
@@ -239,20 +237,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       response = RedisResponse.customError(RedisConstants.ERROR_NOT_AUTH);
     }
     return response;
-  }
-
-  public EventLoopGroup getSubscriberGroup() {
-    return subscriberGroup;
-  }
-
-  public void changeChannelEventLoopGroup(EventLoopGroup newGroup) {
-    if (newGroup.equals(channel.eventLoop())) {
-      // already registered with newGroup
-      return;
-    }
-    channel.deregister().addListener((ChannelFutureListener) future -> {
-      newGroup.register(channel).sync();
-    });
   }
 
   private void logResponse(RedisResponse response) {

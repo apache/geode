@@ -142,7 +142,6 @@ public class PubSubImpl implements PubSub {
 
   @VisibleForTesting
   long publishMessageToSubscribers(byte[] channel, byte[] message) {
-
     List<Subscription> foundSubscriptions = subscriptions
         .findSubscriptions(channel);
     if (foundSubscriptions.isEmpty()) {
