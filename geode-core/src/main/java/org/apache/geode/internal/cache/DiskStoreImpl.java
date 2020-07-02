@@ -75,6 +75,7 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.Cache;
@@ -3517,33 +3518,85 @@ public class DiskStoreImpl implements DiskStore {
   }
 
   /**
-   * Set of OplogEntryIds (longs). Memory is optimized by using an int[] for ids in the unsigned int
-   * range.
+   * Set of OplogEntryIds (longs).
+   * Memory is optimized by using an int[] for ids in the unsigned int range.
+   * By default we can't have more than 805306401 ids for a load factor of 0.75, the internal lists
+   * are used to overcome this limit, allowing the disk-store to recover successfully (the internal
+   * class is **only** used during recovery to read all deleted entries).
    */
   static class OplogEntryIdSet {
-    private final IntOpenHashSet ints = new IntOpenHashSet((int) INVALID_ID);
-    private final LongOpenHashSet longs = new LongOpenHashSet((int) INVALID_ID);
+    private final List<IntOpenHashSet> allInts;
+    private final List<LongOpenHashSet> allLongs;
+    private final AtomicReference<IntOpenHashSet> currentInts;
+    private final AtomicReference<LongOpenHashSet> currentLongs;
+
+    // For testing purposes only.
+    @VisibleForTesting
+    OplogEntryIdSet(List<IntOpenHashSet> allInts, List<LongOpenHashSet> allLongs) {
+      this.allInts = allInts;
+      this.currentInts = new AtomicReference<>(this.allInts.get(0));
+
+      this.allLongs = allLongs;
+      this.currentLongs = new AtomicReference<>(this.allLongs.get(0));
+    }
+
+    public OplogEntryIdSet() {
+      IntOpenHashSet intHashSet = new IntOpenHashSet((int) INVALID_ID);
+      this.allInts = new ArrayList<>();
+      this.allInts.add(intHashSet);
+      this.currentInts = new AtomicReference<>(intHashSet);
+
+      LongOpenHashSet longHashSet = new LongOpenHashSet((int) INVALID_ID);
+      this.allLongs = new ArrayList<>();
+      this.allLongs.add(longHashSet);
+      this.currentLongs = new AtomicReference<>(longHashSet);
+    }
 
     public void add(long id) {
       if (id == 0) {
         throw new IllegalArgumentException();
-      } else if (id > 0 && id <= 0x00000000FFFFFFFFL) {
-        this.ints.add((int) id);
-      } else {
-        this.longs.add(id);
+      }
+
+      try {
+        if (id > 0 && id <= 0x00000000FFFFFFFFL) {
+          this.currentInts.get().add((int) id);
+        } else {
+          this.currentLongs.get().add(id);
+        }
+      } catch (IllegalArgumentException illegalArgumentException) {
+        // See GEODE-8029.
+        // Too many entries on the accumulated drf files, overflow and continue.
+        logger.warn(
+            "There is a large number of deleted entries within the disk-store, please execute an offline compaction.");
+
+        // Overflow to the next [Int|Long]OpenHashSet and continue.
+        if (id > 0 && id <= 0x00000000FFFFFFFFL) {
+          IntOpenHashSet overflownHashSet = new IntOpenHashSet((int) INVALID_ID);
+          allInts.add(overflownHashSet);
+          currentInts.set(overflownHashSet);
+
+          currentInts.get().add((int) id);
+        } else {
+          LongOpenHashSet overflownHashSet = new LongOpenHashSet((int) INVALID_ID);
+          allLongs.add(overflownHashSet);
+          currentLongs.set(overflownHashSet);
+
+          currentLongs.get().add(id);
+        }
       }
     }
 
     public boolean contains(long id) {
       if (id >= 0 && id <= 0x00000000FFFFFFFFL) {
-        return this.ints.contains((int) id);
+        return allInts.stream().anyMatch(ints -> ints.contains((int) id));
       } else {
-        return this.longs.contains(id);
+        return allLongs.stream().anyMatch(longs -> longs.contains(id));
       }
     }
 
-    public int size() {
-      return this.ints.size() + this.longs.size();
+    public long size() {
+      return allInts.stream().mapToInt(IntOpenHashSet::size).sum()
+          + allLongs.stream().mapToInt(LongOpenHashSet::size).sum();
     }
   }
 
@@ -3973,13 +4026,13 @@ public class DiskStoreImpl implements DiskStore {
     return this.liveEntryCount;
   }
 
-  private int deadRecordCount;
+  private long deadRecordCount;
 
-  void incDeadRecordCount(int count) {
+  void incDeadRecordCount(long count) {
     this.deadRecordCount += count;
   }
 
-  public int getDeadRecordCount() {
+  public long getDeadRecordCount() {
     return this.deadRecordCount;
   }
 
