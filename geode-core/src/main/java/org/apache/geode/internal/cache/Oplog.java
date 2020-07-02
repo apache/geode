@@ -937,9 +937,8 @@ public class Oplog implements CompactableOplog, Flushable {
         // this.crf.raf.seek(this.crf.currSize);
       } else if (!offline) {
         // drf exists but crf has been deleted (because it was empty).
-        // I don't think the drf needs to be opened. It is only used during
-        // recovery.
-        // At some point the compacter my identify that it can be deleted.
+        // I don't think the drf needs to be opened. It is only used during recovery.
+        // At some point the compacter may identify that it can be deleted.
         this.crf.RAFClosed = true;
         deleteCRF();
         this.closed = true;

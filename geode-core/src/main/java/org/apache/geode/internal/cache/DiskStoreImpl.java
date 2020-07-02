@@ -3567,8 +3567,7 @@ public class DiskStoreImpl implements DiskStore {
         // See GEODE-8029.
         // Too many entries on the accumulated drf files, overflow and continue.
         logger.warn(
-            "There are too many entries within the disk-store, please execute an offline compaction.",
-            illegalArgumentException);
+            "There is a large number of deleted entries within the disk-store, please execute an offline compaction.");
 
         // Overflow to the next [Int|Long]OpenHashSet and continue.
         if (id > 0 && id <= 0x00000000FFFFFFFFL) {
