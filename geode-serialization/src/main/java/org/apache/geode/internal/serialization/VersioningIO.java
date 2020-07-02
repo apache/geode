@@ -23,6 +23,8 @@ import java.nio.ByteBuffer;
 
 public class VersioningIO {
 
+  private VersioningIO() {}
+
   /**
    * Reads ordinal as written by {@link VersioningIO#writeOrdinal(DataOutput,short,boolean)} from
    * given {@link DataInput}.
