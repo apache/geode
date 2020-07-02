@@ -719,7 +719,7 @@ public abstract class LuceneSearchWithRollingUpgradeTestBase extends JUnit4Distr
     try {
       // newer versions have this method
       getVersionMethod = member.getClass().getMethod("getVersionOrdinalObject");
-    } catch(final NoSuchMethodException e) {
+    } catch (final NoSuchMethodException e) {
       // older versions have this other method
       getVersionMethod = member.getClass().getMethod("getVersionObject");
     }
