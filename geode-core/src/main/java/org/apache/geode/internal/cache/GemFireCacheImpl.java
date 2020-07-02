@@ -2938,7 +2938,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         poolName = DEFAULT_POOL_NAME + count;
         count++;
       }
-      pool = defaultPoolFactory.create(poolName);
+      if (defaultPoolFactory != null) {
+        pool = defaultPoolFactory.create(poolName);
+      }
     }
 
     defaultPool = pool;

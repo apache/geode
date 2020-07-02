@@ -318,8 +318,8 @@ public class ReplyProcessor21 implements MembershipListener {
   protected ReplyProcessor21(DistributionManager dm, InternalDistributedSystem system,
       Collection initMembers, CancelCriterion cancelCriterion, boolean register) {
     if (!allowReplyFromSender()) {
-      Assert.assertTrue(initMembers != null, "null initMembers");
-      Assert.assertTrue(system != null, "null system");
+      Assert.assertNotNull(initMembers, "null initMembers");
+      Assert.assertNotNull(system, "null system");
       if (dm != null) {
         Assert.assertTrue(!initMembers.contains(dm.getId()),
             "dm present in initMembers but reply from sender is not allowed");

@@ -1099,7 +1099,7 @@ public class LonerDistributionManager implements DistributionManager {
     public <T> T invokeAny(Collection<? extends Callable<T>> tasks)
         throws InterruptedException, ExecutionException {
 
-      ExecutionException ex = null;
+      Exception ex = new Exception();
       for (Callable<T> task : tasks) {
         try {
           return submit(task).get();

@@ -728,22 +728,22 @@ public class CacheCreation implements InternalCache {
   void startCacheServers(List<CacheServer> declarativeCacheServers, Cache cache,
       ServerLauncherParameters parameters) {
     Integer serverPort = null;
-    String serverBindAdd = null;
+//DONAL:    String serverBindAdd = null;
     Boolean disableDefaultServer = null;
 
     if (parameters != null) {
       serverPort = parameters.getPort();
-      serverBindAdd = parameters.getBindAddress();
+//DONAL:      serverBindAdd = parameters.getBindAddress();
       disableDefaultServer = parameters.isDisableDefaultServer();
     }
 
-    if (declarativeCacheServers.size() > 1 && (serverPort != null || serverBindAdd != null)) {
+    if (declarativeCacheServers.size() > 1 && (serverPort != null/*DONAL: || serverBindAdd != null*/)) {
       throw new RuntimeException(
           "When using -server-port or -server-bind-address arguments, the cache-xml-file can not have more than one cache-server defined.");
     }
 
     CacheServerCreation defaultServer = null;
-    boolean hasServerPortOrBindAddress = serverPort != null || serverBindAdd != null;
+    boolean hasServerPortOrBindAddress = serverPort != null/*DONAL: || serverBindAdd != null*/;
     boolean isDefaultServerDisabled = disableDefaultServer == null || !disableDefaultServer;
 
     if (declarativeCacheServers.isEmpty() && hasServerPortOrBindAddress

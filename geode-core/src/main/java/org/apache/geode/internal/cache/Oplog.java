@@ -6846,7 +6846,7 @@ public class Oplog implements CompactableOplog, Flushable {
           write(olf, this.drIdBytes, this.drIdLength);
           bytesWritten += this.drIdLength;
         }
-        assert this.versionsBytes.length > 0;
+        assert this.versionsBytes != null && this.versionsBytes.length > 0;
         write(olf, this.versionsBytes, this.versionsBytes.length);
         bytesWritten += this.versionsBytes.length;
       } else {

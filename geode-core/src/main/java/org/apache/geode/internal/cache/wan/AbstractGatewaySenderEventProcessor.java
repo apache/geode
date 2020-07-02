@@ -951,26 +951,24 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
   private void handleSuccessfulBatchDispatch(List filteredList, List events) {
     if (filteredList != null) {
       for (GatewayEventFilter filter : sender.getGatewayEventFilters()) {
-        for (Iterator i = filteredList.iterator(); i.hasNext();) {
-          Object o = i.next();
-          if (o != null && o instanceof GatewaySenderEventImpl) {
+        for (Object o : filteredList) {
+          if (o instanceof GatewaySenderEventImpl) {
             try {
               filter.afterAcknowledgement((GatewaySenderEventImpl) o);
             } catch (Exception e) {
               logger.fatal(
                   String.format(
                       "Exception occurred while handling call to %s.afterAcknowledgement for event %s:",
-                      new Object[] {filter.toString(), o}),
+                      filter.toString(), o),
                   e);
             }
           }
         }
       }
+      filteredList.clear();
     }
 
-    filteredList.clear();
     eventQueueRemove(events.size());
-    final GatewaySenderStats statistics = this.sender.getStatistics();
     int queueSize = eventQueueSize();
 
     if (this.eventQueueSizeWarning && queueSize <= AbstractGatewaySender.QUEUE_SIZE_THRESHOLD) {

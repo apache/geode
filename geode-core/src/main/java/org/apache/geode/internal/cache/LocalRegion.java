@@ -39,6 +39,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -970,7 +971,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
       boolean success = false;
       try {
-        newRegion.checkReadiness();
+        Objects.requireNonNull(newRegion).checkReadiness();
         cache.setRegionByPath(newRegion.getFullPath(), newRegion);
         if (regionAttributes instanceof UserSpecifiedRegionAttributes) {
           internalRegionArgs
@@ -3049,11 +3050,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
             if (requireOldValue && result == null) {
               throw new EntryNotFoundException("entry not found for replace");
             }
-            if (!requireOldValue) {
-              if (!(Boolean) result) {
-                // customers don't see this exception
-                throw new EntryNotFoundException("entry found with wrong value");
-              }
+            if (!requireOldValue && result != null && !(Boolean) result) {
+              // customers don't see this exception
+              throw new EntryNotFoundException("entry found with wrong value");
             }
           }
         }
@@ -3369,10 +3368,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         RegionEventImpl regionEvent =
             new RegionEventImpl(this, Operation.REGION_DESTROY, null, true, getMyId());
         regionEvent.setEventID(eventID);
-        FilterInfo clientRouting = routing;
-        if (clientRouting == null) {
-          clientRouting = fp.getLocalFilterRouting(regionEvent);
-        }
+        FilterInfo clientRouting = routing != null ? routing : fp.getLocalFilterRouting(regionEvent);
         regionEvent.setLocalFilterInfo(clientRouting);
         ClientUpdateMessage clientMessage =
             ClientTombstoneMessage.gc(this, regionGCVersions, eventID);
@@ -3446,11 +3442,13 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   @Retained
   Object nonTXbasicGetValueInVM(KeyInfo keyInfo) {
     RegionEntry regionEntry = entries.getEntry(keyInfo.getKey());
+    Object value = null;
     if (regionEntry == null) {
       checkEntryNotFound(keyInfo.getKey());
+    } else {
+      // OFFHEAP returned to callers
+      value = regionEntry.getValueInVM(this);
     }
-    // OFFHEAP returned to callers
-    Object value = regionEntry.getValueInVM(this);
     if (Token.isRemoved(value)) {
       checkEntryNotFound(keyInfo.getKey());
     }

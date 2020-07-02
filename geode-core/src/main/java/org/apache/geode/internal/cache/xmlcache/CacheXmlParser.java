@@ -1251,8 +1251,8 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       cache = (CacheCreation) top;
     } else {
       String s = "Did not expected a " + top.getClass().getName() + " on top of the stack.";
-      Assert.assertTrue(false, s);
-      cache = null; // Dead code
+      Assert.fail(s);
+      return;
     }
     String name = dsac.getName();
     if (name != null) {
@@ -1276,8 +1276,8 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       cache = (CacheCreation) top;
     } else {
       String s = "Did not expected a " + top.getClass().getName() + " on top of the stack.";
-      Assert.assertTrue(false, s);
-      cache = null; // Dead code
+      Assert.fail(s);
+      return;
     }
     String id = attrs.getId();
     if (id != null) {

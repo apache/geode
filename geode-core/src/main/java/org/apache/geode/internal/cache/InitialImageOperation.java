@@ -34,6 +34,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -456,7 +457,7 @@ public class InitialImageOperation {
                   this.region.getFullPath());
             }
             m.versionVector = null;
-          } else if (keysOfUnfinishedOps.size() > MAXIMUM_UNFINISHED_OPERATIONS) {
+          } else if (keysOfUnfinishedOps != null && keysOfUnfinishedOps.size() > MAXIMUM_UNFINISHED_OPERATIONS) {
             if (isDebugEnabled) {
               logger.debug(
                   "Region {} has {} unfinished operations, which exceeded threshold {}, do full GII instead",
@@ -938,7 +939,7 @@ public class InitialImageOperation {
                     tag.replaceNullIDs(sender);
                   }
                   boolean record;
-                  if (this.region.getVersionVector() != null) {
+                  if (this.region.getVersionVector() != null && tag != null) {
                     this.region.getVersionVector().recordVersion(tag.getMemberID(), tag);
                     record = true;
                   } else {
@@ -952,9 +953,7 @@ public class InitialImageOperation {
                       entriesToSynchronize.add(entry);
                     }
                   }
-                } catch (RegionDestroyedException e) {
-                  return false;
-                } catch (CancelException e) {
+                } catch (RegionDestroyedException | CancelException e) {
                   return false;
                 }
                 didIIP = true;
@@ -989,7 +988,7 @@ public class InitialImageOperation {
                   "processChunk:initialImagePut:key={},lastModified={},tmpValue={},wasRecovered={},tag={}",
                   entry.key, lastModified, tmpValue, wasRecovered, tag);
             }
-            if (this.region.getVersionVector() != null) {
+            if (this.region.getVersionVector() != null && tag != null) {
               this.region.getVersionVector().recordVersion(tag.getMemberID(), tag);
             }
             this.entries.initialImagePut(entry.key, lastModified, tmpValue, wasRecovered, false,
@@ -1723,7 +1722,7 @@ public class InitialImageOperation {
               if (isGiiDebugEnabled) {
                 RegionVersionHolder holderOfRequest =
                     this.versionVector.getHolderForMember(this.lostMemberVersionID);
-                if (holderToSync.isNewerThanOrCanFillExceptionsFor(holderOfRequest)) {
+                if (Objects.requireNonNull(holderToSync).isNewerThanOrCanFillExceptionsFor(holderOfRequest)) {
                   logger.trace(LogMarker.INITIAL_IMAGE_VERBOSE,
                       "synchronizeWith detected mismatch region version holder for lost member {}. Old is {}, new is {}",
                       lostMemberVersionID, holderOfRequest, holderToSync);
@@ -2439,7 +2438,7 @@ public class InitialImageOperation {
         }
       } finally {
         if (received_rvv == null) {
-          if (isGiiDebugEnabled) {
+          if (isGiiDebugEnabled && reply != null) {
             logger.trace(LogMarker.INITIAL_IMAGE_VERBOSE,
                 "{} did not send back rvv. Maybe it's non-persistent proxy region or remote region {} not found or not initialized. Nothing to do.",
                 reply.getSender(), region.getFullPath());

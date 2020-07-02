@@ -837,7 +837,7 @@ public class DiskStoreImpl implements DiskStore {
           if (logger.isDebugEnabled()) {
             logger.debug(
                 "DiskRegion: Tried {}, getBytesAndBitsWithoutLock returns wrong byte array: {}",
-                count, Arrays.toString(bb.getBytes()));
+                count, Arrays.toString(bb != null ? bb.getBytes() : null));
           }
           ex = e;
         }

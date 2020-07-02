@@ -750,9 +750,7 @@ public class FilterProfile implements DataSerializableFixedID {
           filters.remove(clientID);
         }
       }
-      if (clientMap != null) {
-        clientMap.removeIDMapping(clientID);
-      }
+      clientMap.removeIDMapping(clientID);
       if (this.region != null && this.isLocalProfile) {
         sendProfileOperation(clientID, operationType.CLEAR, null, false);
       }

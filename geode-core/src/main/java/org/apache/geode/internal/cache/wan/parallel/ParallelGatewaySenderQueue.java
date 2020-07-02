@@ -204,23 +204,21 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
     @Override
     public void run() {
-      PartitionedRegion prQ = null;
+      PartitionedRegion prQ;
       GatewaySenderEventImpl event = (GatewaySenderEventImpl) conflatableObject;
       try {
         String regionPath =
             ColocationHelper.getLeaderRegion((PartitionedRegion) event.getRegion()).getFullPath();
         prQ = userRegionNameToShadowPRMap.get(regionPath);
         destroyEventFromQueue(prQ, bucketId, previousTailKeyTobeRemoved);
+        if (logger.isDebugEnabled()) {
+          logger.debug("{}: Conflated {} for key={} in queue for region={}", this, conflatableObject.getValueToConflate(), conflatableObject.getKeyToConflate(), prQ.getName());
+        }
       } catch (EntryNotFoundException e) {
         if (logger.isDebugEnabled()) {
           logger.debug("{}: Not conflating {} due to EntryNotFoundException", this,
               conflatableObject.getKeyToConflate());
         }
-      }
-      if (logger.isDebugEnabled()) {
-        logger.debug("{}: Conflated {} for key={} in queue for region={}", this,
-            conflatableObject.getValueToConflate(), conflatableObject.getKeyToConflate(),
-            prQ.getName());
       }
     }
 
@@ -1584,10 +1582,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         } else {
           size += prQ.getDataStore().getSizeOfLocalPrimaryBuckets();
         }
-      }
-      if (logger.isDebugEnabled()) {
-        logger.debug("The name of the queue region is {} and the size is {}", prQ.getFullPath(),
-            size);
+        if (logger.isDebugEnabled()) {
+          logger.debug("The name of the queue region is {} and the size is {}", prQ.getFullPath(), size);
+        }
       }
     }
     return size /* + sender.getTmpQueuedEventSize() */;

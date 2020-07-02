@@ -919,13 +919,7 @@ public class PartitionedRegion extends LocalRegion
               PartitionedRegion.this.distAdvisor.advisePersistentMembers().values(), onlineMembers,
               TransformUtils.persistentMemberIdToLogEntryTransformer);
 
-          logger
-              .info(
-                  "The following persistent member has gone offline for region {}:{}.  Remaining participating members for the region include: {}",
-                  new Object[] {PartitionedRegion.this.getName(),
-                      TransformUtils.persistentMemberIdToLogEntryTransformer
-                          .transform(cacheProfile.persistentID),
-                      onlineMembers});
+          logger.info("The following persistent member has gone offline for region {}:{}.  Remaining participating members for the region include: {}", new Object[] {PartitionedRegion.this.getName(), TransformUtils.persistentMemberIdToLogEntryTransformer.transform(cacheProfile != null ? cacheProfile.persistentID : null), onlineMembers});
         }
       }
     });
@@ -2641,9 +2635,7 @@ public class PartitionedRegion extends LocalRegion
             retryTime.waitToRetryNode();
           }
           event.setPossibleDuplicate(true);
-          if (prMsg != null) {
-            prMsg.setPossibleDuplicate(true);
-          }
+          prMsg.setPossibleDuplicate(true);
         } catch (PrimaryBucketException notPrimary) {
           if (isDebugEnabled) {
             logger.debug("Bucket {} on Node {} not primnary", notPrimary.getLocalizedMessage(),
@@ -2782,9 +2774,7 @@ public class PartitionedRegion extends LocalRegion
             retryTime.waitToRetryNode();
           }
           event.setPossibleDuplicate(true);
-          if (prMsg != null) {
-            prMsg.setPossibleDuplicate(true);
-          }
+          prMsg.setPossibleDuplicate(true);
         } catch (PrimaryBucketException notPrimary) {
           if (logger.isDebugEnabled()) {
             logger.debug("Bucket {} on Node {} not primary", notPrimary.getLocalizedMessage(),
@@ -7058,11 +7048,10 @@ public class PartitionedRegion extends LocalRegion
 
       DLockService ls1 = lockService;
       DLockService ls2 = other.lockService;
-      if (ls1 == null || ls2 == null) {
-        if (ls1 != ls2)
-          return false;
+      if (!(ls1 == null || ls2 == null)) {
+        return ls1.equals(ls2);
       }
-      return ls1.equals(ls2);
+      return ls1 == ls2;
     }
 
     @Override
@@ -9063,7 +9052,7 @@ public class PartitionedRegion extends LocalRegion
     // remotely fetch each VM's bucket meta-data (versus looking at the bucket
     // advisor's data
     RuntimeException rte = null;
-    List remoteInfos = null;
+    List<Object[]> remoteInfos = new LinkedList<>();
     for (int i = 0; i < 3; i++) {
       rte = null;
       DumpB2NResponse response =
@@ -9592,7 +9581,7 @@ public class PartitionedRegion extends LocalRegion
           count++;
         }
       }
-      Assert.assertTrue(br != null, "Could not create storage for Entry");
+      Assert.assertNotNull(br, "Could not create storage for Entry");
       if (keyInfo.isCheckPrimary()) {
         br.checkForPrimary();
       }

@@ -1197,8 +1197,10 @@ public class TXCommitMessage extends PooledDistributionMessage
         if (!hookupRegion(dm)) {
           return false;
         }
-        if (msg.isAckRequired()
-            && (this.internalRegion == null || !this.internalRegion.getScope().isDistributed())) {
+//DONAL:        if (msg.isAckRequired()
+//DONAL:            && (this.internalRegion == null || !this.internalRegion.getScope().isDistributed())) {
+          if (this.internalRegion == null || (msg.isAckRequired()
+              && !this.internalRegion.getScope().isDistributed())) {
           if (logger.isDebugEnabled()) {
             logger.debug("Received unneeded commit data for region {}", this.regionPath);
           }
