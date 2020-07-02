@@ -4803,7 +4803,7 @@ public class PartitionedRegion extends LocalRegion
         oneBucketKeys.clear();
         oneBucketKeys.put(e.getKey(), e.getValue());
         try {
-          if (entry.getKey().getVersionObject().compareTo(Version.GFE_80) < 0) {
+          if (entry.getKey().getVersionOrdinalObject().isOlderThan(Version.GFE_80)) {
             failures.putAll(nodeToBuckets.get(entry.getKey()));
             continue;
           }
@@ -4855,7 +4855,7 @@ public class PartitionedRegion extends LocalRegion
         bucketId.clear();
         bucketId.add(bucket);
         try {
-          if (entry.getKey().getVersionObject().compareTo(Version.GFE_80) < 0) {
+          if (entry.getKey().getVersionOrdinalObject().isOlderThan(Version.GFE_80)) {
             failures.addAll(nodeToBuckets.get(entry.getKey()));
             continue;
           }

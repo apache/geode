@@ -347,7 +347,7 @@ public class ClientCacheFactoryJUnitTest {
         (InternalDistributedMember) clientCache.getDistributedSystem().getDistributedMember();
     MemberIdentifier gmsID = memberID;
     memberID.setVersionObjectForTest(Version.GFE_82);
-    assertThat(memberID.getVersionObject()).isEqualTo(Version.GFE_82);
+    assertThat(memberID.getVersionOrdinalObject()).isEqualTo(Version.GFE_82);
 
     ClientProxyMembershipID clientID = ClientProxyMembershipID.getClientId(memberID);
     HeapDataOutputStream out = new HeapDataOutputStream(Version.GFE_82);
@@ -359,7 +359,7 @@ public class ClientCacheFactoryJUnitTest {
     ClientProxyMembershipID newID = DataSerializer.readObject(in);
     InternalDistributedMember newMemberID =
         (InternalDistributedMember) newID.getDistributedMember();
-    assertThat(newMemberID.getVersionObject()).isEqualTo(Version.GFE_82);
+    assertThat(newMemberID.getVersionOrdinalObject()).isEqualTo(Version.GFE_82);
     assertThat(newID.getClientVersion()).isEqualTo(Version.GFE_82);
 
     assertThat(newMemberID.getUuidLeastSignificantBits()).isEqualTo(0);
@@ -375,7 +375,7 @@ public class ClientCacheFactoryJUnitTest {
         Version.CURRENT);
     newID = DataSerializer.readObject(in);
     newMemberID = (InternalDistributedMember) newID.getDistributedMember();
-    assertThat(newMemberID.getVersionObject()).isEqualTo(Version.CURRENT);
+    assertThat(newMemberID.getVersionOrdinalObject()).isEqualTo(Version.CURRENT);
     assertThat(newID.getClientVersion()).isEqualTo(Version.CURRENT);
 
     assertThat(newMemberID.getUuidLeastSignificantBits())

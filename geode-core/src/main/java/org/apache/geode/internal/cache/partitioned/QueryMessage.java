@@ -123,7 +123,7 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
       }
     }
     Object data = this.currentResultIterator.next();
-    boolean isPostGFE_8_1 = this.getSender().getVersionObject().compareTo(Version.GFE_81) > 0;
+    boolean isPostGFE_8_1 = this.getSender().getVersionOrdinalObject().isNewerThan(Version.GFE_81);
 
     // There is a bug in older versions of GFE such that the query node expects the structs to have
     // type as ObjectTypes only & not specific types. So the new version needs to send the
@@ -190,7 +190,7 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
         logger.debug("Started executing query from remote node: {}", query.getQueryString());
       }
       isQueryTraced =
-          query.isTraced() && this.sender.getVersionObject().compareTo(Version.GFE_81) >= 0;
+          query.isTraced() && this.sender.getVersionOrdinalObject().isNotOlderThan(Version.GFE_81);
 
       // Adds a query trace info object to the results list for remote queries
       PRQueryTraceInfo queryTraceInfo = null;

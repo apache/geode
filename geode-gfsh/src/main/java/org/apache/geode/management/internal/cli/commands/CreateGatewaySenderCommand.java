@@ -201,7 +201,8 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
 
   private boolean verifyAllCurrentVersion(Set<DistributedMember> members) {
     return members.stream().allMatch(
-        member -> ((InternalDistributedMember) member).getVersionObject().equals(Version.CURRENT));
+        member -> ((InternalDistributedMember) member).getVersionOrdinalObject()
+            .equals(Version.CURRENT));
   }
 
   private CacheConfig.GatewaySender buildConfiguration(String id, Integer remoteDSId,

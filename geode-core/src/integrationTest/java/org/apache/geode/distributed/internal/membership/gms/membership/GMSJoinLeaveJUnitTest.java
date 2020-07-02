@@ -40,7 +40,6 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -59,15 +58,15 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.api.Authenticator;
-import org.apache.geode.distributed.internal.membership.api.MemberData;
 import org.apache.geode.distributed.internal.membership.api.MemberDataBuilder;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
-import org.apache.geode.distributed.internal.membership.api.MemberIdentifierFactory;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifierFactoryImpl;
 import org.apache.geode.distributed.internal.membership.api.MemberStartupException;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
+import org.apache.geode.distributed.internal.membership.gms.MemberIdentifierImpl;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.Services.Stopper;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
@@ -145,17 +144,7 @@ public class GMSJoinLeaveJUnitTest {
     when(services.getManager()).thenReturn(manager);
     when(services.getHealthMonitor()).thenReturn(healthMonitor);
     when(services.getMemberFactory())
-        .thenReturn(new MemberIdentifierFactory<InternalDistributedMember>() {
-          @Override
-          public InternalDistributedMember create(MemberData memberInfo) {
-            return new InternalDistributedMember(memberInfo);
-          }
-
-          @Override
-          public Comparator<InternalDistributedMember> getComparator() {
-            return InternalDistributedMember::compareTo;
-          }
-        });
+        .thenReturn(new MemberIdentifierFactoryImpl());
 
     gmsJoinLeaveMemberId = services.getMemberFactory().create(
         MemberDataBuilder.newBuilderForLocalHost("localhost")
@@ -172,7 +161,7 @@ public class GMSJoinLeaveJUnitTest {
     Timer t = new Timer(true);
     when(services.getTimer()).thenReturn(t);
 
-    mockMembers = new InternalDistributedMember[4];
+    mockMembers = new MemberIdentifier[4];
     for (int i = 0; i < mockMembers.length; i++) {
       mockMembers[i] = services.getMemberFactory().create(
           MemberDataBuilder.newBuilderForLocalHost("localhost")
@@ -181,7 +170,7 @@ public class GMSJoinLeaveJUnitTest {
     mockOldMember = services.getMemberFactory().create(
         MemberDataBuilder.newBuilderForLocalHost("localhost")
             .setMembershipPort(8700).build());
-    ((InternalDistributedMember) mockOldMember).setVersionObjectForTest(Version.GFE_56);
+    ((MemberIdentifierImpl) mockOldMember).setVersionObjectForTest(Version.GFE_56);
     locatorClient = mock(TcpClient.class);
 
     if (useTestGMSJoinLeave) {
@@ -1587,6 +1576,36 @@ public class GMSJoinLeaveJUnitTest {
     } catch (MembershipConfigurationException e) {
       // expected
     }
+  }
+
+  // GEODE-8240 could cause this member's identifier to have the wrong version so patch it up
+  @Test
+  public void repairWrongVersionInView() throws Exception {
+
+    initMocks();
+
+    List<MemberIdentifier> viewmembers =
+        Arrays.asList(new MemberIdentifier[] {mockMembers[0], gmsJoinLeaveMemberId});
+
+    final GMSMembershipView<MemberIdentifier> viewWithWrongVersion =
+        new GMSMembershipView<>(mockMembers[0], 2, viewmembers);
+
+    // clone member ID
+    final MemberIdentifierImpl myMemberIDWithWrongVersion =
+        new MemberIdentifierImpl(gmsJoinLeaveMemberId.getMemberData());
+
+    // this test must live in the 1.12 and later lines so pick a pre-1.12 version
+    final Version oldVersion = Version.GEODE_1_11_0;
+    myMemberIDWithWrongVersion.setVersionObjectForTest(oldVersion);
+
+    viewWithWrongVersion.remove(gmsJoinLeaveMemberId);
+    viewWithWrongVersion.add(myMemberIDWithWrongVersion);
+
+    gmsJoinLeave.installView(viewWithWrongVersion);
+
+    assertThat(
+        gmsJoinLeave.getView().getCanonicalID(gmsJoinLeaveMemberId).getVersionOrdinalObject())
+            .isEqualTo(Version.getCurrentVersion());
   }
 
   private void installView() throws Exception {
