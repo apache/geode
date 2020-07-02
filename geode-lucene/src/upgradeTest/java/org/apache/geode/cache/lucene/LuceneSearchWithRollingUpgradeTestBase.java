@@ -715,9 +715,16 @@ public abstract class LuceneSearchWithRollingUpgradeTestBase extends JUnit4Distr
     Method getDistributedMemberMethod = ds.getClass().getMethod("getDistributedMember");
     getDistributedMemberMethod.setAccessible(true);
     Object member = getDistributedMemberMethod.invoke(ds);
-    Method getVersionObjectMethod = member.getClass().getMethod("getVersionObject");
-    getVersionObjectMethod.setAccessible(true);
-    Object thisVersion = getVersionObjectMethod.invoke(member);
+    Method getVersionMethod;
+    try {
+      // newer versions have this method
+      getVersionMethod = member.getClass().getMethod("getVersionOrdinalObject");
+    } catch(final NoSuchMethodException e) {
+      // older versions have this other method
+      getVersionMethod = member.getClass().getMethod("getVersionObject");
+    }
+    getVersionMethod.setAccessible(true);
+    Object thisVersion = getVersionMethod.invoke(member);
     Method getOrdinalMethod = thisVersion.getClass().getMethod("ordinal");
     getOrdinalMethod.setAccessible(true);
     short thisOrdinal = (Short) getOrdinalMethod.invoke(thisVersion);
