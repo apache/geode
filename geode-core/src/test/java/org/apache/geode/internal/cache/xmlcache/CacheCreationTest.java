@@ -291,7 +291,7 @@ public class CacheCreationTest {
     when(internalCache.createGatewayReceiverFactory()).thenReturn(receiverFactory);
     when(receiverFactory.create()).thenReturn(receiver);
 
-    cacheCreation.create(internalCache, ModuleService.DEFAULT);
+    cacheCreation.create(internalCache);
 
     InOrder inOrder = inOrder(internalCache, receiverFactory);
     inOrder.verify(internalCache).createGatewayReceiverFactory();

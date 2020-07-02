@@ -23,6 +23,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.extension.ExtensionPoint;
 import org.apache.geode.internal.cache.extension.SimpleExtensionPoint;
 import org.apache.geode.internal.cache.extension.SimpleExtensionPointJUnitTest;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * Unit test for {@link RegionCreation}.

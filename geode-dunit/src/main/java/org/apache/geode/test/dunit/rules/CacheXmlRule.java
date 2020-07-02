@@ -154,7 +154,7 @@ public class CacheXmlRule extends AbstractDistributedRule {
     private final SerializableTemporaryFolder temporaryFolder;
 
     CacheXmlCreation(SerializableRunnableIF createCache,
-                     SerializableTemporaryFolder temporaryFolder, ModuleService moduleService) {
+        SerializableTemporaryFolder temporaryFolder, ModuleService moduleService) {
       super(moduleService);
       this.createCache = createCache;
       this.temporaryFolder = temporaryFolder;

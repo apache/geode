@@ -583,7 +583,7 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
     }
 
     public TestCacheCreation(boolean forParsing,
-                             ModuleService moduleService) {
+        ModuleService moduleService) {
       super(forParsing, moduleService);
     }
 

@@ -44,6 +44,7 @@ import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.cache.xmlcache.ParallelGatewaySenderCreation;
 import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
 import org.apache.geode.internal.cache.xmlcache.SerialGatewaySenderCreation;
+import org.apache.geode.services.module.ModuleService;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({WanTest.class})
