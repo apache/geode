@@ -14,6 +14,7 @@
  */
 package org.apache.geode.test.junit.rules;
 
+import static org.apache.geode.internal.lang.SystemUtils.isWindows;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.nio.file.Path;
@@ -45,19 +46,29 @@ public class GfshRuleIntegrationTest {
   @Before
   public void findGfshCurrentPath() {
     Path geodeHomePath = Paths.get(GEODE_HOME).toAbsolutePath();
-    assertThat(geodeHomePath).exists();
+    assertThat(geodeHomePath)
+        .as("System.getenv(\"GEODE_HOME\")")
+        .exists();
 
-    gfshCurrent = geodeHomePath.resolve("bin/gfsh");
-    assertThat(gfshCurrent).exists();
+    String gfsh = isWindows() ? "gfsh.bat" : "gfsh";
+    gfshCurrent = Paths.get(GEODE_HOME, "bin", gfsh);
+    assertThat(gfshCurrent)
+        .as("GEODE_HOME/bin/" + gfsh + " exists")
+        .exists();
   }
 
   @Before
   public void findGfsh130Path() {
     Path geode130Home = Paths.get(VersionManager.getInstance().getInstall(GFSH_OLD_VERSION));
-    assertThat(geode130Home).exists();
+    assertThat(geode130Home)
+        .as("VersionManager installation for " + GFSH_OLD_VERSION)
+        .exists();
 
-    gfsh130 = geode130Home.resolve("bin/gfsh");
-    assertThat(gfsh130).exists();
+    String gfsh = isWindows() ? "gfsh.bat" : "gfsh";
+    gfsh130 = Paths.get(geode130Home.toString(), "bin", gfsh);
+    assertThat(gfsh130)
+        .as("geode130Home/bin/" + gfsh + " exists")
+        .exists();
   }
 
   @Test
