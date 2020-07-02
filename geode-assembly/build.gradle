@@ -189,11 +189,8 @@ dependencies {
   testImplementation(project(':geode-log4j')) {
     exclude module: 'geode-core'
   }
-  testRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
-
 
   acceptanceTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
-
 
   integrationTestImplementation(project(':geode-core'))
   integrationTestImplementation(project(':geode-gfsh'))
@@ -219,12 +216,12 @@ dependencies {
   integrationTestImplementation('javax.annotation:javax.annotation-api')
   integrationTestImplementation('javax.servlet:javax.servlet-api')
 
+  integrationTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
   integrationTestRuntimeOnly('io.swagger:swagger-annotations')
   // these two modules are for testing only
   integrationTestRuntimeOnly('com.fasterxml.jackson.datatype:jackson-datatype-joda')
   integrationTestRuntimeOnly('joda-time:joda-time')
-
 
   distributedTestCompileOnly(platform(project(':boms:geode-all-bom')))
   distributedTestCompileOnly('io.swagger:swagger-annotations')
@@ -255,7 +252,6 @@ dependencies {
   distributedTestRuntimeOnly('org.codehaus.cargo:cargo-core-uberjar')
   distributedTestRuntimeOnly('io.swagger:swagger-annotations')
   distributedTestRuntimeOnly(project(':geode-wan'))
-
 
   // geodeArchives is a direct reflection of what is contained in geode-dependencies.jar. To that
   // end only add _test_ dependencies to acceptanceTestCompile/Runtime. All other product

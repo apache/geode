@@ -15,6 +15,8 @@
 package org.apache.geode.test.junit.rules.gfsh;
 
 import static java.io.File.pathSeparator;
+import static java.util.Collections.synchronizedList;
+import static org.apache.geode.internal.lang.SystemUtils.isWindows;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -22,7 +24,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -37,19 +38,26 @@ import org.apache.geode.test.version.VersionManager;
  * binaries. Each call to {@link GfshRule#execute(GfshScript)} will invoke the given gfsh script in
  * a forked JVM. The {@link GfshRule#after()} method will attempt to clean up all forked JVMs.
  *
- * if you want to debug into the gfsh or the locator/servers started using this rule, you can do:
- * GfshScript.of("start locator", 30000).and("start server", 30001).withDebugPort(30002).execute
+ * <p>
+ * If you want to debug into the gfsh or the locator/servers started using this rule, you can do:
  *
- * this will set the gfsh to be debuggable at port 30002, and the locator started to be debuggable
+ * <pre>
+ * GfshScript.of("start locator", 30000).and("start server", 30001).withDebugPort(30002).execute
+ * </pre>
+ *
+ * This will set the gfsh to be debuggable at port 30002, and the locator started to be debuggable
  * at port 30000, and the server to be debuggable at 30001
  */
 public class GfshRule extends ExternalResource {
+
   private TemporaryFolder temporaryFolder = new TemporaryFolder();
   private List<GfshExecution> gfshExecutions;
   private Path gfsh;
-  private String version;
+  private final String version;
 
-  public GfshRule() {}
+  public GfshRule() {
+    this(null);
+  }
 
   public GfshRule(String version) {
     this.version = version;
@@ -60,7 +68,7 @@ public class GfshRule extends ExternalResource {
     gfsh = findGfsh();
     assertThat(gfsh).exists();
 
-    gfshExecutions = Collections.synchronizedList(new ArrayList<>());
+    gfshExecutions = synchronizedList(new ArrayList<>());
     temporaryFolder.create();
   }
 
@@ -72,12 +80,13 @@ public class GfshRule extends ExternalResource {
   protected void after() {
     // Copy the gfshExecutions list because stopMembers will add more executions
     // This would not include the "stopMemberQuietly" executions
-    ArrayList<GfshExecution> executionsWithMembersToStop = new ArrayList<>(gfshExecutions);
-    executionsWithMembersToStop.forEach(this::stopMembers);
+    ((Iterable<GfshExecution>) new ArrayList<>(gfshExecutions))
+        .forEach(this::stopMembers);
 
     // This will include the "stopMemberQuietly" executions
     try {
-      gfshExecutions.forEach(GfshExecution::killProcess);
+      gfshExecutions
+          .forEach(GfshExecution::killProcess);
     } finally {
       temporaryFolder.delete();
     }
@@ -93,13 +102,8 @@ public class GfshRule extends ExternalResource {
 
     if (isWindows()) {
       return geodeHome.resolve("bin/gfsh.bat");
-    } else {
-      return geodeHome.resolve("bin/gfsh");
     }
-  }
-
-  private boolean isWindows() {
-    return System.getProperty("os.name").toLowerCase().contains("win");
+    return geodeHome.resolve("bin/gfsh");
   }
 
   public TemporaryFolder getTemporaryFolder() {
@@ -145,9 +149,7 @@ public class GfshRule extends ExternalResource {
 
   public GfshExecution execute(GfshScript gfshScript) {
     try {
-      File workingDir = new File(temporaryFolder.getRoot(), gfshScript.getName());
-      workingDir.mkdirs();
-      return execute(gfshScript, workingDir);
+      return execute(gfshScript, temporaryFolder.getRoot());
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -205,7 +207,7 @@ public class GfshRule extends ExternalResource {
   }
 
   /**
-   * this will stop the lcoator that's been started in this gfsh execution
+   * this will stop the locator that's been started in this gfsh execution
    */
   public void stopLocator(GfshExecution execution, String locatorName) {
     String command = "stop locator --dir="

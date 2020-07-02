@@ -117,6 +117,16 @@ public class VM implements Serializable {
   }
 
   /**
+   * Returns a VM running the specified Geode version in this DistributedTest.
+   *
+   * @param version String specifying the Geode version
+   * @param whichVM A zero-based identifier of the VM
+   */
+  public static VM getVM(String version, int whichVM) {
+    return Host.getHost(0).getVM(whichVM);
+  }
+
+  /**
    * Returns a collection of all DistributedTest VMs.
    */
   public static List<VM> getAllVMs() {
