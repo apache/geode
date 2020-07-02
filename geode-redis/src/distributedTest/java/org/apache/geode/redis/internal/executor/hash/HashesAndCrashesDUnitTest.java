@@ -23,6 +23,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
 import static org.apache.geode.redis.internal.GeodeRedisServer.ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -34,6 +36,7 @@ import io.lettuce.core.api.sync.RedisCommands;
 import io.lettuce.core.resource.ClientResources;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -156,18 +159,60 @@ public class HashesAndCrashesDUnitTest {
   }
 
   @Test
-  public void givenServerCrashesDuringHset_thenDataIsNotLost_andNoExceptionsAreLogged()
+  public void givenServerCrashesDuringHSET_thenDataIsNotLost_andNoExceptionsAreLogged()
       throws Exception {
+    modifyDataWhileCrashingVMs(DataType.HSET);
+  }
 
+  @Test
+  public void givenServerCrashesDuringSADD_thenDataIsNotLost() throws Exception {
+    modifyDataWhileCrashingVMs(DataType.SADD);
+  }
+
+  @Test
+  public void givenServerCrashesDuringAPPEND_thenDataIsNotLost() throws Exception {
+    modifyDataWhileCrashingVMs(DataType.APPEND);
+  }
+
+  enum DataType {
+    HSET, SADD, APPEND
+  }
+
+  private void modifyDataWhileCrashingVMs(DataType dataType) throws Exception {
     AtomicBoolean running1 = new AtomicBoolean(true);
     AtomicBoolean running2 = new AtomicBoolean(true);
     AtomicBoolean running3 = new AtomicBoolean(true);
     AtomicBoolean running4 = new AtomicBoolean(false);
 
-    Future<Void> future1 = executor.submit(() -> performHsetAndVerify(0, 20000, running1));
-    Future<Void> future2 = executor.submit(() -> performHsetAndVerify(1, 20000, running2));
-    Future<Void> future3 = executor.submit(() -> performHsetAndVerify(3, 20000, running3));
-    Future<Void> future4 = executor.submit(() -> performHsetAndVerify(4, 1000, running4));
+    Runnable task1 = null;
+    Runnable task2 = null;
+    Runnable task3 = null;
+    Runnable task4 = null;
+    switch (dataType) {
+      case HSET:
+        task1 = () -> hsetPerformAndVerify(0, 20000, running1);
+        task2 = () -> hsetPerformAndVerify(1, 20000, running2);
+        task3 = () -> hsetPerformAndVerify(3, 20000, running3);
+        task4 = () -> hsetPerformAndVerify(4, 1000, running4);
+        break;
+      case SADD:
+        task1 = () -> saddPerformAndVerify(0, 20000, running1);
+        task2 = () -> saddPerformAndVerify(1, 20000, running2);
+        task3 = () -> saddPerformAndVerify(3, 20000, running3);
+        task4 = () -> saddPerformAndVerify(4, 1000, running4);
+        break;
+      case APPEND:
+        task1 = () -> appendPerformAndVerify(0, 20000, running1);
+        task2 = () -> appendPerformAndVerify(1, 20000, running2);
+        task3 = () -> appendPerformAndVerify(3, 20000, running3);
+        task4 = () -> appendPerformAndVerify(4, 1000, running4);
+        break;
+    }
+
+    Future<Void> future1 = executor.runAsync(task1);
+    Future<Void> future2 = executor.runAsync(task2);
+    Future<Void> future3 = executor.runAsync(task3);
+    Future<Void> future4 = executor.runAsync(task4);
 
     future4.get();
     clusterStartUp.crashVM(2);
@@ -195,8 +240,8 @@ public class HashesAndCrashesDUnitTest {
     future3.get();
   }
 
-  private void performHsetAndVerify(int index, int minimumIterations, AtomicBoolean isRunning) {
-    String key = "key-" + index;
+  private void hsetPerformAndVerify(int index, int minimumIterations, AtomicBoolean isRunning) {
+    String key = "hset-key-" + index;
     int iterationCount = 0;
 
     while (iterationCount < minimumIterations || isRunning.get()) {
@@ -212,6 +257,51 @@ public class HashesAndCrashesDUnitTest {
     }
 
     logger.info("--->>> HSET test ran {} iterations", iterationCount);
+  }
+
+  private void saddPerformAndVerify(int index, int minimumIterations, AtomicBoolean isRunning) {
+    String key = "sadd-key-" + index;
+    int iterationCount = 0;
+
+    while (iterationCount < minimumIterations || isRunning.get()) {
+      String member = "member-" + index + "-" + iterationCount;
+      commands.sadd(key, member);
+      iterationCount += 1;
+    }
+
+    List<String> missingMembers = new ArrayList<>();
+    for (int i = 0; i < iterationCount; i++) {
+      String member = "member-" + index + "-" + i;
+      if (!commands.sismember(key, member)) {
+        missingMembers.add(member);
+      }
+    }
+    assertThat(missingMembers).isEmpty();
+
+    logger.info("--->>> SADD test ran {} iterations, retrying {} times", iterationCount);
+  }
+
+  private void appendPerformAndVerify(int index, int minimumIterations, AtomicBoolean isRunning) {
+    String key = "append-key-" + index;
+    int iterationCount = 0;
+
+    while (iterationCount < minimumIterations || isRunning.get()) {
+      String appendString = "" + iterationCount % 2;
+      commands.append(key, appendString);
+      iterationCount += 1;
+    }
+
+    String storedString = commands.get(key);
+    for (int i = 0; i < iterationCount; i++) {
+      String expectedValue = "" + i % 2;
+      if (!expectedValue.equals("" + storedString.charAt(i))) {
+        Assert.fail("unexpected " + storedString.charAt(i) + " at index " + i + " in string "
+            + storedString);
+        break;
+      }
+    }
+
+    logger.info("--->>> APPEND test ran {} iterations", iterationCount);
   }
 
   private static void rebalanceAllRegions(MemberVM vm) {
