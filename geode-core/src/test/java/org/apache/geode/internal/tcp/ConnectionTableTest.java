@@ -39,7 +39,7 @@ public class ConnectionTableTest {
   private ConnectionTable connectionTable;
   private Socket socket;
   private PeerConnectionFactory factory;
-  private Connection connection;
+  private ClusterConnection connection;
 
   @Before
   public void initConnectionTable() throws Exception {
@@ -57,7 +57,7 @@ public class ConnectionTableTest {
     when(tcpConduit.getCancelCriterion()).thenReturn(cancelCriterion);
     when(tcpConduit.getStats()).thenReturn(dmStats);
 
-    connection = mock(Connection.class);
+    connection = mock(ClusterConnection.class);
 
     socket = mock(Socket.class);
 
@@ -103,7 +103,7 @@ public class ConnectionTableTest {
     Boolean wantsResources = ConnectionTable.getThreadOwnsResourcesRegistration();
     ConnectionTable.threadWantsOwnResources();
     try {
-      Map<DistributedMember, Connection> threadConnectionMap = new HashMap<>();
+      Map<DistributedMember, ClusterConnection> threadConnectionMap = new HashMap<>();
       ConnectionTable.threadOrderedConnMap.set(threadConnectionMap);
       ConnectionTable.releaseThreadsSockets();
       assertEquals(0, threadConnectionMap.size());

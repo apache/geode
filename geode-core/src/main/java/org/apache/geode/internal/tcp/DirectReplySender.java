@@ -43,10 +43,10 @@ class DirectReplySender implements ReplySender {
   @Immutable
   private static final DMStats DUMMY_STATS = new DummyDMStats();
 
-  private final Connection conn;
+  private final ClusterConnection conn;
   private boolean sentReply = false;
 
-  public DirectReplySender(Connection connection) {
+  public DirectReplySender(ClusterConnection connection) {
     this.conn = connection;
   }
 
@@ -63,7 +63,7 @@ class DirectReplySender implements ReplySender {
       logger.trace(LogMarker.DM_VERBOSE, "Sending a direct reply {} to {}", msg,
           conn.getRemoteAddress());
     }
-    ArrayList<Connection> conns = new ArrayList<Connection>(1);
+    ArrayList<ClusterConnection> conns = new ArrayList<ClusterConnection>(1);
     conns.add(conn);
     MsgStreamer ms = (MsgStreamer) MsgStreamer.create(conns, msg, false, DUMMY_STATS,
         conn.getBufferPool(), /* BRUCE: conn.getConduit().useDirectBuffers() */ true);

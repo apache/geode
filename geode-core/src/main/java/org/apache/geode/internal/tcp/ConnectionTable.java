@@ -220,7 +220,7 @@ public class ConnectionTable {
       throws IOException, ConnectionException {
     InetAddress connAddress = sock.getInetAddress();
     boolean finishedConnecting = false;
-    Connection connection = null;
+    ClusterConnection connection = null;
     try {
       connection = peerConnectionFactory.createReceiver(this, sock);
 
@@ -278,14 +278,14 @@ public class ConnectionTable {
    * @return the Connection, or null if someone else already created or closed it
    * @throws IOException if unable to connect
    */
-  private Connection handleNewPendingConnection(InternalDistributedMember id,
+  private ClusterConnection handleNewPendingConnection(InternalDistributedMember id,
       boolean sharedResource,
       boolean preserveOrder, Map m, PendingConnection pc, long startTime, long ackThreshold,
       long ackSAThreshold) throws IOException, DistributedSystemDisconnectedException {
     // handle new pending connection
-    Connection con = null;
+    ClusterConnection con = null;
     try {
-      con = Connection.createSender(owner.getMembership(), this, preserveOrder, id,
+      con = ClusterConnection.createSender(owner.getMembership(), this, preserveOrder, id,
           sharedResource, startTime, ackThreshold, ackSAThreshold);
       owner.getStats().incSenders(sharedResource, preserveOrder);
     } finally {
@@ -317,8 +317,8 @@ public class ConnectionTable {
         con.requestClose("pending connection cancelled");
         con = null;
       } else {
-        if (e instanceof Connection) {
-          Connection newCon = (Connection) e;
+        if (e instanceof ClusterConnection) {
+          ClusterConnection newCon = (ClusterConnection) e;
           if (!newCon.connected) {
             // someone closed our pending connect so cleanup the connection we created
             if (con != null) {
@@ -357,7 +357,8 @@ public class ConnectionTable {
    * @return the new Connection, or null if an error
    * @throws IOException if unable to create the connection
    */
-  private Connection getSharedConnection(InternalDistributedMember id, boolean scheduleTimeout,
+  private ClusterConnection getSharedConnection(InternalDistributedMember id,
+      boolean scheduleTimeout,
       boolean preserveOrder, long startTime, long ackTimeout, long ackSATimeout)
       throws IOException, DistributedSystemDisconnectedException {
 
@@ -372,8 +373,8 @@ public class ConnectionTable {
     // Look for pending connection
     synchronized (m) {
       mEntry = m.get(id);
-      if (mEntry instanceof Connection) {
-        Connection existingCon = (Connection) mEntry;
+      if (mEntry instanceof ClusterConnection) {
+        ClusterConnection existingCon = (ClusterConnection) mEntry;
         if (!existingCon.connected) {
           mEntry = null;
         }
@@ -384,7 +385,7 @@ public class ConnectionTable {
       }
     }
 
-    Connection result;
+    ClusterConnection result;
     if (pc != null) {
       if (logger.isDebugEnabled()) {
         logger.debug("created PendingConnection {}", pc);
@@ -414,7 +415,7 @@ public class ConnectionTable {
           }
         }
       } else {
-        result = (Connection) mEntry;
+        result = (ClusterConnection) mEntry;
       }
     } // we have existing connection
 
@@ -431,9 +432,10 @@ public class ConnectionTable {
    * @return the connection, or null if an error
    * @throws IOException if the connection could not be created
    */
-  Connection getThreadOwnedConnection(InternalDistributedMember id, long startTime, long ackTimeout,
+  ClusterConnection getThreadOwnedConnection(InternalDistributedMember id, long startTime,
+      long ackTimeout,
       long ackSATimeout) throws IOException, DistributedSystemDisconnectedException {
-    Connection result = null;
+    ClusterConnection result = null;
 
     // Look for result in the thread local
     Map m = threadOrderedConnMap.get();
@@ -458,7 +460,7 @@ public class ConnectionTable {
     } else {
       // Consult thread local.
       synchronized (m) {
-        result = (Connection) m.get(id);
+        result = (ClusterConnection) m.get(id);
       }
       if (result != null && result.timedOut) {
         result = null;
@@ -468,7 +470,7 @@ public class ConnectionTable {
       return result;
 
     // OK, we have to create a new connection.
-    result = Connection.createSender(owner.getMembership(), this, true, id, false, startTime,
+    result = ClusterConnection.createSender(owner.getMembership(), this, true, id, false, startTime,
         ackTimeout, ackSATimeout);
     if (logger.isDebugEnabled()) {
       logger.debug("ConnectionTable: created an ordered connection: {}", result);
@@ -508,7 +510,7 @@ public class ConnectionTable {
   }
 
   /** schedule an idle-connection timeout task */
-  private void scheduleIdleTimeout(Connection conn) {
+  private void scheduleIdleTimeout(ClusterConnection conn) {
     if (conn == null) {
       return;
     }
@@ -558,14 +560,15 @@ public class ConnectionTable {
    * @return the new Connection, or null if a problem
    * @throws IOException if the connection could not be created
    */
-  protected Connection get(InternalDistributedMember id, boolean preserveOrder, long startTime,
+  protected ClusterConnection get(InternalDistributedMember id, boolean preserveOrder,
+      long startTime,
       long ackTimeout, long ackSATimeout)
       throws IOException, DistributedSystemDisconnectedException {
     if (closed) {
       owner.getCancelCriterion().checkCancelInProgress(null);
       throw new DistributedSystemDisconnectedException("Connection table is closed");
     }
-    Connection result;
+    ClusterConnection result;
     boolean threadOwnsResources = threadOwnsResources();
     if (!preserveOrder || !threadOwnsResources) {
       result = getSharedConnection(id, threadOwnsResources, preserveOrder, startTime, ackTimeout,
@@ -608,8 +611,8 @@ public class ConnectionTable {
     if (c == null) {
       return;
     }
-    if (c instanceof Connection) {
-      ((Connection) c).closePartialConnect(reason, beingSick);
+    if (c instanceof ClusterConnection) {
+      ((ClusterConnection) c).closePartialConnect(reason, beingSick);
     } else {
       ((PendingConnection) c).notifyWaiters(null);
     }
@@ -715,7 +718,7 @@ public class ConnectionTable {
   void closeReceivers(boolean beingSick) {
     synchronized (receivers) {
       for (Iterator it = receivers.iterator(); it.hasNext();) {
-        Connection con = (Connection) it.next();
+        ClusterConnection con = (ClusterConnection) it.next();
         if (!beingSick || con.preserveOrder) {
           closeCon("Connection table being destroyed", con, beingSick);
           it.remove();
@@ -777,15 +780,15 @@ public class ConnectionTable {
       InternalDistributedMember remoteAddress = null;
       synchronized (orderedConnectionMap) {
         Object c = orderedConnectionMap.remove(memberID);
-        if (c instanceof Connection) {
-          remoteAddress = ((Connection) c).getRemoteAddress();
+        if (c instanceof ClusterConnection) {
+          remoteAddress = ((ClusterConnection) c).getRemoteAddress();
         }
         closeCon(reason, c);
       }
       synchronized (unorderedConnectionMap) {
         Object c = unorderedConnectionMap.remove(memberID);
-        if (remoteAddress == null && c instanceof Connection) {
-          remoteAddress = ((Connection) c).getRemoteAddress();
+        if (remoteAddress == null && c instanceof ClusterConnection) {
+          remoteAddress = ((ClusterConnection) c).getRemoteAddress();
         }
         closeCon(reason, c);
       }
@@ -796,8 +799,8 @@ public class ConnectionTable {
         if (al != null) {
           synchronized (al) {
             for (Object c : al) {
-              if (remoteAddress == null && c instanceof Connection) {
-                remoteAddress = ((Connection) c).getRemoteAddress();
+              if (remoteAddress == null && c instanceof ClusterConnection) {
+                remoteAddress = ((ClusterConnection) c).getRemoteAddress();
               }
               closeCon(reason, c);
             }
@@ -836,7 +839,7 @@ public class ConnectionTable {
       toRemove.clear();
       synchronized (receivers) {
         for (Iterator it = receivers.iterator(); it.hasNext();) {
-          Connection con = (Connection) it.next();
+          ClusterConnection con = (ClusterConnection) it.next();
           if (memberID.equals(con.getRemoteAddress())) {
             it.remove();
             toRemove.add(con);
@@ -844,7 +847,7 @@ public class ConnectionTable {
         }
       }
       for (Object o : toRemove) {
-        Connection con = (Connection) o;
+        ClusterConnection con = (ClusterConnection) o;
         closeCon(reason, con);
       }
       if (notifyDisconnect) {
@@ -868,7 +871,7 @@ public class ConnectionTable {
   boolean hasReceiversFor(DistributedMember endPoint) {
     synchronized (receivers) {
       for (Object receiver : receivers) {
-        Connection con = (Connection) receiver;
+        ClusterConnection con = (ClusterConnection) receiver;
         if (endPoint.equals(con.getRemoteAddress())) {
           return true;
         }
@@ -878,7 +881,7 @@ public class ConnectionTable {
   }
 
   private static void removeFromThreadConMap(ConcurrentMap cm, DistributedMember stub,
-      Connection c) {
+      ClusterConnection c) {
     if (cm != null) {
       List al = (ArrayList) cm.get(stub);
       if (al != null) {
@@ -889,7 +892,7 @@ public class ConnectionTable {
     }
   }
 
-  void removeThreadConnection(DistributedMember stub, Connection c) {
+  void removeThreadConnection(DistributedMember stub, ClusterConnection c) {
     removeFromThreadConMap(threadConnectionMap, stub, c);
     Map m = threadOrderedConnMap.get();
     if (m != null) {
@@ -903,7 +906,7 @@ public class ConnectionTable {
   }
 
   void removeSharedConnection(String reason, DistributedMember stub, boolean ordered,
-      Connection c) {
+      ClusterConnection c) {
     if (closed) {
       return;
     }
@@ -956,7 +959,7 @@ public class ConnectionTable {
         while (it.hasNext()) {
           Map.Entry me = (Map.Entry) it.next();
           DistributedMember stub = (DistributedMember) me.getKey();
-          Connection c = (Connection) me.getValue();
+          ClusterConnection c = (ClusterConnection) me.getValue();
           removeFromThreadConMap(threadConnectionMap, stub, c);
           it.remove();
           closeCon("thread finalization", c);
@@ -989,7 +992,7 @@ public class ConnectionTable {
         }
 
         for (Object o : al) {
-          Connection conn = (Connection) o;
+          ClusterConnection conn = (ClusterConnection) o;
           if (!conn.isSharedResource() && conn.getOriginatedHere() && conn.getPreserveOrder()) {
             result.put(conn.getUniqueId(), conn.getMessagesSent());
           }
@@ -1012,7 +1015,7 @@ public class ConnectionTable {
       r = new ArrayList(receivers);
     }
     for (Object o : r) {
-      Connection con = (Connection) o;
+      ClusterConnection con = (ClusterConnection) o;
       if (!con.stopped && !con.isClosing() && !con.getOriginatedHere() && con.getPreserveOrder()
           && member.equals(con.getRemoteAddress())) {
         Long state = (Long) connectionStates.remove(con.getUniqueId());
@@ -1078,7 +1081,7 @@ public class ConnectionTable {
     /**
      * the connection we are waiting on
      */
-    private Connection conn;
+    private ClusterConnection conn;
 
     /**
      * whether the connection preserves message ordering
@@ -1103,7 +1106,7 @@ public class ConnectionTable {
      *
      * @param c the new connection
      */
-    private synchronized void notifyWaiters(Connection c) {
+    private synchronized void notifyWaiters(ClusterConnection c) {
       if (!pending) {
         return;
       }
@@ -1126,7 +1129,8 @@ public class ConnectionTable {
      * @param ackSATimeout the ms ack-severe-alert-threshold, or zero
      * @return the new connection
      */
-    private synchronized Connection waitForConnect(Membership mgr, long startTime, long ackTimeout,
+    private synchronized ClusterConnection waitForConnect(Membership mgr, long startTime,
+        long ackTimeout,
         long ackSATimeout) {
       if (connectingThread == Thread.currentThread()) {
         throw new ReenteredConnectException("This thread is already trying to connect");
@@ -1202,8 +1206,8 @@ public class ConnectionTable {
           notifyWaiters(null);
           break;
         }
-        if (e instanceof Connection) {
-          notifyWaiters((Connection) e);
+        if (e instanceof ClusterConnection) {
+          notifyWaiters((ClusterConnection) e);
           break;
         }
         // defer to the new instance
@@ -1220,15 +1224,15 @@ public class ConnectionTable {
 
   private static class IdleConnTT extends SystemTimer.SystemTimerTask {
 
-    private Connection connection;
+    private ClusterConnection connection;
 
-    private IdleConnTT(Connection c) {
+    private IdleConnTT(ClusterConnection c) {
       this.connection = c;
     }
 
     @Override
     public boolean cancel() {
-      Connection con = connection;
+      ClusterConnection con = connection;
       if (con != null) {
         con.cleanUpOnIdleTaskCancel();
       }
@@ -1238,7 +1242,7 @@ public class ConnectionTable {
 
     @Override
     public void run2() {
-      Connection con = connection;
+      ClusterConnection con = connection;
       if (con != null) {
         if (con.checkForIdleTimeout()) {
           cancel();

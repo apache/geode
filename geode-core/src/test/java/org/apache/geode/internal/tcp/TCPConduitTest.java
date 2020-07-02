@@ -102,7 +102,7 @@ public class TCPConduitTest {
         new TCPConduit(membership, 0, localHost, false, directChannel, new Properties(),
             TCPConduit -> connectionTable, socketCreator, doNothing(), false);
     InternalDistributedMember member = mock(InternalDistributedMember.class);
-    Connection connection = mock(Connection.class);
+    ClusterConnection connection = mock(ClusterConnection.class);
     when(connection.getRemoteAddress())
         .thenReturn(member);
     doThrow(new IOException("Cannot form connection to alert listener"))
@@ -114,7 +114,7 @@ public class TCPConduitTest {
     when(membership.isShunned(same(member)))
         .thenReturn(false);
 
-    Connection value = tcpConduit.getConnection(member, false, false, 0L, 0L, 0L);
+    ClusterConnection value = tcpConduit.getConnection(member, false, false, 0L, 0L, 0L);
 
     assertThat(value)
         .isSameAs(connection);

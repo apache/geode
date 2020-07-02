@@ -96,7 +96,7 @@ public class ConnectionIntegrationTest {
     when(tcpConduit.getMemberId()).thenReturn(new InternalDistributedMember("localhost", 2345));
     when(connectionTable.getSocketCloser()).thenReturn(mock(SocketCloser.class));
 
-    Connection connection = new Connection(connectionTable, socket);
+    ClusterConnection connection = new ClusterConnection(connectionTable, socket);
     ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(new byte[] {99});
     DataInputStream inputStream = new DataInputStream(byteArrayInputStream);
 

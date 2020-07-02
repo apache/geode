@@ -44,8 +44,8 @@ import org.apache.geode.internal.serialization.Version;
 public class MsgStreamerTest {
   private DMStats stats = mock(DMStats.class);
   private BufferPool pool = spy(new BufferPool(stats));
-  Connection connection1 = mock(Connection.class);
-  Connection connection2 = mock(Connection.class);
+  ClusterConnection connection1 = mock(ClusterConnection.class);
+  ClusterConnection connection2 = mock(ClusterConnection.class);
 
   @Test
   public void create() {
@@ -94,7 +94,7 @@ public class MsgStreamerTest {
     } else {
       when(connection1.getRemoteVersion()).thenReturn(Version.CURRENT);
     }
-    List<Connection> connections = Arrays.asList(connection1, connection2);
+    List<ClusterConnection> connections = Arrays.asList(connection1, connection2);
 
     return MsgStreamer.create(connections, message, false, stats, pool, true);
   }

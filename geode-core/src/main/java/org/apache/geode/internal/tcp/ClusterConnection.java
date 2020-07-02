@@ -99,7 +99,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  *
  * @since GemFire 2.0
  */
-public class Connection implements Runnable {
+public class ClusterConnection implements Runnable {
   private static final Logger logger = LogService.getLogger();
 
   public static final String THREAD_KIND_IDENTIFIER = "P2P message reader";
@@ -492,7 +492,8 @@ public class Connection implements Runnable {
    * creates a "reader" connection that we accepted (it was initiated by an explicit connect being
    * done on the other side).
    */
-  protected Connection(ConnectionTable connectionTable, Socket socket) throws ConnectionException {
+  protected ClusterConnection(ConnectionTable connectionTable, Socket socket)
+      throws ConnectionException {
     if (connectionTable == null) {
       throw new IllegalArgumentException("Null ConnectionTable");
     }
@@ -931,14 +932,14 @@ public class Connection implements Runnable {
    * creates a new connection to a remote server. We are initiating this connection; the other side
    * must accept us We will almost always send messages; small acks are received.
    */
-  static Connection createSender(final Membership<InternalDistributedMember> mgr,
+  static ClusterConnection createSender(final Membership<InternalDistributedMember> mgr,
       final ConnectionTable t,
       final boolean preserveOrder, final InternalDistributedMember remoteAddr,
       final boolean sharedResource,
       final long startTime, final long ackTimeout, final long ackSATimeout)
       throws IOException, DistributedSystemDisconnectedException {
     boolean success = false;
-    Connection conn = null;
+    ClusterConnection conn = null;
     // keep trying. Note that this may be executing during the shutdown window
     // where a cancel criterion has not been established, but threads are being
     // interrupted. In this case we must allow the connection to succeed even
@@ -1019,7 +1020,7 @@ public class Connection implements Runnable {
         // create connection
         try {
           conn = null;
-          conn = new Connection(t, preserveOrder, remoteAddr, sharedResource);
+          conn = new ClusterConnection(t, preserveOrder, remoteAddr, sharedResource);
         } catch (SSLHandshakeException se) {
           // no need to retry if certificates were rejected
           throw se;
@@ -1134,7 +1135,8 @@ public class Connection implements Runnable {
    * creates a new connection to a remote server. We are initiating this connection; the other side
    * must accept us We will almost always send messages; small acks are received.
    */
-  private Connection(ConnectionTable t, boolean preserveOrder, InternalDistributedMember remoteID,
+  private ClusterConnection(ConnectionTable t, boolean preserveOrder,
+      InternalDistributedMember remoteID,
       boolean sharedResource) throws IOException, DistributedSystemDisconnectedException {
     // initialize a socket upfront. So that the
     if (t == null) {
@@ -1988,20 +1990,20 @@ public class Connection implements Runnable {
             connState = connectionState;
           }
           boolean sentAlert = false;
-          synchronized (Connection.this) {
+          synchronized (ClusterConnection.this) {
             if (socketInUse) {
               switch (connState) {
-                case Connection.STATE_IDLE:
+                case ClusterConnection.STATE_IDLE:
                   break;
-                case Connection.STATE_SENDING:
+                case ClusterConnection.STATE_SENDING:
                   sentAlert = doSevereAlertProcessing();
                   break;
-                case Connection.STATE_POST_SENDING:
+                case ClusterConnection.STATE_POST_SENDING:
                   break;
-                case Connection.STATE_READING_ACK:
+                case ClusterConnection.STATE_READING_ACK:
                   sentAlert = doSevereAlertProcessing();
                   break;
-                case Connection.STATE_RECEIVED_ACK:
+                case ClusterConnection.STATE_RECEIVED_ACK:
                   break;
                 default:
               }
@@ -2013,8 +2015,8 @@ public class Connection implements Runnable {
             // about all receivers out just because one was slow. We therefore reset the time stamps
             // and give others more time
             for (Object o : group) {
-              Connection con = (Connection) o;
-              if (con != Connection.this) {
+              ClusterConnection con = (ClusterConnection) o;
+              if (con != ClusterConnection.this) {
                 con.transmissionStartTime += con.ackSATimeout;
               }
             }
@@ -2059,7 +2061,7 @@ public class Connection implements Runnable {
           ackWaitTimeout / 1000L, getRemoteAddress(), ackThreadName);
       ackTimedOut = true;
 
-      final String state = connectionState == Connection.STATE_SENDING
+      final String state = connectionState == ClusterConnection.STATE_SENDING
           ? "Sender has been unable to transmit a message within ack-wait-threshold seconds"
           : "Sender has been unable to receive a response to a message within ack-wait-threshold seconds";
       if (ackSATimeout > 0) {

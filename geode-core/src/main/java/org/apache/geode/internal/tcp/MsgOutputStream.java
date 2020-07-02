@@ -43,7 +43,7 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
     } else {
       this.buffer = ByteBuffer.allocate(allocSize);
     }
-    this.buffer.position(Connection.MSG_HEADER_BYTES);
+    this.buffer.position(ClusterConnection.MSG_HEADER_BYTES);
   }
 
   /** write the low-order 8 bits of the given int */
@@ -59,21 +59,21 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
   }
 
   private int size() {
-    return this.buffer.position() - Connection.MSG_HEADER_BYTES;
+    return this.buffer.position() - ClusterConnection.MSG_HEADER_BYTES;
   }
 
   /**
    * write the header after the message has been written to the stream
    */
   public void setMessageHeader(int msgType, int processorType, short msgId) {
-    buffer.putInt(Connection.MSG_HEADER_SIZE_OFFSET, Connection.calcHdrSize(size()));
-    buffer.put(Connection.MSG_HEADER_TYPE_OFFSET, (byte) (msgType & 0xff));
-    buffer.putShort(Connection.MSG_HEADER_ID_OFFSET, msgId);
+    buffer.putInt(ClusterConnection.MSG_HEADER_SIZE_OFFSET, ClusterConnection.calcHdrSize(size()));
+    buffer.put(ClusterConnection.MSG_HEADER_TYPE_OFFSET, (byte) (msgType & 0xff));
+    buffer.putShort(ClusterConnection.MSG_HEADER_ID_OFFSET, msgId);
   }
 
   public void reset() {
     this.buffer.clear();
-    this.buffer.position(Connection.MSG_HEADER_BYTES);
+    this.buffer.position(ClusterConnection.MSG_HEADER_BYTES);
   }
 
   /**

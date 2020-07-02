@@ -296,9 +296,9 @@ public class TCPConduit implements Runnable {
       } catch (Exception e) {
         logger.warn("exception parsing p2p.tcpBufferSize", e);
       }
-      if (tcpBufferSize < Connection.SMALL_BUFFER_SIZE) {
+      if (tcpBufferSize < ClusterConnection.SMALL_BUFFER_SIZE) {
         // enforce minimum
-        tcpBufferSize = Connection.SMALL_BUFFER_SIZE;
+        tcpBufferSize = ClusterConnection.SMALL_BUFFER_SIZE;
       }
       s = p.getProperty("p2p.idleConnectionTimeout", String.valueOf(idleConnectionTimeout));
       try {
@@ -683,7 +683,7 @@ public class TCPConduit implements Runnable {
    *
    * @param bytesRead number of bytes read off of network to get this message
    */
-  void messageReceived(Connection receiver, DistributionMessage message, int bytesRead)
+  void messageReceived(ClusterConnection receiver, DistributionMessage message, int bytesRead)
       throws MemberShunnedException {
     if (logger.isTraceEnabled()) {
       logger.trace("{} received {} from {}", id, message, receiver);
@@ -741,7 +741,7 @@ public class TCPConduit implements Runnable {
    *
    * @return the connection
    */
-  public Connection getConnection(InternalDistributedMember memberAddress,
+  public ClusterConnection getConnection(InternalDistributedMember memberAddress,
       final boolean preserveOrder, boolean retry, long startTime, long ackTimeout,
       long ackSATimeout) throws IOException, DistributedSystemDisconnectedException {
     if (stopped) {
@@ -749,7 +749,7 @@ public class TCPConduit implements Runnable {
     }
 
     InternalDistributedMember memberInTrouble = null;
-    Connection conn = null;
+    ClusterConnection conn = null;
     for (boolean breakLoop = false;;) {
       stopper.checkCancelInProgress(null);
       boolean interrupted = Thread.interrupted();

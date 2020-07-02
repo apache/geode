@@ -132,7 +132,7 @@ public class MsgStreamer extends OutputStream
     this.buffer = useDirectBuffers ? bufferPool.acquireDirectSenderBuffer(sendBufferSize)
         : bufferPool.acquireNonDirectSenderBuffer(sendBufferSize);
     this.buffer.clear();
-    this.buffer.position(Connection.MSG_HEADER_BYTES);
+    this.buffer.position(ClusterConnection.MSG_HEADER_BYTES);
     this.msgId = MsgIdGenerator.NO_MSG_ID;
     this.directReply = directReply;
     this.bufferPool = bufferPool;
@@ -147,16 +147,16 @@ public class MsgStreamer extends OutputStream
   public static BaseMsgStreamer create(List<?> cons, final DistributionMessage msg,
       final boolean directReply, final DMStats stats,
       BufferPool bufferPool, boolean useDirectBuffers) {
-    final Connection firstCon = (Connection) cons.get(0);
+    final ClusterConnection firstCon = (ClusterConnection) cons.get(0);
     // split into different versions if required
     Version version;
     final int numCons = cons.size();
     if (numCons > 1) {
-      Connection con;
+      ClusterConnection con;
       Object2ObjectOpenHashMap versionToConnMap = null;
       int numVersioned = 0;
       for (Object c : cons) {
-        con = (Connection) c;
+        con = (ClusterConnection) c;
         version = con.getRemoteVersion();
         if (version != null
             && Version.CURRENT_ORDINAL > version.ordinal()) {
@@ -187,7 +187,7 @@ public class MsgStreamer extends OutputStream
           // getSentConnections it may not need to be reallocted later
           final ArrayList<Object> currentVersionConnections = new ArrayList<Object>(numCons);
           for (Object c : cons) {
-            con = (Connection) c;
+            con = (ClusterConnection) c;
             version = con.getRemoteVersion();
             if (version == null || version.ordinal() >= Version.CURRENT_ORDINAL) {
               currentVersionConnections.add(con);
@@ -225,7 +225,7 @@ public class MsgStreamer extends OutputStream
   @Override
   public void reserveConnections(long startTime, long ackTimeout, long ackSDTimeout) {
     for (Iterator it = cons.iterator(); it.hasNext();) {
-      Connection con = (Connection) it.next();
+      ClusterConnection con = (ClusterConnection) it.next();
       con.setInUse(true, startTime, ackTimeout, ackSDTimeout, cons);
       if (ackTimeout > 0) {
         con.scheduleAckTimeouts();
@@ -310,7 +310,7 @@ public class MsgStreamer extends OutputStream
     if (isOverflowMode()) {
       if (this.overflowStream == null) {
         this.overflowStream = new HeapDataOutputStream(
-            this.buffer.capacity() - Connection.MSG_HEADER_BYTES, Version.CURRENT);
+            this.buffer.capacity() - ClusterConnection.MSG_HEADER_BYTES, Version.CURRENT);
       }
       return;
     }
@@ -325,7 +325,7 @@ public class MsgStreamer extends OutputStream
     }
     this.stats.endMsgSerialization(this.serStartTime);
     for (Iterator it = this.cons.iterator(); it.hasNext();) {
-      Connection con = (Connection) it.next();
+      ClusterConnection con = (ClusterConnection) it.next();
       try {
         con.sendPreserialized(this.buffer,
             lastFlushForMessage && this.msg.containsRegionContentChange(), conflationMsg);
@@ -348,7 +348,7 @@ public class MsgStreamer extends OutputStream
     }
     startSerialization();
     this.buffer.clear();
-    this.buffer.position(Connection.MSG_HEADER_BYTES);
+    this.buffer.position(ClusterConnection.MSG_HEADER_BYTES);
   }
 
   @Override
@@ -359,7 +359,7 @@ public class MsgStreamer extends OutputStream
         // since they have been corrupted by a partial serialization.
         if (this.flushedBytes > 0) {
           for (Iterator it = this.cons.iterator(); it.hasNext();) {
-            Connection con = (Connection) it.next();
+            ClusterConnection con = (ClusterConnection) it.next();
             con.closeForReconnect("Message serialization could not complete");
           }
         }
@@ -441,15 +441,15 @@ public class MsgStreamer extends OutputStream
     int msgType;
     if (this.doneWritingMsg) {
       if (this.normalMsg) {
-        msgType = Connection.NORMAL_MSG_TYPE;
+        msgType = ClusterConnection.NORMAL_MSG_TYPE;
       } else {
-        msgType = Connection.END_CHUNKED_MSG_TYPE;
+        msgType = ClusterConnection.END_CHUNKED_MSG_TYPE;
       }
       if (directReply) {
-        msgType |= Connection.DIRECT_ACK_BIT;
+        msgType |= ClusterConnection.DIRECT_ACK_BIT;
       }
     } else {
-      msgType = Connection.CHUNKED_MSG_TYPE;
+      msgType = ClusterConnection.CHUNKED_MSG_TYPE;
     }
     if (!this.normalMsg) {
       if (this.msgId == MsgIdGenerator.NO_MSG_ID) {
@@ -457,10 +457,10 @@ public class MsgStreamer extends OutputStream
       }
     }
 
-    this.buffer.putInt(Connection.MSG_HEADER_SIZE_OFFSET,
-        Connection.calcHdrSize(this.buffer.limit() - Connection.MSG_HEADER_BYTES));
-    this.buffer.put(Connection.MSG_HEADER_TYPE_OFFSET, (byte) (msgType & 0xff));
-    this.buffer.putShort(Connection.MSG_HEADER_ID_OFFSET, this.msgId);
+    this.buffer.putInt(ClusterConnection.MSG_HEADER_SIZE_OFFSET,
+        ClusterConnection.calcHdrSize(this.buffer.limit() - ClusterConnection.MSG_HEADER_BYTES));
+    this.buffer.put(ClusterConnection.MSG_HEADER_TYPE_OFFSET, (byte) (msgType & 0xff));
+    this.buffer.putShort(ClusterConnection.MSG_HEADER_ID_OFFSET, this.msgId);
     this.buffer.position(0);
   }
 
@@ -936,7 +936,7 @@ public class MsgStreamer extends OutputStream
         // we don't even have room to write the length field so just create
         // the overflowBuf
         this.overflowStream = new HeapDataOutputStream(
-            this.buffer.capacity() - Connection.MSG_HEADER_BYTES, Version.CURRENT);
+            this.buffer.capacity() - ClusterConnection.MSG_HEADER_BYTES, Version.CURRENT);
         this.overflowStream.writeAsSerializedByteArray(v);
         return;
       }

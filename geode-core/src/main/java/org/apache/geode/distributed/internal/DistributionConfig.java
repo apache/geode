@@ -210,7 +210,7 @@ import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.internal.logging.LogWriterImpl;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.statistics.StatisticsConfig;
-import org.apache.geode.internal.tcp.Connection;
+import org.apache.geode.internal.tcp.ClusterConnection;
 import org.apache.geode.logging.internal.spi.LogConfig;
 import org.apache.geode.logging.internal.spi.LogWriterLevel;
 import org.apache.geode.util.internal.GeodeGlossary;
@@ -1399,7 +1399,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    * <p>
    * Actual value of this constant is <code>20000000</code>.
    */
-  int MAX_SOCKET_BUFFER_SIZE = Connection.MAX_MSG_SIZE;
+  int MAX_SOCKET_BUFFER_SIZE = ClusterConnection.MAX_MSG_SIZE;
 
   boolean VALIDATE = Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "validateMessageSize");
   int VALIDATE_CEILING = Integer
