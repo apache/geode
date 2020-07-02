@@ -76,6 +76,7 @@ public class CacheXmlParserJUnitTest {
   @Test
   public void testGetDelegate() {
     final TestCacheXmlParser cacheXmlParser = new TestCacheXmlParser();
+    cacheXmlParser.init(ModuleService.DEFAULT);
     assertThat(cacheXmlParser.getDelegates()).as("delegates should be empty.").isEmpty();
 
     final MockXmlParser delegate = (MockXmlParser) cacheXmlParser.getDelegate(NAMESPACE_URI);

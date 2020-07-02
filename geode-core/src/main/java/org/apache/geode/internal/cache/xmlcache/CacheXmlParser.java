@@ -2833,6 +2833,8 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
               break;
             }
           }
+        } else {
+          logger.error(serviceLoadResult.getErrorMessage());
         }
       } catch (final Exception e) {
         logger.error(e.getMessage(), e);
