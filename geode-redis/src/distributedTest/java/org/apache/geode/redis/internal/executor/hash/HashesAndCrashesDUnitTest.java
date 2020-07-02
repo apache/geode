@@ -23,12 +23,9 @@ import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
 import static org.apache.geode.redis.internal.GeodeRedisServer.ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
 
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.RedisClient;
@@ -159,17 +156,18 @@ public class HashesAndCrashesDUnitTest {
   }
 
   @Test
-  public void givenServerCrashesDuringHset_thenDataIsNotLost() throws Exception {
+  public void givenServerCrashesDuringHset_thenDataIsNotLost_andNoExceptionsAreLogged()
+      throws Exception {
 
     AtomicBoolean running1 = new AtomicBoolean(true);
     AtomicBoolean running2 = new AtomicBoolean(true);
     AtomicBoolean running3 = new AtomicBoolean(true);
     AtomicBoolean running4 = new AtomicBoolean(false);
 
-    Future<List<String>> future1 = executor.submit(() -> performAndVerify(0, 20000, running1));
-    Future<List<String>> future2 = executor.submit(() -> performAndVerify(1, 20000, running2));
-    Future<List<String>> future3 = executor.submit(() -> performAndVerify(3, 20000, running3));
-    Future<List<String>> future4 = executor.submit(() -> performAndVerify(4, 1000, running4));
+    Future<Void> future1 = executor.submit(() -> performHsetAndVerify(0, 20000, running1));
+    Future<Void> future2 = executor.submit(() -> performHsetAndVerify(1, 20000, running2));
+    Future<Void> future3 = executor.submit(() -> performHsetAndVerify(3, 20000, running3));
+    Future<Void> future4 = executor.submit(() -> performHsetAndVerify(4, 1000, running4));
 
     future4.get();
     clusterStartUp.crashVM(2);
@@ -192,54 +190,28 @@ public class HashesAndCrashesDUnitTest {
     running2.set(false);
     running3.set(false);
 
-    assertThat(future1.get()).isEmpty();
-    assertThat(future2.get()).isEmpty();
-    assertThat(future3.get()).isEmpty();
+    future1.get();
+    future2.get();
+    future3.get();
   }
 
-  private List<String> performAndVerify(int index, int minimumIterations, AtomicBoolean isRunning) {
+  private void performHsetAndVerify(int index, int minimumIterations, AtomicBoolean isRunning) {
     String key = "key-" + index;
     int iterationCount = 0;
 
     while (iterationCount < minimumIterations || isRunning.get()) {
       int localI = iterationCount;
-      retryableCommand(c -> c.hset(key, "field-" + localI, "value-" + localI));
+      commands.hset(key, "field-" + localI, "value-" + localI);
       iterationCount += 1;
     }
 
-    List<String> missingFields = new ArrayList<>();
-    int retries = 0;
     for (int i = 0; i < iterationCount; i++) {
       String field = "field-" + i;
       String value = "value-" + i;
-      retries += retryableCommand(c -> {
-        if (!c.hget(key, field).equals(value)) {
-          missingFields.add(field);
-        }
-      });
+      assertThat(commands.hget(key, field)).isEqualTo(value);
     }
 
-    logger.info("--->>> HSET test ran {} iterations, retrying {} times", iterationCount, retries);
-
-    return missingFields;
-  }
-
-  private int retryableCommand(Consumer<RedisCommands<String, String>> exe) {
-    exe.accept(commands);
-    return 0;
-    // retry should not be needed since server1 is never restarted
-    // int retries = 0;
-    // do {
-    // try {
-    // exe.accept(commands);
-    // return retries;
-    // } catch (Exception e) {
-    // logger.info("--->>> Handling retryable error {}", e.getMessage());
-    // connection = redisClient.connect();
-    // commands = connection.sync();
-    // retries += 1;
-    // }
-    // } while (true);
+    logger.info("--->>> HSET test ran {} iterations", iterationCount);
   }
 
   private static void rebalanceAllRegions(MemberVM vm) {
