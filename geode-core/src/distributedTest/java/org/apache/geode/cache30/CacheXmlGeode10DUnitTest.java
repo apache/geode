@@ -47,6 +47,7 @@ import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.cache.xmlcache.Declarable2;
 import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
 import org.apache.geode.internal.cache.xmlcache.ResourceManagerCreation;
+import org.apache.geode.services.module.ModuleService;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.util.internal.GeodeGlossary;
 
@@ -65,7 +66,7 @@ public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
 
     final String regionName = "testEnableOffHeapMemory";
 
-    final CacheCreation cache = new CacheCreation();
+    final CacheCreation cache = new CacheCreation(ModuleService.DEFAULT);
     final RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     attrs.setOffHeap(true);
     assertEquals(true, attrs.getOffHeap());
@@ -92,7 +93,7 @@ public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
       throws Exception {
     final String regionName = getUniqueName();
 
-    final CacheCreation cache = new CacheCreation();
+    final CacheCreation cache = new CacheCreation(ModuleService.DEFAULT);
     final RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     attrs.setOffHeap(true);
     assertEquals(true, attrs.getOffHeap());
@@ -126,7 +127,7 @@ public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
     final String rootRegionName = getUniqueName();
     final String subRegionName = "subRegion";
 
-    final CacheCreation cache = new CacheCreation();
+    final CacheCreation cache = new CacheCreation(ModuleService.DEFAULT);
     final RegionAttributesCreation rootRegionAttrs = new RegionAttributesCreation(cache);
     assertEquals(false, rootRegionAttrs.getOffHeap());
 
@@ -167,7 +168,7 @@ public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
   @Override
   @Test
   public void testResourceManagerThresholds() throws Exception {
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(ModuleService.DEFAULT);
     final float low = 90.0f;
     final float high = 95.0f;
 
@@ -257,7 +258,7 @@ public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
     final String regionName = this.testName.getMethodName();
 
     // Create AsyncEventQueue with Listener
-    final CacheCreation cache = new CacheCreation();
+    final CacheCreation cache = new CacheCreation(ModuleService.DEFAULT);
     AsyncEventQueueFactory factory = cache.createAsyncEventQueueFactory();
 
     AsyncEventListener listener = new MyAsyncEventListenerGeode10();
@@ -308,7 +309,7 @@ public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
   @Test
   public void testPoolSocketFactory() throws IOException {
     getSystem();
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(ModuleService.DEFAULT);
     PoolFactory f = cache.createPoolFactory();
     f.setSocketFactory(new TestSocketFactory());
     f.addServer("localhost", 443);

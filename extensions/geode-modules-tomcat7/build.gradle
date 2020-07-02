@@ -58,6 +58,8 @@ dependencies {
   integrationTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
+
+  integrationTestImplementation(project(':geode-common-services'))
   integrationTestImplementation(project(':extensions:geode-modules-test'))
 
   integrationTestRuntimeOnly('javax.annotation:jsr250-api')

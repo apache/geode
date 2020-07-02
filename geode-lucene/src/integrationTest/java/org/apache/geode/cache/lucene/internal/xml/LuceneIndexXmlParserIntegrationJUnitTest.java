@@ -53,6 +53,7 @@ import org.apache.geode.internal.cache.extension.Extension;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlParser;
 import org.apache.geode.internal.cache.xmlcache.RegionCreation;
+import org.apache.geode.services.module.ModuleService;
 import org.apache.geode.test.junit.categories.LuceneTest;
 
 @Category({LuceneTest.class})
@@ -169,7 +170,8 @@ public class LuceneIndexXmlParserIntegrationJUnitTest {
   }
 
   private RegionCreation createRegionCreation(String regionName) throws FileNotFoundException {
-    CacheXmlParser parser = CacheXmlParser.parse(new FileInputStream(getXmlFileForTest()));
+    CacheXmlParser parser =
+        CacheXmlParser.parse(new FileInputStream(getXmlFileForTest()), ModuleService.DEFAULT);
     CacheCreation cacheCreation = parser.getCacheCreation();
     // Some of the tests in this class needs to have the declarables initialized.
     // cacheCreation.create(InternalCache) would do this but it was too much work

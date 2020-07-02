@@ -330,8 +330,8 @@ public class CacheCreation implements InternalCache {
   /**
    * Creates a new {@code CacheCreation} with no root regions
    */
-  public CacheCreation() {
-    this(false);
+  public CacheCreation(ModuleService moduleService) {
+    this(false, moduleService);
   }
 
   /**
@@ -340,7 +340,8 @@ public class CacheCreation implements InternalCache {
    *
    * @since GemFire 5.7
    */
-  public CacheCreation(boolean forParsing) {
+  public CacheCreation(boolean forParsing, ModuleService moduleService) {
+    this.moduleService = moduleService;
     initializeRegionShortcuts();
     if (!forParsing) {
       createInProgress.set(poolManager);
@@ -478,11 +479,10 @@ public class CacheCreation implements InternalCache {
   /**
    * Fills in the contents of a {@link Cache} based on this creation object's state.
    */
-  void create(InternalCache cache, ModuleService moduleService)
+  void create(InternalCache cache)
       throws TimeoutException, CacheWriterException, GatewayException, RegionExistsException,
       QueryConfigurationServiceException {
 
-    this.moduleService = moduleService;
     extensionPoint.beforeCreate(cache);
 
     cache.setDeclarativeCacheConfig(cacheConfig);

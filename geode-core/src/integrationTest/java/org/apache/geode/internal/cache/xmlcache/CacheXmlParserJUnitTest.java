@@ -39,6 +39,7 @@ import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * Test cases for {@link CacheXmlParser}.
@@ -177,13 +178,15 @@ public class CacheXmlParserJUnitTest {
   @Test
   public void testDTDFallbackWithNonEnglishLocal() {
     CacheXmlParser.parse(this.getClass().getResourceAsStream(
-        "CacheXmlParserJUnitTest.testDTDFallbackWithNonEnglishLocal.cache.xml"));
+        "CacheXmlParserJUnitTest.testDTDFallbackWithNonEnglishLocal.cache.xml"),
+        ModuleService.DEFAULT);
 
     final Locale previousLocale = Locale.getDefault();
     try {
       Locale.setDefault(Locale.JAPAN);
       CacheXmlParser.parse(this.getClass().getResourceAsStream(
-          "CacheXmlParserJUnitTest.testDTDFallbackWithNonEnglishLocal.cache.xml"));
+          "CacheXmlParserJUnitTest.testDTDFallbackWithNonEnglishLocal.cache.xml"),
+          ModuleService.DEFAULT);
     } finally {
       Locale.setDefault(previousLocale);
     }

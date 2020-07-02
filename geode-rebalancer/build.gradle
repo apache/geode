@@ -42,6 +42,7 @@ dependencies {
   testImplementation('org.assertj:assertj-core')
   testImplementation('org.mockito:mockito-core')
 
+  integrationTestImplementation(project(':geode-common-services'))
   integrationTestImplementation('junit:junit')
   integrationTestImplementation('org.awaitility:awaitility')
   integrationTestImplementation('org.hamcrest:hamcrest-all')

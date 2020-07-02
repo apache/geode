@@ -60,7 +60,7 @@ public class CacheXml70GatewayDUnitTest extends CacheXmlTestCase {
   @Test
   public void testAsyncEventQueueWithGatewayEventFilter() throws Exception {
     getSystem();
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(ModuleService.DEFAULT);
 
     String id = "WBCLChannel";
     AsyncEventQueueFactory factory = cache.createAsyncEventQueueFactory();
@@ -96,7 +96,7 @@ public class CacheXml70GatewayDUnitTest extends CacheXmlTestCase {
   @Test
   public void testGatewayReceiver() throws Exception {
     getSystem();
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(ModuleService.DEFAULT);
 
     GatewayReceiverFactory gatewayReceiverFactory = cache.createGatewayReceiverFactory();
     gatewayReceiverFactory.setBindAddress("");
@@ -124,7 +124,7 @@ public class CacheXml70GatewayDUnitTest extends CacheXmlTestCase {
   @Test
   public void testParallelGatewaySender() throws Exception {
     getSystem();
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(ModuleService.DEFAULT);
 
     GatewaySenderFactory gatewaySenderFactory = cache.createGatewaySenderFactory();
     gatewaySenderFactory.setParallel(true);
@@ -162,7 +162,7 @@ public class CacheXml70GatewayDUnitTest extends CacheXmlTestCase {
   @Test
   public void testSerialGatewaySender() throws Exception {
     getSystem();
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(ModuleService.DEFAULT);
     GatewaySenderFactory gatewaySenderFactory = cache.createGatewaySenderFactory();
     gatewaySenderFactory.setParallel(false);
     gatewaySenderFactory.setManualStart(true);

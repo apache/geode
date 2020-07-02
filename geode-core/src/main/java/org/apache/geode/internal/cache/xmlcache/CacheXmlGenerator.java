@@ -285,7 +285,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       } else {
         // if we are not generating defaults then create the CacheCreation for parsing
         // so that we can fetch the actual PoolManager and not a fake.
-        creation = new CacheCreation(!generateDefaults);
+        creation = new CacheCreation(!generateDefaults, moduleService);
         if (generateDefaults() || cache.getLockLease() != GemFireCacheImpl.DEFAULT_LOCK_LEASE) {
           creation.setLockLease(cache.getLockLease());
         }
@@ -306,7 +306,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     } else {
       // if we are not generating defaults then create the CacheCreation for parsing
       // so that we can fetch the actual PoolManager and not a fake.
-      creation = new CacheCreation(!generateDefaults);
+      creation = new CacheCreation(!generateDefaults, moduleService);
       if (generateDefaults() || cache.getLockLease() != GemFireCacheImpl.DEFAULT_LOCK_LEASE) {
         creation.setLockLease(cache.getLockLease());
       }
@@ -366,7 +366,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     version = CacheXmlVersion.valueForVersion(VERSION_LATEST);
     generateDefaults = true;
 
-    creation = new CacheCreation();
+    creation = new CacheCreation(moduleService);
     creation.setLockLease(GemFireCacheImpl.DEFAULT_LOCK_LEASE);
     creation.setLockTimeout(GemFireCacheImpl.DEFAULT_LOCK_TIMEOUT);
     creation.setSearchTimeout(GemFireCacheImpl.DEFAULT_SEARCH_TIMEOUT);

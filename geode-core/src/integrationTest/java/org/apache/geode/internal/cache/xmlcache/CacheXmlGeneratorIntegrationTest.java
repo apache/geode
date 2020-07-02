@@ -34,6 +34,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
+import org.apache.geode.services.module.ModuleService;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @RunWith(Parameterized.class)
@@ -61,7 +62,7 @@ public class CacheXmlGeneratorIntegrationTest {
   @Test
   public void generateXmlForPartitionRegionWithOffHeapWhenDistributedSystemDoesNotExistShouldWorkProperly()
       throws Exception {
-    CacheCreation cacheCreation = new CacheCreation();
+    CacheCreation cacheCreation = new CacheCreation(ModuleService.DEFAULT);
     RegionAttributesCreation attributes = new RegionAttributesCreation(cacheCreation);
     attributes.setOffHeap(true);
     attributes.setPartitionAttributes(partitionAttributes);

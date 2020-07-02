@@ -50,7 +50,7 @@ public class CacheXml80GatewayDUnitTest extends CacheXmlTestCase {
   @Test
   public void testGatewayReceiverWithManualStartTRUE() throws Exception {
     // getSystem();
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(ModuleService.DEFAULT);
 
     GatewayReceiverFactory gatewayReceiverFactory = cache.createGatewayReceiverFactory();
     gatewayReceiverFactory.setBindAddress("");
@@ -79,7 +79,7 @@ public class CacheXml80GatewayDUnitTest extends CacheXmlTestCase {
   @Test
   public void testAsyncEventQueueWithSubstitutionFilter() throws Exception {
     getSystem();
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(ModuleService.DEFAULT);
 
     // Create an AsyncEventQueue with GatewayEventSubstitutionFilter.
     String id = getName();
@@ -104,7 +104,7 @@ public class CacheXml80GatewayDUnitTest extends CacheXmlTestCase {
   @Test
   public void testGatewaySenderWithSubstitutionFilter() throws Exception {
     getSystem();
-    CacheCreation cache = new CacheCreation();
+    CacheCreation cache = new CacheCreation(ModuleService.DEFAULT);
 
     // Create a GatewaySender with GatewayEventSubstitutionFilter.
     // Don't start the sender to avoid 'Locators must be configured before starting gateway-sender'

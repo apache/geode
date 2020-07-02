@@ -10,7 +10,7 @@ org/apache/geode/cache/lucene/internal/cli/LuceneIndexInfo,true,1,fieldAnalyzers
 org/apache/geode/cache/lucene/internal/cli/LuceneIndexStatus,false
 org/apache/geode/cache/lucene/internal/cli/LuceneQueryInfo,true,1,defaultField:java/lang/String,keysOnly:boolean,limit:int,queryString:java/lang/String
 org/apache/geode/cache/lucene/internal/cli/LuceneSearchResults,false,exceptionFlag:boolean,exceptionMessage:java/lang/String,key:java/lang/String,score:float,value:java/lang/String
-org/apache/geode/cache/lucene/internal/cli/functions/LuceneCreateIndexFunction,true,3061443846664615818
+org/apache/geode/cache/lucene/internal/cli/functions/LuceneCreateIndexFunction,true,3061443846664615818,moduleService:org/apache/geode/services/module/ModuleService
 org/apache/geode/cache/lucene/internal/cli/functions/LuceneDescribeIndexFunction,true,1776072528558670172
 org/apache/geode/cache/lucene/internal/cli/functions/LuceneDestroyIndexFunction,false
 org/apache/geode/cache/lucene/internal/cli/functions/LuceneListIndexFunction,true,-2320432506763893879

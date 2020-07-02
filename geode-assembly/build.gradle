@@ -201,6 +201,7 @@ dependencies {
     acceptanceTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
 
+    integrationTestImplementation(project(':geode-common-services'))
     integrationTestImplementation(project(':geode-core'))
     integrationTestImplementation(project(':geode-gfsh'))
     integrationTestImplementation(project(':geode-log4j')) {
@@ -232,6 +233,7 @@ dependencies {
     integrationTestRuntimeOnly('joda-time:joda-time')
 
 
+    distributedTestImplementation(project(':geode-common-services'))
     distributedTestCompileOnly(platform(project(':boms:geode-all-bom')))
     distributedTestCompileOnly('io.swagger:swagger-annotations')
     distributedTestImplementation(project(':geode-gfsh'))

@@ -186,7 +186,7 @@ dependencies {
     api('commons-io:commons-io')
 
   compileOnly(project(":geode-modules"))
-  testImplementation(project(":geode-modules"))
+  testImplementation(project(":geode-common-services"))
   integrationTestImplementation(project(":geode-modules"))
   acceptanceTestImplementation(project(":geode-modules"))
   distributedTestImplementation(project(":geode-modules"))
@@ -350,7 +350,8 @@ dependencies {
     testRuntime('com.pholser:junit-quickcheck-generators')
     testRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
-    integrationTestImplementation(project(':geode-gfsh'))
+  integrationTestImplementation(project(":geode-common-services"))
+  integrationTestImplementation(project(':geode-gfsh'))
     integrationTestImplementation(project(':geode-junit')) {
         exclude module: 'geode-core'
     }

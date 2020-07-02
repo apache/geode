@@ -39,7 +39,7 @@ public class RegionCreationJUnitTest {
    */
   @Test
   public void testGetExtensionPoint() {
-    final CacheCreation cache = new CacheCreation();
+    final CacheCreation cache = new CacheCreation(ModuleService.DEFAULT);
     final RegionCreation region = new RegionCreation(cache, "test");
     final ExtensionPoint<Region<?, ?>> extensionPoint = region.getExtensionPoint();
     assertNotNull(extensionPoint);

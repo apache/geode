@@ -187,7 +187,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
    * @since GemFire 4.0
    *
    */
-  public static CacheXmlParser parse(InputStream is) {
+  public static CacheXmlParser parse(InputStream is, ModuleService moduleService) {
 
     /*
      * The API doc http://java.sun.com/javase/6/docs/api/org/xml/sax/InputSource.html for the SAX
@@ -209,6 +209,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     }
 
     CacheXmlParser handler = new CacheXmlParser();
+    handler.init(moduleService);
     try {
       SAXParserFactory factory = SAXParserFactory.newInstance();
       factory.setFeature(DISALLOW_DOCTYPE_DECL_FEATURE, true);
@@ -329,14 +330,14 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
   /**
    * Creates cache artifacts ({@link Cache}s, etc.) based upon the XML parsed by this parser.
    */
-  public void create(InternalCache cache, ModuleService moduleService)
+  public void create(InternalCache cache)
       throws TimeoutException, GatewayException, CacheWriterException, RegionExistsException {
     if (this.cache == null) {
       String s = "A cache or client-cache element is required";
       throw new CacheXmlException(
           "No cache element specified.");
     }
-    this.cache.create(cache, moduleService);
+    this.cache.create(cache);
   }
 
   /**
@@ -347,7 +348,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     if (this.cache != null) {
       throw new CacheXmlException("Only a single cache or client-cache element is allowed");
     }
-    this.cache = new CacheCreation(true);
+    this.cache = new CacheCreation(true, moduleService);
     String lockLease = atts.getValue(LOCK_LEASE);
     if (lockLease != null) {
       this.cache.setLockLease(parseInt(lockLease));

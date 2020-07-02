@@ -60,6 +60,7 @@ dependencies {
   testImplementation('org.mockito:mockito-core')
 
 
+  integrationTestImplementation(project(':geode-common-services'))
   integrationTestImplementation('junit:junit')
   integrationTestImplementation('pl.pragmatists:JUnitParams')
 

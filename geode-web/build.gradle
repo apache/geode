@@ -57,6 +57,7 @@ dependencies {
   testImplementation(project(':geode-junit'))
   testImplementation('org.springframework:spring-test')
 
+  integrationTestImplementation(project(':geode-common-services'));
   integrationTestImplementation(project(':geode-dunit'));
 
   integrationTestRuntimeOnly(files(war.destinationDir))

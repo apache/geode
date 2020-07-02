@@ -76,7 +76,7 @@ public class ClientCacheCreation extends CacheCreation implements ClientCache {
    * @since GemFire 5.7
    */
   ClientCacheCreation(boolean forParsing) {
-    super(forParsing);
+    super(forParsing, ModuleService.DEFAULT);
   }
 
   @Immutable
@@ -170,7 +170,7 @@ public class ClientCacheCreation extends CacheCreation implements ClientCache {
    * Fills in the contents of a {@link Cache} based on this creation object's state.
    */
   @Override
-  void create(InternalCache cache, ModuleService moduleService)
+  void create(InternalCache cache)
       throws TimeoutException, CacheWriterException, GatewayException, RegionExistsException {
     cache.setDeclarativeCacheConfig(this.getCacheConfig());
     if (!cache.isClient()) {

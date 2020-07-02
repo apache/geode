@@ -63,6 +63,8 @@ dependencies {
 
     testImplementation(project(':geode-common-services'))
 
+    integrationTestImplementation(project(':geode-common-services'))
+
     integrationTestImplementation(project(':geode-dunit')) {
         exclude module: 'geode-core'
     }

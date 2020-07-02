@@ -801,7 +801,7 @@ public class InternalDistributedSystemJUnitTest {
 
     createSystem(getCommonProperties(), metricsSessionBuilder);
 
-    verify(metricsSessionBuilder).build(system, any());
+    verify(metricsSessionBuilder).build(system, ModuleService.DEFAULT);
   }
 
   @Test

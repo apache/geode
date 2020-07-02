@@ -4394,11 +4394,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         writer.write(replacedXmlString);
         writer.flush();
 
-        xml = CacheXmlParser.parse(new ByteArrayInputStream(baos.toByteArray()));
+        xml = CacheXmlParser.parse(new ByteArrayInputStream(baos.toByteArray()), moduleService);
       } else {
-        xml = CacheXmlParser.parse(is);
+        xml = CacheXmlParser.parse(is, moduleService);
       }
-      xml.create(this, moduleService);
+      xml.create(this);
     } catch (IOException e) {
       throw new CacheXmlException(
           "Input Stream could not be read for system property substitutions.", e);

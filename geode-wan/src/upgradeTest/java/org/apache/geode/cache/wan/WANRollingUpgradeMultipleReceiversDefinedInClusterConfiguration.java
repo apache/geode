@@ -181,7 +181,7 @@ public class WANRollingUpgradeMultipleReceiversDefinedInClusterConfiguration
   private void addMultipleGatewayReceiverElementsToClusterConfiguration()
       throws Exception {
     // Create empty xml document
-    CacheCreation creation = new CacheCreation();
+    CacheCreation creation = new CacheCreation(ModuleService.DEFAULT);
     final StringWriter stringWriter = new StringWriter();
     final PrintWriter printWriter = new PrintWriter(stringWriter);
     CacheXmlGenerator.generate(creation, printWriter, true, false, false);
