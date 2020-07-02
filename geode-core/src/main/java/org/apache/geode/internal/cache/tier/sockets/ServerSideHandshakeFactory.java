@@ -24,7 +24,6 @@ import java.util.Map;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.cache.IncompatibleVersionException;
 import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.cache.VersionException;
 import org.apache.geode.distributed.DistributedSystem;
@@ -34,6 +33,7 @@ import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.Versioning;
+import org.apache.geode.internal.serialization.VersioningIO;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 class ServerSideHandshakeFactory {
@@ -67,7 +67,7 @@ class ServerSideHandshakeFactory {
       soTimeout = socket.getSoTimeout();
       socket.setSoTimeout(timeout);
       InputStream is = socket.getInputStream();
-      short clientVersionOrdinal = Version.readOrdinalFromInputStream(is);
+      short clientVersionOrdinal = VersioningIO.readOrdinal(is);
       if (clientVersionOrdinal == -1) {
         throw new EOFException(
             "HandShakeReader: EOF reached before client version could be read");
@@ -82,9 +82,6 @@ class ServerSideHandshakeFactory {
         if (commands == null) {
           message = "Client version {} is not supported";
         } else {
-          if (!clientVersion.compatibleWith(currentServerVersion)) {
-            throw new IncompatibleVersionException(clientVersion, currentServerVersion);
-          }
           return clientVersion;
         }
       }

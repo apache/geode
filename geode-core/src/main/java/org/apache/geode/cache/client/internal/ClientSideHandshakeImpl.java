@@ -66,6 +66,7 @@ import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
 import org.apache.geode.internal.serialization.Versioning;
+import org.apache.geode.internal.serialization.VersioningIO;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
@@ -214,7 +215,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
       // Successful handshake for GATEWAY_TO_GATEWAY mode sets the peer version in connection
       if (communicationMode.isWAN() && !(acceptanceCode == REPLY_EXCEPTION_AUTHENTICATION_REQUIRED
           || acceptanceCode == REPLY_EXCEPTION_AUTHENTICATION_FAILED)) {
-        short wanSiteVersion = Version.readOrdinal(dis);
+        short wanSiteVersion = VersioningIO.readOrdinal(dis);
         conn.setWanSiteVersion(wanSiteVersion);
         // establish a versioned stream for the other site, if necessary
         if (wanSiteVersion < Version.CURRENT_ORDINAL) {
@@ -378,9 +379,9 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
       hdos.writeByte(communicationMode.getModeNumber());
       if (overrideClientVersion > 0) {
         // for testing
-        Version.writeOrdinal(hdos, overrideClientVersion, true);
+        VersioningIO.writeOrdinal(hdos, overrideClientVersion, true);
       } else {
-        Version.writeOrdinal(hdos, currentClientVersion.ordinal(), true);
+        VersioningIO.writeOrdinal(hdos, currentClientVersion.ordinal(), true);
       }
 
       hdos.writeByte(replyCode);

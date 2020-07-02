@@ -33,6 +33,7 @@ import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
 import org.apache.geode.internal.serialization.Versioning;
+import org.apache.geode.internal.serialization.VersioningIO;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 class ClientRegistrationMetadata {
@@ -116,7 +117,7 @@ class ClientRegistrationMetadata {
   private boolean getAndValidateClientVersion(final Socket socket,
       final DataInputStream dataInputStream, final DataOutputStream dataOutputStream)
       throws IOException {
-    short clientVersionOrdinal = Version.readOrdinal(dataInputStream);
+    short clientVersionOrdinal = VersioningIO.readOrdinal(dataInputStream);
 
     clientVersion = Versioning.getKnownVersion(
         Versioning.getVersionOrdinal(clientVersionOrdinal), null);

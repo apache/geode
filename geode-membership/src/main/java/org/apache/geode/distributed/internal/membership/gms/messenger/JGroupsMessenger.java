@@ -95,6 +95,7 @@ import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.serialization.Versioning;
+import org.apache.geode.internal.serialization.VersioningIO;
 import org.apache.geode.logging.internal.OSProcess;
 import org.apache.geode.util.internal.GeodeGlossary;
 
@@ -884,7 +885,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
               Version.CURRENT);
       BufferDataOutputStream out_stream =
           new BufferDataOutputStream(version);
-      Version.writeOrdinal(out_stream,
+      VersioningIO.writeOrdinal(out_stream,
           Version.getCurrentVersion().ordinal(), true);
       if (encrypt != null) {
         out_stream.writeBoolean(true);
@@ -1035,7 +1036,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
       DataInputStream dis =
           new DataInputStream(new ByteArrayInputStream(buf, jgmsg.getOffset(), jgmsg.getLength()));
 
-      short ordinal = Version.readOrdinal(dis);
+      short ordinal = VersioningIO.readOrdinal(dis);
 
       if (ordinal < Version.getCurrentVersion().ordinal()) {
         final Version version = Versioning.getKnownVersion(

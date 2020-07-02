@@ -106,6 +106,7 @@ import org.apache.geode.internal.sequencelog.EntryLogger;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.Versioning;
+import org.apache.geode.internal.serialization.VersioningIO;
 import org.apache.geode.internal.shared.NativeCalls;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -2077,7 +2078,7 @@ public class Oplog implements CompactableOplog, Flushable {
   }
 
   private Version readProductVersionRecord(DataInput dis, File f) throws IOException {
-    short ver = Version.readOrdinal(dis);
+    short ver = VersioningIO.readOrdinal(dis);
     final Version recoveredGFVersion =
         Versioning.getKnownVersion(
             Versioning.getVersionOrdinal(ver), null);
@@ -3922,15 +3923,15 @@ public class Oplog implements CompactableOplog, Flushable {
       dataVersion = Version.CURRENT;
     }
     if (this.gfversion == dataVersion) {
-      this.gfversion.writeOrdinal(this.krf.dos, false);
+      VersioningIO.writeOrdinal(this.krf.dos, this.gfversion.ordinal(), false);
     } else {
-      Version.TOKEN.writeOrdinal(this.krf.dos, false);
+      VersioningIO.writeOrdinal(this.krf.dos, Version.TOKEN.ordinal(), false);
       this.krf.dos.writeByte(END_OF_RECORD_ID);
       this.krf.dos.writeByte(OPLOG_GEMFIRE_VERSION);
-      this.gfversion.writeOrdinal(this.krf.dos, false);
+      VersioningIO.writeOrdinal(this.krf.dos, this.gfversion.ordinal(), false);
       this.krf.dos.writeByte(END_OF_RECORD_ID);
       this.krf.dos.writeByte(OPLOG_GEMFIRE_VERSION);
-      dataVersion.writeOrdinal(this.krf.dos, false);
+      VersioningIO.writeOrdinal(this.krf.dos, dataVersion.ordinal(), false);
     }
     this.krf.dos.writeByte(END_OF_RECORD_ID);
 
@@ -6582,7 +6583,7 @@ public class Oplog implements CompactableOplog, Flushable {
         flushNoSync(olf);
       }
       // don't compress since we setup fixed size of buffers
-      Version.writeOrdinal(bb, ordinal, false);
+      VersioningIO.writeOrdinal(bb, ordinal, false);
     }
 
     private void writeInt(OplogFile olf, int v) throws IOException {

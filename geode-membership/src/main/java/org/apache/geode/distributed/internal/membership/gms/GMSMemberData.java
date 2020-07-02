@@ -30,6 +30,7 @@ import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionOrdinal;
 import org.apache.geode.internal.serialization.Versioning;
+import org.apache.geode.internal.serialization.VersioningIO;
 
 /**
  * GMSMember contains data that is required to identify a member of the cluster.
@@ -551,7 +552,7 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
   @Override
   public void writeEssentialData(DataOutput out,
       SerializationContext context) throws IOException {
-    Version.writeOrdinal(out, getVersionOrdinal(), true);
+    VersioningIO.writeOrdinal(out, getVersionOrdinal(), true);
 
     int flags = 0;
     if (networkPartitionDetectionEnabled)
@@ -583,7 +584,7 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
   @Override
   public void readEssentialData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    setVersionOrdinal(Version.readOrdinal(in));
+    setVersionOrdinal(VersioningIO.readOrdinal(in));
 
     int flags = in.readShort();
     this.networkPartitionDetectionEnabled = (flags & NPD_ENABLED_BIT) != 0;

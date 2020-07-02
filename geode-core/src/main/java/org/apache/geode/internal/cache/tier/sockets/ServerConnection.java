@@ -1663,7 +1663,7 @@ public abstract class ServerConnection implements Runnable {
   public long getUniqueId() {
     long uniqueId;
 
-    if (handshake.getVersion().isPre65() || communicationMode.isWAN()) {
+    if (handshake.getVersion().isOlderThan(Version.GFE_65) || communicationMode.isWAN()) {
       uniqueId = userAuthId;
     } else if (requestMessage.isSecureMode()) {
       uniqueId = messageIdExtractor.getUniqueIdFromMessage(requestMessage,

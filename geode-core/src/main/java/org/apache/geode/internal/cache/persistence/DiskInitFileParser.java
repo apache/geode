@@ -44,6 +44,7 @@ import org.apache.geode.internal.cache.versions.RegionVersionHolder;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.Versioning;
+import org.apache.geode.internal.serialization.VersioningIO;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class DiskInitFileParser {
@@ -426,7 +427,7 @@ public class DiskInitFileParser {
         }
           break;
         case DiskInitFile.IFREC_GEMFIRE_VERSION: {
-          short ver = Version.readOrdinal(dis);
+          short ver = VersioningIO.readOrdinal(dis);
           readEndOfRecord(dis);
           if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
             logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE, "IFREC_GEMFIRE_VERSION version={}",
