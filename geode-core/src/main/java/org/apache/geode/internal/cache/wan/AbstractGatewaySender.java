@@ -911,6 +911,15 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   }
 
   @Override
+  public boolean isStarting() {
+    if (this.eventProcessor != null) {
+      return this.eventProcessor.isStarting();
+    }
+    logger.info("toberal isStarting eventProcessor is null for sender: {}", this);
+    return false;
+  }
+
+  @Override
   public AbstractGatewaySenderEventProcessor getEventProcessor() {
     return this.eventProcessor;
   }
@@ -1032,12 +1041,20 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       }
 
       // If this gateway is not running, return
+      logger.info("toberal received event {}, isRunning: {}, isPrimary: {}, is Starting: {} ",
+          event.getEventId(), isRunning(), isPrimary(), isStarting());
+
       if (!isRunning()) {
-        if (this.isPrimary()) {
+        // logger.info("toberal received event while not running. isStarting: {}", isStarting());
+        if (isPrimary() && isStarting()) {
+          // if (isPrimary()) {
+          // toberal. These are the events filling up the memory when the sender is stopped.
+          // Can we do something with them???
           tmpDroppedEvents.add(clonedEvent);
           if (isDebugEnabled) {
             logger.debug("add to tmpDroppedEvents for evnet {}", clonedEvent);
           }
+          logger.info("toberal add to tmpDroppedEvents for event {}", clonedEvent);
         }
         if (isDebugEnabled) {
           logger.debug("Returning back without putting into the gateway sender queue:" + event);
@@ -1136,10 +1153,13 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
    * ParallelGatewaySenderQueue.addPartitionedRegionForRegion
    */
   public void enqueueTempEvents() {
+    logger.info("toberal enqueueTempEvents start");
+
     if (this.eventProcessor != null) {// Fix for defect #47308
       // process tmpDroppedEvents
       EntryEventImpl droppedEvent = null;
       while ((droppedEvent = tmpDroppedEvents.poll()) != null) {
+        logger.info("toberal getting {} out of tmpDroppedEvents.", droppedEvent);
         this.eventProcessor.registerEventDroppedInPrimaryQueue(droppedEvent);
       }
 

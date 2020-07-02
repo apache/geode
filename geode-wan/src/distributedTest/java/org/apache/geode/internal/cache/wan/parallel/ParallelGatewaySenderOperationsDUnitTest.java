@@ -419,6 +419,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
    * case in the way that when the sender is starting from stopped state, puts are simultaneously
    * happening on the region by another thread.
    */
+  // toberal run this test case to check if GatewaySender.isStarting() is effective
   @Test
   public void testParallelPropagationSenderStartAfterStop_Scenario2() throws Exception {
     addIgnoredException("Broken pipe");

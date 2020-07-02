@@ -89,6 +89,11 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
   private volatile boolean isStopped = true;
 
   /**
+   * A boolean verifying whether this <code>AbstractGatewaySenderEventProcessor</code> is starting.
+   */
+  private volatile boolean isStarting = true;
+
+  /**
    * A boolean verifying whether this <code>AbstractGatewaySenderEventProcessor</code> is paused.
    */
   protected volatile boolean isPaused = false;
@@ -152,6 +157,8 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
     this.sender = (AbstractGatewaySender) sender;
     this.batchSize = sender.getBatchSize();
     this.threadMonitoring = tMonitoring;
+    logger.info("toberal starting AbstractGatewaySenderEventProcessor. string: {}, sender: {}",
+        string, sender);
   }
 
   public Object getRunningStateLock() {
@@ -180,10 +187,22 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
     return this.isStopped;
   }
 
+  public boolean isStarting() {
+    // logger.info("toberal isStarting: {}, sender: {}, thread: {}", isStarting, sender,
+    // Thread.currentThread().getId());
+    return isStarting;
+  }
+
+  protected void setIsStarting(boolean isStarting) {
+    // logger.info("toberal setIsStarting to {}", isStarting);
+    this.isStarting = isStarting;
+  }
+
   protected void setIsStopped(boolean isStopped) {
     if (isStopped) {
       this.isStopped = true;
       this.failureLogInterval.clear();
+      setIsStarting(false);
     } else {
       this.isStopped = isStopped;
     }
@@ -1138,6 +1157,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
   public void setRunningStatus() throws Exception {
     GemFireException ex = null;
     try {
+      setIsStarting(true);
       this.initializeEventDispatcher();
     } catch (GemFireException e) {
       ex = e;

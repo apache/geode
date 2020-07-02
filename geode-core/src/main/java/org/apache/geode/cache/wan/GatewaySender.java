@@ -257,6 +257,12 @@ public interface GatewaySender {
   boolean isRunning();
 
   /**
+   * Returns whether or not this GatewaySender is starting.
+   * Set to false when the sender is stopped.
+   */
+  boolean isStarting();
+
+  /**
    * Returns whether or not this GatewaySender is paused.
    *
    */
