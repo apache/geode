@@ -125,7 +125,7 @@ public class OpExecutorImpl implements ExecutablePool {
       return executeWithServerAffinity(loc, op);
     }
 
-    ClientCacheConnection conn = connectionManager.borrowConnection(serverTimeout);
+    Connection conn = connectionManager.borrowConnection(serverTimeout);
     try {
       Set<ServerLocation> attemptedServers = null;
 
@@ -266,7 +266,7 @@ public class OpExecutorImpl implements ExecutablePool {
   }
 
   public ServerLocation getNextOpServerLocation() {
-    ClientCacheConnection conn = connectionManager.borrowConnection(serverTimeout);
+    Connection conn = connectionManager.borrowConnection(serverTimeout);
     try {
       return conn.getServer();
     } finally {
@@ -307,7 +307,7 @@ public class OpExecutorImpl implements ExecutablePool {
       boolean onlyUseExistingCnx) {
     boolean returnCnx = true;
     boolean pingOp = (op instanceof PingOp.PingOpImpl);
-    ClientCacheConnection conn = null;
+    Connection conn = null;
     if (pingOp) {
       // currently for pings we prefer to queue clientToServer cnx so that we will
       // not create a pooled cnx when all we have is queue cnxs.
@@ -363,7 +363,7 @@ public class OpExecutorImpl implements ExecutablePool {
 
     HashSet<ServerLocation> attemptedPrimaries = new HashSet<>();
     while (true) {
-      ClientCacheConnection primary = queueManager.getAllConnections().getPrimary();
+      Connection primary = queueManager.getAllConnections().getPrimary();
       try {
         return executeWithPossibleReAuthentication(primary, op);
       } catch (Exception e) {
@@ -386,7 +386,7 @@ public class OpExecutorImpl implements ExecutablePool {
     RuntimeException lastException = null;
 
     QueueConnections connections = queueManager.getAllConnectionsNoWait();
-    ClientCacheConnection primary = connections.getPrimary();
+    Connection primary = connections.getPrimary();
     if (primary != null) {
       try {
         executeWithPossibleReAuthentication(primary, op);
@@ -399,8 +399,8 @@ public class OpExecutorImpl implements ExecutablePool {
       }
     }
 
-    List<ClientCacheConnection> backups = connections.getBackups();
-    for (ClientCacheConnection conn : backups) {
+    List<Connection> backups = connections.getBackups();
+    for (Connection conn : backups) {
       try {
         executeWithPossibleReAuthentication(conn, op);
       } catch (Exception e) {
@@ -436,7 +436,7 @@ public class OpExecutorImpl implements ExecutablePool {
       logger.trace(LogMarker.BRIDGE_SERVER_VERBOSE, "sending {} to backups: {}", op, backups);
     }
     for (int i = backups.size() - 1; i >= 0; i--) {
-      ClientCacheConnection conn = (ClientCacheConnection) backups.get(i);
+      Connection conn = (Connection) backups.get(i);
       try {
         executeWithPossibleReAuthentication(conn, op);
       } catch (Exception e) {
@@ -444,7 +444,7 @@ public class OpExecutorImpl implements ExecutablePool {
       }
     }
 
-    ClientCacheConnection primary = connections.getPrimary();
+    Connection primary = connections.getPrimary();
     HashSet<ServerLocation> attemptedPrimaries = new HashSet<>();
     while (true) {
       try {
@@ -472,7 +472,7 @@ public class OpExecutorImpl implements ExecutablePool {
    * Used by GatewayBatchOp
    */
   @Override
-  public Object executeOn(ClientCacheConnection conn, Op op, boolean timeoutFatal) {
+  public Object executeOn(Connection conn, Op op, boolean timeoutFatal) {
     try {
       return executeWithPossibleReAuthentication(conn, op);
     } catch (Exception e) {
@@ -486,7 +486,7 @@ public class OpExecutorImpl implements ExecutablePool {
    * This is used by unit tests
    */
   @Override
-  public Object executeOn(ClientCacheConnection conn, Op op) {
+  public Object executeOn(Connection conn, Op op) {
     return executeOn(conn, op, false);
   }
 
@@ -499,12 +499,12 @@ public class OpExecutorImpl implements ExecutablePool {
    * This method will throw an exception if we need to stop the connection manager if there are
    * failures.
    */
-  protected void handleException(Throwable e, ClientCacheConnection conn, int retryCount,
+  protected void handleException(Throwable e, Connection conn, int retryCount,
       boolean finalAttempt) {
     handleException(e, conn, retryCount, finalAttempt, false/* timeoutFatal */);
   }
 
-  protected void handleException(Op op, Throwable e, ClientCacheConnection conn, int retryCount,
+  protected void handleException(Op op, Throwable e, Connection conn, int retryCount,
       boolean finalAttempt, boolean timeoutFatal) throws CacheRuntimeException {
     if (op instanceof AuthenticateUserOp.AuthenticateUserOpImpl) {
       if (e instanceof GemFireSecurityException) {
@@ -516,8 +516,7 @@ public class OpExecutorImpl implements ExecutablePool {
     handleException(e, conn, retryCount, finalAttempt, timeoutFatal);
   }
 
-  protected void handleException(Throwable e, ClientCacheConnection conn, int retryCount,
-      boolean finalAttempt,
+  protected void handleException(Throwable e, Connection conn, int retryCount, boolean finalAttempt,
       boolean timeoutFatal) throws CacheRuntimeException {
     GemFireException exToThrow = null;
     String title;
@@ -670,7 +669,7 @@ public class OpExecutorImpl implements ExecutablePool {
   }
 
   private StringBuffer getExceptionMessage(String exceptionName, int retryCount,
-      boolean finalAttempt, ClientCacheConnection connection) {
+      boolean finalAttempt, Connection connection) {
     StringBuffer message = new StringBuffer(200);
     message.append("Pool unexpected ").append(exceptionName);
     if (connection != null) {
@@ -687,7 +686,7 @@ public class OpExecutorImpl implements ExecutablePool {
     return message;
   }
 
-  private void authenticateIfRequired(ClientCacheConnection conn, Op op) {
+  private void authenticateIfRequired(Connection conn, Op op) {
     if (!conn.getServer().getRequiresCredentials()) {
       return;
     }
@@ -713,7 +712,7 @@ public class OpExecutorImpl implements ExecutablePool {
       // This should not be reached, but keeping this code here in case it is
       // reached.
       if (conn.getServer().getUserId() == -1) {
-        ClientCacheConnection connImpl = conn.getWrappedConnection();
+        Connection connImpl = conn.getWrappedConnection();
         conn.getServer().setUserId((Long) AuthenticateUserOp.executeOn(connImpl, pool));
         if (logger.isDebugEnabled()) {
           logger.debug(
@@ -723,7 +722,7 @@ public class OpExecutorImpl implements ExecutablePool {
     }
   }
 
-  private void authenticateMultiuser(PoolImpl pool, ClientCacheConnection conn, UserAttributes ua) {
+  private void authenticateMultiuser(PoolImpl pool, Connection conn, UserAttributes ua) {
     try {
       Long userId =
           (Long) AuthenticateUserOp.executeOn(conn.getServer(), pool, ua.getCredentials());
@@ -749,8 +748,7 @@ public class OpExecutorImpl implements ExecutablePool {
     }
   }
 
-  private Object executeWithPossibleReAuthentication(ClientCacheConnection conn, Op op)
-      throws Exception {
+  private Object executeWithPossibleReAuthentication(Connection conn, Op op) throws Exception {
     try {
       return conn.execute(op);
 
@@ -765,7 +763,7 @@ public class OpExecutorImpl implements ExecutablePool {
         PoolImpl pool =
             (PoolImpl) PoolManagerImpl.getPMI().find(endpointManager.getPoolName());
         if (!pool.getMultiuserAuthentication()) {
-          ClientCacheConnection connImpl = conn.getWrappedConnection();
+          Connection connImpl = conn.getWrappedConnection();
           conn.getServer().setUserId((Long) AuthenticateUserOp.executeOn(connImpl, this));
           return conn.execute(op);
         } else {

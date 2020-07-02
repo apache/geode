@@ -22,7 +22,7 @@ import org.apache.geode.cache.client.AllConnectionsInUseException;
 import org.apache.geode.cache.client.NoAvailableServersException;
 import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.ServerOperationException;
-import org.apache.geode.cache.client.internal.ClientCacheConnection;
+import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.distributed.PoolCancelledException;
 import org.apache.geode.distributed.internal.ServerLocation;
 
@@ -47,7 +47,7 @@ public interface ConnectionManager {
    * @throws ServerOperationException if there is an issue with security or connecting to a gateway
    * @throws PoolCancelledException if the pool is being shut down
    */
-  ClientCacheConnection borrowConnection(long acquireTimeout)
+  Connection borrowConnection(long acquireTimeout)
       throws AllConnectionsInUseException, NoAvailableServersException;
 
   /**
@@ -67,7 +67,7 @@ public interface ConnectionManager {
    *         to return a connection
    *
    */
-  ClientCacheConnection borrowConnection(ServerLocation server, long acquireTimeout,
+  Connection borrowConnection(ServerLocation server, long acquireTimeout,
       boolean onlyUseExistingCnx)
       throws AllConnectionsInUseException, NoAvailableServersException;
 
@@ -76,7 +76,7 @@ public interface ConnectionManager {
    *
    * @param connection the connection to return
    */
-  void returnConnection(ClientCacheConnection connection);
+  void returnConnection(Connection connection);
 
   /**
    * Return a connection to the pool. The connection should not be used after it is returned.
@@ -84,7 +84,7 @@ public interface ConnectionManager {
    * @param connection the connection to return
    * @param accessed if true then the connection was accessed
    */
-  void returnConnection(ClientCacheConnection connection, boolean accessed);
+  void returnConnection(Connection connection, boolean accessed);
 
   /**
    * Start the idle expiration for the pool and prefill the pool.
@@ -111,8 +111,7 @@ public interface ConnectionManager {
    * @throws ServerOperationException if creating a connection fails due to authentication issues
    * @return a new connection to the pool to a server that is not in the list of excluded servers
    */
-  ClientCacheConnection exchangeConnection(ClientCacheConnection conn,
-      Set<ServerLocation> excludedServers)
+  Connection exchangeConnection(Connection conn, Set<ServerLocation> excludedServers)
       throws AllConnectionsInUseException;
 
   /**

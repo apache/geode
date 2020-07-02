@@ -77,7 +77,7 @@ public class GetClientPartitionAttributesOp {
     }
 
     @Override
-    protected void sendMessage(ClientCacheConnection cnx) throws Exception {
+    protected void sendMessage(Connection cnx) throws Exception {
       getMessage().clearMessageHasSecurePartFlag();
       getMessage().send(false);
     }

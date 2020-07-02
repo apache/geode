@@ -98,8 +98,7 @@ public class DestroyOp {
    * @param event the event for this destroy operation
    * @param callbackArg an optional callback arg to pass to any cache callbacks
    */
-  public static void execute(ClientCacheConnection con, ExecutablePool pool, String region,
-      Object key,
+  public static void execute(Connection con, ExecutablePool pool, String region, Object key,
       Object expectedOldValue, Operation operation, EntryEventImpl event, Object callbackArg) {
     AbstractOp op = new DestroyOpImpl(region, key, expectedOldValue, operation, event, callbackArg);
     pool.executeOn(con, op);
@@ -173,7 +172,7 @@ public class DestroyOp {
 
 
     @Override
-    protected Object processResponse(Message msg, ClientCacheConnection con) throws Exception {
+    protected Object processResponse(Message msg, Connection con) throws Exception {
       processAck(msg, "destroy");
       boolean isReply = (msg.getMessageType() == MessageType.REPLY);
       int partIdx = 0;

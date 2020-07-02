@@ -49,7 +49,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  *
  * @since GemFire 5.7
  */
-public class ConnectionImpl implements ClientCacheConnection {
+public class ConnectionImpl implements Connection {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -77,7 +77,7 @@ public class ConnectionImpl implements ClientCacheConnection {
   private OutputStream out;
   private InputStream in;
 
-  private long connectionID = ClientCacheConnection.DEFAULT_CONNECTION_ID;
+  private long connectionID = Connection.DEFAULT_CONNECTION_ID;
 
   private ClientSideHandshake handshake;
 

@@ -139,7 +139,7 @@ public class GetOp {
     }
 
     @Override
-    protected Object processResponse(Message msg, ClientCacheConnection con) throws Exception {
+    protected Object processResponse(Message msg, Connection con) throws Exception {
       Object object = processObjResponse(msg, "get");
       if (msg.getNumberOfParts() > 1) {
         int partIdx = 1;

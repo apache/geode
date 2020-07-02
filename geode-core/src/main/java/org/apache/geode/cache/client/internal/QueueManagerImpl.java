@@ -245,8 +245,8 @@ public class QueueManagerImpl implements QueueManager {
       }
     }
 
-    List<ClientCacheConnection> backups = queueConnections.getBackups();
-    for (ClientCacheConnection connection : backups) {
+    List<Connection> backups = queueConnections.getBackups();
+    for (Connection connection : backups) {
       QueueConnectionImpl backup = (QueueConnectionImpl) connection;
       if (backup != null) {
         try {
@@ -268,8 +268,8 @@ public class QueueManagerImpl implements QueueManager {
   public void emergencyClose() {
     shuttingDown = true;
     queueConnections.getPrimary().emergencyClose();
-    List<ClientCacheConnection> backups = queueConnections.getBackups();
-    for (ClientCacheConnection backup : backups) {
+    List<Connection> backups = queueConnections.getBackups();
+    for (Connection backup : backups) {
       backup.emergencyClose();
     }
   }
@@ -351,7 +351,7 @@ public class QueueManagerImpl implements QueueManager {
     }
   }
 
-  void connectionCrashed(ClientCacheConnection con) {
+  void connectionCrashed(Connection con) {
     // the endpoint has not crashed but this method does all the work
     // we need to do
     endpointCrashed(con.getEndpoint());
@@ -444,12 +444,11 @@ public class QueueManagerImpl implements QueueManager {
       logger.debug("SubscriptionManager - discovered subscription servers {}", servers);
     }
 
-    SortedMap<ServerQueueStatus, ClientCacheConnection> oldQueueServers =
-        new TreeMap<>(QSIZE_COMPARATOR);
-    List<ClientCacheConnection> nonRedundantServers = new ArrayList<>();
+    SortedMap<ServerQueueStatus, Connection> oldQueueServers = new TreeMap<>(QSIZE_COMPARATOR);
+    List<Connection> nonRedundantServers = new ArrayList<>();
 
     for (ServerLocation server : servers) {
-      ClientCacheConnection connection = null;
+      Connection connection = null;
       try {
         connection = factory.createClientToServerConnection(server, true);
       } catch (GemFireSecurityException | GemFireConfigException e) {
@@ -486,7 +485,7 @@ public class QueueManagerImpl implements QueueManager {
     // if the redundant with the largest queue fails, then we go and
     // make a new server a primary.
 
-    ClientCacheConnection newPrimary = null;
+    Connection newPrimary = null;
     if (!oldQueueServers.isEmpty()) {
       newPrimary = oldQueueServers.remove(oldQueueServers.lastKey());
     } else if (!nonRedundantServers.isEmpty()) {
@@ -495,7 +494,7 @@ public class QueueManagerImpl implements QueueManager {
 
     nonRedundantServers.addAll(0, oldQueueServers.values());
 
-    for (ClientCacheConnection connection : nonRedundantServers) {
+    for (Connection connection : nonRedundantServers) {
       QueueConnectionImpl queueConnection = initializeQueueConnection(connection, false, null);
       if (queueConnection != null) {
         addToConnectionList(queueConnection, false);
@@ -656,7 +655,7 @@ public class QueueManagerImpl implements QueueManager {
 
       final boolean isDebugEnabled = logger.isDebugEnabled();
       for (ServerLocation server : servers) {
-        ClientCacheConnection connection = null;
+        Connection connection = null;
         try {
           connection = factory.createClientToServerConnection(server, true);
         } catch (GemFireSecurityException e) {
@@ -786,7 +785,7 @@ public class QueueManagerImpl implements QueueManager {
         break;
       }
 
-      ClientCacheConnection connection = null;
+      Connection connection = null;
       try {
         connection = factory.createClientToServerConnection(servers.get(0), true);
       } catch (GemFireSecurityException e) {
@@ -950,8 +949,7 @@ public class QueueManagerImpl implements QueueManager {
     }
   }
 
-  private QueueConnectionImpl initializeQueueConnection(ClientCacheConnection connection,
-      boolean isPrimary,
+  private QueueConnectionImpl initializeQueueConnection(Connection connection, boolean isPrimary,
       ClientUpdater failedUpdater) {
     QueueConnectionImpl queueConnection = null;
     FailureTracker failureTracker = denyList.getFailureTracker(connection.getServer());
@@ -1092,7 +1090,7 @@ public class QueueManagerImpl implements QueueManager {
     return this.state;
   }
 
-  private void recoverSingleList(int interestType, ClientCacheConnection recoveredConnection,
+  private void recoverSingleList(int interestType, Connection recoveredConnection,
       boolean isDurable, boolean receiveValues, boolean isFirstNewConnection) {
     for (RegionInterestEntry e : this.getPool().getRITracker()
         .getRegionToInterestsMap(interestType, isDurable, !receiveValues)
@@ -1103,7 +1101,7 @@ public class QueueManagerImpl implements QueueManager {
     }
   }
 
-  private void recoverCqs(ClientCacheConnection recoveredConnection, boolean isDurable) {
+  private void recoverCqs(Connection recoveredConnection, boolean isDurable) {
     Map cqs = this.getPool().getRITracker().getCqsMap();
     for (Object o : cqs.entrySet()) {
       Map.Entry e = (Map.Entry) o;
@@ -1126,7 +1124,7 @@ public class QueueManagerImpl implements QueueManager {
   // TODO this is distressingly similar to LocalRegion#processSingleInterest
   private void recoverSingleRegion(LocalRegion r, Map<Object, InterestResultPolicy> keys,
       int interestType,
-      ClientCacheConnection recoveredConnection, boolean isDurable, boolean receiveValues,
+      Connection recoveredConnection, boolean isDurable, boolean receiveValues,
       boolean isFirstNewConnection) {
 
     if (logger.isDebugEnabled()) {
@@ -1167,8 +1165,7 @@ public class QueueManagerImpl implements QueueManager {
   }
 
   private void recoverSingleKey(LocalRegion r, Object keys, InterestResultPolicy policy,
-      int interestType, ClientCacheConnection recoveredConnection, boolean isDurable,
-      boolean receiveValues,
+      int interestType, Connection recoveredConnection, boolean isDurable, boolean receiveValues,
       boolean isFirstNewConnection) {
     r.startRegisterInterest();
     try {
@@ -1214,7 +1211,7 @@ public class QueueManagerImpl implements QueueManager {
     }
   }
 
-  private void recoverInterestList(final ClientCacheConnection recoveredConnection, boolean durable,
+  private void recoverInterestList(final Connection recoveredConnection, boolean durable,
       boolean receiveValues, boolean isFirstNewConnection) {
     recoverSingleList(InterestType.KEY, recoveredConnection, durable, receiveValues,
         isFirstNewConnection);
@@ -1226,7 +1223,7 @@ public class QueueManagerImpl implements QueueManager {
         isFirstNewConnection);
   }
 
-  private void recoverAllInterestTypes(final ClientCacheConnection recoveredConnection,
+  private void recoverAllInterestTypes(final Connection recoveredConnection,
       boolean isFirstNewConnection) {
     if (PoolImpl.BEFORE_RECOVER_INTEREST_CALLBACK_FLAG) {
       ClientServerObserver bo = ClientServerObserverHolder.getInstance();
@@ -1281,8 +1278,8 @@ public class QueueManagerImpl implements QueueManager {
    */
   public class ConnectionList implements QueueConnections {
     private final QueueConnectionImpl primary;
-    private final Map<Endpoint, ClientCacheConnection> connectionMap;
-    private final List<ClientCacheConnection> backups;
+    private final Map<Endpoint, Connection> connectionMap;
+    private final List<Connection> backups;
     /**
      * The primaryDiscoveryException flag is stronger than just not having any queue connections It
      * also means we tried all of the possible queue servers and we'ren't able to connect.
@@ -1298,11 +1295,11 @@ public class QueueManagerImpl implements QueueManager {
       failedPrimary = null;
     }
 
-    private ConnectionList(QueueConnectionImpl primary, List<ClientCacheConnection> backups,
+    private ConnectionList(QueueConnectionImpl primary, List<Connection> backups,
         GemFireException discoveryException, QueueConnectionImpl failedPrimary) {
       this.primary = primary;
-      Map<Endpoint, ClientCacheConnection> allConnectionsTmp = new HashMap<>();
-      for (ClientCacheConnection nextConnection : backups) {
+      Map<Endpoint, Connection> allConnectionsTmp = new HashMap<>();
+      for (Connection nextConnection : backups) {
         allConnectionsTmp.put(nextConnection.getEndpoint(), nextConnection);
       }
       if (primary != null) {
@@ -1316,7 +1313,7 @@ public class QueueManagerImpl implements QueueManager {
     }
 
     public ConnectionList setPrimary(QueueConnectionImpl newPrimary) {
-      List<ClientCacheConnection> newBackups = backups;
+      List<Connection> newBackups = backups;
       if (backups.contains(newPrimary)) {
         newBackups = new ArrayList<>(backups);
         newBackups.remove(newPrimary);
@@ -1334,7 +1331,7 @@ public class QueueManagerImpl implements QueueManager {
     }
 
     ConnectionList addBackup(QueueConnectionImpl queueConnection) {
-      ArrayList<ClientCacheConnection> newBackups = new ArrayList<>(backups);
+      ArrayList<Connection> newBackups = new ArrayList<>(backups);
       newBackups.add(queueConnection);
       return new ConnectionList(primary, newBackups, primaryDiscoveryException, failedPrimary);
     }
@@ -1343,19 +1340,19 @@ public class QueueManagerImpl implements QueueManager {
       if (primary == connection) {
         return new ConnectionList(null, backups, primaryDiscoveryException, primary);
       } else {
-        ArrayList<ClientCacheConnection> newBackups = new ArrayList<>(backups);
+        ArrayList<Connection> newBackups = new ArrayList<>(backups);
         newBackups.remove(connection);
         return new ConnectionList(primary, newBackups, primaryDiscoveryException, failedPrimary);
       }
     }
 
     @Override
-    public ClientCacheConnection getPrimary() {
+    public Connection getPrimary() {
       return primary;
     }
 
     @Override
-    public List<ClientCacheConnection> getBackups() {
+    public List<Connection> getBackups() {
       return backups;
     }
 

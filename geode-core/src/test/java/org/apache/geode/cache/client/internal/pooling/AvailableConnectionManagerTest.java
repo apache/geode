@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Test;
 
-import org.apache.geode.cache.client.internal.ClientCacheConnection;
+import org.apache.geode.cache.client.internal.Connection;
 
 public class AvailableConnectionManagerTest {
 
@@ -37,17 +37,17 @@ public class AvailableConnectionManagerTest {
   public void useFirstReturnsNullGivenEmptyManager() {
     instance.getDeque().clear();
 
-    ClientCacheConnection result = instance.useFirst();
+    Connection result = instance.useFirst();
 
     assertThat(result).isNull();
   }
 
   @Test
   public void useFirstReturnsExpectedConnectionGivenManagerWithOneItem() {
-    ClientCacheConnection expected = createConnection();
+    Connection expected = createConnection();
     instance.getDeque().addFirst(expected);
 
-    ClientCacheConnection result = instance.useFirst();
+    Connection result = instance.useFirst();
 
     assertThat(result).isSameAs(expected);
     assertThat(instance.getDeque()).isEmpty();
@@ -56,11 +56,11 @@ public class AvailableConnectionManagerTest {
 
   @Test
   public void useFirstReturnsNullGivenManagerWithOneItemThatCantBeActivated() {
-    ClientCacheConnection expected = createConnection();
+    Connection expected = createConnection();
     when(expected.activate()).thenReturn(false);
     instance.getDeque().addFirst(expected);
 
-    ClientCacheConnection result = instance.useFirst();
+    Connection result = instance.useFirst();
 
     assertThat(result).isNull();
     assertThat(instance.getDeque()).isEmpty();
@@ -71,17 +71,17 @@ public class AvailableConnectionManagerTest {
   public void useFirstWithPredicateReturnsNullGivenEmptyManager() {
     instance.getDeque().clear();
 
-    ClientCacheConnection result = instance.useFirst(c -> true);
+    Connection result = instance.useFirst(c -> true);
 
     assertThat(result).isNull();
   }
 
   @Test
   public void useFirstWithPredicateReturnsExpectedGivenManagerWithOneItem() {
-    ClientCacheConnection expected = createConnection();
+    Connection expected = createConnection();
     instance.getDeque().addFirst(expected);
 
-    ClientCacheConnection result = instance.useFirst(c -> c == expected);
+    Connection result = instance.useFirst(c -> c == expected);
 
     assertThat(result).isSameAs(expected);
     assertThat(instance.getDeque()).isEmpty();
@@ -90,10 +90,10 @@ public class AvailableConnectionManagerTest {
 
   @Test
   public void useFirstWithPredicateReturnsNullGivenManagerWithOneItemThatDoesNotMatch() {
-    ClientCacheConnection expected = createConnection();
+    Connection expected = createConnection();
     instance.getDeque().addFirst(expected);
 
-    ClientCacheConnection result = instance.useFirst(c -> false);
+    Connection result = instance.useFirst(c -> false);
 
     assertThat(result).isNull();
     assertThat(instance.getDeque()).hasSize(1);
@@ -102,11 +102,11 @@ public class AvailableConnectionManagerTest {
 
   @Test
   public void useFirstWithPredicateReturnsNullGivenManagerWithOneItemThatCantBeActivated() {
-    ClientCacheConnection expected = createConnection();
+    Connection expected = createConnection();
     when(expected.activate()).thenReturn(false);
     instance.getDeque().addFirst(expected);
 
-    ClientCacheConnection result = instance.useFirst(c -> c == expected);
+    Connection result = instance.useFirst(c -> c == expected);
 
     assertThat(result).isNull();
     assertThat(instance.getDeque()).isEmpty();
@@ -115,12 +115,12 @@ public class AvailableConnectionManagerTest {
 
   @Test
   public void useFirstWithPredicateReturnsNullGivenManagerWithOneItemThatDoesNotMatchAfterBeingActivated() {
-    ClientCacheConnection expected = createConnection();
+    Connection expected = createConnection();
     when(expected.activate()).thenReturn(true);
     instance.getDeque().addFirst(expected);
     final AtomicBoolean firstTime = new AtomicBoolean(true);
 
-    ClientCacheConnection result = instance.useFirst(c -> {
+    Connection result = instance.useFirst(c -> {
       if (firstTime.get()) {
         firstTime.set(false);
         return true;
@@ -145,7 +145,7 @@ public class AvailableConnectionManagerTest {
 
   @Test
   public void removeReturnsTrueGivenConnectionInManager() {
-    ClientCacheConnection connection = createConnection();
+    Connection connection = createConnection();
     instance.getDeque().addFirst(connection);
 
     boolean result = instance.remove(connection);
@@ -155,7 +155,7 @@ public class AvailableConnectionManagerTest {
 
   @Test
   public void removeEmptiesDequeGivenConnectionInManager() {
-    ClientCacheConnection connection = createConnection();
+    Connection connection = createConnection();
     instance.getDeque().addFirst(connection);
 
     instance.remove(connection);
@@ -165,7 +165,7 @@ public class AvailableConnectionManagerTest {
 
   @Test
   public void addFirstWithTrueAddsActiveConnectionToManager() {
-    ClientCacheConnection connection = createConnection();
+    Connection connection = createConnection();
 
     instance.addFirst(connection, true);
 
@@ -176,7 +176,7 @@ public class AvailableConnectionManagerTest {
 
   @Test
   public void addFirstWithFalseAddsActiveConnectionToManager() {
-    ClientCacheConnection connection = createConnection();
+    Connection connection = createConnection();
 
     instance.addFirst(connection, false);
 
@@ -187,7 +187,7 @@ public class AvailableConnectionManagerTest {
 
   @Test
   public void addFirstAddsInactiveConnectionToManager() {
-    ClientCacheConnection connection = createConnection();
+    Connection connection = createConnection();
     when(connection.isActive()).thenReturn(false);
 
     instance.addFirst(connection, true);
@@ -200,7 +200,7 @@ public class AvailableConnectionManagerTest {
 
   @Test
   public void addLastWithTrueAddsActiveConnectionToManager() {
-    ClientCacheConnection connection = createConnection();
+    Connection connection = createConnection();
 
     instance.addLast(connection, true);
 
@@ -211,7 +211,7 @@ public class AvailableConnectionManagerTest {
 
   @Test
   public void addLastWithFalseAddsActiveConnectionToManager() {
-    ClientCacheConnection connection = createConnection();
+    Connection connection = createConnection();
 
     instance.addLast(connection, false);
 
@@ -222,7 +222,7 @@ public class AvailableConnectionManagerTest {
 
   @Test
   public void addLastAddsInactiveConnectionToManager() {
-    ClientCacheConnection connection = createConnection();
+    Connection connection = createConnection();
     when(connection.isActive()).thenReturn(false);
 
     instance.addLast(connection, true);
@@ -234,19 +234,19 @@ public class AvailableConnectionManagerTest {
 
   @Test
   public void addFirstTakesPrecedenceOverAddLast() {
-    ClientCacheConnection expected = createConnection();
+    Connection expected = createConnection();
 
     instance.addLast(createConnection(), true);
     instance.addFirst(expected, true);
     instance.addLast(createConnection(), true);
-    ClientCacheConnection connection = instance.useFirst();
+    Connection connection = instance.useFirst();
 
     assertThat(instance.getDeque()).hasSize(2);
     assertThat(connection).isSameAs(expected);
   }
 
-  private ClientCacheConnection createConnection() {
-    ClientCacheConnection result = mock(ClientCacheConnection.class);
+  private Connection createConnection() {
+    Connection result = mock(Connection.class);
     when(result.activate()).thenReturn(true);
     when(result.isActive()).thenReturn(true);
     return result;

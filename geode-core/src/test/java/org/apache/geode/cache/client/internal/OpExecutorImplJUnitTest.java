@@ -275,7 +275,7 @@ public class OpExecutorImplJUnitTest {
       private int i;
 
       @Override
-      public Object attempt(ClientCacheConnection cnx) throws Exception {
+      public Object attempt(Connection cnx) throws Exception {
         i++;
         if (i < 15) {
           throw new IOException("test");
@@ -389,13 +389,13 @@ public class OpExecutorImplJUnitTest {
     }
 
     @Override
-    public ClientCacheConnection borrowConnection(long acquireTimeout) {
+    public Connection borrowConnection(long acquireTimeout) {
       borrows++;
       return new DummyConnection(new ServerLocation("localhost", currentServer++ % numServers));
     }
 
     @Override
-    public ClientCacheConnection borrowConnection(ServerLocation server, long acquireTimeout,
+    public Connection borrowConnection(ServerLocation server, long acquireTimeout,
         boolean onlyUseExistingCnx) {
       borrows++;
       return new DummyConnection(server);
@@ -407,13 +407,13 @@ public class OpExecutorImplJUnitTest {
     }
 
     @Override
-    public void returnConnection(ClientCacheConnection connection) {
+    public void returnConnection(Connection connection) {
       returns++;
 
     }
 
     @Override
-    public void returnConnection(ClientCacheConnection connection, boolean accessed) {
+    public void returnConnection(Connection connection, boolean accessed) {
       returns++;
 
     }
@@ -424,8 +424,7 @@ public class OpExecutorImplJUnitTest {
     }
 
     @Override
-    public ClientCacheConnection exchangeConnection(ClientCacheConnection conn,
-        Set<ServerLocation> excludedServers) {
+    public Connection exchangeConnection(Connection conn, Set<ServerLocation> excludedServers) {
       if (excludedServers.size() >= numServers) {
         throw new NoAvailableServersException("test");
       }
@@ -439,7 +438,7 @@ public class OpExecutorImplJUnitTest {
     }
   }
 
-  private class DummyConnection implements ClientCacheConnection {
+  private class DummyConnection implements Connection {
 
     private final ServerLocation server;
 
@@ -620,9 +619,9 @@ public class OpExecutorImplJUnitTest {
     public QueueConnections getAllConnections() {
       return new QueueConnections() {
         @Override
-        public List<ClientCacheConnection> getBackups() {
+        public List<Connection> getBackups() {
           getBackups++;
-          List<ClientCacheConnection> result = new ArrayList<>(backups);
+          List<Connection> result = new ArrayList<>(backups);
           for (int i = 0; i < backups; i++) {
             result.add(new DummyConnection(new ServerLocation("localhost", currentServer++)));
           }
@@ -630,7 +629,7 @@ public class OpExecutorImplJUnitTest {
         }
 
         @Override
-        public ClientCacheConnection getPrimary() {
+        public Connection getPrimary() {
           getPrimary++;
           return new DummyConnection(new ServerLocation("localhost", currentServer++));
         }

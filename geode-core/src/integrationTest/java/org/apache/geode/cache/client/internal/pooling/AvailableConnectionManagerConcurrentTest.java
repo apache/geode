@@ -29,7 +29,7 @@ import java.util.concurrent.ExecutionException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.apache.geode.cache.client.internal.ClientCacheConnection;
+import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.cache.client.internal.ConnectionStats;
 import org.apache.geode.cache.client.internal.Endpoint;
 import org.apache.geode.cache.client.internal.Op;
@@ -52,7 +52,7 @@ public class AvailableConnectionManagerConcurrentTest {
 
     executor.inParallel(() -> {
       repeat(() -> {
-        ClientCacheConnection used = instance.useFirst();
+        Connection used = instance.useFirst();
         instance.addFirst(used, true);
       }, iterationCount);
     }, parallelCount);
@@ -68,7 +68,7 @@ public class AvailableConnectionManagerConcurrentTest {
 
     executor.inParallel(() -> {
       repeat(() -> {
-        ClientCacheConnection used = instance.useFirst(c -> true);
+        Connection used = instance.useFirst(c -> true);
         instance.addFirst(used, true);
       }, iterationCount);
     }, parallelCount);
@@ -84,7 +84,7 @@ public class AvailableConnectionManagerConcurrentTest {
 
     executor.inParallel(() -> {
       repeat(() -> {
-        ClientCacheConnection used = instance.useFirst();
+        Connection used = instance.useFirst();
         instance.addLast(used, true);
       }, iterationCount);
     }, parallelCount);
@@ -103,7 +103,7 @@ public class AvailableConnectionManagerConcurrentTest {
 
     executor.inParallel(() -> {
       repeat(() -> {
-        ClientCacheConnection used = instance.useFirst();
+        Connection used = instance.useFirst();
         if (used != null) {
           Thread.yield();
           instance.addFirst(used, true);
@@ -125,7 +125,7 @@ public class AvailableConnectionManagerConcurrentTest {
 
     executor.inParallel(() -> {
       repeat(() -> {
-        ClientCacheConnection used = instance.useFirst(c -> true);
+        Connection used = instance.useFirst(c -> true);
         if (used != null) {
           Thread.yield();
           instance.addFirst(used, true);
@@ -146,13 +146,13 @@ public class AvailableConnectionManagerConcurrentTest {
     repeat(() -> instance.addFirst(createConnection(), false), connectionCount);
     // now add a bunch of connections that will not match the predicate
     repeat(() -> {
-      ClientCacheConnection nonMatchingConnection = createConnection(1);
+      Connection nonMatchingConnection = createConnection(1);
       instance.addFirst(nonMatchingConnection, false);
     }, connectionCount);
 
     executor.inParallel(() -> {
       repeat(() -> {
-        ClientCacheConnection used = instance.useFirst(c -> c.getBirthDate() == 0L);
+        Connection used = instance.useFirst(c -> c.getBirthDate() == 0L);
         if (used != null) {
           Thread.yield();
           assertThat(used.getBirthDate()).isEqualTo(0L);
@@ -169,16 +169,16 @@ public class AvailableConnectionManagerConcurrentTest {
   public void addLastRemoveDoesNotRemoveOtherConnections(ParallelExecutor executor)
       throws ExecutionException, InterruptedException {
     int originalCount = 7;
-    Collection<ClientCacheConnection> originalConnections = new ArrayList<>();
+    Collection<Connection> originalConnections = new ArrayList<>();
     repeat(() -> {
-      ClientCacheConnection original = createConnection();
+      Connection original = createConnection();
       originalConnections.add(original);
       instance.addFirst(original, false);
     }, originalCount);
 
     executor.inParallel(() -> {
       repeat(() -> {
-        ClientCacheConnection removed = createConnection();
+        Connection removed = createConnection();
         instance.addLast(removed, true);
         assertThat(instance.remove(removed)).isTrue();
       }, iterationCount);
@@ -188,12 +188,12 @@ public class AvailableConnectionManagerConcurrentTest {
     assertThat(instance.getDeque()).containsExactlyInAnyOrderElementsOf(originalConnections);
   }
 
-  private ClientCacheConnection createConnection() {
+  private Connection createConnection() {
     return createConnection(0);
   }
 
-  private ClientCacheConnection createConnection(long birthDate) {
-    return new ClientCacheConnection() {
+  private Connection createConnection(long birthDate) {
+    return new Connection() {
       @Override
       public Socket getSocket() {
         return null;

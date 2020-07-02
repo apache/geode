@@ -119,7 +119,7 @@ public class InvalidateOp {
 
 
     @Override
-    protected Object processResponse(Message msg, ClientCacheConnection con) throws Exception {
+    protected Object processResponse(Message msg, Connection con) throws Exception {
       processAck(msg, "invalidate");
       boolean isReply = (msg.getMessageType() == MessageType.REPLY);
       int partIdx = 0;

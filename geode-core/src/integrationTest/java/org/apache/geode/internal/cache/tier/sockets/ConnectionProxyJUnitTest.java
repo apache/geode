@@ -45,7 +45,7 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.PoolManager;
-import org.apache.geode.cache.client.internal.ClientCacheConnection;
+import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.client.internal.PutOp;
 import org.apache.geode.cache.client.internal.QueueStateImpl.SequenceIdAndExpirationObject;
@@ -170,7 +170,7 @@ public class ConnectionProxyJUnitTest {
       ex.printStackTrace();
       fail("Failed to initialize client");
     }
-    ClientCacheConnection conn = (proxy).acquireConnection();
+    Connection conn = (proxy).acquireConnection();
     long t1 = 0;
     try {
       t1 = System.currentTimeMillis();

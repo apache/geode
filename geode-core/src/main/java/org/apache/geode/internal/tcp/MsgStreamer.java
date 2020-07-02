@@ -25,11 +25,9 @@ import java.util.List;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
-import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.DMStats;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ByteBufferWriter;
@@ -39,7 +37,6 @@ import org.apache.geode.internal.ObjToByteArraySerializer;
 import org.apache.geode.internal.net.BufferPool;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -53,7 +50,6 @@ import org.apache.geode.util.internal.GeodeGlossary;
 
 public class MsgStreamer extends OutputStream
     implements ObjToByteArraySerializer, BaseMsgStreamer, ByteBufferWriter {
-  private static final Logger logger = LogService.getLogger();
 
   /**
    * List of connections to send this msg to.
@@ -178,11 +174,7 @@ public class MsgStreamer extends OutputStream
         }
       }
       if (versionToConnMap == null) {
-        int sendBufferSize = firstCon.getSendBufferSize();
-        sendBufferSize = Math.max(sendBufferSize, DistributionConfig.DEFAULT_SOCKET_BUFFER_SIZE);
-        // logger.info("BRUCE: creating a message streamer to {} with buffer size {}",
-        // firstCon, sendBufferSize);
-        return new MsgStreamer(cons, msg, directReply, stats, sendBufferSize,
+        return new MsgStreamer(cons, msg, directReply, stats, firstCon.getSendBufferSize(),
             bufferPool, useDirectBuffers);
       } else {
         // if there is a versioned stream created, then split remaining

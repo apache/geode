@@ -66,7 +66,7 @@ class DirectReplySender implements ReplySender {
     ArrayList<Connection> conns = new ArrayList<Connection>(1);
     conns.add(conn);
     MsgStreamer ms = (MsgStreamer) MsgStreamer.create(conns, msg, false, DUMMY_STATS,
-        conn.getBufferPool(), true);
+        conn.getBufferPool(), /* BRUCE: conn.getConduit().useDirectBuffers() */ true);
     try {
       ms.writeMessage();
       ConnectExceptions ce = ms.getConnectExceptions();

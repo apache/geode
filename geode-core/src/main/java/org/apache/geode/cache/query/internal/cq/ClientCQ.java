@@ -14,7 +14,7 @@
  */
 package org.apache.geode.cache.query.internal.cq;
 
-import org.apache.geode.cache.client.internal.ClientCacheConnection;
+import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.cache.client.internal.ProxyCache;
 import org.apache.geode.cache.query.CqClosedException;
 import org.apache.geode.cache.query.CqException;
@@ -32,6 +32,6 @@ public interface ClientCQ extends InternalCqQuery {
 
   void setProxyCache(ProxyCache proxyCache);
 
-  void createOn(ClientCacheConnection recoveredConnection, boolean isDurable);
+  void createOn(Connection recoveredConnection, boolean isDurable);
 
 }

@@ -46,7 +46,7 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.PoolManager;
-import org.apache.geode.cache.client.internal.ClientCacheConnection;
+import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
@@ -82,7 +82,7 @@ public class DurableClientReconnectDUnitTest extends JUnit4DistributedTestCase {
   private static VM server4 = null;
 
   private static PoolImpl pool = null;
-  private static ClientCacheConnection conn = null;
+  private static Connection conn = null;
 
   private static Integer PORT1;
   private static Integer PORT2;

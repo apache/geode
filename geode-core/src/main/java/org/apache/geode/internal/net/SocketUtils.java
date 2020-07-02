@@ -95,13 +95,11 @@ public abstract class SocketUtils {
       InputStream socketInputStream) throws IOException {
     int amountRead;
     inputBuffer.limit(inputBuffer.capacity());
-    // logger.info("BRUCE: reading from socket into " + inputBuffer);
     if (socket instanceof SSLSocket) {
       amountRead = readFromStream(socketInputStream, inputBuffer);
     } else {
       amountRead = socket.getChannel().read(inputBuffer);
     }
-    // logger.info("BRUCE: read " + amountRead + " bytes");
     return amountRead;
   }
 

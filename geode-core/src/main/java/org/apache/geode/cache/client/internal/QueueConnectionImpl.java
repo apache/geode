@@ -38,17 +38,17 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * The clientToServerConnection should not be used outside of this class.
  *
  */
-public class QueueConnectionImpl implements ClientCacheConnection {
+public class QueueConnectionImpl implements Connection {
   private static final Logger logger = LogService.getLogger();
 
-  private final AtomicReference<ClientCacheConnection> clientToServerConn = new AtomicReference<>();
+  private final AtomicReference<Connection> clientToServerConn = new AtomicReference<>();
   private final Endpoint endpoint;
   private volatile ClientUpdater updater;
   private QueueManagerImpl manager;
   private final AtomicBoolean sentClientReady = new AtomicBoolean();
   private FailureTracker failureTracker;
 
-  public QueueConnectionImpl(QueueManagerImpl manager, ClientCacheConnection clientToServer,
+  public QueueConnectionImpl(QueueManagerImpl manager, Connection clientToServer,
       ClientUpdater updater, FailureTracker failureTracker) {
     this.manager = manager;
     this.clientToServerConn.set(clientToServer);
@@ -65,7 +65,7 @@ public class QueueConnectionImpl implements ClientCacheConnection {
 
   @Override
   public void emergencyClose() {
-    ClientCacheConnection conn = clientToServerConn.getAndSet(null);
+    Connection conn = clientToServerConn.getAndSet(null);
     if (conn != null) {
       conn.emergencyClose();
     }
@@ -83,14 +83,14 @@ public class QueueConnectionImpl implements ClientCacheConnection {
 
   @Override
   public void destroy() {
-    ClientCacheConnection conn = this.clientToServerConn.get();
+    Connection conn = this.clientToServerConn.get();
     if (conn != null) {
       manager.connectionCrashed(conn);
     } // else someone else destroyed it
   }
 
   public void internalDestroy() {
-    ClientCacheConnection currentConn = this.clientToServerConn.get();
+    Connection currentConn = this.clientToServerConn.get();
     if (currentConn != null) {
       if (!this.clientToServerConn.compareAndSet(currentConn, null)) {
         // someone else did (or is doing) the internalDestroy so return
@@ -191,8 +191,8 @@ public class QueueConnectionImpl implements ClientCacheConnection {
     return getConnection().execute(op);
   }
 
-  public ClientCacheConnection getConnection() {
-    ClientCacheConnection result = this.clientToServerConn.get();
+  public Connection getConnection() {
+    Connection result = this.clientToServerConn.get();
     if (result == null) {
       throw new ConnectionDestroyedException();
     }
@@ -200,7 +200,7 @@ public class QueueConnectionImpl implements ClientCacheConnection {
   }
 
   @Override
-  public ClientCacheConnection getWrappedConnection() {
+  public Connection getWrappedConnection() {
     return getConnection();
   }
 
@@ -219,7 +219,7 @@ public class QueueConnectionImpl implements ClientCacheConnection {
 
   @Override
   public String toString() {
-    ClientCacheConnection result = this.clientToServerConn.get();
+    Connection result = this.clientToServerConn.get();
     if (result != null) {
       return result.toString();
     } else {

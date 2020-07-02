@@ -117,7 +117,7 @@ import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.client.SubscriptionNotEnabledException;
-import org.apache.geode.cache.client.internal.ClientCacheConnection;
+import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.cache.client.internal.Endpoint;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.client.internal.ServerRegionProxy;
@@ -4196,7 +4196,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   /**
    * Refresh local entries based on server's list of keys
    */
-  public void refreshEntriesFromServerKeys(ClientCacheConnection con, List serverKeys,
+  public void refreshEntriesFromServerKeys(Connection con, List serverKeys,
       InterestResultPolicy interestResultPolicy) {
     if (serverKeys == null) {
       return;

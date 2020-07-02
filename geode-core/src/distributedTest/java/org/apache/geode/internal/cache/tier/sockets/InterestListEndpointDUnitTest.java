@@ -45,7 +45,7 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
-import org.apache.geode.cache.client.internal.ClientCacheConnection;
+import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.client.internal.QueueConnectionImpl;
 import org.apache.geode.cache.server.CacheServer;
@@ -77,7 +77,7 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
   private int PORT1;
   private int PORT2;
 
-  private static ClientCacheConnection conn1;
+  private static Connection conn1;
   private static PoolImpl pool;
   private static final String REGION_NAME = "InterestListEndpointDUnitTest_region";
 

@@ -31,7 +31,7 @@ import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
  *
  * @since GemFire 5.7
  */
-public interface ClientCacheConnection {
+public interface Connection {
   long DEFAULT_CONNECTION_ID = 26739;
 
   Socket getSocket();
@@ -99,7 +99,7 @@ public interface ClientCacheConnection {
    * @return the wrapped connection or this connection
    * @throws ConnectionDestroyedException if the wrapped connection no longer exists
    */
-  default ClientCacheConnection getWrappedConnection() {
+  default Connection getWrappedConnection() {
     return this;
   }
 

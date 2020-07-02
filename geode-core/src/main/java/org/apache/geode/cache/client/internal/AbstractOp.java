@@ -79,7 +79,7 @@ public abstract class AbstractOp implements Op {
    * @param cnx the connection to use when sending
    * @throws Exception if the send fails
    */
-  protected void attemptSend(ClientCacheConnection cnx) throws Exception {
+  protected void attemptSend(Connection cnx) throws Exception {
     setMsgTransactionId();
     if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_BRIDGE_SERVER_VERBOSE)) {
       logger.trace(LogMarker.DISTRIBUTION_BRIDGE_SERVER_VERBOSE, "Sending op={} using {}",
@@ -105,10 +105,10 @@ public abstract class AbstractOp implements Op {
    * excluded from client authentication. e.g. PingOp#sendMessage(Connection cnx)
    *
    * @see AbstractOp#needsUserId()
-   * @see AbstractOp#processSecureBytes(ClientCacheConnection, Message)
+   * @see AbstractOp#processSecureBytes(Connection, Message)
    * @see ServerConnection#updateAndGetSecurityPart()
    */
-  protected void sendMessage(ClientCacheConnection cnx) throws Exception {
+  protected void sendMessage(Connection cnx) throws Exception {
     if (cnx.getServer().getRequiresCredentials()) {
       // Security is enabled on client as well as on server
       getMessage().setMessageHasSecurePartFlag();
@@ -140,7 +140,7 @@ public abstract class AbstractOp implements Op {
    *
    * @see ServerConnection#updateAndGetSecurityPart()
    */
-  protected void processSecureBytes(ClientCacheConnection cnx, Message message) throws Exception {
+  protected void processSecureBytes(Connection cnx, Message message) throws Exception {
     if (cnx.getServer().getRequiresCredentials()) {
       if (!message.isSecureMode()) {
         // This can be seen during shutdown
@@ -170,7 +170,7 @@ public abstract class AbstractOp implements Op {
    * Also, such an operation's <code>MessageType</code> must be added in the 'if' condition in
    * {@link ServerConnection#updateAndGetSecurityPart()}
    *
-   * @see AbstractOp#sendMessage(ClientCacheConnection)
+   * @see AbstractOp#sendMessage(Connection)
    * @see ServerConnection#updateAndGetSecurityPart()
    */
   protected boolean needsUserId() {
@@ -185,7 +185,7 @@ public abstract class AbstractOp implements Op {
    * @return the result of the operation or <code>null</code> if the operation has no result.
    * @throws Exception if the execute failed
    */
-  protected Object attemptReadResponse(ClientCacheConnection cnx) throws Exception {
+  protected Object attemptReadResponse(Connection cnx) throws Exception {
     Message msg = createResponseMessage();
     if (msg != null) {
       msg.setComms(cnx.getSocket(), cnx.getInputStream(), cnx.getOutputStream(),
@@ -218,7 +218,7 @@ public abstract class AbstractOp implements Op {
     return new Message(1, Version.CURRENT);
   }
 
-  protected Object processResponse(Message m, ClientCacheConnection con) throws Exception {
+  protected Object processResponse(Message m, Connection con) throws Exception {
     return processResponse(m);
   }
 
@@ -366,7 +366,7 @@ public abstract class AbstractOp implements Op {
    * Connection)
    */
   @Override
-  public Object attempt(ClientCacheConnection connection) throws Exception {
+  public Object attempt(Connection connection) throws Exception {
     failed = true;
     timedOut = false;
     long start = startAttempt(connection.getStats());

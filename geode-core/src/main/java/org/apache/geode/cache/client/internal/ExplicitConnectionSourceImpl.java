@@ -164,7 +164,7 @@ public class ExplicitConnectionSourceImpl implements ConnectionSource {
     static final HasQueueOp SINGLETON = new HasQueueOp();
 
     @Override
-    public Object attempt(ClientCacheConnection cnx) throws Exception {
+    public Object attempt(Connection cnx) throws Exception {
       ServerQueueStatus status = cnx.getQueueStatus();
       return status.isNonRedundant() ? Boolean.FALSE : Boolean.TRUE;
     }

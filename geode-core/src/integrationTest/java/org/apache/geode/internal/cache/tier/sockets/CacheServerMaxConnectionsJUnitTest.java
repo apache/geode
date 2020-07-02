@@ -36,7 +36,7 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.client.NoAvailableServersException;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.PoolManager;
-import org.apache.geode.cache.client.internal.ClientCacheConnection;
+import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
@@ -140,7 +140,7 @@ public class CacheServerMaxConnectionsJUnitTest {
     final Statistics s = this.system.findStatisticsByType(st)[0];
     assertEquals(0, s.getInt("currentClients"));
     assertEquals(0, s.getInt("currentClientConnections"));
-    ClientCacheConnection[] cnxs = new ClientCacheConnection[MAX_CNXS];
+    Connection[] cnxs = new Connection[MAX_CNXS];
     for (int i = 0; i < MAX_CNXS; i++) {
       cnxs[i] = proxy.acquireConnection();
       this.system.getLogWriter().info("acquired connection[" + i + "]=" + cnxs[i]);
@@ -162,7 +162,7 @@ public class CacheServerMaxConnectionsJUnitTest {
     this.system.getLogWriter().info(
         "<ExpectedException action=add>" + "exceeded max-connections" + "</ExpectedException>");
     try {
-      ClientCacheConnection cnx = proxy.acquireConnection();
+      Connection cnx = proxy.acquireConnection();
       if (cnx != null) {
         fail("should not have been able to connect more than " + MAX_CNXS
             + " times but was able to connect " + s.getInt("currentClientConnections")

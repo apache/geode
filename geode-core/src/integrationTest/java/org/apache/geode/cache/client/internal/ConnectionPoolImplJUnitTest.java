@@ -194,7 +194,7 @@ public class ConnectionPoolImplJUnitTest {
       int attempts = 0;
 
       @Override
-      public Object attempt(ClientCacheConnection cnx) throws Exception {
+      public Object attempt(Connection cnx) throws Exception {
         if (attempts == 0) {
           attempts++;
           throw new SocketTimeoutException();
@@ -214,7 +214,7 @@ public class ConnectionPoolImplJUnitTest {
 
     testOp = new Op() {
       @Override
-      public Object attempt(ClientCacheConnection cnx) throws Exception {
+      public Object attempt(Connection cnx) throws Exception {
         throw new SocketTimeoutException();
       }
     };
@@ -245,7 +245,7 @@ public class ConnectionPoolImplJUnitTest {
 
     Op testOp = new Op() {
       @Override
-      public Object attempt(ClientCacheConnection cnx) throws Exception {
+      public Object attempt(Connection cnx) throws Exception {
         return cnx.getServer();
       }
     };

@@ -97,7 +97,7 @@ public interface ExecutablePool {
    * @param op the operation to execute
    * @return the result of execution if any; null if not
    */
-  Object executeOn(ClientCacheConnection con, Op op);
+  Object executeOn(Connection con, Op op);
 
   /**
    * Execute the given op on the given connection.
@@ -107,7 +107,7 @@ public interface ExecutablePool {
    * @param timeoutFatal true if a timeout exception should be treated as a fatal one
    * @return the result of execution if any; null if not
    */
-  Object executeOn(ClientCacheConnection con, Op op, boolean timeoutFatal);
+  Object executeOn(Connection con, Op op, boolean timeoutFatal);
 
   /**
    * Execute the given op on the current primary server.

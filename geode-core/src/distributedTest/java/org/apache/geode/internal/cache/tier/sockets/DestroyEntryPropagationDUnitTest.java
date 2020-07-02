@@ -43,7 +43,7 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
-import org.apache.geode.cache.client.internal.ClientCacheConnection;
+import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.client.internal.ServerRegionProxy;
 import org.apache.geode.cache.server.CacheServer;
@@ -279,8 +279,8 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
       assertNotNull(poolName);
       PoolImpl pool = (PoolImpl) PoolManager.find(poolName);
       assertNotNull(pool);
-      ClientCacheConnection conn = pool.acquireConnection();
-      final ClientCacheConnection conn1;
+      Connection conn = pool.acquireConnection();
+      final Connection conn1;
       if (conn.getServer().getPort() != PORT2) {
         conn1 = pool.acquireConnection(); // Ensure we have a server with the proper port
       } else {

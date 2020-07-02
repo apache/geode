@@ -166,7 +166,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
    * Client-side handshake with a Server
    */
   @Override
-  public ServerQueueStatus handshakeWithServer(ClientCacheConnection conn, ServerLocation location,
+  public ServerQueueStatus handshakeWithServer(Connection conn, ServerLocation location,
       CommunicationMode communicationMode) throws IOException, AuthenticationRequiredException,
       AuthenticationFailedException, ServerRefusedConnectionException {
     try {

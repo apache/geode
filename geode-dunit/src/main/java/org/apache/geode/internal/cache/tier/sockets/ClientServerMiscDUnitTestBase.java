@@ -62,7 +62,7 @@ import org.apache.geode.cache.client.NoAvailableServersException;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.PoolManager;
-import org.apache.geode.cache.client.internal.ClientCacheConnection;
+import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.cache.client.internal.Op;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.client.internal.QueueConnectionImpl;
@@ -102,7 +102,7 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
 
   protected static PoolImpl pool = null;
 
-  protected static ClientCacheConnection conn = null;
+  protected static Connection conn = null;
 
   static Cache static_cache;
 
@@ -536,7 +536,7 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
     // pause(5000);
     server1.invoke(
         () -> ClientServerMiscDUnitTestBase.verifyCacheClientProxyOnServer(REGION_NAME1));
-    ClientCacheConnection conn = pool.acquireConnection();
+    Connection conn = pool.acquireConnection();
     assertNotNull(conn);
     assertEquals(1, pool.getConnectedServerCount());
     assertFalse(pool.isDestroyed());
@@ -608,7 +608,7 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
     Region region = static_cache.getRegion(REGION_NAME1);
     Op operation = new Op() {
       @Override
-      public Object attempt(ClientCacheConnection cnx) throws Exception {
+      public Object attempt(Connection cnx) throws Exception {
         throw new MessageTooLargeException("message is too big");
       }
     };

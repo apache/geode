@@ -86,8 +86,7 @@ public class RegisterInterestListOp {
    * @param regionDataPolicy the data policy ordinal of the region
    * @return list of keys
    */
-  public static List executeOn(ClientCacheConnection conn, ExecutablePool pool, String region,
-      List keys,
+  public static List executeOn(Connection conn, ExecutablePool pool, String region, List keys,
       InterestResultPolicy policy, boolean isDurable, boolean receiveUpdatesAsInvalidates,
       byte regionDataPolicy) {
     AbstractOp op = new RegisterInterestListOpImpl(region, keys, policy, isDurable,

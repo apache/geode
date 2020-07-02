@@ -49,8 +49,7 @@ public class DestroyRegionOp {
    * @param eventId the event id for this destroyRegion
    * @param callbackArg an optional callback arg to pass to any cache callbacks
    */
-  public static void execute(ClientCacheConnection con, ExecutablePool pool, String region,
-      EventID eventId,
+  public static void execute(Connection con, ExecutablePool pool, String region, EventID eventId,
       Object callbackArg) {
     AbstractOp op = new DestroyRegionOpImpl(region, eventId, callbackArg);
     pool.executeOn(con, op);

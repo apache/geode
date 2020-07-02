@@ -109,12 +109,11 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
   }
 
   @Override
-  public ClientCacheConnection createClientToServerConnection(ServerLocation location,
-      boolean forQueue)
+  public Connection createClientToServerConnection(ServerLocation location, boolean forQueue)
       throws GemFireSecurityException {
     FailureTracker failureTracker = denyList.getFailureTracker(location);
 
-    ClientCacheConnection connection = null;
+    Connection connection = null;
     try {
       connection = connectionConnector.connectClientToServer(location, forQueue);
       failureTracker.reset();
@@ -144,7 +143,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
     return connection;
   }
 
-  private void authenticateIfRequired(ClientCacheConnection conn) {
+  private void authenticateIfRequired(Connection conn) {
     cancelCriterion.checkCancelInProgress(null);
     if (!pool.isUsedByGateway() && !pool.getMultiuserAuthentication()) {
       ServerLocation server = conn.getServer();
@@ -185,13 +184,13 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
   }
 
   @Override
-  public ClientCacheConnection createClientToServerConnection(Set<ServerLocation> excludedServers)
+  public Connection createClientToServerConnection(Set<ServerLocation> excludedServers)
       throws GemFireSecurityException {
     final Set<ServerLocation> origExcludedServers = excludedServers;
     excludedServers = new HashSet<>(excludedServers);
     Set<ServerLocation> denyListedServers = denyList.getBadServers();
     excludedServers.addAll(denyListedServers);
-    ClientCacheConnection conn = null;
+    Connection conn = null;
     RuntimeException fatalException = null;
     boolean tryDenyList = true;
 

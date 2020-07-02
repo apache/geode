@@ -95,8 +95,7 @@ public class RegisterInterestOp {
    * @param regionDataPolicy the data policy ordinal of the region
    * @return list of keys
    */
-  public static List executeOn(ClientCacheConnection conn, ExecutablePool pool, String region,
-      Object key,
+  public static List executeOn(Connection conn, ExecutablePool pool, String region, Object key,
       int interestType, InterestResultPolicy policy, boolean isDurable,
       boolean receiveUpdatesAsInvalidates, byte regionDataPolicy) {
     AbstractOp op = new RegisterInterestOpImpl(region, key, interestType, policy, isDurable,
@@ -159,7 +158,7 @@ public class RegisterInterestOp {
     }
 
     @Override
-    protected Object processResponse(Message m, ClientCacheConnection con) throws Exception {
+    protected Object processResponse(Message m, Connection con) throws Exception {
       ChunkedMessage chunkedMessage = (ChunkedMessage) m;
       chunkedMessage.readHeader();
       switch (chunkedMessage.getMessageType()) {

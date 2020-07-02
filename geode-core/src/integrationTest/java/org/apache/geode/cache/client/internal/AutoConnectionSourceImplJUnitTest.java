@@ -622,12 +622,12 @@ public class AutoConnectionSourceImplJUnitTest {
     }
 
     @Override
-    public Object executeOn(ClientCacheConnection con, Op op) {
+    public Object executeOn(Connection con, Op op) {
       return null;
     }
 
     @Override
-    public Object executeOn(ClientCacheConnection con, Op op, boolean timeoutFatal) {
+    public Object executeOn(Connection con, Op op, boolean timeoutFatal) {
       return null;
     }
 
