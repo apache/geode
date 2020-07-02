@@ -68,7 +68,7 @@ public class VersioningIO {
    * given {@link InputStream}. Returns -1 on
    * end of stream.
    */
-  public static short readOrdinal(InputStream is) throws IOException {
+  public static short readOrdinalFromInputStream(InputStream is) throws IOException {
     final int ordinal = is.read();
     if (ordinal != -1) {
       if (ordinal != Version.TOKEN_ORDINAL_INT) {

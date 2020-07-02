@@ -67,7 +67,7 @@ class ServerSideHandshakeFactory {
       soTimeout = socket.getSoTimeout();
       socket.setSoTimeout(timeout);
       InputStream is = socket.getInputStream();
-      short clientVersionOrdinal = VersioningIO.readOrdinal(is);
+      short clientVersionOrdinal = VersioningIO.readOrdinalFromInputStream(is);
       if (clientVersionOrdinal == -1) {
         throw new EOFException(
             "HandShakeReader: EOF reached before client version could be read");
