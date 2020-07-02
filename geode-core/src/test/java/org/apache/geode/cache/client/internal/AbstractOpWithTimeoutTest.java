@@ -36,10 +36,10 @@ public class AbstractOpWithTimeoutTest {
     }
 
     @Override
-    protected void attemptSend(Connection cnx) {}
+    protected void attemptSend(ClientCacheConnection cnx) {}
 
     @Override
-    protected Object attemptReadResponse(Connection cnx) {
+    protected Object attemptReadResponse(ClientCacheConnection cnx) {
       return null;
     }
   }
@@ -52,7 +52,7 @@ public class AbstractOpWithTimeoutTest {
     final Socket socket = mock(Socket.class);
     when(socket.getSoTimeout()).thenReturn(456);
 
-    final Connection connection = mock(Connection.class);
+    final ClientCacheConnection connection = mock(ClientCacheConnection.class);
     when(connection.getSocket()).thenReturn(socket);
 
     mockOp.attempt(connection);
@@ -71,7 +71,7 @@ public class AbstractOpWithTimeoutTest {
     final Socket socket = mock(Socket.class);
     when(socket.getSoTimeout()).thenReturn(123);
 
-    final Connection connection = mock(Connection.class);
+    final ClientCacheConnection connection = mock(ClientCacheConnection.class);
     when(connection.getSocket()).thenReturn(socket);
 
     mockOp.attempt(connection);

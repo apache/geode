@@ -50,7 +50,7 @@ import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.UnsupportedVersionException;
-import org.apache.geode.cache.client.internal.Connection;
+import org.apache.geode.cache.client.internal.ClientCacheConnection;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.HeapDataOutputStream;
@@ -238,7 +238,7 @@ public abstract class ServerConnection implements Runnable {
 
   // this is constant(server and client) for first user request, after that it is random
   // this also need to send in handshake
-  private long connectionId = Connection.DEFAULT_CONNECTION_ID;
+  private long connectionId = ClientCacheConnection.DEFAULT_CONNECTION_ID;
 
   private final Random randomConnectionIdGen;
 

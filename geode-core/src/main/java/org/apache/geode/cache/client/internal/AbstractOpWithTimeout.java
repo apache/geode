@@ -33,7 +33,7 @@ public abstract class AbstractOpWithTimeout extends AbstractOp {
 
 
   @Override
-  public Object attempt(final Connection connection) throws Exception {
+  public Object attempt(final ClientCacheConnection connection) throws Exception {
     final Socket socket = connection.getSocket();
     final int previousTimeoutMs = socket.getSoTimeout();
     final int timeoutMs = getTimeoutMs();

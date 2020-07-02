@@ -79,7 +79,7 @@ public class TXFailoverOp {
     }
 
     @Override
-    protected void sendMessage(Connection cnx) throws Exception {
+    protected void sendMessage(ClientCacheConnection cnx) throws Exception {
       getMessage().clearMessageHasSecurePartFlag();
       getMessage().send(false);
     }

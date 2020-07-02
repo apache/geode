@@ -283,7 +283,8 @@ public class RemoveAllOp {
     }
 
     @Override
-    protected Object processResponse(final Message msg, final Connection con) throws Exception {
+    protected Object processResponse(final Message msg, final ClientCacheConnection con)
+        throws Exception {
       final VersionedObjectList result = new VersionedObjectList();
       final Exception[] exceptionRef = new Exception[1];
       final boolean isDebugEnabled = logger.isDebugEnabled();

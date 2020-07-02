@@ -45,7 +45,7 @@ import org.apache.geode.cache.client.NoAvailableServersException;
 import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.client.ServerRefusedConnectionException;
-import org.apache.geode.cache.client.internal.Connection;
+import org.apache.geode.cache.client.internal.ClientCacheConnection;
 import org.apache.geode.cache.client.internal.ConnectionFactory;
 import org.apache.geode.cache.client.internal.Endpoint;
 import org.apache.geode.cache.client.internal.EndpointManager;
@@ -257,13 +257,13 @@ public class ConnectionManagerImpl implements ConnectionManager {
   }
 
   @Override
-  public Connection borrowConnection(long acquireTimeout)
+  public ClientCacheConnection borrowConnection(long acquireTimeout)
       throws AllConnectionsInUseException, NoAvailableServersException, ServerOperationException {
     long waitStart = NOT_WAITING;
     try {
       long timeout = System.nanoTime() + MILLISECONDS.toNanos(acquireTimeout);
       while (true) {
-        Connection connection = availableConnectionManager.useFirst();
+        ClientCacheConnection connection = availableConnectionManager.useFirst();
         if (null != connection) {
           return connection;
         }
@@ -302,12 +302,12 @@ public class ConnectionManagerImpl implements ConnectionManager {
   }
 
   @Override
-  public Connection borrowConnection(ServerLocation server, long acquireTimeout,
+  public ClientCacheConnection borrowConnection(ServerLocation server, long acquireTimeout,
       boolean onlyUseExistingCnx)
       throws AllConnectionsInUseException, NoAvailableServersException,
       ServerConnectivityException {
 
-    Connection connection;
+    ClientCacheConnection connection;
     logger.trace("Connection borrowConnection single hop connection");
 
     long waitStart = NOT_WAITING;
@@ -348,12 +348,12 @@ public class ConnectionManagerImpl implements ConnectionManager {
   }
 
   @Override
-  public Connection exchangeConnection(final Connection oldConnection,
+  public ClientCacheConnection exchangeConnection(final ClientCacheConnection oldConnection,
       final Set<ServerLocation> excludedServers)
       throws AllConnectionsInUseException {
 
     try {
-      Connection connection = availableConnectionManager
+      ClientCacheConnection connection = availableConnectionManager
           .useFirst((c) -> !excludedServers.contains(c.getServer()));
       if (null != connection) {
         return connection;
@@ -374,7 +374,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
     return poolName;
   }
 
-  private PooledConnection addConnection(Connection conn) {
+  private PooledConnection addConnection(ClientCacheConnection conn) {
 
     if (conn == null) {
       if (logger.isDebugEnabled()) {
@@ -428,16 +428,17 @@ public class ConnectionManagerImpl implements ConnectionManager {
   }
 
   @Override
-  public void returnConnection(Connection connection) {
+  public void returnConnection(ClientCacheConnection connection) {
     returnConnection(connection, true);
   }
 
   @Override
-  public void returnConnection(Connection connection, boolean accessed) {
+  public void returnConnection(ClientCacheConnection connection, boolean accessed) {
     returnConnection(connection, accessed, false);
   }
 
-  private void returnConnection(Connection connection, boolean accessed, boolean addLast) {
+  private void returnConnection(ClientCacheConnection connection, boolean accessed,
+      boolean addLast) {
     assert connection instanceof PooledConnection;
     PooledConnection pooledConn = (PooledConnection) connection;
 
@@ -696,7 +697,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
    * Offer the replacement "con" to any cnx currently connected to "currentServer".
    *
    */
-  private void offerReplacementConnection(Connection con, ServerLocation currentServer) {
+  private void offerReplacementConnection(ClientCacheConnection con, ServerLocation currentServer) {
     boolean retry;
     do {
       retry = false;
@@ -751,7 +752,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
       if (!allConnectionsMap.hasExpiredCnxToServer(currentServer)) {
         break;
       }
-      Connection con;
+      ClientCacheConnection con;
       try {
         con = connectionFactory.createClientToServerConnection(sl, false);
         if (con != null) {

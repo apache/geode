@@ -37,7 +37,7 @@ public class PutOpJUnitTest {
   private final VersionTag versionTag = mock(VersionTag.class);
   private final RegionEntry entry = mock(RegionEntry.class);
   private final VersionStamp versionStamp = mock(VersionStamp.class);
-  private final Connection connection = mock(Connection.class);
+  private final ClientCacheConnection connection = mock(ClientCacheConnection.class);
 
   @Before
   public void setup() {

@@ -17,7 +17,7 @@ package org.apache.geode.cache.query.cq.internal.ops;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.client.internal.AbstractOp;
-import org.apache.geode.cache.client.internal.Connection;
+import org.apache.geode.cache.client.internal.ClientCacheConnection;
 import org.apache.geode.cache.client.internal.ConnectionStats;
 import org.apache.geode.cache.client.internal.ExecutablePool;
 import org.apache.geode.internal.cache.tier.MessageType;
@@ -62,7 +62,7 @@ public class CreateCQOp {
    * @param isDurable true if CQ is durable
    * @param regionDataPolicy the data policy ordinal of the region
    */
-  public static Object executeOn(ExecutablePool pool, Connection conn, String cqName,
+  public static Object executeOn(ExecutablePool pool, ClientCacheConnection conn, String cqName,
       String queryStr, int cqState, boolean isDurable, byte regionDataPolicy) {
     AbstractOp op = new CreateCQOpImpl(cqName, queryStr, cqState, isDurable, regionDataPolicy);
     return pool.executeOn(conn, op);

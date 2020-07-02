@@ -32,6 +32,6 @@ public interface Op {
    * @return the result of the operation or <code>null</code if the operation has no result.
    * @throws Exception if the execute failed
    */
-  Object attempt(Connection cnx) throws Exception;
+  Object attempt(ClientCacheConnection cnx) throws Exception;
 
 }

@@ -40,7 +40,7 @@ import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
-import org.apache.geode.cache.client.internal.Connection;
+import org.apache.geode.cache.client.internal.ClientCacheConnection;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.client.internal.ServerRegionProxy;
 import org.apache.geode.cache.server.CacheServer;
@@ -280,7 +280,7 @@ public class ClearPropagationDUnitTest extends JUnit4DistributedTestCase {
       assertNotNull(poolName);
       PoolImpl pool = (PoolImpl) PoolManager.find(poolName);
       assertNotNull(pool);
-      Connection conn1 = pool.acquireConnection(new ServerLocation(host, PORT2));
+      ClientCacheConnection conn1 = pool.acquireConnection(new ServerLocation(host, PORT2));
       assertNotNull(conn1);
       assertEquals(PORT2, conn1.getServer().getPort());
       ServerRegionProxy srp = new ServerRegionProxy(SEPARATOR + REGION_NAME, pool);
@@ -300,7 +300,7 @@ public class ClearPropagationDUnitTest extends JUnit4DistributedTestCase {
       assertNotNull(poolName);
       PoolImpl pool = (PoolImpl) PoolManager.find(poolName);
       assertNotNull(pool);
-      Connection conn1 = pool.acquireConnection(new ServerLocation(host, PORT2));
+      ClientCacheConnection conn1 = pool.acquireConnection(new ServerLocation(host, PORT2));
       assertNotNull(conn1);
       assertEquals(PORT2, conn1.getServer().getPort());
       ServerRegionProxy srp = new ServerRegionProxy(SEPARATOR + REGION_NAME, pool);

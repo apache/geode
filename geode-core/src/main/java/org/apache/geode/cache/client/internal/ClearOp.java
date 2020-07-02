@@ -49,7 +49,8 @@ public class ClearOp {
    * @param eventId the event id for this clear
    * @param callbackArg an optional callback arg to pass to any cache callbacks
    */
-  public static void execute(Connection con, ExecutablePool pool, String region, EventID eventId,
+  public static void execute(ClientCacheConnection con, ExecutablePool pool, String region,
+      EventID eventId,
       Object callbackArg) {
     AbstractOp op = new ClearOpImpl(region, eventId, callbackArg);
     pool.executeOn(con, op);

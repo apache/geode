@@ -39,7 +39,7 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.ServerConnectivityException;
-import org.apache.geode.cache.client.internal.Connection;
+import org.apache.geode.cache.client.internal.ClientCacheConnection;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.client.internal.ServerRegionProxy;
 import org.apache.geode.cache.server.CacheServer;
@@ -186,7 +186,7 @@ public class ClientHealthMonitorIntegrationTest {
     this.system.getLogWriter()
         .info("beforeAcquireConnection clients=" + statistics.getInt("currentClients") + " cnxs="
             + statistics.getInt("currentClientConnections"));
-    Connection connection1 = proxy.acquireConnection();
+    ClientCacheConnection connection1 = proxy.acquireConnection();
     this.system.getLogWriter()
         .info("afterAcquireConnection clients=" + statistics.getInt("currentClients") + " cnxs="
             + statistics.getInt("currentClientConnections"));

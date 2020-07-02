@@ -32,7 +32,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.PoolManager;
-import org.apache.geode.cache.client.internal.Connection;
+import org.apache.geode.cache.client.internal.ClientCacheConnection;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.client.internal.ServerRegionProxy;
 import org.apache.geode.cache.server.CacheServer;
@@ -128,7 +128,7 @@ public class ClientDestroyRegionNotificationRegressionTest implements Serializab
     clientRegionFactory.setPoolName(pool.getName());
     clientRegionFactory.create(regionName);
 
-    Connection connection = pool.acquireConnection(new ServerLocation(hostName, port2));
+    ClientCacheConnection connection = pool.acquireConnection(new ServerLocation(hostName, port2));
     EventID eventId = new EventID(new byte[] {1}, 1, 1);
     ServerRegionProxy serverRegionProxy = new ServerRegionProxy(regionName, pool);
 

@@ -34,7 +34,7 @@ public class PrimaryAckOp {
    * @param pool the pool to use to communicate with the server.
    * @param events list of events to acknowledge
    */
-  public static void execute(Connection connection, ExecutablePool pool, List events) {
+  public static void execute(ClientCacheConnection connection, ExecutablePool pool, List events) {
     AbstractOp op = new PrimaryAckOpImpl(events);
     pool.executeOn(connection, op);
   }
@@ -60,7 +60,7 @@ public class PrimaryAckOp {
     }
 
     @Override
-    protected void sendMessage(Connection cnx) throws Exception {
+    protected void sendMessage(ClientCacheConnection cnx) throws Exception {
       getMessage().clearMessageHasSecurePartFlag();
       getMessage().send(false);
     }

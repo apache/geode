@@ -30,7 +30,7 @@ public class QueueConnectionImplJUnitTest {
   public void testInternalDestroyFollowedByInternalClose() {
     // Mock ClientUpdater and Connection
     ClientUpdater updater = mock(ClientUpdater.class);
-    Connection connection = mock(Connection.class);
+    ClientCacheConnection connection = mock(ClientCacheConnection.class);
 
     // Create a QueueConnectionImpl on the mocks
     QueueConnectionImpl qci = new QueueConnectionImpl(null, connection, updater, null);

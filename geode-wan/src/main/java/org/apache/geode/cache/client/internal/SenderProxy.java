@@ -27,13 +27,13 @@ public class SenderProxy extends ServerProxy {
     super(pool);
   }
 
-  public void dispatchBatch_NewWAN(Connection con, List events, int batchId,
+  public void dispatchBatch_NewWAN(ClientCacheConnection con, List events, int batchId,
       boolean removeFromQueueOnException, boolean isRetry) {
     GatewaySenderBatchOp.executeOn(con, this.pool, events, batchId, removeFromQueueOnException,
         isRetry);
   }
 
-  public Object receiveAckFromReceiver(Connection con) {
+  public Object receiveAckFromReceiver(ClientCacheConnection con) {
     return GatewaySenderBatchOp.executeOn(con, this.pool);
   }
 }

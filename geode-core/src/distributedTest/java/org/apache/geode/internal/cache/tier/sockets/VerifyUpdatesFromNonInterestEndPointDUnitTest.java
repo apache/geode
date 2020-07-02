@@ -35,7 +35,7 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
-import org.apache.geode.cache.client.internal.Connection;
+import org.apache.geode.cache.client.internal.ClientCacheConnection;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.client.internal.ServerRegionProxy;
 import org.apache.geode.cache.server.CacheServer;
@@ -125,8 +125,8 @@ public class VerifyUpdatesFromNonInterestEndPointDUnitTest extends JUnit4Distrib
       assertNotNull(poolName);
       PoolImpl pool = (PoolImpl) PoolManager.find(poolName);
       assertNotNull(pool);
-      Connection conn1 = pool.acquireConnection();
-      Connection conn2 = pool.acquireConnection();
+      ClientCacheConnection conn1 = pool.acquireConnection();
+      ClientCacheConnection conn2 = pool.acquireConnection();
       ServerRegionProxy srp = new ServerRegionProxy(SEPARATOR + REGION_NAME, pool);
       // put on a connection which is is not interest list ep
       if (conn1.getServer().getPort() == port.intValue()) {

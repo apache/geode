@@ -30,7 +30,7 @@ import org.mockito.Mockito;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.Statistics;
-import org.apache.geode.cache.client.internal.Connection;
+import org.apache.geode.cache.client.internal.ClientCacheConnection;
 import org.apache.geode.cache.client.internal.Endpoint;
 import org.apache.geode.cache.client.internal.EndpointManager;
 import org.apache.geode.cache.client.internal.PoolImpl;
@@ -67,7 +67,7 @@ public class GatewaySenderEventRemoteDispatcherIntegrationTest {
         getMockedAbstractGatewaySenderEventProcessor(pool, serverLocation);
 
     final Endpoint endpoint = getMockedEndpoint(serverLocation);
-    final Connection connection = getMockedConnection(serverLocation, endpoint);
+    final ClientCacheConnection connection = getMockedConnection(serverLocation, endpoint);
 
     /*
      * In order for listeners to be notified, the endpoint must be referenced by the
@@ -136,14 +136,15 @@ public class GatewaySenderEventRemoteDispatcherIntegrationTest {
         internalDistributedSystem, internalCache, tMonitoring);
   }
 
-  private Connection getMockedConnection(ServerLocation serverLocation, Endpoint endpoint)
+  private ClientCacheConnection getMockedConnection(ServerLocation serverLocation,
+      Endpoint endpoint)
       throws Exception {
     /*
      * Mock the connection to throw a RuntimeException() when connection.Execute() is called,
      * so that we attempt to notify listeners in the exception handling logic in
      * OpExecutorImpl.executeWithPossibleReAuthentication()
      */
-    final Connection connection = mock(PooledConnection.class);
+    final ClientCacheConnection connection = mock(PooledConnection.class);
     doReturn(serverLocation).when(connection).getServer();
     doReturn(endpoint).when(connection).getEndpoint();
     doThrow(new RuntimeException()).when(connection).execute(any());

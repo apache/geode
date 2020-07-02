@@ -190,7 +190,8 @@ public class GetAllOp {
     }
 
     @Override
-    protected Object processResponse(Message msg, final Connection con) throws Exception {
+    protected Object processResponse(Message msg, final ClientCacheConnection con)
+        throws Exception {
       final VersionedObjectList result = new VersionedObjectList(false);
       final Exception[] exceptionRef = new Exception[1];
       processChunkedResponse((ChunkedMessage) msg, "getAll", new ChunkHandler() {

@@ -30,7 +30,8 @@ public class MakePrimaryOp {
    * @param conn the connection to do the execution on
    * @param sentClientReady true if the client ready message has already been sent
    */
-  public static void execute(ExecutablePool pool, Connection conn, boolean sentClientReady) {
+  public static void execute(ExecutablePool pool, ClientCacheConnection conn,
+      boolean sentClientReady) {
     AbstractOp op = new MakePrimaryOpImpl(sentClientReady);
     pool.executeOn(conn, op);
   }
@@ -54,7 +55,7 @@ public class MakePrimaryOp {
     }
 
     @Override
-    protected void sendMessage(Connection cnx) throws Exception {
+    protected void sendMessage(ClientCacheConnection cnx) throws Exception {
       getMessage().clearMessageHasSecurePartFlag();
       getMessage().send(false);
     }

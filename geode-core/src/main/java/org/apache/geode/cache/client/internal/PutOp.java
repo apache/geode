@@ -121,7 +121,8 @@ public class PutOp {
    * @param event the event for this put
    * @param callbackArg an optional callback arg to pass to any cache callbacks
    */
-  public static void execute(Connection con, ExecutablePool pool, String regionName, Object key,
+  public static void execute(ClientCacheConnection con, ExecutablePool pool, String regionName,
+      Object key,
       Object value, EntryEventImpl event, Object callbackArg, boolean prSingleHopEnabled) {
     AbstractOp op = new PutOpImpl(regionName, key, value, null, event, Operation.CREATE, false,
         null, callbackArg, false /* donot send full Obj; send delta */, prSingleHopEnabled);
@@ -266,7 +267,7 @@ public class PutOp {
      * @since GemFire 6.1
      */
     @Override
-    protected Object processResponse(Message msg, Connection con) throws Exception {
+    protected Object processResponse(Message msg, ClientCacheConnection con) throws Exception {
       processAck(msg, con);
       if (prSingleHopEnabled) {
         Part part = msg.getPart(0);
@@ -307,7 +308,8 @@ public class PutOp {
       return null;
     }
 
-    void checkForDeltaConflictAndSetVersionTag(VersionTag versionTag, Connection connection)
+    void checkForDeltaConflictAndSetVersionTag(VersionTag versionTag,
+        ClientCacheConnection connection)
         throws Exception {
       RegionEntry regionEntry = ((EntryEventImpl) event).getRegionEntry();
       if (regionEntry == null) {
@@ -327,7 +329,7 @@ public class PutOp {
       }
     }
 
-    Object getFullValue(Connection connection) throws Exception {
+    Object getFullValue(ClientCacheConnection connection) throws Exception {
       GetOp.GetOpImpl getOp =
           new GetOp.GetOpImpl(region, key, callbackArg, prSingleHopEnabled, event);
       return getOp.attempt(connection);
@@ -342,7 +344,7 @@ public class PutOp {
      *         exception.
      * @since GemFire 6.1
      */
-    private void processAck(Message msg, Connection con) throws Exception {
+    private void processAck(Message msg, ClientCacheConnection con) throws Exception {
       final int msgType = msg.getMessageType();
       // Update delta stats
       if (deltaSent && region != null) {

@@ -16,7 +16,7 @@ package org.apache.geode.cache.query.cq.internal.ops;
 
 import java.util.List;
 
-import org.apache.geode.cache.client.internal.Connection;
+import org.apache.geode.cache.client.internal.ClientCacheConnection;
 import org.apache.geode.cache.client.internal.InternalPool;
 import org.apache.geode.cache.client.internal.ServerProxy;
 import org.apache.geode.cache.query.SelectResults;
@@ -70,7 +70,7 @@ public class ServerCQProxyImpl extends ServerProxy {
    * @param isDurable true if CQ is durable
    * @param regionDataPolicy the data policy ordinal of the region
    */
-  public void createOn(String cqName, Connection conn, String queryStr, int cqState,
+  public void createOn(String cqName, ClientCacheConnection conn, String queryStr, int cqState,
       boolean isDurable, byte regionDataPolicy) {
 
     CreateCQOp.executeOn(this.pool, conn, cqName, queryStr, cqState, isDurable, regionDataPolicy);

@@ -42,7 +42,7 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.client.PoolManager;
-import org.apache.geode.cache.client.internal.Connection;
+import org.apache.geode.cache.client.internal.ClientCacheConnection;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.client.internal.QueueStateImpl.SequenceIdAndExpirationObject;
 import org.apache.geode.cache.client.internal.ServerRegionProxy;
@@ -289,7 +289,7 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
    * @throws Exception - thrown if any problem occurs in put operation
    */
   public static void generateEventsByPutOperation() throws Exception {
-    Connection connection = pool.acquireConnection();
+    ClientCacheConnection connection = pool.acquireConnection();
     String regionName = SEPARATOR + REGION_NAME;
     ServerRegionProxy srp = new ServerRegionProxy(regionName, pool);
 
@@ -306,7 +306,7 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
    * @throws Exception - thrown if any problem occurs in destroyEntry operation
    */
   public static void generateEventsByDestroyEntryOperation() throws Exception {
-    Connection connection = pool.acquireConnection();
+    ClientCacheConnection connection = pool.acquireConnection();
     String regionName = SEPARATOR + REGION_NAME;
     ServerRegionProxy srp = new ServerRegionProxy(regionName, pool);
 
@@ -328,7 +328,7 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
    * @throws Exception - thrown if any problem occurs in destroyRegionOperation
    */
   public static void generateEventsByDestroyRegionOperation() throws Exception {
-    Connection connection = pool.acquireConnection();
+    ClientCacheConnection connection = pool.acquireConnection();
     String regionName = SEPARATOR + REGION_NAME;
 
     for (int i = 0; i < 1; i++) {
@@ -348,7 +348,7 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
    * @throws Exception - thrown if any problem occurs in clearRegionOperation
    */
   public static void generateEventsByClearRegionOperation() throws Exception {
-    Connection connection = pool.acquireConnection();
+    ClientCacheConnection connection = pool.acquireConnection();
     String regionName = SEPARATOR + REGION_NAME;
     ServerRegionProxy srp = new ServerRegionProxy(regionName, pool);
 

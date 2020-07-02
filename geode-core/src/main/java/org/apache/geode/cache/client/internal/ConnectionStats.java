@@ -27,7 +27,7 @@ import org.apache.geode.internal.cache.tier.sockets.MessageStats;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 /**
- * Stats for a client to server {@link Connection}
+ * Stats for a client to server {@link ClientCacheConnection}
  *
  * @since GemFire 5.7
  */

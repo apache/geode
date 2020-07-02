@@ -199,7 +199,7 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
     }
   }
 
-  // @Test BRUCE: reenable this
+  @Test
   public void performARollingUpgrade() {
     List<String> testVersions = VersionManager.getInstance().getVersionsWithoutCurrent();
     String testVersion = testVersions.get(testVersions.size() - 1);
@@ -325,8 +325,7 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
     if (useSSL) {
       properties.setProperty(SSL_ENABLED_COMPONENTS, "cluster,locator");
       properties
-          .setProperty(SSL_KEYSTORE, createTempFileFromResource(getClass(), "server.keystore")
-              .getAbsolutePath());
+          .setProperty(SSL_KEYSTORE, getClass().getResource("server.keystore").getFile());
       properties.setProperty(SSL_TRUSTSTORE,
           createTempFileFromResource(getClass(), "server.keystore")
               .getAbsolutePath());

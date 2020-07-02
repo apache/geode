@@ -36,9 +36,9 @@ public interface QueueManager {
   void close(boolean keepAlive);
 
   interface QueueConnections {
-    Connection getPrimary();
+    ClientCacheConnection getPrimary();
 
-    List<Connection> getBackups();
+    List<ClientCacheConnection> getBackups();
 
     QueueConnectionImpl getConnection(Endpoint endpoint);
   }

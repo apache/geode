@@ -30,7 +30,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.PoolManager;
-import org.apache.geode.cache.client.internal.Connection;
+import org.apache.geode.cache.client.internal.ClientCacheConnection;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.wan.GatewayReceiver;
@@ -160,7 +160,7 @@ public class WANLocatorServerDUnitTest extends WANTestBase {
     pf.addLocator("localhost", port3);
     pf.init((GatewaySender) null);
     proxy = ((PoolImpl) pf.create("KISHOR_POOL"));
-    Connection con1 = proxy.acquireConnection();
+    ClientCacheConnection con1 = proxy.acquireConnection();
     try {
       con1.close(true);
     } catch (Exception e) {
@@ -169,7 +169,7 @@ public class WANLocatorServerDUnitTest extends WANTestBase {
   }
 
   public static void tryNewConnection() {
-    Connection con1 = null;
+    ClientCacheConnection con1 = null;
     try {
       con1 = proxy.acquireConnection();
     } catch (Exception e) {

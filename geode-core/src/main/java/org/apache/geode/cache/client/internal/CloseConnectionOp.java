@@ -31,7 +31,7 @@ public class CloseConnectionOp {
    * @param con the connection that is being closed
    * @param keepAlive whether to keep the proxy alive on the server
    */
-  public static void execute(Connection con, boolean keepAlive) throws Exception {
+  public static void execute(ClientCacheConnection con, boolean keepAlive) throws Exception {
     AbstractOp op = new CloseConnectionOpImpl(keepAlive);
     try {
       con.execute(op);
@@ -59,7 +59,7 @@ public class CloseConnectionOp {
     }
 
     @Override
-    protected void sendMessage(Connection cnx) throws Exception {
+    protected void sendMessage(ClientCacheConnection cnx) throws Exception {
       getMessage().clearMessageHasSecurePartFlag();
       getMessage().send(false);
     }

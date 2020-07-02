@@ -63,7 +63,7 @@ public class AuthenticateUserOp {
    * @param pool The connection pool to use for this operation.
    * @return Object unique user-id.
    */
-  public static Object executeOn(Connection con, ExecutablePool pool) {
+  public static Object executeOn(ClientCacheConnection con, ExecutablePool pool) {
     AbstractOp op = new AuthenticateUserOpImpl(con);
     return pool.executeOn(con, op);
   }
@@ -92,7 +92,7 @@ public class AuthenticateUserOp {
     private Properties securityProperties = null;
     private boolean needsServerLocation = false;
 
-    AuthenticateUserOpImpl(Connection con) {
+    AuthenticateUserOpImpl(ClientCacheConnection con) {
       super(MessageType.USER_CREDENTIAL_MESSAGE, 1);
       byte[] credentialBytes;
       DistributedMember server = new InternalDistributedMember(con.getSocket().getInetAddress(),
@@ -130,7 +130,7 @@ public class AuthenticateUserOp {
     }
 
     @Override
-    protected void sendMessage(Connection cnx) throws Exception {
+    protected void sendMessage(ClientCacheConnection cnx) throws Exception {
       HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
       byte[] secureBytes;
       hdos.writeLong(cnx.getConnectionID());
@@ -160,7 +160,7 @@ public class AuthenticateUserOp {
     }
 
     @Override
-    public Object attempt(Connection cnx) throws Exception {
+    public Object attempt(ClientCacheConnection cnx) throws Exception {
       if (cnx.getServer().getRequiresCredentials()) {
         return super.attempt(cnx);
       } else {
@@ -169,7 +169,7 @@ public class AuthenticateUserOp {
     }
 
     @Override
-    protected Object processResponse(Message msg, Connection cnx) throws Exception {
+    protected Object processResponse(Message msg, ClientCacheConnection cnx) throws Exception {
       byte[] bytes;
       Part part = msg.getPart(0);
       final int msgType = msg.getMessageType();

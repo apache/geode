@@ -847,13 +847,13 @@ public class PoolImpl implements InternalPool {
    * @return the result of execution if any; null if not
    */
   @Override
-  public Object executeOn(Connection con, Op op) {
+  public Object executeOn(ClientCacheConnection con, Op op) {
     authenticateIfRequired(con.getServer(), op);
     return executor.executeOn(con, op);
   }
 
   @Override
-  public Object executeOn(Connection con, Op op, boolean timeoutFatal) {
+  public Object executeOn(ClientCacheConnection con, Op op, boolean timeoutFatal) {
     return executor.executeOn(con, op, timeoutFatal);
   }
 
@@ -927,14 +927,14 @@ public class PoolImpl implements InternalPool {
    * using this method must be returned using returnConnection, even if it is destroyed.
    *
    */
-  public Connection acquireConnection() {
+  public ClientCacheConnection acquireConnection() {
     return manager.borrowConnection(45000L);
   }
 
   /**
    * Hook to return connections that were acquired using acquireConnection.
    */
-  public void returnConnection(Connection conn) {
+  public void returnConnection(ClientCacheConnection conn) {
     manager.returnConnection(conn);
   }
 
@@ -945,7 +945,7 @@ public class PoolImpl implements InternalPool {
    * destroyed.
    *
    */
-  public Connection acquireConnection(ServerLocation loc) {
+  public ClientCacheConnection acquireConnection(ServerLocation loc) {
     return manager.borrowConnection(loc, serverConnectionTimeout, false);
   }
 
@@ -959,7 +959,7 @@ public class PoolImpl implements InternalPool {
   /**
    * Test hook to handle an exception that happened on the given connection
    */
-  public void processException(Throwable e, Connection con) {
+  public void processException(Throwable e, ClientCacheConnection con) {
     executor.handleException(e, con, 0, false);
   }
 
@@ -989,7 +989,7 @@ public class PoolImpl implements InternalPool {
     boolean ok = false;
     if (queueManager != null) {
       QueueManager.QueueConnections cons = queueManager.getAllConnections();
-      Connection con = cons.getPrimary();
+      ClientCacheConnection con = cons.getPrimary();
       if (con != null) {
         final String msg = "killing primary endpoint";
         logger.info("<ExpectedException action=add>{}</ExpectedException>", msg);
@@ -1064,7 +1064,7 @@ public class PoolImpl implements InternalPool {
     ServerLocation result = null;
     if (queueManager != null) {
       QueueManager.QueueConnections cons = queueManager.getAllConnections();
-      Connection con = cons.getPrimary();
+      ClientCacheConnection con = cons.getPrimary();
       result = con.getServer();
     }
     return result;
@@ -1073,7 +1073,7 @@ public class PoolImpl implements InternalPool {
   /**
    * Test hook to get a connection to the primary server.
    */
-  public Connection getPrimaryConnection() {
+  public ClientCacheConnection getPrimaryConnection() {
     if (queueManager != null) {
       QueueManager.QueueConnections cons = queueManager.getAllConnections();
       return cons.getPrimary();
@@ -1089,10 +1089,10 @@ public class PoolImpl implements InternalPool {
     List<String> result = Collections.emptyList();
     if (queueManager != null) {
       QueueManager.QueueConnections cons = queueManager.getAllConnections();
-      List<Connection> backupCons = cons.getBackups();
+      List<ClientCacheConnection> backupCons = cons.getBackups();
       if (backupCons.size() > 0) {
         result = new ArrayList<>(backupCons.size());
-        for (Connection con : backupCons) {
+        for (ClientCacheConnection con : backupCons) {
           ServerLocation sl = con.getServer();
           result.add(sl.getHostName() + sl.getPort());
         }
@@ -1109,10 +1109,10 @@ public class PoolImpl implements InternalPool {
     List<ServerLocation> result = Collections.emptyList();
     if (queueManager != null) {
       QueueManager.QueueConnections cons = queueManager.getAllConnections();
-      List<Connection> backupCons = cons.getBackups();
+      List<ClientCacheConnection> backupCons = cons.getBackups();
       if (backupCons.size() > 0) {
         result = new ArrayList<>(backupCons.size());
-        for (Connection con : backupCons) {
+        for (ClientCacheConnection con : backupCons) {
           result.add(con.getServer());
         }
       }
@@ -1553,7 +1553,7 @@ public class PoolImpl implements InternalPool {
         if (queueManager == null) {
           throw new SubscriptionNotEnabledException();
         }
-        Connection primary = queueManager.getAllConnectionsNoWait().getPrimary();
+        ClientCacheConnection primary = queueManager.getAllConnectionsNoWait().getPrimary();
         if (primary != null && !map.containsKey(primary.getServer())) {
           Long userId = (Long) AuthenticateUserOp.executeOn(primary.getServer(), this,
               userAttributes.getCredentials());
@@ -1562,8 +1562,8 @@ public class PoolImpl implements InternalPool {
           }
         }
 
-        List<Connection> backups = queueManager.getAllConnectionsNoWait().getBackups();
-        for (Connection conn : backups) {
+        List<ClientCacheConnection> backups = queueManager.getAllConnectionsNoWait().getBackups();
+        for (ClientCacheConnection conn : backups) {
           if (!map.containsKey(conn.getServer())) {
             Long userId = (Long) AuthenticateUserOp.executeOn(conn.getServer(), this,
                 userAttributes.getCredentials());

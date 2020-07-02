@@ -22,7 +22,7 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.geode.InternalGemFireException;
-import org.apache.geode.cache.client.internal.Connection;
+import org.apache.geode.cache.client.internal.ClientCacheConnection;
 import org.apache.geode.cache.client.internal.ConnectionStats;
 import org.apache.geode.cache.client.internal.Endpoint;
 import org.apache.geode.cache.client.internal.Op;
@@ -36,13 +36,13 @@ import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
  * @since GemFire 5.7
  *
  */
-public class PooledConnection implements Connection {
+public class PooledConnection implements ClientCacheConnection {
 
   /*
    * connection is volatile because we may asynchronously destroy the pooled connection while
    * shutting down.
    */
-  private volatile Connection connection;
+  private volatile ClientCacheConnection connection;
   private volatile Endpoint endpoint;
   private volatile long birthDate;
   private long lastAccessed; // read & written while synchronized
@@ -50,7 +50,7 @@ public class PooledConnection implements Connection {
   private final AtomicBoolean shouldDestroy = new AtomicBoolean();
   private boolean waitingToSwitch = false;
 
-  public PooledConnection(ConnectionManagerImpl manager, Connection connection) {
+  public PooledConnection(ConnectionManagerImpl manager, ClientCacheConnection connection) {
     this.connection = connection;
     this.endpoint = connection.getEndpoint();
     this.birthDate = System.nanoTime();
@@ -78,7 +78,7 @@ public class PooledConnection implements Connection {
     synchronized (this) {
       this.active = false;
       notifyAll();
-      Connection myCon = connection;
+      ClientCacheConnection myCon = connection;
       if (myCon != null) {
         myCon.destroy();
         connection = null;
@@ -99,7 +99,7 @@ public class PooledConnection implements Connection {
 
   public void internalClose(boolean keepAlive) throws Exception {
     try {
-      Connection con = this.connection;
+      ClientCacheConnection con = this.connection;
       if (con != null) {
         con.close(keepAlive);
       }
@@ -115,7 +115,7 @@ public class PooledConnection implements Connection {
 
   @Override
   public void emergencyClose() {
-    Connection con = this.connection;
+    ClientCacheConnection con = this.connection;
     if (con != null) {
       this.connection.emergencyClose();
     }
@@ -123,8 +123,8 @@ public class PooledConnection implements Connection {
 
   }
 
-  Connection getConnection() {
-    Connection result = this.connection;
+  ClientCacheConnection getConnection() {
+    ClientCacheConnection result = this.connection;
     if (result == null) {
       throw new ConnectionDestroyedException();
     }
@@ -132,7 +132,7 @@ public class PooledConnection implements Connection {
   }
 
   @Override
-  public Connection getWrappedConnection() {
+  public ClientCacheConnection getWrappedConnection() {
     return getConnection();
   }
 
@@ -179,8 +179,9 @@ public class PooledConnection implements Connection {
   }
 
 
-  public synchronized boolean switchConnection(Connection newCon) throws InterruptedException {
-    Connection oldCon = null;
+  public synchronized boolean switchConnection(ClientCacheConnection newCon)
+      throws InterruptedException {
+    ClientCacheConnection oldCon = null;
     synchronized (this) {
       if (shouldDestroy())
         return false;
@@ -342,7 +343,7 @@ public class PooledConnection implements Connection {
 
   @Override
   public String toString() {
-    Connection myCon = connection;
+    ClientCacheConnection myCon = connection;
     if (myCon != null) {
       return "Pooled Connection to " + this.endpoint + ": " + myCon.toString();
     } else {
@@ -370,7 +371,7 @@ public class PooledConnection implements Connection {
     getConnection().setWanSiteVersion(wanSiteVersion);
   }
 
-  public void setConnection(Connection newConnection) {
+  public void setConnection(ClientCacheConnection newConnection) {
     this.connection = newConnection;
   }
 

@@ -48,7 +48,8 @@ public class GatewaySenderBatchOp {
    * @param removeFromQueueOnException true if the events should be processed even after some
    *        exception
    */
-  public static void executeOn(Connection con, ExecutablePool pool, List events, int batchId,
+  public static void executeOn(ClientCacheConnection con, ExecutablePool pool, List events,
+      int batchId,
       boolean removeFromQueueOnException, boolean isRetry) {
     AbstractOp op = new GatewaySenderGFEBatchOpImpl(events, batchId, removeFromQueueOnException,
         con.getDistributedSystemId(), isRetry);
@@ -56,7 +57,7 @@ public class GatewaySenderBatchOp {
   }
 
 
-  public static Object executeOn(Connection con, ExecutablePool pool) {
+  public static Object executeOn(ClientCacheConnection con, ExecutablePool pool) {
     AbstractOp op = new GatewaySenderGFEBatchOpImpl();
     return pool.executeOn(con, op, true/* timeoutFatal */);
   }
@@ -128,7 +129,7 @@ public class GatewaySenderBatchOp {
     }
 
     @Override
-    public Object attempt(Connection cnx) throws Exception {
+    public Object attempt(ClientCacheConnection cnx) throws Exception {
       if (getMessage().getNumberOfParts() == 0) {
         return attemptRead(cnx);
       }
@@ -148,7 +149,7 @@ public class GatewaySenderBatchOp {
       return this.failed;
     }
 
-    private Object attemptRead(Connection cnx) throws Exception {
+    private Object attemptRead(ClientCacheConnection cnx) throws Exception {
       this.failed = true;
       try {
         Object result = attemptReadResponse(cnx);
@@ -171,7 +172,7 @@ public class GatewaySenderBatchOp {
      * @throws Exception if the execute failed
      */
     @Override
-    protected Object attemptReadResponse(Connection cnx) throws Exception {
+    protected Object attemptReadResponse(ClientCacheConnection cnx) throws Exception {
       Message msg = createResponseMessage();
       if (msg != null) {
         msg.setComms(cnx.getSocket(), cnx.getInputStream(), cnx.getOutputStream(),
@@ -215,7 +216,7 @@ public class GatewaySenderBatchOp {
     }
 
     @Override
-    protected void sendMessage(Connection cnx) throws Exception {
+    protected void sendMessage(ClientCacheConnection cnx) throws Exception {
       getMessage().clearMessageHasSecurePartFlag();
       getMessage().send(false);
     }

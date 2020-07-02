@@ -169,7 +169,8 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
    * @param eventId the event ID for this put
    * @param callbackArg an optional callback arg to pass to any cache callbacks
    */
-  public void putOnForTestsOnly(Connection con, Object key, Object value, EventID eventId,
+  public void putOnForTestsOnly(ClientCacheConnection con, Object key, Object value,
+      EventID eventId,
       Object callbackArg) {
     EventIDHolder event = new EventIDHolder(eventId);
     PutOp.execute(con, pool, regionName, key, value, event, callbackArg,
@@ -214,7 +215,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
    * @param event the event for this destroy operation
    * @param callbackArg an optional callback arg to pass to any cache callbacks
    */
-  public void destroyOnForTestsOnly(Connection con, Object key, Object expectedOldValue,
+  public void destroyOnForTestsOnly(ClientCacheConnection con, Object key, Object expectedOldValue,
       Operation operation, EntryEventImpl event, Object callbackArg) {
     DestroyOp.execute(con, pool, regionName, key, expectedOldValue, operation, event,
         callbackArg);
@@ -237,7 +238,8 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
    * @param eventId the event id for this destroy
    * @param callbackArg an optional callback arg to pass to any cache callbacks
    */
-  public void destroyRegionOnForTestsOnly(Connection con, EventID eventId, Object callbackArg) {
+  public void destroyRegionOnForTestsOnly(ClientCacheConnection con, EventID eventId,
+      Object callbackArg) {
     DestroyRegionOp.execute(con, pool, regionName, eventId, callbackArg);
   }
 
@@ -268,7 +270,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
    * @param eventId the event id for this clear
    * @param callbackArg an optional callback arg to pass to any cache callbacks
    */
-  public void clearOnForTestsOnly(Connection con, EventID eventId, Object callbackArg) {
+  public void clearOnForTestsOnly(ClientCacheConnection con, EventID eventId, Object callbackArg) {
     ClearOp.execute(con, pool, regionName, eventId, callbackArg);
   }
 
@@ -486,7 +488,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
    * @param regionDataPolicy the data policy ordinal of the region
    * @return list of keys
    */
-  List registerInterestOn(Connection conn, final Object key, final int interestType,
+  List registerInterestOn(ClientCacheConnection conn, final Object key, final int interestType,
       final InterestResultPolicy policy, final boolean isDurable,
       final boolean receiveUpdatesAsInvalidates, final byte regionDataPolicy) {
     if (interestType == InterestType.KEY && key instanceof List) {

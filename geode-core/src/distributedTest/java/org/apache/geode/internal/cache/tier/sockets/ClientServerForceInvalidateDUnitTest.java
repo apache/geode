@@ -39,7 +39,7 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.SubscriptionAttributes;
 import org.apache.geode.cache.client.NoAvailableServersException;
 import org.apache.geode.cache.client.PoolManager;
-import org.apache.geode.cache.client.internal.Connection;
+import org.apache.geode.cache.client.internal.ClientCacheConnection;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
@@ -332,7 +332,7 @@ public class ClientServerForceInvalidateDUnitTest extends JUnit4CacheTestCase {
 
   private static boolean poolReady(final PoolImpl pool) {
     try {
-      Connection conn = pool.acquireConnection();
+      ClientCacheConnection conn = pool.acquireConnection();
       if (conn == null) {
         // excuse = "acquireConnection returned null?";
         return false;

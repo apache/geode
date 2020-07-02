@@ -55,7 +55,7 @@ public class PingOp {
     }
 
     @Override
-    protected void processSecureBytes(Connection cnx, Message message) throws Exception {
+    protected void processSecureBytes(ClientCacheConnection cnx, Message message) throws Exception {
       super.processSecureBytes(cnx, message);
       Message.MESSAGE_TYPE.set(null);
     }
@@ -66,7 +66,7 @@ public class PingOp {
     }
 
     @Override
-    protected void sendMessage(Connection cnx) throws Exception {
+    protected void sendMessage(ClientCacheConnection cnx) throws Exception {
       getMessage().clearMessageHasSecurePartFlag();
       getMessage().setNumberOfParts(1);
       getMessage().addObjPart(serverID);

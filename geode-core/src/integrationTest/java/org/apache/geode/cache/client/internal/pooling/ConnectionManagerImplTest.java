@@ -38,7 +38,7 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.cache.client.AllConnectionsInUseException;
 import org.apache.geode.cache.client.NoAvailableServersException;
-import org.apache.geode.cache.client.internal.Connection;
+import org.apache.geode.cache.client.internal.ClientCacheConnection;
 import org.apache.geode.cache.client.internal.ConnectionFactory;
 import org.apache.geode.cache.client.internal.Endpoint;
 import org.apache.geode.cache.client.internal.EndpointManager;
@@ -92,7 +92,7 @@ public class ConnectionManagerImplTest {
   @Test
   public void borrowConnectionThrowsWhenUsingExistingConnectionsAndNoFreeConnectionsExist() {
     ServerLocation serverLocation = mock(ServerLocation.class);
-    Connection connection = mock(Connection.class);
+    ClientCacheConnection connection = mock(ClientCacheConnection.class);
 
     when(connectionFactory.createClientToServerConnection(any())).thenReturn(connection);
 
@@ -111,7 +111,7 @@ public class ConnectionManagerImplTest {
 
   @Test
   public void borrowConnectionCreatesAConnectionOnSpecifiedServerWhenNoneExist() {
-    Connection connection = mock(Connection.class);
+    ClientCacheConnection connection = mock(ClientCacheConnection.class);
     ServerLocation serverLocation = mock(ServerLocation.class);
     when(connectionFactory.createClientToServerConnection(serverLocation, false))
         .thenReturn(connection);
@@ -128,7 +128,7 @@ public class ConnectionManagerImplTest {
 
   @Test
   public void borrowConnectionCreatesAConnectionWhenNoneExist() {
-    Connection connection = mock(Connection.class);
+    ClientCacheConnection connection = mock(ClientCacheConnection.class);
     when(connectionFactory.createClientToServerConnection(any())).thenReturn(connection);
 
     connectionManager = createDefaultConnectionManager();
@@ -142,7 +142,7 @@ public class ConnectionManagerImplTest {
 
   @Test
   public void borrowConnectionReturnsAnActiveConnection() {
-    Connection connection = mock(Connection.class);
+    ClientCacheConnection connection = mock(ClientCacheConnection.class);
     when(connectionFactory.createClientToServerConnection(any())).thenReturn(connection);
 
     connectionManager = createDefaultConnectionManager();
@@ -160,7 +160,7 @@ public class ConnectionManagerImplTest {
   public void borrowConnectionReturnsAConnectionWhenOneExists() {
     ServerLocation serverLocation = mock(ServerLocation.class);
     Endpoint endpoint = mock(Endpoint.class);
-    Connection connection = mock(Connection.class);
+    ClientCacheConnection connection = mock(ClientCacheConnection.class);
     when(connectionFactory.createClientToServerConnection(any())).thenReturn(connection);
     when(connection.getServer()).thenReturn(serverLocation);
     when(connection.getEndpoint()).thenReturn(endpoint);
@@ -169,7 +169,7 @@ public class ConnectionManagerImplTest {
     connectionManager = createDefaultConnectionManager();
     connectionManager.start(backgroundProcessor);
 
-    Connection heldConnection = connectionManager.borrowConnection(timeout);
+    ClientCacheConnection heldConnection = connectionManager.borrowConnection(timeout);
     connectionManager.returnConnection(heldConnection);
     heldConnection = connectionManager.borrowConnection(timeout);
     assertThat(heldConnection.getServer()).isEqualTo(connection.getServer());
@@ -211,7 +211,7 @@ public class ConnectionManagerImplTest {
   @Test
   public void borrowConnectionGivesUpWhenShuttingDown() {
     int maxConnections = 1;
-    Connection connection = mock(Connection.class);
+    ClientCacheConnection connection = mock(ClientCacheConnection.class);
     when(connectionFactory.createClientToServerConnection(any())).thenReturn(connection);
 
     connectionManager = new ConnectionManagerImpl(poolName, connectionFactory, endpointManager,
@@ -233,7 +233,7 @@ public class ConnectionManagerImplTest {
   @Test
   public void borrowConnectionTimesOutWithException() {
     int maxConnections = 1;
-    Connection connection = mock(Connection.class);
+    ClientCacheConnection connection = mock(ClientCacheConnection.class);
     when(connectionFactory.createClientToServerConnection(any())).thenReturn(connection);
 
     connectionManager = new ConnectionManagerImpl(poolName, connectionFactory, endpointManager,
@@ -256,17 +256,17 @@ public class ConnectionManagerImplTest {
     int maxConnections = 2;
 
     ServerLocation serverLocation1 = mock(ServerLocation.class);
-    Connection connection1 = mock(Connection.class);
+    ClientCacheConnection connection1 = mock(ClientCacheConnection.class);
     when(connectionFactory.createClientToServerConnection(serverLocation1, false))
         .thenReturn(connection1);
 
     ServerLocation serverLocation2 = mock(ServerLocation.class);
-    Connection connection2 = mock(Connection.class);
+    ClientCacheConnection connection2 = mock(ClientCacheConnection.class);
     when(connectionFactory.createClientToServerConnection(serverLocation2, false))
         .thenReturn(connection2);
 
     ServerLocation serverLocation3 = mock(ServerLocation.class);
-    Connection connection3 = mock(Connection.class);
+    ClientCacheConnection connection3 = mock(ClientCacheConnection.class);
     when(connectionFactory.createClientToServerConnection(serverLocation3, false))
         .thenReturn(connection3);
 
@@ -287,13 +287,13 @@ public class ConnectionManagerImplTest {
   @Test
   public void returnConnectionReturnsToHead() {
     ServerLocation serverLocation1 = mock(ServerLocation.class);
-    Connection connection1 = mock(Connection.class);
+    ClientCacheConnection connection1 = mock(ClientCacheConnection.class);
     when(connectionFactory.createClientToServerConnection(serverLocation1, false))
         .thenReturn(connection1);
     when(connection1.getServer()).thenReturn(serverLocation1);
 
     ServerLocation serverLocation2 = mock(ServerLocation.class);
-    Connection connection2 = mock(Connection.class);
+    ClientCacheConnection connection2 = mock(ClientCacheConnection.class);
     Endpoint endpoint2 = mock(Endpoint.class);
     when(connectionFactory.createClientToServerConnection(serverLocation2, false))
         .thenReturn(connection2);
@@ -303,9 +303,9 @@ public class ConnectionManagerImplTest {
 
     connectionManager = createDefaultConnectionManager();
     connectionManager.start(backgroundProcessor);
-    Connection heldConnection1 =
+    ClientCacheConnection heldConnection1 =
         connectionManager.borrowConnection(serverLocation1, timeout, false);
-    Connection heldConnection2 =
+    ClientCacheConnection heldConnection2 =
         connectionManager.borrowConnection(serverLocation2, timeout, false);
     assertThat(connectionManager.getConnectionCount()).isEqualTo(2);
 
@@ -320,13 +320,13 @@ public class ConnectionManagerImplTest {
 
   @Test
   public void shouldDestroyConnectionsDoNotGetReturnedToPool() {
-    Connection connection = mock(Connection.class);
+    ClientCacheConnection connection = mock(ClientCacheConnection.class);
     when(connectionFactory.createClientToServerConnection(any())).thenReturn(connection);
 
     connectionManager = createDefaultConnectionManager();
     connectionManager.start(backgroundProcessor);
 
-    Connection heldConnection = connectionManager.borrowConnection(timeout);
+    ClientCacheConnection heldConnection = connectionManager.borrowConnection(timeout);
     heldConnection.destroy();
     connectionManager.returnConnection(heldConnection, true);
 
@@ -341,17 +341,17 @@ public class ConnectionManagerImplTest {
     int maxConnections = 2;
 
     ServerLocation serverLocation1 = mock(ServerLocation.class);
-    Connection connection1 = mock(Connection.class);
+    ClientCacheConnection connection1 = mock(ClientCacheConnection.class);
     when(connectionFactory.createClientToServerConnection(serverLocation1, false))
         .thenReturn(connection1);
 
     ServerLocation serverLocation2 = mock(ServerLocation.class);
-    Connection connection2 = mock(Connection.class);
+    ClientCacheConnection connection2 = mock(ClientCacheConnection.class);
     when(connectionFactory.createClientToServerConnection(serverLocation2, false))
         .thenReturn(connection2);
 
     ServerLocation serverLocation3 = mock(ServerLocation.class);
-    Connection connection3 = mock(Connection.class);
+    ClientCacheConnection connection3 = mock(ClientCacheConnection.class);
     when(connectionFactory.createClientToServerConnection(serverLocation3, false))
         .thenReturn(connection3);
 
@@ -360,11 +360,11 @@ public class ConnectionManagerImplTest {
         cancelCriterion, poolStats);
     connectionManager.start(backgroundProcessor);
 
-    Connection heldConnection1 =
+    ClientCacheConnection heldConnection1 =
         connectionManager.borrowConnection(serverLocation1, timeout, false);
-    Connection heldConnection2 =
+    ClientCacheConnection heldConnection2 =
         connectionManager.borrowConnection(serverLocation2, timeout, false);
-    Connection heldConnection3 =
+    ClientCacheConnection heldConnection3 =
         connectionManager.borrowConnection(serverLocation3, timeout, false);
 
     assertThat(connectionManager.getConnectionCount()).isGreaterThan(maxConnections);
@@ -384,13 +384,13 @@ public class ConnectionManagerImplTest {
     Set<ServerLocation> excluded = Collections.emptySet();
 
     ServerLocation serverLocation1 = mock(ServerLocation.class);
-    Connection connection1 = mock(Connection.class);
+    ClientCacheConnection connection1 = mock(ClientCacheConnection.class);
     when(connectionFactory.createClientToServerConnection(serverLocation1, false))
         .thenReturn(connection1);
 
     ServerLocation serverLocation2 = mock(ServerLocation.class);
     Endpoint endpoint2 = mock(Endpoint.class);
-    Connection connection2 = mock(Connection.class);
+    ClientCacheConnection connection2 = mock(ClientCacheConnection.class);
     when(connectionFactory.createClientToServerConnection(eq(Collections.EMPTY_SET)))
         .thenReturn(connection2);
     when(connection2.getServer()).thenReturn(serverLocation2);
@@ -400,7 +400,8 @@ public class ConnectionManagerImplTest {
     connectionManager = createDefaultConnectionManager();
     connectionManager.start(backgroundProcessor);
 
-    Connection heldConnection = connectionManager.borrowConnection(serverLocation1, timeout, false);
+    ClientCacheConnection heldConnection =
+        connectionManager.borrowConnection(serverLocation1, timeout, false);
     heldConnection = connectionManager.exchangeConnection(heldConnection, excluded);
 
     assertThat(heldConnection.getServer()).isEqualTo(connection2.getServer());
@@ -416,23 +417,23 @@ public class ConnectionManagerImplTest {
     Set<ServerLocation> excluded = Collections.emptySet();
 
     ServerLocation serverLocation1 = mock(ServerLocation.class);
-    Connection connection1 = mock(Connection.class);
+    ClientCacheConnection connection1 = mock(ClientCacheConnection.class);
     when(connectionFactory.createClientToServerConnection(serverLocation1, false))
         .thenReturn(connection1);
 
     ServerLocation serverLocation2 = mock(ServerLocation.class);
-    Connection connection2 = mock(Connection.class);
+    ClientCacheConnection connection2 = mock(ClientCacheConnection.class);
     when(connectionFactory.createClientToServerConnection(serverLocation2, false))
         .thenReturn(connection2);
 
     ServerLocation serverLocation3 = mock(ServerLocation.class);
-    Connection connection3 = mock(Connection.class);
+    ClientCacheConnection connection3 = mock(ClientCacheConnection.class);
     when(connectionFactory.createClientToServerConnection(serverLocation3, false))
         .thenReturn(connection3);
 
     ServerLocation serverLocation4 = mock(ServerLocation.class);
     Endpoint endpoint4 = mock(Endpoint.class);
-    Connection connection4 = mock(Connection.class);
+    ClientCacheConnection connection4 = mock(ClientCacheConnection.class);
     when(connectionFactory.createClientToServerConnection(eq(Collections.EMPTY_SET)))
         .thenReturn(connection4);
     when(connection4.getServer()).thenReturn(serverLocation4);
@@ -444,7 +445,8 @@ public class ConnectionManagerImplTest {
         cancelCriterion, poolStats);
     connectionManager.start(backgroundProcessor);
 
-    Connection heldConnection = connectionManager.borrowConnection(serverLocation1, timeout, false);
+    ClientCacheConnection heldConnection =
+        connectionManager.borrowConnection(serverLocation1, timeout, false);
     connectionManager.borrowConnection(serverLocation2, timeout, false);
     connectionManager.borrowConnection(serverLocation3, timeout, false);
     assertThat(connectionManager.getConnectionCount()).isGreaterThan(maxConnections);
@@ -462,12 +464,12 @@ public class ConnectionManagerImplTest {
     Set<ServerLocation> excluded = Collections.emptySet();
 
     ServerLocation serverLocation1 = mock(ServerLocation.class);
-    Connection connection1 = mock(Connection.class);
+    ClientCacheConnection connection1 = mock(ClientCacheConnection.class);
     when(connectionFactory.createClientToServerConnection(serverLocation1, false))
         .thenReturn(connection1);
 
     ServerLocation serverLocation2 = mock(ServerLocation.class);
-    Connection connection2 = mock(Connection.class);
+    ClientCacheConnection connection2 = mock(ClientCacheConnection.class);
     Endpoint endpoint2 = mock(Endpoint.class);
     when(connectionFactory.createClientToServerConnection(serverLocation2, false))
         .thenReturn(connection2);
@@ -478,9 +480,9 @@ public class ConnectionManagerImplTest {
     connectionManager = createDefaultConnectionManager();
     connectionManager.start(backgroundProcessor);
 
-    Connection heldConnection1 =
+    ClientCacheConnection heldConnection1 =
         connectionManager.borrowConnection(serverLocation1, timeout, false);
-    Connection heldConnection2 =
+    ClientCacheConnection heldConnection2 =
         connectionManager.borrowConnection(serverLocation2, timeout, false);
 
     connectionManager.returnConnection(heldConnection2);

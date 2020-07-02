@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.net.Socket;
 
 import org.apache.geode.cache.client.ServerRefusedConnectionException;
-import org.apache.geode.cache.client.internal.Connection;
+import org.apache.geode.cache.client.internal.ClientCacheConnection;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
@@ -38,7 +38,7 @@ public interface ClientSideHandshake {
       throws IOException, AuthenticationRequiredException, AuthenticationFailedException,
       ServerRefusedConnectionException, ClassNotFoundException;
 
-  ServerQueueStatus handshakeWithServer(Connection conn, ServerLocation location,
+  ServerQueueStatus handshakeWithServer(ClientCacheConnection conn, ServerLocation location,
       CommunicationMode communicationMode) throws IOException, AuthenticationRequiredException,
       AuthenticationFailedException, ServerRefusedConnectionException;
 }

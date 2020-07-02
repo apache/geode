@@ -20,7 +20,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.client.internal.Connection;
+import org.apache.geode.cache.client.internal.ClientCacheConnection;
 import org.apache.geode.cache.client.internal.pooling.ConnectionDestroyedException;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
@@ -91,7 +91,7 @@ public class RemoteParallelGatewaySenderEventProcessor extends ParallelGatewaySe
           (GatewaySenderEventRemoteDispatcher) disp;
       // This will create a new connection if no batch has been sent till
       // now.
-      Connection conn = remoteDispatcher.getConnection(false);
+      ClientCacheConnection conn = remoteDispatcher.getConnection(false);
       if (conn != null) {
         short remoteSiteVersion = conn.getWanSiteVersion();
         if (Version.GFE_701.compareTo(Versioning.getVersionOrdinal(remoteSiteVersion)) <= 0) {

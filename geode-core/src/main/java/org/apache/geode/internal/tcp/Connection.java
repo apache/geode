@@ -573,6 +573,8 @@ public class Connection implements Runnable {
 
   private void setSocketBufferSize(Socket sock, boolean send, int requestedSize,
       boolean alreadySetInSocket) {
+    // logger.info("BRUCE: setting {} buffer size to {} (alreadySetInSocket={})",
+    // send?"send":"receive", requestedSize, alreadySetInSocket);
     if (requestedSize > 0) {
       try {
         int currentSize = send ? sock.getSendBufferSize() : sock.getReceiveBufferSize();
@@ -1620,20 +1622,19 @@ public class Connection implements Runnable {
         }
 
         try {
-          ByteBuffer buff = getInputBuffer();
+          ByteBuffer buffer = getInputBuffer();
           synchronized (stateLock) {
             connectionState = STATE_READING;
           }
           int amountRead;
           if (!isInitialRead) {
-            amountRead = SocketUtils.readFromSocket(socket, buff, inputStream);
+            amountRead = SocketUtils.readFromSocket(socket, buffer, inputStream);
           } else {
             isInitialRead = false;
             if (!skipInitialRead) {
-              conduit.getStats().incFinalCheckResponsesReceived(); // BRUCE: remove stat
-              amountRead = SocketUtils.readFromSocket(socket, buff, inputStream);
+              amountRead = SocketUtils.readFromSocket(socket, buffer, inputStream);
             } else {
-              amountRead = buff.position();
+              amountRead = buffer.position();
             }
           }
 
@@ -1641,6 +1642,7 @@ public class Connection implements Runnable {
             connectionState = STATE_IDLE;
           }
           if (amountRead == 0) {
+            Thread.yield();
             continue;
           }
           if (amountRead < 0) {
@@ -1779,7 +1781,6 @@ public class Connection implements Runnable {
       }
 
       ioFilter = new NioPlainEngine(getBufferPool(), getConduit().useDirectBuffers(), inputStream);
-      ((NioPlainEngine) ioFilter).setStatistics(conduit.getStats());
     }
   }
 
@@ -1902,6 +1903,7 @@ public class Connection implements Runnable {
       batchSend(buffer);
       return;
     }
+    // logger.info("BRUCE: sendPreserialized({}) to {}", buffer, remoteAddr);
     final boolean origSocketInUse = socketInUse;
     byte originalState;
     synchronized (stateLock) {
@@ -2680,8 +2682,14 @@ public class Connection implements Runnable {
     if (inputBuffer == null) {
       int allocSize = recvBufferSize;
       if (allocSize == -1) {
-        allocSize = owner.getConduit().tcpBufferSize;
+        allocSize = getConduit().tcpBufferSize;
       }
+      if (allocSize < DistributionConfig.DEFAULT_SOCKET_BUFFER_SIZE) {
+        allocSize = DistributionConfig.DEFAULT_SOCKET_BUFFER_SIZE;
+      }
+      // logger.info("BRUCE: creating input buffer with size {}, recvBufferSize={}
+      // tcpBufferSize={}",
+      // allocSize, recvBufferSize, getConduit().tcpBufferSize);
       inputBuffer =
           getConduit().useDirectBuffers() ? getBufferPool().acquireDirectReceiveBuffer(allocSize)
               : getBufferPool().acquireNonDirectReceiveBuffer(allocSize);
@@ -2818,6 +2826,7 @@ public class Connection implements Runnable {
 
           if (handshakeRead) {
             try {
+              // logger.info("BRUCE: invoking readMessage()");
               readMessage(peerDataBuffer);
             } catch (SerializationException e) {
               throw e;
@@ -3069,6 +3078,7 @@ public class Connection implements Runnable {
         ReplyProcessor21.clearMessageRPId();
       }
     } else if (messageType == CHUNKED_MSG_TYPE) {
+      // logger.info("BRUCE: recording message chunk from " + peerDataBuffer);
       MsgDestreamer md = obtainMsgDestreamer(messageId, remoteVersion);
       owner.getConduit().getStats().incMessagesBeingReceived(md.size() == 0,
           messageLength);
@@ -3273,6 +3283,7 @@ public class Connection implements Runnable {
         getBufferPool().releaseReceiveBuffer(oldBuffer);
       }
     } else {
+      // logger.info("BRUCE: messageLength={} processing {}", messageLength, inputBuffer);
       if (inputBuffer.position() != 0) {
         inputBuffer.compact();
       } else {

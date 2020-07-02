@@ -28,7 +28,7 @@ import org.apache.geode.GemFireIOException;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.ServerOperationException;
-import org.apache.geode.cache.client.internal.Connection;
+import org.apache.geode.cache.client.internal.ClientCacheConnection;
 import org.apache.geode.cache.client.internal.SenderProxy;
 import org.apache.geode.cache.client.internal.pooling.ConnectionDestroyedException;
 import org.apache.geode.cache.wan.GatewaySender;
@@ -49,7 +49,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
 
   protected final AbstractGatewaySenderEventProcessor processor;
 
-  private volatile Connection connection;
+  private volatile ClientCacheConnection connection;
 
   private final Set<String> notFoundRegions = new HashSet<String>();
 
@@ -93,7 +93,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
   }
 
   GatewaySenderEventRemoteDispatcher(AbstractGatewaySenderEventProcessor processor,
-      Connection connection) {
+      ClientCacheConnection connection) {
     this.processor = processor;
     this.sender = processor.getSender();
     this.connection = connection;
@@ -286,7 +286,8 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
    * @return the <code>Connection</code>
    *
    */
-  public Connection getConnection(boolean startAckReaderThread) throws GatewaySenderException {
+  public ClientCacheConnection getConnection(boolean startAckReaderThread)
+      throws GatewaySenderException {
     if (this.processor.isStopped()) {
       stop();
       return null;
@@ -330,7 +331,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
   public void destroyConnection() {
     this.connectionLifeCycleLock.writeLock().lock();
     try {
-      Connection con = this.connection;
+      ClientCacheConnection con = this.connection;
       if (con != null) {
         if (!con.isDestroyed()) {
           con.destroy();
@@ -363,7 +364,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
       } else {
         this.processor.resetBatchId();
       }
-      Connection con;
+      ClientCacheConnection con;
       try {
         if (this.sender.isParallel()) {
           /*
@@ -743,7 +744,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
       // we need to destroy connection irrespective of we are listening on it or
       // not. No need to take lock as the reader thread may be blocked and we might not
       // get chance to destroy unless that returns.
-      Connection conn = connection;
+      ClientCacheConnection conn = connection;
       if (conn != null) {
         shutDownAckReaderConnection(conn);
         if (!conn.isDestroyed()) {
@@ -767,8 +768,8 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
       }
     }
 
-    protected void shutDownAckReaderConnection(Connection connection) {
-      Connection conn = connection;
+    protected void shutDownAckReaderConnection(ClientCacheConnection connection) {
+      ClientCacheConnection conn = connection;
       // attempt to unblock the ackReader thread by shutting down the inputStream, if it was stuck
       // on a read
       try {

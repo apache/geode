@@ -214,7 +214,7 @@ public class QueueManagerJUnitTest {
       assertPortEquals(new int[] {2, 3}, manager.getAllConnections().getBackups());
     });
 
-    Connection backup = manager.getAllConnections().getBackups().get(0);
+    ClientCacheConnection backup = manager.getAllConnections().getBackups().get(0);
     backup.destroy();
 
     assertPortEquals(1, manager.getAllConnections().getPrimary());
@@ -247,18 +247,18 @@ public class QueueManagerJUnitTest {
     assertPortEquals(2, manager.getAllConnections().getPrimary());
   }
 
-  private static void assertPortEquals(int expected, Connection actual) {
+  private static void assertPortEquals(int expected, ClientCacheConnection actual) {
     assertThat(actual.getServer().getPort()).isEqualTo(expected);
   }
 
-  private static void assertPortEquals(int[] expected, Iterable<Connection> actual) {
+  private static void assertPortEquals(int[] expected, Iterable<ClientCacheConnection> actual) {
     Collection<Integer> expectedPorts = new ArrayList<>();
     for (int value : expected) {
       expectedPorts.add(value);
     }
 
     List<Integer> actualPorts = new ArrayList<>();
-    for (Connection connection : actual) {
+    for (ClientCacheConnection connection : actual) {
       actualPorts.add(connection.getServer().getPort());
     }
 
@@ -303,12 +303,12 @@ public class QueueManagerJUnitTest {
     }
 
     @Override
-    public Object executeOn(Connection con, Op op) {
+    public Object executeOn(ClientCacheConnection con, Op op) {
       return null;
     }
 
     @Override
-    public Object executeOn(Connection con, Op op, boolean timeoutFatal) {
+    public Object executeOn(ClientCacheConnection con, Op op, boolean timeoutFatal) {
       return null;
     }
 
@@ -578,7 +578,7 @@ public class QueueManagerJUnitTest {
     }
 
     @Override
-    public Connection createClientToServerConnection(Set excludedServers) {
+    public ClientCacheConnection createClientToServerConnection(Set excludedServers) {
       return null;
     }
 
@@ -588,7 +588,8 @@ public class QueueManagerJUnitTest {
     }
 
     @Override
-    public Connection createClientToServerConnection(ServerLocation location, boolean forQueue) {
+    public ClientCacheConnection createClientToServerConnection(ServerLocation location,
+        boolean forQueue) {
       if (nextConnections.isEmpty()) {
         return null;
       }
@@ -687,7 +688,7 @@ public class QueueManagerJUnitTest {
     }
   }
 
-  private class DummyConnection implements Connection {
+  private class DummyConnection implements ClientCacheConnection {
 
     private final ServerQueueStatus status;
     private final ServerLocation location;

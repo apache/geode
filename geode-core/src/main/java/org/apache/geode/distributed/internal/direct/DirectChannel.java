@@ -295,8 +295,7 @@ public class DirectChannel {
         List<?> sentCons; // used for cons we sent to this time
 
         final BaseMsgStreamer ms =
-            MsgStreamer.create(cons, msg, directReply, stats, getConduit().getBufferPool(),
-                /* BRUCE: conduit.useDirectBuffers() */ true);
+            MsgStreamer.create(cons, msg, directReply, stats, getConduit().getBufferPool(), true);
         try {
           startTime = 0;
           if (ackTimeout > 0) {
