@@ -35,7 +35,7 @@ import org.apache.geode.annotations.Immutable;
  * @since GemFire 5.7
  */
 @Immutable
-public class Version extends VersionOrdinalImpl {
+public class Version extends AbstractVersion {
 
   /** The name of this version */
   private final transient String name;
@@ -326,7 +326,7 @@ public class Version extends VersionOrdinalImpl {
     this.methodSuffix = this.productName + "_" + this.majorVersion + "_" + this.minorVersion + "_"
         + this.release + "_" + this.patch;
     if (ordinal != TOKEN_ORDINAL) {
-      VALUES[this.ordinal] = this;
+      VALUES[ordinal()] = this;
     }
   }
 
@@ -334,36 +334,10 @@ public class Version extends VersionOrdinalImpl {
     return CURRENT;
   }
 
-  /** Return the <code>Version</code> represented by specified ordinal */
-  public static Version fromOrdinal(short ordinal)
-      throws UnsupportedSerializationVersionException {
-    if (ordinal == TOKEN_ORDINAL) {
-      return TOKEN;
-    }
-    // for clients also check that there must be a commands object mapping
-    // for processing
-    if ((VALUES.length < ordinal + 1) || VALUES[ordinal] == null) {
-      throw new UnsupportedSerializationVersionException(String.format(
-          "Peer or client version with ordinal %s not supported. Highest known version is %s",
-          ordinal, CURRENT.name));
-    }
-    return VALUES[ordinal];
-  }
-
-  /**
-   * return the version corresponding to the given ordinal, or CURRENT if the ordinal isn't valid
-   *
-   * @return the corresponding ordinal
-   */
-  public static Version fromOrdinalOrCurrent(short ordinal) {
-    if (ordinal == TOKEN_ORDINAL) {
-      return TOKEN;
-    }
-    final Version version;
-    if ((VALUES.length < ordinal + 1) || (version = VALUES[ordinal]) == null) {
-      return CURRENT;
-    }
-    return version;
+  public static String unsupportedVersionMessage(final short ordinal) {
+    return String.format(
+        "Peer or client version with ordinal %s not supported. Highest known version is %s",
+        ordinal, CURRENT.name);
   }
 
   /**
@@ -406,7 +380,7 @@ public class Version extends VersionOrdinalImpl {
    *        seemlessly
    */
   public void writeOrdinal(DataOutput out, boolean compressed) throws IOException {
-    writeOrdinal(out, this.ordinal, compressed);
+    writeOrdinal(out, ordinal(), compressed);
   }
 
   /**
@@ -454,26 +428,13 @@ public class Version extends VersionOrdinalImpl {
    * since higher version data cannot be read.
    *
    * @param in the {@link DataInput} to read the version from
-   * @param returnNullForCurrent if true then return null if incoming version >= {@link #CURRENT}
+   * @param returnNullForCurrent if incoming version is unknown: if true then return null
    *        else return {@link #CURRENT}
    */
   public static Version readVersion(DataInput in, boolean returnNullForCurrent) throws IOException {
-    return fromOrdinalNoThrow(readOrdinal(in), returnNullForCurrent);
-  }
-
-  /**
-   * Return the <code>Version</code> represented by specified ordinal while not throwing exception
-   * if given ordinal is higher than any known ones or does not map to an actual Version instance
-   * due to gaps in the version ordinal sequence.
-   */
-  public static Version fromOrdinalNoThrow(short ordinal, boolean returnNullForCurrent) {
-    if (ordinal == TOKEN_ORDINAL) {
-      return TOKEN;
-    }
-    if (ordinal >= VALUES.length || VALUES[ordinal] == null) {
-      return returnNullForCurrent ? null : CURRENT;
-    }
-    return VALUES[ordinal];
+    return Versioning.getKnownVersion(
+        Versioning.getVersionOrdinal(readOrdinal(in)),
+        returnNullForCurrent ? null : CURRENT);
   }
 
   /**
@@ -546,8 +507,8 @@ public class Version extends VersionOrdinalImpl {
 
   public byte[] toBytes() {
     byte[] bytes = new byte[2];
-    bytes[0] = (byte) (ordinal >> 8);
-    bytes[1] = (byte) ordinal;
+    bytes[0] = (byte) (ordinal() >> 8);
+    bytes[1] = (byte) ordinal();
     return bytes;
   }
 
@@ -558,6 +519,20 @@ public class Version extends VersionOrdinalImpl {
   public static Iterable<? extends Version> getAllVersions() {
     return Arrays.asList(VALUES).stream().filter(x -> x != null && x != TEST_VERSION)
         .collect(Collectors.toList());
+  }
+
+  /**
+   * package-protected for use by Versioning factory
+   */
+  static Version getKnownVersion(final short ordinal,
+      final Version returnWhenUnknown) {
+    if (ordinal == TOKEN_ORDINAL) {
+      return TOKEN;
+    }
+    if (ordinal >= VALUES.length || VALUES[ordinal] == null) {
+      return returnWhenUnknown;
+    }
+    return VALUES[ordinal];
   }
 
 }

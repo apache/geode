@@ -98,6 +98,7 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.internal.util.ObjectIntProcedure;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -2038,7 +2039,8 @@ public class InitialImageOperation {
                     entry.key = key;
                     entry.setVersionTag(stamp.asVersionTag());
                     fillRes = mapEntry.fillInValue(rgn, entry, in, rgn.getDistributionManager(),
-                        sender.getVersionObject());
+                        Versioning
+                            .getKnownVersion(sender.getVersionOrdinalObject(), Version.CURRENT));
                     if (versionVector != null) {
                       if (logger.isTraceEnabled(LogMarker.INITIAL_IMAGE_VERBOSE)) {
                         logger.trace(LogMarker.INITIAL_IMAGE_VERBOSE,
@@ -2050,7 +2052,8 @@ public class InitialImageOperation {
                   entry = new InitialImageOperation.Entry();
                   entry.key = key;
                   fillRes = mapEntry.fillInValue(rgn, entry, in, rgn.getDistributionManager(),
-                      sender.getVersionObject());
+                      Versioning
+                          .getKnownVersion(sender.getVersionOrdinalObject(), Version.CURRENT));
                 }
               } catch (DiskAccessException dae) {
                 rgn.handleDiskAccessException(dae);

@@ -43,6 +43,7 @@ import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.util.internal.GeodeGlossary;
 
@@ -349,7 +350,10 @@ public class ClientProxyMembershipID
   }
 
   public Version getClientVersion() {
-    return ((InternalDistributedMember) getDistributedMember()).getVersionObject();
+    return Versioning
+        .getKnownVersion(
+            ((InternalDistributedMember) getDistributedMember()).getVersionOrdinalObject(),
+            Version.CURRENT);
   }
 
   public String getDSMembership() {

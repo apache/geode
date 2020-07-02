@@ -26,11 +26,37 @@ package org.apache.geode.internal.serialization;
 public class Versioning {
   private Versioning() {}
 
+  /**
+   * Make a VersionOrdinal for the short ordinal value.
+   *
+   * If the short ordinal represents a known version (Version) then return
+   * that instead of constructing a new VersionOrdinal.
+   *
+   * @return a known version (Version) if possible, otherwise a VersionOrdinal.
+   */
   public static VersionOrdinal getVersionOrdinal(final short ordinal) {
-    try {
-      return Version.fromOrdinal(ordinal);
-    } catch (final UnsupportedSerializationVersionException e) {
-      return new VersionOrdinalImpl(ordinal);
+    final Version knownVersion = Version.getKnownVersion(ordinal, null);
+    if (knownVersion == null) {
+      return new UnknownVersion(ordinal);
+    } else {
+      return knownVersion;
+    }
+  }
+
+  /**
+   * Find the known version (Version) for the VersionOrdinal, if possible.
+   * Otherwise return the returnWhenUnknown Version
+   *
+   * @param returnWhenUnknown will be returned if anyVersion does not represent
+   *        a known version
+   * @return a known version
+   */
+  public static Version getKnownVersion(final VersionOrdinal anyVersion,
+      Version returnWhenUnknown) {
+    if (anyVersion instanceof Version) {
+      return (Version) anyVersion;
+    } else {
+      return Version.getKnownVersion(anyVersion.ordinal(), returnWhenUnknown);
     }
   }
 

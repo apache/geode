@@ -65,6 +65,7 @@ import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
+import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
@@ -115,7 +116,8 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
     if (ver > Version.CURRENT_ORDINAL) {
       overrideClientVersion = ver;
     } else {
-      currentClientVersion = Version.fromOrdinalOrCurrent(ver);
+      currentClientVersion =
+          Versioning.getKnownVersion(Versioning.getVersionOrdinal(ver), Version.CURRENT);
       overrideClientVersion = -1;
     }
   }
@@ -216,7 +218,8 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
         conn.setWanSiteVersion(wanSiteVersion);
         // establish a versioned stream for the other site, if necessary
         if (wanSiteVersion < Version.CURRENT_ORDINAL) {
-          dis = new VersionedDataInputStream(dis, Version.fromOrdinalOrCurrent(wanSiteVersion));
+          dis = new VersionedDataInputStream(dis, Versioning
+              .getKnownVersion(Versioning.getVersionOrdinal(wanSiteVersion), Version.CURRENT));
         }
       }
 
@@ -240,7 +243,8 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
       }
 
       // validate that the remote side has a different distributed system id.
-      if (communicationMode.isWAN() && Version.GFE_66.compareTo(conn.getWanSiteVersion()) <= 0
+      if (communicationMode.isWAN()
+          && Version.GFE_66.compareTo(Versioning.getVersionOrdinal(conn.getWanSiteVersion())) <= 0
           && currentClientVersion.isNotOlderThan(Version.GFE_66)) {
         int remoteDistributedSystemId = in.read();
         int localDistributedSystemId =
@@ -253,7 +257,8 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
         }
       }
       // Read the PDX registry size from the remote size
-      if (communicationMode.isWAN() && Version.GFE_80.compareTo(conn.getWanSiteVersion()) <= 0
+      if (communicationMode.isWAN()
+          && Version.GFE_80.compareTo(Versioning.getVersionOrdinal(conn.getWanSiteVersion())) <= 0
           && currentClientVersion.isNotOlderThan(Version.GFE_80)) {
         int remotePdxSize = dis.readInt();
         serverQStatus.setPdxSize(remotePdxSize);

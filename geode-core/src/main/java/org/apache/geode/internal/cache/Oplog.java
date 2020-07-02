@@ -104,8 +104,8 @@ import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.sequencelog.EntryLogger;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
-import org.apache.geode.internal.serialization.UnsupportedSerializationVersionException;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.internal.shared.NativeCalls;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -2077,13 +2077,13 @@ public class Oplog implements CompactableOplog, Flushable {
   }
 
   private Version readProductVersionRecord(DataInput dis, File f) throws IOException {
-    Version recoveredGFVersion;
     short ver = Version.readOrdinal(dis);
-    try {
-      recoveredGFVersion = Version.fromOrdinal(ver);
-    } catch (UnsupportedSerializationVersionException e) {
+    final Version recoveredGFVersion =
+        Versioning.getKnownVersion(
+            Versioning.getVersionOrdinal(ver), null);
+    if (recoveredGFVersion == null) {
       throw new DiskAccessException(
-          String.format("Unknown version ordinal %s found when recovering Oplogs", ver), e,
+          String.format("Unknown version ordinal %s found when recovering Oplogs", ver),
           getParent());
     }
     if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {

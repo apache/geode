@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 
@@ -27,11 +28,12 @@ import org.apache.geode.cache.IncompatibleVersionException;
 import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.cache.VersionException;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.serialization.UnsupportedSerializationVersionException;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 class ServerSideHandshakeFactory {
@@ -70,30 +72,33 @@ class ServerSideHandshakeFactory {
         throw new EOFException(
             "HandShakeReader: EOF reached before client version could be read");
       }
-      Version clientVersion = null;
-      try {
-        clientVersion = Version.fromOrdinal(clientVersionOrdinal);
-        if (CommandInitializer.getCommands(clientVersion) == null) {
-          throw new UnsupportedVersionException("Client version {} is not supported");
-        }
-      } catch (UnsupportedSerializationVersionException uve) {
-        // Allows higher version of wan site to connect to server
-        if (isWan) {
-          return currentServerVersion;
+      final Version clientVersion = Versioning.getKnownVersion(
+          Versioning.getVersionOrdinal(clientVersionOrdinal), null);
+      final String message;
+      if (clientVersion == null) {
+        message = Version.unsupportedVersionMessage(clientVersionOrdinal);
+      } else {
+        final Map<Integer, Command> commands = CommandInitializer.getCommands(clientVersion);
+        if (commands == null) {
+          message = "Client version {} is not supported";
         } else {
-          SocketAddress sa = socket.getRemoteSocketAddress();
-          String sInfo = "";
-          if (sa != null) {
-            sInfo = " Client: " + sa.toString() + ".";
+          if (!clientVersion.compatibleWith(currentServerVersion)) {
+            throw new IncompatibleVersionException(clientVersion, currentServerVersion);
           }
-          throw new UnsupportedVersionException(uve.getMessage() + sInfo);
+          return clientVersion;
         }
       }
-
-      if (!clientVersion.compatibleWith(currentServerVersion)) {
-        throw new IncompatibleVersionException(clientVersion, currentServerVersion);
+      // Allows higher version of wan site to connect to server
+      if (isWan) {
+        return currentServerVersion;
+      } else {
+        SocketAddress sa = socket.getRemoteSocketAddress();
+        String sInfo = "";
+        if (sa != null) {
+          sInfo = " Client: " + sa.toString() + ".";
+        }
+        throw new UnsupportedVersionException(message + sInfo);
       }
-      return clientVersion;
     } finally {
       if (soTimeout != -1) {
         try {

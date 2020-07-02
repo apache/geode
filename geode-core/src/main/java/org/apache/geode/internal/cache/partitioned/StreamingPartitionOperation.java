@@ -47,6 +47,8 @@ import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PrimaryBucketException;
 import org.apache.geode.internal.cache.Token;
+import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -382,7 +384,8 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
       boolean sentFinalMessage = false;
       boolean receiverCacheClosed = false;
 
-      this.outStream = new HeapDataOutputStream(chunkSize, getSender().getVersionObject());
+      this.outStream = new HeapDataOutputStream(chunkSize, Versioning
+          .getKnownVersion(getSender().getVersionOrdinalObject(), Version.CURRENT));
 
       try {
         do {

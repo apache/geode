@@ -44,6 +44,7 @@ import org.apache.geode.internal.serialization.UnsupportedSerializationVersionEx
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
+import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -419,27 +420,33 @@ public class TcpServer {
     }
 
     Object request;
-    Object response;
     short versionOrdinal;
     if (gossipVersion <= getCurrentGossipVersion()
         && GOSSIP_TO_GEMFIRE_VERSION_MAP.containsKey(gossipVersion)) {
       // Create a versioned stream to remember sender's GemFire version
       versionOrdinal = (short) GOSSIP_TO_GEMFIRE_VERSION_MAP.get(gossipVersion);
 
-      if (Version.GFE_71.compareTo(versionOrdinal) <= 0) {
+      if (Version.GFE_71.compareTo(Versioning.getVersionOrdinal(versionOrdinal)) <= 0) {
         // Recent versions of TcpClient will send the version ordinal
         versionOrdinal = input.readShort();
       }
 
       if (logger.isDebugEnabled() && versionOrdinal != Version.CURRENT_ORDINAL) {
         logger.debug("Locator reading request from " + socket.getInetAddress() + " with version "
-            + Version.fromOrdinal(versionOrdinal));
+            + Versioning.getVersionOrdinal(versionOrdinal));
       }
-      input = new VersionedDataInputStream(input, Version.fromOrdinal(versionOrdinal));
+      final Version version = Versioning.getKnownVersion(
+          Versioning.getVersionOrdinal(versionOrdinal), null);
+      if (version == null) {
+        throw new UnsupportedSerializationVersionException(
+            Version.unsupportedVersionMessage(versionOrdinal));
+      }
+      input = new VersionedDataInputStream(input, version);
       request = objectDeserializer.readObject(input);
       if (logger.isDebugEnabled()) {
         logger.debug("Locator received request " + request + " from " + socket.getInetAddress());
       }
+      final Object response;
       if (request instanceof ShutdownRequest) {
         shuttingDown = true;
         // Don't call shutdown from within the worker thread, see java bug #6576792.
@@ -457,9 +464,8 @@ public class TcpServer {
       final long startTime2 = nanoTimeSupplier.getAsLong();
       if (response != null) {
         DataOutputStream output = new DataOutputStream(socket.getOutputStream());
-        if (versionOrdinal != Version.CURRENT_ORDINAL) {
-          output =
-              new VersionedDataOutputStream(output, Version.fromOrdinal(versionOrdinal));
+        if (version != Version.CURRENT) {
+          output = new VersionedDataOutputStream(output, version);
         }
         objectSerializer.writeObject(response, output);
         output.flush();
