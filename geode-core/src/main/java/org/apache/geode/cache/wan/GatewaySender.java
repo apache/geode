@@ -257,10 +257,10 @@ public interface GatewaySender {
   boolean isRunning();
 
   /**
-   * Returns whether or not this GatewaySender is starting.
-   * Set to false when the sender is stopped.
+   * Returns whether or not this GatewaySender was manually stopped.
+   * Set to false when the sender is asked to be started.
    */
-  boolean isStarting();
+  boolean wasManuallyStopped();
 
   /**
    * Returns whether or not this GatewaySender is paused.

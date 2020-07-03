@@ -342,7 +342,7 @@ public class SerialGatewaySenderOperationsDistributedTest extends CacheTestCase 
     vm5.invoke(() -> validateQueueSizeStat("ln", 0));
   }
 
-  // toberal run this test case to check if GatewaySender.isStarting() is effective
+  // toberal run this test case to check if GatewaySender.wasManuallyStopped() is effective
   @Test
   public void testRestartSerialGatewaySendersWhilePutting() throws Exception {
     int lnPort = vm0.invoke(() -> createFirstLocatorWithDSId(1));

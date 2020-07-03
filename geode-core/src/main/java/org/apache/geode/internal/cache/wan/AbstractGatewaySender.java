@@ -911,11 +911,11 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   }
 
   @Override
-  public boolean isStarting() {
+  public boolean wasManuallyStopped() {
     if (this.eventProcessor != null) {
-      return this.eventProcessor.isStarting();
+      return this.eventProcessor.wasManuallyStopped();
     }
-    logger.info("toberal isStarting eventProcessor is null for sender: {}", this);
+    logger.info("toberal wasManuallyStopped eventProcessor is null for sender: {}", this);
     return false;
   }
 
@@ -1041,12 +1041,12 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       }
 
       // If this gateway is not running, return
-      logger.info("toberal received event {}, isRunning: {}, isPrimary: {}, is Starting: {} ",
-          event.getEventId(), isRunning(), isPrimary(), isStarting());
+      logger.info(
+          "toberal received event {}, isRunning: {}, isPrimary: {}, wasManuallyStopped: {} ",
+          event.getEventId(), isRunning(), isPrimary(), wasManuallyStopped());
 
       if (!isRunning()) {
-        // logger.info("toberal received event while not running. isStarting: {}", isStarting());
-        if (isPrimary() && isStarting()) {
+        if (isPrimary() && !wasManuallyStopped()) {
           // if (isPrimary()) {
           // toberal. These are the events filling up the memory when the sender is stopped.
           // Can we do something with them???

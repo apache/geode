@@ -89,9 +89,10 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
   private volatile boolean isStopped = true;
 
   /**
-   * A boolean verifying whether this <code>AbstractGatewaySenderEventProcessor</code> is starting.
+   * A boolean verifying whether this <code>AbstractGatewaySenderEventProcessor</code>
+   * wasManuallyStopped.
    */
-  private volatile boolean isStarting = true;
+  private volatile boolean wasManuallyStopped = false;
 
   /**
    * A boolean verifying whether this <code>AbstractGatewaySenderEventProcessor</code> is paused.
@@ -187,22 +188,23 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
     return this.isStopped;
   }
 
-  public boolean isStarting() {
-    // logger.info("toberal isStarting: {}, sender: {}, thread: {}", isStarting, sender,
+  public boolean wasManuallyStopped() {
+    // logger.info("toberal wasManuallyStopped: {}, sender: {}, thread: {}", wasManuallyStopped,
+    // sender,
     // Thread.currentThread().getId());
-    return isStarting;
+    return wasManuallyStopped;
   }
 
-  protected void setIsStarting(boolean isStarting) {
-    // logger.info("toberal setIsStarting to {}", isStarting);
-    this.isStarting = isStarting;
+  protected void setWasManuallyStopped(boolean wasManuallyStopped) {
+    // logger.info("toberal setIsStarting to {}", wasManuallyStopped);
+    this.wasManuallyStopped = wasManuallyStopped;
   }
 
   protected void setIsStopped(boolean isStopped) {
     if (isStopped) {
       this.isStopped = true;
       this.failureLogInterval.clear();
-      setIsStarting(false);
+      setWasManuallyStopped(false);
     } else {
       this.isStopped = isStopped;
     }
@@ -1157,7 +1159,6 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
   public void setRunningStatus() throws Exception {
     GemFireException ex = null;
     try {
-      setIsStarting(true);
       this.initializeEventDispatcher();
     } catch (GemFireException e) {
       ex = e;
