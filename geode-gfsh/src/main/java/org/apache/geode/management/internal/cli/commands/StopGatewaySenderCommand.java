@@ -22,6 +22,7 @@ import javax.management.ObjectName;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.GatewaySenderMXBean;
@@ -97,6 +98,24 @@ public class StopGatewaySenderCommand extends GfshCommand {
       }
     }
 
+    sendAllStoppedMessage(dsMembers, cache, service, senderId);
+
     return resultModel;
+  }
+
+  private void sendAllStoppedMessage(Set<DistributedMember> dsMembers, Cache cache,
+      SystemManagementService service, String senderId) {
+    GatewaySenderMXBean bean;
+    for (DistributedMember member : dsMembers) {
+      if (cache.getDistributedSystem().getDistributedMember().getId().equals(member.getId())) {
+        bean = service.getLocalGatewaySenderMXBean(senderId);
+      } else {
+        ObjectName objectName = service.getGatewaySenderMBeanName(member, senderId);
+        bean = service.getMBeanProxy(objectName, GatewaySenderMXBean.class);
+      }
+      if (bean != null) {
+        bean.setMustQueueDroppedEvents(false);
+      }
+    }
   }
 }

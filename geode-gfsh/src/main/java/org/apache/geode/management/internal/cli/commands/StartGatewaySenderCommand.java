@@ -77,6 +77,11 @@ public class StartGatewaySenderCommand extends GfshCommand {
       return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
 
+    if (!sendAllStartingMessage(dsMembers, cache, service, id)) {
+      return ResultModel
+          .createError("Unable to send pre start message to all members hosting the sender");
+    }
+
     ExecutorService execService =
         LoggingExecutors.newCachedThreadPool("Start Sender Command Thread ", true);
 
@@ -154,5 +159,39 @@ public class StartGatewaySenderCommand extends GfshCommand {
     execService.shutdown();
 
     return resultModel;
+  }
+
+  private boolean sendAllStartingMessage(Set<DistributedMember> dsMembers, Cache cache,
+      SystemManagementService service, String senderId) {
+    ExecutorService execService =
+        LoggingExecutors.newCachedThreadPool("Start Sender Command Thread ", true);
+
+    List<Callable<Boolean>> callables = new ArrayList<>();
+
+    boolean success = true;
+    for (DistributedMember member : dsMembers) {
+      callables.add(() -> {
+        GatewaySenderMXBean bean;
+        if (cache.getDistributedSystem().getDistributedMember().getId().equals(member.getId())) {
+          bean = service.getLocalGatewaySenderMXBean(senderId);
+        } else {
+          ObjectName objectName = service.getGatewaySenderMBeanName(member, senderId);
+          bean = service.getMBeanProxy(objectName, GatewaySenderMXBean.class);
+        }
+        if (bean != null) {
+          bean.setMustQueueDroppedEvents(true);
+        }
+        return false;
+      });
+    }
+
+    try {
+      execService.invokeAll(callables);
+    } catch (InterruptedException ite) {
+      success = false;
+    } finally {
+      execService.shutdown();
+    }
+    return success;
   }
 }

@@ -334,4 +334,8 @@ public class GatewaySenderMBeanBridge {
   public int getEventsExceedingAlertThreshold() {
     return getStatistic(StatsKey.GATEWAYSENDER_EVENTS_EXCEEDING_ALERT_THRESHOLD).intValue();
   }
+
+  public void setMustQueueDroppedEvents(boolean mustQueueDroppedEvents) {
+    this.sender.setMustQueueDroppedEvents(mustQueueDroppedEvents);
+  };
 }

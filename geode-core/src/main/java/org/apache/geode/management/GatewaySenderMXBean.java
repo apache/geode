@@ -273,6 +273,8 @@ public interface GatewaySenderMXBean {
    */
   int getEventsExceedingAlertThreshold();
 
-
-
+  /**
+   * Tells the GatewaySender to queue or not queue dropped events while stopped.
+   */
+  void setMustQueueDroppedEvents(boolean mustQueueDroppedEvents);
 }

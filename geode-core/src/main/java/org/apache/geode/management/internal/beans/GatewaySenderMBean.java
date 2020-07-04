@@ -241,4 +241,9 @@ public class GatewaySenderMBean extends NotificationBroadcasterSupport
   public int getEventsExceedingAlertThreshold() {
     return bridge.getEventsExceedingAlertThreshold();
   }
+
+  @Override
+  public void setMustQueueDroppedEvents(boolean mustQueueDroppedEvents) {
+    bridge.setMustQueueDroppedEvents(mustQueueDroppedEvents);
+  };
 }
