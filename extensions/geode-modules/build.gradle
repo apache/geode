@@ -73,3 +73,6 @@ dependencies {
   }
 }
 
+sonarqube {
+  skipProject = true
+}

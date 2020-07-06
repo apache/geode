@@ -70,3 +70,6 @@ jar {
   baseName = 'geode-modules-session'
 }
 
+sonarqube {
+  skipProject = true
+}
