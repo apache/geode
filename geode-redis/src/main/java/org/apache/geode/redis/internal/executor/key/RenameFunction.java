@@ -247,9 +247,5 @@ public class RenameFunction implements InternalFunction {
     private Region getDataRegion() {
       return context.getDataSet();
     }
-
-    private Region<ByteArrayWrapper, RedisSet> getLocalDataSet() {
-      return context.getLocalDataSet(getDataRegion());
-    }
   }
 }
