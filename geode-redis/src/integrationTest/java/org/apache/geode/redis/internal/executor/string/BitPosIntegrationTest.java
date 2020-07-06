@@ -64,4 +64,13 @@ public class BitPosIntegrationTest {
     assertThat(jedis.bitpos("does not exist", true, new BitPosParams(4, 7))).isEqualTo(-1);
     assertThat(jedis.exists("does not exist")).isFalse();
   }
+
+  @Test
+  public void bitpos_givenEmptyKeyReturnsExpectedValue() {
+    jedis.set("emptyKey", "");
+    assertThat(jedis.bitpos("emptyKey", false)).isEqualTo(-1);
+    assertThat(jedis.bitpos("emptyKey", true)).isEqualTo(-1);
+    assertThat(jedis.bitpos("emptyKey", false, new BitPosParams(4, 7))).isEqualTo(-1);
+    assertThat(jedis.bitpos("emptyKey", true, new BitPosParams(4, 7))).isEqualTo(-1);
+  }
 }

@@ -33,42 +33,47 @@ import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.executor.CommandFunction;
 import org.apache.geode.redis.internal.executor.SingleResultCollector;
 
-public class RedisKeyCommandsFunctionExecutor implements RedisKeyCommands {
+/**
+ * This class is used by netty redis key command executors
+ * to invoke a geode function that will run on a
+ * particular server to do the redis command.
+ */
+public class RedisKeyCommandsFunctionInvoker implements RedisKeyCommands {
   private final Region<ByteArrayWrapper, RedisData> region;
 
-  public RedisKeyCommandsFunctionExecutor(
+  public RedisKeyCommandsFunctionInvoker(
       Region<ByteArrayWrapper, RedisData> region) {
     this.region = region;
   }
 
   @Override
   public boolean del(ByteArrayWrapper key) {
-    return CommandFunction.execute(DEL, key, null, region);
+    return CommandFunction.invoke(DEL, key, null, region);
   }
 
   @Override
   public boolean exists(ByteArrayWrapper key) {
-    return CommandFunction.execute(EXISTS, key, null, region);
+    return CommandFunction.invoke(EXISTS, key, null, region);
   }
 
   @Override
   public long pttl(ByteArrayWrapper key) {
-    return CommandFunction.execute(PTTL, key, null, region);
+    return CommandFunction.invoke(PTTL, key, null, region);
   }
 
   @Override
   public int pexpireat(ByteArrayWrapper key, long timestamp) {
-    return CommandFunction.execute(PEXPIREAT, key, timestamp, region);
+    return CommandFunction.invoke(PEXPIREAT, key, timestamp, region);
   }
 
   @Override
   public int persist(ByteArrayWrapper key) {
-    return CommandFunction.execute(PERSIST, key, null, region);
+    return CommandFunction.invoke(PERSIST, key, null, region);
   }
 
   @Override
   public String type(ByteArrayWrapper key) {
-    return CommandFunction.execute(TYPE, key, null, region);
+    return CommandFunction.invoke(TYPE, key, null, region);
   }
 
   @Override
@@ -84,8 +89,6 @@ public class RedisKeyCommandsFunctionExecutor implements RedisKeyCommands {
     keysToOperateOn.add(newKey);
 
     SingleResultCollector<Boolean> rc = new SingleResultCollector<>();
-
-
 
     FunctionService
         .onRegion(region)

@@ -62,6 +62,12 @@ public class BitCountIntegrationTest {
   }
 
   @Test
+  public void bitcount_withStartAndEnd_givenNonExistentKeyReturnsZero() {
+    assertThat(jedis.bitcount("does not exist", 1, 3)).isEqualTo(0);
+    assertThat(jedis.exists("does not exist")).isFalse();
+  }
+
+  @Test
   public void bitcount_givenEmptyStringReturnsZero() {
     jedis.set("key", "");
     assertThat(jedis.bitcount("key")).isEqualTo(0);

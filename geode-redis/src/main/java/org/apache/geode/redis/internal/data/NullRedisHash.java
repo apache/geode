@@ -18,31 +18,44 @@ package org.apache.geode.redis.internal.data;
 
 import static java.util.Collections.emptyList;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.redis.internal.netty.Coder;
 
-public class EmptyRedisHash extends RedisHash {
-  public EmptyRedisHash() {
+public class NullRedisHash extends RedisHash {
+  NullRedisHash() {
     super(emptyList());
+  }
+
+  @Override
+  public boolean isNull() {
+    return true;
   }
 
   @Override
   public int hset(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
       List<ByteArrayWrapper> fieldsToSet, boolean nx) {
-    throw new UnsupportedOperationException();
+    region.put(key, new RedisHash(fieldsToSet));
+    return fieldsToSet.size() / 2;
   }
 
   @Override
   public long hincrby(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
       ByteArrayWrapper field, long increment)
       throws NumberFormatException, ArithmeticException {
-    throw new UnsupportedOperationException();
+    region.put(key,
+        new RedisHash(Arrays.asList(field, new ByteArrayWrapper(Coder.longToBytes(increment)))));
+    return increment;
   }
 
   @Override
   public double hincrbyfloat(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
       ByteArrayWrapper field, double increment) throws NumberFormatException {
-    throw new UnsupportedOperationException();
+    region.put(key,
+        new RedisHash(
+            Arrays.asList(field, new ByteArrayWrapper(Coder.doubleToBytes(increment)))));
+    return increment;
   }
 }

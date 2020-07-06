@@ -37,7 +37,7 @@ public class PersistExecutor extends AbstractExecutor {
 
     ByteArrayWrapper key = command.getKey();
 
-    RedisKeyCommands redisKeyCommands = new RedisKeyCommandsFunctionExecutor(
+    RedisKeyCommands redisKeyCommands = new RedisKeyCommandsFunctionInvoker(
         context.getRegionProvider().getDataRegion());
     int result = redisKeyCommands.persist(key);
 

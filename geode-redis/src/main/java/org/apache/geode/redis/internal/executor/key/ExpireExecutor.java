@@ -52,7 +52,7 @@ public class ExpireExecutor extends AbstractExecutor implements Extendable {
 
     long timestamp = System.currentTimeMillis() + delay;
 
-    RedisKeyCommands redisKeyCommands = new RedisKeyCommandsFunctionExecutor(
+    RedisKeyCommands redisKeyCommands = new RedisKeyCommandsFunctionInvoker(
         context.getRegionProvider().getDataRegion());
     int result = redisKeyCommands.pexpireat(key, timestamp);
 

@@ -60,6 +60,33 @@ public abstract class AbstractRedisData implements RedisData {
   }
 
   @Override
+  public int pexpireat(CommandHelper helper, ByteArrayWrapper key, long timestamp) {
+    long now = System.currentTimeMillis();
+    if (now >= timestamp) {
+      // already expired
+      doExpiration(helper, key);
+    } else {
+      setExpirationTimestamp(helper.getRegion(), key, timestamp);
+    }
+    return 1;
+  }
+
+  @Override
+  public void doExpiration(CommandHelper helper, ByteArrayWrapper key) {
+    long start = helper.getRedisStats().startExpiration();
+    helper.getRegion().remove(key);
+    helper.getRedisStats().endExpiration(start);
+  }
+
+  @Override
+  public boolean rename(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper oldKey,
+      ByteArrayWrapper newKey) {
+    region.put(newKey, this);
+    region.remove(oldKey);
+    return true;
+  }
+
+  @Override
   public long getExpirationTimestamp() {
     return expirationTimestamp;
   }
@@ -86,6 +113,11 @@ public abstract class AbstractRedisData implements RedisData {
     }
     setExpirationTimestamp(region, key, NO_EXPIRATION);
     return 1;
+  }
+
+  @Override
+  public String type() {
+    return getType().toString();
   }
 
   public void persistNoDelta() {
