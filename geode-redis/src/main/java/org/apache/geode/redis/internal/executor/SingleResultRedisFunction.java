@@ -62,8 +62,7 @@ public abstract class SingleResultRedisFunction implements InternalFunction<Obje
 
   @Override
   public boolean isHA() {
-    // retrying can end up doing the operation twice so disable HA
-    return false;
+    return true;
   }
 
   public static void computeWithPrimaryLocked(Object key, LocalDataSet localDataSet, Runnable r) {

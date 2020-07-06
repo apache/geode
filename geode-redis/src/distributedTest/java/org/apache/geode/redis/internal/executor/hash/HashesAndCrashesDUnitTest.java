@@ -36,7 +36,6 @@ import io.lettuce.core.api.sync.RedisCommands;
 import io.lettuce.core.resource.ClientResources;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -170,12 +169,12 @@ public class HashesAndCrashesDUnitTest {
   }
 
   @Test
-  public void givenServerCrashesDuringAPPEND_thenDataIsNotLost() throws Exception {
-    modifyDataWhileCrashingVMs(DataType.APPEND);
+  public void givenServerCrashesDuringSET_thenDataIsNotLost() throws Exception {
+    modifyDataWhileCrashingVMs(DataType.SET);
   }
 
   enum DataType {
-    HSET, SADD, APPEND
+    HSET, SADD, SET
   }
 
   private void modifyDataWhileCrashingVMs(DataType dataType) throws Exception {
@@ -201,11 +200,11 @@ public class HashesAndCrashesDUnitTest {
         task3 = () -> saddPerformAndVerify(3, 20000, running3);
         task4 = () -> saddPerformAndVerify(4, 1000, running4);
         break;
-      case APPEND:
-        task1 = () -> appendPerformAndVerify(0, 20000, running1);
-        task2 = () -> appendPerformAndVerify(1, 20000, running2);
-        task3 = () -> appendPerformAndVerify(3, 20000, running3);
-        task4 = () -> appendPerformAndVerify(4, 1000, running4);
+      case SET:
+        task1 = () -> setPerformAndVerify(0, 20000, running1);
+        task2 = () -> setPerformAndVerify(1, 20000, running2);
+        task3 = () -> setPerformAndVerify(3, 20000, running3);
+        task4 = () -> setPerformAndVerify(4, 1000, running4);
         break;
     }
 
@@ -281,27 +280,22 @@ public class HashesAndCrashesDUnitTest {
     logger.info("--->>> SADD test ran {} iterations, retrying {} times", iterationCount);
   }
 
-  private void appendPerformAndVerify(int index, int minimumIterations, AtomicBoolean isRunning) {
-    String key = "append-key-" + index;
+  private void setPerformAndVerify(int index, int minimumIterations, AtomicBoolean isRunning) {
     int iterationCount = 0;
 
     while (iterationCount < minimumIterations || isRunning.get()) {
-      String appendString = "" + iterationCount % 2;
-      commands.append(key, appendString);
+      String key = "set-key-" + index + "-" + iterationCount;
+      commands.set(key, key);
       iterationCount += 1;
     }
 
-    String storedString = commands.get(key);
     for (int i = 0; i < iterationCount; i++) {
-      String expectedValue = "" + i % 2;
-      if (!expectedValue.equals("" + storedString.charAt(i))) {
-        Assert.fail("unexpected " + storedString.charAt(i) + " at index " + i + " in string "
-            + storedString);
-        break;
-      }
+      String key = "set-key-" + index + "-" + i;
+      String value = commands.get(key);
+      assertThat(value).isEqualTo(key);
     }
 
-    logger.info("--->>> APPEND test ran {} iterations", iterationCount);
+    logger.info("--->>> SET test ran {} iterations", iterationCount);
   }
 
   private static void rebalanceAllRegions(MemberVM vm) {

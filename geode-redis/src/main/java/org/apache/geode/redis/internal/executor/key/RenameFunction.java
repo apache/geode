@@ -211,9 +211,8 @@ public class RenameFunction implements InternalFunction {
   }
 
   @Override
-  boolean isHA() {
-    // retrying can end up doing the operation twice so disable HA
-    return false;
+  public boolean isHA() {
+    return true;
   }
 
 
