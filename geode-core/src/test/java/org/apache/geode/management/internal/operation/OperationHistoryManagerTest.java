@@ -33,17 +33,24 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.runtime.OperationResult;
 
 public class OperationHistoryManagerTest {
   private OperationHistoryManager history;
   private OperationStateStore operationStateStore;
+  private InternalCache cache;
 
   @Before
   public void setUp() throws Exception {
     operationStateStore = mock(OperationStateStore.class);
-    history = new OperationHistoryManager(Duration.ofHours(2), operationStateStore);
+    cache = mock(InternalCache.class);
+    history = new OperationHistoryManager(Duration.ofHours(2), operationStateStore, cache);
+    when(cache.getMyId()).thenReturn(mock(InternalDistributedMember.class));
+    when(cache.getDistributedSystem()).thenReturn(mock(DistributedSystem.class));
   }
 
   @Test

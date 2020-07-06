@@ -132,7 +132,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     this(cache, persistenceService, new ConcurrentHashMap<>(), new ConcurrentHashMap<>(),
         new MemberValidator(cache, persistenceService), new CommonConfigurationValidator(),
         new OperationManager(cache,
-            new OperationHistoryManager(new RegionOperationStateStore(cache))));
+            new OperationHistoryManager(new RegionOperationStateStore(cache), cache)));
     // initialize the list of managers
     managers.put(Region.class, new RegionConfigManager(persistenceService));
     managers.put(Pdx.class, new PdxManager(persistenceService));
@@ -531,27 +531,16 @@ public class LocatorClusterManagementService implements ClusterManagementService
     throw new IllegalStateException("This should never be called on locator");
   }
 
-  private boolean isLocatorOffline(OperationState operationState) {
-    if (operationState.getOperationEnd() == null
-        && cache.getMyId().toString().compareTo(operationState.getLocator()) != 0
-        && (!cache.getDistributedSystem().getAllOtherMembers().stream().map(Object::toString)
-            .collect(Collectors.toSet()).contains(operationState.getLocator()))) {
-      return true;
-    }
-    return false;
-  }
-
   private <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<A, V> toClusterManagementOperationResult(
       OperationState<A, V> operationState) {
     StatusCode resultStatus = StatusCode.OK;
     String resultMessage = "";
     if (operationState.getOperationEnd() == null) {
-      if (isLocatorOffline(operationState)) {
-        resultStatus = StatusCode.ERROR;
-        resultMessage = "Locator that initiated the Rest API operation is offline.";
-      } else {
-        resultStatus = StatusCode.IN_PROGRESS;
-      }
+      resultStatus = StatusCode.IN_PROGRESS;
+    } else if (operationState.getLocator() == null && operationState.getResult() == null
+        && operationState.getThrowable() == null) {
+      resultStatus = StatusCode.ERROR;
+      resultMessage = "Locator that initiated the Rest API operation is offline.";
     } else if (operationState.getThrowable() != null) {
       resultStatus = StatusCode.ERROR;
       resultMessage = operationState.getThrowable().toString();

@@ -98,6 +98,12 @@ public class OperationState<A extends ClusterManagementOperation<V>, V extends O
     }
   }
 
+  public void setOperationEnd(Date operationEnd) {
+    synchronized (this) {
+      this.operationEnd = operationEnd;
+    }
+  }
+
   /**
    * Creates and returns a copy of this operation state that will have
    * a consistent view of all the fields. In particular, it will have
@@ -126,18 +132,5 @@ public class OperationState<A extends ClusterManagementOperation<V>, V extends O
 
   public Throwable getThrowable() {
     return this.throwable;
-  }
-
-  @Override
-  public String toString() {
-    return "OperationState{" +
-        "opId='" + opId + '\'' +
-        ", operation=" + operation +
-        ", operationStart=" + operationStart +
-        ", operationEnd=" + operationEnd +
-        ", result=" + result +
-        ", throwable=" + throwable +
-        ", locator=" + locator +
-        '}';
   }
 }

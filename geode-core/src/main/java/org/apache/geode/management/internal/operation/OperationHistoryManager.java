@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.runtime.OperationResult;
 
@@ -35,22 +36,25 @@ import org.apache.geode.management.runtime.OperationResult;
 public class OperationHistoryManager {
   private final long keepCompletedMillis;
   private final OperationStateStore operationStateStore;
+  private final InternalCache cache;
 
   /**
    * set a default retention policy to keep results for 7 days after completion
    */
   public OperationHistoryManager(
-      OperationStateStore operationStateStore) {
-    this(Duration.ofDays(7), operationStateStore);
+      OperationStateStore operationStateStore, InternalCache cache) {
+    this(Duration.ofDays(7), operationStateStore, cache);
   }
 
   /**
    * set a custom retention policy to keep results for X amount of time after completion
    */
   public OperationHistoryManager(Duration keepCompleted,
-      OperationStateStore operationStateStore) {
+      OperationStateStore operationStateStore,
+      InternalCache cache) {
     keepCompletedMillis = keepCompleted.toMillis();
     this.operationStateStore = operationStateStore;
+    this.cache = cache;
   }
 
   /**
@@ -69,6 +73,7 @@ public class OperationHistoryManager {
     final long expirationTime = now() - keepCompletedMillis;
     Set<String> expiredKeys = operationStateStore.list()
         .stream()
+        .map(operationState -> validate(operationState))
         .filter(operationInstance -> isExpired(expirationTime, operationInstance))
         .map(OperationState::getId)
         .collect(Collectors.toSet());
@@ -88,6 +93,26 @@ public class OperationHistoryManager {
     }
 
     return operationEnd.getTime() <= expirationTime;
+  }
+
+  OperationState<?, ?> validate(OperationState<?, ?> operationState) {
+    if (isLocatorOffline(operationState)) {
+      operationState.setOperationEnd(new Date());
+      operationState.setLocator(null);
+    }
+
+    return operationState;
+  }
+
+  private boolean isLocatorOffline(OperationState operationState) {
+    if (operationState.getOperationEnd() == null
+        && (operationState.getLocator() != null)
+        && cache.getMyId().toString().compareTo(operationState.getLocator()) != 0
+        && (!cache.getDistributedSystem().getAllOtherMembers().stream().map(Object::toString)
+            .collect(Collectors.toSet()).contains(operationState.getLocator()))) {
+      return true;
+    }
+    return false;
   }
 
   /**
