@@ -1993,6 +1993,10 @@ public class InitialImageOperation {
         } else {
           it = rgn.getBestIterator(includeValues);
         }
+
+        final Version knownVersion = Versioning
+            .getKnownVersion(sender.getVersionOrdinalObject(), Version.CURRENT);
+
         do {
           flowControl.acquirePermit();
           int currentChunkSize = 0;
@@ -2039,8 +2043,7 @@ public class InitialImageOperation {
                     entry.key = key;
                     entry.setVersionTag(stamp.asVersionTag());
                     fillRes = mapEntry.fillInValue(rgn, entry, in, rgn.getDistributionManager(),
-                        Versioning
-                            .getKnownVersion(sender.getVersionOrdinalObject(), Version.CURRENT));
+                        knownVersion);
                     if (versionVector != null) {
                       if (logger.isTraceEnabled(LogMarker.INITIAL_IMAGE_VERBOSE)) {
                         logger.trace(LogMarker.INITIAL_IMAGE_VERBOSE,
@@ -2052,8 +2055,7 @@ public class InitialImageOperation {
                   entry = new InitialImageOperation.Entry();
                   entry.key = key;
                   fillRes = mapEntry.fillInValue(rgn, entry, in, rgn.getDistributionManager(),
-                      Versioning
-                          .getKnownVersion(sender.getVersionOrdinalObject(), Version.CURRENT));
+                      knownVersion);
                 }
               } catch (DiskAccessException dae) {
                 rgn.handleDiskAccessException(dae);
