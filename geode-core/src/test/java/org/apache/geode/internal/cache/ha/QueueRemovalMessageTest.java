@@ -57,7 +57,8 @@ public class QueueRemovalMessageTest {
   private final EventID eventID1 = mock(EventID.class);
   private final EventID eventID2 = mock(EventID.class);
   private final EventID eventID3 = mock(EventID.class);
-
+  private final int region1EventSize = 1;
+  private final int region2EventSize = 2;
 
   @Before
   public void setup() {
@@ -90,8 +91,10 @@ public class QueueRemovalMessageTest {
 
     queueRemovalMessage.processRegionQueues(cache, iterator);
 
-    verify(queueRemovalMessage).processRegionQueue(iterator, regionName1, 1, regionQueue1);
-    verify(queueRemovalMessage).processRegionQueue(iterator, regionName2, 2, regionQueue2);
+    verify(queueRemovalMessage).processRegionQueue(iterator, regionName1, region1EventSize,
+        regionQueue1);
+    verify(queueRemovalMessage).processRegionQueue(iterator, regionName2, region2EventSize,
+        regionQueue2);
     verify(queueRemovalMessage).removeQueueEvent(regionName1, regionQueue1, eventID1);
     verify(queueRemovalMessage).removeQueueEvent(regionName2, regionQueue2, eventID2);
     verify(queueRemovalMessage).removeQueueEvent(regionName2, regionQueue2, eventID3);
@@ -99,10 +102,10 @@ public class QueueRemovalMessageTest {
 
   private void addToMessagesList() {
     messagesList.add(regionName1);
-    messagesList.add(1);
+    messagesList.add(region1EventSize);
     messagesList.add(eventID1);
     messagesList.add(regionName2);
-    messagesList.add(2);
+    messagesList.add(region2EventSize);
     messagesList.add(eventID2);
     messagesList.add(eventID3);
   }
@@ -115,23 +118,26 @@ public class QueueRemovalMessageTest {
 
     queueRemovalMessage.processRegionQueues(cache, iterator);
 
-    verify(queueRemovalMessage).processRegionQueue(iterator, regionName1, 1, null);
-    verify(queueRemovalMessage).processRegionQueue(iterator, regionName2, 2, regionQueue2);
+    verify(queueRemovalMessage).processRegionQueue(iterator, regionName1, region1EventSize, null);
+    verify(queueRemovalMessage).processRegionQueue(iterator, regionName2, region2EventSize,
+        regionQueue2);
     verify(queueRemovalMessage, never()).removeQueueEvent(regionName1, regionQueue1, eventID1);
     verify(queueRemovalMessage).removeQueueEvent(regionName2, regionQueue2, eventID2);
     verify(queueRemovalMessage).removeQueueEvent(regionName2, regionQueue2, eventID3);
   }
 
   @Test
-  public void canProcessRegionQueuesWithoutHARegionQueueIsNotInitialized() {
+  public void canProcessRegionQueuesWhenHARegionQueueIsNotInitialized() {
     addToMessagesList();
     Iterator iterator = messagesList.iterator();
     when(regionQueue2.isQueueInitialized()).thenReturn(false);
 
     queueRemovalMessage.processRegionQueues(cache, iterator);
 
-    verify(queueRemovalMessage).processRegionQueue(iterator, regionName1, 1, regionQueue1);
-    verify(queueRemovalMessage).processRegionQueue(iterator, regionName2, 2, regionQueue2);
+    verify(queueRemovalMessage).processRegionQueue(iterator, regionName1, region1EventSize,
+        regionQueue1);
+    verify(queueRemovalMessage).processRegionQueue(iterator, regionName2, region2EventSize,
+        regionQueue2);
     verify(queueRemovalMessage).removeQueueEvent(regionName1, regionQueue1, eventID1);
     verify(queueRemovalMessage, never()).removeQueueEvent(regionName2, regionQueue2, eventID2);
     verify(queueRemovalMessage, never()).removeQueueEvent(regionName2, regionQueue2, eventID3);
@@ -141,13 +147,15 @@ public class QueueRemovalMessageTest {
   public void processRegionQueuesStopsIfProcessRegionQueueReturnsFalse() {
     addToMessagesList();
     Iterator iterator = messagesList.iterator();
-    doReturn(false).when(queueRemovalMessage).processRegionQueue(iterator, regionName1, 1,
-        regionQueue1);
+    doReturn(false).when(queueRemovalMessage).processRegionQueue(iterator, regionName1,
+        region1EventSize, regionQueue1);
 
     queueRemovalMessage.processRegionQueues(cache, iterator);
 
-    verify(queueRemovalMessage).processRegionQueue(iterator, regionName1, 1, regionQueue1);
-    verify(queueRemovalMessage, never()).processRegionQueue(iterator, regionName2, 2, regionQueue2);
+    verify(queueRemovalMessage).processRegionQueue(iterator, regionName1, region1EventSize,
+        regionQueue1);
+    verify(queueRemovalMessage, never()).processRegionQueue(iterator, regionName2, region2EventSize,
+        regionQueue2);
   }
 
   @Test
@@ -156,8 +164,8 @@ public class QueueRemovalMessageTest {
     Iterator iterator = messagesList.iterator();
     doReturn(false).when(queueRemovalMessage).removeQueueEvent(regionName1, regionQueue1, eventID1);
 
-    assertThat(queueRemovalMessage.processRegionQueue(iterator, regionName1, 1, regionQueue1))
-        .isFalse();
+    assertThat(queueRemovalMessage.processRegionQueue(iterator, regionName1, region1EventSize,
+        regionQueue1)).isFalse();
   }
 
   @Test

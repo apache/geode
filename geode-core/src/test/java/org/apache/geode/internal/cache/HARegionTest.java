@@ -53,7 +53,7 @@ public class HARegionTest {
   }
 
   @Test
-  public void getOwnerWithWaitReturnsHARegionQueueIfInitializedWithWait() throws Exception {
+  public void getOwnerWithWaitReturnsHARegionQueueIfInitializedWithWait() {
     long timeout = 1;
     HARegionQueue queue = mock(HARegionQueue.class);
     when(queue.isQueueInitializedWithWait(timeout)).thenReturn(true);
@@ -64,7 +64,7 @@ public class HARegionTest {
   }
 
   @Test
-  public void getOwnerWithWaitReturnsHARegionQueueIfNotInitializedWithWait() throws Exception {
+  public void getOwnerWithWaitReturnsNullIfNotInitializedWithWait() {
     long timeout = 1;
     HARegionQueue queue = mock(HARegionQueue.class);
     when(queue.isQueueInitializedWithWait(timeout)).thenReturn(false);
