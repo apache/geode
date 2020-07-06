@@ -210,6 +210,13 @@ public class RenameFunction implements InternalFunction {
     return true;
   }
 
+  @Override
+  boolean isHA() {
+    // retrying can end up doing the operation twice so disable HA
+    return false;
+  }
+
+
   private static class RenameContext {
 
     private final RegionFunctionContextImpl context;
