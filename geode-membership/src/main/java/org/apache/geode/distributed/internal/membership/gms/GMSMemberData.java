@@ -88,8 +88,7 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
    * e.g. during rolling upgrade members with old versions receive member identifiers
    * from members with new (unknown) versions.
    */
-  private transient VersionOrdinal versionOrdinal =
-      Versioning.getVersionOrdinal(Version.CURRENT.ordinal());
+  private transient VersionOrdinal versionOrdinal = Version.CURRENT;
 
   /**
    * whether this is a partial member ID (without roles, durable attributes). We use partial IDs in

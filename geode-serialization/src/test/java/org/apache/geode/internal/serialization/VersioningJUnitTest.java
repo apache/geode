@@ -38,6 +38,22 @@ public class VersioningJUnitTest {
   }
 
   @Test
+  public void getVersionOrdinalForToken() {
+    final VersionOrdinal versionOrdinal = Versioning.getVersionOrdinal(Version.TOKEN_ORDINAL);
+    assertThat(versionOrdinal).isEqualTo(Version.TOKEN);
+    assertThat(versionOrdinal).isInstanceOf(Version.class);
+  }
+
+  @Test
+  public void getVersionOrdinalForUnknownNegativeShort() {
+    // a little coziness with TOKEN_ORDINAL: we happen to know ordinals lower than that are not
+    // known versions
+    final VersionOrdinal versionOrdinal =
+        Versioning.getVersionOrdinal((short) (Version.TOKEN_ORDINAL - 1));
+    assertThat(versionOrdinal).isInstanceOf(UnknownVersion.class);
+  }
+
+  @Test
   public void getKnownVersionForKnownVersionOrdinal() {
     final Version current = Version.getCurrentVersion();
     final Version knownVersion = Versioning.getKnownVersion(current, null);

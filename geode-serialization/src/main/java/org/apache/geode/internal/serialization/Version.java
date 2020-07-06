@@ -389,7 +389,7 @@ public class Version extends AbstractVersion {
     if (ordinal == TOKEN_ORDINAL) {
       return TOKEN;
     }
-    if (ordinal >= VALUES.length || VALUES[ordinal] == null) {
+    if (ordinal < TOKEN_ORDINAL || ordinal >= VALUES.length || VALUES[ordinal] == null) {
       return returnWhenUnknown;
     }
     return VALUES[ordinal];
