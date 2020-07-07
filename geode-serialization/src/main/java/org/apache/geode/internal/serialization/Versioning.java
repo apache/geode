@@ -45,21 +45,21 @@ public class Versioning {
 
   /**
    * Return the known version (Version) for the VersionOrdinal, if possible.
-   * Otherwise return the returnWhenUnknown Version. This method essentially
+   * Otherwise return the defaultKnownVersion Version. This method essentially
    * downcasts a {@link VersionOrdinal} to a known version {@link Version}
    *
    * @param anyVersion came from a call to {@link #getVersionOrdinal(short)} or this
    *        method
-   * @param returnWhenUnknown will be returned if anyVersion does not represent
+   * @param defaultKnownVersion will be returned if anyVersion does not represent
    *        a known version
    * @return a known version
    */
-  public static Version getKnownVersion(final VersionOrdinal anyVersion,
-      Version returnWhenUnknown) {
+  public static Version getKnownVersionOrDefault(final VersionOrdinal anyVersion,
+      Version defaultKnownVersion) {
     if (anyVersion instanceof Version) {
       return (Version) anyVersion;
     } else {
-      return returnWhenUnknown;
+      return defaultKnownVersion;
     }
   }
 

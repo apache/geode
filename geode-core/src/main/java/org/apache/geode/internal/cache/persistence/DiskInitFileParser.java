@@ -433,7 +433,7 @@ public class DiskInitFileParser {
             logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE, "IFREC_GEMFIRE_VERSION version={}",
                 ver);
           }
-          gfversion = Versioning.getKnownVersion(
+          gfversion = Versioning.getKnownVersionOrDefault(
               Versioning.getVersionOrdinal(ver), null);
           if (gfversion == null) {
             throw new DiskAccessException(

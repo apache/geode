@@ -72,7 +72,7 @@ class ServerSideHandshakeFactory {
         throw new EOFException(
             "HandShakeReader: EOF reached before client version could be read");
       }
-      final Version clientVersion = Versioning.getKnownVersion(
+      final Version clientVersion = Versioning.getKnownVersionOrDefault(
           Versioning.getVersionOrdinal(clientVersionOrdinal), null);
       final String message;
       if (clientVersion == null) {

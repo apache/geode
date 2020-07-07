@@ -119,7 +119,7 @@ class ClientRegistrationMetadata {
       throws IOException {
     short clientVersionOrdinal = VersioningIO.readOrdinal(dataInputStream);
 
-    clientVersion = Versioning.getKnownVersion(
+    clientVersion = Versioning.getKnownVersionOrDefault(
         Versioning.getVersionOrdinal(clientVersionOrdinal), null);
 
     final String message;

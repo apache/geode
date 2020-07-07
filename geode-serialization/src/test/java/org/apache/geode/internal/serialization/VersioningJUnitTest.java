@@ -56,7 +56,7 @@ public class VersioningJUnitTest {
   @Test
   public void getKnownVersionForKnownVersionOrdinal() {
     final Version current = Version.getCurrentVersion();
-    final Version knownVersion = Versioning.getKnownVersion(current, null);
+    final Version knownVersion = Versioning.getKnownVersionOrDefault(current, null);
     assertThat(knownVersion).isEqualTo(current);
   }
 
@@ -66,8 +66,8 @@ public class VersioningJUnitTest {
     final Version current = Version.getCurrentVersion();
     final short unknownOrdinal = (short) (current.ordinal() + 1);
     final UnknownVersion unknownVersion = new UnknownVersion(unknownOrdinal);
-    assertThat(Versioning.getKnownVersion(unknownVersion, null)).isNull();
-    assertThat(Versioning.getKnownVersion(unknownVersion, current)).isEqualTo(current);
+    assertThat(Versioning.getKnownVersionOrDefault(unknownVersion, null)).isNull();
+    assertThat(Versioning.getKnownVersionOrDefault(unknownVersion, current)).isEqualTo(current);
   }
 
 }

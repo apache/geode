@@ -152,7 +152,7 @@ public class TcpClient {
     // Get the GemFire version of the TcpServer first, before sending any other request.
     final short serverVersionShort = getServerVersion(addr, timeout);
     Version serverVersion =
-        Versioning.getKnownVersion(
+        Versioning.getKnownVersionOrDefault(
             Versioning.getVersionOrdinal(serverVersionShort),
             null);
     final String debugVersionMessage;

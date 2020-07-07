@@ -435,7 +435,7 @@ public class TcpServer {
         logger.debug("Locator reading request from " + socket.getInetAddress() + " with version "
             + Versioning.getVersionOrdinal(versionOrdinal));
       }
-      final Version version = Versioning.getKnownVersion(
+      final Version version = Versioning.getKnownVersionOrDefault(
           Versioning.getVersionOrdinal(versionOrdinal), null);
       if (version == null) {
         throw new UnsupportedSerializationVersionException(

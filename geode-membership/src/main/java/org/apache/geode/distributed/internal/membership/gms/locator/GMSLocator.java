@@ -454,7 +454,7 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID>, Tcp
         return false;
       } else {
         Version geodeVersion =
-            Versioning.getKnownVersion(
+            Versioning.getKnownVersionOrDefault(
                 Versioning.getVersionOrdinal((short) version),
                 Version.CURRENT);
         logger.info("Peer locator found that persistent view was written with version {}",

@@ -1995,7 +1995,7 @@ public class InitialImageOperation {
         }
 
         final Version knownVersion = Versioning
-            .getKnownVersion(sender.getVersionOrdinalObject(), Version.CURRENT);
+            .getKnownVersionOrDefault(sender.getVersionOrdinalObject(), Version.CURRENT);
 
         do {
           flowControl.acquirePermit();

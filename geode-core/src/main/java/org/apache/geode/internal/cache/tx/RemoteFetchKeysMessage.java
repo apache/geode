@@ -224,7 +224,7 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
       // always write at least one chunk
       final HeapDataOutputStream mos = new HeapDataOutputStream(
           InitialImageOperation.CHUNK_SIZE_IN_BYTES + 2048, Versioning
-              .getKnownVersion(recipient.getVersionOrdinalObject(), Version.CURRENT));
+              .getKnownVersionOrDefault(recipient.getVersionOrdinalObject(), Version.CURRENT));
       do {
         mos.reset();
 

@@ -297,7 +297,7 @@ public abstract class StreamingOperation {
       int chunkSize = socketBufferSize - MSG_OVERHEAD;
       HeapDataOutputStream outStream =
           new HeapDataOutputStream(chunkSize, Versioning
-              .getKnownVersion(getSender().getVersionOrdinalObject(), Version.CURRENT));
+              .getKnownVersionOrDefault(getSender().getVersionOrdinalObject(), Version.CURRENT));
       boolean sentFinalMessage = false;
       boolean receiverCacheClosed = false;
       int msgNum = 0;

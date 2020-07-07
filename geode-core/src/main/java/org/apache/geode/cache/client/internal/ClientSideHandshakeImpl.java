@@ -118,7 +118,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
       overrideClientVersion = ver;
     } else {
       currentClientVersion =
-          Versioning.getKnownVersion(Versioning.getVersionOrdinal(ver), Version.CURRENT);
+          Versioning.getKnownVersionOrDefault(Versioning.getVersionOrdinal(ver), Version.CURRENT);
       overrideClientVersion = -1;
     }
   }
@@ -220,7 +220,8 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
         // establish a versioned stream for the other site, if necessary
         if (wanSiteVersion < Version.CURRENT_ORDINAL) {
           dis = new VersionedDataInputStream(dis, Versioning
-              .getKnownVersion(Versioning.getVersionOrdinal(wanSiteVersion), Version.CURRENT));
+              .getKnownVersionOrDefault(Versioning.getVersionOrdinal(wanSiteVersion),
+                  Version.CURRENT));
         }
       }
 

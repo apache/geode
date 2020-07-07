@@ -93,7 +93,7 @@ public class VersionJUnitTest {
 
   @Test
   public void testFromOrdinalForCurrentVersionSucceeds() {
-    final Version version = Versioning.getKnownVersion(
+    final Version version = Versioning.getKnownVersionOrDefault(
         Versioning.getVersionOrdinal(Version.CURRENT_ORDINAL), null);
     assertThat(version).isNotNull();
     assertThat(version).isEqualTo(Version.CURRENT);

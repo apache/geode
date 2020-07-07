@@ -2812,7 +2812,7 @@ public class Connection implements Runnable {
       uniqueId = dis.readLong();
       // read the product version ordinal for on-the-fly serialization
       // transformations (for rolling upgrades)
-      remoteVersion = Versioning.getKnownVersion(
+      remoteVersion = Versioning.getKnownVersionOrDefault(
           Versioning.getVersionOrdinal(VersioningIO.readOrdinal(dis)),
           null);
       int dominoNumber = 0;
@@ -3130,7 +3130,7 @@ public class Connection implements Runnable {
           }
           // read the product version ordinal for on-the-fly serialization
           // transformations (for rolling upgrades)
-          remoteVersion = Versioning.getKnownVersion(
+          remoteVersion = Versioning.getKnownVersionOrDefault(
               Versioning.getVersionOrdinal(VersioningIO.readOrdinal(dis)),
               null);
           ioFilter.doneReading(peerDataBuffer);

@@ -2080,7 +2080,7 @@ public class Oplog implements CompactableOplog, Flushable {
   private Version readProductVersionRecord(DataInput dis, File f) throws IOException {
     short ver = VersioningIO.readOrdinal(dis);
     final Version recoveredGFVersion =
-        Versioning.getKnownVersion(
+        Versioning.getKnownVersionOrDefault(
             Versioning.getVersionOrdinal(ver), null);
     if (recoveredGFVersion == null) {
       throw new DiskAccessException(

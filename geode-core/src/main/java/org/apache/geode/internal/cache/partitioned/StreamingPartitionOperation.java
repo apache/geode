@@ -385,7 +385,7 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
       boolean receiverCacheClosed = false;
 
       this.outStream = new HeapDataOutputStream(chunkSize, Versioning
-          .getKnownVersion(getSender().getVersionOrdinalObject(), Version.CURRENT));
+          .getKnownVersionOrDefault(getSender().getVersionOrdinalObject(), Version.CURRENT));
 
       try {
         do {
