@@ -35,10 +35,10 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.serialization.ObjectDeserializer;
 import org.apache.geode.internal.serialization.ObjectSerializer;
-import org.apache.geode.internal.serialization.UnsupportedSerializationVersionException;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
+import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -150,16 +150,25 @@ public class TcpClient {
     long giveupTime = System.currentTimeMillis() + timeout;
 
     // Get the GemFire version of the TcpServer first, before sending any other request.
-    short serverVersion = getServerVersion(addr, timeout);
-
-    if (serverVersion > Version.CURRENT_ORDINAL) {
-      serverVersion = Version.CURRENT_ORDINAL;
+    final short serverVersionShort = getServerVersion(addr, timeout);
+    Version serverVersion =
+        Versioning.getKnownVersionOrDefault(
+            Versioning.getVersionOrdinal(serverVersionShort),
+            null);
+    final String debugVersionMessage;
+    if (serverVersion == null) {
+      serverVersion = Version.CURRENT;
+      debugVersionMessage =
+          "Remote TcpServer version: " + serverVersionShort + " is higher than local version: "
+              + Version.CURRENT_ORDINAL + ". This is never expected as remoteVersion";
+    } else {
+      debugVersionMessage = null;
     }
 
     // establish the old GossipVersion for the server
     int gossipVersion = TcpServer.getCurrentGossipVersion();
 
-    if (Version.GFE_71.compareTo(serverVersion) > 0) {
+    if (serverVersion.isNotNewerThan(Version.GFE_71)) {
       gossipVersion = TcpServer.getOldGossipVersion();
     }
 
@@ -178,13 +187,13 @@ public class TcpClient {
 
       out = new DataOutputStream(new BufferedOutputStream(sock.getOutputStream()));
 
-      if (serverVersion < Version.CURRENT_ORDINAL) {
-        out = new VersionedDataOutputStream(out, Version.fromOrdinalNoThrow(serverVersion, false));
+      if (serverVersion.isOlderThan(Version.CURRENT)) {
+        out = new VersionedDataOutputStream(out, serverVersion);
       }
 
       out.writeInt(gossipVersion);
       if (gossipVersion > TcpServer.getOldGossipVersion()) {
-        out.writeShort(serverVersion);
+        out.writeShort(serverVersionShort);
       }
 
       objectSerializer.writeObject(request, out);
@@ -192,7 +201,10 @@ public class TcpClient {
 
       if (replyExpected) {
         DataInputStream in = new DataInputStream(sock.getInputStream());
-        in = new VersionedDataInputStream(in, Version.fromOrdinal(serverVersion));
+        if (debugVersionMessage != null && logger.isDebugEnabled()) {
+          logger.debug(debugVersionMessage);
+        }
+        in = new VersionedDataInputStream(in, serverVersion);
         try {
           Object response = objectDeserializer.readObject(in);
           logger.debug("received response: {}", response);
@@ -207,13 +219,6 @@ public class TcpClient {
       } else {
         return null;
       }
-    } catch (UnsupportedSerializationVersionException ex) {
-      if (logger.isDebugEnabled()) {
-        logger
-            .debug("Remote TcpServer version: " + serverVersion + " is higher than local version: "
-                + Version.CURRENT_ORDINAL + ". This is never expected as remoteVersion");
-      }
-      return null;
     } finally {
       try {
         if (replyExpected) {

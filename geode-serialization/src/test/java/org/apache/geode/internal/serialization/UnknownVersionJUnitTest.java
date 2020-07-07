@@ -20,28 +20,28 @@ import static org.assertj.core.api.Assertions.assertThat;
 import junit.framework.TestCase;
 import org.junit.Test;
 
-public class VersionOrdinalImplJUnitTest extends TestCase {
+public class UnknownVersionJUnitTest extends TestCase {
 
   @Test
   public void testEqualMinSameIdentity() {
-    final VersionOrdinal versionOrdinal = new VersionOrdinalImpl(Short.MIN_VALUE);
+    final VersionOrdinal versionOrdinal = construct(Short.MIN_VALUE);
     validateEqual(versionOrdinal, versionOrdinal);
   }
 
   @Test
   public void testEqualMinDifferentIdentity() {
-    validateEqual(new VersionOrdinalImpl(Short.MIN_VALUE), new VersionOrdinalImpl(Short.MIN_VALUE));
+    validateEqual(construct(Short.MIN_VALUE), construct(Short.MIN_VALUE));
   }
 
   @Test
   public void testEqualMaxSameIdentity() {
-    final VersionOrdinalImpl versionOrdinal = new VersionOrdinalImpl(Short.MAX_VALUE);
+    final UnknownVersion versionOrdinal = construct(Short.MAX_VALUE);
     validateEqual(versionOrdinal, versionOrdinal);
   }
 
   @Test
   public void testEqualMaxDifferentIdentity() {
-    validateEqual(new VersionOrdinalImpl(Short.MAX_VALUE), new VersionOrdinalImpl(Short.MAX_VALUE));
+    validateEqual(construct(Short.MAX_VALUE), construct(Short.MAX_VALUE));
   }
 
   @Test
@@ -66,24 +66,24 @@ public class VersionOrdinalImplJUnitTest extends TestCase {
 
   @Test
   public void testStringMin() {
-    assertThat(new VersionOrdinalImpl(Short.MIN_VALUE).toString())
-        .isEqualTo("VersionOrdinal[ordinal=-32768]");
+    assertThat(construct(Short.MIN_VALUE).toString())
+        .isEqualTo("UnknownVersion[ordinal=-32768]");
   }
 
   @Test
   public void testStringMax() {
-    assertThat(new VersionOrdinalImpl(Short.MAX_VALUE).toString())
-        .isEqualTo("VersionOrdinal[ordinal=32767]");
+    assertThat(construct(Short.MAX_VALUE).toString())
+        .isEqualTo("UnknownVersion[ordinal=32767]");
   }
 
   @Test
   public void testCompareToNull() {
-    assertThat(new VersionOrdinalImpl((short) 3).compareTo(null)).isEqualTo(1);
+    assertThat(construct((short) 3).compareTo(null)).isEqualTo(1);
   }
 
   @Test
   public void testEqualsIncompatible() {
-    assertThat(new VersionOrdinalImpl((short) 6).equals("howdy!")).isFalse();
+    assertThat(construct((short) 6).equals("howdy!")).isFalse();
   }
 
   private void validateEqual(final VersionOrdinal a, final VersionOrdinal b) {
@@ -96,8 +96,8 @@ public class VersionOrdinalImplJUnitTest extends TestCase {
   }
 
   private void validateUnequal(final short smallerShort, final short largerShort) {
-    final VersionOrdinal smaller = new VersionOrdinalImpl(smallerShort);
-    final VersionOrdinal larger = new VersionOrdinalImpl(largerShort);
+    final VersionOrdinal smaller = construct(smallerShort);
+    final VersionOrdinal larger = construct(largerShort);
 
     assertThat(smaller.compareTo(larger)).isLessThan(0);
     assertThat(smaller.equals(larger)).isFalse();
@@ -118,10 +118,14 @@ public class VersionOrdinalImplJUnitTest extends TestCase {
   }
 
   private void validateHash(final short ordinal) {
-    final VersionOrdinal a = new VersionOrdinalImpl(ordinal);
-    final VersionOrdinal b = new VersionOrdinalImpl(ordinal);
+    final VersionOrdinal a = construct(ordinal);
+    final VersionOrdinal b = construct(ordinal);
     assertThat(a.equals(b)).isTrue();
     assertThat(a.hashCode()).isEqualTo(b.hashCode());
+  }
+
+  private UnknownVersion construct(final short minValue) {
+    return new UnknownVersion(minValue);
   }
 
 }

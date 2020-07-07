@@ -54,9 +54,9 @@ public class VersionJUnitTest {
     assertTrue(later.compareTo(later) == 0);
     assertTrue(earlier.compareTo(later) < 0);
 
-    assertTrue(later.compareTo(earlier.ordinal()) > 0);
-    assertTrue(later.compareTo(later.ordinal()) == 0);
-    assertTrue(earlier.compareTo(later.ordinal()) < 0);
+    assertTrue(later.compareTo(Versioning.getVersionOrdinal(earlier.ordinal())) > 0);
+    assertTrue(later.compareTo(Versioning.getVersionOrdinal(later.ordinal())) == 0);
+    assertTrue(earlier.compareTo(Versioning.getVersionOrdinal(later.ordinal())) < 0);
 
     compareNewerVsOlder(later, earlier);
   }
@@ -85,16 +85,18 @@ public class VersionJUnitTest {
 
   @Test
   public void testIsPre65() {
-    assertTrue(Version.GFE_61.isPre65());
-    assertFalse(Version.GFE_65.isPre65());
-    assertFalse(Version.GFE_70.isPre65());
-    assertFalse(Version.GEODE_1_1_0.isPre65());
+    assertTrue(Version.GFE_61.isOlderThan(Version.GFE_65));
+    assertFalse(Version.GFE_65.isOlderThan(Version.GFE_65));
+    assertFalse(Version.GFE_70.isOlderThan(Version.GFE_65));
+    assertFalse(Version.GEODE_1_1_0.isOlderThan(Version.GFE_65));
   }
 
   @Test
-  public void testFromOrdinalForCurrentVersionSucceeds()
-      throws UnsupportedSerializationVersionException {
-    Version.fromOrdinal(Version.CURRENT_ORDINAL);
+  public void testFromOrdinalForCurrentVersionSucceeds() {
+    final Version version = Versioning.getKnownVersionOrDefault(
+        Versioning.getVersionOrdinal(Version.CURRENT_ORDINAL), null);
+    assertThat(version).isNotNull();
+    assertThat(version).isEqualTo(Version.CURRENT);
   }
 
   @Test
@@ -104,7 +106,7 @@ public class VersionJUnitTest {
      * because we intend to test that Version and VersionOrdinal are cross-comparable.
      * The factory would return Version.GFE_82 which would foil our testing.
      */
-    final VersionOrdinalImpl versionOrdinal = new VersionOrdinalImpl(Version.GFE_82.ordinal);
+    final UnknownVersion versionOrdinal = new UnknownVersion(Version.GFE_82.ordinal());
     assertThat(Version.GFE_82.equals(versionOrdinal))
         .as("GFE_82 Version equals VersionOrdinal").isTrue();
     assertThat(versionOrdinal.equals(Version.GFE_82))

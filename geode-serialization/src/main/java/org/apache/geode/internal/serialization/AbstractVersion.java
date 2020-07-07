@@ -15,15 +15,20 @@
 
 package org.apache.geode.internal.serialization;
 
-public class VersionOrdinalImpl implements VersionOrdinal {
+/**
+ * Extend this class to get short ordinal storage and access,
+ * and comparison, hashing, and toString implementations.
+ *
+ * Package private since this class is an implementation detail.
+ */
+abstract class AbstractVersion implements VersionOrdinal {
 
-  protected final short ordinal;
+  private final short ordinal;
 
   /**
-   * Package-private so only the Versioning factory can access this constructor.
-   *
+   * Protected to require subclassing.
    */
-  VersionOrdinalImpl(final short ordinal) {
+  protected AbstractVersion(final short ordinal) {
     this.ordinal = ordinal;
   }
 
@@ -41,53 +46,29 @@ public class VersionOrdinalImpl implements VersionOrdinal {
     }
   }
 
-  /**
-   * TODO: eliminate this legacy method in favor of requiring callers to construct a
-   * VersionOrdinalImpl. Inline this logic up in compareTo(VersionOrdinal).
-   */
-  public int compareTo(final short other) {
-    // short min/max can't overflow int, so use (a-b)
-    final int thisOrdinal = this.ordinal;
-    final int otherOrdinal = other;
-    return thisOrdinal - otherOrdinal;
-  }
-
   @Override
   public boolean equals(final Object other) {
     if (other == this)
       return true;
-    if (other instanceof VersionOrdinalImpl) {
-      return this.ordinal == ((VersionOrdinalImpl) other).ordinal;
+    if (other instanceof VersionOrdinal) {
+      return ordinal() == ((VersionOrdinal) other).ordinal();
     } else {
       return false;
     }
-  }
-
-  public boolean equals(final VersionOrdinal other) {
-    return other != null && this.ordinal == other.ordinal();
   }
 
   @Override
   public int hashCode() {
     int result = 17;
     final int mult = 37;
-    result = mult * result + this.ordinal;
+    result = mult * result + ordinal();
     return result;
   }
 
   @Override
   public String toString() {
-    return toString(ordinal);
+    return getClass().getSimpleName() + "[ordinal=" + ordinal() + ']';
   }
-
-  /**
-   * TODO: eliminate this legacy method in favor of requiring callers to construct a
-   * VersionOrdinalImpl. Inline this logic up in toString().
-   */
-  public static String toString(short ordinal) {
-    return "VersionOrdinal[ordinal=" + ordinal + ']';
-  }
-
 
   /**
    * Test if this version is older than given version.
@@ -131,6 +112,13 @@ public class VersionOrdinalImpl implements VersionOrdinal {
   @Override
   public final boolean isNotNewerThan(final VersionOrdinal version) {
     return compareTo(version) <= 0;
+  }
+
+  private int compareTo(final short other) {
+    // short min/max can't overflow int, so use (a-b)
+    final int thisOrdinal = ordinal();
+    final int otherOrdinal = other;
+    return thisOrdinal - otherOrdinal;
   }
 
 }

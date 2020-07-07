@@ -98,6 +98,7 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.internal.util.ObjectIntProcedure;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -1992,6 +1993,10 @@ public class InitialImageOperation {
         } else {
           it = rgn.getBestIterator(includeValues);
         }
+
+        final Version knownVersion = Versioning
+            .getKnownVersionOrDefault(sender.getVersionOrdinalObject(), Version.CURRENT);
+
         do {
           flowControl.acquirePermit();
           int currentChunkSize = 0;
@@ -2038,7 +2043,7 @@ public class InitialImageOperation {
                     entry.key = key;
                     entry.setVersionTag(stamp.asVersionTag());
                     fillRes = mapEntry.fillInValue(rgn, entry, in, rgn.getDistributionManager(),
-                        sender.getVersionObject());
+                        knownVersion);
                     if (versionVector != null) {
                       if (logger.isTraceEnabled(LogMarker.INITIAL_IMAGE_VERBOSE)) {
                         logger.trace(LogMarker.INITIAL_IMAGE_VERBOSE,
@@ -2050,7 +2055,7 @@ public class InitialImageOperation {
                   entry = new InitialImageOperation.Entry();
                   entry.key = key;
                   fillRes = mapEntry.fillInValue(rgn, entry, in, rgn.getDistributionManager(),
-                      sender.getVersionObject());
+                      knownVersion);
                 }
               } catch (DiskAccessException dae) {
                 rgn.handleDiskAccessException(dae);

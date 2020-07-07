@@ -101,6 +101,7 @@ import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.internal.util.concurrent.StoppableCondition;
@@ -2116,7 +2117,9 @@ public class HARegionQueue implements RegionQueue {
     Object inputValue;
     try {
       inputValue = BlobHelper.deserializeBlob(newValueCd.getSerializedValue(),
-          sender.getVersionObject(), null);
+          Versioning
+              .getKnownVersionOrDefault(sender.getVersionOrdinalObject(), Version.CURRENT),
+          null);
       newValueCd = new VMCachedDeserializable(inputValue, newValueCd.getSizeInBytes());
     } catch (IOException | ClassNotFoundException e) {
       throw new RuntimeException("Unable to deserialize HA event for region " + regionName);

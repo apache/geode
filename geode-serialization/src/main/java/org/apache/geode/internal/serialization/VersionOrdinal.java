@@ -41,7 +41,7 @@ public interface VersionOrdinal extends Comparable<VersionOrdinal> {
   /**
    * @return the short ordinal value for comparison implementations
    */
-  public short ordinal();
+  short ordinal();
 
   /*
    * What follows is a bunch of comparison methods phrased in terms of version age:

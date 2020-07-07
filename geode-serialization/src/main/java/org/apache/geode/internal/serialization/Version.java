@@ -15,11 +15,6 @@
 
 package org.apache.geode.internal.serialization;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -35,7 +30,7 @@ import org.apache.geode.annotations.Immutable;
  * @since GemFire 5.7
  */
 @Immutable
-public class Version extends VersionOrdinalImpl {
+public class Version extends AbstractVersion {
 
   /** The name of this version */
   private final transient String name;
@@ -60,8 +55,8 @@ public class Version extends VersionOrdinalImpl {
   /**
    * Reserved token that cannot be used for product version but as a flag in internal contexts.
    */
-  private static final byte TOKEN_ORDINAL = -1;
-  private static final int TOKEN_ORDINAL_INT = (TOKEN_ORDINAL & 0xFF);
+  static final byte TOKEN_ORDINAL = -1;
+  static final int TOKEN_ORDINAL_INT = (TOKEN_ORDINAL & 0xFF);
 
   @Immutable
   public static final Version TOKEN =
@@ -326,7 +321,7 @@ public class Version extends VersionOrdinalImpl {
     this.methodSuffix = this.productName + "_" + this.majorVersion + "_" + this.minorVersion + "_"
         + this.release + "_" + this.patch;
     if (ordinal != TOKEN_ORDINAL) {
-      VALUES[this.ordinal] = this;
+      VALUES[ordinal()] = this;
     }
   }
 
@@ -334,170 +329,10 @@ public class Version extends VersionOrdinalImpl {
     return CURRENT;
   }
 
-  /** Return the <code>Version</code> represented by specified ordinal */
-  public static Version fromOrdinal(short ordinal)
-      throws UnsupportedSerializationVersionException {
-    if (ordinal == TOKEN_ORDINAL) {
-      return TOKEN;
-    }
-    // for clients also check that there must be a commands object mapping
-    // for processing
-    if ((VALUES.length < ordinal + 1) || VALUES[ordinal] == null) {
-      throw new UnsupportedSerializationVersionException(String.format(
-          "Peer or client version with ordinal %s not supported. Highest known version is %s",
-          ordinal, CURRENT.name));
-    }
-    return VALUES[ordinal];
-  }
-
-  /**
-   * return the version corresponding to the given ordinal, or CURRENT if the ordinal isn't valid
-   *
-   * @return the corresponding ordinal
-   */
-  public static Version fromOrdinalOrCurrent(short ordinal) {
-    if (ordinal == TOKEN_ORDINAL) {
-      return TOKEN;
-    }
-    final Version version;
-    if ((VALUES.length < ordinal + 1) || (version = VALUES[ordinal]) == null) {
-      return CURRENT;
-    }
-    return version;
-  }
-
-  /**
-   * Write the given ordinal (result of {@link #ordinal()}) to given {@link DataOutput}. This keeps
-   * the serialization of ordinal compatible with previous versions writing a single byte to
-   * DataOutput when possible, and a token with 2 bytes if it is large.
-   *
-   * @param out the {@link DataOutput} to write the ordinal write to
-   * @param ordinal the version to be written
-   * @param compressed if true, then use single byte for ordinal < 128, and three bytes for beyond
-   *        that, else always use three bytes where the first byte is {@link #TOKEN_ORDINAL}; former
-   *        mode is useful for interoperatibility with previous versions while latter to use fixed
-   *        size for writing version; typically former will be used for P2P/client-server
-   *        communications while latter for persisting to disk; we use the token to ensure that
-   *        {@link #readOrdinal(DataInput)} can deal with both compressed/uncompressed cases
-   *        seemlessly
-   */
-  public static void writeOrdinal(DataOutput out, short ordinal, boolean compressed)
-      throws IOException {
-    if (compressed && ordinal <= Byte.MAX_VALUE) {
-      out.writeByte(ordinal);
-    } else {
-      out.writeByte(TOKEN_ORDINAL);
-      out.writeShort(ordinal);
-    }
-  }
-
-  /**
-   * Write this {@link Version}'s ordinal (result of {@link #ordinal()}) to given
-   * {@link DataOutput}. This keeps the serialization of ordinal compatible with previous versions
-   * writing a single byte to DataOutput when possible, and a token with 2 bytes if it is large.
-   *
-   * @param out the {@link DataOutput} to write the ordinal write to
-   * @param compressed if true, then use single byte for ordinal < 128, and three bytes for beyond
-   *        that, else always use three bytes where the first byte is {@link #TOKEN_ORDINAL}; former
-   *        mode is useful for interoperatibility with previous versions while latter to use fixed
-   *        size for writing version; typically former will be used for P2P/client-server
-   *        communications while latter for persisting to disk; we use the token to ensure that
-   *        {@link #readOrdinal(DataInput)} can deal with both compressed/uncompressed cases
-   *        seemlessly
-   */
-  public void writeOrdinal(DataOutput out, boolean compressed) throws IOException {
-    writeOrdinal(out, this.ordinal, compressed);
-  }
-
-  /**
-   * Write the given ordinal (result of {@link #ordinal()}) to given {@link ByteBuffer}. This keeps
-   * the serialization of ordinal compatible with previous versions writing a single byte to
-   * DataOutput when possible, and a token with 2 bytes if it is large.
-   *
-   * @param buffer the {@link ByteBuffer} to write the ordinal write to
-   * @param ordinal the version to be written
-   * @param compressed if true, then use single byte for ordinal < 128, and three bytes for beyond
-   *        that, else always use three bytes where the first byte is {@link #TOKEN_ORDINAL}
-   */
-  public static void writeOrdinal(ByteBuffer buffer, short ordinal, boolean compressed) {
-    if (compressed && ordinal <= Byte.MAX_VALUE) {
-      buffer.put((byte) ordinal);
-    } else {
-      buffer.put(TOKEN_ORDINAL);
-      buffer.putShort(ordinal);
-    }
-  }
-
-  /**
-   * Reads ordinal as written by {@link #writeOrdinal} from given {@link DataInput}.
-   */
-  public static short readOrdinal(DataInput in) throws IOException {
-    final byte ordinal = in.readByte();
-    if (ordinal != TOKEN_ORDINAL) {
-      return ordinal;
-    } else {
-      return in.readShort();
-    }
-  }
-
-  /**
-   * Return the <code>Version</code> reading from given {@link DataInput} as serialized by
-   * {@link #writeOrdinal(DataOutput, boolean)}.
-   *
-   * If the incoming ordinal is greater than or equal to current ordinal then this will return null
-   * or {@link #CURRENT} indicating that version is same as that of {@link #CURRENT} assuming that
-   * peer will support this JVM.
-   *
-   * This method is not meant to be used for client-server protocol since servers cannot support
-   * higher version clients, rather is only meant for P2P/JGroups messaging where a mixed version of
-   * servers can be running at the same time. Similarly cannot be used when recovering from disk
-   * since higher version data cannot be read.
-   *
-   * @param in the {@link DataInput} to read the version from
-   * @param returnNullForCurrent if true then return null if incoming version >= {@link #CURRENT}
-   *        else return {@link #CURRENT}
-   */
-  public static Version readVersion(DataInput in, boolean returnNullForCurrent) throws IOException {
-    return fromOrdinalNoThrow(readOrdinal(in), returnNullForCurrent);
-  }
-
-  /**
-   * Return the <code>Version</code> represented by specified ordinal while not throwing exception
-   * if given ordinal is higher than any known ones or does not map to an actual Version instance
-   * due to gaps in the version ordinal sequence.
-   */
-  public static Version fromOrdinalNoThrow(short ordinal, boolean returnNullForCurrent) {
-    if (ordinal == TOKEN_ORDINAL) {
-      return TOKEN;
-    }
-    if (ordinal >= VALUES.length || VALUES[ordinal] == null) {
-      return returnNullForCurrent ? null : CURRENT;
-    }
-    return VALUES[ordinal];
-  }
-
-  /**
-   * Reads ordinal as written by {@link #writeOrdinal} from given {@link InputStream}. Returns -1 on
-   * end of stream.
-   */
-  public static short readOrdinalFromInputStream(InputStream is) throws IOException {
-    final int ordinal = is.read();
-    if (ordinal != -1) {
-      if (ordinal != TOKEN_ORDINAL_INT) {
-        return (short) ordinal;
-      } else {
-        // two byte ordinal
-        final int ordinalPart1 = is.read();
-        final int ordinalPart2 = is.read();
-        if ((ordinalPart1 | ordinalPart2) >= 0) {
-          return (short) ((ordinalPart1 << 8) | ordinalPart2);
-        } else {
-          return -1;
-        }
-      }
-    } else {
-      return -1;
-    }
+  public static String unsupportedVersionMessage(final short ordinal) {
+    return String.format(
+        "Peer or client version with ordinal %s not supported. Highest known version is %s",
+        ordinal, CURRENT.name);
   }
 
   public String getMethodSuffix() {
@@ -525,16 +360,6 @@ public class Version extends VersionOrdinalImpl {
   }
 
   /**
-   * Returns whether this <code>Version</code> is compatible with the input <code>Version</code>
-   *
-   * @param version The <code>Version</code> to compare
-   * @return whether this <code>Version</code> is compatible with the input <code>Version</code>
-   */
-  public boolean compatibleWith(Version version) {
-    return true;
-  }
-
-  /**
    * Returns a string representation for this <code>Version</code>.
    *
    * @return the name of this operation.
@@ -546,18 +371,28 @@ public class Version extends VersionOrdinalImpl {
 
   public byte[] toBytes() {
     byte[] bytes = new byte[2];
-    bytes[0] = (byte) (ordinal >> 8);
-    bytes[1] = (byte) ordinal;
+    bytes[0] = (byte) (ordinal() >> 8);
+    bytes[1] = (byte) ordinal();
     return bytes;
-  }
-
-  public boolean isPre65() {
-    return compareTo(Version.GFE_65) < 0;
   }
 
   public static Iterable<? extends Version> getAllVersions() {
     return Arrays.asList(VALUES).stream().filter(x -> x != null && x != TEST_VERSION)
         .collect(Collectors.toList());
+  }
+
+  /**
+   * package-protected for use by Versioning factory
+   */
+  static Version getKnownVersion(final short ordinal,
+      final Version returnWhenUnknown) {
+    if (ordinal == TOKEN_ORDINAL) {
+      return TOKEN;
+    }
+    if (ordinal < TOKEN_ORDINAL || ordinal >= VALUES.length || VALUES[ordinal] == null) {
+      return returnWhenUnknown;
+    }
+    return VALUES[ordinal];
   }
 
 }

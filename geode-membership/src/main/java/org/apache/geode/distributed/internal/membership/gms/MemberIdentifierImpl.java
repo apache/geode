@@ -48,6 +48,7 @@ import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionOrdinal;
 import org.apache.geode.internal.serialization.Versioning;
+import org.apache.geode.internal.serialization.VersioningIO;
 
 /**
  * An implementation of {@link MemberIdentifier}
@@ -512,7 +513,7 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
 
   private short readVersion(int flags, DataInput in) throws IOException {
     if ((flags & VERSION_BIT) != 0) {
-      short version = Version.readOrdinal(in);
+      short version = VersioningIO.readOrdinal(in);
       return version;
     } else {
       // prior to 7.1 member IDs did not serialize their version information
@@ -566,7 +567,7 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
     StaticSerialization.writeInteger(
         Integer.valueOf(durableId == null ? 300 : memberData.getDurableTimeout()),
         out);
-    Version.writeOrdinal(out, memberData.getVersionOrdinal(), true);
+    VersioningIO.writeOrdinal(out, memberData.getVersionOrdinal(), true);
     memberData.writeAdditionalData(out);
   }
 
@@ -685,7 +686,7 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
         out);
 
     short version = memberData.getVersionOrdinal();
-    Version.writeOrdinal(out, version, true);
+    VersioningIO.writeOrdinal(out, version, true);
   }
 
   public void toDataPre_GFE_7_1_0_0(DataOutput out, SerializationContext context)

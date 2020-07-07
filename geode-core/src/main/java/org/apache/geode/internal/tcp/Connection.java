@@ -82,6 +82,8 @@ import org.apache.geode.internal.net.NioFilter;
 import org.apache.geode.internal.net.NioPlainEngine;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.Versioning;
+import org.apache.geode.internal.serialization.VersioningIO;
 import org.apache.geode.internal.tcp.MsgReader.Header;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -709,7 +711,7 @@ public class Connection implements Runnable {
       bb.putInt(cfg.getAsyncQueueTimeout());
       bb.putInt(cfg.getAsyncMaxQueueSize());
       // write own product version
-      Version.writeOrdinal(bb, Version.CURRENT.ordinal(), true);
+      VersioningIO.writeOrdinal(bb, Version.CURRENT.ordinal(), true);
       // now set the msg length into position 0
       bb.putInt(0, calcHdrSize(bb.position() - MSG_HEADER_BYTES));
       my_okHandshakeBuf = bb;
@@ -886,7 +888,7 @@ public class Connection implements Runnable {
     connectHandshake.writeBoolean(preserveOrder);
     connectHandshake.writeLong(uniqueId);
     // write the product version ordinal
-    Version.CURRENT.writeOrdinal(connectHandshake, true);
+    VersioningIO.writeOrdinal(connectHandshake, Version.CURRENT.ordinal(), true);
     connectHandshake.writeInt(dominoCount.get() + 1);
     // this writes the sending member + thread name that is stored in senderName
     // on the receiver to show the cause of reader thread creation
@@ -2810,7 +2812,9 @@ public class Connection implements Runnable {
       uniqueId = dis.readLong();
       // read the product version ordinal for on-the-fly serialization
       // transformations (for rolling upgrades)
-      remoteVersion = Version.readVersion(dis, true);
+      remoteVersion = Versioning.getKnownVersionOrDefault(
+          Versioning.getVersionOrdinal(VersioningIO.readOrdinal(dis)),
+          null);
       int dominoNumber = 0;
       if (remoteVersion == null
           || remoteVersion.isNotOlderThan(Version.GFE_80)) {
@@ -3126,7 +3130,9 @@ public class Connection implements Runnable {
           }
           // read the product version ordinal for on-the-fly serialization
           // transformations (for rolling upgrades)
-          remoteVersion = Version.readVersion(dis, true);
+          remoteVersion = Versioning.getKnownVersionOrDefault(
+              Versioning.getVersionOrdinal(VersioningIO.readOrdinal(dis)),
+              null);
           ioFilter.doneReading(peerDataBuffer);
           notifyHandshakeWaiter(true);
           if (preserveOrder && asyncDistributionTimeout != 0) {

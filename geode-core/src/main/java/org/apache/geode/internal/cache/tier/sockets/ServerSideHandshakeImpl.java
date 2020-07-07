@@ -38,6 +38,7 @@ import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
 import org.apache.geode.internal.serialization.VersionedDataStream;
+import org.apache.geode.internal.serialization.VersioningIO;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
 import org.apache.geode.security.AuthenticationRequiredException;
 
@@ -149,7 +150,7 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
 
     // additional byte of wan site needs to send for Gateway BC
     if (communicationMode.isWAN()) {
-      Version.writeOrdinal(dos, currentServerVersion.ordinal(), true);
+      VersioningIO.writeOrdinal(dos, currentServerVersion.ordinal(), true);
     }
 
     dos.writeByte(endpointType);
