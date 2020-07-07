@@ -31,6 +31,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.RedisClient;
+import io.lettuce.core.RedisCommandExecutionException;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
 import io.lettuce.core.resource.ClientResources;
@@ -244,9 +245,16 @@ public class HashesAndCrashesDUnitTest {
     int iterationCount = 0;
 
     while (iterationCount < minimumIterations || isRunning.get()) {
-      int localI = iterationCount;
-      commands.hset(key, "field-" + localI, "value-" + localI);
-      iterationCount += 1;
+      try {
+        commands.hset(key, "field-" + iterationCount, "value-" + iterationCount);
+        iterationCount += 1;
+      } catch (RedisCommandExecutionException e) {
+        if (e.getMessage().contains("memberDeparted")) {
+          if (commands.hexists(key, "field-" + iterationCount)) {
+            iterationCount += 1;
+          }
+        }
+      }
     }
 
     for (int i = 0; i < iterationCount; i++) {
@@ -264,8 +272,16 @@ public class HashesAndCrashesDUnitTest {
 
     while (iterationCount < minimumIterations || isRunning.get()) {
       String member = "member-" + index + "-" + iterationCount;
-      commands.sadd(key, member);
-      iterationCount += 1;
+      try {
+        commands.sadd(key, member);
+        iterationCount += 1;
+      } catch (RedisCommandExecutionException e) {
+        if (e.getMessage().contains("memberDeparted")) {
+          if (commands.sismember(key, member)) {
+            iterationCount += 1;
+          }
+        }
+      }
     }
 
     List<String> missingMembers = new ArrayList<>();
@@ -285,8 +301,16 @@ public class HashesAndCrashesDUnitTest {
 
     while (iterationCount < minimumIterations || isRunning.get()) {
       String key = "set-key-" + index + "-" + iterationCount;
-      commands.set(key, key);
-      iterationCount += 1;
+      try {
+        commands.set(key, key);
+        iterationCount += 1;
+      } catch (RedisCommandExecutionException e) {
+        if (e.getMessage().contains("memberDeparted")) {
+          if (commands.exists(key) == 1) {
+            iterationCount += 1;
+          }
+        }
+      }
     }
 
     for (int i = 0; i < iterationCount; i++) {
