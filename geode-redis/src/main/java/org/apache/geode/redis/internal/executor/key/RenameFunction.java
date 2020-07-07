@@ -212,7 +212,7 @@ public class RenameFunction implements InternalFunction {
 
   @Override
   public boolean isHA() {
-    return true;
+    return false;
   }
 
 

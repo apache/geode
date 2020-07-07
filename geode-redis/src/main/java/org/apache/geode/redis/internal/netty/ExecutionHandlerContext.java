@@ -33,6 +33,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.execute.FunctionException;
+import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.redis.internal.ParameterRequirements.RedisParametersMismatchException;
@@ -166,6 +167,8 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       response = RedisResponse.error(RedisConstants.SERVER_ERROR_SHUTDOWN);
     } else if (cause instanceof IllegalStateException
         || cause instanceof RedisParametersMismatchException) {
+      response = RedisResponse.error(cause.getMessage());
+    } else if (cause instanceof FunctionInvocationTargetException) {
       response = RedisResponse.error(cause.getMessage());
     } else {
       if (logger.isErrorEnabled()) {

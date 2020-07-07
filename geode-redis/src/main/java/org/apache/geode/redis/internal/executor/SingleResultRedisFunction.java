@@ -59,6 +59,6 @@ public abstract class SingleResultRedisFunction implements InternalFunction<Obje
 
   @Override
   public boolean isHA() {
-    return true;
+    return false;
   }
 }
