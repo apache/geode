@@ -79,18 +79,25 @@ public class OperationManagementUpgradeTest {
   @Test
   public void newLocatorCanReadOldConfigurationData()
       throws IOException, ExecutionException, InterruptedException {
-    int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(10);
+    int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(7);
+    int locatorPort1 = ports[0];
+    int jmxPort1 = ports[1];
+    int httpPort1 = ports[2];
+    int locatorPort2 = ports[3];
+    int jmxPort2 = ports[4];
+    int httpPort2 = ports[5];
+    int serverPort = ports[6];
     GfshExecution execute =
-        GfshScript.of(startLocatorCommand("locator1", ports[0], ports[1], ports[2], 0))
-            .and(startLocatorCommand("locator2", ports[3], ports[4], ports[5], ports[0]))
-            .and(startServerCommand("server", ports[6], ports[0]))
+        GfshScript.of(startLocatorCommand("locator1", locatorPort1, jmxPort1, httpPort1, 0))
+            .and(startLocatorCommand("locator2", locatorPort2, jmxPort2, httpPort2, locatorPort1))
+            .and(startServerCommand("server", serverPort, locatorPort1))
             .execute(oldGfsh);
 
     String operationId = vm.invoke(() -> {
       // start a cms client that connects to locator1's http port
       ClusterManagementService cms = new ClusterManagementServiceBuilder()
           .setHost("localhost")
-          .setPort(ports[2])
+          .setPort(httpPort1)
           .build();
 
       ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> startResult =
@@ -103,13 +110,13 @@ public class OperationManagementUpgradeTest {
     // stop locator1
     oldGfsh.stopLocator(execute, "locator1");
     // use new gfsh to start locator1, make sure new locator can start
-    GfshScript.of(startLocatorCommand("locator1", ports[0], ports[1], ports[2], ports[3]))
+    GfshScript.of(startLocatorCommand("locator1", locatorPort1, jmxPort1, httpPort1, locatorPort2))
         .execute(gfsh, execute.getWorkingDir());
 
     // use the new cms client
     ClusterManagementService cms = new ClusterManagementServiceBuilder()
         .setHost("localhost")
-        .setPort(ports[2])
+        .setPort(httpPort1)
         .build();
     ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> operationResult =
         cms.get(new RebalanceOperation(), operationId);

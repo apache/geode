@@ -465,6 +465,22 @@ public class LocatorClusterManagementServiceTest {
   }
 
   @Test
+  public void getRebalanceStatusWhenLocatorIsOffline() {
+    OperationState operationState = mock(OperationState.class);
+    when(operationManager.get(any())).thenReturn(operationState);
+    when(operationState.getOperationEnd()).thenReturn(new Date());
+    Throwable throwable =
+        new RuntimeException("Locator that initiated the Rest API operation is offline:");
+    when(operationState.getThrowable()).thenReturn(throwable);
+
+    ClusterManagementOperationResult result = service.get(rebalanceOperation, "456");
+
+    assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.ERROR);
+    assertThat(result.getStatusMessage())
+        .contains("Locator that initiated the Rest API operation is offline:");
+  }
+
+  @Test
   public void getRebalanceWithOperationResultThatFailedCorrectlySetsStatusMessage() {
     OperationState operationState = mock(OperationState.class);
     when(operationManager.get(any())).thenReturn(operationState);

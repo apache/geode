@@ -97,6 +97,7 @@ public class RebalanceOperationPerformer
               (InternalCache) cache,
               String.valueOf(simulate), excludeRegions, new FunctionExecutor());
     }
+
     return result;
   }
 

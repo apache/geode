@@ -87,6 +87,16 @@ public class OperationHistoryManagerTest {
   }
 
   @Test
+  public void recordLocator() {
+    String opId = "opId";
+    String locator = "locator";
+
+    history.recordLocator(opId, locator);
+
+    verify(operationStateStore).recordLocator(same(opId), same(locator));
+  }
+
+  @Test
   public void expireHistoryRetainsHistoryInProgressOperations() {
     List<OperationState<ClusterManagementOperation<OperationResult>, OperationResult>> sampleOps =
         new ArrayList<>();
@@ -101,6 +111,21 @@ public class OperationHistoryManagerTest {
     history.expireHistory();
 
     verify(operationStateStore, never()).remove(any());
+  }
+
+  @Test
+  public void rebalanceLocatorIsOffline() {
+    OperationState operationState = new OperationState("opid", null, new Date());
+    operationState.setLocator(new String());
+    List<OperationState> ops = new ArrayList<>();
+    ops.add(operationState);
+    doReturn(ops).when(operationStateStore).list();
+
+    history.expireHistory();
+
+    assertThat(operationState.getOperationEnd()).isNotNull();
+    assertThat(operationState.getThrowable().getMessage())
+        .contains("Locator that initiated the Rest API operation is offline:");
   }
 
   @Test

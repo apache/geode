@@ -108,6 +108,21 @@ public class RegionOperationStateStoreTest {
   }
 
   @Test
+  public void recordLocator() {
+    String opId = "opId";
+    String locator = "locator";
+    OperationState operationState = mock(OperationState.class);
+    when(region.get(opId)).thenReturn(operationState);
+
+    service.recordLocator(opId, locator);
+
+    verify(operationState).setLocator(same(locator));
+    verifyNoMoreInteractions(operationState);
+
+    verify(region).put(same(opId), same(operationState));
+  }
+
+  @Test
   public void removeRemovesIdentifiedOperationStateFromRegion() {
     String opId = "doomed-operation";
 

@@ -98,12 +98,6 @@ public class OperationState<A extends ClusterManagementOperation<V>, V extends O
     }
   }
 
-  public void setOperationEnd(Date operationEnd) {
-    synchronized (this) {
-      this.operationEnd = operationEnd;
-    }
-  }
-
   /**
    * Creates and returns a copy of this operation state that will have
    * a consistent view of all the fields. In particular, it will have

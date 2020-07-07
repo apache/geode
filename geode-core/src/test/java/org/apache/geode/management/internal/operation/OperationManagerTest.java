@@ -154,6 +154,8 @@ public class OperationManagerTest {
 
     executorManager.submit(operation);
 
+    verify(operationHistoryManager).recordLocator(same(opId), any());
+
     performerIsInProgress.await(10, SECONDS);
 
     verify(operationHistoryManager, never()).recordEnd(any(), any(), any());

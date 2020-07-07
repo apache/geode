@@ -537,10 +537,6 @@ public class LocatorClusterManagementService implements ClusterManagementService
     String resultMessage = "";
     if (operationState.getOperationEnd() == null) {
       resultStatus = StatusCode.IN_PROGRESS;
-    } else if (operationState.getLocator() == null && operationState.getResult() == null
-        && operationState.getThrowable() == null) {
-      resultStatus = StatusCode.ERROR;
-      resultMessage = "Locator that initiated the Rest API operation is offline.";
     } else if (operationState.getThrowable() != null) {
       resultStatus = StatusCode.ERROR;
       resultMessage = operationState.getThrowable().toString();
