@@ -111,7 +111,7 @@ public class RedisSet extends AbstractRedisData {
       if (memberToPop != null) {
         setMembers[idx] = null;
         popped.add(memberToPop);
-        members.remove(memberToPop);
+        membersRemove(memberToPop);
       }
     }
     if (!popped.isEmpty()) {
@@ -169,24 +169,44 @@ public class RedisSet extends AbstractRedisData {
     return members.size();
   }
 
-
   @Override
   protected void applyDelta(DeltaInfo deltaInfo) {
     if (deltaInfo instanceof AddsDeltaInfo) {
       AddsDeltaInfo addsDeltaInfo = (AddsDeltaInfo) deltaInfo;
-      members.addAll(addsDeltaInfo.getAdds());
+      membersAddAll(addsDeltaInfo);
     } else {
       RemsDeltaInfo remsDeltaInfo = (RemsDeltaInfo) deltaInfo;
-      members.removeAll(remsDeltaInfo.getRemoves());
+      membersRemoveAll(remsDeltaInfo);
     }
   }
 
-  // DATA SERIALIZABLE
+  /**
+   * Since GII (getInitialImage) can come in and call toData while other threads
+   * are modifying this object, the striped executor will not protect toData.
+   * So any methods that modify "members" needs to be thread safe with toData.
+   */
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public synchronized void toData(DataOutput out) throws IOException {
     super.toData(out);
     DataSerializer.writeHashSet(members, out);
   }
+
+  private synchronized boolean membersAdd(ByteArrayWrapper memberToAdd) {
+    return members.add(memberToAdd);
+  }
+
+  private boolean membersRemove(ByteArrayWrapper memberToRemove) {
+    return members.remove(memberToRemove);
+  }
+
+  private synchronized boolean membersAddAll(AddsDeltaInfo addsDeltaInfo) {
+    return members.addAll(addsDeltaInfo.getAdds());
+  }
+
+  private synchronized boolean membersRemoveAll(RemsDeltaInfo remsDeltaInfo) {
+    return members.removeAll(remsDeltaInfo.getRemoves());
+  }
+
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
@@ -205,7 +225,7 @@ public class RedisSet extends AbstractRedisData {
       Region<ByteArrayWrapper, RedisData> region,
       ByteArrayWrapper key) {
 
-    membersToAdd.removeIf(memberToAdd -> !members.add(memberToAdd));
+    membersToAdd.removeIf(memberToAdd -> !membersAdd(memberToAdd));
     int membersAdded = membersToAdd.size();
     if (membersAdded != 0) {
       storeChanges(region, key, new AddsDeltaInfo(membersToAdd));
@@ -224,7 +244,7 @@ public class RedisSet extends AbstractRedisData {
       Region<ByteArrayWrapper, RedisData> region,
       ByteArrayWrapper key) {
 
-    membersToRemove.removeIf(memberToRemove -> !members.remove(memberToRemove));
+    membersToRemove.removeIf(memberToRemove -> !membersRemove(memberToRemove));
     int membersRemoved = membersToRemove.size();
     if (membersRemoved != 0) {
       storeChanges(region, key, new RemsDeltaInfo(membersToRemove));

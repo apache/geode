@@ -21,9 +21,13 @@ import java.net.InetSocketAddress;
 import io.lettuce.core.RedisURI;
 import io.lettuce.core.resource.DnsResolver;
 import io.lettuce.core.resource.SocketAddressResolver;
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class DUnitSocketAddressResolver extends SocketAddressResolver {
 
+  private static Logger logger = LogService.getLogger();
   private String[] redisPorts;
   int indexOfLastRedisPortReturned;
 
@@ -43,6 +47,8 @@ public class DUnitSocketAddressResolver extends SocketAddressResolver {
   public InetSocketAddress resolve(RedisURI redisUri) {
     int redisPort =
         Integer.parseInt(redisPorts[indexOfLastRedisPortReturned++ % redisPorts.length]);
+
+    logger.info("Redis client creating connection to port " + redisPort);
 
     return InetSocketAddress.createUnresolved(
         "127.0.0.1",
