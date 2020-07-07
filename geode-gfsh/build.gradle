@@ -53,6 +53,15 @@ dependencies {
     testCompileOnly(platform(project(':boms:geode-all-bom')))
     testCompileOnly('io.swagger:swagger-annotations')
 
+    upgradeTestImplementation(project(':geode-junit'))
+    upgradeTestImplementation(project(':geode-dunit'))
+
+    upgradeTestImplementation('org.awaitility:awaitility')
+    upgradeTestImplementation('org.assertj:assertj-core')
+    upgradeTestImplementation('junit:junit')
+    upgradeTestImplementation('xml-apis:xml-apis:2.0.2')
+    upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
+
     implementation('net.sf.jopt-simple:jopt-simple')
 
     //Log4j is used everywhere

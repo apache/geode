@@ -675,7 +675,6 @@ public class Gfsh extends JLineShell {
     if (full) {
       return GemFireVersion.asString();
     } else {
-
       return GemFireVersion.getGemFireVersion();
     }
   }
