@@ -15,8 +15,13 @@
 package org.apache.geode.internal.cache.ha;
 
 import static junit.framework.TestCase.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -144,4 +149,38 @@ public class HARegionQueueTest {
     assertEquals(3, haRegionQueue.size());
   }
 
+  @Test
+  public void isQueueInitializedWithWaitDoesNotWaitIfInitialized() throws Exception {
+    long time = 1;
+    HARegionQueue spy = spy(haRegionQueue);
+    doReturn(true).when(spy).isQueueInitialized();
+
+    assertThat(spy.isQueueInitializedWithWait(time)).isTrue();
+
+    verify(spy, never()).waitForInitialized(time);
+  }
+
+  @Test
+  public void isQueueInitializedWithWaitWillWaitIfNotInitialized() throws Exception {
+    long time = 1;
+    HARegionQueue spy = spy(haRegionQueue);
+    doReturn(false).doReturn(true).when(spy).isQueueInitialized();
+    doNothing().when(spy).waitForInitialized(time);
+
+    assertThat(spy.isQueueInitializedWithWait(time)).isTrue();
+
+    verify(spy).waitForInitialized(time);
+  }
+
+  @Test
+  public void isQueueInitializedWithWaitReturnsFalseIfNotInitializedAfterWait() throws Exception {
+    long time = 1;
+    HARegionQueue spy = spy(haRegionQueue);
+    doReturn(false).doReturn(false).when(spy).isQueueInitialized();
+    doNothing().when(spy).waitForInitialized(time);
+
+    assertThat(spy.isQueueInitializedWithWait(time)).isFalse();
+
+    verify(spy).waitForInitialized(time);
+  }
 }

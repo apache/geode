@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache.ha;
 
-import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.BEFORE_INITIAL_IMAGE;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -36,7 +36,6 @@ import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.HARegion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -52,20 +51,20 @@ public class QueueRemovalMessage extends PooledDistributionMessage {
   /**
    * List of messages (String[] )
    */
-  private List messagesList;
+  private List<Object> messagesList;
 
   /**
    * Constructor : Set the recipient list to ALL_RECIPIENTS
    */
   public QueueRemovalMessage() {
-    this.setRecipient(ALL_RECIPIENTS);
+    setRecipient(ALL_RECIPIENTS);
   }
 
   /**
    * Set the message list
    */
-  public void setMessagesList(List messages) {
-    this.messagesList = messages;
+  void setMessagesList(List messages) {
+    this.messagesList = uncheckedCast(messages);
   }
 
   /**
@@ -76,72 +75,88 @@ public class QueueRemovalMessage extends PooledDistributionMessage {
   protected void process(ClusterDistributionManager dm) {
     final InternalCache cache = dm.getCache();
     if (cache != null) {
-      Iterator iterator = this.messagesList.iterator();
-      final InitializationLevel oldLevel =
-          LocalRegion.setThreadInitLevelRequirement(BEFORE_INITIAL_IMAGE);
-      try {
-        while (iterator.hasNext()) {
-          final String regionName = (String) iterator.next();
-          final int size = (Integer) iterator.next();
-          final LocalRegion region = (LocalRegion) cache.getRegion(regionName);
-          final HARegionQueue hrq;
-          if (region == null || !region.isInitialized()) {
-            hrq = null;
-          } else {
-            HARegionQueue tmp = ((HARegion) region).getOwner();
-            if (tmp != null && tmp.isQueueInitialized()) {
-              hrq = tmp;
-            } else {
-              hrq = null;
-            }
-          }
-          // we have to iterate even if the hrq isn't available since there are
-          // a bunch of event IDs to go through
-          for (int i = 0; i < size; i++) {
-            final EventID id = (EventID) iterator.next();
-            boolean interrupted = Thread.interrupted();
-            if (hrq == null || !hrq.isQueueInitialized()) {
-              continue;
-            }
-            try {
-              // Fix for bug 39516: inline removal of events by QRM.
-              // dm.getWaitingThreadPool().execute(new Runnable() {
-              // public void run()
-              // {
-              try {
-                if (logger.isTraceEnabled()) {
-                  logger.trace("QueueRemovalMessage: removing dispatched events on queue {} for {}",
-                      regionName, id);
-                }
-                hrq.removeDispatchedEvents(id);
-              } catch (RegionDestroyedException ignore) {
-                logger.info(
-                    "Queue found destroyed while processing the last disptached sequence ID for a HARegionQueue's DACE. The event ID is {} for HARegion with name={}",
-                    new Object[] {id, regionName});
-              } catch (CancelException ignore) {
-                return; // cache or DS is closing
-              } catch (CacheException e) {
-                logger.error(String.format(
-                    "QueueRemovalMessage::process:Exception in processing the last disptached sequence ID for a HARegionQueue's DACE. The problem is with event ID,%s for HARegion with name=%s",
-                    new Object[] {regionName, id}),
-                    e);
-              } catch (InterruptedException ignore) {
-                return; // interrupt occurs during shutdown. this runs in an executor, so just stop
-                        // processing
-              }
-            } catch (RejectedExecutionException ignore) {
-              interrupted = true;
-            } finally {
-              if (interrupted) {
-                Thread.currentThread().interrupt();
-              }
-            }
-          } // if
-        } // for
-      } finally {
-        LocalRegion.setThreadInitLevelRequirement(oldLevel);
+      Iterator iterator = messagesList.iterator();
+      processRegionQueues(cache, iterator);
+    }
+  }
+
+  void processRegionQueues(InternalCache cache, Iterator iterator) {
+    while (iterator.hasNext()) {
+      final String regionName = (String) iterator.next();
+      final int size = (Integer) iterator.next();
+      final LocalRegion region = (LocalRegion) cache.getRegion(regionName);
+      final HARegionQueue hrq;
+      if (region == null) {
+        if (logger.isDebugEnabled()) {
+          logger.debug("processing QRM region {} does not exist.", regionName);
+        }
+        hrq = null;
+      } else {
+        long maxWaitTimeForInitialization = 30000;
+        hrq = ((HARegion) region).getOwnerWithWait(maxWaitTimeForInitialization);
       }
-    } // cache != null
+      boolean succeed = processRegionQueue(iterator, regionName, size, hrq);
+      if (!succeed) {
+        return;
+      }
+    }
+  }
+
+  boolean processRegionQueue(Iterator iterator, String regionName, int size,
+      HARegionQueue hrq) {
+    // we have to iterate even if the hrq isn't available since there are
+    // a bunch of event IDs to go through
+    for (int i = 0; i < size; i++) {
+      final EventID id = (EventID) iterator.next();
+      if (hrq == null || !hrq.isQueueInitialized()) {
+        if (logger.isDebugEnabled()) {
+          logger.debug("QueueRemovalMessage: hrq is not ready when trying to remove "
+              + "dispatched event on queue {} for {}", regionName, id);
+        }
+        continue;
+      }
+
+      if (!removeQueueEvent(regionName, hrq, id)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  boolean removeQueueEvent(String regionName, HARegionQueue hrq, EventID id) {
+    // Fix for bug 39516: inline removal of events by QRM.
+    // dm.getWaitingThreadPool().execute(new Runnable() {
+    // public void run()
+    // {
+    boolean interrupted = Thread.interrupted();
+    try {
+      if (logger.isTraceEnabled()) {
+        logger.trace("QueueRemovalMessage: removing dispatched events on queue {} for {}",
+            regionName, id);
+      }
+      hrq.removeDispatchedEvents(id);
+    } catch (RegionDestroyedException ignore) {
+      logger.info(
+          "Queue found destroyed while processing the last dispatched sequence ID for a HARegionQueue's DACE. The event ID is {} for HARegion with name={}",
+          new Object[] {id, regionName});
+    } catch (CancelException ignore) {
+      return false;
+    } catch (CacheException e) {
+      logger.error(String.format(
+          "QueueRemovalMessage::process:Exception in processing the last dispatched sequence ID for a HARegionQueue's DACE. The problem is with event ID, %s for HARegion with name=%s",
+          regionName, id),
+          e);
+    } catch (InterruptedException ignore) {
+      Thread.currentThread().interrupt();
+      return false;
+    } catch (RejectedExecutionException ignore) {
+      interrupted = true;
+    } finally {
+      if (interrupted) {
+        Thread.currentThread().interrupt();
+      }
+    }
+    return true;
   }
 
   @Override
@@ -190,18 +205,18 @@ public class QueueRemovalMessage extends PooledDistributionMessage {
     super.fromData(in, context);
     // read the size of the message
     int size = DataSerializer.readInteger(in);
-    this.messagesList = new LinkedList();
+    messagesList = new LinkedList<>();
     int eventIdSizeInt;
     for (int i = 0; i < size; i++) {
       // read the region name
-      this.messagesList.add(DataSerializer.readString(in));
-      // read the datasize
+      messagesList.add(DataSerializer.readString(in));
+      // read the data size
       Integer eventIdSize = DataSerializer.readInteger(in);
-      this.messagesList.add(eventIdSize);
+      messagesList.add(eventIdSize);
       eventIdSizeInt = eventIdSize;
       // read the total number of events
       for (int j = 0; j < eventIdSizeInt; j++) {
-        this.messagesList.add(DataSerializer.readObject(in));
+        messagesList.add(DataSerializer.readObject(in));
       }
       // increment i by adding the total number of ids read and 1 for
       // the length of the message
@@ -212,6 +227,6 @@ public class QueueRemovalMessage extends PooledDistributionMessage {
 
   @Override
   public String toString() {
-    return "QueueRemovalMessage" + this.messagesList;
+    return "QueueRemovalMessage" + messagesList;
   }
 }
