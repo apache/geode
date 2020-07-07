@@ -568,9 +568,6 @@ public class BucketRegion extends DistributedRegion implements Bucket {
 
     boolean enableRVV = useRVV && getConcurrencyChecksEnabled();
     RegionVersionVector rvv = null;
-    if (enableRVV) {
-      rvv = getVersionVector().getCloneForTransmission();
-    }
 
     // get rvvLock
     Set<InternalDistributedMember> participants =
@@ -581,6 +578,9 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     try {
       if (!isLockedAlready) {
         obtainWriteLocksForClear(regionEvent, participants);
+      }
+      if (enableRVV) {
+        rvv = getVersionVector().getCloneForTransmission();
       }
       // no need to dominate my own rvv.
       // Clear is on going here, there won't be GII for this member
