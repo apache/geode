@@ -20,10 +20,8 @@ import static org.apache.geode.test.junit.rules.gfsh.GfshRule.startLocatorComman
 import static org.apache.geode.test.junit.rules.gfsh.GfshRule.startServerCommand;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -58,7 +56,7 @@ public class OperationManagementUpgradeTest {
   @Parameterized.Parameters(name = "{0}")
   public static Collection<String> data() {
     List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
-    result.removeIf(s -> TestVersion.compare(s, "1.12.0") < 0);
+    result.removeIf(s -> TestVersion.compare(s, "1.13.0") < 0);
     return result;
   }
 
@@ -77,8 +75,7 @@ public class OperationManagementUpgradeTest {
   public GfshRule gfsh = new GfshRule();
 
   @Test
-  public void newLocatorCanReadOldConfigurationData()
-      throws IOException, ExecutionException, InterruptedException {
+  public void newLocatorCanReadOldConfigurationData() {
     int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(7);
     int locatorPort1 = ports[0];
     int jmxPort1 = ports[1];
