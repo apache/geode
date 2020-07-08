@@ -14,9 +14,12 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -130,5 +133,36 @@ public class RemoveAllPRMessageTest {
     verify(bucketRegion, never()).removeAndNotifyKeys(eq(keys));
     verify(dataStore).checkRegionDestroyedOnBucket(eq(bucketRegion), eq(true),
         eq(regionDestroyedException));
+  }
+
+  @Test
+  public void rvvLockedAfterKeysAreLockedAndUnlockRVVBeforeKeys() throws Exception {
+    RemoveAllPRMessage message =
+        spy(new RemoveAllPRMessage(bucketId, 1, false, false, false, null));
+    message.addEntry(entryData);
+    doReturn(keys).when(message).getKeysToBeLocked();
+    when(bucketRegion.waitUntilLocked(keys)).thenReturn(true);
+    when(bucketRegion.doLockForPrimary(false)).thenThrow(new PrimaryBucketException());
+    doNothing().when(bucketRegion).lockRVVForBulkOp();
+    doNothing().when(bucketRegion).unlockRVVForBulkOp();
+
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    when(bucketRegion.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(null);
+
+    try {
+      message.doLocalRemoveAll(partitionedRegion, mock(InternalDistributedMember.class), true);
+      fail("Expect PrimaryBucketException");
+    } catch (Exception e) {
+      assertThat(e instanceof PrimaryBucketException);
+    }
+
+    InOrder inOrder = inOrder(bucketRegion);
+    inOrder.verify(bucketRegion).waitUntilLocked(keys);
+    inOrder.verify(bucketRegion).lockRVVForBulkOp();
+    inOrder.verify(bucketRegion).unlockRVVForBulkOp();
+    inOrder.verify(bucketRegion).removeAndNotifyKeys(keys);
   }
 }
