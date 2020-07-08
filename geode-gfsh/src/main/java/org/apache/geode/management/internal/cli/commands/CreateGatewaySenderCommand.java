@@ -32,7 +32,7 @@ import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.cli.CliMetaData;
@@ -208,7 +208,7 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
   private boolean verifyAllCurrentVersion(Set<DistributedMember> members) {
     return members.stream().allMatch(
         member -> ((InternalDistributedMember) member).getVersionOrdinalObject()
-            .equals(Version.CURRENT));
+            .equals(KnownVersion.CURRENT));
   }
 
   private CacheConfig.GatewaySender buildConfiguration(String id, Integer remoteDSId,

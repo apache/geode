@@ -44,7 +44,7 @@ import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.internal.offheap.MemoryBlock.State;
 import org.apache.geode.internal.serialization.DSCODE;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 
 public class OffHeapStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
 
@@ -571,7 +571,7 @@ public class OffHeapStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
     OffHeapStoredObject chunk = createValueAsUnserializedStoredObject(regionEntryValue);
 
     // writeByte is a final method and cannot be mocked, so creating a real one
-    HeapDataOutputStream dataOutput = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream dataOutput = new HeapDataOutputStream(KnownVersion.CURRENT);
 
     chunk.sendTo(dataOutput);
 
@@ -594,7 +594,7 @@ public class OffHeapStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
     OffHeapStoredObject chunk = createValueAsUnserializedStoredObject(regionEntryValue);
 
     // writeByte is a final method and cannot be mocked, so creating a real one
-    HeapDataOutputStream dataOutput = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream dataOutput = new HeapDataOutputStream(KnownVersion.CURRENT);
 
     chunk.sendAsByteArray(dataOutput);
 

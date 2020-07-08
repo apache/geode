@@ -80,7 +80,7 @@ import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.sequencelog.MembershipLogger;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.internal.tcp.ReenteredConnectException;
 import org.apache.geode.logging.internal.OSProcess;
@@ -1542,13 +1542,13 @@ public class ClusterDistributionManager implements DistributionManager {
 
   @Override
   public void retainMembersWithSameOrNewerVersion(Collection<InternalDistributedMember> members,
-      Version version) {
+      KnownVersion version) {
     members.removeIf(id -> id.getVersionOrdinalObject().compareTo(version) < 0);
   }
 
   @Override
   public void removeMembersWithSameOrNewerVersion(Collection<InternalDistributedMember> members,
-      Version version) {
+      KnownVersion version) {
     members.removeIf(id -> id.getVersionOrdinalObject().compareTo(version) >= 0);
   }
 

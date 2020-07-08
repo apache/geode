@@ -80,7 +80,7 @@ import org.apache.geode.distributed.internal.membership.gms.messages.SuspectRequ
 import org.apache.geode.distributed.internal.membership.gms.util.MemberIdentifierUtil;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreatorImpl;
 import org.apache.geode.internal.serialization.BufferDataOutputStream;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.internal.DSFIDSerializerImpl;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
@@ -105,7 +105,7 @@ public class GMSHealthMonitorJUnitTest {
   @Before
   public void initMocks() throws MemberStartupException {
     // ensure that Geode's serialization and version are initialized
-    Version currentVersion = Version.CURRENT;
+    KnownVersion currentVersion = KnownVersion.CURRENT;
     dsfidSerializer = new DSFIDSerializerImpl();
     Services.registerSerializables(dsfidSerializer);
 
@@ -574,7 +574,7 @@ public class GMSHealthMonitorJUnitTest {
       gmsHealthMonitor.setNextNeighbor(v, memberToCheck);
       assertNotEquals(memberToCheck, gmsHealthMonitor.getNextNeighbor());
 
-      ((MemberIdentifierImpl) mockMembers.get(0)).setVersionObjectForTest(Version.GEODE_1_3_0);
+      ((MemberIdentifierImpl) mockMembers.get(0)).setVersionObjectForTest(KnownVersion.GEODE_1_3_0);
       boolean retVal = gmsHealthMonitor.inlineCheckIfAvailable(mockMembers.get(0), v, true,
           memberToCheck, "Not responding");
 
@@ -590,7 +590,7 @@ public class GMSHealthMonitorJUnitTest {
   public void testFinalCheckPassedMessageCanBeSerializedAndDeserialized()
       throws IOException, ClassNotFoundException {
     BufferDataOutputStream BufferDataOutputStream =
-        new BufferDataOutputStream(500, Version.CURRENT);
+        new BufferDataOutputStream(500, KnownVersion.CURRENT);
     FinalCheckPassedMessage message =
         new FinalCheckPassedMessage(mockMembers.get(0), mockMembers.get(1));
     dsfidSerializer.getObjectSerializer().writeObject(message, BufferDataOutputStream);
@@ -771,8 +771,8 @@ public class GMSHealthMonitorJUnitTest {
     int viewId = 2;
     long msb = 3;
     long lsb = 4;
-    MemberIdentifier otherMember = createGMSMember(Version.CURRENT_ORDINAL, viewId, msb, lsb);
-    MemberIdentifier gmsMember = createGMSMember(Version.CURRENT_ORDINAL, viewId, msb, lsb);
+    MemberIdentifier otherMember = createGMSMember(KnownVersion.CURRENT_ORDINAL, viewId, msb, lsb);
+    MemberIdentifier gmsMember = createGMSMember(KnownVersion.CURRENT_ORDINAL, viewId, msb, lsb);
     executeTestClientSocketHandler(gmsMember, otherMember, GMSHealthMonitor.OK);
   }
 
@@ -781,8 +781,9 @@ public class GMSHealthMonitorJUnitTest {
     int viewId = 2;
     long msb = 3;
     long lsb = 4;
-    MemberIdentifier otherMember = createGMSMember(Version.CURRENT_ORDINAL, viewId, msb + 1, lsb);
-    MemberIdentifier gmsMember = createGMSMember(Version.CURRENT_ORDINAL, viewId, msb, lsb);
+    MemberIdentifier otherMember =
+        createGMSMember(KnownVersion.CURRENT_ORDINAL, viewId, msb + 1, lsb);
+    MemberIdentifier gmsMember = createGMSMember(KnownVersion.CURRENT_ORDINAL, viewId, msb, lsb);
     executeTestClientSocketHandler(gmsMember, otherMember, GMSHealthMonitor.ERROR);
   }
 
@@ -791,8 +792,9 @@ public class GMSHealthMonitorJUnitTest {
     int viewId = 2;
     long msb = 3;
     long lsb = 4;
-    MemberIdentifier otherMember = createGMSMember(Version.CURRENT_ORDINAL, viewId, msb, lsb + 1);
-    MemberIdentifier gmsMember = createGMSMember(Version.CURRENT_ORDINAL, viewId, msb, lsb);
+    MemberIdentifier otherMember =
+        createGMSMember(KnownVersion.CURRENT_ORDINAL, viewId, msb, lsb + 1);
+    MemberIdentifier gmsMember = createGMSMember(KnownVersion.CURRENT_ORDINAL, viewId, msb, lsb);
     executeTestClientSocketHandler(gmsMember, otherMember, GMSHealthMonitor.ERROR);
   }
 
@@ -801,8 +803,9 @@ public class GMSHealthMonitorJUnitTest {
     int viewId = 2;
     long msb = 3;
     long lsb = 4;
-    MemberIdentifier otherMember = createGMSMember(Version.CURRENT_ORDINAL, viewId + 1, msb, lsb);
-    MemberIdentifier gmsMember = createGMSMember(Version.CURRENT_ORDINAL, viewId, msb, lsb);
+    MemberIdentifier otherMember =
+        createGMSMember(KnownVersion.CURRENT_ORDINAL, viewId + 1, msb, lsb);
+    MemberIdentifier gmsMember = createGMSMember(KnownVersion.CURRENT_ORDINAL, viewId, msb, lsb);
     executeTestClientSocketHandler(gmsMember, otherMember, GMSHealthMonitor.ERROR);
   }
 
@@ -814,7 +817,7 @@ public class GMSHealthMonitorJUnitTest {
     int viewId = gmsMember.getVmViewId();
 
     MemberIdentifier testMember =
-        createGMSMember(Version.CURRENT_ORDINAL, viewId,
+        createGMSMember(KnownVersion.CURRENT_ORDINAL, viewId,
             gmsMember.getUuidMostSignificantBits(),
             gmsMember.getUuidLeastSignificantBits());
     testMember.setUdpPort(9000);
@@ -905,7 +908,7 @@ public class GMSHealthMonitorJUnitTest {
     serverThread.setDaemon(true);
     serverThread.start();
     MemberIdentifier otherMember =
-        createGMSMember(Version.CURRENT_ORDINAL, 0, 1, 1);
+        createGMSMember(KnownVersion.CURRENT_ORDINAL, 0, 1, 1);
     long startTime = System.currentTimeMillis();
     gmsHealthMonitor.doTCPCheckMember(otherMember, mySocket.getLocalPort(), true);
     mySocket.close();
@@ -931,9 +934,9 @@ public class GMSHealthMonitorJUnitTest {
 
   private void executeTestDoTCPCheck(int receivedStatus, boolean expectedResult) throws Exception {
     MemberIdentifier otherMember =
-        createGMSMember(Version.CURRENT_ORDINAL, 0, 1, 1);
+        createGMSMember(KnownVersion.CURRENT_ORDINAL, 0, 1, 1);
     MemberIdentifier gmsMember =
-        createGMSMember(Version.CURRENT_ORDINAL, 0, 1, 1);
+        createGMSMember(KnownVersion.CURRENT_ORDINAL, 0, 1, 1);
 
     // Set up the incoming/received bytes. We just wrap output streams and write out the gms member
     // information

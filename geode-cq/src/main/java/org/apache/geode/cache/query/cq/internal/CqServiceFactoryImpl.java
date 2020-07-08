@@ -34,28 +34,28 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.CommandInitializer;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 
 public class CqServiceFactoryImpl implements CqServiceFactory {
 
   @Override
   public void initialize() {
-    Map<Version, Command> versions = new HashMap<>();
-    versions.put(Version.GFE_57, ExecuteCQ.getCommand());
-    versions.put(Version.GFE_61, ExecuteCQ61.getCommand());
+    Map<KnownVersion, Command> versions = new HashMap<>();
+    versions.put(KnownVersion.GFE_57, ExecuteCQ.getCommand());
+    versions.put(KnownVersion.GFE_61, ExecuteCQ61.getCommand());
     CommandInitializer.registerCommand(MessageType.EXECUTECQ_MSG_TYPE, versions);
     CommandInitializer.registerCommand(MessageType.EXECUTECQ_WITH_IR_MSG_TYPE, versions);
 
     CommandInitializer.registerCommand(MessageType.GETCQSTATS_MSG_TYPE,
-        Collections.singletonMap(Version.GFE_57, GetCQStats.getCommand()));
+        Collections.singletonMap(KnownVersion.GFE_57, GetCQStats.getCommand()));
     CommandInitializer.registerCommand(MessageType.MONITORCQ_MSG_TYPE,
-        Collections.singletonMap(Version.GFE_57, MonitorCQ.getCommand()));
+        Collections.singletonMap(KnownVersion.GFE_57, MonitorCQ.getCommand()));
     CommandInitializer.registerCommand(MessageType.STOPCQ_MSG_TYPE,
-        Collections.singletonMap(Version.GFE_57, StopCQ.getCommand()));
+        Collections.singletonMap(KnownVersion.GFE_57, StopCQ.getCommand()));
     CommandInitializer.registerCommand(MessageType.CLOSECQ_MSG_TYPE,
-        Collections.singletonMap(Version.GFE_57, CloseCQ.getCommand()));
+        Collections.singletonMap(KnownVersion.GFE_57, CloseCQ.getCommand()));
     CommandInitializer.registerCommand(MessageType.GETDURABLECQS_MSG_TYPE,
-        Collections.singletonMap(Version.GFE_70, GetDurableCQs.getCommand()));
+        Collections.singletonMap(KnownVersion.GFE_70, GetDurableCQs.getCommand()));
   }
 
   @Override

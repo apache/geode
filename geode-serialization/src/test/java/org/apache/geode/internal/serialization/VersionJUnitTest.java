@@ -23,32 +23,32 @@ import org.junit.Test;
 public class VersionJUnitTest {
   @Test
   public void testVersionClass() throws Exception {
-    compare(Version.GFE_662, Version.GFE_66);
-    compare(Version.GFE_6622, Version.GFE_662);
-    compare(Version.GFE_71, Version.GFE_70);
-    compare(Version.GFE_80, Version.GFE_70);
-    compare(Version.GFE_80, Version.GFE_71);
-    compare(Version.GFE_81, Version.GFE_70);
-    compare(Version.GFE_81, Version.GFE_71);
-    compare(Version.GFE_81, Version.GFE_80);
-    compare(Version.GFE_82, Version.GFE_81);
-    compare(Version.GEODE_1_1_0, Version.GFE_82);
-    compare(Version.GEODE_1_2_0, Version.GEODE_1_1_1);
-    compare(Version.GEODE_1_3_0, Version.GEODE_1_2_0);
-    compare(Version.GEODE_1_4_0, Version.GEODE_1_3_0);
-    compare(Version.GEODE_1_5_0, Version.GEODE_1_4_0);
-    compare(Version.GEODE_1_6_0, Version.GEODE_1_5_0);
-    compare(Version.GEODE_1_7_0, Version.GEODE_1_6_0);
-    compare(Version.GEODE_1_8_0, Version.GEODE_1_7_0);
-    compare(Version.GEODE_1_9_0, Version.GEODE_1_8_0);
-    compare(Version.GEODE_1_10_0, Version.GEODE_1_9_0);
-    compare(Version.GEODE_1_11_0, Version.GEODE_1_10_0);
-    compare(Version.GEODE_1_12_0, Version.GEODE_1_11_0);
-    compare(Version.GEODE_1_13_0, Version.GEODE_1_12_0);
-    compare(Version.GEODE_1_14_0, Version.GEODE_1_13_0);
+    compare(KnownVersion.GFE_662, KnownVersion.GFE_66);
+    compare(KnownVersion.GFE_6622, KnownVersion.GFE_662);
+    compare(KnownVersion.GFE_71, KnownVersion.GFE_70);
+    compare(KnownVersion.GFE_80, KnownVersion.GFE_70);
+    compare(KnownVersion.GFE_80, KnownVersion.GFE_71);
+    compare(KnownVersion.GFE_81, KnownVersion.GFE_70);
+    compare(KnownVersion.GFE_81, KnownVersion.GFE_71);
+    compare(KnownVersion.GFE_81, KnownVersion.GFE_80);
+    compare(KnownVersion.GFE_82, KnownVersion.GFE_81);
+    compare(KnownVersion.GEODE_1_1_0, KnownVersion.GFE_82);
+    compare(KnownVersion.GEODE_1_2_0, KnownVersion.GEODE_1_1_1);
+    compare(KnownVersion.GEODE_1_3_0, KnownVersion.GEODE_1_2_0);
+    compare(KnownVersion.GEODE_1_4_0, KnownVersion.GEODE_1_3_0);
+    compare(KnownVersion.GEODE_1_5_0, KnownVersion.GEODE_1_4_0);
+    compare(KnownVersion.GEODE_1_6_0, KnownVersion.GEODE_1_5_0);
+    compare(KnownVersion.GEODE_1_7_0, KnownVersion.GEODE_1_6_0);
+    compare(KnownVersion.GEODE_1_8_0, KnownVersion.GEODE_1_7_0);
+    compare(KnownVersion.GEODE_1_9_0, KnownVersion.GEODE_1_8_0);
+    compare(KnownVersion.GEODE_1_10_0, KnownVersion.GEODE_1_9_0);
+    compare(KnownVersion.GEODE_1_11_0, KnownVersion.GEODE_1_10_0);
+    compare(KnownVersion.GEODE_1_12_0, KnownVersion.GEODE_1_11_0);
+    compare(KnownVersion.GEODE_1_13_0, KnownVersion.GEODE_1_12_0);
+    compare(KnownVersion.GEODE_1_14_0, KnownVersion.GEODE_1_13_0);
   }
 
-  private void compare(Version later, Version earlier) {
+  private void compare(KnownVersion later, KnownVersion earlier) {
     assertTrue(later.compareTo(earlier) > 0);
     assertTrue(later.equals(later));
     assertTrue(later.compareTo(later) == 0);
@@ -61,7 +61,7 @@ public class VersionJUnitTest {
     compareNewerVsOlder(later, earlier);
   }
 
-  private void compareNewerVsOlder(Version newer, Version older) {
+  private void compareNewerVsOlder(KnownVersion newer, KnownVersion older) {
     assertTrue(older.isOlderThan(newer));
     assertFalse(newer.isOlderThan(older));
     assertFalse(newer.isOlderThan(newer));
@@ -85,18 +85,18 @@ public class VersionJUnitTest {
 
   @Test
   public void testIsPre65() {
-    assertTrue(Version.GFE_61.isOlderThan(Version.GFE_65));
-    assertFalse(Version.GFE_65.isOlderThan(Version.GFE_65));
-    assertFalse(Version.GFE_70.isOlderThan(Version.GFE_65));
-    assertFalse(Version.GEODE_1_1_0.isOlderThan(Version.GFE_65));
+    assertTrue(KnownVersion.GFE_61.isOlderThan(KnownVersion.GFE_65));
+    assertFalse(KnownVersion.GFE_65.isOlderThan(KnownVersion.GFE_65));
+    assertFalse(KnownVersion.GFE_70.isOlderThan(KnownVersion.GFE_65));
+    assertFalse(KnownVersion.GEODE_1_1_0.isOlderThan(KnownVersion.GFE_65));
   }
 
   @Test
   public void testFromOrdinalForCurrentVersionSucceeds() {
-    final Version version = Versioning.getKnownVersionOrDefault(
-        Versioning.getVersionOrdinal(Version.CURRENT_ORDINAL), null);
+    final KnownVersion version = Versioning.getKnownVersionOrDefault(
+        Versioning.getVersionOrdinal(KnownVersion.CURRENT_ORDINAL), null);
     assertThat(version).isNotNull();
-    assertThat(version).isEqualTo(Version.CURRENT);
+    assertThat(version).isEqualTo(KnownVersion.CURRENT);
   }
 
   @Test
@@ -106,10 +106,10 @@ public class VersionJUnitTest {
      * because we intend to test that Version and VersionOrdinal are cross-comparable.
      * The factory would return Version.GFE_82 which would foil our testing.
      */
-    final UnknownVersion versionOrdinal = new UnknownVersion(Version.GFE_82.ordinal());
-    assertThat(Version.GFE_82.equals(versionOrdinal))
+    final UnknownVersion versionOrdinal = new UnknownVersion(KnownVersion.GFE_82.ordinal());
+    assertThat(KnownVersion.GFE_82.equals(versionOrdinal))
         .as("GFE_82 Version equals VersionOrdinal").isTrue();
-    assertThat(versionOrdinal.equals(Version.GFE_82))
+    assertThat(versionOrdinal.equals(KnownVersion.GFE_82))
         .as("GFE_82 VersionOrdinal equals Version").isTrue();
   }
 

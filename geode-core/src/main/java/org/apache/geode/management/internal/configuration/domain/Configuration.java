@@ -38,7 +38,7 @@ import org.xml.sax.SAXException;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.VersionOrdinal;
 import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.internal.serialization.VersioningIO;
@@ -169,7 +169,7 @@ public class Configuration implements DataSerializable {
     // configuration, and will now also write the deployment map.
     DataSerializer.writeHashSet(null, out);
     // As of 1.12, this class starting writing the current version
-    VersioningIO.writeOrdinal(out, Version.getCurrentVersion().ordinal(), true);
+    VersioningIO.writeOrdinal(out, KnownVersion.getCurrentVersion().ordinal(), true);
     DataSerializer.writeHashMap(deployments, out);
   }
 
@@ -189,7 +189,7 @@ public class Configuration implements DataSerializable {
     } else {
       // version of the data we are reading (1.12 or later)
       final VersionOrdinal version = Versioning.getVersionOrdinal(VersioningIO.readOrdinal(in));
-      if (version.isNotOlderThan(Version.GEODE_1_12_0)) {
+      if (version.isNotOlderThan(KnownVersion.GEODE_1_12_0)) {
         deployments.putAll(DataSerializer.readHashMap(in));
       }
     }

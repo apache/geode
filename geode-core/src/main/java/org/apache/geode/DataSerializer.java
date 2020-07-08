@@ -62,8 +62,8 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.serialization.DSCODE;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.StaticSerialization;
-import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.PdxInstance;
 
@@ -1235,9 +1235,9 @@ public abstract class DataSerializer {
       if (object instanceof HeapDataOutputStream) {
         hdos = (HeapDataOutputStream) object;
       } else {
-        Version v = StaticSerialization.getVersionForDataStreamOrNull(out);
+        KnownVersion v = StaticSerialization.getVersionForDataStreamOrNull(out);
         if (v == null) {
-          v = Version.CURRENT;
+          v = KnownVersion.CURRENT;
         }
         hdos = new HeapDataOutputStream(v);
         try {

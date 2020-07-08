@@ -18,7 +18,7 @@ package org.apache.geode.internal;
 import java.io.IOException;
 import java.io.ObjectInput;
 
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.VersionedDataStream;
 
 /**
@@ -30,7 +30,7 @@ import org.apache.geode.internal.serialization.VersionedDataStream;
 public class VersionedObjectInput implements ObjectInput, VersionedDataStream {
 
   private final ObjectInput in;
-  private final Version version;
+  private final KnownVersion version;
 
   /**
    * Creates a VersionedObjectInput that wraps the specified underlying ObjectInput.
@@ -38,7 +38,7 @@ public class VersionedObjectInput implements ObjectInput, VersionedDataStream {
    * @param in the specified {@link ObjectInput}
    * @param version the product version that serialized object on the given {@link ObjectInput}
    */
-  public VersionedObjectInput(ObjectInput in, Version version) {
+  public VersionedObjectInput(ObjectInput in, KnownVersion version) {
     this.in = in;
     this.version = version;
   }
@@ -47,7 +47,7 @@ public class VersionedObjectInput implements ObjectInput, VersionedDataStream {
    * {@inheritDoc}
    */
   @Override
-  public Version getVersion() {
+  public KnownVersion getVersion() {
     return this.version;
   }
 

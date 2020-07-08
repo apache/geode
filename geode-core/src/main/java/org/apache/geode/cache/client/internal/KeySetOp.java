@@ -24,7 +24,7 @@ import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 
 /**
  * Does a region keySet on a server
@@ -59,7 +59,7 @@ public class KeySetOp {
 
     @Override
     protected Message createResponseMessage() {
-      return new ChunkedMessage(1, Version.CURRENT);
+      return new ChunkedMessage(1, KnownVersion.CURRENT);
     }
 
     @Override

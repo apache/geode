@@ -43,7 +43,7 @@ import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
@@ -123,7 +123,7 @@ public class RegisterInterestList61Test {
     when(this.serverConnection.getAuthzRequest()).thenReturn(this.authzRequest);
     when(this.serverConnection.getCachedRegionHelper()).thenReturn(mock(CachedRegionHelper.class));
     when(this.serverConnection.getChunkedResponseMessage()).thenReturn(this.chunkedResponseMessage);
-    when(this.serverConnection.getClientVersion()).thenReturn(Version.GFE_80);
+    when(this.serverConnection.getClientVersion()).thenReturn(KnownVersion.GFE_80);
     when(this.serverConnection.getAcceptor()).thenReturn(mock(AcceptorImpl.class));
   }
 

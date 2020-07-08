@@ -37,7 +37,7 @@ import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.offheap.annotations.Unretained;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.util.internal.GeodeGlossary;
@@ -169,12 +169,12 @@ public class Message {
   Part securePart = null;
   private boolean isMetaRegion = false;
 
-  private Version version;
+  private KnownVersion version;
 
   /**
    * Creates a new message with the given number of parts
    */
-  public Message(int numberOfParts, Version destVersion) {
+  public Message(int numberOfParts, KnownVersion destVersion) {
     this.version = destVersion;
     Assert.assertTrue(destVersion != null, "Attempt to create an unversioned message");
     this.partsList = new Part[numberOfParts];
@@ -202,7 +202,7 @@ public class Message {
     this.messageType = msgType;
   }
 
-  public void setVersion(Version clientVersion) {
+  public void setVersion(KnownVersion clientVersion) {
     this.version = clientVersion;
   }
 
@@ -371,8 +371,8 @@ public class Message {
   }
 
   private void serializeAndAddPartNoCopying(Object o) {
-    Version v = this.version;
-    if (this.version.equals(Version.CURRENT)) {
+    KnownVersion v = this.version;
+    if (this.version.equals(KnownVersion.CURRENT)) {
       v = null;
     }
 
@@ -395,8 +395,8 @@ public class Message {
       throw new UnsupportedOperationException("zipValues no longer supported");
     }
 
-    Version v = this.version;
-    if (this.version.equals(Version.CURRENT)) {
+    KnownVersion v = this.version;
+    if (this.version.equals(KnownVersion.CURRENT)) {
       v = null;
     }
 

@@ -28,7 +28,7 @@ import org.junit.Test;
 
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 
 public class ExpireDisconnectedClientTransactionsMessageTest {
   private final ClusterDistributionManager dm = mock(ClusterDistributionManager.class);
@@ -37,7 +37,7 @@ public class ExpireDisconnectedClientTransactionsMessageTest {
   private final InternalDistributedMember sender = mock(InternalDistributedMember.class);
   private final ExpireDisconnectedClientTransactionsMessage message =
       spy(new ExpireDisconnectedClientTransactionsMessage());
-  private Version version = mock(Version.class);
+  private KnownVersion version = mock(KnownVersion.class);
 
   @Before
   public void setup() {
@@ -49,7 +49,7 @@ public class ExpireDisconnectedClientTransactionsMessageTest {
 
   @Test
   public void processMessageFromServerOfGeode170AndLaterVersionWillExpireDisconnectedClientTransactions() {
-    when(version.compareTo(Version.GEODE_1_7_0)).thenReturn(1);
+    when(version.compareTo(KnownVersion.GEODE_1_7_0)).thenReturn(1);
 
     message.process(dm);
 
@@ -58,7 +58,7 @@ public class ExpireDisconnectedClientTransactionsMessageTest {
 
   @Test
   public void processMessageFromServerOfPriorGeode170VersionWillRemoveExpiredClientTransactions() {
-    when(version.compareTo(Version.GEODE_1_7_0)).thenReturn(-1);
+    when(version.compareTo(KnownVersion.GEODE_1_7_0)).thenReturn(-1);
 
     message.process(dm);
 

@@ -35,7 +35,7 @@ import org.openjdk.jmh.annotations.Warmup;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DSCODE;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 
 
 /**
@@ -51,7 +51,7 @@ public class InternalDataSerializerBenchmark {
 
   @Setup(Level.Trial)
   public void setup() throws IOException {
-    HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream hdos = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeString("12345678901234567890123456789012345", hdos);
     byte[] bytes = hdos.toByteArray();
     if (bytes[0] != DSCODE.STRING_BYTES.toByte()) {
@@ -67,7 +67,7 @@ public class InternalDataSerializerBenchmark {
   @BenchmarkMode(Mode.Throughput)
   @OutputTimeUnit(TimeUnit.MILLISECONDS)
   public String readStringBenchmark() throws IOException {
-    dataInput.initialize(serializedBytes, Version.CURRENT);
+    dataInput.initialize(serializedBytes, KnownVersion.CURRENT);
     String result = InternalDataSerializer.readString(dataInput, DSCODE.STRING_BYTES.toByte());
     return result;
   }

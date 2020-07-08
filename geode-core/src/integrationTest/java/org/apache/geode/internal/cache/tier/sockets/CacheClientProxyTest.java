@@ -35,7 +35,7 @@ import org.junit.Test;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.net.SocketCloser;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
@@ -72,7 +72,7 @@ public class CacheClientProxyTest {
     when(proxyID.getDistributedMember()).thenReturn(member);
 
     CacheClientProxy proxy = new CacheClientProxy(ccn, socket, proxyID, true,
-        Handshake.CONFLATION_DEFAULT, Version.CURRENT, 1L, true,
+        Handshake.CONFLATION_DEFAULT, KnownVersion.CURRENT, 1L, true,
         null, null, mock(StatisticsClock.class));
 
     CompletableFuture<Void> result1 = executorServiceRule.runAsync(() -> proxy.close());

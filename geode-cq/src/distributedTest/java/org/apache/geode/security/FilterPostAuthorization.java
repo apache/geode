@@ -38,7 +38,7 @@ import org.apache.geode.cache.query.internal.ResultsCollectionWrapper;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 
 /**
  * An authorization implementation for testing that checks for authorization information in
@@ -104,7 +104,7 @@ public class FilterPostAuthorization implements AccessControl {
     obj = checkObjectAuth(obj);
     if (obj != null) {
       HeapDataOutputStream hos =
-          new HeapDataOutputStream(serializedObj.length + 32, Version.CURRENT);
+          new HeapDataOutputStream(serializedObj.length + 32, KnownVersion.CURRENT);
       try {
         DataSerializer.writeObject(obj, hos);
         return hos.toByteArray();

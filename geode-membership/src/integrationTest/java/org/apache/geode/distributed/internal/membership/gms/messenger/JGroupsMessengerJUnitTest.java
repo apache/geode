@@ -94,9 +94,9 @@ import org.apache.geode.internal.serialization.BufferDataOutputStream;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
-import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.internal.DSFIDSerializerImpl;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
@@ -187,8 +187,8 @@ public class JGroupsMessengerJUnitTest {
     DSFIDSerializer serializer = new DSFIDSerializerImpl();
     Services.registerSerializables(serializer);
     when(services.getSerializer()).thenReturn(serializer);
-    Version current = Version.CURRENT; // force Version static initialization to set
-                                       // Version
+    KnownVersion current = KnownVersion.CURRENT; // force Version static initialization to set
+    // Version
 
     when(services.getStatistics()).thenReturn(new DefaultMembershipStatistics());
 
@@ -286,7 +286,7 @@ public class JGroupsMessengerJUnitTest {
   public void testMemberWeightIsSerialized() throws Exception {
     initMocks(false);
     BufferDataOutputStream out =
-        new BufferDataOutputStream(500, Version.getCurrentVersion());
+        new BufferDataOutputStream(500, KnownVersion.getCurrentVersion());
     MemberIdentifier mbr = createAddress(8888);
     mbr.setMemberWeight((byte) 40);
     mbr.toData(out, mock(SerializationContext.class));
@@ -483,7 +483,7 @@ public class JGroupsMessengerJUnitTest {
 
     org.jgroups.Message jmsg =
         messenger.createJGMessage(msg, messenger.jgAddress, messenger.localAddress,
-            Version.getCurrentVersion().ordinal());
+            KnownVersion.getCurrentVersion().ordinal());
     interceptor.up(new Event(Event.MSG, jmsg));
 
     verify(mh, times(1)).processMessage(any(JoinRequestMessage.class));
@@ -491,7 +491,7 @@ public class JGroupsMessengerJUnitTest {
     LeaveRequestMessage lmsg = new LeaveRequestMessage(messenger.localAddress, sender, "testing");
     when(joinLeave.getMemberID(any())).thenReturn(sender);
     jmsg = messenger.createJGMessage(lmsg, messenger.jgAddress, messenger.localAddress,
-        Version.getCurrentVersion().ordinal());
+        KnownVersion.getCurrentVersion().ordinal());
     interceptor.up(new Event(Event.MSG, jmsg));
 
     verify(manager).processMessage(any(LeaveRequestMessage.class));
@@ -839,7 +839,7 @@ public class JGroupsMessengerJUnitTest {
     ArgumentCaptor<Message> valueCapture = ArgumentCaptor.forClass(Message.class);
     doNothing().when(manager).processMessage(valueCapture.capture());
     org.jgroups.Message jgroupsMessage = messenger.createJGMessage(new TestMessage(), jgAddress,
-        memberIdentifier, Version.CURRENT_ORDINAL);
+        memberIdentifier, KnownVersion.CURRENT_ORDINAL);
     messenger.jgroupsReceiver.receive(jgroupsMessage, true);
     assertThat(valueCapture.getAllValues()).isEmpty();
   }
@@ -893,7 +893,7 @@ public class JGroupsMessengerJUnitTest {
 
     // a message is ignored during manager shutdown
     msg = messenger.createJGMessage(dmsg, new JGAddress(other),
-        recipients.get(0), Version.getCurrentVersion().ordinal());
+        recipients.get(0), KnownVersion.getCurrentVersion().ordinal());
     when(manager.shutdownInProgress()).thenReturn(Boolean.TRUE);
     receiver.receive(msg);
     verify(manager, never()).processMessage(isA(Message.class));
@@ -1006,10 +1006,10 @@ public class JGroupsMessengerJUnitTest {
     recipients.add(otherMbr);
     gfmsg.setRecipients(recipients);
 
-    short version = Version.getCurrentVersion().ordinal();
+    short version = KnownVersion.getCurrentVersion().ordinal();
 
     BufferDataOutputStream out =
-        new BufferDataOutputStream(Version.getCurrentVersion());
+        new BufferDataOutputStream(KnownVersion.getCurrentVersion());
 
     messenger.writeEncryptedMessage(gfmsg, otherMbr, version, out);
 
@@ -1046,10 +1046,10 @@ public class JGroupsMessengerJUnitTest {
     recipients.add(otherMbr);
     gfmsg.setRecipients(recipients);
 
-    short version = Version.getCurrentVersion().ordinal();
+    short version = KnownVersion.getCurrentVersion().ordinal();
 
     BufferDataOutputStream out =
-        new BufferDataOutputStream(Version.getCurrentVersion());
+        new BufferDataOutputStream(KnownVersion.getCurrentVersion());
 
     messenger.writeEncryptedMessage(gfmsg, otherMbr, version, out);
 
@@ -1081,10 +1081,10 @@ public class JGroupsMessengerJUnitTest {
     JoinRequestMessage gfmsg =
         new JoinRequestMessage(otherMbr, messenger.getMemberID(), null, 9789, 1);
 
-    short version = Version.getCurrentVersion().ordinal();
+    short version = KnownVersion.getCurrentVersion().ordinal();
 
     BufferDataOutputStream out =
-        new BufferDataOutputStream(Version.getCurrentVersion());
+        new BufferDataOutputStream(KnownVersion.getCurrentVersion());
 
     messenger.writeEncryptedMessage(gfmsg, otherMbr, version, out);
 
@@ -1116,10 +1116,10 @@ public class JGroupsMessengerJUnitTest {
     JoinResponseMessage gfmsg =
         new JoinResponseMessage(otherMbr, messenger.getClusterSecretKey(), 1);
 
-    short version = Version.getCurrentVersion().ordinal();
+    short version = KnownVersion.getCurrentVersion().ordinal();
 
     BufferDataOutputStream out =
-        new BufferDataOutputStream(Version.getCurrentVersion());
+        new BufferDataOutputStream(KnownVersion.getCurrentVersion());
 
     messenger.writeEncryptedMessage(gfmsg, otherMbr, version, out);
 
@@ -1138,7 +1138,7 @@ public class JGroupsMessengerJUnitTest {
 
     InstallViewMessage installViewMessage = new InstallViewMessage(v, null, true);
 
-    out = new BufferDataOutputStream(Version.getCurrentVersion());
+    out = new BufferDataOutputStream(KnownVersion.getCurrentVersion());
 
     messenger.writeEncryptedMessage(installViewMessage, otherMbr, version, out);
 
@@ -1159,7 +1159,7 @@ public class JGroupsMessengerJUnitTest {
     MemberIdentifier gms = MemberIdentifierUtil.createMemberID(port);
     gms.getMemberData().setUUID(UUID.randomUUID());
     gms.setVmKind(MemberIdentifier.NORMAL_DM_TYPE);
-    gms.setVersionObjectForTest(Version.getCurrentVersion());
+    gms.setVersionObjectForTest(KnownVersion.getCurrentVersion());
     return gms;
   }
 
@@ -1192,7 +1192,7 @@ public class JGroupsMessengerJUnitTest {
     }
 
     @Override
-    public Version[] getSerializationVersions() {
+    public KnownVersion[] getSerializationVersions() {
       return null;
     }
   }

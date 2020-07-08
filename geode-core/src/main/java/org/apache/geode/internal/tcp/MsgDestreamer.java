@@ -29,7 +29,7 @@ import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 
 /**
@@ -64,9 +64,9 @@ public class MsgDestreamer {
 
   final CancelCriterion stopper;
 
-  final Version version;
+  final KnownVersion version;
 
-  public MsgDestreamer(DMStats stats, CancelCriterion stopper, Version v) {
+  public MsgDestreamer(DMStats stats, CancelCriterion stopper, KnownVersion v) {
     this.stopper = stopper;
     this.t = new DestreamerThread(stats, stopper);
     this.version = v;
@@ -237,7 +237,7 @@ public class MsgDestreamer {
         }
         try {
           ReplyProcessor21.initMessageRPId();
-          final Version v = version;
+          final KnownVersion v = version;
           DataInputStream dis =
               v == null ? new DataInputStream(this.is)
                   : new VersionedDataInputStream(this.is, v);

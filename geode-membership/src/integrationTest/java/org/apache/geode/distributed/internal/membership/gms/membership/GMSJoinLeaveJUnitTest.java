@@ -83,7 +83,7 @@ import org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMess
 import org.apache.geode.distributed.internal.membership.gms.util.MemberIdentifierUtil;
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
@@ -166,7 +166,7 @@ public class GMSJoinLeaveJUnitTest {
     mockOldMember = services.getMemberFactory().create(
         MemberDataBuilder.newBuilderForLocalHost("localhost")
             .setMembershipPort(8700).build());
-    ((MemberIdentifierImpl) mockOldMember).setVersionObjectForTest(Version.GFE_56);
+    ((MemberIdentifierImpl) mockOldMember).setVersionObjectForTest(KnownVersion.GFE_56);
     locatorClient = mock(TcpClient.class);
 
     if (useTestGMSJoinLeave) {
@@ -1587,7 +1587,7 @@ public class GMSJoinLeaveJUnitTest {
         new MemberIdentifierImpl(gmsJoinLeaveMemberId.getMemberData());
 
     // this test must live in the 1.12 and later lines so pick a pre-1.12 version
-    final Version oldVersion = Version.GEODE_1_11_0;
+    final KnownVersion oldVersion = KnownVersion.GEODE_1_11_0;
     myMemberIDWithWrongVersion.setVersionObjectForTest(oldVersion);
 
     viewWithWrongVersion.remove(gmsJoinLeaveMemberId);
@@ -1597,7 +1597,7 @@ public class GMSJoinLeaveJUnitTest {
 
     assertThat(
         gmsJoinLeave.getView().getCanonicalID(gmsJoinLeaveMemberId).getVersionOrdinalObject())
-            .isEqualTo(Version.getCurrentVersion());
+            .isEqualTo(KnownVersion.getCurrentVersion());
   }
 
   private void becomeCoordinatorForTest(GMSJoinLeave gmsJoinLeave) {

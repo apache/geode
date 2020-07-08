@@ -29,7 +29,7 @@ import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
 import org.apache.geode.internal.serialization.Versioning;
@@ -44,7 +44,7 @@ class ClientRegistrationMetadata {
   private ClientProxyMembershipID clientProxyMembershipID;
   private byte clientConflation;
   private Properties clientCredentials;
-  private Version clientVersion;
+  private KnownVersion clientVersion;
   private DataInputStream dataInputStream;
   private DataOutputStream dataOutputStream;
 
@@ -106,7 +106,7 @@ class ClientRegistrationMetadata {
     return clientCredentials;
   }
 
-  Version getClientVersion() {
+  KnownVersion getClientVersion() {
     return clientVersion;
   }
 
@@ -124,7 +124,7 @@ class ClientRegistrationMetadata {
 
     final String message;
     if (clientVersion == null) {
-      message = Version.unsupportedVersionMessage(clientVersionOrdinal);
+      message = KnownVersion.unsupportedVersionMessage(clientVersionOrdinal);
     } else {
       final Map<Integer, Command> commands = CommandInitializer.getCommands(clientVersion);
       if (commands == null) {
@@ -161,15 +161,15 @@ class ClientRegistrationMetadata {
   }
 
   private boolean doesClientSupportExtractOverrides() {
-    return clientVersion.isNotOlderThan(Version.GFE_603);
+    return clientVersion.isNotOlderThan(KnownVersion.GFE_603);
   }
 
-  private boolean oldClientRequiresVersionedStreams(final Version clientVersion) {
-    return Version.CURRENT.compareTo(clientVersion) > 0;
+  private boolean oldClientRequiresVersionedStreams(final KnownVersion clientVersion) {
+    return KnownVersion.CURRENT.compareTo(clientVersion) > 0;
   }
 
-  private boolean isVersionOlderThan57(final Version clientVersion) {
-    return Version.GFE_57.compareTo(clientVersion) > 0;
+  private boolean isVersionOlderThan57(final KnownVersion clientVersion) {
+    return KnownVersion.GFE_57.compareTo(clientVersion) > 0;
   }
 
   private void getAndValidateClientProxyMembershipID()

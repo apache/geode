@@ -35,7 +35,7 @@ public class Versioning {
    * @return a known version (Version) if possible, otherwise a VersionOrdinal.
    */
   public static VersionOrdinal getVersionOrdinal(final short ordinal) {
-    final Version knownVersion = Version.getKnownVersion(ordinal, null);
+    final KnownVersion knownVersion = KnownVersion.getKnownVersion(ordinal, null);
     if (knownVersion == null) {
       return new UnknownVersion(ordinal);
     } else {
@@ -46,7 +46,7 @@ public class Versioning {
   /**
    * Return the known version (Version) for the VersionOrdinal, if possible.
    * Otherwise return the defaultKnownVersion Version. This method essentially
-   * downcasts a {@link VersionOrdinal} to a known version {@link Version}
+   * downcasts a {@link VersionOrdinal} to a known version {@link KnownVersion}
    *
    * @param anyVersion came from a call to {@link #getVersionOrdinal(short)} or this
    *        method
@@ -54,10 +54,10 @@ public class Versioning {
    *        a known version
    * @return a known version
    */
-  public static Version getKnownVersionOrDefault(final VersionOrdinal anyVersion,
-      Version defaultKnownVersion) {
-    if (anyVersion instanceof Version) {
-      return (Version) anyVersion;
+  public static KnownVersion getKnownVersionOrDefault(final VersionOrdinal anyVersion,
+      KnownVersion defaultKnownVersion) {
+    if (anyVersion instanceof KnownVersion) {
+      return (KnownVersion) anyVersion;
     } else {
       return defaultKnownVersion;
     }

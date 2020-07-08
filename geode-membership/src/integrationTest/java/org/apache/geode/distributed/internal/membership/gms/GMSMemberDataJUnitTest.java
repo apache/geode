@@ -36,8 +36,8 @@ import org.apache.geode.internal.serialization.BufferDataOutputStream;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.DSFIDSerializerFactory;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
@@ -220,12 +220,12 @@ public class GMSMemberDataJUnitTest {
 
 
     // vmKind should not be transmitted to a member with version GFE_90 or earlier
-    dataOutput = new BufferDataOutputStream(Version.GFE_90);
+    dataOutput = new BufferDataOutputStream(KnownVersion.GFE_90);
     member.writeEssentialData(dataOutput, serializationContext);
     bais = new ByteArrayInputStream(baos.toByteArray());
     DataInputStream stream = new DataInputStream(bais);
     deserializationContext = dsfidSerializer.createDeserializationContext(stream);
-    dataInput = new VersionedDataInputStream(stream, Version.GFE_90);
+    dataInput = new VersionedDataInputStream(stream, KnownVersion.GFE_90);
     newMember = new GMSMemberData();
     newMember.readEssentialData(dataInput, deserializationContext);
     assertThat(newMember.getVmKind()).isZero();
