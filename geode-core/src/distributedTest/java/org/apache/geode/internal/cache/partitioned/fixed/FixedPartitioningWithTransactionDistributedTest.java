@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.partitioned.fixed;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getHostName;
 import static org.apache.geode.test.dunit.VM.getVM;
@@ -238,7 +237,7 @@ public class FixedPartitioningWithTransactionDistributedTest implements
     ClientMetadataService clientMetadataService =
         ((InternalCache) clientCacheRule.getClientCache()).getClientMetadataService();
     clientMetadataService.scheduleGetPRMetaData((InternalRegion) region, true);
-    await().atMost(5, MINUTES).until(clientMetadataService::isMetadataStable);
+    await().until(clientMetadataService::isMetadataStable);
   }
 
   @Test
