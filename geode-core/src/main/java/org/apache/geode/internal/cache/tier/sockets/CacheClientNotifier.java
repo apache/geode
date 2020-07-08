@@ -102,7 +102,7 @@ import org.apache.geode.internal.cache.tier.OverflowAttributes;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.net.SocketCloser;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.statistics.DummyStatisticsFactory;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -184,7 +184,7 @@ public class CacheClientNotifier {
     ClientProxyMembershipID clientProxyMembershipID =
         clientRegistrationMetadata.getClientProxyMembershipID();
     DataOutputStream dataOutputStream = clientRegistrationMetadata.getDataOutputStream();
-    Version clientVersion = clientRegistrationMetadata.getClientVersion();
+    KnownVersion clientVersion = clientRegistrationMetadata.getClientVersion();
 
     try {
       if (isClientPermitted(clientRegistrationMetadata, clientProxyMembershipID)) {
@@ -246,7 +246,7 @@ public class CacheClientNotifier {
     ClientProxyMembershipID clientProxyMembershipID =
         clientRegistrationMetadata.getClientProxyMembershipID();
     byte clientConflation = clientRegistrationMetadata.getClientConflation();
-    Version clientVersion = clientRegistrationMetadata.getClientVersion();
+    KnownVersion clientVersion = clientRegistrationMetadata.getClientVersion();
 
     CacheClientProxy cacheClientProxy = getClientProxy(clientProxyMembershipID);
     DistributedMember member = clientProxyMembershipID.getDistributedMember();
@@ -446,7 +446,7 @@ public class CacheClientNotifier {
   }
 
   private void handleAuthenticationException(final ClientProxyMembershipID clientProxyMembershipID,
-      final DataOutputStream dataOutputStream, final Version clientVersion,
+      final DataOutputStream dataOutputStream, final KnownVersion clientVersion,
       final GemFireSecurityException ex, final byte replyExceptionAuthenticationFailed)
       throws IOException {
     securityLogWriter.warning(
@@ -683,7 +683,7 @@ public class CacheClientNotifier {
       Object[] objects = filterClients.toArray();
       for (Object id : objects) {
         CacheClientProxy ccp = getClientProxy((ClientProxyMembershipID) id, true);
-        if (ccp != null && ccp.getVersion().isOlderThan(Version.GFE_70)) {
+        if (ccp != null && ccp.getVersion().isOlderThan(KnownVersion.GFE_70)) {
           filterClients.remove(id);
         }
       }
@@ -1864,7 +1864,7 @@ public class CacheClientNotifier {
         for (CacheClientProxy proxy : getClientProxies()) {
           logger.debug("Checking whether to ping {}", proxy);
           // Ping clients whose version is GE 6.6.2.2
-          if (proxy.getVersion().isNotOlderThan(Version.GFE_6622)) {
+          if (proxy.getVersion().isNotOlderThan(KnownVersion.GFE_6622)) {
             // Send the ping message directly to the client. Do not qo through
             // the queue. If the queue were used, the secondary connection would
             // not be pinged. Instead, pings would just build up in secondary

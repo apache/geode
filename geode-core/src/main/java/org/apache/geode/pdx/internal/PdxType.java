@@ -32,8 +32,8 @@ import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.tier.sockets.OldClientSupportService;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.StaticSerialization;
-import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.pdx.PdxFieldAlreadyExistsException;
 import org.apache.geode.pdx.internal.AutoSerializableManager.AutoClassInfo;
 
@@ -134,8 +134,8 @@ public class PdxType implements DataSerializable {
       // to set noDomainClass to true.
       // For this reason the pdx delete-field command should only be used after
       // all member have been upgraded to 8.1 or later.
-      Version sourceVersion = StaticSerialization.getVersionForDataStream(out);
-      if (sourceVersion.isNotOlderThan(Version.GFE_81)) {
+      KnownVersion sourceVersion = StaticSerialization.getVersionForDataStream(out);
+      if (sourceVersion.isNotOlderThan(KnownVersion.GFE_81)) {
         if (this.hasDeletedField) {
           bits |= HAS_DELETED_FIELD_BIT;
         }

@@ -15,13 +15,13 @@
 package org.apache.geode.cache.client.internal.locator;
 
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 
 public abstract class ServerLocationResponse implements DataSerializableFixedID {
   public abstract boolean hasResult();
 
   @Override
-  public Version[] getSerializationVersions() {
+  public KnownVersion[] getSerializationVersions() {
     return null;
   }
 }

@@ -29,7 +29,7 @@ import org.apache.geode.cache.lucene.internal.cli.functions.LuceneDestroyIndexFu
 import org.apache.geode.cache.lucene.internal.security.LucenePermission;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.internal.cli.remote.CommandExecutor;
@@ -65,11 +65,11 @@ public class LuceneDestroyIndexCommand extends LuceneCommandBase {
 
     // Get members >= Geode 1.8 (when the new destroy code path went into the product)
     Set<DistributedMember> validVersionMembers =
-        getNormalMembersWithSameOrNewerVersion(Version.GEODE_1_7_0);
+        getNormalMembersWithSameOrNewerVersion(KnownVersion.GEODE_1_7_0);
     if (validVersionMembers.isEmpty()) {
       return ResultModel.createInfo(CliStrings.format(
           LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__COULD_NOT_FIND__MEMBERS_GREATER_THAN_VERSION_0,
-          Version.GEODE_1_7_0));
+          KnownVersion.GEODE_1_7_0));
     }
 
     // Execute the destroy index function

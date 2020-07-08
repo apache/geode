@@ -34,16 +34,16 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 
 /**
  * Unit Tests for {@link BlobHelper}.
  *
  * TODO: add coverage for additional methods:
- * <li>{@link BlobHelper#deserializeBlob(byte[], Version, ByteArrayDataInput)}
+ * <li>{@link BlobHelper#deserializeBlob(byte[], KnownVersion, ByteArrayDataInput)}
  * <li>{@link BlobHelper#deserializeBuffer(ByteArrayDataInput, int)}
  * <li>{@link BlobHelper#deserializeOffHeapBlob(StoredObject)}
- * <li>{@link BlobHelper#serializeToBlob(Object, Version)}
+ * <li>{@link BlobHelper#serializeToBlob(Object, KnownVersion)}
  */
 public class BlobHelperTest {
 

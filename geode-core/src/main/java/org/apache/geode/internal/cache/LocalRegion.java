@@ -213,7 +213,7 @@ import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.sequencelog.EntryLogger;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteHashMap;
 import org.apache.geode.internal.util.concurrent.FutureResult;
@@ -1727,7 +1727,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           extractDelta = true;
         }
         if (extractDelta && ((Delta) value).hasDelta()) {
-          HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
+          HeapDataOutputStream hdos = new HeapDataOutputStream(KnownVersion.CURRENT);
           long start = DistributionStats.getStatTime();
           try {
             ((Delta) value).toDelta(hdos);
@@ -10686,7 +10686,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   @Override
-  public Version[] getSerializationVersions() {
+  public KnownVersion[] getSerializationVersions() {
     return null;
   }
 

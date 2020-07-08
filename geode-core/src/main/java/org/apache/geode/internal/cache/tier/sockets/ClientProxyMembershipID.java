@@ -41,8 +41,8 @@ import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.util.internal.GeodeGlossary;
@@ -194,7 +194,7 @@ public class ClientProxyMembershipID
             ((InternalDistributedMember) systemMemberId).setDurableId(attributes.getId());
           }
         }
-        HeapDataOutputStream hdos = new HeapDataOutputStream(256, Version.CURRENT);
+        HeapDataOutputStream hdos = new HeapDataOutputStream(256, KnownVersion.CURRENT);
         DataSerializer.writeObject(systemMemberId, hdos);
         client_side_identity = hdos.toByteArray();
       } catch (IOException ioe) {
@@ -349,11 +349,11 @@ public class ClientProxyMembershipID
     // {toString(); this.transientPort = ((InternalDistributedMember)this.memberId).getPort();}
   }
 
-  public Version getClientVersion() {
+  public KnownVersion getClientVersion() {
     return Versioning
         .getKnownVersionOrDefault(
             ((InternalDistributedMember) getDistributedMember()).getVersionOrdinalObject(),
-            Version.CURRENT);
+            KnownVersion.CURRENT);
   }
 
   public String getDSMembership() {
@@ -374,7 +374,7 @@ public class ClientProxyMembershipID
   private String getMemberIdAsString() {
     String memberIdAsString = null;
     InternalDistributedMember idm = (InternalDistributedMember) getDistributedMember();
-    if (getClientVersion().isOlderThan(Version.GFE_90)) {
+    if (getClientVersion().isOlderThan(KnownVersion.GFE_90)) {
       memberIdAsString = idm.toString();
     } else {
       StringBuilder sb = new StringBuilder();
@@ -493,7 +493,7 @@ public class ClientProxyMembershipID
     // new Exception("stack trace")
     // ));
     // }
-    HeapDataOutputStream hdos = new HeapDataOutputStream(256, Version.CURRENT);
+    HeapDataOutputStream hdos = new HeapDataOutputStream(256, KnownVersion.CURRENT);
     try {
       DataSerializer.writeObject(idm, hdos);
     } catch (IOException e) {
@@ -607,7 +607,7 @@ public class ClientProxyMembershipID
   }
 
   @Override
-  public Version[] getSerializationVersions() {
+  public KnownVersion[] getSerializationVersions() {
     return null;
   }
 

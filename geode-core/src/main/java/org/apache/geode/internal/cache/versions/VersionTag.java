@@ -29,8 +29,8 @@ import org.apache.geode.internal.cache.persistence.DiskStoreID;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.size.ReflectionSingleObjectSizer;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -417,7 +417,7 @@ public abstract class VersionTag<T extends VersionSource>
         try {
           this.previousMemberID = readMember(in);
         } catch (BufferUnderflowException e) {
-          if (context.getSerializationVersion().isOlderThan(Version.GEODE_1_11_0)) {
+          if (context.getSerializationVersion().isOlderThan(KnownVersion.GEODE_1_11_0)) {
             // GEODE-7219: older versions may report HAS_PREVIOUS_MEMBER_ID but not transmit it
             logger.info("Buffer underflow encountered while reading a version tag - ignoring");
           } else {

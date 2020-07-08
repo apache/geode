@@ -21,7 +21,7 @@ import java.io.IOException;
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 
 public class ObjectTraverserPerf {
 
@@ -57,7 +57,7 @@ public class ObjectTraverserPerf {
   private static void calcSize(TestObject testObject) throws IllegalAccessException, IOException {
     if (USE_SERIALIZATION) {
       // NullDataOutputStream out = new NullDataOutputStream();
-      HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
+      HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT);
       testObject.toData(out);
     } else {
       ObjectGraphSizer.size(testObject);

@@ -26,19 +26,19 @@ import java.io.DataOutput;
  * Internal product classes that implement {@link DataSerializableFixedID}
  * and change serialization format must check this on DataInput/DataOutput
  * (see {@link SerializationContext#getSerializationVersion()} methods) and deal with serialization
- * with previous {@link Version}s appropriately.
+ * with previous {@link KnownVersion}s appropriately.
  */
 public interface VersionedDataStream {
 
   /**
    * If the remote peer to which this input/output is connected has a version ordinal
-   * for which a {@link Version} is known (locally) then that {@link Version} is returned,
+   * for which a {@link KnownVersion} is known (locally) then that {@link KnownVersion} is returned,
    * otherwise null is returned.
    *
-   * If the peer has a version ordinal for which no {@link Version} is locally known,
+   * If the peer has a version ordinal for which no {@link KnownVersion} is locally known,
    * then this member cannot do any adjustment to serialization and it's the remote
    * peer's responsibility to adjust the serialization/deserialization according to
    * this peer.
    */
-  Version getVersion();
+  KnownVersion getVersion();
 }

@@ -46,7 +46,7 @@ import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.lang.JavaWorkarounds;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -129,7 +129,8 @@ public class ClientHealthMonitor {
    *
    * @see CacheClientNotifier#addClientProxy(CacheClientProxy)
    */
-  AtomicIntegerArray numOfClientsPerVersion = new AtomicIntegerArray(Version.HIGHEST_VERSION + 1);
+  AtomicIntegerArray numOfClientsPerVersion =
+      new AtomicIntegerArray(KnownVersion.HIGHEST_VERSION + 1);
 
   public long getMonitorInterval() {
     return monitorInterval;
@@ -647,7 +648,7 @@ public class ClientHealthMonitor {
     return cleanupTable;
   }
 
-  private int getNumberOfClientsAtOrAboveVersion(Version version) {
+  private int getNumberOfClientsAtOrAboveVersion(KnownVersion version) {
     int number = 0;
     for (int i = version.ordinal(); i < numOfClientsPerVersion.length(); i++) {
       number += numOfClientsPerVersion.get(i);
@@ -656,7 +657,7 @@ public class ClientHealthMonitor {
   }
 
   public boolean hasDeltaClients() {
-    return getNumberOfClientsAtOrAboveVersion(Version.GFE_61) > 0;
+    return getNumberOfClientsAtOrAboveVersion(KnownVersion.GFE_61) > 0;
   }
 
   /**

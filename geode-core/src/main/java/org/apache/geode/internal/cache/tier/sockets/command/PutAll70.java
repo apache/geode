@@ -45,7 +45,7 @@ import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
@@ -287,7 +287,8 @@ public class PutAll70 extends BaseCommand {
           serverConnection.getName(), serverConnection.getSocketString(), regionName, response);
     }
     // Starting in 7.0.1 we do not send the keys back
-    if (response != null && Version.GFE_70.compareTo(serverConnection.getClientVersion()) < 0) {
+    if (response != null
+        && KnownVersion.GFE_70.compareTo(serverConnection.getClientVersion()) < 0) {
       if (logger.isDebugEnabled()) {
         logger.debug("setting putAll keys to null");
       }

@@ -46,7 +46,7 @@ import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
@@ -115,7 +115,7 @@ public class Get70Test {
     when(serverConnection.getResponseMessage()).thenReturn(responseMessage);
     when(serverConnection.getCachedRegionHelper()).thenReturn(mock(CachedRegionHelper.class));
     when(serverConnection.getErrorResponseMessage()).thenReturn(errorResponseMessage);
-    when(serverConnection.getClientVersion()).thenReturn(Version.CURRENT);
+    when(serverConnection.getClientVersion()).thenReturn(KnownVersion.CURRENT);
 
     when(valuePart.getObject()).thenReturn(CALLBACK_ARG);
 

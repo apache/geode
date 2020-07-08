@@ -22,7 +22,7 @@ import org.junit.Test;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 
 public class EventIDTest {
@@ -30,16 +30,16 @@ public class EventIDTest {
   @Test
   public void emptyEventIdCanBeSerializedWithCurrentVersion()
       throws IOException, ClassNotFoundException {
-    emptyEventIdCanBeSerialized(Version.CURRENT);
+    emptyEventIdCanBeSerialized(KnownVersion.CURRENT);
 
   }
 
   @Test
   public void emptyEventIdCanBeSerializedToGeode100() throws IOException, ClassNotFoundException {
-    emptyEventIdCanBeSerialized(Version.GFE_90);
+    emptyEventIdCanBeSerialized(KnownVersion.GFE_90);
   }
 
-  private void emptyEventIdCanBeSerialized(Version version)
+  private void emptyEventIdCanBeSerialized(KnownVersion version)
       throws IOException, ClassNotFoundException {
     EventID eventID = new EventID();
     HeapDataOutputStream out = new HeapDataOutputStream(version);

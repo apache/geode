@@ -27,7 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 
 public class FunctionAdapterJUnitTest {
@@ -77,7 +77,7 @@ public class FunctionAdapterJUnitTest {
                 + "serializedFunctionAdapterWithDifferentSerialVersionUID.ser").getAbsolutePath());
 
     DataInputStream dis =
-        new VersionedDataInputStream(new DataInputStream(fis), Version.GFE_82);
+        new VersionedDataInputStream(new DataInputStream(fis), KnownVersion.GFE_82);
     Object o = InternalDataSerializer.basicReadObject(dis);
     assertTrue(o instanceof FunctionAdapter);
   }

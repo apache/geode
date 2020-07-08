@@ -60,7 +60,7 @@ import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.persistence.DiskStoreID;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
@@ -2527,7 +2527,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
         LocalRegion region = (LocalRegion) cache.getRegion(regionName);
         RegionVersionVector rvv = region.getVersionVector();
         rvv = rvv.getCloneForTransmission();
-        HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
+        HeapDataOutputStream hdos = new HeapDataOutputStream(KnownVersion.CURRENT);
 
         // Using gemfire serialization because
         // RegionVersionVector is not java serializable
@@ -2554,7 +2554,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
         LocalRegion region = (LocalRegion) cache.getRegion(REGION_NAME);
         RegionVersionVector rvv = region.getDiskRegion().getRegionVersionVector();
         rvv = rvv.getCloneForTransmission();
-        HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
+        HeapDataOutputStream hdos = new HeapDataOutputStream(KnownVersion.CURRENT);
 
         // Using gemfire serialization because
         // RegionVersionVector is not java serializable

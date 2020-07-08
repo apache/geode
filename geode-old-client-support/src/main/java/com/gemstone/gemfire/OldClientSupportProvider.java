@@ -24,7 +24,7 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.sockets.OldClientSupportService;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
 import org.apache.geode.util.internal.GeodeGlossary;
@@ -107,8 +107,8 @@ public class OldClientSupportProvider implements OldClientSupportService {
     // if the client is old then it needs com.gemstone.gemfire package names
     if (out instanceof VersionedDataOutputStream) {
       VersionedDataOutputStream vout = (VersionedDataOutputStream) out;
-      Version version = vout.getVersion();
-      if (version != null && version.isOlderThan(Version.GFE_90)) {
+      KnownVersion version = vout.getVersion();
+      if (version != null && version.isOlderThan(KnownVersion.GFE_90)) {
         return processClassName(name, GEODE, GEMFIRE, newClassNamesToOld);
       }
     }
@@ -116,12 +116,12 @@ public class OldClientSupportProvider implements OldClientSupportService {
   }
 
   @Override
-  public Throwable getThrowable(Throwable theThrowable, Version clientVersion) {
+  public Throwable getThrowable(Throwable theThrowable, KnownVersion clientVersion) {
 
     if (theThrowable == null) {
       return theThrowable;
     }
-    if (clientVersion.isNotOlderThan(Version.GFE_90)) {
+    if (clientVersion.isNotOlderThan(KnownVersion.GFE_90)) {
       return theThrowable;
     }
 

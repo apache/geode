@@ -23,8 +23,8 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.Version;
 
 /**
  * Class <code>ClientMarkerMessageImpl</code> is a marker message that is placed in the
@@ -59,9 +59,9 @@ public class ClientMarkerMessageImpl implements ClientMessage {
 
   @Override
   public Message getMessage(CacheClientProxy proxy, boolean notify) throws IOException {
-    Version clientVersion = proxy.getVersion();
+    KnownVersion clientVersion = proxy.getVersion();
     Message message = null;
-    if (clientVersion.isNotOlderThan(Version.GFE_57)) {
+    if (clientVersion.isNotOlderThan(KnownVersion.GFE_57)) {
       message = getGFEMessage();
     } else {
       throw new IOException(
@@ -72,7 +72,7 @@ public class ClientMarkerMessageImpl implements ClientMessage {
   }
 
   protected Message getGFEMessage() throws IOException {
-    Message message = new Message(1, Version.CURRENT);
+    Message message = new Message(1, KnownVersion.CURRENT);
     message.setMessageType(MessageType.CLIENT_MARKER);
     message.setTransactionId(0);
     message.addObjPart(this.eventId);
@@ -131,7 +131,7 @@ public class ClientMarkerMessageImpl implements ClientMessage {
   }
 
   @Override
-  public Version[] getSerializationVersions() {
+  public KnownVersion[] getSerializationVersions() {
     return null;
   }
 }

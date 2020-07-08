@@ -24,8 +24,8 @@ import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.ExternalizableDSFID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.Version;
 
 /**
  * The implementation of the {@link TransactionId} interface stored in the transaction state and
@@ -121,7 +121,7 @@ public class TXId extends ExternalizableDSFID implements TransactionId {
   }
 
   @Override
-  public Version[] getSerializationVersions() {
+  public KnownVersion[] getSerializationVersions() {
     return null;
   }
 

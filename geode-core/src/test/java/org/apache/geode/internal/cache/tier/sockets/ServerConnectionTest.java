@@ -42,7 +42,7 @@ import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.Encryptor;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
@@ -93,7 +93,7 @@ public class ServerConnectionTest {
   @Test
   public void pre65SecureShouldReturnUserAuthId() {
     long userAuthId = 12345L;
-    when(handshake.getVersion()).thenReturn(Version.GFE_61);
+    when(handshake.getVersion()).thenReturn(KnownVersion.GFE_61);
     serverConnection.setUserAuthId(userAuthId);
 
     long value = serverConnection.getUniqueId();
@@ -103,7 +103,7 @@ public class ServerConnectionTest {
 
   @Test
   public void pre65NonSecureShouldReturnUserAuthId() {
-    when(handshake.getVersion()).thenReturn(Version.GFE_61);
+    when(handshake.getVersion()).thenReturn(KnownVersion.GFE_61);
     long userAuthId = 12345L;
     serverConnection.setUserAuthId(userAuthId);
 
@@ -117,7 +117,7 @@ public class ServerConnectionTest {
     long uniqueIdFromMessage = 23456L;
     MessageIdExtractor messageIdExtractor = mock(MessageIdExtractor.class);
     when(handshake.getEncryptor()).thenReturn(mock(Encryptor.class));
-    when(handshake.getVersion()).thenReturn(Version.GFE_82);
+    when(handshake.getVersion()).thenReturn(KnownVersion.GFE_82);
     when(messageIdExtractor.getUniqueIdFromMessage(any(Message.class), any(Encryptor.class),
         anyLong())).thenReturn(uniqueIdFromMessage);
     when(requestMessage.isSecureMode()).thenReturn(true);
@@ -131,7 +131,7 @@ public class ServerConnectionTest {
 
   @Test
   public void post65NonSecureShouldThrow() {
-    when(handshake.getVersion()).thenReturn(Version.GFE_82);
+    when(handshake.getVersion()).thenReturn(KnownVersion.GFE_82);
 
     Throwable thrown = catchThrowable(() -> serverConnection.getUniqueId());
 

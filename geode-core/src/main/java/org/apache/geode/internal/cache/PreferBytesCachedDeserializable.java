@@ -25,8 +25,8 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.Version;
 
 /**
  * This cache deserializable always keeps its byte[] in serialized form. You can ask it for its
@@ -161,7 +161,7 @@ public class PreferBytesCachedDeserializable
   }
 
   @Override
-  public Version[] getSerializationVersions() {
+  public KnownVersion[] getSerializationVersions() {
     return null;
   }
 

@@ -103,7 +103,7 @@ import org.apache.geode.internal.cache.tier.sockets.command.TXSynchronizationCom
 import org.apache.geode.internal.cache.tier.sockets.command.UnregisterInterest;
 import org.apache.geode.internal.cache.tier.sockets.command.UnregisterInterestList;
 import org.apache.geode.internal.cache.tier.sockets.command.UpdateClientNotification;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 
 /**
  * A <code>CommandInitializer</code> maintains version specific commands map.
@@ -114,7 +114,7 @@ import org.apache.geode.internal.serialization.Version;
 public class CommandInitializer {
 
   @Immutable
-  static final Map<Version, Map<Integer, Command>> ALL_COMMANDS = initializeAllCommands();
+  static final Map<KnownVersion, Map<Integer, Command>> ALL_COMMANDS = initializeAllCommands();
 
   /**
    * Register a new command with the system.
@@ -125,12 +125,13 @@ public class CommandInitializer {
    *        earliest version for which this command class is valid (starting with GFE_57). The value
    *        is the command object for clients starting with that version.
    */
-  public static void registerCommand(int messageType, Map<Version, Command> versionToNewCommand) {
+  public static void registerCommand(int messageType,
+      Map<KnownVersion, Command> versionToNewCommand) {
     Command command = null;
     // Iterate through all the gemfire versions, and
     // add a command to the map for that version
-    for (Map.Entry<Version, Map<Integer, Command>> entry : ALL_COMMANDS.entrySet()) {
-      Version version = entry.getKey();
+    for (Map.Entry<KnownVersion, Map<Integer, Command>> entry : ALL_COMMANDS.entrySet()) {
+      KnownVersion version = entry.getKey();
 
       // Get the current set of commands for this version.
       Map<Integer, Command> commandMap = entry.getValue();
@@ -154,15 +155,15 @@ public class CommandInitializer {
     }
   }
 
-  private static Map<Version, Map<Integer, Command>> initializeAllCommands() {
-    final LinkedHashMap<Version, Map<Integer, Command>> allCommands =
-        new LinkedHashMap<Version, Map<Integer, Command>>();
+  private static Map<KnownVersion, Map<Integer, Command>> initializeAllCommands() {
+    final LinkedHashMap<KnownVersion, Map<Integer, Command>> allCommands =
+        new LinkedHashMap<KnownVersion, Map<Integer, Command>>();
 
-    allCommands.put(Version.GFE_56, new HashMap<>());
+    allCommands.put(KnownVersion.GFE_56, new HashMap<>());
 
     // Initialize the GFE 5.7 commands
     Map<Integer, Command> gfe57Commands = new HashMap<Integer, Command>();
-    allCommands.put(Version.GFE_57, gfe57Commands);
+    allCommands.put(KnownVersion.GFE_57, gfe57Commands);
     gfe57Commands.put(MessageType.PING, Ping.getCommand());
     gfe57Commands.put(MessageType.REQUEST, Request.getCommand());
     gfe57Commands.put(MessageType.PUT, Put.getCommand());
@@ -193,20 +194,20 @@ public class CommandInitializer {
 
     // Initialize the GFE 5.8 commands example
     Map<Integer, Command> gfe58Commands = new HashMap<Integer, Command>();
-    allCommands.put(Version.GFE_58, gfe58Commands);
-    gfe58Commands.putAll(allCommands.get(Version.GFE_57));
+    allCommands.put(KnownVersion.GFE_58, gfe58Commands);
+    gfe58Commands.putAll(allCommands.get(KnownVersion.GFE_57));
     gfe58Commands.put(MessageType.EXECUTE_REGION_FUNCTION, ExecuteRegionFunction.getCommand());
     gfe58Commands.put(MessageType.EXECUTE_FUNCTION, ExecuteFunction.getCommand());
 
     // Initialize the GFE 6.0.3 commands map
     Map<Integer, Command> gfe603Commands =
-        new HashMap<Integer, Command>(allCommands.get(Version.GFE_58));
-    allCommands.put(Version.GFE_603, gfe603Commands);
+        new HashMap<Integer, Command>(allCommands.get(KnownVersion.GFE_58));
+    allCommands.put(KnownVersion.GFE_603, gfe603Commands);
 
     // Initialize the GFE 6.1 commands
     Map<Integer, Command> gfe61Commands = new HashMap<Integer, Command>();
-    allCommands.put(Version.GFE_61, gfe61Commands);
-    gfe61Commands.putAll(allCommands.get(Version.GFE_603));
+    allCommands.put(KnownVersion.GFE_61, gfe61Commands);
+    gfe61Commands.putAll(allCommands.get(KnownVersion.GFE_603));
     gfe61Commands.put(MessageType.REGISTER_INTEREST, RegisterInterest61.getCommand());
     gfe61Commands.put(MessageType.REGISTER_INTEREST_LIST, RegisterInterestList61.getCommand());
     gfe61Commands.put(MessageType.REQUEST_EVENT_VALUE, RequestEventValue.getCommand());
@@ -215,8 +216,8 @@ public class CommandInitializer {
 
     // Initialize the GFE 6.5 commands
     Map<Integer, Command> gfe65Commands = new HashMap<Integer, Command>();
-    allCommands.put(Version.GFE_65, gfe65Commands);
-    gfe65Commands.putAll(allCommands.get(Version.GFE_61));
+    allCommands.put(KnownVersion.GFE_65, gfe65Commands);
+    gfe65Commands.putAll(allCommands.get(KnownVersion.GFE_61));
     gfe65Commands.put(MessageType.DESTROY, Destroy65.getCommand());
     gfe65Commands.put(MessageType.PUT, Put65.getCommand());
     gfe65Commands.put(MessageType.EXECUTE_REGION_FUNCTION, ExecuteRegionFunction65.getCommand());
@@ -231,22 +232,22 @@ public class CommandInitializer {
 
     // Initialize the GFE 6.5.1 commands
     Map<Integer, Command> gfe651Commands = new HashMap<Integer, Command>();
-    allCommands.put(Version.GFE_651, gfe651Commands);
-    gfe651Commands.putAll(allCommands.get(Version.GFE_65));
+    allCommands.put(KnownVersion.GFE_651, gfe651Commands);
+    gfe651Commands.putAll(allCommands.get(KnownVersion.GFE_65));
     gfe651Commands.put(MessageType.QUERY_WITH_PARAMETERS, Query651.getCommand());
 
     // Initialize the GFE 6.5.1.6 commands
     Map<Integer, Command> gfe6516Commands = new HashMap<Integer, Command>();
-    allCommands.put(Version.GFE_6516, gfe6516Commands);
-    gfe6516Commands.putAll(allCommands.get(Version.GFE_651));
+    allCommands.put(KnownVersion.GFE_6516, gfe6516Commands);
+    gfe6516Commands.putAll(allCommands.get(KnownVersion.GFE_651));
     gfe6516Commands.put(MessageType.GET_ALL, GetAll651.getCommand());
     gfe6516Commands.put(MessageType.GET_CLIENT_PR_METADATA,
         GetClientPRMetadataCommand66.getCommand());
 
     // Initialize the GFE 6.6 commands
     Map<Integer, Command> gfe66Commands = new HashMap<Integer, Command>();
-    allCommands.put(Version.GFE_66, gfe66Commands);
-    gfe66Commands.putAll(allCommands.get(Version.GFE_6516));
+    allCommands.put(KnownVersion.GFE_66, gfe66Commands);
+    gfe66Commands.putAll(allCommands.get(KnownVersion.GFE_6516));
     gfe66Commands.put(MessageType.ADD_PDX_TYPE, AddPdxType.getCommand());
     gfe66Commands.put(MessageType.GET_PDX_ID_FOR_TYPE, GetPDXIdForType.getCommand());
     gfe66Commands.put(MessageType.GET_PDX_TYPE_BY_ID, GetPDXTypeById.getCommand());
@@ -269,20 +270,20 @@ public class CommandInitializer {
 
     // Initialize the GFE 6.6.2 commands
     Map<Integer, Command> gfe662Commands = new HashMap<Integer, Command>();
-    allCommands.put(Version.GFE_662, gfe662Commands);
-    gfe662Commands.putAll(allCommands.get(Version.GFE_66));
+    allCommands.put(KnownVersion.GFE_662, gfe662Commands);
+    gfe662Commands.putAll(allCommands.get(KnownVersion.GFE_66));
     gfe662Commands.put(MessageType.ADD_PDX_ENUM, AddPdxEnum.getCommand());
     gfe662Commands.put(MessageType.GET_PDX_ID_FOR_ENUM, GetPDXIdForEnum.getCommand());
     gfe662Commands.put(MessageType.GET_PDX_ENUM_BY_ID, GetPDXEnumById.getCommand());
 
     // Initialize the GFE 6.6.2.2 commands (same commands as the GFE 6.6.2 commands)
     // The SERVER_TO_CLIENT_PING message was added, but it doesn't need to be registered here
-    allCommands.put(Version.GFE_6622, gfe662Commands);
+    allCommands.put(KnownVersion.GFE_6622, gfe662Commands);
 
     // Initialize the GFE 70 commands
     Map<Integer, Command> gfe70Commands = new HashMap<Integer, Command>();
-    allCommands.put(Version.GFE_70, gfe70Commands);
-    gfe70Commands.putAll(allCommands.get(Version.GFE_662));
+    allCommands.put(KnownVersion.GFE_70, gfe70Commands);
+    gfe70Commands.putAll(allCommands.get(KnownVersion.GFE_662));
     gfe70Commands.remove(MessageType.GET_ALL_FOR_RI);
     gfe70Commands.put(MessageType.REQUEST, Get70.getCommand());
     gfe70Commands.put(MessageType.GET_ENTRY, GetEntry70.getCommand());
@@ -295,56 +296,57 @@ public class CommandInitializer {
     gfe70Commands.put(MessageType.GET_PDX_ENUMS, GetPdxEnums70.getCommand());
     gfe70Commands.put(MessageType.EXECUTE_FUNCTION, ExecuteFunction70.getCommand());
 
-    allCommands.put(Version.GFE_701, gfe70Commands);
-    allCommands.put(Version.GFE_7099, gfe70Commands);
-    allCommands.put(Version.GFE_71, gfe70Commands);
+    allCommands.put(KnownVersion.GFE_701, gfe70Commands);
+    allCommands.put(KnownVersion.GFE_7099, gfe70Commands);
+    allCommands.put(KnownVersion.GFE_71, gfe70Commands);
 
     Map<Integer, Command> gfe80Commands =
-        new HashMap<Integer, Command>(allCommands.get(Version.GFE_71));
-    allCommands.put(Version.GFE_80, gfe80Commands);
+        new HashMap<Integer, Command>(allCommands.get(KnownVersion.GFE_71));
+    allCommands.put(KnownVersion.GFE_80, gfe80Commands);
     // PutAll is changed to chunk responses back to the client
     gfe80Commands.put(MessageType.PUTALL, PutAll80.getCommand());
 
-    allCommands.put(Version.GFE_8009, gfe80Commands);
+    allCommands.put(KnownVersion.GFE_8009, gfe80Commands);
 
     Map<Integer, Command> gfe81Commands = new HashMap<Integer, Command>(gfe80Commands);
     gfe81Commands.put(MessageType.GET_ALL_WITH_CALLBACK, GetAllWithCallback.getCommand());
     gfe81Commands.put(MessageType.PUT_ALL_WITH_CALLBACK, PutAllWithCallback.getCommand());
     gfe81Commands.put(MessageType.REMOVE_ALL, RemoveAll.getCommand());
 
-    allCommands.put(Version.GFE_81, gfe81Commands);
-    allCommands.put(Version.GFE_82, gfe81Commands);
+    allCommands.put(KnownVersion.GFE_81, gfe81Commands);
+    allCommands.put(KnownVersion.GFE_82, gfe81Commands);
 
-    Map<Integer, Command> commands = new HashMap<Integer, Command>(allCommands.get(Version.GFE_82));
-    allCommands.put(Version.GFE_90, commands);
+    Map<Integer, Command> commands =
+        new HashMap<Integer, Command>(allCommands.get(KnownVersion.GFE_82));
+    allCommands.put(KnownVersion.GFE_90, commands);
     commands.put(MessageType.QUERY_WITH_PARAMETERS, QueryWithParametersGeode10.getCommand());
     commands.put(MessageType.QUERY, QueryGeode10.getCommand());
 
-    allCommands.put(Version.GEODE_1_1_0, commands);
-    allCommands.put(Version.GEODE_1_1_1, commands);
-    allCommands.put(Version.GEODE_1_2_0, commands);
-    allCommands.put(Version.GEODE_1_3_0, commands);
-    allCommands.put(Version.GEODE_1_4_0, commands);
-    allCommands.put(Version.GEODE_1_5_0, commands);
-    allCommands.put(Version.GEODE_1_6_0, commands);
-    allCommands.put(Version.GEODE_1_7_0, commands);
+    allCommands.put(KnownVersion.GEODE_1_1_0, commands);
+    allCommands.put(KnownVersion.GEODE_1_1_1, commands);
+    allCommands.put(KnownVersion.GEODE_1_2_0, commands);
+    allCommands.put(KnownVersion.GEODE_1_3_0, commands);
+    allCommands.put(KnownVersion.GEODE_1_4_0, commands);
+    allCommands.put(KnownVersion.GEODE_1_5_0, commands);
+    allCommands.put(KnownVersion.GEODE_1_6_0, commands);
+    allCommands.put(KnownVersion.GEODE_1_7_0, commands);
 
     Map<Integer, Command> geode18Commands =
-        new HashMap<Integer, Command>(allCommands.get(Version.GEODE_1_7_0));
+        new HashMap<Integer, Command>(allCommands.get(KnownVersion.GEODE_1_7_0));
     geode18Commands.put(MessageType.EXECUTE_REGION_FUNCTION,
         ExecuteRegionFunctionGeode18.getCommand());
-    allCommands.put(Version.GEODE_1_8_0, geode18Commands);
-    allCommands.put(Version.GEODE_1_9_0, geode18Commands);
-    allCommands.put(Version.GEODE_1_10_0, geode18Commands);
-    allCommands.put(Version.GEODE_1_11_0, geode18Commands);
-    allCommands.put(Version.GEODE_1_12_0, geode18Commands);
-    allCommands.put(Version.GEODE_1_13_0, geode18Commands);
+    allCommands.put(KnownVersion.GEODE_1_8_0, geode18Commands);
+    allCommands.put(KnownVersion.GEODE_1_9_0, geode18Commands);
+    allCommands.put(KnownVersion.GEODE_1_10_0, geode18Commands);
+    allCommands.put(KnownVersion.GEODE_1_11_0, geode18Commands);
+    allCommands.put(KnownVersion.GEODE_1_12_0, geode18Commands);
+    allCommands.put(KnownVersion.GEODE_1_13_0, geode18Commands);
 
-    allCommands.put(Version.GEODE_1_14_0, geode18Commands);
+    allCommands.put(KnownVersion.GEODE_1_14_0, geode18Commands);
     return Collections.unmodifiableMap(allCommands);
   }
 
-  public static Map<Integer, Command> getCommands(Version version) {
+  public static Map<Integer, Command> getCommands(KnownVersion version) {
     return ALL_COMMANDS.get(version);
   }
 

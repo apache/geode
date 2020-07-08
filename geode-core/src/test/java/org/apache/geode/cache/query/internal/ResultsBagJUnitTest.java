@@ -29,7 +29,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 
 /**
  * Test ResultsBag, including null elements
@@ -102,7 +102,7 @@ public class ResultsBagJUnitTest {
     ResultsCollectionWrapper w =
         new ResultsCollectionWrapper(new ObjectTypeImpl(Integer.class), set);
 
-    HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream hdos = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeObject(w, hdos);
     DataInputStream in = new DataInputStream(hdos.getInputStream());
     SelectResults setCopy = (SelectResults) DataSerializer.readObject(in);

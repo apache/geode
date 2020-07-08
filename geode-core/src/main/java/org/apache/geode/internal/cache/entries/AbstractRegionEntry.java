@@ -78,7 +78,7 @@ import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.internal.util.Versionable;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap;
@@ -329,7 +329,7 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
   @Override
   public boolean fillInValue(InternalRegion region,
       @Retained(ABSTRACT_REGION_ENTRY_FILL_IN_VALUE) Entry entry, ByteArrayDataInput in,
-      DistributionManager mgr, final Version version) {
+      DistributionManager mgr, final KnownVersion version) {
 
     // starting default value
     entry.setSerialized(false);

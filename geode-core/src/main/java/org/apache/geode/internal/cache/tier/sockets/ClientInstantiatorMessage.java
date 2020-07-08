@@ -26,8 +26,8 @@ import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.Version;
 
 /**
  * Class <code>ClientInstantiatorMessage</code> represents a message that is to be sent to the
@@ -106,9 +106,9 @@ public class ClientInstantiatorMessage extends ClientUpdateMessageImpl {
 
   @Override
   protected Message getMessage(CacheClientProxy proxy, byte[] latestValue) throws IOException {
-    Version clientVersion = proxy.getVersion();
+    KnownVersion clientVersion = proxy.getVersion();
     Message message = null;
-    if (clientVersion.isNotOlderThan(Version.GFE_57)) {
+    if (clientVersion.isNotOlderThan(KnownVersion.GFE_57)) {
       message = getGFEMessage(proxy.getProxyID(), null, clientVersion);
     } else {
       throw new IOException(
@@ -120,7 +120,7 @@ public class ClientInstantiatorMessage extends ClientUpdateMessageImpl {
 
   @Override
   protected Message getGFEMessage(ClientProxyMembershipID proxy, byte[] latestValue,
-      Version clientVersion) throws IOException {
+      KnownVersion clientVersion) throws IOException {
     Message message = null;
     int instantiatorsLength = this.serializedInstantiators.length;
     message = new Message(instantiatorsLength + 1, clientVersion); // one for eventID

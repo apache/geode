@@ -24,8 +24,8 @@ import java.util.Date;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.Version;
 
 /**
  * This message simply contains a date
@@ -38,7 +38,7 @@ public class DateMessage extends SerialDistributionMessage {
   /** The date being distributed */
   private Date date;
   /** The versions in which this message was modified */
-  private static final Version[] dsfidVersions = new Version[] {};
+  private static final KnownVersion[] dsfidVersions = new KnownVersion[] {};
 
   ///////////////////// Instance Methods /////////////////////
 
@@ -99,7 +99,7 @@ public class DateMessage extends SerialDistributionMessage {
   }
 
   @Override
-  public Version[] getSerializationVersions() {
+  public KnownVersion[] getSerializationVersions() {
     return dsfidVersions;
   }
 

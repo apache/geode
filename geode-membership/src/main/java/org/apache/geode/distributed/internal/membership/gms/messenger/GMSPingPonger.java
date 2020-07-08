@@ -18,7 +18,7 @@ import org.jgroups.Address;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
 
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 
 /**
  * GMSPingPonger is used to detect whether a member exists by sending UDP Ping and Pong
@@ -46,12 +46,12 @@ public class GMSPingPonger {
 
   public Message createPongMessage(Address src, Address dest) {
     return createJGMessage(pongInBytes, src, dest,
-        Version.getCurrentVersion().ordinal());
+        KnownVersion.getCurrentVersion().ordinal());
   }
 
   public Message createPingMessage(Address src, Address dest) {
     return createJGMessage(pingInBytes, src, dest,
-        Version.getCurrentVersion().ordinal());
+        KnownVersion.getCurrentVersion().ordinal());
   }
 
   public void sendPingMessage(JChannel channel, Address src, JGAddress dest) throws Exception {

@@ -21,8 +21,8 @@ import java.util.Objects;
 
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.Version;
 
 /**
  * A JoinRequestMessage is sent from a prospective member of the cluster to a node
@@ -94,7 +94,7 @@ public class JoinRequestMessage<ID extends MemberIdentifier> extends AbstractGMS
   }
 
   @Override
-  public Version[] getSerializationVersions() {
+  public KnownVersion[] getSerializationVersions() {
     return null;
   }
 
