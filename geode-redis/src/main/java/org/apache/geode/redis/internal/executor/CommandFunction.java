@@ -72,7 +72,7 @@ public class CommandFunction extends SingleResultRedisFunction {
       } catch (FunctionException ex) {
         Throwable th = ex.getCause();
         if (th == null) {
-          if (ex.getExceptions() != null) {
+          if (!ex.getExceptions().isEmpty()) {
             th = ex.getExceptions().get(0);
           }
         }

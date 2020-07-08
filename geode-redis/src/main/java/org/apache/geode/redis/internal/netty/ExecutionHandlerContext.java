@@ -144,7 +144,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       Throwable th = cause.getCause();
       if (th == null) {
         FunctionException functionException = (FunctionException) cause;
-        if (functionException.getExceptions() != null) {
+        if (!functionException.getExceptions().isEmpty()) {
           th = functionException.getExceptions().get(0);
         }
       }
