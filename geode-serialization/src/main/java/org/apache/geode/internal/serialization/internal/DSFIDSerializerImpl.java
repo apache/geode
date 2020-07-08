@@ -35,12 +35,12 @@ import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.DscodeHelper;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.ObjectDeserializer;
 import org.apache.geode.internal.serialization.ObjectSerializer;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.SerializationVersions;
 import org.apache.geode.internal.serialization.StaticSerialization;
-import org.apache.geode.internal.serialization.Version;
 
 public class DSFIDSerializerImpl implements DSFIDSerializer {
 
@@ -187,16 +187,16 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
 
     try {
       boolean invoked = false;
-      Version v = context.getSerializationVersion();
+      KnownVersion v = context.getSerializationVersion();
 
-      if (!Version.CURRENT.equals(v)) {
+      if (!KnownVersion.CURRENT.equals(v)) {
         // get versions where DataOutput was upgraded
         SerializationVersions sv = (SerializationVersions) ds;
-        Version[] versions = sv.getSerializationVersions();
+        KnownVersion[] versions = sv.getSerializationVersions();
         // check if the version of the peer or diskstore is different and
         // there has been a change in the message
         if (versions != null) {
-          for (Version version : versions) {
+          for (KnownVersion version : versions) {
             // if peer version is less than the greatest upgraded version
             if (v.compareTo(version) < 0) {
               ds.getClass().getMethod("toDataPre_" + version.getMethodSuffix(),
@@ -292,15 +292,15 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
     DeserializationContextImpl context = new DeserializationContextImpl(in, this);
     try {
       boolean invoked = false;
-      Version v = context.getSerializationVersion();
-      if (!Version.CURRENT.equals(v) && ds instanceof SerializationVersions) {
+      KnownVersion v = context.getSerializationVersion();
+      if (!KnownVersion.CURRENT.equals(v) && ds instanceof SerializationVersions) {
         // get versions where DataOutput was upgraded
         SerializationVersions vds = (SerializationVersions) ds;
-        Version[] versions = vds.getSerializationVersions();
+        KnownVersion[] versions = vds.getSerializationVersions();
         // check if the version of the peer or diskstore is different and
         // there has been a change in the message
         if (versions != null) {
-          for (Version version : versions) {
+          for (KnownVersion version : versions) {
             // if peer version is less than the greatest upgraded version
             if (v.compareTo(version) < 0) {
               ds.getClass().getMethod("fromDataPre" + '_' + version.getMethodSuffix(),

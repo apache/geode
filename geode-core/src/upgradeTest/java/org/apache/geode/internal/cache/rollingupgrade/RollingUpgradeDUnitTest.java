@@ -55,7 +55,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.distributed.internal.membership.api.MembershipView;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.VersionOrdinal;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
@@ -210,7 +210,7 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
       verifyValues(objectType, regionName, 0, 10, server2);
       putAndVerify(objectType, server2, regionName, 15, 25, server1);
 
-      final short versionOrdinalAfterUpgrade = Version.getCurrentVersion().ordinal();
+      final short versionOrdinalAfterUpgrade = KnownVersion.getCurrentVersion().ordinal();
       locator.invoke(() -> {
 
         final Locator theLocator = Locator.getLocator();

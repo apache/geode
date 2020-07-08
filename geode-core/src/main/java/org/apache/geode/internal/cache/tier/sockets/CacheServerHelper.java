@@ -27,7 +27,7 @@ import java.util.zip.GZIPOutputStream;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.CacheServerImpl;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.util.BlobHelper;
 
 /**
@@ -68,7 +68,7 @@ public class CacheServerHelper {
     return unzipObject ? unzip(blob) : BlobHelper.deserializeBlob(blob);
   }
 
-  public static Object deserialize(byte[] blob, Version version, boolean unzipObject)
+  public static Object deserialize(byte[] blob, KnownVersion version, boolean unzipObject)
       throws IOException, ClassNotFoundException {
     return unzipObject ? unzip(blob) : BlobHelper.deserializeBlob(blob, version, null);
   }

@@ -21,7 +21,7 @@ import java.io.OutputStream;
 import java.security.Principal;
 
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
 
@@ -36,7 +36,7 @@ public interface ServerSideHandshake {
 
   int getClientReadTimeout();
 
-  Version getVersion();
+  KnownVersion getVersion();
 
   Object verifyCredentials() throws AuthenticationRequiredException, AuthenticationFailedException;
 

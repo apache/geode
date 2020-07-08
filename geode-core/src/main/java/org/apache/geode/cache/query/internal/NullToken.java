@@ -22,8 +22,8 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.Version;
 
 /**
  * A Token representing null.
@@ -76,7 +76,7 @@ public class NullToken implements DataSerializableFixedID, Comparable {
       DeserializationContext context) throws IOException, ClassNotFoundException {}
 
   @Override
-  public Version[] getSerializationVersions() {
+  public KnownVersion[] getSerializationVersions() {
     return null;
   }
 }

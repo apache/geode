@@ -43,7 +43,7 @@ import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
@@ -129,7 +129,7 @@ public class UnregisterInterestTest {
     when(this.serverConnection.getCachedRegionHelper()).thenReturn(mock(CachedRegionHelper.class));
     when(this.serverConnection.getErrorResponseMessage()).thenReturn(this.errorResponseMessage);
     when(this.serverConnection.getAcceptor()).thenReturn(this.acceptor);
-    when(this.serverConnection.getClientVersion()).thenReturn(Version.CURRENT);
+    when(this.serverConnection.getClientVersion()).thenReturn(KnownVersion.CURRENT);
 
     when(this.valuePart.getObject()).thenReturn(CALLBACK_ARG);
 

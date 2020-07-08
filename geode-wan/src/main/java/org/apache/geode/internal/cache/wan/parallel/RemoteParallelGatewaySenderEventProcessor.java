@@ -30,7 +30,7 @@ import org.apache.geode.internal.cache.wan.GatewaySenderEventRemoteDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -94,7 +94,7 @@ public class RemoteParallelGatewaySenderEventProcessor extends ParallelGatewaySe
       Connection conn = remoteDispatcher.getConnection(false);
       if (conn != null) {
         short remoteSiteVersion = conn.getWanSiteVersion();
-        if (Version.GFE_701.compareTo(Versioning.getVersionOrdinal(remoteSiteVersion)) <= 0) {
+        if (KnownVersion.GFE_701.compareTo(Versioning.getVersionOrdinal(remoteSiteVersion)) <= 0) {
           return true;
         }
       }

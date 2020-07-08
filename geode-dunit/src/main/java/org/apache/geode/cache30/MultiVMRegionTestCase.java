@@ -112,7 +112,7 @@ import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.offheap.MemoryAllocatorImpl;
 import org.apache.geode.internal.offheap.StoredObject;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
@@ -6677,7 +6677,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         "vm" + vm + " with id " + id + " copying " + CCRegion.getVersionVector().fullToString());
     RegionVersionVector vector = CCRegion.getVersionVector().getCloneForTransmission();
     logger.info("clone is " + vector);
-    HeapDataOutputStream dos = new HeapDataOutputStream(3000, Version.CURRENT);
+    HeapDataOutputStream dos = new HeapDataOutputStream(3000, KnownVersion.CURRENT);
     DataSerializer.writeObject(vector, dos);
     byte[] bytes = dos.toByteArray();
     logger.info("serialized size is " + bytes.length);

@@ -35,8 +35,8 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.ObjToByteArraySerializer;
 import org.apache.geode.internal.net.BufferPool;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.StaticSerialization;
-import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -147,7 +147,7 @@ public class MsgStreamer extends OutputStream
       final boolean directReply, final DMStats stats, BufferPool bufferPool) {
     final Connection firstCon = (Connection) cons.get(0);
     // split into different versions if required
-    Version version;
+    KnownVersion version;
     final int numCons = cons.size();
     if (numCons > 1) {
       Connection con;
@@ -157,7 +157,7 @@ public class MsgStreamer extends OutputStream
         con = (Connection) c;
         version = con.getRemoteVersion();
         if (version != null
-            && Version.CURRENT_ORDINAL > version.ordinal()) {
+            && KnownVersion.CURRENT_ORDINAL > version.ordinal()) {
           if (versionToConnMap == null) {
             versionToConnMap = new Object2ObjectOpenHashMap();
           }
@@ -187,7 +187,7 @@ public class MsgStreamer extends OutputStream
           for (Object c : cons) {
             con = (Connection) c;
             version = con.getRemoteVersion();
-            if (version == null || version.ordinal() >= Version.CURRENT_ORDINAL) {
+            if (version == null || version.ordinal() >= KnownVersion.CURRENT_ORDINAL) {
               currentVersionConnections.add(con);
             }
           }
@@ -201,7 +201,7 @@ public class MsgStreamer extends OutputStream
           Object ver = entry.getKey();
           Object l = entry.getValue();
           streamers.add(new VersionedMsgStreamer((List<?>) l, msg, directReply, stats,
-              bufferPool, sendBufferSize, (Version) ver));
+              bufferPool, sendBufferSize, (KnownVersion) ver));
         }
         return new MsgStreamerList(streamers);
       }
@@ -308,7 +308,7 @@ public class MsgStreamer extends OutputStream
     if (isOverflowMode()) {
       if (this.overflowBuf == null) {
         this.overflowBuf = new HeapDataOutputStream(
-            this.buffer.capacity() - Connection.MSG_HEADER_BYTES, Version.CURRENT);
+            this.buffer.capacity() - Connection.MSG_HEADER_BYTES, KnownVersion.CURRENT);
       }
       return;
     }
@@ -934,7 +934,7 @@ public class MsgStreamer extends OutputStream
         // we don't even have room to write the length field so just create
         // the overflowBuf
         this.overflowBuf = new HeapDataOutputStream(
-            this.buffer.capacity() - Connection.MSG_HEADER_BYTES, Version.CURRENT);
+            this.buffer.capacity() - Connection.MSG_HEADER_BYTES, KnownVersion.CURRENT);
         this.overflowBuf.writeAsSerializedByteArray(v);
         return;
       }

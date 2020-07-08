@@ -23,8 +23,8 @@ import java.io.Serializable;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.Version;
 
 /**
  * An UNDEFINED value is the result of accessing an attribute of a null-valued attribute. If you
@@ -92,7 +92,7 @@ public class Undefined implements DataSerializableFixedID, Comparable, Serializa
 
 
   @Override
-  public Version[] getSerializationVersions() {
+  public KnownVersion[] getSerializationVersions() {
     return null;
   }
 

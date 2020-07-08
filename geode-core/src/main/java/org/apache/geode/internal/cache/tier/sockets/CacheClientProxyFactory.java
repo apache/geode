@@ -26,7 +26,7 @@ import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.statistics.StatisticsClock;
 
 /**
@@ -75,7 +75,7 @@ public class CacheClientProxyFactory {
 
   public CacheClientProxy create(CacheClientNotifier notifier, Socket socket,
       ClientProxyMembershipID proxyId, boolean isPrimary, byte clientConflation,
-      Version clientVersion, long acceptorId, boolean notifyBySubscription,
+      KnownVersion clientVersion, long acceptorId, boolean notifyBySubscription,
       SecurityService securityService, Subject subject, StatisticsClock statisticsClock)
       throws CacheException {
     return internalFactory.create(notifier, socket, proxyId, isPrimary, clientConflation,
@@ -87,7 +87,7 @@ public class CacheClientProxyFactory {
   public interface InternalCacheClientProxyFactory {
     CacheClientProxy create(CacheClientNotifier notifier, Socket socket,
         ClientProxyMembershipID proxyId, boolean isPrimary, byte clientConflation,
-        Version clientVersion, long acceptorId, boolean notifyBySubscription,
+        KnownVersion clientVersion, long acceptorId, boolean notifyBySubscription,
         SecurityService securityService, Subject subject, StatisticsClock statisticsClock)
         throws CacheException;
   }

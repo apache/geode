@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.geode.internal.cache.DiskInitFile.DiskRegionFlag;
 import org.apache.geode.internal.cache.versions.RegionVersionHolder;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 
 public interface DiskInitFileInterpreter {
 
@@ -85,5 +85,5 @@ public interface DiskInitFileInterpreter {
 
   boolean cmnRevokeDiskStoreId(PersistentMemberPattern id);
 
-  void cmnGemfireVersion(Version version);
+  void cmnGemfireVersion(KnownVersion version);
 }

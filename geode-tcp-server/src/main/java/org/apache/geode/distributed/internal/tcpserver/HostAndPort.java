@@ -25,9 +25,9 @@ import org.apache.commons.validator.routines.InetAddressValidator;
 
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
-import org.apache.geode.internal.serialization.Version;
 
 /**
  * HostAndPort is a holder of a host name/address and a port. It is the primary
@@ -151,7 +151,7 @@ public class HostAndPort implements DataSerializableFixedID {
   }
 
   @Override
-  public Version[] getSerializationVersions() {
+  public KnownVersion[] getSerializationVersions() {
     return null;
   }
 

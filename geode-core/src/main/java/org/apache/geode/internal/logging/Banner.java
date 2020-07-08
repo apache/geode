@@ -42,7 +42,7 @@ import java.util.TreeMap;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.VersionDescription;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.util.ArgumentRedactor;
 import org.apache.geode.logging.internal.ConfigurationInfo;
 import org.apache.geode.logging.internal.OSProcess;
@@ -123,7 +123,7 @@ public class Banner {
     sp.remove("os.arch");
 
     int processId = attemptToReadProcessId();
-    short currentOrdinal = Version.CURRENT_ORDINAL;
+    short currentOrdinal = KnownVersion.CURRENT_ORDINAL;
 
     List<String> commandLineArguments = new ArrayList<>();
     RuntimeMXBean runtimeBean = ManagementFactory.getRuntimeMXBean();

@@ -33,7 +33,7 @@ import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 
 /**
  * Internal interface for a region entry. Note that a region is implemented with a ConcurrentHashMap
@@ -178,7 +178,7 @@ public interface RegionEntry {
    */
   boolean fillInValue(InternalRegion region,
       @Retained(ABSTRACT_REGION_ENTRY_FILL_IN_VALUE) Entry entry, ByteArrayDataInput in,
-      DistributionManager distributionManager, final Version version);
+      DistributionManager distributionManager, final KnownVersion version);
 
   /**
    * Returns true if this entry has overflowed to disk.

@@ -21,7 +21,7 @@ import java.io.IOException;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.VersionedDataSerializable;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 
 /**
  * RVV exceptions are part of a RegionVersionVector. They are held by RegionVersionHolders.
@@ -205,7 +205,7 @@ abstract class RVVException
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {}
 
   @Override
-  public Version[] getSerializationVersions() {
+  public KnownVersion[] getSerializationVersions() {
     return null;
   }
 

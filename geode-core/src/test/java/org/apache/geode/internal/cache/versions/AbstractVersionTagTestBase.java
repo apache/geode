@@ -43,7 +43,7 @@ import org.mockito.stubbing.Answer;
 
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.tcp.ByteBufferInputStream;
 
@@ -163,7 +163,7 @@ public abstract class AbstractVersionTagTestBase {
         new ByteBufferInputStream(ByteBuffer.wrap(outputStream.toByteArray()));
     DataInputStream in = new DataInputStream(inputStream);
     VersionedDataInputStream versionedDataInputStream =
-        new VersionedDataInputStream(in, Version.GEODE_1_10_0);
+        new VersionedDataInputStream(in, KnownVersion.GEODE_1_10_0);
     DeserializationContext context =
         InternalDataSerializer.createDeserializationContext(versionedDataInputStream);
 

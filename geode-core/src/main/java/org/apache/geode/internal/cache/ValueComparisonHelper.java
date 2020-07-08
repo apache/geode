@@ -21,7 +21,7 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.offheap.annotations.Unretained;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxSerializationException;
@@ -153,7 +153,7 @@ public class ValueComparisonHelper {
         }
         if (pdxSerializer != null || obj instanceof PdxSerializable) {
           // try to convert obj to a PdxInstance
-          HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
+          HeapDataOutputStream hdos = new HeapDataOutputStream(KnownVersion.CURRENT);
           try {
             if (InternalDataSerializer.autoSerialized(obj, hdos)
                 || InternalDataSerializer.writePdx(hdos, cache, obj, pdxSerializer)) {

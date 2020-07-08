@@ -23,25 +23,25 @@ public class VersioningJUnitTest {
 
   @Test
   public void getVersionOrdinalForKnownVersion() {
-    final Version current = Version.getCurrentVersion();
+    final KnownVersion current = KnownVersion.getCurrentVersion();
     final VersionOrdinal knownVersion = Versioning.getVersionOrdinal(current.ordinal());
-    assertThat(knownVersion).isInstanceOf(Version.class);
+    assertThat(knownVersion).isInstanceOf(KnownVersion.class);
     assertThat(knownVersion).isEqualTo(current);
   }
 
   @Test
   public void getVersionOrdinalForUnknownVersion() {
     // Version.getCurrentVersion() returns the newest/latest version
-    final short unknownOrdinal = (short) (Version.getCurrentVersion().ordinal() + 1);
+    final short unknownOrdinal = (short) (KnownVersion.getCurrentVersion().ordinal() + 1);
     final VersionOrdinal unknownVersion = Versioning.getVersionOrdinal(unknownOrdinal);
     assertThat(unknownVersion).isInstanceOf(UnknownVersion.class);
   }
 
   @Test
   public void getVersionOrdinalForToken() {
-    final VersionOrdinal versionOrdinal = Versioning.getVersionOrdinal(Version.TOKEN_ORDINAL);
-    assertThat(versionOrdinal).isEqualTo(Version.TOKEN);
-    assertThat(versionOrdinal).isInstanceOf(Version.class);
+    final VersionOrdinal versionOrdinal = Versioning.getVersionOrdinal(KnownVersion.TOKEN_ORDINAL);
+    assertThat(versionOrdinal).isEqualTo(KnownVersion.TOKEN);
+    assertThat(versionOrdinal).isInstanceOf(KnownVersion.class);
   }
 
   @Test
@@ -49,21 +49,21 @@ public class VersioningJUnitTest {
     // a little coziness with TOKEN_ORDINAL: we happen to know ordinals lower than that are not
     // known versions
     final VersionOrdinal versionOrdinal =
-        Versioning.getVersionOrdinal((short) (Version.TOKEN_ORDINAL - 1));
+        Versioning.getVersionOrdinal((short) (KnownVersion.TOKEN_ORDINAL - 1));
     assertThat(versionOrdinal).isInstanceOf(UnknownVersion.class);
   }
 
   @Test
   public void getKnownVersionForKnownVersionOrdinal() {
-    final Version current = Version.getCurrentVersion();
-    final Version knownVersion = Versioning.getKnownVersionOrDefault(current, null);
+    final KnownVersion current = KnownVersion.getCurrentVersion();
+    final KnownVersion knownVersion = Versioning.getKnownVersionOrDefault(current, null);
     assertThat(knownVersion).isEqualTo(current);
   }
 
   @Test
   public void getKnownVersionForUnknownVersionOrdinal() {
     // Version.getCurrentVersion() returns the newest/latest version
-    final Version current = Version.getCurrentVersion();
+    final KnownVersion current = KnownVersion.getCurrentVersion();
     final short unknownOrdinal = (short) (current.ordinal() + 1);
     final UnknownVersion unknownVersion = new UnknownVersion(unknownOrdinal);
     assertThat(Versioning.getKnownVersionOrDefault(unknownVersion, null)).isNull();

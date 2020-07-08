@@ -53,7 +53,7 @@ import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.BufferDataOutputStream;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.junit.categories.SerializationTest;
 import org.apache.geode.unsafe.internal.sun.reflect.ReflectionFactory;
@@ -302,7 +302,7 @@ public abstract class AnalyzeSerializablesJUnitTestBase extends
 
 
   private void serializeAndDeserializeSanctionedObject(Object object) throws Exception {
-    BufferDataOutputStream outputStream = new BufferDataOutputStream(Version.CURRENT);
+    BufferDataOutputStream outputStream = new BufferDataOutputStream(KnownVersion.CURRENT);
     try {
       serializeObject(object, outputStream);
     } catch (IOException e) {

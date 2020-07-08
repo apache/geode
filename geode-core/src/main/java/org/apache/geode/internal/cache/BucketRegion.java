@@ -90,7 +90,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.util.internal.GeodeGlossary;
@@ -1851,7 +1851,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
       if (instance instanceof org.apache.geode.Delta
           && ((org.apache.geode.Delta) instance).hasDelta()) {
         try {
-          HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
+          HeapDataOutputStream hdos = new HeapDataOutputStream(KnownVersion.CURRENT);
           long start = DistributionStats.getStatTime();
           ((org.apache.geode.Delta) instance).toDelta(hdos);
           event.setDeltaBytes(hdos.toByteArray());
