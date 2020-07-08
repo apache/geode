@@ -159,7 +159,7 @@ public abstract class SessionDUnitTest {
             .getBody();
         sesssionObtained = true;
       } catch (HttpServerErrorException e) {
-        if (e.getMessage().contains("memberDeparted")) {
+        if (e.getMessage().contains("Internal Server Error")) {
           // retry
         } else {
           throw e;
@@ -184,7 +184,7 @@ public abstract class SessionDUnitTest {
             .getHeaders();
         noteAdded = true;
       } catch (HttpServerErrorException e) {
-        if (e.getMessage().contains("memberDeparted")) {
+        if (e.getMessage().contains("Internal Server Error")) {
           // retry
         } else {
           throw e;
