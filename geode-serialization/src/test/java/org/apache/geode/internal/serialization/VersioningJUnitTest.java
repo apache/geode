@@ -32,8 +32,8 @@ public class VersioningJUnitTest {
   @Test
   public void getVersionForUnknownVersion() {
     /*
-     Version.getCurrentVersion() returns the newest/latest version. Adding 1 gives us an
-     ordinal for an unknown version.
+     * Version.getCurrentVersion() returns the newest/latest version. Adding 1 gives us an
+     * ordinal for an unknown version.
      */
     final short unknownOrdinal = (short) (KnownVersion.getCurrentVersion().ordinal() + 1);
     final Version unknownVersion = Versioning.getVersion(unknownOrdinal);

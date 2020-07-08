@@ -718,11 +718,11 @@ public abstract class LuceneSearchWithRollingUpgradeTestBase extends JUnit4Distr
     Method getVersionMethod;
 
     /*
-     The method to get the version from an InternalDistributedMember has changed over time:
-
-     1. getVersionObject()
-     2. getVersionOrdinalObject()
-     3. getVersion()
+     * The method to get the version from an InternalDistributedMember has changed over time:
+     *
+     * 1. getVersionObject()
+     * 2. getVersionOrdinalObject()
+     * 3. getVersion()
      */
     try {
       getVersionMethod = member.getClass().getMethod("getVersion");
