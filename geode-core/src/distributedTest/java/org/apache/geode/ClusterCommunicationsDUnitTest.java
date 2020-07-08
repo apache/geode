@@ -199,7 +199,7 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
     }
   }
 
-  // @Test BRUCE: reenable this
+  @Test
   public void performARollingUpgrade() {
     List<String> testVersions = VersionManager.getInstance().getVersionsWithoutCurrent();
     String testVersion = testVersions.get(testVersions.size() - 1);

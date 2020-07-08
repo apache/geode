@@ -202,7 +202,7 @@ public class TCPConduit implements Runnable {
 
   private final Stopper stopper = new Stopper();
 
-  private boolean enableTLSOverNIO = Boolean.getBoolean("geode.enable-tls-nio");
+  private boolean enableTLSOverNIO = true; // Boolean.getBoolean("geode.enable-tls-nio");
 
   /**
    * <p>
@@ -367,7 +367,7 @@ public class TCPConduit implements Runnable {
     InetAddress bindAddress = address;
 
     try {
-      if (!useTLSOverOldIO()) {
+      if (!useSSL()) {
         if (serverPort <= 0) {
           socket = socketCreator.forAdvancedUse().createServerSocketUsingPortRange(bindAddress,
               connectionRequestBacklog, isBindAddress, true, 0, tcpPortRange,
@@ -962,16 +962,8 @@ public class TCPConduit implements Runnable {
     return useSSL;
   }
 
-  public boolean useTLSOverNIO() {
-    return useSSL && enableTLSOverNIO;
-  }
-
-  public boolean useTLSOverOldIO() {
-    return useSSL && !enableTLSOverNIO;
-  }
-
-  public boolean useDirectBuffers() {
-    return !useTLSOverOldIO();
+  public boolean useDirectReceiveBuffers() {
+    return !useSSL();
   }
 
   public BufferPool getBufferPool() {

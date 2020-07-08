@@ -43,7 +43,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
-import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLSocket;
@@ -82,8 +81,6 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.SystemTimer.SystemTimerTask;
 import org.apache.geode.internal.net.BufferPool;
-import org.apache.geode.internal.net.NioFilter;
-import org.apache.geode.internal.net.NioPlainEngine;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketUtils;
 import org.apache.geode.internal.serialization.Version;
@@ -148,7 +145,7 @@ public class ClusterConnection implements Runnable {
   private final ConnectionTable owner;
 
   private final TCPConduit conduit;
-  private NioFilter ioFilter;
+  // private NioFilter ioFilter;
 
   /**
    * Set to false once run() is terminating. Using this instead of Thread.isAlive as the reader
@@ -817,9 +814,8 @@ public class ClusterConnection implements Runnable {
 
   private void notifyHandshakeWaiter(boolean success) {
     ByteBuffer buffer = inputBuffer;
-    if (getConduit().useSSL() && ioFilter != null && buffer != null) {
+    if (getConduit().useSSL() && buffer != null) {
       // clear out any remaining handshake bytes
-      buffer = ioFilter.getUnwrappedBuffer(buffer);
       buffer.position(0).limit(0);
     }
     synchronized (handshakeSync) {
@@ -852,8 +848,7 @@ public class ClusterConnection implements Runnable {
         Socket s = socket;
         if (s != null && !s.isClosed()) {
           prepareForAsyncClose();
-          owner.getSocketCloser().asyncClose(s, String.valueOf(remoteAddr),
-              () -> ioFilter.close(s));
+          owner.getSocketCloser().asyncClose(s, String.valueOf(remoteAddr), null);
         }
       }
     }
@@ -1162,8 +1157,8 @@ public class ClusterConnection implements Runnable {
         new InetSocketAddress(remoteID.getInetAddress(), remoteID.getDirectChannelPort());
 
     int connectTime = getP2PConnectTimeout(conduit.getDM().getConfig());
-    boolean useTLSOverOldIO = getConduit().useTLSOverOldIO();
-    if (useTLSOverOldIO) {
+    boolean useSSL = getConduit().useSSL();
+    if (useSSL) {
       // int socketBufferSize = -1;
       int socketBufferSize =
           sharedResource ? SMALL_BUFFER_SIZE : this.owner.getConduit().tcpBufferSize;
@@ -1190,17 +1185,17 @@ public class ClusterConnection implements Runnable {
       socket.setKeepAlive(SocketCreator.ENABLE_TCP_KEEP_ALIVE);
 
       setSendBufferSize(socket);
-      if (!useTLSOverOldIO) {
+      if (!useSSL) {
         socket.getChannel().configureBlocking(true);
       }
 
       try {
 
-        if (!useTLSOverOldIO) {
+        if (!useSSL) {
           // haven't connected yet
           socket.connect(addr, connectTime);
         }
-        createIoFilter(socket, true);
+        configureInputStream(socket, true);
 
       } catch (NullPointerException e) {
         // jdk 1.7 sometimes throws an NPE here
@@ -1558,8 +1553,8 @@ public class ClusterConnection implements Runnable {
     try {
       socket.setSoTimeout(0);
       socket.setTcpNoDelay(true);
-      if (ioFilter == null) {
-        createIoFilter(socket, false);
+      if (inputStream == null) {
+        configureInputStream(socket, false);
       }
       SocketChannel channel = socket.getChannel();
       if (channel != null) {
@@ -1610,7 +1605,6 @@ public class ClusterConnection implements Runnable {
         if (SystemFailure.getFailure() != null) {
           // Allocate no objects here!
           try {
-            ioFilter.close(socket);
             socket.close();
           } catch (IOException e) {
             // don't care
@@ -1632,7 +1626,6 @@ public class ClusterConnection implements Runnable {
           } else {
             isInitialRead = false;
             if (!skipInitialRead) {
-              conduit.getStats().incFinalCheckResponsesReceived(); // BRUCE: remove stat
               amountRead = SocketUtils.readFromSocket(socket, buff, inputStream);
             } else {
               amountRead = buff.position();
@@ -1746,42 +1739,11 @@ public class ClusterConnection implements Runnable {
   }
 
 
-  private void createIoFilter(Socket socket, boolean clientSocket) throws IOException {
-    SocketChannel channel = socket.getChannel();
+  private void configureInputStream(Socket socket, boolean clientSocket) throws IOException {
     inputStream = socket.getInputStream();
-    if (getConduit().useTLSOverNIO()) {
-      InetSocketAddress address = (InetSocketAddress) channel.getRemoteAddress();
-      SSLEngine engine =
-          getConduit().getSocketCreator().createSSLEngine(address.getHostString(),
-              address.getPort());
-
-      int packetBufferSize = engine.getSession().getPacketBufferSize();
-      if (inputBuffer == null || inputBuffer.capacity() < packetBufferSize) {
-        // TLS has a minimum input buffer size constraint
-        if (inputBuffer != null) {
-          getBufferPool().releaseReceiveBuffer(inputBuffer);
-        }
-        inputBuffer = getBufferPool().acquireDirectReceiveBuffer(packetBufferSize);
-      }
-      if (channel.socket().getReceiveBufferSize() < packetBufferSize) {
-        channel.socket().setReceiveBufferSize(packetBufferSize);
-      }
-      if (channel.socket().getSendBufferSize() < packetBufferSize) {
-        channel.socket().setSendBufferSize(packetBufferSize);
-      }
-      ioFilter = getConduit().getSocketCreator().handshakeSSLSocketChannel(channel, engine,
-          getConduit().idleConnectionTimeout, clientSocket, inputBuffer,
-          getBufferPool());
-    } else {
-      if (!clientSocket && getConduit().useSSL()) {
-        // inputStream = new BufferedInputStream(getSocket().getInputStream(),
-        // Connection.INITIAL_CAPACITY);
-        getConduit().getSocketCreator().forCluster()
-            .handshakeIfSocketIsSSL(socket, getConduit().idleConnectionTimeout);
-      }
-
-      ioFilter = new NioPlainEngine(getBufferPool(), getConduit().useDirectBuffers(), inputStream);
-      ((NioPlainEngine) ioFilter).setStatistics(conduit.getStats());
+    if (!clientSocket && getConduit().useSSL()) {
+      getConduit().getSocketCreator().forCluster()
+          .handshakeIfSocketIsSSL(socket, getConduit().idleConnectionTimeout);
     }
   }
 
@@ -2333,7 +2295,6 @@ public class ClusterConnection implements Runnable {
               if (s != null) {
                 try {
                   logger.debug("closing socket", new Exception("closing socket"));
-                  ioFilter.close(socket);
                   s.close();
                 } catch (IOException e) {
                   // don't care
@@ -2484,7 +2445,6 @@ public class ClusterConnection implements Runnable {
         long queueTimeoutTarget = now + asyncQueueTimeout;
         channel.configureBlocking(false);
         try {
-          ByteBuffer wrappedBuffer = ioFilter.wrap(buffer);
           int waitTime = 1;
           do {
             owner.getConduit().getCancelCriterion().checkCancelInProgress(null);
@@ -2493,7 +2453,7 @@ public class ClusterConnection implements Runnable {
             if (FORCE_ASYNC_QUEUE) {
               amtWritten = 0;
             } else {
-              amtWritten = channel.write(wrappedBuffer);
+              amtWritten = channel.write(buffer);
             }
             if (amtWritten == 0) {
               now = System.currentTimeMillis();
@@ -2520,7 +2480,7 @@ public class ClusterConnection implements Runnable {
                     // the partial msg a candidate for conflation.
                     msg = null;
                   }
-                  if (handleBlockedWrite(wrappedBuffer, msg)) {
+                  if (handleBlockedWrite(buffer, msg)) {
                     return;
                   }
                 }
@@ -2592,7 +2552,7 @@ public class ClusterConnection implements Runnable {
               queueTimeoutTarget = System.currentTimeMillis() + asyncQueueTimeout;
               waitTime = 1;
             }
-          } while (wrappedBuffer.remaining() > 0);
+          } while (buffer.remaining() > 0);
         } finally {
           channel.configureBlocking(true);
         }
@@ -2636,8 +2596,7 @@ public class ClusterConnection implements Runnable {
           }
           // fall through
         }
-        ByteBuffer wrappedBuffer = ioFilter.wrap(buffer);
-        while (wrappedBuffer.remaining() > 0) {
+        while (buffer.remaining() > 0) {
           int amtWritten = 0;
           long start = stats.startSocketWrite(true);
           try {
@@ -2656,7 +2615,7 @@ public class ClusterConnection implements Runnable {
                 output.flush();
               }
             } else {
-              amtWritten = socket.getChannel().write(wrappedBuffer);
+              amtWritten = socket.getChannel().write(buffer);
             }
           } finally {
             stats.endSocketWrite(true, start, amtWritten, 0);
@@ -2685,7 +2644,8 @@ public class ClusterConnection implements Runnable {
         allocSize = owner.getConduit().tcpBufferSize;
       }
       inputBuffer =
-          getConduit().useDirectBuffers() ? getBufferPool().acquireDirectReceiveBuffer(allocSize)
+          getConduit().useDirectReceiveBuffers()
+              ? getBufferPool().acquireDirectReceiveBuffer(allocSize)
               : getBufferPool().acquireNonDirectReceiveBuffer(allocSize);
     }
     return inputBuffer;
@@ -2710,7 +2670,7 @@ public class ClusterConnection implements Runnable {
     DMStats stats = owner.getConduit().getStats();
     final Version version = getRemoteVersion();
     try {
-      msgReader = new MsgReader(this, ioFilter, version);
+      msgReader = new MsgReader(this, getBufferPool(), inputStream, version);
 
       Header header = msgReader.readHeader();
 
@@ -2793,8 +2753,10 @@ public class ClusterConnection implements Runnable {
    * deserialized and passed to TCPConduit for further processing
    */
   private void processInputBuffer() throws ConnectionException, IOException {
+    // BRUCE: simplify this
     inputBuffer.flip();
-    ByteBuffer peerDataBuffer = ioFilter.unwrap(inputBuffer);
+    ByteBuffer peerDataBuffer = inputBuffer;
+    peerDataBuffer.position(peerDataBuffer.limit());
     peerDataBuffer.flip();
 
     boolean done = false;
@@ -2834,7 +2796,7 @@ public class ClusterConnection implements Runnable {
               return;
             }
             if (readHandshakeForReceiver(dis)) {
-              ioFilter.doneReading(peerDataBuffer);
+              doneReading(peerDataBuffer);
               return;
             }
           }
@@ -2846,18 +2808,24 @@ public class ClusterConnection implements Runnable {
           peerDataBuffer.position(startPos + messageLength);
         } else {
           done = true;
-          if (getConduit().useTLSOverNIO()) {
-            ioFilter.doneReading(peerDataBuffer);
-          } else {
-            compactOrResizeBuffer(messageLength);
-          }
+          compactOrResizeBuffer(messageLength);
         }
       } else {
-        ioFilter.doneReading(peerDataBuffer);
+        doneReading(peerDataBuffer);
         done = true;
       }
     }
   }
+
+  void doneReading(ByteBuffer buffer) {
+    if (buffer.position() != 0) {
+      buffer.compact();
+    } else {
+      buffer.position(buffer.limit());
+      buffer.limit(buffer.capacity());
+    }
+  }
+
 
   private boolean readHandshakeForReceiver(DataInput dis) {
     try {
@@ -3188,7 +3156,7 @@ public class ClusterConnection implements Runnable {
       int replyCode = dis.readUnsignedByte();
       switch (replyCode) {
         case REPLY_CODE_OK:
-          ioFilter.doneReading(peerDataBuffer);
+          doneReading(peerDataBuffer);
           notifyHandshakeWaiter(true);
           return;
         case REPLY_CODE_OK_WITH_ASYNC_INFO:
@@ -3206,7 +3174,7 @@ public class ClusterConnection implements Runnable {
           remoteVersion = Versioning.getKnownVersionOrDefault(
               Versioning.getVersionOrdinal(VersioningIO.readOrdinal(dis)),
               null);
-          ioFilter.doneReading(peerDataBuffer);
+          doneReading(peerDataBuffer);
           notifyHandshakeWaiter(true);
           if (preserveOrder && asyncDistributionTimeout != 0) {
             asyncMode = true;
@@ -3265,7 +3233,8 @@ public class ClusterConnection implements Runnable {
           allocSize, oldBufferSize);
       ByteBuffer oldBuffer = inputBuffer;
       inputBuffer =
-          getConduit().useDirectBuffers() ? getBufferPool().acquireDirectReceiveBuffer(allocSize)
+          getConduit().useDirectReceiveBuffers()
+              ? getBufferPool().acquireDirectReceiveBuffer(allocSize)
               : getBufferPool().acquireNonDirectReceiveBuffer(allocSize);
 
       if (oldBuffer != null) {
