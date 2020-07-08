@@ -35,6 +35,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import redis.clients.jedis.Jedis;
 
@@ -132,7 +133,8 @@ public abstract class SessionDUnitTest {
     HttpEntity<String> request = new HttpEntity<>(note);
     HttpHeaders resultHeaders = new RestTemplate()
         .postForEntity(
-            "http://localhost:" + ports.get(sessionApp) + "/addSessionNote",
+            "http://localhost:" + ports.get(sessionApp)
+                + "/addSessionNote",
             request,
             String.class)
         .getHeaders();
@@ -144,14 +146,23 @@ public abstract class SessionDUnitTest {
     HttpHeaders requestHeaders = new HttpHeaders();
     requestHeaders.add("Cookie", sessionCookie);
     HttpEntity<String> request2 = new HttpEntity<>("", requestHeaders);
-
-    return new RestTemplate()
-        .exchange(
-            "http://localhost:" + ports.get(sessionApp) + "/getSessionNotes",
-            HttpMethod.GET,
-            request2,
-            String[].class)
-        .getBody();
+    boolean sesssionObtained = false;
+    String[] responseBody = new String[0];
+    do {
+      try {
+        responseBody = new RestTemplate()
+            .exchange(
+                "http://localhost:" + ports.get(sessionApp) + "/getSessionNotes",
+                HttpMethod.GET,
+                request2,
+                String[].class)
+            .getBody();
+        sesssionObtained = true;
+      } catch (HttpServerErrorException e) {
+        // retry
+      }
+    } while (!sesssionObtained);
+    return responseBody;
   }
 
   void addNoteToSession(int sessionApp, String sessionCookie, String note) {
