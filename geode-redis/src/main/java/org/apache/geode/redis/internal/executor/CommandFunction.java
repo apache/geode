@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.internal.cache.PrimaryBucketException;
 import org.apache.geode.internal.cache.execute.BucketMovedException;
@@ -68,6 +69,22 @@ public class CommandFunction extends SingleResultRedisFunction {
         return resultsCollector.getResult();
       } catch (BucketMovedException | PrimaryBucketException ex) {
         // try again
+      } catch (FunctionException ex) {
+        Throwable th = ex.getCause();
+        if (th == null) {
+          if (ex.getExceptions() != null) {
+            th = ex.getExceptions().get(0);
+          }
+        }
+        if (th != null) {
+          if (th instanceof BucketMovedException) {
+            // try again
+          } else {
+            throw ex;
+          }
+        } else {
+          throw ex;
+        }
       }
     } while (true);
   }
