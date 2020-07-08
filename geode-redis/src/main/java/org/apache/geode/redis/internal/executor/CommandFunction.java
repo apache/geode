@@ -77,7 +77,7 @@ public class CommandFunction extends SingleResultRedisFunction {
           }
         }
         if (th != null) {
-          if (th instanceof BucketMovedException) {
+          if (th instanceof BucketMovedException | th instanceof PrimaryBucketException) {
             // try again
           } else {
             throw ex;
