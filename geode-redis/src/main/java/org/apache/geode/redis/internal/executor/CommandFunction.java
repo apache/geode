@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.internal.cache.PrimaryBucketException;
 import org.apache.geode.internal.cache.execute.BucketMovedException;
 import org.apache.geode.redis.internal.RedisCommandType;
 import org.apache.geode.redis.internal.RedisStats;
@@ -65,7 +66,7 @@ public class CommandFunction extends SingleResultRedisFunction {
             .execute(CommandFunction.ID)
             .getResult();
         return resultsCollector.getResult();
-      } catch (BucketMovedException ex) {
+      } catch (BucketMovedException | PrimaryBucketException ex) {
         // try again
       }
     } while (true);
