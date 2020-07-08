@@ -39,8 +39,8 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.EntriesSet;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.Version;
 
 /**
  * Implementation of SelectResults that wraps an existing java.util.Collection and optionally adds a
@@ -656,7 +656,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
   }
 
   @Override
-  public Version[] getSerializationVersions() {
+  public KnownVersion[] getSerializationVersions() {
     return null;
   }
 }

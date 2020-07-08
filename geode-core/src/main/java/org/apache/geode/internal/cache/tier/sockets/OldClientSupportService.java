@@ -19,7 +19,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 
 import org.apache.geode.internal.cache.CacheService;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 
 /**
  * Support for old GemFire clients
@@ -33,7 +33,7 @@ public interface OldClientSupportService extends CacheService {
    * @param clientVersion the version of the client
    * @return the exception to give the client
    */
-  Throwable getThrowable(Throwable theThrowable, Version clientVersion);
+  Throwable getThrowable(Throwable theThrowable, KnownVersion clientVersion);
 
   /**
    * Process a class name read from a serialized object of unknown origin

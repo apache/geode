@@ -25,7 +25,7 @@ import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.DSCODE;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.pdx.PdxSerializationException;
 import org.apache.geode.pdx.WritablePdxInstance;
 
@@ -179,7 +179,7 @@ public class PdxInstanceEnum implements InternalPdxInstance, ComparableEnum {
 
   @Override
   public byte[] toBytes() throws IOException {
-    HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream hdos = new HeapDataOutputStream(KnownVersion.CURRENT);
     sendTo(hdos);
     return hdos.toByteArray();
   }

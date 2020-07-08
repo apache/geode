@@ -21,8 +21,9 @@ import java.net.InetAddress;
 import org.jgroups.util.UUID;
 
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.VersionOrdinal;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * MemberIdentifiers are created with a MemberData component. Use MemberDataBuilder to create
@@ -45,11 +46,11 @@ public interface MemberData {
 
   short getVersionOrdinal();
 
-  VersionOrdinal getVersionOrdinalObject();
+  Version getVersion();
 
   String getUniqueTag();
 
-  void setVersionOrdinal(short versionOrdinal);
+  void setVersionOrdinal(short version);
 
   void setUUID(UUID u);
 
@@ -91,7 +92,7 @@ public interface MemberData {
 
   void setVmKind(int vmKind);
 
-  void setVersion(org.apache.geode.internal.serialization.Version v);
+  void setVersion(KnownVersion v);
 
   void setDirectChannelPort(int directPort);
 

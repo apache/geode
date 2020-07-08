@@ -235,17 +235,31 @@ public class VersionManager {
   }
 
   private Class<?> findVersionClass() {
-    // GEODE's Version class was repackaged when serialization was modularized
+    /*
+     * The known versions "enum" class has moved packages and been renamed over time:
+     *
+     * 1. org.apache.geode.internal.Version
+     * 2. org.apache.geode.internal.serialization.Version
+     * 3. org.apache.geode.internal.serialization.KnownVersion
+     *
+     * We search in order 3,1,2 because when we renamed the class "KnownVersion"
+     * we also had an interface in the same package, called "Version" so we want to
+     * avoid finding that interface when we really want the "enum" class.
+     */
     try {
-      return Class.forName("org.apache.geode.internal.Version");
+      return Class.forName("org.apache.geode.internal.serialization.KnownVersion");
     } catch (ClassNotFoundException e) {
       try {
-        return Class.forName("org.apache.geode.internal.serialization.Version");
+        return Class.forName("org.apache.geode.internal.Version");
       } catch (ClassNotFoundException e2) {
-        System.out.println("classpath is " + System.getProperty("java.class.path"));
-        throw new IllegalStateException(
-            "Unable to locate Version.java in order to establish the product's serialization version",
-            e2);
+        try {
+          return Class.forName("org.apache.geode.internal.serialization.Version");
+        } catch (ClassNotFoundException e3) {
+          System.out.println("classpath is " + System.getProperty("java.class.path"));
+          throw new IllegalStateException(
+              "Unable to locate Version or KnownVersion in order to establish the product's serialization version",
+              e3);
+        }
       }
     }
   }

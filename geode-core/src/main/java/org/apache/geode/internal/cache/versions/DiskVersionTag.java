@@ -20,7 +20,7 @@ import java.io.IOException;
 
 import org.apache.geode.internal.cache.persistence.DiskStoreID;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 
 /**
  * The version tag class for version tags for persistent regions. The VersionSource held in these
@@ -74,7 +74,7 @@ public class DiskVersionTag extends VersionTag<DiskStoreID> {
   }
 
   @Override
-  public Version[] getSerializationVersions() {
+  public KnownVersion[] getSerializationVersions() {
     // TODO Auto-generated method stub
     return null;
   }

@@ -42,7 +42,7 @@ import org.apache.geode.internal.cache.Oplog.OPLOG_TYPE;
 import org.apache.geode.internal.cache.ProxyBucketRegion;
 import org.apache.geode.internal.cache.versions.RegionVersionHolder;
 import org.apache.geode.internal.logging.log4j.LogMarker;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.internal.serialization.VersioningIO;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -65,7 +65,7 @@ public class DiskInitFileParser {
   private transient boolean gotEOF;
 
   public DiskStoreID parse() throws IOException, ClassNotFoundException {
-    Version gfversion = Version.GFE_662;
+    KnownVersion gfversion = KnownVersion.GFE_662;
     DiskStoreID result = null;
     boolean endOfFile = false;
     while (!endOfFile) {
@@ -434,7 +434,7 @@ public class DiskInitFileParser {
                 ver);
           }
           gfversion = Versioning.getKnownVersionOrDefault(
-              Versioning.getVersionOrdinal(ver), null);
+              Versioning.getVersion(ver), null);
           if (gfversion == null) {
             throw new DiskAccessException(
                 String.format("Unknown version ordinal %s found when recovering Oplogs", ver),
@@ -571,7 +571,7 @@ public class DiskInitFileParser {
     }
   }
 
-  private PersistentMemberID readPMID(CountingDataInputStream dis, Version gfversion)
+  private PersistentMemberID readPMID(CountingDataInputStream dis, KnownVersion gfversion)
       throws IOException, ClassNotFoundException {
     int len = dis.readInt();
     byte[] buf = new byte[len];
@@ -579,12 +579,12 @@ public class DiskInitFileParser {
     return bytesToPMID(buf, gfversion);
   }
 
-  private PersistentMemberID bytesToPMID(byte[] bytes, Version gfversion)
+  private PersistentMemberID bytesToPMID(byte[] bytes, KnownVersion gfversion)
       throws IOException, ClassNotFoundException {
     ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
     DataInputStream dis = new DataInputStream(bais);
     PersistentMemberID result = new PersistentMemberID();
-    if (Version.GFE_70.compareTo(gfversion) > 0) {
+    if (KnownVersion.GFE_70.compareTo(gfversion) > 0) {
       result._fromData662(dis);
     } else {
       InternalDataSerializer.invokeFromData(result, dis);

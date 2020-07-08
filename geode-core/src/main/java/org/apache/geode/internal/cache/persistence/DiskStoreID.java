@@ -22,8 +22,8 @@ import java.util.UUID;
 
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.Version;
 
 /**
  * A Unique ID for a disk store
@@ -142,7 +142,7 @@ public class DiskStoreID implements VersionSource<DiskStoreID>, Serializable {
   }
 
   @Override
-  public Version[] getSerializationVersions() {
+  public KnownVersion[] getSerializationVersions() {
     return null;
   }
 

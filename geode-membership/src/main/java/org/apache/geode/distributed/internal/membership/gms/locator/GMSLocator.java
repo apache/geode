@@ -49,9 +49,9 @@ import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.ObjectDeserializer;
 import org.apache.geode.internal.serialization.ObjectSerializer;
-import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -357,7 +357,7 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID>, Tcp
     try (FileOutputStream fileStream = new FileOutputStream(viewFile);
         ObjectOutputStream oos = new ObjectOutputStream(fileStream)) {
       oos.writeInt(LOCATOR_FILE_STAMP);
-      oos.writeInt(Version.getCurrentVersion().ordinal());
+      oos.writeInt(KnownVersion.getCurrentVersion().ordinal());
       oos.flush();
       DataOutputStream dataOutputStream = new DataOutputStream(oos);
       objectSerializer.writeObject(view, dataOutputStream);
@@ -446,20 +446,20 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID>, Tcp
       }
 
       int version = ois.readInt();
-      int currentVersion = Version.getCurrentVersion().ordinal();
+      int currentVersion = KnownVersion.getCurrentVersion().ordinal();
       DataInputStream input;
       if (version == currentVersion) {
         input = new DataInputStream(ois);
       } else if (version > currentVersion) {
         return false;
       } else {
-        Version geodeVersion =
+        KnownVersion geodeVersion =
             Versioning.getKnownVersionOrDefault(
-                Versioning.getVersionOrdinal((short) version),
-                Version.CURRENT);
+                Versioning.getVersion((short) version),
+                KnownVersion.CURRENT);
         logger.info("Peer locator found that persistent view was written with version {}",
             geodeVersion);
-        if (Version.GEODE_1_11_0.equals(geodeVersion)) {
+        if (KnownVersion.GEODE_1_11_0.equals(geodeVersion)) {
           // v1.11 did not create the file with an ObjectOutputStream, so don't use one here
           input = new VersionedDataInputStream(fileInputStream, geodeVersion);
         } else {

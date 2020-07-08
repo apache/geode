@@ -36,9 +36,9 @@ import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
-import org.apache.geode.internal.serialization.Version;
 
 /**
  * The GMSMembershipView class represents a membership view For Geode this is translated
@@ -645,7 +645,7 @@ public class GMSMembershipView<ID extends MemberIdentifier> implements DataSeria
   }
 
   @Override
-  public Version[] getSerializationVersions() {
+  public KnownVersion[] getSerializationVersions() {
     return null;
   }
 
@@ -667,9 +667,9 @@ public class GMSMembershipView<ID extends MemberIdentifier> implements DataSeria
    */
   public void correctWrongVersionIn(final ID memberID) {
     final ID oldID = getCanonicalID(memberID);
-    if (!oldID.getVersionOrdinalObject().equals(Version.getCurrentVersion())) {
+    if (!oldID.getVersion().equals(KnownVersion.getCurrentVersion())) {
       // don't remove/add the ID lest we change it's relative position in the list
-      oldID.setVersionObjectForTest(Version.getCurrentVersion());
+      oldID.setVersionForTest(KnownVersion.getCurrentVersion());
     }
   }
 

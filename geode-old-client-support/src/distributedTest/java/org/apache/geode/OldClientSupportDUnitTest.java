@@ -39,7 +39,7 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.sockets.OldClientSupportService;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
@@ -107,7 +107,7 @@ public class OldClientSupportDUnitTest extends JUnit4CacheTestCase {
   public void testConversionOfArrayTypes() throws Exception {
     OldClientSupportService oldClientSupport = OldClientSupportProvider.getService(myCache);
 
-    Version oldClientVersion = Version.GFE_82;
+    KnownVersion oldClientVersion = KnownVersion.GFE_82;
     VersionedDataOutputStream dout = new VersionedDataOutputStream(
         new HeapDataOutputStream(10, oldClientVersion), oldClientVersion);
 
@@ -132,7 +132,7 @@ public class OldClientSupportDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void convertThrowable(String geodeClassName) throws Exception {
-    Version oldClientVersion = Version.GFE_82;
+    KnownVersion oldClientVersion = KnownVersion.GFE_82;
     final String comGemstoneGemFire = "com.gemstone.gemfire";
     final int comGemstoneGemFireLength = comGemstoneGemFire.length();
 
@@ -198,7 +198,7 @@ public class OldClientSupportDUnitTest extends JUnit4CacheTestCase {
     byte[] serializedForm = byteStream.toByteArray();
 
     ByteArrayDataInput byteDataInput = new ByteArrayDataInput();
-    byteDataInput.initialize(serializedForm, Version.GFE_82);
+    byteDataInput.initialize(serializedForm, KnownVersion.GFE_82);
     ClientSerializableObject result = DataSerializer.readObject(byteDataInput);
     Assert.assertEquals("Expected an org.apache.geode exception but found " + result,
         result.getClass().getName().substring(0, "org.apache.geode".length()), "org.apache.geode");
@@ -225,7 +225,7 @@ public class OldClientSupportDUnitTest extends JUnit4CacheTestCase {
     byte[] serializedForm = byteStream.toByteArray();
 
     ByteArrayDataInput byteDataInput = new ByteArrayDataInput();
-    byteDataInput.initialize(serializedForm, Version.GFE_82);
+    byteDataInput.initialize(serializedForm, KnownVersion.GFE_82);
     Object result = DataSerializer.readObject(byteDataInput);
     Assert.assertEquals("Expected an org.apache.geode object but found " + result,
         result.getClass().getName().substring(0, "org.apache.geode".length()), "org.apache.geode");
@@ -249,7 +249,7 @@ public class OldClientSupportDUnitTest extends JUnit4CacheTestCase {
     byte[] serializedForm = byteStream.toByteArray();
 
     ByteArrayDataInput byteDataInput = new ByteArrayDataInput();
-    byteDataInput.initialize(serializedForm, Version.GFE_82);
+    byteDataInput.initialize(serializedForm, KnownVersion.GFE_82);
     Object result = DataSerializer.readObject(byteDataInput);
     Assert.assertEquals("Expected an org.apache.geode object but found " + result,
         result.getClass().getName().substring(0, "org.apache.geode".length()), "org.apache.geode");

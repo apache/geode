@@ -34,8 +34,8 @@ import org.apache.geode.distributed.internal.membership.api.MemberData;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.DSFIDSerializerFactory;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.Version;
 
 /**
  * MemberData has to be able to hold an unknown version ordinal since, during a rolling upgrade,
@@ -44,7 +44,7 @@ import org.apache.geode.internal.serialization.Version;
 public class GMSMemberDataVersionJUnitTest {
 
   private final short unknownVersionOrdinal =
-      (short) (Version.CURRENT_ORDINAL + 1);
+      (short) (KnownVersion.CURRENT_ORDINAL + 1);
 
   @Test
   public void testConstructor1() {

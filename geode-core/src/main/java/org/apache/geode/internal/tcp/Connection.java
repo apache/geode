@@ -81,7 +81,7 @@ import org.apache.geode.internal.net.BufferPool;
 import org.apache.geode.internal.net.NioFilter;
 import org.apache.geode.internal.net.NioPlainEngine;
 import org.apache.geode.internal.net.SocketCreator;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.internal.serialization.VersioningIO;
 import org.apache.geode.internal.tcp.MsgReader.Header;
@@ -187,7 +187,7 @@ public class Connection implements Runnable {
   /**
    * Identifies the version of the member on the other side of the connection.
    */
-  private Version remoteVersion;
+  private KnownVersion remoteVersion;
 
   /**
    * True if this connection was accepted by a listening socket. This makes it a receiver. False if
@@ -711,7 +711,7 @@ public class Connection implements Runnable {
       bb.putInt(cfg.getAsyncQueueTimeout());
       bb.putInt(cfg.getAsyncMaxQueueSize());
       // write own product version
-      VersioningIO.writeOrdinal(bb, Version.CURRENT.ordinal(), true);
+      VersioningIO.writeOrdinal(bb, KnownVersion.CURRENT.ordinal(), true);
       // now set the msg length into position 0
       bb.putInt(0, calcHdrSize(bb.position() - MSG_HEADER_BYTES));
       my_okHandshakeBuf = bb;
@@ -888,7 +888,7 @@ public class Connection implements Runnable {
     connectHandshake.writeBoolean(preserveOrder);
     connectHandshake.writeLong(uniqueId);
     // write the product version ordinal
-    VersioningIO.writeOrdinal(connectHandshake, Version.CURRENT.ordinal(), true);
+    VersioningIO.writeOrdinal(connectHandshake, KnownVersion.CURRENT.ordinal(), true);
     connectHandshake.writeInt(dominoCount.get() + 1);
     // this writes the sending member + thread name that is stored in senderName
     // on the receiver to show the cause of reader thread creation
@@ -1793,7 +1793,7 @@ public class Connection implements Runnable {
     }
   }
 
-  private MsgDestreamer obtainMsgDestreamer(short msgId, final Version v) {
+  private MsgDestreamer obtainMsgDestreamer(short msgId, final KnownVersion v) {
     synchronized (destreamerLock) {
       if (destreamerMap == null) {
         destreamerMap = new HashMap();
@@ -2636,7 +2636,7 @@ public class Connection implements Runnable {
     socketInUse = true;
     MsgReader msgReader = null;
     DMStats stats = owner.getConduit().getStats();
-    final Version version = getRemoteVersion();
+    final KnownVersion version = getRemoteVersion();
     try {
       msgReader = new MsgReader(this, ioFilter, version);
 
@@ -2813,11 +2813,11 @@ public class Connection implements Runnable {
       // read the product version ordinal for on-the-fly serialization
       // transformations (for rolling upgrades)
       remoteVersion = Versioning.getKnownVersionOrDefault(
-          Versioning.getVersionOrdinal(VersioningIO.readOrdinal(dis)),
+          Versioning.getVersion(VersioningIO.readOrdinal(dis)),
           null);
       int dominoNumber = 0;
       if (remoteVersion == null
-          || remoteVersion.isNotOlderThan(Version.GFE_80)) {
+          || remoteVersion.isNotOlderThan(KnownVersion.GFE_80)) {
         dominoNumber = dis.readInt();
         if (sharedResource) {
           dominoNumber = 0;
@@ -3131,7 +3131,7 @@ public class Connection implements Runnable {
           // read the product version ordinal for on-the-fly serialization
           // transformations (for rolling upgrades)
           remoteVersion = Versioning.getKnownVersionOrDefault(
-              Versioning.getVersionOrdinal(VersioningIO.readOrdinal(dis)),
+              Versioning.getVersion(VersioningIO.readOrdinal(dis)),
               null);
           ioFilter.doneReading(peerDataBuffer);
           notifyHandshakeWaiter(true);
@@ -3265,14 +3265,14 @@ public class Connection implements Runnable {
   /**
    * Return the version of the member on the other side of this connection.
    */
-  Version getRemoteVersion() {
+  KnownVersion getRemoteVersion() {
     return remoteVersion;
   }
 
   @Override
   public String toString() {
     return remoteAddr + "(uid=" + uniqueId + ")"
-        + (remoteVersion != null && remoteVersion != Version.CURRENT
+        + (remoteVersion != null && remoteVersion != KnownVersion.CURRENT
             ? "(v" + remoteVersion.toString() + ')' : "");
   }
 

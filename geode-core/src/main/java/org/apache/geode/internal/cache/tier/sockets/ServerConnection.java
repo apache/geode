@@ -69,7 +69,7 @@ import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.util.Breadcrumbs;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.security.AuthenticationFailedException;
@@ -170,20 +170,20 @@ public abstract class ServerConnection implements Runnable {
 
   // IMPORTANT: if new messages are added change setHandshake to initialize them
   // to the correct Version for serializing to the client
-  private Message requestMessage = new Message(2, Version.CURRENT);
-  private final Message replyMessage = new Message(1, Version.CURRENT);
-  private final Message responseMessage = new Message(1, Version.CURRENT);
-  private final Message errorMessage = new Message(1, Version.CURRENT);
+  private Message requestMessage = new Message(2, KnownVersion.CURRENT);
+  private final Message replyMessage = new Message(1, KnownVersion.CURRENT);
+  private final Message responseMessage = new Message(1, KnownVersion.CURRENT);
+  private final Message errorMessage = new Message(1, KnownVersion.CURRENT);
 
   // IMPORTANT: if new messages are added change setHandshake to initialize them
   // to the correct Version for serializing to the client
-  private final ChunkedMessage queryResponseMessage = new ChunkedMessage(2, Version.CURRENT);
-  private final ChunkedMessage chunkedResponseMessage = new ChunkedMessage(1, Version.CURRENT);
+  private final ChunkedMessage queryResponseMessage = new ChunkedMessage(2, KnownVersion.CURRENT);
+  private final ChunkedMessage chunkedResponseMessage = new ChunkedMessage(1, KnownVersion.CURRENT);
   private final ChunkedMessage executeFunctionResponseMessage =
-      new ChunkedMessage(1, Version.CURRENT);
+      new ChunkedMessage(1, KnownVersion.CURRENT);
   private final ChunkedMessage registerInterestResponseMessage =
-      new ChunkedMessage(1, Version.CURRENT);
-  private final ChunkedMessage keySetResponseMessage = new ChunkedMessage(1, Version.CURRENT);
+      new ChunkedMessage(1, KnownVersion.CURRENT);
+  private final ChunkedMessage keySetResponseMessage = new ChunkedMessage(1, KnownVersion.CURRENT);
 
   @Deprecated
   private final InternalLogWriter logWriter;
@@ -362,7 +362,7 @@ public abstract class ServerConnection implements Runnable {
 
         setHandshake(readHandshake);
         setProxyId(readHandshake.getMembershipId());
-        if (readHandshake.getVersion().isOlderThan(Version.GFE_65)
+        if (readHandshake.getVersion().isOlderThan(KnownVersion.GFE_65)
             || getCommunicationMode().isWAN()) {
           try {
             setAuthAttributes();
@@ -469,7 +469,7 @@ public abstract class ServerConnection implements Runnable {
 
   public void setHandshake(ServerSideHandshake handshake) {
     this.handshake = handshake;
-    Version v = handshake.getVersion();
+    KnownVersion v = handshake.getVersion();
 
     replyMessage.setVersion(v);
     requestMessage.setVersion(v);
@@ -487,7 +487,7 @@ public abstract class ServerConnection implements Runnable {
     this.requestMessage = requestMessage;
   }
 
-  public Version getClientVersion() {
+  public KnownVersion getClientVersion() {
     return handshake.getVersion();
   }
 
@@ -1125,7 +1125,7 @@ public abstract class ServerConnection implements Runnable {
   public Part updateAndGetSecurityPart() {
     // need to take care all message types here
     if (AcceptorImpl.isAuthenticationRequired()
-        && handshake.getVersion().isNotOlderThan(Version.GFE_65)
+        && handshake.getVersion().isNotOlderThan(KnownVersion.GFE_65)
         && !communicationMode.isWAN() && !requestMessage.getAndResetIsMetaRegion()
         && !isInternalMessage(requestMessage, allowInternalMessagesWithoutCredentials)) {
       setSecurityPart();
@@ -1652,7 +1652,8 @@ public abstract class ServerConnection implements Runnable {
 
   private byte[] encryptId(long id) throws Exception {
     // deserialize this using handshake keys
-    try (HeapDataOutputStream heapDataOutputStream = new HeapDataOutputStream(Version.CURRENT)) {
+    try (HeapDataOutputStream heapDataOutputStream =
+        new HeapDataOutputStream(KnownVersion.CURRENT)) {
 
       heapDataOutputStream.writeLong(id);
 
@@ -1663,7 +1664,7 @@ public abstract class ServerConnection implements Runnable {
   public long getUniqueId() {
     long uniqueId;
 
-    if (handshake.getVersion().isOlderThan(Version.GFE_65) || communicationMode.isWAN()) {
+    if (handshake.getVersion().isOlderThan(KnownVersion.GFE_65) || communicationMode.isWAN()) {
       uniqueId = userAuthId;
     } else if (requestMessage.isSecureMode()) {
       uniqueId = messageIdExtractor.getUniqueIdFromMessage(requestMessage,

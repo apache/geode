@@ -60,8 +60,8 @@ import org.apache.geode.distributed.internal.membership.api.MessageListener;
 import org.apache.geode.distributed.internal.membership.api.QuorumChecker;
 import org.apache.geode.distributed.internal.membership.api.StopShunningMarker;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.Version;
-import org.apache.geode.internal.serialization.VersionOrdinal;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.util.internal.GeodeGlossary;
@@ -378,22 +378,22 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
     latestViewWriteLock.lock();
     try {
       // first determine the version for multicast message serialization
-      VersionOrdinal version = Version.CURRENT;
+      Version version = KnownVersion.CURRENT;
       for (final Entry<ID, Long> internalIDLongEntry : surpriseMembers
           .entrySet()) {
         ID mbr = internalIDLongEntry.getKey();
-        final VersionOrdinal itsVersion = mbr.getVersionOrdinalObject();
+        final Version itsVersion = mbr.getVersion();
         if (itsVersion != null && version.compareTo(itsVersion) < 0) {
           version = itsVersion;
         }
       }
       for (ID mbr : newView.getMembers()) {
-        final VersionOrdinal itsVersion = mbr.getVersionOrdinalObject();
+        final Version itsVersion = mbr.getVersion();
         if (itsVersion != null && itsVersion.compareTo(version) < 0) {
-          version = mbr.getVersionOrdinalObject();
+          version = mbr.getVersion();
         }
       }
-      disableMulticastForRollingUpgrade = !version.equals(Version.CURRENT);
+      disableMulticastForRollingUpgrade = !version.equals(KnownVersion.CURRENT);
 
       // Save previous view, for delta analysis
       MembershipView<ID> priorView = latestView;

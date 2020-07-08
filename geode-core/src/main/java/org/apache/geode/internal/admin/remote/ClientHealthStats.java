@@ -27,8 +27,8 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.Version;
 
 /**
  * Bean class act as container for client stats
@@ -95,8 +95,8 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
 
   /** The versions in which this message was modified */
   @Immutable
-  private static final Version[] dsfidVersions =
-      new Version[] {Version.GFE_80, Version.GEODE_1_9_0};
+  private static final KnownVersion[] dsfidVersions =
+      new KnownVersion[] {KnownVersion.GFE_80, KnownVersion.GEODE_1_9_0};
 
   public ClientHealthStats() {}
 
@@ -319,7 +319,7 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
   }
 
   @Override
-  public Version[] getSerializationVersions() {
+  public KnownVersion[] getSerializationVersions() {
     return dsfidVersions;
   }
 

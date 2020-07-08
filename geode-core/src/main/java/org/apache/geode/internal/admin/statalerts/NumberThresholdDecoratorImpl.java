@@ -24,8 +24,8 @@ import org.apache.geode.internal.admin.StatAlert;
 import org.apache.geode.internal.admin.StatAlertDefinition;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.Version;
 
 /**
  * Implementation of {@link StatAlertDefinition}, represents threshold as number
@@ -143,7 +143,7 @@ public class NumberThresholdDecoratorImpl extends BaseDecoratorImpl
   public static final String ID = "NumberThreshold";
 
   @Override
-  public Version[] getSerializationVersions() {
+  public KnownVersion[] getSerializationVersions() {
     return null;
   }
 }

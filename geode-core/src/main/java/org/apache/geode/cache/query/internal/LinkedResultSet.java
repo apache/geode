@@ -33,8 +33,8 @@ import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.query.types.StructType;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.Version;
 
 public class LinkedResultSet extends java.util.LinkedHashSet
     implements Ordered, SelectResults, DataSerializableFixedID {
@@ -139,7 +139,7 @@ public class LinkedResultSet extends java.util.LinkedHashSet
   }
 
   @Override
-  public Version[] getSerializationVersions() {
+  public KnownVersion[] getSerializationVersions() {
     return null;
   }
 

@@ -35,7 +35,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category({ClientServerTest.class})
@@ -46,7 +46,7 @@ public class MessageJUnitTest {
   @Before
   public void setUp() throws Exception {
     Socket mockSocket = mock(Socket.class);
-    this.message = new Message(2, Version.CURRENT);
+    this.message = new Message(2, KnownVersion.CURRENT);
     assertEquals(2, this.message.getNumberOfParts());
     MessageStats mockStats = mock(MessageStats.class);
     ByteBuffer msgBuffer = ByteBuffer.allocate(1000);

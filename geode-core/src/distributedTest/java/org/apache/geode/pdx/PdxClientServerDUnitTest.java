@@ -48,7 +48,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.PdxSerializerObject;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.pdx.internal.AutoSerializableManager;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
@@ -390,7 +390,7 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
     // Serialize an object and put it in both regions, sending
     // the event to each pool
     vm2.invoke(() -> {
-      HeapDataOutputStream bytes = new HeapDataOutputStream(Version.CURRENT);
+      HeapDataOutputStream bytes = new HeapDataOutputStream(KnownVersion.CURRENT);
       Region r1 = getRootRegion("region1");
       r1.put(1, new SimpleClass(57, (byte) 3));
       Region r2 = getRootRegion("region2");
@@ -422,7 +422,7 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
     createClientRegion(vm2, port);
 
     vm1.invoke(() -> {
-      HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
+      HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT);
       DataSerializer.writeObject(new SimpleClass(57, (byte) 3), out);
       byte[] bytes = out.toByteArray();
       Region r = getRootRegion("testSimplePdx");
@@ -515,7 +515,7 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
         props.setProperty(LOCATORS, "");
         getSystem(props);
         Cache cache = getCache();
-        HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
+        HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT);
         DataSerializer.writeObject(new SimpleClass(57, (byte) 3), out);
 
         PoolFactory pf = PoolManager.createFactory();

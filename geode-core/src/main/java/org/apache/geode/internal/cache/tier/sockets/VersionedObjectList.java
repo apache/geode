@@ -46,8 +46,8 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -298,10 +298,11 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
   }
 
   @Immutable
-  private static final Version[] serializationVersions = new Version[] {Version.GFE_80};
+  private static final KnownVersion[] serializationVersions =
+      new KnownVersion[] {KnownVersion.GFE_80};
 
   @Override
-  public Version[] getSerializationVersions() {
+  public KnownVersion[] getSerializationVersions() {
     return serializationVersions;
   }
 
@@ -778,7 +779,7 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
     // }
 
     @Override
-    public Version[] getSerializationVersions() {
+    public KnownVersion[] getSerializationVersions() {
       return this.list.getSerializationVersions();
     }
   }

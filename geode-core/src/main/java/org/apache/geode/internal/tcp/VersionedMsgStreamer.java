@@ -20,7 +20,7 @@ import java.util.List;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.internal.net.BufferPool;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.VersionedDataStream;
 
 /**
@@ -30,10 +30,10 @@ import org.apache.geode.internal.serialization.VersionedDataStream;
  */
 class VersionedMsgStreamer extends MsgStreamer implements VersionedDataStream {
 
-  private final Version version;
+  private final KnownVersion version;
 
   VersionedMsgStreamer(List<?> cons, DistributionMessage msg, boolean directReply, DMStats stats,
-      BufferPool bufferPool, int sendBufferSize, Version version) {
+      BufferPool bufferPool, int sendBufferSize, KnownVersion version) {
     super(cons, msg, directReply, stats, sendBufferSize, bufferPool);
     this.version = version;
   }
@@ -42,7 +42,7 @@ class VersionedMsgStreamer extends MsgStreamer implements VersionedDataStream {
    * {@inheritDoc}
    */
   @Override
-  public Version getVersion() {
+  public KnownVersion getVersion() {
     return this.version;
   }
 

@@ -47,9 +47,9 @@ import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
-import org.apache.geode.internal.serialization.VersionOrdinal;
 import org.apache.geode.logging.internal.OSProcess;
 
 /**
@@ -545,17 +545,17 @@ public class InternalDistributedMember
     return memberIdentifier.getUniqueId();
   }
 
-  public void setVersionObjectForTest(Version v) {
-    memberIdentifier.setVersionObjectForTest(v);
+  public void setVersionForTest(KnownVersion v) {
+    memberIdentifier.setVersionForTest(v);
   }
 
   @Override
-  public VersionOrdinal getVersionOrdinalObject() {
-    return memberIdentifier.getVersionOrdinalObject();
+  public Version getVersion() {
+    return memberIdentifier.getVersion();
   }
 
   @Override
-  public Version[] getSerializationVersions() {
+  public KnownVersion[] getSerializationVersions() {
     return memberIdentifier.getSerializationVersions();
   }
 

@@ -46,8 +46,8 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DSCODE;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.size.Sizeable;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -353,7 +353,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
    */
 
   protected Message getMessage(CacheClientProxy proxy, byte[] latestValue) throws IOException {
-    Version clientVersion = proxy.getVersion();
+    KnownVersion clientVersion = proxy.getVersion();
     byte[] serializedValue = null;
     Message message;
     boolean conflation;
@@ -374,13 +374,13 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
         this._value = serializedValue = CacheServerHelper.serialize(latestValue);
       }
     }
-    if (clientVersion.isNotOlderThan(Version.GFE_70)) {
+    if (clientVersion.isNotOlderThan(KnownVersion.GFE_70)) {
       message = getGFE70Message(proxy, serializedValue, conflation, clientVersion);
-    } else if (clientVersion.isNotOlderThan(Version.GFE_65)) {
+    } else if (clientVersion.isNotOlderThan(KnownVersion.GFE_65)) {
       message = getGFE65Message(proxy, serializedValue, conflation, clientVersion);
-    } else if (clientVersion.isNotOlderThan(Version.GFE_61)) {
+    } else if (clientVersion.isNotOlderThan(KnownVersion.GFE_61)) {
       message = getGFE61Message(proxy, serializedValue, conflation, clientVersion);
-    } else if (clientVersion.isNotOlderThan(Version.GFE_57)) {
+    } else if (clientVersion.isNotOlderThan(KnownVersion.GFE_57)) {
       message = getGFEMessage(proxy.getProxyID(), latestValue, clientVersion);
     } else {
       throw new IOException(
@@ -391,7 +391,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
   }
 
   protected Message getGFEMessage(ClientProxyMembershipID proxyId, byte[] latestValue,
-      Version clientVersion) throws IOException {
+      KnownVersion clientVersion) throws IOException {
     Message message;
     // Add CQ info.
     int cqMsgParts = 0;
@@ -499,7 +499,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
   }
 
   private Message getGFE61Message(CacheClientProxy proxy, byte[] latestValue, boolean conflation,
-      Version clientVersion) throws IOException {
+      KnownVersion clientVersion) throws IOException {
     Message message;
     ClientProxyMembershipID proxyId = proxy.getProxyID();
 
@@ -663,7 +663,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
   }
 
   private Message getGFE65Message(CacheClientProxy proxy, byte[] p_latestValue,
-      boolean conflation, Version clientVersion) throws IOException {
+      boolean conflation, KnownVersion clientVersion) throws IOException {
     byte[] latestValue = p_latestValue;
     Message message;
     ClientProxyMembershipID proxyId = proxy.getProxyID();
@@ -824,7 +824,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
 
 
   private Message getGFE70Message(CacheClientProxy proxy, byte[] p_latestValue,
-      boolean conflation, Version clientVersion) throws IOException {
+      boolean conflation, KnownVersion clientVersion) throws IOException {
     byte[] latestValue = p_latestValue;
 
     Message message;
@@ -970,10 +970,10 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
   private static final ThreadLocal<Map<Integer, Message>> CACHED_MESSAGES =
       ThreadLocal.withInitial(HashMap::new);
 
-  private Message getMessage(int numParts, Version clientVersion) {
+  private Message getMessage(int numParts, KnownVersion clientVersion) {
     Message m = CACHED_MESSAGES.get().get(numParts);
     if (m == null) {
-      m = new Message(numParts, Version.CURRENT);
+      m = new Message(numParts, KnownVersion.CURRENT);
       CACHED_MESSAGES.get().put(numParts, m);
     }
     m.clearParts();
@@ -1396,7 +1396,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
   }
 
   @Override
-  public Version[] getSerializationVersions() {
+  public KnownVersion[] getSerializationVersions() {
     return null;
   }
 

@@ -29,8 +29,8 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxSerializationException;
 import org.apache.geode.pdx.WritablePdxInstance;
@@ -327,7 +327,7 @@ public class EnumInfo implements DataSerializableFixedID {
 
     @Override
     public byte[] toBytes() throws IOException {
-      HeapDataOutputStream hdos = new HeapDataOutputStream(16, Version.CURRENT);
+      HeapDataOutputStream hdos = new HeapDataOutputStream(16, KnownVersion.CURRENT);
       sendTo(hdos);
       return hdos.toByteArray();
     }
@@ -349,7 +349,7 @@ public class EnumInfo implements DataSerializableFixedID {
   }
 
   @Override
-  public Version[] getSerializationVersions() {
+  public KnownVersion[] getSerializationVersions() {
     return null;
   }
 

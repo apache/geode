@@ -83,7 +83,7 @@ import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.sequencelog.EntryLogger;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -562,7 +562,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
    * the server.
    */
   private Message initializeMessage() {
-    Message message = new Message(2, Version.CURRENT);
+    Message message = new Message(2, KnownVersion.CURRENT);
     message.setComms(this.socket, this.in, this.out, this.commBuffer, this.stats);
     return message;
   }

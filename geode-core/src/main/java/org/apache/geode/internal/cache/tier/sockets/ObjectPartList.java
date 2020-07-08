@@ -30,8 +30,8 @@ import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.offheap.Releasable;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -249,7 +249,7 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
   }
 
   @Override
-  public Version[] getSerializationVersions() {
+  public KnownVersion[] getSerializationVersions() {
     return null;
   }
 

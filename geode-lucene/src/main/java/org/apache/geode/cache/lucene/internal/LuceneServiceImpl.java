@@ -81,8 +81,8 @@ import org.apache.geode.internal.cache.RegionListener;
 import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.Version;
-import org.apache.geode.internal.serialization.VersionOrdinal;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
 import org.apache.geode.util.internal.GeodeGlossary;
@@ -105,7 +105,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
       Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "luceneReindex");
 
   // Change this to the correct version once reindexing on an existing region is enabled
-  public static short LUCENE_REINDEX_ENABLED_VERSION_ORDINAL = Version.CURRENT_ORDINAL;
+  public static short LUCENE_REINDEX_ENABLED_VERSION_ORDINAL = KnownVersion.CURRENT_ORDINAL;
 
   public LuceneServiceImpl() {}
 
@@ -240,11 +240,11 @@ public class LuceneServiceImpl implements InternalLuceneService {
 
   protected void validateAllMembersAreTheSameVersion(PartitionedRegion region) {
     Set<InternalDistributedMember> remoteMembers = region.getRegionAdvisor().adviseAllPRNodes();
-    final VersionOrdinal localVersion =
-        cache.getDistributionManager().getDistributionManagerId().getVersionOrdinalObject();
+    final Version localVersion =
+        cache.getDistributionManager().getDistributionManagerId().getVersion();
     if (!remoteMembers.isEmpty()) {
       for (InternalDistributedMember remoteMember : remoteMembers) {
-        if (!remoteMember.getVersionOrdinalObject().equals(localVersion)) {
+        if (!remoteMember.getVersion().equals(localVersion)) {
           throw new IllegalStateException(
               "The lucene index cannot be created on a existing region if all members hosting the region : "
                   + region.getFullPath() + ", are not the same Apache Geode version ");
@@ -726,7 +726,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
   private boolean isAnyRemoteMemberVersionLessThanGeode1_7_0(
       Set<InternalDistributedMember> remoteMembers) {
     for (InternalDistributedMember remoteMember : remoteMembers) {
-      if (remoteMember.getVersionOrdinalObject().ordinal() < Version.GEODE_1_7_0.ordinal()) {
+      if (remoteMember.getVersion().ordinal() < KnownVersion.GEODE_1_7_0.ordinal()) {
         return true;
       }
     }

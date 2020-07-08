@@ -21,8 +21,8 @@ import java.util.ArrayList;
 
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.Version;
 
 public class PageResults extends ArrayList<PageEntry> implements DataSerializableFixedID {
 
@@ -58,7 +58,7 @@ public class PageResults extends ArrayList<PageEntry> implements DataSerializabl
   }
 
   @Override
-  public Version[] getSerializationVersions() {
-    return new Version[0];
+  public KnownVersion[] getSerializationVersions() {
+    return new KnownVersion[0];
   }
 }

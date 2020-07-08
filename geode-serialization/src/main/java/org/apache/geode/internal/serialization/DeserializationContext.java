@@ -21,7 +21,7 @@ package org.apache.geode.internal.serialization;
 public interface DeserializationContext {
 
   /** return the version of the source/destination of this serializer */
-  Version getSerializationVersion();
+  KnownVersion getSerializationVersion();
 
   /** return the serializer */
   ObjectDeserializer getDeserializer();

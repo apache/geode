@@ -31,7 +31,7 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.functions.RestoreRedundancyFunction;
 import org.apache.geode.management.internal.util.ManagementUtils;
@@ -42,7 +42,7 @@ public class RestoreRedundancyPerformer
     implements OperationPerformer<RestoreRedundancyRequest, RestoreRedundancyResults> {
   @Immutable
   @VisibleForTesting
-  static final Version ADDED_VERSION = Version.GEODE_1_13_0;
+  static final KnownVersion ADDED_VERSION = KnownVersion.GEODE_1_13_0;
   private static final String NO_MEMBERS_WITH_VERSION_FOR_REGION =
       "No members with a version greater than or equal to %s were found for region %s";
   private static final String EXCEPTION_MEMBER_MESSAGE = "Exception occurred on member %s: %s";
@@ -129,7 +129,7 @@ public class RestoreRedundancyPerformer
       RebalanceOperationPerformer.MemberPRInfo prInfo) {
     return prInfo.dsMemberList.stream()
         .map(InternalDistributedMember.class::cast)
-        .filter(member -> member.getVersionOrdinalObject().compareTo(ADDED_VERSION) >= 0)
+        .filter(member -> member.getVersion().compareTo(ADDED_VERSION) >= 0)
         .collect(Collectors.toList());
   }
 

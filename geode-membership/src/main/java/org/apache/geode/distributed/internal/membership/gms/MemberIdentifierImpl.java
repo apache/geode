@@ -43,10 +43,10 @@ import org.apache.geode.distributed.internal.membership.api.MemberDataBuilder;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
-import org.apache.geode.internal.serialization.VersionOrdinal;
 import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.internal.serialization.VersioningIO;
 
@@ -56,8 +56,8 @@ import org.apache.geode.internal.serialization.VersioningIO;
 public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableFixedID {
   /** The versions in which this message was modified */
   @Immutable
-  private static final Version[] dsfidVersions = new Version[] {
-      Version.GFE_71, Version.GFE_90};
+  private static final KnownVersion[] dsfidVersions = new KnownVersion[] {
+      KnownVersion.GFE_71, KnownVersion.GFE_90};
   private MemberData memberData; // the underlying member object
 
 
@@ -421,8 +421,8 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
 
       // add version if not current
       short version = memberData.getVersionOrdinal();
-      if (version != Version.CURRENT.ordinal()) {
-        sb.append("(version:").append(Versioning.getVersionOrdinal(version)).append(')');
+      if (version != KnownVersion.CURRENT.ordinal()) {
+        sb.append("(version:").append(Versioning.getVersion(version)).append(')');
       }
 
       // leave out Roles on purpose
@@ -517,11 +517,11 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
       return version;
     } else {
       // prior to 7.1 member IDs did not serialize their version information
-      Version v = StaticSerialization.getVersionForDataStreamOrNull(in);
+      KnownVersion v = StaticSerialization.getVersionForDataStreamOrNull(in);
       if (v != null) {
         return v.ordinal();
       }
-      return Version.CURRENT_ORDINAL;
+      return KnownVersion.CURRENT_ORDINAL;
     }
   }
 
@@ -619,7 +619,7 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
         .setIsPartial(isPartial)
         .setUniqueTag(uniqueTag)
         .build();
-    if (version >= Version.GFE_90.ordinal()) {
+    if (version >= KnownVersion.GFE_90.ordinal()) {
       try {
         memberData.readAdditionalData(in);
       } catch (java.io.EOFException e) {
@@ -638,7 +638,7 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     toDataPre_GFE_9_0_0_0(out, context);
-    if (memberData.getVersionOrdinal() >= Version.GFE_90.ordinal()) {
+    if (memberData.getVersionOrdinal() >= KnownVersion.GFE_90.ordinal()) {
       memberData.writeAdditionalData(out);
     }
   }
@@ -741,7 +741,7 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
     fromDataPre_GFE_9_0_0_0(in, context);
     // just in case this is just a non-versioned read
     // from a file we ought to check the version
-    if (memberData.getVersionOrdinal() >= Version.GFE_90.ordinal()) {
+    if (memberData.getVersionOrdinal() >= KnownVersion.GFE_90.ordinal()) {
       try {
         memberData.readAdditionalData(in);
       } catch (EOFException e) {
@@ -898,7 +898,7 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
         .setUniqueTag(uniqueTag)
         .build();
 
-    if (StaticSerialization.getVersionForDataStream(in) == Version.GFE_90) {
+    if (StaticSerialization.getVersionForDataStream(in) == KnownVersion.GFE_90) {
       memberData.readAdditionalData(in);
     }
   }
@@ -928,9 +928,9 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
     // write name last to fix bug 45160
     StaticSerialization.writeString(memberData.getName(), out);
 
-    Version outputVersion = StaticSerialization.getVersionForDataStream(out);
-    if (outputVersion.isOlderThan(Version.GEODE_1_1_0)
-        && outputVersion.isNotOlderThan(Version.GFE_90)) {
+    KnownVersion outputVersion = StaticSerialization.getVersionForDataStream(out);
+    if (outputVersion.isOlderThan(KnownVersion.GEODE_1_1_0)
+        && outputVersion.isNotOlderThan(KnownVersion.GFE_90)) {
       memberData.writeAdditionalData(out);
     }
   }
@@ -975,25 +975,25 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
 
     // add version if not current
     short version = memberData.getVersionOrdinal();
-    if (version != Version.CURRENT.ordinal()) {
-      sb.append("(version:").append(Versioning.getVersionOrdinal(version)).append(')');
+    if (version != KnownVersion.CURRENT.ordinal()) {
+      sb.append("(version:").append(Versioning.getVersion(version)).append(')');
     }
 
     return sb.toString();
   }
 
-  public void setVersionObjectForTest(Version v) {
+  public void setVersionForTest(KnownVersion v) {
     memberData.setVersion(v);
     cachedToString = null;
   }
 
   @Override
-  public VersionOrdinal getVersionOrdinalObject() {
-    return memberData.getVersionOrdinalObject();
+  public Version getVersion() {
+    return memberData.getVersion();
   }
 
   @Override
-  public Version[] getSerializationVersions() {
+  public KnownVersion[] getSerializationVersions() {
     return dsfidVersions;
   }
 

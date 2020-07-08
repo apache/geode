@@ -31,7 +31,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.control.SerializableRestoreRedundancyResultsImpl;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.cli.Result;
@@ -66,7 +66,7 @@ public class RedundancyCommand extends GfshCommand {
   public static final String SATISFIED_REDUNDANCY_SECTION = "satisfied-redundancy";
   public static final String PRIMARIES_INFO_SECTION = "primaries-info";
 
-  public static final Version ADDED_VERSION = Version.GEODE_1_13_0;
+  public static final KnownVersion ADDED_VERSION = KnownVersion.GEODE_1_13_0;
   public static final String INDENT = "  ";
 
   ResultModel execute(String[] includeRegions, String[] excludeRegions, boolean reassignPrimaries,
@@ -91,7 +91,7 @@ public class RedundancyCommand extends GfshCommand {
       RebalanceOperationPerformer.MemberPRInfo prInfo) {
     return prInfo.dsMemberList.stream()
         .map(InternalDistributedMember.class::cast)
-        .filter(member -> member.getVersionOrdinalObject().compareTo(ADDED_VERSION) >= 0)
+        .filter(member -> member.getVersion().compareTo(ADDED_VERSION) >= 0)
         .collect(Collectors.toList());
   }
 

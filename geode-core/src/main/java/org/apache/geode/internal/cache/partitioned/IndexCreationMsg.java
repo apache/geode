@@ -49,8 +49,8 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionException;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class IndexCreationMsg extends PartitionMessage {
@@ -357,7 +357,7 @@ public class IndexCreationMsg extends PartitionMessage {
     }
 
     for (InternalDistributedMember rec : recipients) {
-      if (rec.getVersionOrdinalObject().isOlderThan(Version.GFE_81)) {
+      if (rec.getVersion().isOlderThan(KnownVersion.GFE_81)) {
         throw new UnsupportedOperationException(
             "Indexes should not be created during rolling upgrade");
       }
@@ -422,7 +422,7 @@ public class IndexCreationMsg extends PartitionMessage {
   }
 
   @Override
-  public Version[] getSerializationVersions() {
+  public KnownVersion[] getSerializationVersions() {
     return null;
   }
 

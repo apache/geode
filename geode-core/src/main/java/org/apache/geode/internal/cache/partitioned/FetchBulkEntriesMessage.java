@@ -56,8 +56,8 @@ import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -194,7 +194,7 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
     private HashSet<Integer> failedBucketIds;
 
     @Override
-    public Version[] getSerializationVersions() {
+    public KnownVersion[] getSerializationVersions() {
       return null;
     }
 
@@ -240,7 +240,7 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
 
       HeapDataOutputStream mos = new HeapDataOutputStream(
           InitialImageOperation.CHUNK_SIZE_IN_BYTES + 2048, Versioning
-              .getKnownVersionOrDefault(recipient.getVersionOrdinalObject(), Version.CURRENT));
+              .getKnownVersionOrDefault(recipient.getVersion(), KnownVersion.CURRENT));
       Iterator<BucketRegion> mapsIterator = maps.iterator();
       BucketRegion map = null;
       Iterator it = null;
@@ -660,7 +660,7 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
   }
 
   @Override
-  public Version[] getSerializationVersions() {
+  public KnownVersion[] getSerializationVersions() {
     return null;
   }
 

@@ -49,7 +49,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
@@ -75,9 +75,9 @@ public class ManagementUtils {
    */
   @SuppressWarnings("unchecked")
   public static Set<DistributedMember> getNormalMembersWithSameOrNewerVersion(InternalCache cache,
-      Version version) {
+      KnownVersion version) {
     return getAllNormalMembers(cache).stream().filter(
-        member -> ((InternalDistributedMember) member).getVersionOrdinalObject()
+        member -> ((InternalDistributedMember) member).getVersion()
             .compareTo(version) >= 0)
         .collect(Collectors.toSet());
   }

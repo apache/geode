@@ -251,7 +251,7 @@ import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.internal.sequencelog.SequenceLoggerImpl;
 import org.apache.geode.internal.serialization.DSCODE;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.shared.StringPrintWriter;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.statistics.StatisticsClockFactory;
@@ -4399,7 +4399,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     // This block prevents sending a message to old members that do not know about
     // the RemoveCacheServerProfileMessage
     otherMembers
-        .removeIf(member -> Version.GEODE_1_5_0.compareTo(member.getVersionOrdinalObject()) > 0);
+        .removeIf(
+            member -> KnownVersion.GEODE_1_5_0.compareTo(member.getVersion()) > 0);
 
     if (!otherMembers.isEmpty()) {
       if (logger.isDebugEnabled()) {

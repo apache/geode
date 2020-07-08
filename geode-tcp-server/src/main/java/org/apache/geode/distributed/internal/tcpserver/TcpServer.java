@@ -38,10 +38,10 @@ import javax.net.ssl.SSLException;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.internal.MutableForTesting;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.ObjectDeserializer;
 import org.apache.geode.internal.serialization.ObjectSerializer;
 import org.apache.geode.internal.serialization.UnsupportedSerializationVersionException;
-import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
 import org.apache.geode.internal.serialization.Versioning;
@@ -112,8 +112,8 @@ public class TcpServer {
    */
   private static Map<Integer, Short> createGossipToVersionMap() {
     HashMap<Integer, Short> map = new HashMap<>();
-    map.put(GOSSIPVERSION, Version.GFE_71.ordinal());
-    map.put(OLDGOSSIPVERSION, Version.GFE_57.ordinal());
+    map.put(GOSSIPVERSION, KnownVersion.GFE_71.ordinal());
+    map.put(OLDGOSSIPVERSION, KnownVersion.GFE_57.ordinal());
     return map;
   }
 
@@ -426,20 +426,20 @@ public class TcpServer {
       // Create a versioned stream to remember sender's GemFire version
       versionOrdinal = (short) GOSSIP_TO_GEMFIRE_VERSION_MAP.get(gossipVersion);
 
-      if (Version.GFE_71.compareTo(Versioning.getVersionOrdinal(versionOrdinal)) <= 0) {
+      if (KnownVersion.GFE_71.compareTo(Versioning.getVersion(versionOrdinal)) <= 0) {
         // Recent versions of TcpClient will send the version ordinal
         versionOrdinal = input.readShort();
       }
 
-      if (logger.isDebugEnabled() && versionOrdinal != Version.CURRENT_ORDINAL) {
+      if (logger.isDebugEnabled() && versionOrdinal != KnownVersion.CURRENT_ORDINAL) {
         logger.debug("Locator reading request from " + socket.getInetAddress() + " with version "
-            + Versioning.getVersionOrdinal(versionOrdinal));
+            + Versioning.getVersion(versionOrdinal));
       }
-      final Version version = Versioning.getKnownVersionOrDefault(
-          Versioning.getVersionOrdinal(versionOrdinal), null);
+      final KnownVersion version = Versioning.getKnownVersionOrDefault(
+          Versioning.getVersion(versionOrdinal), null);
       if (version == null) {
         throw new UnsupportedSerializationVersionException(
-            Version.unsupportedVersionMessage(versionOrdinal));
+            KnownVersion.unsupportedVersionMessage(versionOrdinal));
       }
       input = new VersionedDataInputStream(input, version);
       request = objectDeserializer.readObject(input);
@@ -464,7 +464,7 @@ public class TcpServer {
       final long startTime2 = nanoTimeSupplier.getAsLong();
       if (response != null) {
         DataOutputStream output = new DataOutputStream(socket.getOutputStream());
-        if (version != Version.CURRENT) {
+        if (version != KnownVersion.CURRENT) {
           output = new VersionedDataOutputStream(output, version);
         }
         objectSerializer.writeObject(response, output);
@@ -494,7 +494,7 @@ public class TcpServer {
 
   protected Object handleVersionRequest(Object request) {
     VersionResponse response = new VersionResponse();
-    response.setVersionOrdinal(Version.CURRENT_ORDINAL);
+    response.setVersionOrdinal(KnownVersion.CURRENT_ORDINAL);
     return response;
   }
 

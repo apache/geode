@@ -33,9 +33,9 @@ import javax.net.ssl.SSLHandshakeException;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.ObjectDeserializer;
 import org.apache.geode.internal.serialization.ObjectSerializer;
-import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
 import org.apache.geode.internal.serialization.Versioning;
@@ -151,16 +151,16 @@ public class TcpClient {
 
     // Get the GemFire version of the TcpServer first, before sending any other request.
     final short serverVersionShort = getServerVersion(addr, timeout);
-    Version serverVersion =
+    KnownVersion serverVersion =
         Versioning.getKnownVersionOrDefault(
-            Versioning.getVersionOrdinal(serverVersionShort),
+            Versioning.getVersion(serverVersionShort),
             null);
     final String debugVersionMessage;
     if (serverVersion == null) {
-      serverVersion = Version.CURRENT;
+      serverVersion = KnownVersion.CURRENT;
       debugVersionMessage =
           "Remote TcpServer version: " + serverVersionShort + " is higher than local version: "
-              + Version.CURRENT_ORDINAL + ". This is never expected as remoteVersion";
+              + KnownVersion.CURRENT_ORDINAL + ". This is never expected as remoteVersion";
     } else {
       debugVersionMessage = null;
     }
@@ -168,7 +168,7 @@ public class TcpClient {
     // establish the old GossipVersion for the server
     int gossipVersion = TcpServer.getCurrentGossipVersion();
 
-    if (serverVersion.isNotNewerThan(Version.GFE_71)) {
+    if (serverVersion.isNotNewerThan(KnownVersion.GFE_71)) {
       gossipVersion = TcpServer.getOldGossipVersion();
     }
 
@@ -187,7 +187,7 @@ public class TcpClient {
 
       out = new DataOutputStream(new BufferedOutputStream(sock.getOutputStream()));
 
-      if (serverVersion.isOlderThan(Version.CURRENT)) {
+      if (serverVersion.isOlderThan(KnownVersion.CURRENT)) {
         out = new VersionedDataOutputStream(out, serverVersion);
       }
 
@@ -275,7 +275,7 @@ public class TcpClient {
     try {
       OutputStream outputStream = new BufferedOutputStream(sock.getOutputStream());
       DataOutputStream out =
-          new VersionedDataOutputStream(new DataOutputStream(outputStream), Version.GFE_57);
+          new VersionedDataOutputStream(new DataOutputStream(outputStream), KnownVersion.GFE_57);
 
       out.writeInt(gossipVersion);
 
@@ -285,7 +285,7 @@ public class TcpClient {
 
       InputStream inputStream = sock.getInputStream();
       DataInputStream in = new DataInputStream(inputStream);
-      in = new VersionedDataInputStream(in, Version.GFE_57);
+      in = new VersionedDataInputStream(in, KnownVersion.GFE_57);
       try {
         Object readObject = objectDeserializer.readObject(in);
         if (!(readObject instanceof VersionResponse)) {
@@ -320,8 +320,8 @@ public class TcpClient {
       }
     }
     synchronized (serverVersions) {
-      serverVersions.put(addr, Version.GFE_57.ordinal());
+      serverVersions.put(addr, KnownVersion.GFE_57.ordinal());
     }
-    return Version.GFE_57.ordinal();
+    return KnownVersion.GFE_57.ordinal();
   }
 }

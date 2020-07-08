@@ -23,9 +23,9 @@ import java.util.Collection;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.messages.AbstractGMSMessage;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
-import org.apache.geode.internal.serialization.Version;
 
 /**
  * FindCoordinatorRequest is a message intended to be sent via a TcpClient to a Locator.
@@ -92,7 +92,7 @@ public class FindCoordinatorRequest<ID extends MemberIdentifier> extends Abstrac
   }
 
   @Override
-  public Version[] getSerializationVersions() {
+  public KnownVersion[] getSerializationVersions() {
     return null;
   }
 

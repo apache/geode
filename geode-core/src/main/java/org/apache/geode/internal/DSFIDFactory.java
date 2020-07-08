@@ -404,8 +404,8 @@ import org.apache.geode.internal.cache.wan.serial.BatchDestroyOperation;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.management.internal.JmxManagerAdvisor.JmxManagerProfile;
 import org.apache.geode.management.internal.JmxManagerAdvisor.JmxManagerProfileMessage;
 import org.apache.geode.management.internal.JmxManagerLocatorRequest;
@@ -451,7 +451,7 @@ public class DSFIDFactory implements DataSerializableFixedID {
   }
 
   @Override
-  public Version[] getSerializationVersions() {
+  public KnownVersion[] getSerializationVersions() {
     throw new UnsupportedOperationException();
   }
 

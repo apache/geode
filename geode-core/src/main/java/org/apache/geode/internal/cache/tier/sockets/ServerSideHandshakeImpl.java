@@ -34,7 +34,7 @@ import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.Encryptor;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
 import org.apache.geode.internal.serialization.VersionedDataStream;
@@ -44,9 +44,9 @@ import org.apache.geode.security.AuthenticationRequiredException;
 
 public class ServerSideHandshakeImpl extends Handshake implements ServerSideHandshake {
   @Immutable
-  private static final Version currentServerVersion =
+  private static final KnownVersion currentServerVersion =
       ServerSideHandshakeFactory.currentServerVersion;
-  private Version clientVersion;
+  private KnownVersion clientVersion;
 
   private final byte replyCode;
 
@@ -59,7 +59,8 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
    * HandShake Constructor used by server side connection
    */
   public ServerSideHandshakeImpl(Socket sock, int timeout, DistributedSystem sys,
-      Version clientVersion, CommunicationMode communicationMode, SecurityService securityService)
+      KnownVersion clientVersion, CommunicationMode communicationMode,
+      SecurityService securityService)
       throws IOException, AuthenticationRequiredException {
 
     this.clientVersion = clientVersion;
@@ -86,7 +87,7 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
         DataInputStream dataInputStream = new DataInputStream(inputStream);
         DataOutputStream dataOutputStream = new DataOutputStream(sock.getOutputStream());
         this.clientReadTimeout = dataInputStream.readInt();
-        if (clientVersion.isOlderThan(Version.CURRENT)) {
+        if (clientVersion.isOlderThan(KnownVersion.CURRENT)) {
           // versioned streams allow object serialization code to deal with older clients
           dataInputStream = new VersionedDataInputStream(dataInputStream, clientVersion);
           dataOutputStream =
@@ -95,12 +96,12 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
         this.id = ClientProxyMembershipID.readCanonicalized(dataInputStream);
         // Note: credentials should always be the last piece in handshake for
         // Diffie-Hellman key exchange to work
-        if (clientVersion.isNotOlderThan(Version.GFE_603)) {
+        if (clientVersion.isNotOlderThan(KnownVersion.GFE_603)) {
           setOverrides(new byte[] {dataInputStream.readByte()});
         } else {
           setClientConflation(dataInputStream.readByte());
         }
-        if (this.clientVersion.isOlderThan(Version.GFE_65) || communicationMode.isWAN()) {
+        if (this.clientVersion.isOlderThan(KnownVersion.GFE_65) || communicationMode.isWAN()) {
           this.credentials =
               readCredentials(dataInputStream, dataOutputStream, sys, this.securityService);
         } else {
@@ -120,12 +121,12 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
     }
   }
 
-  public Version getClientVersion() {
+  public KnownVersion getClientVersion() {
     return this.clientVersion;
   }
 
   @Override
-  public Version getVersion() {
+  public KnownVersion getVersion() {
     return this.clientVersion;
   }
 
@@ -134,7 +135,7 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
       int queueSize, CommunicationMode communicationMode, Principal principal) throws IOException {
     DataOutputStream dos = new DataOutputStream(out);
     DataInputStream dis;
-    if (clientVersion.isOlderThan(Version.CURRENT)) {
+    if (clientVersion.isOlderThan(KnownVersion.CURRENT)) {
       dis = new VersionedDataInputStream(in, clientVersion);
       dos = new VersionedDataOutputStream(dos, clientVersion);
     } else {
@@ -159,9 +160,9 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
     // Write the server's member
     DistributedMember member = this.system.getDistributedMember();
 
-    Version v = Version.CURRENT;
+    KnownVersion v = KnownVersion.CURRENT;
     if (dos instanceof VersionedDataStream) {
-      v = (Version) ((VersionedDataStream) dos).getVersion();
+      v = (KnownVersion) ((VersionedDataStream) dos).getVersion();
     }
     HeapDataOutputStream hdos = new HeapDataOutputStream(v);
     DataSerializer.writeObject(member, hdos);
@@ -172,7 +173,7 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
     dos.writeUTF("");
 
     // Write delta-propagation property value if this is not WAN.
-    if (!communicationMode.isWAN() && this.clientVersion.isNotOlderThan(Version.GFE_61)) {
+    if (!communicationMode.isWAN() && this.clientVersion.isNotOlderThan(KnownVersion.GFE_61)) {
       dos.writeBoolean(((InternalDistributedSystem) this.system).getConfig().getDeltaPropagation());
     }
 
@@ -184,14 +185,14 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
 
     // Write the distributed system id if this is a 6.6 or greater client
     // on the remote side of the gateway
-    if (communicationMode.isWAN() && this.clientVersion.isNotOlderThan(Version.GFE_66)
-        && currentServerVersion.isNotOlderThan(Version.GFE_66)) {
+    if (communicationMode.isWAN() && this.clientVersion.isNotOlderThan(KnownVersion.GFE_66)
+        && currentServerVersion.isNotOlderThan(KnownVersion.GFE_66)) {
       dos.writeByte(((InternalDistributedSystem) this.system).getDistributionManager()
           .getDistributedSystemId());
     }
 
-    if ((communicationMode.isWAN()) && this.clientVersion.isNotOlderThan(Version.GFE_80)
-        && currentServerVersion.isNotOlderThan(Version.GFE_80)) {
+    if ((communicationMode.isWAN()) && this.clientVersion.isNotOlderThan(KnownVersion.GFE_80)
+        && currentServerVersion.isNotOlderThan(KnownVersion.GFE_80)) {
       int pdxSize = PeerTypeRegistration.getPdxRegistrySize();
       dos.writeInt(pdxSize);
     }

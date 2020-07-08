@@ -55,7 +55,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.DistributedTestUtils;
@@ -133,7 +133,7 @@ public abstract class LuceneSearchWithRollingUpgradeTestBase extends JUnit4Distr
     VM rollClient = Host.getHost(0).getVM(VersionManager.CURRENT_VERSION, oldClient.getId());
     rollClient.invoke(invokeCreateClientCache(getClientSystemProperties(), hostNames, locatorPorts,
         subscriptionEnabled, singleHopEnabled));
-    rollClient.invoke(invokeAssertVersion(Version.CURRENT_ORDINAL));
+    rollClient.invoke(invokeAssertVersion(KnownVersion.CURRENT_ORDINAL));
     return rollClient;
   }
 
@@ -345,7 +345,7 @@ public abstract class LuceneSearchWithRollingUpgradeTestBase extends JUnit4Distr
     VM rollServer = Host.getHost(0).getVM(VersionManager.CURRENT_VERSION, oldServer.getId());
     rollServer.invoke(invokeCreateCache(locatorPorts == null ? getSystemPropertiesPost71()
         : getSystemPropertiesPost71(locatorPorts)));
-    rollServer.invoke(invokeAssertVersion(Version.CURRENT_ORDINAL));
+    rollServer.invoke(invokeAssertVersion(KnownVersion.CURRENT_ORDINAL));
     return rollServer;
   }
 
@@ -716,12 +716,22 @@ public abstract class LuceneSearchWithRollingUpgradeTestBase extends JUnit4Distr
     getDistributedMemberMethod.setAccessible(true);
     Object member = getDistributedMemberMethod.invoke(ds);
     Method getVersionMethod;
+
+    /*
+     The method to get the version from an InternalDistributedMember has changed over time:
+
+     1. getVersionObject()
+     2. getVersionOrdinalObject()
+     3. getVersion()
+     */
     try {
-      // newer versions have this method
-      getVersionMethod = member.getClass().getMethod("getVersionOrdinalObject");
+      getVersionMethod = member.getClass().getMethod("getVersion");
     } catch (final NoSuchMethodException e) {
-      // older versions have this other method
-      getVersionMethod = member.getClass().getMethod("getVersionObject");
+      try {
+        getVersionMethod = member.getClass().getMethod("getVersionOrdinalObject");
+      } catch (final NoSuchMethodException e2) {
+        getVersionMethod = member.getClass().getMethod("getVersionObject");
+      }
     }
     getVersionMethod.setAccessible(true);
     Object thisVersion = getVersionMethod.invoke(member);

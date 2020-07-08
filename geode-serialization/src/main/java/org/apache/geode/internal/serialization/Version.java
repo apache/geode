@@ -15,384 +15,69 @@
 
 package org.apache.geode.internal.serialization;
 
-import java.util.Arrays;
-import java.util.stream.Collectors;
-
-import org.apache.geode.annotations.Immutable;
-
 /**
- * Enumerated type for client / server and p2p version.
+ * VersionOrdinal is able to represent not only currently-known
+ * Geode versions but future versions as well. This is necessary
+ * because during rolling upgrades Geode manipulates member
+ * identifiers for members running newer versions of the software.
+ * In that case we receive the ordinal over the network
+ * (serialization) but we don't know other version details such as
+ * major/minor/patch version, which are known to the Version class.
  *
- * There are dependencies in versioning code that require newer versions to have ordinals higher
- * than older versions in order to protect against deserialization problems. Client/server code also
- * uses greater-than comparison of ordinals in backward-compatibility checks.
+ * Implementations must define equals() and hashCode() based on
+ * ordinal() result. And since this interface extends Comparable,
+ * implementations must define compareTo() as well.
  *
- * @since GemFire 5.7
+ * Unlike Version (a subtype of VersionOrdinal which acts like an
+ * enumerated type), VersionOrdinal does not, in general, guarantee
+ * that if vo1.equals(vo2) then vo1 == vo2.
+ *
+ * Use the Versioning factory class to construct objects implementing
+ * this interface. All instances of known versions are defined as
+ * constants in the Version class, e.g. Version.GEODE_1_11_0
  */
-@Immutable
-public class Version extends AbstractVersion {
-
-  /** The name of this version */
-  private final transient String name;
-
-  /** The product name of this version */
-  private final transient String productName;
-
-  /** The suffix to use in toDataPre / fromDataPre method names */
-  private final transient String methodSuffix;
-
-  // the major, minor and release bits of the release
-  private final byte majorVersion;
-  private final byte minorVersion;
-  private final byte release;
-  private final byte patch;
-
-  public static final int HIGHEST_VERSION = 125;
-
-  @Immutable
-  private static final Version[] VALUES = new Version[HIGHEST_VERSION + 1];
+public interface Version extends Comparable<Version> {
 
   /**
-   * Reserved token that cannot be used for product version but as a flag in internal contexts.
+   * @return the short ordinal value for comparison implementations
    */
-  static final byte TOKEN_ORDINAL = -1;
-  static final int TOKEN_ORDINAL_INT = (TOKEN_ORDINAL & 0xFF);
-
-  @Immutable
-  public static final Version TOKEN =
-      new Version("", "TOKEN", (byte) -1, (byte) 0, (byte) 0, (byte) 0, TOKEN_ORDINAL);
-
-  private static final short GFE_56_ORDINAL = 0;
-
-  @Immutable
-  public static final Version GFE_56 =
-      new Version("GFE", "5.6", (byte) 5, (byte) 6, (byte) 0, (byte) 0, GFE_56_ORDINAL);
-
-  private static final short GFE_57_ORDINAL = 1;
-
-  @Immutable
-  public static final Version GFE_57 =
-      new Version("GFE", "5.7", (byte) 5, (byte) 7, (byte) 0, (byte) 0, GFE_57_ORDINAL);
-
-  private static final short GFE_58_ORDINAL = 3;
-
-  @Immutable
-  public static final Version GFE_58 =
-      new Version("GFE", "5.8", (byte) 5, (byte) 8, (byte) 0, (byte) 0, GFE_58_ORDINAL);
-
-  private static final short GFE_603_ORDINAL = 4;
-
-  @Immutable
-  public static final Version GFE_603 =
-      new Version("GFE", "6.0.3", (byte) 6, (byte) 0, (byte) 3, (byte) 0, GFE_603_ORDINAL);
-
-  private static final short GFE_61_ORDINAL = 5;
-
-  @Immutable
-  public static final Version GFE_61 =
-      new Version("GFE", "6.1", (byte) 6, (byte) 1, (byte) 0, (byte) 0, GFE_61_ORDINAL);
-
-  private static final short GFE_65_ORDINAL = 6;
-
-  @Immutable
-  public static final Version GFE_65 =
-      new Version("GFE", "6.5", (byte) 6, (byte) 5, (byte) 0, (byte) 0, GFE_65_ORDINAL);
-
-  private static final short GFE_651_ORDINAL = 7;
-
-  @Immutable
-  public static final Version GFE_651 =
-      new Version("GFE", "6.5.1", (byte) 6, (byte) 5, (byte) 1, (byte) 0, GFE_651_ORDINAL);
-
-  private static final short GFE_6516_ORDINAL = 12;
-
-  @Immutable
-  public static final Version GFE_6516 =
-      new Version("GFE", "6.5.1.6", (byte) 6, (byte) 5, (byte) 1, (byte) 6, GFE_6516_ORDINAL);
-
-  private static final short GFE_66_ORDINAL = 16;
-
-  @Immutable
-  public static final Version GFE_66 =
-      new Version("GFE", "6.6", (byte) 6, (byte) 6, (byte) 0, (byte) 0, GFE_66_ORDINAL);
-
-  private static final short GFE_662_ORDINAL = 17;
-
-  @Immutable
-  public static final Version GFE_662 =
-      new Version("GFE", "6.6.2", (byte) 6, (byte) 6, (byte) 2, (byte) 0, GFE_662_ORDINAL);
-
-  private static final short GFE_6622_ORDINAL = 18;
-
-  @Immutable
-  public static final Version GFE_6622 =
-      new Version("GFE", "6.6.2.2", (byte) 6, (byte) 6, (byte) 2, (byte) 2, GFE_6622_ORDINAL);
-
-  private static final short GFE_70_ORDINAL = 19;
-
-  @Immutable
-  public static final Version GFE_70 =
-      new Version("GFE", "7.0", (byte) 7, (byte) 0, (byte) 0, (byte) 0, GFE_70_ORDINAL);
-
-  private static final short GFE_701_ORDINAL = 20;
-
-  @Immutable
-  public static final Version GFE_701 =
-      new Version("GFE", "7.0.1", (byte) 7, (byte) 0, (byte) 1, (byte) 0, GFE_701_ORDINAL);
-
-  private static final short GFE_7099_ORDINAL = 21;
-
-  @Immutable
-  public static final Version GFE_7099 =
-      new Version("GFE", "7.0.99", (byte) 7, (byte) 0, (byte) 99, (byte) 0, GFE_7099_ORDINAL);
-
-  private static final short GFE_71_ORDINAL = 22;
-
-  @Immutable
-  public static final Version GFE_71 =
-      new Version("GFE", "7.1", (byte) 7, (byte) 1, (byte) 0, (byte) 0, GFE_71_ORDINAL);
-
-  // 23-29 available for 7.x variants
-
-  private static final short GFE_80_ORDINAL = 30;
-
-  @Immutable
-  public static final Version GFE_80 =
-      new Version("GFE", "8.0", (byte) 8, (byte) 0, (byte) 0, (byte) 0, GFE_80_ORDINAL);
-
-  // 31-34 available for 8.0.x variants
-
-  private static final short GFE_8009_ORDINAL = 31;
-
-  @Immutable
-  public static final Version GFE_8009 =
-      new Version("GFE", "8.0.0.9", (byte) 8, (byte) 0, (byte) 0, (byte) 9, GFE_8009_ORDINAL);
-
-  private static final short GFE_81_ORDINAL = 35;
-
-  @Immutable
-  public static final Version GFE_81 =
-      new Version("GFE", "8.1", (byte) 8, (byte) 1, (byte) 0, (byte) 0, GFE_81_ORDINAL);
-
-  // 36-39 available for 8.1.x variants
-
-  private static final short GFE_82_ORDINAL = 40;
-
-  @Immutable
-  public static final Version GFE_82 =
-      new Version("GFE", "8.2", (byte) 8, (byte) 2, (byte) 0, (byte) 0, GFE_82_ORDINAL);
-
-  // 41-44 available for 8.2.x variants
-
-  private static final short GFE_90_ORDINAL = 45; // this is also GEODE 1.0.0-incubating
-
-  @Immutable
-  public static final Version GFE_90 =
-      new Version("GFE", "9.0", (byte) 9, (byte) 0, (byte) 0, (byte) 0, GFE_90_ORDINAL);
-
-  // prior to v1.2.0 GEODE_1_1_0 was named GFE_91. This was used for both the rel/v1.1.0
-  // and rel/v1.1.1 releases
-  private static final short GEODE_1_1_0_ORDINAL = 50;
-
-  @Immutable
-  public static final Version GEODE_1_1_0 =
-      new Version("GEODE", "1.1.0", (byte) 1, (byte) 1, (byte) 0, (byte) 0, GEODE_1_1_0_ORDINAL);
-
-  // This ordinal was never used
-  private static final short GEODE_1_1_1_ORDINAL = 55;
-
-  @Immutable
-  public static final Version GEODE_1_1_1 =
-      new Version("GEODE", "1.1.1", (byte) 1, (byte) 1, (byte) 1, (byte) 0, GEODE_1_1_1_ORDINAL);
-
-  private static final short GEODE_1_2_0_ORDINAL = 65;
-
-  @Immutable
-  public static final Version GEODE_1_2_0 =
-      new Version("GEODE", "1.2.0", (byte) 1, (byte) 2, (byte) 0, (byte) 0, GEODE_1_2_0_ORDINAL);
-
-  private static final short GEODE_1_3_0_ORDINAL = 70;
-
-  @Immutable
-  public static final Version GEODE_1_3_0 =
-      new Version("GEODE", "1.3.0", (byte) 1, (byte) 3, (byte) 0, (byte) 0, GEODE_1_3_0_ORDINAL);
-
-  private static final short GEODE_1_4_0_ORDINAL = 75;
-
-  @Immutable
-  public static final Version GEODE_1_4_0 =
-      new Version("GEODE", "1.4.0", (byte) 1, (byte) 4, (byte) 0, (byte) 0, GEODE_1_4_0_ORDINAL);
-
-  private static final short GEODE_1_5_0_ORDINAL = 80;
-
-  @Immutable
-  public static final Version GEODE_1_5_0 =
-      new Version("GEODE", "1.5.0", (byte) 1, (byte) 5, (byte) 0, (byte) 0, GEODE_1_5_0_ORDINAL);
-
-  private static final short GEODE_1_6_0_ORDINAL = 85;
-
-  @Immutable
-  public static final Version GEODE_1_6_0 =
-      new Version("GEODE", "1.6.0", (byte) 1, (byte) 6, (byte) 0, (byte) 0, GEODE_1_6_0_ORDINAL);
-
-  private static final short GEODE_1_7_0_ORDINAL = 90;
-
-  @Immutable
-  public static final Version GEODE_1_7_0 =
-      new Version("GEODE", "1.7.0", (byte) 1, (byte) 7, (byte) 0, (byte) 0, GEODE_1_7_0_ORDINAL);
-
-  private static final short GEODE_1_8_0_ORDINAL = 95;
-
-  @Immutable
-  public static final Version GEODE_1_8_0 =
-      new Version("GEODE", "1.8.0", (byte) 1, (byte) 8, (byte) 0, (byte) 0, GEODE_1_8_0_ORDINAL);
-
-  private static final short GEODE_1_9_0_ORDINAL = 100;
-
-  @Immutable
-  public static final Version GEODE_1_9_0 =
-      new Version("GEODE", "1.9.0", (byte) 1, (byte) 9, (byte) 0, (byte) 0, GEODE_1_9_0_ORDINAL);
-
-
-  private static final byte GEODE_1_10_0_ORDINAL = 105;
-
-  @Immutable
-  public static final Version GEODE_1_10_0 =
-      new Version("GEODE", "1.10.0", (byte) 1, (byte) 10, (byte) 0, (byte) 0, GEODE_1_10_0_ORDINAL);
-
-  private static final short GEODE_1_11_0_ORDINAL = 110;
-
-  @Immutable
-  public static final Version GEODE_1_11_0 =
-      new Version("GEODE", "1.11.0", (byte) 1, (byte) 11, (byte) 0, (byte) 0, GEODE_1_11_0_ORDINAL);
-
-  private static final short GEODE_1_12_0_ORDINAL = 115;
-
-  @Immutable
-  public static final Version GEODE_1_12_0 =
-      new Version("GEODE", "1.12.0", (byte) 1, (byte) 12, (byte) 0, (byte) 0, GEODE_1_12_0_ORDINAL);
-
-  private static final short GEODE_1_13_0_ORDINAL = 120;
-
-  @Immutable
-  public static final Version GEODE_1_13_0 =
-      new Version("GEODE", "1.13.0", (byte) 1, (byte) 13, (byte) 0, (byte) 0, GEODE_1_13_0_ORDINAL);
-
-  private static final short GEODE_1_14_0_ORDINAL = 125;
-
-  @Immutable
-  public static final Version GEODE_1_14_0 =
-      new Version("GEODE", "1.14.0", (byte) 1, (byte) 14, (byte) 0, (byte) 0, GEODE_1_14_0_ORDINAL);
-
-  /* NOTE: when adding a new version bump the ordinal by 5. Ordinals can be short ints */
-
-  /**
-   * This constant must be set to the most current version of the product. !!! NOTE: update
-   * HIGHEST_VERSION when changing CURRENT !!!
+  short ordinal();
+
+  /*
+   * What follows is a bunch of comparison methods phrased in terms of version age:
+   * older/newer.
    */
-  @Immutable
-  public static final Version CURRENT = GEODE_1_14_0;
 
   /**
-   * A lot of versioning code needs access to the current version's ordinal
-   */
-  @Immutable
-  public static final short CURRENT_ORDINAL = CURRENT.ordinal();
-
-  /**
-   * version ordinal for test Backward compatibility.
-   */
-  private static final short validOrdinalForTesting = 2;
-
-  @Immutable
-  public static final Version TEST_VERSION = new Version("TEST", "VERSION", (byte) 0, (byte) 0,
-      (byte) 0, (byte) 0, validOrdinalForTesting);
-
-  /** Creates a new instance of <code>Version</code> */
-  private Version(String product, String name, byte major, byte minor, byte release, byte patch,
-      short ordinal) {
-    super(ordinal);
-    this.productName = product;
-    this.name = name;
-    this.majorVersion = major;
-    this.minorVersion = minor;
-    this.release = release;
-    this.patch = patch;
-    this.methodSuffix = this.productName + "_" + this.majorVersion + "_" + this.minorVersion + "_"
-        + this.release + "_" + this.patch;
-    if (ordinal != TOKEN_ORDINAL) {
-      VALUES[ordinal()] = this;
-    }
-  }
-
-  public static Version getCurrentVersion() {
-    return CURRENT;
-  }
-
-  public static String unsupportedVersionMessage(final short ordinal) {
-    return String.format(
-        "Peer or client version with ordinal %s not supported. Highest known version is %s",
-        ordinal, CURRENT.name);
-  }
-
-  public String getMethodSuffix() {
-    return this.methodSuffix;
-  }
-
-  public String getName() {
-    return this.name;
-  }
-
-  public short getMajorVersion() {
-    return this.majorVersion;
-  }
-
-  public short getMinorVersion() {
-    return this.minorVersion;
-  }
-
-  public short getRelease() {
-    return this.release;
-  }
-
-  public short getPatch() {
-    return this.patch;
-  }
-
-  /**
-   * Returns a string representation for this <code>Version</code>.
+   * Test if this version is older than given version.
    *
-   * @return the name of this operation.
+   * @param version to compare to this version
+   * @return true if this is older than version, otherwise false.
    */
-  @Override
-  public String toString() {
-    return this.productName + " " + this.name;
-  }
-
-  public byte[] toBytes() {
-    byte[] bytes = new byte[2];
-    bytes[0] = (byte) (ordinal() >> 8);
-    bytes[1] = (byte) ordinal();
-    return bytes;
-  }
-
-  public static Iterable<? extends Version> getAllVersions() {
-    return Arrays.asList(VALUES).stream().filter(x -> x != null && x != TEST_VERSION)
-        .collect(Collectors.toList());
-  }
+  boolean isOlderThan(Version version);
 
   /**
-   * package-protected for use by Versioning factory
+   * Test if this version is not older than given version.
+   *
+   * @param version to compare to this version
+   * @return true if this is the same version or newer, otherwise false.
    */
-  static Version getKnownVersion(final short ordinal,
-      final Version returnWhenUnknown) {
-    if (ordinal == TOKEN_ORDINAL) {
-      return TOKEN;
-    }
-    if (ordinal < TOKEN_ORDINAL || ordinal >= VALUES.length || VALUES[ordinal] == null) {
-      return returnWhenUnknown;
-    }
-    return VALUES[ordinal];
-  }
+  boolean isNotOlderThan(Version version);
+
+  /**
+   * Test if this version is newer than given version.
+   *
+   * @param version to compare to this version
+   * @return true if this is newer than version, otherwise false.
+   */
+  boolean isNewerThan(Version version);
+
+  /**
+   * Test if this version is not newer than given version.
+   *
+   * @param version to compare to this version
+   * @return true if this is the same version or older, otherwise false.
+   */
+  boolean isNotNewerThan(Version version);
 
 }

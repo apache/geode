@@ -63,7 +63,7 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.cache.xmlcache.ClientCacheCreation;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
 import org.apache.geode.test.junit.categories.ClientServerTest;
@@ -354,37 +354,37 @@ public class ClientCacheFactoryJUnitTest {
     InternalDistributedMember memberID =
         (InternalDistributedMember) clientCache.getDistributedSystem().getDistributedMember();
     MemberIdentifier gmsID = memberID;
-    memberID.setVersionObjectForTest(Version.GFE_82);
-    assertThat(memberID.getVersionOrdinalObject()).isEqualTo(Version.GFE_82);
+    memberID.setVersionForTest(KnownVersion.GFE_82);
+    assertThat(memberID.getVersion()).isEqualTo(KnownVersion.GFE_82);
 
     ClientProxyMembershipID clientID = ClientProxyMembershipID.getClientId(memberID);
-    HeapDataOutputStream out = new HeapDataOutputStream(Version.GFE_82);
+    HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.GFE_82);
     DataSerializer.writeObject(clientID, out);
 
     DataInputStream in =
         new VersionedDataInputStream(new ByteArrayInputStream(out.toByteArray()),
-            Version.CURRENT);
+            KnownVersion.CURRENT);
     ClientProxyMembershipID newID = DataSerializer.readObject(in);
     InternalDistributedMember newMemberID =
         (InternalDistributedMember) newID.getDistributedMember();
-    assertThat(newMemberID.getVersionOrdinalObject()).isEqualTo(Version.GFE_82);
-    assertThat(newID.getClientVersion()).isEqualTo(Version.GFE_82);
+    assertThat(newMemberID.getVersion()).isEqualTo(KnownVersion.GFE_82);
+    assertThat(newID.getClientVersion()).isEqualTo(KnownVersion.GFE_82);
 
     assertThat(newMemberID.getUuidLeastSignificantBits()).isEqualTo(0);
     assertThat(newMemberID.getUuidMostSignificantBits()).isEqualTo(0);
 
     gmsID.setUUID(new UUID(1234L, 5678L));
-    memberID.setVersionObjectForTest(Version.CURRENT);
+    memberID.setVersionForTest(KnownVersion.CURRENT);
     clientID = ClientProxyMembershipID.getClientId(memberID);
-    out = new HeapDataOutputStream(Version.CURRENT);
+    out = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeObject(clientID, out);
 
     in = new VersionedDataInputStream(new ByteArrayInputStream(out.toByteArray()),
-        Version.CURRENT);
+        KnownVersion.CURRENT);
     newID = DataSerializer.readObject(in);
     newMemberID = (InternalDistributedMember) newID.getDistributedMember();
-    assertThat(newMemberID.getVersionOrdinalObject()).isEqualTo(Version.CURRENT);
-    assertThat(newID.getClientVersion()).isEqualTo(Version.CURRENT);
+    assertThat(newMemberID.getVersion()).isEqualTo(KnownVersion.CURRENT);
+    assertThat(newID.getClientVersion()).isEqualTo(KnownVersion.CURRENT);
 
     assertThat(newMemberID.getUuidLeastSignificantBits())
         .isEqualTo(gmsID.getUuidLeastSignificantBits());

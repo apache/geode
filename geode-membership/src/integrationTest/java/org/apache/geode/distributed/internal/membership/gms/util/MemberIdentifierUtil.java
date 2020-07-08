@@ -24,7 +24,7 @@ import org.apache.geode.distributed.internal.membership.api.MemberDataBuilder;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifierFactoryImpl;
 import org.apache.geode.distributed.internal.membership.gms.GMSMemberData;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 
 public class MemberIdentifierUtil {
   public static MemberIdentifier createMemberID(short version, int viewId, long msb, long lsb)
@@ -46,7 +46,7 @@ public class MemberIdentifierUtil {
     UUID uuid = UUID.randomUUID();
     try {
       return new MemberIdentifierFactoryImpl().create(new GMSMemberData(InetAddress.getLocalHost(),
-          port, Version.CURRENT_ORDINAL, uuid.getMostSignificantBits(),
+          port, KnownVersion.CURRENT_ORDINAL, uuid.getMostSignificantBits(),
           uuid.getLeastSignificantBits(), -1));
     } catch (UnknownHostException e) {
       throw new RuntimeException(e);
@@ -59,7 +59,7 @@ public class MemberIdentifierUtil {
   public static MemberIdentifier createMemberIDWithNoUUID(int port) {
     try {
       return new MemberIdentifierFactoryImpl().create(new GMSMemberData(InetAddress.getLocalHost(),
-          port, Version.CURRENT_ORDINAL, 0l, 0l, -1));
+          port, KnownVersion.CURRENT_ORDINAL, 0l, 0l, -1));
     } catch (UnknownHostException e) {
       throw new RuntimeException(e);
     }
