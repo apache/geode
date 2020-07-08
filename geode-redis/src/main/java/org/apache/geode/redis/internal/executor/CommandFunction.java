@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.internal.cache.execute.BucketMovedException;
 import org.apache.geode.redis.internal.RedisCommandType;
 import org.apache.geode.redis.internal.RedisStats;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
@@ -53,18 +54,22 @@ public class CommandFunction extends SingleResultRedisFunction {
   public static <T> T invoke(RedisCommandType command,
       ByteArrayWrapper key,
       Object commandArguments, Region<ByteArrayWrapper, RedisData> region) {
-    SingleResultCollector<T> resultsCollector = new SingleResultCollector<>();
-    FunctionService
-        .onRegion(region)
-        .withFilter(Collections.singleton(key))
-        .setArguments(new Object[] {command, commandArguments})
-        .withCollector(resultsCollector)
-        .execute(CommandFunction.ID)
-        .getResult();
-
-    return resultsCollector.getResult();
+    do {
+      SingleResultCollector<T> resultsCollector = new SingleResultCollector<>();
+      try {
+        FunctionService
+            .onRegion(region)
+            .withFilter(Collections.singleton(key))
+            .setArguments(new Object[] {command, commandArguments})
+            .withCollector(resultsCollector)
+            .execute(CommandFunction.ID)
+            .getResult();
+        return resultsCollector.getResult();
+      } catch (BucketMovedException ex) {
+        // try again
+      }
+    } while (true);
   }
-
 
   public CommandFunction(Region<ByteArrayWrapper, RedisData> dataRegion,
       StripedExecutor stripedExecutor,

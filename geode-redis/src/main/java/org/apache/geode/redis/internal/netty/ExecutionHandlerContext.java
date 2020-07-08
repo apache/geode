@@ -169,6 +169,15 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
         || cause instanceof RedisParametersMismatchException) {
       response = RedisResponse.error(cause.getMessage());
     } else if (cause instanceof FunctionInvocationTargetException) {
+      // This indicates a member departed
+      // Pause for a bit to give us a chance to know longer direct
+      // operations to the departed server. Client apps that receive
+      // this error response may turn around and ask the server
+      try {
+        Thread.sleep(999);
+      } catch (InterruptedException e) {
+        Thread.interrupted();
+      }
       response = RedisResponse.error(cause.getMessage());
     } else {
       if (logger.isErrorEnabled()) {
