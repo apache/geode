@@ -25,9 +25,9 @@ import org.jgroups.util.UUID;
 import org.apache.geode.distributed.internal.membership.api.MemberData;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
-import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionOrdinal;
 import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.internal.serialization.VersioningIO;
@@ -88,7 +88,7 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
    * e.g. during rolling upgrade members with old versions receive member identifiers
    * from members with new (unknown) versions.
    */
-  private transient VersionOrdinal versionOrdinal = Version.CURRENT;
+  private transient VersionOrdinal versionOrdinal = KnownVersion.CURRENT;
 
   /**
    * whether this is a partial member ID (without roles, durable attributes). We use partial IDs in
@@ -406,7 +406,7 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
     sb.append("addr=").append(inetAddr).append(";port=").append(udpPort)
         .append(";kind=").append(vmKind).append(";processId=").append(processId)
         .append(";viewId=").append(vmViewId);
-    if (getVersionOrdinal() != Version.CURRENT_ORDINAL) {
+    if (getVersionOrdinal() != KnownVersion.CURRENT_ORDINAL) {
       sb.append(";version=").append(getVersionOrdinal());
     }
     sb.append("]");
@@ -507,7 +507,7 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
 
 
   @Override
-  public void setVersion(Version v) {
+  public void setVersion(KnownVersion v) {
     setVersionOrdinal(v.ordinal());
   }
 
@@ -565,7 +565,7 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
     out.writeInt(vmViewId);
     out.writeLong(uuidMSBs);
     out.writeLong(uuidLSBs);
-    if (context.getSerializationVersion().ordinal() >= Version.GEODE_1_2_0.ordinal()) {
+    if (context.getSerializationVersion().ordinal() >= KnownVersion.GEODE_1_2_0.ordinal()) {
       out.writeByte(vmKind);
     }
   }
@@ -599,7 +599,7 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
     this.vmViewId = in.readInt();
     this.uuidMSBs = in.readLong();
     this.uuidLSBs = in.readLong();
-    if (context.getSerializationVersion().ordinal() >= Version.GEODE_1_2_0.ordinal()) {
+    if (context.getSerializationVersion().ordinal() >= KnownVersion.GEODE_1_2_0.ordinal()) {
       this.vmKind = in.readByte();
     }
     this.isPartial = true;

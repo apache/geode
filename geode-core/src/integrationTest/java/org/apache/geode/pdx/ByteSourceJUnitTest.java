@@ -33,7 +33,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSource;
 import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSourceFactory;
 import org.apache.geode.test.junit.categories.SerializationTest;
@@ -741,7 +741,7 @@ public class ByteSourceJUnitTest {
 
   @Test
   public void testSendToDataOutput() throws IOException {
-    HeapDataOutputStream hdos = new HeapDataOutputStream((Version) null);
+    HeapDataOutputStream hdos = new HeapDataOutputStream((KnownVersion) null);
     ByteSource bs = createByteSource(new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 0});
     bs.sendTo(hdos);
     assertEquals(0, bs.remaining());
@@ -751,7 +751,7 @@ public class ByteSourceJUnitTest {
 
     bs.position(1);
     bs.limit(9);
-    hdos = new HeapDataOutputStream((Version) null);
+    hdos = new HeapDataOutputStream((KnownVersion) null);
     bs.sendTo(hdos);
     assertEquals(0, bs.remaining());
     bb = hdos.toByteBuffer();

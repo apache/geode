@@ -46,9 +46,9 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.UpdateAttributesProcessor;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
-import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -557,7 +557,7 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
       this.senderEventListenerClassNames = DataSerializer.readArrayList(in);
       this.isDiskSynchronous = in.readBoolean();
       this.dispatcherThreads = in.readInt();
-      if (StaticSerialization.getVersionForDataStream(in).isOlderThan(Version.GFE_90)) {
+      if (StaticSerialization.getVersionForDataStream(in).isOlderThan(KnownVersion.GFE_90)) {
         Gateway.OrderPolicy oldOrderPolicy = DataSerializer.readObject(in);
         if (oldOrderPolicy != null) {
           if (oldOrderPolicy.name().equals(OrderPolicy.KEY.name())) {
@@ -599,7 +599,7 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
       DataSerializer.writeArrayList(senderEventListenerClassNames, out);
       out.writeBoolean(isDiskSynchronous);
       out.writeInt(dispatcherThreads);
-      if (StaticSerialization.getVersionForDataStream(out).isOlderThan(Version.GFE_90)
+      if (StaticSerialization.getVersionForDataStream(out).isOlderThan(KnownVersion.GFE_90)
           && this.orderPolicy != null) {
         String orderPolicyName = this.orderPolicy.name();
         if (orderPolicyName.equals(Gateway.OrderPolicy.KEY.name())) {
@@ -683,10 +683,11 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
     }
 
     @Immutable
-    private static final Version[] serializationVersions = new Version[] {Version.GFE_80};
+    private static final KnownVersion[] serializationVersions =
+        new KnownVersion[] {KnownVersion.GFE_80};
 
     @Override
-    public Version[] getSerializationVersions() {
+    public KnownVersion[] getSerializationVersions() {
       return serializationVersions;
     }
 

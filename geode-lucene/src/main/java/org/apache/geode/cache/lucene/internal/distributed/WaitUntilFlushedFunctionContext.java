@@ -23,8 +23,8 @@ import java.util.concurrent.TimeUnit;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.Version;
 
 /**
  * Contains function arguments for WaitUntilFlushed
@@ -87,7 +87,7 @@ public class WaitUntilFlushedFunctionContext implements DataSerializableFixedID 
   }
 
   @Override
-  public Version[] getSerializationVersions() {
+  public KnownVersion[] getSerializationVersions() {
     return null;
   }
 }

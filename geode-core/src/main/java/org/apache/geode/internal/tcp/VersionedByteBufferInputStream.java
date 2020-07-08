@@ -17,7 +17,7 @@ package org.apache.geode.internal.tcp;
 
 import java.nio.ByteBuffer;
 
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.VersionedDataStream;
 
 /**
@@ -29,26 +29,26 @@ import org.apache.geode.internal.serialization.VersionedDataStream;
 public class VersionedByteBufferInputStream extends ByteBufferInputStream
     implements VersionedDataStream {
 
-  private final Version version;
+  private final KnownVersion version;
 
   /**
-   * Create a ByteBuffer input stream whose contents are null at given product {@link Version}.
+   * Create a ByteBuffer input stream whose contents are null at given product {@link KnownVersion}.
    *
    * @param version the product version for which this stream was created
    */
-  public VersionedByteBufferInputStream(Version version) {
+  public VersionedByteBufferInputStream(KnownVersion version) {
     super();
     this.version = version;
   }
 
   /**
    * Create a ByteBuffer input stream whose contents are the given {@link ByteBuffer} at given
-   * product {@link Version}.
+   * product {@link KnownVersion}.
    *
    * @param buffer the byte buffer to read
    * @param version the product version for which this stream was created
    */
-  public VersionedByteBufferInputStream(ByteBuffer buffer, Version version) {
+  public VersionedByteBufferInputStream(ByteBuffer buffer, KnownVersion version) {
     super(buffer);
     this.version = version;
   }
@@ -57,7 +57,7 @@ public class VersionedByteBufferInputStream extends ByteBufferInputStream
    * {@inheritDoc}
    */
   @Override
-  public Version getVersion() {
+  public KnownVersion getVersion() {
     return this.version;
   }
 

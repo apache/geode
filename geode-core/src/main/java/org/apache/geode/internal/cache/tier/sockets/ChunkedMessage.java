@@ -22,7 +22,7 @@ import java.nio.ByteBuffer;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.cache.tier.MessageType;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -107,7 +107,7 @@ public class ChunkedMessage extends Message {
    *
    * @param numberOfParts The number of parts to create
    */
-  public ChunkedMessage(int numberOfParts, Version version) {
+  public ChunkedMessage(int numberOfParts, KnownVersion version) {
     super(numberOfParts, version);
   }
 
@@ -152,7 +152,7 @@ public class ChunkedMessage extends Message {
   public void setLastChunkAndNumParts(boolean lastChunk, int numParts) {
     setLastChunk(lastChunk);
     if (this.serverConnection != null
-        && this.serverConnection.getClientVersion().isNotOlderThan(Version.GFE_65)) {
+        && this.serverConnection.getClientVersion().isNotOlderThan(KnownVersion.GFE_65)) {
       // we us e three bits for number of parts in last chunk byte
       // we us e three bits for number of parts in last chunk byte
       byte localLastChunk = (byte) (numParts << 5);

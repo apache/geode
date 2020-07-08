@@ -55,7 +55,7 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.PdxSerializerObject;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.pdx.internal.AutoSerializableManager;
 import org.apache.geode.pdx.internal.PdxField;
 import org.apache.geode.pdx.internal.PdxInstanceImpl;
@@ -126,7 +126,7 @@ public class AutoSerializableJUnitTest {
     list.add("string four");
     objOut.set("string_list", list);
 
-    HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeObject(objOut, out);
 
     PdxInstance pdxIn =
@@ -178,7 +178,7 @@ public class AutoSerializableJUnitTest {
     m.put("k1", "v1");
     m.put("k2", "v2");
     m.put("k3", "v3");
-    HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeObject(m, out);
 
     Object dObj =
@@ -190,7 +190,7 @@ public class AutoSerializableJUnitTest {
   public void testMonth() throws Exception {
     setupSerializer(false, false, "org.apache.geode.pdx.AutoSerializableJUnitTest.MyMonth");
     MyMonth m = new MyMonth(1);
-    HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeObject(m, out);
 
     Object dObj =
@@ -273,7 +273,7 @@ public class AutoSerializableJUnitTest {
   public void testExternalizable() throws Exception {
     setupSerializer("org.apache.geode.pdx.AutoSerializableJUnitTest.MyExternalizable");
     MyExternalizable o = new MyExternalizable(79);
-    HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeObject(o, out);
 
     Object dObj =
@@ -300,7 +300,7 @@ public class AutoSerializableJUnitTest {
   public void testWriteReplace() throws Exception {
     setupSerializer("org.apache.geode.pdx.AutoSerializableJUnitTest.MyWriteReplace");
     MyWriteReplace o = new MyWriteReplace("79");
-    HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeObject(o, out);
 
     Object dObj =
@@ -324,7 +324,7 @@ public class AutoSerializableJUnitTest {
   public void testComparator() throws Exception {
     setupSerializer("org.apache.geode.pdx.AutoSerializableJUnitTest.MyComparator");
     TreeSet o = new TreeSet(new MyComparator());
-    HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeObject(o, out);
 
     Object dObj =
@@ -501,7 +501,7 @@ public class AutoSerializableJUnitTest {
     BigInteger bi = new BigInteger("12345678901234567890");
     BigDecimal bd = new BigDecimal("1234567890.1234567890");
     BigHolder bih = new BigHolder(bi, bd);
-    HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT);
     try {
       DataSerializer.writeObject(bih, out);
       throw new RuntimeException("expected NonPortableClassException");
@@ -524,7 +524,7 @@ public class AutoSerializableJUnitTest {
   public void testIsClassAutoSerialized() throws IOException, ClassNotFoundException {
     setupSerializer(new ExplicitClassNameAutoSerializer(false, ""), false);
     DomainObject objOut = new DomainObjectPdxAuto(4);
-    HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeObject(objOut, out);
 
     DomainObject objIn = (DomainObject) DataSerializer
@@ -549,7 +549,7 @@ public class AutoSerializableJUnitTest {
         new ExplicitIdentityAutoSerializer(false, "org.apache.geode.pdx.DomainObjectPdxAuto"),
         true);
     DomainObject objOut = new DomainObjectPdxAuto(4);
-    HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeObject(objOut, out);
     DataSerializer.writeObject(objOut, out);
 
@@ -581,7 +581,7 @@ public class AutoSerializableJUnitTest {
         new ExplicitIncludedAutoSerializer(false, "org.apache.geode.pdx.DomainObjectPdxAuto"),
         true);
     DomainObject objOut = new DomainObjectPdxAuto(4);
-    HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeObject(objOut, out);
 
     PdxInstance pi = (PdxInstance) DataSerializer
@@ -611,7 +611,7 @@ public class AutoSerializableJUnitTest {
         new ExplicitFieldNameAutoSerializer(false, "org.apache.geode.pdx.DomainObjectPdxAuto"),
         true);
     DomainObject objOut = new DomainObjectPdxAuto(4);
-    HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeObject(objOut, out);
 
     PdxInstance pi = (PdxInstance) DataSerializer
@@ -836,7 +836,7 @@ public class AutoSerializableJUnitTest {
     defaultHolder.l = 0L;
     defaultHolder.f = 0.0f;
     defaultHolder.d = 0.0;
-    HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeObject(nullHolder, out);
     PdxInstance pi =
         DataSerializer.readObject(new DataInputStream(new ByteArrayInputStream(out.toByteArray())));
@@ -846,7 +846,7 @@ public class AutoSerializableJUnitTest {
     assertFalse(nullHolder.equals(dObj));
     assertEquals(defaultHolder, dObj);
 
-    out = new HeapDataOutputStream(Version.CURRENT);
+    out = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeObject(defaultHolder, out);
     pi = DataSerializer
         .readObject(new DataInputStream(new ByteArrayInputStream(out.toByteArray())));
@@ -873,7 +873,7 @@ public class AutoSerializableJUnitTest {
     BigInteger bi = new BigInteger("12345678901234567890");
     BigDecimal bd = new BigDecimal("1234567890.1234567890");
     BigHolder bih = new BigHolder(bi, bd);
-    HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeObject(bih, out);
     System.out.println(msg + " out.size=" + out.size());
     Object dObj =
@@ -964,7 +964,7 @@ public class AutoSerializableJUnitTest {
       chm.put("key" + i, new BigHolder(i));
     }
     CHMHolder h = new CHMHolder(chm);
-    HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeObject(h, out);
     System.out.println(msg + " out.size=" + out.size());
     Object dObj =
@@ -985,7 +985,7 @@ public class AutoSerializableJUnitTest {
     DomainObject objOut = new DomainObjectPdxAuto(4);
     objOut.set("aString", "aString has a value");
 
-    HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeObject(objOut, out);
 
     // Now we want to read all fields.
@@ -1018,7 +1018,7 @@ public class AutoSerializableJUnitTest {
     DomainObjectPdxAuto objOut = new DomainObjectPdxAuto(4);
     objOut.anInteger = null;
 
-    HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeObject(objOut, out);
 
     // Now we want to read all fields.
@@ -1039,7 +1039,7 @@ public class AutoSerializableJUnitTest {
   public void testNoZeroArgConstructor() throws Exception {
     setupSerializer(stdSerializableClasses);
     DomainObject objOut = new DomainObjectPdxAutoNoDefaultConstructor(4);
-    HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT);
     try {
       DataSerializer.writeObject(objOut, out);
     } catch (NotSerializableException ex) {
@@ -1057,7 +1057,7 @@ public class AutoSerializableJUnitTest {
   public void testException() throws Exception {
     setupSerializer(stdSerializableClasses);
     DomainObject objOut = new DomainObjectBad();
-    HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT);
 
     try {
       DataSerializer.writeObject(objOut, out);
@@ -1117,7 +1117,7 @@ public class AutoSerializableJUnitTest {
     objOut.set("string_0", "test string value");
     objOut.set("long_0", 99L);
 
-    HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeObject(objOut, out);
 
     PdxInstance pdxIn =
@@ -1144,7 +1144,7 @@ public class AutoSerializableJUnitTest {
     objOut.set("string_0", "test string value");
     objOut.set("long_0", 99L);
 
-    HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeObject(objOut, out);
 
     PdxInstance pdxIn =
@@ -1172,7 +1172,7 @@ public class AutoSerializableJUnitTest {
     objOut.set("string_0", "test string value");
     objOut.set("long_0", 99L);
 
-    HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeObject(objOut, out);
 
     PdxInstance pdxIn =
@@ -1200,7 +1200,7 @@ public class AutoSerializableJUnitTest {
     objOut.set("string_0", "test string value");
     objOut.set("long_0", 99L);
 
-    HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeObject(objOut, out);
 
     PdxInstance pdxIn =
@@ -1308,7 +1308,7 @@ public class AutoSerializableJUnitTest {
     obj1.set("string_0", "test string value");
     obj1.set("long_0", 99L);
 
-    HeapDataOutputStream out1 = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream out1 = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeObject(obj1, out1);
 
     PdxInstance pdxIn = DataSerializer
@@ -1325,7 +1325,7 @@ public class AutoSerializableJUnitTest {
     // They are definitely not the same class
     assertFalse(obj1.getClass() == obj2.getClass());
 
-    HeapDataOutputStream out2 = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream out2 = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeObject(obj2, out2);
 
     pdxIn = DataSerializer

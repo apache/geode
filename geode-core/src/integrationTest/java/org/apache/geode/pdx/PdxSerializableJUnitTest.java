@@ -60,7 +60,7 @@ import org.apache.geode.internal.PdxSerializerObject;
 import org.apache.geode.internal.SystemAdmin;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.serialization.DSCODE;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSourceFactory;
 import org.apache.geode.internal.util.ArrayUtils;
 import org.apache.geode.pdx.internal.DataSize;
@@ -102,7 +102,7 @@ public class PdxSerializableJUnitTest {
     this.cache.close();
     this.cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").setPdxPersistent(true)
         .setPdxDiskStore("doesNotExist").create();
-    HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT);
     PdxSerializable object = new SimpleClass(1, (byte) 5, null);
     try {
       DataSerializer.writeObject(object, out);
@@ -284,7 +284,7 @@ public class PdxSerializableJUnitTest {
 
   @Test
   public void testByteFormatForSimpleClass() throws Exception {
-    HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT);
     PdxSerializable object = new SimpleClass(1, (byte) 5, null);
     DataSerializer.writeObject(object, out);
     int typeId = getPdxTypeIdForClass(SimpleClass.class);
@@ -335,19 +335,19 @@ public class PdxSerializableJUnitTest {
     int myInt = 1420;
     float myFloat = 123.023f;
 
-    HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT);
     SimpleClass1 pdx =
         new SimpleClass1(myFlag, myShort, myString1, myLong, myString2, myString3, myInt, myFloat);
     DataSerializer.writeObject(pdx, out);
     int typeId = getPdxTypeIdForClass(SimpleClass1.class);
 
-    HeapDataOutputStream hdos1 = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream hdos1 = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeString(myString1, hdos1);
     byte[] str1Bytes = hdos1.toByteArray();
-    HeapDataOutputStream hdos2 = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream hdos2 = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeString(myString2, hdos2);
     byte[] str2Bytes = hdos2.toByteArray();
-    HeapDataOutputStream hdos3 = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream hdos3 = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeString(myString3, hdos3);
     byte[] str3Bytes = hdos3.toByteArray();
 
@@ -562,19 +562,19 @@ public class PdxSerializableJUnitTest {
     int myInt = 1420;
     float myFloat = 123.023f;
 
-    HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT);
     SimpleClass1 pdx =
         new SimpleClass1(myFlag, myShort, myString1, myLong, myString2, myString3, myInt, myFloat);
     DataSerializer.writeObject(pdx, out);
     int typeId = getPdxTypeIdForClass(SimpleClass1.class);
 
-    HeapDataOutputStream hdos1 = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream hdos1 = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeString(myString1, hdos1);
     byte[] str1Bytes = hdos1.toByteArray();
-    HeapDataOutputStream hdos2 = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream hdos2 = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeString(myString2, hdos2);
     byte[] str2Bytes = hdos2.toByteArray();
-    HeapDataOutputStream hdos3 = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream hdos3 = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeString(myString3, hdos3);
     byte[] str3Bytes = hdos3.toByteArray();
 
@@ -773,18 +773,18 @@ public class PdxSerializableJUnitTest {
       myHashMap.put("KEY_" + i, new SimpleClass(i, (byte) 5));
     }
 
-    HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT);
     PdxSerializable pdx = new NestedPdx(myString1, myLong, myHashMap, myString2, myFloat);
     DataSerializer.writeObject(pdx, out);
     int typeId = getPdxTypeIdForClass(NestedPdx.class);
 
-    HeapDataOutputStream hdos1 = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream hdos1 = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeString(myString1, hdos1);
     byte[] str1Bytes = hdos1.toByteArray();
-    HeapDataOutputStream hdosForMap = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream hdosForMap = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeObject(myHashMap, hdosForMap);
     byte[] mapBytes = hdosForMap.toByteArray();
-    HeapDataOutputStream hdos2 = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream hdos2 = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeString(myString2, hdos2);
     byte[] str2Bytes = hdos2.toByteArray();
 
@@ -866,22 +866,22 @@ public class PdxSerializableJUnitTest {
     String myString2 = "ComplexClass1_myString2";
     float myFloat = 123.023f;
 
-    HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT);
     PdxSerializable pdx = new DSInsidePdx(myString1, myLong, myDS, myString2, myFloat);
     DataSerializer.writeObject(pdx, out);
     int typeId = getPdxTypeIdForClass(DSInsidePdx.class);
 
-    HeapDataOutputStream hdos1 = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream hdos1 = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeString(myString1, hdos1);
     byte[] str1Bytes = hdos1.toByteArray();
     System.out.println("Length of string1: " + str1Bytes.length);
 
-    HeapDataOutputStream hdos2 = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream hdos2 = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeObject(myDS, hdos2);
     byte[] dsBytes = hdos2.toByteArray();
     System.out.println("Length of DS: " + dsBytes.length);
 
-    HeapDataOutputStream hdos3 = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream hdos3 = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeString(myString2, hdos3);
     byte[] str2Bytes = hdos3.toByteArray();
     System.out.println("Length of string2: " + str2Bytes.length);
@@ -978,27 +978,27 @@ public class PdxSerializableJUnitTest {
     }
     PdxSerializable myPDX = new NestedPdx(myString1, myLong, myHashMap, myString2, myFloat);
 
-    HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializable ds = new PdxInsideDS(myString1, myLong, myPDX, myString2);
     DataSerializer.writeObject(ds, out);
 
-    HeapDataOutputStream hdosString1 = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream hdosString1 = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeString(myString1, hdosString1);
     byte[] str1Bytes = hdosString1.toByteArray();
     System.out.println("Length of string1: " + str1Bytes.length);
 
-    HeapDataOutputStream hdosMyPDX = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream hdosMyPDX = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeObject(myPDX, hdosMyPDX);
     byte[] pdxBytes = hdosMyPDX.toByteArray();
     System.out.println("Length of myPDX: " + pdxBytes.length);
 
-    HeapDataOutputStream hdosString2 = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream hdosString2 = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeString(myString2, hdosString2);
     byte[] str2Bytes = hdosString2.toByteArray();
     System.out.println("Length of string2: " + str2Bytes.length);
 
     Class classInstance = ds.getClass();
-    HeapDataOutputStream hdosClass = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream hdosClass = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeClass(classInstance, hdosClass);
     byte[] dsInitBytes = hdosClass.toByteArray();
 
@@ -1239,7 +1239,7 @@ public class PdxSerializableJUnitTest {
   }
 
   private Object serializeAndDeserialize(Object in) throws IOException, ClassNotFoundException {
-    HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream hdos = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeObject(in, hdos);
     byte[] bytes = hdos.toByteArray();
     System.out.println("Serialized bytes = " + Arrays.toString(bytes));
@@ -1666,7 +1666,7 @@ public class PdxSerializableJUnitTest {
 
   @Test
   public void testVariableFields() throws Exception {
-    HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeObject(new VariableFields(1), out);
     try {
       DataSerializer.writeObject(new VariableFields(2), out);
@@ -2041,7 +2041,7 @@ public class PdxSerializableJUnitTest {
   }
 
   private byte[] createBlob(Object o) throws IOException {
-    HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeObject(o, out);
     return out.toByteArray();
   }

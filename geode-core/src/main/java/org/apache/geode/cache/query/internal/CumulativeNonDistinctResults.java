@@ -38,8 +38,8 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.serialization.BufferDataOutputStream.LongUpdater;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.Version;
 
 /**
  * This is used as a wrapper over all the results of PR which are of non distinct type
@@ -273,7 +273,7 @@ public class CumulativeNonDistinctResults<E> implements SelectResults<E>, DataSe
   }
 
   @Override
-  public Version[] getSerializationVersions() {
+  public KnownVersion[] getSerializationVersions() {
     return null;
   }
 

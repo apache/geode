@@ -95,9 +95,9 @@ import org.apache.geode.internal.sequencelog.RegionLogger;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
-import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.internal.util.ObjectIntProcedure;
 import org.apache.geode.logging.internal.executors.LoggingThread;
@@ -339,14 +339,14 @@ public class InitialImageOperation {
       final ClusterDistributionManager dm =
           (ClusterDistributionManager) this.region.getDistributionManager();
       boolean allowDeltaGII = true;
-      if (FORCE_FULL_GII || recipient.getVersionOrdinalObject().isOlderThan(Version.GFE_80)) {
+      if (FORCE_FULL_GII || recipient.getVersionOrdinalObject().isOlderThan(KnownVersion.GFE_80)) {
         allowDeltaGII = false;
       }
       Set keysOfUnfinishedOps = null;
       RegionVersionVector received_rvv = null;
       RegionVersionVector remote_rvv = null;
       if (this.region.getConcurrencyChecksEnabled()
-          && recipient.getVersionOrdinalObject().isNotOlderThan(Version.GFE_80)) {
+          && recipient.getVersionOrdinalObject().isNotOlderThan(KnownVersion.GFE_80)) {
         if (internalBeforeRequestRVV != null
             && internalBeforeRequestRVV.getRegionName().equals(this.region.getName())) {
           internalBeforeRequestRVV.run();
@@ -747,7 +747,7 @@ public class InitialImageOperation {
           Set recipients = this.region.getCacheDistributionAdvisor().adviseReplicates();
           for (Iterator it = recipients.iterator(); it.hasNext();) {
             InternalDistributedMember mbr = (InternalDistributedMember) it.next();
-            if (mbr.getVersionOrdinalObject().isOlderThan(Version.GFE_80)) {
+            if (mbr.getVersionOrdinalObject().isOlderThan(KnownVersion.GFE_80)) {
               it.remove();
             }
           }
@@ -1191,7 +1191,7 @@ public class InitialImageOperation {
         region.recordEventState(msg.getSender(), msg.eventState);
       }
       if (msg.versionVector != null
-          && msg.getSender().getVersionOrdinalObject().isOlderThan(Version.GFE_80)
+          && msg.getSender().getVersionOrdinalObject().isOlderThan(KnownVersion.GFE_80)
           && region.getConcurrencyChecksEnabled()) {
         // for older version, save received rvv from RegionStateMessage
         logger.debug("Applying version vector to {}: {}", region.getName(), msg.versionVector);
@@ -1586,7 +1586,7 @@ public class InitialImageOperation {
 
     /** The versions in which this message was modified */
     @Immutable
-    private static final Version[] dsfidVersions = null;
+    private static final KnownVersion[] dsfidVersions = null;
 
     @Override
     public int getProcessorId() {
@@ -1600,7 +1600,7 @@ public class InitialImageOperation {
     }
 
     public boolean goWithFullGII(DistributedRegion rgn, RegionVersionVector requesterRVV) {
-      if (getSender().getVersionOrdinalObject().isOlderThan(Version.GFE_80)) {
+      if (getSender().getVersionOrdinalObject().isOlderThan(KnownVersion.GFE_80)) {
         // pre-8.0 could not handle a delta-GII
         return true;
       }
@@ -1745,7 +1745,7 @@ public class InitialImageOperation {
             if (eventState != null && eventState.size() > 0) {
               RegionStateMessage.send(dm, getSender(), this.processorId, eventState, true);
             }
-          } else if (getSender().getVersionOrdinalObject().isOlderThan(Version.GFE_80)) {
+          } else if (getSender().getVersionOrdinalObject().isOlderThan(KnownVersion.GFE_80)) {
             // older versions of the product expect a RegionStateMessage at this point
             if (rgn.getConcurrencyChecksEnabled() && this.versionVector == null
                 && !recoveringForLostMember) {
@@ -1994,8 +1994,8 @@ public class InitialImageOperation {
           it = rgn.getBestIterator(includeValues);
         }
 
-        final Version knownVersion = Versioning
-            .getKnownVersionOrDefault(sender.getVersionOrdinalObject(), Version.CURRENT);
+        final KnownVersion knownVersion = Versioning
+            .getKnownVersionOrDefault(sender.getVersionOrdinalObject(), KnownVersion.CURRENT);
 
         do {
           flowControl.acquirePermit();
@@ -2167,7 +2167,7 @@ public class InitialImageOperation {
     }
 
     @Override
-    public Version[] getSerializationVersions() {
+    public KnownVersion[] getSerializationVersions() {
       return dsfidVersions;
     }
 
@@ -2807,12 +2807,12 @@ public class InitialImageOperation {
      */
     private Map<VersionSource, Long> gcVersions;
 
-    /** the {@link Version} of the remote peer */
-    private transient Version remoteVersion;
+    /** the {@link KnownVersion} of the remote peer */
+    private transient KnownVersion remoteVersion;
 
     /** The versions in which this message was modified */
     @Immutable
-    private static final Version[] dsfidVersions = null;
+    private static final KnownVersion[] dsfidVersions = null;
 
     @Override
     public boolean getInlineProcess() {
@@ -2996,7 +2996,7 @@ public class InitialImageOperation {
     }
 
     @Override
-    public Version[] getSerializationVersions() {
+    public KnownVersion[] getSerializationVersions() {
       return dsfidVersions;
     }
   }
@@ -3148,7 +3148,7 @@ public class InitialImageOperation {
     }
 
     @Override
-    public Version[] getSerializationVersions() {
+    public KnownVersion[] getSerializationVersions() {
       return null;
     }
 
@@ -3442,7 +3442,7 @@ public class InitialImageOperation {
     }
 
     @Override
-    public Version[] getSerializationVersions() {
+    public KnownVersion[] getSerializationVersions() {
       return null;
     }
   }

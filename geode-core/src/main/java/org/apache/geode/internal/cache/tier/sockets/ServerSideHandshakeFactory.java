@@ -31,7 +31,7 @@ import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.internal.serialization.VersioningIO;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -40,18 +40,18 @@ class ServerSideHandshakeFactory {
   private static final Logger logger = LogService.getLogger();
 
   @Immutable
-  static final Version currentServerVersion = Version.CURRENT;
+  static final KnownVersion currentServerVersion = KnownVersion.CURRENT;
 
   ServerSideHandshake readHandshake(Socket socket, int timeout, CommunicationMode communicationMode,
       DistributedSystem system, SecurityService securityService) throws Exception {
     // Read the version byte from the socket
-    Version clientVersion = readClientVersion(socket, timeout, communicationMode.isWAN());
+    KnownVersion clientVersion = readClientVersion(socket, timeout, communicationMode.isWAN());
 
     if (logger.isDebugEnabled()) {
       logger.debug("Client version: {}", clientVersion);
     }
 
-    if (clientVersion.isOlderThan(Version.GFE_57)) {
+    if (clientVersion.isOlderThan(KnownVersion.GFE_57)) {
       throw new UnsupportedVersionException("Unsupported version " + clientVersion
           + "Server's current version " + currentServerVersion);
     }
@@ -60,7 +60,7 @@ class ServerSideHandshakeFactory {
         securityService);
   }
 
-  private Version readClientVersion(Socket socket, int timeout, boolean isWan)
+  private KnownVersion readClientVersion(Socket socket, int timeout, boolean isWan)
       throws IOException, VersionException {
     int soTimeout = -1;
     try {
@@ -72,11 +72,11 @@ class ServerSideHandshakeFactory {
         throw new EOFException(
             "HandShakeReader: EOF reached before client version could be read");
       }
-      final Version clientVersion = Versioning.getKnownVersionOrDefault(
+      final KnownVersion clientVersion = Versioning.getKnownVersionOrDefault(
           Versioning.getVersionOrdinal(clientVersionOrdinal), null);
       final String message;
       if (clientVersion == null) {
-        message = Version.unsupportedVersionMessage(clientVersionOrdinal);
+        message = KnownVersion.unsupportedVersionMessage(clientVersionOrdinal);
       } else {
         final Map<Integer, Command> commands = CommandInitializer.getCommands(clientVersion);
         if (commands == null) {

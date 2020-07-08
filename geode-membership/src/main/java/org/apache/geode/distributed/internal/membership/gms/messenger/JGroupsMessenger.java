@@ -91,8 +91,8 @@ import org.apache.geode.distributed.internal.membership.gms.messages.JoinRequest
 import org.apache.geode.distributed.internal.membership.gms.messages.JoinResponseMessage;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.serialization.BufferDataOutputStream;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.StaticSerialization;
-import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.internal.serialization.VersioningIO;
@@ -559,7 +559,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
         GMSUtil.parseGroups(config.getRoles(), config.getGroups()), config.getDurableClientId(),
         config.getDurableClientTimeout(),
         config.isNetworkPartitionDetectionEnabled(), isLocator,
-        Version.getCurrentVersion().ordinal(),
+        KnownVersion.getCurrentVersion().ordinal(),
         jgAddress.getUUIDMsbs(), jgAddress.getUUIDLsbs(),
         (byte) (services.getConfig().getMemberWeight() & 0xff), false, null);
     localAddress = services.getMemberFactory().create(gmsMember);
@@ -711,7 +711,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
       org.jgroups.Message jmsg;
       try {
         jmsg =
-            createJGMessage(msg, local, null, Version.getCurrentVersion().ordinal());
+            createJGMessage(msg, local, null, KnownVersion.getCurrentVersion().ordinal());
       } catch (IOException e) {
         return new HashSet<>(msg.getRecipients());
       } finally {
@@ -879,14 +879,14 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
     setMessageFlags(gfmsg, msg);
     try {
       long start = services.getStatistics().startMsgSerialization();
-      final Version version =
+      final KnownVersion version =
           Versioning.getKnownVersionOrDefault(
               Versioning.getVersionOrdinal(versionOrdinal),
-              Version.CURRENT);
+              KnownVersion.CURRENT);
       BufferDataOutputStream out_stream =
           new BufferDataOutputStream(version);
       VersioningIO.writeOrdinal(out_stream,
-          Version.getCurrentVersion().ordinal(), true);
+          KnownVersion.getCurrentVersion().ordinal(), true);
       if (encrypt != null) {
         out_stream.writeBoolean(true);
         writeEncryptedMessage(gfmsg, dst, versionOrdinal, out_stream);
@@ -942,10 +942,10 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
         StaticSerialization.writeByteArray(pk, out);
       }
 
-      final Version version =
+      final KnownVersion version =
           Versioning.getKnownVersionOrDefault(
               Versioning.getVersionOrdinal(versionOrdinal),
-              Version.CURRENT);
+              KnownVersion.CURRENT);
       BufferDataOutputStream out_stream =
           new BufferDataOutputStream(version);
       byte[] messageBytes = serializeMessage(gfmsg, out_stream);
@@ -1038,10 +1038,10 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
 
       short ordinal = VersioningIO.readOrdinal(dis);
 
-      if (ordinal < Version.getCurrentVersion().ordinal()) {
-        final Version version = Versioning.getKnownVersionOrDefault(
+      if (ordinal < KnownVersion.getCurrentVersion().ordinal()) {
+        final KnownVersion version = Versioning.getKnownVersionOrDefault(
             Versioning.getVersionOrdinal(ordinal),
-            Version.CURRENT);
+            KnownVersion.CURRENT);
         dis = new VersionedDataInputStream(dis,
             version);
       }
@@ -1138,10 +1138,10 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
       {
         DataInputStream in = new DataInputStream(new ByteArrayInputStream(data));
 
-        if (ordinal < Version.getCurrentVersion().ordinal()) {
-          final Version version = Versioning.getKnownVersionOrDefault(
+        if (ordinal < KnownVersion.getCurrentVersion().ordinal()) {
+          final KnownVersion version = Versioning.getKnownVersionOrDefault(
               Versioning.getVersionOrdinal(ordinal),
-              Version.CURRENT);
+              KnownVersion.CURRENT);
           in = new VersionedDataInputStream(in,
               version);
         }
@@ -1186,7 +1186,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
           // get the multicast message digest and pass it with the join response
           Digest digest = (Digest) this.myChannel.getProtocolStack().getTopProtocol()
               .down(Event.GET_DIGEST_EVT);
-          BufferDataOutputStream hdos = new BufferDataOutputStream(500, Version.CURRENT);
+          BufferDataOutputStream hdos = new BufferDataOutputStream(500, KnownVersion.CURRENT);
           try {
             digest.writeTo(hdos);
           } catch (Exception e) {

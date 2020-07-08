@@ -28,8 +28,8 @@ import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.Version;
 
 /**
  * Ping to check if a server is alive. It waits for a specified time before returning false.
@@ -65,7 +65,7 @@ public class ServerPingMessage extends PooledDistributionMessage {
 
     // filtered recipients
     for (InternalDistributedMember recipient : recipients) {
-      if (Version.GFE_81.compareTo(recipient.getVersionOrdinalObject()) <= 0) {
+      if (KnownVersion.GFE_81.compareTo(recipient.getVersionOrdinalObject()) <= 0) {
         filteredRecipients.add(recipient);
       }
     }

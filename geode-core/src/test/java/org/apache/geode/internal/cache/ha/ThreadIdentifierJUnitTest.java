@@ -27,7 +27,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier.WanType;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category({ClientServerTest.class})
@@ -36,7 +36,7 @@ public class ThreadIdentifierJUnitTest {
   @Test
   public void testEqualsIgnoresUUIDBytes() throws Exception {
     InternalDistributedMember id = new InternalDistributedMember(InetAddress.getLocalHost(), 1234);
-    id.setVersionObjectForTest(Version.GFE_90);
+    id.setVersionObjectForTest(KnownVersion.GFE_90);
     byte[] memberIdBytes = EventID.getMembershipId(new ClientProxyMembershipID(id));
     byte[] memberIdBytesWithoutUUID = new byte[memberIdBytes.length - (2 * 8 + 1)];// UUID bytes +
                                                                                    // weight byte

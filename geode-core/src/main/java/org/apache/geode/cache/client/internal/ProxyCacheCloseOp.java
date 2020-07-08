@@ -24,7 +24,7 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 
 public class ProxyCacheCloseOp {
 
@@ -53,7 +53,7 @@ public class ProxyCacheCloseOp {
 
     @Override
     protected void sendMessage(Connection cnx) throws Exception {
-      HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
+      HeapDataOutputStream hdos = new HeapDataOutputStream(KnownVersion.CURRENT);
       byte[] secureBytes = null;
       hdos.writeLong(cnx.getConnectionID());
       Object userId = UserAttributes.userAttributes.get().getServerToId().get(cnx.getServer());

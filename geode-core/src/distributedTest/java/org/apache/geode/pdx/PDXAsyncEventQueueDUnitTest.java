@@ -30,7 +30,7 @@ import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
@@ -150,7 +150,7 @@ public class PDXAsyncEventQueueDUnitTest extends JUnit4CacheTestCase {
         // Make sure the cache exists
         getCache();
         DataSerializer.writeObject(new SimpleClass(value, (byte) value),
-            new HeapDataOutputStream(Version.CURRENT));
+            new HeapDataOutputStream(KnownVersion.CURRENT));
         return null;
       }
     };

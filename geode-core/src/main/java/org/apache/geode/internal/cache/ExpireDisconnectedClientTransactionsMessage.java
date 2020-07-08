@@ -26,8 +26,8 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.Version;
 
 public class ExpireDisconnectedClientTransactionsMessage
     extends HighPriorityDistributionMessage {
@@ -47,7 +47,7 @@ public class ExpireDisconnectedClientTransactionsMessage
     Set newVersionRecipients = new HashSet();
     for (InternalDistributedMember recipient : recipients) {
       // to geode 1.7.0 and later version servers
-      if (recipient.getVersionOrdinalObject().isNotOlderThan(Version.GEODE_1_7_0)) {
+      if (recipient.getVersionOrdinalObject().isNotOlderThan(KnownVersion.GEODE_1_7_0)) {
         newVersionRecipients.add(recipient);
       }
     }
@@ -78,7 +78,7 @@ public class ExpireDisconnectedClientTransactionsMessage
     InternalDistributedMember sender = getSender();
     if (cache != null) {
       TXManagerImpl mgr = cache.getTXMgr();
-      if (sender.getVersionOrdinalObject().isNotOlderThan(Version.GEODE_1_7_0)) {
+      if (sender.getVersionOrdinalObject().isNotOlderThan(KnownVersion.GEODE_1_7_0)) {
         // schedule to expire disconnected client transaction.
         mgr.expireDisconnectedClientTransactions(this.txIds, false);
       } else {

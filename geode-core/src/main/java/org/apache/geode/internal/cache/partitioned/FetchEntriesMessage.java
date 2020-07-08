@@ -61,8 +61,8 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.internal.util.ObjectIntProcedure;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -178,10 +178,10 @@ public class FetchEntriesMessage extends PartitionMessage {
 
     /** The versions in which this message was modified */
     @Immutable
-    private static final Version[] dsfidVersions = null;
+    private static final KnownVersion[] dsfidVersions = null;
 
     @Override
-    public Version[] getSerializationVersions() {
+    public KnownVersion[] getSerializationVersions() {
       return dsfidVersions;
     }
 
@@ -293,7 +293,7 @@ public class FetchEntriesMessage extends PartitionMessage {
       // always write at least one chunk
       final HeapDataOutputStream mos = new HeapDataOutputStream(
           InitialImageOperation.CHUNK_SIZE_IN_BYTES + 2048, Versioning
-              .getKnownVersionOrDefault(receiver.getVersionOrdinalObject(), Version.CURRENT));
+              .getKnownVersionOrDefault(receiver.getVersionOrdinalObject(), KnownVersion.CURRENT));
       do {
         mos.reset();
 

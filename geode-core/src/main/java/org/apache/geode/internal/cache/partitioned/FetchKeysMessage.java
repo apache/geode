@@ -48,8 +48,8 @@ import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.internal.util.ObjectIntProcedure;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -215,10 +215,10 @@ public class FetchKeysMessage extends PartitionMessage {
   /**
    * Versions in which on-wire form has changed, requiring new toData/fromData methods
    */
-  public Version[] serializationVersions = null;
+  public KnownVersion[] serializationVersions = null;
 
   @Override
-  public Version[] getSerializationVersions() {
+  public KnownVersion[] getSerializationVersions() {
     return serializationVersions;
   }
 
@@ -372,7 +372,7 @@ public class FetchKeysMessage extends PartitionMessage {
       // always write at least one chunk
       final HeapDataOutputStream mos = new HeapDataOutputStream(
           InitialImageOperation.CHUNK_SIZE_IN_BYTES + 2048, Versioning
-              .getKnownVersionOrDefault(recipient.getVersionOrdinalObject(), Version.CURRENT));
+              .getKnownVersionOrDefault(recipient.getVersionOrdinalObject(), KnownVersion.CURRENT));
       do {
         mos.reset();
 

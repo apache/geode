@@ -40,7 +40,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.internal.BaseManagementService;
@@ -240,9 +240,9 @@ public class RestoreRedundancyPerformerTest {
 
 
     when(server1.getVersionOrdinalObject())
-        .thenReturn(Version.GEODE_1_2_0);
+        .thenReturn(KnownVersion.GEODE_1_2_0);
     when(server2.getVersionOrdinalObject())
-        .thenReturn(Version.GEODE_1_9_0);
+        .thenReturn(KnownVersion.GEODE_1_9_0);
 
 
     // intercept the executeFunctionAndGetFunctionResult method call on the performer

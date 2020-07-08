@@ -52,7 +52,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSourceFactory;
 import org.apache.geode.pdx.internal.PdxField;
 import org.apache.geode.pdx.internal.PdxInstanceEnum;
@@ -1226,7 +1226,7 @@ public class PdxInstanceFactoryJUnitTest {
   }
 
   private Object serializeAndDeserialize(Object in) throws IOException, ClassNotFoundException {
-    HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
+    HeapDataOutputStream hdos = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeObject(in, hdos);
     byte[] bytes = hdos.toByteArray();
     // System.out.println("Serialized bytes = " + Arrays.toString(bytes));

@@ -29,8 +29,8 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
 public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSerializableFixedID {
@@ -352,7 +352,7 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
   }
 
   @Override
-  public Version[] getSerializationVersions() {
-    return new Version[] {Version.GFE_80};
+  public KnownVersion[] getSerializationVersions() {
+    return new KnownVersion[] {KnownVersion.GFE_80};
   }
 }
