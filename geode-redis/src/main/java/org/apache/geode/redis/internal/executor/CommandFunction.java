@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionException;
+import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.internal.cache.PrimaryBucketException;
 import org.apache.geode.internal.cache.execute.BucketMovedException;
@@ -69,24 +70,42 @@ public class CommandFunction extends SingleResultRedisFunction {
         return resultsCollector.getResult();
       } catch (BucketMovedException | PrimaryBucketException ex) {
         // try again
+        continue;
       } catch (FunctionException ex) {
-        Throwable th = ex.getCause();
-        if (th == null) {
-          if (!ex.getExceptions().isEmpty()) {
-            th = ex.getExceptions().get(0);
-          }
+        if (ex.getMessage()
+            .equals("Function named " + ID + " is not registered to FunctionService")) {
+          // try again. A race exists because the data region is created first
+          // and then the function is registered.
+          continue;
         }
-        if (th != null) {
-          if (th instanceof BucketMovedException | th instanceof PrimaryBucketException) {
+        Throwable initialCause = getInitialCause(ex);
+        if (initialCause instanceof BucketMovedException
+            || initialCause instanceof PrimaryBucketException) {
+          // try again
+          continue;
+        }
+        if (initialCause instanceof FunctionInvocationTargetException) {
+          if (initialCause.getMessage().contains("PrimaryBucketException")) {
             // try again
-          } else {
-            throw ex;
+            continue;
           }
-        } else {
-          throw ex;
         }
+        throw ex;
       }
     } while (true);
+  }
+
+  public static Throwable getInitialCause(FunctionException ex) {
+    Throwable result = ex.getCause();
+    while (result != null && result.getCause() != null) {
+      result = result.getCause();
+    }
+    if (result == null) {
+      if (!ex.getExceptions().isEmpty()) {
+        result = ex.getExceptions().get(0);
+      }
+    }
+    return result;
   }
 
   public CommandFunction(Region<ByteArrayWrapper, RedisData> dataRegion,

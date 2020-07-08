@@ -87,7 +87,7 @@ public class SessionExpirationDUnitTest extends SessionDUnitTest {
   }
 
   private void waitForTheSessionToExpire(String sessionId) {
-    GeodeAwaitility.await().atMost((SHORT_SESSION_TIMEOUT + 5), TimeUnit.SECONDS)
+    GeodeAwaitility.await().ignoreExceptions().atMost((SHORT_SESSION_TIMEOUT + 5), TimeUnit.SECONDS)
         .until(
             () -> jedisConnetedToServer1.ttl("spring:session:sessions:expires:" + sessionId) < 0);
   }

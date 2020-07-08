@@ -42,6 +42,7 @@ import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisStats;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.data.RedisDataTypeMismatchException;
+import org.apache.geode.redis.internal.executor.CommandFunction;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.pubsub.PubSub;
 
@@ -141,13 +142,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     RedisResponse response;
 
     if (cause instanceof FunctionException) {
-      Throwable th = cause.getCause();
-      if (th == null) {
-        FunctionException functionException = (FunctionException) cause;
-        if (!functionException.getExceptions().isEmpty()) {
-          th = functionException.getExceptions().get(0);
-        }
-      }
+      Throwable th = CommandFunction.getInitialCause((FunctionException) cause);
       if (th != null) {
         cause = th;
       }

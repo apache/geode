@@ -159,7 +159,11 @@ public abstract class SessionDUnitTest {
             .getBody();
         sesssionObtained = true;
       } catch (HttpServerErrorException e) {
-        // retry
+        if (e.getMessage().contains("memberDeparted")) {
+          // retry
+        } else {
+          throw e;
+        }
       }
     } while (!sesssionObtained);
     return responseBody;
@@ -169,12 +173,24 @@ public abstract class SessionDUnitTest {
     HttpHeaders requestHeaders = new HttpHeaders();
     requestHeaders.add("Cookie", sessionCookie);
     HttpEntity<String> request = new HttpEntity<>(note, requestHeaders);
-    new RestTemplate()
-        .postForEntity(
-            "http://localhost:" + ports.get(sessionApp) + "/addSessionNote",
-            request,
-            String.class)
-        .getHeaders();
+    boolean noteAdded = false;
+    do {
+      try {
+        new RestTemplate()
+            .postForEntity(
+                "http://localhost:" + ports.get(sessionApp) + "/addSessionNote",
+                request,
+                String.class)
+            .getHeaders();
+        noteAdded = true;
+      } catch (HttpServerErrorException e) {
+        if (e.getMessage().contains("memberDeparted")) {
+          // retry
+        } else {
+          throw e;
+        }
+      }
+    } while (!noteAdded);
   }
 
   protected String getSessionId(String sessionCookie) {
