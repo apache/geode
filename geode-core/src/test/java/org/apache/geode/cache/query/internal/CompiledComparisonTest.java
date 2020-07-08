@@ -25,6 +25,8 @@ import static org.mockito.Mockito.when;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.cache.EntryDestroyedException;
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
@@ -104,5 +106,27 @@ public class CompiledComparisonTest {
     doReturn(indexInfos).when(compiledComparison).getIndexInfo(queryExecutionContext);
 
     assertThat(compiledComparison.getSizeEstimate(queryExecutionContext)).isEqualTo(15);
+  }
+
+  @Test
+  public void evaluateHandlesEntryDestroyedExceptionThrownByRegionEntryGetValue()
+      throws NameResolutionException, TypeMismatchException, QueryInvocationTargetException,
+      FunctionDomainException {
+    CompiledValue left = mock(CompiledValue.class);
+    CompiledValue right = mock(CompiledValue.class);
+
+    ExecutionContext context = mock(ExecutionContext.class);
+    when(context.isCqQueryContext()).thenReturn(true);
+    Region.Entry<?, ?> leftEntry = mock(Region.Entry.class);
+    when(left.evaluate(context)).thenReturn(leftEntry);
+    when(leftEntry.getValue()).thenThrow(new EntryDestroyedException());
+    Region.Entry<?, ?> rightEntry = mock(Region.Entry.class);
+    when(right.evaluate(context)).thenReturn(rightEntry);
+    when(rightEntry.getValue()).thenThrow(new EntryDestroyedException());
+
+    CompiledComparison comparison =
+        spy(new CompiledComparison(left, right, OQLLexerTokenTypes.TOK_EQ));
+
+    comparison.evaluate(context);
   }
 }
