@@ -185,7 +185,7 @@ Export logs to a given directory.
 
 All files that have logs in the specified time range will be exported. If no time range is specified, all logs will be exported.
 
-The `--dir` parameter specifies a local directory to which log files will be written. This is used only when you are exporting logs using an http connection.  If executed over http, the zip archive will be saved in the specified directory on the user's client machine. If not specified, logs are written to the location specified by the `user.dir` system property. When the command is executed over JMX, logs will be saved as `exportedlogs_xxx.zip` in the connected locator's working directory.
+The `--dir` parameter specifies a local directory to which log files will be written. This is used only when you are exporting logs using an http connection.  If executed over http, the zip archive will be saved in the specified directory on the user's client machine. If not specified, logs are written to the location specified by the `user.dir` system property. When the command is executed over JMX, logs will be saved as `exportedLogs_xxx.zip` in the connected locator's working directory.
 
 **Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
 
