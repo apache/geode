@@ -1112,7 +1112,8 @@ public class QueueManagerImpl implements QueueManager {
             .set(((DefaultQueryService) this.pool.getQueryService()).getUserAttributes(name));
       }
       try {
-        if (((CqStateImpl) cqi.getState()).getState() != CqStateImpl.INIT) {
+        if (((CqStateImpl) cqi.getState()).getState() != CqStateImpl.INIT
+            && cqi.isDurable() == isDurable) {
           cqi.createOn(recoveredConnection, isDurable);
         }
       } finally {
