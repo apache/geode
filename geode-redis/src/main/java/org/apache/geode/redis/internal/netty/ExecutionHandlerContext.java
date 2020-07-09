@@ -141,7 +141,8 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private RedisResponse getExceptionResponse(ChannelHandlerContext ctx, Throwable cause) {
     RedisResponse response;
 
-    if (cause instanceof FunctionException) {
+    if (cause instanceof FunctionException
+        && !(cause instanceof FunctionInvocationTargetException)) {
       Throwable th = CommandFunction.getInitialCause((FunctionException) cause);
       if (th != null) {
         cause = th;
@@ -173,7 +174,11 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       } catch (InterruptedException e) {
         Thread.interrupted();
       }
-      response = RedisResponse.error(cause.getMessage());
+      String errorMsg = cause.getMessage();
+      if (!errorMsg.contains("memberDeparted")) {
+        errorMsg = "memberDeparted: " + errorMsg;
+      }
+      response = RedisResponse.error(errorMsg);
     } else {
       if (logger.isErrorEnabled()) {
         logger.error("GeodeRedisServer-Unexpected error handler for " + ctx.channel(), cause);

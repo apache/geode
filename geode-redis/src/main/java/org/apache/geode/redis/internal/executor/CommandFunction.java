@@ -71,6 +71,10 @@ public class CommandFunction extends SingleResultRedisFunction {
       } catch (BucketMovedException | PrimaryBucketException ex) {
         // try again
         continue;
+      } catch (FunctionInvocationTargetException ex) {
+        // don't try again; we need to application
+        // to decide if the operation needs to be done again.
+        throw ex;
       } catch (FunctionException ex) {
         if (ex.getMessage()
             .equals("Function named " + ID + " is not registered to FunctionService")) {
@@ -83,12 +87,6 @@ public class CommandFunction extends SingleResultRedisFunction {
             || initialCause instanceof PrimaryBucketException) {
           // try again
           continue;
-        }
-        if (initialCause instanceof FunctionInvocationTargetException) {
-          if (initialCause.getMessage().contains("PrimaryBucketException")) {
-            // try again
-            continue;
-          }
         }
         throw ex;
       }
