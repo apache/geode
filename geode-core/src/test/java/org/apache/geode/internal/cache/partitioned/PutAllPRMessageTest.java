@@ -15,8 +15,7 @@
 package org.apache.geode.internal.cache.partitioned;
 
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
@@ -138,12 +137,9 @@ public class PutAllPRMessageTest {
     when(cache.getDistributedSystem()).thenReturn(ids);
     when(ids.getOffHeapStore()).thenReturn(null);
 
-    try {
-      message.doLocalPutAll(partitionedRegion, mock(InternalDistributedMember.class), 1);
-      fail("Expect PrimaryBucketException");
-    } catch (Exception e) {
-      assertThat(e instanceof PrimaryBucketException);
-    }
+    assertThatThrownBy(
+        () -> message.doLocalPutAll(partitionedRegion, mock(InternalDistributedMember.class), 1))
+            .isInstanceOf(PrimaryBucketException.class);
 
     InOrder inOrder = inOrder(bucketRegion);
     inOrder.verify(bucketRegion).waitUntilLocked(keys);
