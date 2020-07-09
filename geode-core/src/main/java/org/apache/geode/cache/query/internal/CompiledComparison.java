@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.FunctionDomainException;
@@ -85,10 +86,18 @@ public class CompiledComparison extends AbstractCompiledValue
     Object right = _right.evaluate(context);
 
     if (context.isCqQueryContext() && left instanceof Region.Entry) {
-      left = ((Region.Entry) left).getValue();
+      try {
+        left = ((Region.Entry<?, ?>) left).getValue();
+      } catch (EntryDestroyedException ex) {
+        left = null;
+      }
     }
     if (context.isCqQueryContext() && right instanceof Region.Entry) {
-      right = ((Region.Entry) right).getValue();
+      try {
+        right = ((Region.Entry<?, ?>) right).getValue();
+      } catch (EntryDestroyedException ex) {
+        right = null;
+      }
     }
 
     if (left == null || right == null) {
