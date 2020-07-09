@@ -176,7 +176,7 @@ resources:
   source:
     branch: {{benchmarks.benchmark_branch}}
     depth: 1
-    uri: https://github.com/apache/geode-benchmarks.git
+    uri: https://github.com/((geode-fork))/geode-benchmarks.git
 - name: geode-build-version
   type: semver
   source:
@@ -487,6 +487,7 @@ jobs:
           FLAGS: {{ run_var.flag }}
           TAG_POSTFIX: {{ run_var.title }}
           TEST_OPTIONS: {{ run_var.options }}
+          PURPOSE: ((pipeline-prefix))geode-benchmarks
         run:
           path: geode-ci/ci/scripts/run_benchmarks.sh
         inputs:

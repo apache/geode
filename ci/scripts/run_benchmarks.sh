@@ -34,10 +34,15 @@ source concourse-metadata-resource/concourse_metadata
 CLUSTER_TAG="${BUILD_PIPELINE_NAME}-${BUILD_JOB_NAME}-${BUILD_NAME}-${BUILD_ID}${TAG_POSTFIX}"
 RESULTS_DIR=$(pwd)/results/benchmarks-${CLUSTER_TAG}
 
+if [[ ! -z "${PURPOSE}" ]]; then
+  PURPOSE_OPTION="-p ${PURPOSE}"
+fi
+
 CLUSTER_COUNT=4
 BENCHMARKS_BRANCH=${BENCHMARKS_BRANCH:-develop}
 
 GEODE_REPO=${GEODE_REPO:-$(cd geode && git remote get-url origin)}
+BENCHMARKS_REPO=${BENCHMARKS_REPO:-$(cd geode-benchmarks && git remote get-url origin)}
 BASELINE_REPO=${BASELINE_REPO:-${GEODE_REPO}}
 
 pushd geode
@@ -47,7 +52,7 @@ popd
 input="$(pwd)/results/failedTests"
 
 pushd geode-benchmarks/infrastructure/scripts/aws/
-./launch_cluster.sh -t ${CLUSTER_TAG} -c ${CLUSTER_COUNT} --ci
+./launch_cluster.sh -t ${CLUSTER_TAG} -c ${CLUSTER_COUNT} ${PURPOSE_OPTION} --ci
 
 # test retry loop - Check if any tests have failed. If so, overwrite the TEST_OPTIONS with only the
 # failed tests. Test failures only result in an exit code of 1 when on the last iteration of loop.
@@ -80,7 +85,7 @@ do
 
   ./run_on_cluster.sh -t ${CLUSTER_TAG} -- pkill -9 java
   ./run_on_cluster.sh -t ${CLUSTER_TAG} -- rm /home/geode/locator10334view.dat;
-  ./run_against_baseline.sh -t ${CLUSTER_TAG} -b ${GEODE_SHA} -r ${GEODE_REPO} ${BASELINE_OPTION} -e ${BENCHMARKS_BRANCH} -o ${RESULTS_DIR} -m "'source':'geode-ci',${METADATA_BASELINE},'baseline_branch':'${BASELINE_BRANCH}','geode_branch':'${GEODE_SHA}'" --ci -- ${FLAGS} ${TEST_OPTIONS}
+  ./run_against_baseline.sh -t ${CLUSTER_TAG} -b ${GEODE_SHA} -r ${GEODE_REPO} -p ${BENCHMARKS_REPO} ${BASELINE_OPTION} -e ${BENCHMARKS_BRANCH} -o ${RESULTS_DIR} -m "'source':'geode-ci',${METADATA_BASELINE},'baseline_branch':'${BASELINE_BRANCH}','geode_branch':'${GEODE_SHA}'" --ci -- ${FLAGS} ${TEST_OPTIONS}
 
   if [[ $? -eq 0 ]]; then
     break;

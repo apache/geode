@@ -108,16 +108,37 @@ YML
 
   python3 ../render.py jinja.template.yml --variable-file ../shared/jinja.variables.yml repository.yml pipelineProperties.yml --environment ../shared/ --output ${SCRIPTDIR}/generated-pipeline.yml --debug || exit 1
 
+  unamestr=$(uname)
+  platform='unknown'
+  if [[ "${unamestr}" == 'Darwin' ]]; then
+    platform='darwin'
+  elif [[ "${unamestr}" == 'Linux' ]]; then
+    platform='linux'
+  fi
+
+  FLY_URL="${CONCOURSE_URL}/api/v1/cli?arch=amd64&platform=${platform}"
+  FLY="${SCRIPTDIR}/fly"
+  if [[ ! -e "${FLY}" ]]; then
+    curl -so ${FLY} ${FLY_URL}
+  fi
+  chmod +x ${FLY}
+  set +e
+  if [[ ! $(${FLY} targets | grep "${FLY_TARGET}") ]]; then
+    echo "Creating target for ${FLY_TARGET}"
+    ${FLY} -t ${FLY_TARGET} login -c "${CONCOURSE_URL}"
+  else
+    echo "Target ${FLY_TARGET} already exists."
+  fi
+
   set -e
   if [[ ${UPSTREAM_FORK} != "apache" ]]; then
-    fly -t ${FLY_TARGET} status || \
-    fly -t ${FLY_TARGET} login \
+    ${FLY} -t ${FLY_TARGET} status || \
+    ${FLY} -t ${FLY_TARGET} login \
            --team-name ${CONCOURSE_TEAM} \
            --concourse-url=${CONCOURSE_URL}
   fi
 
-  fly -t ${FLY_TARGET} sync
-  fly -t ${FLY_TARGET} set-pipeline \
+  ${FLY} -t ${FLY_TARGET} set-pipeline \
     -p ${META_PIPELINE} \
     --config ${SCRIPTDIR}/generated-pipeline.yml \
     --var artifact-bucket=${ARTIFACT_BUCKET} \
@@ -145,19 +166,19 @@ popd 2>&1 > /dev/null
 function jobStatus {
   PIPELINE=$1
   JOB=$2
-  fly jobs -t ${FLY_TARGET} -p ${PIPELINE}|awk "/${JOB}/"'{if($2=="yes")print "paused";else if($4!="n/a")print $4; else print $3}'
+  ${FLY} jobs -t ${FLY_TARGET} -p ${PIPELINE}|awk "/${JOB}/"'{if($2=="yes")print "paused";else if($4!="n/a")print $4; else print $3}'
 }
 
 function triggerJob {
   PIPELINE=$1
   JOB=$2
-  (set -x ; fly trigger-job -t ${FLY_TARGET} -j ${PIPELINE}/${JOB})
+  (set -x ; ${FLY} trigger-job -t ${FLY_TARGET} -j ${PIPELINE}/${JOB})
 }
 
 function pauseJob {
   PIPELINE=$1
   JOB=$2
-  (set -x ; fly pause-job -t ${FLY_TARGET} -j ${PIPELINE}/${JOB})
+  (set -x ; ${FLY} pause-job -t ${FLY_TARGET} -j ${PIPELINE}/${JOB})
 }
 
 function pauseJobs {
@@ -180,7 +201,7 @@ function pauseNewJobs {
 function unpauseJob {
   PIPELINE=$1
   JOB=$2
-  (set -x ; fly unpause-job -t ${FLY_TARGET} -j ${PIPELINE}/${JOB})
+  (set -x ; ${FLY} unpause-job -t ${FLY_TARGET} -j ${PIPELINE}/${JOB})
 }
 
 function unpauseJobs {
@@ -193,12 +214,12 @@ function unpauseJobs {
 
 function unpausePipeline {
   PIPELINE=$1
-  (set -x ; fly -t ${FLY_TARGET} unpause-pipeline -p ${PIPELINE})
+  (set -x ; ${FLY} -t ${FLY_TARGET} unpause-pipeline -p ${PIPELINE})
 }
 
 function exposePipeline {
   PIPELINE=$1
-  (set -x ; fly -t ${FLY_TARGET} expose-pipeline -p ${PIPELINE})
+  (set -x ; ${FLY} -t ${FLY_TARGET} expose-pipeline -p ${PIPELINE})
 }
 
 function exposePipelines {
