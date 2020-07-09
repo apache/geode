@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.executor.set.RedisSetCommands;
 import org.apache.geode.redis.internal.executor.set.RedisSetCommandsFunctionInvoker;
@@ -81,6 +82,7 @@ class NullRedisSet extends RedisSet {
   }
 
   @Override
+  @VisibleForTesting
   Set<ByteArrayWrapper> smembers() {
     // some callers want to be able to modify the set returned
     return new HashSet<>();

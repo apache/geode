@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
@@ -258,6 +259,7 @@ public class RedisSet extends AbstractRedisData {
    *
    * @return a set containing all the members in this set
    */
+  @VisibleForTesting
   Set<ByteArrayWrapper> smembers() {
     return new HashSet<>(members);
   }
