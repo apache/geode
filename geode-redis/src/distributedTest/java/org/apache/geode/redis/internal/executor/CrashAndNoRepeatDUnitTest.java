@@ -26,6 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Properties;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.RedisClient;
@@ -255,6 +256,18 @@ public class CrashAndNoRepeatDUnitTest {
     future3.get();
   }
 
+  private <T> T doWithRetry(Supplier<T> supplier) {
+    while (true) {
+      try {
+        return supplier.get();
+      } catch (RedisCommandExecutionException ex) {
+        if (!ex.getMessage().contains("memberDeparted")) {
+          throw ex;
+        }
+      }
+    }
+  }
+
   private void renamePerformAndVerify(int index, int minimumIterations, AtomicBoolean isRunning) {
     String newKey = null;
     String baseKey = "rename-key-" + index;
@@ -269,7 +282,7 @@ public class CrashAndNoRepeatDUnitTest {
         iterationCount += 1;
       } catch (RedisCommandExecutionException e) {
         if (e.getMessage().contains("memberDeparted")) {
-          if (commands.exists(oldKey) == 0) {
+          if (doWithRetry(() -> commands.exists(oldKey)) == 0) {
             iterationCount += 1;
           }
         } else if (e.getMessage().contains("no such key")) {
@@ -297,7 +310,7 @@ public class CrashAndNoRepeatDUnitTest {
         iterationCount += 1;
       } catch (RedisCommandExecutionException e) {
         if (e.getMessage().contains("memberDeparted")) {
-          if (commands.get(key).endsWith(appendString)) {
+          if (doWithRetry(() -> commands.get(key)).endsWith(appendString)) {
             iterationCount += 1;
           }
         } else {
