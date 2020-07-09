@@ -37,10 +37,6 @@ public class ExpireAtExecutor extends AbstractExecutor implements Extendable {
     List<byte[]> commandElems = command.getProcessedCommand();
     int TIMESTAMP_INDEX = 2;
 
-    if (commandElems.size() != 3) {
-      return RedisResponse.error(getArgsError());
-    }
-
     ByteArrayWrapper wKey = command.getKey();
 
     byte[] timestampByteArray = commandElems.get(TIMESTAMP_INDEX);

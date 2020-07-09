@@ -29,12 +29,12 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.management.internal.cli.CommandManager;
+import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.security.NotAuthorizedException;
 
 public class OnlineCommandProcessorTest {
-
-  Properties properties;
   SecurityService securityService;
   CommandExecutor executor;
   OnlineCommandProcessor onlineCommandProcessor;
@@ -45,14 +45,14 @@ public class OnlineCommandProcessorTest {
 
   @Before
   public void before() {
-    properties = new Properties();
     securityService = mock(SecurityService.class);
+    GfshParser gfshParser = new GfshParser(new CommandManager(new Properties(), null));
     executor = mock(CommandExecutor.class);
     result = mock(ResultModel.class);
     when(executor.execute(any())).thenReturn(result);
 
     onlineCommandProcessor =
-        new OnlineCommandProcessor(properties, securityService, executor, null);
+        new OnlineCommandProcessor(gfshParser, securityService, executor);
   }
 
   @Test

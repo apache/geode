@@ -1073,7 +1073,8 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
   private static void assertVersion(GemFireCache cache, short ordinal) {
     DistributedSystem system = cache.getDistributedSystem();
     int thisOrdinal =
-        ((InternalDistributedMember) system.getDistributedMember()).getVersionObject().ordinal();
+        ((InternalDistributedMember) system.getDistributedMember()).getVersionOrdinalObject()
+            .ordinal();
     if (ordinal != thisOrdinal) {
       throw new Error(
           "Version ordinal:" + thisOrdinal + " was not the expected ordinal of:" + ordinal);
@@ -1185,6 +1186,8 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
     props.setProperty(DistributionConfig.LOCATORS_NAME, locatorsString);
     props.setProperty(DistributionConfig.LOG_LEVEL_NAME, DUnitLauncher.logLevel);
     props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, enableCC + "");
+    // do not start http service to avoid port conflict between upgrade tests
+    props.setProperty(DistributionConfig.HTTP_SERVICE_PORT_NAME, "0");
     return props;
   }
 

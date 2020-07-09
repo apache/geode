@@ -2,13 +2,13 @@
 
 This document contains instructions for building and viewing the Apache Geode User Guide locally.
 
-Apache Geode provides the full source for the Apache Geode User Guide in markdown format (see `{geode-project-dir}/geode-docs/CONTRIBUTE.md`). For every Apache Geode release the user guide is built and published to http://geode.apache.org/docs/. Users can build the markdown into an HTML user guide using the provided Docker image, [Bookbinder](https://github.com/pivotal-cf/bookbinder), and the instructions below.
+Apache Geode provides the full source for the Apache Geode User Guide in markdown format (see `{geode-project-dir}/geode-docs/CONTRIBUTE.md`). For every Apache Geode release the user guide is built and published to http://geode.apache.org/docs/. Users can build the markdown into an HTML user guide by following the instructions below. The tooling builds upon a Docker image that includes [Bookbinder](https://github.com/pivotal-cf/bookbinder) and everything needed to run it. No local version of Ruby or bookbinder is needed.
 
 The User Guide built in this way reflects any local updates you have made to the documentation source files in your local Apache Geode repository.
 
 ## Building the User Guide
 
-The `build-docs.sh` script invokes Bookbinder to transform the markdown files to HTML using Docker, which has been provisioned with Bookbinder and Ruby. To build the guide, run the script from a shell prompt:
+To build the guide, open a shell, cd into this directoy and run
 
 ```bash
 $ ./build-docs.sh

@@ -17,8 +17,6 @@ package org.apache.geode.test.version;
 import java.io.Serializable;
 import java.util.Objects;
 
-import org.apache.geode.internal.serialization.Version;
-
 public class TestVersion implements Comparable, Serializable {
   public static final TestVersion CURRENT_VERSION = new TestVersion(VersionManager.CURRENT_VERSION);
 
@@ -49,15 +47,6 @@ public class TestVersion implements Comparable, Serializable {
    */
   public static int compare(String version1, String version2) {
     return new TestVersion(version1).compareTo(new TestVersion(version2));
-  }
-
-  public boolean isSameAs(Version version) {
-    if (equals(CURRENT_VERSION) && version.equals(Version.getCurrentVersion())) {
-      return true;
-    }
-    return release == version.getRelease()
-        && minor == version.getMinorVersion()
-        && major == version.getMajorVersion();
   }
 
   @Override

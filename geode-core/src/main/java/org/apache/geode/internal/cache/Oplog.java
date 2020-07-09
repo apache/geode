@@ -104,8 +104,9 @@ import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.sequencelog.EntryLogger;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
-import org.apache.geode.internal.serialization.UnsupportedSerializationVersionException;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.Versioning;
+import org.apache.geode.internal.serialization.VersioningIO;
 import org.apache.geode.internal.shared.NativeCalls;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -937,17 +938,10 @@ public class Oplog implements CompactableOplog, Flushable {
         // this.crf.raf.seek(this.crf.currSize);
       } else if (!offline) {
         // drf exists but crf has been deleted (because it was empty).
+        // I don't think the drf needs to be opened. It is only used during recovery.
+        // At some point the compacter may identify that it can be deleted.
         this.crf.RAFClosed = true;
         deleteCRF();
-
-        // The drf file needs to be deleted (see GEODE-8029).
-        // If compaction is not enabled, or if the compaction-threshold is never reached, there
-        // will be orphaned drf files that are not automatically deleted (unless a manual
-        // compaction is executed), in which case a later recovery might fail when the amount of
-        // deleted records is too high (805306401).
-        setHasDeletes(false);
-        deleteDRF();
-
         this.closed = true;
         this.deleted.set(true);
       }
@@ -2077,13 +2071,13 @@ public class Oplog implements CompactableOplog, Flushable {
   }
 
   private Version readProductVersionRecord(DataInput dis, File f) throws IOException {
-    Version recoveredGFVersion;
-    short ver = Version.readOrdinal(dis);
-    try {
-      recoveredGFVersion = Version.fromOrdinal(ver);
-    } catch (UnsupportedSerializationVersionException e) {
+    short ver = VersioningIO.readOrdinal(dis);
+    final Version recoveredGFVersion =
+        Versioning.getKnownVersionOrDefault(
+            Versioning.getVersionOrdinal(ver), null);
+    if (recoveredGFVersion == null) {
       throw new DiskAccessException(
-          String.format("Unknown version ordinal %s found when recovering Oplogs", ver), e,
+          String.format("Unknown version ordinal %s found when recovering Oplogs", ver),
           getParent());
     }
     if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
@@ -3922,15 +3916,15 @@ public class Oplog implements CompactableOplog, Flushable {
       dataVersion = Version.CURRENT;
     }
     if (this.gfversion == dataVersion) {
-      this.gfversion.writeOrdinal(this.krf.dos, false);
+      VersioningIO.writeOrdinal(this.krf.dos, this.gfversion.ordinal(), false);
     } else {
-      Version.TOKEN.writeOrdinal(this.krf.dos, false);
+      VersioningIO.writeOrdinal(this.krf.dos, Version.TOKEN.ordinal(), false);
       this.krf.dos.writeByte(END_OF_RECORD_ID);
       this.krf.dos.writeByte(OPLOG_GEMFIRE_VERSION);
-      this.gfversion.writeOrdinal(this.krf.dos, false);
+      VersioningIO.writeOrdinal(this.krf.dos, this.gfversion.ordinal(), false);
       this.krf.dos.writeByte(END_OF_RECORD_ID);
       this.krf.dos.writeByte(OPLOG_GEMFIRE_VERSION);
-      dataVersion.writeOrdinal(this.krf.dos, false);
+      VersioningIO.writeOrdinal(this.krf.dos, dataVersion.ordinal(), false);
     }
     this.krf.dos.writeByte(END_OF_RECORD_ID);
 
@@ -6582,7 +6576,7 @@ public class Oplog implements CompactableOplog, Flushable {
         flushNoSync(olf);
       }
       // don't compress since we setup fixed size of buffers
-      Version.writeOrdinal(bb, ordinal, false);
+      VersioningIO.writeOrdinal(bb, ordinal, false);
     }
 
     private void writeInt(OplogFile olf, int v) throws IOException {
@@ -7227,7 +7221,8 @@ public class Oplog implements CompactableOplog, Flushable {
 
     @Override
     public boolean fillInValue(InternalRegion region, InitialImageOperation.Entry entry,
-        ByteArrayDataInput in, DistributionManager distributionManager, final Version version) {
+        ByteArrayDataInput in, DistributionManager distributionManager,
+        final Version version) {
       return false;
     }
 

@@ -53,6 +53,7 @@ import org.apache.geode.internal.serialization.ObjectDeserializer;
 import org.apache.geode.internal.serialization.ObjectSerializer;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
+import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -452,7 +453,10 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID>, Tcp
       } else if (version > currentVersion) {
         return false;
       } else {
-        Version geodeVersion = Version.fromOrdinalNoThrow((short) version, false);
+        Version geodeVersion =
+            Versioning.getKnownVersionOrDefault(
+                Versioning.getVersionOrdinal((short) version),
+                Version.CURRENT);
         logger.info("Peer locator found that persistent view was written with version {}",
             geodeVersion);
         if (Version.GEODE_1_11_0.equals(geodeVersion)) {

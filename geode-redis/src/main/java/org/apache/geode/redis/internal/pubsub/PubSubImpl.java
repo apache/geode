@@ -19,6 +19,7 @@ package org.apache.geode.redis.internal.pubsub;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
@@ -60,7 +61,7 @@ public class PubSubImpl implements PubSub {
   @Override
   public long publish(
       Region<ByteArrayWrapper, RedisData> dataRegion,
-      String channel, byte[] message) {
+      byte[] channel, byte[] message) {
     PartitionRegionInfo info = PartitionRegionHelper.getPartitionRegionInfo(dataRegion);
     Set<DistributedMember> membersWithDataRegion = new HashSet<>();
     for (PartitionMemberInfo memberInfo : info.getPartitionMemberInfo()) {
@@ -73,6 +74,7 @@ public class PubSubImpl implements PubSub {
         .execute(REDIS_PUB_SUB_FUNCTION_ID);
 
     List<Long> subscriberCounts = null;
+
     try {
       subscriberCounts = subscriberCountCollector.getResult();
     } catch (Exception e) {
@@ -84,24 +86,13 @@ public class PubSubImpl implements PubSub {
   }
 
   @Override
-  public long subscribe(String channel, ExecutionHandlerContext context, Client client) {
-    if (subscriptions.exists(channel, client)) {
-      return subscriptions.findSubscriptions(client).size();
-    }
-    Subscription subscription = new ChannelSubscription(client, channel, context);
-    subscriptions.add(subscription);
-    return subscriptions.findSubscriptions(client).size();
+  public long subscribe(byte[] channel, ExecutionHandlerContext context, Client client) {
+    return subscriptions.subscribe(channel, context, client);
   }
 
   @Override
   public long psubscribe(GlobPattern pattern, ExecutionHandlerContext context, Client client) {
-    if (subscriptions.exists(pattern, client)) {
-      return subscriptions.findSubscriptions(client).size();
-    }
-    Subscription subscription = new PatternSubscription(client, pattern, context);
-    subscriptions.add(subscription);
-
-    return subscriptions.findSubscriptions(client).size();
+    return subscriptions.psubscribe(pattern, context, client);
   }
 
   private void registerPublishFunction() {
@@ -115,7 +106,7 @@ public class PubSubImpl implements PubSub {
       public void execute(FunctionContext<Object[]> context) {
         Object[] publishMessage = context.getArguments();
         long subscriberCount =
-            publishMessageToSubscribers((String) publishMessage[0], (byte[]) publishMessage[1]);
+            publishMessageToSubscribers((byte[]) publishMessage[0], (byte[]) publishMessage[1]);
         context.getResultSender().lastResult(subscriberCount);
       }
 
@@ -133,19 +124,24 @@ public class PubSubImpl implements PubSub {
   }
 
   @Override
-  public long unsubscribe(String channel, Client client) {
-    subscriptions.remove(channel, client);
-    return subscriptions.findSubscriptions(client).size();
+  public long unsubscribe(byte[] channel, Client client) {
+    return subscriptions.unsubscribe(channel, client);
   }
 
   @Override
   public long punsubscribe(GlobPattern pattern, Client client) {
-    subscriptions.remove(pattern, client);
-    return subscriptions.findSubscriptions(client).size();
+    return subscriptions.unsubscribe(pattern, client);
+  }
+
+  @Override
+  public List<byte[]> findSubscribedChannels(Client client) {
+    return subscriptions.findSubscriptions(client).stream()
+        .map(Subscription::getChannelName)
+        .collect(Collectors.toList());
   }
 
   @VisibleForTesting
-  long publishMessageToSubscribers(String channel, byte[] message) {
+  long publishMessageToSubscribers(byte[] channel, byte[] message) {
 
     List<Subscription> foundSubscriptions = subscriptions
         .findSubscriptions(channel);

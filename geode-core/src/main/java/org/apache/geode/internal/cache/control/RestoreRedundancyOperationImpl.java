@@ -22,15 +22,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import org.apache.geode.cache.RegionDestroyedException;
-import org.apache.geode.cache.control.RegionRedundancyStatus;
 import org.apache.geode.cache.control.RestoreRedundancyOperation;
-import org.apache.geode.cache.control.RestoreRedundancyResults;
 import org.apache.geode.cache.partition.PartitionRebalanceInfo;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionRebalanceOp;
 import org.apache.geode.internal.cache.partitioned.rebalance.CompositeDirector;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.management.runtime.RegionRedundancyStatus;
+import org.apache.geode.management.runtime.RestoreRedundancyResults;
 
 class RestoreRedundancyOperationImpl implements RestoreRedundancyOperation {
 
@@ -39,23 +39,23 @@ class RestoreRedundancyOperationImpl implements RestoreRedundancyOperation {
   private Set<String> includedRegions;
   private Set<String> excludedRegions;
   private boolean shouldReassign = true;
-  private ScheduledExecutorService executor;
+  private final ScheduledExecutorService executor;
 
   public RestoreRedundancyOperationImpl(InternalCache cache) {
     this.cache = cache;
-    this.manager = cache.getInternalResourceManager();
-    this.executor = this.manager.getExecutor();
+    manager = cache.getInternalResourceManager();
+    executor = manager.getExecutor();
   }
 
   @Override
   public RestoreRedundancyOperation includeRegions(Set<String> regions) {
-    this.includedRegions = regions;
+    includedRegions = regions;
     return this;
   }
 
   @Override
   public RestoreRedundancyOperation excludeRegions(Set<String> regions) {
-    this.excludedRegions = regions;
+    excludedRegions = regions;
     return this;
   }
 
@@ -100,7 +100,7 @@ class RestoreRedundancyOperationImpl implements RestoreRedundancyOperation {
   @Override
   public RestoreRedundancyResults redundancyStatus() {
     RegionFilter filter = getRegionFilter();
-    RestoreRedundancyResultsImpl results = getEmptyRestoreRedundancyResults();
+    SerializableRestoreRedundancyResultsImpl results = getEmptyRestoreRedundancyResults();
     cache.getPartitionedRegions().stream().filter(filter::include)
         .forEach(region -> results.addRegionResult(getRegionResult(region)));
     return results;
@@ -116,7 +116,7 @@ class RestoreRedundancyOperationImpl implements RestoreRedundancyOperation {
       try {
         detailSet = op.execute();
 
-        RestoreRedundancyResultsImpl results = getEmptyRestoreRedundancyResults();
+        SerializableRestoreRedundancyResultsImpl results = getEmptyRestoreRedundancyResults();
         // No work was done, either because redundancy was not impaired or because colocation
         // was not complete
         if (detailSet.isEmpty()) {
@@ -143,7 +143,7 @@ class RestoreRedundancyOperationImpl implements RestoreRedundancyOperation {
 
   RestoreRedundancyResults getRestoreRedundancyResults(
       List<CompletableFuture<RestoreRedundancyResults>> regionFutures) {
-    RestoreRedundancyResultsImpl finalResult = getEmptyRestoreRedundancyResults();
+    SerializableRestoreRedundancyResultsImpl finalResult = getEmptyRestoreRedundancyResults();
     regionFutures.stream()
         .map(CompletableFuture::join)
         .forEach(finalResult::addRegionResults);
@@ -152,7 +152,7 @@ class RestoreRedundancyOperationImpl implements RestoreRedundancyOperation {
 
   // Extracted for testing
   RegionFilter getRegionFilter() {
-    return new FilterByPath(this.includedRegions, this.excludedRegions);
+    return new FilterByPath(includedRegions, excludedRegions);
   }
 
   // Extracted for testing
@@ -169,13 +169,13 @@ class RestoreRedundancyOperationImpl implements RestoreRedundancyOperation {
   }
 
   // Extracted for testing
-  RestoreRedundancyResultsImpl getEmptyRestoreRedundancyResults() {
-    return new RestoreRedundancyResultsImpl();
+  SerializableRestoreRedundancyResultsImpl getEmptyRestoreRedundancyResults() {
+    return new SerializableRestoreRedundancyResultsImpl();
   }
 
   // Extracted for testing
   RegionRedundancyStatus getRegionResult(PartitionedRegion region) {
-    return new RegionRedundancyStatusImpl(region);
+    return new SerializableRegionRedundancyStatusImpl(region);
   }
 
   // Extracted for testing

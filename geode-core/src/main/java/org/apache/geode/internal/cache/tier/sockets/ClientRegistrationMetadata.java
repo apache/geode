@@ -20,17 +20,20 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
-import org.apache.geode.internal.serialization.UnsupportedSerializationVersionException;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
+import org.apache.geode.internal.serialization.Versioning;
+import org.apache.geode.internal.serialization.VersioningIO;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 class ClientRegistrationMetadata {
@@ -114,45 +117,51 @@ class ClientRegistrationMetadata {
   private boolean getAndValidateClientVersion(final Socket socket,
       final DataInputStream dataInputStream, final DataOutputStream dataOutputStream)
       throws IOException {
-    short clientVersionOrdinal = Version.readOrdinal(dataInputStream);
+    short clientVersionOrdinal = VersioningIO.readOrdinal(dataInputStream);
 
-    try {
-      clientVersion = Version.fromOrdinal(clientVersionOrdinal);
-      if (CommandInitializer.getCommands(clientVersion) == null) {
-        throw new UnsupportedSerializationVersionException("Client version {} is not supported");
+    clientVersion = Versioning.getKnownVersionOrDefault(
+        Versioning.getVersionOrdinal(clientVersionOrdinal), null);
+
+    final String message;
+    if (clientVersion == null) {
+      message = Version.unsupportedVersionMessage(clientVersionOrdinal);
+    } else {
+      final Map<Integer, Command> commands = CommandInitializer.getCommands(clientVersion);
+      if (commands == null) {
+        message = "Client version {} is not supported";
+      } else {
+        if (isVersionOlderThan57(clientVersion)) {
+          throw new IOException(new UnsupportedVersionException(clientVersionOrdinal));
+        }
+        if (logger.isDebugEnabled()) {
+          logger.debug("{}: Registering client with version: {}", this, clientVersion);
+        }
+        return true;
       }
-      if (isVersionOlderThan57(clientVersion)) {
-        throw new IOException(new UnsupportedVersionException(clientVersionOrdinal));
-      }
-      if (logger.isDebugEnabled()) {
-        logger.debug("{}: Registering client with version: {}", this, clientVersion);
-      }
-    } catch (UnsupportedSerializationVersionException e) {
-      UnsupportedVersionException unsupportedVersionException =
-          new UnsupportedVersionException(e.getMessage());
-      SocketAddress socketAddress = socket.getRemoteSocketAddress();
-
-      if (socketAddress != null) {
-        String sInfo = " Client: " + socketAddress.toString() + ".";
-        unsupportedVersionException = new UnsupportedVersionException(e.getMessage() + sInfo);
-      }
-
-      logger.warn(
-          "CacheClientNotifier: Registering client version is unsupported.  Error details: ",
-          unsupportedVersionException);
-
-      socketMessageWriter.writeException(dataOutputStream,
-          CommunicationMode.UnsuccessfulServerToClient.getModeNumber(),
-          unsupportedVersionException, null);
-
-      return false;
     }
 
-    return true;
+    UnsupportedVersionException unsupportedVersionException =
+        new UnsupportedVersionException(message);
+    SocketAddress socketAddress = socket.getRemoteSocketAddress();
+
+    if (socketAddress != null) {
+      String sInfo = " Client: " + socketAddress.toString() + ".";
+      unsupportedVersionException = new UnsupportedVersionException(message + sInfo);
+    }
+
+    logger.warn(
+        "CacheClientNotifier: Registering client version is unsupported.  Error details: ",
+        unsupportedVersionException);
+
+    socketMessageWriter.writeException(dataOutputStream,
+        CommunicationMode.UnsuccessfulServerToClient.getModeNumber(),
+        unsupportedVersionException, null);
+
+    return false;
   }
 
   private boolean doesClientSupportExtractOverrides() {
-    return clientVersion.compareTo(Version.GFE_603) >= 0;
+    return clientVersion.isNotOlderThan(Version.GFE_603);
   }
 
   private boolean oldClientRequiresVersionedStreams(final Version clientVersion) {

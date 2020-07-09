@@ -27,15 +27,15 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.util.DiskStoreCompacter;
 import org.apache.geode.management.internal.i18n.CliStrings;
 
-public class CompactOfflineDiskStoreCommand extends SingleGfshCommand {
+public class CompactOfflineDiskStoreCommand extends GfshCommand {
   @CliCommand(value = CliStrings.COMPACT_OFFLINE_DISK_STORE,
       help = CliStrings.COMPACT_OFFLINE_DISK_STORE__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = CliStrings.TOPIC_GEODE_DISKSTORE)

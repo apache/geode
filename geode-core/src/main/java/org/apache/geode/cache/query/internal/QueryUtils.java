@@ -737,6 +737,9 @@ public class QueryUtils {
         } else {
           c = currentLevel.evaluateCollection(context);
         }
+      } else if (useDerivedResults && derivedResults != null && key != null
+          && derivedResults.containsKey(key)) {
+        c = derivedResults.get(key);
       } else {
         c = currentLevel.evaluateCollection(context);
       }

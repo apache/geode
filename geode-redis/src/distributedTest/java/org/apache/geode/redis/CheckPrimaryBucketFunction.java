@@ -28,9 +28,9 @@ import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.LocalDataSet;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.execute.RegionFunctionContextImpl;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.redis.internal.executor.SingleResultRedisFunction;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 @SuppressWarnings("unchecked")
@@ -97,7 +97,9 @@ public class CheckPrimaryBucketFunction implements Function {
       }
     };
 
-    SingleResultRedisFunction.computeWithPrimaryLocked(key, (LocalDataSet) localRegion, r);
+    LocalDataSet localDataSet = (LocalDataSet) localRegion;
+    PartitionedRegion partitionedRegion = localDataSet.getProxy();
+    partitionedRegion.computeWithPrimaryLocked(key, r);
   }
 
   private boolean isMemberPrimary(RegionFunctionContextImpl context, String key,

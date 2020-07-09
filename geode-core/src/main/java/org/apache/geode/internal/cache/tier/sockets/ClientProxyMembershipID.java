@@ -43,6 +43,7 @@ import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.util.internal.GeodeGlossary;
 
@@ -349,7 +350,10 @@ public class ClientProxyMembershipID
   }
 
   public Version getClientVersion() {
-    return ((InternalDistributedMember) getDistributedMember()).getVersionObject();
+    return Versioning
+        .getKnownVersionOrDefault(
+            ((InternalDistributedMember) getDistributedMember()).getVersionOrdinalObject(),
+            Version.CURRENT);
   }
 
   public String getDSMembership() {
@@ -370,7 +374,7 @@ public class ClientProxyMembershipID
   private String getMemberIdAsString() {
     String memberIdAsString = null;
     InternalDistributedMember idm = (InternalDistributedMember) getDistributedMember();
-    if (getClientVersion().compareTo(Version.GFE_90) < 0) {
+    if (getClientVersion().isOlderThan(Version.GFE_90)) {
       memberIdAsString = idm.toString();
     } else {
       StringBuilder sb = new StringBuilder();

@@ -46,7 +46,8 @@ public class GfshParserRule extends ExternalResource {
   public void before() {
     commandManager = new CommandManager();
     parser = new GfshParser(commandManager);
-    commandExecutor = new CommandExecutor();
+    // GfshParserRule doesn't need dlock service
+    commandExecutor = new CommandExecutor(null);
   }
 
   public GfshParseResult parse(String command) {

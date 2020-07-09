@@ -103,4 +103,9 @@ public class UndeployCommand extends GfshCommand {
 
     return result;
   }
+
+  @Override
+  public boolean affectsClusterConfiguration() {
+    return true;
+  }
 }

@@ -26,9 +26,9 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class MSetNXExecutor extends StringExecutor {
 
-  private final int SET = 1;
+  private static final int SET = 1;
 
-  private final int NOT_SET = 0;
+  private static final int NOT_SET = 0;
 
   @Override
   public RedisResponse executeCommand(Command command,

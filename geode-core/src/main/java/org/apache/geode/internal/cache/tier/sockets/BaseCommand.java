@@ -215,7 +215,7 @@ public abstract class BaseCommand implements Command {
    */
   protected boolean shouldMasqueradeForTx(Message clientMessage,
       ServerConnection serverConnection) {
-    return serverConnection.getClientVersion().compareTo(Version.GFE_66) >= 0
+    return serverConnection.getClientVersion().isNotOlderThan(Version.GFE_66)
         && clientMessage.getTransactionId() > TXManagerImpl.NOTX;
   }
 
@@ -901,7 +901,7 @@ public abstract class BaseCommand implements Command {
       sendRegisterInterestResponseChunk(region, riKey, new ArrayList(), true, servConn);
       return;
     }
-    if (policy.isKeysValues() && servConn.getClientVersion().compareTo(Version.GFE_80) >= 0) {
+    if (policy.isKeysValues() && servConn.getClientVersion().isNotOlderThan(Version.GFE_80)) {
       handleKeysValuesPolicy(region, riKey, interestType, serializeValues, servConn);
       return;
     }
@@ -1018,7 +1018,7 @@ public abstract class BaseCommand implements Command {
   private static boolean sendTombstonesInRIResults(ServerConnection servConn,
       InterestResultPolicy policy) {
     return policy == InterestResultPolicy.KEYS_VALUES
-        && servConn.getClientVersion().compareTo(Version.GFE_80) >= 0;
+        && servConn.getClientVersion().isNotOlderThan(Version.GFE_80);
   }
 
   /**

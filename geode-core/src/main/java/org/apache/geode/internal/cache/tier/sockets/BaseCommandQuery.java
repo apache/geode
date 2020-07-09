@@ -97,7 +97,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
 
     // from 7.0, set flag to indicate a remote query irrespective of the
     // object type
-    if (servConn.getClientVersion().compareTo(Version.GFE_70) >= 0) {
+    if (servConn.getClientVersion().isNotOlderThan(Version.GFE_70)) {
       ((DefaultQuery) query).setRemoteQuery(true);
     }
     // Process the query request
@@ -310,7 +310,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
 
   private boolean sendCqResultsWithKey(ServerConnection servConn) {
     Version clientVersion = servConn.getClientVersion();
-    if (clientVersion.compareTo(Version.GFE_65) >= 0) {
+    if (clientVersion.isNotOlderThan(Version.GFE_65)) {
       return true;
     }
     return false;
@@ -536,7 +536,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
       Object[] values = ((Object[]) res);
       // create another ObjectPartList for the Object[]
       ObjectPartList serializedValueObjs = new ObjectPartList(values.length, false);
-      for (int i = 0; i < values.length; i += 2) {
+      for (int i = 0; i < values.length - 1; i += 2) {
         Object key = values[i];
         Object value = values[i + 1];
         addObjectToPartList(serializedValueObjs, key, value, securityService);

@@ -33,7 +33,7 @@ public class SubscribeExecutor extends AbstractExecutor {
       Collection<Object> item = new ArrayList<>();
       byte[] channelName = command.getProcessedCommand().get(i);
       long subscribedChannels =
-          context.getPubSub().subscribe(new String(channelName), context, context.getClient());
+          context.getPubSub().subscribe(channelName, context, context.getClient());
 
       item.add("subscribe");
       item.add(channelName);
@@ -41,6 +41,8 @@ public class SubscribeExecutor extends AbstractExecutor {
 
       items.add(item);
     }
+
+    context.changeChannelEventLoopGroup(context.getSubscriberGroup());
 
     return RedisResponse.flattenedArray(items);
   }

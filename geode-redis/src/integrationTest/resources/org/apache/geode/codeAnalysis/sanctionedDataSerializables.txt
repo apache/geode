@@ -6,6 +6,10 @@ org/apache/geode/redis/internal/data/ByteArrayWrapper,2
 fromData,9
 toData,9
 
+org/apache/geode/redis/internal/data/NullRedisData,2
+fromData,8
+toData,8
+
 org/apache/geode/redis/internal/data/RedisHash,2
 fromData,14
 toData,14

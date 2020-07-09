@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.remote;
 
+import static org.apache.geode.management.internal.api.LocatorClusterManagementService.CMS_DLOCK_SERVICE_NAME;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -24,9 +26,11 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.util.ReflectionUtils;
 
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.util.ArgumentRedactor;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.cli.UpdateAllConfigurationGroupsMarker;
@@ -51,6 +55,12 @@ public class CommandExecutor {
       "Cluster configuration service is not running. Configuration change is not persisted.";
 
   private Logger logger = LogService.getLogger();
+  private final DistributedLockService cmsDlockService;
+
+  // this cmsDlockService could be null for offline commands
+  public CommandExecutor(DistributedLockService cmsDlockService) {
+    this.cmsDlockService = cmsDlockService;
+  }
 
   /**
    *
@@ -73,6 +83,7 @@ public class CommandExecutor {
       logger.info("Executing command: " + ArgumentRedactor.redact(userInput));
     }
 
+    boolean locked = lockCMS(command);
     try {
       Object result = invokeCommand(command, parseResult);
 
@@ -95,7 +106,6 @@ public class CommandExecutor {
       }
       return result;
     }
-
     // for Authorization Exception, we need to throw them for higher level code to catch
     catch (NotAuthorizedException e) {
       logger.error("Not authorized to execute \"" + parseResult + "\".", e);
@@ -132,6 +142,8 @@ public class CommandExecutor {
     } catch (Throwable t) {
       org.apache.geode.SystemFailure.checkFailure();
       throw t;
+    } finally {
+      unlockCMS(locked);
     }
   }
 
@@ -206,5 +218,41 @@ public class CommandExecutor {
     }
 
     return resultModel;
+  }
+
+  @VisibleForTesting
+  boolean lockCMS(Object command) {
+    // no lock if this is executing an offline command
+    if (cmsDlockService == null) {
+      return false;
+    }
+
+    // no lock if this command does not implement GfshCommand, i.e. custom
+    // commands. All commands that affects cluster config shoudl be a subclass
+    // of GfshCommand
+    if (!(command instanceof GfshCommand)) {
+      return false;
+    }
+
+    GfshCommand gfshCommand = (GfshCommand) command;
+    // no lock if cluster configuration service is not started
+    if (gfshCommand.getConfigurationPersistenceService() == null) {
+      return false;
+    }
+
+    // no lock if the command itself doesn't update cluster configuration
+    if (!gfshCommand.affectsClusterConfiguration()) {
+      return false;
+    }
+
+    // otherwise, ok to get the lock
+    return cmsDlockService.lock(CMS_DLOCK_SERVICE_NAME, -1, -1);
+  }
+
+  @VisibleForTesting
+  void unlockCMS(boolean locked) {
+    if (locked) {
+      cmsDlockService.unlock(CMS_DLOCK_SERVICE_NAME);
+    }
   }
 }

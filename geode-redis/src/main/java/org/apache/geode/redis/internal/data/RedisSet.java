@@ -40,7 +40,7 @@ import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisSet extends AbstractRedisData {
 
-  public static final RedisSet EMPTY = new EmptyRedisSet();
+  public static final NullRedisSet NULL_REDIS_SET = new NullRedisSet();
   private HashSet<ByteArrayWrapper> members;
 
   @SuppressWarnings("unchecked")
@@ -111,7 +111,7 @@ public class RedisSet extends AbstractRedisData {
       if (memberToPop != null) {
         setMembers[idx] = null;
         popped.add(memberToPop);
-        members.remove(memberToPop);
+        membersRemove(memberToPop);
       }
     }
     if (!popped.isEmpty()) {
@@ -122,6 +122,10 @@ public class RedisSet extends AbstractRedisData {
 
   Collection<ByteArrayWrapper> srandmember(int count) {
     int membersSize = members.size();
+    boolean duplicatesAllowed = count < 0;
+    if (duplicatesAllowed) {
+      count = -count;
+    }
 
     if (membersSize <= count && count != 1) {
       return new ArrayList<>(members);
@@ -138,14 +142,23 @@ public class RedisSet extends AbstractRedisData {
       result.add(randEntry);
       return result;
     }
-    Set<ByteArrayWrapper> result = new HashSet<>();
-    // Note that rand.nextInt can return duplicates when "count" is high
-    // so we need to use a Set to collect the results.
-    while (result.size() < count) {
-      ByteArrayWrapper s = entries[rand.nextInt(entries.length)];
-      result.add(s);
+    if (duplicatesAllowed) {
+      ArrayList<ByteArrayWrapper> result = new ArrayList<>(count);
+      while (count > 0) {
+        result.add(entries[rand.nextInt(entries.length)]);
+        count--;
+      }
+      return result;
+    } else {
+      Set<ByteArrayWrapper> result = new HashSet<>();
+      // Note that rand.nextInt can return duplicates when "count" is high
+      // so we need to use a Set to collect the results.
+      while (result.size() < count) {
+        ByteArrayWrapper s = entries[rand.nextInt(entries.length)];
+        result.add(s);
+      }
+      return result;
     }
-    return result;
   }
 
   public boolean sismember(ByteArrayWrapper member) {
@@ -156,24 +169,44 @@ public class RedisSet extends AbstractRedisData {
     return members.size();
   }
 
-
   @Override
   protected void applyDelta(DeltaInfo deltaInfo) {
     if (deltaInfo instanceof AddsDeltaInfo) {
       AddsDeltaInfo addsDeltaInfo = (AddsDeltaInfo) deltaInfo;
-      members.addAll(addsDeltaInfo.getAdds());
+      membersAddAll(addsDeltaInfo);
     } else {
       RemsDeltaInfo remsDeltaInfo = (RemsDeltaInfo) deltaInfo;
-      members.removeAll(remsDeltaInfo.getRemoves());
+      membersRemoveAll(remsDeltaInfo);
     }
   }
 
-  // DATA SERIALIZABLE
+  /**
+   * Since GII (getInitialImage) can come in and call toData while other threads
+   * are modifying this object, the striped executor will not protect toData.
+   * So any methods that modify "members" needs to be thread safe with toData.
+   */
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public synchronized void toData(DataOutput out) throws IOException {
     super.toData(out);
     DataSerializer.writeHashSet(members, out);
   }
+
+  private synchronized boolean membersAdd(ByteArrayWrapper memberToAdd) {
+    return members.add(memberToAdd);
+  }
+
+  private boolean membersRemove(ByteArrayWrapper memberToRemove) {
+    return members.remove(memberToRemove);
+  }
+
+  private synchronized boolean membersAddAll(AddsDeltaInfo addsDeltaInfo) {
+    return members.addAll(addsDeltaInfo.getAdds());
+  }
+
+  private synchronized boolean membersRemoveAll(RemsDeltaInfo remsDeltaInfo) {
+    return members.removeAll(remsDeltaInfo.getRemoves());
+  }
+
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
@@ -192,7 +225,7 @@ public class RedisSet extends AbstractRedisData {
       Region<ByteArrayWrapper, RedisData> region,
       ByteArrayWrapper key) {
 
-    membersToAdd.removeIf(memberToAdd -> !members.add(memberToAdd));
+    membersToAdd.removeIf(memberToAdd -> !membersAdd(memberToAdd));
     int membersAdded = membersToAdd.size();
     if (membersAdded != 0) {
       storeChanges(region, key, new AddsDeltaInfo(membersToAdd));
@@ -211,7 +244,7 @@ public class RedisSet extends AbstractRedisData {
       Region<ByteArrayWrapper, RedisData> region,
       ByteArrayWrapper key) {
 
-    membersToRemove.removeIf(memberToRemove -> !members.remove(memberToRemove));
+    membersToRemove.removeIf(memberToRemove -> !membersRemove(memberToRemove));
     int membersRemoved = membersToRemove.size();
     if (membersRemoved != 0) {
       storeChanges(region, key, new RemsDeltaInfo(membersToRemove));
@@ -257,5 +290,13 @@ public class RedisSet extends AbstractRedisData {
   @Override
   public int hashCode() {
     return Objects.hash(super.hashCode(), members);
+  }
+
+  @Override
+  public String toString() {
+    return "RedisSet{" +
+        super.toString() + ", " +
+        "members=" + members +
+        '}';
   }
 }

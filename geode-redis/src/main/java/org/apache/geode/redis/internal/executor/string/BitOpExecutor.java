@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
@@ -36,113 +37,26 @@ public class BitOpExecutor extends StringExecutor {
     }
 
     String operation = command.getStringKey().toUpperCase();
-    ByteArrayWrapper destKey = new ByteArrayWrapper(commandElems.get(2));
-
-    byte[][] values = new byte[commandElems.size() - 3][];
-    int maxLength = 0;
-    for (int i = 3; i < commandElems.size(); i++) {
-      ByteArrayWrapper key = new ByteArrayWrapper(commandElems.get(i));
-      ByteArrayWrapper value = getRedisStringCommands(context).get(key);
-      if (value == null) {
-        values[i - 3] = null;
-        continue;
-      }
-
-      byte[] val = value.toBytes();
-      values[i - 3] = val;
-      if (val.length > maxLength) {
-        maxLength = val.length;
-        byte[] tmp = values[0];
-        values[0] = val;
-        values[i - 3] = tmp;
-      }
-      if (i == 3 && operation.equalsIgnoreCase("NOT")) {
-        break;
-      }
-    }
-
-    if (operation.equals("AND")) {
-      and(context, destKey, values, maxLength);
-    } else if (operation.equals("OR")) {
-      or(context, destKey, values, maxLength);
-    } else if (operation.equals("XOR")) {
-      xor(context, destKey, values, maxLength);
-    } else if (operation.equals("NOT")) {
-      not(context, destKey, values, maxLength);
-    } else {
+    if (!operation.equals("AND")
+        && !operation.equals("OR")
+        && !operation.equals("XOR")
+        && !operation.equals("NOT")) {
       return RedisResponse.error(ERROR_NO_SUCH_OP);
     }
 
-    return RedisResponse.integer(maxLength);
-  }
+    ByteArrayWrapper destKey = new ByteArrayWrapper(commandElems.get(2));
 
-  private void and(ExecutionHandlerContext context,
-      ByteArrayWrapper destKey, byte[][] values, int max) {
-    byte[] dest = new byte[max];
-    outer: for (int i = 0; i < max; i++) {
-      byte b = values[0][i];
-      for (int j = 1; j < values.length; j++) {
-        if (values[j] == null) {
-          break outer;
-        } else if (i < values[j].length) {
-          b &= values[j][i];
-        } else {
-          b &= 0;
-        }
-      }
-      dest[i] = b;
+    List<ByteArrayWrapper> values = new ArrayList<>();
+    for (int i = 3; i < commandElems.size(); i++) {
+      ByteArrayWrapper key = new ByteArrayWrapper(commandElems.get(i));
+      values.add(key);
     }
-    getRedisStringCommands(context).set(destKey, new ByteArrayWrapper(dest), null);
-  }
-
-  private void or(ExecutionHandlerContext context,
-      ByteArrayWrapper destKey, byte[][] values, int max) {
-    byte[] dest = new byte[max];
-    for (int i = 0; i < max; i++) {
-      byte b = values[0][i];
-      for (int j = 1; j < values.length; j++) {
-        byte[] cA = values[j];
-        if (cA != null && i < cA.length) {
-          b |= cA[i];
-        } else {
-          b |= 0;
-        }
-      }
-      dest[i] = b;
+    if (operation.equals("NOT") && values.size() != 1) {
+      return RedisResponse.error(ArityDef.BITOP);
     }
-    getRedisStringCommands(context).set(destKey, new ByteArrayWrapper(dest), null);
-  }
 
-  private void xor(ExecutionHandlerContext context,
-      ByteArrayWrapper destKey, byte[][] values, int max) {
-    byte[] dest = new byte[max];
-    for (int i = 0; i < max; i++) {
-      byte b = values[0][i];
-      for (int j = 1; j < values.length; j++) {
-        byte[] cA = values[j];
-        if (cA != null && i < cA.length) {
-          b ^= cA[i];
-        } else {
-          b ^= 0;
-        }
-      }
-      dest[i] = b;
-    }
-    getRedisStringCommands(context).set(destKey, new ByteArrayWrapper(dest), null);
-  }
+    int result = getRedisStringCommands(context).bitop(operation, destKey, values);
 
-  private void not(ExecutionHandlerContext context,
-      ByteArrayWrapper destKey, byte[][] values, int max) {
-    byte[] dest = new byte[max];
-    byte[] cA = values[0];
-    for (int i = 0; i < max; i++) {
-      if (cA == null) {
-        dest[i] = ~0;
-      } else {
-        dest[i] = (byte) (~cA[i] & 0xFF);
-      }
-    }
-    getRedisStringCommands(context).set(destKey, new ByteArrayWrapper(dest), null);
+    return RedisResponse.integer(result);
   }
-
 }

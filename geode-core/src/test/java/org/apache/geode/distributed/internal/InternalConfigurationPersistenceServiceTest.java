@@ -17,6 +17,7 @@
 package org.apache.geode.distributed.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doCallRealMethod;
@@ -27,6 +28,8 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.AbstractMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -35,7 +38,9 @@ import java.util.Set;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.w3c.dom.Document;
 
@@ -59,8 +64,11 @@ public class InternalConfigurationPersistenceServiceTest {
   private InternalConfigurationPersistenceService service2;
   private Configuration configuration;
 
+  @Rule
+  public TemporaryFolder tempFolder = new TemporaryFolder();
+
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     service = spy(new InternalConfigurationPersistenceService(
         JAXBService.createWithValidation(CacheConfig.class, ElementOne.class, ElementTwo.class)));
     service2 = spy(new InternalConfigurationPersistenceService(
@@ -182,7 +190,7 @@ public class InternalConfigurationPersistenceServiceTest {
   public void updateShouldInsertIfNotExist() {
     doCallRealMethod().when(service).updateCacheConfig(any(), any());
     doCallRealMethod().when(service).getCacheConfig(any());
-    Region region = mock(Region.class);
+    Region<Object, Object> region = mock(Region.class);
     doReturn(region).when(service).getConfigurationRegion();
 
     service.updateCacheConfig("non-existing-group", cc -> cc);
@@ -206,10 +214,12 @@ public class InternalConfigurationPersistenceServiceTest {
   public void removeDuplicateGatewayReceiversWithDefaultProperties() throws Exception {
     Document document =
         XmlUtils.createDocumentFromXml(getDuplicateReceiversWithDefaultPropertiesXml());
-    System.out.println("Initial document:\n" + XmlUtils.prettyXml(document));
+    System.out
+        .println("Initial document:" + System.lineSeparator() + "" + XmlUtils.prettyXml(document));
     assertThat(document.getElementsByTagName("gateway-receiver").getLength()).isEqualTo(2);
     service.removeDuplicateGatewayReceivers(document);
-    System.out.println("Processed document:\n" + XmlUtils.prettyXml(document));
+    System.out.println(
+        "Processed document:" + System.lineSeparator() + "" + XmlUtils.prettyXml(document));
     assertThat(document.getElementsByTagName("gateway-receiver").getLength()).isEqualTo(1);
   }
 
@@ -217,10 +227,12 @@ public class InternalConfigurationPersistenceServiceTest {
   public void removeInvalidGatewayReceiversWithDifferentHostNameForSenders() throws Exception {
     Document document =
         XmlUtils.createDocumentFromXml(getDuplicateReceiversWithDifferentHostNameForSendersXml());
-    System.out.println("Initial document:\n" + XmlUtils.prettyXml(document));
+    System.out
+        .println("Initial document:" + System.lineSeparator() + "" + XmlUtils.prettyXml(document));
     assertThat(document.getElementsByTagName("gateway-receiver").getLength()).isEqualTo(2);
     service.removeInvalidGatewayReceivers(document);
-    System.out.println("Processed document:\n" + XmlUtils.prettyXml(document));
+    System.out.println(
+        "Processed document:" + System.lineSeparator() + "" + XmlUtils.prettyXml(document));
     assertThat(document.getElementsByTagName("gateway-receiver").getLength()).isEqualTo(0);
   }
 
@@ -228,10 +240,12 @@ public class InternalConfigurationPersistenceServiceTest {
   public void removeInvalidGatewayReceiversWithDifferentBindAddresses() throws Exception {
     Document document =
         XmlUtils.createDocumentFromXml(getDuplicateReceiversWithDifferentBindAddressesXml());
-    System.out.println("Initial document:\n" + XmlUtils.prettyXml(document));
+    System.out
+        .println("Initial document:" + System.lineSeparator() + "" + XmlUtils.prettyXml(document));
     assertThat(document.getElementsByTagName("gateway-receiver").getLength()).isEqualTo(2);
     service.removeInvalidGatewayReceivers(document);
-    System.out.println("Processed document:\n" + XmlUtils.prettyXml(document));
+    System.out.println(
+        "Processed document:" + System.lineSeparator() + "" + XmlUtils.prettyXml(document));
     assertThat(document.getElementsByTagName("gateway-receiver").getLength()).isEqualTo(0);
   }
 
@@ -239,10 +253,12 @@ public class InternalConfigurationPersistenceServiceTest {
   public void keepValidGatewayReceiversWithDefaultBindAddress() throws Exception {
     Document document =
         XmlUtils.createDocumentFromXml(getSingleReceiverWithDefaultBindAddressXml());
-    System.out.println("Initial document:\n" + XmlUtils.prettyXml(document));
+    System.out
+        .println("Initial document:" + System.lineSeparator() + "" + XmlUtils.prettyXml(document));
     assertThat(document.getElementsByTagName("gateway-receiver").getLength()).isEqualTo(1);
     service.removeInvalidGatewayReceivers(document);
-    System.out.println("Processed document:\n" + XmlUtils.prettyXml(document));
+    System.out.println(
+        "Processed document:" + System.lineSeparator() + "" + XmlUtils.prettyXml(document));
     assertThat(document.getElementsByTagName("gateway-receiver").getLength()).isEqualTo(1);
   }
 
@@ -252,7 +268,8 @@ public class InternalConfigurationPersistenceServiceTest {
       int expectFinalElements) throws Exception {
     Region<String, Configuration> configurationRegion = mock(Region.class);
     configuration.setCacheXmlContent(xml);
-    System.out.println("Initial xml content:\n" + configuration.getCacheXmlContent());
+    System.out.println(
+        "Initial xml content:" + System.lineSeparator() + configuration.getCacheXmlContent());
     Document document = XmlUtils.createDocumentFromXml(configuration.getCacheXmlContent());
     assertThat(document.getElementsByTagName("gateway-receiver").getLength())
         .isEqualTo(expectedInitialElements);
@@ -260,7 +277,8 @@ public class InternalConfigurationPersistenceServiceTest {
     configurationEntries.add(new AbstractMap.SimpleEntry<>("cluster", configuration));
     doReturn(configurationEntries).when(configurationRegion).entrySet();
     service.removeInvalidXmlConfigurations(configurationRegion);
-    System.out.println("Processed xml content:\n" + configuration.getCacheXmlContent());
+    System.out.println(
+        "Processed xml content:" + System.lineSeparator() + configuration.getCacheXmlContent());
     document = XmlUtils.createDocumentFromXml(configuration.getCacheXmlContent());
     assertThat(document.getElementsByTagName("gateway-receiver").getLength())
         .isEqualTo(expectFinalElements);
@@ -276,32 +294,50 @@ public class InternalConfigurationPersistenceServiceTest {
     verify(cps, times(0)).unlockSharedConfiguration();
   }
 
+  @Test
+  public void loadFromNonExistDir() {
+    File configDir = new File(tempFolder.getRoot(), "NonExistDir");
+    assertThatThrownBy(() -> service.loadSharedConfigurationFromDir(configDir))
+        .isInstanceOf(IOException.class)
+        .hasMessageContaining("ConfigDir does not exist:");
+  }
+
   private String getDuplicateReceiversWithDefaultPropertiesXml() {
-    return "<cache>\n<gateway-receiver/>\n<gateway-receiver/>\n</cache>";
+    return "<cache>" + System.lineSeparator() + "<gateway-receiver/>" + System.lineSeparator()
+        + "<gateway-receiver/>" + System.lineSeparator() + "</cache>";
   }
 
   private String getDuplicateReceiversWithDifferentHostNameForSendersXml() {
-    return "<cache>\n<gateway-receiver hostname-for-senders=\"123.12.12.12\"/>\n<gateway-receiver hostname-for-senders=\"123.12.12.11\"/>\n</cache>";
+    return "<cache>" + System.lineSeparator()
+        + "<gateway-receiver hostname-for-senders=\"123.12.12.12\"/>" + System.lineSeparator()
+        + "<gateway-receiver hostname-for-senders=\"123.12.12.11\"/>" + System.lineSeparator()
+        + "</cache>";
   }
 
   private String getDuplicateReceiversWithDifferentBindAddressesXml() {
-    return "<cache>\n<gateway-receiver bind-address=\"123.12.12.12\"/>\n<gateway-receiver bind-address=\"123.12.12.11\"/>\n</cache>";
+    return "<cache>" + System.lineSeparator() + "<gateway-receiver bind-address=\"123.12.12.12\"/>"
+        + System.lineSeparator() + "<gateway-receiver bind-address=\"123.12.12.11\"/>"
+        + System.lineSeparator() + "</cache>";
   }
 
   private String getSingleReceiverWithDefaultBindAddressXml() {
-    return "<cache>\n<gateway-receiver bind-address=\"0.0.0.0\"/>\n</cache>";
+    return "<cache>" + System.lineSeparator() + "<gateway-receiver bind-address=\"0.0.0.0\"/>"
+        + System.lineSeparator() + "</cache>";
   }
 
   private String getDuplicateReceiversWithDefaultBindAddressesXml() {
-    return "<cache>\n<gateway-receiver bind-address=\"0.0.0.0\"/>\n<gateway-receiver bind-address=\"0.0.0.0\"/>\n</cache>";
+    return "<cache>" + System.lineSeparator() + "<gateway-receiver bind-address=\"0.0.0.0\"/>"
+        + System.lineSeparator() + "<gateway-receiver bind-address=\"0.0.0.0\"/>"
+        + System.lineSeparator() + "</cache>";
   }
 
   private String getValidReceiversXml() {
-    return "<cache>\n<gateway-receiver/>\n</cache>";
+    return "<cache>" + System.lineSeparator() + "<gateway-receiver/>" + System.lineSeparator()
+        + "</cache>";
   }
 
   private String getNoReceiversXml() {
-    return "<cache>\n</cache>";
+    return "<cache>" + System.lineSeparator() + "</cache>";
   }
 
   protected Object[] getXmlAndExpectedElements() {

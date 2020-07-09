@@ -20,6 +20,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
 
@@ -92,7 +93,7 @@ public class HARegion extends DistributedRegion {
 
   private volatile HARegionQueue owningQueue;
 
-  private HARegion(String regionName, RegionAttributes attrs, LocalRegion parentRegion,
+  HARegion(String regionName, RegionAttributes attrs, LocalRegion parentRegion,
       InternalCache cache, StatisticsClock statisticsClock) {
     super(regionName, attrs, parentRegion, cache,
         new InternalRegionArguments().setDestroyLockFlag(true).setRecreateFlag(false)
@@ -272,6 +273,18 @@ public class HARegion extends DistributedRegion {
     // it is fully initialized. The previous implementation of this rule did
     // not protect subclasses of HARegionQueue and caused the bug.
     return this.owningQueue.isQueueInitialized() ? this.owningQueue : null;
+  }
+
+  public HARegionQueue getOwnerWithWait(long timeout) {
+    if (owningQueue.isQueueInitializedWithWait(timeout)) {
+      return owningQueue;
+    } else {
+      if (logger.isDebugEnabled()) {
+        logger.debug("After waiting for {} seconds, queue is still not initialized",
+            TimeUnit.MILLISECONDS.toSeconds(timeout));
+      }
+      return null;
+    }
   }
 
   @Override

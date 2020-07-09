@@ -25,13 +25,14 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.execute.RegionFunctionContextImpl;
+import org.apache.geode.redis.internal.RedisStats;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
-import org.apache.geode.redis.internal.data.RedisKeyInRegion;
-import org.apache.geode.redis.internal.data.RedisSet;
+import org.apache.geode.redis.internal.data.CommandHelper;
+import org.apache.geode.redis.internal.data.RedisData;
+import org.apache.geode.redis.internal.data.RedisKeyCommandsFunctionExecutor;
 import org.apache.geode.redis.internal.executor.SingleResultCollector;
 import org.apache.geode.redis.internal.executor.StripedExecutor;
 
@@ -40,21 +41,29 @@ public class RenameFunction implements InternalFunction {
 
   public static final String ID = "REDIS_RENAME_FUNCTION";
 
-  private final transient StripedExecutor stripedExecutor;
+  private final transient PartitionedRegion partitionedRegion;
+  private final transient CommandHelper commandHelper;
+  private final transient RedisKeyCommandsFunctionExecutor keyCommands;
 
-  public static void register(StripedExecutor stripedExecutor) {
-    FunctionService.registerFunction(new RenameFunction(stripedExecutor));
+  public static void register(Region<ByteArrayWrapper, RedisData> dataRegion,
+      StripedExecutor stripedExecutor,
+      RedisStats redisStats) {
+    FunctionService.registerFunction(new RenameFunction(dataRegion, stripedExecutor, redisStats));
   }
 
 
-  public RenameFunction(StripedExecutor stripedExecutor) {
-    this.stripedExecutor = stripedExecutor;
+  public RenameFunction(
+      Region<ByteArrayWrapper, RedisData> dataRegion,
+      StripedExecutor stripedExecutor,
+      RedisStats redisStats) {
+    partitionedRegion = (PartitionedRegion) dataRegion;
+    commandHelper = new CommandHelper(dataRegion, redisStats, stripedExecutor);
+    keyCommands = new RedisKeyCommandsFunctionExecutor(commandHelper);
   }
 
   @Override
   public void execute(FunctionContext context) {
     RenameContext renameContext = new RenameContext(context);
-    LocalDataSet localDataSet = (LocalDataSet) renameContext.getLocalDataSet();
 
     if (renameContext.getKeysFixedOnPrimary().size() < 2) {
       Runnable computation = () -> {
@@ -62,18 +71,11 @@ public class RenameFunction implements InternalFunction {
         context.getResultSender().lastResult(result);
       };
 
-      computeWithPrimaryLocked(renameContext.getKeyToLock(),
-          localDataSet, computation);
+      partitionedRegion.computeWithPrimaryLocked(renameContext.getKeyToLock(), computation);
     } else {
       Object result = acquireLockIfNeeded(renameContext);
       context.getResultSender().lastResult(result);
     }
-  }
-
-  public static void computeWithPrimaryLocked(Object key, LocalDataSet localDataSet, Runnable r) {
-    PartitionedRegion partitionedRegion = localDataSet.getProxy();
-
-    partitionedRegion.computeWithPrimaryLocked(key, r);
   }
 
   private boolean fixKeysOnPrimary(RenameContext context) {
@@ -92,8 +94,12 @@ public class RenameFunction implements InternalFunction {
     return getLockForNextKey(context);
   }
 
+  private StripedExecutor getStripedExecutor() {
+    return commandHelper.getStripedExecutor();
+  }
+
   private int compare(Object object1, Object object2, RenameContext context) {
-    int result = stripedExecutor.compareStripes(object1, object2);
+    int result = getStripedExecutor().compareStripes(object1, object2);
     if (result == 0) {
       DistributedMember distributedMember1 =
           PartitionRegionHelper.getPrimaryMemberForKey(context.getDataRegion(), object1);
@@ -108,7 +114,7 @@ public class RenameFunction implements InternalFunction {
 
   private boolean acquireLockIfNeeded(RenameContext context) {
     if (isLockNeededForCurrentKey(context)) {
-      return stripedExecutor
+      return getStripedExecutor()
           .execute(context.getKeyToLock(),
               () -> renameOrGetLockForNextKey(context));
     } else {
@@ -139,8 +145,7 @@ public class RenameFunction implements InternalFunction {
   }
 
   private boolean rename(RenameContext context) {
-    return new RedisKeyInRegion(context.getDataRegion())
-        .rename(context.getOldKey(), context.getNewKey());
+    return keyCommands.rename(context.getOldKey(), context.getNewKey());
   }
 
   private void markCurrentKeyAsLocked(RenameContext context) {
@@ -154,7 +159,7 @@ public class RenameFunction implements InternalFunction {
       ByteArrayWrapper lockedKey, RenameContext context) {
 
     boolean stripesAreTheSame =
-        stripedExecutor.compareStripes(lockedKey, context.getKeyToLock()) == 0;
+        getStripedExecutor().compareStripes(lockedKey, context.getKeyToLock()) == 0;
 
     if (!stripesAreTheSame) {
       return false;
@@ -205,6 +210,12 @@ public class RenameFunction implements InternalFunction {
     return true;
   }
 
+  @Override
+  public boolean isHA() {
+    return true;
+  }
+
+
   private static class RenameContext {
 
     private final RegionFunctionContextImpl context;
@@ -240,10 +251,6 @@ public class RenameFunction implements InternalFunction {
 
     private Region getDataRegion() {
       return context.getDataSet();
-    }
-
-    private Region<ByteArrayWrapper, RedisSet> getLocalDataSet() {
-      return context.getLocalDataSet(getDataRegion());
     }
   }
 }

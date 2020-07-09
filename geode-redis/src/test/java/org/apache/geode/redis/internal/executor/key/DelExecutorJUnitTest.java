@@ -16,7 +16,7 @@
 
 package org.apache.geode.redis.internal.executor.key;
 
-import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.netty.buffer.UnpooledByteBufAllocator;
-import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.Test;
 
 import org.apache.geode.redis.internal.ParameterRequirements.RedisParametersMismatchException;
@@ -40,10 +39,9 @@ public class DelExecutorJUnitTest {
     commandsAsBytes.add("DEL".getBytes());
     Command command = new Command(commandsAsBytes);
 
-    Throwable thrown = catchThrowable(() -> command.execute(mockContext()));
-
-    AssertionsForClassTypes.assertThat(thrown).hasMessageContaining("wrong number of arguments");
-    AssertionsForClassTypes.assertThat(thrown).isInstanceOf(RedisParametersMismatchException.class);
+    assertThatThrownBy(() -> command.execute(mockContext()))
+        .hasMessageContaining("wrong number of arguments")
+        .isInstanceOf(RedisParametersMismatchException.class);
   }
 
   public ExecutionHandlerContext mockContext() {

@@ -41,7 +41,7 @@ public class MGetExecutor extends StringExecutor {
     for (int i = 1; i < commandElems.size(); i++) {
       byte[] keyArray = commandElems.get(i);
       ByteArrayWrapper key = new ByteArrayWrapper(keyArray);
-      values.add(stringCommands.get(key));
+      values.add(stringCommands.mget(key));
     }
 
     return respondBulkStrings(values);

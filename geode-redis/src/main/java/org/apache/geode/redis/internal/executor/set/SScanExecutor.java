@@ -93,7 +93,7 @@ public class SScanExecutor extends AbstractScanExecutor {
     }
 
     RedisSetCommands redisSetCommands =
-        new RedisSetCommandsFunctionExecutor(context.getRegionProvider().getDataRegion());
+        new RedisSetCommandsFunctionInvoker(context.getRegionProvider().getDataRegion());
     List<Object> returnList = redisSetCommands.sscan(key, matchPattern, count, cursor);
 
     return RedisResponse.scan(returnList);

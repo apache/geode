@@ -50,6 +50,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.internal.util.ObjectIntProcedure;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -370,7 +371,8 @@ public class FetchKeysMessage extends PartitionMessage {
 
       // always write at least one chunk
       final HeapDataOutputStream mos = new HeapDataOutputStream(
-          InitialImageOperation.CHUNK_SIZE_IN_BYTES + 2048, recipient.getVersionObject());
+          InitialImageOperation.CHUNK_SIZE_IN_BYTES + 2048, Versioning
+              .getKnownVersionOrDefault(recipient.getVersionOrdinalObject(), Version.CURRENT));
       do {
         mos.reset();
 

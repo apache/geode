@@ -26,7 +26,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.GatewayReceiverMXBean;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.SingleGfshCommand;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
@@ -35,7 +35,7 @@ import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class StatusGatewayReceiverCommand extends SingleGfshCommand {
+public class StatusGatewayReceiverCommand extends GfshCommand {
   @CliCommand(value = CliStrings.STATUS_GATEWAYRECEIVER,
       help = CliStrings.STATUS_GATEWAYRECEIVER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)

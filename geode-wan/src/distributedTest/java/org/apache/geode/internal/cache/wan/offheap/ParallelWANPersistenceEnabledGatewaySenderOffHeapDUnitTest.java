@@ -30,6 +30,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderOffHeapDUnitTest
 
   @Override
   public boolean isOffHeap() {
+
     return true;
   }
 

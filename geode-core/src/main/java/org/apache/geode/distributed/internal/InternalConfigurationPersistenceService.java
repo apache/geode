@@ -66,7 +66,6 @@ import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.internal.JarDeployer;
 import org.apache.geode.internal.cache.ClusterConfigurationLoader;
@@ -129,7 +128,8 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
   public InternalConfigurationPersistenceService(InternalCache cache, Path workingDirectory,
       JAXBService jaxbService) {
     this(cache,
-        sharedConfigLockService(cache.getDistributedSystem()),
+        DLockService.getOrCreateService(SHARED_CONFIG_LOCK_SERVICE_NAME,
+            cache.getInternalDistributedSystem()),
         jaxbService,
         workingDirectory.resolve(CLUSTER_CONFIG_ARTIFACTS_DIR_NAME),
         workingDirectory
@@ -151,24 +151,6 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     this.sharedConfigLockingService = sharedConfigLockingService;
     status.set(SharedConfigurationStatus.NOT_STARTED);
     this.jaxbService = jaxbService;
-  }
-
-
-  /**
-   * Gets or creates (if not created) shared configuration lock service
-   */
-  private static DistributedLockService sharedConfigLockService(DistributedSystem ds) {
-    DistributedLockService sharedConfigDls =
-        DLockService.getServiceNamed(SHARED_CONFIG_LOCK_SERVICE_NAME);
-    try {
-      if (sharedConfigDls == null) {
-        sharedConfigDls = DLockService.create(SHARED_CONFIG_LOCK_SERVICE_NAME,
-            (InternalDistributedSystem) ds, true, true);
-      }
-    } catch (IllegalArgumentException ignore) {
-      return DLockService.getServiceNamed(SHARED_CONFIG_LOCK_SERVICE_NAME);
-    }
-    return sharedConfigDls;
   }
 
   public JAXBService getJaxbService() {
@@ -193,7 +175,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
           xmlContent = generateInitialXmlContent();
         }
         try {
-          final Document doc = XmlUtils.createAndUpgradeDocumentFromXml(xmlContent);
+          Document doc = XmlUtils.createAndUpgradeDocumentFromXml(xmlContent);
           XmlUtils.addNewNode(doc, xmlEntity);
           configuration.setCacheXmlContent(XmlUtils.prettyXml(doc));
           configRegion.put(group, configuration);
@@ -209,7 +191,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
   /**
    * Deletes the xml entity from the shared configuration.
    */
-  public void deleteXmlEntity(final XmlEntity xmlEntity, String[] groups) {
+  public void deleteXmlEntity(XmlEntity xmlEntity, String[] groups) {
     lockSharedConfiguration();
     try {
       Region<String, Configuration> configRegion = getConfigurationRegion();
@@ -345,7 +327,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     }
   }
 
-  private static void removeOtherVersionsOf(Path groupDir, String jarFileName) throws IOException {
+  private static void removeOtherVersionsOf(Path groupDir, String jarFileName) {
     String artifactId = JarDeployer.getArtifactId(jarFileName);
     for (File file : groupDir.toFile().listFiles()) {
       if (file.getName().equals(jarFileName)) {
@@ -371,19 +353,19 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
   }
 
   /**
-   * Removes the jar files from the shared configuration. used when undeploy jars
+   * Removes the jar files from the shared configuration. used when un-deploy jars
    *
    * @param jarNames Names of the jar files.
    * @param groups Names of the groups which had the jar file deployed.
    * @return true on success.
    */
-  public boolean removeJars(final String[] jarNames, String[] groups) {
+  public boolean removeJars(String[] jarNames, String[] groups) {
     lockSharedConfiguration();
     boolean success = true;
     try {
       Region<String, Configuration> configRegion = getConfigurationRegion();
       if (groups == null) {
-        groups = configRegion.keySet().stream().toArray(String[]::new);
+        groups = configRegion.keySet().toArray(new String[0]);
       }
       for (String group : groups) {
         Configuration configuration = configRegion.get(group);
@@ -437,7 +419,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     downloadJarFromLocator(groupName, jarName, locators.get(0));
   }
 
-  // used in the cluster config change listener when jarnames are changed in the internal region
+  // used in the cluster config change listener when jar names are changed in the internal region
   public void downloadJarFromLocator(String groupName, String jarName,
       DistributedMember sourceLocator) throws IllegalStateException, IOException {
     logger.info("Downloading jar {} from locator {}", jarName, sourceLocator.getName());
@@ -564,7 +546,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     return modified;
   }
 
-  private void persistSecuritySettings(final Region<String, Configuration> configRegion) {
+  private void persistSecuritySettings(Region<String, Configuration> configRegion) {
     Properties securityProps = cache.getDistributedSystem().getSecurityProperties();
 
     Configuration clusterPropertiesConfig =
@@ -694,10 +676,10 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
       if (!waitingRegions.isEmpty()) {
         status.compareAndSet(SharedConfigurationStatus.STARTED,
             SharedConfigurationStatus.WAITING);
-        Set<PersistentMemberID> persMemIds =
+        Set<PersistentMemberID> persistentMemberIDS =
             waitingRegions.get(SEPARATOR_CHAR + CONFIG_REGION_NAME);
-        for (PersistentMemberID persMemId : persMemIds) {
-          newerSharedConfigurationLocatorInfo.add(new PersistentMemberPattern(persMemId));
+        for (PersistentMemberID persistentMemberID : persistentMemberIDS) {
+          newerSharedConfigurationLocatorInfo.add(new PersistentMemberPattern(persistentMemberID));
         }
       }
     }
@@ -706,6 +688,9 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
 
   // configDir is the dir that has all the groups structure underneath it.
   public void loadSharedConfigurationFromDir(File configDir) throws IOException {
+    if (!configDir.exists()) {
+      throw new IOException("ConfigDir does not exist: " + configDir.toPath());
+    }
     lockSharedConfiguration();
     try {
       File[] groupNames = configDir.listFiles((FileFilter) DirectoryFileFilter.INSTANCE);
@@ -718,14 +703,14 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
       Map<String, Configuration> sharedConfiguration = new HashMap<>();
       for (File groupName : groupNames) {
         Configuration configuration = readConfiguration(groupName);
-        logger.info(configuration.getConfigName() + " xml content: \n"
+        logger.info(configuration.getConfigName() + " xml content: " + System.lineSeparator()
             + configuration.getCacheXmlContent());
         logger.info(configuration.getConfigName() + " properties: "
             + configuration.getGemfireProperties().size());
         logger.info(configuration.getConfigName() + " jars: "
             + Strings.join(configuration.getJarNames(), ", "));
         sharedConfiguration.put(groupName.getName(), configuration);
-        if (needToCopyJars && configuration.getJarNames().size() > 0) {
+        if (needToCopyJars && !configuration.getJarNames().isEmpty()) {
           Path groupDirPath = createConfigDirIfNecessary(configuration.getConfigName()).toPath();
           for (String jarName : configuration.getJarNames()) {
             Files.copy(groupName.toPath().resolve(jarName), groupDirPath.resolve(jarName));
@@ -747,7 +732,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
   }
 
   // Write the content of xml and properties into the file system for exporting purpose
-  public void writeConfigToFile(final Configuration configuration, File rootDir)
+  public void writeConfigToFile(Configuration configuration, File rootDir)
       throws IOException {
     File configDir = createConfigDirIfNecessary(rootDir, configuration.getConfigName());
 
@@ -868,11 +853,11 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
   /**
    * Creates a directory for this configuration if it doesn't already exist.
    */
-  private File createConfigDirIfNecessary(final String configName) throws IOException {
+  private File createConfigDirIfNecessary(String configName) throws IOException {
     return createConfigDirIfNecessary(configDirPath.toFile(), configName);
   }
 
-  private File createConfigDirIfNecessary(File clusterConfigDir, final String configName)
+  private File createConfigDirIfNecessary(File clusterConfigDir, String configName)
       throws IOException {
     if (!clusterConfigDir.exists() && !clusterConfigDir.mkdirs()) {
       throw new IOException("Cannot create directory : " + configDirPath);

@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.rollingupgrade;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -47,11 +48,15 @@ import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.api.MembershipView;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.VersionOrdinal;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -204,6 +209,22 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
           shortcutName, regionName, locatorPorts);
       verifyValues(objectType, regionName, 0, 10, server2);
       putAndVerify(objectType, server2, regionName, 15, 25, server1);
+
+      final short versionOrdinalAfterUpgrade = Version.getCurrentVersion().ordinal();
+      locator.invoke(() -> {
+
+        final Locator theLocator = Locator.getLocator();
+        final DistributedSystem distributedSystem = theLocator.getDistributedSystem();
+        final InternalDistributedSystem ids =
+            (InternalDistributedSystem) distributedSystem;
+        final DistributionManager distributionManager = ids.getDistributionManager();
+        final MembershipView<InternalDistributedMember> view =
+            distributionManager.getDistribution().getView();
+
+        for (final InternalDistributedMember member : view.getMembers()) {
+          assertThat(member.getVersionOrdinal()).isEqualTo(versionOrdinalAfterUpgrade);
+        }
+      });
 
     } finally {
       invokeRunnableInVMs(true, invokeStopLocator(), locator);
@@ -659,7 +680,7 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
   private static void assertVersion(Cache cache, short ordinal) {
     DistributedSystem ds = cache.getDistributedSystem();
     InternalDistributedMember member = (InternalDistributedMember) ds.getDistributedMember();
-    Version thisVersion = member.getVersionObject();
+    final VersionOrdinal thisVersion = member.getVersionOrdinalObject();
     short thisOrdinal = thisVersion.ordinal();
     if (ordinal != thisOrdinal) {
       throw new Error(

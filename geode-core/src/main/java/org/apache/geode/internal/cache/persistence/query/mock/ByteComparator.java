@@ -58,7 +58,7 @@ public class ByteComparator implements Comparator<Object> {
     }
 
     for (int i = 0; i < o1Bytes.length; i++) {
-      if (i > o2Bytes.length) {
+      if (i >= o2Bytes.length) {
         return 1;
       } else {
         int result = o1Bytes[i] - o2Bytes[i];

@@ -17,7 +17,6 @@ package org.apache.geode.redis.internal.executor.pubsub;
 
 import java.util.List;
 
-import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
@@ -29,13 +28,9 @@ public class PublishExecutor extends AbstractExecutor {
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<byte[]> args = command.getProcessedCommand();
-    if (args.size() != 3) {
-      return RedisResponse.error(ArityDef.PUBLISH);
-    }
 
-    String channelName = new String(args.get(1));
     long publishCount =
-        context.getPubSub().publish(getDataRegion(context), channelName, args.get(2));
+        context.getPubSub().publish(getDataRegion(context), args.get(1), args.get(2));
 
     return RedisResponse.integer(publishCount);
   }

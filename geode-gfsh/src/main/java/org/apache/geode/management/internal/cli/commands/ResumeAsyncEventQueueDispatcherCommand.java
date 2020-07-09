@@ -22,7 +22,7 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.SingleGfshCommand;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.functions.ResumeAsyncEventQueueDispatcherFunction;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
@@ -31,7 +31,7 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 
-public class ResumeAsyncEventQueueDispatcherCommand extends SingleGfshCommand {
+public class ResumeAsyncEventQueueDispatcherCommand extends GfshCommand {
 
   @CliCommand(value = CliStrings.RESUME_ASYNCEVENTQUEUE,
       help = CliStrings.RESUME_ASYNCEVENTQUEUE__HELP)

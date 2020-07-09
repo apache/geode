@@ -45,7 +45,7 @@ public class SocketMessageWriter {
       msg = "";
     }
     dos.writeUTF(msg);
-    if (clientVersion != null && clientVersion.compareTo(Version.GFE_61) >= 0) {
+    if (clientVersion != null && clientVersion.isNotOlderThan(Version.GFE_61)) {
       // get all the instantiators.
       Instantiator[] instantiators = InternalInstantiator.getInstantiators();
       HashMap instantiatorMap = new HashMap();
@@ -68,7 +68,7 @@ public class SocketMessageWriter {
         for (DataSerializer dataSerializer : dataSerializers) {
           dataSerializersMap.put(dataSerializer.getId(),
               dataSerializer.getClass().toString().substring(6));
-          if (clientVersion.compareTo(Version.GFE_6516) >= 0) {
+          if (clientVersion.isNotOlderThan(Version.GFE_6516)) {
             ArrayList<String> supportedClassNames = new ArrayList<String>();
             for (Class clazz : dataSerializer.getSupportedClasses()) {
               supportedClassNames.add(clazz.getName());
@@ -78,10 +78,10 @@ public class SocketMessageWriter {
         }
       }
       DataSerializer.writeHashMap(dataSerializersMap, dos);
-      if (clientVersion.compareTo(Version.GFE_6516) >= 0) {
+      if (clientVersion.isNotOlderThan(Version.GFE_6516)) {
         DataSerializer.writeHashMap(dsToSupportedClasses, dos);
       }
-      if (clientVersion.compareTo(Version.GEODE_1_5_0) >= 0) {
+      if (clientVersion.isNotOlderThan(Version.GEODE_1_5_0)) {
         dos.writeInt(CLIENT_PING_TASK_PERIOD);
       }
     }

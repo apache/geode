@@ -1,0 +1,5 @@
+ansicolors
+requests
+sseclient-py
+tqdm
+urllib3

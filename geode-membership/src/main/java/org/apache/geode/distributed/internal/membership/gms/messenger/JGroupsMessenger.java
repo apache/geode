@@ -94,6 +94,8 @@ import org.apache.geode.internal.serialization.BufferDataOutputStream;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
+import org.apache.geode.internal.serialization.Versioning;
+import org.apache.geode.internal.serialization.VersioningIO;
 import org.apache.geode.logging.internal.OSProcess;
 import org.apache.geode.util.internal.GeodeGlossary;
 
@@ -865,11 +867,11 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
    *
    * @param gfmsg the DistributionMessage
    * @param src the sender address
-   * @param version the version of the recipient
+   * @param versionOrdinal the version of the recipient
    * @return the new message
    */
   org.jgroups.Message createJGMessage(Message<ID> gfmsg, JGAddress src, ID dst,
-      short version) throws IOException {
+      short versionOrdinal) throws IOException {
     gfmsg.registerProcessor();
     org.jgroups.Message msg = new org.jgroups.Message();
     msg.setDest(null);
@@ -877,13 +879,17 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
     setMessageFlags(gfmsg, msg);
     try {
       long start = services.getStatistics().startMsgSerialization();
+      final Version version =
+          Versioning.getKnownVersionOrDefault(
+              Versioning.getVersionOrdinal(versionOrdinal),
+              Version.CURRENT);
       BufferDataOutputStream out_stream =
-          new BufferDataOutputStream(Version.fromOrdinalNoThrow(version, false));
-      Version.writeOrdinal(out_stream,
+          new BufferDataOutputStream(version);
+      VersioningIO.writeOrdinal(out_stream,
           Version.getCurrentVersion().ordinal(), true);
       if (encrypt != null) {
         out_stream.writeBoolean(true);
-        writeEncryptedMessage(gfmsg, dst, version, out_stream);
+        writeEncryptedMessage(gfmsg, dst, versionOrdinal, out_stream);
       } else {
         out_stream.writeBoolean(false);
         serializeMessage(gfmsg, out_stream);
@@ -903,7 +909,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
     return msg;
   }
 
-  void writeEncryptedMessage(Message<ID> gfmsg, ID recipient, short version,
+  void writeEncryptedMessage(Message<ID> gfmsg, ID recipient, short versionOrdinal,
       BufferDataOutputStream out)
       throws Exception {
     long start = services.getStatistics().startUDPMsgEncryption();
@@ -936,8 +942,12 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
         StaticSerialization.writeByteArray(pk, out);
       }
 
+      final Version version =
+          Versioning.getKnownVersionOrDefault(
+              Versioning.getVersionOrdinal(versionOrdinal),
+              Version.CURRENT);
       BufferDataOutputStream out_stream =
-          new BufferDataOutputStream(Version.fromOrdinalNoThrow(version, false));
+          new BufferDataOutputStream(version);
       byte[] messageBytes = serializeMessage(gfmsg, out_stream);
 
       if (pkMbr != null) {
@@ -1026,11 +1036,14 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
       DataInputStream dis =
           new DataInputStream(new ByteArrayInputStream(buf, jgmsg.getOffset(), jgmsg.getLength()));
 
-      short ordinal = Version.readOrdinal(dis);
+      short ordinal = VersioningIO.readOrdinal(dis);
 
       if (ordinal < Version.getCurrentVersion().ordinal()) {
+        final Version version = Versioning.getKnownVersionOrDefault(
+            Versioning.getVersionOrdinal(ordinal),
+            Version.CURRENT);
         dis = new VersionedDataInputStream(dis,
-            Version.fromOrdinalNoThrow(ordinal, false));
+            version);
       }
 
       // read
@@ -1126,8 +1139,11 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
         DataInputStream in = new DataInputStream(new ByteArrayInputStream(data));
 
         if (ordinal < Version.getCurrentVersion().ordinal()) {
+          final Version version = Versioning.getKnownVersionOrDefault(
+              Versioning.getVersionOrdinal(ordinal),
+              Version.CURRENT);
           in = new VersionedDataInputStream(in,
-              Version.fromOrdinalNoThrow(ordinal, false));
+              version);
         }
 
         Message<ID> result = deserializeMessage(in, ordinal);

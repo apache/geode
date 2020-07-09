@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InvalidClassException;
 import java.io.Serializable;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -211,13 +212,12 @@ public abstract class AnalyzeDataSerializablesJUnitTestBase {
   }
 
   protected String getSrcPathFor(File file) {
-    return getSrcPathFor(file, "test");
-  }
-
-  private String getSrcPathFor(File file, String testOrMain) {
-    return file.getAbsolutePath().replace(
-        "build" + File.separator + "resources" + File.separator + "test",
-        "src" + File.separator + testOrMain + File.separator + "resources");
+    final String srcResourcePath = Paths.get("src", "integrationTest", "resources").toString();
+    final String line =
+        "(.*" + File.separator + "geode" + File.separator + ").*(" + File.separator + "org.*)";
+    return file.getAbsolutePath().replaceAll(
+        line,
+        "$1" + getModuleName() + File.separator + srcResourcePath + "$2");
   }
 
   protected List<String> loadExcludedClasses(File exclusionsFile) throws IOException {
@@ -296,13 +296,28 @@ public abstract class AnalyzeDataSerializablesJUnitTestBase {
   }
 
   protected File createEmptyFile(String fileName) throws IOException {
-    File file = new File(fileName);
+    final String workingDir = System.getProperty("user.dir");
+    final String filePath;
+    if (isIntelliJDir(workingDir)) {
+      String buildDir = workingDir.replace(getModuleName(), "");
+      buildDir =
+          Paths.get(buildDir, "out", "production", "geode." + getModuleName() + ".integrationTest")
+              .toString();
+      filePath = buildDir + File.separator + fileName;
+    } else {
+      filePath = fileName;
+    }
+    File file = new File(filePath);
     if (file.exists()) {
       assertThat(file.delete()).isTrue();
     }
     assertThat(file.createNewFile()).isTrue();
     assertThat(file).exists().canWrite();
     return file;
+  }
+
+  private boolean isIntelliJDir(final String workingDir) {
+    return !workingDir.contains("build");
   }
 
   /**

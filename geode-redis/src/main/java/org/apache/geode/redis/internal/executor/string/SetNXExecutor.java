@@ -26,11 +26,11 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class SetNXExecutor extends StringExecutor {
 
-  private final int SET = 1;
+  private static final int SET = 1;
 
-  private final int NOT_SET = 0;
+  private static final int NOT_SET = 0;
 
-  private final int VALUE_INDEX = 2;
+  private static final int VALUE_INDEX = 2;
 
   @Override
   public RedisResponse executeCommand(Command command,

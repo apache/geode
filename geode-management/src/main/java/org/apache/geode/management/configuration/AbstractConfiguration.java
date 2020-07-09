@@ -47,7 +47,7 @@ import org.apache.geode.management.runtime.RuntimeInfo;
 @Experimental
 public abstract class AbstractConfiguration<R extends RuntimeInfo>
     implements Identifiable<String>, JsonSerializable {
-
+  private static final long serialVersionUID = -6612840641128145954L;
   /**
    * The reserved group name that represents the predefined "cluster" group.
    * Every member of a cluster automatically belongs to this group.

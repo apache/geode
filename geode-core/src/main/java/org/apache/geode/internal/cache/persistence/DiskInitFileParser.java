@@ -42,8 +42,9 @@ import org.apache.geode.internal.cache.Oplog.OPLOG_TYPE;
 import org.apache.geode.internal.cache.ProxyBucketRegion;
 import org.apache.geode.internal.cache.versions.RegionVersionHolder;
 import org.apache.geode.internal.logging.log4j.LogMarker;
-import org.apache.geode.internal.serialization.UnsupportedSerializationVersionException;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.Versioning;
+import org.apache.geode.internal.serialization.VersioningIO;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class DiskInitFileParser {
@@ -426,17 +427,17 @@ public class DiskInitFileParser {
         }
           break;
         case DiskInitFile.IFREC_GEMFIRE_VERSION: {
-          short ver = Version.readOrdinal(dis);
+          short ver = VersioningIO.readOrdinal(dis);
           readEndOfRecord(dis);
           if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
             logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE, "IFREC_GEMFIRE_VERSION version={}",
                 ver);
           }
-          try {
-            gfversion = Version.fromOrdinal(ver);
-          } catch (UnsupportedSerializationVersionException e) {
+          gfversion = Versioning.getKnownVersionOrDefault(
+              Versioning.getVersionOrdinal(ver), null);
+          if (gfversion == null) {
             throw new DiskAccessException(
-                String.format("Unknown version ordinal %s found when recovering Oplogs", ver), e,
+                String.format("Unknown version ordinal %s found when recovering Oplogs", ver),
                 this.interpreter.getNameForError());
           }
           interpreter.cmnGemfireVersion(gfversion);

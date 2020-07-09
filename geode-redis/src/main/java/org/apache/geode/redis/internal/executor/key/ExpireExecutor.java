@@ -37,10 +37,6 @@ public class ExpireExecutor extends AbstractExecutor implements Extendable {
     List<byte[]> commandElems = command.getProcessedCommand();
     int SECONDS_INDEX = 2;
 
-    if (commandElems.size() != 3) {
-      return RedisResponse.error(getArgsError());
-    }
-
     ByteArrayWrapper key = command.getKey();
     byte[] delayByteArray = commandElems.get(SECONDS_INDEX);
     long delay;
@@ -56,7 +52,7 @@ public class ExpireExecutor extends AbstractExecutor implements Extendable {
 
     long timestamp = System.currentTimeMillis() + delay;
 
-    RedisKeyCommands redisKeyCommands = new RedisKeyCommandsFunctionExecutor(
+    RedisKeyCommands redisKeyCommands = new RedisKeyCommandsFunctionInvoker(
         context.getRegionProvider().getDataRegion());
     int result = redisKeyCommands.pexpireat(key, timestamp);
 

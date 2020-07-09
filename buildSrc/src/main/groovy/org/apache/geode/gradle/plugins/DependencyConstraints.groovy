@@ -42,7 +42,7 @@ class DependencyConstraints implements Plugin<Project> {
     deps.put("jgroups.version", "3.6.14.Final")
     deps.put("log4j.version", "2.13.1")
     deps.put("micrometer.version", "1.4.1")
-    deps.put("shiro.version", "1.5.2")
+    deps.put("shiro.version", "1.5.3")
     deps.put("slf4j-api.version", "1.7.30")
 
     // These version numbers are used in testing various versions of tomcat and are consumed explicitly
@@ -53,7 +53,7 @@ class DependencyConstraints implements Plugin<Project> {
     deps.put("tomcat6.version", "6.0.37")
     deps.put("tomcat7.version", "7.0.99")
     deps.put("tomcat8.version", "8.5.50")
-    deps.put("tomcat9.version", "9.0.12")
+    deps.put("tomcat9.version", "9.0.33")
 
     // The jetty version is also hard-coded in geode-assembly:test
     // at o.a.g.sessions.tests.GenericAppServerInstall.java

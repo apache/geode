@@ -65,6 +65,8 @@ import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
+import org.apache.geode.internal.serialization.Versioning;
+import org.apache.geode.internal.serialization.VersioningIO;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
@@ -115,7 +117,8 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
     if (ver > Version.CURRENT_ORDINAL) {
       overrideClientVersion = ver;
     } else {
-      currentClientVersion = Version.fromOrdinalOrCurrent(ver);
+      currentClientVersion =
+          Versioning.getKnownVersionOrDefault(Versioning.getVersionOrdinal(ver), Version.CURRENT);
       overrideClientVersion = -1;
     }
   }
@@ -128,7 +131,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
     // handshakes.
     // Client side handshake code uses this.currentClientVersion which can be
     // set via tests.
-    if (currentClientVersion.compareTo(Version.GFE_603) >= 0) {
+    if (currentClientVersion.isNotOlderThan(Version.GFE_603)) {
       this.overrides = new byte[] {this.clientConflation};
     }
   }
@@ -212,11 +215,13 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
       // Successful handshake for GATEWAY_TO_GATEWAY mode sets the peer version in connection
       if (communicationMode.isWAN() && !(acceptanceCode == REPLY_EXCEPTION_AUTHENTICATION_REQUIRED
           || acceptanceCode == REPLY_EXCEPTION_AUTHENTICATION_FAILED)) {
-        short wanSiteVersion = Version.readOrdinal(dis);
+        short wanSiteVersion = VersioningIO.readOrdinal(dis);
         conn.setWanSiteVersion(wanSiteVersion);
         // establish a versioned stream for the other site, if necessary
         if (wanSiteVersion < Version.CURRENT_ORDINAL) {
-          dis = new VersionedDataInputStream(dis, Version.fromOrdinalOrCurrent(wanSiteVersion));
+          dis = new VersionedDataInputStream(dis, Versioning
+              .getKnownVersionOrDefault(Versioning.getVersionOrdinal(wanSiteVersion),
+                  Version.CURRENT));
         }
       }
 
@@ -235,13 +240,14 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
       // Read delta-propagation property value from server.
       // [sumedh] Static variable below? Client can connect to different
       // DSes with different values of this. It shoule be a member variable.
-      if (!communicationMode.isWAN() && currentClientVersion.compareTo(Version.GFE_61) >= 0) {
+      if (!communicationMode.isWAN() && currentClientVersion.isNotOlderThan(Version.GFE_61)) {
         ((InternalDistributedSystem) system).setDeltaEnabledOnServer(dis.readBoolean());
       }
 
       // validate that the remote side has a different distributed system id.
-      if (communicationMode.isWAN() && Version.GFE_66.compareTo(conn.getWanSiteVersion()) <= 0
-          && currentClientVersion.compareTo(Version.GFE_66) >= 0) {
+      if (communicationMode.isWAN()
+          && Version.GFE_66.compareTo(Versioning.getVersionOrdinal(conn.getWanSiteVersion())) <= 0
+          && currentClientVersion.isNotOlderThan(Version.GFE_66)) {
         int remoteDistributedSystemId = in.read();
         int localDistributedSystemId =
             ((InternalDistributedSystem) system).getDistributionManager().getDistributedSystemId();
@@ -253,8 +259,9 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
         }
       }
       // Read the PDX registry size from the remote size
-      if (communicationMode.isWAN() && Version.GFE_80.compareTo(conn.getWanSiteVersion()) <= 0
-          && currentClientVersion.compareTo(Version.GFE_80) >= 0) {
+      if (communicationMode.isWAN()
+          && Version.GFE_80.compareTo(Versioning.getVersionOrdinal(conn.getWanSiteVersion())) <= 0
+          && currentClientVersion.isNotOlderThan(Version.GFE_80)) {
         int remotePdxSize = dis.readInt();
         serverQStatus.setPdxSize(remotePdxSize);
       }
@@ -323,7 +330,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
       // [sumedh] nothing more to be done for older clients used in tests
       // there is a difference in serializer map registration for >= 6.5.1.6
       // clients but that is not used in tests
-      if (currentClientVersion.compareTo(Version.GFE_61) < 0) {
+      if (currentClientVersion.isOlderThan(Version.GFE_61)) {
         return new ServerQueueStatus(endpointType, queueSize, member);
       }
       HashMap instantiatorMap = DataSerializer.readHashMap(dis);
@@ -373,9 +380,9 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
       hdos.writeByte(communicationMode.getModeNumber());
       if (overrideClientVersion > 0) {
         // for testing
-        Version.writeOrdinal(hdos, overrideClientVersion, true);
+        VersioningIO.writeOrdinal(hdos, overrideClientVersion, true);
       } else {
-        Version.writeOrdinal(hdos, currentClientVersion.ordinal(), true);
+        VersioningIO.writeOrdinal(hdos, currentClientVersion.ordinal(), true);
       }
 
       hdos.writeByte(replyCode);
@@ -393,7 +400,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
       DataOutput idOut = new VersionedDataOutputStream(hdos, Version.GFE_82);
       DataSerializer.writeObject(this.id, idOut);
 
-      if (currentClientVersion.compareTo(Version.GFE_603) >= 0) {
+      if (currentClientVersion.isNotOlderThan(Version.GFE_603)) {
         byte[] overrides = getOverrides();
         for (int bytes = 0; bytes < overrides.length; bytes++) {
           hdos.writeByte(overrides[bytes]);

@@ -81,7 +81,6 @@ public class GlobPattern {
   private Pattern createPattern(String glob) {
     StringBuilder regex = new StringBuilder();
     int setOpen = 0;
-    int curlyOpen = 0;
     int len = glob.length();
     hasWildcard = false;
 
@@ -90,17 +89,19 @@ public class GlobPattern {
 
       switch (c) {
         case BACKSLASH:
-          if (++i >= len) {
-            error("Missing escaped character", glob, i);
+          if (++i < len) {
+            regex.append(c).append(glob.charAt(i));
+            continue;
           }
-          regex.append(c).append(glob.charAt(i));
-          continue;
+          break;
         case '.':
         case '$':
         case '(':
         case ')':
         case '|':
         case '+':
+        case '{':
+        case '!':
           // escape regex special chars that are not glob special chars
           regex.append(BACKSLASH);
           break;
@@ -112,25 +113,9 @@ public class GlobPattern {
           regex.append('.');
           hasWildcard = true;
           continue;
-        case '{': // start of a group
-          regex.append("(?:"); // non-capturing
-          curlyOpen++;
-          hasWildcard = true;
-          continue;
-        case ',':
-          regex.append(curlyOpen > 0 ? '|' : c);
-          continue;
-        case '}':
-          if (curlyOpen > 0) {
-            // end of a group
-            curlyOpen--;
-            regex.append(")");
-            continue;
-          }
-          break;
         case '[':
           if (setOpen > 0) {
-            error("Unclosed character class", glob, i);
+            regex.append(BACKSLASH);
           }
           setOpen++;
           hasWildcard = true;
@@ -140,13 +125,7 @@ public class GlobPattern {
             regex.append(BACKSLASH);
           }
           break;
-        case '!': // [! needs to be translated to [^
-          regex.append(setOpen > 0 && '[' == glob.charAt(i - 1) ? '^' : '!');
-          continue;
         case ']':
-          // Many set errors like [][] could not be easily detected here,
-          // as []], []-] and [-] are all valid POSIX glob and java regex.
-          // We'll just let the regex compiler do the real work.
           setOpen = 0;
           break;
         default:
@@ -155,19 +134,10 @@ public class GlobPattern {
     }
 
     if (setOpen > 0) {
-      error("Unclosed character class", glob, len);
+      regex.append(']');
     }
-    if (curlyOpen > 0) {
-      error("Unclosed group", glob, len);
-    }
-    return Pattern.compile(regex.toString());
-  }
 
-  /**
-   * @return true if this is a wildcard pattern (with special chars)
-   */
-  public boolean hasWildcard() {
-    return hasWildcard;
+    return Pattern.compile(regex.toString());
   }
 
   @Override

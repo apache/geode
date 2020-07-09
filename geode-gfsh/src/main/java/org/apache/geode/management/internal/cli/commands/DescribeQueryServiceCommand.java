@@ -27,7 +27,7 @@ import org.apache.geode.cache.query.management.configuration.QueryConfigService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.management.cli.SingleGfshCommand;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.functions.DescribeQueryServiceFunction;
 import org.apache.geode.management.internal.cli.result.model.DataResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
@@ -35,7 +35,7 @@ import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class DescribeQueryServiceCommand extends SingleGfshCommand {
+public class DescribeQueryServiceCommand extends GfshCommand {
 
   static final String COMMAND_NAME = "describe query-service";
   private static final String COMMAND_HELP =

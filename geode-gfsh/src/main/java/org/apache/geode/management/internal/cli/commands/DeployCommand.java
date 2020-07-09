@@ -152,7 +152,7 @@ public class DeployCommand extends GfshCommand {
         result.setStatus(Result.Status.ERROR);
       } else {
         String[] strings = (String[]) cliResult.getSerializables();
-        for (int i = 0; i < strings.length; i += 2) {
+        for (int i = 0; i < strings.length - 1; i += 2) {
           deployResult.addRow(cliResult.getMemberIdOrName(), strings[i], strings[i + 1]);
         }
       }
@@ -226,5 +226,10 @@ public class DeployCommand extends GfshCommand {
 
       return result;
     }
+  }
+
+  @Override
+  public boolean affectsClusterConfiguration() {
+    return true;
   }
 }

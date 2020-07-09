@@ -1392,7 +1392,7 @@ public class ClusterDistributionManager implements DistributionManager {
           logger.debug("waiting for view {}.  Current DM view processed by all listeners is {}", id,
               membershipViewIdAcknowledged);
         }
-        membershipViewIdGuard.wait();
+        membershipViewIdGuard.wait(100);
       }
     }
   }
@@ -1543,13 +1543,13 @@ public class ClusterDistributionManager implements DistributionManager {
   @Override
   public void retainMembersWithSameOrNewerVersion(Collection<InternalDistributedMember> members,
       Version version) {
-    members.removeIf(id -> id.getVersionObject().compareTo(version) < 0);
+    members.removeIf(id -> id.getVersionOrdinalObject().compareTo(version) < 0);
   }
 
   @Override
   public void removeMembersWithSameOrNewerVersion(Collection<InternalDistributedMember> members,
       Version version) {
-    members.removeIf(id -> id.getVersionObject().compareTo(version) >= 0);
+    members.removeIf(id -> id.getVersionOrdinalObject().compareTo(version) >= 0);
   }
 
   @Override

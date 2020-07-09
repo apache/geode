@@ -49,6 +49,7 @@ import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.VersionOrdinal;
 import org.apache.geode.logging.internal.OSProcess;
 
 /**
@@ -549,8 +550,8 @@ public class InternalDistributedMember
   }
 
   @Override
-  public Version getVersionObject() {
-    return memberIdentifier.getVersionObject();
+  public VersionOrdinal getVersionOrdinalObject() {
+    return memberIdentifier.getVersionOrdinalObject();
   }
 
   @Override

@@ -102,6 +102,10 @@ public class RedisResponse {
     return new RedisResponse((bba) -> Coder.getErrorResponse(bba, error));
   }
 
+  public static RedisResponse customError(String error) {
+    return new RedisResponse((bba) -> Coder.getCustomErrorResponse(bba, error));
+  }
+
   public static RedisResponse wrongType(String error) {
     return new RedisResponse((bba) -> Coder.getWrongTypeResponse(bba, error));
   }
@@ -116,4 +120,9 @@ public class RedisResponse {
   public String toString() {
     return encode(new UnpooledByteBufAllocator(false)).toString(Charset.defaultCharset());
   }
+
+  public static RedisResponse doubleValue(double numericValue) {
+    return new RedisResponse((bba) -> Coder.getDoubleResponse(bba, numericValue));
+  }
+
 }

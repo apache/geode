@@ -96,7 +96,7 @@ public class LuceneQueryFunction implements InternalFunction<LuceneFunctionConte
     // Hence the query waits for the repositories to be ready instead of throwing the exception
     if (!remoteMembers.isEmpty()) {
       for (InternalDistributedMember remoteMember : remoteMembers) {
-        if (remoteMember.getVersionObject().ordinal() < Version.GEODE_1_6_0.ordinal()) {
+        if (remoteMember.getVersionOrdinalObject().ordinal() < Version.GEODE_1_6_0.ordinal()) {
           // re-execute but wait till indexing is complete
           execute(ctx, true);
           return;

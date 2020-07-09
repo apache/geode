@@ -310,7 +310,7 @@ public class Put65 extends BaseCommand {
           oldValue = ((CachedDeserializable) oldValue).getSerializedValue();
         } else if (oldValue instanceof byte[]) {
           oldValueIsObject = false;
-        } else if ((oldValue instanceof Token) && clientVersion.compareTo(Version.GFE_651) <= 0) {
+        } else if ((oldValue instanceof Token) && clientVersion.isNotNewerThan(Version.GFE_651)) {
           // older clients don't know that Token is now a DSFID class, so we
           // put the token in a serialized form they can consume
           HeapDataOutputStream str = new HeapDataOutputStream(Version.CURRENT);
@@ -344,7 +344,7 @@ public class Put65 extends BaseCommand {
             oldValue = ((CachedDeserializable) oldValue).getSerializedValue();
           } else if (oldValue instanceof byte[]) {
             oldValueIsObject = false;
-          } else if ((oldValue instanceof Token) && clientVersion.compareTo(Version.GFE_651) <= 0) {
+          } else if ((oldValue instanceof Token) && clientVersion.isNotNewerThan(Version.GFE_651)) {
             // older clients don't know that Token is now a DSFID class, so we
             // put the token in a serialized form they can consume
             HeapDataOutputStream str = new HeapDataOutputStream(Version.CURRENT);

@@ -51,13 +51,14 @@ public class PubSubImplJUnitTest {
 
     ChannelSubscription subscription =
         spy(new ChannelSubscription(deadClient,
-            "sally", mockContext));
+            "sally".getBytes(), mockContext));
 
     subscriptions.add(subscription);
 
     PubSubImpl subject = new PubSubImpl(subscriptions);
 
-    Long numberOfSubscriptions = subject.publishMessageToSubscribers("sally", "message".getBytes());
+    Long numberOfSubscriptions =
+        subject.publishMessageToSubscribers("sally".getBytes(), "message".getBytes());
 
     assertThat(numberOfSubscriptions).isEqualTo(0);
     assertThat(subscriptions.findSubscriptions(deadClient)).isEmpty();

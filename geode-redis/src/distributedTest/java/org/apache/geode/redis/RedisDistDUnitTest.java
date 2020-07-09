@@ -22,17 +22,17 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
+import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
 
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
-import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -99,8 +99,13 @@ public class RedisDistDUnitTest implements Serializable {
     }
   }
 
+  @After
+  public void cleanup() {
+    Jedis jedis = new Jedis(LOCALHOST, server1Port, JEDIS_TIMEOUT);
+    jedis.flushAll();
+  }
+
   @Test
-  @Ignore("GEODE-8127")
   public void testConcurrentSaddOperations_runWithoutException_orDataLoss()
       throws InterruptedException {
     List<String> set1 = new ArrayList<>();
@@ -137,11 +142,10 @@ public class RedisDistDUnitTest implements Serializable {
   @Test
   public void testConcCreateDestroy() throws Exception {
 
-    IgnoredException.addIgnoredException("RegionDestroyedException");
-    IgnoredException.addIgnoredException("IndexInvalidException");
-    final int ops = 40;
+    final int ops = 1000;
     final String hKey = KEY + "hash";
     final String sKey = KEY + "set";
+    final String key = KEY + "string";
 
     class ConcCreateDestroy extends ClientTestBase {
       protected ConcCreateDestroy(int port) {
@@ -153,19 +157,21 @@ public class RedisDistDUnitTest implements Serializable {
         Jedis jedis = new Jedis(LOCALHOST, port, JEDIS_TIMEOUT);
         Random r = new Random();
         for (int i = 0; i < ops; i++) {
-          int n = r.nextInt(4);
-          if (n == 0) {
-            if (r.nextBoolean()) {
+          int n = r.nextInt(3);
+          switch (n) {
+            // hashes
+            case 0:
               jedis.hset(hKey, randString(), randString());
-            } else {
               jedis.del(hKey);
-            }
-          } else {
-            if (r.nextBoolean()) {
+              break;
+            case 1:
               jedis.sadd(sKey, randString());
-            } else {
               jedis.del(sKey);
-            }
+              break;
+            case 2:
+              jedis.set(key, randString());
+              jedis.del(key);
+              break;
           }
         }
       }
@@ -175,6 +181,64 @@ public class RedisDistDUnitTest implements Serializable {
     AsyncInvocation<Void> i = client1.invokeAsync(new ConcCreateDestroy(server1Port));
     client2.invoke(new ConcCreateDestroy(server2Port));
     i.await();
+
+    Jedis jedis = new Jedis(LOCALHOST, server1Port, JEDIS_TIMEOUT);
+    assertThat(jedis.keys("*")).isEmpty();
+  }
+
+  @Test
+  public void testConcurrentDel_iteratingOverEachKey() {
+    int iterations = 1000;
+    String keyBaseName = "DELBASE";
+    Jedis jedis = new Jedis(LOCALHOST, server1Port, JEDIS_TIMEOUT);
+    Jedis jedis2 = new Jedis(LOCALHOST, server2Port, JEDIS_TIMEOUT);
+
+    new ConcurrentLoopingThreads(
+        iterations,
+        (i) -> jedis.set(keyBaseName + i, "value" + i))
+            .run();
+
+    AtomicLong deletedCount = new AtomicLong();
+    new ConcurrentLoopingThreads(iterations,
+        (i) -> deletedCount.addAndGet(jedis.del(keyBaseName + i)),
+        (i) -> deletedCount.addAndGet(jedis2.del(keyBaseName + i)))
+            .run();
+
+    assertThat(deletedCount.get()).isEqualTo(iterations);
+
+    for (int i = 0; i < iterations; i++) {
+      assertThat(jedis.get(keyBaseName + i)).isNull();
+    }
+  }
+
+  @Test
+  public void testConcurrentDel_bulk() {
+    int iterations = 1000;
+    String keyBaseName = "DELBASE";
+    Jedis jedis = new Jedis(LOCALHOST, server1Port, JEDIS_TIMEOUT);
+    Jedis jedis2 = new Jedis(LOCALHOST, server2Port, JEDIS_TIMEOUT);
+
+    new ConcurrentLoopingThreads(
+        iterations,
+        (i) -> jedis.set(keyBaseName + i, "value" + i))
+            .run();
+
+    String[] keys = new String[iterations];
+    for (int i = 0; i < iterations; i++) {
+      keys[i] = keyBaseName + i;
+    }
+
+    AtomicLong deletedCount = new AtomicLong();
+    new ConcurrentLoopingThreads(2,
+        (i) -> deletedCount.addAndGet(jedis.del(keys)),
+        (i) -> deletedCount.addAndGet(jedis2.del(keys)))
+            .run();
+
+    assertThat(deletedCount.get()).isEqualTo(iterations);
+
+    for (int i = 0; i < iterations; i++) {
+      assertThat(jedis.get(keyBaseName + i)).isNull();
+    }
   }
 
   /**

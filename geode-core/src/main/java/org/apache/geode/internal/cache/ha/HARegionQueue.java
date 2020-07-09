@@ -101,6 +101,7 @@ import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.internal.util.concurrent.StoppableCondition;
@@ -336,7 +337,6 @@ public class HARegionQueue implements RegionQueue {
       ClientProxyMembershipID clientProxyId, final byte clientConflation, boolean isPrimary,
       StatisticsClock statisticsClock)
       throws IOException, ClassNotFoundException, CacheException, InterruptedException {
-
     String processedRegionName = createRegionName(regionName);
 
     // Initialize the statistics
@@ -375,7 +375,10 @@ public class HARegionQueue implements RegionQueue {
     putGIIDataInRegion();
 
     if (this.getClass() == HARegionQueue.class) {
-      initialized.set(true);
+      synchronized (initialized) {
+        initialized.set(true);
+        initialized.notifyAll();
+      }
     }
   }
 
@@ -408,8 +411,29 @@ public class HARegionQueue implements RegionQueue {
       putGIIDataInRegion();
     }
     if (this.getClass() == HARegionQueue.class) {
-      initialized.set(true);
+      synchronized (initialized) {
+        initialized.set(true);
+        initialized.notifyAll();
+      }
     }
+  }
+
+  public boolean isQueueInitializedWithWait(long waitTime) {
+    try {
+      synchronized (initialized) {
+        if (!isQueueInitialized()) {
+          waitForInitialized(waitTime);
+        }
+      }
+    } catch (InterruptedException interruptedException) {
+      Thread.currentThread().interrupt();
+      return false;
+    }
+    return isQueueInitialized();
+  }
+
+  void waitForInitialized(long waitTime) throws InterruptedException {
+    initialized.wait(waitTime);
   }
 
   /**
@@ -2093,7 +2117,9 @@ public class HARegionQueue implements RegionQueue {
     Object inputValue;
     try {
       inputValue = BlobHelper.deserializeBlob(newValueCd.getSerializedValue(),
-          sender.getVersionObject(), null);
+          Versioning
+              .getKnownVersionOrDefault(sender.getVersionOrdinalObject(), Version.CURRENT),
+          null);
       newValueCd = new VMCachedDeserializable(inputValue, newValueCd.getSizeInBytes());
     } catch (IOException | ClassNotFoundException e) {
       throw new RuntimeException("Unable to deserialize HA event for region " + regionName);
@@ -2216,7 +2242,10 @@ public class HARegionQueue implements RegionQueue {
 
       super.putGIIDataInRegion();
       if (this.getClass() == BlockingHARegionQueue.class) {
-        initialized.set(true);
+        synchronized (initialized) {
+          initialized.set(true);
+          initialized.notifyAll();
+        }
       }
     }
 
@@ -2439,12 +2468,14 @@ public class HARegionQueue implements RegionQueue {
         throws IOException, ClassNotFoundException, CacheException, InterruptedException {
       super(regionName, cache, hrqa, haContainer, clientProxyId, clientConflation, isPrimary,
           statisticsClock);
+      threadIdToSeqId.keepPrevAcks = true;
+      durableIDsList = new LinkedHashSet();
+      ackedEvents = new HashMap();
 
-      this.threadIdToSeqId.keepPrevAcks = true;
-      this.durableIDsList = new LinkedHashSet();
-      this.ackedEvents = new HashMap();
-      this.initialized.set(true);
-
+      synchronized (initialized) {
+        initialized.set(true);
+        initialized.notifyAll();
+      }
     }
 
     @Override
@@ -3433,26 +3464,28 @@ public class HARegionQueue implements RegionQueue {
     }
   }
 
-  private void addClientCQsAndInterestList(ClientUpdateMessageImpl msg,
+  protected void addClientCQsAndInterestList(ClientUpdateMessageImpl msg,
       HAEventWrapper haEventWrapper, Map haContainer, String regionName) {
 
     ClientProxyMembershipID proxyID = ((HAContainerWrapper) haContainer).getProxyID(regionName);
-    if (haEventWrapper.getClientCqs() != null) {
-      CqNameToOp clientCQ = haEventWrapper.getClientCqs().get(proxyID);
-      if (clientCQ != null) {
-        msg.addClientCqs(proxyID, clientCQ);
+    if (proxyID != null) {
+      if (haEventWrapper.getClientCqs() != null) {
+        CqNameToOp clientCQ = haEventWrapper.getClientCqs().get(proxyID);
+        if (clientCQ != null) {
+          msg.addClientCqs(proxyID, clientCQ);
+        }
       }
-    }
 
-    // This is a remote HAEventWrapper.
-    // Add new Interested client lists.
-    ClientUpdateMessageImpl clientMsg =
-        (ClientUpdateMessageImpl) haEventWrapper.getClientUpdateMessage();
-    if (clientMsg != null) {
-      if (clientMsg.isClientInterestedInUpdates(proxyID)) {
-        msg.addClientInterestList(proxyID, true);
-      } else if (clientMsg.isClientInterestedInInvalidates(proxyID)) {
-        msg.addClientInterestList(proxyID, false);
+      // This is a remote HAEventWrapper.
+      // Add new Interested client lists.
+      ClientUpdateMessageImpl clientMsg =
+          (ClientUpdateMessageImpl) haEventWrapper.getClientUpdateMessage();
+      if (clientMsg != null) {
+        if (clientMsg.isClientInterestedInUpdates(proxyID)) {
+          msg.addClientInterestList(proxyID, true);
+        } else if (clientMsg.isClientInterestedInInvalidates(proxyID)) {
+          msg.addClientInterestList(proxyID, false);
+        }
       }
     }
   }

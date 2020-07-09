@@ -27,7 +27,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.GatewaySenderMXBean;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.SingleGfshCommand;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
@@ -35,7 +35,7 @@ import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class StopGatewaySenderCommand extends SingleGfshCommand {
+public class StopGatewaySenderCommand extends GfshCommand {
 
   @CliCommand(value = CliStrings.STOP_GATEWAYSENDER, help = CliStrings.STOP_GATEWAYSENDER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)

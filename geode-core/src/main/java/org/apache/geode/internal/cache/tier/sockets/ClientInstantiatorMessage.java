@@ -108,7 +108,7 @@ public class ClientInstantiatorMessage extends ClientUpdateMessageImpl {
   protected Message getMessage(CacheClientProxy proxy, byte[] latestValue) throws IOException {
     Version clientVersion = proxy.getVersion();
     Message message = null;
-    if (clientVersion.compareTo(Version.GFE_57) >= 0) {
+    if (clientVersion.isNotOlderThan(Version.GFE_57)) {
       message = getGFEMessage(proxy.getProxyID(), null, clientVersion);
     } else {
       throw new IOException(
@@ -126,7 +126,7 @@ public class ClientInstantiatorMessage extends ClientUpdateMessageImpl {
     message = new Message(instantiatorsLength + 1, clientVersion); // one for eventID
     // Set message type
     message.setMessageType(MessageType.REGISTER_INSTANTIATORS);
-    for (int i = 0; i < instantiatorsLength; i = i + 3) {
+    for (int i = 0; i < instantiatorsLength - 2; i += 3) {
       message.addBytesPart(this.serializedInstantiators[i]);
       message.addBytesPart(this.serializedInstantiators[i + 1]);
       message.addBytesPart(this.serializedInstantiators[i + 2]);

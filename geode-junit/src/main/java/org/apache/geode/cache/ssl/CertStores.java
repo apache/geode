@@ -131,7 +131,7 @@ public class CertStores {
     return sslConfigs;
   }
 
-  private void createTrustStore(String filename, String password)
+  public void createTrustStore(String filename, String password)
       throws GeneralSecurityException, IOException {
     KeyStore ks = KeyStore.getInstance("JKS");
     try (InputStream in = Files.newInputStream(Paths.get(filename))) {
@@ -148,7 +148,7 @@ public class CertStores {
     }
   }
 
-  private void createKeyStore(String filename, String password)
+  public void createKeyStore(String filename, String password)
       throws GeneralSecurityException, IOException {
     KeyStore ks = createEmptyKeyStore();
 

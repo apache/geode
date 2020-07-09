@@ -59,6 +59,14 @@ public abstract class GfshCommand implements CommandMarker {
     return gfsh.isConnectedAndReady();
   }
 
+  /**
+   * For those commands that could possibly change the cluster configuration, they need to
+   * override this method to return true.
+   */
+  public boolean affectsClusterConfiguration() {
+    return false;
+  }
+
   public void authorize(ResourcePermission.Resource resource,
       ResourcePermission.Operation operation, ResourcePermission.Target target) {
     cache.getSecurityService().authorize(resource, operation, target);

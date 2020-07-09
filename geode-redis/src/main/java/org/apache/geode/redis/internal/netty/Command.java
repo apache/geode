@@ -19,8 +19,6 @@ import java.nio.channels.SocketChannel;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import io.netty.buffer.ByteBuf;
-
 import org.apache.geode.redis.internal.RedisCommandType;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.RedisResponse;
@@ -33,7 +31,6 @@ public class Command {
 
   private final List<byte[]> commandElems;
   private final RedisCommandType commandType;
-  private ByteBuf response;
   private String key;
   private ByteArrayWrapper bytes;
 
@@ -49,7 +46,6 @@ public class Command {
           "List of command elements cannot be empty -> List:" + commandElems);
     }
     this.commandElems = commandElems;
-    this.response = null;
 
     RedisCommandType type;
     try {
@@ -99,36 +95,6 @@ public class Command {
    */
   public RedisCommandType getCommandType() {
     return this.commandType;
-  }
-
-  /**
-   * Getter method to get the response to be sent
-   *
-   * @return The response
-   */
-  public ByteBuf getResponse() {
-    return response;
-  }
-
-  /**
-   * Setter method to set the response to be sent
-   *
-   * @param response The response to be sent
-   */
-  public void setResponse(ByteBuf response) {
-    this.response = response;
-  }
-
-  public boolean hasError() {
-    if (response == null) {
-      return false;
-    }
-
-    if (response.getByte(0) == Coder.ERROR_ID) {
-      return true;
-    }
-
-    return false;
   }
 
   /**

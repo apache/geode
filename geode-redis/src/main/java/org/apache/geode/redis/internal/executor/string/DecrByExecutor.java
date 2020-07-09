@@ -26,10 +26,10 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class DecrByExecutor extends StringExecutor {
 
-  private final String ERROR_DECREMENT_NOT_USABLE =
+  private static final String ERROR_DECREMENT_NOT_USABLE =
       "The decrementation on this key must be numeric";
 
-  private final int DECREMENT_INDEX = 2;
+  private static final int DECREMENT_INDEX = 2;
 
   @Override
   public RedisResponse executeCommand(Command command,

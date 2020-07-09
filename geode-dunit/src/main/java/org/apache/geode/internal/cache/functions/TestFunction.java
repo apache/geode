@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
@@ -1028,6 +1029,11 @@ public class TestFunction<T> implements Function<T>, Declarable2, DataSerializab
     }
     TestFunction function = (TestFunction) obj;
     return this.props.equals(function.getConfig());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(props);
   }
 
   @Override

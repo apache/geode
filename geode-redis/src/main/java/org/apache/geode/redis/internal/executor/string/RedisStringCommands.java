@@ -14,6 +14,8 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+import java.util.List;
+
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 
 public interface RedisStringCommands {
@@ -32,4 +34,26 @@ public interface RedisStringCommands {
   long incrby(ByteArrayWrapper key, long increment);
 
   long decrby(ByteArrayWrapper key, long decrement);
+
+  ByteArrayWrapper getrange(ByteArrayWrapper key, long start, long end);
+
+  long bitcount(ByteArrayWrapper key, int start, int end);
+
+  long bitcount(ByteArrayWrapper key);
+
+  int strlen(ByteArrayWrapper key);
+
+  int getbit(ByteArrayWrapper key, int offset);
+
+  int setbit(ByteArrayWrapper key, long offset, int value);
+
+  double incrbyfloat(ByteArrayWrapper key, double increment);
+
+  int bitop(String operation, ByteArrayWrapper destKey, List<ByteArrayWrapper> sources);
+
+  int bitpos(ByteArrayWrapper key, int bit, int start, Integer end);
+
+  int setrange(ByteArrayWrapper key, int offset, byte[] value);
+
+  ByteArrayWrapper mget(ByteArrayWrapper key);
 }

@@ -79,6 +79,7 @@ import org.apache.geode.internal.cache.versions.RegionVersionHolder;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.VersioningIO;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -2794,7 +2795,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
     try {
       ByteBuffer bb = getIFWriteBuffer(1 + 3 + 1);
       bb.put(IFREC_GEMFIRE_VERSION);
-      Version.writeOrdinal(bb, version.ordinal(), false);
+      VersioningIO.writeOrdinal(bb, version.ordinal(), false);
       bb.put(END_OF_RECORD_ID);
       writeIFRecord(bb, false); // don't do stats for these small records
     } catch (IOException ex) {

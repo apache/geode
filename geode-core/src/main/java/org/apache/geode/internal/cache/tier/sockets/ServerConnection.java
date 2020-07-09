@@ -362,7 +362,7 @@ public abstract class ServerConnection implements Runnable {
 
         setHandshake(readHandshake);
         setProxyId(readHandshake.getMembershipId());
-        if (readHandshake.getVersion().compareTo(Version.GFE_65) < 0
+        if (readHandshake.getVersion().isOlderThan(Version.GFE_65)
             || getCommunicationMode().isWAN()) {
           try {
             setAuthAttributes();
@@ -1125,7 +1125,7 @@ public abstract class ServerConnection implements Runnable {
   public Part updateAndGetSecurityPart() {
     // need to take care all message types here
     if (AcceptorImpl.isAuthenticationRequired()
-        && handshake.getVersion().compareTo(Version.GFE_65) >= 0
+        && handshake.getVersion().isNotOlderThan(Version.GFE_65)
         && !communicationMode.isWAN() && !requestMessage.getAndResetIsMetaRegion()
         && !isInternalMessage(requestMessage, allowInternalMessagesWithoutCredentials)) {
       setSecurityPart();
@@ -1663,7 +1663,7 @@ public abstract class ServerConnection implements Runnable {
   public long getUniqueId() {
     long uniqueId;
 
-    if (handshake.getVersion().isPre65() || communicationMode.isWAN()) {
+    if (handshake.getVersion().isOlderThan(Version.GFE_65) || communicationMode.isWAN()) {
       uniqueId = userAuthId;
     } else if (requestMessage.isSecureMode()) {
       uniqueId = messageIdExtractor.getUniqueIdFromMessage(requestMessage,

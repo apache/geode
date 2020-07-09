@@ -24,8 +24,6 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class StrlenExecutor extends StringExecutor {
 
-  private final int KEY_DOES_NOT_EXIST = 0;
-
   @Override
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
@@ -38,12 +36,7 @@ public class StrlenExecutor extends StringExecutor {
     RedisStringCommands stringCommands = getRedisStringCommands(context);
 
     ByteArrayWrapper key = command.getKey();
-    ByteArrayWrapper value = stringCommands.get(key);
-
-    if (value == null) {
-      return RedisResponse.integer(KEY_DOES_NOT_EXIST);
-    }
-
-    return RedisResponse.integer(value.length());
+    int length = stringCommands.strlen(key);
+    return RedisResponse.integer(length);
   }
 }

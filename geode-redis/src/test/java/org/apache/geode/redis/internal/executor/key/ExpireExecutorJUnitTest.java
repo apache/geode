@@ -16,7 +16,8 @@
 
 package org.apache.geode.redis.internal.executor.key;
 
-import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -26,7 +27,7 @@ import java.util.List;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import org.junit.Test;
 
-import org.apache.geode.redis.internal.executor.Executor;
+import org.apache.geode.redis.internal.ParameterRequirements.RedisParametersMismatchException;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -35,42 +36,39 @@ public class ExpireExecutorJUnitTest {
 
   @Test
   public void calledWithTooFewCommandArguments_returnsError() {
-    Executor executor = new ExpireExecutor();
-    List<byte[]> commandsAsBytesWithTooFewArguments = new ArrayList<>();
-    commandsAsBytesWithTooFewArguments.add("EXPIRE".getBytes());
-    commandsAsBytesWithTooFewArguments.add("key".getBytes());
+    List<byte[]> commandsAsBytes = new ArrayList<>();
+    commandsAsBytes.add("EXPIRE".getBytes());
+    commandsAsBytes.add("key".getBytes());
+    Command command = new Command(commandsAsBytes);
 
-    Command command = new Command(commandsAsBytesWithTooFewArguments);
-    RedisResponse response = executor.executeCommand(command, mockContext());
-
-    assertThat(response.toString()).startsWith("-ERR The wrong number of arguments");
+    assertThatThrownBy(() -> command.execute(mockContext()))
+        .hasMessageContaining("wrong number of arguments")
+        .isInstanceOf(RedisParametersMismatchException.class);
   }
 
   @Test
   public void calledWithTooManyCommandArguments_returnsErrorMessage() {
-    Executor executor = new ExpireExecutor();
-    List<byte[]> commandsAsBytesWithTooManyArguments = new ArrayList<>();
-    commandsAsBytesWithTooManyArguments.add("EXPIRE".getBytes());
-    commandsAsBytesWithTooManyArguments.add("key".getBytes());
-    commandsAsBytesWithTooManyArguments.add("100".getBytes());
-    commandsAsBytesWithTooManyArguments.add("Bonus!".getBytes());
-    Command command = new Command(commandsAsBytesWithTooManyArguments);
+    List<byte[]> commandsAsBytes = new ArrayList<>();
+    commandsAsBytes.add("EXPIRE".getBytes());
+    commandsAsBytes.add("key".getBytes());
+    commandsAsBytes.add("100".getBytes());
+    commandsAsBytes.add("Bonus!".getBytes());
+    Command command = new Command(commandsAsBytes);
 
-    RedisResponse response = executor.executeCommand(command, mockContext());
-
-    assertThat(response.toString()).startsWith("-ERR The wrong number of arguments");
+    assertThatThrownBy(() -> command.execute(mockContext()))
+        .hasMessageContaining("wrong number of arguments")
+        .isInstanceOf(RedisParametersMismatchException.class);
   }
 
   @Test
   public void calledWithInvalidCommandArguments_returnsErrorMessage() {
-    Executor executor = new ExpireExecutor();
     List<byte[]> commandsAsBytesWithTooManyArguments = new ArrayList<>();
     commandsAsBytesWithTooManyArguments.add("EXPIRE".getBytes());
     commandsAsBytesWithTooManyArguments.add("key".getBytes());
     commandsAsBytesWithTooManyArguments.add("not a number".getBytes());
     Command command = new Command(commandsAsBytesWithTooManyArguments);
 
-    RedisResponse response = executor.executeCommand(command, mockContext());
+    RedisResponse response = command.execute(mockContext());
 
     assertThat(response.toString()).startsWith("-ERR value is not an integer or out of range");
   }

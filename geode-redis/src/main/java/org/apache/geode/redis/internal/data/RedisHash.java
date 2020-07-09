@@ -39,14 +39,14 @@ import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
 import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisHash extends AbstractRedisData {
-  public static final RedisHash EMPTY = new EmptyRedisHash();
+  public static final RedisHash NULL_REDIS_HASH = new NullRedisHash();
   private HashMap<ByteArrayWrapper, ByteArrayWrapper> hash;
 
   public RedisHash(List<ByteArrayWrapper> fieldsToSet) {
     hash = new HashMap<>();
     Iterator<ByteArrayWrapper> iterator = fieldsToSet.iterator();
     while (iterator.hasNext()) {
-      hash.put(iterator.next(), iterator.next());
+      hashPut(iterator.next(), iterator.next());
     }
   }
 
@@ -54,11 +54,30 @@ public class RedisHash extends AbstractRedisData {
     // for serialization
   }
 
+  /**
+   * Since GII (getInitialImage) can come in and call toData while other threads
+   * are modifying this object, the striped executor will not protect toData.
+   * So any methods that modify "hash" needs to be thread safe with toData.
+   */
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public synchronized void toData(DataOutput out) throws IOException {
     super.toData(out);
     DataSerializer.writeHashMap(hash, out);
   }
+
+  private synchronized ByteArrayWrapper hashPut(ByteArrayWrapper field, ByteArrayWrapper value) {
+    return hash.put(field, value);
+  }
+
+  private synchronized ByteArrayWrapper hashPutIfAbsent(ByteArrayWrapper field,
+      ByteArrayWrapper value) {
+    return hash.putIfAbsent(field, value);
+  }
+
+  private synchronized ByteArrayWrapper hashRemove(ByteArrayWrapper field) {
+    return hash.remove(field);
+  }
+
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
@@ -75,12 +94,12 @@ public class RedisHash extends AbstractRedisData {
       while (iterator.hasNext()) {
         ByteArrayWrapper field = iterator.next();
         ByteArrayWrapper value = iterator.next();
-        hash.put(field, value);
+        hashPut(field, value);
       }
     } else {
       RemsDeltaInfo remsDeltaInfo = (RemsDeltaInfo) deltaInfo;
       for (ByteArrayWrapper field : remsDeltaInfo.getRemoves()) {
-        hash.remove(field);
+        hashRemove(field);
       }
     }
   }
@@ -95,9 +114,9 @@ public class RedisHash extends AbstractRedisData {
       ByteArrayWrapper value = iterator.next();
       boolean added;
       if (nx) {
-        added = hash.putIfAbsent(field, value) == null;
+        added = hashPutIfAbsent(field, value) == null;
       } else {
-        added = hash.put(field, value) == null;
+        added = hashPut(field, value) == null;
       }
       if (added) {
         if (deltaInfo == null) {
@@ -117,7 +136,7 @@ public class RedisHash extends AbstractRedisData {
     int fieldsRemoved = 0;
     RemsDeltaInfo deltaInfo = null;
     for (ByteArrayWrapper fieldToRemove : fieldsToRemove) {
-      if (hash.remove(fieldToRemove) != null) {
+      if (hashRemove(fieldToRemove) != null) {
         if (deltaInfo == null) {
           deltaInfo = new RemsDeltaInfo();
         }
@@ -152,6 +171,11 @@ public class RedisHash extends AbstractRedisData {
 
   public int hlen() {
     return hash.size();
+  }
+
+  public int hstrlen(ByteArrayWrapper field) {
+    ByteArrayWrapper entry = hget(field);
+    return entry != null ? entry.length() : 0;
   }
 
   public List<ByteArrayWrapper> hmget(List<ByteArrayWrapper> fields) {
@@ -214,7 +238,7 @@ public class RedisHash extends AbstractRedisData {
     ByteArrayWrapper oldValue = hash.get(field);
     if (oldValue == null) {
       ByteArrayWrapper newValue = new ByteArrayWrapper(Coder.longToBytes(increment));
-      hash.put(field, newValue);
+      hashPut(field, newValue);
       AddsDeltaInfo deltaInfo = new AddsDeltaInfo();
       deltaInfo.add(field);
       deltaInfo.add(newValue);
@@ -236,7 +260,7 @@ public class RedisHash extends AbstractRedisData {
     value += increment;
 
     ByteArrayWrapper modifiedValue = new ByteArrayWrapper(Coder.longToBytes(value));
-    hash.put(field, modifiedValue);
+    hashPut(field, modifiedValue);
     AddsDeltaInfo deltaInfo = new AddsDeltaInfo();
     deltaInfo.add(field);
     deltaInfo.add(modifiedValue);
@@ -244,12 +268,14 @@ public class RedisHash extends AbstractRedisData {
     return value;
   }
 
-  public double hincrbyfloat(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
-      ByteArrayWrapper field, double increment) throws NumberFormatException {
+  public double hincrbyfloat(Region<ByteArrayWrapper, RedisData> region,
+      ByteArrayWrapper key,
+      ByteArrayWrapper field, double increment)
+      throws NumberFormatException {
     ByteArrayWrapper oldValue = hash.get(field);
     if (oldValue == null) {
       ByteArrayWrapper newValue = new ByteArrayWrapper(Coder.doubleToBytes(increment));
-      hash.put(field, newValue);
+      hashPut(field, newValue);
       AddsDeltaInfo deltaInfo = new AddsDeltaInfo();
       deltaInfo.add(field);
       deltaInfo.add(newValue);
@@ -271,7 +297,7 @@ public class RedisHash extends AbstractRedisData {
     value += increment;
 
     ByteArrayWrapper modifiedValue = new ByteArrayWrapper(Coder.doubleToBytes(value));
-    hash.put(field, modifiedValue);
+    hashPut(field, modifiedValue);
     AddsDeltaInfo deltaInfo = new AddsDeltaInfo();
     deltaInfo.add(field);
     deltaInfo.add(modifiedValue);
@@ -307,5 +333,13 @@ public class RedisHash extends AbstractRedisData {
   @Override
   public int hashCode() {
     return Objects.hash(super.hashCode(), hash);
+  }
+
+  @Override
+  public String toString() {
+    return "RedisHash{" +
+        super.toString() + ", " +
+        "hash=" + hash +
+        '}';
   }
 }

@@ -123,19 +123,24 @@ public class GfshParser extends SimpleParser {
 
     List<String> furtherSplitWithEquals = new ArrayList<>();
     for (String token : splitWithWhiteSpaces) {
+      // do not split with "=" if this part starts with quotes or is part of -D
+      if (token.startsWith("'") || token.startsWith("\"") || token.startsWith("-D")) {
+        furtherSplitWithEquals.add(token);
+        continue;
+      }
       // if this token has equal sign, split around the first occurrence of it
       int indexOfFirstEqual = token.indexOf('=');
       if (indexOfFirstEqual < 0) {
         furtherSplitWithEquals.add(token);
-      } else {
-        String left = token.substring(0, indexOfFirstEqual);
-        String right = token.substring(indexOfFirstEqual + 1);
-        if (left.length() > 0) {
-          furtherSplitWithEquals.add(left);
-        }
-        if (right.length() > 0) {
-          furtherSplitWithEquals.add(right);
-        }
+        continue;
+      }
+      String left = token.substring(0, indexOfFirstEqual);
+      String right = token.substring(indexOfFirstEqual + 1);
+      if (left.length() > 0) {
+        furtherSplitWithEquals.add(left);
+      }
+      if (right.length() > 0) {
+        furtherSplitWithEquals.add(right);
       }
     }
     return furtherSplitWithEquals;
@@ -200,7 +205,6 @@ public class GfshParser extends SimpleParser {
   @Override
   public GfshParseResult parse(String userInput) {
     String rawInput = convertToSimpleParserInput(userInput);
-
     // this tells the simpleParser not to interpret backslash as escaping character
     rawInput = rawInput.replace("\\", "\\\\");
     // User SimpleParser to parse the input

@@ -173,7 +173,7 @@ public class PdxField implements DataSerializable, Comparable<PdxField> {
       // For this reason the pdx delete-field command should only be used after
       // all member have been upgraded to 8.1 or later.
       Version sourceVersion = StaticSerialization.getVersionForDataStream(out);
-      if (sourceVersion.compareTo(Version.GFE_81) >= 0) {
+      if (sourceVersion.isNotOlderThan(Version.GFE_81)) {
         if (this.deleted) {
           bits |= DELETED_BIT;
         }

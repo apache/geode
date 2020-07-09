@@ -15,8 +15,15 @@
 package org.apache.geode.internal.cache.ha;
 
 import static junit.framework.TestCase.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -32,6 +39,8 @@ import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.HARegion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
+import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl;
+import org.apache.geode.internal.cache.tier.sockets.HAEventWrapper;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantReadWriteLock;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
@@ -70,6 +79,20 @@ public class HARegionQueueTest {
         mock(StatisticsClock.class));
 
     CacheClientNotifier.resetInstance();
+  }
+
+  @Test
+  public void whenProxyIDisNullThenItIsNotAddedToClientInterestList() {
+    ClientUpdateMessageImpl clientUpdateMessage = mock(ClientUpdateMessageImpl.class);
+    HAEventWrapper haEventWrapper = mock(HAEventWrapper.class);
+    HAContainerWrapper haContainerWrapper = mock(HAContainerWrapper.class);
+    String regionName = "mockRegion";
+    when(haContainerWrapper.getProxyID(any())).thenReturn(null);
+    haRegionQueue.addClientCQsAndInterestList(clientUpdateMessage, haEventWrapper,
+        haContainerWrapper, regionName);
+    verify(haEventWrapper, times(0)).getClientCqs();
+    verify(haEventWrapper, times(0)).getClientUpdateMessage();
+
   }
 
   @Test
@@ -126,4 +149,38 @@ public class HARegionQueueTest {
     assertEquals(3, haRegionQueue.size());
   }
 
+  @Test
+  public void isQueueInitializedWithWaitDoesNotWaitIfInitialized() throws Exception {
+    long time = 1;
+    HARegionQueue spy = spy(haRegionQueue);
+    doReturn(true).when(spy).isQueueInitialized();
+
+    assertThat(spy.isQueueInitializedWithWait(time)).isTrue();
+
+    verify(spy, never()).waitForInitialized(time);
+  }
+
+  @Test
+  public void isQueueInitializedWithWaitWillWaitIfNotInitialized() throws Exception {
+    long time = 1;
+    HARegionQueue spy = spy(haRegionQueue);
+    doReturn(false).doReturn(true).when(spy).isQueueInitialized();
+    doNothing().when(spy).waitForInitialized(time);
+
+    assertThat(spy.isQueueInitializedWithWait(time)).isTrue();
+
+    verify(spy).waitForInitialized(time);
+  }
+
+  @Test
+  public void isQueueInitializedWithWaitReturnsFalseIfNotInitializedAfterWait() throws Exception {
+    long time = 1;
+    HARegionQueue spy = spy(haRegionQueue);
+    doReturn(false).doReturn(false).when(spy).isQueueInitialized();
+    doNothing().when(spy).waitForInitialized(time);
+
+    assertThat(spy.isQueueInitializedWithWait(time)).isFalse();
+
+    verify(spy).waitForInitialized(time);
+  }
 }

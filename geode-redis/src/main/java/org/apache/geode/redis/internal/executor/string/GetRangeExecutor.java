@@ -14,7 +14,6 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
@@ -53,35 +52,15 @@ public class GetRangeExecutor extends StringExecutor {
 
     RedisStringCommands stringCommands = getRedisStringCommands(context);
     ByteArrayWrapper key = command.getKey();
-    ByteArrayWrapper valueWrapper = stringCommands.get(key);
 
-    if (valueWrapper == null) {
-      return RedisResponse.emptyString();
-    }
+    ByteArrayWrapper returnRange = stringCommands.getrange(key, start, end);
 
-    byte[] value = valueWrapper.toBytes();
-    int length = value.length;
-
-    start = getBoundedStartIndex(start, length);
-    end = getBoundedEndIndex(end, length);
-
-    /*
-     * Can't 'start' at end of value
-     */
-    if (start > end || start == length) {
-      return RedisResponse.emptyString();
-    }
-    /*
-     * 1 is added to end because the end in copyOfRange is exclusive but in Redis it is inclusive
-     */
-    if (end != length) {
-      end++;
-    }
-    byte[] returnRange = Arrays.copyOfRange(value, (int) start, (int) end);
-    if (returnRange == null || returnRange.length == 0) {
+    if (returnRange == null) {
       return RedisResponse.nil();
+    } else if (returnRange.length() == 0) {
+      return RedisResponse.emptyString();
+    } else {
+      return respondBulkStrings(returnRange);
     }
-
-    return respondBulkStrings(returnRange);
   }
 }
