@@ -530,6 +530,7 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
         } finally {
           if (rvvLocked) {
             bucketRegion.unlockRVVForBulkOp();
+            rvvLocked = false;
           }
           if (locked) {
             bucketRegion.removeAndNotifyKeys(keys);
