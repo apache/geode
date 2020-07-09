@@ -18,6 +18,7 @@ package org.apache.geode.internal.cache.tier.sockets;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -192,24 +193,32 @@ public class DurableClientCQDUnitTest extends DurableClientTestBase {
     int oldPrimaryPort = getPrimaryServerPort();
     // Close the server that is hosting subscription queue
     VM primary = getPrimaryServerVM();
+    // Verify durable client on server
+    verifyDurableClientPresent(DistributionConfig.DEFAULT_DURABLE_CLIENT_TIMEOUT, durableClientId,
+        primary);
+
     primary.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
 
     // Wait until failover to the another server is successfully performed
     waitForFailoverToPerform(oldPrimaryPort);
+    primary = getPrimaryServerVM();
+    waitForDurableClientPresence(durableClientId, primary, 1);
+    int primaryPort = getPrimaryServerPort();
 
     // Stop the durable client
     CacheServerTestUtil.closeCache(true);
 
     // Start normal publisher client
-    startClient(publisherClientVM, server1Port, server2Port, regionName);
+    startClient(publisherClientVM, primaryPort, regionName);
 
     // Publish some entries
     publishEntries(regionName, 10);
 
     // Restart the durable client
     CacheServerTestUtil.createCacheClient(
-        getClientPool(NetworkUtils.getServerHostName(), server1Port, server2Port, true, 0),
+        getClientPool(NetworkUtils.getServerHostName(), primaryPort, true),
         regionName, getClientDistributedSystemProperties(durableClientId), Boolean.TRUE);
+    assertThat(CacheServerTestUtil.getClientCache()).isNotNull();
 
     // Re-register non durable cq
     createCq("GreaterThan5", greaterThan5Query, false).execute();
@@ -225,9 +234,9 @@ public class DurableClientCQDUnitTest extends DurableClientTestBase {
     checkCqListenerEvents("GreaterThan5", 0 /* numEventsExpected */,
         /* numEventsToWaitFor */ 15/* secondsToWait */);
     checkCqListenerEvents("LessThan5", 5 /* numEventsExpected */,
-        /* numEventsToWaitFor */ 20/* secondsToWait */);
+        /* numEventsToWaitFor */ 15/* secondsToWait */);
     checkCqListenerEvents("All", 10 /* numEventsExpected */,
-        /* numEventsToWaitFor */ 20/* secondsToWait */);
+        /* numEventsToWaitFor */ 15/* secondsToWait */);
 
     primary = getPrimaryServerVM();
     // Stop the durable client
@@ -1085,7 +1094,6 @@ public class DurableClientCQDUnitTest extends DurableClientTestBase {
     WaitCriterion ev = new WaitCriterion() {
       @Override
       public boolean done() {
-        logger.info("Jale waiting failover");
         return pool.getPrimary() != null && pool.getPrimary().getPort() != oldPrimaryPort;
       }
 

@@ -60,10 +60,12 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 
 public class DurableClientTestBase extends JUnit4DistributedTestCase {
@@ -170,6 +172,32 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
   void verifyDurableClientNotPresent(int durableClientTimeout, String durableClientId,
       final VM serverVM) {
     verifyDurableClientPresence(durableClientTimeout, durableClientId, serverVM, 0);
+  }
+
+  void waitForDurableClientPresence(String durableClientId, VM serverVM, final int count) {
+    serverVM.invoke(() -> {
+      if (count > 0) {
+
+        WaitCriterion ev = new WaitCriterion() {
+          @Override
+          public boolean done() {
+            checkNumberOfClientProxies(count);
+            CacheClientProxy proxy = getClientProxy();
+
+            if (proxy != null && durableClientId.equals(proxy.getDurableId())) {
+              return true;
+            }
+            return false;
+          }
+
+          @Override
+          public String description() {
+            return null;
+          }
+        };
+        GeodeAwaitility.await().untilAsserted(ev);
+      }
+    });
   }
 
   void verifyDurableClientPresence(int durableClientTimeout, String durableClientId,
@@ -723,15 +751,6 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
     vm.invoke(() -> {
       CacheServerTestUtil.createCacheClient(
           getClientPool(NetworkUtils.getServerHostName(), serverPort1, false),
-          regionName);
-      assertThat(CacheServerTestUtil.getClientCache()).isNotNull();
-    });
-  }
-
-  void startClient(VM vm, int serverPort1, int server2Port, String regionName) {
-    vm.invoke(() -> {
-      CacheServerTestUtil.createCacheClient(
-          getClientPool(NetworkUtils.getServerHostName(), serverPort1, server2Port, false),
           regionName);
       assertThat(CacheServerTestUtil.getClientCache()).isNotNull();
     });
