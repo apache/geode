@@ -48,15 +48,15 @@ public class ConnectionTest {
 
   @Test
   public void canBeMocked() throws Exception {
-    Connection mockConnection = mock(Connection.class);
-    SocketChannel channel = null;
+    ClusterConnection mockConnection = mock(ClusterConnection.class);
+    Socket socket = null;
     ByteBuffer buffer = null;
     boolean forceAsync = true;
     DistributionMessage mockDistributionMessage = mock(DistributionMessage.class);
 
-    mockConnection.writeFully(channel, buffer, forceAsync, mockDistributionMessage);
+    mockConnection.writeFully(socket, buffer, forceAsync, mockDistributionMessage);
 
-    verify(mockConnection, times(1)).writeFully(channel, buffer, forceAsync,
+    verify(mockConnection, times(1)).writeFully(socket, buffer, forceAsync,
         mockDistributionMessage);
   }
 
@@ -87,7 +87,7 @@ public class ConnectionTest {
 
     SocketChannel channel = SocketChannel.open();
 
-    Connection connection = new Connection(connectionTable, channel.socket());
+    ClusterConnection connection = new ClusterConnection(connectionTable, channel.socket());
     connection.setSharedUnorderedForTest();
     connection.run();
 
@@ -104,7 +104,7 @@ public class ConnectionTest {
     when(distributionConfig.getMemberTimeout()).thenReturn(100);
     when(tcpConduit.getSocketId()).thenReturn(new InetSocketAddress(getLocalHost(), 12345));
 
-    Connection connection = new Connection(connectionTable, mock(Socket.class));
+    ClusterConnection connection = new ClusterConnection(connectionTable, mock(Socket.class));
 
     int normalTimeout = connection.getP2PConnectTimeout(distributionConfig);
     assertThat(normalTimeout).isEqualTo(600);

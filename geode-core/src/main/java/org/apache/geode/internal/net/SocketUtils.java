@@ -16,8 +16,16 @@
 package org.apache.geode.internal.net;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.ByteBuffer;
+
+import javax.net.ssl.SSLSocket;
+
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * The SocketUtils class is utility class for performing operations on Sockets and ServerSockets.
@@ -28,6 +36,7 @@ import java.net.Socket;
  * @since GemFire 7.0
  */
 public abstract class SocketUtils {
+  private static final Logger logger = LogService.getLogger();
 
   /**
    * Closes the specified Socket silently ignoring any IOException, guarding against null Object
@@ -72,5 +81,50 @@ public abstract class SocketUtils {
 
     return true;
   }
+
+  /**
+   * Read data from the given socket into the given ByteBuffer. If NIO is supported
+   * we use Channel.read(ByteBuffer). If not we use byte arrays to read available
+   * bytes or buffer.remaining() bytes, whichever is smaller. If buffer.limit is zero
+   * and buffer.remaining is also zero the limit is changed to be buffer.capacity
+   * before reading.
+   *
+   * @return the number of bytes read, which may be -1 for EOF
+   */
+  public static int readFromSocket(Socket socket, ByteBuffer inputBuffer,
+      InputStream socketInputStream) throws IOException {
+    int amountRead;
+    inputBuffer.limit(inputBuffer.capacity());
+    if (socket instanceof SSLSocket) {
+      amountRead = readFromStream(socketInputStream, inputBuffer);
+    } else {
+      amountRead = socket.getChannel().read(inputBuffer);
+    }
+    return amountRead;
+  }
+
+  private static int readFromStream(InputStream stream, ByteBuffer inputBuffer) throws IOException {
+    int amountRead;
+    // if bytes are available we read that number of bytes. Otherwise we do a blocking read
+    // of buffer.remaining() bytes
+    int amountToRead = inputBuffer.remaining();
+    // stream.available() > 0 ? Math.min(stream.available(), inputBuffer.remaining())
+    // : inputBuffer.remaining();
+    if (inputBuffer.hasArray()) {
+      amountRead = stream.read(inputBuffer.array(),
+          inputBuffer.arrayOffset() + inputBuffer.position(), amountToRead);
+      if (amountRead > 0) {
+        inputBuffer.position(inputBuffer.position() + amountRead);
+      }
+    } else {
+      byte[] bytesRead = new byte[amountToRead];
+      amountRead = stream.read(bytesRead);
+      if (amountRead > 0) {
+        inputBuffer.put(bytesRead, 0, amountRead);
+      }
+    }
+    return amountRead;
+  }
+
 
 }

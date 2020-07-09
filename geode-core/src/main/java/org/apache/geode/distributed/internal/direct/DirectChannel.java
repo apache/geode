@@ -50,8 +50,8 @@ import org.apache.geode.internal.cache.DirectReplyMessage;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.tcp.BaseMsgStreamer;
+import org.apache.geode.internal.tcp.ClusterConnection;
 import org.apache.geode.internal.tcp.ConnectExceptions;
-import org.apache.geode.internal.tcp.Connection;
 import org.apache.geode.internal.tcp.ConnectionException;
 import org.apache.geode.internal.tcp.MsgStreamer;
 import org.apache.geode.internal.tcp.TCPConduit;
@@ -208,7 +208,7 @@ public class DirectChannel {
     ConnectExceptions retryInfo = null;
     int bytesWritten = 0;
     boolean retry = false;
-    final boolean orderedMsg = msg.orderedDelivery() || Connection.isDominoThread();
+    final boolean orderedMsg = msg.orderedDelivery() || ClusterConnection.isDominoThread();
     // Connections we actually sent messages to.
     final List totalSentCons = new ArrayList(destinations.length);
     boolean interrupted = false;
@@ -295,7 +295,8 @@ public class DirectChannel {
         List<?> sentCons; // used for cons we sent to this time
 
         final BaseMsgStreamer ms =
-            MsgStreamer.create(cons, msg, directReply, stats, getConduit().getBufferPool());
+            MsgStreamer.create(cons, msg, directReply, stats, getConduit().getBufferPool(),
+                true);
         try {
           startTime = 0;
           if (ackTimeout > 0) {
@@ -366,7 +367,7 @@ public class DirectChannel {
         Thread.currentThread().interrupt();
       }
       for (Iterator it = totalSentCons.iterator(); it.hasNext();) {
-        Connection con = (Connection) it.next();
+        ClusterConnection con = (ClusterConnection) it.next();
         con.setInUse(false, 0, 0, 0, null);
       }
     }
@@ -382,7 +383,7 @@ public class DirectChannel {
     ConnectExceptions ce = cumulativeExceptions;
 
     for (Iterator it = sentCons.iterator(); it.hasNext();) {
-      Connection con = (Connection) it.next();
+      ClusterConnection con = (ClusterConnection) it.next();
       // We don't expect replies on shared connections.
       if (con.isSharedResource()) {
         continue;
@@ -449,8 +450,9 @@ public class DirectChannel {
           if (ackTimeout > 0) {
             startTime = System.currentTimeMillis();
           }
-          Connection con = conduit.getConnection(destination, preserveOrder, retry, startTime,
-              ackTimeout, ackSDTimeout);
+          ClusterConnection con =
+              conduit.getConnection(destination, preserveOrder, retry, startTime,
+                  ackTimeout, ackSDTimeout);
 
           con.setInUse(true, startTime, 0, 0, null); // fix for bug#37657
           cons.add(con);
@@ -552,7 +554,7 @@ public class DirectChannel {
    * @param ackTimeout ack wait threshold
    * @param ackSATimeout severe alert threshold
    */
-  private void handleAckTimeout(long ackTimeout, long ackSATimeout, Connection c,
+  private void handleAckTimeout(long ackTimeout, long ackSATimeout, ClusterConnection c,
       DirectReplyProcessor processor) throws ConnectionException {
     Set activeMembers = dm.getDistributionManagerIds();
 

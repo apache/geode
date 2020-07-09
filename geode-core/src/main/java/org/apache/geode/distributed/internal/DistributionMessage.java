@@ -40,7 +40,7 @@ import org.apache.geode.internal.sequencelog.MessageLogger;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.tcp.Connection;
+import org.apache.geode.internal.tcp.ClusterConnection;
 import org.apache.geode.internal.util.Breadcrumbs;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -415,7 +415,8 @@ public abstract class DistributionMessage
         && getProcessorType() == OperationExecutors.SERIAL_EXECUTOR
         && !isMembershipMessengerThread();
 
-    boolean forceInline = this.acker != null || getInlineProcess() || Connection.isDominoThread();
+    boolean forceInline =
+        this.acker != null || getInlineProcess() || ClusterConnection.isDominoThread();
 
     if (inlineProcess && !forceInline && isSharedReceiver()) {
       // If processing this message notify a serial gateway sender then don't do it inline.
@@ -509,7 +510,7 @@ public abstract class DistributionMessage
       if (pid != 0) {
         procId = " processorId=" + pid;
       }
-      if (Thread.currentThread().getName().startsWith(Connection.THREAD_KIND_IDENTIFIER)) {
+      if (Thread.currentThread().getName().startsWith(ClusterConnection.THREAD_KIND_IDENTIFIER)) {
         sender = procId;
       } else {
         sender = "sender=" + getSender() + procId;

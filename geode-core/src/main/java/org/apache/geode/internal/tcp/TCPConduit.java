@@ -202,6 +202,8 @@ public class TCPConduit implements Runnable {
 
   private final Stopper stopper = new Stopper();
 
+  private boolean enableTLSOverNIO = true; // Boolean.getBoolean("geode.enable-tls-nio");
+
   /**
    * <p>
    * creates a new TCPConduit bound to the given InetAddress and port. The given ServerDelegate will
@@ -294,9 +296,9 @@ public class TCPConduit implements Runnable {
       } catch (Exception e) {
         logger.warn("exception parsing p2p.tcpBufferSize", e);
       }
-      if (tcpBufferSize < Connection.SMALL_BUFFER_SIZE) {
+      if (tcpBufferSize < ClusterConnection.SMALL_BUFFER_SIZE) {
         // enforce minimum
-        tcpBufferSize = Connection.SMALL_BUFFER_SIZE;
+        tcpBufferSize = ClusterConnection.SMALL_BUFFER_SIZE;
       }
       s = p.getProperty("p2p.idleConnectionTimeout", String.valueOf(idleConnectionTimeout));
       try {
@@ -365,18 +367,30 @@ public class TCPConduit implements Runnable {
     InetAddress bindAddress = address;
 
     try {
-      if (serverPort <= 0) {
-        socket = socketCreator.forAdvancedUse().createServerSocketUsingPortRange(bindAddress,
-            connectionRequestBacklog, isBindAddress, true, 0, tcpPortRange,
-            socketCreator.forAdvancedUse().useSSL());
+      if (!useSSL()) {
+        if (serverPort <= 0) {
+          socket = socketCreator.forAdvancedUse().createServerSocketUsingPortRange(bindAddress,
+              connectionRequestBacklog, isBindAddress, true, 0, tcpPortRange,
+              false);
 
+        } else {
+          ServerSocketChannel channel = ServerSocketChannel.open();
+          socket = channel.socket();
+
+          InetSocketAddress inetSocketAddress =
+              new InetSocketAddress(isBindAddress ? bindAddress : null, serverPort);
+          socket.bind(inetSocketAddress, connectionRequestBacklog);
+        }
+        channel = socket.getChannel();
       } else {
-        ServerSocketChannel channel = ServerSocketChannel.open();
-        socket = channel.socket();
-
-        InetSocketAddress inetSocketAddress =
-            new InetSocketAddress(isBindAddress ? bindAddress : null, serverPort);
-        socket.bind(inetSocketAddress, connectionRequestBacklog);
+        if (serverPort <= 0) {
+          socket = getSocketCreator().forAdvancedUse().createServerSocketUsingPortRange(bindAddress,
+              connectionRequestBacklog, isBindAddress,
+              false, tcpBufferSize, tcpPortRange, true);
+        } else {
+          socket = getSocketCreator().forCluster().createServerSocket(serverPort,
+              connectionRequestBacklog, isBindAddress ? bindAddress : null);
+        }
       }
 
       try {
@@ -392,7 +406,6 @@ public class TCPConduit implements Runnable {
         logger.warn("Failed to set listener receiverBufferSize to {}",
             tcpBufferSize);
       }
-      channel = socket.getChannel();
       port = socket.getLocalPort();
     } catch (IOException io) {
       throw new ConnectionException(
@@ -534,8 +547,12 @@ public class TCPConduit implements Runnable {
 
       Socket othersock = null;
       try {
-        SocketChannel otherChannel = channel.accept();
-        othersock = otherChannel.socket();
+        if (channel != null) {
+          SocketChannel otherChannel = channel.accept();
+          othersock = otherChannel.socket();
+        } else {
+          othersock = socket.accept();
+        }
         if (stopped) {
           try {
             if (othersock != null) {
@@ -666,7 +683,7 @@ public class TCPConduit implements Runnable {
    *
    * @param bytesRead number of bytes read off of network to get this message
    */
-  void messageReceived(Connection receiver, DistributionMessage message, int bytesRead)
+  void messageReceived(ClusterConnection receiver, DistributionMessage message, int bytesRead)
       throws MemberShunnedException {
     if (logger.isTraceEnabled()) {
       logger.trace("{} received {} from {}", id, message, receiver);
@@ -724,7 +741,7 @@ public class TCPConduit implements Runnable {
    *
    * @return the connection
    */
-  public Connection getConnection(InternalDistributedMember memberAddress,
+  public ClusterConnection getConnection(InternalDistributedMember memberAddress,
       final boolean preserveOrder, boolean retry, long startTime, long ackTimeout,
       long ackSATimeout) throws IOException, DistributedSystemDisconnectedException {
     if (stopped) {
@@ -732,7 +749,7 @@ public class TCPConduit implements Runnable {
     }
 
     InternalDistributedMember memberInTrouble = null;
-    Connection conn = null;
+    ClusterConnection conn = null;
     for (boolean breakLoop = false;;) {
       stopper.checkCancelInProgress(null);
       boolean interrupted = Thread.interrupted();
@@ -943,6 +960,10 @@ public class TCPConduit implements Runnable {
 
   public boolean useSSL() {
     return useSSL;
+  }
+
+  public boolean useDirectReceiveBuffers() {
+    return !useSSL();
   }
 
   public BufferPool getBufferPool() {

@@ -24,7 +24,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.tcp.Connection;
+import org.apache.geode.internal.tcp.ClusterConnection;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.util.internal.GeodeGlossary;
 
@@ -65,7 +65,7 @@ public class BufferPool {
   private final ConcurrentLinkedQueue<BBSoftReference> bufferLargeQueue =
       new ConcurrentLinkedQueue<>();
 
-  private final int SMALL_BUFFER_SIZE = Connection.SMALL_BUFFER_SIZE;
+  private final int SMALL_BUFFER_SIZE = ClusterConnection.SMALL_BUFFER_SIZE;
 
 
   private final int MEDIUM_BUFFER_SIZE = DistributionConfig.DEFAULT_SOCKET_BUFFER_SIZE;
@@ -253,7 +253,7 @@ public class BufferPool {
     return newBuffer;
   }
 
-  ByteBuffer acquireDirectBuffer(BufferPool.BufferType type, int capacity) {
+  public ByteBuffer acquireDirectBuffer(BufferPool.BufferType type, int capacity) {
     switch (type) {
       case UNTRACKED:
         return ByteBuffer.allocate(capacity);
@@ -265,7 +265,7 @@ public class BufferPool {
     throw new IllegalArgumentException("Unexpected buffer type " + type.toString());
   }
 
-  ByteBuffer acquireNonDirectBuffer(BufferPool.BufferType type, int capacity) {
+  public ByteBuffer acquireNonDirectBuffer(BufferPool.BufferType type, int capacity) {
     switch (type) {
       case UNTRACKED:
         return ByteBuffer.allocate(capacity);
@@ -277,7 +277,7 @@ public class BufferPool {
     throw new IllegalArgumentException("Unexpected buffer type " + type.toString());
   }
 
-  void releaseBuffer(BufferPool.BufferType type, ByteBuffer buffer) {
+  public void releaseBuffer(BufferPool.BufferType type, ByteBuffer buffer) {
     switch (type) {
       case UNTRACKED:
         return;

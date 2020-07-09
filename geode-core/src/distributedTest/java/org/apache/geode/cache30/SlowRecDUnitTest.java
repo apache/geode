@@ -21,7 +21,7 @@ import static org.apache.geode.cache.Scope.DISTRIBUTED_NO_ACK;
 import static org.apache.geode.distributed.ConfigurationProperties.ASYNC_DISTRIBUTION_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.ASYNC_MAX_QUEUE_SIZE;
 import static org.apache.geode.distributed.ConfigurationProperties.ASYNC_QUEUE_TIMEOUT;
-import static org.apache.geode.internal.tcp.Connection.FORCE_ASYNC_QUEUE;
+import static org.apache.geode.internal.tcp.ClusterConnection.FORCE_ASYNC_QUEUE;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.apache.geode.test.dunit.Wait.pause;
 import static org.junit.Assert.assertEquals;

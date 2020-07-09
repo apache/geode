@@ -24,9 +24,9 @@ public class PeerConnectionFactory {
    * creates a connection that we accepted (it was initiated by an explicit connect being done on
    * the other side). We will only receive data on this socket; never send.
    */
-  public Connection createReceiver(ConnectionTable table, Socket socket)
+  public ClusterConnection createReceiver(ConnectionTable table, Socket socket)
       throws IOException, ConnectionException {
-    Connection connection = new Connection(table, socket);
+    ClusterConnection connection = new ClusterConnection(table, socket);
     connection.initReceiver();
     return connection;
   }
