@@ -34,7 +34,6 @@ import org.apache.geode.redis.internal.data.RedisSetCommandsFunctionExecutor;
 import org.apache.geode.redis.internal.data.RedisStringCommandsFunctionExecutor;
 import org.apache.geode.redis.internal.executor.string.SetOptions;
 
-@SuppressWarnings("unchecked")
 public class CommandFunction extends SingleResultRedisFunction {
 
   public static final String ID = "REDIS_COMMAND_FUNCTION";
@@ -80,6 +79,7 @@ public class CommandFunction extends SingleResultRedisFunction {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   protected Object compute(ByteArrayWrapper key, Object[] args) {
     RedisCommandType command = (RedisCommandType) args[0];
     switch (command) {

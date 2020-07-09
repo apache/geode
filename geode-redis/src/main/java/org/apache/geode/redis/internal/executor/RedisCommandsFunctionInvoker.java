@@ -30,10 +30,11 @@ import org.apache.geode.redis.internal.data.RedisData;
 public abstract class RedisCommandsFunctionInvoker {
   protected final Region<ByteArrayWrapper, RedisData> region;
 
-  public RedisCommandsFunctionInvoker(Region<ByteArrayWrapper, RedisData> region) {
+  protected RedisCommandsFunctionInvoker(Region<ByteArrayWrapper, RedisData> region) {
     this.region = region;
   }
 
+  @SuppressWarnings("unchecked")
   protected <T> T invoke(String functionId,
       Object filter,
       Object... arguments) {
@@ -73,7 +74,7 @@ public abstract class RedisCommandsFunctionInvoker {
     } while (true);
   }
 
-  public <T> T invokeCommandFunction(ByteArrayWrapper key,
+  protected <T> T invokeCommandFunction(ByteArrayWrapper key,
       Object... arguments) {
     return invoke(CommandFunction.ID, key, arguments);
   }
