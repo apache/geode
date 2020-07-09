@@ -42,12 +42,11 @@ import org.apache.geode.management.runtime.OperationResult;
 public class OperationHistoryManagerTest {
   private OperationHistoryManager history;
   private OperationStateStore operationStateStore;
-  private InternalCache cache;
 
   @Before
   public void setUp() throws Exception {
     operationStateStore = mock(OperationStateStore.class);
-    cache = mock(InternalCache.class);
+    InternalCache cache = mock(InternalCache.class);
     history = new OperationHistoryManager(Duration.ofHours(2), operationStateStore, cache);
     when(cache.getMyId()).thenReturn(mock(InternalDistributedMember.class));
     when(cache.getDistributedSystem()).thenReturn(mock(DistributedSystem.class));
@@ -62,18 +61,20 @@ public class OperationHistoryManagerTest {
   public void recordStartReturnsExpectedOpId() {
     ClusterManagementOperation<?> op = mock(ClusterManagementOperation.class);
     String expectedOpId = "12345";
-    when(operationStateStore.recordStart(same(op))).thenReturn(expectedOpId);
+    String locator = "locator";
+    when(operationStateStore.recordStart(same(op), same(locator))).thenReturn(expectedOpId);
 
-    String opId = history.recordStart(op);
+    String opId = history.recordStart(op, locator);
     assertThat(opId).isSameAs(expectedOpId);
   }
 
   @Test
   public void recordStartDelegatesToPersistenceService() {
     ClusterManagementOperation<?> op = mock(ClusterManagementOperation.class);
+    String locator = "locator";
 
-    String opId = history.recordStart(op);
-    verify(operationStateStore).recordStart(same(op));
+    history.recordStart(op, locator);
+    verify(operationStateStore).recordStart(same(op), same(locator));
   }
 
   @Test
@@ -84,16 +85,6 @@ public class OperationHistoryManagerTest {
 
     history.recordEnd(opId, result, cause);
     verify(operationStateStore).recordEnd(same(opId), same(result), same(cause));
-  }
-
-  @Test
-  public void recordLocator() {
-    String opId = "opId";
-    String locator = "locator";
-
-    history.recordLocator(opId, locator);
-
-    verify(operationStateStore).recordLocator(same(opId), same(locator));
   }
 
   @Test
@@ -115,9 +106,9 @@ public class OperationHistoryManagerTest {
 
   @Test
   public void rebalanceLocatorIsOffline() {
-    OperationState operationState = new OperationState("opid", null, new Date());
-    operationState.setLocator(new String());
-    List<OperationState> ops = new ArrayList<>();
+    OperationState<?, ?> operationState = new OperationState("opid", null, new Date());
+    operationState.setLocator("locator");
+    List<OperationState<?, ?>> ops = new ArrayList<>();
     ops.add(operationState);
     doReturn(ops).when(operationStateStore).list();
 
@@ -201,7 +192,7 @@ public class OperationHistoryManagerTest {
   public void recordStartCallsExpireHistory() {
     OperationHistoryManager historySpy = spy(history);
 
-    historySpy.recordStart(null);
+    historySpy.recordStart(null, null);
     verify(historySpy).expireHistory();
   }
 

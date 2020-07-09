@@ -70,10 +70,11 @@ public class RegionOperationStateStore
   }
 
   @Override
-  public <A extends ClusterManagementOperation<?>> String recordStart(A operation) {
+  public <A extends ClusterManagementOperation<?>> String recordStart(A operation, String locator) {
     String opId = uniqueIdSupplier.get();
 
     OperationState operationInstance = new OperationState(opId, operation, new Date());
+    operationInstance.setLocator(locator);
 
     region.put(opId, operationInstance);
 
@@ -110,14 +111,6 @@ public class RegionOperationStateStore
     OperationState<ClusterManagementOperation<OperationResult>, OperationResult> operationState =
         region.get(opId);
     operationState.setOperationEnd(new Date(), result, exception);
-    region.put(opId, operationState);
-  }
-
-  @Override
-  public void recordLocator(String opId, String locator) {
-    OperationState<ClusterManagementOperation<OperationResult>, OperationResult> operationState =
-        region.get(opId);
-    operationState.setLocator(locator);
     region.put(opId, operationState);
   }
 

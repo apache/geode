@@ -34,7 +34,7 @@ public interface OperationStateStore {
    *
    * @return an identifier for the state of the operation
    */
-  <A extends ClusterManagementOperation<?>> String recordStart(A operation);
+  <A extends ClusterManagementOperation<?>> String recordStart(A operation, String locator);
 
   /**
    * Returns a single instance of an {@link OperationState} for a given
@@ -52,8 +52,6 @@ public interface OperationStateStore {
    * Records that the given operation has completed with the given result or exception.
    */
   <V extends OperationResult> void recordEnd(String opId, V result, Throwable exception);
-
-  void recordLocator(String opId, String locator);
 
   /**
    * Removes an existing {@link OperationState}.

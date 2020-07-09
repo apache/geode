@@ -73,7 +73,7 @@ public class OperationHistoryManager {
     final long expirationTime = now() - keepCompletedMillis;
     Set<String> expiredKeys = operationStateStore.list()
         .stream()
-        .map(operationState -> validateLocator(operationState))
+        .map(this::validateLocator)
         .filter(operationInstance -> isExpired(expirationTime, operationInstance))
         .map(OperationState::getId)
         .collect(Collectors.toSet());
@@ -106,23 +106,20 @@ public class OperationHistoryManager {
   }
 
   private boolean isLocatorOffline(OperationState operationState) {
-    if (operationState.getOperationEnd() == null
+    return operationState.getOperationEnd() == null
         && (operationState.getLocator() != null)
         && cache.getMyId().toString().compareTo(operationState.getLocator()) != 0
         && (!cache.getDistributedSystem().getAllOtherMembers().stream().map(Object::toString)
-            .collect(Collectors.toSet()).contains(operationState.getLocator()))) {
-      return true;
-    }
-    return false;
+            .collect(Collectors.toSet()).contains(operationState.getLocator()));
   }
 
   /**
    * Stores a new operation in the history and returns its unique identifier.
    */
-  public String recordStart(ClusterManagementOperation<?> op) {
+  public String recordStart(ClusterManagementOperation<?> op, String locator) {
     expireHistory();
 
-    return operationStateStore.recordStart(op);
+    return operationStateStore.recordStart(op, locator);
   }
 
   /**
@@ -130,10 +127,6 @@ public class OperationHistoryManager {
    */
   public void recordEnd(String opId, OperationResult result, Throwable cause) {
     operationStateStore.recordEnd(opId, result, cause);
-  }
-
-  public void recordLocator(String opId, String locator) {
-    operationStateStore.recordLocator(opId, locator);
   }
 
   public <A extends ClusterManagementOperation<V>, V extends OperationResult> List<OperationState<A, V>> list(
