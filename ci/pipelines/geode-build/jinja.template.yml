@@ -448,7 +448,7 @@ jobs:
 {% for run_var in (benchmarks.flavors) %}
 - name: Benchmark{{ run_var.title }}
   public: true
-  max_in_flight: 2
+  max_in_flight: {{ run_var.max_in_flight }}
   plan:
   - get: geode-ci
     passed: &benchmark-inputs
