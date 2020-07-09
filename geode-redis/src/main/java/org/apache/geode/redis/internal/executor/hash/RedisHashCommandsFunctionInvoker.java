@@ -36,84 +36,83 @@ import java.util.regex.Pattern;
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisData;
-import org.apache.geode.redis.internal.executor.CommandFunction;
+import org.apache.geode.redis.internal.executor.RedisCommandsFunctionInvoker;
 
 /**
  * This class is used by netty redis has command executors
  * to invoke a geode function that will run on a
  * particular server to do the redis command.
  */
-public class RedisHashCommandsFunctionInvoker implements RedisHashCommands {
-
-  private final Region<ByteArrayWrapper, RedisData> region;
+public class RedisHashCommandsFunctionInvoker extends RedisCommandsFunctionInvoker
+    implements RedisHashCommands {
 
   public RedisHashCommandsFunctionInvoker(Region<ByteArrayWrapper, RedisData> region) {
-    this.region = region;
+    super(region);
   }
 
   @Override
   public int hset(ByteArrayWrapper key, List<ByteArrayWrapper> fieldsToSet, boolean NX) {
-    return CommandFunction.invoke(HSET, key, new Object[] {fieldsToSet, NX}, region);
+    return invokeCommandFunction(key, HSET, fieldsToSet, NX);
   }
 
   @Override
   public int hdel(ByteArrayWrapper key, List<ByteArrayWrapper> fieldsToRemove) {
-    return CommandFunction.invoke(HDEL, key, fieldsToRemove, region);
+    return invokeCommandFunction(key, HDEL, fieldsToRemove);
   }
 
   @Override
   public Collection<ByteArrayWrapper> hgetall(ByteArrayWrapper key) {
-    return CommandFunction.invoke(HGETALL, key, null, region);
+    return invokeCommandFunction(key, HGETALL);
   }
 
   @Override
   public int hexists(ByteArrayWrapper key, ByteArrayWrapper field) {
-    return CommandFunction.invoke(HEXISTS, key, field, region);
+    return invokeCommandFunction(key, HEXISTS, field);
   }
 
   @Override
   public ByteArrayWrapper hget(ByteArrayWrapper key, ByteArrayWrapper field) {
-    return CommandFunction.invoke(HGET, key, field, region);
+    return invokeCommandFunction(key, HGET, field);
   }
 
   @Override
   public int hlen(ByteArrayWrapper key) {
-    return CommandFunction.invoke(HLEN, key, null, region);
+    return invokeCommandFunction(key, HLEN);
   }
 
   @Override
   public int hstrlen(ByteArrayWrapper key, ByteArrayWrapper field) {
-    return CommandFunction.invoke(HSTRLEN, key, field, region);
+    return invokeCommandFunction(key, HSTRLEN, field);
   }
 
   @Override
   public List<ByteArrayWrapper> hmget(ByteArrayWrapper key,
       List<ByteArrayWrapper> fields) {
-    return CommandFunction.invoke(HMGET, key, fields, region);
+    return invokeCommandFunction(key, HMGET, fields);
   }
 
   @Override
   public Collection<ByteArrayWrapper> hvals(ByteArrayWrapper key) {
-    return CommandFunction.invoke(HVALS, key, null, region);
+    return invokeCommandFunction(key, HVALS);
   }
 
   @Override
   public Collection<ByteArrayWrapper> hkeys(ByteArrayWrapper key) {
-    return CommandFunction.invoke(HKEYS, key, null, region);
+    return invokeCommandFunction(key, HKEYS);
   }
 
   @Override
   public List<Object> hscan(ByteArrayWrapper key, Pattern matchPattern, int count, int cursor) {
-    return CommandFunction.invoke(HSCAN, key, new Object[] {matchPattern, count, cursor}, region);
+    return invokeCommandFunction(key, HSCAN, matchPattern, count, cursor);
   }
 
   @Override
   public long hincrby(ByteArrayWrapper key, ByteArrayWrapper field, long increment) {
-    return CommandFunction.invoke(HINCRBY, key, new Object[] {field, increment}, region);
+    return invokeCommandFunction(key, HINCRBY, field, increment);
   }
 
   @Override
   public double hincrbyfloat(ByteArrayWrapper key, ByteArrayWrapper field, double increment) {
-    return CommandFunction.invoke(HINCRBYFLOAT, key, new Object[] {field, increment}, region);
+    return invokeCommandFunction(key, HINCRBYFLOAT, field, increment);
   }
 }

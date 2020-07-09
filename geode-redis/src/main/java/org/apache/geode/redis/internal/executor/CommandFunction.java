@@ -17,16 +17,12 @@
 package org.apache.geode.redis.internal.executor;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionException;
-import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.internal.cache.PrimaryBucketException;
-import org.apache.geode.internal.cache.execute.BucketMovedException;
 import org.apache.geode.redis.internal.RedisCommandType;
 import org.apache.geode.redis.internal.RedisStats;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
@@ -52,45 +48,6 @@ public class CommandFunction extends SingleResultRedisFunction {
       StripedExecutor stripedExecutor,
       RedisStats redisStats) {
     FunctionService.registerFunction(new CommandFunction(dataRegion, stripedExecutor, redisStats));
-  }
-
-  public static <T> T invoke(RedisCommandType command,
-      ByteArrayWrapper key,
-      Object commandArguments, Region<ByteArrayWrapper, RedisData> region) {
-    do {
-      SingleResultCollector<T> resultsCollector = new SingleResultCollector<>();
-      try {
-        FunctionService
-            .onRegion(region)
-            .withFilter(Collections.singleton(key))
-            .setArguments(new Object[] {command, commandArguments})
-            .withCollector(resultsCollector)
-            .execute(CommandFunction.ID)
-            .getResult();
-        return resultsCollector.getResult();
-      } catch (BucketMovedException | PrimaryBucketException ex) {
-        // try again
-        continue;
-      } catch (FunctionInvocationTargetException ex) {
-        // don't try again; we need to application
-        // to decide if the operation needs to be done again.
-        throw ex;
-      } catch (FunctionException ex) {
-        if (ex.getMessage()
-            .equals("Function named " + ID + " is not registered to FunctionService")) {
-          // try again. A race exists because the data region is created first
-          // and then the function is registered.
-          continue;
-        }
-        Throwable initialCause = getInitialCause(ex);
-        if (initialCause instanceof BucketMovedException
-            || initialCause instanceof PrimaryBucketException) {
-          // try again
-          continue;
-        }
-        throw ex;
-      }
-    } while (true);
   }
 
   public static Throwable getInitialCause(FunctionException ex) {
@@ -151,9 +108,8 @@ public class CommandFunction extends SingleResultRedisFunction {
       case STRLEN:
         return stringCommands.strlen(key);
       case SET: {
-        Object[] argArgs = (Object[]) args[1];
-        ByteArrayWrapper value = (ByteArrayWrapper) argArgs[0];
-        SetOptions options = (SetOptions) argArgs[1];
+        ByteArrayWrapper value = (ByteArrayWrapper) args[1];
+        SetOptions options = (SetOptions) args[2];
         return stringCommands.set(key, value, options);
       }
       case GETSET: {
@@ -161,32 +117,28 @@ public class CommandFunction extends SingleResultRedisFunction {
         return stringCommands.getset(key, value);
       }
       case GETRANGE: {
-        Object[] argArgs = (Object[]) args[1];
-        long start = (long) argArgs[0];
-        long end = (long) argArgs[1];
+        long start = (long) args[1];
+        long end = (long) args[2];
         return stringCommands.getrange(key, start, end);
       }
       case SETRANGE: {
-        Object[] argArgs = (Object[]) args[1];
-        int offset = (int) argArgs[0];
-        byte[] value = (byte[]) argArgs[1];
+        int offset = (int) args[1];
+        byte[] value = (byte[]) args[2];
         return stringCommands.setrange(key, offset, value);
       }
       case BITCOUNT: {
-        Object[] argArgs = (Object[]) args[1];
-        if (argArgs == null) {
+        if (args.length == 1) {
           return stringCommands.bitcount(key);
         } else {
-          int start = (int) argArgs[0];
-          int end = (int) argArgs[1];
+          int start = (int) args[1];
+          int end = (int) args[2];
           return stringCommands.bitcount(key, start, end);
         }
       }
       case BITPOS: {
-        Object[] argArgs = (Object[]) args[1];
-        int bit = (int) argArgs[0];
-        int start = (int) argArgs[1];
-        Integer end = (Integer) argArgs[2];
+        int bit = (int) args[1];
+        int start = (int) args[2];
+        Integer end = (Integer) args[3];
         return stringCommands.bitpos(key, bit, start, end);
       }
       case GETBIT: {
@@ -194,15 +146,13 @@ public class CommandFunction extends SingleResultRedisFunction {
         return stringCommands.getbit(key, offset);
       }
       case SETBIT: {
-        Object[] argArgs = (Object[]) args[1];
-        long offset = (long) argArgs[0];
-        int value = (int) argArgs[1];
+        long offset = (long) args[1];
+        int value = (int) args[2];
         return stringCommands.setbit(key, offset, value);
       }
       case BITOP: {
-        Object[] argArgs = (Object[]) args[1];
-        String operation = (String) argArgs[0];
-        List<ByteArrayWrapper> sources = (List<ByteArrayWrapper>) argArgs[1];
+        String operation = (String) args[1];
+        List<ByteArrayWrapper> sources = (List<ByteArrayWrapper>) args[2];
         return stringCommands.bitop(operation, key, sources);
       }
       case INCR:
@@ -246,10 +196,9 @@ public class CommandFunction extends SingleResultRedisFunction {
         return setCommands.spop(key, popCount);
       }
       case SSCAN: {
-        Object[] sscanArgs = (Object[]) args[1];
-        Pattern matchPattern = (Pattern) sscanArgs[0];
-        int count = (int) sscanArgs[1];
-        int cursor = (int) sscanArgs[2];
+        Pattern matchPattern = (Pattern) args[1];
+        int count = (int) args[2];
+        int cursor = (int) args[3];
         return setCommands.sscan(key, matchPattern, count, cursor);
       }
       case SUNIONSTORE: {
@@ -265,9 +214,8 @@ public class CommandFunction extends SingleResultRedisFunction {
         return setCommands.sdiffstore(key, setKeys);
       }
       case HSET: {
-        Object[] hsetArgs = (Object[]) args[1];
-        List<ByteArrayWrapper> fieldsToSet = (List<ByteArrayWrapper>) hsetArgs[0];
-        boolean NX = (boolean) hsetArgs[1];
+        List<ByteArrayWrapper> fieldsToSet = (List<ByteArrayWrapper>) args[1];
+        boolean NX = (boolean) args[2];
         return hashCommands.hset(key, fieldsToSet, NX);
       }
       case HDEL: {
@@ -299,22 +247,19 @@ public class CommandFunction extends SingleResultRedisFunction {
       case HKEYS:
         return hashCommands.hkeys(key);
       case HSCAN: {
-        Object[] hscanArgs = (Object[]) args[1];
-        Pattern pattern = (Pattern) hscanArgs[0];
-        int count = (int) hscanArgs[1];
-        int cursor = (int) hscanArgs[2];
+        Pattern pattern = (Pattern) args[1];
+        int count = (int) args[2];
+        int cursor = (int) args[3];
         return hashCommands.hscan(key, pattern, count, cursor);
       }
       case HINCRBY: {
-        Object[] hsetArgs = (Object[]) args[1];
-        ByteArrayWrapper field = (ByteArrayWrapper) hsetArgs[0];
-        long increment = (long) hsetArgs[1];
+        ByteArrayWrapper field = (ByteArrayWrapper) args[1];
+        long increment = (long) args[2];
         return hashCommands.hincrby(key, field, increment);
       }
       case HINCRBYFLOAT: {
-        Object[] hsetArgs = (Object[]) args[1];
-        ByteArrayWrapper field = (ByteArrayWrapper) hsetArgs[0];
-        double increment = (double) hsetArgs[1];
+        ByteArrayWrapper field = (ByteArrayWrapper) args[1];
+        double increment = (double) args[2];
         return hashCommands.hincrbyfloat(key, field, increment);
       }
       default:
