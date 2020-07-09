@@ -202,8 +202,6 @@ public class TCPConduit implements Runnable {
 
   private final Stopper stopper = new Stopper();
 
-  private boolean enableTLSOverNIO = true; // Boolean.getBoolean("geode.enable-tls-nio");
-
   /**
    * <p>
    * creates a new TCPConduit bound to the given InetAddress and port. The given ServerDelegate will

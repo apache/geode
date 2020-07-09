@@ -60,8 +60,7 @@ public class MsgReader {
     Assert.assertTrue(buffer.remaining() >= ClusterConnection.MSG_HEADER_BYTES);
 
     int messageLength = buffer.getInt();
-    /* nioMessageVersion = */
-    ClusterConnection.calcHdrVersion(messageLength);
+    ClusterConnection.throwExceptionIfWrongMessageVersion(messageLength);
     messageLength = ClusterConnection.calcMsgByteSize(messageLength);
     byte messageType = buffer.get();
     short messageId = buffer.getShort();

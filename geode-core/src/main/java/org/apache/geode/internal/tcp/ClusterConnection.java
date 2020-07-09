@@ -145,7 +145,6 @@ public class ClusterConnection implements Runnable {
   private final ConnectionTable owner;
 
   private final TCPConduit conduit;
-  // private NioFilter ioFilter;
 
   /**
    * Set to false once run() is terminating. Using this instead of Thread.isAlive as the reader
@@ -696,7 +695,7 @@ public class ClusterConnection implements Runnable {
     return hdrSize & MAX_MSG_SIZE;
   }
 
-  static void calcHdrVersion(int hdrSize) throws IOException {
+  static void throwExceptionIfWrongMessageVersion(int hdrSize) throws IOException {
     byte ver = (byte) (hdrSize >> 24);
     if (ver != HANDSHAKE_VERSION) {
       throw new IOException(
@@ -1159,7 +1158,6 @@ public class ClusterConnection implements Runnable {
     int connectTime = getP2PConnectTimeout(conduit.getDM().getConfig());
     boolean useSSL = getConduit().useSSL();
     if (useSSL) {
-      // int socketBufferSize = -1;
       int socketBufferSize =
           sharedResource ? SMALL_BUFFER_SIZE : this.owner.getConduit().tcpBufferSize;
       socket = getConduit().getSocketCreator().forAdvancedUse().connect(
@@ -2935,7 +2933,7 @@ public class ClusterConnection implements Runnable {
     int headerStartPos = peerDataBuffer.position();
     messageLength = peerDataBuffer.getInt();
     /* nioMessageVersion = */
-    calcHdrVersion(messageLength);
+    throwExceptionIfWrongMessageVersion(messageLength);
     messageLength = calcMsgByteSize(messageLength);
     messageType = peerDataBuffer.get();
     messageId = peerDataBuffer.getShort();
