@@ -15,9 +15,11 @@
 package org.apache.geode.internal.cache.partitioned;
 
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -117,6 +119,33 @@ public class PutAllPRMessageTest {
     verify(bucketRegion, never()).removeAndNotifyKeys(eq(keys));
     verify(dataStore).checkRegionDestroyedOnBucket(eq(bucketRegion), eq(true),
         eq(regionDestroyedException));
+  }
+
+  @Test
+  public void rvvLockedAfterKeysAreLockedAndUnlockRVVBeforeKeys() throws Exception {
+    PutAllPRMessage message = spy(new PutAllPRMessage(bucketId, 1, false, false, false, null));
+    message.addEntry(entryData);
+    doReturn(keys).when(message).getKeysToBeLocked();
+    when(bucketRegion.waitUntilLocked(keys)).thenReturn(true);
+    when(bucketRegion.doLockForPrimary(false)).thenThrow(new PrimaryBucketException());
+    doNothing().when(bucketRegion).lockRVVForBulkOp();
+    doNothing().when(bucketRegion).unlockRVVForBulkOp();
+
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    when(bucketRegion.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(null);
+
+    assertThatThrownBy(
+        () -> message.doLocalPutAll(partitionedRegion, mock(InternalDistributedMember.class), 1))
+            .isInstanceOf(PrimaryBucketException.class);
+
+    InOrder inOrder = inOrder(bucketRegion);
+    inOrder.verify(bucketRegion).waitUntilLocked(keys);
+    inOrder.verify(bucketRegion).lockRVVForBulkOp();
+    inOrder.verify(bucketRegion).unlockRVVForBulkOp();
+    inOrder.verify(bucketRegion).removeAndNotifyKeys(keys);
   }
 
 }
