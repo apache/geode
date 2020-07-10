@@ -108,7 +108,7 @@ public class OperationHistoryManager {
   private boolean isLocatorOffline(OperationState operationState) {
     return operationState.getOperationEnd() == null
         && (operationState.getLocator() != null)
-        && cache.getMyId().toString().equals(operationState.getLocator())
+        && !cache.getMyId().toString().equals(operationState.getLocator())
         && (!cache.getDistributedSystem().getAllOtherMembers().stream().map(Object::toString)
             .collect(Collectors.toSet()).contains(operationState.getLocator()));
   }
