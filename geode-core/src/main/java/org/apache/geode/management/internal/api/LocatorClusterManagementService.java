@@ -132,7 +132,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     this(cache, persistenceService, new ConcurrentHashMap<>(), new ConcurrentHashMap<>(),
         new MemberValidator(cache, persistenceService), new CommonConfigurationValidator(),
         new OperationManager(cache,
-            new OperationHistoryManager(new RegionOperationStateStore(cache))));
+            new OperationHistoryManager(new RegionOperationStateStore(cache), cache)));
     // initialize the list of managers
     managers.put(Region.class, new RegionConfigManager(persistenceService));
     managers.put(Pdx.class, new PdxManager(persistenceService));
@@ -521,6 +521,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     if (operationState == null) {
       raise(StatusCode.ENTITY_NOT_FOUND, "Operation '" + opId + "' does not exist.");
     }
+
     return toClusterManagementOperationResult(operationState);
   }
 

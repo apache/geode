@@ -34,7 +34,7 @@ public interface OperationStateStore {
    *
    * @return an identifier for the state of the operation
    */
-  <A extends ClusterManagementOperation<?>> String recordStart(A operation);
+  <A extends ClusterManagementOperation<?>> String recordStart(A operation, String locator);
 
   /**
    * Returns a single instance of an {@link OperationState} for a given

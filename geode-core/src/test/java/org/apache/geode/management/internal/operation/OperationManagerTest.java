@@ -33,6 +33,7 @@ import java.util.concurrent.CountDownLatch;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.runtime.OperationResult;
@@ -46,7 +47,8 @@ public class OperationManagerTest {
   public void setUp() throws Exception {
     operationHistoryManager = mock(OperationHistoryManager.class);
     cache = mock(InternalCache.class);
-
+    InternalDistributedMember member = mock(InternalDistributedMember.class);
+    when(cache.getMyId()).thenReturn(member);
     executorManager = new OperationManager(cache, operationHistoryManager);
   }
 
@@ -74,7 +76,7 @@ public class OperationManagerTest {
     executorManager.registerOperation(
         (Class<ClusterManagementOperation<OperationResult>>) operation.getClass(), performer);
 
-    when(operationHistoryManager.recordStart(operation)).thenReturn(opId);
+    when(operationHistoryManager.recordStart(eq(operation), any())).thenReturn(opId);
     when(operationHistoryManager.get(opId)).thenReturn(expectedOpState);
 
     OperationState<ClusterManagementOperation<OperationResult>, OperationResult> operationState =
@@ -94,14 +96,12 @@ public class OperationManagerTest {
 
     when(performer.perform(any(), any())).thenReturn(operationResult);
     String opId = "my-op-id";
-    when(operationHistoryManager.recordStart(any())).thenReturn(opId);
+    when(operationHistoryManager.recordStart(any(), any())).thenReturn(opId);
 
     executorManager.submit(operation);
 
-    await().untilAsserted(() -> {
-      verify(operationHistoryManager)
-          .recordEnd(eq(opId), same(operationResult), isNull());
-    });
+    await().untilAsserted(() -> verify(operationHistoryManager)
+        .recordEnd(eq(opId), same(operationResult), isNull()));
   }
 
   @Test
@@ -115,14 +115,12 @@ public class OperationManagerTest {
     RuntimeException thrownByPerformer = new RuntimeException();
     doThrow(thrownByPerformer).when(performer).perform(any(), any());
     String opId = "my-op-id";
-    when(operationHistoryManager.recordStart(any())).thenReturn(opId);
+    when(operationHistoryManager.recordStart(any(), any())).thenReturn(opId);
 
     executorManager.submit(operation);
 
-    await().untilAsserted(() -> {
-      verify(operationHistoryManager)
-          .recordEnd(eq(opId), isNull(), same(thrownByPerformer));
-    });
+    await().untilAsserted(() -> verify(operationHistoryManager)
+        .recordEnd(eq(opId), isNull(), same(thrownByPerformer)));
   }
 
   @Test
@@ -132,7 +130,7 @@ public class OperationManagerTest {
     CountDownLatch performerHasTestPermissionToComplete = new CountDownLatch(1);
 
     String opId = "my-op-id";
-    when(operationHistoryManager.recordStart(any())).thenReturn(opId);
+    when(operationHistoryManager.recordStart(any(), any())).thenReturn(opId);
 
     OperationResult operationResult = mock(OperationResult.class);
 
@@ -158,10 +156,8 @@ public class OperationManagerTest {
 
     performerHasTestPermissionToComplete.countDown();
 
-    await().untilAsserted(() -> {
-      verify(operationHistoryManager)
-          .recordEnd(eq(opId), same(operationResult), isNull());
-    });
+    await().untilAsserted(() -> verify(operationHistoryManager)
+        .recordEnd(eq(opId), same(operationResult), isNull()));
   }
 
   @Test

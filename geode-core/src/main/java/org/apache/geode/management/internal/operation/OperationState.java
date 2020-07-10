@@ -28,12 +28,25 @@ import org.apache.geode.management.runtime.OperationResult;
  */
 public class OperationState<A extends ClusterManagementOperation<V>, V extends OperationResult>
     implements Identifiable<String> {
+  private static final long serialVersionUID = 8212319653561969588L;
   private final String opId;
   private final A operation;
   private final Date operationStart;
   private Date operationEnd;
   private V result;
   private Throwable throwable;
+  private String locator;
+
+  public String getLocator() {
+    return this.locator;
+  }
+
+  public void setLocator(
+      String locator) {
+    synchronized (this) {
+      this.locator = locator;
+    }
+  }
 
   @Override
   public boolean equals(Object o) {
@@ -49,7 +62,8 @@ public class OperationState<A extends ClusterManagementOperation<V>, V extends O
         Objects.equals(getOperationStart(), that.getOperationStart()) &&
         Objects.equals(getOperationEnd(), that.getOperationEnd()) &&
         Objects.equals(getResult(), that.getResult()) &&
-        Objects.equals(getThrowable(), that.getThrowable());
+        Objects.equals(getThrowable(), that.getThrowable()) &&
+        Objects.equals(getLocator(), that.getLocator());
   }
 
   @Override
@@ -97,6 +111,7 @@ public class OperationState<A extends ClusterManagementOperation<V>, V extends O
       result.operationEnd = this.operationEnd;
       result.result = this.result;
       result.throwable = this.throwable;
+      result.locator = this.locator;
     }
     return result;
   }
