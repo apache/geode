@@ -333,8 +333,7 @@ public class PartitionedRegionClear {
       acquireDistributedClearLock(lockName);
 
       // Force all primary buckets to be created before clear.
-      PartitionedRegion leader = ColocationHelper.getLeaderRegion(partitionedRegion);
-      PartitionRegionHelper.assignBucketsToPartitions(leader);
+      assignAllPrimaryBuckets();
 
       // do cacheWrite
       if (cacheWrite) {
@@ -383,7 +382,8 @@ public class PartitionedRegionClear {
   }
 
   protected void assignAllPrimaryBuckets() {
-    PartitionRegionHelper.assignBucketsToPartitions(partitionedRegion);
+    PartitionedRegion leader = ColocationHelper.getLeaderRegion(partitionedRegion);
+    PartitionRegionHelper.assignBucketsToPartitions(leader);
   }
 
   protected void handleClearFromDepartedMember(InternalDistributedMember departedMember) {
