@@ -59,6 +59,14 @@ public class OperationStateTest {
   }
 
   @Test
+  public void getLocator() {
+    String locator = "locator";
+    OperationState operationState = new OperationState(null, null, null);
+    operationState.setLocator(locator);
+    assertThat(operationState.getLocator()).isSameAs(locator);
+  }
+
+  @Test
   public void getResult() {
     OperationState<?, OperationResult> operationState = new OperationState<>(null, null, null);
     assertThat(operationState.getResult()).isNull();

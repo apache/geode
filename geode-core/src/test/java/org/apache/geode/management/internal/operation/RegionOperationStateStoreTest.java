@@ -61,8 +61,9 @@ public class RegionOperationStateStoreTest {
   public void recordStartReturnsAnIdFromProvidedSupplier() {
     ClusterManagementOperation<OperationResult> operation = mock(ClusterManagementOperation.class);
     String uniqueId = ";lkajdfa;ldkjfppoiuqe.,.,mnavc098";
+    String locator = "locator";
     when(uniqueIdSupplier.get()).thenReturn(uniqueId);
-    String opId = service.recordStart(operation);
+    String opId = service.recordStart(operation, locator);
 
     assertThat(opId).isSameAs(uniqueId);
     verify(uniqueIdSupplier).get();
@@ -71,8 +72,9 @@ public class RegionOperationStateStoreTest {
   @Test
   public void recordStartRecordsOperationStatusInGivenRegion() {
     ClusterManagementOperation<OperationResult> operation = mock(ClusterManagementOperation.class);
+    String locator = "locator";
 
-    String opId = service.recordStart(operation);
+    String opId = service.recordStart(operation, locator);
 
     ArgumentCaptor<OperationState> capturedOperationInstance = ArgumentCaptor.forClass(
         OperationState.class);
