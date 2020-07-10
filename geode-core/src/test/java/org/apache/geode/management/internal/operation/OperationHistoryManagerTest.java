@@ -33,6 +33,9 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.runtime.OperationResult;
 
@@ -43,7 +46,10 @@ public class OperationHistoryManagerTest {
   @Before
   public void setUp() throws Exception {
     operationStateStore = mock(OperationStateStore.class);
-    history = new OperationHistoryManager(Duration.ofHours(2), operationStateStore);
+    InternalCache cache = mock(InternalCache.class);
+    history = new OperationHistoryManager(Duration.ofHours(2), operationStateStore, cache);
+    when(cache.getMyId()).thenReturn(mock(InternalDistributedMember.class));
+    when(cache.getDistributedSystem()).thenReturn(mock(DistributedSystem.class));
   }
 
   @Test
@@ -55,18 +61,20 @@ public class OperationHistoryManagerTest {
   public void recordStartReturnsExpectedOpId() {
     ClusterManagementOperation<?> op = mock(ClusterManagementOperation.class);
     String expectedOpId = "12345";
-    when(operationStateStore.recordStart(same(op))).thenReturn(expectedOpId);
+    String locator = "locator";
+    when(operationStateStore.recordStart(same(op), same(locator))).thenReturn(expectedOpId);
 
-    String opId = history.recordStart(op);
+    String opId = history.recordStart(op, locator);
     assertThat(opId).isSameAs(expectedOpId);
   }
 
   @Test
   public void recordStartDelegatesToPersistenceService() {
     ClusterManagementOperation<?> op = mock(ClusterManagementOperation.class);
+    String locator = "locator";
 
-    String opId = history.recordStart(op);
-    verify(operationStateStore).recordStart(same(op));
+    history.recordStart(op, locator);
+    verify(operationStateStore).recordStart(same(op), same(locator));
   }
 
   @Test
@@ -94,6 +102,21 @@ public class OperationHistoryManagerTest {
     history.expireHistory();
 
     verify(operationStateStore, never()).remove(any());
+  }
+
+  @Test
+  public void rebalanceLocatorIsOffline() {
+    OperationState<?, ?> operationState = new OperationState("opid", null, new Date());
+    operationState.setLocator("locator");
+    List<OperationState<?, ?>> ops = new ArrayList<>();
+    ops.add(operationState);
+    doReturn(ops).when(operationStateStore).list();
+
+    history.expireHistory();
+
+    assertThat(operationState.getOperationEnd()).isNotNull();
+    assertThat(operationState.getThrowable().getMessage())
+        .contains("Locator that initiated the Rest API operation is offline:");
   }
 
   @Test
@@ -169,7 +192,7 @@ public class OperationHistoryManagerTest {
   public void recordStartCallsExpireHistory() {
     OperationHistoryManager historySpy = spy(history);
 
-    historySpy.recordStart(null);
+    historySpy.recordStart(null, null);
     verify(historySpy).expireHistory();
   }
 
