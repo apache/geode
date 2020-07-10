@@ -29,7 +29,7 @@ public interface GatewaySenderFactory {
 
   /**
    * Indicates whether all VMs need to distribute events to remote site. In this case only the
-   * events originating in a particular VM will be in dispatched in order.
+   * events originating in a particular VM will be dispatched in order.
    *
    * @param isParallel boolean to indicate whether distribution policy is parallel
    */
@@ -39,8 +39,9 @@ public interface GatewaySenderFactory {
    * Indicates whether events belonging to the same transaction must be
    * delivered inside the same batch, i.e. they cannot be spread across different
    * batches.
-   * Can only be enabled on serial gateway senders with just one dispatcher
-   * thread or on parallel gateway senders.
+   * <code>groupTransactionEvents</code> can be enabled only on parallel gateway senders
+   * or on serial gateway senders with just one dispatcher thread.
+   * It cannot be enabled if batch conflation is enabled.
    *
    * @param groupTransactionEvents boolean to indicate whether events from
    *        the same transaction must be delivered inside

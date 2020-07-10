@@ -209,6 +209,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
 
     vm4.invoke(() -> WANTestBase.checkQueueStats("ln", 0, entries, entries, entries));
     vm4.invoke(() -> WANTestBase.checkBatchStats("ln", 1, true));
+    vm4.invoke(() -> WANTestBase.checkConflatedStats("ln", 0));
 
     // wait until queue is empty
     vm5.invoke(() -> await()
@@ -216,6 +217,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
 
     vm5.invoke(() -> WANTestBase.checkQueueStats("ln", 0, entries, 0, 0));
     vm5.invoke(() -> WANTestBase.checkBatchStats("ln", 0, true));
+    vm5.invoke(() -> WANTestBase.checkConflatedStats("ln", 0));
   }
 
   @Test
@@ -354,6 +356,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
 
     vm4.invoke(() -> WANTestBase.checkQueueStats("ln", 0, entries, entries, entries));
     vm4.invoke(() -> WANTestBase.checkBatchStats("ln", 2, true, true));
+    vm4.invoke(() -> WANTestBase.checkConflatedStats("ln", 0));
 
     // wait until queue is empty
     vm5.invoke(() -> await()
@@ -361,6 +364,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
 
     vm5.invoke(() -> WANTestBase.checkQueueStats("ln", 0, entries, 0, 0));
     vm5.invoke(() -> WANTestBase.checkBatchStats("ln", 0, true));
+    vm5.invoke(() -> WANTestBase.checkConflatedStats("ln", 0));
   }
 
   @Test

@@ -118,6 +118,13 @@ public class SerialGatewaySenderQueue implements RegionQueue {
   private final Set<Long> extraPeekedIds = ConcurrentHashMap.newKeySet();
 
   /**
+   * Contains the set of peekedIds that were peeked to complete a transaction
+   * inside a batch when groupTransactionEvents is set and that have
+   * been sent in a batch but have not yet been removed.
+   */
+  private final Set<Long> extraPeekedIdsSentNotRemoved = ConcurrentHashMap.newKeySet();
+
+  /**
    * The name of the <code>Region</code> backing this queue
    */
   private final String regionName;
@@ -315,10 +322,12 @@ public class SerialGatewaySenderQueue implements RegionQueue {
         return;
       }
       Long key = peekedIds.remove();
-      extraPeekedIds.remove(key);
+      boolean isExtraPeeked = extraPeekedIds.remove(key);
       try {
         // Increment the head key
-        updateHeadKey(key.longValue());
+        if (!isExtraPeeked) {
+          updateHeadKey(key.longValue());
+        }
         removeIndex(key);
         // Remove the entry at that key with a callback arg signifying it is
         // a WAN queue so that AbstractRegionEntry.destroy can get the value
@@ -338,7 +347,26 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       }
 
       boolean wasEmpty = this.lastDispatchedKey == this.lastDestroyedKey;
-      this.lastDispatchedKey = key;
+      if (!isExtraPeeked) {
+        this.lastDispatchedKey = key;
+        // Remove also the extraPeekedIds right after this one so that
+        // they do not stay in the secondary's queue forever
+        long tmpKey = key;
+        while (extraPeekedIdsSentNotRemoved.contains(tmpKey = inc(tmpKey))) {
+          extraPeekedIdsSentNotRemoved.remove(tmpKey);
+          this.lastDispatchedKey = tmpKey;
+          updateHeadKey(tmpKey);
+        }
+      } else {
+        extraPeekedIdsSentNotRemoved.add(key);
+        // Remove if previous key was already dispatched so that it does
+        // not stay in the secondary's queue forever
+        long tmpKey = dec(key);
+        if (this.lastDispatchedKey == tmpKey) {
+          this.lastDispatchedKey = key;
+          updateHeadKey(key);
+        }
+      }
       if (wasEmpty) {
         synchronized (this) {
           notifyAll();
@@ -700,11 +728,18 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     return val;
   }
 
+  private long dec(long value) {
+    long val = value - 1;
+    val = val == -1 ? MAXIMUM_KEY - 1 : val;
+    return val;
+  }
+
+
   /**
    * Clear the list of peeked keys. The next peek will start again at the head key.
    */
   public void resetLastPeeked() {
-    this.peekedIds.clear();
+    peekedIds.clear();
     extraPeekedIds.clear();
     lastPeekedId.set(-1);
   }
@@ -715,7 +750,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
    */
   private Long getCurrentKey() {
     long currentKey;
-    if (lastPeekedId.equals(-1)) {
+    if (lastPeekedId.get() == -1) {
       currentKey = getHeadKey();
     } else {
       currentKey = inc(lastPeekedId.get());
@@ -784,7 +819,10 @@ public class SerialGatewaySenderQueue implements RegionQueue {
         logger.trace("{}: Trying head key + offset: {}", this, currentKey);
       }
       currentKey = inc(currentKey);
-      if (this.stats != null) {
+      // When mustGroupTransactionEvents is true, conflation cannot be enabled.
+      // Therefore, if we reach here, it would not be due to a conflated event
+      // but rather to an extra peeked event already sent.
+      if (!mustGroupTransactionEvents() && this.stats != null) {
         this.stats.incEventsNotQueuedConflated();
       }
     }
@@ -794,7 +832,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     }
 
     if (object != null) {
-      this.peekedIds.add(currentKey);
+      peekedIds.add(currentKey);
       lastPeekedId.set(currentKey);
       return new KeyAndEventPair(currentKey, object);
     }
