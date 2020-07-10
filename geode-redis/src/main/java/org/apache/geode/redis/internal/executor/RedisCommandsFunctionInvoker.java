@@ -20,10 +20,8 @@ import java.util.Collections;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionException;
-import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.internal.cache.PrimaryBucketException;
-import org.apache.geode.internal.cache.execute.BucketMovedException;
+import org.apache.geode.internal.cache.PrimaryBucketLockException;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisData;
 
@@ -49,13 +47,9 @@ public abstract class RedisCommandsFunctionInvoker {
             .execute(functionId)
             .getResult();
         return resultsCollector.getResult();
-      } catch (BucketMovedException | PrimaryBucketException ex) {
+      } catch (PrimaryBucketLockException ex) {
         // try again
         continue;
-      } catch (FunctionInvocationTargetException ex) {
-        // don't try again; we need to application
-        // to decide if the operation needs to be done again.
-        throw ex;
       } catch (FunctionException ex) {
         if (ex.getMessage()
             .equals("Function named " + functionId + " is not registered to FunctionService")) {
@@ -64,8 +58,7 @@ public abstract class RedisCommandsFunctionInvoker {
           continue;
         }
         Throwable initialCause = CommandFunction.getInitialCause(ex);
-        if (initialCause instanceof BucketMovedException
-            || initialCause instanceof PrimaryBucketException) {
+        if (initialCause instanceof PrimaryBucketLockException) {
           // try again
           continue;
         }
