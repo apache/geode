@@ -23,58 +23,55 @@ import static org.apache.geode.redis.internal.RedisCommandType.PTTL;
 import static org.apache.geode.redis.internal.RedisCommandType.TYPE;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisData;
-import org.apache.geode.redis.internal.executor.CommandFunction;
-import org.apache.geode.redis.internal.executor.SingleResultCollector;
+import org.apache.geode.redis.internal.executor.RedisCommandsFunctionInvoker;
 
 /**
  * This class is used by netty redis key command executors
  * to invoke a geode function that will run on a
  * particular server to do the redis command.
  */
-public class RedisKeyCommandsFunctionInvoker implements RedisKeyCommands {
-  private final Region<ByteArrayWrapper, RedisData> region;
-
+public class RedisKeyCommandsFunctionInvoker extends RedisCommandsFunctionInvoker
+    implements RedisKeyCommands {
   public RedisKeyCommandsFunctionInvoker(
       Region<ByteArrayWrapper, RedisData> region) {
-    this.region = region;
+    super(region);
   }
 
   @Override
   public boolean del(ByteArrayWrapper key) {
-    return CommandFunction.invoke(DEL, key, null, region);
+    return invokeCommandFunction(key, DEL);
   }
 
   @Override
   public boolean exists(ByteArrayWrapper key) {
-    return CommandFunction.invoke(EXISTS, key, null, region);
+    return invokeCommandFunction(key, EXISTS);
   }
 
   @Override
   public long pttl(ByteArrayWrapper key) {
-    return CommandFunction.invoke(PTTL, key, null, region);
+    return invokeCommandFunction(key, PTTL);
   }
 
   @Override
   public int pexpireat(ByteArrayWrapper key, long timestamp) {
-    return CommandFunction.invoke(PEXPIREAT, key, timestamp, region);
+    return invokeCommandFunction(key, PEXPIREAT, timestamp);
   }
 
   @Override
   public int persist(ByteArrayWrapper key) {
-    return CommandFunction.invoke(PERSIST, key, null, region);
+    return invokeCommandFunction(key, PERSIST);
   }
 
   @Override
   public String type(ByteArrayWrapper key) {
-    return CommandFunction.invoke(TYPE, key, null, region);
+    return invokeCommandFunction(key, TYPE);
   }
+
 
   @Override
   @SuppressWarnings("unchecked")
@@ -88,17 +85,7 @@ public class RedisKeyCommandsFunctionInvoker implements RedisKeyCommands {
     keysToOperateOn.add(oldKey);
     keysToOperateOn.add(newKey);
 
-    SingleResultCollector<Boolean> rc = new SingleResultCollector<>();
-
-    FunctionService
-        .onRegion(region)
-        .withFilter(Collections.singleton(keysToOperateOn.get(0)))
-        .setArguments(
-            new Object[] {oldKey, newKey, keysToOperateOn, new ArrayList<>(), new ArrayList<>()})
-        .withCollector(rc)
-        .execute(RenameFunction.ID)
-        .getResult();
-
-    return rc.getResult();
+    return invoke(RenameFunction.ID, oldKey, oldKey, newKey, keysToOperateOn, new ArrayList<>(),
+        new ArrayList<>());
   }
 }

@@ -611,7 +611,7 @@ public class PartitionedRegion extends LocalRegion
     return redundancyTracker;
   }
 
-  public void computeWithPrimaryLocked(Object key, Runnable r) {
+  public void computeWithPrimaryLocked(Object key, Runnable r) throws PrimaryBucketLockException {
     int bucketId = PartitionedRegionHelper.getHashKey(this, null, key, null, null);
 
     BucketRegion br;
@@ -624,7 +624,7 @@ public class PartitionedRegion extends LocalRegion
     try {
       br.doLockForPrimary(false);
     } catch (PrimaryBucketException e) {
-      throw new BucketMovedException(e);
+      throw new PrimaryBucketLockException("retry since primary lock failed: " + e);
     }
 
     try {

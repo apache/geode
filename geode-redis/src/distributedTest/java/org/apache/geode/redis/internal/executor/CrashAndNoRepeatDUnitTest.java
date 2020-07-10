@@ -14,7 +14,7 @@
  *
  */
 
-package org.apache.geode.redis.internal.executor.hash;
+package org.apache.geode.redis.internal.executor;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_BIND_ADDRESS;
@@ -23,8 +23,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
 import static org.apache.geode.redis.internal.GeodeRedisServer.ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -38,9 +36,11 @@ import io.lettuce.core.api.sync.RedisCommands;
 import io.lettuce.core.resource.ClientResources;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -55,7 +55,7 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-public class HashesAndCrashesDUnitTest {
+public class CrashAndNoRepeatDUnitTest {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -160,26 +160,7 @@ public class HashesAndCrashesDUnitTest {
   }
 
   @Test
-  public void givenServerCrashesDuringHSET_thenDataIsNotLost_andNoExceptionsAreLogged()
-      throws Exception {
-    modifyDataWhileCrashingVMs(DataType.HSET);
-  }
-
-  @Test
-  public void givenServerCrashesDuringSADD_thenDataIsNotLost() throws Exception {
-    modifyDataWhileCrashingVMs(DataType.SADD);
-  }
-
-  @Test
-  public void givenServerCrashesDuringSET_thenDataIsNotLost() throws Exception {
-    modifyDataWhileCrashingVMs(DataType.SET);
-  }
-
-  enum DataType {
-    HSET, SADD, SET
-  }
-
-  private void modifyDataWhileCrashingVMs(DataType dataType) throws Exception {
+  public void givenServerCrashesDuringAPPEND_thenDataIsNotLost() throws Exception {
     AtomicBoolean running1 = new AtomicBoolean(true);
     AtomicBoolean running2 = new AtomicBoolean(true);
     AtomicBoolean running3 = new AtomicBoolean(true);
@@ -189,26 +170,60 @@ public class HashesAndCrashesDUnitTest {
     Runnable task2 = null;
     Runnable task3 = null;
     Runnable task4 = null;
-    switch (dataType) {
-      case HSET:
-        task1 = () -> hsetPerformAndVerify(0, 20000, running1);
-        task2 = () -> hsetPerformAndVerify(1, 20000, running2);
-        task3 = () -> hsetPerformAndVerify(3, 20000, running3);
-        task4 = () -> hsetPerformAndVerify(4, 1000, running4);
-        break;
-      case SADD:
-        task1 = () -> saddPerformAndVerify(0, 20000, running1);
-        task2 = () -> saddPerformAndVerify(1, 20000, running2);
-        task3 = () -> saddPerformAndVerify(3, 20000, running3);
-        task4 = () -> saddPerformAndVerify(4, 1000, running4);
-        break;
-      case SET:
-        task1 = () -> setPerformAndVerify(0, 20000, running1);
-        task2 = () -> setPerformAndVerify(1, 20000, running2);
-        task3 = () -> setPerformAndVerify(3, 20000, running3);
-        task4 = () -> setPerformAndVerify(4, 1000, running4);
-        break;
-    }
+
+    task1 = () -> appendPerformAndVerify(0, 20000, running1);
+    task2 = () -> appendPerformAndVerify(1, 20000, running2);
+    task3 = () -> appendPerformAndVerify(3, 20000, running3);
+    task4 = () -> appendPerformAndVerify(4, 1000, running4);
+
+    Future<Void> future1 = executor.runAsync(task1);
+    Future<Void> future2 = executor.runAsync(task2);
+    Future<Void> future3 = executor.runAsync(task3);
+    Future<Void> future4 = executor.runAsync(task4);
+
+    future4.get();
+    clusterStartUp.crashVM(2);
+    server2 = startRedisVM(2, redisPorts[1]);
+    rebalanceAllRegions(server2);
+
+    clusterStartUp.crashVM(3);
+    server3 = startRedisVM(3, redisPorts[2]);
+    rebalanceAllRegions(server3);
+
+    clusterStartUp.crashVM(2);
+    server2 = startRedisVM(2, redisPorts[1]);
+    rebalanceAllRegions(server2);
+
+    clusterStartUp.crashVM(3);
+    server3 = startRedisVM(3, redisPorts[2]);
+    rebalanceAllRegions(server3);
+
+    running1.set(false);
+    running2.set(false);
+    running3.set(false);
+
+    future1.get();
+    future2.get();
+    future3.get();
+  }
+
+  @Test
+  @Ignore("GEODE-8339")
+  public void givenServerCrashesDuringRename_thenDataIsNotLost() throws Exception {
+    AtomicBoolean running1 = new AtomicBoolean(true);
+    AtomicBoolean running2 = new AtomicBoolean(true);
+    AtomicBoolean running3 = new AtomicBoolean(true);
+    AtomicBoolean running4 = new AtomicBoolean(false);
+
+    Runnable task1 = null;
+    Runnable task2 = null;
+    Runnable task3 = null;
+    Runnable task4 = null;
+
+    task1 = () -> renamePerformAndVerify(0, 20000, running1);
+    task2 = () -> renamePerformAndVerify(1, 20000, running2);
+    task3 = () -> renamePerformAndVerify(3, 20000, running3);
+    task4 = () -> renamePerformAndVerify(4, 1000, running4);
 
     Future<Void> future1 = executor.runAsync(task1);
     Future<Void> future2 = executor.runAsync(task2);
@@ -253,87 +268,68 @@ public class HashesAndCrashesDUnitTest {
     }
   }
 
-  private void hsetPerformAndVerify(int index, int minimumIterations, AtomicBoolean isRunning) {
-    String key = "hset-key-" + index;
+  private void renamePerformAndVerify(int index, int minimumIterations, AtomicBoolean isRunning) {
+    String newKey = null;
+    String baseKey = "rename-key-" + index;
+    commands.set(baseKey + "-0", "value");
     int iterationCount = 0;
 
     while (iterationCount < minimumIterations || isRunning.get()) {
-      String fieldName = "field-" + iterationCount;
+      String oldKey = baseKey + "-" + iterationCount;
+      newKey = baseKey + "-" + (iterationCount + 1);
       try {
-        commands.hset(key, fieldName, "value-" + iterationCount);
+        commands.rename(oldKey, newKey);
         iterationCount += 1;
       } catch (RedisCommandExecutionException e) {
         if (e.getMessage().contains("memberDeparted")) {
-          if (doWithRetry(() -> commands.hexists(key, fieldName))) {
+          if (doWithRetry(() -> commands.exists(oldKey)) == 0) {
             iterationCount += 1;
           }
+        } else if (e.getMessage().contains("no such key")) {
+          iterationCount += 1;
+        } else {
+          throw e;
         }
       }
     }
 
-    for (int i = 0; i < iterationCount; i++) {
-      String field = "field-" + i;
-      String value = "value-" + i;
-      assertThat(commands.hget(key, field)).isEqualTo(value);
-    }
+    assertThat(commands.keys(baseKey + "-*").size()).isEqualTo(1);
+    assertThat(commands.exists(newKey)).isEqualTo(1);
 
-    logger.info("--->>> HSET test ran {} iterations", iterationCount);
+    logger.info("--->>> RENAME test ran {} iterations", iterationCount);
   }
 
-  private void saddPerformAndVerify(int index, int minimumIterations, AtomicBoolean isRunning) {
-    String key = "sadd-key-" + index;
+  private void appendPerformAndVerify(int index, int minimumIterations, AtomicBoolean isRunning) {
+    String key = "append-key-" + index;
     int iterationCount = 0;
 
     while (iterationCount < minimumIterations || isRunning.get()) {
-      String member = "member-" + index + "-" + iterationCount;
+      String appendString = "" + iterationCount % 2;
       try {
-        commands.sadd(key, member);
+        commands.append(key, appendString);
         iterationCount += 1;
       } catch (RedisCommandExecutionException e) {
         if (e.getMessage().contains("memberDeparted")) {
-          if (doWithRetry(() -> commands.sismember(key, member))) {
+          if (doWithRetry(() -> commands.get(key)).endsWith(appendString)) {
             iterationCount += 1;
           }
+        } else {
+          throw e;
         }
       }
     }
 
-    List<String> missingMembers = new ArrayList<>();
+    String storedString = commands.get(key);
     for (int i = 0; i < iterationCount; i++) {
-      String member = "member-" + index + "-" + i;
-      if (!commands.sismember(key, member)) {
-        missingMembers.add(member);
-      }
-    }
-    assertThat(missingMembers).isEmpty();
-
-    logger.info("--->>> SADD test ran {} iterations, retrying {} times", iterationCount);
-  }
-
-  private void setPerformAndVerify(int index, int minimumIterations, AtomicBoolean isRunning) {
-    int iterationCount = 0;
-
-    while (iterationCount < minimumIterations || isRunning.get()) {
-      String key = "set-key-" + index + "-" + iterationCount;
-      try {
-        commands.set(key, key);
-        iterationCount += 1;
-      } catch (RedisCommandExecutionException e) {
-        if (e.getMessage().contains("memberDeparted")) {
-          if (doWithRetry(() -> commands.exists(key)) == 1) {
-            iterationCount += 1;
-          }
-        }
+      String expectedValue = "" + i % 2;
+      if (!expectedValue.equals("" + storedString.charAt(i))) {
+        Assert.fail("unexpected " + storedString.charAt(i) + " at index " + i + " in string "
+            + storedString);
+        break;
       }
     }
 
-    for (int i = 0; i < iterationCount; i++) {
-      String key = "set-key-" + index + "-" + i;
-      String value = commands.get(key);
-      assertThat(value).isEqualTo(key);
-    }
-
-    logger.info("--->>> SET test ran {} iterations", iterationCount);
+    logger.info("--->>> APPEND test ran {} iterations", iterationCount);
   }
 
   private static void rebalanceAllRegions(MemberVM vm) {

@@ -82,10 +82,9 @@ public class GeodeRedisServer {
     }
 
     pubSub = new PubSubImpl(new Subscriptions());
-    regionProvider = new RegionProvider(cache);
     redisStats = createStats(cache);
-
     StripedExecutor stripedExecutor = new SynchronizedStripedExecutor();
+    regionProvider = new RegionProvider(cache);
 
     CommandFunction.register(regionProvider.getDataRegion(), stripedExecutor, redisStats);
     RenameFunction.register(regionProvider.getDataRegion(), stripedExecutor, redisStats);

@@ -27,6 +27,7 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -36,6 +37,7 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.exceptions.JedisException;
 
 import org.apache.geode.redis.MockSubscriber;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -178,12 +180,29 @@ public class PubSubDUnitTest {
 
     // Depending on the timing of this call, it may catch a function error (due to member departed)
     // and return 0 as a result. Regardless, it should NOT hang.
-    result = publisher1.publish(CHANNEL_NAME, "hello again");
+    boolean published = false;
+    do {
+      try {
+        result = publisher1.publish(CHANNEL_NAME, "hello again");
+        published = true;
+      } catch (JedisException ex) {
+        if (ex.getMessage().contains("memberDeparted")) {
+          // retry
+        } else {
+          throw ex;
+        }
+      }
+    } while (!published);
     assertThat(result).isLessThanOrEqualTo(1);
 
     mockSubscriber1.unsubscribe(CHANNEL_NAME);
 
     GeodeAwaitility.await().untilAsserted(subscriber1Future::get);
+    try {
+      subscriber2Future.get();
+    } catch (ExecutionException e) {
+      // exception expected since we killed server 2
+    }
 
     restartServerVM2();
     reconnectSubscriber2();

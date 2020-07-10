@@ -36,74 +36,72 @@ import java.util.regex.Pattern;
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisData;
-import org.apache.geode.redis.internal.executor.CommandFunction;
+import org.apache.geode.redis.internal.executor.RedisCommandsFunctionInvoker;
 
 /**
  * This class is used by netty redis set command executors
  * to invoke a geode function that will run on a
  * particular server to do the redis command.
  */
-public class RedisSetCommandsFunctionInvoker implements RedisSetCommands {
-
-  private final Region<ByteArrayWrapper, RedisData> region;
+public class RedisSetCommandsFunctionInvoker extends RedisCommandsFunctionInvoker
+    implements RedisSetCommands {
 
   public RedisSetCommandsFunctionInvoker(Region<ByteArrayWrapper, RedisData> region) {
-    this.region = region;
+    super(region);
   }
 
   @Override
   public long sadd(ByteArrayWrapper key, ArrayList<ByteArrayWrapper> membersToAdd) {
-    return CommandFunction.invoke(SADD, key, membersToAdd, region);
+    return invokeCommandFunction(key, SADD, membersToAdd);
   }
 
-  @SuppressWarnings("unchecked")
   @Override
   public long srem(ByteArrayWrapper key, ArrayList<ByteArrayWrapper> membersToRemove) {
-    return CommandFunction.invoke(SREM, key, membersToRemove, region);
+    return invokeCommandFunction(key, SREM, membersToRemove);
   }
 
   @Override
   public Set<ByteArrayWrapper> smembers(ByteArrayWrapper key) {
-    return CommandFunction.invoke(SMEMBERS, key, null, region);
+    return invokeCommandFunction(key, SMEMBERS);
   }
 
   @Override
   public int scard(ByteArrayWrapper key) {
-    return CommandFunction.invoke(SCARD, key, null, region);
+    return invokeCommandFunction(key, SCARD);
   }
 
   @Override
   public boolean sismember(ByteArrayWrapper key, ByteArrayWrapper member) {
-    return CommandFunction.invoke(SISMEMBER, key, member, region);
+    return invokeCommandFunction(key, SISMEMBER, member);
   }
 
   @Override
   public Collection<ByteArrayWrapper> srandmember(ByteArrayWrapper key, int count) {
-    return CommandFunction.invoke(SRANDMEMBER, key, count, region);
+    return invokeCommandFunction(key, SRANDMEMBER, count);
   }
 
   @Override
   public Collection<ByteArrayWrapper> spop(ByteArrayWrapper key, int popCount) {
-    return CommandFunction.invoke(SPOP, key, popCount, region);
+    return invokeCommandFunction(key, SPOP, popCount);
   }
 
   @Override
   public List<Object> sscan(ByteArrayWrapper key, Pattern matchPattern, int count, int cursor) {
-    return CommandFunction.invoke(SSCAN, key, new Object[] {matchPattern, count, cursor}, region);
+    return invokeCommandFunction(key, SSCAN, matchPattern, count, cursor);
   }
 
   @Override
   public int sunionstore(ByteArrayWrapper destination, ArrayList<ByteArrayWrapper> setKeys) {
-    return CommandFunction.invoke(SUNIONSTORE, destination, setKeys, region);
+    return invokeCommandFunction(destination, SUNIONSTORE, setKeys);
   }
 
   @Override
   public int sinterstore(ByteArrayWrapper destination, ArrayList<ByteArrayWrapper> setKeys) {
-    return CommandFunction.invoke(SINTERSTORE, destination, setKeys, region);
+    return invokeCommandFunction(destination, SINTERSTORE, setKeys);
   }
 
   @Override
   public int sdiffstore(ByteArrayWrapper destination, ArrayList<ByteArrayWrapper> setKeys) {
-    return CommandFunction.invoke(SDIFFSTORE, destination, setKeys, region);
+    return invokeCommandFunction(destination, SDIFFSTORE, setKeys);
   }
 }

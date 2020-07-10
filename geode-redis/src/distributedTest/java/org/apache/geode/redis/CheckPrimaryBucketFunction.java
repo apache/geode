@@ -29,6 +29,8 @@ import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.PrimaryBucketLockException;
+import org.apache.geode.internal.cache.execute.BucketMovedException;
 import org.apache.geode.internal.cache.execute.RegionFunctionContextImpl;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -99,7 +101,11 @@ public class CheckPrimaryBucketFunction implements Function {
 
     LocalDataSet localDataSet = (LocalDataSet) localRegion;
     PartitionedRegion partitionedRegion = localDataSet.getProxy();
-    partitionedRegion.computeWithPrimaryLocked(key, r);
+    try {
+      partitionedRegion.computeWithPrimaryLocked(key, r);
+    } catch (PrimaryBucketLockException ex) {
+      throw new BucketMovedException(ex.toString());
+    }
   }
 
   private boolean isMemberPrimary(RegionFunctionContextImpl context, String key,

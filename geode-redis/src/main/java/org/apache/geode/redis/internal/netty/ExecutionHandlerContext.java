@@ -33,6 +33,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.execute.FunctionException;
+import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.redis.internal.ParameterRequirements.RedisParametersMismatchException;
@@ -41,6 +42,7 @@ import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisStats;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.data.RedisDataTypeMismatchException;
+import org.apache.geode.redis.internal.executor.CommandFunction;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.pubsub.PubSub;
 
@@ -139,14 +141,9 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private RedisResponse getExceptionResponse(ChannelHandlerContext ctx, Throwable cause) {
     RedisResponse response;
 
-    if (cause instanceof FunctionException) {
-      Throwable th = cause.getCause();
-      if (th == null) {
-        FunctionException functionException = (FunctionException) cause;
-        if (functionException.getExceptions() != null) {
-          th = functionException.getExceptions().get(0);
-        }
-      }
+    if (cause instanceof FunctionException
+        && !(cause instanceof FunctionInvocationTargetException)) {
+      Throwable th = CommandFunction.getInitialCause((FunctionException) cause);
       if (th != null) {
         cause = th;
       }
@@ -167,6 +164,13 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     } else if (cause instanceof IllegalStateException
         || cause instanceof RedisParametersMismatchException) {
       response = RedisResponse.error(cause.getMessage());
+    } else if (cause instanceof FunctionInvocationTargetException) {
+      // This indicates a member departed
+      String errorMsg = cause.getMessage();
+      if (!errorMsg.contains("memberDeparted")) {
+        errorMsg = "memberDeparted: " + errorMsg;
+      }
+      response = RedisResponse.error(errorMsg);
     } else {
       if (logger.isErrorEnabled()) {
         logger.error("GeodeRedisServer-Unexpected error handler for " + ctx.channel(), cause);
