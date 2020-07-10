@@ -566,12 +566,6 @@ public class BucketRegion extends DistributedRegion implements Bucket {
       return;
     }
 
-    boolean enableRVV = useRVV && getConcurrencyChecksEnabled();
-    RegionVersionVector rvv = null;
-    if (enableRVV) {
-      rvv = getVersionVector().getCloneForTransmission();
-    }
-
     // get rvvLock
     Set<InternalDistributedMember> participants =
         getCacheDistributionAdvisor().adviseInvalidateRegion();
@@ -585,7 +579,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
       // no need to dominate my own rvv.
       // Clear is on going here, there won't be GII for this member
       clearRegionLocally(regionEvent, cacheWrite, null);
-      distributeClearOperation(regionEvent, rvv, participants);
+      distributeClearOperation(regionEvent, null, participants);
 
       // TODO: call reindexUserDataRegion if there're lucene indexes
     } finally {
