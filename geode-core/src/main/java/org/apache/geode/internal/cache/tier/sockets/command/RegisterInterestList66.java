@@ -27,6 +27,7 @@ import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
@@ -184,8 +185,27 @@ public class RegisterInterestList66 extends BaseCommand {
       return;
     }
 
-    boolean isPrimary = serverConnection.getAcceptor().getCacheClientNotifier()
-        .getClientProxy(serverConnection.getProxyID()).isPrimary();
+    CacheClientProxy cacheClientProxy = serverConnection.getAcceptor().getCacheClientNotifier()
+        .getClientProxy(serverConnection.getProxyID());
+
+    if (cacheClientProxy == null) {
+      if (crHelper.isShutdown()) {
+        logger.info("cmdExecute: got a bad cacheClientProxy while shutting down");
+      } else {
+        logger.info("cmdExecute: got a bad cacheClientProxy");
+      }
+
+      Exception ex =
+          new RuntimeException("CacheClientProxy not found for " + serverConnection.getProxyID());
+      logger.info(
+          "cmdExecute {}: ", ex);
+      writeChunkedException(clientMessage, ex, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
+      return;
+    }
+
+    boolean isPrimary = cacheClientProxy.isPrimary();
+
     if (!isPrimary) {
       chunkedResponseMsg.setMessageType(MessageType.RESPONSE_FROM_SECONDARY);
       chunkedResponseMsg.setTransactionId(clientMessage.getTransactionId());
