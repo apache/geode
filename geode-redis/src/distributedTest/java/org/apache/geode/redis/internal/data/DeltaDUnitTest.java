@@ -18,13 +18,16 @@ package org.apache.geode.redis.internal.data;
 import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Function;
 
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -36,6 +39,7 @@ import redis.clients.jedis.Jedis;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -47,7 +51,7 @@ public class DeltaDUnitTest {
   public static RedisClusterStartupRule clusterStartUp = new RedisClusterStartupRule(4);
 
   private static final String LOCAL_HOST = "127.0.0.1";
-  private static final int SET_SIZE = 10;
+  private static final int ITERATION_COUNT = 1000;
   private static final int JEDIS_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
   private static Jedis jedis1;
@@ -97,30 +101,30 @@ public class DeltaDUnitTest {
     String key = "key";
     String baseValue = "value-";
     jedis1.set(key, baseValue);
-    for (int i = 0; i < SET_SIZE; i++) {
-      jedis1.set(key, String.valueOf(i));
+    for (int i = 0; i < ITERATION_COUNT; i++) {
+      jedis1.append(key, String.valueOf(i));
 
-      String server1LocalValue = server1.invoke(() -> {
-        InternalCache cache = ClusterStartupRule.getCache();
-        Region<ByteArrayWrapper, RedisData> region = cache.getRegion("__REDIS_DATA");
-        Region<ByteArrayWrapper, RedisData> localRegion =
-            PartitionRegionHelper.getLocalData(region);
+      byte[] server1LocalValue = server1.invoke(() -> (byte[]) getLocalData(key, r -> {
+        RedisData localValue = r.get(new ByteArrayWrapper(key.getBytes()));
 
-        RedisData localValue = localRegion.get(new ByteArrayWrapper(key.getBytes()));
-        return localValue.toString();
-      });
+        try {
+          return BlobHelper.serializeToBlob(localValue);
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+      }));
 
-      String server2LocalValue = server2.invoke(() -> {
-        InternalCache cache = ClusterStartupRule.getCache();
-        Region<ByteArrayWrapper, RedisData> region = cache.getRegion("__REDIS_DATA");
-        Region<ByteArrayWrapper, RedisData> localRegion =
-            PartitionRegionHelper.getLocalData(region);
+      byte[] server2LocalValue = server2.invoke(() -> (byte[]) getLocalData(key, r -> {
+        RedisData localValue = r.get(new ByteArrayWrapper(key.getBytes()));
 
-        RedisData localValue = localRegion.get(new ByteArrayWrapper(key.getBytes()));
-        return localValue.toString();
-      });
+        try {
+          return BlobHelper.serializeToBlob(localValue);
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+      }));
 
-      assertThat(server1LocalValue).isEqualTo(server2LocalValue);
+      assertThat(Arrays.equals(server1LocalValue, server2LocalValue));
     }
   }
 
@@ -128,28 +132,26 @@ public class DeltaDUnitTest {
   public void shouldCorrectlyPropagateDeltaToSecondaryServer_whenAddingToSet() {
     String key = "key";
 
-    List<String> members = makeMemberList(SET_SIZE, "member-");
+    List<String> members = makeMemberList(ITERATION_COUNT, "member-");
     for (String member : members) {
       jedis1.sadd(key, member);
-      Set<ByteArrayWrapper> server1LocalSet = server1.invoke(() -> {
-        InternalCache cache = ClusterStartupRule.getCache();
-        Region<ByteArrayWrapper, RedisData> region = cache.getRegion("__REDIS_DATA");
-        Region<ByteArrayWrapper, RedisData> localRegion =
-            PartitionRegionHelper.getLocalData(region);
+      Set<ByteArrayWrapper> server1LocalSet =
+          server1.invoke(() -> (Set<ByteArrayWrapper>) getLocalData(key, r -> {
+            RedisSet localSet = (RedisSet) r.get(new ByteArrayWrapper(key.getBytes()));
+            if (localSet == null) {
+              return null;
+            }
+            return localSet.smembers();
+          }));
 
-        RedisSet localSet = (RedisSet) localRegion.get(new ByteArrayWrapper(key.getBytes()));
-        return localSet.smembers();
-      });
-
-      Set<ByteArrayWrapper> server2LocalSet = server2.invoke(() -> {
-        InternalCache cache = ClusterStartupRule.getCache();
-        Region<ByteArrayWrapper, RedisData> region = cache.getRegion("__REDIS_DATA");
-        Region<ByteArrayWrapper, RedisData> localRegion =
-            PartitionRegionHelper.getLocalData(region);
-
-        RedisSet localSet = (RedisSet) localRegion.get(new ByteArrayWrapper(key.getBytes()));
-        return localSet.smembers();
-      });
+      Set<ByteArrayWrapper> server2LocalSet =
+          server2.invoke(() -> (Set<ByteArrayWrapper>) getLocalData(key, r -> {
+            RedisSet localSet = (RedisSet) r.get(new ByteArrayWrapper(key.getBytes()));
+            if (localSet == null) {
+              return null;
+            }
+            return localSet.smembers();
+          }));
 
       assertThat(server1LocalSet).containsExactlyInAnyOrder(server2LocalSet.toArray(
           new ByteArrayWrapper[] {}));
@@ -160,39 +162,28 @@ public class DeltaDUnitTest {
   public void shouldCorrectlyPropagateDeltaToSecondaryServer_whenRemovingFromSet() {
     String key = "key";
 
-    List<String> members = makeMemberList(SET_SIZE, "member-");
+    List<String> members = makeMemberList(ITERATION_COUNT, "member-");
     jedis1.sadd(key, members.toArray(new String[] {}));
 
     for (String member : members) {
       jedis1.srem(key, member);
-      Set<ByteArrayWrapper> server1LocalSet = server1.invoke(() -> {
-        InternalCache cache = ClusterStartupRule.getCache();
-        Region<ByteArrayWrapper, RedisData> region = cache.getRegion("__REDIS_DATA");
-        Region<ByteArrayWrapper, RedisData> localRegion =
-            PartitionRegionHelper.getLocalData(region);
+      Set<ByteArrayWrapper> server1LocalSet =
+          server1.invoke(() -> (Set<ByteArrayWrapper>) getLocalData(key, r -> {
+            RedisSet localSet = (RedisSet) r.get(new ByteArrayWrapper(key.getBytes()));
+            if (localSet == null) {
+              return null;
+            }
+            return localSet.smembers();
+          }));
 
-        RedisSet localSet = (RedisSet) localRegion.get(new ByteArrayWrapper(key.getBytes()));
-        System.out.println("LOCAL SET IS...." + localSet);
-        if (localSet == null) {
-          System.out.println("LOCAL SET IS NULL");
-          return null;
-        }
-        return localSet.smembers();
-      });
-
-      Set<ByteArrayWrapper> server2LocalSet = server2.invoke(() -> {
-        InternalCache cache = ClusterStartupRule.getCache();
-        Region<ByteArrayWrapper, RedisData> region = cache.getRegion("__REDIS_DATA");
-        Region<ByteArrayWrapper, RedisData> localRegion =
-            PartitionRegionHelper.getLocalData(region);
-
-        RedisSet localSet = (RedisSet) localRegion.get(new ByteArrayWrapper(key.getBytes()));
-
-        if (localSet == null) {
-          return null;
-        }
-        return localSet.smembers();
-      });
+      Set<ByteArrayWrapper> server2LocalSet =
+          server2.invoke(() -> (Set<ByteArrayWrapper>) getLocalData(key, r -> {
+            RedisSet localSet = (RedisSet) r.get(new ByteArrayWrapper(key.getBytes()));
+            if (localSet == null) {
+              return null;
+            }
+            return localSet.smembers();
+          }));
 
       if (server1LocalSet == null || server2LocalSet == null) {
         assertThat(server1LocalSet).isEqualTo(server2LocalSet);
@@ -207,30 +198,22 @@ public class DeltaDUnitTest {
   public void shouldCorrectlyPropagateDeltaToSecondaryServer_whenAddingToHash() {
     String key = "key";
 
-    Map<String, String> testMap = makeHashMap(SET_SIZE, "field-", "value-");
+    Map<String, String> testMap = makeHashMap(ITERATION_COUNT, "field-", "value-");
 
     for (String field : testMap.keySet()) {
       jedis1.hset(key, field, testMap.get(field));
 
-      Collection<ByteArrayWrapper> server1LocalHash = server1.invoke(() -> {
-        InternalCache cache = ClusterStartupRule.getCache();
-        Region<ByteArrayWrapper, RedisData> region = cache.getRegion("__REDIS_DATA");
-        Region<ByteArrayWrapper, RedisData> localRegion =
-            PartitionRegionHelper.getLocalData(region);
+      Collection<ByteArrayWrapper> server1LocalHash =
+          server1.invoke(() -> (Collection<ByteArrayWrapper>) getLocalData(key, r -> {
+            RedisHash localSet = (RedisHash) r.get(new ByteArrayWrapper(key.getBytes()));
+            return localSet.hgetall();
+          }));
 
-        RedisHash localSet = (RedisHash) localRegion.get(new ByteArrayWrapper(key.getBytes()));
-        return localSet.hgetall();
-      });
-
-      Collection<ByteArrayWrapper> server2LocalHash = server2.invoke(() -> {
-        InternalCache cache = ClusterStartupRule.getCache();
-        Region<ByteArrayWrapper, RedisData> region = cache.getRegion("__REDIS_DATA");
-        Region<ByteArrayWrapper, RedisData> localRegion =
-            PartitionRegionHelper.getLocalData(region);
-
-        RedisHash localSet = (RedisHash) localRegion.get(new ByteArrayWrapper(key.getBytes()));
-        return localSet.hgetall();
-      });
+      Collection<ByteArrayWrapper> server2LocalHash =
+          server2.invoke(() -> (Collection<ByteArrayWrapper>) getLocalData(key, r -> {
+            RedisHash localSet = (RedisHash) r.get(new ByteArrayWrapper(key.getBytes()));
+            return localSet.hgetall();
+          }));
 
       assertThat(server1LocalHash).containsExactlyInAnyOrder(server2LocalHash.toArray(
           new ByteArrayWrapper[] {}));
@@ -241,39 +224,29 @@ public class DeltaDUnitTest {
   public void shouldCorrectlyPropagateDeltaToSecondaryServer_whenRemovingFromHash() {
     String key = "key";
 
-    Map<String, String> testMap = makeHashMap(SET_SIZE, "field-", "value-");
+    Map<String, String> testMap = makeHashMap(ITERATION_COUNT, "field-", "value-");
     jedis1.hset(key, testMap);
 
     for (String field : testMap.keySet()) {
       jedis1.hdel(key, field, testMap.get(field));
 
-      Collection<ByteArrayWrapper> server1LocalHash = server1.invoke(() -> {
-        InternalCache cache = ClusterStartupRule.getCache();
-        Region<ByteArrayWrapper, RedisData> region = cache.getRegion("__REDIS_DATA");
-        Region<ByteArrayWrapper, RedisData> localRegion =
-            PartitionRegionHelper.getLocalData(region);
+      Collection<ByteArrayWrapper> server1LocalHash =
+          server1.invoke(() -> (Collection<ByteArrayWrapper>) getLocalData(key, r -> {
+            RedisHash localSet = (RedisHash) r.get(new ByteArrayWrapper(key.getBytes()));
+            if (localSet == null) {
+              return null;
+            }
+            return localSet.hgetall();
+          }));
 
-        RedisHash localSet = (RedisHash) localRegion.get(new ByteArrayWrapper(key.getBytes()));
-        if (localSet == null) {
-          return null;
-        }
-
-        return localSet.hgetall();
-      });
-
-      Collection<ByteArrayWrapper> server2LocalHash = server2.invoke(() -> {
-        InternalCache cache = ClusterStartupRule.getCache();
-        Region<ByteArrayWrapper, RedisData> region = cache.getRegion("__REDIS_DATA");
-        Region<ByteArrayWrapper, RedisData> localRegion =
-            PartitionRegionHelper.getLocalData(region);
-
-        RedisHash localSet = (RedisHash) localRegion.get(new ByteArrayWrapper(key.getBytes()));
-        if (localSet == null) {
-          return null;
-        }
-
-        return localSet.hgetall();
-      });
+      Collection<ByteArrayWrapper> server2LocalHash =
+          server2.invoke(() -> (Collection<ByteArrayWrapper>) getLocalData(key, r -> {
+            RedisHash localSet = (RedisHash) r.get(new ByteArrayWrapper(key.getBytes()));
+            if (localSet == null) {
+              return null;
+            }
+            return localSet.hgetall();
+          }));
 
       if (server1LocalHash == null || server2LocalHash == null) {
         assertThat(server1LocalHash).isEqualTo(server2LocalHash);
@@ -288,36 +261,38 @@ public class DeltaDUnitTest {
   public void shouldCorrectlyPropagateDeltaToSecondaryServer_whenExpiring() {
     String baseKey = "key-";
 
-    for (int i = 0; i < SET_SIZE; i++) {
+    for (int i = 0; i < ITERATION_COUNT; i++) {
       String key = baseKey + i;
       jedis1.set(key, "value");
       jedis1.expire(key, 20);
-      long server1LocalExpirtionTimestamp = server1.invoke(() -> {
-        InternalCache cache = ClusterStartupRule.getCache();
-        Region<ByteArrayWrapper, RedisData> region = cache.getRegion("__REDIS_DATA");
-        Region<ByteArrayWrapper, RedisData> localRegion =
-            PartitionRegionHelper.getLocalData(region);
-
-        RedisData localSet = localRegion.get(new ByteArrayWrapper(key.getBytes()));
+      long server1LocalExpirtionTimestamp = server1.invoke(() -> (long) getLocalData(key, r -> {
+        RedisData localSet = r.get(new ByteArrayWrapper(key.getBytes()));
         if (localSet == null) {
           return null;
         }
         return localSet.getExpirationTimestamp();
-      });
+      }));
 
-      long server2LocalExpirationTimestamp = server2.invoke(() -> {
-        InternalCache cache = ClusterStartupRule.getCache();
-        Region<ByteArrayWrapper, RedisData> region = cache.getRegion("__REDIS_DATA");
-        Region<ByteArrayWrapper, RedisData> localRegion =
-            PartitionRegionHelper.getLocalData(region);
-
-        RedisData localSet = localRegion.get(new ByteArrayWrapper(key.getBytes()));
-
+      long server2LocalExpirationTimestamp = server2.invoke(() -> (long) getLocalData(key, r -> {
+        RedisData localSet = r.get(new ByteArrayWrapper(key.getBytes()));
+        if (localSet == null) {
+          return null;
+        }
         return localSet.getExpirationTimestamp();
-      });
+      }));
 
       assertThat(server1LocalExpirtionTimestamp).isEqualTo(server2LocalExpirationTimestamp);
     }
+  }
+
+  private static Object getLocalData(String key,
+      Function<Region<ByteArrayWrapper, RedisData>, Object> func) {
+    InternalCache cache = ClusterStartupRule.getCache();
+    Region<ByteArrayWrapper, RedisData> region = cache.getRegion("__REDIS_DATA");
+    Region<ByteArrayWrapper, RedisData> localRegion =
+        PartitionRegionHelper.getLocalData(region);
+
+    return func.apply(localRegion);
   }
 
   private Map<String, String> makeHashMap(int hashSize, String baseFieldName,
