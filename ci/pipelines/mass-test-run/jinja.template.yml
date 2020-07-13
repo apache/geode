@@ -213,6 +213,7 @@ jobs:
     {%- endif %}
 - name: {{test.name}}Test{{java_test_version.name}}
   max_in_flight: 10
+  public: true
   plan:
   - do:
     {{- plan_resource_gets(test) |indent(4) }}
