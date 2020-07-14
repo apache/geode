@@ -201,9 +201,9 @@ public class GMSMembershipJUnitTest {
     manager.getGMSManager().started();
     manager.isJoining = true;
 
-    List<MemberIdentifier> viewmembers =
+    List<MemberIdentifier> viewMembers =
         Arrays.asList(new MemberIdentifier[] {mockMembers[0], myMemberId});
-    manager.getGMSManager().installView(createView(myMemberId, 2, viewmembers));
+    manager.getGMSManager().installView(createView(myMemberId, 2, viewMembers));
 
     // add a surprise member that will be shunned due to it's having
     // an old view ID
@@ -234,9 +234,9 @@ public class GMSMembershipJUnitTest {
     assertEquals(3, manager.getStartupEvents().size());
 
     // this view officially adds surpriseMember2
-    viewmembers = Arrays
+    viewMembers = Arrays
         .asList(new MemberIdentifier[] {mockMembers[0], myMemberId, surpriseMember2});
-    manager.handleOrDeferViewEvent(new MembershipView(myMemberId, 3, viewmembers));
+    manager.handleOrDeferViewEvent(new MembershipView(myMemberId, 3, viewMembers));
     assertEquals(4, manager.getStartupEvents().size());
 
     // add a surprise member that will be shunned due to it's having
@@ -249,9 +249,9 @@ public class GMSMembershipJUnitTest {
     // process a new view after we finish joining but before event processing has started
     manager.isJoining = false;
     mockMembers[4].setVmViewId(4);
-    viewmembers = Arrays.asList(new MemberIdentifier[] {mockMembers[0], myMemberId,
+    viewMembers = Arrays.asList(new MemberIdentifier[] {mockMembers[0], myMemberId,
         surpriseMember2, mockMembers[4]});
-    manager.handleOrDeferViewEvent(new MembershipView(myMemberId, 4, viewmembers));
+    manager.handleOrDeferViewEvent(new MembershipView(myMemberId, 4, viewMembers));
     assertEquals(6, manager.getStartupEvents().size());
 
     // exercise the toString methods for code coverage
@@ -273,7 +273,7 @@ public class GMSMembershipJUnitTest {
     // for code coverage also install a view after we finish joining but before
     // event processing has started. This should notify the distribution manager
     // with a LocalViewMessage to process the view
-    manager.handleOrDeferViewEvent(new MembershipView(myMemberId, 5, viewmembers));
+    manager.handleOrDeferViewEvent(new MembershipView(myMemberId, 5, viewMembers));
     await().untilAsserted(() -> assertEquals(manager.getView().getViewId(), 5));
 
     // process a suspect now - it will be passed to the listener
@@ -294,15 +294,15 @@ public class GMSMembershipJUnitTest {
     manager.getGMSManager().started();
     manager.isJoining = true;
 
-    List<MemberIdentifier> viewmembers =
+    List<MemberIdentifier> viewMembers =
         Arrays.asList(new MemberIdentifier[] {mockMembers[0], mockMembers[1], myMemberId});
-    GMSMembershipView view = createView(myMemberId, 2, viewmembers);
+    GMSMembershipView view = createView(myMemberId, 2, viewMembers);
     manager.getGMSManager().installView(view);
     when(services.getJoinLeave().getView()).thenReturn(view);
 
-    MemberIdentifier[] destinations = new MemberIdentifier[viewmembers.size()];
+    MemberIdentifier[] destinations = new MemberIdentifier[viewMembers.size()];
     for (int i = 0; i < destinations.length; i++) {
-      MemberIdentifier id = viewmembers.get(i);
+      MemberIdentifier id = viewMembers.get(i);
       destinations[i] = createMemberID(id.getMembershipPort());
     }
     manager.checkAddressesForUUIDs(destinations);
@@ -330,93 +330,58 @@ public class GMSMembershipJUnitTest {
     assertThat(spy.getStartupEvents()).isEmpty();
   }
 
-  @Test
-  public void testMulticastWithOldVersionSurpriseMember() throws Exception {
-    manager.getGMSManager().start();
-    manager.getGMSManager().started();
-    manager.isJoining = true;
-
-    List<MemberIdentifier> viewmembers = Arrays.asList(mockMembers[0], mockMembers[1], myMemberId);
-    MembershipView view = new MembershipView(myMemberId, 2, viewmembers);
-
-    MemberIdentifier surpriseMember = mockMembers[0];
+  private void addSurpriseMemberWithVersion(Version version) {
+    MemberIdentifier surpriseMember = myMemberId;
     surpriseMember.setVmViewId(3);
-    surpriseMember.setVersionObjectForTest(Version.GEODE_1_1_0);
+    surpriseMember.setVersionObjectForTest(version);
     manager.addSurpriseMember(surpriseMember);
-
-    assertTrue(manager.isDisableMulticastForRollingUpgrade(view, Version.CURRENT));
   }
 
   @Test
-  public void testMulticastWithCurrentVersionSurpriseMember() throws Exception {
-    manager.getGMSManager().start();
-    manager.getGMSManager().started();
-    manager.isJoining = true;
+  public void testMulticastWithOldVersionSurpriseMember() {
+    MembershipView<MemberIdentifier> view = new MembershipView<>(myMemberId, 2, members);
+    addSurpriseMemberWithVersion(Version.GEODE_1_1_0);
 
-    List<MemberIdentifier> viewmembers = Arrays.asList(mockMembers[0], mockMembers[1], myMemberId);
-    MembershipView view = new MembershipView(myMemberId, 2, viewmembers);
-
-    MemberIdentifier surpriseMember = mockMembers[0];
-    surpriseMember.setVmViewId(3);
-    surpriseMember.setVersionObjectForTest(Version.CURRENT);
-    manager.addSurpriseMember(surpriseMember);
-
-    assertFalse(manager.isDisableMulticastForRollingUpgrade(view, Version.CURRENT));
+    assertTrue(manager.containsOldVersionMember(view, Version.CURRENT));
   }
 
   @Test
-  public void testMulticastWithHigherVersionSurpriseMember() throws Exception {
-    manager.getGMSManager().start();
-    manager.getGMSManager().started();
-    manager.isJoining = true;
+  public void testMulticastWithCurrentVersionSurpriseMember() {
+    MembershipView<MemberIdentifier> view = new MembershipView<>(myMemberId, 2, members);
+    addSurpriseMemberWithVersion(Version.CURRENT);
 
-    List<MemberIdentifier> viewmembers = Arrays.asList(mockMembers[0], mockMembers[1], myMemberId);
-    MembershipView view = new MembershipView(myMemberId, 2, viewmembers);
-
-    MemberIdentifier surpriseMember = mockMembers[0];
-    surpriseMember.setVmViewId(3);
-    surpriseMember.setVersionObjectForTest(Version.CURRENT);
-    manager.addSurpriseMember(surpriseMember);
-
-    assertFalse(manager.isDisableMulticastForRollingUpgrade(view, Version.GEODE_1_1_0));
+    assertFalse(manager.containsOldVersionMember(view, Version.CURRENT));
   }
 
   @Test
-  public void testMulticastWithOldVersionViewMember() throws Exception {
-    manager.getGMSManager().start();
-    manager.getGMSManager().started();
-    manager.isJoining = true;
+  public void testMulticastWithHigherVersionSurpriseMember() {
+    MembershipView<MemberIdentifier> view = new MembershipView<>(myMemberId, 2, members);
+    addSurpriseMemberWithVersion(Version.CURRENT);
 
-    List<MemberIdentifier> viewmembers = Arrays.asList(mockMembers[0], mockMembers[1], myMemberId);
-    viewmembers.get(0).setVersionObjectForTest(Version.GEODE_1_1_0);
-    MembershipView view = new MembershipView(myMemberId, 2, viewmembers);
-
-    assertTrue(manager.isDisableMulticastForRollingUpgrade(view, Version.CURRENT));
+    assertFalse(manager.containsOldVersionMember(view, Version.GEODE_1_1_0));
   }
 
   @Test
-  public void testMulticastWithCurrentVersionViewMember() throws Exception {
-    manager.getGMSManager().start();
-    manager.getGMSManager().started();
-    manager.isJoining = true;
+  public void testMulticastWithOldVersionViewMember() {
+    members.get(0).setVersionObjectForTest(Version.GEODE_1_1_0);
+    MembershipView<MemberIdentifier> view = new MembershipView<>(myMemberId, 2, members);
 
-    List<MemberIdentifier> viewmembers = Arrays.asList(mockMembers[0], mockMembers[1], myMemberId);
-    viewmembers.get(0).setVersionObjectForTest(Version.CURRENT);
-    MembershipView view = new MembershipView(myMemberId, 2, viewmembers);
-
-    assertFalse(manager.isDisableMulticastForRollingUpgrade(view, Version.CURRENT));
+    assertTrue(manager.containsOldVersionMember(view, Version.CURRENT));
   }
 
   @Test
-  public void testMulticastWithHigherVersionViewMember() throws Exception {
-    manager.getGMSManager().start();
-    manager.getGMSManager().started();
-    manager.isJoining = true;
+  public void testMulticastWithCurrentVersionViewMember() {
+    members.get(0).setVersionObjectForTest(Version.CURRENT);
+    MembershipView<MemberIdentifier> view = new MembershipView<>(myMemberId, 2, members);
 
-    List<MemberIdentifier> viewmembers = Arrays.asList(mockMembers[0], mockMembers[1], myMemberId);
-    viewmembers.get(0).setVersionObjectForTest(Version.CURRENT);
-    MembershipView view = new MembershipView(myMemberId, 2, viewmembers);
+    assertFalse(manager.containsOldVersionMember(view, Version.CURRENT));
+  }
 
-    assertFalse(manager.isDisableMulticastForRollingUpgrade(view, Version.GEODE_1_1_0));
+  @Test
+  public void testMulticastWithHigherVersionViewMember() {
+    members.get(0).setVersionObjectForTest(Version.CURRENT);
+    MembershipView<MemberIdentifier> view = new MembershipView<>(myMemberId, 2, members);
+
+    assertFalse(manager.containsOldVersionMember(view, Version.GEODE_1_1_0));
   }
 }
