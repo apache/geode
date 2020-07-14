@@ -344,7 +344,7 @@ public class GMSMembershipJUnitTest {
     surpriseMember.setVersionObjectForTest(Version.GEODE_1_1_0);
     manager.addSurpriseMember(surpriseMember);
 
-    assertTrue(manager.isDisableMulticastForRollingUpgrade(view));
+    assertTrue(manager.isDisableMulticastForRollingUpgrade(view, Version.CURRENT));
   }
 
   @Test
@@ -361,7 +361,24 @@ public class GMSMembershipJUnitTest {
     surpriseMember.setVersionObjectForTest(Version.CURRENT);
     manager.addSurpriseMember(surpriseMember);
 
-    assertFalse(manager.isDisableMulticastForRollingUpgrade(view));
+    assertFalse(manager.isDisableMulticastForRollingUpgrade(view, Version.CURRENT));
+  }
+
+  @Test
+  public void testMulticastWithHigherVersionSurpriseMember() throws Exception {
+    manager.getGMSManager().start();
+    manager.getGMSManager().started();
+    manager.isJoining = true;
+
+    List<MemberIdentifier> viewmembers = Arrays.asList(mockMembers[0], mockMembers[1], myMemberId);
+    MembershipView view = new MembershipView(myMemberId, 2, viewmembers);
+
+    MemberIdentifier surpriseMember = mockMembers[0];
+    surpriseMember.setVmViewId(3);
+    surpriseMember.setVersionObjectForTest(Version.CURRENT);
+    manager.addSurpriseMember(surpriseMember);
+
+    assertFalse(manager.isDisableMulticastForRollingUpgrade(view, Version.GEODE_1_1_0));
   }
 
   @Test
@@ -374,7 +391,7 @@ public class GMSMembershipJUnitTest {
     viewmembers.get(0).setVersionObjectForTest(Version.GEODE_1_1_0);
     MembershipView view = new MembershipView(myMemberId, 2, viewmembers);
 
-    assertTrue(manager.isDisableMulticastForRollingUpgrade(view));
+    assertTrue(manager.isDisableMulticastForRollingUpgrade(view, Version.CURRENT));
   }
 
   @Test
@@ -387,6 +404,19 @@ public class GMSMembershipJUnitTest {
     viewmembers.get(0).setVersionObjectForTest(Version.CURRENT);
     MembershipView view = new MembershipView(myMemberId, 2, viewmembers);
 
-    assertFalse(manager.isDisableMulticastForRollingUpgrade(view));
+    assertFalse(manager.isDisableMulticastForRollingUpgrade(view, Version.CURRENT));
+  }
+
+  @Test
+  public void testMulticastWithHigherVersionViewMember() throws Exception {
+    manager.getGMSManager().start();
+    manager.getGMSManager().started();
+    manager.isJoining = true;
+
+    List<MemberIdentifier> viewmembers = Arrays.asList(mockMembers[0], mockMembers[1], myMemberId);
+    viewmembers.get(0).setVersionObjectForTest(Version.CURRENT);
+    MembershipView view = new MembershipView(myMemberId, 2, viewmembers);
+
+    assertFalse(manager.isDisableMulticastForRollingUpgrade(view, Version.GEODE_1_1_0));
   }
 }
