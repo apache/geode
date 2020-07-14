@@ -97,7 +97,6 @@ public class NioSslEngineTest {
     Socket mockSocket = mock(Socket.class);
     when(mockChannel.socket()).thenReturn(mockSocket);
     when(mockSocket.isClosed()).thenReturn(false);
-    when(mockSocket.getChannel()).thenReturn(mockChannel);
 
     // initial read of handshake status followed by read of handshake status after task execution
     when(mockEngine.getHandshakeStatus()).thenReturn(NEED_UNWRAP, NEED_WRAP);
@@ -209,15 +208,9 @@ public class NioSslEngineTest {
 
   @Test(expected = IOException.class)
   public void checkClosedThrows() throws Exception {
-    SocketChannel mockChannel = mock(SocketChannel.class);
-    when(mockChannel.read(any(ByteBuffer.class))).thenReturn(100, 100, 100, 0);
-    Socket mockSocket = mock(Socket.class);
-    when(mockChannel.socket()).thenReturn(mockSocket);
-    when(mockSocket.isClosed()).thenReturn(false);
-    when(mockSocket.getChannel()).thenReturn(mockChannel);
     when(mockEngine.wrap(any(ByteBuffer.class), any(ByteBuffer.class))).thenReturn(
         new SSLEngineResult(CLOSED, FINISHED, 0, 100));
-    nioSslEngine.close(mockSocket);
+    nioSslEngine.close(mock(SocketChannel.class));
     nioSslEngine.checkClosed();
   }
 
@@ -348,15 +341,14 @@ public class NioSslEngineTest {
     Socket mockSocket = mock(Socket.class);
     when(mockChannel.socket()).thenReturn(mockSocket);
     when(mockSocket.isClosed()).thenReturn(false);
-    when(mockSocket.getChannel()).thenReturn(mockChannel);
 
     when(mockEngine.isOutboundDone()).thenReturn(Boolean.FALSE);
     when(mockEngine.wrap(any(ByteBuffer.class), any(ByteBuffer.class))).thenReturn(
         new SSLEngineResult(CLOSED, FINISHED, 0, 0));
-    nioSslEngine.close(mockSocket);
+    nioSslEngine.close(mockChannel);
     assertThatThrownBy(() -> nioSslEngine.checkClosed()).isInstanceOf(IOException.class)
         .hasMessageContaining("NioSslEngine has been closed");
-    nioSslEngine.close(mockSocket);
+    nioSslEngine.close(mockChannel);
   }
 
   @Test
@@ -365,12 +357,11 @@ public class NioSslEngineTest {
     Socket mockSocket = mock(Socket.class);
     when(mockChannel.socket()).thenReturn(mockSocket);
     when(mockSocket.isClosed()).thenReturn(true);
-    when(mockSocket.getChannel()).thenReturn(mockChannel);
 
     when(mockEngine.isOutboundDone()).thenReturn(Boolean.FALSE);
     when(mockEngine.wrap(any(ByteBuffer.class), any(ByteBuffer.class))).thenReturn(
         new SSLEngineResult(BUFFER_OVERFLOW, FINISHED, 0, 0));
-    assertThatThrownBy(() -> nioSslEngine.close(mockSocket)).isInstanceOf(GemFireIOException.class)
+    assertThatThrownBy(() -> nioSslEngine.close(mockChannel)).isInstanceOf(GemFireIOException.class)
         .hasMessageContaining("exception closing SSL session")
         .hasCauseInstanceOf(SSLException.class);
   }
@@ -381,7 +372,6 @@ public class NioSslEngineTest {
     Socket mockSocket = mock(Socket.class);
     when(mockChannel.socket()).thenReturn(mockSocket);
     when(mockSocket.isClosed()).thenReturn(true);
-    when(mockSocket.getChannel()).thenReturn(mockChannel);
 
     when(mockEngine.isOutboundDone()).thenReturn(Boolean.FALSE);
     when(mockEngine.wrap(any(ByteBuffer.class), any(ByteBuffer.class))).thenAnswer((x) -> {
@@ -391,7 +381,7 @@ public class NioSslEngineTest {
       return new SSLEngineResult(CLOSED, FINISHED, 0, 0);
     });
     when(mockChannel.write(any(ByteBuffer.class))).thenThrow(new ClosedChannelException());
-    nioSslEngine.close(mockSocket);
+    nioSslEngine.close(mockChannel);
     verify(mockChannel, times(1)).write(any(ByteBuffer.class));
   }
 
@@ -418,8 +408,6 @@ public class NioSslEngineTest {
     final int preexistingBytes = 10;
     ByteBuffer wrappedBuffer = ByteBuffer.allocate(1000);
     SocketChannel mockChannel = mock(SocketChannel.class);
-    Socket mockSocket = mock(Socket.class);
-    when(mockSocket.getChannel()).thenReturn(mockChannel);
 
     // force a compaction by making the decoded buffer appear near to being full
     ByteBuffer unwrappedBuffer = nioSslEngine.peerAppData;
@@ -440,7 +428,7 @@ public class NioSslEngineTest {
     testSSLEngine.addReturnResult(new SSLEngineResult(OK, NEED_UNWRAP, 0, 0));
     nioSslEngine.engine = testSSLEngine;
 
-    ByteBuffer data = nioSslEngine.readAtLeast(amountToRead, wrappedBuffer, mockSocket);
+    ByteBuffer data = nioSslEngine.readAtLeast(mockChannel, amountToRead, wrappedBuffer);
     verify(mockChannel, times(3)).read(isA(ByteBuffer.class));
     assertThat(data.position()).isEqualTo(0);
     assertThat(data.limit()).isEqualTo(individualRead * 3 + preexistingBytes);
@@ -460,8 +448,6 @@ public class NioSslEngineTest {
     final int preexistingBytes = 10;
     ByteBuffer wrappedBuffer = ByteBuffer.allocate(1000);
     SocketChannel mockChannel = mock(SocketChannel.class);
-    Socket mockSocket = mock(Socket.class);
-    when(mockSocket.getChannel()).thenReturn(mockChannel);
 
     // force buffer expansion by making a small decoded buffer appear near to being full
     int initialUnwrappedBufferSize = 100;
@@ -487,7 +473,7 @@ public class NioSslEngineTest {
         new SSLEngineResult(OK, NEED_UNWRAP, 0, 0)); // 130 + 60 bytes = 190
     nioSslEngine.engine = testSSLEngine;
 
-    ByteBuffer data = nioSslEngine.readAtLeast(amountToRead, wrappedBuffer, mockSocket);
+    ByteBuffer data = nioSslEngine.readAtLeast(mockChannel, amountToRead, wrappedBuffer);
     verify(mockChannel, times(3)).read(isA(ByteBuffer.class));
     assertThat(data.position()).isEqualTo(0);
     assertThat(data.limit()).isEqualTo(individualRead * 3 + preexistingBytes);
@@ -513,8 +499,6 @@ public class NioSslEngineTest {
     final int preexistingBytes = initialUnwrappedBufferSize - 7;
     ByteBuffer wrappedBuffer = ByteBuffer.allocate(1000);
     SocketChannel mockChannel = mock(SocketChannel.class);
-    Socket mockSocket = mock(Socket.class);
-    when(mockSocket.getChannel()).thenReturn(mockChannel);
 
     // force buffer expansion by making a small decoded buffer appear near to being full
     ByteBuffer unwrappedBuffer = ByteBuffer.allocate(initialUnwrappedBufferSize);
@@ -539,7 +523,7 @@ public class NioSslEngineTest {
         new SSLEngineResult(OK, NEED_UNWRAP, 0, 0));
     nioSslEngine.engine = testSSLEngine;
 
-    ByteBuffer data = nioSslEngine.readAtLeast(amountToRead, wrappedBuffer, mockSocket);
+    ByteBuffer data = nioSslEngine.readAtLeast(mockChannel, amountToRead, wrappedBuffer);
     verify(mockChannel, times(1)).read(isA(ByteBuffer.class));
     assertThat(data.position()).isEqualTo(0);
     assertThat(data.limit())

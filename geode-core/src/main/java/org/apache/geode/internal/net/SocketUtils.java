@@ -89,6 +89,10 @@ public abstract class SocketUtils {
    * and buffer.remaining is also zero the limit is changed to be buffer.capacity
    * before reading.
    *
+   * @param socket the socket to read from
+   * @param inputBuffer the buffer into which data should be stored
+   * @param socketInputStream the socket's inputStream, included as a parameter so it can be a
+   *        buffered stream, if desired
    * @return the number of bytes read, which may be -1 for EOF
    */
   public static int readFromSocket(Socket socket, ByteBuffer inputBuffer,
@@ -105,11 +109,7 @@ public abstract class SocketUtils {
 
   private static int readFromStream(InputStream stream, ByteBuffer inputBuffer) throws IOException {
     int amountRead;
-    // if bytes are available we read that number of bytes. Otherwise we do a blocking read
-    // of buffer.remaining() bytes
     int amountToRead = inputBuffer.remaining();
-    // stream.available() > 0 ? Math.min(stream.available(), inputBuffer.remaining())
-    // : inputBuffer.remaining();
     if (inputBuffer.hasArray()) {
       amountRead = stream.read(inputBuffer.array(),
           inputBuffer.arrayOffset() + inputBuffer.position(), amountToRead);

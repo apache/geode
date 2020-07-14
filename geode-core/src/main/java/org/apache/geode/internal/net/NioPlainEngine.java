@@ -17,31 +17,24 @@ package org.apache.geode.internal.net;
 
 import java.io.EOFException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
 
 import org.apache.geode.internal.Assert;
 
 /**
  * A pass-through implementation of NioFilter. Use this if you don't need
- * secure communications. This filter can handle both old-IO and new-IO (NIO)
- * sockets.
+ * secure communications.
  */
 public class NioPlainEngine implements NioFilter {
   private final BufferPool bufferPool;
-  private final boolean useDirectBuffers;
-  private final InputStream inputStream;
 
   int lastReadPosition;
   int lastProcessedPosition;
 
 
-  public NioPlainEngine(BufferPool bufferPool, boolean useDirectBuffers,
-      InputStream inputStream) {
+  public NioPlainEngine(BufferPool bufferPool) {
     this.bufferPool = bufferPool;
-    this.useDirectBuffers = useDirectBuffers;
-    this.inputStream = inputStream;
   }
 
   @Override
@@ -61,8 +54,7 @@ public class NioPlainEngine implements NioFilter {
     ByteBuffer buffer = wrappedBuffer;
 
     if (buffer == null) {
-      buffer = useDirectBuffers ? bufferPool.acquireDirectBuffer(bufferType, amount)
-          : bufferPool.acquireNonDirectBuffer(bufferType, amount);
+      buffer = bufferPool.acquireDirectBuffer(bufferType, amount);
       buffer.clear();
       lastProcessedPosition = 0;
       lastReadPosition = 0;
@@ -79,8 +71,7 @@ public class NioPlainEngine implements NioFilter {
       ByteBuffer oldBuffer = buffer;
       oldBuffer.limit(lastReadPosition);
       oldBuffer.position(lastProcessedPosition);
-      buffer = useDirectBuffers ? bufferPool.acquireDirectBuffer(bufferType, amount)
-          : bufferPool.acquireNonDirectBuffer(bufferType, amount);
+      buffer = bufferPool.acquireDirectBuffer(bufferType, amount);
       buffer.clear();
       buffer.put(oldBuffer);
       bufferPool.releaseBuffer(bufferType, oldBuffer);
@@ -91,8 +82,9 @@ public class NioPlainEngine implements NioFilter {
   }
 
   @Override
-  public ByteBuffer readAtLeast(int bytes, ByteBuffer buffer, Socket socket)
+  public ByteBuffer readAtLeast(SocketChannel channel, int bytes, ByteBuffer wrappedBuffer)
       throws IOException {
+    ByteBuffer buffer = wrappedBuffer;
 
     Assert.assertTrue(buffer.capacity() - lastProcessedPosition >= bytes);
 
@@ -101,7 +93,7 @@ public class NioPlainEngine implements NioFilter {
     buffer.position(lastReadPosition);
 
     while (buffer.position() < (lastProcessedPosition + bytes)) {
-      int amountRead = SocketUtils.readFromSocket(socket, buffer, inputStream);
+      int amountRead = channel.read(buffer);
       if (amountRead < 0) {
         throw new EOFException();
       }
@@ -119,9 +111,13 @@ public class NioPlainEngine implements NioFilter {
     return buffer;
   }
 
-  @Override
-  public void close(Socket socket) {
-    // nothing needs to be done in this implementation
+  public void doneReading(ByteBuffer unwrappedBuffer) {
+    if (unwrappedBuffer.position() != 0) {
+      unwrappedBuffer.compact();
+    } else {
+      unwrappedBuffer.position(unwrappedBuffer.limit());
+      unwrappedBuffer.limit(unwrappedBuffer.capacity());
+    }
   }
 
   @Override

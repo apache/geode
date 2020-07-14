@@ -213,7 +213,7 @@ public class SSLSocketHostNameVerificationIntegrationTest {
       } finally {
         if (engine != null && socket != null) {
           final NioSslEngine nioSslEngine = engine;
-          engine.close(socket);
+          engine.close(socket.getChannel());
           assertThatThrownBy(() -> {
             nioSslEngine.unwrap(ByteBuffer.wrap(new byte[0]));
           })

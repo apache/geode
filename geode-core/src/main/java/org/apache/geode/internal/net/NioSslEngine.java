@@ -24,7 +24,6 @@ import static org.apache.geode.internal.net.BufferPool.BufferType.TRACKED_SENDER
 
 import java.io.EOFException;
 import java.io.IOException;
-import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
@@ -48,10 +47,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 /**
  * NioSslEngine uses an SSLEngine to bind SSL logic to a data source. This class is not thread
  * safe. Its use should be confined to one thread or should be protected by external
- * synchronization.<br>
- * While some NioSslEngine methods take a Socket as a parameter the given socket must hold
- * a NIO Channel for i/o operations. If this is not the case these methods will likely throw
- * a NullPointerException when they attempt to access and use the channel.
+ * synchronization.
  */
 public class NioSslEngine implements NioFilter {
   private static final Logger logger = LogService.getLogger();
@@ -313,8 +309,8 @@ public class NioSslEngine implements NioFilter {
   }
 
   @Override
-  public ByteBuffer readAtLeast(int bytes,
-      ByteBuffer wrappedBuffer, Socket socket) throws IOException {
+  public ByteBuffer readAtLeast(SocketChannel channel, int bytes,
+      ByteBuffer wrappedBuffer) throws IOException {
     if (peerAppData.capacity() > bytes) {
       // we already have a buffer that's big enough
       if (peerAppData.capacity() - peerAppData.position() < bytes) {
@@ -325,7 +321,7 @@ public class NioSslEngine implements NioFilter {
 
     while (peerAppData.remaining() < bytes) {
       wrappedBuffer.limit(wrappedBuffer.capacity());
-      int amountRead = socket.getChannel().read(wrappedBuffer);
+      int amountRead = channel.read(wrappedBuffer);
       if (amountRead < 0) {
         throw new EOFException();
       }
@@ -368,7 +364,7 @@ public class NioSslEngine implements NioFilter {
 
 
   @Override
-  public synchronized void close(Socket socket) {
+  public synchronized void close(SocketChannel socketChannel) {
     if (closed) {
       return;
     }
@@ -392,7 +388,7 @@ public class NioSslEngine implements NioFilter {
         // Send close message to peer
         myNetData.flip();
         while (myNetData.hasRemaining()) {
-          socket.getChannel().write(myNetData);
+          socketChannel.write(myNetData);
         }
       }
     } catch (ClosedChannelException e) {

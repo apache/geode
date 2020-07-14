@@ -41,7 +41,10 @@ public class MsgReader {
   private ByteBuffer peerNetData;
   private final InputStream inputStream;
   private final ByteBufferInputStream byteBufferInputStream;
+
+  /* readAtLeast() state: keeps track of how much of the buffer contains valid data */
   private int lastProcessedPosition;
+  /* readAtLeast() state: keeps track of how much has been consumed */
   private int lastReadPosition;
 
 

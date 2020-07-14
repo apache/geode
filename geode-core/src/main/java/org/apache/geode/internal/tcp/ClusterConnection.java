@@ -1163,6 +1163,8 @@ public class ClusterConnection implements Runnable {
       socket = getConduit().getSocketCreator().forAdvancedUse().connect(
           new HostAndPort(remoteID.getHostName(), remoteID.getDirectChannelPort()),
           0, null, false, socketBufferSize, true);
+      // set the local socketBufferSize for message streaming but leave the socket's buffer alone.
+      // SSLSocket performs worse if you mess with the buffer size
       setSocketBufferSize(this.socket, false, socketBufferSize, true);
     } else {
       SocketChannel channel = SocketChannel.open();
@@ -2751,10 +2753,7 @@ public class ClusterConnection implements Runnable {
    * deserialized and passed to TCPConduit for further processing
    */
   private void processInputBuffer() throws ConnectionException, IOException {
-    // BRUCE: simplify this
-    inputBuffer.flip();
     ByteBuffer peerDataBuffer = inputBuffer;
-    peerDataBuffer.position(peerDataBuffer.limit());
     peerDataBuffer.flip();
 
     boolean done = false;

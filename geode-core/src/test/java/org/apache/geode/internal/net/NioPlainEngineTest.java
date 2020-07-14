@@ -23,8 +23,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.EOFException;
-import java.io.InputStream;
-import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
@@ -45,7 +43,7 @@ public class NioPlainEngineTest {
   public void setUp() throws Exception {
     mockStats = mock(DMStats.class);
     bufferPool = new BufferPool(mockStats);
-    nioEngine = new NioPlainEngine(bufferPool, true, mock(InputStream.class));
+    nioEngine = new NioPlainEngine(bufferPool);
   }
 
   @Test
@@ -106,8 +104,6 @@ public class NioPlainEngineTest {
     final int preexistingBytes = 10;
     ByteBuffer wrappedBuffer = ByteBuffer.allocate(1000);
     SocketChannel mockChannel = mock(SocketChannel.class);
-    Socket mockSocket = mock(Socket.class);
-    when(mockSocket.getChannel()).thenReturn(mockChannel);
 
     // simulate some socket reads
     when(mockChannel.read(any(ByteBuffer.class))).thenAnswer(new Answer<Integer>() {
@@ -121,14 +117,14 @@ public class NioPlainEngineTest {
 
     nioEngine.lastReadPosition = 10;
 
-    ByteBuffer data = nioEngine.readAtLeast(amountToRead, wrappedBuffer, mockSocket);
+    ByteBuffer data = nioEngine.readAtLeast(mockChannel, amountToRead, wrappedBuffer);
     verify(mockChannel, times(3)).read(isA(ByteBuffer.class));
     assertThat(data.position()).isEqualTo(0);
     assertThat(data.limit()).isEqualTo(amountToRead);
     assertThat(nioEngine.lastReadPosition).isEqualTo(individualRead * 3 + preexistingBytes);
     assertThat(nioEngine.lastProcessedPosition).isEqualTo(amountToRead);
 
-    data = nioEngine.readAtLeast(amountToRead, wrappedBuffer, mockSocket);
+    data = nioEngine.readAtLeast(mockChannel, amountToRead, wrappedBuffer);
     verify(mockChannel, times(5)).read(any(ByteBuffer.class));
     // at end of last readAtLeast data
     assertThat(data.position()).isEqualTo(amountToRead);
@@ -146,15 +142,13 @@ public class NioPlainEngineTest {
     final int amountToRead = 150;
     ByteBuffer wrappedBuffer = ByteBuffer.allocate(1000);
     SocketChannel mockChannel = mock(SocketChannel.class);
-    Socket mockSocket = mock(Socket.class);
-    when(mockSocket.getChannel()).thenReturn(mockChannel);
 
     // simulate some socket reads
     when(mockChannel.read(any(ByteBuffer.class))).thenReturn(-1);
 
     nioEngine.lastReadPosition = 10;
 
-    nioEngine.readAtLeast(amountToRead, wrappedBuffer, mockSocket);
+    nioEngine.readAtLeast(mockChannel, amountToRead, wrappedBuffer);
   }
 
 }

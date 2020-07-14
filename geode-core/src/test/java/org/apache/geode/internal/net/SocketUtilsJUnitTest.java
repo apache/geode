@@ -20,10 +20,17 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
+
+import javax.net.ssl.SSLSocket;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -87,5 +94,87 @@ public class SocketUtilsJUnitTest {
   @Test
   public void testCloseServerSocketWithNull() {
     assertThat(SocketUtils.close((ServerSocket) null)).isTrue();
+  }
+
+  @Test
+  public void readFromSocketWithHeapBuffer() throws IOException {
+    Socket socket = mock(Socket.class);
+    SocketChannel channel = mock(SocketChannel.class);
+    when(socket.getChannel()).thenReturn(channel);
+    final ByteBuffer buffer = ByteBuffer.allocate(100); // heap buffer
+    byte[] bytes = new byte[100];
+    InputStream stream = new ByteArrayInputStream(bytes);
+    when(channel.read(buffer)).thenAnswer((answer) -> {
+      buffer.put(bytes);
+      return buffer.position();
+    });
+    assertThat(buffer.hasArray()).isTrue();
+    SocketUtils.readFromSocket(socket, buffer, stream);
+    // the channel was used to read the bytes
+    verify(channel, times(1)).read(buffer);
+    // the buffer was filled
+    assertThat(buffer.position()).isEqualTo(bytes.length);
+    // the stream was not used
+    assertThat(stream.available()).isEqualTo(bytes.length);
+  }
+
+
+  @Test
+  public void readFromSocketWithDirectBuffer() throws IOException {
+    Socket socket = mock(Socket.class);
+    SocketChannel channel = mock(SocketChannel.class);
+    when(socket.getChannel()).thenReturn(channel);
+    final ByteBuffer buffer = ByteBuffer.allocateDirect(100); // non-heap buffer
+    byte[] bytes = new byte[100];
+    InputStream stream = new ByteArrayInputStream(bytes);
+    when(channel.read(buffer)).thenAnswer((answer) -> {
+      buffer.put(bytes);
+      return buffer.position();
+    });
+    assertThat(buffer.hasArray()).isFalse();
+    SocketUtils.readFromSocket(socket, buffer, stream);
+    // the channel was used to read the bytes
+    verify(channel, times(1)).read(buffer);
+    // the buffer was filled
+    assertThat(buffer.position()).isEqualTo(bytes.length);
+    // the stream was not used
+    assertThat(stream.available()).isEqualTo(bytes.length);
+  }
+
+  @Test
+  public void readFromSSLSocketWithHeapBuffer() throws IOException {
+    Socket socket = mock(SSLSocket.class);
+    SocketChannel channel = mock(SocketChannel.class);
+    when(socket.getChannel()).thenReturn(channel);
+    final ByteBuffer buffer = ByteBuffer.allocate(100); // heap buffer
+    byte[] bytes = new byte[100];
+    InputStream stream = new ByteArrayInputStream(bytes);
+    assertThat(stream.available()).isEqualTo(bytes.length);
+    SocketUtils.readFromSocket(socket, buffer, stream);
+    // the channel was not used to read the bytes
+    verify(channel, times(0)).read(buffer);
+    // the buffer was filled
+    assertThat(buffer.position()).isEqualTo(bytes.length);
+    // the stream was used to read the bytes
+    assertThat(stream.available()).isZero();
+  }
+
+
+  @Test
+  public void readFromSSLSocketWithDirectBuffer() throws IOException {
+    Socket socket = mock(SSLSocket.class);
+    SocketChannel channel = mock(SocketChannel.class);
+    when(socket.getChannel()).thenReturn(channel);
+    final ByteBuffer buffer = ByteBuffer.allocateDirect(100); // non-heap buffer
+    byte[] bytes = new byte[100];
+    InputStream stream = new ByteArrayInputStream(bytes);
+    assertThat(stream.available()).isEqualTo(bytes.length);
+    SocketUtils.readFromSocket(socket, buffer, stream);
+    // the channel was not used
+    verify(channel, times(0)).read(buffer);
+    // the buffer was filled
+    assertThat(buffer.position()).isEqualTo(bytes.length);
+    // the stream was used to fill the buffer
+    assertThat(stream.available()).isZero();
   }
 }
