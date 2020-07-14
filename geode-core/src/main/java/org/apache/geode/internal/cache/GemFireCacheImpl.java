@@ -276,7 +276,7 @@ import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
 import org.apache.geode.pdx.internal.PdxInstanceImpl;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.services.module.ModuleService;
-import org.apache.geode.services.result.ModuleServiceResult;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * GemFire's implementation of a distributed {@link Cache}.
@@ -1850,7 +1850,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * Initialize any services provided as extensions to the cache using service loader.
    */
   private void initializeServices() {
-    ModuleServiceResult<Set<CacheService>> loadedServices =
+    ServiceResult<Set<CacheService>> loadedServices =
         moduleService.loadService(CacheService.class);
     if (loadedServices.isSuccessful()) {
       for (CacheService service : loadedServices.getMessage()) {

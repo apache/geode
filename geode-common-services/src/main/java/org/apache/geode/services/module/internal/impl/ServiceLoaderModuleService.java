@@ -16,6 +16,8 @@
  */
 package org.apache.geode.services.module.internal.impl;
 
+import static org.apache.geode.services.result.impl.Success.SUCCESS_TRUE;
+
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashSet;
@@ -28,69 +30,108 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.services.module.ModuleDescriptor;
 import org.apache.geode.services.module.ModuleService;
-import org.apache.geode.services.result.ModuleServiceResult;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.services.result.impl.Failure;
 import org.apache.geode.services.result.impl.Success;
 
+/**
+ * Default of {@link ModuleService} using {@link ServiceLoader}.
+ *
+ * @since Geode 1.14.0
+ *
+ * @see ModuleService
+ * @see ServiceResult
+ * @see ServiceLoader
+ */
 public class ServiceLoaderModuleService implements ModuleService {
 
   private Logger logger;
+
 
   public ServiceLoaderModuleService(Logger logger) {
     this.logger = logger;
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
-  public ModuleServiceResult<Boolean> loadModule(ModuleDescriptor moduleDescriptor) {
-    return Failure.of("This features is not implemented for a default ModuleService");
+  public ServiceResult<Boolean> loadModule(ModuleDescriptor moduleDescriptor) {
+    return SUCCESS_TRUE;
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
-  public ModuleServiceResult<Boolean> registerModule(ModuleDescriptor moduleDescriptor) {
-    return Failure.of("This features is not implemented for a default ModuleService");
+  public ServiceResult<Boolean> unloadModule(String moduleName) {
+    return SUCCESS_TRUE;
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
-  public ModuleServiceResult<Boolean> unloadModule(String moduleName) {
-    return Failure.of("This features is not implemented for a default ModuleService");
+  public ServiceResult<Boolean> registerModule(ModuleDescriptor moduleDescriptor) {
+    return SUCCESS_TRUE;
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
-  public <T> ModuleServiceResult<Set<T>> loadService(Class<T> service) {
+  public ServiceResult<Boolean> unregisterModule(ModuleDescriptor geodeModuleDescriptor) {
+    return SUCCESS_TRUE;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public <T> ServiceResult<Set<T>> loadService(Class<T> service) {
     Set<T> result = new HashSet<>();
-    try {
-      Iterator<T> iterator = ServiceLoader.load(service).iterator();
-      while (iterator.hasNext()) {
-        try {
-          result.add(iterator.next());
-        } catch (Error e) {
-          logger.error(e.getMessage());
-        }
+    Iterator<T> iterator = ServiceLoader.load(service).iterator();
+    while (iterator.hasNext()) {
+      try {
+        result.add(iterator.next());
+      } catch (Error e) {
+        logger.error(e.getMessage());
       }
-    } catch (Exception e) {
-      return Failure.of(e.toString());
     }
     return Success.of(result);
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
-  public ModuleServiceResult<Class<?>> loadClass(String className,
+  public ServiceResult<Class<?>> loadClass(String className,
       ModuleDescriptor moduleDescriptor) {
-    return Failure.of("This features is not implemented for a default ModuleService");
+    try {
+      return Success.of(this.getClass().getClassLoader().loadClass(className));
+    } catch (ClassNotFoundException e) {
+      return Failure.of(e);
+    }
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
-  public ModuleServiceResult<List<Class<?>>> loadClass(String className) {
+  public ServiceResult<List<Class<?>>> loadClass(String className) {
     try {
       return Success.of(Collections.singletonList(
           this.getClass().getClassLoader().loadClass(className)));
     } catch (ClassNotFoundException e) {
-      return Failure.of(e.toString());
+      return Failure.of(e);
     }
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
-  public ModuleServiceResult<List<InputStream>> findResourceAsStream(String resourceFile) {
+  public ServiceResult<List<InputStream>> findResourceAsStream(String resourceFile) {
     InputStream inputStream = null;
     ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
     if (contextClassLoader != null) {
@@ -109,6 +150,9 @@ public class ServiceLoaderModuleService implements ModuleService {
         : Success.of(Collections.singletonList(inputStream));
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public void setLogger(Logger logger) {
     this.logger = logger;

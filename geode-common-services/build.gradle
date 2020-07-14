@@ -31,5 +31,9 @@ dependencies {
 
     implementation(project(':geode-common'))
 
-    implementation(project(':geode-logging'))
+    implementation('org.apache.logging.log4j:log4j-api')
+
+    testImplementation('junit:junit')
+
+    testImplementation('org.assertj:assertj-core')
 }

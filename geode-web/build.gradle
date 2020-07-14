@@ -63,6 +63,7 @@ dependencies {
 
   integrationTestRuntimeOnly(files(war.destinationDir))
 
+  distributedTestImplementation(project(':geode-common-services'))
   distributedTestImplementation(project(':geode-common'))
   distributedTestImplementation(project(':geode-dunit'))
   distributedTestImplementation('pl.pragmatists:JUnitParams')

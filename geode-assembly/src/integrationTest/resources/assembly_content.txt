@@ -967,14 +967,12 @@ javadoc/org/apache/geode/security/package-frame.html
 javadoc/org/apache/geode/security/package-summary.html
 javadoc/org/apache/geode/security/package-tree.html
 javadoc/org/apache/geode/services/bootstrapping/BootstrappingService.html
-javadoc/org/apache/geode/services/bootstrapping/impl/BootstrappingServiceImpl.html
-javadoc/org/apache/geode/services/bootstrapping/impl/package-frame.html
-javadoc/org/apache/geode/services/bootstrapping/impl/package-summary.html
-javadoc/org/apache/geode/services/bootstrapping/impl/package-tree.html
 javadoc/org/apache/geode/services/bootstrapping/package-frame.html
 javadoc/org/apache/geode/services/bootstrapping/package-summary.html
 javadoc/org/apache/geode/services/bootstrapping/package-tree.html
+javadoc/org/apache/geode/services/management/ComponentManagementService.html
 javadoc/org/apache/geode/services/management/ManagementService.html
+javadoc/org/apache/geode/services/management/impl/ComponentIdentifier.html
 javadoc/org/apache/geode/services/management/impl/ManagementServiceImpl.html
 javadoc/org/apache/geode/services/management/impl/package-frame.html
 javadoc/org/apache/geode/services/management/impl/package-summary.html
@@ -985,7 +983,6 @@ javadoc/org/apache/geode/services/management/package-tree.html
 javadoc/org/apache/geode/services/module/ModuleDescriptor.Builder.html
 javadoc/org/apache/geode/services/module/ModuleDescriptor.html
 javadoc/org/apache/geode/services/module/ModuleService.html
-javadoc/org/apache/geode/services/module/impl/GeodeModuleLoader.html
 javadoc/org/apache/geode/services/module/impl/JBossModuleServiceImpl.html
 javadoc/org/apache/geode/services/module/impl/package-frame.html
 javadoc/org/apache/geode/services/module/impl/package-summary.html
@@ -993,8 +990,8 @@ javadoc/org/apache/geode/services/module/impl/package-tree.html
 javadoc/org/apache/geode/services/module/package-frame.html
 javadoc/org/apache/geode/services/module/package-summary.html
 javadoc/org/apache/geode/services/module/package-tree.html
-javadoc/org/apache/geode/services/result/ModuleServiceResult.html
 javadoc/org/apache/geode/services/result/Result.html
+javadoc/org/apache/geode/services/result/ServiceResult.html
 javadoc/org/apache/geode/services/result/impl/Failure.html
 javadoc/org/apache/geode/services/result/impl/Success.html
 javadoc/org/apache/geode/services/result/impl/package-frame.html
@@ -1031,6 +1028,7 @@ lib/geode-common-0.0.0.jar
 lib/geode-common-services-0.0.0.jar
 lib/geode-connectors-0.0.0.jar
 lib/geode-core-0.0.0.jar
+lib/geode-core-dependencies.jar
 lib/geode-cq-0.0.0.jar
 lib/geode-dependencies.jar
 lib/geode-gfsh-0.0.0.jar
@@ -1045,6 +1043,7 @@ lib/geode-memcached-0.0.0.jar
 lib/geode-module-bootstrapping-0.0.0.jar
 lib/geode-module-management-0.0.0.jar
 lib/geode-modules-0.0.0.jar
+lib/geode-modules-dependencies.jar
 lib/geode-old-client-support-0.0.0.jar
 lib/geode-protobuf-0.0.0.jar
 lib/geode-protobuf-messages-0.0.0.jar
@@ -1119,6 +1118,8 @@ lib/spring-jcl-5.2.5.RELEASE.jar
 lib/spring-shell-1.2.0.RELEASE.jar
 lib/spring-web-5.2.5.RELEASE.jar
 lib/swagger-annotations-1.5.23.jar
+lib/vavr-0.10.3.jar
+lib/vavr-match-0.10.3.jar
 tools/ClientProtocol/geode-protobuf-messages-definitions-0.0.0.zip
 tools/Extensions/geode-web-0.0.0.war
 tools/Extensions/geode-web-api-0.0.0.war

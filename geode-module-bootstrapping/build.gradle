@@ -14,7 +14,7 @@
  */
 
 plugins {
-    id 'me.champeau.gradle.jmh' version '0.4.8'
+  id 'me.champeau.gradle.jmh' version '0.4.8'
 }
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
@@ -23,12 +23,18 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 apply from: "${project.projectDir}/../gradle/warnings.gradle"
 
 dependencies {
-    compile(platform(project(':boms:geode-all-bom')))
+  compile(platform(project(':boms:geode-all-bom')))
 
-    compileOnly(project(':geode-common'))
-    compileOnly(project(':geode-common-services'))
+  compileOnly(project(':geode-common'))
+  compileOnly(project(':geode-common-services'))
 
-    compileOnly(project(':geode-modules'))
+  implementation('org.apache.commons:commons-lang3')
+  implementation('org.apache.logging.log4j:log4j-api')
 
-
+  testImplementation(project(':geode-common-services'))
+  testImplementation('org.apache.logging.log4j:log4j-core')
+  testImplementation('junit:junit')
+  testImplementation('org.assertj:assertj-core')
+  testImplementation('org.mockito:mockito-core')
+  testImplementation('commons-io:commons-io')
 }

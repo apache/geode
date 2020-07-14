@@ -45,7 +45,7 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
-  <dependencies>
+  <dependencies>GradleBuildWithGeodeCoreAcceptanceTest
     <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-common-services</artifactId>
@@ -63,12 +63,17 @@
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-core</artifactId>
+      <artifactId>log4j-api</artifactId>
       <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.jboss.modules</groupId>
       <artifactId>jboss-modules</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.vavr</groupId>
+      <artifactId>vavr</artifactId>
       <scope>runtime</scope>
     </dependency>
   </dependencies>

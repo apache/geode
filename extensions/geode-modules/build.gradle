@@ -67,6 +67,7 @@ dependencies {
   integrationTestRuntimeOnly('org.apache.tomcat:coyote:' + DependencyConstraints.get('tomcat6.version'))
   integrationTestRuntimeOnly('xerces:xercesImpl')
 
+  distributedTestImplementation(project(':geode-common-services'))
   distributedTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }

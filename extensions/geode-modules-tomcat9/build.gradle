@@ -46,6 +46,7 @@ dependencies {
   testImplementation('org.mockito:mockito-core')
   testImplementation(project(':extensions:geode-modules-test'))
 
+  integrationTestImplementation(project(':geode-common-services'))
   integrationTestImplementation(project(':extensions:geode-modules-test'))
   integrationTestImplementation('junit:junit')
   integrationTestImplementation('org.mockito:mockito-core')

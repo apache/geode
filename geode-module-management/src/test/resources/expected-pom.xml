@@ -47,9 +47,9 @@
   </dependencyManagement>
   <dependencies>
     <dependency>
-      <groupId>org.apache.geode</groupId>
-      <artifactId>geode-core</artifactId>
-      <scope>compile</scope>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-api</artifactId>
+      <scope>runtime</scope>
     </dependency>
   </dependencies>
 </project>

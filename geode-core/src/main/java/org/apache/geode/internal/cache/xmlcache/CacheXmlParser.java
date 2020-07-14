@@ -120,7 +120,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.services.module.ModuleService;
-import org.apache.geode.services.result.ModuleServiceResult;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * Parses an XML file and creates a {@link Cache}/{@link ClientCache} and {@link Region}s from it.
@@ -2821,7 +2821,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     XmlParser delegate = delegates.get(namespaceUri);
     if (null == delegate) {
       try {
-        ModuleServiceResult<Set<XmlParser>> serviceLoadResult =
+        ServiceResult<Set<XmlParser>> serviceLoadResult =
             moduleService.loadService(XmlParser.class);
         if (serviceLoadResult.isSuccessful()) {
           for (final XmlParser xmlParser : serviceLoadResult.getMessage()) {

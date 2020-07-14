@@ -76,6 +76,7 @@ dependencies {
     integrationTestRuntimeOnly('xerces:xercesImpl')
     integrationTestRuntimeOnly('javax.annotation:javax.annotation-api')
 
+    distributedTestImplementation(project(':geode-common-services'))
     distributedTestImplementation(project(':geode-dunit')) {
         exclude module: 'geode-core'
     }

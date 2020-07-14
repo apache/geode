@@ -31,10 +31,10 @@ dependencies {
 
   compileOnly('org.apache.logging.log4j:log4j-api:2.13.1')
 
-  testImplementation(project(":geode-modules"))
-  integrationTestImplementation(project(":geode-modules"))
-  acceptanceTestImplementation(project(":geode-modules"))
-  distributedTestImplementation(project(":geode-modules"))
+  testImplementation(project(':geode-common-services'))
+  integrationTestImplementation(project(':geode-common-services'))
+  acceptanceTestImplementation(project(':geode-common-services'))
+  distributedTestImplementation(project(':geode-common-services'))
 
   testImplementation(project(':geode-junit'))
   testImplementation('org.assertj:assertj-core')

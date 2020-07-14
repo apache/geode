@@ -23,7 +23,7 @@ import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.query.internal.cq.spi.CqServiceFactory;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.services.module.ModuleService;
-import org.apache.geode.services.result.ModuleServiceResult;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 public class CqServiceProvider {
@@ -46,7 +46,7 @@ public class CqServiceProvider {
 
   private static void setup(ModuleService moduleService) {
     if (factory == null) {
-      ModuleServiceResult<Set<CqServiceFactory>> loadServiceResult =
+      ServiceResult<Set<CqServiceFactory>> loadServiceResult =
           moduleService.loadService(CqServiceFactory.class);
       if (loadServiceResult.isSuccessful()) {
         for (CqServiceFactory cqServiceFactory : loadServiceResult.getMessage()) {

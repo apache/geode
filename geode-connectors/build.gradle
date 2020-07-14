@@ -57,10 +57,10 @@ dependencies {
   implementation('org.apache.httpcomponents:httpcore')
   implementation('com.fasterxml.jackson.core:jackson-databind')
 
-  testImplementation(project(":geode-modules"))
-  integrationTestImplementation(project(":geode-modules"))
-  acceptanceTestImplementation(project(":geode-modules"))
-  distributedTestImplementation(project(":geode-modules"))
+  testImplementation(project(':geode-common-services'))
+  integrationTestImplementation(project(':geode-common-services'))
+  acceptanceTestImplementation(project(':geode-common-services'))
+  distributedTestImplementation(project(':geode-common-services'))
 
   testImplementation(project(':geode-membership'))
   testImplementation(project(':geode-junit')) {

@@ -15,25 +15,30 @@
 
 package org.apache.geode.services.result.impl;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.apache.commons.lang3.StringUtils;
 
-import org.apache.geode.services.result.ModuleServiceResult;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
- * This type of {@link ModuleServiceResult} represents a failed operation. It contains the
+ * This type of {@link ServiceResult} represents a failed operation. It contains the
  * errorMessage
  * for the failure.
  *
  * @param <SuccessType> the result type for a successful operation. Not used by the {@link Failure}
  *        type
- *        but required by the {@link ModuleServiceResult}
+ *        but required by the {@link ServiceResult}
  *
  * @since 1.14.0
+ *
+ * @see ServiceResult
+ * @see Success
  */
-public class Failure<SuccessType> implements ModuleServiceResult<SuccessType> {
+public class Failure<SuccessType> implements ServiceResult<SuccessType> {
 
   private final String errorMessage;
 
@@ -48,10 +53,44 @@ public class Failure<SuccessType> implements ModuleServiceResult<SuccessType> {
    * @return an {@link Failure} instance containing the errorMessage
    */
   public static <T> Failure<T> of(String errorMessage) {
-    if (StringUtils.isEmpty(errorMessage)) {
+    if (StringUtils.isBlank(errorMessage)) {
       throw new IllegalArgumentException("Error message cannot be null or empty");
     }
     return new Failure<>(errorMessage);
+  }
+
+  /**
+   * Creates a {@link Failure} object containing the throwable
+   *
+   * @param throwable the error message describing the reason for failure.
+   * @return an {@link Failure} instance containing the throwable
+   */
+  public static <T> Failure<T> of(Throwable throwable) {
+    if (throwable == null) {
+      throw new IllegalArgumentException("Error message cannot be null or empty");
+    }
+    StringWriter stringWriter = new StringWriter();
+    try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
+      throwable.printStackTrace(printWriter);
+      return new Failure<>(stringWriter.toString());
+    }
+  }
+
+  /**
+   * Creates a {@link Failure} object containing the errorMessage
+   *
+   * @param errorMessage the error message describing the reason for failure.
+   * @return an {@link Failure} instance containing the errorMessage
+   */
+  public static <T> Failure<T> of(String errorMessage, Throwable throwable) {
+    if (throwable == null || StringUtils.isBlank(errorMessage)) {
+      throw new IllegalArgumentException("Error message cannot be null or empty");
+    }
+    StringWriter stringWriter = new StringWriter();
+    try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
+      throwable.printStackTrace(printWriter);
+      return new Failure<>(errorMessage + "\n" + stringWriter.toString());
+    }
   }
 
   /**
@@ -79,12 +118,22 @@ public class Failure<SuccessType> implements ModuleServiceResult<SuccessType> {
   }
 
   /**
+   *
+   * {@inheritDoc}
+   */
+  public ServiceResult<SuccessType> ifFailure(
+      Consumer<? super String> consumer) {
+    if (isFailure()) {
+      consumer.accept(errorMessage);
+    }
+    return this;
+  }
+
+  /**
    * {@inheritDoc}
    */
   @Override
-  public void ifFailure(Consumer<? super String> consumer) {
-    if (!isSuccessful()) {
-      consumer.accept(errorMessage);
-    }
+  public boolean isFailure() {
+    return true;
   }
 }

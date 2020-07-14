@@ -21,9 +21,9 @@ geode-module-management-0.0.0.jar
 geode-module-bootstrapping-0.0.0.jar
 geode-management-0.0.0.jar
 jackson-databind-2.10.1.jar
+commons-lang3-3.10.jar
 jackson-annotations-2.10.1.jar
 jackson-core-2.10.1.jar
-commons-lang3-3.10.jar
 log4j-api-2.13.1.jar
 geode-membership-0.0.0.jar
 geode-http-service-0.0.0.jar
@@ -90,6 +90,8 @@ lucene-queryparser-6.6.6.jar
 lucene-core-6.6.6.jar
 lucene-queries-6.6.6.jar
 jboss-modules-1.10.1.Final.jar
+vavr-0.10.3.jar
+vavr-match-0.10.3.jar
 protobuf-java-3.11.4.jar
 geo-0.7.7.jar
 netty-all-4.1.48.Final.jar

@@ -30,15 +30,16 @@ dependencies {
 
   compileOnly(project(':geode-common-services'))
 
+//  implementation(project(':geode-core'))
   compileOnly(project(':geode-core'))
   compileOnly(project(':geode-common')) {
     exclude module: 'junit'
   }
 
-  testImplementation(project(":geode-modules"))
-  integrationTestImplementation(project(":geode-modules"))
-  acceptanceTestImplementation(project(":geode-modules"))
-  distributedTestImplementation(project(":geode-modules"))
+  testImplementation(project(':geode-common-services'))
+  integrationTestImplementation(project(':geode-common-services'))
+  acceptanceTestImplementation(project(':geode-common-services'))
+  distributedTestImplementation(project(':geode-common-services'))
 
   testImplementation(project(':geode-core'))
   testImplementation(project(':geode-common'))
