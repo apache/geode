@@ -65,11 +65,12 @@ public abstract class SessionDUnitTest {
   protected static final int APP1 = 3;
   protected static final int APP2 = 4;
 
-  private static final Map<Integer, Integer> ports = new HashMap<>();
+  protected static final Map<Integer, Integer> ports = new HashMap<>();
   public static ConfigurableApplicationContext springApplicationContext;
 
   protected static Jedis jedisConnetedToServer1;
-  private static final int JEDIS_TIMEOUT = Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
+  protected static final int JEDIS_TIMEOUT =
+      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @BeforeClass
   public static void setup() {
@@ -106,6 +107,19 @@ public abstract class SessionDUnitTest {
       Logger logger = LogManager.getLogger("org.apache.geode.redis.internal");
       Configurator.setAllLevels(logger.getName(), Level.getLevel("DEBUG"));
       FastLogger.setDelegating(true);
+    });
+  }
+
+  static void startSpringApp(int sessionApp, int primaryServer, long sessionTimeout) {
+    int primaryRedisPort = ports.get(primaryServer);
+    int httpPort = ports.get(sessionApp);
+    VM host = cluster.getVM(sessionApp);
+    host.invoke("Start a Spring app", () -> {
+      System.setProperty("server.port", "" + httpPort);
+      System.setProperty("spring.redis.port", "" + primaryRedisPort);
+      System.setProperty("server.servlet.session.timeout", "" + sessionTimeout + "s");
+      springApplicationContext = SpringApplication.run(
+          RedisSpringTestApplication.class, "" + primaryRedisPort);
     });
   }
 

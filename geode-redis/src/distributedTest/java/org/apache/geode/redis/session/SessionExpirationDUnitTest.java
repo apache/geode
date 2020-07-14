@@ -26,7 +26,7 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public class SessionExpirationDUnitTest extends SessionDUnitTest {
 
-  private static final int SHORT_SESSION_TIMEOUT = 5;
+  protected static final int SHORT_SESSION_TIMEOUT = 5;
 
   @BeforeClass
   public static void setup() {
