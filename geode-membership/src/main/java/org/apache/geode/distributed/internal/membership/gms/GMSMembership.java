@@ -39,6 +39,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.logging.log4j.Logger;
 
@@ -377,23 +378,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
     // incoming events will not be lost in terms of our global view.
     latestViewWriteLock.lock();
     try {
-      // first determine the version for multicast message serialization
-      Version version = KnownVersion.CURRENT;
-      for (final Entry<ID, Long> internalIDLongEntry : surpriseMembers
-          .entrySet()) {
-        ID mbr = internalIDLongEntry.getKey();
-        final Version itsVersion = mbr.getVersion();
-        if (itsVersion != null && version.compareTo(itsVersion) < 0) {
-          version = itsVersion;
-        }
-      }
-      for (ID mbr : newView.getMembers()) {
-        final Version itsVersion = mbr.getVersion();
-        if (itsVersion != null && itsVersion.compareTo(version) < 0) {
-          version = mbr.getVersion();
-        }
-      }
-      disableMulticastForRollingUpgrade = !version.equals(KnownVersion.CURRENT);
+      disableMulticastForRollingUpgrade = isDisableMulticastForRollingUpgrade(newView);
 
       // Save previous view, for delta analysis
       MembershipView<ID> priorView = latestView;
@@ -529,6 +514,16 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
     } finally {
       latestViewWriteLock.unlock();
     }
+  }
+
+  boolean isDisableMulticastForRollingUpgrade(MembershipView<ID> newView) {
+    return Stream.concat(surpriseMembers.entrySet().stream().map(entry -> entry.getKey()),
+        newView.getMembers().stream())
+        .anyMatch(member -> {
+          final VersionOrdinal memberVersionOrdinal = member.getVersionOrdinalObject();
+          return memberVersionOrdinal != null
+              && memberVersionOrdinal.compareTo(Version.CURRENT) < 0;
+        });
   }
 
   @Override

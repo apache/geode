@@ -19,6 +19,7 @@ import static org.apache.geode.internal.serialization.DataSerializableFixedID.HI
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Matchers.isA;
@@ -59,6 +60,7 @@ import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMon
 import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Messenger;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.internal.DSFIDSerializerImpl;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
@@ -328,4 +330,63 @@ public class GMSMembershipJUnitTest {
     assertThat(spy.getStartupEvents()).isEmpty();
   }
 
+  @Test
+  public void testMulticastWithOldVersionSurpriseMember() throws Exception {
+    manager.getGMSManager().start();
+    manager.getGMSManager().started();
+    manager.isJoining = true;
+
+    List<MemberIdentifier> viewmembers = Arrays.asList(mockMembers[0], mockMembers[1], myMemberId);
+    MembershipView view = new MembershipView(myMemberId, 2, viewmembers);
+
+    MemberIdentifier surpriseMember = mockMembers[0];
+    surpriseMember.setVmViewId(3);
+    surpriseMember.setVersionObjectForTest(Version.GEODE_1_1_0);
+    manager.addSurpriseMember(surpriseMember);
+
+    assertTrue(manager.isDisableMulticastForRollingUpgrade(view));
+  }
+
+  @Test
+  public void testMulticastWithCurrentVersionSurpriseMember() throws Exception {
+    manager.getGMSManager().start();
+    manager.getGMSManager().started();
+    manager.isJoining = true;
+
+    List<MemberIdentifier> viewmembers = Arrays.asList(mockMembers[0], mockMembers[1], myMemberId);
+    MembershipView view = new MembershipView(myMemberId, 2, viewmembers);
+
+    MemberIdentifier surpriseMember = mockMembers[0];
+    surpriseMember.setVmViewId(3);
+    surpriseMember.setVersionObjectForTest(Version.CURRENT);
+    manager.addSurpriseMember(surpriseMember);
+
+    assertFalse(manager.isDisableMulticastForRollingUpgrade(view));
+  }
+
+  @Test
+  public void testMulticastWithOldVersionViewMember() throws Exception {
+    manager.getGMSManager().start();
+    manager.getGMSManager().started();
+    manager.isJoining = true;
+
+    List<MemberIdentifier> viewmembers = Arrays.asList(mockMembers[0], mockMembers[1], myMemberId);
+    viewmembers.get(0).setVersionObjectForTest(Version.GEODE_1_1_0);
+    MembershipView view = new MembershipView(myMemberId, 2, viewmembers);
+
+    assertTrue(manager.isDisableMulticastForRollingUpgrade(view));
+  }
+
+  @Test
+  public void testMulticastWithCurrentVersionViewMember() throws Exception {
+    manager.getGMSManager().start();
+    manager.getGMSManager().started();
+    manager.isJoining = true;
+
+    List<MemberIdentifier> viewmembers = Arrays.asList(mockMembers[0], mockMembers[1], myMemberId);
+    viewmembers.get(0).setVersionObjectForTest(Version.CURRENT);
+    MembershipView view = new MembershipView(myMemberId, 2, viewmembers);
+
+    assertFalse(manager.isDisableMulticastForRollingUpgrade(view));
+  }
 }
