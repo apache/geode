@@ -47,8 +47,6 @@ public class GeodeJarModuleFinderTest {
       System.getProperty("user.dir") + "/../libs/geode-common-services-" + gemFireVersion + ".jar";
   private static final String GEODE_COMMONS_PATH =
       System.getProperty("user.dir") + "/../libs/geode-common-" + gemFireVersion + ".jar";
-  private static final String GEODE_LOGGING_PATH =
-      System.getProperty("user.dir") + "/../libs/geode-logging-" + gemFireVersion + ".jar";
 
   private static ModuleDescriptor geodeCommonsServiceDescriptor;
   private static ModuleDescriptor geodeCommonDescriptor;
@@ -67,10 +65,11 @@ public class GeodeJarModuleFinderTest {
         new ModuleDescriptor.Builder("geode-common", gemFireVersion)
             .fromResourcePaths(GEODE_COMMONS_PATH)
             .build();
+  }
 
-    geodeLoggingDescriptor = new ModuleDescriptor.Builder("geode-logging", gemFireVersion)
-        .fromResourcePaths(GEODE_LOGGING_PATH)
-        .build();
+  @Before
+  public void setUp() throws Exception {
+    logger = LogManager.getLogger();
   }
 
   @Before

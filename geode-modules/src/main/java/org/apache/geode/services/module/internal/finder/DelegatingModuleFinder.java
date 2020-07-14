@@ -42,18 +42,29 @@ import org.jboss.modules.ModuleSpec;
  * @see ModuleSpec
  */
 public class DelegatingModuleFinder implements ModuleFinder {
-  // private final Logger logger;
+  private final Logger logger;
 
   private SortedSet<Tuple2<String, ModuleFinder>> finders =
       TreeSet.of(new Tuple2<>("JDK", JDKModuleFinder.getInstance()));
 
-  public DelegatingModuleFinder() {
-    finders.add(JDKModuleFinder.getInstance());
+  public DelegatingModuleFinder(Logger logger) {
+    this.logger = logger;
   }
 
-  // public DelegatingModuleFinder(Logger logger) {
-  // this.logger = logger;
-  // }
+  /**
+   * Adds a {@link ModuleFinder} to be used for finding modules.
+   *
+   * @param moduleName Name of the module associated with the {@link ModuleFinder}.
+   * @param finder a {@link ModuleFinder} used to find the {@link ModuleSpec} for a specific module.
+   */
+  public void addModuleFinder(String moduleName, ModuleFinder finder) {
+    if (moduleFinderAlreadyAdded(moduleName)) {
+      logger.debug("ModuleFinder for module named: " + moduleName + " already added");
+    } else {
+      finders = finders.add(new Tuple2<>(moduleName, finder));
+      logger.debug("Added finder " + finder);
+    }
+  }
 
   /**
    * Adds a {@link ModuleFinder} to be used for finding modules.
@@ -83,11 +94,11 @@ public class DelegatingModuleFinder implements ModuleFinder {
     for (Tuple2<String, ModuleFinder> finder : finders) {
       ModuleSpec moduleSpec = finder._2().findModule(name, delegateLoader);
       if (moduleSpec != null) {
-        // logger.debug(String.format("Found module specification for module named: %s ", name));
+        logger.debug(String.format("Found module specification for module named: %s ", name));
         return moduleSpec;
       }
     }
-    // logger.debug(String.format("No module specification for module named: %s found", name));
+    logger.debug(String.format("No module specification for module named: %s found", name));
     return null;
   }
 

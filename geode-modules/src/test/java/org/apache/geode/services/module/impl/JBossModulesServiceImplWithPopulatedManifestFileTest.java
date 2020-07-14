@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.logging.log4j.LogManager;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -44,17 +45,14 @@ public class JBossModulesServiceImplWithPopulatedManifestFileTest {
       System.getProperty("user.dir") + "/../libs/geode-common-services-" + gemFireVersion + ".jar";
   private static final String GEODE_COMMONS_PATH =
       System.getProperty("user.dir") + "/../libs/geode-common-" + gemFireVersion + ".jar";
-  private static final String GEODE_LOGGING_PATH =
-      System.getProperty("user.dir") + "/../libs/geode-logging-" + gemFireVersion + ".jar";
 
   private ModuleService moduleService;
   private ModuleDescriptor geodeCommonsServiceDescriptor;
   private ModuleDescriptor geodeCommonDescriptor;
-  private ModuleDescriptor geodeLoggingDescriptor;
 
   @Before
   public void setup() {
-    moduleService = new JBossModuleServiceImpl();
+    moduleService = new JBossModuleServiceImpl(LogManager.getLogger());
     geodeCommonsServiceDescriptor =
         new ModuleDescriptor.Builder("geode-common-services", gemFireVersion)
             .fromResourcePaths(GEODE_COMMONS_SERVICES_PATH)
@@ -62,10 +60,6 @@ public class JBossModulesServiceImplWithPopulatedManifestFileTest {
 
     geodeCommonDescriptor = new ModuleDescriptor.Builder("geode-common", gemFireVersion)
         .fromResourcePaths(GEODE_COMMONS_PATH)
-        .build();
-
-    geodeLoggingDescriptor = new ModuleDescriptor.Builder("geode-logging", gemFireVersion)
-        .fromResourcePaths(GEODE_LOGGING_PATH)
         .build();
   }
 
@@ -81,7 +75,6 @@ public class JBossModulesServiceImplWithPopulatedManifestFileTest {
 
     assertThat(moduleService.registerModule(geodeCommonsServiceDescriptor).isSuccessful()).isTrue();
     assertThat(moduleService.registerModule(geodeCommonDescriptor).isSuccessful()).isTrue();
-    assertThat(moduleService.registerModule(geodeLoggingDescriptor).isSuccessful()).isTrue();
     assertThat(moduleService.registerModule(module1Descriptor).isSuccessful()).isTrue();
     assertThat(moduleService.registerModule(module2Descriptor).isSuccessful()).isTrue();
 
@@ -112,7 +105,6 @@ public class JBossModulesServiceImplWithPopulatedManifestFileTest {
 
     assertThat(moduleService.registerModule(geodeCommonDescriptor).isSuccessful()).isTrue();
     assertThat(moduleService.registerModule(geodeCommonsServiceDescriptor).isSuccessful()).isTrue();
-    assertThat(moduleService.registerModule(geodeLoggingDescriptor).isSuccessful()).isTrue();
     assertThat(moduleService.registerModule(module1Descriptor).isSuccessful()).isTrue();
     loadModuleAndAssert(module1Descriptor);
 

@@ -1035,12 +1035,6 @@
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
-        <artifactId>geode-modules-proto</artifactId>
-        <version>${version}</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.geode</groupId>
         <artifactId>geode-old-client-support</artifactId>
         <version>${version}</version>
         <scope>compile</scope>
