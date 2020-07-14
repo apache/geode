@@ -50,7 +50,10 @@ fi
 
 if [[ -d geode ]]; then
   pushd geode
-  GEODE_SHA=$(git rev-parse --verify HEAD)
+    . ${SCRIPTDIR}/short_circuit_pr_tasks.sh
+    is_source_from_pr_testable "ci" "dev-tools" "etc" "geode-book" "geode-docs" || exit 0
+
+    GEODE_SHA=$(git rev-parse --verify HEAD)
   popd
 else
   GEODE_SHA="unknown"

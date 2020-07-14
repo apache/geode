@@ -29,6 +29,11 @@ while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symli
 done
 SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
+. ${SCRIPTDIR}/short_circuit_pr_tasks.sh
+cd geode
+  is_source_from_pr_testable "ci" "dev-tools" "etc" "geode-book" "geode-docs" || exit 0
+cd ..
+
 INSTANCE_NAME="$(cat instance-data/instance-name)"
 PERMITTED_ZONES=($(gcloud compute zones list --filter="name~'us-central.*'" --format=json | jq -r .[].name))
 

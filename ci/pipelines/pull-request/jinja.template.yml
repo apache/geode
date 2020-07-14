@@ -45,11 +45,11 @@ resources:
 - name: geode-ci
   type: git
   source:
-    branch: develop
+    branch: {{repository.branch}}
     depth: 1
     paths:
     - ci/*
-    uri: https://github.com/apache/geode.git
+    uri: https://github.com/{{repository.upstream_fork}}/geode.git
 - name: concourse-metadata-resource
   type: concourse-metadata-resource
   source: {}
@@ -88,7 +88,7 @@ resource_types:
   type: docker-image
   source:
     password: ((!docker-password))
-    repository: gcr.io/apachegeode-ci/((pipeline-prefix))concourse-metadata-resource
+    repository: gcr.io/((gcp-project))/((pipeline-prefix))concourse-metadata-resource
     tag: latest
     username: ((!docker-username))
 jobs:
@@ -341,7 +341,7 @@ jobs:
           GRADLE_GLOBAL_ARGS: ((gradle-global-args))
         run:
           {%- if test.name=="StressNew" %}
-          path: geode/ci/scripts/repeat-new-tests.sh
+          path: geode-ci/ci/scripts/repeat-new-tests.sh
           {%- else %}
           path: geode-ci/ci/scripts/execute_tests.sh
           {%- endif %}
