@@ -29,7 +29,7 @@ import org.xml.sax.SAXException;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.services.module.internal.impl.ServiceLoaderModuleService;
-import org.apache.geode.services.result.ModuleServiceResult;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * Unit test for {@link PivotalEntityResolver} and {@link DefaultEntityResolver2}.
@@ -59,7 +59,7 @@ public abstract class AbstractEntityResolverTest {
   @Test
   public void testDiscovery() {
     boolean found = false;
-    ModuleServiceResult<Set<GeodeEntityResolver2>> serviceLoadResult =
+    ServiceResult<Set<GeodeEntityResolver2>> serviceLoadResult =
         new ServiceLoaderModuleService(LogService.getLogger())
             .loadService(GeodeEntityResolver2.class);
     if (serviceLoadResult.isSuccessful()) {

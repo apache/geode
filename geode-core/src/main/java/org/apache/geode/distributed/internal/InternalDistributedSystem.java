@@ -125,7 +125,7 @@ import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.SecurityManager;
 import org.apache.geode.services.module.ModuleService;
-import org.apache.geode.services.result.ModuleServiceResult;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * The concrete implementation of {@link DistributedSystem} that provides internal-only
@@ -669,7 +669,7 @@ public class InternalDistributedSystem extends DistributedSystem
    * mechanism.
    */
   private void initializeServices() {
-    ModuleServiceResult<Set<DistributedSystemService>> loadService =
+    ServiceResult<Set<DistributedSystemService>> loadService =
         moduleService.loadService(DistributedSystemService.class);
     loadService
         .ifSuccessful(distributedSystemServices -> distributedSystemServices.stream()

@@ -148,6 +148,7 @@ dependencies {
   distributedTestImplementation('org.springframework.security:spring-security-test')
 
   distributedTestImplementation(project(':geode-core'))
+  distributedTestImplementation(project(':geode-common-services'))
   distributedTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }

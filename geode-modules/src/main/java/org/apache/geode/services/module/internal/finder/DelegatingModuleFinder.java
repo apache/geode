@@ -15,9 +15,13 @@
 
 package org.apache.geode.services.module.internal.finder;
 
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
+
+import io.vavr.Tuple2;
+import io.vavr.collection.List;
+import io.vavr.collection.SortedSet;
+import io.vavr.collection.TreeSet;
+import org.apache.logging.log4j.Logger;
 import org.jboss.modules.JDKModuleFinder;
 import org.jboss.modules.ModuleFinder;
 import org.jboss.modules.ModuleLoadException;
@@ -38,34 +42,59 @@ import org.jboss.modules.ModuleSpec;
  * @see ModuleSpec
  */
 public class DelegatingModuleFinder implements ModuleFinder {
-  // private final Logger logger;
+  private final Logger logger;
 
-  private final List<ModuleFinder> finders = new CopyOnWriteArrayList<>();
+  private SortedSet<Tuple2<String, ModuleFinder>> finders =
+      TreeSet.of(new Tuple2<>("JDK", JDKModuleFinder.getInstance()));
 
-  public DelegatingModuleFinder() {
-    finders.add(JDKModuleFinder.getInstance());
+  public DelegatingModuleFinder(Logger logger) {
+    this.logger = logger;
   }
 
-  // public DelegatingModuleFinder(Logger logger) {
-  // this.logger = logger;
-  // }
-
-  public void addModuleFinder(ModuleFinder finder) {
-    finders.add(finder);
-    // logger.debug("Added finder " + finder);
+  /**
+   * Adds a {@link ModuleFinder} to be used for finding modules.
+   *
+   * @param moduleName Name of the module associated with the {@link ModuleFinder}.
+   * @param finder a {@link ModuleFinder} used to find the {@link ModuleSpec} for a specific module.
+   */
+  public void addModuleFinder(String moduleName, ModuleFinder finder) {
+    if (moduleFinderAlreadyAdded(moduleName)) {
+      logger.debug("ModuleFinder for module named: " + moduleName + " already added");
+    } else {
+      finders = finders.add(new Tuple2<>(moduleName, finder));
+      logger.debug("Added finder " + finder);
+    }
   }
 
+  private boolean moduleFinderAlreadyAdded(String moduleName) {
+    return !finders.toStream().filter(tuple -> tuple._1.equals(moduleName)).toList().isEmpty();
+  }
+
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public ModuleSpec findModule(String name, ModuleLoader delegateLoader)
       throws ModuleLoadException {
-    for (ModuleFinder finder : finders) {
-      ModuleSpec moduleSpec = finder.findModule(name, delegateLoader);
+    for (Tuple2<String, ModuleFinder> finder : finders) {
+      ModuleSpec moduleSpec = finder._2().findModule(name, delegateLoader);
       if (moduleSpec != null) {
-        // logger.debug(String.format("Found module specification for module named: %s ", name));
+        logger.debug(String.format("Found module specification for module named: %s ", name));
         return moduleSpec;
       }
     }
-    // logger.debug(String.format("No module specification for module named: %s found", name));
+    logger.debug(String.format("No module specification for module named: %s found", name));
     return null;
+  }
+
+  /**
+   * Removes a previously added {@link ModuleFinder} given its name.
+   *
+   * @param moduleName the name of the module to remove the {@link ModuleFinder} of.
+   */
+  public void removeModuleFinderForName(String moduleName) {
+    List<Tuple2<String, ModuleFinder>> findersToRemove =
+        finders.toStream().filter(tuple -> tuple._1.equals(moduleName)).toList();
+    finders = finders.removeAll(findersToRemove);
   }
 }

@@ -55,6 +55,7 @@ dependencies {
 
   // distributedTest
   distributedTestImplementation(project(':geode-dunit'))
+  distributedTestImplementation(project(':geode-common-services'))
 }
 
 sonarqube {

@@ -1,1 +1,1 @@
-org.apache.geode.services.bootstrapping.impl.BootstrappingServiceImpl
+org.apache.geode.services.bootstrapping.internal.impl.BootstrappingServiceImpl

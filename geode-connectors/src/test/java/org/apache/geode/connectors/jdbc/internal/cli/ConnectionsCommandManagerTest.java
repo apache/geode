@@ -29,7 +29,7 @@ import org.apache.geode.management.internal.cli.CommandManager;
 import org.apache.geode.management.internal.cli.commands.VersionCommand;
 import org.apache.geode.management.internal.util.ClasspathScanLoadHelper;
 import org.apache.geode.services.module.internal.impl.ServiceLoaderModuleService;
-import org.apache.geode.services.result.ModuleServiceResult;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * CommandManagerTest - Includes tests to check the CommandManager functions
@@ -60,7 +60,7 @@ public class ConnectionsCommandManagerTest {
         GfshCommand.class.getPackage().getName(),
         VersionCommand.class.getPackage().getName());
 
-    ModuleServiceResult<Set<CommandMarker>> serviceLoadResult =
+    ServiceResult<Set<CommandMarker>> serviceLoadResult =
         new ServiceLoaderModuleService(LogService.getLogger())
             .loadService(CommandMarker.class);
 

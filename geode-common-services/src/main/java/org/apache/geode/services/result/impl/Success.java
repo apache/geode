@@ -18,18 +18,23 @@ package org.apache.geode.services.result.impl;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import org.apache.geode.services.result.ModuleServiceResult;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
- * This type of {@link ModuleServiceResult} represents a successful operation. It contains the
+ * This type of {@link ServiceResult} represents a successful operation. It contains the
  * return value
  * of type <SuccessType>
  *
  * @param <SuccessType> the result type for a successful operation.
  *
  * @since 1.14.0
+ *
+ * @see ServiceResult
+ * @see Failure
  */
-public class Success<SuccessType> implements ModuleServiceResult<SuccessType> {
+public class Success<SuccessType> implements ServiceResult<SuccessType> {
+
+  public static final Success<Boolean> SUCCESS_TRUE = Success.of(true);
 
   private final SuccessType result;
 
@@ -83,9 +88,11 @@ public class Success<SuccessType> implements ModuleServiceResult<SuccessType> {
    * {@inheritDoc}
    */
   @Override
-  public void ifSuccessful(Consumer<? super SuccessType> consumer) {
+  public ServiceResult<SuccessType> ifSuccessful(
+      Consumer<? super SuccessType> consumer) {
     if (isSuccessful()) {
       consumer.accept(result);
     }
+    return this;
   }
 }

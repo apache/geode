@@ -50,7 +50,7 @@ allprojects {
   }
 
   repositories {
-    mavenLocal()
+//    mavenLocal()
     mavenCentral()
     maven { url "https://repo.spring.io/release" }
   }

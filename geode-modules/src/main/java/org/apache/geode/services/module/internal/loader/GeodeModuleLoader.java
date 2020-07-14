@@ -15,11 +15,14 @@
 
 package org.apache.geode.services.module.internal.loader;
 
+import static org.apache.geode.services.result.impl.Success.SUCCESS_TRUE;
+
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 import org.jboss.modules.DelegatingModuleLoader;
 import org.jboss.modules.GeodeModuleFinder;
 import org.jboss.modules.Module;
@@ -33,7 +36,7 @@ import org.apache.geode.services.module.ModuleDescriptor;
 import org.apache.geode.services.module.ModuleService;
 import org.apache.geode.services.module.impl.JBossModuleServiceImpl;
 import org.apache.geode.services.module.internal.finder.DelegatingModuleFinder;
-import org.apache.geode.services.result.ModuleServiceResult;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.services.result.impl.Failure;
 import org.apache.geode.services.result.impl.Success;
 
@@ -50,7 +53,7 @@ import org.apache.geode.services.result.impl.Success;
  * @see ModuleLoader
  * @see JBossModuleServiceImpl
  * @see ModuleService
- * @see ModuleServiceResult
+ * @see ServiceResult
  * @see ModuleSpec
  *
  * @since 1.14.0
@@ -59,64 +62,85 @@ import org.apache.geode.services.result.impl.Success;
 public class GeodeModuleLoader extends DelegatingModuleLoader {
   private final DelegatingModuleFinder moduleFinder;
   private final Map<String, ModuleSpec> moduleSpecs = new ConcurrentHashMap<>();
-  // private final Logger logger;
+  private final Logger logger;
 
-  // public GeodeModuleLoader(Logger logger) {
-  // this(new DelegatingModuleFinder(logger), logger);
-  // }
-  public GeodeModuleLoader() {
-    this(new DelegatingModuleFinder());
+  /**
+   * Construct a {@link GeodeModuleLoader} with a {@link Logger}
+   *
+   */
+  public GeodeModuleLoader(Logger logger) {
+    this(new DelegatingModuleFinder(logger), logger);
   }
 
-  // private GeodeModuleLoader(DelegatingModuleFinder moduleFinder, Logger logger) {
-  private GeodeModuleLoader(DelegatingModuleFinder moduleFinder) {
+  private GeodeModuleLoader(DelegatingModuleFinder moduleFinder, Logger logger) {
     super(Module.getSystemModuleLoader(), moduleFinder);
     this.moduleFinder = moduleFinder;
-    // this.logger = logger;
+    this.logger = logger;
   }
 
-
-
-  public ModuleServiceResult<Boolean> unloadModule(Module module) {
-    if (module != null && !StringUtils.isEmpty(module.getName())) {
+  /**
+   * Unload a previously loaded {@link Module}.
+   *
+   * @param module - the {@link Module} to be unloaded
+   * @return {@link Success} if the {@link Module} was successfully unloaded. Returns
+   *         {@link Failure<String>} if the module was not unloaded.
+   */
+  public ServiceResult<Boolean> unloadModule(Module module) {
+    if (module != null && !StringUtils.isBlank(module.getName())) {
       return unloadModuleAndRemoveSpec(module);
     } else {
       String errorMessage =
           "Module could not be unloaded because either the module or module name is null";
-      // logger.debug(errorMessage);
+      logger.debug(errorMessage);
       return Failure.of(errorMessage);
     }
   }
 
-  private ModuleServiceResult<Boolean> unloadModuleAndRemoveSpec(Module module) {
+  /**
+   * Removes the {@link ModuleSpec} and unloads the {@link Module}.
+   *
+   * @param module - the {@link Module} that needs to be unregistered and unloaded
+   * @return {@link Success} in the case of successfully unregistering and unloading of the
+   *         module. In the case of an {@link SecurityException} being thrown, the {@link Module} is
+   *         not unloaded or unregistered and a {@link Failure<String>} is returned.
+   */
+  private ServiceResult<Boolean> unloadModuleAndRemoveSpec(Module module) {
     try {
       if (unloadModuleLocal(module.getName(), module)) {
         moduleSpecs.remove(module.getName());
-        return Success.of(true);
       } else {
-        String errorMessage = "Module could not be unloaded because it does not exist";
-        // logger.debug(errorMessage);
-        return Failure.of(errorMessage);
+        logger.debug("Module could not be unloaded because it does not exist");
       }
     } catch (SecurityException e) {
-      // logger.error(e);
-      return Failure.of(String.format("Unloading of module: %s  failed due to exception: %s",
-          module.getName(), e.getMessage()));
+      logger.error(e);
+      return Failure.of("Unloading of module: " + module.getName() + "  failed due to exception",
+          e);
     }
+    return SUCCESS_TRUE;
   }
 
-  public ModuleServiceResult<Boolean> registerModuleDescriptor(ModuleDescriptor descriptor) {
+  /**
+   * Register the {@link ModuleDescriptor} with the modular system.
+   *
+   * @param moduleDescriptor - the {@link ModuleDescriptor} to be registered
+   * @return {@link Success} when the {@link ModuleDescriptor} was successfully registered.
+   *         {@link Failure<String>} is returned in the failure case.
+   */
+  public ServiceResult<Boolean> registerModuleDescriptor(ModuleDescriptor moduleDescriptor) {
     try {
-      moduleFinder.addModuleFinder(new GeodeModuleFinder(descriptor));
-      // moduleFinder.addModuleFinder(new GeodeJarModuleFinder(logger, descriptor));
+      moduleFinder.addModuleFinder(moduleDescriptor.getName(),
+          new GeodeModuleFinder(logger, moduleDescriptor));
     } catch (IOException e) {
-      // logger.error(e);
-      return Failure.of(String.format("Registering module: %s failed with error: %s",
-          descriptor.getName(), e.getMessage()));
+      logger.error(e);
+      return Failure.of("Registering module: " + moduleDescriptor.getName() + " failed with error",
+          e);
     }
-    return Success.of(true);
+    return SUCCESS_TRUE;
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   protected ModuleSpec findModule(String name) throws ModuleLoadException {
     ModuleSpec moduleSpec = moduleSpecs.get(name);
@@ -129,7 +153,26 @@ public class GeodeModuleLoader extends DelegatingModuleLoader {
     return moduleSpec;
   }
 
+  /**
+   * Has a {@link ModuleSpec} for the name been registered.
+   *
+   * @param moduleName - the name of the {@link ModuleSpec} to be checked
+   */
   public boolean hasRegisteredModule(String moduleName) {
     return moduleSpecs.get(moduleName) != null;
+  }
+
+  /**
+   * Unregister a {@link ModuleDescriptor}. The current implementation does not have a failure
+   * case, thus {@link Failure<String>} is never returned and always successfull.
+   *
+   * @param moduleDescriptor - the {@link ModuleDescriptor} to be unregistered
+   * @return {@link Success} on successfully unregistering the {@link ModuleDescriptor}.
+   */
+  public ServiceResult<Boolean> unregisterModuleDescriptor(
+      ModuleDescriptor moduleDescriptor) {
+    moduleFinder.removeModuleFinderForName(moduleDescriptor.getName());
+    moduleSpecs.remove(moduleDescriptor.getName());
+    return SUCCESS_TRUE;
   }
 }

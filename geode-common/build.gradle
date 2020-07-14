@@ -23,6 +23,8 @@ apply from: "${project.projectDir}/../gradle/warnings.gradle"
 dependencies {
   implementation(platform(project(':boms:geode-all-bom')))
   implementation('com.fasterxml.jackson.core:jackson-databind')
+  implementation('org.apache.commons:commons-lang3')
   testImplementation('junit:junit')
   testImplementation('org.assertj:assertj-core')
+
 }

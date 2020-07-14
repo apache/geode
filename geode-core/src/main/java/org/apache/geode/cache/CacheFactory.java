@@ -94,6 +94,7 @@ import org.apache.geode.services.module.internal.impl.ServiceLoaderModuleService
 public class CacheFactory {
 
   private final InternalCacheBuilder internalCacheBuilder;
+  private ModuleService moduleService;
 
   /**
    * Creates a default cache factory.
@@ -112,8 +113,20 @@ public class CacheFactory {
    * @since GemFire 6.5
    */
   public CacheFactory(Properties props) {
-    internalCacheBuilder = new InternalCacheBuilder(props, new ServiceLoaderModuleService(
-        LogService.getLogger()));
+    internalCacheBuilder = new InternalCacheBuilder(props, null);
+  }
+
+  /**
+   * Create a CacheFactory initialized with the given gemfire properties. For a list of valid
+   * GemFire properties and their meanings see {@linkplain ConfigurationProperties}.
+   *
+   * @param props the gemfire properties to initialize the factory with.
+   * @param moduleService the {@link ModuleService} that will be use to load Services and resources
+   * @since Geode 1.14
+   */
+  public CacheFactory(Properties props, ModuleService moduleService) {
+    this.moduleService = moduleService;
+    internalCacheBuilder = new InternalCacheBuilder(props, moduleService);
   }
 
   /**
@@ -143,6 +156,10 @@ public class CacheFactory {
    */
   public Cache create()
       throws TimeoutException, CacheWriterException, GatewayException, RegionExistsException {
+    if (moduleService == null) {
+      internalCacheBuilder.setModuleService(new ServiceLoaderModuleService(
+          LogService.getLogger()));
+    }
     return internalCacheBuilder.create();
   }
 
@@ -412,6 +429,7 @@ public class CacheFactory {
 
   public CacheFactory setModuleService(ModuleService moduleService) {
     internalCacheBuilder.setModuleService(moduleService);
+    this.moduleService = moduleService;
     return this;
   }
 }

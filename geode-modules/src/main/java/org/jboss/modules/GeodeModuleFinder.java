@@ -17,21 +17,21 @@ package org.jboss.modules;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.jboss.modules.filter.PathFilters;
 
 import org.apache.geode.services.module.ModuleDescriptor;
+import org.apache.geode.services.module.internal.GeodeJDKPaths;
+import org.apache.geode.util.internal.JarFileUtils;
 
 /**
  * A custom implementation of a {@link ModuleFinder}. This implementation is based on {@link
@@ -57,17 +57,14 @@ import org.apache.geode.services.module.ModuleDescriptor;
  * @see Manifest
  * @since 1.14.0
  */
-public class GeodeModuleFinder implements ModuleFinder {
+public class GeodeModuleFinder implements ModuleFinder, Comparable {
 
   private final ModuleDescriptor moduleDescriptor;
   private final String moduleName;
   private final List<JarFile> sourceJarFiles;
-  private final List<File> sourceFiles;
-  // private final Logger logger;
+  private final Logger logger;
 
-  private static final String[] EMPTY_STRING_ARRAY = new String[0];
   private static final String DEPENDENT_MODULES = "Dependent-Modules";
-  private static final List<String> EMPTY_LIST = new ArrayList<>();
 
   /**
    * Constructs a {@link GeodeModuleFinder} using a {@link Logger} and {@link ModuleDescriptor}.
@@ -76,13 +73,11 @@ public class GeodeModuleFinder implements ModuleFinder {
    * @param moduleDescriptor the {@link ModuleDescriptor} describing the module
    * @throws IOException is thrown in the case of incorrect/missing resource paths.
    */
-  // public GeodeJarModuleFinder(final Logger logger, final ModuleDescriptor moduleDescriptor)
-  public GeodeModuleFinder(final ModuleDescriptor moduleDescriptor)
+  public GeodeModuleFinder(final Logger logger, final ModuleDescriptor moduleDescriptor)
       throws IOException {
     this.moduleName = moduleDescriptor.getName();
     this.sourceJarFiles = parseSourcesIntoJarFiles(moduleDescriptor);
-    this.sourceFiles = parseSourcesIntoPathFiles(moduleDescriptor);
-    // this.logger = logger;
+    this.logger = logger;
     this.moduleDescriptor = moduleDescriptor;
   }
 
@@ -105,30 +100,13 @@ public class GeodeModuleFinder implements ModuleFinder {
   }
 
   /**
-   * Processes the {@link ModuleDescriptor} resource paths into a collection of {@link JarFile}
-   *
-   * @param moduleDescriptor the {@link ModuleDescriptor} for the module
-   * @return a collection of {@link JarFile} from the {@link ModuleDescriptor}
-   * @throws IOException is thrown in the case of incorrect/missing resources
-   */
-  private List<File> parseSourcesIntoPathFiles(ModuleDescriptor moduleDescriptor) {
-    List<File> results = new LinkedList<>();
-    for (String sourcePath : moduleDescriptor.getResourceJarPaths()) {
-      if (!sourcePath.endsWith(".jar")) {
-        results.add(new File(sourcePath));
-      }
-    }
-    return results;
-  }
-
-  /**
    * {@inheritDoc}
    */
   @Override
   public ModuleSpec findModule(String name, ModuleLoader delegateLoader)
       throws ModuleLoadException {
     if (this.moduleName.equals(name)) {
-      return findModuleOfRegisteredJars(name);
+      return createModuleSpecForRegisteredJars(name);
     }
     return null;
   }
@@ -142,16 +120,22 @@ public class GeodeModuleFinder implements ModuleFinder {
    * @return a {@link ModuleSpec} from the corresponding {@link ModuleDescriptor}
    * @throws ModuleLoadException in case of failure loading resource paths
    */
-  private ModuleSpec findModuleOfRegisteredJars(String name) throws ModuleLoadException {
+  private ModuleSpec createModuleSpecForRegisteredJars(String name) throws ModuleLoadException {
     ModuleSpec.Builder moduleSpecBuilder = getModuleSpec(name);
     for (JarFile jarFile : sourceJarFiles) {
       registerJarFile(moduleSpecBuilder, jarFile);
     }
 
-    for (File file : sourceFiles) {
-      registerFilePath(moduleSpecBuilder, file);
-    }
     createDependenciesForModules(moduleSpecBuilder, moduleDescriptor.getDependedOnModules());
+
+    createJDKPathDependencyForModule(moduleSpecBuilder);
+
+    moduleSpecBuilder
+        .addDependency(DependencySpec.createSystemDependencySpec(GeodeJDKPaths.JDK));
+    return moduleSpecBuilder.create();
+  }
+
+  private void createJDKPathDependencyForModule(ModuleSpec.Builder moduleSpecBuilder) {
     if (moduleDescriptor.requiresJDKPaths()) {
       moduleSpecBuilder.addDependency(new LocalDependencySpecBuilder()
           .setImportFilter(PathFilters.acceptAll())
@@ -160,9 +144,6 @@ public class GeodeModuleFinder implements ModuleFinder {
           .setLoaderPaths(JDKPaths.JDK)
           .build());
     }
-    moduleSpecBuilder
-        .addDependency(DependencySpec.createSystemDependencySpec(GeodeJDKPaths.JDK));
-    return moduleSpecBuilder.create();
   }
 
   /**
@@ -182,16 +163,21 @@ public class GeodeModuleFinder implements ModuleFinder {
   }
 
   /**
-   * Processes a single {@link JarFile}. Processes the optionally included {@link Manifest} and adds
-   * itself to the {@link ModuleSpec} as a source resource.
+   * Processes a collection of modules and adds them to the dependent modules list for the {@link
+   * ModuleSpec}
    *
    * @param moduleSpecBuilder the builder for the {@link ModuleSpec}
-   * @param file the {@link File} to be processed
-   * @throws ModuleLoadException in case of failure loading resource paths
+   * @param modulesDependencies a list of module names on which this module depends on
    */
-  private void registerFilePath(ModuleSpec.Builder moduleSpecBuilder, File file) {
-    moduleSpecBuilder.addResourceRoot(ResourceLoaderSpec
-        .createResourceLoaderSpec(ResourceLoaders.createPathResourceLoader(file.toPath())));
+  private void createDependenciesForModules(ModuleSpec.Builder moduleSpecBuilder,
+      String[] modulesDependencies) {
+    for (String moduleDependency : modulesDependencies) {
+      moduleSpecBuilder.addDependency(new ModuleDependencySpecBuilder()
+          .setExport(true)
+          .setImportServices(true)
+          .setName(moduleDependency)
+          .build());
+    }
   }
 
   /**
@@ -227,14 +213,13 @@ public class GeodeModuleFinder implements ModuleFinder {
       throws ModuleLoadException {
     Optional<Manifest> manifestFromJar = getManifestFromJar(jarFile);
     if (manifestFromJar.isPresent()) {
-      String rootPath =
-          jarFile.getName().substring(0, jarFile.getName().lastIndexOf(File.separator));
-      Attributes mainAttributes = manifestFromJar.get().getMainAttributes();
-      processClasspathFromManifest(moduleSpecBuilder, rootPath,
-          mainAttributes.getValue(Attributes.Name.CLASS_PATH));
+      Manifest manifest = manifestFromJar.get();
+      processClasspathFromManifest(moduleSpecBuilder, JarFileUtils.getRootPathFromJarFile(jarFile),
+          manifest);
 
-      processManifestDependents(moduleSpecBuilder, mainAttributes.getValue(DEPENDENT_MODULES));
+      processManifestDependents(moduleSpecBuilder, manifest);
     }
+
   }
 
   /**
@@ -243,13 +228,12 @@ public class GeodeModuleFinder implements ModuleFinder {
    * attribute {@link #DEPENDENT_MODULES} entries for this to be successful.
    *
    * @param moduleSpecBuilder the builder for the {@link ModuleSpec}
-   * @param dependentModules a String (' ') single space delimited of dependent module names
+   * @param manifest the manifest file where the attribute {@link #DEPENDENT_MODULES} is looked up
+   *        from
    */
-  private void processManifestDependents(ModuleSpec.Builder moduleSpecBuilder,
-      String dependentModules) {
-    List<String> dependentModulesEntries = !StringUtils.isEmpty(dependentModules) ? Arrays
-        .asList(dependentModules.split(" ")) : EMPTY_LIST;
-    createDependenciesForModules(moduleSpecBuilder, dependentModulesEntries);
+  private void processManifestDependents(ModuleSpec.Builder moduleSpecBuilder, Manifest manifest) {
+    createDependenciesForModules(moduleSpecBuilder,
+        JarFileUtils.getAttributesFromManifest(manifest, DEPENDENT_MODULES));
   }
 
   /**
@@ -259,27 +243,25 @@ public class GeodeModuleFinder implements ModuleFinder {
    *
    * @param builder the builder for the {@link ModuleSpec}
    * @param rootPath the root path for the source {@link JarFile}.
-   * @param classpath a String (' ') single space delimited list of resource paths.
+   * @param manifest the manifest file where the attribute {@link Attributes.Name#CLASS_PATH} is
+   *        looked up from
    * @throws ModuleLoadException in the case of incorrect/missing resource
    */
   private void processClasspathFromManifest(ModuleSpec.Builder builder, String rootPath,
-      String classpath) throws ModuleLoadException {
+      Manifest manifest) throws ModuleLoadException {
     String[] classpathEntries =
-        !StringUtils.isEmpty(classpath) ? classpath.split(" ") : EMPTY_STRING_ARRAY;
+        JarFileUtils.getAttributesFromManifest(manifest, Attributes.Name.CLASS_PATH);
     for (String classpathEntry : classpathEntries) {
-      if (!classpathEntry.isEmpty()) {
-
-        File file = getFileForPath(rootPath, classpathEntry);
-        try {
-          builder.addResourceRoot(ResourceLoaderSpec
-              .createResourceLoaderSpec(
-                  ResourceLoaders.createJarResourceLoader(new JarFile(file, true))));
-        } catch (IOException e) {
-          // logger.error(String.format(
-          // "File for name: %s could not be loaded as a dependent jar file at location: %s",
-          // classpathEntry, file.getName()));
-          throw new ModuleLoadException(e);
-        }
+      try {
+        builder.addResourceRoot(ResourceLoaderSpec
+            .createResourceLoaderSpec(
+                ResourceLoaders
+                    .createJarResourceLoader(getJarFileForPath(rootPath, classpathEntry))));
+      } catch (IOException e) {
+        logger.error(String.format(
+            "File for name: %s could not be loaded as a dependent jar file at location: %s",
+            classpathEntry, (rootPath + File.separator + classpathEntry)));
+        throw new ModuleLoadException(e);
       }
     }
   }
@@ -290,13 +272,13 @@ public class GeodeModuleFinder implements ModuleFinder {
    *
    * @param rootPath the root path where the file is to be located
    * @param fileName the filename of the {@link JarFile} within the rootPath
-   * @return file represented by the rootPath + fileName.
+   * @return file represented by the rootPath + fileName + ".jar".
    */
-  private File getFileForPath(String rootPath, String fileName) {
+  private JarFile getJarFileForPath(String rootPath, String fileName) throws IOException {
     if (fileName.endsWith(".jar")) {
-      return new File(rootPath + File.separator + fileName);
+      return new JarFile(rootPath + File.separator + fileName);
     } else {
-      return new File(rootPath + File.separator + fileName + ".jar");
+      return new JarFile(rootPath + File.separator + fileName + ".jar");
     }
   }
 
@@ -341,11 +323,33 @@ public class GeodeModuleFinder implements ModuleFinder {
    */
   private Optional<Manifest> getManifestFromJar(JarFile jarFile) {
     try {
-      return Optional.ofNullable(jarFile.getManifest());
+      return JarFileUtils.getManifestFromJarFile(jarFile);
     } catch (IOException e) {
-      // logger.info(
-      // String.format("Unable to find manifest file for jar ile name: %s", jarFile.getName()));
+      logger.info(
+          String.format("Unable to find manifest file for jar ile name: %s", jarFile.getName()));
     }
     return Optional.empty();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    GeodeModuleFinder that = (GeodeModuleFinder) o;
+    return moduleName.equals(that.moduleName);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(moduleName);
+  }
+
+  @Override
+  public int compareTo(Object o) {
+    return this.moduleName.compareTo(((GeodeModuleFinder) o).moduleName);
   }
 }

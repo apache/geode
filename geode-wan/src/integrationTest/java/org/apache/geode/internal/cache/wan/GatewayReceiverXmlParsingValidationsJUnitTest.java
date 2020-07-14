@@ -46,7 +46,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.spi.WANFactory;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.services.module.internal.impl.ServiceLoaderModuleService;
-import org.apache.geode.services.result.ModuleServiceResult;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.junit.categories.WanTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
@@ -92,7 +92,7 @@ public class GatewayReceiverXmlParsingValidationsJUnitTest {
     assertThat(cache.getGatewayReceivers()).isNotEmpty();
     GatewayReceiver receiver = cache.getGatewayReceivers().iterator().next();
 
-    ModuleServiceResult<Set<WANFactory>> serviceLoadResult =
+    ServiceResult<Set<WANFactory>> serviceLoadResult =
         new ServiceLoaderModuleService(LogService.getLogger()).loadService(WANFactory.class);
 
     assertTrue(serviceLoadResult.isSuccessful());

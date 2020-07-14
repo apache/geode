@@ -85,6 +85,13 @@ public class ModuleDescriptor {
     return name + (version != null ? "-" + version : "");
   }
 
+  /**
+   * Returns {@literal true} if this {@link ModuleDescriptor} is dependent on JDK path and
+   * {@literal false} otherwise.
+   *
+   * @return {@literal true} if this {@link ModuleDescriptor} is dependent on JDK path and
+   *         {@literal false} otherwise.
+   */
   public boolean requiresJDKPaths() {
     return requiresJDKPaths;
   }
@@ -96,8 +103,8 @@ public class ModuleDescriptor {
 
     private final String name;
     private final String version;
-    private final Set<String> dependencies = new HashSet<>();
-    private final Set<String> sources = new HashSet<>();
+    private final Set<String> dependedOnModuleNames = new HashSet<>();
+    private final Set<String> resourcePaths = new HashSet<>();
     private boolean requiresJDKPaths = false;
 
     public Builder(String name) {
@@ -105,7 +112,7 @@ public class ModuleDescriptor {
     }
 
     public Builder(String name, String version) {
-      if (!StringUtils.isEmpty(name)) {
+      if (!StringUtils.isBlank(name)) {
         this.name = name;
       } else {
         throw new IllegalArgumentException(
@@ -114,31 +121,80 @@ public class ModuleDescriptor {
       this.version = version;
     }
 
+    /**
+     * Adds the provided resource path to this {@link Builder}
+     *
+     * @param resourcePaths paths to jar files to use as the modules resources.
+     * @return this {@link Builder}
+     */
     public Builder fromResourcePaths(String... resourcePaths) {
       return fromResourcePaths(Arrays.asList(resourcePaths));
     }
 
+    /**
+     * Adds the provided resource path to this {@link Builder}
+     *
+     * @param resourcePaths paths to jar files to use as the modules resources.
+     * @return this {@link Builder}
+     */
     public Builder fromResourcePaths(Collection<String> resourcePaths) {
-      this.sources.addAll(resourcePaths);
+      this.resourcePaths.addAll(resourcePaths);
       return this;
     }
 
+    /**
+     * Adds dependent modules to this {@link Builder}
+     *
+     * @param dependencies names of modules for the {@link ModuleDescriptor} built by this
+     *        {@link Builder} to be dependent on.
+     * @return this {@link Builder}
+     */
     public Builder dependsOnModules(String... dependencies) {
       return dependsOnModules(Arrays.asList(dependencies));
     }
 
+    /**
+     * Adds dependent modules to this {@link Builder}
+     *
+     * @param dependencies names of modules for the {@link ModuleDescriptor} built by this
+     *        {@link Builder} to be dependent on.
+     * @return this {@link Builder}
+     */
     public Builder dependsOnModules(Collection<String> dependencies) {
-      this.dependencies.addAll(dependencies);
+      this.dependedOnModuleNames.addAll(dependencies);
       return this;
     }
 
+    /**
+     * Enables the module to depend on JDK paths.
+     *
+     * @param requiresJDKPaths a {@literal boolean} indicating whether or not this module should
+     *        depend on the JDK paths.
+     * @return this {@link Builder}
+     */
     public Builder requiresJDKPaths(boolean requiresJDKPaths) {
       this.requiresJDKPaths = requiresJDKPaths;
       return this;
     }
 
+    /**
+     * Builds a {@link ModuleDescriptor} using the information previously set on this
+     * {@link Builder}.
+     *
+     * @return the newly created {@link ModuleDescriptor}.
+     */
     public ModuleDescriptor build() {
-      return new ModuleDescriptor(name, version, sources, dependencies, requiresJDKPaths);
+      return new ModuleDescriptor(name, version, resourcePaths, dependedOnModuleNames,
+          requiresJDKPaths);
+    }
+
+    /**
+     * Gets the name of the {@link ModuleDescriptor} created by this {@link Builder}.
+     *
+     * @return the name of the {@link ModuleDescriptor} created by this {@link Builder}.
+     */
+    public String getName() {
+      return name;
     }
   }
 }

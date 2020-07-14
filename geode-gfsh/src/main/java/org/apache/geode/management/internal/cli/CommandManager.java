@@ -43,7 +43,7 @@ import org.apache.geode.management.internal.cli.help.Helper;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.util.ClasspathScanLoadHelper;
 import org.apache.geode.services.module.ModuleService;
-import org.apache.geode.services.result.ModuleServiceResult;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -159,7 +159,7 @@ public class CommandManager {
    * @since GemFire 8.1
    */
   private void loadPluginCommands(ModuleService moduleService) {
-    ModuleServiceResult<Set<CommandMarker>> serviceLoadResult =
+    ServiceResult<Set<CommandMarker>> serviceLoadResult =
         moduleService.loadService(CommandMarker.class);
 
     serviceLoadResult.ifSuccessful(commandMarkers -> {

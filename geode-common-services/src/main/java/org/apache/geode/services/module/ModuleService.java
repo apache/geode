@@ -21,15 +21,16 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.annotations.Experimental;
-import org.apache.geode.services.result.ModuleServiceResult;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * Loads and unloads modules and services in a classloader-isolated manner.
  *
  * @since Geode 1.14.0
+ *
+ * @see ModuleDescriptor
+ * @see ServiceResult
  */
-@Experimental
 public interface ModuleService {
 
   /**
@@ -37,30 +38,30 @@ public interface ModuleService {
    *
    * @param moduleDescriptor description of the module to be loaded and information necessary to
    *        load it.
-   * @return {@link ModuleServiceResult}. This type represents either Success or Failure. Using
-   *         {@link ModuleServiceResult#isSuccessful()} returns a {@literal Boolean} in the case of
+   * @return {@link ServiceResult}. This type represents either Success or Failure. Using
+   *         {@link ServiceResult#isSuccessful()} returns a {@literal Boolean} in the case of
    *         success.
-   *         Upon success use {@link ModuleServiceResult#getMessage()} to get the result and upon
+   *         Upon success use {@link ServiceResult#getMessage()} to get the result and upon
    *         failure
-   *         used {@link ModuleServiceResult#getErrorMessage()} to get the error message of the
+   *         used {@link ServiceResult#getErrorMessage()} to get the error message of the
    *         failure.
    */
-  ModuleServiceResult<Boolean> loadModule(ModuleDescriptor moduleDescriptor);
+  ServiceResult<Boolean> loadModule(ModuleDescriptor moduleDescriptor);
 
   /**
    * Registers a module from the {@link ModuleDescriptor}.
    *
    * @param moduleDescriptor description of the module to be loaded and information necessary to
    *        register it.
-   * @return {@link ModuleServiceResult}. This type represents either Success or Failure. Using
-   *         {@link ModuleServiceResult#isSuccessful()} returns a {@literal Boolean} in the case of
+   * @return {@link ServiceResult}. This type represents either Success or Failure. Using
+   *         {@link ServiceResult#isSuccessful()} returns a {@literal Boolean} in the case of
    *         success.
-   *         Upon success use {@link ModuleServiceResult#getMessage()} to get the result and upon
+   *         Upon success use {@link ServiceResult#getMessage()} to get the result and upon
    *         failure
-   *         used {@link ModuleServiceResult#getErrorMessage()} to get the error message of the
+   *         used {@link ServiceResult#getErrorMessage()} to get the error message of the
    *         failure.
    */
-  ModuleServiceResult<Boolean> registerModule(ModuleDescriptor moduleDescriptor);
+  ServiceResult<Boolean> registerModule(ModuleDescriptor moduleDescriptor);
 
   /**
    * Unloads a previously loaded module.
@@ -68,64 +69,87 @@ public interface ModuleService {
    * modules that are not dependencies of other modules.
    *
    * @param moduleName name of the module to be unloaded.
-   * @return {@link ModuleServiceResult}. This type represents either Success or Failure. Using
-   *         {@link ModuleServiceResult#isSuccessful()} returns a {@literal Boolean} in the case of
+   * @return {@link ServiceResult}. This type represents either Success or Failure. Using
+   *         {@link ServiceResult#isSuccessful()} returns a {@literal Boolean} in the case of
    *         success.
-   *         Upon success use {@link ModuleServiceResult#getMessage()} to get the result and upon
+   *         Upon success use {@link ServiceResult#getMessage()} to get the result and upon
    *         failure
-   *         used {@link ModuleServiceResult#getErrorMessage()} to get the error message of the
+   *         used {@link ServiceResult#getErrorMessage()} to get the error message of the
    *         failure.
    */
-  ModuleServiceResult<Boolean> unloadModule(String moduleName);
+  ServiceResult<Boolean> unloadModule(String moduleName);
 
   /**
    * Loads and returns a service instance from any loaded module.
    *
    * @param service interface type to load and instantiate an implementation of.
-   * @return {@link ModuleServiceResult}. This type represents either Success or Failure. Using
-   *         {@link ModuleServiceResult#isSuccessful()} returns a {@literal Map<String,Set<T>>} in
+   * @return {@link ServiceResult}. This type represents either Success or Failure. Using
+   *         {@link ServiceResult#isSuccessful()} returns a {@literal Map<String,Set<T>>} in
    *         the case of success.
    *         The result is a Map of {@code <ModuleName,Set<ServiceInstance>>}. Where moduleName
    *         corresponds
    *         to the serviceInstance from the module.
-   *         Upon success use {@link ModuleServiceResult#getMessage()} to get the result and upon
+   *         Upon success use {@link ServiceResult#getMessage()} to get the result and upon
    *         failure
-   *         used {@link ModuleServiceResult#getErrorMessage()} to get the error message of the
+   *         used {@link ServiceResult#getErrorMessage()} to get the error message of the
    *         failure.
    */
-  <T> ModuleServiceResult<Set<T>> loadService(Class<T> service);
+  <T> ServiceResult<Set<T>> loadService(Class<T> service);
 
   /**
    * Returns the Class for the provided name for a specific module.
    *
    * @param className the classname that is to be loaded
    * @param moduleDescriptor the ${@link ModuleDescriptor} used to lookup the module in question
-   * @return {@link ModuleServiceResult}. This type represents either Success or Failure. Using
-   *         {@link ModuleServiceResult#isSuccessful()} returns a {@literal Class<T>} in the case of
+   * @return {@link ServiceResult}. This type represents either Success or Failure. Using
+   *         {@link ServiceResult#isSuccessful()} returns a {@literal Class<T>} in the case of
    *         success.
-   *         Upon success use {@link ModuleServiceResult#getMessage()} to get the result and upon
+   *         Upon success use {@link ServiceResult#getMessage()} to get the result and upon
    *         failure
-   *         used {@link ModuleServiceResult#getErrorMessage()} to get the error message of the
+   *         used {@link ServiceResult#getErrorMessage()} to get the error message of the
    *         failure.
    */
-  ModuleServiceResult<Class<?>> loadClass(String className, ModuleDescriptor moduleDescriptor);
+  ServiceResult<Class<?>> loadClass(String className, ModuleDescriptor moduleDescriptor);
 
   /**
    * Returns the Class for the provided name for all loaded module.
    *
    * @param className the classname that is to be loaded
-   * @return {@link ModuleServiceResult}. This type represents either Success or Failure. Using
-   *         {@link ModuleServiceResult#isSuccessful()} returns a {@literal Map<String,Class<T>>} in
+   * @return {@link ServiceResult}. This type represents either Success or Failure. Using
+   *         {@link ServiceResult#isSuccessful()} returns a {@literal Map<String,Class<T>>} in
    *         the case of success.
    *         The resultant map returns a list of modules where the class can be loaded from.
-   *         Upon success use {@link ModuleServiceResult#getMessage()} to get the result and upon
+   *         Upon success use {@link ServiceResult#getMessage()} to get the result and upon
    *         failure
-   *         used {@link ModuleServiceResult#getErrorMessage()} to get the error message of the
+   *         used {@link ServiceResult#getErrorMessage()} to get the error message of the
    *         failure.
    */
-  ModuleServiceResult<List<Class<?>>> loadClass(String className);
+  ServiceResult<List<Class<?>>> loadClass(String className);
 
-  ModuleServiceResult<List<InputStream>> findResourceAsStream(String resourceFile);
+  /**
+   * Finds the resource represented by the given resource file and returns a collection of
+   * {@link InputStream}s for the found resources.
+   *
+   * @param resourceFile the name of the resource to be found.
+   * @return a {@link ServiceResult} containing a {@link List} of {@link InputStream}s representing
+   *         the desired resource.
+   */
+  ServiceResult<List<InputStream>> findResourceAsStream(String resourceFile);
 
+  /**
+   * Sets the {@link Logger} to be used by the {@link ModuleService}.
+   *
+   * @param logger the {@link Logger} to be used.
+   */
   void setLogger(Logger logger);
+
+  /**
+   * Unregisters the module for the given {@link ModuleDescriptor}.
+   *
+   * @param moduleDescriptor the {@link ModuleDescriptor} representing the module to be
+   *        unregistered.
+   * @return a {@link ServiceResult} indicating success if the module was unregistered or a
+   *         {@link ServiceResult} indicating failure.
+   */
+  ServiceResult<Boolean> unregisterModule(ModuleDescriptor moduleDescriptor);
 }

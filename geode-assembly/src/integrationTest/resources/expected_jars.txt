@@ -125,3 +125,5 @@ springfox-swagger-common
 springfox-swagger-ui
 swagger-annotations
 swagger-models
+vavr
+vavr-match
