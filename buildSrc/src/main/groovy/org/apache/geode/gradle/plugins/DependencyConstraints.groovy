@@ -124,6 +124,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'io.micrometer', name: 'micrometer-core', version: get('micrometer.version'))
         api(group: 'io.netty', name: 'netty-all', version: '4.1.53.Final')
         api(group: 'io.swagger', name: 'swagger-annotations', version: '1.6.2')
+        api(group: 'io.vavr', name: 'vavr', version: '0.10.3')
         api(group: 'it.unimi.dsi', name: 'fastutil', version: get('fastutil.version'))
         api(group: 'javax.annotation', name: 'javax.annotation-api', version: '1.3.2')
         api(group: 'javax.annotation', name: 'jsr250-api', version: '1.0')

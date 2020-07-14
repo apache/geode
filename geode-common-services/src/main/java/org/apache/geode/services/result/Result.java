@@ -14,7 +14,6 @@
  */
 package org.apache.geode.services.result;
 
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.apache.geode.annotations.Experimental;
@@ -59,29 +58,18 @@ public interface Result<SuccessType, FailureType> {
   /**
    * Returns a boolean to indicate the success or failure of the operation
    *
-   * @return {@literal true} or {@literal false} indicating success or failure of the operation
+   * @return {@literal true} indicating the success of the operation
    */
   default boolean isSuccessful() {
     return false;
   }
 
   /**
-   * If the result of the operation is successful, invoke the specified consumer with the value,
-   * otherwise do nothing.
+   * Returns a boolean to indicate the success or failure of the operation
    *
-   * @param consumer block to be executed if a value is present
-   * @throws NullPointerException if value is present and {@code consumer} is
-   *         null
+   * @return {@literal true} indicating the failure of the operation
    */
-  default void ifSuccessful(Consumer<? super SuccessType> consumer) {}
-
-  /**
-   * If the result of the operation has failed, invoke the specified consumer with the value,
-   * otherwise do nothing.
-   *
-   * @param consumer block to be executed if a value is present
-   * @throws NullPointerException if value is present and {@code consumer} is
-   *         null
-   */
-  default void ifFailure(Consumer<? super String> consumer) {}
+  default boolean isFailure() {
+    return false;
+  }
 }

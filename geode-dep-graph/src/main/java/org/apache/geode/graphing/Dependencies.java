@@ -61,6 +61,8 @@ public class Dependencies {
     List<File> files =
         Arrays.stream(file.listFiles())
             .filter(file1 -> file1.getName().startsWith("geode-"))
+            .filter(file1 -> !file1.getName().contains("geode-modules-dependencies"))
+            .filter(file1 -> !file1.getName().contains("geode-core-dependencies"))
             .filter(file1 -> !file1.getName().contains("geode-dependencies"))
             .filter(file1 -> !file1.getName().contains("gfsh-dependencies"))
             .filter(file1 -> !file1.getName().contains("geode-module-bootstrapping"))
@@ -98,9 +100,9 @@ public class Dependencies {
     depsMap.forEach((name, deps) -> {
       String[] classPathDeps = new String[] {};
       // String[] classPathDeps =
-      // !StringUtils.isEmpty(deps.get(0)) ? deps.get(0).split(" ") : new String[] {};
+      // !StringUtils.isBlank(deps.get(0)) ? deps.get(0).split(" ") : new String[] {};
       String[] moduleDeps =
-          !StringUtils.isEmpty(deps.get(1)) ? deps.get(1).split(" ") : new String[] {};
+          !StringUtils.isBlank(deps.get(1)) ? deps.get(1).split(" ") : new String[] {};
 
       Arrays.stream(moduleDeps)
           .forEach(moduleDep -> graph.addEdge(name + "-" + moduleDep, name, moduleDep, true));

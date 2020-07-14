@@ -24,7 +24,7 @@ import org.apache.geode.distributed.internal.WanLocatorDiscoverer;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.spi.WANFactory;
 import org.apache.geode.services.module.ModuleService;
-import org.apache.geode.services.result.ModuleServiceResult;
+import org.apache.geode.services.result.ServiceResult;
 
 public class WANServiceProvider {
   @Immutable
@@ -32,7 +32,7 @@ public class WANServiceProvider {
 
   private static void setup(ModuleService moduleService) {
     if (factory == null) {
-      ModuleServiceResult<Set<WANFactory>> loadServiceResult =
+      ServiceResult<Set<WANFactory>> loadServiceResult =
           moduleService.loadService(WANFactory.class);
       if (loadServiceResult.isSuccessful()) {
         for (WANFactory wanFactory : loadServiceResult.getMessage()) {

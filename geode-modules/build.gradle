@@ -21,28 +21,28 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 apply from: "${project.projectDir}/../gradle/warnings.gradle"
 
 repositories {
-    mavenCentral()
+  mavenCentral()
 }
 
 apply plugin: 'nebula.facet'
 facets {
-    module1WithManifest {}
-    module2WithManifest {}
-    module3WithManifest {}
-    module4WithManifest {}
-    module1WithoutManifest {}
-    module2WithoutManifest {}
-    module3WithoutManifest {}
-    module4WithoutManifest {}
+  module1WithManifest {}
+  module2WithManifest {}
+  module3WithManifest {}
+  module4WithManifest {}
+  module1WithoutManifest {}
+  module2WithoutManifest {}
+  module3WithoutManifest {}
+  module4WithoutManifest {}
 }
 
 sourceSets {
-    module5WithManifest {
-        java.srcDir "src/testModules/module5WithManifest/java"
-        resources.srcDir "src/testModules/module5WithManifest/resources"
-        compileClasspath += configurations.compileClasspath
-        runtimeClasspath += configurations.runtimeClasspath
-    }
+  module5WithManifest {
+    java.srcDir "src/testModules/module5WithManifest/java"
+    resources.srcDir "src/testModules/module5WithManifest/resources"
+    compileClasspath += configurations.compileClasspath
+    runtimeClasspath += configurations.runtimeClasspath
+  }
 }
 
 def moduleTasks = []
@@ -50,97 +50,97 @@ def moduleCopyTasks = []
 def geodeProjects = ['geode-common-services', 'geode-common']
 
 facets.each { thisConfig ->
-    if (thisConfig.name.contains("WithManifest")) {
-        tasks.create("${thisConfig.name}CopyRuntimeLibs", Copy) {
-            into "$buildDir/libs"
-            from configurations.getByName("${thisConfig.name}RuntimeClasspath")
-            moduleCopyTasks.add(it.name - ".jar")
-        }
-        tasks.create("${thisConfig.name}Jar", Jar) {
-            description 'Assembles the jar archive that contains the $it classes without a manifest file'
-            from sourceSets.getByName(thisConfig.name).output
-
-            def sourceSet = sourceSets.getByName(thisConfig.name)
-            sourceSet.java.source().setSrcDirs(["src/testModules/${thisConfig.name}/java"])
-            sourceSet.resources.source().setSrcDirs(["src/testModules/${thisConfig.name}/resources"])
-
-            archiveName "${thisConfig.name}-1.0".concat(".jar")
-            moduleTasks.add(it.name)
-
-            doFirst {
-                def projectDependencies = []
-                def runtimeList = []
-
-                configurations.getByName("${thisConfig.name}RuntimeClasspath")
-                        .collect { it.name - ".jar" }
-                        .each { dependency ->
-                            if (dependency.startsWith("geode-")) {
-                                projectDependencies.add(dependency)
-                            } else {
-                                runtimeList.add(dependency)
-                            }
-                        }
-
-                projectDependencies.each { projectDependency ->
-                    geodeProjects.each { geodeProject ->
-                        if (projectDependency.contains(geodeProject)) {
-                            def childProject = project(":$geodeProject")
-
-                            if (childProject != null) {
-                                def collect = childProject.configurations.runtimeClasspath.collect { it.name - ".jar" }
-                                runtimeList.removeAll(collect)
-                                projectDependencies.removeAll(collect)
-                            }
-                        }
-                    }
-                }
-                manifest {
-                    attributes("Class-Path": runtimeList.join(' '))
-                    attributes("Dependent-Modules": projectDependencies.join(' '))
-                }
-            }
-        }
-
+  if (thisConfig.name.contains("WithManifest")) {
+    tasks.create("${thisConfig.name}CopyRuntimeLibs", Copy) {
+      into "$buildDir/libs"
+      from configurations.getByName("${thisConfig.name}RuntimeClasspath")
+      moduleCopyTasks.add(it.name - ".jar")
     }
-    if (thisConfig.name.contains("WithoutManifest")) {
-        tasks.create("${thisConfig.name}CopyRuntimeLibs", Copy) {
-            into "$buildDir/libs"
-            from configurations.getByName("${thisConfig.name}RuntimeClasspath")
-            moduleCopyTasks.add(it.name)
-        }
-        tasks.create("${thisConfig.name}Jar", Jar) {
-            description 'Assembles the jar archive that contains the $it classes with a manifest file'
-            from sourceSets.getByName(thisConfig.name).output
+    tasks.create("${thisConfig.name}Jar", Jar) {
+      description 'Assembles the jar archive that contains the $it classes without a manifest file'
+      from sourceSets.getByName(thisConfig.name).output
 
-            def sourceSet = sourceSets.getByName(thisConfig.name)
-            sourceSet.java.source().setSrcDirs(["src/testModules/${thisConfig.name}/java"])
-            sourceSet.resources.source().setSrcDirs(["src/testModules/${thisConfig.name}/resources"])
+      def sourceSet = sourceSets.getByName(thisConfig.name)
+      sourceSet.java.source().setSrcDirs(["src/testModules/${thisConfig.name}/java"])
+      sourceSet.resources.source().setSrcDirs(["src/testModules/${thisConfig.name}/resources"])
 
-            doFirst {
-                manifest {
-                   attributes.clear()
+      archiveName "${thisConfig.name}-1.0".concat(".jar")
+      moduleTasks.add(it.name)
+
+      doFirst {
+        def projectDependencies = []
+        def runtimeList = []
+
+        configurations.getByName("${thisConfig.name}RuntimeClasspath")
+                .collect { it.name - ".jar" }
+                .each { dependency ->
+                  if (dependency.startsWith("geode-")) {
+                    projectDependencies.add(dependency)
+                  } else {
+                    runtimeList.add(dependency)
+                  }
                 }
+
+        projectDependencies.clone().each { projectDependency ->
+          geodeProjects.each { geodeProject ->
+            if (projectDependency.contains(geodeProject)) {
+              def childProject = project(":$geodeProject")
+
+              if (childProject != null) {
+                def collect = childProject.configurations.runtimeClasspath.collect { it.name - ".jar" }
+                runtimeList.removeAll(collect)
+                projectDependencies.removeAll(collect)
+              }
             }
-            archiveName "${thisConfig.name}-1.0".concat(".jar")
-            moduleTasks.add(it.name)
+          }
         }
+        manifest {
+          attributes("Class-Path": runtimeList.join(' '))
+          attributes("Dependent-Modules": projectDependencies.join(' '))
+        }
+      }
     }
+
+  }
+  if (thisConfig.name.contains("WithoutManifest")) {
+    tasks.create("${thisConfig.name}CopyRuntimeLibs", Copy) {
+      into "$buildDir/libs"
+      from configurations.getByName("${thisConfig.name}RuntimeClasspath")
+      moduleCopyTasks.add(it.name)
+    }
+    tasks.create("${thisConfig.name}Jar", Jar) {
+      description 'Assembles the jar archive that contains the $it classes with a manifest file'
+      from sourceSets.getByName(thisConfig.name).output
+
+      def sourceSet = sourceSets.getByName(thisConfig.name)
+      sourceSet.java.source().setSrcDirs(["src/testModules/${thisConfig.name}/java"])
+      sourceSet.resources.source().setSrcDirs(["src/testModules/${thisConfig.name}/resources"])
+
+      doFirst {
+        manifest {
+          attributes.clear()
+        }
+      }
+      archiveName "${thisConfig.name}-1.0".concat(".jar")
+      moduleTasks.add(it.name)
+    }
+  }
 }
 
 task module5WithManifestJar(type: Jar, dependsOn: classes) {
-    description 'Assembles the jar archive that contains a manifest file wih an incorrect classpath location'
-    from sourceSets.module5WithManifest.output
-    doFirst {
-        manifest {
-            attributes("Class-Path": "invalidjar.jar")
-        }
+  description 'Assembles the jar archive that contains a manifest file wih an incorrect classpath location'
+  from sourceSets.module5WithManifest.output
+  doFirst {
+    manifest {
+      attributes("Class-Path": "invalidjar.jar")
     }
-    archiveName 'module5WithManifest-1.0.jar'
+  }
+  archiveName 'module5WithManifest-1.0.jar'
 }
 
 task copyRuntimeLibs(type: Copy) {
-    into "$buildDir/libs"
-    from configurations.module1WithoutManifestRuntime
+  into "$buildDir/libs"
+  from configurations.module1WithoutManifestRuntime
 }
 
 tasks.test.dependsOn("module5WithManifestJar")
@@ -148,36 +148,32 @@ tasks.test.dependsOn(moduleTasks)
 tasks.test.dependsOn(moduleCopyTasks)
 
 dependencies {
-    compile(platform(project(':boms:geode-all-bom')))
-    testCompile(group: 'junit', name: 'junit', version: '4.12')
-    testImplementation('org.assertj:assertj-core')
+  compile(platform(project(':boms:geode-all-bom')))
 
-    testImplementation('org.mockito:mockito-core')
+  implementation(project(':geode-common-services'))
+  implementation(project(':geode-common'))
+  implementation('org.apache.commons:commons-lang3')
+  implementation('org.apache.logging.log4j:log4j-api')
+  implementation('org.jboss.modules:jboss-modules')
+  testImplementation('junit:junit')
+  testCompile(project(":geode-core"))
+  testImplementation('org.assertj:assertj-core')
+  testImplementation('org.mockito:mockito-core')
+  implementation('io.vavr:vavr')
+  testImplementation('org.apache.logging.log4j:log4j-core')
+  testImplementation('com.carrotsearch.randomizedtesting:randomizedtesting-runner')
 
-    implementation(project(':geode-common-services'))
+  module1WithoutManifestCompileOnly(sourceSets.test.output)
+  module2WithoutManifestCompileOnly(sourceSets.test.output)
+  module3WithoutManifestCompileOnly(sourceSets.test.output)
+  module4WithoutManifestCompileOnly(sourceSets.test.output)
+  module1WithManifestCompileOnly(sourceSets.test.output)
+  module2WithManifestCompileOnly(sourceSets.test.output)
+  module3WithManifestCompileOnly(sourceSets.test.output)
+  module4WithManifestCompileOnly(sourceSets.test.output)
+  module5WithManifestCompileOnly(sourceSets.test.output)
 
-    implementation(project(':geode-common'))
+  module1WithManifestCompile('com.google.guava:guava')
 
-    implementation('org.apache.commons:commons-lang3')
 
-    implementation(project(':geode-common'))
-
-    implementation('org.apache.commons:commons-lang3')
-
-    implementation('org.apache.logging.log4j:log4j-core')
-    implementation('org.jboss.modules:jboss-modules')
-
-    module1WithoutManifestCompileOnly(sourceSets.test.output)
-    module2WithoutManifestCompileOnly(sourceSets.test.output)
-    module3WithoutManifestCompileOnly(sourceSets.test.output)
-    module4WithoutManifestCompileOnly(sourceSets.test.output)
-    module1WithManifestCompileOnly(sourceSets.test.output)
-    module2WithManifestCompileOnly(sourceSets.test.output)
-    module3WithManifestCompileOnly(sourceSets.test.output)
-    module4WithManifestCompileOnly(sourceSets.test.output)
-    module5WithManifestCompileOnly(sourceSets.test.output)
-
-    module1WithManifestCompile('com.google.guava:guava')
-
-    testCompile(project(":geode-core"))
 }

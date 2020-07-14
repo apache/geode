@@ -15,6 +15,8 @@
 
 package org.apache.geode.services.module.impl;
 
+import static org.apache.geode.services.result.impl.Success.SUCCESS_TRUE;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -29,11 +31,10 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleLoadException;
 
-import org.apache.geode.annotations.Experimental;
 import org.apache.geode.services.module.ModuleDescriptor;
 import org.apache.geode.services.module.ModuleService;
 import org.apache.geode.services.module.internal.loader.GeodeModuleLoader;
-import org.apache.geode.services.result.ModuleServiceResult;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.services.result.impl.Failure;
 import org.apache.geode.services.result.impl.Success;
 
@@ -46,7 +47,6 @@ import org.apache.geode.services.result.impl.Success;
  *
  * @since 1.14.0
  */
-@Experimental
 public class JBossModuleServiceImpl implements ModuleService {
 
   private final Map<String, Module> modules = new ConcurrentHashMap<>();
@@ -54,15 +54,16 @@ public class JBossModuleServiceImpl implements ModuleService {
   private final GeodeModuleLoader moduleLoader;
   private Logger logger;
 
-  public JBossModuleServiceImpl() {
-    this.moduleLoader = new GeodeModuleLoader();
+  public JBossModuleServiceImpl(Logger logger) {
+    this.logger = logger;
+    this.moduleLoader = new GeodeModuleLoader(logger);
   }
 
   /**
    * {@inheritDoc}
    */
   @Override
-  public ModuleServiceResult<Boolean> registerModule(ModuleDescriptor moduleDescriptor) {
+  public ServiceResult<Boolean> registerModule(ModuleDescriptor moduleDescriptor) {
     return moduleLoader.registerModuleDescriptor(moduleDescriptor);
   }
 
@@ -70,7 +71,7 @@ public class JBossModuleServiceImpl implements ModuleService {
    * {@inheritDoc}
    */
   @Override
-  public ModuleServiceResult<Boolean> loadModule(ModuleDescriptor moduleDescriptor) {
+  public ServiceResult<Boolean> loadModule(ModuleDescriptor moduleDescriptor) {
     if (moduleDescriptor == null) {
       return Failure.of("Load module failed due to moduleDescriptor being null");
     }
@@ -97,14 +98,14 @@ public class JBossModuleServiceImpl implements ModuleService {
    *         {@link ModuleDescriptor} can be registered using
    *         {@link ModuleService#registerModule(ModuleDescriptor)}
    */
-  private ModuleServiceResult<Boolean> loadRegisteredModule(ModuleDescriptor moduleDescriptor) {
+  private ServiceResult<Boolean> loadRegisteredModule(ModuleDescriptor moduleDescriptor) {
     String versionedName = moduleDescriptor.getName();
     try {
       modules.put(versionedName, moduleLoader.loadModule(versionedName));
-      return Success.of(true);
+      return SUCCESS_TRUE;
     } catch (ModuleLoadException e) {
-      logError(e.getMessage());
-      return Failure.of(e.toString());
+      logError(e);
+      return Failure.of(e);
     }
   }
 
@@ -112,7 +113,7 @@ public class JBossModuleServiceImpl implements ModuleService {
    * {@inheritDoc}
    */
   @Override
-  public ModuleServiceResult<Boolean> unloadModule(String moduleName) {
+  public ServiceResult<Boolean> unloadModule(String moduleName) {
     logDebug(String.format("Unloading module %s", moduleName));
     if (!modules.containsKey(moduleName)) {
       String errorMessage =
@@ -121,7 +122,7 @@ public class JBossModuleServiceImpl implements ModuleService {
       return Failure.of(errorMessage);
     }
 
-    ModuleServiceResult<Boolean> unloadModuleResult =
+    ServiceResult<Boolean> unloadModuleResult =
         moduleLoader.unloadModule(modules.get(moduleName));
     if (unloadModuleResult.isSuccessful()) {
       modules.remove(moduleName);
@@ -136,7 +137,7 @@ public class JBossModuleServiceImpl implements ModuleService {
    *
    */
   @Override
-  public <T> ModuleServiceResult<Set<T>> loadService(Class<T> service) {
+  public <T> ServiceResult<Set<T>> loadService(Class<T> service) {
     Set<T> result = createTreeSetWithClassLoaderComparator();
 
     // Iterate over all the modules looking for implementations of service.
@@ -145,8 +146,10 @@ public class JBossModuleServiceImpl implements ModuleService {
       while (loadedServices.hasNext()) {
         try {
           result.add(loadedServices.next());
+          logDebug("Loaded service from module: " + module.getName());
         } catch (Error e) {
-          logError(e.getMessage());
+          logDebug("Trying to load service from module: " + module.getName());
+          logError(e);
         }
       }
     });
@@ -184,7 +187,25 @@ public class JBossModuleServiceImpl implements ModuleService {
    * {@inheritDoc}
    */
   @Override
-  public ModuleServiceResult<Class<?>> loadClass(String className,
+  public ServiceResult<List<Class<?>>> loadClass(String className) {
+    List<Class<?>> result = new ArrayList<>();
+    modules.values().forEach((module) -> {
+      try {
+        result.add(module.getClassLoader().loadClass(className));
+      } catch (ClassNotFoundException e) {
+        logDebug(String.format("Could not find class for name: %s in module: %s", className,
+            module.getName()));
+      }
+    });
+
+    return Success.of(result);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public ServiceResult<Class<?>> loadClass(String className,
       ModuleDescriptor moduleDescriptor) {
     Module module = modules.get(moduleDescriptor.getName());
 
@@ -196,8 +217,8 @@ public class JBossModuleServiceImpl implements ModuleService {
         module = moduleLoader.loadModule(moduleDescriptor.getName());
         return loadClassFromModule(className, module);
       } catch (ModuleLoadException e) {
-        logError(e.getMessage());
-        return Failure.of(e.getMessage());
+        logError(e);
+        return Failure.of(e);
       }
     }
     return Failure
@@ -214,7 +235,7 @@ public class JBossModuleServiceImpl implements ModuleService {
    *         {@literal String}
    *         error message describing the reason for failure.
    */
-  private ModuleServiceResult<Class<?>> loadClassFromModule(String className, Module module) {
+  private ServiceResult<Class<?>> loadClassFromModule(String className, Module module) {
     try {
       Class<?> loadedClass = module.getClassLoader().loadClass(className);
       return Success.of(loadedClass);
@@ -228,25 +249,14 @@ public class JBossModuleServiceImpl implements ModuleService {
   }
 
   /**
-   * {@inheritDoc}
+   * Tries to load a resource from all the registered {@link Module}.
+   *
+   * @param resourceFile The resource to load
+   * @return {@link ServiceResult <List>} returned, containing the found resources.
+   *         {@link Failure} returned if no resources are found.
    */
   @Override
-  public ModuleServiceResult<List<Class<?>>> loadClass(String className) {
-    List<Class<?>> result = new ArrayList<>();
-    modules.values().forEach((module) -> {
-      try {
-        result.add(module.getClassLoader().loadClass(className));
-      } catch (ClassNotFoundException e) {
-        logDebug(String.format("Could not find class for name: %s in module: %s", className,
-            module.getName()));
-      }
-    });
-
-    return Success.of(result);
-  }
-
-  @Override
-  public ModuleServiceResult<List<InputStream>> findResourceAsStream(String resourceFile) {
+  public ServiceResult<List<InputStream>> findResourceAsStream(String resourceFile) {
     List<InputStream> results = new ArrayList<>();
     modules.values().forEach(module -> {
       InputStream resourceAsStream =
@@ -267,6 +277,18 @@ public class JBossModuleServiceImpl implements ModuleService {
     this.logger = logger;
   }
 
+  /**
+   * Unregister a loaded Module described by the {@link ModuleDescriptor}
+   *
+   * @param moduleDescriptor - the {@link ModuleDescriptor} to unregister
+   * @return {@link Success} on unregistering the module successfully. {@link Failure} returned on
+   *         failure.
+   */
+  @Override
+  public ServiceResult<Boolean> unregisterModule(ModuleDescriptor moduleDescriptor) {
+    return moduleLoader.unregisterModuleDescriptor(moduleDescriptor);
+  }
+
   private void logWarn(String message) {
     if (logger != null) {
       logger.warn(message);
@@ -285,9 +307,9 @@ public class JBossModuleServiceImpl implements ModuleService {
     }
   }
 
-  private void logError(String message) {
+  private void logError(Throwable throwable) {
     if (logger != null) {
-      logger.error(message);
+      logger.error(throwable);
     }
   }
 }

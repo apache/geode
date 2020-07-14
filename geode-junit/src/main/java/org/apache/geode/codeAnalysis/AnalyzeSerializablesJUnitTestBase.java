@@ -53,9 +53,10 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.BufferDataOutputStream;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.services.module.internal.impl.ServiceLoaderModuleService;
-import org.apache.geode.services.result.ModuleServiceResult;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.junit.categories.SerializationTest;
 import org.apache.geode.unsafe.internal.sun.reflect.ReflectionFactory;
 
@@ -324,7 +325,7 @@ public abstract class AnalyzeSerializablesJUnitTestBase extends
   private List<DistributedSystemService> initializeServices() {
     List<DistributedSystemService> services = new ArrayList<>();
 
-    ModuleServiceResult<Set<DistributedSystemService>> serviceLoadResult =
+    ServiceResult<Set<DistributedSystemService>> serviceLoadResult =
         new ServiceLoaderModuleService(LogService.getLogger())
             .loadService(DistributedSystemService.class);
     if (serviceLoadResult.isSuccessful()) {

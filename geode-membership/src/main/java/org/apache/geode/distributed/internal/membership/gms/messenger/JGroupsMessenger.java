@@ -98,7 +98,7 @@ import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.internal.serialization.VersioningIO;
 import org.apache.geode.logging.internal.OSProcess;
 import org.apache.geode.services.module.ModuleService;
-import org.apache.geode.services.result.ModuleServiceResult;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 
@@ -204,7 +204,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
 
     String properties;
 
-    ModuleServiceResult<List<InputStream>> resourceStreamResult = moduleService
+    ServiceResult<List<InputStream>> resourceStreamResult = moduleService
         .findResourceAsStream(config.isMulticastEnabled()
             ? JGROUPS_MCAST_CONFIG_FILE_NAME
             : DEFAULT_JGROUPS_TCP_CONFIG);

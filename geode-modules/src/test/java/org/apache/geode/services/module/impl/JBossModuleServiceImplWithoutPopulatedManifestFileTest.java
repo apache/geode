@@ -18,10 +18,13 @@ package org.apache.geode.services.module.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOfType;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.LogManager;
 import org.jboss.modules.ModuleClassLoader;
 import org.junit.After;
 import org.junit.Before;
@@ -32,7 +35,7 @@ import org.apache.geode.TestService;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.services.module.ModuleDescriptor;
 import org.apache.geode.services.module.ModuleService;
-import org.apache.geode.services.result.ModuleServiceResult;
+import org.apache.geode.services.result.ServiceResult;
 
 public class JBossModuleServiceImplWithoutPopulatedManifestFileTest {
 
@@ -58,7 +61,7 @@ public class JBossModuleServiceImplWithoutPopulatedManifestFileTest {
 
   @Before
   public void setup() {
-    moduleService = new JBossModuleServiceImpl();
+    moduleService = new JBossModuleServiceImpl(LogManager.getLogger());
     ModuleDescriptor geodeCommonsServiceDescriptor =
         new ModuleDescriptor.Builder("geode-common-services", gemFireVersion)
             .fromResourcePaths(GEODE_COMMONS_SERVICES_PATH)
@@ -80,15 +83,15 @@ public class JBossModuleServiceImplWithoutPopulatedManifestFileTest {
 
   @Test
   public void modulesNotAccessibleFromSystemClassloaderNoModulesLoaded() {
-    ModuleServiceResult<List<Class<?>>> mapModuleServiceResult = moduleService
+    ServiceResult<List<Class<?>>> mapServiceResult = moduleService
         .loadClass("org.apache.geode.ModuleService1");
-    assertThat(mapModuleServiceResult.isSuccessful()).isEqualTo(true);
-    assertThat(mapModuleServiceResult.getMessage().size()).isEqualTo(0);
+    assertThat(mapServiceResult.isSuccessful()).isEqualTo(true);
+    assertThat(mapServiceResult.getMessage().size()).isEqualTo(0);
 
-    mapModuleServiceResult = moduleService
+    mapServiceResult = moduleService
         .loadClass("org.apache.geode.ModuleService2");
-    assertThat(mapModuleServiceResult.isSuccessful()).isEqualTo(true);
-    assertThat(mapModuleServiceResult.getMessage().size()).isEqualTo(0);
+    assertThat(mapServiceResult.isSuccessful()).isEqualTo(true);
+    assertThat(mapServiceResult.getMessage().size()).isEqualTo(0);
   }
 
   @Test
@@ -147,7 +150,7 @@ public class JBossModuleServiceImplWithoutPopulatedManifestFileTest {
 
   private void loadClassAndAssert(String className, ModuleDescriptor loadFromModule,
       ModuleDescriptor moduleClassLoader) {
-    ModuleServiceResult<Class<?>> loadClassResult =
+    ServiceResult<Class<?>> loadClassResult =
         moduleService.loadClass(className, loadFromModule);
     assertThat(loadClassResult.isSuccessful()).isTrue();
     String moduleNameFromClassLoader =
@@ -161,7 +164,7 @@ public class JBossModuleServiceImplWithoutPopulatedManifestFileTest {
 
   private void loadClassAndAssertFailure(String className, ModuleDescriptor moduleDescriptor,
       String expectedErrorMessage) {
-    ModuleServiceResult<Class<?>> loadClassResult =
+    ServiceResult<Class<?>> loadClassResult =
         moduleService.loadClass(className, moduleDescriptor);
     assertThat(loadClassResult.isSuccessful()).isFalse();
     assertThat(loadClassResult.getErrorMessage()).isEqualTo(expectedErrorMessage);
@@ -428,11 +431,15 @@ public class JBossModuleServiceImplWithoutPopulatedManifestFileTest {
             .fromResourcePaths("/there/is/nothing/here.jar")
             .build();
 
-    ModuleServiceResult<Boolean> moduleServiceResult =
+    ServiceResult<Boolean> serviceResult =
         moduleService.registerModule(module1Descriptor);
-    assertThat(moduleServiceResult.isSuccessful()).isFalse();
-    assertThat(moduleServiceResult.getErrorMessage()).contains(
-        "Registering module: module1WithoutManifest-1.0 failed with error: /there/is/nothing/here.jar");
+    assertThat(serviceResult.isSuccessful()).isFalse();
+    assertThat(serviceResult.getErrorMessage()).contains(
+        "Registering module: module1WithoutManifest-1.0 failed with error");
+    assertMessageContainsAny(serviceResult.getErrorMessage(),
+        new String[] {"java.io.FileNotFoundException:", "java.nio.file.NoSuchFileException:"});
+    assertThat(serviceResult.getErrorMessage()).contains(
+        "/there/is/nothing/here.jar");
   }
 
   @Test
@@ -475,7 +482,7 @@ public class JBossModuleServiceImplWithoutPopulatedManifestFileTest {
 
   @Test
   public void loadServiceNoModulesLoaded() {
-    ModuleServiceResult<Set<TestService>> loadServiceResult =
+    ServiceResult<Set<TestService>> loadServiceResult =
         moduleService.loadService(TestService.class);
     assertThat(loadServiceResult.isSuccessful()).isTrue();
     assertThat(loadServiceResult.getMessage()).isEmpty();
@@ -483,7 +490,7 @@ public class JBossModuleServiceImplWithoutPopulatedManifestFileTest {
 
   @Test
   public void loadServiceNoModulesImplementService() {
-    ModuleServiceResult<Set<InvalidService>> loadServiceResult =
+    ServiceResult<Set<InvalidService>> loadServiceResult =
         moduleService.loadService(InvalidService.class);
     assertThat(loadServiceResult.isSuccessful()).isTrue();
     assertThat(loadServiceResult.getMessage()).isEmpty();
@@ -499,7 +506,7 @@ public class JBossModuleServiceImplWithoutPopulatedManifestFileTest {
     assertThat(moduleService.registerModule(module1Descriptor).isSuccessful()).isTrue();
     assertThat(moduleService.loadModule(module1Descriptor).isSuccessful()).isTrue();
 
-    ModuleServiceResult<Set<TestService>> serviceList =
+    ServiceResult<Set<TestService>> serviceList =
         moduleService.loadService(TestService.class);
     assertThat(serviceList.isSuccessful()).isTrue();
     assertThat(serviceList.getMessage().size()).isEqualTo(1);
@@ -524,7 +531,7 @@ public class JBossModuleServiceImplWithoutPopulatedManifestFileTest {
     assertThat(moduleService.loadModule(module1Descriptor).isSuccessful()).isTrue();
     assertThat(moduleService.loadModule(module2Descriptor).isSuccessful()).isTrue();
 
-    ModuleServiceResult<Set<TestService>> serviceList =
+    ServiceResult<Set<TestService>> serviceList =
         moduleService.loadService(TestService.class);
     assertThat(serviceList.isSuccessful()).isTrue();
     assertThat(serviceList.getMessage().size()).isEqualTo(2);
@@ -543,7 +550,7 @@ public class JBossModuleServiceImplWithoutPopulatedManifestFileTest {
     assertThat(moduleService.registerModule(moduleDescriptor).isSuccessful()).isTrue();
     assertThat(moduleService.loadModule(moduleDescriptor).isSuccessful()).isTrue();
 
-    ModuleServiceResult<Set<TestService>> serviceList =
+    ServiceResult<Set<TestService>> serviceList =
         moduleService.loadService(TestService.class);
     assertThat(serviceList.isSuccessful()).isTrue();
     assertThat(serviceList.getMessage().size()).isEqualTo(2);
@@ -572,7 +579,7 @@ public class JBossModuleServiceImplWithoutPopulatedManifestFileTest {
     assertThat(moduleService.loadModule(module2Descriptor).isSuccessful()).isTrue();
     assertThat(moduleService.loadModule(module1Descriptor).isSuccessful()).isTrue();
 
-    ModuleServiceResult<Set<TestService>> serviceList =
+    ServiceResult<Set<TestService>> serviceList =
         moduleService.loadService(TestService.class);
     assertThat(serviceList.isSuccessful()).isTrue();
     assertThat(serviceList.getMessage().size()).isEqualTo(2);
@@ -593,7 +600,7 @@ public class JBossModuleServiceImplWithoutPopulatedManifestFileTest {
 
     assertThat(moduleService.loadModule(module1Descriptor).isSuccessful()).isTrue();
 
-    ModuleServiceResult<Set<TestService>> serviceList =
+    ServiceResult<Set<TestService>> serviceList =
         moduleService.loadService(TestService.class);
     assertThat(serviceList.isSuccessful()).isTrue();
     assertThat(serviceList.getMessage().size()).isEqualTo(1);
@@ -611,7 +618,7 @@ public class JBossModuleServiceImplWithoutPopulatedManifestFileTest {
     assertThat(moduleService.registerModule(module1Descriptor).isSuccessful()).isTrue();
     assertThat(moduleService.loadModule(module1Descriptor).isSuccessful()).isTrue();
 
-    ModuleServiceResult<Set<TestService>> loadServiceResult =
+    ServiceResult<Set<TestService>> loadServiceResult =
         moduleService.loadService(TestService.class);
     assertThat(loadServiceResult.isSuccessful()).isTrue();
     assertThat(loadServiceResult.getMessage().size()).isEqualTo(1);
@@ -634,7 +641,7 @@ public class JBossModuleServiceImplWithoutPopulatedManifestFileTest {
     assertThat(moduleService.registerModule(moduleDescriptor).isSuccessful()).isTrue();
     assertThat(moduleService.loadModule(moduleDescriptor).isSuccessful()).isTrue();
 
-    ModuleServiceResult<Set<TestService>> loadServiceResult =
+    ServiceResult<Set<TestService>> loadServiceResult =
         moduleService.loadService(TestService.class);
     assertThat(loadServiceResult.isSuccessful()).isTrue();
     assertThat(loadServiceResult.getMessage().size()).isEqualTo(2);
@@ -664,7 +671,7 @@ public class JBossModuleServiceImplWithoutPopulatedManifestFileTest {
     assertThat(moduleService.loadModule(module1Descriptor).isSuccessful()).isTrue();
     assertThat(moduleService.loadModule(module2Descriptor).isSuccessful()).isTrue();
 
-    ModuleServiceResult<Set<TestService>> loadServiceResult =
+    ServiceResult<Set<TestService>> loadServiceResult =
         moduleService.loadService(TestService.class);
     assertThat(loadServiceResult.isSuccessful()).isTrue();
     assertThat(loadServiceResult.getMessage().size()).isEqualTo(2);
@@ -695,7 +702,7 @@ public class JBossModuleServiceImplWithoutPopulatedManifestFileTest {
 
     assertThat(moduleService.loadModule(module1Descriptor).isSuccessful()).isTrue();
 
-    ModuleServiceResult<Set<TestService>> loadServiceResult =
+    ServiceResult<Set<TestService>> loadServiceResult =
         moduleService.loadService(TestService.class);
     assertThat(loadServiceResult.isSuccessful()).isTrue();
     assertThat(loadServiceResult.getMessage().size()).isEqualTo(1);
@@ -734,7 +741,7 @@ public class JBossModuleServiceImplWithoutPopulatedManifestFileTest {
     assertThat(moduleService.loadModule(module1Descriptor).isSuccessful()).isTrue();
     assertThat(moduleService.loadModule(module2Descriptor).isSuccessful()).isTrue();
 
-    ModuleServiceResult<Set<TestService>> loadServiceResult =
+    ServiceResult<Set<TestService>> loadServiceResult =
         moduleService.loadService(TestService.class);
     assertThat(loadServiceResult.isSuccessful()).isTrue();
     assertThat(loadServiceResult.getMessage().size()).isEqualTo(2);
@@ -790,7 +797,7 @@ public class JBossModuleServiceImplWithoutPopulatedManifestFileTest {
     loadClassAndAssert("org.apache.geode.ModuleService2", module2Descriptor);
     loadClassAndAssert("org.apache.geode.ModuleService3", module2Descriptor);
 
-    ModuleServiceResult<Set<TestService>> loadServiceResult =
+    ServiceResult<Set<TestService>> loadServiceResult =
         moduleService.loadService(TestService.class);
     assertThat(loadServiceResult.isSuccessful()).isTrue();
 
@@ -798,5 +805,17 @@ public class JBossModuleServiceImplWithoutPopulatedManifestFileTest {
     assertThat(loadServiceResult.getMessage().stream().map(service -> service.getClass().getName()))
         .containsExactlyInAnyOrder("org.apache.geode.ModuleService2",
             "org.apache.geode.ModuleService3");
+  }
+
+  private void assertMessageContainsAny(String errorMessage, String[] errorMessageSnippet) {
+    AtomicBoolean containsString = new AtomicBoolean();
+    Arrays.stream(errorMessageSnippet)
+        .forEach(errorSnippet -> {
+          boolean contains = errorMessage.contains(errorSnippet);
+          if (contains) {
+            containsString.set(true);
+          }
+        });
+    assertThat(containsString.get()).isTrue();
   }
 }

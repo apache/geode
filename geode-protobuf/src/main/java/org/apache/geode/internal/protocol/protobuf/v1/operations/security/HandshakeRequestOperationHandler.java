@@ -34,7 +34,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.protocol.serialization.ValueSerializer;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.services.module.ModuleService;
-import org.apache.geode.services.result.ModuleServiceResult;
+import org.apache.geode.services.result.ServiceResult;
 
 public class HandshakeRequestOperationHandler implements
     ProtobufOperationHandler<ConnectionAPI.HandshakeRequest, ConnectionAPI.HandshakeResponse> {
@@ -80,7 +80,7 @@ public class HandshakeRequestOperationHandler implements
 
   private ValueSerializer loadSerializer(String valueFormat)
       throws ConnectionStateException {
-    ModuleServiceResult<Set<ValueSerializer>> valueSerializerServiceResult =
+    ServiceResult<Set<ValueSerializer>> valueSerializerServiceResult =
         moduleService.loadService(ValueSerializer.class);
     if (valueSerializerServiceResult.isSuccessful()) {
       for (ValueSerializer serializer : valueSerializerServiceResult.getMessage()) {

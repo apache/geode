@@ -96,6 +96,8 @@ dependencies {
   testImplementation(project(':geode-core'))
   testImplementation('javax.servlet:javax.servlet-api')
 
+  integrationTestImplementation(project(':geode-common-services'))
+
   integrationTestImplementation('org.springframework:spring-test')
   integrationTestImplementation('org.springframework.security:spring-security-test')
 

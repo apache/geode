@@ -24,7 +24,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.services.module.ModuleService;
-import org.apache.geode.services.result.ModuleServiceResult;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * Implements {@link CollectingServiceLoader} by returning a {@link List} of all currently loadable
@@ -42,12 +42,12 @@ public class ListCollectingServiceLoader<S> implements CollectingServiceLoader<S
 
   @Override
   public Collection<S> loadServices(Class<S> service) {
-    ModuleServiceResult<Set<S>> moduleServiceResult = moduleService.loadService(service);
+    ServiceResult<Set<S>> serviceResult = moduleService.loadService(service);
 
-    if (moduleServiceResult.isSuccessful()) {
-      return moduleServiceResult.getMessage();
+    if (serviceResult.isSuccessful()) {
+      return serviceResult.getMessage();
     } else {
-      logger.warn(moduleServiceResult.getErrorMessage());
+      logger.warn(serviceResult.getErrorMessage());
     }
 
     return Collections.EMPTY_LIST;

@@ -36,9 +36,8 @@ dependencies {
     implementation('com.healthmarketscience.rmiio:rmiio')
     implementation('com.fasterxml.jackson.core:jackson-databind')
 
-    testImplementation(project(":geode-modules"))
-    integrationTestImplementation(project(":geode-modules"))
-    acceptanceTestImplementation(project(":geode-modules"))
+    testImplementation(project(':geode-common-services'))
+    acceptanceTestImplementation(project(':geode-common-services'))
 
 
 //    //Find bugs is used in multiple places in the code to suppress findbugs warnings
@@ -52,8 +51,7 @@ dependencies {
     integrationTestImplementation('pl.pragmatists:JUnitParams')
     integrationTestRuntimeOnly('org.apache.derby:derby')
 
-    distributedTestImplementation(project(":geode-modules"))
-    distributedTestImplementation(project(":geode-common-services"))
+    distributedTestImplementation(project(':geode-common-services'))
     distributedTestImplementation(project(':geode-dunit'))
     distributedTestImplementation('pl.pragmatists:JUnitParams')
     distributedTestRuntimeOnly('org.apache.derby:derby')

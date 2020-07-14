@@ -22,7 +22,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import org.apache.geode.services.module.ModuleService;
-import org.apache.geode.services.result.ModuleServiceResult;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * Default behavior for GeodeEntityResolver2 implementations.
@@ -60,7 +60,7 @@ public abstract class DefaultEntityResolver2 implements GeodeEntityResolver2 {
    */
   protected InputSource getClassPathInputSource(final String publicId, final String systemId,
       final String path, ModuleService moduleService) {
-    ModuleServiceResult<List<InputStream>> resourceResult =
+    ServiceResult<List<InputStream>> resourceResult =
         moduleService.findResourceAsStream(path);
 
     if (resourceResult.isSuccessful() && (!resourceResult.getMessage().isEmpty())) {
