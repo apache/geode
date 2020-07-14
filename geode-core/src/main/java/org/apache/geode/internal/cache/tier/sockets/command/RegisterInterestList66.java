@@ -167,7 +167,7 @@ public class RegisterInterestList66 extends BaseCommand {
         if (!DynamicRegionFactory.regionIsDynamicRegionList(regionName)) {
           RegisterInterestOperationContext registerContext =
               authorizeRequest.registerInterestListAuthorize(regionName, keys, policy);
-          keys = (List<Object>)  registerContext.getKey();
+          keys = (List<Object>) registerContext.getKey();
         }
       }
       // Register interest
