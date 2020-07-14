@@ -110,7 +110,7 @@ public abstract class SessionDUnitTest {
     });
   }
 
-  static void startSpringApp(int sessionApp, int primaryServer, long sessionTimeout) {
+  protected static void startSpringApp(int sessionApp, int primaryServer, long sessionTimeout) {
     int primaryRedisPort = ports.get(primaryServer);
     int httpPort = ports.get(sessionApp);
     VM host = cluster.getVM(sessionApp);

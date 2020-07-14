@@ -12,20 +12,24 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.redis.session;
+package session;
 
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.rules.TestRule;
 import org.testcontainers.containers.GenericContainer;
 import redis.clients.jedis.Jedis;
 
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.test.junit.categories.RedisTest;
+import org.apache.geode.redis.session.SessionExpirationDUnitTest;
+import org.apache.geode.test.junit.rules.IgnoreOnWindowsRule;
 
-@Category({RedisTest.class})
-public class NativeRedisSessionExpirationDUnitTest extends SessionExpirationDUnitTest {
+public class NativeRedisSessionExpirationAcceptanceTest extends SessionExpirationDUnitTest {
+
+  @ClassRule
+  public static TestRule ignoreOnWindowsRule = new IgnoreOnWindowsRule();
 
   @BeforeClass
   public static void setup() {
