@@ -15,8 +15,6 @@
 
 package org.apache.geode.services.management;
 
-import java.util.Properties;
-
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.services.management.impl.ComponentIdentifier;
 import org.apache.geode.services.result.ServiceResult;
