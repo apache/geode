@@ -18,6 +18,7 @@ package org.apache.geode.redis.internal.data;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Arrays;
 
 import org.apache.geode.DataSerializer;
@@ -30,9 +31,10 @@ import org.apache.geode.redis.internal.netty.Coder;
 /**
  * This class is a wrapper for the any Regions that need to store a byte[]. The only data this an
  * instance will store is a byte[] for the data but it is also serializable and comparable so it is
- * able to be used in querying
+ * able to be used in querying. Class is also marked as Serializable for test support.
  */
-public class ByteArrayWrapper implements DataSerializableFixedID, Comparable<ByteArrayWrapper> {
+public class ByteArrayWrapper
+    implements DataSerializableFixedID, Serializable, Comparable<ByteArrayWrapper> {
   /**
    * The data portion of ValueWrapper
    */
