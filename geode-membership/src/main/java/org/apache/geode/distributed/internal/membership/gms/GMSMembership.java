@@ -360,7 +360,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   /**
    * Analyze a given view object, generate events as appropriate
    */
-  public void processView(long newViewId, MembershipView<ID> newView) {
+  public void processView(MembershipView<ID> newView) {
     // Sanity check...
     if (logger.isDebugEnabled()) {
       StringBuilder msg = new StringBuilder(200);
@@ -383,14 +383,13 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
       // Save previous view, for delta analysis
       MembershipView<ID> priorView = latestView;
 
-      if (newViewId < priorView.getViewId()) {
+      if (newView.getViewId() < priorView.getViewId()) {
         // ignore this view since it is old news
         return;
       }
 
       // update the view to reflect our changes, so that
       // callbacks will see the new (updated) view.
-      long newlatestViewId = newViewId;
       MembershipView<ID> newlatestView = new MembershipView<>(newView, newView.getViewId());
 
       // look for additions
@@ -978,7 +977,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
         }
       }
 
-      viewExecutor.submit(() -> processView(viewArg.getViewId(), viewArg));
+      viewExecutor.submit(() -> processView(viewArg));
 
     } finally {
       latestViewWriteLock.unlock();
@@ -1037,7 +1036,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
         // message from non-member - ignore
       }
     } else if (o.isGmsView()) { // view event
-      processView(o.gmsView.getViewId(), o.gmsView);
+      processView(o.gmsView);
     } else if (o.isSurpriseConnect()) { // connect
       processSurpriseConnect(o.member);
     } else {
