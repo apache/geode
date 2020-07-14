@@ -93,7 +93,7 @@ public class SubscriptionsIntegrationTest {
 
     new ConcurrentLoopingThreads(ITERATIONS,
         i -> subscriptions.add(new DummySubscription()),
-        i -> subscriptions.findSubscriptions("channel".getBytes()))
+        i -> subscriptions.findSubscriptions("channel".getBytes(), false))
             .run();
 
     assertThat(subscriptions.size()).isEqualTo(ITERATIONS);

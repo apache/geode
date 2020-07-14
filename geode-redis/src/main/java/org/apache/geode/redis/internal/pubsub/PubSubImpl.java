@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
@@ -86,12 +87,14 @@ public class PubSubImpl implements PubSub {
   }
 
   @Override
-  public long subscribe(byte[] channel, ExecutionHandlerContext context, Client client) {
+  public Pair<Integer, Subscription> subscribe(byte[] channel, ExecutionHandlerContext context,
+      Client client) {
     return subscriptions.subscribe(channel, context, client);
   }
 
   @Override
-  public long psubscribe(GlobPattern pattern, ExecutionHandlerContext context, Client client) {
+  public Pair<Integer, Subscription> psubscribe(GlobPattern pattern,
+      ExecutionHandlerContext context, Client client) {
     return subscriptions.psubscribe(pattern, context, client);
   }
 
@@ -144,7 +147,7 @@ public class PubSubImpl implements PubSub {
   long publishMessageToSubscribers(byte[] channel, byte[] message) {
 
     List<Subscription> foundSubscriptions = subscriptions
-        .findSubscriptions(channel);
+        .findSubscriptions(channel, true);
     if (foundSubscriptions.isEmpty()) {
       return 0;
     }

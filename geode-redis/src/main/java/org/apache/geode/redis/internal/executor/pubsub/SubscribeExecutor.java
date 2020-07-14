@@ -17,32 +17,46 @@ package org.apache.geode.redis.internal.executor.pubsub;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.pubsub.Subscription;
 
 public class SubscribeExecutor extends AbstractExecutor {
+
+  private static final Logger logger = LogService.getLogger();
 
   @Override
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
+
+    List<Subscription> newSubscriptions = new ArrayList<>();
     Collection<Collection<?>> items = new ArrayList<>();
     for (int i = 1; i < command.getProcessedCommand().size(); i++) {
       Collection<Object> item = new ArrayList<>();
       byte[] channelName = command.getProcessedCommand().get(i);
-      long subscribedChannels =
+      Pair<Integer, Subscription> subscribedChannel =
           context.getPubSub().subscribe(channelName, context, context.getClient());
+
+      if (subscribedChannel.getRight() != null) {
+        newSubscriptions.add(subscribedChannel.getRight());
+      }
 
       item.add("subscribe");
       item.add(channelName);
-      item.add(subscribedChannels);
+      item.add(subscribedChannel.getLeft());
 
       items.add(item);
     }
 
-    context.changeChannelEventLoopGroup(context.getSubscriberGroup());
+    context.changeChannelEventLoopGroup(context.getSubscriberGroup(), newSubscriptions);
 
     return RedisResponse.flattenedArray(items);
   }

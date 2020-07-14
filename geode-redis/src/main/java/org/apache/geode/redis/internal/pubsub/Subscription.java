@@ -57,4 +57,8 @@ public interface Subscription {
    * pattern is returned.
    */
   byte[] getChannelName();
+
+  boolean isReady();
+
+  void setReady();
 }

@@ -45,6 +45,7 @@ dependencies {
 
   commonTestImplementation(project(':geode-junit'))
   commonTestImplementation(project(':geode-dunit'))
+  commonTestImplementation('redis.clients:jedis')
 
   integrationTestImplementation(project(':geode-dunit'))
   integrationTestImplementation(project(':geode-junit'))

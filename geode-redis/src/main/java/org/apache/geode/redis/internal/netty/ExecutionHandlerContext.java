@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal.netty;
 
 
 import java.io.IOException;
+import java.util.List;
 import java.util.function.Supplier;
 
 import io.netty.buffer.ByteBuf;
@@ -45,6 +46,7 @@ import org.apache.geode.redis.internal.data.RedisDataTypeMismatchException;
 import org.apache.geode.redis.internal.executor.CommandFunction;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.pubsub.PubSub;
+import org.apache.geode.redis.internal.pubsub.Subscription;
 
 /**
  * This class extends {@link ChannelInboundHandlerAdapter} from Netty and it is the last part of the
@@ -245,13 +247,15 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     return subscriberGroup;
   }
 
-  public void changeChannelEventLoopGroup(EventLoopGroup newGroup) {
+  public void changeChannelEventLoopGroup(EventLoopGroup newGroup,
+      List<Subscription> newSubscriptions) {
     if (newGroup.equals(channel.eventLoop())) {
       // already registered with newGroup
       return;
     }
     channel.deregister().addListener((ChannelFutureListener) future -> {
       newGroup.register(channel).sync();
+      newSubscriptions.forEach(Subscription::setReady);
     });
   }
 

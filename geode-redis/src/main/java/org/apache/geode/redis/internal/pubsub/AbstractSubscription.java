@@ -16,6 +16,7 @@
 
 package org.apache.geode.redis.internal.pubsub;
 
+
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelFutureListener;
 import org.apache.logging.log4j.Logger;
@@ -30,6 +31,7 @@ public abstract class AbstractSubscription implements Subscription {
   private static final Logger logger = LogService.getLogger();
   private final Client client;
   private final ExecutionHandlerContext context;
+  private boolean ready;
 
   AbstractSubscription(Client client, ExecutionHandlerContext context) {
     if (client == null) {
@@ -40,6 +42,7 @@ public abstract class AbstractSubscription implements Subscription {
     }
     this.client = client;
     this.context = context;
+    this.ready = false;
   }
 
   @Override
@@ -56,6 +59,16 @@ public abstract class AbstractSubscription implements Subscription {
   @Override
   public boolean matchesClient(Client client) {
     return this.client.equals(client);
+  }
+
+  @Override
+  public boolean isReady() {
+    return ready;
+  }
+
+  @Override
+  public void setReady() {
+    ready = true;
   }
 
   private ByteBuf constructResponse(byte[] channel, byte[] message) {

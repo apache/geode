@@ -18,32 +18,44 @@ package org.apache.geode.redis.internal.executor.pubsub;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.pubsub.Subscription;
 
 public class PsubscribeExecutor extends AbstractExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
+
+    List<Subscription> newSubscriptions = new ArrayList<>();
     Collection<Collection<?>> items = new ArrayList<>();
     for (int i = 1; i < command.getProcessedCommand().size(); i++) {
       Collection<Object> item = new ArrayList<>();
       byte[] pattern = command.getProcessedCommand().get(i);
-      long subscribedChannels =
+      Pair<Integer, Subscription> subscribedChannel =
           context.getPubSub().psubscribe(
               new GlobPattern(new String(pattern)), context, context.getClient());
 
+      if (subscribedChannel.getRight() != null) {
+        newSubscriptions.add(subscribedChannel.getRight());
+      }
+
       item.add("psubscribe");
       item.add(pattern);
-      item.add(subscribedChannels);
+      item.add(subscribedChannel.getLeft());
 
       items.add(item);
     }
+
+    context.changeChannelEventLoopGroup(context.getSubscriberGroup(), newSubscriptions);
 
     return RedisResponse.flattenedArray(items);
   }

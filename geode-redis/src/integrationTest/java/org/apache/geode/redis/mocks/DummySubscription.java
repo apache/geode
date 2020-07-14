@@ -52,4 +52,12 @@ public class DummySubscription implements Subscription {
   public byte[] getChannelName() {
     return null;
   }
+
+  @Override
+  public boolean isReady() {
+    return true;
+  }
+
+  @Override
+  public void setReady() {}
 }

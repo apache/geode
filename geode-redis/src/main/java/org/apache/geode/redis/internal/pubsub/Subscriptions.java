@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.netty.Client;
@@ -56,14 +58,15 @@ public class Subscriptions {
   }
 
   /**
-   * Return all subscriptions for a given channel or pattern
+   * Return all subscriptions for a given channel or pattern that are marked as 'ready'.
    *
    * @param channelOrPattern the channel or pattern
    * @return a list of subscriptions
    */
-  public List<Subscription> findSubscriptions(byte[] channelOrPattern) {
+  public List<Subscription> findSubscriptions(byte[] channelOrPattern, boolean ready) {
     return subscriptions.stream()
-        .filter(subscription -> subscription.matches(channelOrPattern))
+        .filter(subscription -> subscription.isReady() == ready
+            && subscription.matches(channelOrPattern))
         .collect(Collectors.toList());
   }
 
@@ -98,20 +101,26 @@ public class Subscriptions {
     return subscriptions.size();
   }
 
-  public synchronized long subscribe(byte[] channel, ExecutionHandlerContext context,
+  public synchronized Pair<Integer, Subscription> subscribe(byte[] channel,
+      ExecutionHandlerContext context,
       Client client) {
+    Subscription newSubscription = null;
     if (!exists(channel, client)) {
-      add(new ChannelSubscription(client, channel, context));
+      newSubscription = new ChannelSubscription(client, channel, context);
+      add(newSubscription);
     }
-    return findSubscriptions(client).size();
+    return Pair.of(findSubscriptions(client).size(), newSubscription);
   }
 
-  public synchronized long psubscribe(GlobPattern pattern, ExecutionHandlerContext context,
+  public synchronized Pair<Integer, Subscription> psubscribe(GlobPattern pattern,
+      ExecutionHandlerContext context,
       Client client) {
+    Subscription newSubscription = null;
     if (!exists(pattern, client)) {
-      add(new PatternSubscription(client, pattern, context));
+      newSubscription = new PatternSubscription(client, pattern, context);
+      add(newSubscription);
     }
-    return findSubscriptions(client).size();
+    return Pair.of(findSubscriptions(client).size(), newSubscription);
   }
 
   public synchronized long unsubscribe(Object channelOrPattern, Client client) {
