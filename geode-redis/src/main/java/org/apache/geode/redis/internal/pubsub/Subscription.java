@@ -18,6 +18,8 @@ package org.apache.geode.redis.internal.pubsub;
 
 import java.util.List;
 
+import io.netty.channel.EventLoopGroup;
+
 import org.apache.geode.redis.internal.netty.Client;
 
 
@@ -58,7 +60,15 @@ public interface Subscription {
    */
   byte[] getChannelName();
 
+  /**
+   * Is the Subscription ready to process messages. Due to the current implementation, a
+   * Subscription is only ready to process messages when it is associated with the 'subscribers'
+   * {@link EventLoopGroup}.
+   */
   boolean isReady();
 
+  /**
+   * Mark the Subscription as ready to process messages.
+   */
   void setReady();
 }

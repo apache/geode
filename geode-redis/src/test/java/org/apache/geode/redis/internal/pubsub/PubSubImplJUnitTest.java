@@ -53,6 +53,7 @@ public class PubSubImplJUnitTest {
         spy(new ChannelSubscription(deadClient,
             "sally".getBytes(), mockContext));
 
+    subscription.setReady();
     subscriptions.add(subscription);
 
     PubSubImpl subject = new PubSubImpl(subscriptions);

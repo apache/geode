@@ -46,7 +46,8 @@ public class Subscriptions {
   }
 
   /**
-   * Return all subscriptions for a given client
+   * Return all subscriptions for a given client. This includes both 'ready' and not 'ready'
+   * Subscriptions.
    *
    * @param client the subscribed client
    * @return a list of subscriptions
