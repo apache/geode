@@ -166,7 +166,7 @@ public abstract class SessionDUnitTest {
           throw e;
         }
       }
-    } while(!noteAdded);
+    } while (!noteAdded);
 
     return sessionCookie;
   }
