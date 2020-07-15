@@ -60,8 +60,8 @@ public class RegisterInterest61 extends BaseCommand {
   RegisterInterest61() {}
 
   @Override
-  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
-      final SecurityService securityService, long start) throws IOException, InterruptedException {
+  public void cmdExecute(Message clientMessage, ServerConnection serverConnection,
+                         SecurityService securityService, long start) throws IOException, InterruptedException {
     Part regionNamePart, keyPart;
     String regionName;
     Object key;
@@ -70,7 +70,6 @@ public class RegisterInterest61 extends BaseCommand {
 
     // Retrieve the data from the message parts
     regionNamePart = clientMessage.getPart(0);
-    regionName = regionNamePart.getCachedString();
     InterestResultPolicy policy;
     // Retrieve the interest type
     int interestType = clientMessage.getPart(1).getInt();
