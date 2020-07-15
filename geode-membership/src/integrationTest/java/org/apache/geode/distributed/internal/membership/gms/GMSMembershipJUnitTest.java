@@ -60,14 +60,19 @@ import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Messenger;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.VersionOrdinal;
+import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.internal.serialization.internal.DSFIDSerializerImpl;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
 public class GMSMembershipJUnitTest {
 
-  private static final Version OLDER_THAN_CURRENT_VERSION = Version.GEODE_1_1_0;
-  public static final int DEFAULT_PORT = 8888;
+  private static final VersionOrdinal OLDER_THAN_CURRENT_VERSION =
+      Versioning.getVersionOrdinal((short) (Version.CURRENT_ORDINAL - 1));
+  private static final VersionOrdinal NEWER_THAN_CURRENT_VERSION =
+      Versioning.getVersionOrdinal((short) (Version.CURRENT_ORDINAL + 1));;
+  private static final int DEFAULT_PORT = 8888;
 
   private Services services;
   private MembershipConfig mockConfig;
@@ -334,7 +339,7 @@ public class GMSMembershipJUnitTest {
 
   @Test
   public void testIsMulticastAllowedWithOldVersionSurpriseMember() {
-    MembershipView<MemberIdentifier> view = createMembershipView(Version.CURRENT);
+    MembershipView<MemberIdentifier> view = createMembershipView();
     manager.addSurpriseMember(createSurpriseMember(OLDER_THAN_CURRENT_VERSION));
 
     manager.processView(view);
@@ -344,7 +349,7 @@ public class GMSMembershipJUnitTest {
 
   @Test
   public void testIsMulticastAllowedWithCurrentVersionSurpriseMember() {
-    MembershipView<MemberIdentifier> view = createMembershipView(Version.CURRENT);
+    MembershipView<MemberIdentifier> view = createMembershipView();
     manager.addSurpriseMember(createSurpriseMember(Version.CURRENT));
 
     manager.processView(view);
@@ -353,8 +358,19 @@ public class GMSMembershipJUnitTest {
   }
 
   @Test
+  public void testIsMulticastAllowedWithNewVersionSurpriseMember() {
+    MembershipView<MemberIdentifier> view = createMembershipView();
+    manager.addSurpriseMember(createSurpriseMember(NEWER_THAN_CURRENT_VERSION));
+
+    manager.processView(view);
+
+    assertThat(manager.getGMSManager().isMulticastAllowed()).isTrue();
+  }
+
+  @Test
   public void testIsMulticastAllowedWithOldVersionViewMember() {
-    MembershipView<MemberIdentifier> view = createMembershipView(OLDER_THAN_CURRENT_VERSION);
+    MembershipView<MemberIdentifier> view = createMembershipView();
+    view.getMembers().get(0).setVersionObjectForTest(OLDER_THAN_CURRENT_VERSION);
 
     manager.processView(view);
 
@@ -363,30 +379,39 @@ public class GMSMembershipJUnitTest {
 
   @Test
   public void testMulticastAllowedWithCurrentVersionViewMember() {
-    MembershipView<MemberIdentifier> view = createMembershipView(Version.CURRENT);
+    MembershipView<MemberIdentifier> view = createMembershipView();
 
     manager.processView(view);
 
     assertThat(manager.getGMSManager().isMulticastAllowed()).isTrue();
   }
 
-  private MemberIdentifier createSurpriseMember(Version version) {
+  @Test
+  public void testMulticastAllowedWithNewVersionViewMember() {
+    MembershipView<MemberIdentifier> view = createMembershipView();
+    view.getMembers().get(0).setVersionObjectForTest(NEWER_THAN_CURRENT_VERSION);
+
+    manager.processView(view);
+
+    assertThat(manager.getGMSManager().isMulticastAllowed()).isTrue();
+  }
+
+  private MemberIdentifier createSurpriseMember(VersionOrdinal version) {
     MemberIdentifier surpriseMember = createMemberID(DEFAULT_PORT + 5);
     surpriseMember.setVmViewId(3);
     surpriseMember.setVersionObjectForTest(version);
     return surpriseMember;
   }
 
-  private MembershipView<MemberIdentifier> createMembershipView(Version version) {
-    List<MemberIdentifier> viewMembers = createMemberIdentifiers(version);
+  private MembershipView<MemberIdentifier> createMembershipView() {
+    List<MemberIdentifier> viewMembers = createMemberIdentifiers();
     return new MembershipView<>(myMemberId, 2, viewMembers);
   }
 
-  private List<MemberIdentifier> createMemberIdentifiers(Version memberVersion) {
+  private List<MemberIdentifier> createMemberIdentifiers() {
     List<MemberIdentifier> viewMembers = new ArrayList<>();
     for (int i = 0; i < 2; ++i) {
       MemberIdentifier memberIdentifier = createMemberID(DEFAULT_PORT + 6 + i);
-      memberIdentifier.setVersionObjectForTest(memberVersion);
       viewMembers.add(memberIdentifier);
     }
     return viewMembers;
