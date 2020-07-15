@@ -159,6 +159,7 @@ public abstract class SessionDUnitTest {
                 String.class)
             .getHeaders();
         sessionCookie = resultHeaders.getFirst("Set-Cookie");
+        noteAdded = true;
       } catch (HttpServerErrorException e) {
         if (e.getMessage().contains("memberDeparted")) {
           // retry
