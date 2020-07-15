@@ -206,19 +206,13 @@ public class RegisterInterestList extends BaseCommand {
             serverConnection);
         serverConnection.setAsTrue(RESPONDED);
       } catch (Exception e) {
-        // If an interrupted exception is thrown , rethrow it
         checkForInterrupt(serverConnection, e);
-
-        // otherwise send the exception back to client
         writeChunkedException(clientMessage, e, serverConnection);
         serverConnection.setAsTrue(RESPONDED);
         return;
       }
 
       if (logger.isDebugEnabled()) {
-        // logger.debug(getName() + ": Sent chunk (1 of 1) of register interest
-        // response (" + chunkedResponseMsg.getBufferLength() + " bytes) for
-        // region " + regionName + " key " + key);
         logger.debug(
             "{}: Sent register interest response for the following {} keys in region {}: {}",
             serverConnection.getName(), numberOfKeys, regionName, keys);

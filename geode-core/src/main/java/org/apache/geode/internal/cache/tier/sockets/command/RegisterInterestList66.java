@@ -68,7 +68,6 @@ public class RegisterInterestList66 extends BaseCommand {
     serverConnection.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
     ChunkedMessage chunkedResponseMsg = serverConnection.getRegisterInterestResponseMessage();
 
-    // Retrieve the data from the message parts
     regionNamePart = clientMessage.getPart(0);
     regionName = regionNamePart.getCachedString();
 
@@ -152,9 +151,9 @@ public class RegisterInterestList66 extends BaseCommand {
       writeChunkedErrorResponse(clientMessage, MessageType.REGISTER_INTEREST_DATA_ERROR, errMessage,
           serverConnection);
       serverConnection.setAsTrue(RESPONDED);
+      return;
     }
 
-    // key not null
     LocalRegion region = (LocalRegion) serverConnection.getCache().getRegion(regionName);
     if (region == null) {
       logger.info("{}: Region named {} was not found during register interest list request.",
@@ -174,11 +173,11 @@ public class RegisterInterestList66 extends BaseCommand {
       serverConnection.getAcceptor().getCacheClientNotifier().registerClientInterest(regionName,
           keys, serverConnection.getProxyID(), isDurable, sendUpdatesAsInvalidates, true,
           regionDataPolicyPartBytes[0], true);
-    } catch (Exception e) {
+    } catch (Exception ex) {
       // If an interrupted exception is thrown , rethrow it
-      checkForInterrupt(serverConnection, e);
+      checkForInterrupt(serverConnection, ex);
       // Otherwise, write an exception message and continue
-      writeChunkedException(clientMessage, e, serverConnection);
+      writeChunkedException(clientMessage, ex, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       return;
     }
