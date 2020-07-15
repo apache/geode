@@ -85,7 +85,7 @@ public class RedisSessionDUnitTest extends SessionDUnitTest {
 
     String[] sessionNotes = getSessionNotes(APP2, sessionCookie);
 
-    assertThat(sessionNotes).containsExactly("noteFromClient2", "noteFromClient1");
+    assertThat(sessionNotes).containsExactlyInAnyOrder("noteFromClient2", "noteFromClient1");
   }
 
   @Test
