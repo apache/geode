@@ -188,7 +188,7 @@ public class RegisterInterestList66 extends BaseCommand {
 
     if (ccp == null) {
       IOException ioException = new IOException(
-          "CacheClientProxy for this client is no longer on the server , so registerInterest operation is unsuccessful");
+          "CacheClientProxy for this client is no longer on the server");
       writeChunkedException(clientMessage, ioException, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       return;
