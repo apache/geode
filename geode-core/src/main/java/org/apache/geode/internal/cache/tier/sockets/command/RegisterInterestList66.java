@@ -57,7 +57,7 @@ public class RegisterInterestList66 extends BaseCommand {
 
   @Override
   public void cmdExecute(Message clientMessage, ServerConnection serverConnection,
-                         SecurityService securityService, long start) throws IOException, InterruptedException {
+      SecurityService securityService, long start) throws IOException, InterruptedException {
     Part regionNamePart;
     String regionName;
     Object key = null;
