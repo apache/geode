@@ -112,18 +112,24 @@ public class RedisHash extends AbstractRedisData {
     while (iterator.hasNext()) {
       ByteArrayWrapper field = iterator.next();
       ByteArrayWrapper value = iterator.next();
-      boolean added;
+      boolean added = true;
+      boolean newField;
       if (nx) {
-        added = hashPutIfAbsent(field, value) == null;
+        newField = hashPutIfAbsent(field, value) == null;
+        added = newField;
       } else {
-        added = hashPut(field, value) == null;
+        newField = hashPut(field, value) == null;
       }
+
       if (added) {
         if (deltaInfo == null) {
           deltaInfo = new AddsDeltaInfo();
         }
         deltaInfo.add(field);
         deltaInfo.add(value);
+      }
+
+      if (newField) {
         fieldsAdded++;
       }
     }
