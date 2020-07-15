@@ -75,4 +75,13 @@ public class StrLenIntegrationTest {
         .isInstanceOf(JedisDataException.class)
         .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
   }
+
+  @Test
+  public void testStrlen_withBinaryData() {
+    byte[] zero = new byte[] {0};
+    jedis.set(zero, zero);
+
+    assertThat(jedis.strlen(zero)).isEqualTo(1);
+  }
+
 }
