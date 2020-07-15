@@ -655,8 +655,7 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
     }
   }
 
-  @VisibleForTesting
-  void memberRemoved(PersistentMemberID id, boolean revoked) {
+  private void memberRemoved(PersistentMemberID id, boolean revoked) {
     if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR_VERBOSE)) {
       logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE, "{}-{}: Member removed. persistentID={}",
           shortDiskStoreId(), regionPath, id);
@@ -767,7 +766,9 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
 
       // The oldId and newId could be the same if the member is retrying a GII. See bug #42051
       if (oldId != null && !oldId.equals(newId)) {
-        memberRemoved(oldId, false);
+        if (initialized) {
+          memberRemoved(oldId, false);
+        }
       }
     }
   }

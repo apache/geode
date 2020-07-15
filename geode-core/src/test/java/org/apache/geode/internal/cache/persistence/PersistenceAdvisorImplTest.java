@@ -22,9 +22,7 @@ import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -193,21 +191,6 @@ public class PersistenceAdvisorImplTest {
     persistenceAdvisorImpl.removeOlderMembers(aSet);
 
     assertThat(aSet).containsExactly(id_1, id_3, id_6);
-  }
-
-  @Test
-  public void prepareNewMemberRemovesOldPersistentMemberId() {
-    InternalDistributedMember sender = mock(InternalDistributedMember.class);
-    PersistentMemberID oldId = mock(PersistentMemberID.class);
-    PersistentMemberID newId = mock(PersistentMemberID.class);
-    when(cacheDistributionAdvisor.containsId(sender)).thenReturn(true);
-    PersistenceAdvisorImpl spy = spy(persistenceAdvisorImpl);
-    doNothing().when(spy).memberRemoved(oldId, false);
-
-    spy.prepareNewMember(sender, oldId, newId);
-
-    verify(persistentMemberView).memberOnline(newId);
-    verify(spy).memberRemoved(oldId, false);
   }
 
   @Test
