@@ -63,6 +63,14 @@ resources:
     repository: openjdk
     tag: 8
 
+- name: geode-benchmarks-image
+  type: git
+  source:
+    branch: ((geode-build-branch))
+    paths:
+    - infrastructure/scripts/aws/image
+    uri: https://github.com/((geode-fork))/geode-benchmarks.git
+
 - name: google-geode-builder
   type: git
   source:
@@ -227,6 +235,39 @@ jobs:
     params:
       build: build-concourse-dockerfile/ci/docker
       tag_as_latest: true
+
+- name: build-geode-benchmarks-image
+  public: ((public-pipelines))
+  serial: true
+  plan:
+  - in_parallel:
+    - get: geode-benchmarks-image
+      trigger: true
+    - get: alpine-tools-docker-image
+      passed: [build-alpine-tools-docker-image]
+  - task: build-image
+    timeout: 1h
+    image: alpine-tools-docker-image
+    config:
+      inputs:
+      - name: geode-benchmarks-image
+      outputs:
+      - name: results
+      platform: linux
+      params:
+        AWS_ACCESS_KEY_ID: ((benchmarks-access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((benchmarks-secret-access-key))
+        AWS_DEFAULT_REGION: us-west-2
+        AWS_REGION: us-west-2
+        PURPOSE: ((pipeline-prefix))geode-benchmarks
+      run:
+        path: bash
+        args:
+          - -ec
+          - |-
+            pushd geode-benchmarks-image/infrastructure/scripts/aws/image
+            packer build -var "purpose=${PURPOSE}" packer.json
+            popd
 
 - name: build-google-geode-builder
   public: ((public-pipelines))
