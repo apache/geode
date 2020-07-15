@@ -378,8 +378,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
     // incoming events will not be lost in terms of our global view.
     latestViewWriteLock.lock();
     try {
-      disableMulticastForRollingUpgrade = containsOldVersionMember(newView, Version.CURRENT);
-
+      setIsMulticastAllowedFrom(newView, surpriseMembers);
       // Save previous view, for delta analysis
       MembershipView<ID> priorView = latestView;
 
@@ -515,10 +514,16 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
     }
   }
 
-  protected boolean containsOldVersionMember(MembershipView<ID> newView,
-      VersionOrdinal referenceVersion) {
-    return Stream.concat(surpriseMembers.keySet().stream(), newView.getMembers().stream())
-        .anyMatch(member -> referenceVersion.isNewerThan(member.getVersionOrdinalObject()));
+  private void setIsMulticastAllowedFrom(final MembershipView<ID> newView,
+      final Map<ID, Long> surpriseMembers) {
+    disableMulticastForRollingUpgrade =
+        anyMemberHasOlderVersion(
+            Stream.concat(surpriseMembers.keySet().stream(), newView.getMembers().stream()));
+  }
+
+  private boolean anyMemberHasOlderVersion(final Stream<ID> members) {
+    return members
+        .anyMatch(member -> Version.CURRENT.isNewerThan(member.getVersionOrdinalObject()));
   }
 
   @Override

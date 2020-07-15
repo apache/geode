@@ -19,7 +19,6 @@ import static org.apache.geode.internal.serialization.DataSerializableFixedID.HI
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Matchers.isA;
@@ -66,6 +65,9 @@ import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
 public class GMSMembershipJUnitTest {
+
+  private static final Version OLDER_THAN_CURRENT_VERSION = Version.GEODE_1_1_0;
+  public static final int DEFAULT_PORT = 8888;
 
   private Services services;
   private MembershipConfig mockConfig;
@@ -141,7 +143,7 @@ public class GMSMembershipJUnitTest {
     Random r = new Random();
     mockMembers = new MemberIdentifier[5];
     for (int i = 0; i < mockMembers.length; i++) {
-      mockMembers[i] = createMemberID(8888 + i);
+      mockMembers[i] = createMemberID(DEFAULT_PORT + i);
       uuid = new UUID(r.nextLong(), r.nextLong());
       mockMembers[i].setUUID(uuid);
     }
@@ -177,7 +179,7 @@ public class GMSMembershipJUnitTest {
     MemberIdentifier myGMSMemberId = myMemberId;
     List<MemberIdentifier> gmsMembers =
         members.stream().map(x -> ((MemberIdentifier) x)).collect(Collectors.toList());
-    manager.getGMSManager().installView(new GMSMembershipView(myGMSMemberId, 1, gmsMembers));
+    manager.getGMSManager().installView(new GMSMembershipView<>(myGMSMemberId, 1, gmsMembers));
     MemberIdentifier[] destinations = new MemberIdentifier[] {mockMembers[0]};
     Set<MemberIdentifier> failures =
         manager.send(destinations, m);
@@ -221,7 +223,7 @@ public class GMSMembershipJUnitTest {
     // suspect a member
     MemberIdentifier suspectMember = mockMembers[1];
     manager.handleOrDeferSuspect(
-        new SuspectMember(mockMembers[0], suspectMember, "testing"));
+        new SuspectMember<>(mockMembers[0], suspectMember, "testing"));
     // suspect messages aren't queued - they're ignored before joining the system
     assertEquals(2, manager.getStartupEvents().size());
     verify(listener, never()).memberSuspect(suspectMember, mockMembers[0], "testing");
@@ -236,7 +238,7 @@ public class GMSMembershipJUnitTest {
     // this view officially adds surpriseMember2
     viewMembers = Arrays
         .asList(new MemberIdentifier[] {mockMembers[0], myMemberId, surpriseMember2});
-    manager.handleOrDeferViewEvent(new MembershipView(myMemberId, 3, viewMembers));
+    manager.handleOrDeferViewEvent(new MembershipView<>(myMemberId, 3, viewMembers));
     assertEquals(4, manager.getStartupEvents().size());
 
     // add a surprise member that will be shunned due to it's having
@@ -251,11 +253,11 @@ public class GMSMembershipJUnitTest {
     mockMembers[4].setVmViewId(4);
     viewMembers = Arrays.asList(new MemberIdentifier[] {mockMembers[0], myMemberId,
         surpriseMember2, mockMembers[4]});
-    manager.handleOrDeferViewEvent(new MembershipView(myMemberId, 4, viewMembers));
+    manager.handleOrDeferViewEvent(new MembershipView<>(myMemberId, 4, viewMembers));
     assertEquals(6, manager.getStartupEvents().size());
 
     // exercise the toString methods for code coverage
-    for (StartupEvent ev : manager.getStartupEvents()) {
+    for (StartupEvent<MemberIdentifier> ev : manager.getStartupEvents()) {
       ev.toString();
     }
 
@@ -273,14 +275,14 @@ public class GMSMembershipJUnitTest {
     // for code coverage also install a view after we finish joining but before
     // event processing has started. This should notify the distribution manager
     // with a LocalViewMessage to process the view
-    manager.handleOrDeferViewEvent(new MembershipView(myMemberId, 5, viewMembers));
+    manager.handleOrDeferViewEvent(new MembershipView<>(myMemberId, 5, viewMembers));
     await().untilAsserted(() -> assertEquals(manager.getView().getViewId(), 5));
 
     // process a suspect now - it will be passed to the listener
     reset(listener);
     suspectMember = mockMembers[1];
     manager.handleOrDeferSuspect(
-        new SuspectMember(mockMembers[0], suspectMember, "testing"));
+        new SuspectMember<>(mockMembers[0], suspectMember, "testing"));
     verify(listener).memberSuspect(suspectMember, mockMembers[0], "testing");
   }
 
@@ -330,58 +332,63 @@ public class GMSMembershipJUnitTest {
     assertThat(spy.getStartupEvents()).isEmpty();
   }
 
-  private void addSurpriseMemberWithVersion(Version version) {
-    MemberIdentifier surpriseMember = myMemberId;
+  @Test
+  public void testIsMulticastAllowedWithOldVersionSurpriseMember() {
+    MembershipView<MemberIdentifier> view = createMembershipView(Version.CURRENT);
+    manager.addSurpriseMember(createSurpriseMember(OLDER_THAN_CURRENT_VERSION));
+
+    manager.processView(view);
+
+    assertThat(manager.getGMSManager().isMulticastAllowed()).isFalse();
+  }
+
+  @Test
+  public void testIsMulticastAllowedWithCurrentVersionSurpriseMember() {
+    MembershipView<MemberIdentifier> view = createMembershipView(Version.CURRENT);
+    manager.addSurpriseMember(createSurpriseMember(Version.CURRENT));
+
+    manager.processView(view);
+
+    assertThat(manager.getGMSManager().isMulticastAllowed()).isTrue();
+  }
+
+  @Test
+  public void testIsMulticastAllowedWithOldVersionViewMember() {
+    MembershipView<MemberIdentifier> view = createMembershipView(OLDER_THAN_CURRENT_VERSION);
+
+    manager.processView(view);
+
+    assertThat(manager.getGMSManager().isMulticastAllowed()).isFalse();
+  }
+
+  @Test
+  public void testMulticastAllowedWithCurrentVersionViewMember() {
+    MembershipView<MemberIdentifier> view = createMembershipView(Version.CURRENT);
+
+    manager.processView(view);
+
+    assertThat(manager.getGMSManager().isMulticastAllowed()).isTrue();
+  }
+
+  private MemberIdentifier createSurpriseMember(Version version) {
+    MemberIdentifier surpriseMember = createMemberID(DEFAULT_PORT + 5);
     surpriseMember.setVmViewId(3);
     surpriseMember.setVersionObjectForTest(version);
-    manager.addSurpriseMember(surpriseMember);
+    return surpriseMember;
   }
 
-  @Test
-  public void testMulticastWithOldVersionSurpriseMember() {
-    MembershipView<MemberIdentifier> view = new MembershipView<>(myMemberId, 2, members);
-    addSurpriseMemberWithVersion(Version.GEODE_1_1_0);
-
-    assertTrue(manager.containsOldVersionMember(view, Version.CURRENT));
+  private MembershipView<MemberIdentifier> createMembershipView(Version version) {
+    List<MemberIdentifier> viewMembers = createMemberIdentifiers(version);
+    return new MembershipView<>(myMemberId, 2, viewMembers);
   }
 
-  @Test
-  public void testMulticastWithCurrentVersionSurpriseMember() {
-    MembershipView<MemberIdentifier> view = new MembershipView<>(myMemberId, 2, members);
-    addSurpriseMemberWithVersion(Version.CURRENT);
-
-    assertFalse(manager.containsOldVersionMember(view, Version.CURRENT));
-  }
-
-  @Test
-  public void testMulticastWithHigherVersionSurpriseMember() {
-    MembershipView<MemberIdentifier> view = new MembershipView<>(myMemberId, 2, members);
-    addSurpriseMemberWithVersion(Version.CURRENT);
-
-    assertFalse(manager.containsOldVersionMember(view, Version.GEODE_1_1_0));
-  }
-
-  @Test
-  public void testMulticastWithOldVersionViewMember() {
-    members.get(0).setVersionObjectForTest(Version.GEODE_1_1_0);
-    MembershipView<MemberIdentifier> view = new MembershipView<>(myMemberId, 2, members);
-
-    assertTrue(manager.containsOldVersionMember(view, Version.CURRENT));
-  }
-
-  @Test
-  public void testMulticastWithCurrentVersionViewMember() {
-    members.get(0).setVersionObjectForTest(Version.CURRENT);
-    MembershipView<MemberIdentifier> view = new MembershipView<>(myMemberId, 2, members);
-
-    assertFalse(manager.containsOldVersionMember(view, Version.CURRENT));
-  }
-
-  @Test
-  public void testMulticastWithHigherVersionViewMember() {
-    members.get(0).setVersionObjectForTest(Version.CURRENT);
-    MembershipView<MemberIdentifier> view = new MembershipView<>(myMemberId, 2, members);
-
-    assertFalse(manager.containsOldVersionMember(view, Version.GEODE_1_1_0));
+  private List<MemberIdentifier> createMemberIdentifiers(Version memberVersion) {
+    List<MemberIdentifier> viewMembers = new ArrayList<>();
+    for (int i = 0; i < 2; ++i) {
+      MemberIdentifier memberIdentifier = createMemberID(DEFAULT_PORT + 6 + i);
+      memberIdentifier.setVersionObjectForTest(memberVersion);
+      viewMembers.add(memberIdentifier);
+    }
+    return viewMembers;
   }
 }
