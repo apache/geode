@@ -46,32 +46,27 @@ public class UnregisterInterestList extends BaseCommand {
   private UnregisterInterestList() {}
 
   @Override
-  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
-      final SecurityService securityService, long start)
+  public void cmdExecute(Message clientMessage, ServerConnection serverConnection,
+      SecurityService securityService, long start)
       throws IOException, ClassNotFoundException {
-    Part regionNamePart = null, keyPart = null, numberOfKeysPart = null;
-    String regionName = null;
-    Object key = null;
-    List keys = null;
-    int numberOfKeys = 0, partNumber = 0;
+    Part regionNamePart, keyPart, numberOfKeysPart;
+    String regionName;
+    Object key;
+    List<Object> keys;
+    int numberOfKeys, partNumber;
     serverConnection.setAsTrue(REQUIRES_RESPONSE);
 
-    // bserverStats.incLong(readDestroyRequestTimeId,
-    // DistributionStats.getStatTime() - start);
-    // bserverStats.incInt(destroyRequestsId, 1);
-    // start = DistributionStats.getStatTime();
-    // Retrieve the data from the message parts
     regionNamePart = clientMessage.getPart(0);
     regionName = regionNamePart.getCachedString();
 
     Part isClosingListPart = clientMessage.getPart(1);
     byte[] isClosingListPartBytes = (byte[]) isClosingListPart.getObject();
     boolean isClosingList = isClosingListPartBytes[0] == 0x01;
-    boolean keepalive = false;
+    boolean keepAlive;
     try {
-      Part keepalivePart = clientMessage.getPart(2);
-      byte[] keepalivePartBytes = (byte[]) keepalivePart.getObject();
-      keepalive = keepalivePartBytes[0] == 0x01;
+      Part keepAlivePart = clientMessage.getPart(2);
+      byte[] keepAlivePartBytes = (byte[]) keepAlivePart.getObject();
+      keepAlive = keepAlivePartBytes[0] == 0x01;
     } catch (Exception e) {
       writeChunkedException(clientMessage, e, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
@@ -81,7 +76,7 @@ public class UnregisterInterestList extends BaseCommand {
     numberOfKeys = numberOfKeysPart.getInt();
 
     partNumber = 4;
-    keys = new ArrayList();
+    keys = new ArrayList<>();
     for (int i = 0; i < numberOfKeys; i++) {
       keyPart = clientMessage.getPart(partNumber + i);
       try {
@@ -107,15 +102,12 @@ public class UnregisterInterestList extends BaseCommand {
         errMessage =
             "The input list of keys is empty and the input region name is null for the unregister interest request.";
       } else if (keys.isEmpty()) {
-        errMessage =
-            "The input list of keys for the unregister interest request is empty.";
+        errMessage = "The input list of keys for the unregister interest request is empty.";
       } else if (regionName == null) {
-        errMessage =
-            "The input region name for the unregister interest request is null.";
+        errMessage = "The input region name for the unregister interest request is null.";
       }
-      String s = errMessage;
-      logger.warn("{}: {}", serverConnection.getName(), s);
-      writeErrorResponse(clientMessage, MessageType.UNREGISTER_INTEREST_DATA_ERROR, s,
+      logger.warn("{}: {}", serverConnection.getName(), errMessage);
+      writeErrorResponse(clientMessage, MessageType.UNREGISTER_INTEREST_DATA_ERROR, errMessage,
           serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       return;
@@ -130,13 +122,13 @@ public class UnregisterInterestList extends BaseCommand {
     }
 
 
-    AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
-    if (authzRequest != null) {
+    AuthorizeRequest authorizeRequest = serverConnection.getAuthzRequest();
+    if (authorizeRequest != null) {
       if (!DynamicRegionFactory.regionIsDynamicRegionList(regionName)) {
         try {
           UnregisterInterestOperationContext unregisterContext =
-              authzRequest.unregisterInterestListAuthorize(regionName, keys);
-          keys = (List) unregisterContext.getKey();
+              authorizeRequest.unregisterInterestListAuthorize(regionName, keys);
+          keys = (List<Object>) unregisterContext.getKey();
         } catch (NotAuthorizedException ex) {
           writeException(clientMessage, ex, false, serverConnection);
           serverConnection.setAsTrue(RESPONDED);
@@ -144,27 +136,10 @@ public class UnregisterInterestList extends BaseCommand {
         }
       }
     }
-    // Yogesh : bug fix for 36457 :
-    /*
-     * Region destroy message from server to client results in client calling unregister to server
-     * (an unnecessary callback). The unregister encounters an error because the region has been
-     * destroyed on the server and hence falsely marks the server dead.
-     */
-    /*
-     * Region region = crHelper.getRegion(regionName); if (region == null) {
-     * logger.warning(this.name + ": Region named " + regionName + " was not found during register
-     * interest list request"); writeErrorResponse(msg, MessageType.UNREGISTER_INTEREST_DATA_ERROR);
-     * responded = true; } else {
-     */
-    // Register interest
-    serverConnection.getAcceptor().getCacheClientNotifier().unregisterClientInterest(regionName,
-        keys, isClosingList, serverConnection.getProxyID(), keepalive);
 
-    // Update the statistics and write the reply
-    // bserverStats.incLong(processDestroyTimeId,
-    // DistributionStats.getStatTime() - start);
-    // start = DistributionStats.getStatTime(); WHY ARE GETTING START AND NOT
-    // USING IT?
+    serverConnection.getAcceptor().getCacheClientNotifier().unregisterClientInterest(regionName,
+        keys, isClosingList, serverConnection.getProxyID(), keepAlive);
+
     writeReply(clientMessage, serverConnection);
     serverConnection.setAsTrue(RESPONDED);
     if (logger.isDebugEnabled()) {
@@ -172,11 +147,5 @@ public class UnregisterInterestList extends BaseCommand {
           "{}: Sent unregister interest response for the following {} keys in region {}: {}",
           serverConnection.getName(), numberOfKeys, regionName, keys);
     }
-    // bserverStats.incLong(writeDestroyResponseTimeId,
-    // DistributionStats.getStatTime() - start);
-    // bserverStats.incInt(destroyResponsesId, 1);
-    // }
-
   }
-
 }
