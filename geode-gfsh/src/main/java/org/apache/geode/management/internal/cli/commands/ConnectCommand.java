@@ -168,22 +168,22 @@ public class ConnectCommand extends OfflineGfshCommand {
       return result;
     }
 
-    String gfshVersion = gfsh.getVersion();
+    // since 1.14, only allow gfsh to connect to cluster that's older than 1.10
     String remoteVersion = null;
+    String gfshVersion = gfsh.getVersion();
     try {
-      String gfshGeodeSerializationVersion = gfsh.getGeodeSerializationVersion();
-      String remoteGeodeSerializationVersion = invoker.getRemoteGeodeSerializationVersion();
-      if (hasSameMajorMinor(gfshGeodeSerializationVersion, remoteGeodeSerializationVersion)) {
+      remoteVersion = invoker.getRemoteVersion();
+      int minorVersion = Integer.parseInt(versionComponent(remoteVersion, VERSION_MINOR));
+      if (versionComponent(remoteVersion, VERSION_MAJOR).equals("1") && minorVersion >= 10 ||
+          versionComponent(remoteVersion, VERSION_MAJOR).equals("9") && minorVersion >= 9) {
+        InfoResultModel versionInfo = result.addInfo("versionInfo");
+        versionInfo.addLine("You are connected to a cluster of version: " + remoteVersion);
         return result;
       }
-    } catch (Exception e) {
-      // we failed to get the remote geode serialization version; get remote product version for
-      // error message
-      try {
-        remoteVersion = invoker.getRemoteVersion();
-      } catch (Exception ex) {
-        gfsh.logInfo("failed to get the the remote version.", ex);
-      }
+    } catch (Exception ex) {
+      // if unable to get the remote version, we are certainly talking to
+      // a pre-1.5 cluster
+      gfsh.logInfo("failed to get the the remote version.", ex);
     }
 
     // will reach here only when remoteVersion is not available or does not match
@@ -195,13 +195,6 @@ public class ConnectCommand extends OfflineGfshCommand {
       return ResultModel.createError(String.format(
           "Cannot use a %s gfsh client to connect to a %s cluster.", gfshVersion, remoteVersion));
     }
-  }
-
-  private static boolean hasSameMajorMinor(String gfshVersion, String remoteVersion) {
-    return versionComponent(remoteVersion, VERSION_MAJOR)
-        .equalsIgnoreCase(versionComponent(gfshVersion, VERSION_MAJOR))
-        && versionComponent(remoteVersion, VERSION_MINOR)
-            .equalsIgnoreCase(versionComponent(gfshVersion, VERSION_MINOR));
   }
 
   private static String versionComponent(String version, int component) {
