@@ -382,57 +382,39 @@ public class ConnectCommandTest {
   }
 
   @Test
-  public void connectToManagerWithGreaterPatchVersion() {
-    when(gfsh.getGeodeSerializationVersion()).thenReturn("1.5.1");
-    when(operationInvoker.getRemoteGeodeSerializationVersion()).thenReturn("1.5.2");
+  public void connectToManagerOlderThan1_10() {
+    when(operationInvoker.getRemoteVersion()).thenReturn("1.10");
     when(operationInvoker.isConnected()).thenReturn(true);
-    when(resultModel.getStatus()).thenReturn(Result.Status.OK);
+
+    ResultModel resultModel = new ResultModel();
+    when(connectCommand.jmxConnect(any(), anyBoolean(), any(), any(), anyBoolean()))
+        .thenReturn(resultModel);
 
     gfshParserRule.executeAndAssertThat(connectCommand, "connect --locator=localhost:4040")
-        .statusIsSuccess();
+        .statusIsSuccess()
+        .containsOutput("You are connected to a cluster of version: 1.10");
   }
 
   @Test
-  public void connectToManagerWithNoPatchVersion() {
-    when(gfsh.getGeodeSerializationVersion()).thenReturn("1.5.1");
-    when(operationInvoker.getRemoteGeodeSerializationVersion()).thenReturn("1.5");
-    when(operationInvoker.isConnected()).thenReturn(true);
-    when(resultModel.getStatus()).thenReturn(Result.Status.OK);
-
-    gfshParserRule.executeAndAssertThat(connectCommand, "connect --locator=localhost:4040")
-        .statusIsSuccess();
-  }
-
-  @Test
-  public void connectToManagerWithLessorPatchVersion() {
-    when(gfsh.getGeodeSerializationVersion()).thenReturn("1.5.1");
-    when(operationInvoker.getRemoteGeodeSerializationVersion()).thenReturn("1.5.0");
-    when(operationInvoker.isConnected()).thenReturn(true);
-    when(resultModel.getStatus()).thenReturn(Result.Status.OK);
-
-    gfshParserRule.executeAndAssertThat(connectCommand, "connect --locator=localhost:4040")
-        .statusIsSuccess();
-  }
-
-  @Test
-  public void connectToOlderManagerWithNewerGfsh() {
-    when(gfsh.getVersion()).thenReturn("1.5");
+  public void connectToOlderManagerWithNoRemoteVersion() {
+    when(gfsh.getVersion()).thenReturn("1.14");
     when(operationInvoker.getRemoteVersion())
         .thenThrow(new RuntimeException("release version not available"));
     when(operationInvoker.isConnected()).thenReturn(true);
 
     gfshParserRule.executeAndAssertThat(connectCommand, "connect --locator=localhost:4040")
-        .statusIsError().containsOutput("Cannot use a 1.5 gfsh client to connect to this cluster.");
+        .statusIsError()
+        .containsOutput("Cannot use a 1.14 gfsh client to connect to this cluster.");
   }
 
   @Test
-  public void connectToAValidManager() {
-    when(gfsh.getGeodeSerializationVersion()).thenReturn("1.5");
-    when(operationInvoker.getRemoteGeodeSerializationVersion()).thenReturn("1.5");
+  public void connectToManagerBefore1_10() {
+    when(gfsh.getVersion()).thenReturn("1.14");
+    when(operationInvoker.getRemoteVersion()).thenReturn("1.9");
     when(operationInvoker.isConnected()).thenReturn(true);
 
-    when(resultModel.getStatus()).thenReturn(Result.Status.OK);
     gfshParserRule.executeAndAssertThat(connectCommand, "connect --locator=localhost:4040")
-        .statusIsSuccess();
+        .statusIsError()
+        .containsOutput("Cannot use a 1.14 gfsh client to connect to a 1.9 cluster");
   }
 }
