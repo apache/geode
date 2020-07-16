@@ -395,7 +395,7 @@ public class PartitionedRegionClear {
     }
   }
 
-  static class LockForListenerAndClientNotification {
+  class LockForListenerAndClientNotification {
 
     private boolean locked = false;
 
