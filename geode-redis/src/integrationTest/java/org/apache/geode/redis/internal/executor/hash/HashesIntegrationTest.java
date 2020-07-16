@@ -76,13 +76,6 @@ public class HashesIntegrationTest {
   }
 
   @Test
-  public void testing() {
-    String key = "key";
-    jedis.hset(key, "field", "value");
-    jedis.hset(key, "field", "value");
-  }
-
-  @Test
   public void testHMSet_givenWrongNumberOfArguments() {
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HMSET))
         .hasMessageContaining("wrong number of arguments");

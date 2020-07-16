@@ -30,8 +30,8 @@ public class RedisSessionDUnitTest extends SessionDUnitTest {
   @BeforeClass
   public static void setup() {
     SessionDUnitTest.setup();
-    startSpringApp(APP1, SERVER1, SERVER2, DEFAULT_SESSION_TIMEOUT);
-    startSpringApp(APP2, SERVER2, SERVER1, DEFAULT_SESSION_TIMEOUT);
+    startSpringApp(APP1, DEFAULT_SESSION_TIMEOUT, ports.get(SERVER1), ports.get(SERVER2));
+    startSpringApp(APP2, DEFAULT_SESSION_TIMEOUT, ports.get(SERVER2), ports.get(SERVER1));
   }
 
   @Test

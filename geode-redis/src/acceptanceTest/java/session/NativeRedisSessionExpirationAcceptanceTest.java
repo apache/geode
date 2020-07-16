@@ -41,8 +41,8 @@ public class NativeRedisSessionExpirationAcceptanceTest extends SessionExpiratio
     ports.put(SERVER1, redisContainer.getFirstMappedPort());
 
     jedisConnetedToServer1 = new Jedis("localhost", ports.get(SERVER1), JEDIS_TIMEOUT);
-    startSpringApp(APP1, SERVER1, SHORT_SESSION_TIMEOUT);
-    startSpringApp(APP2, SERVER1, SHORT_SESSION_TIMEOUT);
+    startSpringApp(APP1, SHORT_SESSION_TIMEOUT, ports.get(SERVER1));
+    startSpringApp(APP2, SHORT_SESSION_TIMEOUT, ports.get(SERVER1));
   }
 
   @Test
