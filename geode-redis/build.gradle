@@ -53,12 +53,18 @@ dependencies {
   integrationTestRuntime(project(':geode-log4j'))
 
   acceptanceTestImplementation(sourceSets.integrationTest.output)
+  acceptanceTestImplementation(sourceSets.distributedTest.output)
   acceptanceTestImplementation(sourceSets.commonTest.output)
   acceptanceTestImplementation(project(':geode-dunit'))
   acceptanceTestImplementation(project(':geode-junit'))
   acceptanceTestImplementation('redis.clients:jedis')
   acceptanceTestImplementation('org.testcontainers:testcontainers')
   acceptanceTestRuntime(project(':geode-log4j'))
+  acceptanceTestImplementation('org.springframework.boot:spring-boot-starter-web') {
+    exclude module: 'spring-boot-starter-tomcat'
+  }
+  acceptanceTestImplementation('org.springframework.boot:spring-boot-starter-data-redis')
+  acceptanceTestImplementation('org.springframework.session:spring-session-data-redis')
 
   distributedTestCompile('org.apache.logging.log4j:log4j-core')
   distributedTestImplementation(project(':geode-dunit'))

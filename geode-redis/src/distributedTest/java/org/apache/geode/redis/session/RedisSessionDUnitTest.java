@@ -25,7 +25,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.test.junit.categories.RedisTest;
 
 @Category({RedisTest.class})
-public class RedisSessionDistDUnitTest extends SessionDUnitTest {
+public class RedisSessionDUnitTest extends SessionDUnitTest {
 
   @BeforeClass
   public static void setup() {
@@ -85,7 +85,7 @@ public class RedisSessionDistDUnitTest extends SessionDUnitTest {
 
     String[] sessionNotes = getSessionNotes(APP2, sessionCookie);
 
-    assertThat(sessionNotes).containsExactly("noteFromClient2", "noteFromClient1");
+    assertThat(sessionNotes).containsExactlyInAnyOrder("noteFromClient2", "noteFromClient1");
   }
 
   @Test
@@ -112,7 +112,11 @@ public class RedisSessionDistDUnitTest extends SessionDUnitTest {
 
       assertThat(sessionNotes).containsExactly("noteFromClient2");
     } finally {
-      startSpringApp(APP2, SERVER1, SERVER2, DEFAULT_SESSION_TIMEOUT);
+      if (ports.get(SERVER2) == null) {
+        startSpringApp(APP2, SERVER1, DEFAULT_SESSION_TIMEOUT);
+      } else {
+        startSpringApp(APP2, SERVER1, SERVER2, DEFAULT_SESSION_TIMEOUT);
+      }
     }
   }
 }

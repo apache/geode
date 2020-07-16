@@ -16,7 +16,9 @@
 package org.apache.geode.redis.session;
 
 import java.net.HttpCookie;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,11 +67,12 @@ public abstract class SessionDUnitTest {
   protected static final int APP1 = 3;
   protected static final int APP2 = 4;
 
-  private static final Map<Integer, Integer> ports = new HashMap<>();
+  protected static final Map<Integer, Integer> ports = new HashMap<>();
   public static ConfigurableApplicationContext springApplicationContext;
 
   protected static Jedis jedisConnetedToServer1;
-  private static final int JEDIS_TIMEOUT = Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
+  protected static final int JEDIS_TIMEOUT =
+      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @BeforeClass
   public static void setup() {
@@ -109,6 +112,19 @@ public abstract class SessionDUnitTest {
     });
   }
 
+  protected static void startSpringApp(int sessionApp, int primaryServer, long sessionTimeout) {
+    int primaryRedisPort = ports.get(primaryServer);
+    int httpPort = ports.get(sessionApp);
+    VM host = cluster.getVM(sessionApp);
+    host.invoke("Start a Spring app", () -> {
+      System.setProperty("server.port", "" + httpPort);
+      System.setProperty("spring.redis.port", "" + primaryRedisPort);
+      System.setProperty("server.servlet.session.timeout", "" + sessionTimeout + "s");
+      springApplicationContext = SpringApplication.run(
+          RedisSpringTestApplication.class, "" + primaryRedisPort);
+    });
+  }
+
   static void startSpringApp(int sessionApp, int primaryServer, int secondaryServer,
       long sessionTimeout) {
     int primaryRedisPort = ports.get(primaryServer);
@@ -131,15 +147,29 @@ public abstract class SessionDUnitTest {
 
   protected String createNewSessionWithNote(int sessionApp, String note) {
     HttpEntity<String> request = new HttpEntity<>(note);
-    HttpHeaders resultHeaders = new RestTemplate()
-        .postForEntity(
-            "http://localhost:" + ports.get(sessionApp)
-                + "/addSessionNote",
-            request,
-            String.class)
-        .getHeaders();
+    boolean noteAdded = false;
+    String sessionCookie = "";
+    do {
+      try {
+        HttpHeaders resultHeaders = new RestTemplate()
+            .postForEntity(
+                "http://localhost:" + ports.get(sessionApp)
+                    + "/addSessionNote",
+                request,
+                String.class)
+            .getHeaders();
+        sessionCookie = resultHeaders.getFirst("Set-Cookie");
+        noteAdded = true;
+      } catch (HttpServerErrorException e) {
+        if (e.getMessage().contains("memberDeparted")) {
+          // retry
+        } else {
+          throw e;
+        }
+      }
+    } while (!noteAdded);
 
-    return resultHeaders.getFirst("Set-Cookie");
+    return sessionCookie;
   }
 
   protected String[] getSessionNotes(int sessionApp, String sessionCookie) {
@@ -172,6 +202,8 @@ public abstract class SessionDUnitTest {
   void addNoteToSession(int sessionApp, String sessionCookie, String note) {
     HttpHeaders requestHeaders = new HttpHeaders();
     requestHeaders.add("Cookie", sessionCookie);
+    List<String> notes = new ArrayList<>();
+    Collections.addAll(notes, getSessionNotes(sessionApp, sessionCookie));
     HttpEntity<String> request = new HttpEntity<>(note, requestHeaders);
     boolean noteAdded = false;
     do {
@@ -184,8 +216,13 @@ public abstract class SessionDUnitTest {
             .getHeaders();
         noteAdded = true;
       } catch (HttpServerErrorException e) {
-        if (e.getMessage().contains("Internal Server Error")) {
-          // retry
+        if (e.getMessage().contains("memberDeparted")) {
+          List<String> updatedNotes = new ArrayList<>();
+          Collections.addAll(updatedNotes, getSessionNotes(sessionApp, sessionCookie));
+          if (notes.containsAll(updatedNotes)) {
+            noteAdded = true;
+          }
+          e.printStackTrace();
         } else {
           throw e;
         }
