@@ -89,6 +89,9 @@ public class OnlineCommandProcessorTest {
   public void handlesParsingError() {
     ResultModel commandResult = onlineCommandProcessor.executeCommand("foo --bar");
     assertThat(commandResult).isInstanceOf(ResultModel.class);
-    assertThat(commandResult.toString()).contains("Could not parse command string. foo --bar");
+    assertThat(commandResult.toString())
+        .contains("Could not parse command string. foo --bar")
+        .contains(
+            "The command or some options in this command may not be supported by this locator");
   }
 }
