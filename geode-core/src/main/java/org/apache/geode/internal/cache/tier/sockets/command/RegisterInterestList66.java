@@ -22,11 +22,11 @@ import org.apache.geode.cache.DynamicRegionFactory;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.operations.RegisterInterestOperationContext;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
@@ -56,20 +56,18 @@ public class RegisterInterestList66 extends BaseCommand {
   RegisterInterestList66() {}
 
   @Override
-  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
-      final SecurityService securityService, long start) throws IOException, InterruptedException {
-    Part regionNamePart = null, keyPart = null;
-    String regionName = null;
+  public void cmdExecute(Message clientMessage, ServerConnection serverConnection,
+      SecurityService securityService, long start) throws IOException, InterruptedException {
+    Part regionNamePart;
+    String regionName;
     Object key = null;
     InterestResultPolicy policy;
-    List keys = null;
-    CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
-    int numberOfKeys = 0, partNumber = 0;
+    List<Object> keys;
+    int numberOfKeys, partNumber;
     serverConnection.setAsTrue(REQUIRES_RESPONSE);
     serverConnection.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
     ChunkedMessage chunkedResponseMsg = serverConnection.getRegisterInterestResponseMessage();
 
-    // Retrieve the data from the message parts
     regionNamePart = clientMessage.getPart(0);
     regionName = regionNamePart.getCachedString();
 
@@ -81,7 +79,7 @@ public class RegisterInterestList66 extends BaseCommand {
       serverConnection.setAsTrue(RESPONDED);
       return;
     }
-    boolean isDurable = false;
+    boolean isDurable;
     try {
       Part durablePart = clientMessage.getPart(2);
       byte[] durablePartBytes = (byte[]) durablePart.getObject();
@@ -110,7 +108,7 @@ public class RegisterInterestList66 extends BaseCommand {
     partNumber = 3;
     Part list = clientMessage.getPart(partNumber);
     try {
-      keys = (List) list.getObject();
+      keys = (List<Object>) list.getObject();
       numberOfKeys = keys.size();
     } catch (Exception e) {
       writeChunkedException(clientMessage, e, serverConnection);
@@ -118,7 +116,7 @@ public class RegisterInterestList66 extends BaseCommand {
       return;
     }
 
-    boolean sendUpdatesAsInvalidates = false;
+    boolean sendUpdatesAsInvalidates;
     try {
       Part notifyPart = clientMessage.getPart(partNumber + 1);
       byte[] notifyPartBytes = (byte[]) notifyPart.getObject();
@@ -153,9 +151,9 @@ public class RegisterInterestList66 extends BaseCommand {
       writeChunkedErrorResponse(clientMessage, MessageType.REGISTER_INTEREST_DATA_ERROR, errMessage,
           serverConnection);
       serverConnection.setAsTrue(RESPONDED);
+      return;
     }
 
-    // key not null
     LocalRegion region = (LocalRegion) serverConnection.getCache().getRegion(regionName);
     if (region == null) {
       logger.info("{}: Region named {} was not found during register interest list request.",
@@ -163,12 +161,12 @@ public class RegisterInterestList66 extends BaseCommand {
     }
     try {
       securityService.authorize(Resource.DATA, Operation.READ, regionName);
-      AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
-      if (authzRequest != null) {
+      AuthorizeRequest authorizeRequest = serverConnection.getAuthzRequest();
+      if (authorizeRequest != null) {
         if (!DynamicRegionFactory.regionIsDynamicRegionList(regionName)) {
           RegisterInterestOperationContext registerContext =
-              authzRequest.registerInterestListAuthorize(regionName, keys, policy);
-          keys = (List) registerContext.getKey();
+              authorizeRequest.registerInterestListAuthorize(regionName, keys, policy);
+          keys = (List<Object>) registerContext.getKey();
         }
       }
       // Register interest
@@ -184,8 +182,19 @@ public class RegisterInterestList66 extends BaseCommand {
       return;
     }
 
-    boolean isPrimary = serverConnection.getAcceptor().getCacheClientNotifier()
-        .getClientProxy(serverConnection.getProxyID()).isPrimary();
+    CacheClientProxy ccp = serverConnection.getAcceptor().getCacheClientNotifier()
+        .getClientProxy(serverConnection.getProxyID());
+
+    if (ccp == null) {
+      IOException ioException = new IOException(
+          "CacheClientProxy for this client is no longer on the server");
+      writeChunkedException(clientMessage, ioException, serverConnection);
+      serverConnection.setAsTrue(RESPONDED);
+      return;
+    }
+
+    boolean isPrimary = ccp.isPrimary();
+
     if (!isPrimary) {
       chunkedResponseMsg.setMessageType(MessageType.RESPONSE_FROM_SECONDARY);
       chunkedResponseMsg.setTransactionId(clientMessage.getTransactionId());
@@ -209,10 +218,7 @@ public class RegisterInterestList66 extends BaseCommand {
             policy, serverConnection);
         serverConnection.setAsTrue(RESPONDED);
       } catch (Exception e) {
-        // If an interrupted exception is thrown , rethrow it
         checkForInterrupt(serverConnection, e);
-
-        // otherwise send the exception back to client
         writeChunkedException(clientMessage, e, serverConnection);
         serverConnection.setAsTrue(RESPONDED);
         return;

@@ -44,13 +44,13 @@ public class UnregisterInterest extends BaseCommand {
   UnregisterInterest() {}
 
   @Override
-  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
-      final SecurityService securityService, long start)
+  public void cmdExecute(Message clientMessage, ServerConnection serverConnection,
+      SecurityService securityService, long start)
       throws ClassNotFoundException, IOException {
-    Part regionNamePart = null, keyPart = null;
-    String regionName = null;
-    Object key = null;
-    int interestType = 0;
+    Part regionNamePart, keyPart;
+    String regionName;
+    Object key;
+    int interestType;
     String errMessage = null;
     serverConnection.setAsTrue(REQUIRES_RESPONSE);
 
@@ -68,11 +68,11 @@ public class UnregisterInterest extends BaseCommand {
       serverConnection.setAsTrue(RESPONDED);
       return;
     }
-    boolean keepalive = false;
+    boolean keepAlive;
     try {
-      Part keepalivePart = clientMessage.getPart(4);
-      byte[] keepaliveBytes = (byte[]) keepalivePart.getObject();
-      keepalive = keepaliveBytes[0] != 0x00;
+      Part keepAlivePart = clientMessage.getPart(4);
+      byte[] keepAliveBytes = (byte[]) keepAlivePart.getObject();
+      keepAlive = keepAliveBytes[0] != 0x00;
     } catch (Exception e) {
       writeException(clientMessage, e, false, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
@@ -87,17 +87,16 @@ public class UnregisterInterest extends BaseCommand {
 
     // Process the unregister interest request
     if ((key == null) && (regionName == null)) {
-      errMessage =
-          "The input region name and key for the unregister interest request are null.";
+      errMessage = "The input region name and key for the unregister interest request are null.";
     } else if (key == null) {
-      errMessage =
-          "The input key for the unregister interest request is null.";
+      errMessage = "The input key for the unregister interest request is null.";
     } else if (regionName == null) {
-      errMessage =
-          "The input region name for the unregister interest request is null.";
-      String s = errMessage;
-      logger.warn("{}: {}", serverConnection.getName(), s);
-      writeErrorResponse(clientMessage, MessageType.UNREGISTER_INTEREST_DATA_ERROR, s,
+      errMessage = "The input region name for the unregister interest request is null.";
+    }
+
+    if (errMessage != null) {
+      logger.warn("{}: {}", serverConnection.getName(), errMessage);
+      writeErrorResponse(clientMessage, MessageType.UNREGISTER_INTEREST_DATA_ERROR, errMessage,
           serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       return;
@@ -115,12 +114,12 @@ public class UnregisterInterest extends BaseCommand {
       return;
     }
 
-    AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
-    if (authzRequest != null) {
+    AuthorizeRequest authorizeRequest = serverConnection.getAuthzRequest();
+    if (authorizeRequest != null) {
       if (!DynamicRegionFactory.regionIsDynamicRegionList(regionName)) {
         try {
           UnregisterInterestOperationContext unregisterContext =
-              authzRequest.unregisterInterestAuthorize(regionName, key, interestType);
+              authorizeRequest.unregisterInterestAuthorize(regionName, key, interestType);
           key = unregisterContext.getKey();
         } catch (NotAuthorizedException ex) {
           writeException(clientMessage, ex, false, serverConnection);
@@ -129,37 +128,15 @@ public class UnregisterInterest extends BaseCommand {
         }
       }
     }
-    // Yogesh : bug fix for 36457 :
-    /*
-     * Region destroy message from server to client results in client calling unregister to server
-     * (an unnecessary callback). The unregister encounters an error because the region has been
-     * destroyed on the server and hence falsely marks the server dead.
-     */
-    /*
-     * Region region = crHelper.getRegion(regionName); if (region == null) {
-     * logger.warning(this.name + ": Region named " + regionName + " was not found during unregister
-     * interest request"); writeErrorResponse(msg, MessageType.UNREGISTER_INTEREST_DATA_ERROR);
-     * responded = true; } else {
-     */
-    // Unregister interest irrelevant of whether the region is present it or
-    // not
-    serverConnection.getAcceptor().getCacheClientNotifier().unregisterClientInterest(regionName,
-        key, interestType, isClosing, serverConnection.getProxyID(), keepalive);
 
-    // Update the statistics and write the reply
-    // bserverStats.incLong(processDestroyTimeId,
-    // DistributionStats.getStatTime() - start);
-    // start = DistributionStats.getStatTime();
+    serverConnection.getAcceptor().getCacheClientNotifier().unregisterClientInterest(regionName,
+        key, interestType, isClosing, serverConnection.getProxyID(), keepAlive);
+
     writeReply(clientMessage, serverConnection);
     serverConnection.setAsTrue(RESPONDED);
     if (logger.isDebugEnabled()) {
       logger.debug("{}: Sent unregister interest response for region {} key {}",
           serverConnection.getName(), regionName, key);
     }
-    // bserverStats.incLong(writeDestroyResponseTimeId,
-    // DistributionStats.getStatTime() - start);
-    // bserverStats.incInt(destroyResponsesId, 1);
-    // }
   }
-
 }
