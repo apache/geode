@@ -50,8 +50,6 @@ public interface MemberData {
 
   String getUniqueTag();
 
-  void setVersionOrdinal(short versionOrdinal);
-
   void setUUID(UUID u);
 
   UUID getUUID();

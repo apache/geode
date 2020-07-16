@@ -85,13 +85,6 @@ public class GMSMemberDataVersionJUnitTest {
     validate(newMember);
   }
 
-  @Test
-  public void testSetVersionOrdinal() {
-    final GMSMemberData memberData = new GMSMemberData();
-    memberData.setVersionOrdinal(unknownVersionOrdinal);
-    validate(memberData);
-  }
-
   private AbstractShortAssert<?> validate(final MemberData memberData) {
     return assertThat(memberData.getVersionOrdinal()).isEqualTo(unknownVersionOrdinal);
   }
