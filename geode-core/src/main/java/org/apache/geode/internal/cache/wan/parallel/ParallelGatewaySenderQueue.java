@@ -438,6 +438,11 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
   }
 
   public void addShadowPartitionedRegionForUserPR(PartitionedRegion userPR) {
+    addShadowPartitionedRegionForUserPR(userPR, null);
+  }
+
+  public void addShadowPartitionedRegionForUserPR(PartitionedRegion userPR,
+      PartitionedRegion leaderRegion) {
     if (logger.isDebugEnabled()) {
       logger.debug("{} addShadowPartitionedRegionForUserPR: Attempting to create queue region: {}",
           this, userPR.getDisplayName());
@@ -449,16 +454,17 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       String regionName = userPR.getFullPath();
       // Find if there is any parent region for this userPR
       // if there is then no need to add another q for the same
-      String leaderRegionName = ColocationHelper.getLeaderRegion(userPR).getFullPath();
-      if (!regionName.equals(leaderRegionName)) {
-        // Fix for defect #50364. Allow user to attach GatewaySender to child PR (without attaching
-        // to leader PR)
-        // though, internally, colocate the GatewaySender's shadowPR with the leader PR in
-        // colocation chain
-        if (!this.userRegionNameToShadowPRMap.containsKey(leaderRegionName)) {
-          addShadowPartitionedRegionForUserPR(ColocationHelper.getLeaderRegion(userPR));
+      if (leaderRegion == null) {
+        String leaderRegionName = ColocationHelper.getLeaderRegion(userPR).getFullPath();
+        if (!regionName.equals(leaderRegionName)) {
+          // Fix for defect #50364. Allow user to attach GatewaySender to child PR (without
+          // attaching to leader PR) though, internally, colocate the GatewaySender's shadowPR with
+          // the leader PR in colocation chain
+          if (!this.userRegionNameToShadowPRMap.containsKey(leaderRegionName)) {
+            addShadowPartitionedRegionForUserPR(userPR, ColocationHelper.getLeaderRegion(userPR));
+          }
+          return;
         }
-        return;
       }
 
       if (this.userRegionNameToShadowPRMap.containsKey(regionName))
@@ -570,7 +576,8 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
     } finally {
       if (prQ != null) {
-        this.userRegionNameToShadowPRMap.put(userPR.getFullPath(), prQ);
+        this.userRegionNameToShadowPRMap
+            .put((leaderRegion == null ? userPR : leaderRegion).getFullPath(), prQ);
       }
       /*
        * Here, enqueueTempEvents need to be invoked when a sender is already running and userPR is
@@ -581,7 +588,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       if ((this.index == this.nDispatcher - 1) && this.sender.isRunning()) {
         ((AbstractGatewaySender) sender).enqueueTempEvents();
       }
-      afterRegionAdd(userPR);
+      afterRegionAdd(leaderRegion == null ? userPR : leaderRegion);
       this.sender.getLifeCycleLock().writeLock().unlock();
     }
   }
