@@ -27,6 +27,7 @@ import org.springframework.util.StringUtils;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.internal.CommandProcessor;
+import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.security.SecurityService;
@@ -104,7 +105,11 @@ public class OnlineCommandProcessor implements CommandProcessor {
     ParseResult parseResult = parseCommand(commentLessLine);
 
     if (parseResult == null) {
-      return ResultModel.createError("Could not parse command string. " + command);
+      String version = GemFireVersion.getGemFireVersion();
+      String message = "Could not parse command string. " + command + "." + System.lineSeparator() +
+          "The command or some options in this command may not be supported by this locator(" +
+          version + ") gfsh is connected with.";
+      return ResultModel.createError(message);
     }
 
     Method method = parseResult.getMethod();

@@ -26,6 +26,7 @@ import org.springframework.shell.event.ParseResult;
 import org.springframework.util.Assert;
 
 import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.CliAroundInterceptor;
@@ -203,8 +204,23 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
     // it can also be a Path to a temp file downloaded from the rest http request
     ResultModel commandResult = null;
     if (response instanceof String) {
-      commandResult = ResultModel.fromJson((String) response);
-
+      try {
+        commandResult = ResultModel.fromJson((String) response);
+      } catch (Exception e) {
+        logWrapper.severe("Unable to parse the remote response.", e);
+        String clientVersion = GemFireVersion.getGemFireVersion();
+        String remoteVersion = null;
+        try {
+          remoteVersion = shell.getOperationInvoker().getRemoteVersion();
+        } catch (Exception exception) {
+          // unable to get the remote version (pre-1.5.0 manager does not have this capability)
+          // ignore
+        }
+        String message = "Unable to parse the remote response. This might due to gfsh client "
+            + "version(" + clientVersion + ") mismatch with the remote cluster version"
+            + ((remoteVersion == null) ? "." : "(" + remoteVersion + ").");
+        return ResultModel.createError(message);
+      }
     } else if (response instanceof Path) {
       tempFile = (Path) response;
     }

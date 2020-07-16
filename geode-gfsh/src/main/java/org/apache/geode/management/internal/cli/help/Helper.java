@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -464,5 +465,27 @@ public class Helper {
 
   public Set<String> getCommands() {
     return commands.keySet();
+  }
+
+  public Method getCommandMethod(String command) {
+    return commands.get(command);
+
+  }
+
+  // methods added for future option comparison
+  public Set<String> getOptions(String command) {
+    Method method = getCommandMethod(command);
+    Set<String> optionList = new HashSet<>();
+    Annotation[][] annotations = method.getParameterAnnotations();
+    if (annotations == null || annotations.length == 0) {
+      // can't validate arguments if command doesn't have any
+      return optionList;
+    }
+
+    for (Annotation[] annotation : annotations) {
+      CliOption cliOption = getAnnotation(annotation, CliOption.class);
+      optionList.add(getPrimaryKey(cliOption));
+    }
+    return optionList;
   }
 }
