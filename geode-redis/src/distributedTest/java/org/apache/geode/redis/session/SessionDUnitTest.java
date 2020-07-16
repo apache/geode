@@ -163,7 +163,7 @@ public abstract class SessionDUnitTest {
   protected String[] getSessionNotes(int sessionApp, String sessionCookie) {
     HttpHeaders requestHeaders = new HttpHeaders();
     requestHeaders.add("Cookie", sessionCookie);
-    HttpEntity<String> request2 = new HttpEntity<>("", requestHeaders);
+    HttpEntity<String> request = new HttpEntity<>("", requestHeaders);
     boolean sesssionObtained = false;
     String[] responseBody = new String[0];
     do {
@@ -172,7 +172,7 @@ public abstract class SessionDUnitTest {
             .exchange(
                 "http://localhost:" + ports.get(sessionApp) + "/getSessionNotes",
                 HttpMethod.GET,
-                request2,
+                request,
                 String[].class)
             .getBody();
         sesssionObtained = true;

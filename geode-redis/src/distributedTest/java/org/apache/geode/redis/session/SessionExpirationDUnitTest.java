@@ -17,12 +17,26 @@ package org.apache.geode.redis.session;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import com.sun.xml.internal.messaging.saaj.util.ByteInputStream;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.web.client.RestTemplate;
 
+import org.apache.geode.internal.cache.BucketDump;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.RedisHash;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 
 public class SessionExpirationDUnitTest extends SessionDUnitTest {
 
@@ -86,15 +100,79 @@ public class SessionExpirationDUnitTest extends SessionDUnitTest {
     }
   }
 
+  @Test
+  public void sessionShouldNotTimeout_whenPersisted() {
+    String sessionCookie = createNewSessionWithNote(APP2, "note1");
+    setMaxInactiveInterval(APP2, sessionCookie, 100);
+    setMaxInactiveInterval(APP2, sessionCookie, -1);
+
+    compareBuckets();
+  }
+
   private void waitForTheSessionToExpire(String sessionId) {
     GeodeAwaitility.await().ignoreExceptions().atMost((SHORT_SESSION_TIMEOUT + 5), TimeUnit.SECONDS)
         .until(
-            () -> jedisConnetedToServer1.ttl("spring:session:sessions:expires:" + sessionId) < 0);
+            () -> jedisConnetedToServer1.ttl("spring:session:sessions:expires:" + sessionId) == -2);
   }
 
   private void refreshSession(String sessionCookie, int sessionApp) {
     GeodeAwaitility.await()
         .during(SHORT_SESSION_TIMEOUT + 2, TimeUnit.SECONDS)
         .until(() -> getSessionNotes(sessionApp, sessionCookie) != null);
+  }
+
+  void setMaxInactiveInterval(int sessionApp, String sessionCookie, int maxInactiveInterval) {
+    HttpHeaders requestHeaders = new HttpHeaders();
+    requestHeaders.add("Cookie", sessionCookie);
+    HttpEntity<Integer> request = new HttpEntity<>(maxInactiveInterval, requestHeaders);
+    new RestTemplate()
+        .postForEntity(
+            "http://localhost:" + ports.get(sessionApp) + "/setMaxInactiveInterval",
+            request,
+            Integer.class)
+        .getHeaders();
+  }
+
+  private void compareBuckets() {
+    cluster.getVM(1).invoke(() -> {
+      for (int j = 0; j < 113; j++) {
+        InternalCache cache = ClusterStartupRule.getCache();
+        PartitionedRegion region = (PartitionedRegion) cache.getRegion("__REDIS_DATA");
+        List<BucketDump> buckets = region.getAllBucketEntries(j);
+        if (buckets.isEmpty()) {
+          continue;
+        }
+        assertThat(buckets.size()).isEqualTo(2);
+        Map<Object, Object> bucket1 = buckets.get(0).getValues();
+        Map<Object, Object> bucket2 = buckets.get(1).getValues();
+
+        bucket1.keySet().forEach(key -> {
+          if (bucket1.get(key) instanceof RedisHash) {
+
+            RedisHash value1 = (RedisHash) bucket1.get(key);
+            RedisHash value2 = (RedisHash) bucket2.get(key);
+
+            assertThat(getIntFromBytes(value1)).isEqualTo(getIntFromBytes(value2));
+          }
+        });
+      }
+    });
+  }
+
+  private static int getIntFromBytes(RedisHash redisHash) {
+    if (redisHash == null) {
+      return 0;
+    }
+    ObjectInputStream inputStream;
+    byte[] bytes = redisHash.hget(new ByteArrayWrapper("maxInactiveInterval".getBytes())).toBytes();
+    ByteInputStream byteStream = new ByteInputStream(bytes, bytes.length);
+    try {
+      inputStream = new ObjectInputStream(byteStream);
+      return (int) inputStream.readObject();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
   }
 }
