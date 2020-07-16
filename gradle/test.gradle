@@ -104,6 +104,7 @@ dependencies {
 configure([integrationTest, distributedTest, performanceTest, acceptanceTest, uiTest,
            upgradeTest]) {
   forkEvery 1
+  maxParallelForks Runtime.runtime.availableProcessors().intdiv(4)
 
   doFirst {
     TestPropertiesWriter.writeTestProperties(buildDir, name)

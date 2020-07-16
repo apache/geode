@@ -23,6 +23,8 @@ evaluationDependsOn(':extensions:geode-modules-session')
 evaluationDependsOn(':extensions:geode-modules-session-internal')
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
+apply from: "${rootDir}/${scriptDir}/docker.gradle"
+
 
 import org.apache.geode.gradle.plugins.DependencyConstraints
 import org.apache.tools.ant.filters.ReplaceTokens
