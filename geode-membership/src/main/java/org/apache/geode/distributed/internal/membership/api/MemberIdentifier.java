@@ -29,7 +29,7 @@ import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.VersionOrdinal;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * MemberIdentifier should be implemented by a user of GMS if the default member identifier
@@ -132,7 +132,7 @@ public interface MemberIdentifier extends DataSerializableFixedID {
   /**
    * Get the Geode version of this member
    */
-  VersionOrdinal getVersionOrdinalObject();
+  Version getVersion();
 
   /**
    * Replace the current member data with the given member data. This can be used to fill out a
@@ -191,7 +191,7 @@ public interface MemberIdentifier extends DataSerializableFixedID {
 
   String getUniqueId();
 
-  void setVersionObjectForTest(KnownVersion v);
+  void setVersionForTest(KnownVersion v);
 
   void setUniqueTag(String tag);
 

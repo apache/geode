@@ -34,7 +34,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
 import org.apache.geode.internal.serialization.DSFIDNotFoundException;
-import org.apache.geode.internal.serialization.VersionOrdinal;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.internal.util.Breadcrumbs;
 import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
@@ -472,7 +472,7 @@ public class ReplyProcessor21 implements MembershipListener {
    */
   protected synchronized void processException(DistributionMessage msg, DSFIDNotFoundException ex) {
     final short versionOrdinal = ex.getProductVersionOrdinal();
-    final VersionOrdinal anyVersion = Versioning.getVersionOrdinal(versionOrdinal);
+    final Version anyVersion = Versioning.getVersion(versionOrdinal);
     logger.fatal(String.format(
         "Exception received due to missing DSFID %s on remote node %s running version %s.",
         new Object[] {ex.getUnknownDSFID(), msg.getSender(), anyVersion}), ex);

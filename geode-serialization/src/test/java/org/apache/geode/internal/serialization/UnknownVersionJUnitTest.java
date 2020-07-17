@@ -24,7 +24,7 @@ public class UnknownVersionJUnitTest extends TestCase {
 
   @Test
   public void testEqualMinSameIdentity() {
-    final VersionOrdinal versionOrdinal = construct(Short.MIN_VALUE);
+    final Version versionOrdinal = construct(Short.MIN_VALUE);
     validateEqual(versionOrdinal, versionOrdinal);
   }
 
@@ -86,7 +86,7 @@ public class UnknownVersionJUnitTest extends TestCase {
     assertThat(construct((short) 6).equals("howdy!")).isFalse();
   }
 
-  private void validateEqual(final VersionOrdinal a, final VersionOrdinal b) {
+  private void validateEqual(final Version a, final Version b) {
     assertThat(a.compareTo(b)).isEqualTo(0);
     assertThat(a.equals(b)).isTrue();
     assertThat(a.isNewerThan(b)).isFalse();
@@ -96,8 +96,8 @@ public class UnknownVersionJUnitTest extends TestCase {
   }
 
   private void validateUnequal(final short smallerShort, final short largerShort) {
-    final VersionOrdinal smaller = construct(smallerShort);
-    final VersionOrdinal larger = construct(largerShort);
+    final Version smaller = construct(smallerShort);
+    final Version larger = construct(largerShort);
 
     assertThat(smaller.compareTo(larger)).isLessThan(0);
     assertThat(smaller.equals(larger)).isFalse();
@@ -118,8 +118,8 @@ public class UnknownVersionJUnitTest extends TestCase {
   }
 
   private void validateHash(final short ordinal) {
-    final VersionOrdinal a = construct(ordinal);
-    final VersionOrdinal b = construct(ordinal);
+    final Version a = construct(ordinal);
+    final Version b = construct(ordinal);
     assertThat(a.equals(b)).isTrue();
     assertThat(a.hashCode()).isEqualTo(b.hashCode());
   }

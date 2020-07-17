@@ -354,8 +354,8 @@ public class ClientCacheFactoryJUnitTest {
     InternalDistributedMember memberID =
         (InternalDistributedMember) clientCache.getDistributedSystem().getDistributedMember();
     MemberIdentifier gmsID = memberID;
-    memberID.setVersionObjectForTest(KnownVersion.GFE_82);
-    assertThat(memberID.getVersionOrdinalObject()).isEqualTo(KnownVersion.GFE_82);
+    memberID.setVersionForTest(KnownVersion.GFE_82);
+    assertThat(memberID.getVersion()).isEqualTo(KnownVersion.GFE_82);
 
     ClientProxyMembershipID clientID = ClientProxyMembershipID.getClientId(memberID);
     HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.GFE_82);
@@ -367,14 +367,14 @@ public class ClientCacheFactoryJUnitTest {
     ClientProxyMembershipID newID = DataSerializer.readObject(in);
     InternalDistributedMember newMemberID =
         (InternalDistributedMember) newID.getDistributedMember();
-    assertThat(newMemberID.getVersionOrdinalObject()).isEqualTo(KnownVersion.GFE_82);
+    assertThat(newMemberID.getVersion()).isEqualTo(KnownVersion.GFE_82);
     assertThat(newID.getClientVersion()).isEqualTo(KnownVersion.GFE_82);
 
     assertThat(newMemberID.getUuidLeastSignificantBits()).isEqualTo(0);
     assertThat(newMemberID.getUuidMostSignificantBits()).isEqualTo(0);
 
     gmsID.setUUID(new UUID(1234L, 5678L));
-    memberID.setVersionObjectForTest(KnownVersion.CURRENT);
+    memberID.setVersionForTest(KnownVersion.CURRENT);
     clientID = ClientProxyMembershipID.getClientId(memberID);
     out = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeObject(clientID, out);
@@ -383,7 +383,7 @@ public class ClientCacheFactoryJUnitTest {
         KnownVersion.CURRENT);
     newID = DataSerializer.readObject(in);
     newMemberID = (InternalDistributedMember) newID.getDistributedMember();
-    assertThat(newMemberID.getVersionOrdinalObject()).isEqualTo(KnownVersion.CURRENT);
+    assertThat(newMemberID.getVersion()).isEqualTo(KnownVersion.CURRENT);
     assertThat(newID.getClientVersion()).isEqualTo(KnownVersion.CURRENT);
 
     assertThat(newMemberID.getUuidLeastSignificantBits())

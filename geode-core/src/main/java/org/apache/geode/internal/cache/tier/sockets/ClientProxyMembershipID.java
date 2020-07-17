@@ -352,7 +352,7 @@ public class ClientProxyMembershipID
   public KnownVersion getClientVersion() {
     return Versioning
         .getKnownVersionOrDefault(
-            ((InternalDistributedMember) getDistributedMember()).getVersionOrdinalObject(),
+            ((InternalDistributedMember) getDistributedMember()).getVersion(),
             KnownVersion.CURRENT);
   }
 

@@ -401,13 +401,13 @@ public class KnownVersion extends AbstractVersion {
   /**
    * package-protected for use by Versioning factory
    */
-  static KnownVersion getKnownVersion(final short ordinal,
-      final KnownVersion returnWhenUnknown) {
+  static KnownVersion getKnownVersionOrDefault(final short ordinal,
+      final KnownVersion defaultKnownVersion) {
     if (ordinal == TOKEN_ORDINAL) {
       return TOKEN;
     }
     if (ordinal < TOKEN_ORDINAL || ordinal >= VALUES.length || VALUES[ordinal] == null) {
-      return returnWhenUnknown;
+      return defaultKnownVersion;
     }
     return VALUES[ordinal];
   }

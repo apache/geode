@@ -293,7 +293,7 @@ public class FetchEntriesMessage extends PartitionMessage {
       // always write at least one chunk
       final HeapDataOutputStream mos = new HeapDataOutputStream(
           InitialImageOperation.CHUNK_SIZE_IN_BYTES + 2048, Versioning
-              .getKnownVersionOrDefault(receiver.getVersionOrdinalObject(), KnownVersion.CURRENT));
+              .getKnownVersionOrDefault(receiver.getVersion(), KnownVersion.CURRENT));
       do {
         mos.reset();
 
