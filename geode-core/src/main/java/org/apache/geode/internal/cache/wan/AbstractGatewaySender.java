@@ -219,6 +219,8 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   private boolean removeFromQueueOnException = GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION;
 
+  private int maxWaitTimeForSenderToStart = 15000;
+
   /**
    * A unique (per <code>GatewaySender</code> id) index used when modifying <code>EventIDs</code>.
    * Unlike the serialNumber, the eventIdIndex matches for the same <code>GatewaySender</code>
@@ -1034,7 +1036,8 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       // If this gateway is not running, return
       if (!isRunning()) {
         if (this.isPrimary()) {
-          if (this.startTime < 0 && System.currentTimeMillis() + this.startTime < 10000) {
+          if (this.startTime < 0
+              && System.currentTimeMillis() + this.startTime < maxWaitTimeForSenderToStart) {
             tmpDroppedEvents.add(clonedEvent);
             if (isDebugEnabled) {
               logger.debug("add to tmpDroppedEvents for evnet {}", clonedEvent);
