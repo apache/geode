@@ -1034,9 +1034,16 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       // If this gateway is not running, return
       if (!isRunning()) {
         if (this.isPrimary()) {
-          tmpDroppedEvents.add(clonedEvent);
-          if (isDebugEnabled) {
-            logger.debug("add to tmpDroppedEvents for evnet {}", clonedEvent);
+          if (this.startTime < 0 && System.currentTimeMillis() + this.startTime < 10000) {
+            tmpDroppedEvents.add(clonedEvent);
+            if (isDebugEnabled) {
+              logger.debug("add to tmpDroppedEvents for evnet {}", clonedEvent);
+            }
+          } else {
+            if (isDebugEnabled) {
+              logger.debug("The sender is stopped. Not to add to tmpDroppedEvents for event {}",
+                  clonedEvent);
+            }
           }
         }
         if (isDebugEnabled) {

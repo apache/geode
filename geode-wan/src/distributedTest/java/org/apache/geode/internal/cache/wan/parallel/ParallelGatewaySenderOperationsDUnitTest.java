@@ -489,6 +489,9 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     // remote site.
 
     vm4.invoke(() -> validateQueueContents("ln", 0));
+    vm4.invoke(() -> validateRegionSize(getUniqueName() + "_PR", 5000));
+    vm2.invoke(() -> validateRegionSize(getUniqueName() + "_PR", 5000));
+    vm3.invoke(() -> validateRegionSize(getUniqueName() + "_PR", 5000));
   }
 
   /**

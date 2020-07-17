@@ -107,6 +107,7 @@ public class ParallelAsyncEventQueueImpl extends AbstractGatewaySender {
           (InternalDistributedSystem) this.cache.getDistributedSystem();
       system.handleResourceEvent(ResourceEvent.GATEWAYSENDER_START, this);
 
+      this.startTime = System.currentTimeMillis();
       logger.info("Started  {}", this);
 
       enqueueTempEvents();
@@ -132,6 +133,7 @@ public class ParallelAsyncEventQueueImpl extends AbstractGatewaySender {
       // stop the running threads, open sockets if any
       ((ConcurrentParallelGatewaySenderQueue) this.eventProcessor.getQueue()).cleanUp();
 
+      this.startTime = (-1) * System.currentTimeMillis();
       logger.info("Stopped  {}", this);
 
       InternalDistributedSystem system =
