@@ -112,32 +112,20 @@ public abstract class SessionDUnitTest {
     });
   }
 
-  protected static void startSpringApp(int sessionApp, int primaryServer, long sessionTimeout) {
-    int primaryRedisPort = ports.get(primaryServer);
+  protected static void startSpringApp(int sessionApp, long sessionTimeout, int... serverPorts) {
     int httpPort = ports.get(sessionApp);
     VM host = cluster.getVM(sessionApp);
     host.invoke("Start a Spring app", () -> {
       System.setProperty("server.port", "" + httpPort);
-      System.setProperty("spring.redis.port", "" + primaryRedisPort);
+      System.setProperty("spring.redis.port", "" + serverPorts[0]);
       System.setProperty("server.servlet.session.timeout", "" + sessionTimeout + "s");
-      springApplicationContext = SpringApplication.run(
-          RedisSpringTestApplication.class, "" + primaryRedisPort);
-    });
-  }
+      String[] args = new String[serverPorts.length];
 
-  static void startSpringApp(int sessionApp, int primaryServer, int secondaryServer,
-      long sessionTimeout) {
-    int primaryRedisPort = ports.get(primaryServer);
-    int failoverRedisPort = ports.get(secondaryServer);
-    int httpPort = ports.get(sessionApp);
-    VM host = cluster.getVM(sessionApp);
-    host.invoke("Start a Spring app", () -> {
-      System.setProperty("server.port", "" + httpPort);
-      System.setProperty("spring.redis.port", "" + primaryRedisPort);
-      System.setProperty("server.servlet.session.timeout", "" + sessionTimeout + "s");
+      for (int i = 0; i < serverPorts.length; i++) {
+        args[i] = "" + serverPorts[i];
+      }
       springApplicationContext = SpringApplication.run(
-          RedisSpringTestApplication.class,
-          "" + primaryRedisPort, "" + failoverRedisPort);
+          RedisSpringTestApplication.class, args);
     });
   }
 

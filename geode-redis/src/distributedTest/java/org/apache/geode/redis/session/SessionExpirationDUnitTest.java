@@ -31,8 +31,8 @@ public class SessionExpirationDUnitTest extends SessionDUnitTest {
   @BeforeClass
   public static void setup() {
     SessionDUnitTest.setup();
-    startSpringApp(APP1, SERVER1, SERVER2, SHORT_SESSION_TIMEOUT);
-    startSpringApp(APP2, SERVER2, SERVER1, SHORT_SESSION_TIMEOUT);
+    startSpringApp(APP1, SHORT_SESSION_TIMEOUT, ports.get(SERVER1), ports.get(SERVER2));
+    startSpringApp(APP2, SHORT_SESSION_TIMEOUT, ports.get(SERVER2), ports.get(SERVER1));
   }
 
   @Test

@@ -18,16 +18,12 @@ package org.apache.geode.redis.internal.data;
 import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
-import java.util.function.Function;
+import java.util.Random;
 
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -36,10 +32,9 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.partition.PartitionRegionHelper;
+import org.apache.geode.internal.cache.BucketDump;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.util.BlobHelper;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -66,6 +61,7 @@ public class DeltaDUnitTest {
 
   private static int redisServerPort1;
   private static int redisServerPort2;
+  private static Random random;
 
   @BeforeClass
   public static void classSetup() {
@@ -81,6 +77,7 @@ public class DeltaDUnitTest {
 
     jedis1 = new Jedis(LOCAL_HOST, redisServerPort1, JEDIS_TIMEOUT);
     jedis2 = new Jedis(LOCAL_HOST, redisServerPort2, JEDIS_TIMEOUT);
+    random = new Random();
   }
 
   @Before
@@ -104,29 +101,8 @@ public class DeltaDUnitTest {
     jedis1.set(key, baseValue);
     for (int i = 0; i < ITERATION_COUNT; i++) {
       jedis1.append(key, String.valueOf(i));
-
-      byte[] server1LocalValue = server1.invoke(() -> (byte[]) getLocalData(key, r -> {
-        RedisData localValue = r.get(new ByteArrayWrapper(key.getBytes()));
-
-        try {
-          return BlobHelper.serializeToBlob(localValue);
-        } catch (IOException e) {
-          throw new RuntimeException(e);
-        }
-      }));
-
-      byte[] server2LocalValue = server2.invoke(() -> (byte[]) getLocalData(key, r -> {
-        RedisData localValue = r.get(new ByteArrayWrapper(key.getBytes()));
-
-        try {
-          return BlobHelper.serializeToBlob(localValue);
-        } catch (IOException e) {
-          throw new RuntimeException(e);
-        }
-      }));
-
-      assertThat(Arrays.equals(server1LocalValue, server2LocalValue));
     }
+    compareBuckets();
   }
 
   @Test
@@ -134,29 +110,12 @@ public class DeltaDUnitTest {
     String key = "key";
 
     List<String> members = makeMemberList(ITERATION_COUNT, "member-");
+
     for (String member : members) {
       jedis1.sadd(key, member);
-      Set<ByteArrayWrapper> server1LocalSet =
-          server1.invoke(() -> (Set<ByteArrayWrapper>) getLocalData(key, r -> {
-            RedisSet localSet = (RedisSet) r.get(new ByteArrayWrapper(key.getBytes()));
-            if (localSet == null) {
-              return null;
-            }
-            return localSet.smembers();
-          }));
-
-      Set<ByteArrayWrapper> server2LocalSet =
-          server2.invoke(() -> (Set<ByteArrayWrapper>) getLocalData(key, r -> {
-            RedisSet localSet = (RedisSet) r.get(new ByteArrayWrapper(key.getBytes()));
-            if (localSet == null) {
-              return null;
-            }
-            return localSet.smembers();
-          }));
-
-      assertThat(server1LocalSet).containsExactlyInAnyOrder(server2LocalSet.toArray(
-          new ByteArrayWrapper[] {}));
     }
+
+    compareBuckets();
   }
 
   @Test
@@ -168,31 +127,8 @@ public class DeltaDUnitTest {
 
     for (String member : members) {
       jedis1.srem(key, member);
-      Set<ByteArrayWrapper> server1LocalSet =
-          server1.invoke(() -> (Set<ByteArrayWrapper>) getLocalData(key, r -> {
-            RedisSet localSet = (RedisSet) r.get(new ByteArrayWrapper(key.getBytes()));
-            if (localSet == null) {
-              return null;
-            }
-            return localSet.smembers();
-          }));
-
-      Set<ByteArrayWrapper> server2LocalSet =
-          server2.invoke(() -> (Set<ByteArrayWrapper>) getLocalData(key, r -> {
-            RedisSet localSet = (RedisSet) r.get(new ByteArrayWrapper(key.getBytes()));
-            if (localSet == null) {
-              return null;
-            }
-            return localSet.smembers();
-          }));
-
-      if (server1LocalSet == null || server2LocalSet == null) {
-        assertThat(server1LocalSet).isEqualTo(server2LocalSet);
-      } else {
-        assertThat(server1LocalSet).containsExactlyInAnyOrder(server2LocalSet.toArray(
-            new ByteArrayWrapper[] {}));
-      }
     }
+    compareBuckets();
   }
 
   @Test
@@ -203,22 +139,26 @@ public class DeltaDUnitTest {
 
     for (String field : testMap.keySet()) {
       jedis1.hset(key, field, testMap.get(field));
-
-      Collection<ByteArrayWrapper> server1LocalHash =
-          server1.invoke(() -> (Collection<ByteArrayWrapper>) getLocalData(key, r -> {
-            RedisHash localSet = (RedisHash) r.get(new ByteArrayWrapper(key.getBytes()));
-            return localSet.hgetall();
-          }));
-
-      Collection<ByteArrayWrapper> server2LocalHash =
-          server2.invoke(() -> (Collection<ByteArrayWrapper>) getLocalData(key, r -> {
-            RedisHash localSet = (RedisHash) r.get(new ByteArrayWrapper(key.getBytes()));
-            return localSet.hgetall();
-          }));
-
-      assertThat(server1LocalHash).containsExactlyInAnyOrder(server2LocalHash.toArray(
-          new ByteArrayWrapper[] {}));
     }
+    compareBuckets();
+  }
+
+  @Test
+  public void shouldCorrectlyPropagateDeltaToSecondaryServer_whenUpdatingHashValues() {
+    String key = "key";
+
+    Map<String, String> testMap = makeHashMap(ITERATION_COUNT, "field-", "value-");
+    jedis1.hset(key, testMap);
+
+    for (int i = 0; i < 100; i++) {
+      Map<String, String> retrievedMap = jedis1.hgetAll(key);
+      int rand = random.nextInt(retrievedMap.size());
+      String fieldToUpdate = "field-" + rand;
+      String valueToUpdate = retrievedMap.get(fieldToUpdate);
+      retrievedMap.put(fieldToUpdate, valueToUpdate + " updated");
+      jedis1.hset(key, retrievedMap);
+    }
+    compareBuckets();
   }
 
   @Test
@@ -230,32 +170,8 @@ public class DeltaDUnitTest {
 
     for (String field : testMap.keySet()) {
       jedis1.hdel(key, field, testMap.get(field));
-
-      Collection<ByteArrayWrapper> server1LocalHash =
-          server1.invoke(() -> (Collection<ByteArrayWrapper>) getLocalData(key, r -> {
-            RedisHash localSet = (RedisHash) r.get(new ByteArrayWrapper(key.getBytes()));
-            if (localSet == null) {
-              return null;
-            }
-            return localSet.hgetall();
-          }));
-
-      Collection<ByteArrayWrapper> server2LocalHash =
-          server2.invoke(() -> (Collection<ByteArrayWrapper>) getLocalData(key, r -> {
-            RedisHash localSet = (RedisHash) r.get(new ByteArrayWrapper(key.getBytes()));
-            if (localSet == null) {
-              return null;
-            }
-            return localSet.hgetall();
-          }));
-
-      if (server1LocalHash == null || server2LocalHash == null) {
-        assertThat(server1LocalHash).isEqualTo(server2LocalHash);
-      } else {
-        assertThat(server1LocalHash).containsExactlyInAnyOrder(server2LocalHash.toArray(
-            new ByteArrayWrapper[] {}));
-      }
     }
+    compareBuckets();
   }
 
   @Test
@@ -266,34 +182,34 @@ public class DeltaDUnitTest {
       String key = baseKey + i;
       jedis1.set(key, "value");
       jedis1.expire(key, 20);
-      long server1LocalExpirtionTimestamp = server1.invoke(() -> (long) getLocalData(key, r -> {
-        RedisData localSet = r.get(new ByteArrayWrapper(key.getBytes()));
-        if (localSet == null) {
-          return null;
-        }
-        return localSet.getExpirationTimestamp();
-      }));
-
-      long server2LocalExpirationTimestamp = server2.invoke(() -> (long) getLocalData(key, r -> {
-        RedisData localSet = r.get(new ByteArrayWrapper(key.getBytes()));
-        if (localSet == null) {
-          return null;
-        }
-        return localSet.getExpirationTimestamp();
-      }));
-
-      assertThat(server1LocalExpirtionTimestamp).isEqualTo(server2LocalExpirationTimestamp);
     }
+
+    for (int i = 0; i < ITERATION_COUNT; i++) {
+      String key = baseKey + i;
+      jedis1.expire(key, 80);
+    }
+    compareBuckets();
   }
 
-  private static Object getLocalData(String key,
-      Function<Region<ByteArrayWrapper, RedisData>, Object> func) {
-    InternalCache cache = ClusterStartupRule.getCache();
-    Region<ByteArrayWrapper, RedisData> region = cache.getRegion("__REDIS_DATA");
-    Region<ByteArrayWrapper, RedisData> localRegion =
-        PartitionRegionHelper.getLocalData(region);
+  private void compareBuckets() {
+    server1.invoke(() -> {
+      for (int j = 0; j < 113; j++) {
+        InternalCache cache = ClusterStartupRule.getCache();
+        PartitionedRegion region = (PartitionedRegion) cache.getRegion("__REDIS_DATA");
+        List<BucketDump> buckets = region.getAllBucketEntries(j);
+        assertThat(buckets.size()).isEqualTo(2);
+        Map<Object, Object> bucket1 = buckets.get(0).getValues();
+        Map<Object, Object> bucket2 = buckets.get(1).getValues();
+        assertThat(bucket1).containsExactlyInAnyOrderEntriesOf(bucket2);
 
-    return func.apply(localRegion);
+        bucket1.keySet().forEach(key -> {
+          RedisData value1 = (RedisData) bucket1.get(key);
+          RedisData value2 = (RedisData) bucket2.get(key);
+
+          assertThat(value1.getExpirationTimestamp()).isEqualTo(value2.getExpirationTimestamp());
+        });
+      }
+    });
   }
 
   private Map<String, String> makeHashMap(int hashSize, String baseFieldName,
