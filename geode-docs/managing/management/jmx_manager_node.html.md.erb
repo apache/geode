@@ -25,6 +25,8 @@ Any member can host an embedded JMX Manager, which provides a federated view of 
 
 You need to have a JMX Manager started in your cluster in order to use <%=vars.product_name%> management and monitoring tools such as [gfsh](../../tools_modules/gfsh/chapter_overview.html) and [<%=vars.product_name%> Pulse](../../tools_modules/pulse/pulse-overview.html).
 
+To create MBeans, a Security Manager must be enabled. See [Enable Security with Property Definitions](../security/enable_security.html) for more information.
+
 **Note:**
 Each node that acts as the JMX Manager has additional memory requirements depending on the number of resources that it is managing and monitoring. Being a JMX Manager can increase the memory footprint of any process, including locator processes. See [Memory Requirements for Cached Data](../../reference/topics/memory_requirements_for_cache_data.html#calculating_memory_requirements) for more information on calculating memory overhead on your <%=vars.product_name%> processes.
 
