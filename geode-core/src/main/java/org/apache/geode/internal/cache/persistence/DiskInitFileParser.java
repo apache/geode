@@ -434,7 +434,7 @@ public class DiskInitFileParser {
                 ver);
           }
           gfversion = Versioning.getKnownVersionOrDefault(
-              Versioning.getVersionOrdinal(ver), null);
+              Versioning.getVersion(ver), null);
           if (gfversion == null) {
             throw new DiskAccessException(
                 String.format("Unknown version ordinal %s found when recovering Oplogs", ver),

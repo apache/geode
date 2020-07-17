@@ -56,7 +56,7 @@ import org.apache.geode.distributed.internal.membership.api.MembershipView;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.serialization.KnownVersion;
-import org.apache.geode.internal.serialization.VersionOrdinal;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -680,7 +680,7 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
   private static void assertVersion(Cache cache, short ordinal) {
     DistributedSystem ds = cache.getDistributedSystem();
     InternalDistributedMember member = (InternalDistributedMember) ds.getDistributedMember();
-    final VersionOrdinal thisVersion = member.getVersionOrdinalObject();
+    final Version thisVersion = member.getVersion();
     short thisOrdinal = thisVersion.ordinal();
     if (ordinal != thisOrdinal) {
       throw new Error(

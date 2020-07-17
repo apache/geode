@@ -240,7 +240,7 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
 
       HeapDataOutputStream mos = new HeapDataOutputStream(
           InitialImageOperation.CHUNK_SIZE_IN_BYTES + 2048, Versioning
-              .getKnownVersionOrDefault(recipient.getVersionOrdinalObject(), KnownVersion.CURRENT));
+              .getKnownVersionOrDefault(recipient.getVersion(), KnownVersion.CURRENT));
       Iterator<BucketRegion> mapsIterator = maps.iterator();
       BucketRegion map = null;
       Iterator it = null;

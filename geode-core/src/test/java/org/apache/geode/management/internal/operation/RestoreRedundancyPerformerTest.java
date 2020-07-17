@@ -93,9 +93,9 @@ public class RestoreRedundancyPerformerTest {
     when(internalCacheForClientAccess.getInternalDistributedSystem())
         .thenReturn(internalDistributedSystem);
 
-    when(server1.getVersionOrdinalObject())
+    when(server1.getVersion())
         .thenReturn(RestoreRedundancyPerformer.ADDED_VERSION);
-    when(server2.getVersionOrdinalObject())
+    when(server2.getVersion())
         .thenReturn(RestoreRedundancyPerformer.ADDED_VERSION);
 
     restoreRedundancyPerformer = new RestoreRedundancyPerformer();
@@ -239,9 +239,9 @@ public class RestoreRedundancyPerformerTest {
     underRedundancyRegionResults.put(REGION_1, regionRedundancyStatusImpl);
 
 
-    when(server1.getVersionOrdinalObject())
+    when(server1.getVersion())
         .thenReturn(KnownVersion.GEODE_1_2_0);
-    when(server2.getVersionOrdinalObject())
+    when(server2.getVersion())
         .thenReturn(KnownVersion.GEODE_1_9_0);
 
 

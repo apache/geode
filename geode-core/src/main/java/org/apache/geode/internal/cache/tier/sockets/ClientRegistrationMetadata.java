@@ -120,7 +120,7 @@ class ClientRegistrationMetadata {
     short clientVersionOrdinal = VersioningIO.readOrdinal(dataInputStream);
 
     clientVersion = Versioning.getKnownVersionOrDefault(
-        Versioning.getVersionOrdinal(clientVersionOrdinal), null);
+        Versioning.getVersion(clientVersionOrdinal), null);
 
     final String message;
     if (clientVersion == null) {

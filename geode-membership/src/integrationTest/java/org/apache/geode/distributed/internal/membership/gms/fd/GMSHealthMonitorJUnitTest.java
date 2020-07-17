@@ -574,7 +574,7 @@ public class GMSHealthMonitorJUnitTest {
       gmsHealthMonitor.setNextNeighbor(v, memberToCheck);
       assertNotEquals(memberToCheck, gmsHealthMonitor.getNextNeighbor());
 
-      ((MemberIdentifierImpl) mockMembers.get(0)).setVersionObjectForTest(KnownVersion.GEODE_1_3_0);
+      ((MemberIdentifierImpl) mockMembers.get(0)).setVersionForTest(KnownVersion.GEODE_1_3_0);
       boolean retVal = gmsHealthMonitor.inlineCheckIfAvailable(mockMembers.get(0), v, true,
           memberToCheck, "Not responding");
 
