@@ -14,11 +14,9 @@
  */
 package org.apache.geode.internal.cache;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
+import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
@@ -32,7 +30,6 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class PartitionedRegionClear {
@@ -98,10 +95,8 @@ public class PartitionedRegionClear {
         PartitionedRegionClearMessage.OperationType.OP_UNLOCK_FOR_PR_CLEAR);
   }
 
-  List clearRegion(RegionEventImpl regionEvent, boolean cacheWrite,
-      RegionVersionVector vector) {
-    List allBucketsCleared = new ArrayList();
-    allBucketsCleared.addAll(clearRegionLocal(regionEvent));
+  Set<Integer> clearRegion(RegionEventImpl regionEvent) {
+    Set<Integer> allBucketsCleared = new HashSet<>(clearRegionLocal(regionEvent));
     allBucketsCleared.addAll(sendPartitionedRegionClearMessage(regionEvent,
         PartitionedRegionClearMessage.OperationType.OP_PR_CLEAR));
     return allBucketsCleared;
@@ -116,8 +111,8 @@ public class PartitionedRegionClear {
         if (!bucketRegion.getBucketAdvisor().hasPrimary()) {
           if (retryTimer.overMaximum()) {
             throw new PartitionedRegionPartialClearException(
-                "Unable to find primary bucket region during clear operation for region: " +
-                    partitionedRegion.getName());
+                "Unable to find primary bucket region during clear operation on "
+                    + partitionedRegion.getName() + " region.");
           }
           retryTimer.waitForBucketsRecovery();
           retry = true;
@@ -126,8 +121,8 @@ public class PartitionedRegionClear {
     } while (retry);
   }
 
-  public ArrayList clearRegionLocal(RegionEventImpl regionEvent) {
-    ArrayList clearedBuckets = new ArrayList();
+  public Set<Integer> clearRegionLocal(RegionEventImpl regionEvent) {
+    Set<Integer> clearedBuckets = new HashSet<>();
     setMembershipChange(false);
     // Synchronized to handle the requester departure.
     synchronized (lockForListenerAndClientNotification) {
@@ -255,7 +250,7 @@ public class PartitionedRegionClear {
     }
   }
 
-  protected List sendPartitionedRegionClearMessage(RegionEventImpl event,
+  protected Set<Integer> sendPartitionedRegionClearMessage(RegionEventImpl event,
       PartitionedRegionClearMessage.OperationType op) {
     RegionEventImpl eventForLocalClear = (RegionEventImpl) event.clone();
     eventForLocalClear.setOperation(Operation.REGION_LOCAL_CLEAR);
@@ -269,10 +264,10 @@ public class PartitionedRegionClear {
     } while (true);
   }
 
-  protected List attemptToSendPartitionedRegionClearMessage(RegionEventImpl event,
+  protected Set<Integer> attemptToSendPartitionedRegionClearMessage(RegionEventImpl event,
       PartitionedRegionClearMessage.OperationType op)
       throws ForceReattemptException {
-    List bucketsOperated = null;
+    Set<Integer> bucketsOperated = null;
 
     if (partitionedRegion.getPRRoot() == null) {
       if (logger.isDebugEnabled()) {
@@ -284,17 +279,16 @@ public class PartitionedRegionClear {
       return bucketsOperated;
     }
 
-    final HashSet configRecipients =
-        new HashSet(partitionedRegion.getRegionAdvisor().adviseAllPRNodes());
+    final Set<InternalDistributedMember> configRecipients =
+        new HashSet<>(partitionedRegion.getRegionAdvisor().adviseAllPRNodes());
 
     try {
       final PartitionRegionConfig prConfig =
           partitionedRegion.getPRRoot().get(partitionedRegion.getRegionIdentifier());
 
       if (prConfig != null) {
-        Iterator itr = prConfig.getNodes().iterator();
-        while (itr.hasNext()) {
-          InternalDistributedMember idm = ((Node) itr.next()).getMemberId();
+        for (Node node : prConfig.getNodes()) {
+          InternalDistributedMember idm = node.getMemberId();
           if (!idm.equals(partitionedRegion.getMyId())) {
             configRecipients.add(idm);
           }
@@ -355,7 +349,7 @@ public class PartitionedRegionClear {
         obtainLockForClear(regionEvent);
       }
       try {
-        List bucketsCleared = clearRegion(regionEvent, cacheWrite, null);
+        Set<Integer> bucketsCleared = clearRegion(regionEvent);
 
         if (partitionedRegion.getTotalNumberOfBuckets() != bucketsCleared.size()) {
           String message = "Unable to clear all the buckets from the partitioned region "

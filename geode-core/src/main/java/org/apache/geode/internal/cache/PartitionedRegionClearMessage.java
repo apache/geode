@@ -18,10 +18,7 @@ package org.apache.geode.internal.cache;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheException;
@@ -36,6 +33,7 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.ReplySender;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.CopyOnWriteHashSet;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.cache.partitioned.PartitionMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
@@ -57,7 +55,7 @@ public class PartitionedRegionClearMessage extends PartitionMessage {
 
   private PartitionedRegion partitionedRegion;
 
-  private ArrayList bucketsCleared;
+  private Set<Integer> bucketsCleared;
 
   @Override
   public EventID getEventID() {
@@ -66,7 +64,7 @@ public class PartitionedRegionClearMessage extends PartitionMessage {
 
   public PartitionedRegionClearMessage() {}
 
-  PartitionedRegionClearMessage(Set recipients, PartitionedRegion region,
+  PartitionedRegionClearMessage(Set<InternalDistributedMember> recipients, PartitionedRegion region,
       ReplyProcessor21 processor, PartitionedRegionClearMessage.OperationType operationType,
       final RegionEventImpl event) {
     super(recipients, region.getPRId(), processor);
@@ -90,11 +88,10 @@ public class PartitionedRegionClearMessage extends PartitionMessage {
   protected Throwable processCheckForPR(PartitionedRegion pr,
       DistributionManager distributionManager) {
     if (pr != null && !pr.getDistributionAdvisor().isInitialized()) {
-      Throwable thr = new ForceReattemptException(
+      return new ForceReattemptException(
           String.format("%s : could not find partitioned region with Id %s",
               distributionManager.getDistributionManagerId(),
               pr.getRegionIdentifier()));
-      return thr;
     }
     return null;
   }
@@ -160,16 +157,17 @@ public class PartitionedRegionClearMessage extends PartitionMessage {
    * received from the "far side"
    */
   public static class PartitionedRegionClearResponse extends ReplyProcessor21 {
-    CopyOnWriteArrayList bucketsCleared = new CopyOnWriteArrayList();
+    CopyOnWriteHashSet<Integer> bucketsCleared = new CopyOnWriteHashSet<>();
 
-    public PartitionedRegionClearResponse(InternalDistributedSystem system, Set initMembers) {
+    public PartitionedRegionClearResponse(InternalDistributedSystem system,
+        Set<InternalDistributedMember> initMembers) {
       super(system, initMembers);
     }
 
     @Override
     public void process(DistributionMessage msg) {
       if (msg instanceof PartitionedRegionClearReplyMessage) {
-        List buckets = ((PartitionedRegionClearReplyMessage) msg).bucketsCleared;
+        Set<Integer> buckets = ((PartitionedRegionClearReplyMessage) msg).bucketsCleared;
         if (buckets != null) {
           bucketsCleared.addAll(buckets);
         }
@@ -194,7 +192,7 @@ public class PartitionedRegionClearMessage extends PartitionMessage {
 
   public static class PartitionedRegionClearReplyMessage extends ReplyMessage {
 
-    private ArrayList bucketsCleared;
+    private Set<Integer> bucketsCleared;
 
     private OperationType op;
 
@@ -209,7 +207,7 @@ public class PartitionedRegionClearMessage extends PartitionMessage {
     public PartitionedRegionClearReplyMessage() {}
 
     private PartitionedRegionClearReplyMessage(int processorId, OperationType op,
-        ArrayList bucketsCleared, ReplyException ex) {
+        Set<Integer> bucketsCleared, ReplyException ex) {
       super();
       this.bucketsCleared = bucketsCleared;
       this.op = op;
@@ -219,7 +217,7 @@ public class PartitionedRegionClearMessage extends PartitionMessage {
 
     /** Send an ack */
     public static void send(InternalDistributedMember recipient, int processorId, ReplySender dm,
-        OperationType op, ArrayList bucketsCleared, ReplyException ex) {
+        OperationType op, Set<Integer> bucketsCleared, ReplyException ex) {
 
       Assert.assertTrue(recipient != null, "partitionedRegionClearReplyMessage NULL reply message");
 
@@ -262,7 +260,7 @@ public class PartitionedRegionClearMessage extends PartitionMessage {
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
       op = PartitionedRegionClearMessage.OperationType.values()[in.readByte()];
-      bucketsCleared = DataSerializer.readArrayList(in);
+      bucketsCleared = DataSerializer.readObject(in);
     }
 
     @Override
@@ -270,7 +268,7 @@ public class PartitionedRegionClearMessage extends PartitionMessage {
         SerializationContext context) throws IOException {
       super.toData(out, context);
       out.writeByte(op.ordinal());
-      DataSerializer.writeArrayList(bucketsCleared, out);
+      DataSerializer.writeObject(bucketsCleared, out);
     }
 
     @Override
