@@ -1543,13 +1543,13 @@ public class ClusterDistributionManager implements DistributionManager {
   @Override
   public void retainMembersWithSameOrNewerVersion(Collection<InternalDistributedMember> members,
       KnownVersion version) {
-    members.removeIf(id -> id.getVersionOrdinalObject().compareTo(version) < 0);
+    members.removeIf(id -> id.getVersion().compareTo(version) < 0);
   }
 
   @Override
   public void removeMembersWithSameOrNewerVersion(Collection<InternalDistributedMember> members,
       KnownVersion version) {
-    members.removeIf(id -> id.getVersionOrdinalObject().compareTo(version) >= 0);
+    members.removeIf(id -> id.getVersion().compareTo(version) >= 0);
   }
 
   @Override

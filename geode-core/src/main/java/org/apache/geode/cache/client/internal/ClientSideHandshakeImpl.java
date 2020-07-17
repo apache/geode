@@ -118,7 +118,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
       overrideClientVersion = ver;
     } else {
       currentClientVersion =
-          Versioning.getKnownVersionOrDefault(Versioning.getVersionOrdinal(ver),
+          Versioning.getKnownVersionOrDefault(Versioning.getVersion(ver),
               KnownVersion.CURRENT);
       overrideClientVersion = -1;
     }
@@ -221,7 +221,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
         // establish a versioned stream for the other site, if necessary
         if (wanSiteVersion < KnownVersion.CURRENT_ORDINAL) {
           dis = new VersionedDataInputStream(dis, Versioning
-              .getKnownVersionOrDefault(Versioning.getVersionOrdinal(wanSiteVersion),
+              .getKnownVersionOrDefault(Versioning.getVersion(wanSiteVersion),
                   KnownVersion.CURRENT));
         }
       }
@@ -248,7 +248,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
       // validate that the remote side has a different distributed system id.
       if (communicationMode.isWAN()
           && KnownVersion.GFE_66
-              .compareTo(Versioning.getVersionOrdinal(conn.getWanSiteVersion())) <= 0
+              .compareTo(Versioning.getVersion(conn.getWanSiteVersion())) <= 0
           && currentClientVersion.isNotOlderThan(KnownVersion.GFE_66)) {
         int remoteDistributedSystemId = in.read();
         int localDistributedSystemId =
@@ -263,7 +263,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
       // Read the PDX registry size from the remote size
       if (communicationMode.isWAN()
           && KnownVersion.GFE_80
-              .compareTo(Versioning.getVersionOrdinal(conn.getWanSiteVersion())) <= 0
+              .compareTo(Versioning.getVersion(conn.getWanSiteVersion())) <= 0
           && currentClientVersion.isNotOlderThan(KnownVersion.GFE_80)) {
         int remotePdxSize = dis.readInt();
         serverQStatus.setPdxSize(remotePdxSize);

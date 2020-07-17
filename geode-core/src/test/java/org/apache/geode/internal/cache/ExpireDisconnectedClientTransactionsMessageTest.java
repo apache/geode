@@ -44,7 +44,7 @@ public class ExpireDisconnectedClientTransactionsMessageTest {
     when(dm.getCache()).thenReturn(cache);
     when(cache.getTXMgr()).thenReturn(txManager);
     doReturn(sender).when(message).getSender();
-    when(sender.getVersionOrdinalObject()).thenReturn(version);
+    when(sender.getVersion()).thenReturn(version);
   }
 
   @Test
