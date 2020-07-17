@@ -1080,7 +1080,7 @@ fromData,40
 toData,36
 
 org/apache/geode/internal/cache/PartitionedRegionClearMessage$PartitionedRegionClearReplyMessage,2
-fromData,29
+fromData,32
 toData,28
 
 org/apache/geode/internal/cache/PoolFactoryImpl$PoolAttributes,2
