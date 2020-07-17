@@ -1068,8 +1068,8 @@ Apache Geode bundles the following files under the MIT License:
 
   - Checker Qual v2.10.0 (https://checkerframework.org), Copyright (c)
     2004-present by the Checker Framework developers
-  - ClassGraph v4.8.52 (https://github.com/classgraph/classgraph), Copyright
-    (c) 2019 Luke Hutchison
+  - ClassGraph v4.8.87 (https://github.com/classgraph/classgraph), Copyright
+    (c) 2020 Luke Hutchison
   - HTML5 Shiv vpre3.5 (https://github.com/aFarkas/html5shiv), Copyright
     (c) 2014 Alexander Farkas (aFarkas)
   - JavaScript InfoVis Toolkit v2.0.1 (http://philogb.github.io/jit/),
