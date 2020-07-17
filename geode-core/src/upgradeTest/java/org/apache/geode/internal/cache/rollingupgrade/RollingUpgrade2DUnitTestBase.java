@@ -1073,7 +1073,7 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
   private static void assertVersion(GemFireCache cache, short ordinal) {
     DistributedSystem system = cache.getDistributedSystem();
     int thisOrdinal =
-        ((InternalDistributedMember) system.getDistributedMember()).getVersionOrdinalObject()
+        ((InternalDistributedMember) system.getDistributedMember()).getVersion()
             .ordinal();
     if (ordinal != thisOrdinal) {
       throw new Error(

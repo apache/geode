@@ -166,7 +166,7 @@ public class GMSJoinLeaveJUnitTest {
     mockOldMember = services.getMemberFactory().create(
         MemberDataBuilder.newBuilderForLocalHost("localhost")
             .setMembershipPort(8700).build());
-    ((MemberIdentifierImpl) mockOldMember).setVersionObjectForTest(KnownVersion.GFE_56);
+    ((MemberIdentifierImpl) mockOldMember).setVersionForTest(KnownVersion.GFE_56);
     locatorClient = mock(TcpClient.class);
 
     if (useTestGMSJoinLeave) {
@@ -1588,7 +1588,7 @@ public class GMSJoinLeaveJUnitTest {
 
     // this test must live in the 1.12 and later lines so pick a pre-1.12 version
     final KnownVersion oldVersion = KnownVersion.GEODE_1_11_0;
-    myMemberIDWithWrongVersion.setVersionObjectForTest(oldVersion);
+    myMemberIDWithWrongVersion.setVersionForTest(oldVersion);
 
     viewWithWrongVersion.remove(gmsJoinLeaveMemberId);
     viewWithWrongVersion.add(myMemberIDWithWrongVersion);
@@ -1596,7 +1596,7 @@ public class GMSJoinLeaveJUnitTest {
     gmsJoinLeave.installView(viewWithWrongVersion);
 
     assertThat(
-        gmsJoinLeave.getView().getCanonicalID(gmsJoinLeaveMemberId).getVersionOrdinalObject())
+        gmsJoinLeave.getView().getCanonicalID(gmsJoinLeaveMemberId).getVersion())
             .isEqualTo(KnownVersion.getCurrentVersion());
   }
 

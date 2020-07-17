@@ -94,7 +94,7 @@ public class RemoteParallelGatewaySenderEventProcessor extends ParallelGatewaySe
       Connection conn = remoteDispatcher.getConnection(false);
       if (conn != null) {
         short remoteSiteVersion = conn.getWanSiteVersion();
-        if (KnownVersion.GFE_701.compareTo(Versioning.getVersionOrdinal(remoteSiteVersion)) <= 0) {
+        if (KnownVersion.GFE_701.compareTo(Versioning.getVersion(remoteSiteVersion)) <= 0) {
           return true;
         }
       }

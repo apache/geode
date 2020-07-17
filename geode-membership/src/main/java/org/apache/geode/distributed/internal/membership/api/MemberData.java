@@ -23,7 +23,7 @@ import org.jgroups.util.UUID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.VersionOrdinal;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * MemberIdentifiers are created with a MemberData component. Use MemberDataBuilder to create
@@ -46,7 +46,7 @@ public interface MemberData {
 
   short getVersionOrdinal();
 
-  VersionOrdinal getVersionOrdinalObject();
+  Version getVersion();
 
   String getUniqueTag();
 
