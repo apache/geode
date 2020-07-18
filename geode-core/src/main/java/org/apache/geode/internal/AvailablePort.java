@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
@@ -24,6 +25,7 @@ import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.net.NetworkInterface;
 import java.net.ServerSocket;
+import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
@@ -461,22 +463,22 @@ public class AvailablePort {
    * smaller that can cause bug 46690
    *
    */
-  public static class Keeper implements Serializable {
-    private final transient ServerSocket ss;
+  public static class Keeper<Socket extends Closeable> implements Serializable {
+    private final transient Socket socket;
     private final int port;
 
-    public Keeper(ServerSocket ss, int port) {
-      this.ss = ss;
+    public Keeper(Socket socket, int port) {
+      this.socket = socket;
       this.port = port;
     }
 
-    public Keeper(ServerSocket ss, Integer port) {
-      this.ss = ss;
+    public Keeper(Socket socket, Integer port) {
+      this.socket = socket;
       this.port = port != null ? port : 0;
     }
 
     public int getPort() {
-      return this.port;
+      return port;
     }
 
     /**
@@ -484,8 +486,8 @@ public class AvailablePort {
      */
     public void release() {
       try {
-        if (this.ss != null) {
-          this.ss.close();
+        if (socket != null) {
+          socket.close();
         }
       } catch (IOException ignore) {
       }

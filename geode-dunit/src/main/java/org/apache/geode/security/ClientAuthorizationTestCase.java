@@ -905,7 +905,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
         buildProperties(authenticator, accessor, false, extraAuthProps, extraAuthzProps);
 
     // Get ports for the servers
-    List<Keeper> randomAvailableTCPPortKeepers =
+    List<Keeper<?>> randomAvailableTCPPortKeepers =
         AvailablePortHelper.getRandomAvailableTCPPortKeepers(2);
     Keeper port1Keeper = randomAvailableTCPPortKeepers.get(0);
     Keeper port2Keeper = randomAvailableTCPPortKeepers.get(1);

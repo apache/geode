@@ -79,7 +79,7 @@ public class ReconnectWithClusterConfigurationDUnitTest implements Serializable 
 
   @Before
   public void setup() throws IOException {
-    List<AvailablePort.Keeper> randomAvailableTCPPortKeepers =
+    List<AvailablePort.Keeper<?>> randomAvailableTCPPortKeepers =
         AvailablePortHelper.getRandomAvailableTCPPortKeepers(NUM_LOCATORS);
     for (int i = 0; i < NUM_LOCATORS; i++) {
       AvailablePort.Keeper keeper = randomAvailableTCPPortKeepers.get(i);

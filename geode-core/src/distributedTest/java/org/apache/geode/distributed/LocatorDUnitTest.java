@@ -1115,7 +1115,7 @@ public class LocatorDUnitTest implements Serializable {
 
   @Test
   public void testConcurrentLocatorStartup() throws Exception {
-    List<AvailablePort.Keeper> portKeepers =
+    List<AvailablePort.Keeper<?>> portKeepers =
         AvailablePortHelper.getRandomAvailableTCPPortKeepers(4);
     StringBuilder sb = new StringBuilder(100);
     for (int i = 0; i < portKeepers.size(); i++) {

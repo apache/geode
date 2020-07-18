@@ -16,17 +16,12 @@ package org.apache.geode.internal;
 
 import static java.util.Arrays.stream;
 import static java.util.Comparator.naturalOrder;
-import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE;
-import static org.apache.geode.internal.AvailablePort.AVAILABLE_PORTS_LOWER_BOUND;
-import static org.apache.geode.internal.AvailablePort.AVAILABLE_PORTS_UPPER_BOUND;
 import static org.apache.geode.internal.AvailablePort.MULTICAST;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPortRange;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPortRangeKeepers;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableUDPPort;
-import static org.apache.geode.internal.AvailablePortHelper.initializeUniquePortRange;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assume.assumeFalse;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -50,7 +45,6 @@ import org.junit.rules.ErrorCollector;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.internal.AvailablePort.Keeper;
-import org.apache.geode.internal.lang.SystemUtils;
 
 @RunWith(JUnitParamsRunner.class)
 public class AvailablePortHelperIntegrationTest {
@@ -103,63 +97,35 @@ public class AvailablePortHelperIntegrationTest {
   }
 
   @Test
-  @Parameters({"true", "false"})
-  @TestCaseName("{method}(useMembershipPortRange={0})")
-  public void getRandomAvailableTCPPortRange_returnsUsablePorts(boolean useMembershipPortRange) {
-    int[] results = getRandomAvailableTCPPortRange(10, useMembershipPortRange);
+  public void getRandomAvailableTCPPortRange_returnsUsablePorts() {
+    int[] results = getRandomAvailableTCPPortRange(10);
 
     stream(results).forEach(port -> assertThatPort(port)
         .isUsable());
   }
 
   @Test
-  @Parameters({"true", "false"})
-  @TestCaseName("{method}(useMembershipPortRange={0})")
-  public void getRandomAvailableTCPPortRange_returnsUniquePorts(boolean useMembershipPortRange) {
-    int[] results = getRandomAvailableTCPPortRange(10, useMembershipPortRange);
+  public void getRandomAvailableTCPPortRange_returnsUniquePorts() {
+    int[] results = getRandomAvailableTCPPortRange(10);
 
     assertThat(results)
         .doesNotHaveDuplicates();
   }
 
   @Test
-  @Parameters({"true", "false"})
-  @TestCaseName("{method}(useMembershipPortRange={0})")
-  public void getRandomAvailableTCPPortRange_returnsNaturallyOrderedPorts(
-      boolean useMembershipPortRange) {
-    int[] results = getRandomAvailableTCPPortRange(10, useMembershipPortRange);
+  public void getRandomAvailableTCPPortRange_returnsNaturallyOrderedPorts() {
+    int[] results = getRandomAvailableTCPPortRange(10);
 
     assertThat(results)
         .isSortedAccordingTo(naturalOrder());
   }
 
   @Test
-  @Parameters({"true", "false"})
-  @TestCaseName("{method}(useMembershipPortRange={0})")
-  public void getRandomAvailableTCPPortRange_returnsConsecutivePorts(
-      boolean useMembershipPortRange) {
-    int[] results = getRandomAvailableTCPPortRange(10, useMembershipPortRange);
+  public void getRandomAvailableTCPPortRange_returnsConsecutivePorts() {
+    int[] results = getRandomAvailableTCPPortRange(10);
 
     assertThatSequence(results)
         .isConsecutive();
-  }
-
-  @Test
-  @Parameters({"true", "false"})
-  @TestCaseName("{method}(useMembershipPortRange={0})")
-  public void getRandomAvailableTCPPortRange_returnsPortsInRange(boolean useMembershipPortRange) {
-    int lower =
-        useMembershipPortRange ? DEFAULT_MEMBERSHIP_PORT_RANGE[0] : AVAILABLE_PORTS_LOWER_BOUND;
-    int upper =
-        useMembershipPortRange ? DEFAULT_MEMBERSHIP_PORT_RANGE[1] : AVAILABLE_PORTS_UPPER_BOUND;
-
-    int[] results = getRandomAvailableTCPPortRange(10, useMembershipPortRange);
-
-    stream(results).forEach(port ->
-
-    assertThat(port)
-        .isGreaterThanOrEqualTo(lower)
-        .isLessThanOrEqualTo(upper));
   }
 
   @Test
@@ -222,33 +188,11 @@ public class AvailablePortHelperIntegrationTest {
   }
 
   @Test
-  @Parameters({"true", "false"})
-  @TestCaseName("{method}(useMembershipPortRange={0})")
-  public void getRandomAvailableTCPPortRangeKeepers_returnsConsecutivePorts(
-      boolean useMembershipPortRange) {
-    List<Keeper> results = getRandomAvailableTCPPortRangeKeepers(10, useMembershipPortRange);
+  public void getRandomAvailableTCPPortRangeKeepers_returnsConsecutivePorts() {
+    List<Keeper> results = getRandomAvailableTCPPortRangeKeepers(10);
 
     assertThatSequence(keeperPorts(results))
         .isConsecutive();
-  }
-
-  @Test
-  @Parameters({"true", "false"})
-  @TestCaseName("{method}(useMembershipPortRange={0})")
-  public void getRandomAvailableTCPPortRangeKeepers_returnsPortsInRange(
-      boolean useMembershipPortRange) {
-    int lower =
-        useMembershipPortRange ? DEFAULT_MEMBERSHIP_PORT_RANGE[0] : AVAILABLE_PORTS_LOWER_BOUND;
-    int upper =
-        useMembershipPortRange ? DEFAULT_MEMBERSHIP_PORT_RANGE[1] : AVAILABLE_PORTS_UPPER_BOUND;
-
-    List<Keeper> results = getRandomAvailableTCPPortRangeKeepers(10, useMembershipPortRange);
-
-    keeperPorts(results).forEach(port ->
-
-    assertThat(port)
-        .isGreaterThanOrEqualTo(lower)
-        .isLessThanOrEqualTo(upper));
   }
 
   @Test
@@ -268,13 +212,11 @@ public class AvailablePortHelperIntegrationTest {
   }
 
   @Test
-  @Parameters({"true", "false"})
-  @TestCaseName("{method}(useMembershipPortRange={0})")
-  public void getRandomAvailableTCPPortRange_returnsUniqueRanges(boolean useMembershipPortRange) {
+  public void getRandomAvailableTCPPortRange_returnsUniqueRanges() {
     Collection<Integer> previousPorts = new HashSet<>();
     for (int i = 0; i < 3; ++i) {
 
-      int[] results = getRandomAvailableTCPPortRange(5, useMembershipPortRange);
+      int[] results = getRandomAvailableTCPPortRange(5);
 
       Collection<Integer> ports = toSet(results);
 
@@ -286,64 +228,16 @@ public class AvailablePortHelperIntegrationTest {
   }
 
   @Test
-  @Parameters({"true", "false"})
-  @TestCaseName("{method}(useMembershipPortRange={0})")
-  public void getRandomAvailableTCPPort_returnsUniqueValues(boolean useMembershipPortRange) {
+  public void getRandomAvailableTCPPort_returnsUniqueValues() {
     Collection<Integer> previousPorts = new HashSet<>();
     for (int i = 0; i < 3; ++i) {
 
-      int port = getRandomAvailableTCPPorts(1, useMembershipPortRange)[0];
+      int port = getRandomAvailableTCPPorts(1)[0];
 
       assertThat(previousPorts)
           .doesNotContain(port);
 
       previousPorts.add(port);
-    }
-  }
-
-  @Test
-  @Parameters({"true", "false"})
-  @TestCaseName("{method}(useMembershipPortRange={0})")
-  public void initializeUniquePortRange_returnSamePortsForSameRange(
-      boolean useMembershipPortRange) {
-    assumeFalse(
-        "Windows has ports scattered throughout the range that makes this test difficult to pass consistently",
-        SystemUtils.isWindows());
-
-    for (int i = 0; i < 3; ++i) {
-
-      initializeUniquePortRange(i);
-      int[] previousPorts = getRandomAvailableTCPPorts(3, useMembershipPortRange);
-
-      initializeUniquePortRange(i);
-      int[] ports = getRandomAvailableTCPPorts(3, useMembershipPortRange);
-
-      assertThat(ports)
-          .isEqualTo(previousPorts);
-    }
-  }
-
-  @Test
-  @Parameters({"true", "false"})
-  @TestCaseName("{method}(useMembershipPortRange={0})")
-  public void initializeUniquePortRange_willReturnUniquePortsForUniqueRanges(
-      boolean useMembershipPortRange) {
-    assumeFalse(
-        "Windows has ports scattered throughout the range that makes this test difficult to pass consistently",
-        SystemUtils.isWindows());
-
-    Collection<Integer> previousPorts = new HashSet<>();
-    for (int i = 0; i < 3; ++i) {
-
-      initializeUniquePortRange(i);
-      int[] results = getRandomAvailableTCPPorts(5, useMembershipPortRange);
-
-      Collection<Integer> ports = toSet(results);
-
-      assertThat(previousPorts)
-          .doesNotContainAnyElementsOf(ports);
-
-      previousPorts.addAll(ports);
     }
   }
 

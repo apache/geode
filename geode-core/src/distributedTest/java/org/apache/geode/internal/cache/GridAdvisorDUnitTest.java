@@ -71,7 +71,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
     VM vm2 = VM.getVM(2);
     VM vm3 = VM.getVM(3);
 
-    List<Keeper> freeTCPPorts = AvailablePortHelper.getRandomAvailableTCPPortKeepers(6);
+    List<Keeper<?>> freeTCPPorts = AvailablePortHelper.getRandomAvailableTCPPortKeepers(6);
     final Keeper keeper1 = freeTCPPorts.get(0);
     final int port1 = keeper1.getPort();
     final Keeper keeper2 = freeTCPPorts.get(1);
@@ -210,7 +210,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
     VM vm2 = VM.getVM(2);
     VM vm3 = VM.getVM(3);
 
-    List<Keeper> freeTCPPorts = AvailablePortHelper.getRandomAvailableTCPPortKeepers(6);
+    List<Keeper<?>> freeTCPPorts = AvailablePortHelper.getRandomAvailableTCPPortKeepers(6);
     final Keeper keeper1 = freeTCPPorts.get(0);
     final int port1 = keeper1.getPort();
     final Keeper keeper2 = freeTCPPorts.get(1);
