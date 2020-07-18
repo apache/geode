@@ -213,6 +213,6 @@ public class MembershipLocatorImpl<ID extends MemberIdentifier> implements Membe
 
   @Override
   public String toString() {
-    return "Locator on " + getSocketAddress() + ":" + getPort();
+    return "Locator on " + getSocketAddress();
   }
 }
