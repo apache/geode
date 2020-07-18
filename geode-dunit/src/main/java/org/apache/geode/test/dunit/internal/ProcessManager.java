@@ -121,7 +121,7 @@ class ProcessManager implements ChildVMLauncher {
     }
   }
 
-  private static final File baseDir = Files.createTempDir();
+  static final File baseDir = Files.createTempDir();
 
   public static File getVMDir(String version, int vmNum) {
     return new File(new File(baseDir, DUnitLauncher.DUNIT_DIR),
@@ -287,7 +287,7 @@ class ProcessManager implements ChildVMLauncher {
     cmds.add("-D" + DUnitLauncher.RMI_PORT_PARAM + "=" + namingPort);
     cmds.add("-D" + DUnitLauncher.VM_NUM_PARAM + "=" + vmNum);
     cmds.add("-D" + DUnitLauncher.VM_VERSION_PARAM + "=" + version);
-    cmds.add("-D" + DUnitLauncher.WORKSPACE_DIR_PARAM + "=" + new File(".").getAbsolutePath());
+    cmds.add("-D" + DUnitLauncher.WORKSPACE_DIR_PARAM + "=" + baseDir);
     if (vmNum >= 0) { // let the locator print a banner
       if (version.equals(VersionManager.CURRENT_VERSION)) { // enable the banner for older versions
         cmds.add("-D" + InternalLocator.INHIBIT_DM_BANNER + "=true");

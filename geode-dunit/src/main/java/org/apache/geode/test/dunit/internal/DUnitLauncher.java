@@ -188,7 +188,7 @@ public class DUnitLauncher {
 
   private static void launch(boolean launchLocator) throws AlreadyBoundException, IOException,
       InterruptedException, NotBoundException {
-    DUNIT_SUSPECT_FILE = new File(SUSPECT_FILENAME);
+    DUNIT_SUSPECT_FILE = new File(ProcessManager.baseDir, SUSPECT_FILENAME);
     DUNIT_SUSPECT_FILE.delete();
     DUNIT_SUSPECT_FILE.deleteOnExit();
 
@@ -259,6 +259,7 @@ public class DUnitLauncher {
    * format so that hydra will be able to parse them.
    */
   private static void addSuspectFileAppender(final String workspaceDir) {
+    System.out.println("XXXXXX WorkspaceDir=" + workspaceDir);
     final String suspectFilename = new File(workspaceDir, SUSPECT_FILENAME).getAbsolutePath();
 
 
@@ -332,7 +333,7 @@ public class DUnitLauncher {
     DUnitEnv.set(new StandAloneDUnitEnv(master));
     // fake out tests that are using a bunch of hydra stuff
     String workspaceDir = System.getProperty(DUnitLauncher.WORKSPACE_DIR_PARAM);
-    workspaceDir = workspaceDir == null ? new File(".").getAbsolutePath() : workspaceDir;
+    workspaceDir = workspaceDir == null ? ProcessManager.baseDir.getAbsolutePath() : workspaceDir;
 
     addSuspectFileAppender(workspaceDir);
 
