@@ -59,8 +59,8 @@ import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMon
 import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Messenger;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.Version;
-import org.apache.geode.internal.serialization.VersionOrdinal;
 import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.internal.serialization.internal.DSFIDSerializerImpl;
 import org.apache.geode.test.junit.categories.MembershipTest;
@@ -68,10 +68,10 @@ import org.apache.geode.test.junit.categories.MembershipTest;
 @Category({MembershipTest.class})
 public class GMSMembershipJUnitTest {
 
-  private static final VersionOrdinal OLDER_THAN_CURRENT_VERSION =
-      Versioning.getVersionOrdinal((short) (Version.CURRENT_ORDINAL - 1));
-  private static final VersionOrdinal NEWER_THAN_CURRENT_VERSION =
-      Versioning.getVersionOrdinal((short) (Version.CURRENT_ORDINAL + 1));;
+  private static final Version OLDER_THAN_CURRENT_VERSION =
+      Versioning.getVersion((short) (KnownVersion.CURRENT_ORDINAL - 1));
+  private static final Version NEWER_THAN_CURRENT_VERSION =
+      Versioning.getVersion((short) (KnownVersion.CURRENT_ORDINAL + 1));;
   private static final int DEFAULT_PORT = 8888;
 
   private Services services;
@@ -350,7 +350,7 @@ public class GMSMembershipJUnitTest {
   @Test
   public void testIsMulticastAllowedWithCurrentVersionSurpriseMember() {
     MembershipView<MemberIdentifier> view = createMembershipView();
-    manager.addSurpriseMember(createSurpriseMember(Version.CURRENT));
+    manager.addSurpriseMember(createSurpriseMember(KnownVersion.CURRENT));
 
     manager.processView(view);
 
@@ -370,7 +370,7 @@ public class GMSMembershipJUnitTest {
   @Test
   public void testIsMulticastAllowedWithOldVersionViewMember() {
     MembershipView<MemberIdentifier> view = createMembershipView();
-    view.getMembers().get(0).setVersionObjectForTest(OLDER_THAN_CURRENT_VERSION);
+    view.getMembers().get(0).setVersionForTest(OLDER_THAN_CURRENT_VERSION);
 
     manager.processView(view);
 
@@ -389,17 +389,17 @@ public class GMSMembershipJUnitTest {
   @Test
   public void testMulticastAllowedWithNewVersionViewMember() {
     MembershipView<MemberIdentifier> view = createMembershipView();
-    view.getMembers().get(0).setVersionObjectForTest(NEWER_THAN_CURRENT_VERSION);
+    view.getMembers().get(0).setVersionForTest(NEWER_THAN_CURRENT_VERSION);
 
     manager.processView(view);
 
     assertThat(manager.getGMSManager().isMulticastAllowed()).isTrue();
   }
 
-  private MemberIdentifier createSurpriseMember(VersionOrdinal version) {
+  private MemberIdentifier createSurpriseMember(Version version) {
     MemberIdentifier surpriseMember = createMemberID(DEFAULT_PORT + 5);
     surpriseMember.setVmViewId(3);
-    surpriseMember.setVersionObjectForTest(version);
+    surpriseMember.setVersionForTest(version);
     return surpriseMember;
   }
 

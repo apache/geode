@@ -502,8 +502,8 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
 
 
   @Override
-  public void setVersion(KnownVersion version) {
-   this.version = version;
+  public void setVersion(Version version) {
+    this.version = version;
   }
 
   @Override

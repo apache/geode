@@ -62,7 +62,6 @@ import org.apache.geode.distributed.internal.membership.api.QuorumChecker;
 import org.apache.geode.distributed.internal.membership.api.StopShunningMarker;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
 import org.apache.geode.internal.serialization.KnownVersion;
-import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.util.internal.GeodeGlossary;
@@ -523,7 +522,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
 
   private boolean anyMemberHasOlderVersion(final Stream<ID> members) {
     return members
-        .anyMatch(member -> Version.CURRENT.isNewerThan(member.getVersionOrdinalObject()));
+        .anyMatch(member -> KnownVersion.CURRENT.isNewerThan(member.getVersion()));
   }
 
   @Override
