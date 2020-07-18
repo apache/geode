@@ -33,6 +33,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.JavaVersion;
 import org.apache.commons.lang3.SystemUtils;
@@ -89,7 +90,7 @@ class ProcessManager implements ChildVMLauncher {
     }
 
     String[] cmd = buildJavaCommand(vmNum, namingPort, version);
-    System.out.println("Executing " + Arrays.toString(cmd));
+    System.out.println("Executing " + Arrays.toString(cmd) + "\n Working directory:" + workingDir);
 
     if (log4jConfig != null) {
       FileUtils.copyFileToDirectory(log4jConfig, workingDir);
@@ -120,8 +121,11 @@ class ProcessManager implements ChildVMLauncher {
     }
   }
 
+  private static final File baseDir = Files.createTempDir();
+
   public static File getVMDir(String version, int vmNum) {
-    return new File(DUnitLauncher.DUNIT_DIR, VM.getVMName(VersionManager.CURRENT_VERSION, vmNum));
+    return new File(new File(baseDir, DUnitLauncher.DUNIT_DIR),
+        VM.getVMName(VersionManager.CURRENT_VERSION, vmNum));
   }
 
   public synchronized void killVMs() {
