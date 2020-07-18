@@ -41,7 +41,6 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionAdvisee;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.internal.AvailablePort.Keeper;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -71,19 +70,13 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
     VM vm2 = VM.getVM(2);
     VM vm3 = VM.getVM(3);
 
-    List<Keeper<?>> freeTCPPorts = AvailablePortHelper.getRandomAvailableTCPPortKeepers(6);
-    final Keeper keeper1 = freeTCPPorts.get(0);
-    final int port1 = keeper1.getPort();
-    final Keeper keeper2 = freeTCPPorts.get(1);
-    final int port2 = keeper2.getPort();
-    final Keeper bsKeeper1 = freeTCPPorts.get(2);
-    final int bsPort1 = bsKeeper1.getPort();
-    final Keeper bsKeeper2 = freeTCPPorts.get(3);
-    final int bsPort2 = bsKeeper2.getPort();
-    final Keeper bsKeeper3 = freeTCPPorts.get(4);
-    final int bsPort3 = bsKeeper3.getPort();
-    final Keeper bsKeeper4 = freeTCPPorts.get(5);
-    final int bsPort4 = bsKeeper4.getPort();
+    int[] freeTCPPorts = AvailablePortHelper.getRandomAvailableTCPPorts(6);
+    final int port1 = freeTCPPorts[0];
+    final int port2 = freeTCPPorts[1];
+    final int bsPort1 = freeTCPPorts[2];
+    final int bsPort2 = freeTCPPorts[3];
+    final int bsPort3 = freeTCPPorts[4];
+    final int bsPort4 = freeTCPPorts[5];
 
     final String host0 = NetworkUtils.getServerHostName();
     final String locators = host0 + "[" + port1 + "]" + "," + host0 + "[" + port2 + "]";
@@ -94,22 +87,16 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
     dsProps.setProperty(LOG_LEVEL, String.valueOf(logger.getLevel()));
     dsProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
 
-    keeper1.release();
     vm0.invoke(() -> startLocatorOnPort(port1, dsProps, null));
 
-    keeper2.release();
     vm3.invoke(() -> startLocatorOnPort(port2, dsProps, "locator2HNFC"));
 
     vm1.invoke(() -> createCache(locators, null));
     vm2.invoke(() -> createCache(locators, null));
 
-    bsKeeper1.release();
     vm1.invoke(() -> startBridgeServerOnPort(bsPort1, "bs1Group1", "bs1Group2"));
-    bsKeeper3.release();
     vm1.invoke(() -> startBridgeServerOnPort(bsPort3, "bs3Group1", "bs3Group2"));
-    bsKeeper2.release();
     vm2.invoke(() -> startBridgeServerOnPort(bsPort2, "bs2Group1", "bs2Group2"));
-    bsKeeper4.release();
     vm2.invoke(() -> startBridgeServerOnPort(bsPort4, "bs4Group1", "bs4Group2"));
 
     // verify that locators know about each other
@@ -210,19 +197,13 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
     VM vm2 = VM.getVM(2);
     VM vm3 = VM.getVM(3);
 
-    List<Keeper<?>> freeTCPPorts = AvailablePortHelper.getRandomAvailableTCPPortKeepers(6);
-    final Keeper keeper1 = freeTCPPorts.get(0);
-    final int port1 = keeper1.getPort();
-    final Keeper keeper2 = freeTCPPorts.get(1);
-    final int port2 = keeper2.getPort();
-    final Keeper bsKeeper1 = freeTCPPorts.get(2);
-    final int bsPort1 = bsKeeper1.getPort();
-    final Keeper bsKeeper2 = freeTCPPorts.get(3);
-    final int bsPort2 = bsKeeper2.getPort();
-    final Keeper bsKeeper3 = freeTCPPorts.get(4);
-    final int bsPort3 = bsKeeper3.getPort();
-    final Keeper bsKeeper4 = freeTCPPorts.get(5);
-    final int bsPort4 = bsKeeper4.getPort();
+    int[] freeTCPPorts = AvailablePortHelper.getRandomAvailableTCPPorts(6);
+    final int port1 = freeTCPPorts[0];
+    final int port2 = freeTCPPorts[1];
+    final int bsPort1 = freeTCPPorts[2];
+    final int bsPort2 = freeTCPPorts[3];
+    final int bsPort3 = freeTCPPorts[4];
+    final int bsPort4 = freeTCPPorts[5];
 
     final String host0 = NetworkUtils.getServerHostName();
     final String locators = host0 + "[" + port1 + "]" + "," + host0 + "[" + port2 + "]";
@@ -233,22 +214,16 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
     dsProps.setProperty(LOG_LEVEL, String.valueOf(logger.getLevel()));
     dsProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
 
-    keeper1.release();
     vm0.invoke(() -> startLocatorOnPort(port1, dsProps, null));
 
-    keeper2.release();
     vm3.invoke(() -> startLocatorOnPort(port2, dsProps, "locator2HNFC"));
 
     vm1.invoke(() -> createCache(locators, "bs1Group1, bs1Group2"));
     vm2.invoke(() -> createCache(locators, "bs2Group1, bs2Group2"));
 
-    bsKeeper1.release();
     vm1.invoke(() -> startBridgeServerOnPort(bsPort1));
-    bsKeeper3.release();
     vm1.invoke(() -> startBridgeServerOnPort(bsPort3));
-    bsKeeper2.release();
     vm2.invoke(() -> startBridgeServerOnPort(bsPort2));
-    bsKeeper4.release();
     vm2.invoke(() -> startBridgeServerOnPort(bsPort4));
 
     // verify that locators know about each other

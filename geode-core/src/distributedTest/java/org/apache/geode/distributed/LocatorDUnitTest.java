@@ -1115,13 +1115,12 @@ public class LocatorDUnitTest implements Serializable {
 
   @Test
   public void testConcurrentLocatorStartup() throws Exception {
-    List<AvailablePort.Keeper<?>> portKeepers =
-        AvailablePortHelper.getRandomAvailableTCPPortKeepers(4);
+    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(4);
     StringBuilder sb = new StringBuilder(100);
-    for (int i = 0; i < portKeepers.size(); i++) {
-      AvailablePort.Keeper keeper = portKeepers.get(i);
-      sb.append("localhost[").append(keeper.getPort()).append("]");
-      if (i < portKeepers.size() - 1) {
+    for (int i = 0; i < ports.length; i++) {
+      final int port = ports[i];
+      sb.append("localhost[").append(port).append("]");
+      if (i < ports.length - 1) {
         sb.append(',');
       }
     }
@@ -1129,12 +1128,10 @@ public class LocatorDUnitTest implements Serializable {
 
     Properties dsProps = getClusterProperties(locators, "false");
 
-    List<AsyncInvocation<Object>> asyncInvocations = new ArrayList<>(portKeepers.size());
+    List<AsyncInvocation<Object>> asyncInvocations = new ArrayList<>(ports.length);
 
-    for (int i = 0; i < portKeepers.size(); i++) {
-      AvailablePort.Keeper keeper = portKeepers.get(i);
-      int port = keeper.getPort();
-      keeper.release();
+    for (int i = 0; i < ports.length; i++) {
+      final int port = ports[i];
       AsyncInvocation<Object> startLocator = getVM(i).invokeAsync("start locator " + i, () -> {
         DUnitBlackboard blackboard = getBlackboard();
         blackboard.signalGate("" + port);

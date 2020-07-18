@@ -14,23 +14,14 @@
  */
 package org.apache.geode.internal;
 
-import java.io.Closeable;
-import java.io.IOException;
 import java.io.PrintStream;
-import java.io.Serializable;
 import java.net.DatagramPacket;
-import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
-import java.net.NetworkInterface;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.net.SocketAddress;
-import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
-import java.util.Enumeration;
 import java.util.Random;
 
 import org.apache.geode.annotations.Immutable;
@@ -163,76 +154,12 @@ public class AvailablePort {
     }
   }
 
-  public static Keeper isPortKeepable(final int port, int protocol, InetAddress addr) {
-    if (protocol == SOCKET) {
-      // Try to create a ServerSocket
-      if (addr == null) {
-        return keepAllInterfaces(port);
-      } else {
-        return keepOneInterface(addr, port);
-      }
-    } else if (protocol == MULTICAST) {
-      throw new IllegalArgumentException("You can not keep the JGROUPS protocol");
-    } else {
-      throw new IllegalArgumentException(String.format("Unknown protocol: %s",
-          Integer.valueOf(protocol)));
-    }
-  }
 
   private static boolean testOneInterface(InetAddress addr, int port) {
-    Keeper k = keepOneInterface(addr, port);
-    if (k != null) {
-      k.release();
-      return true;
-    } else {
-      return false;
-    }
+    // TODO attempt to bind
+    return true;
   }
 
-  private static Keeper keepOneInterface(InetAddress addr, int port) {
-    ServerSocket server = null;
-    try {
-      // (new Exception("Opening server socket on " + port)).printStackTrace();
-      server = new ServerSocket();
-      server.setReuseAddress(true);
-      if (addr != null) {
-        server.bind(new InetSocketAddress(addr, port));
-      } else {
-        server.bind(new InetSocketAddress(port));
-      }
-      Keeper result = new Keeper(server, port);
-      server = null;
-      return result;
-    } catch (java.io.IOException ioe) {
-      if (ioe.getMessage().equals("Network is unreachable")) {
-        throw new RuntimeException("Network is unreachable");
-      }
-      // ioe.printStackTrace();
-      if (addr instanceof Inet6Address) {
-        byte[] addrBytes = addr.getAddress();
-        if ((addrBytes[0] == (byte) 0xfe) && (addrBytes[1] == (byte) 0x80)) {
-          // Hack, early Sun 1.5 versions (like Hitachi's JVM) cannot handle IPv6
-          // link local addresses. Cannot trust InetAddress.isLinkLocalAddress()
-          // see http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6558853
-          // By returning true we ignore these interfaces and potentially say a
-          // port is not in use when it really is.
-          Keeper result = new Keeper(server, port);
-          server = null;
-          return result;
-        }
-      }
-      return null;
-    } catch (Exception ex) {
-      return null;
-    } finally {
-      if (server != null)
-        try {
-          server.close();
-        } catch (Exception ex) {
-
-        }
-    }
-  }
 
   /**
    * Test to see if a given port is available port on all interfaces on this host.
@@ -240,51 +167,9 @@ public class AvailablePort {
    * @return true of if the port is free on all interfaces
    */
   private static boolean testAllInterfaces(int port) {
-    Keeper k = keepAllInterfaces(port);
-    if (k != null) {
-      k.release();
-      return true;
-    } else {
-      return false;
-    }
+    // TODO attempt to bind
+    return true;
   }
-
-  private static Keeper keepAllInterfaces(int port) {
-    // First check to see if we can bind to the wildcard address.
-    if (!testOneInterface(null, port)) {
-      return null;
-    }
-
-    // Now check all of the addresses for all of the addresses
-    // on this system. On some systems (solaris, aix) binding
-    // to the wildcard address will successfully bind to only some
-    // of the interfaces if other interfaces are in use. We want to
-    // make sure this port is completely free.
-    //
-    // Note that we still need the check of the wildcard address, above,
-    // because on some systems (aix) we can still bind to specific addresses
-    // if someone else has bound to the wildcard address.
-    Enumeration en;
-    try {
-      en = NetworkInterface.getNetworkInterfaces();
-    } catch (SocketException e) {
-      throw new RuntimeException(e);
-    }
-    while (en.hasMoreElements()) {
-      NetworkInterface next = (NetworkInterface) en.nextElement();
-      Enumeration en2 = next.getInetAddresses();
-      while (en2.hasMoreElements()) {
-        InetAddress addr = (InetAddress) en2.nextElement();
-        boolean available = testOneInterface(addr, port);
-        if (!available) {
-          return null;
-        }
-      }
-    }
-    // Now do it one more time but reserve the wildcard address
-    return keepOneInterface(null, port);
-  }
-
 
   /**
    * Returns a randomly selected available port in the range 5001 to 32767.
@@ -296,33 +181,6 @@ public class AvailablePort {
   public static int getRandomAvailablePort(int protocol) {
     return getRandomAvailablePort(protocol, getAddress(protocol));
   }
-
-  public static Keeper getRandomAvailablePortKeeper(int protocol) {
-    return getRandomAvailablePortKeeper(protocol, getAddress(protocol));
-  }
-
-  /**
-   * Returns a randomly selected available port in the provided range.
-   *
-   * @param protocol The protocol to check (either {@link #SOCKET} or {@link #MULTICAST}).
-   *
-   * @throws IllegalArgumentException <code>protocol</code> is unknown
-   */
-  public static int getAvailablePortInRange(int rangeBase, int rangeTop, int protocol) {
-    return getAvailablePortInRange(protocol, getAddress(protocol), rangeBase, rangeTop);
-  }
-
-  /**
-   * Returns a randomly selected available port in the range 5001 to 32767 that satisfies a modulus
-   *
-   * @param protocol The protocol to check (either {@link #SOCKET} or {@link #MULTICAST}).
-   *
-   * @throws IllegalArgumentException <code>protocol</code> is unknown
-   */
-  public static int getRandomAvailablePortWithMod(int protocol, int mod) {
-    return getRandomAvailablePortWithMod(protocol, getAddress(protocol), mod);
-  }
-
 
   /**
    * Returns a randomly selected available port in the range 5001 to 32767.
@@ -354,21 +212,6 @@ public class AvailablePort {
         if (!(protocol == MULTICAST && port == DistributionConfig.DEFAULT_MCAST_PORT)) {
           return port;
         }
-      }
-    }
-  }
-
-  public static Keeper getRandomAvailablePortKeeper(int protocol, InetAddress addr) {
-    return getRandomAvailablePortKeeper(protocol, addr, false);
-  }
-
-  public static Keeper getRandomAvailablePortKeeper(int protocol, InetAddress addr,
-      boolean useMembershipPortRange) {
-    while (true) {
-      int port = getRandomWildcardBindPortNumber(useMembershipPortRange);
-      Keeper result = isPortKeepable(port, protocol, addr);
-      if (result != null) {
-        return result;
       }
     }
   }
@@ -458,41 +301,6 @@ public class AvailablePort {
     return -1;
   }
 
-  /**
-   * This class will keep an allocated port allocated until it is used. This makes the window
-   * smaller that can cause bug 46690
-   *
-   */
-  public static class Keeper<Socket extends Closeable> implements Serializable {
-    private final transient Socket socket;
-    private final int port;
-
-    public Keeper(Socket socket, int port) {
-      this.socket = socket;
-      this.port = port;
-    }
-
-    public Keeper(Socket socket, Integer port) {
-      this.socket = socket;
-      this.port = port != null ? port : 0;
-    }
-
-    public int getPort() {
-      return port;
-    }
-
-    /**
-     * Once you call this the socket will be freed and can then be reallocated by someone else.
-     */
-    public void release() {
-      try {
-        if (socket != null) {
-          socket.close();
-        }
-      } catch (IOException ignore) {
-      }
-    }
-  }
 
   /////////////////////// Main Program ///////////////////////
 

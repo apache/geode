@@ -18,7 +18,6 @@ import static java.util.Arrays.stream;
 import static java.util.Comparator.naturalOrder;
 import static org.apache.geode.internal.AvailablePort.MULTICAST;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPortRange;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPortRangeKeepers;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableUDPPort;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,16 +34,12 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
-import junitparams.naming.TestCaseName;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ErrorCollector;
 import org.junit.runner.RunWith;
-
-import org.apache.geode.internal.AvailablePort.Keeper;
 
 @RunWith(JUnitParamsRunner.class)
 public class AvailablePortHelperIntegrationTest {
@@ -129,73 +124,6 @@ public class AvailablePortHelperIntegrationTest {
   }
 
   @Test
-  public void getRandomAvailableTCPPortRangeKeepers_returnsNoKeepers_ifCountIsZero() {
-    List<Keeper> results = getRandomAvailableTCPPortRangeKeepers(0);
-
-    assertThat(results)
-        .isEmpty();
-  }
-
-  @Test
-  public void getRandomAvailableTCPPortRangeKeepers_returnsOneKeeper_ifCountIsOne() {
-    List<Keeper> results = getRandomAvailableTCPPortRangeKeepers(1);
-
-    assertThat(results)
-        .hasSize(1);
-  }
-
-  @Test
-  public void getRandomAvailableTCPPortRangeKeepers_returnsManyKeepers_ifCountIsMany() {
-    List<Keeper> results = getRandomAvailableTCPPortRangeKeepers(10);
-
-    assertThat(results)
-        .hasSize(10);
-  }
-
-  @Test
-  @Parameters({"true", "false"})
-  @TestCaseName("{method}(useMembershipPortRange={0})")
-  public void getRandomAvailableTCPPortRangeKeepers_returnsUsableKeepers(
-      boolean useMembershipPortRange) {
-    List<Keeper> results = getRandomAvailableTCPPortRangeKeepers(10, useMembershipPortRange);
-
-    results.stream().forEach(keeper ->
-
-    assertThatKeeper(keeper)
-        .isUsable());
-  }
-
-  @Test
-  @Parameters({"true", "false"})
-  @TestCaseName("{method}(useMembershipPortRange={0})")
-  public void getRandomAvailableTCPPortRangeKeepers_returnsUniqueKeepers(
-      boolean useMembershipPortRange) {
-    List<Keeper> results = getRandomAvailableTCPPortRangeKeepers(10, useMembershipPortRange);
-
-    assertThat(keeperPorts(results))
-        .doesNotHaveDuplicates();
-  }
-
-  @Test
-  @Parameters({"true", "false"})
-  @TestCaseName("{method}(useMembershipPortRange={0})")
-  public void getRandomAvailableTCPPortRangeKeepers_returnsNaturallyOrderedPorts(
-      boolean useMembershipPortRange) {
-    List<Keeper> results = getRandomAvailableTCPPortRangeKeepers(10, useMembershipPortRange);
-
-    assertThat(keeperPorts(results))
-        .isSortedAccordingTo(naturalOrder());
-  }
-
-  @Test
-  public void getRandomAvailableTCPPortRangeKeepers_returnsConsecutivePorts() {
-    List<Keeper> results = getRandomAvailableTCPPortRangeKeepers(10);
-
-    assertThatSequence(keeperPorts(results))
-        .isConsecutive();
-  }
-
-  @Test
   public void getRandomAvailableUDPPort_returnsNonZeroUdpPort() {
     int udpPort = getRandomAvailableUDPPort();
 
@@ -263,18 +191,8 @@ public class AvailablePortHelperIntegrationTest {
         .collect(Collectors.toSet());
   }
 
-  private List<Integer> keeperPorts(List<Keeper> keepers) {
-    return keepers.stream()
-        .map(Keeper::getPort)
-        .collect(Collectors.toList());
-  }
-
   private PortAssertion assertThatPort(int port) {
     return new PortAssertion(port);
-  }
-
-  private KeeperAssertion assertThatKeeper(Keeper keeper) {
-    return new KeeperAssertion(keeper);
   }
 
   private SequenceAssertion assertThatSequence(int[] integers) {
@@ -307,22 +225,6 @@ public class AvailablePortHelperIntegrationTest {
       } catch (IOException e) {
         throw new UncheckedIOException(e);
       }
-      return this;
-    }
-  }
-
-  private class KeeperAssertion {
-
-    private final Keeper keeper;
-
-    KeeperAssertion(Keeper keeper) {
-      this.keeper = keeper;
-    }
-
-    KeeperAssertion isUsable() {
-      int port = keeper.getPort();
-      keeper.release();
-      assertThatPort(port).isUsable();
       return this;
     }
   }

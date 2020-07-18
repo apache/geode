@@ -20,10 +20,7 @@ import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.SocketException;
-import java.util.ArrayList;
-import java.util.List;
 
-import org.apache.geode.internal.AvailablePort.Keeper;
 
 /**
  * Provides helper methods for acquiring a set of unique available ports. It is not safe to simply
@@ -41,14 +38,6 @@ public abstract class AvailablePortHelper {
     return getRandomAvailableTCPPortRange(count);
   }
 
-  public static List<Keeper<?>> getRandomAvailableTCPPortKeepers(int count) {
-    List<Keeper<?>> result = new ArrayList<>();
-    while (result.size() < count) {
-      result.add(getUniquePortKeeper(AvailablePort.SOCKET));
-    }
-    return result;
-  }
-
   /**
    * Returns an array of unique randomly available tcp ports
    *
@@ -56,31 +45,7 @@ public abstract class AvailablePortHelper {
    * @return the ports
    */
   public static int[] getRandomAvailableTCPPortRange(final int count) {
-    List<Keeper> list = getUniquePortRangeKeepers(AvailablePort.SOCKET, count);
-    int[] ports = new int[list.size()];
-    int i = 0;
-    for (Keeper k : list) {
-      ports[i] = k.getPort();
-      k.release();
-      i++;
-    }
-    return ports;
-  }
-
-  public static List<Keeper> getRandomAvailableTCPPortRangeKeepers(final int count) {
-    return getRandomAvailableTCPPortRangeKeepers(count, false);
-  }
-
-  public static List<Keeper> getRandomAvailableTCPPortRangeKeepers(final int count,
-      final boolean useMembershipPortRange) {
-    return getUniquePortRangeKeepers(AvailablePort.SOCKET,
-        count);
-  }
-
-  private static void releaseKeepers(Iterable<Keeper> keepers) {
-    for (Keeper keeper : keepers) {
-      keeper.release();
-    }
+    return getRandomAvailableTCPPortsForDUnitSite(count);
   }
 
   /**
@@ -124,34 +89,6 @@ public abstract class AvailablePortHelper {
     }
   }
 
-  /**
-   * Get keeper objects for the next unused, consecutive 'rangeSize' ports on this machine.
-   *
-   * @param protocol - either AvailablePort.SOCKET (TCP) or AvailablePort.MULTICAST (UDP)
-   * @param rangeSize - number of contiguous ports needed
-   * @return Keeper objects associated with a range of ports satisfying the request
-   */
-  private static List<Keeper> getUniquePortRangeKeepers(final int protocol, final int rangeSize) {
-
-    final List<Keeper> keepers = new ArrayList<>(rangeSize);
-    for (int i = 0; i < rangeSize; ++i) {
-      try {
-        if (AvailablePort.SOCKET == protocol) {
-          final ServerSocket socket = bindEphemeralTcpSocket();
-          keepers.add(new Keeper<>(socket, socket.getLocalPort()));
-        } else {
-          final DatagramSocket socket = bindEphemeralUdpSocket();
-          keepers.add(new Keeper<>(socket, socket.getLocalPort()));
-        }
-      } catch (IOException e) {
-        releaseKeepers(keepers);
-        throw new IllegalStateException(e);
-      }
-    }
-
-    return keepers;
-  }
-
   private static DatagramSocket bindEphemeralUdpSocket() throws SocketException {
     return new DatagramSocket();
   }
@@ -162,8 +99,5 @@ public abstract class AvailablePortHelper {
     return socket;
   }
 
-  private static Keeper<?> getUniquePortKeeper(int protocol) {
-    return getUniquePortRangeKeepers(protocol, 1).get(0);
-  }
 
 }
