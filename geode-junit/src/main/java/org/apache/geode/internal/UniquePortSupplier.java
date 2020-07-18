@@ -24,24 +24,7 @@ import java.util.stream.IntStream;
  */
 public class UniquePortSupplier {
 
-  private final IntSupplier supplier;
-  private final Set<Integer> usedPorts = new HashSet<>();
-
-  public UniquePortSupplier() {
-    supplier = () -> AvailablePortHelper.getRandomAvailableTCPPort();
-  }
-
-  public UniquePortSupplier(IntSupplier supplier) {
-    this.supplier = supplier;
-  }
-
-  public synchronized int getAvailablePort() {
-    int result = IntStream.generate(supplier)
-        .filter(port -> !usedPorts.contains(port))
-        .findFirst()
-        .getAsInt();
-
-    usedPorts.add(result);
-    return result;
+  public int getAvailablePort() {
+    return AvailablePortHelper.getRandomAvailableTCPPort();
   }
 }

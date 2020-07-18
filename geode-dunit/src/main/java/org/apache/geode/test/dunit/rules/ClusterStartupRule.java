@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
+import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.JavaVersion;
 import org.junit.runner.Description;
@@ -173,8 +174,11 @@ public class ClusterStartupRule implements SerializableTestRule {
     vms.forEach(x -> x.stop());
 
     // delete any file under root dir
-    Arrays.stream(getWorkingDirRoot().listFiles()).filter(File::isFile)
-        .forEach(FileUtils::deleteQuietly);
+    final File[] files = getWorkingDirRoot().listFiles();
+    if (null != files) {
+      Arrays.stream(files).filter(File::isFile)
+          .forEach(FileUtils::deleteQuietly);
+    }
 
     restoreSystemProperties.afterDistributedTest(description);
 
@@ -362,9 +366,10 @@ public class ClusterStartupRule implements SerializableTestRule {
     member.getVM().bounceForcibly();
   }
 
+  private static final File baseDir = Files.createTempDir();
   public File getWorkingDirRoot() {
     // return the dunit folder
-    return new File(DUnitLauncher.DUNIT_DIR);
+    return new File(baseDir, DUnitLauncher.DUNIT_DIR);
   }
 
   public static void stopElementInsideVM() {
