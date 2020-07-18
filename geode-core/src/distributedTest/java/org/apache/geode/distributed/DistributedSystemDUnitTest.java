@@ -102,7 +102,7 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
     this.locatorPort = getRandomAvailablePort(SOCKET);
     this.tcpPort = getRandomAvailablePort(SOCKET);
 
-    int[] portRange = getRandomAvailableTCPPortRange(3, true);
+    int[] portRange = getRandomAvailableTCPPortRange(3);
     this.lowerBoundOfPortRange = portRange[0];
     this.upperBoundOfPortRange = portRange[portRange.length - 1];
   }

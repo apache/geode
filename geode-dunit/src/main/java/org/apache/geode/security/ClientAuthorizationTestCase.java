@@ -72,7 +72,6 @@ import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.Struct;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.AvailablePort.Keeper;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.entries.AbstractRegionEntry;
@@ -905,12 +904,9 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
         buildProperties(authenticator, accessor, false, extraAuthProps, extraAuthzProps);
 
     // Get ports for the servers
-    List<Keeper> randomAvailableTCPPortKeepers =
-        AvailablePortHelper.getRandomAvailableTCPPortKeepers(2);
-    Keeper port1Keeper = randomAvailableTCPPortKeepers.get(0);
-    Keeper port2Keeper = randomAvailableTCPPortKeepers.get(1);
-    int port1 = port1Keeper.getPort();
-    int port2 = port2Keeper.getPort();
+    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    int port1 = ports[0];
+    int port2 = ports[1];
 
     // Perform all the ops on the clients
     List opBlock = new ArrayList();
@@ -925,7 +921,6 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
         // End of current operation block; execute all the operations on the servers with/without
         // failover
         if (opBlock.size() > 0) {
-          port1Keeper.release();
 
           // Start the first server and execute the operation block
           server1.invoke("createCacheServer", () -> ClientAuthorizationTestCase
@@ -937,7 +932,6 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
 
           if (!currentOp.equals(OperationWithAction.OPBLOCK_NO_FAILOVER)) {
             // Failover to the second server and run the block again
-            port2Keeper.release();
 
             server2.invoke("createCacheServer", () -> ClientAuthorizationTestCase
                 .createCacheServer(port2, serverProps, javaProps));

@@ -14,9 +14,7 @@
  */
 package org.apache.geode.internal;
 
-import java.io.IOException;
 import java.io.PrintStream;
-import java.io.Serializable;
 import java.net.DatagramPacket;
 import java.net.Inet6Address;
 import java.net.InetAddress;
@@ -78,7 +76,6 @@ public class AvailablePort {
    *
    * @param port The port to check
    * @param protocol The protocol to check (either {@link #SOCKET} or {@link #MULTICAST}).
-   *
    * @throws IllegalArgumentException <code>protocol</code> is unknown
    */
   public static boolean isPortAvailable(final int port, int protocol) {
@@ -92,7 +89,6 @@ public class AvailablePort {
    * @param port The port to check
    * @param protocol The protocol to check (either {@link #SOCKET} or {@link #MULTICAST}).
    * @param addr the bind address (or mcast address) to use
-   *
    * @throws IllegalArgumentException <code>protocol</code> is unknown
    */
   public static boolean isPortAvailable(final int port, int protocol, InetAddress addr) {
@@ -103,9 +99,7 @@ public class AvailablePort {
       } else {
         return testOneInterface(addr, port);
       }
-    }
-
-    else if (protocol == MULTICAST) {
+    } else if (protocol == MULTICAST) {
       MulticastSocket socket = null;
       try {
         socket = new MulticastSocket();
@@ -161,46 +155,17 @@ public class AvailablePort {
     }
   }
 
-  public static Keeper isPortKeepable(final int port, int protocol, InetAddress addr) {
-    if (protocol == SOCKET) {
-      // Try to create a ServerSocket
-      if (addr == null) {
-        return keepAllInterfaces(port);
-      } else {
-        return keepOneInterface(addr, port);
-      }
-    } else if (protocol == MULTICAST) {
-      throw new IllegalArgumentException("You can not keep the JGROUPS protocol");
-    } else {
-      throw new IllegalArgumentException(String.format("Unknown protocol: %s",
-          Integer.valueOf(protocol)));
-    }
-  }
-
   private static boolean testOneInterface(InetAddress addr, int port) {
-    Keeper k = keepOneInterface(addr, port);
-    if (k != null) {
-      k.release();
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  private static Keeper keepOneInterface(InetAddress addr, int port) {
-    ServerSocket server = null;
+    ServerSocket socket = null;
     try {
-      // (new Exception("Opening server socket on " + port)).printStackTrace();
-      server = new ServerSocket();
-      server.setReuseAddress(true);
+      socket = new ServerSocket();
+      socket.setReuseAddress(true);
       if (addr != null) {
-        server.bind(new InetSocketAddress(addr, port));
+        socket.bind(new InetSocketAddress(addr, port));
       } else {
-        server.bind(new InetSocketAddress(port));
+        socket.bind(new InetSocketAddress(port));
       }
-      Keeper result = new Keeper(server, port);
-      server = null;
-      return result;
+      return true;
     } catch (java.io.IOException ioe) {
       if (ioe.getMessage().equals("Network is unreachable")) {
         throw new RuntimeException("Network is unreachable");
@@ -214,23 +179,23 @@ public class AvailablePort {
           // see http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6558853
           // By returning true we ignore these interfaces and potentially say a
           // port is not in use when it really is.
-          Keeper result = new Keeper(server, port);
-          server = null;
-          return result;
+          return true;
         }
       }
-      return null;
+      return false;
     } catch (Exception ex) {
-      return null;
+      return false;
     } finally {
-      if (server != null)
+      if (socket != null) {
         try {
-          server.close();
+          socket.close();
         } catch (Exception ex) {
 
         }
+      }
     }
   }
+
 
   /**
    * Test to see if a given port is available port on all interfaces on this host.
@@ -238,19 +203,9 @@ public class AvailablePort {
    * @return true of if the port is free on all interfaces
    */
   private static boolean testAllInterfaces(int port) {
-    Keeper k = keepAllInterfaces(port);
-    if (k != null) {
-      k.release();
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  private static Keeper keepAllInterfaces(int port) {
     // First check to see if we can bind to the wildcard address.
     if (!testOneInterface(null, port)) {
-      return null;
+      return false;
     }
 
     // Now check all of the addresses for all of the addresses
@@ -275,59 +230,29 @@ public class AvailablePort {
         InetAddress addr = (InetAddress) en2.nextElement();
         boolean available = testOneInterface(addr, port);
         if (!available) {
-          return null;
+          return false;
         }
       }
     }
     // Now do it one more time but reserve the wildcard address
-    return keepOneInterface(null, port);
+    return testOneInterface(null, port);
   }
-
 
   /**
    * Returns a randomly selected available port in the range 5001 to 32767.
    *
    * @param protocol The protocol to check (either {@link #SOCKET} or {@link #MULTICAST}).
-   *
    * @throws IllegalArgumentException <code>protocol</code> is unknown
    */
   public static int getRandomAvailablePort(int protocol) {
     return getRandomAvailablePort(protocol, getAddress(protocol));
   }
 
-  public static Keeper getRandomAvailablePortKeeper(int protocol) {
-    return getRandomAvailablePortKeeper(protocol, getAddress(protocol));
-  }
-
-  /**
-   * Returns a randomly selected available port in the provided range.
-   *
-   * @param protocol The protocol to check (either {@link #SOCKET} or {@link #MULTICAST}).
-   *
-   * @throws IllegalArgumentException <code>protocol</code> is unknown
-   */
-  public static int getAvailablePortInRange(int rangeBase, int rangeTop, int protocol) {
-    return getAvailablePortInRange(protocol, getAddress(protocol), rangeBase, rangeTop);
-  }
-
-  /**
-   * Returns a randomly selected available port in the range 5001 to 32767 that satisfies a modulus
-   *
-   * @param protocol The protocol to check (either {@link #SOCKET} or {@link #MULTICAST}).
-   *
-   * @throws IllegalArgumentException <code>protocol</code> is unknown
-   */
-  public static int getRandomAvailablePortWithMod(int protocol, int mod) {
-    return getRandomAvailablePortWithMod(protocol, getAddress(protocol), mod);
-  }
-
-
   /**
    * Returns a randomly selected available port in the range 5001 to 32767.
    *
    * @param protocol The protocol to check (either {@link #SOCKET} or {@link #MULTICAST}).
    * @param addr the bind-address or mcast address to use
-   *
    * @throws IllegalArgumentException <code>protocol</code> is unknown
    */
   public static int getRandomAvailablePort(int protocol, InetAddress addr) {
@@ -340,7 +265,6 @@ public class AvailablePort {
    * @param protocol The protocol to check (either {@link #SOCKET} or {@link #MULTICAST}).
    * @param addr the bind-address or mcast address to use
    * @param useMembershipPortRange use true if the port will be used for membership
-   *
    * @throws IllegalArgumentException <code>protocol</code> is unknown
    */
   public static int getRandomAvailablePort(int protocol, InetAddress addr,
@@ -356,27 +280,11 @@ public class AvailablePort {
     }
   }
 
-  public static Keeper getRandomAvailablePortKeeper(int protocol, InetAddress addr) {
-    return getRandomAvailablePortKeeper(protocol, addr, false);
-  }
-
-  public static Keeper getRandomAvailablePortKeeper(int protocol, InetAddress addr,
-      boolean useMembershipPortRange) {
-    while (true) {
-      int port = getRandomWildcardBindPortNumber(useMembershipPortRange);
-      Keeper result = isPortKeepable(port, protocol, addr);
-      if (result != null) {
-        return result;
-      }
-    }
-  }
-
   /**
    * Returns a randomly selected available port in the provided range.
    *
    * @param protocol The protocol to check (either {@link #SOCKET} or {@link #MULTICAST}).
    * @param addr the bind-address or mcast address to use
-   *
    * @throws IllegalArgumentException <code>protocol</code> is unknown
    */
   public static int getAvailablePortInRange(int protocol, InetAddress addr, int rangeBase,
@@ -395,7 +303,6 @@ public class AvailablePort {
    *
    * @param protocol The protocol to check (either {@link #SOCKET} or {@link #MULTICAST}).
    * @param addr the bind-address or mcast address to use
-   *
    * @throws IllegalArgumentException <code>protocol</code> is unknown
    */
   public static int getRandomAvailablePortWithMod(int protocol, InetAddress addr, int mod) {
@@ -413,10 +320,11 @@ public class AvailablePort {
 
   static {
     boolean fast = Boolean.getBoolean("AvailablePort.fastRandom");
-    if (fast)
+    if (fast) {
       rand = new Random();
-    else
+    } else {
       rand = new java.security.SecureRandom();
+    }
   }
 
   private static int getRandomWildcardBindPortNumber() {
@@ -448,48 +356,12 @@ public class AvailablePort {
     int numberOfRetrys = numberOfPorts * 5;
     for (int i = 0; i < numberOfRetrys; i++) {
       int port = rand.nextInt(numberOfPorts + 1) + rangeBase;// add 1 to numberOfPorts so that
-                                                             // rangeTop also gets included
+      // rangeTop also gets included
       if (isPortAvailable(port, protocol, getAddress(protocol))) {
         return port;
       }
     }
     return -1;
-  }
-
-  /**
-   * This class will keep an allocated port allocated until it is used. This makes the window
-   * smaller that can cause bug 46690
-   *
-   */
-  public static class Keeper implements Serializable {
-    private final transient ServerSocket ss;
-    private final int port;
-
-    public Keeper(ServerSocket ss, int port) {
-      this.ss = ss;
-      this.port = port;
-    }
-
-    public Keeper(ServerSocket ss, Integer port) {
-      this.ss = ss;
-      this.port = port != null ? port : 0;
-    }
-
-    public int getPort() {
-      return this.port;
-    }
-
-    /**
-     * Once you call this the socket will be freed and can then be reallocated by someone else.
-     */
-    public void release() {
-      try {
-        if (this.ss != null) {
-          this.ss.close();
-        }
-      } catch (IOException ignore) {
-      }
-    }
   }
 
   /////////////////////// Main Program ///////////////////////
@@ -504,7 +376,8 @@ public class AvailablePort {
     err.println("usage: java AvailablePort socket|jgroups [\"addr\" network-address] [port]");
     err.println("");
     err.println(
-        "This program either prints whether or not a port is available for a given protocol, or it prints out an available port for a given protocol.");
+        "This program either prints whether or not a port is available for a given protocol, or it "
+            + "prints out an available port for a given protocol.");
     err.println("");
     ExitCode.FATAL.doSystemExit();
   }
@@ -575,5 +448,4 @@ public class AvailablePort {
     }
 
   }
-
 }

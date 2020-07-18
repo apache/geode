@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.net.UnknownHostException;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -49,7 +48,6 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.api.MembershipManagerHelper;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -79,18 +77,12 @@ public class ReconnectWithClusterConfigurationDUnitTest implements Serializable 
 
   @Before
   public void setup() throws IOException {
-    List<AvailablePort.Keeper> randomAvailableTCPPortKeepers =
-        AvailablePortHelper.getRandomAvailableTCPPortKeepers(NUM_LOCATORS);
-    for (int i = 0; i < NUM_LOCATORS; i++) {
-      AvailablePort.Keeper keeper = randomAvailableTCPPortKeepers.get(i);
-      locatorPorts[i] = keeper.getPort();
-    }
+    locatorPorts = AvailablePortHelper.getRandomAvailableTCPPorts(NUM_LOCATORS);
     final int[] locPorts = locatorPorts;
     Invoke.invokeInEveryVM("set locator ports", () -> locatorPorts = locPorts);
     for (int i = 0; i < NUM_LOCATORS; i++) {
       final String workingDir = temporaryFolder.newFolder().getAbsolutePath();
       final int locatorNumber = i;
-      randomAvailableTCPPortKeepers.get(locatorNumber).release();
       VM.getVM(i).invoke("start locator", () -> {
         try {
           Disconnect.disconnectFromDS();

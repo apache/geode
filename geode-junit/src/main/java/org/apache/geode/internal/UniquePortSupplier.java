@@ -14,34 +14,13 @@
  */
 package org.apache.geode.internal;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.function.IntSupplier;
-import java.util.stream.IntStream;
 
 /**
  * Supplies unique ports that have not already been supplied by this instance of PortSupplier
  */
 public class UniquePortSupplier {
 
-  private final IntSupplier supplier;
-  private final Set<Integer> usedPorts = new HashSet<>();
-
-  public UniquePortSupplier() {
-    supplier = () -> AvailablePortHelper.getRandomAvailableTCPPort();
-  }
-
-  public UniquePortSupplier(IntSupplier supplier) {
-    this.supplier = supplier;
-  }
-
-  public synchronized int getAvailablePort() {
-    int result = IntStream.generate(supplier)
-        .filter(port -> !usedPorts.contains(port))
-        .findFirst()
-        .getAsInt();
-
-    usedPorts.add(result);
-    return result;
+  public int getAvailablePort() {
+    return AvailablePortHelper.getRandomAvailableTCPPort();
   }
 }

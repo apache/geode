@@ -14,6 +14,7 @@
  */
 package org.apache.geode.test.junit.rules;
 
+import static java.lang.String.valueOf;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
@@ -279,8 +280,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   public T withJMXManager(boolean useProductDefaultPorts) {
     if (!useProductDefaultPorts) {
       // do no override these properties if already exists
-      properties.putIfAbsent(JMX_MANAGER_PORT,
-          portSupplier.getAvailablePort() + "");
+      properties.putIfAbsent(JMX_MANAGER_PORT, valueOf(portSupplier.getAvailablePort()));
       this.jmxPort = Integer.parseInt(properties.getProperty(JMX_MANAGER_PORT));
     } else {
       // the real port numbers will be set after we started the server/locator.
@@ -294,8 +294,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   public T withHttpService(boolean useDefaultPort) {
     properties.setProperty(HTTP_SERVICE_BIND_ADDRESS, "localhost");
     if (!useDefaultPort) {
-      properties.put(HTTP_SERVICE_PORT,
-          portSupplier.getAvailablePort() + "");
+      properties.put(HTTP_SERVICE_PORT, valueOf(portSupplier.getAvailablePort()));
       this.httpPort = Integer.parseInt(properties.getProperty(HTTP_SERVICE_PORT));
     } else {
       // indicate start http service but with default port
@@ -462,7 +461,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   public CacheServerMXBean getCacheServerMXBean(String serverName, int serverPort) {
     SystemManagementService managementService = (SystemManagementService) getManagementService();
     String objectName = MessageFormat.format(OBJECTNAME__CLIENTSERVICE_MXBEAN,
-        String.valueOf(serverPort), serverName);
+        valueOf(serverPort), serverName);
     ObjectName cacheServerMBeanName = MBeanJMXAdapter.getObjectName(objectName);
     return managementService.getMBeanProxy(cacheServerMBeanName, CacheServerMXBean.class);
   }
@@ -541,7 +540,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
       // There is a very slight race condition here, where the above could conceivably time out,
       // and become satisfied before the next supplier.get()
       throw new ConditionTimeoutException(
-          "The observed result '" + String.valueOf(supplier.get())
+          "The observed result '" + valueOf(supplier.get())
               + "' does not satisfy the provided assertionConsumer. \n" + e.getMessage());
     }
   }
