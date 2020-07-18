@@ -295,7 +295,7 @@ public class PdxLocalQueryDUnitTest extends PDXQueryTestBase {
         }
 
         CacheServer server = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+        int port = AvailablePortHelper.getRandomAvailableTCPPort();
         server.setPort(port);
         server.start();
         return port;
@@ -637,7 +637,7 @@ public class PdxLocalQueryDUnitTest extends PDXQueryTestBase {
           r1.put("key-" + i, new PortfolioPdx(i));
         }
         CacheServer server = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+        int port = AvailablePortHelper.getRandomAvailableTCPPort();
         server.setPort(port);
         server.start();
         return port;
@@ -650,7 +650,7 @@ public class PdxLocalQueryDUnitTest extends PDXQueryTestBase {
       public Object call() throws Exception {
         Region r1 = getCache().createRegionFactory(RegionShortcut.PARTITION).create(regionName);
         CacheServer server = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+        int port = AvailablePortHelper.getRandomAvailableTCPPort();
         server.setPort(port);
         server.start();
         return port;

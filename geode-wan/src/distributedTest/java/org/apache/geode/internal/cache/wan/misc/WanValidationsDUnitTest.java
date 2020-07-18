@@ -1055,7 +1055,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
       cache = new CacheFactory(props).create();
 
       GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
-      int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+      int port = AvailablePortHelper.getRandomAvailableTCPPort();
       fact.setStartPort(port);
       fact.setEndPort(port);
       fact.setManualStart(true);

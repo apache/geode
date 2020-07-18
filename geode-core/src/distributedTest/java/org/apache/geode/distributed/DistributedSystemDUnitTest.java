@@ -33,7 +33,7 @@ import static org.apache.geode.distributed.internal.OperationExecutors.SERIAL_EX
 import static org.apache.geode.internal.AvailablePort.MULTICAST;
 import static org.apache.geode.internal.AvailablePort.SOCKET;
 import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPortRange;
+import static org.apache.geode.internal.AvailablePort.isPortAvailable;
 import static org.apache.geode.internal.inet.LocalHostUtil.getLocalHost;
 import static org.apache.geode.test.dunit.DistributedTestUtils.getDUnitLocatorPort;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
@@ -102,9 +102,9 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
     this.locatorPort = getRandomAvailablePort(SOCKET);
     this.tcpPort = getRandomAvailablePort(SOCKET);
 
-    int[] portRange = getRandomAvailableTCPPortRange(3, true);
-    this.lowerBoundOfPortRange = portRange[0];
-    this.upperBoundOfPortRange = portRange[portRange.length - 1];
+    int portCount = 3;
+    this.lowerBoundOfPortRange = reservePortSequence(portCount);
+    this.upperBoundOfPortRange = lowerBoundOfPortRange + portCount - 1;
   }
 
   @After
@@ -484,6 +484,26 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       throw new ClassNotFoundException("Fake class not found");
 
+    }
+
+  }
+
+  /**
+   * Reserve a sequence available ports and return the lowest port number in that sequence.
+   *
+   * @param size the number of ports to reserve.
+   * @return the lowest port number in the reserved sequence
+   */
+  private static int reservePortSequence(int size) {
+    while (true) {
+      int base = getRandomAvailablePort(SOCKET);
+      for (int port = base + 1; port < base + size; port++) {
+        if (!isPortAvailable(port, SOCKET)) {
+          // Not enough available ports starting from base. so try another base.
+          break;
+        }
+      }
+      return base;
     }
   }
 }
