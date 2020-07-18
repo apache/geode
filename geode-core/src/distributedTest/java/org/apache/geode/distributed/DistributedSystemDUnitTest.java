@@ -24,7 +24,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_FLOW_CONTROL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.MEMBERSHIP_PORT_RANGE;
 import static org.apache.geode.distributed.ConfigurationProperties.REDUNDANCY_ZONE;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.TCP_PORT;
@@ -33,7 +32,6 @@ import static org.apache.geode.distributed.internal.OperationExecutors.SERIAL_EX
 import static org.apache.geode.internal.AvailablePort.MULTICAST;
 import static org.apache.geode.internal.AvailablePort.SOCKET;
 import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.internal.inet.LocalHostUtil.getLocalHost;
 import static org.apache.geode.test.dunit.DistributedTestUtils.getDUnitLocatorPort;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
@@ -91,8 +89,8 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
   private int mcastPort;
   private int locatorPort;
   private int tcpPort;
-//  private int lowerBoundOfPortRange;
-//  private int upperBoundOfPortRange;
+  // private int lowerBoundOfPortRange;
+  // private int upperBoundOfPortRange;
 
   @Before
   public void before() throws Exception {
@@ -102,9 +100,9 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
     this.locatorPort = getRandomAvailablePort(SOCKET);
     this.tcpPort = getRandomAvailablePort(SOCKET);
 
-//    int[] portRange = getRandomAvailableTCPPorts(3);
-//    this.lowerBoundOfPortRange = portRange[0];
-//    this.upperBoundOfPortRange = portRange[portRange.length - 1];
+    // int[] portRange = getRandomAvailableTCPPorts(3);
+    // this.lowerBoundOfPortRange = portRange[0];
+    // this.upperBoundOfPortRange = portRange[portRange.length - 1];
   }
 
   @After
@@ -270,27 +268,27 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
     assertThatThrownBy(() -> getSystem(config)).isInstanceOf(GemFireConfigException.class);
   }
 
-//  @Test
-//  public void testPortRange() throws Exception {
-//    Properties config = new Properties();
-//    config.put(LOCATORS, "localhost[" + getDUnitLocatorPort() + "]");
-//    config.setProperty(MEMBERSHIP_PORT_RANGE,
-//        this.lowerBoundOfPortRange + "-" + this.upperBoundOfPortRange);
-//
-//    InternalDistributedSystem system = getSystem(config);
-//    ClusterDistributionManager dm = (ClusterDistributionManager) system.getDistributionManager();
-//    InternalDistributedMember member = dm.getDistributionManagerId();
-//
-//    verifyMembershipPortsInRange(member, this.lowerBoundOfPortRange, this.upperBoundOfPortRange);
-//  }
+  // @Test
+  // public void testPortRange() throws Exception {
+  // Properties config = new Properties();
+  // config.put(LOCATORS, "localhost[" + getDUnitLocatorPort() + "]");
+  // config.setProperty(MEMBERSHIP_PORT_RANGE,
+  // this.lowerBoundOfPortRange + "-" + this.upperBoundOfPortRange);
+  //
+  // InternalDistributedSystem system = getSystem(config);
+  // ClusterDistributionManager dm = (ClusterDistributionManager) system.getDistributionManager();
+  // InternalDistributedMember member = dm.getDistributionManagerId();
+  //
+  // verifyMembershipPortsInRange(member, this.lowerBoundOfPortRange, this.upperBoundOfPortRange);
+  // }
 
   @Test
   public void testConflictingUDPPort() {
     Properties config = new Properties();
     config.setProperty(MCAST_PORT, String.valueOf(this.mcastPort));
     config.setProperty(START_LOCATOR, "localhost[" + this.locatorPort + "]");
-//    config.setProperty(MEMBERSHIP_PORT_RANGE,
-//        this.lowerBoundOfPortRange + "-" + this.upperBoundOfPortRange);
+    // config.setProperty(MEMBERSHIP_PORT_RANGE,
+    // this.lowerBoundOfPortRange + "-" + this.upperBoundOfPortRange);
 
     DistributedSystem.connect(config);
 

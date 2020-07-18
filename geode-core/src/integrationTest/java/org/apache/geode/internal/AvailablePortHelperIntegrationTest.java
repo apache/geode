@@ -18,7 +18,6 @@ import static java.util.Arrays.stream;
 import static java.util.Comparator.naturalOrder;
 import static org.apache.geode.internal.AvailablePort.MULTICAST;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableUDPPort;
 import static org.assertj.core.api.Assertions.assertThat;
 
