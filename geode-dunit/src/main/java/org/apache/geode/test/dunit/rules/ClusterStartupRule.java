@@ -367,6 +367,7 @@ public class ClusterStartupRule implements SerializableTestRule {
   }
 
   private static final File baseDir = Files.createTempDir();
+
   public File getWorkingDirRoot() {
     // return the dunit folder
     return new File(baseDir, DUnitLauncher.DUNIT_DIR);
