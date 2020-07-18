@@ -29,22 +29,9 @@
  * The plugin can be activated with the Gradle property 'parallelDunit'.
  * Additional properties that can be set are:
  *
- *  dunitDockerImage   - The docker image used for running parallel dunits. The
- *                       default image is 'openjdk:8'. The image is required to
- *                       have 'JAVA_HOME' set as an environment variable.
  *  dunitParallelForks - The number of parallel containers that will be
- *                       launched. The default is 8.
- *  dunitDockerUser    - The user used within the docker container to run tests.
- *                       The default is 'root'.
  */
 
-
-
-if (project.hasProperty('parallelDunit')) {
-  def pwd = System.getenv('PWD')
-  def geodeDir = new File(pwd).getCanonicalPath()
-  project.ext.dunitDockerVolumes = ["${geodeDir}":geodeDir]
-}
 
 project.ext.dockerConfig = {
   maxParallelForks = dunitParallelForks.toInteger()
