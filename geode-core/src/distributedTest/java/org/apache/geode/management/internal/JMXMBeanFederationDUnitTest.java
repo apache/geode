@@ -86,7 +86,7 @@ public class JMXMBeanFederationDUnitTest {
 
   @Before
   public void before() throws Exception {
-    locator1JmxPort = AvailablePortHelper.getRandomAvailableTCPPorts(LOCATOR_COUNT)[0];
+    locator1JmxPort = AvailablePortHelper.getRandomAvailableTCPPort();
     locator1 = lsRule.startLocatorVM(LOCATOR_1_VM_INDEX, locator1Properties());
 
     server1 = lsRule.startServerVM(SERVER_1_VM_INDEX, locator1.getPort());
@@ -179,7 +179,7 @@ public class JMXMBeanFederationDUnitTest {
   }
 
   private Properties locator2Properties() {
-    locator2JmxPort = AvailablePortHelper.getRandomAvailableTCPPorts(LOCATOR_COUNT)[0];
+    locator2JmxPort = AvailablePortHelper.getRandomAvailableTCPPort();
     Properties props = new Properties();
     props.setProperty(ConfigurationProperties.JMX_MANAGER_HOSTNAME_FOR_CLIENTS, "localhost");
     props.setProperty(ConfigurationProperties.JMX_MANAGER_PORT, "" + locator2JmxPort);

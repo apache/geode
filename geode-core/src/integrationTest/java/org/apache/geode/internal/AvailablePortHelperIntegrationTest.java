@@ -17,7 +17,7 @@ package org.apache.geode.internal;
 import static java.util.Arrays.stream;
 import static java.util.Comparator.naturalOrder;
 import static org.apache.geode.internal.AvailablePort.MULTICAST;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPortRange;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableUDPPort;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -68,56 +68,56 @@ public class AvailablePortHelperIntegrationTest {
   }
 
   @Test
-  public void getRandomAvailableTCPPortRange_returnsNoPorts_ifCountIsZero() {
-    int[] results = getRandomAvailableTCPPortRange(0);
+  public void getRandomAvailableTCPPorts_returnsNoPorts_ifCountIsZero() {
+    int[] results = getRandomAvailableTCPPorts(0);
 
     assertThat(results)
         .isEmpty();
   }
 
   @Test
-  public void getRandomAvailableTCPPortRange_returnsOnePort_ifCountIsOne() {
-    int[] results = getRandomAvailableTCPPortRange(1);
+  public void getRandomAvailableTCPPorts_returnsOnePort_ifCountIsOne() {
+    int[] results = getRandomAvailableTCPPorts(1);
 
     assertThat(results)
         .hasSize(1);
   }
 
   @Test
-  public void getRandomAvailableTCPPortRange_returnsManyPorts_ifCountIsMany() {
-    int[] results = getRandomAvailableTCPPortRange(10);
+  public void getRandomAvailableTCPPorts_returnsManyPorts_ifCountIsMany() {
+    int[] results = getRandomAvailableTCPPorts(10);
 
     assertThat(results)
         .hasSize(10);
   }
 
   @Test
-  public void getRandomAvailableTCPPortRange_returnsUsablePorts() {
-    int[] results = getRandomAvailableTCPPortRange(10);
+  public void getRandomAvailableTCPPorts_returnsUsablePorts() {
+    int[] results = getRandomAvailableTCPPorts(10);
 
     stream(results).forEach(port -> assertThatPort(port)
         .isUsable());
   }
 
   @Test
-  public void getRandomAvailableTCPPortRange_returnsUniquePorts() {
-    int[] results = getRandomAvailableTCPPortRange(10);
+  public void getRandomAvailableTCPPorts_returnsUniquePorts() {
+    int[] results = getRandomAvailableTCPPorts(10);
 
     assertThat(results)
         .doesNotHaveDuplicates();
   }
 
   @Test
-  public void getRandomAvailableTCPPortRange_returnsNaturallyOrderedPorts() {
-    int[] results = getRandomAvailableTCPPortRange(10);
+  public void getRandomAvailableTCPPorts_returnsNaturallyOrderedPorts() {
+    int[] results = getRandomAvailableTCPPorts(10);
 
     assertThat(results)
         .isSortedAccordingTo(naturalOrder());
   }
 
   @Test
-  public void getRandomAvailableTCPPortRange_returnsConsecutivePorts() {
-    int[] results = getRandomAvailableTCPPortRange(10);
+  public void getRandomAvailableTCPPorts_returnsConsecutivePorts() {
+    int[] results = getRandomAvailableTCPPorts(10);
 
     assertThatSequence(results)
         .isConsecutive();
@@ -140,11 +140,11 @@ public class AvailablePortHelperIntegrationTest {
   }
 
   @Test
-  public void getRandomAvailableTCPPortRange_returnsUniqueRanges() {
+  public void getRandomAvailableTCPPorts_returnsUniqueRanges() {
     Collection<Integer> previousPorts = new HashSet<>();
     for (int i = 0; i < 3; ++i) {
 
-      int[] results = getRandomAvailableTCPPortRange(5);
+      int[] results = getRandomAvailableTCPPorts(5);
 
       Collection<Integer> ports = toSet(results);
 

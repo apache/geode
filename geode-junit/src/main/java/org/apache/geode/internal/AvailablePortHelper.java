@@ -33,38 +33,15 @@ public abstract class AvailablePortHelper {
 
   /**
    * Returns array of unique randomly available tcp ports of specified count.
-   */
-  public static int[] getRandomAvailableTCPPorts(int count) {
-    return getRandomAvailableTCPPortRange(count);
-  }
-
-  /**
-   * Returns an array of unique randomly available tcp ports
-   *
    * @param count number of desired ports
    * @return the ports
    */
-  public static int[] getRandomAvailableTCPPortRange(final int count) {
-    return getRandomAvailableTCPPortsForDUnitSite(count);
-  }
-
-  /**
-   * Returns array of unique randomly available tcp ports of specified count.
-   */
-  public static int[] getRandomAvailableTCPPortsForDUnitSite(final int count) {
-    int[] ports = new int[count];
+  public static int[] getRandomAvailableTCPPorts(final int count) {
+    final int[] ports = new int[count];
     for (int i = 0; i < count; ++i) {
-      ports[i] = getRandomAvailablePortForDUnitSite();
+      ports[i] = getRandomAvailableTCPPort();
     }
     return ports;
-  }
-
-
-  /**
-   * Returns array of unique randomly available tcp ports of specified count.
-   */
-  public static int getRandomAvailablePortForDUnitSite() {
-    return getRandomAvailableTCPPort();
   }
 
   /**

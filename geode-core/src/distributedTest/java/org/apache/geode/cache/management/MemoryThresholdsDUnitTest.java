@@ -1388,7 +1388,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
           assertTrue(region instanceof DistributedRegion);
         }
         CacheServer cacheServer = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailableTCPPorts(1)[0];
+        int port = AvailablePortHelper.getRandomAvailableTCPPort();
         cacheServer.setPort(port);
         cacheServer.setNotifyBySubscription(notifyBySubscription);
         cacheServer.start();

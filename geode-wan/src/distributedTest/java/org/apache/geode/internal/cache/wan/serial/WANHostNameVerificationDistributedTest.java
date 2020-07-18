@@ -157,7 +157,7 @@ public class WANHostNameVerificationDistributedTest {
   }
 
   private static void createGatewayReceiver() {
-    int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+    int port = AvailablePortHelper.getRandomAvailableTCPPort();
     GatewayReceiverFactory gwReceiver = getCache().createGatewayReceiverFactory();
     gwReceiver.setStartPort(port);
     gwReceiver.setEndPort(port);

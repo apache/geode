@@ -592,7 +592,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
           r1.put("key-" + i, ba);
         }
         CacheServer server = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+        int port = AvailablePortHelper.getRandomAvailableTCPPort();
         server.setPort(port);
         server.start();
         return port;
@@ -1531,7 +1531,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
         ((GemFireCacheImpl) getCache()).setReadSerializedForTest(true);
         Region r1 = getCache().createRegionFactory(RegionShortcut.REPLICATE).create(regName);
         CacheServer server = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+        int port = AvailablePortHelper.getRandomAvailableTCPPort();
         server.setPort(port);
         server.start();
         return port;
@@ -1622,7 +1622,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
         }
 
         CacheServer server = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+        int port = AvailablePortHelper.getRandomAvailableTCPPort();
         server.setPort(port);
         server.start();
         return port;
@@ -1644,7 +1644,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
         }
 
         CacheServer server = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+        int port = AvailablePortHelper.getRandomAvailableTCPPort();
         server.setPort(port);
         server.start();
         return port;

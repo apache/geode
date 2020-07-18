@@ -107,7 +107,7 @@ public class SenderWithTransportFilterDUnitTest extends WANTestBase {
     InternalDistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
     GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
-    int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+    int port = AvailablePortHelper.getRandomAvailableTCPPort();
     fact.setStartPort(port);
     fact.setEndPort(port);
     ArrayList<GatewayTransportFilter> transportFilters = new ArrayList<GatewayTransportFilter>();

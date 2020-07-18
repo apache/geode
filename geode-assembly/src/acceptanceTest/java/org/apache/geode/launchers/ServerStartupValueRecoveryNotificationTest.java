@@ -64,8 +64,7 @@ public class ServerStartupValueRecoveryNotificationTest {
     server1Folder = temporaryFolder.newFolder(SERVER_1_NAME).toPath().toAbsolutePath();
     Path diskStore1Folder = temporaryFolder.newFolder(DISKSTORE_1).toPath().toAbsolutePath();
     Path diskStore2Folder = temporaryFolder.newFolder(DISKSTORE_2).toPath().toAbsolutePath();
-    int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(1);
-    locatorPort = ports[0];
+    locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
 
     String startLocatorCommand = String.join(" ",
         "start locator",
