@@ -259,7 +259,6 @@ public class DUnitLauncher {
    * format so that hydra will be able to parse them.
    */
   private static void addSuspectFileAppender(final String workspaceDir) {
-    System.out.println("XXXXXX WorkspaceDir=" + workspaceDir);
     final String suspectFilename = new File(workspaceDir, SUSPECT_FILENAME).getAbsolutePath();
 
 
