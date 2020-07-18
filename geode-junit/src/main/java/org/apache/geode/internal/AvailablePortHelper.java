@@ -33,6 +33,7 @@ public abstract class AvailablePortHelper {
 
   /**
    * Returns array of unique randomly available tcp ports of specified count.
+   *
    * @param count number of desired ports
    * @return the ports
    */
@@ -49,6 +50,7 @@ public abstract class AvailablePortHelper {
    */
   public static int getRandomAvailableTCPPort() {
     try (final ServerSocket socket = bindEphemeralTcpSocket()) {
+      System.err.println("AvailablePortHelper.getRandomAvailableTCPPort(): " + socket);
       return socket.getLocalPort();
     } catch (IOException e) {
       throw new IllegalStateException(e);
@@ -60,6 +62,7 @@ public abstract class AvailablePortHelper {
    */
   public static int getRandomAvailableUDPPort() {
     try (final DatagramSocket socket = bindEphemeralUdpSocket()) {
+      System.err.println("AvailablePortHelper.getRandomAvailableUDPPort(): " + socket);
       return socket.getLocalPort();
     } catch (SocketException e) {
       throw new IllegalStateException(e);

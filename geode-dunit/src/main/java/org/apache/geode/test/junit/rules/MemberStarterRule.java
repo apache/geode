@@ -26,6 +26,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.management.internal.ManagementConstants.OBJECTNAME__CLIENTSERVICE_MXBEAN;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.hamcrest.CoreMatchers.is;
@@ -280,8 +281,11 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   public T withJMXManager(boolean useProductDefaultPorts) {
     if (!useProductDefaultPorts) {
       // do no override these properties if already exists
-      properties.putIfAbsent(JMX_MANAGER_PORT, valueOf(portSupplier.getAvailablePort()));
-      this.jmxPort = Integer.parseInt(properties.getProperty(JMX_MANAGER_PORT));
+      System.out
+          .println("XXXXX before JMX_MANAGER_PORT=" + properties.getProperty(JMX_MANAGER_PORT));
+      this.jmxPort = Integer.parseInt((String) properties.computeIfAbsent(JMX_MANAGER_PORT,
+          (k) -> valueOf(getRandomAvailableTCPPort())));
+      System.out.println("XXXXX after  JMX_MANAGER_PORT=" + jmxPort);
     } else {
       // the real port numbers will be set after we started the server/locator.
       this.jmxPort = 0;
