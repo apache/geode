@@ -90,7 +90,8 @@ class ProcessManager implements ChildVMLauncher {
     }
 
     String[] cmd = buildJavaCommand(vmNum, namingPort, version);
-//    System.out.println("Executing " + Arrays.toString(cmd) + "\n Working directory:" + workingDir);
+    // System.out.println("Executing " + Arrays.toString(cmd) + "\n Working directory:" +
+    // workingDir);
 
     if (log4jConfig != null) {
       FileUtils.copyFileToDirectory(log4jConfig, workingDir);
