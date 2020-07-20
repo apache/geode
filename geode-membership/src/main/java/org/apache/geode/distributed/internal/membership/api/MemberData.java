@@ -21,7 +21,6 @@ import java.net.InetAddress;
 import org.jgroups.util.UUID;
 
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
@@ -49,8 +48,6 @@ public interface MemberData {
   Version getVersion();
 
   String getUniqueTag();
-
-  void setVersionOrdinal(short versionOrdinal);
 
   void setUUID(UUID u);
 
@@ -92,7 +89,7 @@ public interface MemberData {
 
   void setVmKind(int vmKind);
 
-  void setVersion(KnownVersion v);
+  void setVersion(Version v);
 
   void setDirectChannelPort(int directPort);
 

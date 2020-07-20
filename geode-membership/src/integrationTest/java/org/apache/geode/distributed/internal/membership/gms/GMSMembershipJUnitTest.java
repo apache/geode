@@ -59,11 +59,20 @@ import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMon
 import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Messenger;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
+import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.internal.serialization.internal.DSFIDSerializerImpl;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
 public class GMSMembershipJUnitTest {
+
+  private static final Version OLDER_THAN_CURRENT_VERSION =
+      Versioning.getVersion((short) (KnownVersion.CURRENT_ORDINAL - 1));
+  private static final Version NEWER_THAN_CURRENT_VERSION =
+      Versioning.getVersion((short) (KnownVersion.CURRENT_ORDINAL + 1));;
+  private static final int DEFAULT_PORT = 8888;
 
   private Services services;
   private MembershipConfig mockConfig;
@@ -139,7 +148,7 @@ public class GMSMembershipJUnitTest {
     Random r = new Random();
     mockMembers = new MemberIdentifier[5];
     for (int i = 0; i < mockMembers.length; i++) {
-      mockMembers[i] = createMemberID(8888 + i);
+      mockMembers[i] = createMemberID(DEFAULT_PORT + i);
       uuid = new UUID(r.nextLong(), r.nextLong());
       mockMembers[i].setUUID(uuid);
     }
@@ -175,7 +184,7 @@ public class GMSMembershipJUnitTest {
     MemberIdentifier myGMSMemberId = myMemberId;
     List<MemberIdentifier> gmsMembers =
         members.stream().map(x -> ((MemberIdentifier) x)).collect(Collectors.toList());
-    manager.getGMSManager().installView(new GMSMembershipView(myGMSMemberId, 1, gmsMembers));
+    manager.getGMSManager().installView(new GMSMembershipView<>(myGMSMemberId, 1, gmsMembers));
     MemberIdentifier[] destinations = new MemberIdentifier[] {mockMembers[0]};
     Set<MemberIdentifier> failures =
         manager.send(destinations, m);
@@ -199,9 +208,9 @@ public class GMSMembershipJUnitTest {
     manager.getGMSManager().started();
     manager.isJoining = true;
 
-    List<MemberIdentifier> viewmembers =
+    List<MemberIdentifier> viewMembers =
         Arrays.asList(new MemberIdentifier[] {mockMembers[0], myMemberId});
-    manager.getGMSManager().installView(createView(myMemberId, 2, viewmembers));
+    manager.getGMSManager().installView(createView(myMemberId, 2, viewMembers));
 
     // add a surprise member that will be shunned due to it's having
     // an old view ID
@@ -219,7 +228,7 @@ public class GMSMembershipJUnitTest {
     // suspect a member
     MemberIdentifier suspectMember = mockMembers[1];
     manager.handleOrDeferSuspect(
-        new SuspectMember(mockMembers[0], suspectMember, "testing"));
+        new SuspectMember<>(mockMembers[0], suspectMember, "testing"));
     // suspect messages aren't queued - they're ignored before joining the system
     assertEquals(2, manager.getStartupEvents().size());
     verify(listener, never()).memberSuspect(suspectMember, mockMembers[0], "testing");
@@ -232,9 +241,9 @@ public class GMSMembershipJUnitTest {
     assertEquals(3, manager.getStartupEvents().size());
 
     // this view officially adds surpriseMember2
-    viewmembers = Arrays
+    viewMembers = Arrays
         .asList(new MemberIdentifier[] {mockMembers[0], myMemberId, surpriseMember2});
-    manager.handleOrDeferViewEvent(new MembershipView(myMemberId, 3, viewmembers));
+    manager.handleOrDeferViewEvent(new MembershipView<>(myMemberId, 3, viewMembers));
     assertEquals(4, manager.getStartupEvents().size());
 
     // add a surprise member that will be shunned due to it's having
@@ -247,13 +256,13 @@ public class GMSMembershipJUnitTest {
     // process a new view after we finish joining but before event processing has started
     manager.isJoining = false;
     mockMembers[4].setVmViewId(4);
-    viewmembers = Arrays.asList(new MemberIdentifier[] {mockMembers[0], myMemberId,
+    viewMembers = Arrays.asList(new MemberIdentifier[] {mockMembers[0], myMemberId,
         surpriseMember2, mockMembers[4]});
-    manager.handleOrDeferViewEvent(new MembershipView(myMemberId, 4, viewmembers));
+    manager.handleOrDeferViewEvent(new MembershipView<>(myMemberId, 4, viewMembers));
     assertEquals(6, manager.getStartupEvents().size());
 
     // exercise the toString methods for code coverage
-    for (StartupEvent ev : manager.getStartupEvents()) {
+    for (StartupEvent<MemberIdentifier> ev : manager.getStartupEvents()) {
       ev.toString();
     }
 
@@ -271,14 +280,14 @@ public class GMSMembershipJUnitTest {
     // for code coverage also install a view after we finish joining but before
     // event processing has started. This should notify the distribution manager
     // with a LocalViewMessage to process the view
-    manager.handleOrDeferViewEvent(new MembershipView(myMemberId, 5, viewmembers));
+    manager.handleOrDeferViewEvent(new MembershipView<>(myMemberId, 5, viewMembers));
     await().untilAsserted(() -> assertEquals(manager.getView().getViewId(), 5));
 
     // process a suspect now - it will be passed to the listener
     reset(listener);
     suspectMember = mockMembers[1];
     manager.handleOrDeferSuspect(
-        new SuspectMember(mockMembers[0], suspectMember, "testing"));
+        new SuspectMember<>(mockMembers[0], suspectMember, "testing"));
     verify(listener).memberSuspect(suspectMember, mockMembers[0], "testing");
   }
 
@@ -292,15 +301,15 @@ public class GMSMembershipJUnitTest {
     manager.getGMSManager().started();
     manager.isJoining = true;
 
-    List<MemberIdentifier> viewmembers =
+    List<MemberIdentifier> viewMembers =
         Arrays.asList(new MemberIdentifier[] {mockMembers[0], mockMembers[1], myMemberId});
-    GMSMembershipView view = createView(myMemberId, 2, viewmembers);
+    GMSMembershipView view = createView(myMemberId, 2, viewMembers);
     manager.getGMSManager().installView(view);
     when(services.getJoinLeave().getView()).thenReturn(view);
 
-    MemberIdentifier[] destinations = new MemberIdentifier[viewmembers.size()];
+    MemberIdentifier[] destinations = new MemberIdentifier[viewMembers.size()];
     for (int i = 0; i < destinations.length; i++) {
-      MemberIdentifier id = viewmembers.get(i);
+      MemberIdentifier id = viewMembers.get(i);
       destinations[i] = createMemberID(id.getMembershipPort());
     }
     manager.checkAddressesForUUIDs(destinations);
@@ -328,4 +337,83 @@ public class GMSMembershipJUnitTest {
     assertThat(spy.getStartupEvents()).isEmpty();
   }
 
+  @Test
+  public void testIsMulticastAllowedWithOldVersionSurpriseMember() {
+    MembershipView<MemberIdentifier> view = createMembershipView();
+    manager.addSurpriseMember(createSurpriseMember(OLDER_THAN_CURRENT_VERSION));
+
+    manager.processView(view);
+
+    assertThat(manager.getGMSManager().isMulticastAllowed()).isFalse();
+  }
+
+  @Test
+  public void testIsMulticastAllowedWithCurrentVersionSurpriseMember() {
+    MembershipView<MemberIdentifier> view = createMembershipView();
+    manager.addSurpriseMember(createSurpriseMember(KnownVersion.CURRENT));
+
+    manager.processView(view);
+
+    assertThat(manager.getGMSManager().isMulticastAllowed()).isTrue();
+  }
+
+  @Test
+  public void testIsMulticastAllowedWithNewVersionSurpriseMember() {
+    MembershipView<MemberIdentifier> view = createMembershipView();
+    manager.addSurpriseMember(createSurpriseMember(NEWER_THAN_CURRENT_VERSION));
+
+    manager.processView(view);
+
+    assertThat(manager.getGMSManager().isMulticastAllowed()).isTrue();
+  }
+
+  @Test
+  public void testIsMulticastAllowedWithOldVersionViewMember() {
+    MembershipView<MemberIdentifier> view = createMembershipView();
+    view.getMembers().get(0).setVersionForTest(OLDER_THAN_CURRENT_VERSION);
+
+    manager.processView(view);
+
+    assertThat(manager.getGMSManager().isMulticastAllowed()).isFalse();
+  }
+
+  @Test
+  public void testMulticastAllowedWithCurrentVersionViewMember() {
+    MembershipView<MemberIdentifier> view = createMembershipView();
+
+    manager.processView(view);
+
+    assertThat(manager.getGMSManager().isMulticastAllowed()).isTrue();
+  }
+
+  @Test
+  public void testMulticastAllowedWithNewVersionViewMember() {
+    MembershipView<MemberIdentifier> view = createMembershipView();
+    view.getMembers().get(0).setVersionForTest(NEWER_THAN_CURRENT_VERSION);
+
+    manager.processView(view);
+
+    assertThat(manager.getGMSManager().isMulticastAllowed()).isTrue();
+  }
+
+  private MemberIdentifier createSurpriseMember(Version version) {
+    MemberIdentifier surpriseMember = createMemberID(DEFAULT_PORT + 5);
+    surpriseMember.setVmViewId(3);
+    surpriseMember.setVersionForTest(version);
+    return surpriseMember;
+  }
+
+  private MembershipView<MemberIdentifier> createMembershipView() {
+    List<MemberIdentifier> viewMembers = createMemberIdentifiers();
+    return new MembershipView<>(myMemberId, 2, viewMembers);
+  }
+
+  private List<MemberIdentifier> createMemberIdentifiers() {
+    List<MemberIdentifier> viewMembers = new ArrayList<>();
+    for (int i = 0; i < 2; ++i) {
+      MemberIdentifier memberIdentifier = createMemberID(DEFAULT_PORT + 6 + i);
+      viewMembers.add(memberIdentifier);
+    }
+    return viewMembers;
+  }
 }
