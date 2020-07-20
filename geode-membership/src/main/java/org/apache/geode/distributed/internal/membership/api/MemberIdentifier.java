@@ -27,7 +27,6 @@ import org.jgroups.util.UUID;
 
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
@@ -191,7 +190,7 @@ public interface MemberIdentifier extends DataSerializableFixedID {
 
   String getUniqueId();
 
-  void setVersionForTest(KnownVersion v);
+  void setVersionForTest(Version v);
 
   void setUniqueTag(String tag);
 

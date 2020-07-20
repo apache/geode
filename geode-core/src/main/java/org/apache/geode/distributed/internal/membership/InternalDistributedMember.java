@@ -545,7 +545,7 @@ public class InternalDistributedMember
     return memberIdentifier.getUniqueId();
   }
 
-  public void setVersionForTest(KnownVersion v) {
+  public void setVersionForTest(Version v) {
     memberIdentifier.setVersionForTest(v);
   }
 
