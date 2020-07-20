@@ -223,8 +223,6 @@ Apache Geode bundles the following files under the BSD 3-Clause License:
     and Sam Harwell
   - ASM v5.0.4 (https://asm.ow2.io) Copyright (c) 2000-2011 INRIA, France
     Telecom
-  - ClassGraph v4.8.52 (https://github.com/classgraph/classgraph), Copyright
-    (c) 2019 Luke Hutchison
   - JLine v2.12 (http://jline.sourceforge.net), Copyright (c) 2002-2006,
     Marc Prud'hommeaux <mwp1@cornell.edu>
   - jQuery Sparklines v2.0 (http://omnipotent.net/jquery.sparkline/),
@@ -1070,6 +1068,8 @@ Apache Geode bundles the following files under the MIT License:
 
   - Checker Qual v2.10.0 (https://checkerframework.org), Copyright (c)
     2004-present by the Checker Framework developers
+  - ClassGraph v4.8.52 (https://github.com/classgraph/classgraph), Copyright
+    (c) 2019 Luke Hutchison
   - HTML5 Shiv vpre3.5 (https://github.com/aFarkas/html5shiv), Copyright
     (c) 2014 Alexander Farkas (aFarkas)
   - JavaScript InfoVis Toolkit v2.0.1 (http://philogb.github.io/jit/),
