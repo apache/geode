@@ -105,8 +105,6 @@ Add a line inside the file indicating the fully qualified class name of your imp
 ```pre
 my.domain.SimpleMetricsPublishingService
 ```
-Note: The above APIs are considered experimental. Micrometer metrics is a new addition to <%=vars.product_name%> and the API may change.
-
 ### Add Your jar File to the classpath When You Start a Server or Locator
 To add your metrics publishing service to a server or locator, add your jar file to the classpath when you start the server or locator via `GFSH` and specify the `prometheus.metrics.port` listed in SimpleMetricsPublishingService:
 
