@@ -34,6 +34,9 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -103,6 +106,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   protected boolean autoStart = false;
   private final transient UniquePortSupplier portSupplier;
 
+  private File workingDir;
   private List<File> firstLevelChildrenFile = new ArrayList<>();
   private boolean cleanWorkingDir = true;
 
@@ -135,6 +139,11 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
       throw new RuntimeException(throwable.getMessage(), throwable);
     }
     normalizeProperties();
+    try {
+      workingDir = Files.createTempDirectory(Paths.get("").toAbsolutePath(), getName()).toFile();
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
     if (httpPort < 0) {
       // at this point, httpPort is not being configured by api, we assume they do not
       // want to start the http service.
@@ -574,7 +583,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
 
   @Override
   public File getWorkingDir() {
-    return new File(System.getProperty("user.dir"));
+    return workingDir;
   }
 
   @Override
