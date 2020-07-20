@@ -17,13 +17,13 @@ package org.apache.geode.redis.session;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.sun.xml.internal.messaging.saaj.util.ByteInputStream;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.http.HttpEntity;
@@ -164,7 +164,7 @@ public class SessionExpirationDUnitTest extends SessionDUnitTest {
     }
     ObjectInputStream inputStream;
     byte[] bytes = redisHash.hget(new ByteArrayWrapper("maxInactiveInterval".getBytes())).toBytes();
-    ByteInputStream byteStream = new ByteInputStream(bytes, bytes.length);
+    ByteArrayInputStream byteStream = new ByteArrayInputStream(bytes);
     try {
       inputStream = new ObjectInputStream(byteStream);
       return (int) inputStream.readObject();
