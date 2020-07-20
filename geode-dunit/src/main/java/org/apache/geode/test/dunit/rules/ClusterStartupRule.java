@@ -370,7 +370,7 @@ public class ClusterStartupRule implements SerializableTestRule {
 
   public File getWorkingDirRoot() {
     // return the dunit folder
-    return new File(baseDir, DUnitLauncher.DUNIT_DIR);
+    return DUnitLauncher.DUNIT_DIR;
   }
 
   public static void stopElementInsideVM() {

@@ -35,6 +35,8 @@ import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
 import java.rmi.registry.LocateRegistry;
@@ -111,7 +113,15 @@ public class DUnitLauncher {
   private static final String SUSPECT_FILENAME = "dunit_suspect.log";
   private static File DUNIT_SUSPECT_FILE;
 
-  public static final String DUNIT_DIR = "dunit";
+  public static final File DUNIT_DIR;
+  static {
+    try {
+      DUNIT_DIR = Files.createTempDirectory(Paths.get("").toAbsolutePath(), "dunit").toFile();
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
   public static final String WORKSPACE_DIR_PARAM = "WORKSPACE_DIR";
   public static final boolean LOCATOR_LOG_TO_DISK = Boolean.getBoolean("locatorLogToDisk");
 
@@ -188,7 +198,7 @@ public class DUnitLauncher {
 
   private static void launch(boolean launchLocator) throws AlreadyBoundException, IOException,
       InterruptedException, NotBoundException {
-    DUNIT_SUSPECT_FILE = new File(ProcessManager.baseDir, SUSPECT_FILENAME);
+    DUNIT_SUSPECT_FILE = new File(DUNIT_DIR, SUSPECT_FILENAME);
     DUNIT_SUSPECT_FILE.delete();
     DUNIT_SUSPECT_FILE.deleteOnExit();
 
@@ -332,7 +342,7 @@ public class DUnitLauncher {
     DUnitEnv.set(new StandAloneDUnitEnv(master));
     // fake out tests that are using a bunch of hydra stuff
     String workspaceDir = System.getProperty(DUnitLauncher.WORKSPACE_DIR_PARAM);
-    workspaceDir = workspaceDir == null ? ProcessManager.baseDir.getAbsolutePath() : workspaceDir;
+    workspaceDir = workspaceDir == null ? DUNIT_DIR.getAbsolutePath() : workspaceDir;
 
     addSuspectFileAppender(workspaceDir);
 
