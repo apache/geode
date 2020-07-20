@@ -103,10 +103,9 @@ public class SessionExpirationDUnitTest extends SessionDUnitTest {
   @Test
   public void sessionShouldNotTimeout_whenPersisted() {
     String sessionCookie = createNewSessionWithNote(APP2, "note1");
-    setMaxInactiveInterval(APP2, sessionCookie, 100);
     setMaxInactiveInterval(APP2, sessionCookie, -1);
 
-    compareBuckets();
+    compareMaxInactiveIntervals();
   }
 
   private void waitForTheSessionToExpire(String sessionId) {
@@ -133,7 +132,7 @@ public class SessionExpirationDUnitTest extends SessionDUnitTest {
         .getHeaders();
   }
 
-  private void compareBuckets() {
+  private void compareMaxInactiveIntervals() {
     cluster.getVM(1).invoke(() -> {
       for (int j = 0; j < 113; j++) {
         InternalCache cache = ClusterStartupRule.getCache();
