@@ -99,6 +99,7 @@ public abstract class Locator {
    * @throws IOException If the locator cannot be started
    * @deprecated as of 7.0 use startLocatorAndDS instead.
    */
+  @Deprecated
   public static Locator startLocator(int port, File logFile) throws IOException {
 
     return startLocator(port, logFile, false, (InetAddress) null, (Properties) null, true, true,
@@ -163,6 +164,7 @@ public abstract class Locator {
    * @throws IOException If the locator cannot be started
    * @deprecated as of 7.0 use startLocatorAndDS instead.
    */
+  @Deprecated
   public static Locator startLocator(int port, File logFile, InetAddress bindAddress)
       throws IOException {
 
@@ -257,6 +259,7 @@ public abstract class Locator {
    * @deprecated as of 7.0 use startLocator(int, File, InetAddress, java.util.Properties,
    *             peerLocator, serverLocator, hostnameForClients) instead.
    */
+  @Deprecated
   private static Locator startLocator(int port, File logFile, boolean startDistributedSystem,
       InetAddress bindAddress, java.util.Properties dsProperties, boolean peerLocator,
       boolean serverLocator, String hostnameForClients) throws IOException {
@@ -270,6 +273,7 @@ public abstract class Locator {
    *
    * @deprecated as of 7.0 use {@link #getLocator} instead
    */
+  @Deprecated
   public static List<Locator> getLocators() {
     Locator result = getLocator();
     if (result == null) {
