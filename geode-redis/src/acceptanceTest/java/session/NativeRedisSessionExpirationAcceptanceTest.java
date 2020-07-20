@@ -50,4 +50,10 @@ public class NativeRedisSessionExpirationAcceptanceTest extends SessionExpiratio
   public void sessionShouldTimeout_whenAppFailsOverToAnotherRedisServer() {
     // Only using one server for Native Redis
   }
+
+  @Test
+  @Ignore
+  public void sessionShouldNotTimeout_whenPersisted() {
+    // Only using one server for Native Redis, no need to compare redundant copies
+  }
 }
