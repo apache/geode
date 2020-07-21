@@ -590,12 +590,18 @@ public class WANTestBase extends DistributedTestCase {
 
   public static void createPartitionedRegion(String regionName, String senderIds,
       Integer redundantCopies, Integer totalNumBuckets, Boolean offHeap) {
+    createPartitionedRegion(regionName, senderIds, redundantCopies, totalNumBuckets, offHeap,
+        RegionShortcut.PARTITION);
+  }
+
+  public static void createPartitionedRegion(String regionName, String senderIds,
+      Integer redundantCopies, Integer totalNumBuckets, Boolean offHeap, RegionShortcut shortcut) {
     IgnoredException exp =
         IgnoredException.addIgnoredException(ForceReattemptException.class.getName());
     IgnoredException exp1 =
         IgnoredException.addIgnoredException(PartitionOfflineException.class.getName());
     try {
-      RegionFactory fact = cache.createRegionFactory(RegionShortcut.PARTITION);
+      RegionFactory fact = cache.createRegionFactory(shortcut);
       if (senderIds != null) {
         StringTokenizer tokenizer = new StringTokenizer(senderIds, ",");
         while (tokenizer.hasMoreTokens()) {
