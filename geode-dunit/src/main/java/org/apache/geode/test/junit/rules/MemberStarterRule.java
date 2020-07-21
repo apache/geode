@@ -291,11 +291,8 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   public T withJMXManager(boolean useProductDefaultPorts) {
     if (!useProductDefaultPorts) {
       // do no override these properties if already exists
-      System.out
-          .println("XXXXX before JMX_MANAGER_PORT=" + properties.getProperty(JMX_MANAGER_PORT));
       this.jmxPort = Integer.parseInt((String) properties.computeIfAbsent(JMX_MANAGER_PORT,
           (k) -> valueOf(getRandomAvailableTCPPort())));
-      System.out.println("XXXXX after  JMX_MANAGER_PORT=" + jmxPort);
     } else {
       // the real port numbers will be set after we started the server/locator.
       this.jmxPort = 0;

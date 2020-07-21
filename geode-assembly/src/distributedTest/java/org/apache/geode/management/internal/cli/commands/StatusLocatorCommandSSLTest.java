@@ -66,7 +66,6 @@ public class StatusLocatorCommandSSLTest {
       result.put("workingDir", locatorStarterRule.getWorkingDir().getAbsolutePath());
       result.put("port", locatorStarterRule.getPort());
       result.put("id", locatorStarterRule.getName());
-      System.out.println("XXXXX: result=" + result);
       return result;
     });
     workingDir = (String) results.get("workingDir");

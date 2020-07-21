@@ -104,8 +104,6 @@ public class LocatorStarterRule extends MemberStarterRule<LocatorStarterRule> im
     jmxPort = config.getJmxManagerPort();
     httpPort = config.getHttpServicePort();
 
-    System.out.println("XXXXX jmxPort=" + jmxPort);
-
     if (config.getEnableClusterConfiguration()) {
       await()
           .untilAsserted(() -> assertTrue(locator.isSharedConfigurationRunning()));
