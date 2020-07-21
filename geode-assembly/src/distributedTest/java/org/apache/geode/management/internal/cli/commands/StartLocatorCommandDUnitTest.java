@@ -181,8 +181,7 @@ public class StartLocatorCommandDUnitTest {
   public void testWithUnavailablePort() throws IOException {
     int locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
     String unexpectedMessage = "[" + locatorPort + "] as locator is currently online.";
-    String expectedMessage = "java.net.BindException: Network is unreachable; port ("
-        + locatorPort + ") is not available on localhost.";
+    String expectedMessage = "Caused by: java.net.BindException";
 
     try (Socket interferingProcess = new Socket()) {
       interferingProcess.bind(new InetSocketAddress(locatorPort));
