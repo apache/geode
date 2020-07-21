@@ -21,6 +21,7 @@ import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.internal.DUnitLauncher.NUM_VMS;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -229,6 +230,7 @@ public class ClusterStartupRule implements SerializableTestRule {
     Locator server = locatorVM.invoke("start locator in vm" + index, () -> {
       memberStarter = new LocatorStarterRule();
       LocatorStarterRule locatorStarter = (LocatorStarterRule) memberStarter;
+      locatorStarter.withWorkingDir(Paths.get("").toAbsolutePath().toFile());
       if (logFile) {
         locatorStarter.withLogFile();
       }
@@ -272,6 +274,7 @@ public class ClusterStartupRule implements SerializableTestRule {
     Server server = serverVM.invoke("startServerVM", () -> {
       memberStarter = new ServerStarterRule();
       ServerStarterRule serverStarter = (ServerStarterRule) memberStarter;
+      serverStarter.withWorkingDir(Paths.get("").toAbsolutePath().toFile());
       if (logFile) {
         serverStarter.withLogFile();
       }
