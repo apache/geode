@@ -20,6 +20,7 @@ import static org.apache.geode.test.junit.assertions.ClusterManagementRealizatio
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.nio.file.Paths;
 import java.util.Set;
 
@@ -52,6 +53,7 @@ public class DeploymentSemanticVersionJarDUnitTest {
   private static File stagedDir;
   private static File semanticJarVersion0, semanticJarVersion1, semanticJarVersion2,
       semanticJarVersion0b, semanticJarVersion0c;
+  public static final FilenameFilter JAR_FILES = (d, f) -> f.endsWith(".jar");
 
   @BeforeClass
   public static void beforeClass() throws Exception {
@@ -124,7 +126,7 @@ public class DeploymentSemanticVersionJarDUnitTest {
     server2.invoke(() -> verifyLoadAndHasVersion("def", "jddunit.function.Def", "version2"));
 
     MemberVM server3 = cluster.startServerVM(3, locator0.getPort(), locator1.getPort());
-    assertThat(server3.getWorkingDir().list())
+    assertThat(server3.getWorkingDir().list(JAR_FILES))
         .containsExactlyInAnyOrder("def-1.1.v1.jar");
     server3.invoke(() -> verifyLoadAndHasVersion("def", "jddunit.function.Def", "version2"));
 
@@ -144,7 +146,7 @@ public class DeploymentSemanticVersionJarDUnitTest {
 
     // restart server3 and make sure it will get the def.1.2
     server3 = cluster.startServerVM(3, locator0.getPort(), locator1.getPort());
-    assertThat(server3.getWorkingDir().list()).containsExactly("def-1.2.v1.jar");
+    assertThat(server3.getWorkingDir().list(JAR_FILES)).containsExactly("def-1.2.v1.jar");
     server3.invoke(() -> verifyLoadAndHasVersion("def", "jddunit.function.Def", "version3"));
 
     // redeploy def-1.2 would not result in error but report already deployed
@@ -195,7 +197,7 @@ public class DeploymentSemanticVersionJarDUnitTest {
       Set<String> deployedJars = getDeployedJarsFromClusterConfig();
       assertThat(deployedJars).containsExactly("def.jar");
     }, locator0, locator1);
-    assertThat(server2.getWorkingDir().list())
+    assertThat(server2.getWorkingDir().list(JAR_FILES))
         .containsExactlyInAnyOrder("def-1.0.v1.jar", "def.v2.jar");
     server2.invoke(() -> verifyLoadAndHasVersion("def", "jddunit.function.Def", "version1c"));
 
