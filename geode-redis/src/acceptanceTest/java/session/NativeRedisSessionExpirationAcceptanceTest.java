@@ -16,7 +16,6 @@ package session;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.testcontainers.containers.GenericContainer;
@@ -46,13 +45,11 @@ public class NativeRedisSessionExpirationAcceptanceTest extends SessionExpiratio
   }
 
   @Test
-  @Ignore
   public void sessionShouldTimeout_whenAppFailsOverToAnotherRedisServer() {
     // Only using one server for Native Redis
   }
 
   @Test
-  @Ignore
   public void sessionShouldNotTimeout_whenPersisted() {
     // Only using one server for Native Redis, no need to compare redundant copies
   }

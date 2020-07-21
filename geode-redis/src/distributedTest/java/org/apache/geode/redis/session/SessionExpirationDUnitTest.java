@@ -134,9 +134,9 @@ public class SessionExpirationDUnitTest extends SessionDUnitTest {
 
   private void compareMaxInactiveIntervals() {
     cluster.getVM(1).invoke(() -> {
-      for (int j = 0; j < 113; j++) {
-        InternalCache cache = ClusterStartupRule.getCache();
-        PartitionedRegion region = (PartitionedRegion) cache.getRegion("__REDIS_DATA");
+      InternalCache cache = ClusterStartupRule.getCache();
+      PartitionedRegion region = (PartitionedRegion) cache.getRegion("__REDIS_DATA");
+      for (int j = 0; j < region.getTotalNumberOfBuckets(); j++) {
         List<BucketDump> buckets = region.getAllBucketEntries(j);
         if (buckets.isEmpty()) {
           continue;

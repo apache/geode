@@ -16,7 +16,6 @@ package session;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.testcontainers.containers.GenericContainer;
@@ -46,19 +45,16 @@ public class NativeRedisSessionAcceptanceTest extends RedisSessionDUnitTest {
   }
 
   @Test
-  @Ignore
   public void should_getSessionFromServer1_whenServer2GoesDown() {
     // Only using one server for Native Redis
   }
 
   @Test
-  @Ignore
   public void should_getSessionFromServer_whenServerGoesDownAndIsRestarted() {
     // Only using one server for Native Redis
   }
 
   @Test
-  @Ignore
   public void should_getSession_whenServer2GoesDown_andAppFailsOverToServer1() {
     // Only using one server for Native Redis
   }
