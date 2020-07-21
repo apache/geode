@@ -202,8 +202,7 @@ public class StartServerCommandDUnitTest implements Serializable {
   public void testWithUnavailablePort() throws IOException {
     String expectedError =
         "java.lang.RuntimeException: An IO error occurred while starting a Server";
-    String expectedCause = "Caused by: java.net.BindException: "
-        + "Network is unreachable; port (" + serverPort + ") is not available on localhost.";
+    String expectedCause = "Caused by: java.net.BindException";
 
     try (Socket interferingProcess = new Socket()) {
       interferingProcess.setReuseAddress(true);
