@@ -344,7 +344,7 @@ public abstract class AbstractRegionMap extends BaseRegionMap
     if (lr != null && !(lr instanceof HARegion)) {
       CachePerfStats stats = lr.getCachePerfStats();
       if (stats != null) {
-        if(lr instanceof BucketRegion) {
+        if (lr instanceof BucketRegion) {
           stats.incBucketClearCount();
         } else {
           stats.incClearCount();

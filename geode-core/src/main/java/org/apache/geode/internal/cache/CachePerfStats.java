@@ -277,9 +277,12 @@ public class CachePerfStats {
         "Current number of regions configured for reliablity that are missing required roles with Limited access";
     final String reliableRegionsMissingNoAccessDesc =
         "Current number of regions configured for reliablity that are missing required roles with No access";
-    final String regionClearsDesc = "The total number of times a clear has been done on this cache.";
-    final String bucketClearsDesc = "The total number of times a clear has been done on this region and it's bucket regions";
-    final String partitionedRegionClearDurationDesc = "The time in nanoseconds partitioned region clear has been running on this region";
+    final String regionClearsDesc =
+        "The total number of times a clear has been done on this cache.";
+    final String bucketClearsDesc =
+        "The total number of times a clear has been done on this region and it's bucket regions";
+    final String partitionedRegionClearDurationDesc =
+        "The time in nanoseconds partitioned region clear has been running on this region";
 
     final String metaDataRefreshCountDesc =
         "Total number of times the meta data is refreshed due to hopping observed.";
@@ -450,7 +453,8 @@ public class CachePerfStats {
                 "operations"),
             f.createLongCounter("regionClears", regionClearsDesc, "operations"),
             f.createLongCounter("bucketClears", bucketClearsDesc, "operations"),
-            f.createLongCounter("partitionedRegionClearDuration", partitionedRegionClearDurationDesc, "nanoseconds"),
+            f.createLongCounter("partitionedRegionClearDuration",
+                partitionedRegionClearDurationDesc, "nanoseconds"),
             f.createIntGauge("diskTasksWaiting",
                 "Current number of disk tasks (oplog compactions, asynchronous recoveries, etc) that are waiting for a thread to run the operation",
                 "operations"),
@@ -1367,7 +1371,9 @@ public class CachePerfStats {
     return stats.getLong(regionClearsId);
   }
 
-  public long getBucketClearCount() { return stats.getLong(bucketClearsId); }
+  public long getBucketClearCount() {
+    return stats.getLong(bucketClearsId);
+  }
 
   public long getPartitionedRegionClearDuration() {
     return stats.getLong(partitionedRegionClearDurationId);

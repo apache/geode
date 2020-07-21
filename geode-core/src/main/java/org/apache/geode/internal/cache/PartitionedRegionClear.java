@@ -377,10 +377,13 @@ public class PartitionedRegionClear {
   }
 
   void incClearCount() {
-    if (partitionedRegion != null && partitionedRegion.getDataStore() != null && partitionedRegion.getDataStore().getAllLocalBucketRegions() != null && partitionedRegion.getDataStore().getAllLocalBucketRegions().size() != 0) {
+    if (partitionedRegion != null && partitionedRegion.getDataStore() != null
+        && partitionedRegion.getDataStore().getAllLocalBucketRegions() != null
+        && partitionedRegion.getDataStore().getAllLocalBucketRegions().size() != 0) {
       CachePerfStats stats = partitionedRegion.getCachePerfStats();
       if (stats != null) {
-        logger.info("BR inc PR Region count:"+stats.getClass().getName()+":"+partitionedRegion.getFullPath(), new Exception());
+        logger.info("BR inc PR Region count:" + stats.getClass().getName() + ":"
+            + partitionedRegion.getFullPath(), new Exception());
         stats.incClearCount();
       }
     }
@@ -390,7 +393,8 @@ public class PartitionedRegionClear {
     if (partitionedRegion != null && partitionedRegion.getTotalNumberOfBuckets() != 0) {
       CachePerfStats stats = partitionedRegion.getCachePerfStats();
       if (stats != null) {
-        logger.info("BR inc PR Duration by + " + durationNanos + " ns:"+stats.getClass().getName()+":"+partitionedRegion.getFullPath(), new Exception());
+        logger.info("BR inc PR Duration by + " + durationNanos + " ns:" + stats.getClass().getName()
+            + ":" + partitionedRegion.getFullPath(), new Exception());
         stats.incPartitionedRegionClearDuration(durationNanos);
       }
     }
