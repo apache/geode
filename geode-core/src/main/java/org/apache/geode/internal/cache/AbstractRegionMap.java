@@ -343,9 +343,13 @@ public abstract class AbstractRegionMap extends BaseRegionMap
   void incClearCount(LocalRegion lr) {
     if (lr != null && !(lr instanceof HARegion)) {
       CachePerfStats stats = lr.getCachePerfStats();
-      logger.info("BR:"+stats.getClass().getName()+":"+lr.getFullPath(), new Exception());
       if (stats != null) {
-        stats.incClearCount();
+        if(lr instanceof BucketRegion) {
+          stats.incBucketClearCount();
+        } else {
+          stats.incClearCount();
+        }
+
       }
     }
   }

@@ -417,7 +417,7 @@ public class CachePerfStatsTest {
   public void getClearsDelegatesToStatistics() {
     statistics.incLong(clearsId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getClearCount()).isEqualTo(Long.MAX_VALUE);
+    assertThat(cachePerfStats.getRegionClearCount()).isEqualTo(Long.MAX_VALUE);
   }
 
   @Test
@@ -436,7 +436,7 @@ public class CachePerfStatsTest {
 
     cachePerfStats.incClearCount();
 
-    assertThat(cachePerfStats.getClearCount()).isNegative();
+    assertThat(cachePerfStats.getRegionClearCount()).isNegative();
   }
 
   @Test

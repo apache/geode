@@ -20,13 +20,11 @@ import static org.apache.geode.test.dunit.rules.ClusterStartupRule.getClientCach
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
-import com.sun.tools.javac.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Before;
@@ -174,7 +172,7 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
 
   SerializableCallableIF<Integer> getStatClearCount = () -> {
     Region region = getRegion(false);
-    long clearCount = ((LocalRegion)region).getCachePerfStats().getClearCount();
+    long clearCount = ((LocalRegion)region).getCachePerfStats().getRegionClearCount();
 
     return(int)clearCount;
   };
@@ -350,7 +348,7 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
       PartitionedRegion region = (PartitionedRegion) getRegion(false);
 
       for(BucketRegion bucket : region.getDataStore().getAllLocalBucketRegions()) {
-        long clearCount = bucket.getCachePerfStats().getClearCount();
+        long clearCount = bucket.getCachePerfStats().getRegionClearCount();
         assertThat(clearCount).isEqualTo(0);
       }
     });
@@ -363,12 +361,53 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     //Verify the stats were properly updated for the bucket regions
     dataStore1.invoke(() -> {
       PartitionedRegion region = (PartitionedRegion) getRegion(false);
+      long clearCount = 0L;
 
       for(BucketRegion bucket : region.getDataStore().getAllLocalBucketRegions()) {
-        long clearCount = bucket.getCachePerfStats().getClearCount();
-        assertThat(clearCount).isEqualTo(1);
+        if(clearCount == 0) {
+          clearCount = bucket.getCachePerfStats().getBucketClearCount();
+        }
+        assertThat(bucket.getCachePerfStats().getBucketClearCount()).isEqualTo(clearCount).isNotEqualTo(0);
       }
+
+      assertThat(region.getCachePerfStats().getRegionClearCount()).isEqualTo(1);
+      assertThat(region.getCachePerfStats().getPartitionedRegionClearDuration()).isGreaterThan(0);
     });
+
+    dataStore2.invoke(() -> {
+      PartitionedRegion region = (PartitionedRegion) getRegion(false);
+      long clearCount = 0L;
+
+      for(BucketRegion bucket : region.getDataStore().getAllLocalBucketRegions()) {
+        if(clearCount == 0) {
+          clearCount = bucket.getCachePerfStats().getBucketClearCount();
+        }
+        assertThat(bucket.getCachePerfStats().getBucketClearCount()).isEqualTo(clearCount).isNotEqualTo(0);
+      }
+
+      assertThat(region.getCachePerfStats().getRegionClearCount()).isEqualTo(1);
+    });
+
+    dataStore3.invoke(() -> {
+      PartitionedRegion region = (PartitionedRegion) getRegion(false);
+      long clearCount = 0L;
+
+      for(BucketRegion bucket : region.getDataStore().getAllLocalBucketRegions()) {
+        if(clearCount == 0) {
+          clearCount = bucket.getCachePerfStats().getBucketClearCount();
+        }
+        assertThat(bucket.getCachePerfStats().getBucketClearCount()).isEqualTo(clearCount).isNotEqualTo(0);
+      }
+
+      assertThat(region.getCachePerfStats().getRegionClearCount()).isEqualTo(1);
+    });
+
+
+ //   The accessor shouldn't increment the region clear count
+    accessor.invoke(() -> {
+      PartitionedRegion region = (PartitionedRegion) getRegion(false);
+      assertThat(region.getCachePerfStats().getRegionClearCount()).isEqualTo(0);
+        });
 
     // do the region destroy to compare that the same callbacks will be triggered
     dataStore1.invoke(() -> {

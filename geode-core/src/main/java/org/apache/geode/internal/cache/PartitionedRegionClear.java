@@ -162,6 +162,7 @@ public class PartitionedRegionClear {
         doAfterClear(regionEvent);
       }
     }
+    incClearCount();
     return clearedBuckets;
   }
 
@@ -327,10 +328,12 @@ public class PartitionedRegionClear {
 
   void doClear(RegionEventImpl regionEvent, boolean cacheWrite) {
     String lockName = CLEAR_OPERATION + partitionedRegion.getName();
+    long clearStartTime = 0;
 
     try {
       // distributed lock to make sure only one clear op is in progress in the cluster.
       acquireDistributedClearLock(lockName);
+      clearStartTime = System.nanoTime();
 
       // Force all primary buckets to be created before clear.
       assignAllPrimaryBuckets();
@@ -367,11 +370,33 @@ public class PartitionedRegionClear {
           releaseLockForClear(regionEvent);
         }
       }
-
     } finally {
       releaseDistributedClearLock(lockName);
+      incClearDuration(System.nanoTime() - clearStartTime);
     }
   }
+
+  void incClearCount() {
+    if (partitionedRegion != null && partitionedRegion.getDataStore() != null && partitionedRegion.getDataStore().getAllLocalBucketRegions() != null && partitionedRegion.getDataStore().getAllLocalBucketRegions().size() != 0) {
+      CachePerfStats stats = partitionedRegion.getCachePerfStats();
+      if (stats != null) {
+        logger.info("BR inc PR Region count:"+stats.getClass().getName()+":"+partitionedRegion.getFullPath(), new Exception());
+        stats.incClearCount();
+      }
+    }
+  }
+
+  void incClearDuration(long durationNanos) {
+    if (partitionedRegion != null && partitionedRegion.getTotalNumberOfBuckets() != 0) {
+      CachePerfStats stats = partitionedRegion.getCachePerfStats();
+      if (stats != null) {
+        logger.info("BR inc PR Duration by + " + durationNanos + " ns:"+stats.getClass().getName()+":"+partitionedRegion.getFullPath(), new Exception());
+        stats.incPartitionedRegionClearDuration(durationNanos);
+      }
+    }
+  }
+
+
 
   protected void invokeCacheWriter(RegionEventImpl regionEvent) {
     try {

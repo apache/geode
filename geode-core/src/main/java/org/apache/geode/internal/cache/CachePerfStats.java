@@ -117,7 +117,10 @@ public class CachePerfStats {
   static final int indexUpdateInProgressId;
   static final int indexUpdateCompletedId;
   static final int indexUpdateTimeId;
-  static final int clearsId;
+  static final int bucketClearsId;
+  static final int regionClearsId;
+  static final int partitionedRegionClearDurationId;
+
   private static final int indexInitializationInProgressId;
   private static final int indexInitializationCompletedId;
   private static final int indexInitializationTimeId;
@@ -274,7 +277,10 @@ public class CachePerfStats {
         "Current number of regions configured for reliablity that are missing required roles with Limited access";
     final String reliableRegionsMissingNoAccessDesc =
         "Current number of regions configured for reliablity that are missing required roles with No access";
-    final String clearsDesc = "The total number of times a clear has been done on this cache.";
+    final String regionClearsDesc = "The total number of times a clear has been done on this cache.";
+    final String bucketClearsDesc = "The total number of times a clear has been done on this region and it's bucket regions";
+    final String partitionedRegionClearDurationDesc = "The time in nanoseconds partitioned region clear has been running on this region";
+
     final String metaDataRefreshCountDesc =
         "Total number of times the meta data is refreshed due to hopping observed.";
     final String conflatedEventsDesc =
@@ -442,7 +448,9 @@ public class CachePerfStats {
             f.createIntCounter("retries",
                 "Number of times a concurrent destroy followed by a create has caused an entry operation to need to retry.",
                 "operations"),
-            f.createLongCounter("clears", clearsDesc, "operations"),
+            f.createLongCounter("regionClears", regionClearsDesc, "operations"),
+            f.createLongCounter("bucketClears", bucketClearsDesc, "operations"),
+            f.createLongCounter("partitionedRegionClearDuration", partitionedRegionClearDurationDesc, "nanoseconds"),
             f.createIntGauge("diskTasksWaiting",
                 "Current number of disk tasks (oplog compactions, asynchronous recoveries, etc) that are waiting for a thread to run the operation",
                 "operations"),
@@ -573,7 +581,9 @@ public class CachePerfStats {
     eventsQueuedId = type.nameToId("eventsQueued");
 
     retriesId = type.nameToId("retries");
-    clearsId = type.nameToId("clears");
+    regionClearsId = type.nameToId("regionClears");
+    bucketClearsId = type.nameToId("bucketClears");
+    partitionedRegionClearDurationId = type.nameToId("partitionedRegionClearDuration");
 
     diskTasksWaitingId = type.nameToId("diskTasksWaiting");
     evictorJobsStartedId = type.nameToId("evictorJobsStarted");
@@ -1353,12 +1363,26 @@ public class CachePerfStats {
     };
   }
 
-  public long getClearCount() {
-    return stats.getLong(clearsId);
+  public long getRegionClearCount() {
+    return stats.getLong(regionClearsId);
+  }
+
+  public long getBucketClearCount() { return stats.getLong(bucketClearsId); }
+
+  public long getPartitionedRegionClearDuration() {
+    return stats.getLong(partitionedRegionClearDurationId);
   }
 
   public void incClearCount() {
-    stats.incLong(clearsId, 1L);
+    stats.incLong(regionClearsId, 1L);
+  }
+
+  public void incBucketClearCount() {
+    stats.incLong(bucketClearsId, 1L);
+  }
+
+  public void incPartitionedRegionClearDuration(long durationNanos) {
+    stats.incLong(partitionedRegionClearDurationId, durationNanos);
   }
 
   public long getConflatedEventsCount() {
