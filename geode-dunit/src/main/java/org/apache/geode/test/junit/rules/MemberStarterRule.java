@@ -29,6 +29,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANA
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.management.internal.ManagementConstants.OBJECTNAME__CLIENTSERVICE_MXBEAN;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -139,11 +140,6 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
       throw new RuntimeException(throwable.getMessage(), throwable);
     }
     normalizeProperties();
-    try {
-      workingDir = Files.createTempDirectory(Paths.get("").toAbsolutePath(), getName()).toFile();
-    } catch (IOException e) {
-      throw new IllegalStateException(e);
-    }
     if (httpPort < 0) {
       // at this point, httpPort is not being configured by api, we assume they do not
       // want to start the http service.
@@ -179,6 +175,11 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
           // do not delete the dunit folder that might have been created by dunit launcher
           .filter(f -> !(f.isDirectory() && f.getName().equals("dunit")))
           .forEach(FileUtils::deleteQuietly);
+  }
+
+  public T withWorkingDir(final File workingDir) {
+    this.workingDir = workingDir;
+    return uncheckedCast(this);
   }
 
   public T withPort(int memberPort) {
@@ -583,6 +584,13 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
 
   @Override
   public File getWorkingDir() {
+    if (null == workingDir) {
+      try {
+        workingDir = Files.createTempDirectory(Paths.get("").toAbsolutePath(), getName()).toFile();
+      } catch (IOException e) {
+        throw new IllegalStateException(e);
+      }
+    }
     return workingDir;
   }
 
