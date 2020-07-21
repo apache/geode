@@ -1044,7 +1044,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
             }
           } else {
             if (isDebugEnabled) {
-              logger.debug("The sender is stopped. Not to add to tmpDroppedEvents for event {}",
+              logger.debug("Gateway sender is stopped. Event was not added to tmpDroppedEvents: {}",
                   clonedEvent);
             }
           }
