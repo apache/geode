@@ -16,13 +16,16 @@
  */
 package org.apache.geode.management.internal.rest;
 
+import static java.lang.String.valueOf;
 import static java.nio.charset.Charset.defaultCharset;
 import static org.apache.commons.io.FileUtils.readFileToString;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.internal.AvailablePort.SOCKET;
 import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -37,6 +40,7 @@ import org.junit.Test;
 
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.ServerLauncher;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
@@ -141,7 +145,8 @@ public class ManagementRequestLoggingDistributedTest implements Serializable {
     builder.setMemberName(locatorName);
     builder.setWorkingDirectory(locatorDir.getAbsolutePath());
     builder.setPort(0);
-    builder.set(HTTP_SERVICE_PORT, String.valueOf(httpPort));
+    builder.set(JMX_MANAGER_PORT, valueOf(getRandomAvailableTCPPort()));
+    builder.set(HTTP_SERVICE_PORT, valueOf(httpPort));
     builder.set(LOG_LEVEL, "debug");
 
     locatorLauncher = builder.build();

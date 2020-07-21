@@ -36,6 +36,7 @@
 project.ext.dockerConfig = {
   maxParallelForks = dunitParallelForks.toInteger()
   forkEvery = 1
+  failFast = true
 }
 
 
