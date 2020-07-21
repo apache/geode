@@ -193,9 +193,9 @@ public class DeltaDUnitTest {
 
   private void compareBuckets() {
     server1.invoke(() -> {
-      for (int j = 0; j < 113; j++) {
-        InternalCache cache = ClusterStartupRule.getCache();
-        PartitionedRegion region = (PartitionedRegion) cache.getRegion("__REDIS_DATA");
+      InternalCache cache = ClusterStartupRule.getCache();
+      PartitionedRegion region = (PartitionedRegion) cache.getRegion("__REDIS_DATA");
+      for (int j = 0; j < region.getTotalNumberOfBuckets(); j++) {
         List<BucketDump> buckets = region.getAllBucketEntries(j);
         assertThat(buckets.size()).isEqualTo(2);
         Map<Object, Object> bucket1 = buckets.get(0).getValues();

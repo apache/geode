@@ -58,6 +58,12 @@ public class SessionController {
     return request.getSession().getId();
   }
 
+  @PostMapping("/setMaxInactiveInterval")
+  public void setMaxInactiveInterval(@RequestBody int maxInactiveInterval,
+      HttpServletRequest request) {
+    request.getSession().setMaxInactiveInterval(maxInactiveInterval);
+  }
+
   @PostMapping("/invalidateSession")
   public void invalidateSession(HttpServletRequest request) {
     request.getSession().invalidate();

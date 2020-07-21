@@ -51,7 +51,8 @@ public class RedisClusterStartupRule extends ClusterStartupRule {
     return rule.withProperty(REDIS_BIND_ADDRESS, "localhost")
         .withProperty(REDIS_PORT, "0")
         .withProperty(REDIS_ENABLED, "true")
-        .withSystemProperty(GeodeRedisServer.ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM, "true");
+        .withSystemProperty(GeodeRedisServer.ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM,
+            "true");
   }
 
   public int getRedisPort(int vmNumber) {
