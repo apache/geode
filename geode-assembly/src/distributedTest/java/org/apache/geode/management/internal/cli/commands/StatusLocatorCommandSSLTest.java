@@ -24,18 +24,25 @@ import java.util.Properties;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.DUnitLauncher;
+import org.apache.geode.test.junit.IgnoreUntil;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.GfshCommandRule.PortType;
-import org.apache.geode.test.junit.rules.LocatorLauncherStartupRule;
+import org.apache.geode.test.junit.rules.IgnoreUntilRule;
+import org.apache.geode.test.junit.rules.LocatorStarterRule;
 import org.apache.geode.test.junit.rules.MemberStarterRule;
 
 public class StatusLocatorCommandSSLTest {
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();
+
+  @ClassRule
+  public static LocatorStarterRule locatorStarterRule =
+      new LocatorStarterRule().withJMXManager().withoutHttpService();
 
   private static VM locatorVM;
   private static String workingDir;
@@ -43,19 +50,23 @@ public class StatusLocatorCommandSSLTest {
   private static String memberId;
   private static File gfPropertiesFile;
 
+  @Rule
+  public final IgnoreUntilRule ignoreUntilRule = new IgnoreUntilRule();
+
   @BeforeClass
   public static void beforeClass() throws Exception {
     DUnitLauncher.launchIfNeeded(false);
     locatorVM = VM.getVM(0);
     Properties sslProperties = MemberStarterRule.getSSLProperties("all", false, false);
     Map<String, Object> results = locatorVM.invoke(() -> {
-      LocatorLauncherStartupRule launcherStartupRule = new LocatorLauncherStartupRule()
-          .withProperties(sslProperties);
-      launcherStartupRule.start();
+      locatorStarterRule.withProperties(sslProperties);
+      locatorStarterRule.startLocator();
+
       Map<String, Object> result = new HashMap<>();
-      result.put("workingDir", launcherStartupRule.getWorkingDir().getAbsolutePath());
-      result.put("port", launcherStartupRule.getLauncher().getPort());
-      result.put("id", launcherStartupRule.getLauncher().getMemberId());
+      result.put("workingDir", locatorStarterRule.getWorkingDir().getAbsolutePath());
+      result.put("port", locatorStarterRule.getPort());
+      result.put("id", locatorStarterRule.getName());
+      System.out.println("XXXXX: result=" + result);
       return result;
     });
     workingDir = (String) results.get("workingDir");
@@ -76,24 +87,40 @@ public class StatusLocatorCommandSSLTest {
         .statusIsSuccess();
   }
 
+  /**
+   * This test expects member listening on default port.
+   */
+  @IgnoreUntil(value = "decontainerization", until = "2020-08-01")
   @Test
   public void testWithMemberName() throws Exception {
     gfsh.executeAndAssertThat(STATUS_LOCATOR + " --name=locator-0" + " --security-properties-file="
         + gfPropertiesFile.getAbsolutePath()).statusIsSuccess();
   }
 
+  /**
+   * This test expects member listening on default port.
+   */
+  @IgnoreUntil(value = "decontainerization", until = "2020-08-01")
   @Test
   public void testWithMemberId() throws Exception {
     gfsh.executeAndAssertThat(STATUS_LOCATOR + " --name=" + memberId
         + " --security-properties-file=" + gfPropertiesFile.getAbsolutePath()).statusIsSuccess();
   }
 
+  /**
+   * This test expects member listening on default port.
+   */
+  @IgnoreUntil(value = "decontainerization", until = "2020-08-01")
   @Test
   public void testWithDirOnline() throws Exception {
     gfsh.executeAndAssertThat(STATUS_LOCATOR + " --dir=" + workingDir
         + " --security-properties-file=" + gfPropertiesFile.getAbsolutePath()).statusIsSuccess();
   }
 
+  /**
+   * This test expects member listening on default port.
+   */
+  @IgnoreUntil(value = "decontainerization", until = "2020-08-01")
   @Test
   public void testWithDirOffline() throws Exception {
     gfsh.disconnect();
