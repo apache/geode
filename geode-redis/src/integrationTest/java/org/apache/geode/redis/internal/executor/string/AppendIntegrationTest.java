@@ -93,6 +93,23 @@ public class AppendIntegrationTest {
     }
   }
 
+  @Test
+  public void testAppend_withBinaryKeyAndValue() {
+    byte[] blob = new byte[256];
+    byte[] doubleBlob = new byte[512];
+    for (int i = 0; i < 256; i++) {
+      blob[i] = (byte) i;
+      doubleBlob[i] = (byte) i;
+      doubleBlob[i + 256] = (byte) i;
+    }
+
+    jedis.set(blob, blob);
+    jedis.append(blob, blob);
+    byte[] result = jedis.get(blob);
+
+    assertThat(result).isEqualTo(doubleBlob);
+  }
+
   private String randString() {
     return Long.toHexString(Double.doubleToLongBits(Math.random()));
   }

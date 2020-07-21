@@ -106,14 +106,24 @@ public class SetsIntegrationTest {
 
     jedis.set(key, stringValue);
 
-    try {
-      jedis.sadd(key, setValue);
-    } catch (JedisDataException exception) {
-    }
+    assertThatThrownBy(() -> jedis.sadd(key, setValue)).isInstanceOf(JedisDataException.class);
 
     String result = jedis.get(key);
 
     assertThat(result).isEqualTo(stringValue);
+  }
+
+  @Test
+  public void testSAdd_canStoreBinaryData() {
+    byte[] blob = new byte[256];
+    for (int i = 0; i < 256; i++) {
+      blob[i] = (byte) i;
+    }
+
+    jedis.sadd("key".getBytes(), blob, blob);
+    Set<byte[]> result = jedis.smembers("key".getBytes());
+
+    assertThat(result).containsExactly(blob);
   }
 
   @Test

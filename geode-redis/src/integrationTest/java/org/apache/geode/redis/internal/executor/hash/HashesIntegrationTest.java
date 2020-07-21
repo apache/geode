@@ -699,6 +699,28 @@ public class HashesIntegrationTest {
     assertThat(successCount.get()).isEqualTo(ITERATION_COUNT * 2);
   }
 
+  @Test
+  public void testHset_canStoreBinaryData() {
+    byte[] blob = new byte[256];
+    for (int i = 0; i < 256; i++) {
+      blob[i] = (byte) i;
+    }
+
+    jedis.hset("key".getBytes(), blob, blob);
+    Map<byte[], byte[]> result = jedis.hgetAll("key".getBytes());
+
+    assertThat(result.keySet()).containsExactly(blob);
+    assertThat(result.values()).containsExactly(blob);
+  }
+
+  @Test
+  public void testHstrlen_withBinaryData() {
+    byte[] zero = new byte[] {0};
+    jedis.hset(zero, zero, zero);
+
+    assertThat(jedis.hstrlen(zero, zero)).isEqualTo(1);
+  }
+
   private void doABunchOfHSets(String key, Map<String, String> record, Jedis jedis) {
     String field;
     String fieldValue;

@@ -111,6 +111,16 @@ public class DelIntegrationTest {
     }
   }
 
+  @Test
+  public void testDel_withBinaryKey() {
+    byte[] key = new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+
+    jedis.set(key, "foo".getBytes());
+    jedis.del(key);
+
+    assertThat(jedis.get(key)).isNull();
+  }
+
   private String randString() {
     return Long.toHexString(Double.doubleToLongBits(Math.random()));
   }

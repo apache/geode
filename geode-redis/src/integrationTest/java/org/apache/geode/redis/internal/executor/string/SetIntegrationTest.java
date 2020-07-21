@@ -497,4 +497,18 @@ public class SetIntegrationTest {
 
     soft.assertAll();
   }
+
+  @Test
+  public void testSET_withBinaryKeyAndValue() {
+    byte[] blob = new byte[256];
+    for (int i = 0; i < 256; i++) {
+      blob[i] = (byte) i;
+    }
+
+    jedis.set(blob, blob);
+    byte[] result = jedis.get(blob);
+
+    assertThat(result).isEqualTo(blob);
+  }
+
 }
