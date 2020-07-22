@@ -69,7 +69,7 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.tier.Encryptor;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.GemFireSecurityException;
 
@@ -413,7 +413,7 @@ public class EncryptorImpl implements Encryptor {
         // PublicKey pubKey = keyFact.generatePublic(x509KeySpec);
         this.clientPublicKey = keyFact.generatePublic(x509KeySpec);
 
-        try (HeapDataOutputStream hdos = new HeapDataOutputStream(KnownVersion.CURRENT)) {
+        try (HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT)) {
           // Add the challenge string
           DataSerializer.writeByteArray(serverChallenge, hdos);
           // byte[] encBytes = encrypt.doFinal(hdos.toByteArray());
@@ -498,7 +498,7 @@ public class EncryptorImpl implements Encryptor {
 
 
 
-        HeapDataOutputStream hdos = new HeapDataOutputStream(KnownVersion.CURRENT);
+        HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
         try {
           DataSerializer.writeProperties(p_credentials, hdos);
           // Also add the challenge string

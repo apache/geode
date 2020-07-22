@@ -32,7 +32,7 @@ import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -49,7 +49,7 @@ public abstract class AbstractOp implements Op {
   private boolean allowDuplicateMetadataRefresh;
 
   protected AbstractOp(int msgType, int msgParts) {
-    msg = new Message(msgParts, KnownVersion.CURRENT);
+    msg = new Message(msgParts, Version.CURRENT);
     getMessage().setMessageType(msgType);
   }
 
@@ -125,7 +125,7 @@ public abstract class AbstractOp implements Op {
         }
         userId = id;
       }
-      try (HeapDataOutputStream hdos = new HeapDataOutputStream(KnownVersion.CURRENT)) {
+      try (HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT)) {
         hdos.writeLong(cnx.getConnectionID());
         hdos.writeLong(userId);
         getMessage().setSecurePart(((ConnectionImpl) cnx).encryptBytes(hdos.toByteArray()));
@@ -215,7 +215,7 @@ public abstract class AbstractOp implements Op {
    * By default just create a normal one part msg. Subclasses can override this.
    */
   protected Message createResponseMessage() {
-    return new Message(1, KnownVersion.CURRENT);
+    return new Message(1, Version.CURRENT);
   }
 
   protected Object processResponse(Message m, Connection con) throws Exception {

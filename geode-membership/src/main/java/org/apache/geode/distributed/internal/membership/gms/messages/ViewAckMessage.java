@@ -21,8 +21,8 @@ import java.io.IOException;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Members receiving an InstallViewMessage must respond by sending a ViewAckMessage.
@@ -93,7 +93,7 @@ public class ViewAckMessage<ID extends MemberIdentifier> extends AbstractGMSMess
   }
 
   @Override
-  public KnownVersion[] getSerializationVersions() {
+  public Version[] getSerializationVersions() {
     return null;
   }
 }

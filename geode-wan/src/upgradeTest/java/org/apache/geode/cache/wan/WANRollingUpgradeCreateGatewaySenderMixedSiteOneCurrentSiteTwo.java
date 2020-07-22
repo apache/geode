@@ -22,7 +22,7 @@ import org.junit.Test;
 
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.AvailablePort;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
@@ -105,7 +105,7 @@ public class WANRollingUpgradeCreateGatewaySenderMixedSiteOneCurrentSiteTwo
     this.gfsh.connectAndVerify(jmxManagerPort, GfshCommandRule.PortType.jmxManager);
     CommandResultAssert cmd = this.gfsh
         .executeAndAssertThat(getCreateGatewaySenderCommand("toSite2", site2DistributedSystemId));
-    if (!majorMinor(oldVersion).equals(majorMinor(KnownVersion.CURRENT.getName()))) {
+    if (!majorMinor(oldVersion).equals(majorMinor(Version.CURRENT.getName()))) {
       cmd.statusIsError()
           .containsOutput(CliStrings.CREATE_GATEWAYSENDER__MSG__CAN_NOT_CREATE_DIFFERENT_VERSIONS);
     } else {

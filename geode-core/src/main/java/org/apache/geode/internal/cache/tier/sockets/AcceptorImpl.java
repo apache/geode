@@ -94,7 +94,7 @@ import org.apache.geode.internal.logging.CoreLoggingExecutors;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.statistics.StatisticsClockFactory;
 import org.apache.geode.internal.tcp.ConnectionTable;
@@ -1510,7 +1510,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
 
   @Override
   public void refuseHandshake(OutputStream out, String message, byte exception) throws IOException {
-    HeapDataOutputStream hdos = new HeapDataOutputStream(32, KnownVersion.CURRENT);
+    HeapDataOutputStream hdos = new HeapDataOutputStream(32, Version.CURRENT);
     DataOutputStream dos = new DataOutputStream(hdos);
     // Write refused reply
     dos.writeByte(exception);
@@ -1522,7 +1522,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
 
     // Write the server's member
     DistributedMember member = InternalDistributedSystem.getAnyInstance().getDistributedMember();
-    HeapDataOutputStream memberDos = new HeapDataOutputStream(KnownVersion.CURRENT);
+    HeapDataOutputStream memberDos = new HeapDataOutputStream(Version.CURRENT);
     DataSerializer.writeObject(member, memberDos);
     DataSerializer.writeByteArray(memberDos.toByteArray(), dos);
     memberDos.close();

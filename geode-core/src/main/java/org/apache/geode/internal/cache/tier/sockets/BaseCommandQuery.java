@@ -43,7 +43,7 @@ import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
@@ -97,7 +97,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
 
     // from 7.0, set flag to indicate a remote query irrespective of the
     // object type
-    if (servConn.getClientVersion().isNotOlderThan(KnownVersion.GFE_70)) {
+    if (servConn.getClientVersion().isNotOlderThan(Version.GFE_70)) {
       ((DefaultQuery) query).setRemoteQuery(true);
     }
     // Process the query request
@@ -309,8 +309,8 @@ public abstract class BaseCommandQuery extends BaseCommand {
   }
 
   private boolean sendCqResultsWithKey(ServerConnection servConn) {
-    KnownVersion clientVersion = servConn.getClientVersion();
-    if (clientVersion.isNotOlderThan(KnownVersion.GFE_65)) {
+    Version clientVersion = servConn.getClientVersion();
+    if (clientVersion.isNotOlderThan(Version.GFE_65)) {
       return true;
     }
     return false;

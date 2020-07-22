@@ -43,9 +43,9 @@ import org.apache.geode.internal.cache.tier.sockets.ClientTombstoneMessage;
 import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.SerializationVersions;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -59,7 +59,7 @@ public class PRTombstoneMessage extends PartitionMessageWithDirectReply
   private static final Logger logger = LogService.getLogger();
 
   @Immutable
-  private static final KnownVersion[] serializationVersions = null;
+  private static final Version[] serializationVersions = null;
 
   private Set<Object> keys;
   private EventID eventID;
@@ -129,7 +129,7 @@ public class PRTombstoneMessage extends PartitionMessageWithDirectReply
   }
 
   @Override
-  public KnownVersion[] getSerializationVersions() {
+  public Version[] getSerializationVersions() {
     return serializationVersions;
   }
 

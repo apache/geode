@@ -26,8 +26,8 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * A file that is stored in a Apache Geode region.
@@ -115,7 +115,7 @@ public class File implements DataSerializableFixedID {
   }
 
   @Override
-  public KnownVersion[] getSerializationVersions() {
+  public Version[] getSerializationVersions() {
     return null;
   }
 

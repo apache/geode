@@ -62,9 +62,9 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -237,7 +237,7 @@ public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
     this.putAllDataCount = (int) InternalDataSerializer.readUnsignedVL(in);
     this.putAllData = new PutAllEntryData[putAllDataCount];
     if (this.putAllDataCount > 0) {
-      final KnownVersion version = StaticSerialization.getVersionForDataStreamOrNull(in);
+      final Version version = StaticSerialization.getVersionForDataStreamOrNull(in);
       final ByteArrayDataInput bytesIn = new ByteArrayDataInput();
       for (int i = 0; i < this.putAllDataCount; i++) {
         this.putAllData[i] = new PutAllEntryData(in, context, this.eventId, i);

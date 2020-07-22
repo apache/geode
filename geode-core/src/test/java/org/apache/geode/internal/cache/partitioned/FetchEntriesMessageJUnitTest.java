@@ -33,7 +33,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.partitioned.FetchEntriesMessage.FetchEntriesReplyMessage;
 import org.apache.geode.internal.cache.partitioned.FetchEntriesMessage.FetchEntriesResponse;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.test.fake.Fakes;
 
 public class FetchEntriesMessageJUnitTest {
@@ -52,8 +52,7 @@ public class FetchEntriesMessageJUnitTest {
 
   private HeapDataOutputStream createDummyChunk() throws IOException, ClassNotFoundException {
     HeapDataOutputStream mos =
-        new HeapDataOutputStream(InitialImageOperation.CHUNK_SIZE_IN_BYTES + 2048,
-            KnownVersion.CURRENT);
+        new HeapDataOutputStream(InitialImageOperation.CHUNK_SIZE_IN_BYTES + 2048, Version.CURRENT);
     mos.reset();
     DataSerializer.writeObject("keyWithOutVersionTag", mos);
     DataSerializer.writeObject("valueWithOutVersionTag", mos);

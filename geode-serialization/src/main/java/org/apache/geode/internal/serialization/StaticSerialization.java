@@ -504,11 +504,11 @@ public class StaticSerialization {
   }
 
   /**
-   * Get the {@link KnownVersion} of the peer or disk store that created this
+   * Get the {@link Version} of the peer or disk store that created this
    * {@link DataInput}. Returns
    * null if the version is same as this member's.
    */
-  public static KnownVersion getVersionForDataStreamOrNull(DataInput in) {
+  public static Version getVersionForDataStreamOrNull(DataInput in) {
     // check if this is a versioned data input
     if (in instanceof VersionedDataStream) {
       return ((VersionedDataStream) in).getVersion();
@@ -519,41 +519,41 @@ public class StaticSerialization {
   }
 
   /**
-   * Get the {@link KnownVersion} of the peer or disk store that created this
+   * Get the {@link Version} of the peer or disk store that created this
    * {@link DataInput}.
    */
-  public static KnownVersion getVersionForDataStream(DataInput in) {
+  public static Version getVersionForDataStream(DataInput in) {
     // check if this is a versioned data input
     if (in instanceof VersionedDataStream) {
-      final KnownVersion v = ((VersionedDataStream) in).getVersion();
-      return v != null ? v : KnownVersion.CURRENT;
+      final Version v = ((VersionedDataStream) in).getVersion();
+      return v != null ? v : Version.CURRENT;
     } else {
       // assume latest version
-      return KnownVersion.CURRENT;
+      return Version.CURRENT;
     }
   }
 
   /**
-   * Get the {@link KnownVersion} of the peer or disk store that created this
+   * Get the {@link Version} of the peer or disk store that created this
    * {@link DataOutput}.
    */
-  public static KnownVersion getVersionForDataStream(DataOutput out) {
+  public static Version getVersionForDataStream(DataOutput out) {
     // check if this is a versioned data output
     if (out instanceof VersionedDataStream) {
-      final KnownVersion v = ((VersionedDataStream) out).getVersion();
-      return v != null ? v : KnownVersion.CURRENT;
+      final Version v = ((VersionedDataStream) out).getVersion();
+      return v != null ? v : Version.CURRENT;
     } else {
       // assume latest version
-      return KnownVersion.CURRENT;
+      return Version.CURRENT;
     }
   }
 
   /**
-   * Get the {@link KnownVersion} of the peer or disk store that created this
+   * Get the {@link Version} of the peer or disk store that created this
    * {@link DataOutput}. Returns
    * null if the version is same as this member's.
    */
-  public static KnownVersion getVersionForDataStreamOrNull(DataOutput out) {
+  public static Version getVersionForDataStreamOrNull(DataOutput out) {
     // check if this is a versioned data output
     if (out instanceof VersionedDataStream) {
       return ((VersionedDataStream) out).getVersion();

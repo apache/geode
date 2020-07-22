@@ -59,7 +59,7 @@ import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -297,7 +297,7 @@ public interface DiskEntry extends RegionEntry {
      */
     static boolean fillInValue(DiskEntry de, InitialImageOperation.Entry entry, DiskRegion dr,
         DistributionManager mgr, ByteArrayDataInput in, RegionEntryContext context,
-        KnownVersion version) {
+        Version version) {
       @Retained
       @Released
       Object v = null;
@@ -1293,7 +1293,7 @@ public interface DiskEntry extends RegionEntry {
       return preparedValue;
     }
 
-    public static Object readSerializedValue(byte[] valueBytes, KnownVersion version,
+    public static Object readSerializedValue(byte[] valueBytes, Version version,
         ByteArrayDataInput in, boolean forceDeserialize, InternalCache cache) {
       if (forceDeserialize) {
         // deserialize checking for product version change
@@ -1306,8 +1306,7 @@ public interface DiskEntry extends RegionEntry {
       }
     }
 
-    public static Object readRawValue(byte[] valueBytes, KnownVersion version,
-        ByteArrayDataInput in) {
+    public static Object readRawValue(byte[] valueBytes, Version version, ByteArrayDataInput in) {
       return valueBytes;
     }
 

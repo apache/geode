@@ -69,8 +69,8 @@ import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.tcp.ConnectExceptions;
 import org.apache.geode.internal.tcp.ConnectionException;
 import org.apache.geode.internal.util.Breadcrumbs;
@@ -873,7 +873,7 @@ public class DistributionImpl implements Distribution {
     }
 
     @Override
-    public KnownVersion[] getSerializationVersions() {
+    public Version[] getSerializationVersions() {
       return null;
     }
   }

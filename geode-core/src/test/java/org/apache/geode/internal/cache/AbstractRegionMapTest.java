@@ -64,7 +64,7 @@ import org.apache.geode.internal.cache.versions.VersionHolder;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.concurrent.ConcurrentMapWithReusableEntries;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap;
 
@@ -1594,8 +1594,8 @@ public class AbstractRegionMapTest {
     }
 
     @Override
-    public KnownVersion[] getSerializationVersions() {
-      return new KnownVersion[0];
+    public Version[] getSerializationVersions() {
+      return new Version[0];
     }
 
     @Override

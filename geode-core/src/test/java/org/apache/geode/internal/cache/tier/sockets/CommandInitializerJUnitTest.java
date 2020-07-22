@@ -16,13 +16,13 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 import org.junit.Test;
 
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 
 public class CommandInitializerJUnitTest {
 
   @Test
   public void testCommandMapContainsAllVersions() {
-    for (KnownVersion version : KnownVersion.getAllVersions()) {
+    for (Version version : Version.getAllVersions()) {
       org.junit.Assert.assertNotNull(
           "Please add a commnd set for " + version + " of Geode to CommandInitializer",
           CommandInitializer.getCommands(version));

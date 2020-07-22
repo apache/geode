@@ -41,7 +41,7 @@ import org.junit.rules.TestName;
 import org.apache.geode.codeAnalysis.decode.CompiledClass;
 import org.apache.geode.codeAnalysis.decode.CompiledMethod;
 import org.apache.geode.internal.serialization.BufferDataOutputStream;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.test.junit.categories.SerializationTest;
 import org.apache.geode.test.junit.rules.ClassAnalysisRule;
 
@@ -195,7 +195,7 @@ public abstract class AnalyzeDataSerializablesJUnitTestBase {
 
 
   protected void serializeAndDeserializeObject(Object object) throws Exception {
-    BufferDataOutputStream outputStream = new BufferDataOutputStream(KnownVersion.CURRENT);
+    BufferDataOutputStream outputStream = new BufferDataOutputStream(Version.CURRENT);
     try {
       serializeObject(object, outputStream);
     } catch (IOException e) {

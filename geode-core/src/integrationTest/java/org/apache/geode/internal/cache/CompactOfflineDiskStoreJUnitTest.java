@@ -41,7 +41,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.versions.RegionVersionHolder;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Tests offline compaction
@@ -831,7 +831,7 @@ public class CompactOfflineDiskStoreJUnitTest {
     // 0: OPLOG_RVV. 1: drMap.size()==1, 2: disRegionId, 3: getRVVTrusted
     // 4: memberToVersion.size()==1, 5: memberid, 6-7: versionHolder 8: END_OF_RECORD_ID
     // but not every diskRegion has a member in RVV
-    HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT);
+    HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
     RegionVersionHolder dummyHolder = new RegionVersionHolder(1);
     try {
       dummyHolder.toData(out);

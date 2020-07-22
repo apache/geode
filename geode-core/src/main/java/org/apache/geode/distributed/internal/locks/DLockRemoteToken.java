@@ -24,8 +24,8 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Represents a held lock in a member for use when initializing a new grantor. All currently held
@@ -217,7 +217,7 @@ public class DLockRemoteToken implements DataSerializableFixedID {
   }
 
   @Override
-  public KnownVersion[] getSerializationVersions() {
+  public Version[] getSerializationVersions() {
     return null;
   }
 }

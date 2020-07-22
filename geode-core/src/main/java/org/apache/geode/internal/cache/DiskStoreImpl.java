@@ -114,7 +114,7 @@ import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.executors.LoggingThread;
@@ -1914,7 +1914,7 @@ public class DiskStoreImpl implements DiskStore {
 
   private String getRecoveredGFVersionName() {
     String currentVersionStr = "GFE pre-7.0";
-    KnownVersion version = getRecoveredGFVersion();
+    Version version = getRecoveredGFVersion();
     if (version != null) {
       currentVersionStr = version.toString();
     }
@@ -1964,7 +1964,7 @@ public class DiskStoreImpl implements DiskStore {
         this.initFile =
             new DiskInitFile(partialFileName, this, ifRequired, persistentBackupFiles.keySet());
         if (this.upgradeVersionOnly) {
-          if (KnownVersion.CURRENT.compareTo(getRecoveredGFVersion()) <= 0) {
+          if (Version.CURRENT.compareTo(getRecoveredGFVersion()) <= 0) {
             if (getCache() != null) {
               getCache().close();
             }
@@ -1973,7 +1973,7 @@ public class DiskStoreImpl implements DiskStore {
                     getRecoveredGFVersionName()));
           }
         } else {
-          if (KnownVersion.GFE_70.compareTo(getRecoveredGFVersion()) > 0) {
+          if (Version.GFE_70.compareTo(getRecoveredGFVersion()) > 0) {
             // TODO: In each new version, need to modify the highest version
             // that needs converstion.
             if (getCache() != null) {
@@ -3644,8 +3644,7 @@ public class DiskStoreImpl implements DiskStore {
   public final boolean upgradeVersionOnly;
 
   boolean isUpgradeVersionOnly() {
-    return this.upgradeVersionOnly
-        && KnownVersion.GFE_70.compareTo(this.getRecoveredGFVersion()) > 0;
+    return this.upgradeVersionOnly && Version.GFE_70.compareTo(this.getRecoveredGFVersion()) > 0;
   }
 
   private final boolean offlineCompacting;
@@ -4696,11 +4695,11 @@ public class DiskStoreImpl implements DiskStore {
     oplogSet.updateDiskRegion(dr);
   }
 
-  public KnownVersion getRecoveredGFVersion() {
+  public Version getRecoveredGFVersion() {
     return getRecoveredGFVersion(this.initFile);
   }
 
-  KnownVersion getRecoveredGFVersion(DiskInitFile initFile) {
+  Version getRecoveredGFVersion(DiskInitFile initFile) {
     return initFile.currentRecoveredGFVersion();
   }
 

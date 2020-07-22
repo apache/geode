@@ -58,9 +58,9 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.util.internal.GeodeGlossary;
@@ -342,7 +342,7 @@ public class GetMessage extends PartitionMessageWithDirectReply {
      */
     public VersionTag versionTag;
 
-    public transient KnownVersion remoteVersion;
+    public transient Version remoteVersion;
 
     /**
      * Empty constructor to conform to DataSerializable interface

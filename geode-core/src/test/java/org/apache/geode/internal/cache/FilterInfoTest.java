@@ -26,7 +26,7 @@ import org.junit.Test;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Unit test for FilterRoutingInfo.FilterInfo
@@ -47,12 +47,12 @@ public class FilterInfoTest {
     clientsInv.add(3L);
     clientsInv.add(4L);
     serialized.setInterestedClientsInv(clientsInv);
-    HeapDataOutputStream dataOut = new HeapDataOutputStream(KnownVersion.CURRENT);
+    HeapDataOutputStream dataOut = new HeapDataOutputStream(Version.CURRENT);
     serialized.toData(dataOut);
     byte[] outputBytes = dataOut.toByteArray();
     FilterInfo deserialized = new FilterInfo();
     ByteArrayDataInput dataInput = new ByteArrayDataInput();
-    dataInput.initialize(outputBytes, KnownVersion.CURRENT);
+    dataInput.initialize(outputBytes, Version.CURRENT);
     deserialized.fromData(dataInput);
     assertThat(deserialized.getCQs()).isEqualTo(cqs);
     assertThat(deserialized.getInterestedClients()).isEqualTo(clients);

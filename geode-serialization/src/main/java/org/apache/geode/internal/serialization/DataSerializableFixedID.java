@@ -701,7 +701,7 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
    * <br>
    * Note: For rolling upgrades, if there is a change in the object format from previous version,
    * add a new toDataPre_GFE_X_X_X_X() method and add an entry for the current {@link
-   * KnownVersion} in the getSerializationVersions array of the
+   * Version} in the getSerializationVersions array of the
    * implementing class. e.g. if msg format changed in version 80, create toDataPre_GFE_8_0_0_0, add
    * Version.GFE_80 to the getSerializationVersions array and copy previous toData contents to this
    * newly created toDataPre_GFE_X_X_X_X() method.
@@ -715,7 +715,7 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
    * <br>
    * Note: For rolling upgrades, if there is a change in the object format from previous version,
    * add a new fromDataPre_GFE_X_X_X_X() method and add an entry for the current {@link
-   * KnownVersion} in the getSerializationVersions array of the
+   * Version} in the getSerializationVersions array of the
    * implementing class. e.g. if msg format changed in version 80, create fromDataPre_GFE_8_0_0_0,
    * add Version.GFE_80 to the getSerializationVersions array and copy previous fromData contents to
    * this newly created fromDataPre_GFE_X_X_X_X() method.

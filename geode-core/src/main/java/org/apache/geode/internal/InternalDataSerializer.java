@@ -113,12 +113,12 @@ import org.apache.geode.internal.serialization.DSFIDSerializerFactory;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.DscodeHelper;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.ObjectDeserializer;
 import org.apache.geode.internal.serialization.ObjectSerializer;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.SerializationVersions;
 import org.apache.geode.internal.serialization.StaticSerialization;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataStream;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteHashMap;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -352,9 +352,9 @@ public abstract class InternalDataSerializer extends DataSerializer {
 
     if (out instanceof VersionedDataStream) {
       VersionedDataStream vout = (VersionedDataStream) out;
-      KnownVersion version = vout.getVersion();
+      Version version = vout.getVersion();
       if (null != version) {
-        if (version.isOlderThan(KnownVersion.GEODE_1_9_0)) {
+        if (version.isOlderThan(Version.GEODE_1_9_0)) {
           if (name.equals(POST_GEODE_190_SERVER_CQIMPL)) {
             return PRE_GEODE_190_SERVER_CQIMPL;
           }
@@ -2181,8 +2181,8 @@ public abstract class InternalDataSerializer extends DataSerializer {
       try {
         ObjectOutput oos = new ObjectOutputStream(stream);
         if (stream instanceof VersionedDataStream) {
-          KnownVersion v = ((VersionedDataStream) stream).getVersion();
-          if (v != null && v != KnownVersion.CURRENT) {
+          Version v = ((VersionedDataStream) stream).getVersion();
+          if (v != null && v != Version.CURRENT) {
             oos = new VersionedObjectOutput(oos, v);
           }
         }
@@ -2214,11 +2214,11 @@ public abstract class InternalDataSerializer extends DataSerializer {
         return;
       }
       boolean invoked = false;
-      KnownVersion v = StaticSerialization.getVersionForDataStreamOrNull(out);
+      Version v = StaticSerialization.getVersionForDataStreamOrNull(out);
 
-      if (KnownVersion.CURRENT != v && v != null) {
+      if (Version.CURRENT != v && v != null) {
         // get versions where DataOutput was upgraded
-        KnownVersion[] versions = null;
+        Version[] versions = null;
         if (serializableObject instanceof SerializationVersions) {
           SerializationVersions sv = (SerializationVersions) serializableObject;
           versions = sv.getSerializationVersions();
@@ -2226,7 +2226,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
         // check if the version of the peer or diskstore is different and
         // there has been a change in the message
         if (versions != null) {
-          for (KnownVersion version : versions) {
+          for (Version version : versions) {
             // if peer version is less than the greatest upgraded version
             if (v.compareTo(version) < 0) {
               serializableObject.getClass().getMethod("toDataPre_" + version.getMethodSuffix(),
@@ -2283,10 +2283,10 @@ public abstract class InternalDataSerializer extends DataSerializer {
     }
     try {
       boolean invoked = false;
-      KnownVersion v = StaticSerialization.getVersionForDataStreamOrNull(in);
-      if (KnownVersion.CURRENT != v && v != null) {
+      Version v = StaticSerialization.getVersionForDataStreamOrNull(in);
+      if (Version.CURRENT != v && v != null) {
         // get versions where DataOutput was upgraded
-        KnownVersion[] versions = null;
+        Version[] versions = null;
         if (deserializableObject instanceof SerializationVersions) {
           SerializationVersions vds = (SerializationVersions) deserializableObject;
           versions = vds.getSerializationVersions();
@@ -2294,7 +2294,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
         // check if the version of the peer or diskstore is different and
         // there has been a change in the message
         if (versions != null) {
-          for (KnownVersion version : versions) {
+          for (Version version : versions) {
             // if peer version is less than the greatest upgraded version
             if (v.compareTo(version) < 0) {
               deserializableObject.getClass()
@@ -2682,8 +2682,8 @@ public abstract class InternalDataSerializer extends DataSerializer {
       ObjectInput ois = new DSObjectInputStream(stream);
       serializationFilter.setFilterOn((ObjectInputStream) ois);
       if (stream instanceof VersionedDataStream) {
-        KnownVersion v = ((VersionedDataStream) stream).getVersion();
-        if (KnownVersion.CURRENT != v && v != null) {
+        Version v = ((VersionedDataStream) stream).getVersion();
+        if (Version.CURRENT != v && v != null) {
           ois = new VersionedObjectInput(ois, v);
         }
       }
@@ -3096,7 +3096,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
 
   /* test only method */
   public static int calculateBytesForTSandDSID(int dsid) {
-    HeapDataOutputStream out = new HeapDataOutputStream(4 + 8, KnownVersion.CURRENT);
+    HeapDataOutputStream out = new HeapDataOutputStream(4 + 8, Version.CURRENT);
     long now = System.currentTimeMillis();
     try {
       writeUnsignedVL(now, out);
@@ -3383,7 +3383,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
      * The versions in which this message was modified
      */
     @Immutable
-    private static final KnownVersion[] dsfidVersions = new KnownVersion[] {};
+    private static final Version[] dsfidVersions = new Version[] {};
     /**
      * The eventId of the {@code DataSerializer} that was registered
      */
@@ -3506,7 +3506,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
     }
 
     @Override
-    public KnownVersion[] getSerializationVersions() {
+    public Version[] getSerializationVersions() {
       return dsfidVersions;
     }
   }

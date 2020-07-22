@@ -29,8 +29,8 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.locks.TXRegionLockRequest;
 import org.apache.geode.internal.logging.log4j.LogMarker;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.StaticSerialization;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -119,8 +119,7 @@ public class TXRegionLockRequestImpl implements TXRegionLockRequest {
       if (cache != null && size > 0) {
         this.r = (LocalRegion) cache.getRegion(this.regionPath);
       }
-      if (StaticSerialization.getVersionForDataStream(in)
-          .isNotOlderThan(KnownVersion.GEODE_1_10_0)) {
+      if (StaticSerialization.getVersionForDataStream(in).isNotOlderThan(Version.GEODE_1_10_0)) {
         this.entryKeys = readEntryKeyMap(size, in);
       } else {
         this.entryKeys = readEntryKeySet(size, in);
@@ -184,8 +183,7 @@ public class TXRegionLockRequestImpl implements TXRegionLockRequest {
   @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(getRegionFullPath(), out);
-    if (StaticSerialization.getVersionForDataStream(out)
-        .isNotOlderThan(KnownVersion.GEODE_1_10_0)) {
+    if (StaticSerialization.getVersionForDataStream(out).isNotOlderThan(Version.GEODE_1_10_0)) {
       InternalDataSerializer.writeHashMap(this.entryKeys, out);
     } else {
       HashSet hashset = new HashSet(this.entryKeys.keySet());

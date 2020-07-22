@@ -249,7 +249,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.sequencelog.RegionLogger;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.size.Sizeable;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.util.TransformUtils;
@@ -4685,7 +4685,7 @@ public class PartitionedRegion extends LocalRegion
 
     Set<InternalDistributedMember> oldMembers =
         new HashSet<InternalDistributedMember>(nodeToBuckets.keySet());
-    dm.removeMembersWithSameOrNewerVersion(oldMembers, KnownVersion.CURRENT);
+    dm.removeMembersWithSameOrNewerVersion(oldMembers, Version.CURRENT);
     Iterator<InternalDistributedMember> oldies = oldMembers.iterator();
     while (oldies.hasNext()) {
       InternalDistributedMember old = oldies.next();
@@ -4830,7 +4830,7 @@ public class PartitionedRegion extends LocalRegion
         oneBucketKeys.clear();
         oneBucketKeys.put(e.getKey(), e.getValue());
         try {
-          if (entry.getKey().getVersionOrdinalObject().isOlderThan(KnownVersion.GFE_80)) {
+          if (entry.getKey().getVersionOrdinalObject().isOlderThan(Version.GFE_80)) {
             failures.putAll(nodeToBuckets.get(entry.getKey()));
             continue;
           }
@@ -4882,7 +4882,7 @@ public class PartitionedRegion extends LocalRegion
         bucketId.clear();
         bucketId.add(bucket);
         try {
-          if (entry.getKey().getVersionOrdinalObject().isOlderThan(KnownVersion.GFE_80)) {
+          if (entry.getKey().getVersionOrdinalObject().isOlderThan(Version.GFE_80)) {
             failures.addAll(nodeToBuckets.get(entry.getKey()));
             continue;
           }

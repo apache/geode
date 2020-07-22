@@ -31,7 +31,7 @@ import org.apache.geode.distributed.internal.locks.ElderState;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * This interface defines the services provided by any class that is a distribution manager.
@@ -71,7 +71,7 @@ public interface DistributionManager extends ReplySender {
    * @since GemFire 8.0
    */
   void retainMembersWithSameOrNewerVersion(Collection<InternalDistributedMember> members,
-      KnownVersion version);
+      Version version);
 
   /**
    * removes members that have the given version or later from the given collection, typically a Set
@@ -80,7 +80,7 @@ public interface DistributionManager extends ReplySender {
    * @since GemFire 8.0
    */
   void removeMembersWithSameOrNewerVersion(Collection<InternalDistributedMember> members,
-      KnownVersion version);
+      Version version);
 
   /**
    * Returns an unmodifiable set containing the identities of all of the known distribution

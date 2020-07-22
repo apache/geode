@@ -18,8 +18,8 @@ import java.io.DataInput;
 
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.ObjectDeserializer;
+import org.apache.geode.internal.serialization.Version;
 
 public class DeserializationContextImpl extends AbstractSerializationContext
     implements DeserializationContext {
@@ -33,7 +33,7 @@ public class DeserializationContextImpl extends AbstractSerializationContext
   }
 
   @Override
-  public KnownVersion getSerializationVersion() {
+  public Version getSerializationVersion() {
     return getVersionForDataStream(dataInput);
   }
 

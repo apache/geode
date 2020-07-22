@@ -172,7 +172,7 @@ public class ByteArrayDataInputTest {
 
   @Test
   public void readUTFHandlesEmptyString() throws IOException {
-    BufferDataOutputStream output = new BufferDataOutputStream(KnownVersion.CURRENT);
+    BufferDataOutputStream output = new BufferDataOutputStream(Version.CURRENT);
     output.writeUTF("");
     output.writeByte(1);
     DataInput input = createDataInput(output.toByteArray());
@@ -186,7 +186,7 @@ public class ByteArrayDataInputTest {
 
   @Test
   public void readUTFHandlesAsciiString() throws IOException {
-    BufferDataOutputStream output = new BufferDataOutputStream(KnownVersion.CURRENT);
+    BufferDataOutputStream output = new BufferDataOutputStream(Version.CURRENT);
     String string = "\u0001test\u007f";
     output.writeUTF(string);
     output.writeByte(1);
@@ -201,7 +201,7 @@ public class ByteArrayDataInputTest {
 
   @Test
   public void readUTFHandlesUTF16String() throws IOException {
-    BufferDataOutputStream output = new BufferDataOutputStream(KnownVersion.CURRENT);
+    BufferDataOutputStream output = new BufferDataOutputStream(Version.CURRENT);
     String string = "\u0000test\u0080\uffff";
     output.writeUTF(string);
     output.writeByte(1);
@@ -216,7 +216,7 @@ public class ByteArrayDataInputTest {
 
   @Test
   public void readUTFOnInputWithJustLengthThrowsEOF() {
-    BufferDataOutputStream output = new BufferDataOutputStream(KnownVersion.CURRENT);
+    BufferDataOutputStream output = new BufferDataOutputStream(Version.CURRENT);
     output.writeShort(1);
     DataInput input = createDataInput(output.toByteArray());
 

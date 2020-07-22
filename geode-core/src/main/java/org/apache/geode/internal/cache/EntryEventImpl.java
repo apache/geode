@@ -77,8 +77,8 @@ import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.size.Sizeable;
 import org.apache.geode.internal.util.ArrayUtils;
 import org.apache.geode.internal.util.BlobHelper;
@@ -2032,7 +2032,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     return deserialize(bytes, null, null);
   }
 
-  public static Object deserialize(byte[] bytes, KnownVersion version, ByteArrayDataInput in) {
+  public static Object deserialize(byte[] bytes, Version version, ByteArrayDataInput in) {
     if (bytes == null)
       return null;
     try {
@@ -2084,7 +2084,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    *
    * @throws IllegalArgumentException If <code>obj</code> should not be serialized
    */
-  public static byte[] serialize(Object obj, KnownVersion version) {
+  public static byte[] serialize(Object obj, Version version) {
     if (obj == null || obj == Token.NOT_AVAILABLE || Token.isInvalidOrRemoved(obj))
       throw new IllegalArgumentException(
           String.format("Must not serialize %s in this context.",
@@ -2117,7 +2117,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     try {
       HeapDataOutputStream hdos = null;
       if (wrapper.getBytes().length < 32) {
-        hdos = new HeapDataOutputStream(KnownVersion.CURRENT);
+        hdos = new HeapDataOutputStream(Version.CURRENT);
       } else {
         hdos = new HeapDataOutputStream(wrapper.getBytes());
       }
@@ -2610,7 +2610,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   }
 
   @Override
-  public KnownVersion[] getSerializationVersions() {
+  public Version[] getSerializationVersions() {
     return null;
   }
 

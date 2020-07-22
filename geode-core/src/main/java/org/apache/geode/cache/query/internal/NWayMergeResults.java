@@ -39,8 +39,8 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.serialization.BufferDataOutputStream.LongUpdater;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * The n - way merge results returns a sorted results on the cumulative sorted results for
@@ -433,7 +433,7 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
   }
 
   @Override
-  public KnownVersion[] getSerializationVersions() {
+  public Version[] getSerializationVersions() {
     return null;
   }
 

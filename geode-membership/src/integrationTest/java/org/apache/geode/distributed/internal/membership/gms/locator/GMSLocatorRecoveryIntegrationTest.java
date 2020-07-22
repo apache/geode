@@ -55,7 +55,7 @@ import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreatorImpl;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketFactory;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.internal.DSFIDSerializerImpl;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.test.junit.categories.MembershipTest;
@@ -79,7 +79,7 @@ public class GMSLocatorRecoveryIntegrationTest {
 
     serializer = new DSFIDSerializerImpl();
     Services.registerSerializables(serializer);
-    KnownVersion current = KnownVersion.CURRENT; // force version initialization
+    Version current = Version.CURRENT; // force version initialization
 
     stateFile = new File(temporaryFolder.getRoot(), getClass().getSimpleName() + "_locator.dat");
 
@@ -109,7 +109,7 @@ public class GMSLocatorRecoveryIntegrationTest {
   @Test
   public void testRecoverFromFileWithNormalFile() throws Exception {
     GMSMembershipView view = new GMSMembershipView();
-    populateStateFile(stateFile, LOCATOR_FILE_STAMP, KnownVersion.CURRENT_ORDINAL, view);
+    populateStateFile(stateFile, LOCATOR_FILE_STAMP, Version.CURRENT_ORDINAL, view);
 
     assertThat(gmsLocator.recoverFromFile(stateFile)).isTrue();
   }
@@ -117,7 +117,7 @@ public class GMSLocatorRecoveryIntegrationTest {
   @Test
   public void testRecoverFromFileWithWrongFileStamp() throws Exception {
     // add 1 to file stamp to make it invalid
-    populateStateFile(stateFile, LOCATOR_FILE_STAMP + 1, KnownVersion.CURRENT_ORDINAL,
+    populateStateFile(stateFile, LOCATOR_FILE_STAMP + 1, Version.CURRENT_ORDINAL,
         MemberIdentifierUtil.createMemberID(2345));
 
     assertThat(gmsLocator.recoverFromFile(stateFile)).isFalse();
@@ -126,7 +126,7 @@ public class GMSLocatorRecoveryIntegrationTest {
   @Test
   public void testRecoverFromFileWithWrongOrdinal() throws Exception {
     // add 1 to ordinal to make it wrong
-    populateStateFile(stateFile, LOCATOR_FILE_STAMP, KnownVersion.CURRENT_ORDINAL + 1,
+    populateStateFile(stateFile, LOCATOR_FILE_STAMP, Version.CURRENT_ORDINAL + 1,
         MemberIdentifierUtil.createMemberID(1234));
 
     boolean recovered = gmsLocator.recoverFromFile(stateFile);
@@ -135,7 +135,7 @@ public class GMSLocatorRecoveryIntegrationTest {
 
   @Test
   public void testRecoverFromFileWithInvalidViewObject() throws Exception {
-    populateStateFile(stateFile, LOCATOR_FILE_STAMP, KnownVersion.CURRENT_ORDINAL,
+    populateStateFile(stateFile, LOCATOR_FILE_STAMP, Version.CURRENT_ORDINAL,
         MemberIdentifierUtil.createMemberID(1234));
 
     Throwable thrown = catchThrowable(() -> gmsLocator.recoverFromFile(stateFile));
@@ -201,7 +201,7 @@ public class GMSLocatorRecoveryIntegrationTest {
 
   @Test
   public void testViewFileNotFound() throws Exception {
-    populateStateFile(stateFile, LOCATOR_FILE_STAMP, KnownVersion.CURRENT_ORDINAL,
+    populateStateFile(stateFile, LOCATOR_FILE_STAMP, Version.CURRENT_ORDINAL,
         new GMSMembershipView());
     assertThat(stateFile).exists();
 

@@ -22,8 +22,8 @@ import java.io.IOException;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Class <code>ClientPingMessageImpl</code> is a ping message that is periodically placed in the
@@ -43,9 +43,9 @@ public class ClientPingMessageImpl implements ClientMessage {
 
   @Override
   public Message getMessage(CacheClientProxy proxy, boolean notify) throws IOException {
-    KnownVersion clientVersion = proxy.getVersion();
+    Version clientVersion = proxy.getVersion();
     Message message = null;
-    if (clientVersion.isNotOlderThan(KnownVersion.GFE_6622)) {
+    if (clientVersion.isNotOlderThan(Version.GFE_6622)) {
       message = getGFEMessage();
     } else {
       throw new IOException(
@@ -56,7 +56,7 @@ public class ClientPingMessageImpl implements ClientMessage {
   }
 
   protected Message getGFEMessage() throws IOException {
-    Message message = new Message(0, KnownVersion.CURRENT);
+    Message message = new Message(0, Version.CURRENT);
     message.setMessageType(MessageType.SERVER_TO_CLIENT_PING);
     message.setTransactionId(0);
     return message;
@@ -110,7 +110,7 @@ public class ClientPingMessageImpl implements ClientMessage {
   }
 
   @Override
-  public KnownVersion[] getSerializationVersions() {
+  public Version[] getSerializationVersions() {
     return null;
   }
 }

@@ -49,7 +49,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
@@ -196,7 +196,7 @@ public class ShellCommandsController extends AbstractCommandsController {
   @RequestMapping(method = RequestMethod.GET, value = "/version/geodeSerializationVersion")
   @ResponseBody
   public String geodeSerializationVersion() {
-    return KnownVersion.CURRENT.getName();
+    return Version.CURRENT.getName();
   }
 
   private ResponseEntity<InputStreamResource> getResponse(String result) {

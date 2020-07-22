@@ -29,7 +29,7 @@ import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Does a region registerInterest on a server
@@ -149,7 +149,7 @@ public class RegisterInterestOp {
 
     @Override
     protected Message createResponseMessage() {
-      return new ChunkedMessage(1, KnownVersion.CURRENT);
+      return new ChunkedMessage(1, Version.CURRENT);
     }
 
     @Override

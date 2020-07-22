@@ -63,7 +63,7 @@ import org.apache.geode.distributed.internal.membership.gms.messages.RemoveMembe
 import org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMessage;
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.util.internal.GeodeGlossary;
@@ -560,7 +560,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
     logger.info("Received a join request from {}", incomingRequest.getMemberID());
 
     if (!ALLOW_OLD_VERSION_FOR_TESTING
-        && incomingRequest.getMemberID().getVersionOrdinal() < KnownVersion.getCurrentVersion()
+        && incomingRequest.getMemberID().getVersionOrdinal() < Version.getCurrentVersion()
             .ordinal()) {
       logger.warn("detected an attempt to start a peer using an older version of the product {}",
           incomingRequest.getMemberID());

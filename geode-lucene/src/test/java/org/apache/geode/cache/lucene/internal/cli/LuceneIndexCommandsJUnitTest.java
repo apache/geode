@@ -61,7 +61,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.CollectionUtils;
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.result.CommandResult;
@@ -442,7 +442,7 @@ public class LuceneIndexCommandsJUnitTest {
     final List<CliFunctionResult> cliFunctionResults = new ArrayList<>();
     String expectedStatus = CliStrings.format(
         LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__COULD_NOT_FIND__MEMBERS_GREATER_THAN_VERSION_0,
-        new Object[] {KnownVersion.GEODE_1_7_0});
+        new Object[] {Version.GEODE_1_7_0});
     cliFunctionResults.add(new CliFunctionResult("member0", CliFunctionResult.StatusState.OK));
     doReturn(Collections.emptySet()).when(command).getNormalMembersWithSameOrNewerVersion(any());
 
@@ -496,7 +496,7 @@ public class LuceneIndexCommandsJUnitTest {
     final List<CliFunctionResult> cliFunctionResults = new ArrayList<>();
     String expectedStatus = CliStrings.format(
         LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__COULD_NOT_FIND__MEMBERS_GREATER_THAN_VERSION_0,
-        new Object[] {KnownVersion.GEODE_1_7_0});
+        new Object[] {Version.GEODE_1_7_0});
     cliFunctionResults.add(new CliFunctionResult("member0", CliFunctionResult.StatusState.OK));
 
     ResultModel result = commands.destroyIndex(null, "regionPath");

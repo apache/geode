@@ -39,7 +39,7 @@ import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.management.internal.cli.functions.GatewaySenderFunctionArgs;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
@@ -230,9 +230,9 @@ public class CreateGatewaySenderCommandTest {
     // Create a set of mixed version members
     Set<DistributedMember> members = new HashSet<>();
     InternalDistributedMember currentVersionMember = mock(InternalDistributedMember.class);
-    when(currentVersionMember.getVersionOrdinalObject()).thenReturn(KnownVersion.CURRENT);
+    when(currentVersionMember.getVersionOrdinalObject()).thenReturn(Version.CURRENT);
     InternalDistributedMember oldVersionMember = mock(InternalDistributedMember.class);
-    when(oldVersionMember.getVersionOrdinalObject()).thenReturn(KnownVersion.GEODE_1_4_0);
+    when(oldVersionMember.getVersionOrdinalObject()).thenReturn(Version.GEODE_1_4_0);
     members.add(currentVersionMember);
     members.add(oldVersionMember);
     doReturn(members).when(command).getMembers(any(), any());

@@ -97,7 +97,7 @@ import org.apache.geode.internal.cache.tier.sockets.CacheClientProxyFactory.Inte
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.MessageDispatcher;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.test.dunit.VM;
@@ -1593,7 +1593,7 @@ public class DeltaPropagationDUnitTest implements Serializable {
     @Override
     public CacheClientProxy create(CacheClientNotifier notifier, Socket socket,
         ClientProxyMembershipID proxyId, boolean isPrimary, byte clientConflation,
-        KnownVersion clientVersion, long acceptorId, boolean notifyBySubscription,
+        Version clientVersion, long acceptorId, boolean notifyBySubscription,
         SecurityService securityService, Subject subject, StatisticsClock statisticsClock)
         throws CacheException {
       return new CustomCacheClientProxy(notifier, socket, proxyId, isPrimary, clientConflation,
@@ -1606,7 +1606,7 @@ public class DeltaPropagationDUnitTest implements Serializable {
 
     private CustomCacheClientProxy(CacheClientNotifier notifier, Socket socket,
         ClientProxyMembershipID proxyId, boolean isPrimary, byte clientConflation,
-        KnownVersion clientVersion, long acceptorId, boolean notifyBySubscription,
+        Version clientVersion, long acceptorId, boolean notifyBySubscription,
         SecurityService securityService, Subject subject, StatisticsClock statisticsClock)
         throws CacheException {
       super(notifier.getCache(), notifier, socket, proxyId, isPrimary, clientConflation,

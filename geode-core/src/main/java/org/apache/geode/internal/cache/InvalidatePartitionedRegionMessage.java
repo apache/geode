@@ -26,8 +26,8 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.internal.cache.partitioned.PartitionMessage;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 public class InvalidatePartitionedRegionMessage extends PartitionMessage {
 
@@ -124,7 +124,7 @@ public class InvalidatePartitionedRegionMessage extends PartitionMessage {
   }
 
   @Override
-  public KnownVersion[] getSerializationVersions() {
-    return new KnownVersion[] {KnownVersion.GEODE_1_9_0};
+  public Version[] getSerializationVersions() {
+    return new Version[] {Version.GEODE_1_9_0};
   }
 }

@@ -39,7 +39,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.pdx.internal.EnumInfo.PdxInstanceEnumInfo;
 import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
@@ -386,7 +386,7 @@ public class PdxInstanceJUnitTest extends JUnit4CacheTestCase {
   }
 
   private PdxInstance getPdx(PdxSerializable toData) throws IOException, ClassNotFoundException {
-    HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT);
+    HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
     DataSerializer.writeObject(toData, out);
     return DataSerializer
         .readObject(new DataInputStream(new ByteArrayInputStream(out.toByteArray())));

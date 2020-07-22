@@ -20,8 +20,8 @@ import java.io.IOException;
 
 import org.apache.geode.internal.serialization.BasicSerializable;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * An internal message sent back to TcpClient from a TcpServer to respond to a
@@ -29,7 +29,7 @@ import org.apache.geode.internal.serialization.SerializationContext;
  * @{link VersionRequest}
  */
 public class VersionResponse implements BasicSerializable {
-  private short versionOrdinal = KnownVersion.TOKEN.ordinal();
+  private short versionOrdinal = Version.TOKEN.ordinal();
 
   public short getVersionOrdinal() {
     return versionOrdinal;

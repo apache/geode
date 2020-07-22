@@ -52,9 +52,9 @@ import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.size.Sizeable;
 
@@ -73,7 +73,7 @@ public class GatewaySenderEventImpl
 
   // It should use current version. But it was hard-coded to be 0x11, i.e. GEODE_120_ORDINAL,
   // by mistake since 120 to pre-190
-  protected static final short VERSION = KnownVersion.getCurrentVersion().ordinal();
+  protected static final short VERSION = Version.getCurrentVersion().ordinal();
 
   protected EnumListenerEvent operation;
 
@@ -749,7 +749,7 @@ public class GatewaySenderEventImpl
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     fromDataPre_GEODE_1_13_0_0(in, context);
-    if (version >= KnownVersion.GEODE_1_13_0.ordinal()) {
+    if (version >= Version.GEODE_1_13_0.ordinal()) {
       boolean hasTransaction = DataSerializer.readBoolean(in);
       if (hasTransaction) {
         this.isLastEventInTransaction = DataSerializer.readBoolean(in);
@@ -761,7 +761,7 @@ public class GatewaySenderEventImpl
   public void fromDataPre_GEODE_1_13_0_0(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
     fromDataPre_GEODE_1_9_0_0(in, context);
-    if (version >= KnownVersion.GEODE_1_9_0.ordinal()) {
+    if (version >= Version.GEODE_1_9_0.ordinal()) {
       this.isConcurrencyConflict = DataSerializer.readBoolean(in);
     }
   }
@@ -774,8 +774,8 @@ public class GatewaySenderEventImpl
     this.numberOfParts = in.readInt();
     // this._id = in.readUTF();
     if (version < 0x11 && (in instanceof InputStream)
-        && StaticSerialization.getVersionForDataStream(in) == KnownVersion.CURRENT) {
-      in = new VersionedDataInputStream((InputStream) in, KnownVersion.GFE_701);
+        && StaticSerialization.getVersionForDataStream(in) == Version.CURRENT) {
+      in = new VersionedDataInputStream((InputStream) in, Version.GFE_701);
     }
     this.id = (EventID) context.getDeserializer().readObject(in);
     // TODO:Asif ; Check if this violates Barry's logic of not assiging VM
@@ -1280,8 +1280,8 @@ public class GatewaySenderEventImpl
   }
 
   @Override
-  public KnownVersion[] getSerializationVersions() {
-    return new KnownVersion[] {KnownVersion.GEODE_1_9_0, KnownVersion.GEODE_1_13_0};
+  public Version[] getSerializationVersions() {
+    return new Version[] {Version.GEODE_1_9_0, Version.GEODE_1_13_0};
   }
 
   public int getSerializedValueSize() {

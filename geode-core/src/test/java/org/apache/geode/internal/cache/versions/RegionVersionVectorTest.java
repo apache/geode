@@ -49,7 +49,7 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.persistence.DiskStoreID;
 import org.apache.geode.internal.inet.LocalHostUtil;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 public class RegionVersionVectorTest {
@@ -485,7 +485,7 @@ public class RegionVersionVectorTest {
 
     assertTrue(rvv.sameAs(rvv.getCloneForTransmission()));
 
-    HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT);
+    HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
     DataSerializer.writeObject(rvv.getCloneForTransmission(), out);
     byte[] bytes = out.toByteArray();
 

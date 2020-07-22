@@ -29,7 +29,7 @@ import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Abstract implementation class of RegionEntry interface. This is adds Disk support behavior
@@ -65,7 +65,7 @@ public abstract class AbstractOplogDiskRegionEntry extends AbstractDiskRegionEnt
 
   @Override
   public boolean fillInValue(InternalRegion region, Entry entry, ByteArrayDataInput in,
-      DistributionManager mgr, final KnownVersion version) {
+      DistributionManager mgr, final Version version) {
     return Helper.fillInValue(this, entry, region.getDiskRegion(), mgr, in, region, version);
   }
 

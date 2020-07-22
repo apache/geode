@@ -240,7 +240,7 @@ public class VersionManager {
       return Class.forName("org.apache.geode.internal.Version");
     } catch (ClassNotFoundException e) {
       try {
-        return Class.forName("org.apache.geode.internal.serialization.KnownVersion");
+        return Class.forName("org.apache.geode.internal.serialization.Version");
       } catch (ClassNotFoundException e2) {
         System.out.println("classpath is " + System.getProperty("java.class.path"));
         throw new IllegalStateException(

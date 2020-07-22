@@ -44,7 +44,7 @@ import org.apache.geode.internal.cache.ha.HARegionQueueAttributes;
 import org.apache.geode.internal.cache.ha.HARegionQueueStats;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -137,7 +137,7 @@ public class MessageDispatcher extends LoggingThread {
       ((HAContainerWrapper) proxy._cacheClientNotifier.getHaContainer())
           .putProxy(HARegionQueue.createRegionName(getProxy().getHARegionName()), getProxy());
       boolean createDurableQueue = proxy.proxyID.isDurable();
-      boolean canHandleDelta = (proxy.getClientVersion().isNotOlderThan(KnownVersion.GFE_61))
+      boolean canHandleDelta = (proxy.getClientVersion().isNotOlderThan(Version.GFE_61))
           && InternalDistributedSystem.getAnyInstance().getConfig().getDeltaPropagation()
           && !(this._proxy.clientConflation == Handshake.CONFLATION_ON);
       if ((createDurableQueue || canHandleDelta) && logger.isDebugEnabled()) {

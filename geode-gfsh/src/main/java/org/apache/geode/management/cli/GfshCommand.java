@@ -33,7 +33,7 @@ import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
@@ -155,7 +155,7 @@ public abstract class GfshCommand implements CommandMarker {
   /**
    * Get All members >= a specific version, excluding locators
    */
-  public Set<DistributedMember> getNormalMembersWithSameOrNewerVersion(KnownVersion version) {
+  public Set<DistributedMember> getNormalMembersWithSameOrNewerVersion(Version version) {
     return ManagementUtils.getNormalMembersWithSameOrNewerVersion(cache, version);
   }
 

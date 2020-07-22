@@ -52,7 +52,7 @@ import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.monitoring.ThreadsMonitoringImpl;
 import org.apache.geode.internal.monitoring.ThreadsMonitoringImplDummy;
 import org.apache.geode.internal.net.SocketCreator;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 
 /**
@@ -186,7 +186,7 @@ public class LonerDistributionManager implements DistributionManager {
 
   @Override // DM method
   public void retainMembersWithSameOrNewerVersion(Collection<InternalDistributedMember> members,
-      KnownVersion version) {
+      Version version) {
     for (Iterator<InternalDistributedMember> it = members.iterator(); it.hasNext();) {
       InternalDistributedMember id = it.next();
       if (id.getVersionOrdinalObject().compareTo(version) < 0) {
@@ -197,7 +197,7 @@ public class LonerDistributionManager implements DistributionManager {
 
   @Override // DM method
   public void removeMembersWithSameOrNewerVersion(Collection<InternalDistributedMember> members,
-      KnownVersion version) {
+      Version version) {
     for (Iterator<InternalDistributedMember> it = members.iterator(); it.hasNext();) {
       InternalDistributedMember id = it.next();
       if (id.getVersionOrdinalObject().compareTo(version) >= 0) {

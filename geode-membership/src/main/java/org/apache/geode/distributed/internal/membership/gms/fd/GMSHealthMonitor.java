@@ -71,7 +71,7 @@ import org.apache.geode.distributed.internal.tcpserver.ConnectionWatcher;
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
 import org.apache.geode.internal.lang.JavaWorkarounds;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.util.internal.GeodeGlossary;
 
@@ -646,7 +646,7 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
   }
 
   void writeMemberToStream(ID gmbr, DataOutputStream out) throws IOException {
-    out.writeShort(KnownVersion.getCurrentVersion().ordinal());
+    out.writeShort(Version.getCurrentVersion().ordinal());
     out.writeInt(gmbr.getVmViewId());
     out.writeLong(gmbr.getUuidLeastSignificantBits());
     out.writeLong(gmbr.getUuidMostSignificantBits());
@@ -1407,7 +1407,7 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
 
       if (!failed) {
         if (!isStopping
-            && initiator.getVersionOrdinal() >= KnownVersion.GEODE_1_4_0.ordinal()) {
+            && initiator.getVersionOrdinal() >= Version.GEODE_1_4_0.ordinal()) {
           // let others know that this member is no longer suspect
           FinalCheckPassedMessage<ID> message = new FinalCheckPassedMessage<>(initiator, mbr);
           List<ID> members = cv.getMembers();

@@ -43,9 +43,9 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.Breadcrumbs;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.util.internal.GeodeGlossary;
@@ -87,7 +87,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
 
   /** The versions in which this message was modified */
   @Immutable
-  private static final KnownVersion[] dsfidVersions = new KnownVersion[] {KnownVersion.GFE_80};
+  private static final Version[] dsfidVersions = new Version[] {Version.GFE_80};
 
 
   private static final ThreadLocal threadIDLocal = new ThreadLocal() {
@@ -300,7 +300,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
    * @return the member that initiated this event
    */
   public InternalDistributedMember getDistributedMember() {
-    return getDistributedMember(KnownVersion.CURRENT);
+    return getDistributedMember(Version.CURRENT);
   }
 
   /**
@@ -309,12 +309,12 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
    * memberID bytes and use that version to deserialize the bytes. Clients prior to 1.1.0 need to
    * have UUID bytes in the memberID. Newer clients don't require this.
    */
-  public InternalDistributedMember getDistributedMember(KnownVersion targetVersion) {
-    KnownVersion disVersion = null;
-    if (targetVersion.isOlderThan(KnownVersion.GEODE_1_1_0)) {
+  public InternalDistributedMember getDistributedMember(Version targetVersion) {
+    Version disVersion = null;
+    if (targetVersion.isOlderThan(Version.GEODE_1_1_0)) {
       // GEODE-3153: clients expect to receive UUID bytes, which are only
       // read if the stream's version is 1.0.0-incubating
-      disVersion = KnownVersion.GFE_90;
+      disVersion = Version.GFE_90;
     }
     ByteArrayDataInput dis =
         new ByteArrayDataInput(membershipID, disVersion);
@@ -351,16 +351,16 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
   @Override
   public void toData(DataOutput dop,
       SerializationContext context) throws IOException {
-    KnownVersion version = StaticSerialization.getVersionForDataStream(dop);
+    Version version = StaticSerialization.getVersionForDataStream(dop);
     // if we are sending to old clients we need to reserialize the ID
     // using the client's version to ensure it gets the proper on-wire form
     // of the identifier
     // See GEODE-3072
-    if (membershipID != null && version.isOlderThan(KnownVersion.GEODE_1_1_0)) {
-      InternalDistributedMember member = getDistributedMember(KnownVersion.GFE_90);
+    if (membershipID != null && version.isOlderThan(Version.GEODE_1_1_0)) {
+      InternalDistributedMember member = getDistributedMember(Version.GFE_90);
       // reserialize with the client's version so that we write the UUID
       // bytes
-      HeapDataOutputStream hdos = new HeapDataOutputStream(KnownVersion.GFE_90);
+      HeapDataOutputStream hdos = new HeapDataOutputStream(Version.GFE_90);
       member.writeEssentialData(hdos);
       DataSerializer.writeByteArray(hdos.toByteArray(), dop);
     } else {
@@ -573,7 +573,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
       // DS already exists... make sure it's for current DS connection
       EventID.systemMemberId = sys.getDistributedMember();
       try {
-        HeapDataOutputStream hdos = new HeapDataOutputStream(256, KnownVersion.CURRENT);
+        HeapDataOutputStream hdos = new HeapDataOutputStream(256, Version.CURRENT);
         ((InternalDistributedMember) EventID.systemMemberId).writeEssentialData(hdos);
         client_side_event_identity = hdos.toByteArray();
       } catch (IOException ioe) {
@@ -836,7 +836,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
   }
 
   @Override
-  public KnownVersion[] getSerializationVersions() {
+  public Version[] getSerializationVersions() {
     return dsfidVersions;
   }
 }

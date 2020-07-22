@@ -33,7 +33,7 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
   private int pos;
   /** reusable buffer for readUTF */
   private char[] charBuf;
-  private KnownVersion version;
+  private Version version;
 
   /**
    * Create a {@link DataInput} whose contents are empty.
@@ -44,7 +44,7 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
     initialize(bytes, null);
   }
 
-  public ByteArrayDataInput(byte[] bytes, KnownVersion version) {
+  public ByteArrayDataInput(byte[] bytes, Version version) {
     initialize(bytes, version);
   }
 
@@ -55,7 +55,7 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    *        (a copy is not made) so it should not be changed externally.
    * @param version the product version that serialized the object on given bytes
    */
-  public void initialize(byte[] bytes, KnownVersion version) {
+  public void initialize(byte[] bytes, Version version) {
     this.bytes = bytes;
     nBytes = bytes.length;
     pos = 0;
@@ -66,7 +66,7 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    * {@inheritDoc}
    */
   @Override
-  public KnownVersion getVersion() {
+  public Version getVersion() {
     return version;
   }
 

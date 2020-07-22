@@ -31,8 +31,8 @@ import org.apache.geode.internal.cache.IdentityArrayList;
 import org.apache.geode.internal.cache.TXRegionLockRequestImpl;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Adapts multiple TXRegionLockRequests to one DLockBatch for DLock to use.
@@ -149,7 +149,7 @@ public class TXLockBatch implements DLockBatch, DataSerializableFixedID {
   }
 
   @Override
-  public KnownVersion[] getSerializationVersions() {
+  public Version[] getSerializationVersions() {
     // TODO Auto-generated method stub
     return null;
   }

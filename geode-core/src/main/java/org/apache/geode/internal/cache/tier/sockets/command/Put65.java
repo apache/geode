@@ -46,7 +46,7 @@ import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.Breadcrumbs;
 import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.ResourcePermission;
@@ -305,16 +305,15 @@ public class Put65 extends BaseCommand {
         }
         sendOldValue = true;
         oldValueIsObject = true;
-        KnownVersion clientVersion = serverConnection.getClientVersion();
+        Version clientVersion = serverConnection.getClientVersion();
         if (oldValue instanceof CachedDeserializable) {
           oldValue = ((CachedDeserializable) oldValue).getSerializedValue();
         } else if (oldValue instanceof byte[]) {
           oldValueIsObject = false;
-        } else if ((oldValue instanceof Token)
-            && clientVersion.isNotNewerThan(KnownVersion.GFE_651)) {
+        } else if ((oldValue instanceof Token) && clientVersion.isNotNewerThan(Version.GFE_651)) {
           // older clients don't know that Token is now a DSFID class, so we
           // put the token in a serialized form they can consume
-          HeapDataOutputStream str = new HeapDataOutputStream(KnownVersion.CURRENT);
+          HeapDataOutputStream str = new HeapDataOutputStream(Version.CURRENT);
           DataOutput dstr = new DataOutputStream(str);
           InternalDataSerializer.writeSerializableObject(oldValue, dstr);
           oldValue = str.toByteArray();
@@ -340,16 +339,15 @@ public class Put65 extends BaseCommand {
               serverConnection.getProxyID(), true, clientEvent);
           sendOldValue = !clientEvent.isConcurrencyConflict();
           oldValueIsObject = true;
-          KnownVersion clientVersion = serverConnection.getClientVersion();
+          Version clientVersion = serverConnection.getClientVersion();
           if (oldValue instanceof CachedDeserializable) {
             oldValue = ((CachedDeserializable) oldValue).getSerializedValue();
           } else if (oldValue instanceof byte[]) {
             oldValueIsObject = false;
-          } else if ((oldValue instanceof Token)
-              && clientVersion.isNotNewerThan(KnownVersion.GFE_651)) {
+          } else if ((oldValue instanceof Token) && clientVersion.isNotNewerThan(Version.GFE_651)) {
             // older clients don't know that Token is now a DSFID class, so we
             // put the token in a serialized form they can consume
-            HeapDataOutputStream str = new HeapDataOutputStream(KnownVersion.CURRENT);
+            HeapDataOutputStream str = new HeapDataOutputStream(Version.CURRENT);
             DataOutput dstr = new DataOutputStream(str);
             InternalDataSerializer.writeSerializableObject(oldValue, dstr);
             oldValue = str.toByteArray();

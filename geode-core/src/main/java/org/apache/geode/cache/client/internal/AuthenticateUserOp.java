@@ -35,7 +35,7 @@ import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.command.PutUserCredentials;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.NotAuthorizedException;
@@ -107,7 +107,7 @@ public class AuthenticateUserOp {
           (InternalLogWriter) sys.getSecurityLogWriter());
 
       getMessage().setMessageHasSecurePartFlag();
-      try (HeapDataOutputStream heapdos = new HeapDataOutputStream(KnownVersion.CURRENT)) {
+      try (HeapDataOutputStream heapdos = new HeapDataOutputStream(Version.CURRENT)) {
         DataSerializer.writeProperties(credentials, heapdos);
         credentialBytes = ((ConnectionImpl) con).encryptBytes(heapdos.toByteArray());
       } catch (Exception e) {
@@ -131,7 +131,7 @@ public class AuthenticateUserOp {
 
     @Override
     protected void sendMessage(Connection cnx) throws Exception {
-      HeapDataOutputStream hdos = new HeapDataOutputStream(KnownVersion.CURRENT);
+      HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
       byte[] secureBytes;
       hdos.writeLong(cnx.getConnectionID());
       if (securityProperties != null) {
@@ -144,7 +144,7 @@ public class AuthenticateUserOp {
             server, false, (InternalLogWriter) sys.getLogWriter(),
             (InternalLogWriter) sys.getSecurityLogWriter());
         byte[] credentialBytes;
-        try (HeapDataOutputStream heapdos = new HeapDataOutputStream(KnownVersion.CURRENT)) {
+        try (HeapDataOutputStream heapdos = new HeapDataOutputStream(Version.CURRENT)) {
           DataSerializer.writeProperties(credentials, heapdos);
           credentialBytes = ((ConnectionImpl) cnx).encryptBytes(heapdos.toByteArray());
         }

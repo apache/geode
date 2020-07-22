@@ -31,7 +31,7 @@ public class BufferDataOutputStreamJUnitTest {
 
   @Test
   public void testWriteByteBuffer() {
-    BufferDataOutputStream out = new BufferDataOutputStream(64, KnownVersion.CURRENT);
+    BufferDataOutputStream out = new BufferDataOutputStream(64, Version.CURRENT);
 
     byte[] bytes = "1234567890qwertyuiopasdfghjklzxcvbnm,./;'".getBytes();
     out.write(ByteBuffer.wrap(bytes, 0, 2));
@@ -50,7 +50,7 @@ public class BufferDataOutputStreamJUnitTest {
   @Test
   public void testWriteByteBufferCopyUseBuffer() {
     ByteBuffer buf = ByteBuffer.allocate(32);
-    BufferDataOutputStream out = new BufferDataOutputStream(buf, KnownVersion.CURRENT, true);
+    BufferDataOutputStream out = new BufferDataOutputStream(buf, Version.CURRENT, true);
 
     out.write(0);
 
@@ -89,7 +89,7 @@ public class BufferDataOutputStreamJUnitTest {
   @Test
   public void testWriteByteBufferNoCopyUseBuffer() {
     ByteBuffer buf = ByteBuffer.allocate(32);
-    BufferDataOutputStream out = new BufferDataOutputStream(buf, KnownVersion.CURRENT, true);
+    BufferDataOutputStream out = new BufferDataOutputStream(buf, Version.CURRENT, true);
 
     out.write(0);
 

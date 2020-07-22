@@ -30,7 +30,7 @@ import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ObjectPartList;
 import org.apache.geode.internal.cache.tier.sockets.Part;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Does a region query on a server
@@ -98,7 +98,7 @@ public class QueryOp {
 
     @Override
     protected Message createResponseMessage() {
-      return new ChunkedMessage(2, KnownVersion.CURRENT);
+      return new ChunkedMessage(2, Version.CURRENT);
     }
 
     @Override

@@ -28,7 +28,7 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.PreferBytesCachedDeserializable;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.test.junit.categories.LuceneTest;
 
 @Category({LuceneTest.class})
@@ -80,7 +80,7 @@ public class PageEntryJUnitTest {
   }
 
   public PageEntry copy(PageEntry entry) throws IOException, ClassNotFoundException {
-    HeapDataOutputStream out = new HeapDataOutputStream((KnownVersion) null);
+    HeapDataOutputStream out = new HeapDataOutputStream((Version) null);
     entry.toData(out);
     final byte[] bytes = out.toByteArray();
     ByteArrayDataInput in = new ByteArrayDataInput();

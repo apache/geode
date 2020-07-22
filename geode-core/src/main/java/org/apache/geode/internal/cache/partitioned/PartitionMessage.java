@@ -63,9 +63,9 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.sequencelog.EntryLogger;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -541,7 +541,7 @@ public abstract class PartitionMessage extends DistributionMessage
     setBooleans(this.flags, in, context);
     this.regionId = in.readInt();
     // extra field post 9.0
-    if (StaticSerialization.getVersionForDataStream(in).isNotOlderThan(KnownVersion.GFE_90)) {
+    if (StaticSerialization.getVersionForDataStream(in).isNotOlderThan(Version.GFE_90)) {
       this.isTransactionDistributed = in.readBoolean();
     }
   }
@@ -585,7 +585,7 @@ public abstract class PartitionMessage extends DistributionMessage
       context.getSerializer().writeObject(this.txMemberId, out);
     out.writeInt(this.regionId);
     // extra field post 9.0
-    if (StaticSerialization.getVersionForDataStream(out).isNotOlderThan(KnownVersion.GFE_90)) {
+    if (StaticSerialization.getVersionForDataStream(out).isNotOlderThan(Version.GFE_90)) {
       out.writeBoolean(this.isTransactionDistributed);
     }
   }

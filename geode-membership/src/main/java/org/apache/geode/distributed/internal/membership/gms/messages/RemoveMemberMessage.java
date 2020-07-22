@@ -21,9 +21,9 @@ import java.util.List;
 
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * A member of the cluster can request that another member be removed. This message is
@@ -77,7 +77,7 @@ public class RemoveMemberMessage<ID extends MemberIdentifier> extends AbstractGM
   }
 
   @Override
-  public KnownVersion[] getSerializationVersions() {
+  public Version[] getSerializationVersions() {
     return null;
   }
 

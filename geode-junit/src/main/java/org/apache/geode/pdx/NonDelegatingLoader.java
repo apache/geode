@@ -19,7 +19,7 @@ import java.io.InputStream;
 import java.net.URL;
 
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 
 class NonDelegatingLoader extends ClassLoader {
 
@@ -37,7 +37,7 @@ class NonDelegatingLoader extends ClassLoader {
     if (url == null) {
       throw new ClassNotFoundException();
     }
-    HeapDataOutputStream hoas = new HeapDataOutputStream(KnownVersion.CURRENT);
+    HeapDataOutputStream hoas = new HeapDataOutputStream(Version.CURRENT);
     InputStream classStream;
     try {
       classStream = url.openStream();

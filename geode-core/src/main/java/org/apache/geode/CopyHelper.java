@@ -26,7 +26,7 @@ import java.util.UUID;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.Token;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.WritablePdxInstance;
 import org.apache.geode.pdx.internal.PdxUnreadData;
@@ -237,7 +237,7 @@ public final class CopyHelper {
   @SuppressWarnings("unchecked")
   private static <T> T doDeepCopy(T o) {
     try {
-      HeapDataOutputStream hdos = new HeapDataOutputStream(KnownVersion.CURRENT);
+      HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
       DataSerializer.writeObject(o, hdos);
       return (T) DataSerializer.readObject(new DataInputStream(hdos.getInputStream()));
     } catch (ClassNotFoundException ex) {

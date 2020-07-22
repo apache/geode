@@ -25,7 +25,7 @@ import org.junit.Test;
 import org.apache.geode.distributed.internal.membership.api.MemberData;
 import org.apache.geode.distributed.internal.membership.api.MemberDataBuilder;
 import org.apache.geode.internal.inet.LocalHostUtil;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 
 public class MemberDataBuilderImplTest {
 
@@ -132,8 +132,8 @@ public class MemberDataBuilderImplTest {
   @Test
   public void testSetVersionOrdinal() {
     MemberData data = MemberDataBuilder.newBuilderForLocalHost("hostname")
-        .setVersionOrdinal(KnownVersion.CURRENT_ORDINAL).build();
-    assertThat(data.getVersionOrdinal()).isEqualTo(KnownVersion.CURRENT_ORDINAL);
+        .setVersionOrdinal(Version.CURRENT_ORDINAL).build();
+    assertThat(data.getVersionOrdinal()).isEqualTo(Version.CURRENT_ORDINAL);
   }
 
   @Test

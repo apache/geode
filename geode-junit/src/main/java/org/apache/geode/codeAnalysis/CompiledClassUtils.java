@@ -40,7 +40,7 @@ import java.util.jar.JarFile;
 import org.apache.geode.codeAnalysis.decode.CompiledClass;
 import org.apache.geode.codeAnalysis.decode.CompiledField;
 import org.apache.geode.codeAnalysis.decode.CompiledMethod;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 
 public class CompiledClassUtils {
 
@@ -48,7 +48,7 @@ public class CompiledClassUtils {
 
   static {
     allowedDataSerializerMethods = new HashSet<>();
-    KnownVersion.getAllVersions().iterator().forEachRemaining((version) -> {
+    Version.getAllVersions().iterator().forEachRemaining((version) -> {
       allowedDataSerializerMethods.add("toDataPre_" + version.getMethodSuffix());
       allowedDataSerializerMethods.add("fromDataPre_" + version.getMethodSuffix());
     });

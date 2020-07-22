@@ -46,7 +46,7 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.pdx.SimpleClass.SimpleEnum;
 import org.apache.geode.pdx.internal.EnumId;
 import org.apache.geode.pdx.internal.EnumInfo;
@@ -396,13 +396,13 @@ public class PdxAttributesDistributedTest extends JUnit4CacheTestCase {
 
   private void defineAType() throws IOException {
     SimpleClass sc = new SimpleClass(1, (byte) 2);
-    HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT);
+    HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
     DataSerializer.writeObject(sc, out);
   }
 
   private void defineATypeNoEnum() throws /* IO */ Exception {
     SimpleClass sc = new SimpleClass(1, (byte) 2, null);
-    HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT);
+    HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
     DataSerializer.writeObject(sc, out);
   }
 

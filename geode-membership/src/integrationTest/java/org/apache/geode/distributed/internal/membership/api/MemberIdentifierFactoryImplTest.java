@@ -25,7 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.internal.inet.LocalHostUtil;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 
 public class MemberIdentifierFactoryImplTest {
 
@@ -99,9 +99,9 @@ public class MemberIdentifierFactoryImplTest {
   @Test
   public void testSetVersionOrdinal() {
     MemberData memberData = MemberDataBuilder.newBuilderForLocalHost("hostname")
-        .setVersionOrdinal(KnownVersion.CURRENT_ORDINAL).build();
+        .setVersionOrdinal(Version.CURRENT_ORDINAL).build();
     MemberIdentifier data = factory.create(memberData);
-    assertThat(data.getVersionOrdinal()).isEqualTo(KnownVersion.CURRENT_ORDINAL);
+    assertThat(data.getVersionOrdinal()).isEqualTo(Version.CURRENT_ORDINAL);
   }
 
   @Test

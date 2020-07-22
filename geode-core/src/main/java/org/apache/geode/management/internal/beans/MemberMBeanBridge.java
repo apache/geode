@@ -72,7 +72,7 @@ import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.offheap.OffHeapMemoryStats;
 import org.apache.geode.internal.process.PidUnavailableException;
 import org.apache.geode.internal.process.ProcessUtils;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.statistics.OsStatisticsProvider;
 import org.apache.geode.internal.statistics.StatSamplerStats;
 import org.apache.geode.internal.statistics.StatisticsManager;
@@ -1424,6 +1424,6 @@ public class MemberMBeanBridge {
   }
 
   String getGeodeReleaseVersion() {
-    return KnownVersion.CURRENT.getName();
+    return Version.CURRENT.getName();
   }
 }

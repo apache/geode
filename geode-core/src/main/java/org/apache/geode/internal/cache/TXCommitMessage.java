@@ -74,9 +74,9 @@ import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -138,7 +138,7 @@ public class TXCommitMessage extends PooledDistributionMessage
    * Version of the client that this TXCommitMessage is being sent to. Used for backwards
    * compatibility
    */
-  private transient KnownVersion clientVersion;
+  private transient Version clientVersion;
 
   /**
    * A token to be put in TXManagerImpl#failoverMap to represent a CommitConflictException while
@@ -953,8 +953,8 @@ public class TXCommitMessage extends PooledDistributionMessage
     return hasFlagsField(StaticSerialization.getVersionForDataStream(in));
   }
 
-  private boolean hasFlagsField(final KnownVersion version) {
-    return version.isNotOlderThan(KnownVersion.GEODE_1_7_0);
+  private boolean hasFlagsField(final Version version) {
+    return version.isNotOlderThan(Version.GEODE_1_7_0);
   }
 
   private boolean useShadowKey() {
@@ -1503,8 +1503,7 @@ public class TXCommitMessage extends PooledDistributionMessage
         out.writeBoolean(largeModCount);
 
         final boolean sendVersionTags =
-            this.msg.clientVersion == null
-                || KnownVersion.GFE_70.compareTo(this.msg.clientVersion) <= 0;
+            this.msg.clientVersion == null || Version.GFE_70.compareTo(this.msg.clientVersion) <= 0;
         if (sendVersionTags) {
           VersionSource member = this.memberId;
           if (member == null) {
@@ -1537,7 +1536,7 @@ public class TXCommitMessage extends PooledDistributionMessage
         this.preserializedBuffer.rewind();
         this.preserializedBuffer.sendTo(out);
       } else if (this.refCount > 1) {
-        KnownVersion v = StaticSerialization.getVersionForDataStream(out);
+        Version v = StaticSerialization.getVersionForDataStream(out);
         HeapDataOutputStream hdos = new HeapDataOutputStream(1024, v);
         basicToData(hdos, context, useShadowKey);
         this.preserializedBuffer = hdos;
@@ -2418,11 +2417,11 @@ public class TXCommitMessage extends PooledDistributionMessage
     disableListeners = true;
   }
 
-  public KnownVersion getClientVersion() {
+  public Version getClientVersion() {
     return clientVersion;
   }
 
-  public void setClientVersion(KnownVersion clientVersion) {
+  public void setClientVersion(Version clientVersion) {
     this.clientVersion = clientVersion;
   }
 
