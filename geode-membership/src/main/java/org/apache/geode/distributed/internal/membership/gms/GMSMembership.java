@@ -39,7 +39,6 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.logging.log4j.Logger;
 
@@ -62,6 +61,7 @@ import org.apache.geode.distributed.internal.membership.api.QuorumChecker;
 import org.apache.geode.distributed.internal.membership.api.StopShunningMarker;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
 import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.util.internal.GeodeGlossary;
@@ -359,7 +359,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   /**
    * Analyze a given view object, generate events as appropriate
    */
-  public void processView(MembershipView<ID> newView) {
+  public void processView(long newViewId, MembershipView<ID> newView) {
     // Sanity check...
     if (logger.isDebugEnabled()) {
       StringBuilder msg = new StringBuilder(200);
@@ -377,17 +377,35 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
     // incoming events will not be lost in terms of our global view.
     latestViewWriteLock.lock();
     try {
-      setIsMulticastAllowedFrom(newView, surpriseMembers);
+      // first determine the version for multicast message serialization
+      Version version = KnownVersion.CURRENT;
+      for (final Entry<ID, Long> internalIDLongEntry : surpriseMembers
+          .entrySet()) {
+        ID mbr = internalIDLongEntry.getKey();
+        final Version itsVersion = mbr.getVersion();
+        if (itsVersion != null && version.compareTo(itsVersion) < 0) {
+          version = itsVersion;
+        }
+      }
+      for (ID mbr : newView.getMembers()) {
+        final Version itsVersion = mbr.getVersion();
+        if (itsVersion != null && itsVersion.compareTo(version) < 0) {
+          version = mbr.getVersion();
+        }
+      }
+      disableMulticastForRollingUpgrade = !version.equals(KnownVersion.CURRENT);
+
       // Save previous view, for delta analysis
       MembershipView<ID> priorView = latestView;
 
-      if (newView.getViewId() < priorView.getViewId()) {
+      if (newViewId < priorView.getViewId()) {
         // ignore this view since it is old news
         return;
       }
 
       // update the view to reflect our changes, so that
       // callbacks will see the new (updated) view.
+      long newlatestViewId = newViewId;
       MembershipView<ID> newlatestView = new MembershipView<>(newView, newView.getViewId());
 
       // look for additions
@@ -511,18 +529,6 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
     } finally {
       latestViewWriteLock.unlock();
     }
-  }
-
-  private void setIsMulticastAllowedFrom(final MembershipView<ID> newView,
-      final Map<ID, Long> surpriseMembers) {
-    disableMulticastForRollingUpgrade =
-        anyMemberHasOlderVersion(
-            Stream.concat(surpriseMembers.keySet().stream(), newView.getMembers().stream()));
-  }
-
-  private boolean anyMemberHasOlderVersion(final Stream<ID> members) {
-    return members
-        .anyMatch(member -> KnownVersion.CURRENT.isNewerThan(member.getVersion()));
   }
 
   @Override
@@ -977,7 +983,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
         }
       }
 
-      viewExecutor.submit(() -> processView(viewArg));
+      viewExecutor.submit(() -> processView(viewArg.getViewId(), viewArg));
 
     } finally {
       latestViewWriteLock.unlock();
@@ -1036,7 +1042,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
         // message from non-member - ignore
       }
     } else if (o.isGmsView()) { // view event
-      processView(o.gmsView);
+      processView(o.gmsView.getViewId(), o.gmsView);
     } else if (o.isSurpriseConnect()) { // connect
       processSurpriseConnect(o.member);
     } else {
