@@ -15,7 +15,6 @@
 package org.apache.geode.internal;
 
 import static java.util.Arrays.stream;
-import static java.util.Comparator.naturalOrder;
 import static org.apache.geode.internal.AvailablePort.MULTICAST;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableUDPPort;
@@ -30,7 +29,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import junitparams.JUnitParamsRunner;
 import org.junit.After;
@@ -107,22 +105,6 @@ public class AvailablePortHelperIntegrationTest {
   }
 
   @Test
-  public void getRandomAvailableTCPPorts_returnsNaturallyOrderedPorts() {
-    int[] results = getRandomAvailableTCPPorts(10);
-
-    assertThat(results)
-        .isSortedAccordingTo(naturalOrder());
-  }
-
-  @Test
-  public void getRandomAvailableTCPPorts_returnsConsecutivePorts() {
-    int[] results = getRandomAvailableTCPPorts(10);
-
-    assertThatSequence(results)
-        .isConsecutive();
-  }
-
-  @Test
   public void getRandomAvailableUDPPort_returnsNonZeroUdpPort() {
     int udpPort = getRandomAvailableUDPPort();
 
@@ -178,12 +160,6 @@ public class AvailablePortHelperIntegrationTest {
     }
   }
 
-  private List<Integer> toList(int[] integers) {
-    return stream(integers)
-        .boxed()
-        .collect(Collectors.toList());
-  }
-
   private Set<Integer> toSet(int[] integers) {
     return stream(integers)
         .boxed()
@@ -192,14 +168,6 @@ public class AvailablePortHelperIntegrationTest {
 
   private PortAssertion assertThatPort(int port) {
     return new PortAssertion(port);
-  }
-
-  private SequenceAssertion assertThatSequence(int[] integers) {
-    return new SequenceAssertion(toList(integers));
-  }
-
-  private SequenceAssertion assertThatSequence(List<Integer> integers) {
-    return new SequenceAssertion(integers);
   }
 
   private class PortAssertion {
@@ -228,28 +196,4 @@ public class AvailablePortHelperIntegrationTest {
     }
   }
 
-  private class SequenceAssertion {
-
-    private final List<Integer> actual;
-
-    SequenceAssertion(List<Integer> actual) {
-      this.actual = actual;
-      assertThat(actual)
-          .isNotEmpty();
-    }
-
-    SequenceAssertion isConsecutive() {
-      int start = actual.get(0);
-      int end = actual.get(actual.size() - 1);
-
-      List<Integer> expected = IntStream.rangeClosed(start, end)
-          .boxed()
-          .collect(Collectors.toList());
-
-      assertThat(actual)
-          .isEqualTo(expected);
-
-      return this;
-    }
-  }
 }
