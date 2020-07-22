@@ -236,6 +236,11 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
   }
 
   @Override
+  public void setVersionOrdinal(short versionOrdinal) {
+    this.version = Versioning.getVersion(versionOrdinal);
+  }
+
+  @Override
   public void setUUID(UUID u) {
     if (u == null) {
       this.uuidLSBs = 0;
@@ -502,8 +507,8 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
 
 
   @Override
-  public void setVersion(Version version) {
-    this.version = version;
+  public void setVersion(KnownVersion v) {
+    setVersionOrdinal(v.ordinal());
   }
 
   @Override
@@ -578,7 +583,7 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
   @Override
   public void readEssentialData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    setVersion(Versioning.getVersion(VersioningIO.readOrdinal(in)));
+    setVersionOrdinal(VersioningIO.readOrdinal(in));
 
     int flags = in.readShort();
     this.networkPartitionDetectionEnabled = (flags & NPD_ENABLED_BIT) != 0;

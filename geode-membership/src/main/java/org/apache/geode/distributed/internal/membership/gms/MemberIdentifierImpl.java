@@ -982,7 +982,7 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
     return sb.toString();
   }
 
-  public void setVersionForTest(Version v) {
+  public void setVersionForTest(KnownVersion v) {
     memberData.setVersion(v);
     cachedToString = null;
   }
