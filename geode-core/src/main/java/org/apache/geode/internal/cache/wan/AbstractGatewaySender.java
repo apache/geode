@@ -94,7 +94,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   protected String id;
 
-  protected long startTime;
+  protected long startTime = System.currentTimeMillis() * (-1);
 
   protected PoolImpl proxy;
 
