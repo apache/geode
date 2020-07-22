@@ -23,6 +23,10 @@ Force GC (Garbage Collection) on a member or members.
 
 The default is for garbage collection to occur on all caching members.
 
+The **gfsh gc** command should be used only in non-production environments.
+This is a forced GC event and not always handled well by the garbage collector outside of normal GC processing.
+This can cause slow-responding members to be perceived as unresponsive and disconnected from the cluster.
+
 **Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
 
 **Syntax:**
