@@ -2118,7 +2118,7 @@ public class HARegionQueue implements RegionQueue {
     try {
       inputValue = BlobHelper.deserializeBlob(newValueCd.getSerializedValue(),
           Versioning
-              .getKnownVersionOrDefault(sender.getVersion(), KnownVersion.CURRENT),
+              .getKnownVersionOrDefault(sender.getVersionOrdinalObject(), KnownVersion.CURRENT),
           null);
       newValueCd = new VMCachedDeserializable(inputValue, newValueCd.getSizeInBytes());
     } catch (IOException | ClassNotFoundException e) {

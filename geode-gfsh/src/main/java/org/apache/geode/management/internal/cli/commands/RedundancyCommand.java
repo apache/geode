@@ -91,7 +91,7 @@ public class RedundancyCommand extends GfshCommand {
       RebalanceOperationPerformer.MemberPRInfo prInfo) {
     return prInfo.dsMemberList.stream()
         .map(InternalDistributedMember.class::cast)
-        .filter(member -> member.getVersion().compareTo(ADDED_VERSION) >= 0)
+        .filter(member -> member.getVersionOrdinalObject().compareTo(ADDED_VERSION) >= 0)
         .collect(Collectors.toList());
   }
 

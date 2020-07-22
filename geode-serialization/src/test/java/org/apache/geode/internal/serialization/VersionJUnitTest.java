@@ -20,9 +20,9 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-public class KnownVersionJUnitTest {
+public class VersionJUnitTest {
   @Test
-  public void testKnownVersionClass() throws Exception {
+  public void testVersionClass() throws Exception {
     compare(KnownVersion.GFE_662, KnownVersion.GFE_66);
     compare(KnownVersion.GFE_6622, KnownVersion.GFE_662);
     compare(KnownVersion.GFE_71, KnownVersion.GFE_70);
@@ -54,9 +54,9 @@ public class KnownVersionJUnitTest {
     assertTrue(later.compareTo(later) == 0);
     assertTrue(earlier.compareTo(later) < 0);
 
-    assertTrue(later.compareTo(Versioning.getVersion(earlier.ordinal())) > 0);
-    assertTrue(later.compareTo(Versioning.getVersion(later.ordinal())) == 0);
-    assertTrue(earlier.compareTo(Versioning.getVersion(later.ordinal())) < 0);
+    assertTrue(later.compareTo(Versioning.getVersionOrdinal(earlier.ordinal())) > 0);
+    assertTrue(later.compareTo(Versioning.getVersionOrdinal(later.ordinal())) == 0);
+    assertTrue(earlier.compareTo(Versioning.getVersionOrdinal(later.ordinal())) < 0);
 
     compareNewerVsOlder(later, earlier);
   }
@@ -94,9 +94,23 @@ public class KnownVersionJUnitTest {
   @Test
   public void testFromOrdinalForCurrentVersionSucceeds() {
     final KnownVersion version = Versioning.getKnownVersionOrDefault(
-        Versioning.getVersion(KnownVersion.CURRENT_ORDINAL), null);
+        Versioning.getVersionOrdinal(KnownVersion.CURRENT_ORDINAL), null);
     assertThat(version).isNotNull();
     assertThat(version).isEqualTo(KnownVersion.CURRENT);
+  }
+
+  @Test
+  public void ordinalImplMatchesVersion() {
+    /*
+     * We are not using the Version.getVersionOrdinal(short) factory method here
+     * because we intend to test that Version and VersionOrdinal are cross-comparable.
+     * The factory would return Version.GFE_82 which would foil our testing.
+     */
+    final UnknownVersion versionOrdinal = new UnknownVersion(KnownVersion.GFE_82.ordinal());
+    assertThat(KnownVersion.GFE_82.equals(versionOrdinal))
+        .as("GFE_82 Version equals VersionOrdinal").isTrue();
+    assertThat(versionOrdinal.equals(KnownVersion.GFE_82))
+        .as("GFE_82 VersionOrdinal equals Version").isTrue();
   }
 
 }

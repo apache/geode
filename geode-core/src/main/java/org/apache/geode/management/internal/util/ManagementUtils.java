@@ -77,7 +77,7 @@ public class ManagementUtils {
   public static Set<DistributedMember> getNormalMembersWithSameOrNewerVersion(InternalCache cache,
       KnownVersion version) {
     return getAllNormalMembers(cache).stream().filter(
-        member -> ((InternalDistributedMember) member).getVersion()
+        member -> ((InternalDistributedMember) member).getVersionOrdinalObject()
             .compareTo(version) >= 0)
         .collect(Collectors.toSet());
   }

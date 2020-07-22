@@ -881,7 +881,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
       long start = services.getStatistics().startMsgSerialization();
       final KnownVersion version =
           Versioning.getKnownVersionOrDefault(
-              Versioning.getVersion(versionOrdinal),
+              Versioning.getVersionOrdinal(versionOrdinal),
               KnownVersion.CURRENT);
       BufferDataOutputStream out_stream =
           new BufferDataOutputStream(version);
@@ -944,7 +944,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
 
       final KnownVersion version =
           Versioning.getKnownVersionOrDefault(
-              Versioning.getVersion(versionOrdinal),
+              Versioning.getVersionOrdinal(versionOrdinal),
               KnownVersion.CURRENT);
       BufferDataOutputStream out_stream =
           new BufferDataOutputStream(version);
@@ -1040,7 +1040,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
 
       if (ordinal < KnownVersion.getCurrentVersion().ordinal()) {
         final KnownVersion version = Versioning.getKnownVersionOrDefault(
-            Versioning.getVersion(ordinal),
+            Versioning.getVersionOrdinal(ordinal),
             KnownVersion.CURRENT);
         dis = new VersionedDataInputStream(dis,
             version);
@@ -1140,7 +1140,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
 
         if (ordinal < KnownVersion.getCurrentVersion().ordinal()) {
           final KnownVersion version = Versioning.getKnownVersionOrDefault(
-              Versioning.getVersion(ordinal),
+              Versioning.getVersionOrdinal(ordinal),
               KnownVersion.CURRENT);
           in = new VersionedDataInputStream(in,
               version);

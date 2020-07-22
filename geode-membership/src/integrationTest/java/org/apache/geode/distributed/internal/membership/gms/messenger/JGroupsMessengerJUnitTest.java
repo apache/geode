@@ -1159,7 +1159,7 @@ public class JGroupsMessengerJUnitTest {
     MemberIdentifier gms = MemberIdentifierUtil.createMemberID(port);
     gms.getMemberData().setUUID(UUID.randomUUID());
     gms.setVmKind(MemberIdentifier.NORMAL_DM_TYPE);
-    gms.setVersionForTest(KnownVersion.getCurrentVersion());
+    gms.setVersionObjectForTest(KnownVersion.getCurrentVersion());
     return gms;
   }
 

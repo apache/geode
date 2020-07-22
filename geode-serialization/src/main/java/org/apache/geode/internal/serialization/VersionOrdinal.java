@@ -16,7 +16,7 @@
 package org.apache.geode.internal.serialization;
 
 /**
- * {@link Version} is able to represent not only currently-known
+ * VersionOrdinal is able to represent not only currently-known
  * Geode versions but future versions as well. This is necessary
  * because during rolling upgrades Geode manipulates member
  * identifiers for members running newer versions of the software.
@@ -28,15 +28,15 @@ package org.apache.geode.internal.serialization;
  * ordinal() result. And since this interface extends Comparable,
  * implementations must define compareTo() as well.
  *
- * Unlike {@link KnownVersion} (a subtype of which acts like an
- * enumerated type), {@link Version} does not, in general, guarantee
+ * Unlike Version (a subtype of VersionOrdinal which acts like an
+ * enumerated type), VersionOrdinal does not, in general, guarantee
  * that if vo1.equals(vo2) then vo1 == vo2.
  *
- * Use the {@link Versioning} factory class to construct objects implementing
+ * Use the Versioning factory class to construct objects implementing
  * this interface. All instances of known versions are defined as
- * constants in the {@link KnownVersion} class, e.g. Version.GEODE_1_11_0
+ * constants in the Version class, e.g. Version.GEODE_1_11_0
  */
-public interface Version extends Comparable<Version> {
+public interface VersionOrdinal extends Comparable<VersionOrdinal> {
 
   /**
    * @return the short ordinal value for comparison implementations
@@ -54,7 +54,7 @@ public interface Version extends Comparable<Version> {
    * @param version to compare to this version
    * @return true if this is older than version, otherwise false.
    */
-  boolean isOlderThan(Version version);
+  boolean isOlderThan(VersionOrdinal version);
 
   /**
    * Test if this version is not older than given version.
@@ -62,7 +62,7 @@ public interface Version extends Comparable<Version> {
    * @param version to compare to this version
    * @return true if this is the same version or newer, otherwise false.
    */
-  boolean isNotOlderThan(Version version);
+  boolean isNotOlderThan(VersionOrdinal version);
 
   /**
    * Test if this version is newer than given version.
@@ -70,7 +70,7 @@ public interface Version extends Comparable<Version> {
    * @param version to compare to this version
    * @return true if this is newer than version, otherwise false.
    */
-  boolean isNewerThan(Version version);
+  boolean isNewerThan(VersionOrdinal version);
 
   /**
    * Test if this version is not newer than given version.
@@ -78,6 +78,6 @@ public interface Version extends Comparable<Version> {
    * @param version to compare to this version
    * @return true if this is the same version or older, otherwise false.
    */
-  boolean isNotNewerThan(Version version);
+  boolean isNotNewerThan(VersionOrdinal version);
 
 }

@@ -16,27 +16,26 @@
 package org.apache.geode.internal.serialization;
 
 /**
- * This is a factory for getting {@link Version} instances. It's aware of the whole
- * {link @Version} hierarchy, so when asked for a {@link Version} that represents
- * a known version ({@link KnownVersion}) it returns a reference to one of those.
+ * This is a factory for getting VersionOrdinal instances. It's aware of the whole
+ * VersionOrdinal/Version hierarchy, so when asked for a VersionOrdinal that represents
+ * a known version (a Version) it returns a reference to one of those.
  *
- * This ensures that {@link #toString()} on any {@Version}, if that object represents a
- * known version, will render itself as a such.
+ * This ensures that toString() on any VersionOrdinal, if that object represents a
+ * known version, will render itself as a Version.
  */
 public class Versioning {
   private Versioning() {}
 
   /**
-   * Find the {@link Version} for the short ordinal value.
+   * Make a VersionOrdinal for the short ordinal value.
    *
-   * If the short ordinal represents a known version ({@link KnownVersion}) then return
-   * that instead of constructing a new {@link UnknownVersion}.
+   * If the short ordinal represents a known version (Version) then return
+   * that instead of constructing a new VersionOrdinal.
    *
-   * @return a known version ({@link KnownVersion}) if possible, otherwise an
-   *         {@link UnknownVersion}.
+   * @return a known version (Version) if possible, otherwise a VersionOrdinal.
    */
-  public static Version getVersion(final short ordinal) {
-    final KnownVersion knownVersion = KnownVersion.getKnownVersionOrDefault(ordinal, null);
+  public static VersionOrdinal getVersionOrdinal(final short ordinal) {
+    final KnownVersion knownVersion = KnownVersion.getKnownVersion(ordinal, null);
     if (knownVersion == null) {
       return new UnknownVersion(ordinal);
     } else {
@@ -45,16 +44,17 @@ public class Versioning {
   }
 
   /**
-   * Return the known version ({@link KnownVersion}) for {@code anyVersion}, if possible.
-   * Otherwise return {@code defaultKnownVersion}. This method essentially
-   * downcasts a {@link Version} to a known version {@link KnownVersion}.
+   * Return the known version (Version) for the VersionOrdinal, if possible.
+   * Otherwise return the defaultKnownVersion Version. This method essentially
+   * downcasts a {@link VersionOrdinal} to a known version {@link KnownVersion}
    *
-   * @param anyVersion came from a call to {@link #getVersion(short)}
-   * @param defaultKnownVersion will be returned if {@code anyVersion} does not represent
+   * @param anyVersion came from a call to {@link #getVersionOrdinal(short)} or this
+   *        method
+   * @param defaultKnownVersion will be returned if anyVersion does not represent
    *        a known version
    * @return a known version
    */
-  public static KnownVersion getKnownVersionOrDefault(final Version anyVersion,
+  public static KnownVersion getKnownVersionOrDefault(final VersionOrdinal anyVersion,
       KnownVersion defaultKnownVersion) {
     if (anyVersion instanceof KnownVersion) {
       return (KnownVersion) anyVersion;
