@@ -27,8 +27,7 @@ public class UniquePortSupplierTest {
   public void returnsUniquePorts() {
     // Create a stream that returns the same number more than once, make sure we find
     // a unique port
-    PrimitiveIterator.OfInt iterator = IntStream.of(0, 0, 0, 0, 0, 1).iterator();
-    UniquePortSupplier supplier = new UniquePortSupplier(iterator::nextInt);
+    UniquePortSupplier supplier = new UniquePortSupplier();
     int port0 = supplier.getAvailablePort();
     int port1 = supplier.getAvailablePort();
 
@@ -36,13 +35,4 @@ public class UniquePortSupplierTest {
     assertThat(port1).isEqualTo(1);
   }
 
-  @Test
-  public void getsPortsFromProvidedSupplier() {
-    int expectedPort = 555;
-
-    UniquePortSupplier supplier = new UniquePortSupplier(() -> expectedPort);
-    int port = supplier.getAvailablePort();
-
-    assertThat(port).isEqualTo(expectedPort);
-  }
 }
