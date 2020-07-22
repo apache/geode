@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.rollingupgrade;
+package org.apache.geode.management;
 
 import static org.apache.geode.test.junit.rules.gfsh.GfshRule.startLocatorCommand;
 import static org.apache.geode.test.junit.rules.gfsh.GfshRule.startServerCommand;
