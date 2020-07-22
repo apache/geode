@@ -2074,7 +2074,7 @@ public class Oplog implements CompactableOplog, Flushable {
     short ver = VersioningIO.readOrdinal(dis);
     final KnownVersion recoveredGFVersion =
         Versioning.getKnownVersionOrDefault(
-            Versioning.getVersion(ver), null);
+            Versioning.getVersionOrdinal(ver), null);
     if (recoveredGFVersion == null) {
       throw new DiskAccessException(
           String.format("Unknown version ordinal %s found when recovering Oplogs", ver),

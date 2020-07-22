@@ -426,17 +426,17 @@ public class TcpServer {
       // Create a versioned stream to remember sender's GemFire version
       versionOrdinal = (short) GOSSIP_TO_GEMFIRE_VERSION_MAP.get(gossipVersion);
 
-      if (KnownVersion.GFE_71.compareTo(Versioning.getVersion(versionOrdinal)) <= 0) {
+      if (KnownVersion.GFE_71.compareTo(Versioning.getVersionOrdinal(versionOrdinal)) <= 0) {
         // Recent versions of TcpClient will send the version ordinal
         versionOrdinal = input.readShort();
       }
 
       if (logger.isDebugEnabled() && versionOrdinal != KnownVersion.CURRENT_ORDINAL) {
         logger.debug("Locator reading request from " + socket.getInetAddress() + " with version "
-            + Versioning.getVersion(versionOrdinal));
+            + Versioning.getVersionOrdinal(versionOrdinal));
       }
       final KnownVersion version = Versioning.getKnownVersionOrDefault(
-          Versioning.getVersion(versionOrdinal), null);
+          Versioning.getVersionOrdinal(versionOrdinal), null);
       if (version == null) {
         throw new UnsupportedSerializationVersionException(
             KnownVersion.unsupportedVersionMessage(versionOrdinal));

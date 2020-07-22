@@ -65,7 +65,7 @@ public class ServerPingMessage extends PooledDistributionMessage {
 
     // filtered recipients
     for (InternalDistributedMember recipient : recipients) {
-      if (KnownVersion.GFE_81.compareTo(recipient.getVersion()) <= 0) {
+      if (KnownVersion.GFE_81.compareTo(recipient.getVersionOrdinalObject()) <= 0) {
         filteredRecipients.add(recipient);
       }
     }

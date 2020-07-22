@@ -19,6 +19,7 @@ public class UnknownVersion extends AbstractVersion {
 
   /**
    * Package-private so only the Versioning factory can access this constructor.
+   *
    */
   UnknownVersion(final short ordinal) {
     super(ordinal);

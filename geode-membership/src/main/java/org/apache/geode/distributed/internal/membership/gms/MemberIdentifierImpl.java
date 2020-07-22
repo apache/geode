@@ -46,7 +46,7 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.VersionOrdinal;
 import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.internal.serialization.VersioningIO;
 
@@ -422,7 +422,7 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
       // add version if not current
       short version = memberData.getVersionOrdinal();
       if (version != KnownVersion.CURRENT.ordinal()) {
-        sb.append("(version:").append(Versioning.getVersion(version)).append(')');
+        sb.append("(version:").append(Versioning.getVersionOrdinal(version)).append(')');
       }
 
       // leave out Roles on purpose
@@ -976,20 +976,20 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
     // add version if not current
     short version = memberData.getVersionOrdinal();
     if (version != KnownVersion.CURRENT.ordinal()) {
-      sb.append("(version:").append(Versioning.getVersion(version)).append(')');
+      sb.append("(version:").append(Versioning.getVersionOrdinal(version)).append(')');
     }
 
     return sb.toString();
   }
 
-  public void setVersionForTest(KnownVersion v) {
+  public void setVersionObjectForTest(KnownVersion v) {
     memberData.setVersion(v);
     cachedToString = null;
   }
 
   @Override
-  public Version getVersion() {
-    return memberData.getVersion();
+  public VersionOrdinal getVersionOrdinalObject() {
+    return memberData.getVersionOrdinalObject();
   }
 
   @Override

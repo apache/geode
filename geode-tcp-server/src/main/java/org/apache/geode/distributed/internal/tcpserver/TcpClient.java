@@ -153,7 +153,7 @@ public class TcpClient {
     final short serverVersionShort = getServerVersion(addr, timeout);
     KnownVersion serverVersion =
         Versioning.getKnownVersionOrDefault(
-            Versioning.getVersion(serverVersionShort),
+            Versioning.getVersionOrdinal(serverVersionShort),
             null);
     final String debugVersionMessage;
     if (serverVersion == null) {

@@ -39,7 +39,7 @@ public class VersioningIO {
   }
 
   /**
-   * Write the given ordinal (result of {@link Version#ordinal()}) to given
+   * Write the given ordinal (result of {@link VersionOrdinal#ordinal()}) to given
    * {@link DataOutput}. This keeps
    * the serialization of ordinal compatible with previous versions writing a single byte to
    * DataOutput when possible, and a token with 2 bytes if it is large.
@@ -92,7 +92,7 @@ public class VersioningIO {
   }
 
   /**
-   * Write the given ordinal (result of {@link Version#ordinal()}) to given
+   * Write the given ordinal (result of {@link VersionOrdinal#ordinal()}) to given
    * {@link ByteBuffer}. This keeps
    * the serialization of ordinal compatible with previous versions writing a single byte to
    * DataOutput when possible, and a token with 2 bytes if it is large.

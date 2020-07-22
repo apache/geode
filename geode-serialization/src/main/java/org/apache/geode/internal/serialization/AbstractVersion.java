@@ -21,7 +21,7 @@ package org.apache.geode.internal.serialization;
  *
  * Package private since this class is an implementation detail.
  */
-abstract class AbstractVersion implements Version {
+abstract class AbstractVersion implements VersionOrdinal {
 
   private final short ordinal;
 
@@ -38,7 +38,7 @@ abstract class AbstractVersion implements Version {
   }
 
   @Override
-  public int compareTo(final Version other) {
+  public int compareTo(final VersionOrdinal other) {
     if (other == null) {
       return 1;
     } else {
@@ -50,8 +50,8 @@ abstract class AbstractVersion implements Version {
   public boolean equals(final Object other) {
     if (other == this)
       return true;
-    if (other instanceof Version) {
-      return ordinal() == ((Version) other).ordinal();
+    if (other instanceof VersionOrdinal) {
+      return ordinal() == ((VersionOrdinal) other).ordinal();
     } else {
       return false;
     }
@@ -77,7 +77,7 @@ abstract class AbstractVersion implements Version {
    * @return true if this is older than version, otherwise false.
    */
   @Override
-  public final boolean isOlderThan(final Version version) {
+  public final boolean isOlderThan(final VersionOrdinal version) {
     return compareTo(version) < 0;
   }
 
@@ -88,7 +88,7 @@ abstract class AbstractVersion implements Version {
    * @return true if this is the same version or newer, otherwise false.
    */
   @Override
-  public final boolean isNotOlderThan(final Version version) {
+  public final boolean isNotOlderThan(final VersionOrdinal version) {
     return compareTo(version) >= 0;
   }
 
@@ -99,7 +99,7 @@ abstract class AbstractVersion implements Version {
    * @return true if this is newer than version, otherwise false.
    */
   @Override
-  public final boolean isNewerThan(final Version version) {
+  public final boolean isNewerThan(final VersionOrdinal version) {
     return compareTo(version) > 0;
   }
 
@@ -110,7 +110,7 @@ abstract class AbstractVersion implements Version {
    * @return true if this is the same version or older, otherwise false.
    */
   @Override
-  public final boolean isNotNewerThan(final Version version) {
+  public final boolean isNotNewerThan(final VersionOrdinal version) {
     return compareTo(version) <= 0;
   }
 
