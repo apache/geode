@@ -30,7 +30,6 @@ import org.apache.geode.test.junit.rules.serializable.SerializableExternalResour
 public class GeodeRedisServerRule extends SerializableExternalResource {
   private GemFireCache cache;
   private GeodeRedisServer server;
-  private String password;
   private CacheFactory cacheFactory;
 
   public GeodeRedisServerRule() {
@@ -42,7 +41,7 @@ public class GeodeRedisServerRule extends SerializableExternalResource {
   }
 
   @Override
-  protected void before() throws Throwable {
+  protected void before() {
     cache = cacheFactory.create();
     server = new GeodeRedisServer("localhost", 0, (InternalCache) cache);
     server.setAllowUnsupportedCommands(true);
