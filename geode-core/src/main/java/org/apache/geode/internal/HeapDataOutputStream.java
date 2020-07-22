@@ -23,8 +23,8 @@ import java.nio.channels.SocketChannel;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.cache.BytesAndBitsForCompactor;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.StaticSerialization;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.tcp.ByteBufferInputStream;
 
 /**
@@ -48,7 +48,7 @@ public class HeapDataOutputStream extends
     org.apache.geode.internal.serialization.BufferDataOutputStream
     implements ObjToByteArraySerializer, ByteBufferWriter {
 
-  public HeapDataOutputStream(KnownVersion version) {
+  public HeapDataOutputStream(Version version) {
     this(INITIAL_CAPACITY, version);
   }
 
@@ -60,7 +60,7 @@ public class HeapDataOutputStream extends
     super(s);
   }
 
-  public HeapDataOutputStream(int allocSize, KnownVersion version) {
+  public HeapDataOutputStream(int allocSize, Version version) {
     this(allocSize, version, false);
   }
 
@@ -72,7 +72,7 @@ public class HeapDataOutputStream extends
    * @param doNotCopy if true then byte arrays/buffers/sources will not be copied to this hdos but
    *        instead referenced.
    */
-  public HeapDataOutputStream(int allocSize, KnownVersion version, boolean doNotCopy) {
+  public HeapDataOutputStream(int allocSize, Version version, boolean doNotCopy) {
     super(allocSize, version, doNotCopy);
   }
 
@@ -80,7 +80,7 @@ public class HeapDataOutputStream extends
    * @param doNotCopy if true then byte arrays/buffers/sources will not be copied to this hdos but
    *        instead referenced.
    */
-  public HeapDataOutputStream(ByteBuffer initialBuffer, KnownVersion version, boolean doNotCopy) {
+  public HeapDataOutputStream(ByteBuffer initialBuffer, Version version, boolean doNotCopy) {
     super(initialBuffer, version, doNotCopy);
   }
 

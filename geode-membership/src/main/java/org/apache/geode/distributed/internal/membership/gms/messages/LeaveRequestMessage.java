@@ -21,9 +21,9 @@ import java.util.List;
 
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * A LeaveRequestMessage is sent by a member of the cluster when it intends to shut down.
@@ -70,7 +70,7 @@ public class LeaveRequestMessage<ID extends MemberIdentifier> extends AbstractGM
   }
 
   @Override
-  public KnownVersion[] getSerializationVersions() {
+  public Version[] getSerializationVersions() {
     return null;
   }
 

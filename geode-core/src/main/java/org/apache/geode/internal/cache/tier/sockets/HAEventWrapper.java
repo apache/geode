@@ -35,8 +35,8 @@ import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl.CqNa
 import org.apache.geode.internal.serialization.DSCODE;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.size.Sizeable;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -393,7 +393,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
   }
 
   @Override
-  public KnownVersion[] getSerializationVersions() {
+  public Version[] getSerializationVersions() {
     return null;
   }
 

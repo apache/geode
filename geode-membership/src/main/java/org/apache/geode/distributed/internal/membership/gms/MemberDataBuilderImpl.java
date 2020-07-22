@@ -21,7 +21,7 @@ import org.apache.geode.distributed.internal.membership.api.MemberData;
 import org.apache.geode.distributed.internal.membership.api.MemberDataBuilder;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.internal.inet.LocalHostUtil;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * MemberDataBuilderImpl is the implementation of MemberDataBuilder. It constructs a
@@ -45,7 +45,7 @@ public class MemberDataBuilderImpl implements MemberDataBuilder {
   private int durableTimeout = -1;
   private boolean preferredForCoordinator = true;
   private boolean networkPartitionDetectionEnabled;
-  private short versionOrdinal = KnownVersion.CURRENT_ORDINAL;
+  private short versionOrdinal = Version.CURRENT_ORDINAL;
   private long uuidMostSignificantBits = 0;
   private long uuidLeastSignificantBits = 0;
   private boolean isPartial;

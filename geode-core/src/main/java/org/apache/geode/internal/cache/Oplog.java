@@ -104,7 +104,7 @@ import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.sequencelog.EntryLogger;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.internal.serialization.VersioningIO;
 import org.apache.geode.internal.shared.NativeCalls;
@@ -152,14 +152,14 @@ public class Oplog implements CompactableOplog, Flushable {
   protected final long oplogId;
 
   /** recovered gemfire version * */
-  protected KnownVersion gfversion;
+  protected Version gfversion;
 
   /**
    * Recovered version of the data. Usually this is same as {@link #gfversion} except for the case
    * of upgrading disk store from previous version in which case the keys/values are carried forward
    * as is and need to be interpreted in load by latest product code if required.
    */
-  protected KnownVersion dataVersion;
+  protected Version dataVersion;
 
   /** Directory in which the file is present* */
   private DirectoryHolder dirHolder;
@@ -730,11 +730,11 @@ public class Oplog implements CompactableOplog, Flushable {
 
   private void writeGemfireVersionRecord(OplogFile olf) throws IOException {
     if (this.gfversion == null) {
-      this.gfversion = KnownVersion.CURRENT;
+      this.gfversion = Version.CURRENT;
     }
-    KnownVersion dataVersion = getDataVersionIfOld();
+    Version dataVersion = getDataVersionIfOld();
     if (dataVersion == null) {
-      dataVersion = KnownVersion.CURRENT;
+      dataVersion = Version.CURRENT;
     }
     // if gfversion and dataVersion are not same, then write a special token
     // version and then write both, else write gfversion as before
@@ -743,7 +743,7 @@ public class Oplog implements CompactableOplog, Flushable {
     if (this.gfversion == dataVersion) {
       writeProductVersionRecord(this.gfversion, olf);
     } else {
-      writeProductVersionRecord(KnownVersion.TOKEN, olf);
+      writeProductVersionRecord(Version.TOKEN, olf);
       clearOpState();
       writeProductVersionRecord(this.gfversion, olf);
       clearOpState();
@@ -751,14 +751,14 @@ public class Oplog implements CompactableOplog, Flushable {
     }
   }
 
-  private void writeProductVersionRecord(KnownVersion version, OplogFile olf) throws IOException {
+  private void writeProductVersionRecord(Version version, OplogFile olf) throws IOException {
     this.opState.initialize(version.ordinal());
     writeOpLogBytes(olf, false, true);
     olf.currSize += getOpStateSize();
     this.dirHolder.incrementTotalOplogSize(getOpStateSize());
   }
 
-  public KnownVersion currentRecoveredGFVersion() {
+  public Version currentRecoveredGFVersion() {
     return this.gfversion;
   }
 
@@ -1650,7 +1650,7 @@ public class Oplog implements CompactableOplog, Flushable {
       long oplogKeyIdHWM = DiskStoreImpl.INVALID_ID;
       int krfEntryCount = 0;
       DataInputStream dis = new DataInputStream(new BufferedInputStream(fis, 1024 * 1024));
-      final KnownVersion version = getProductVersionIfOld();
+      final Version version = getProductVersionIfOld();
       final ByteArrayDataInput in = new ByteArrayDataInput();
       try {
         try {
@@ -1836,9 +1836,9 @@ public class Oplog implements CompactableOplog, Flushable {
     CountingDataInputStream dis = null;
     try {
       final LocalRegion currentRegion = LocalRegion.getInitializingRegion();
-      final KnownVersion version = getProductVersionIfOld();
+      final Version version = getProductVersionIfOld();
       final ByteArrayDataInput in = new ByteArrayDataInput();
-      final HeapDataOutputStream hdos = new HeapDataOutputStream(KnownVersion.CURRENT);
+      final HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
       int recordCount = 0;
       boolean foundDiskStoreRecord = false;
       FileInputStream fis = null;
@@ -2035,9 +2035,9 @@ public class Oplog implements CompactableOplog, Flushable {
    * @throws DiskAccessException if this file does not belong to our parent
    */
   private void readGemfireVersionRecord(DataInput dis, File f) throws IOException {
-    KnownVersion recoveredGFVersion = readProductVersionRecord(dis, f);
+    Version recoveredGFVersion = readProductVersionRecord(dis, f);
     final boolean hasDataVersion;
-    if ((hasDataVersion = (recoveredGFVersion == KnownVersion.TOKEN))) {
+    if ((hasDataVersion = (recoveredGFVersion == Version.TOKEN))) {
       // actual GFE version will be the next record in this case
       byte opCode = dis.readByte();
       if (opCode != OPLOG_GEMFIRE_VERSION) {
@@ -2070,9 +2070,9 @@ public class Oplog implements CompactableOplog, Flushable {
     }
   }
 
-  private KnownVersion readProductVersionRecord(DataInput dis, File f) throws IOException {
+  private Version readProductVersionRecord(DataInput dis, File f) throws IOException {
     short ver = VersioningIO.readOrdinal(dis);
-    final KnownVersion recoveredGFVersion =
+    final Version recoveredGFVersion =
         Versioning.getKnownVersionOrDefault(
             Versioning.getVersionOrdinal(ver), null);
     if (recoveredGFVersion == null) {
@@ -2287,7 +2287,7 @@ public class Oplog implements CompactableOplog, Flushable {
    */
   public DiskEntry.RecoveredEntry createRecoveredEntry(byte[] valueBytes, int valueLength,
       byte userBits, long oplogId, long offsetInOplog, long oplogKeyId, boolean recoverValue,
-      KnownVersion version, ByteArrayDataInput in) {
+      Version version, ByteArrayDataInput in) {
     DiskEntry.RecoveredEntry re = null;
     if (recoverValue || EntryBits.isAnyInvalid(userBits) || EntryBits.isTombstone(userBits)) {
       Object value;
@@ -2352,7 +2352,7 @@ public class Oplog implements CompactableOplog, Flushable {
   }
 
   private VersionTag readVersionsFromOplog(DataInput dis) throws IOException {
-    if (KnownVersion.GFE_70.compareTo(currentRecoveredGFVersion()) <= 0) {
+    if (Version.GFE_70.compareTo(currentRecoveredGFVersion()) <= 0) {
       // this version format is for gemfire 7.0
       // if we have different version format in 7.1, it will be handled in
       // "else if"
@@ -2413,8 +2413,7 @@ public class Oplog implements CompactableOplog, Flushable {
    * @param opcode byte whether the id is short/int/long
    */
   private void readNewEntry(CountingDataInputStream dis, byte opcode, OplogEntryIdSet deletedIds,
-      boolean recoverValue, final LocalRegion currentRegion, KnownVersion version,
-      ByteArrayDataInput in,
+      boolean recoverValue, final LocalRegion currentRegion, Version version, ByteArrayDataInput in,
       HeapDataOutputStream hdos) throws IOException {
     final boolean isPersistRecoveryDebugEnabled =
         logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE);
@@ -2603,7 +2602,7 @@ public class Oplog implements CompactableOplog, Flushable {
    * @param opcode byte whether the id is short/int/long
    */
   private void readModifyEntry(CountingDataInputStream dis, byte opcode, OplogEntryIdSet deletedIds,
-      boolean recoverValue, LocalRegion currentRegion, KnownVersion version, ByteArrayDataInput in,
+      boolean recoverValue, LocalRegion currentRegion, Version version, ByteArrayDataInput in,
       HeapDataOutputStream hdos) throws IOException {
     final boolean isPersistRecoveryDebugEnabled =
         logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE);
@@ -2793,7 +2792,7 @@ public class Oplog implements CompactableOplog, Flushable {
     }
   }
 
-  private void validateValue(byte[] valueBytes, byte userBits, KnownVersion version,
+  private void validateValue(byte[] valueBytes, byte userBits, Version version,
       ByteArrayDataInput in) {
     if (getParent().isValidating()) {
       if (EntryBits.isSerialized(userBits)) {
@@ -2820,7 +2819,7 @@ public class Oplog implements CompactableOplog, Flushable {
    */
   private void readModifyEntryWithKey(CountingDataInputStream dis, byte opcode,
       OplogEntryIdSet deletedIds, boolean recoverValue, final LocalRegion currentRegion,
-      KnownVersion version, ByteArrayDataInput in, HeapDataOutputStream hdos) throws IOException {
+      Version version, ByteArrayDataInput in, HeapDataOutputStream hdos) throws IOException {
     long oplogOffset = -1;
 
     byte userBits = dis.readByte();
@@ -3912,14 +3911,14 @@ public class Oplog implements CompactableOplog, Flushable {
     // write both gemfire and data versions if the two are different else write
     // only gemfire version; a token distinguishes the two cases while reading
     // like in writeGemFireVersionRecord
-    KnownVersion dataVersion = getDataVersionIfOld();
+    Version dataVersion = getDataVersionIfOld();
     if (dataVersion == null) {
-      dataVersion = KnownVersion.CURRENT;
+      dataVersion = Version.CURRENT;
     }
     if (this.gfversion == dataVersion) {
       VersioningIO.writeOrdinal(this.krf.dos, this.gfversion.ordinal(), false);
     } else {
-      VersioningIO.writeOrdinal(this.krf.dos, KnownVersion.TOKEN.ordinal(), false);
+      VersioningIO.writeOrdinal(this.krf.dos, Version.TOKEN.ordinal(), false);
       this.krf.dos.writeByte(END_OF_RECORD_ID);
       this.krf.dos.writeByte(OPLOG_GEMFIRE_VERSION);
       VersioningIO.writeOrdinal(this.krf.dos, this.gfversion.ordinal(), false);
@@ -5353,7 +5352,7 @@ public class Oplog implements CompactableOplog, Flushable {
               this.stats.incOplogReads();
               bb = new BytesAndBits(valueBytes, userBits);
               // also set the product version for an older product
-              final KnownVersion version = getProductVersionIfOld();
+              final Version version = getProductVersionIfOld();
               if (version != null) {
                 bb.setVersion(version);
               }
@@ -6193,7 +6192,7 @@ public class Oplog implements CompactableOplog, Flushable {
 
   private byte[] serializeRVVs(Map<Long, AbstractDiskRegion> drMap, boolean gcRVV)
       throws IOException {
-    HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT);
+    HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
 
     // Filter out any regions that do not have versioning enabled
     drMap = new HashMap<Long, AbstractDiskRegion>(drMap);
@@ -6324,7 +6323,7 @@ public class Oplog implements CompactableOplog, Flushable {
 
   private byte[] serializeVersionTag(int entryVersion, long regionVersion,
       VersionSource versionMember, long timestamp, int dsId) throws IOException {
-    HeapDataOutputStream out = new HeapDataOutputStream(4 + 8 + 4 + 8 + 4, KnownVersion.CURRENT);
+    HeapDataOutputStream out = new HeapDataOutputStream(4 + 8 + 4 + 8 + 4, Version.CURRENT);
     serializeVersionTag(entryVersion, regionVersion, versionMember, timestamp, dsId, out);
     return out.toByteArray();
   }
@@ -6354,7 +6353,7 @@ public class Oplog implements CompactableOplog, Flushable {
     }
   }
 
-  private Object deserializeKey(byte[] keyBytes, final KnownVersion version,
+  private Object deserializeKey(byte[] keyBytes, final Version version,
       final ByteArrayDataInput in) {
     if (!getParent().isOffline() || !PdxWriterImpl.isPdx(keyBytes)) {
       return EntryEventImpl.deserialize(keyBytes, version, in);
@@ -6365,20 +6364,20 @@ public class Oplog implements CompactableOplog, Flushable {
 
   /**
    * If this OpLog is from an older version of the product, then return that
-   * {@link KnownVersion} else
+   * {@link Version} else
    * return null.
    */
-  public KnownVersion getProductVersionIfOld() {
-    final KnownVersion version = this.gfversion;
+  public Version getProductVersionIfOld() {
+    final Version version = this.gfversion;
     if (version == null) {
       // check for the case of diskstore upgrade from 6.6 to >= 7.0
       if (getParent().isUpgradeVersionOnly()) {
         // assume previous release version
-        return KnownVersion.GFE_66;
+        return Version.GFE_66;
       } else {
         return null;
       }
-    } else if (version == KnownVersion.CURRENT) {
+    } else if (version == Version.CURRENT) {
       return null;
     } else {
       // version changed so return that for VersionedDataStream
@@ -6388,19 +6387,19 @@ public class Oplog implements CompactableOplog, Flushable {
 
   /**
    * If this OpLog has data that was written by an older version of the product, then return that
-   * {@link KnownVersion} else return null.
+   * {@link Version} else return null.
    */
-  public KnownVersion getDataVersionIfOld() {
-    final KnownVersion version = this.dataVersion;
+  public Version getDataVersionIfOld() {
+    final Version version = this.dataVersion;
     if (version == null) {
       // check for the case of diskstore upgrade from 6.6 to >= 7.0
       if (getParent().isUpgradeVersionOnly()) {
         // assume previous release version
-        return KnownVersion.GFE_66;
+        return Version.GFE_66;
       } else {
         return null;
       }
-    } else if (version == KnownVersion.CURRENT) {
+    } else if (version == Version.CURRENT) {
       return null;
     } else {
       // version changed so return that for VersionedDataStream
@@ -7223,7 +7222,7 @@ public class Oplog implements CompactableOplog, Flushable {
     @Override
     public boolean fillInValue(InternalRegion region, InitialImageOperation.Entry entry,
         ByteArrayDataInput in, DistributionManager distributionManager,
-        final KnownVersion version) {
+        final Version version) {
       return false;
     }
 

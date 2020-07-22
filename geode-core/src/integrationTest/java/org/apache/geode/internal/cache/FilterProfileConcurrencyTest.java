@@ -28,7 +28,7 @@ import org.junit.runner.RunWith;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.tier.InterestType;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.test.concurrency.ConcurrentTestRunner;
 import org.apache.geode.test.concurrency.ParallelExecutor;
@@ -57,7 +57,7 @@ public class FilterProfileConcurrencyTest {
   }
 
   private Object deserialize(byte[] bytes) throws IOException, ClassNotFoundException {
-    return BlobHelper.deserializeBlob(bytes, KnownVersion.CURRENT, null);
+    return BlobHelper.deserializeBlob(bytes, Version.CURRENT, null);
   }
 
   private FilterProfile createFilterProfile() throws UnknownHostException {

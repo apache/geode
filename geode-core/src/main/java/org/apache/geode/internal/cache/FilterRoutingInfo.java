@@ -34,8 +34,8 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.ObjToByteArraySerializer;
 import org.apache.geode.internal.VersionedDataSerializable;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.StaticSerialization;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * This class is used to hold the information about the servers and their Filters (CQs and Interest
@@ -49,8 +49,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
       Boolean.getBoolean("optimized-cq-serialization");
 
   @Immutable
-  private static final KnownVersion[] serializationVersions =
-      new KnownVersion[] {KnownVersion.GFE_71};
+  private static final Version[] serializationVersions = new Version[] {Version.GFE_71};
 
   /** Set to true if any peer members has any filters. */
   private boolean memberWithFilterInfoExists = false;
@@ -249,7 +248,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
   }
 
   @Override
-  public KnownVersion[] getSerializationVersions() {
+  public Version[] getSerializationVersions() {
     return serializationVersions;
   }
 
@@ -321,7 +320,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
     private transient byte[] myData;
 
     /** version of creator of myData, needed for deserialization */
-    private transient KnownVersion myDataVersion;
+    private transient Version myDataVersion;
 
     /** Clients that are interested in the event and want values */
     private Set interestedClients;
@@ -362,11 +361,10 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
     }
 
     @Immutable
-    private static final KnownVersion[] serializationVersions =
-        new KnownVersion[] {KnownVersion.GFE_80};
+    private static final Version[] serializationVersions = new Version[] {Version.GFE_80};
 
     @Override
-    public KnownVersion[] getSerializationVersions() {
+    public Version[] getSerializationVersions() {
       return serializationVersions;
     }
 

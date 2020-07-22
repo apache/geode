@@ -36,7 +36,7 @@ public class DSFIDNotFoundException extends NotSerializableException {
   public DSFIDNotFoundException(String msg, int dsfid) {
     super(msg);
     this.dsfid = dsfid;
-    this.versionOrdinal = KnownVersion.getCurrentVersion().ordinal();
+    this.versionOrdinal = Version.getCurrentVersion().ordinal();
   }
 
   public int getUnknownDSFID() {

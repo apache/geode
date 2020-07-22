@@ -34,7 +34,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxyFactory.InternalCacheClientProxyFactory;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.statistics.StatisticsManager;
 
@@ -43,7 +43,7 @@ public class CacheClientProxyFactoryTest {
   private CacheClientNotifier notifier;
   private Socket socket;
   private ClientProxyMembershipID proxyId;
-  private KnownVersion clientVersion;
+  private Version clientVersion;
   private SecurityService securityService;
   private Subject subject;
   private StatisticsClock statisticsClock;
@@ -56,7 +56,7 @@ public class CacheClientProxyFactoryTest {
     notifier = mock(CacheClientNotifier.class);
     socket = mock(Socket.class);
     proxyId = mock(ClientProxyMembershipID.class);
-    clientVersion = mock(KnownVersion.class);
+    clientVersion = mock(Version.class);
     securityService = mock(SecurityService.class);
     subject = mock(Subject.class);
     statisticsClock = mock(StatisticsClock.class);
@@ -105,7 +105,7 @@ public class CacheClientProxyFactoryTest {
     @Override
     public CacheClientProxy create(CacheClientNotifier notifier, Socket socket,
         ClientProxyMembershipID proxyId, boolean isPrimary, byte clientConflation,
-        KnownVersion clientVersion, long acceptorId, boolean notifyBySubscription,
+        Version clientVersion, long acceptorId, boolean notifyBySubscription,
         SecurityService securityService, Subject subject, StatisticsClock statisticsClock)
         throws CacheException {
       return new SubCacheClientProxy(notifier, socket, proxyId, isPrimary, clientConflation,
@@ -118,7 +118,7 @@ public class CacheClientProxyFactoryTest {
 
     SubCacheClientProxy(CacheClientNotifier notifier, Socket socket,
         ClientProxyMembershipID proxyId, boolean isPrimary, byte clientConflation,
-        KnownVersion clientVersion, long acceptorId, boolean notifyBySubscription,
+        Version clientVersion, long acceptorId, boolean notifyBySubscription,
         SecurityService securityService, Subject subject, StatisticsClock statisticsClock)
         throws CacheException {
       super(notifier, socket, proxyId, isPrimary, clientConflation, clientVersion, acceptorId,

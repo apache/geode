@@ -24,8 +24,8 @@ import java.util.Arrays;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.redis.internal.netty.Coder;
 
 /**
@@ -178,7 +178,7 @@ public class ByteArrayWrapper
   }
 
   @Override
-  public KnownVersion[] getSerializationVersions() {
+  public Version[] getSerializationVersions() {
     return null;
   }
 }

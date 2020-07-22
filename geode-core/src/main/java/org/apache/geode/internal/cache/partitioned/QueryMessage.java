@@ -53,8 +53,8 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class QueryMessage extends StreamingPartitionOperation.StreamingPartitionMessage {
@@ -123,8 +123,7 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
       }
     }
     Object data = this.currentResultIterator.next();
-    boolean isPostGFE_8_1 =
-        this.getSender().getVersionOrdinalObject().isNewerThan(KnownVersion.GFE_81);
+    boolean isPostGFE_8_1 = this.getSender().getVersionOrdinalObject().isNewerThan(Version.GFE_81);
 
     // There is a bug in older versions of GFE such that the query node expects the structs to have
     // type as ObjectTypes only & not specific types. So the new version needs to send the
@@ -191,8 +190,7 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
         logger.debug("Started executing query from remote node: {}", query.getQueryString());
       }
       isQueryTraced =
-          query.isTraced()
-              && this.sender.getVersionOrdinalObject().isNotOlderThan(KnownVersion.GFE_81);
+          query.isTraced() && this.sender.getVersionOrdinalObject().isNotOlderThan(Version.GFE_81);
 
       // Adds a query trace info object to the results list for remote queries
       PRQueryTraceInfo queryTraceInfo = null;

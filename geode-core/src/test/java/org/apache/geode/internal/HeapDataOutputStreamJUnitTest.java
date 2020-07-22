@@ -29,7 +29,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.cache.UnitTestValueHolder;
 import org.apache.geode.internal.serialization.BufferDataOutputStream;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
@@ -50,7 +50,7 @@ public class HeapDataOutputStreamJUnitTest {
 
   @Test
   public void testWriteByteBuffer() {
-    HeapDataOutputStream out = new HeapDataOutputStream(64, KnownVersion.CURRENT);
+    HeapDataOutputStream out = new HeapDataOutputStream(64, Version.CURRENT);
 
     byte[] bytes = "1234567890qwertyuiopasdfghjklzxcvbnm,./;'".getBytes();
     out.write(ByteBuffer.wrap(bytes, 0, 2));
@@ -69,7 +69,7 @@ public class HeapDataOutputStreamJUnitTest {
   @Test
   public void testWriteByteBufferCopyUseBuffer() {
     ByteBuffer buf = ByteBuffer.allocate(32);
-    HeapDataOutputStream out = new HeapDataOutputStream(buf, KnownVersion.CURRENT, true);
+    HeapDataOutputStream out = new HeapDataOutputStream(buf, Version.CURRENT, true);
 
     out.write(0);
 
@@ -108,7 +108,7 @@ public class HeapDataOutputStreamJUnitTest {
   @Test
   public void testWriteByteBufferNoCopyUseBuffer() {
     ByteBuffer buf = ByteBuffer.allocate(32);
-    HeapDataOutputStream out = new HeapDataOutputStream(buf, KnownVersion.CURRENT, true);
+    HeapDataOutputStream out = new HeapDataOutputStream(buf, Version.CURRENT, true);
 
     out.write(0);
 
@@ -155,7 +155,7 @@ public class HeapDataOutputStreamJUnitTest {
     }
     UnitTestValueHolder vh = new UnitTestValueHolder(bytes);
     ByteBuffer buf = ByteBuffer.allocate(32);
-    HeapDataOutputStream out = new HeapDataOutputStream(buf, KnownVersion.CURRENT, true);
+    HeapDataOutputStream out = new HeapDataOutputStream(buf, Version.CURRENT, true);
     DataSerializer.writeObject(vh, out);
     UnitTestValueHolder vh2 = DataSerializer.readObject(new DataInputStream(out.getInputStream()));
     if (!Arrays.equals(bytes, (byte[]) vh2.getValue())) {

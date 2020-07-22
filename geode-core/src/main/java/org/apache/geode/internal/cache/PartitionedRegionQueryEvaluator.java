@@ -74,7 +74,7 @@ import org.apache.geode.internal.cache.partitioned.PartitionMessage;
 import org.apache.geode.internal.cache.partitioned.QueryMessage;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.internal.cache.partitioned.StreamingPartitionOperation;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.util.internal.GeodeGlossary;
 
@@ -186,7 +186,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     // we will have to sort it
     boolean sortNeeded = false;
     List<CompiledSortCriterion> orderByAttribs = null;
-    if (sender.getVersionOrdinalObject().isOlderThan(KnownVersion.GFE_90)) {
+    if (sender.getVersionOrdinalObject().isOlderThan(Version.GFE_90)) {
       CompiledSelect cs = this.query.getSimpleSelect();
       if (cs != null && cs.isOrderBy()) {
         sortNeeded = true;

@@ -44,7 +44,7 @@ import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category(ClientServerTest.class)
@@ -102,7 +102,7 @@ public class ServerConnectionIntegrationTest {
     private volatile boolean signalled;
 
     TestMessage() {
-      super(3, KnownVersion.CURRENT);
+      super(3, Version.CURRENT);
       messageType = MessageType.REQUEST;
       securePart = new Part();
     }
@@ -155,7 +155,7 @@ public class ServerConnectionIntegrationTest {
       ServerSideHandshake handshake = mock(ServerSideHandshake.class);
       MessageIdExtractor extractor = mock(MessageIdExtractor.class);
 
-      when(handshake.getVersion()).thenReturn(KnownVersion.CURRENT);
+      when(handshake.getVersion()).thenReturn(Version.CURRENT);
       when(proxyID.getDistributedMember()).thenReturn(mock(InternalDistributedMember.class));
 
       setHandshake(handshake);

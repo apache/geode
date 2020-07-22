@@ -49,7 +49,7 @@ import org.apache.geode.cache.lucene.DummyLuceneSerializer;
 import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
 import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.test.junit.categories.LuceneTest;
 
 @Category({LuceneTest.class})
@@ -79,7 +79,7 @@ public class LuceneIndexCreationProfileJUnitTest {
   @Parameters(method = "getProfileWithSerializer")
   public void toDataFromDataShouldContainSerializer(LuceneIndexCreationProfile profile,
       String expectedSerializerCLassName) throws IOException, ClassNotFoundException {
-    HeapDataOutputStream hdos = new HeapDataOutputStream(KnownVersion.CURRENT);
+    HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
     DataSerializer.writeObject(profile, hdos);
     byte[] outputArray = hdos.toByteArray();
     ByteArrayInputStream bais = new ByteArrayInputStream(outputArray);

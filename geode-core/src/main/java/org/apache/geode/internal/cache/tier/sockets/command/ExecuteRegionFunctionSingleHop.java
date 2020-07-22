@@ -46,7 +46,7 @@ import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * @since GemFire 6.5
@@ -85,7 +85,7 @@ public class ExecuteRegionFunctionSingleHop extends BaseCommand {
       byte[] bytes = clientMessage.getPart(0).getSerializedForm();
       functionState = bytes[0];
       if (bytes.length >= 5
-          && serverConnection.getClientVersion().ordinal() >= KnownVersion.GFE_8009.ordinal()) {
+          && serverConnection.getClientVersion().ordinal() >= Version.GFE_8009.ordinal()) {
         functionTimeout = Part.decodeInt(bytes, 1);
       }
       if (functionState != 1) {

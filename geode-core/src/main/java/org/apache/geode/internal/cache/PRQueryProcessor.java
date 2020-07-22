@@ -53,8 +53,8 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.execute.BucketMovedException;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.util.internal.GeodeGlossary;
@@ -380,7 +380,7 @@ public class PRQueryProcessor {
     }
 
     @Override
-    public KnownVersion[] getSerializationVersions() {
+    public Version[] getSerializationVersions() {
       return null;
     }
   }

@@ -18,7 +18,7 @@ package org.apache.geode.internal;
 import java.io.IOException;
 import java.io.ObjectOutput;
 
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataStream;
 
 /**
@@ -30,7 +30,7 @@ import org.apache.geode.internal.serialization.VersionedDataStream;
 public class VersionedObjectOutput implements ObjectOutput, VersionedDataStream {
 
   private final ObjectOutput out;
-  private final KnownVersion version;
+  private final Version version;
 
   /**
    * Creates a VersionedObjectOutput that wraps the specified underlying ObjectOutput.
@@ -38,9 +38,9 @@ public class VersionedObjectOutput implements ObjectOutput, VersionedDataStream 
    * @param out the underlying {@link ObjectOutput}
    * @param version the product version that serialized object on the given {@link ObjectOutput}
    */
-  public VersionedObjectOutput(ObjectOutput out, KnownVersion version) {
-    if (version.isNewerThan(KnownVersion.CURRENT)) {
-      Assert.fail("unexpected version: " + version + ", CURRENT: " + KnownVersion.CURRENT);
+  public VersionedObjectOutput(ObjectOutput out, Version version) {
+    if (version.isNewerThan(Version.CURRENT)) {
+      Assert.fail("unexpected version: " + version + ", CURRENT: " + Version.CURRENT);
     }
     this.out = out;
     this.version = version;
@@ -50,7 +50,7 @@ public class VersionedObjectOutput implements ObjectOutput, VersionedDataStream 
    * {@inheritDoc}
    */
   @Override
-  public KnownVersion getVersion() {
+  public Version getVersion() {
     return this.version;
   }
 

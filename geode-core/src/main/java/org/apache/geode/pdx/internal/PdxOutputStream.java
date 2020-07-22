@@ -23,7 +23,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.ByteBufferWriter;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSource;
 import org.apache.geode.pdx.PdxSerializationException;
 
@@ -36,11 +36,11 @@ public class PdxOutputStream implements ByteBufferWriter {
   private final HeapDataOutputStream hdos;
 
   public PdxOutputStream() {
-    this.hdos = new HeapDataOutputStream(KnownVersion.CURRENT);
+    this.hdos = new HeapDataOutputStream(Version.CURRENT);
   }
 
   public PdxOutputStream(int allocSize) {
-    this.hdos = new HeapDataOutputStream(allocSize, KnownVersion.CURRENT);
+    this.hdos = new HeapDataOutputStream(allocSize, Version.CURRENT);
   }
 
   /**

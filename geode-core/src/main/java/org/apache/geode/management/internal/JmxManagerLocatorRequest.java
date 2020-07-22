@@ -30,8 +30,8 @@ import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Sent to a locator to request it to find (and possibly start) a jmx manager for us. It returns a
@@ -98,7 +98,7 @@ public class JmxManagerLocatorRequest implements DataSerializableFixedID {
   }
 
   @Override
-  public KnownVersion[] getSerializationVersions() {
+  public Version[] getSerializationVersions() {
     // TODO Auto-generated method stub
     return null;
   }

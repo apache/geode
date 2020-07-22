@@ -74,7 +74,7 @@ import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessage;
 import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl;
 import org.apache.geode.internal.cache.tier.sockets.ConnectionListener;
 import org.apache.geode.internal.cache.tier.sockets.HAEventWrapper;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantReadWriteLock;
@@ -509,7 +509,7 @@ public class HARegionQueueIntegrationTest {
   private InternalDistributedMember createMember() {
     // Create an InternalDistributedMember
     InternalDistributedMember member = mock(InternalDistributedMember.class);
-    when(member.getVersionOrdinalObject()).thenReturn(KnownVersion.CURRENT);
+    when(member.getVersionOrdinalObject()).thenReturn(Version.CURRENT);
     return member;
   }
 

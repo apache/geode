@@ -25,7 +25,7 @@ import org.junit.Test;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
@@ -38,7 +38,7 @@ public class RollingUpgradeReindexShouldBeSuccessfulWhenAllServersRollToCurrentV
   @Test
   public void luceneReindexShouldBeSuccessfulWhenAllServersRollToCurrentVersion() throws Exception {
     Assume.assumeFalse("minor versions should be different",
-        majorMinor(oldVersion).equals(majorMinor(KnownVersion.CURRENT.getName())));
+        majorMinor(oldVersion).equals(majorMinor(Version.CURRENT.getName())));
 
     final Host host = Host.getHost(0);
     VM locator1 = host.getVM(oldVersion, 0);

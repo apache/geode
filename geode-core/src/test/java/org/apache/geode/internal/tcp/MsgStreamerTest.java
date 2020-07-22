@@ -39,7 +39,7 @@ import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.SerialAckedMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.net.BufferPool;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 
 public class MsgStreamerTest {
   private DMStats stats = mock(DMStats.class);
@@ -87,12 +87,12 @@ public class MsgStreamerTest {
     message.setRecipients(Arrays.asList(member1, member2));
 
     when(connection1.getRemoteAddress()).thenReturn(member1);
-    when(connection1.getRemoteVersion()).thenReturn(KnownVersion.CURRENT);
+    when(connection1.getRemoteVersion()).thenReturn(Version.CURRENT);
     when(connection2.getRemoteAddress()).thenReturn(member2);
     if (mixedDestinationVersions) {
-      when(connection1.getRemoteVersion()).thenReturn(KnownVersion.GEODE_1_12_0);
+      when(connection1.getRemoteVersion()).thenReturn(Version.GEODE_1_12_0);
     } else {
-      when(connection1.getRemoteVersion()).thenReturn(KnownVersion.CURRENT);
+      when(connection1.getRemoteVersion()).thenReturn(Version.CURRENT);
     }
     List<Connection> connections = Arrays.asList(connection1, connection2);
 

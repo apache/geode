@@ -99,8 +99,8 @@ import org.apache.geode.internal.cache.tier.sockets.Handshake;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.util.BlobHelper;
@@ -2118,7 +2118,7 @@ public class HARegionQueue implements RegionQueue {
     try {
       inputValue = BlobHelper.deserializeBlob(newValueCd.getSerializedValue(),
           Versioning
-              .getKnownVersionOrDefault(sender.getVersionOrdinalObject(), KnownVersion.CURRENT),
+              .getKnownVersionOrDefault(sender.getVersionOrdinalObject(), Version.CURRENT),
           null);
       newValueCd = new VMCachedDeserializable(inputValue, newValueCd.getSizeInBytes());
     } catch (IOException | ClassNotFoundException e) {
@@ -3382,7 +3382,7 @@ public class HARegionQueue implements RegionQueue {
     }
 
     @Override
-    public KnownVersion[] getSerializationVersions() {
+    public Version[] getSerializationVersions() {
       // TODO Auto-generated method stub
       return null;
     }

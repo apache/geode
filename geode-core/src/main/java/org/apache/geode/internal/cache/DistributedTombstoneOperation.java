@@ -35,9 +35,9 @@ import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
 import org.apache.geode.internal.cache.persistence.DiskStoreID;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.SerializationVersions;
+import org.apache.geode.internal.serialization.Version;
 
 public class DistributedTombstoneOperation extends DistributedCacheOperation {
   private enum TOperation {
@@ -129,7 +129,7 @@ public class DistributedTombstoneOperation extends DistributedCacheOperation {
     protected EventID eventID;
 
     @Immutable
-    private static final KnownVersion[] serializationVersions = null; // new Version[]{ };
+    private static final Version[] serializationVersions = null; // new Version[]{ };
 
     /**
      * for deserialization
@@ -179,7 +179,7 @@ public class DistributedTombstoneOperation extends DistributedCacheOperation {
     }
 
     @Override
-    public KnownVersion[] getSerializationVersions() {
+    public Version[] getSerializationVersions() {
       return serializationVersions;
     }
 

@@ -49,7 +49,7 @@ import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * @since GemFire 6.6
@@ -84,7 +84,7 @@ public class ExecuteRegionFunction66 extends BaseCommand {
       byte[] bytes = clientMessage.getPart(0).getSerializedForm();
       functionState = bytes[0];
       if (bytes.length >= 5
-          && serverConnection.getClientVersion().ordinal() >= KnownVersion.GFE_8009.ordinal()) {
+          && serverConnection.getClientVersion().ordinal() >= Version.GFE_8009.ordinal()) {
         functionTimeout = Part.decodeInt(bytes, 1);
       }
       if (functionState != 1) {
@@ -103,7 +103,7 @@ public class ExecuteRegionFunction66 extends BaseCommand {
       memberMappedArg = extractMemberMappedArgument(part);
 
       byte[] flags = clientMessage.getPart(5).getSerializedForm();
-      if (serverConnection.getClientVersion().ordinal() > KnownVersion.GFE_81.ordinal()) {
+      if (serverConnection.getClientVersion().ordinal() > Version.GFE_81.ordinal()) {
         isBucketsAsFilter = (flags[0] & ExecuteFunctionHelper.BUCKETS_AS_FILTER_MASK) != 0;
         isReExecute = (flags[0] & ExecuteFunctionHelper.IS_REXECUTE_MASK) != 0 ? (byte) 1 : 0;
       } else {

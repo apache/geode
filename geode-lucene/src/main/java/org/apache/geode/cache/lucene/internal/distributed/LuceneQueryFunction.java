@@ -51,7 +51,7 @@ import org.apache.geode.internal.cache.PrimaryBucketException;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.geode.internal.cache.execute.PartitionedRegionFunctionResultSender;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.security.ResourcePermissions;
 import org.apache.geode.security.ResourcePermission;
@@ -73,7 +73,7 @@ public class LuceneQueryFunction implements InternalFunction<LuceneFunctionConte
     if (context.getResultSender() instanceof PartitionedRegionFunctionResultSender) {
       PartitionedRegionFunctionResultSender resultSender =
           (PartitionedRegionFunctionResultSender) context.getResultSender();
-      KnownVersion clientVersion = resultSender.getClientVersion();
+      Version clientVersion = resultSender.getClientVersion();
       if (LuceneServiceImpl.LUCENE_REINDEX == false
           || (clientVersion != null && clientVersion
               .ordinal() < LuceneServiceImpl.LUCENE_REINDEX_ENABLED_VERSION_ORDINAL)) {
@@ -96,7 +96,7 @@ public class LuceneQueryFunction implements InternalFunction<LuceneFunctionConte
     // Hence the query waits for the repositories to be ready instead of throwing the exception
     if (!remoteMembers.isEmpty()) {
       for (InternalDistributedMember remoteMember : remoteMembers) {
-        if (remoteMember.getVersionOrdinalObject().ordinal() < KnownVersion.GEODE_1_6_0.ordinal()) {
+        if (remoteMember.getVersionOrdinalObject().ordinal() < Version.GEODE_1_6_0.ordinal()) {
           // re-execute but wait till indexing is complete
           execute(ctx, true);
           return;

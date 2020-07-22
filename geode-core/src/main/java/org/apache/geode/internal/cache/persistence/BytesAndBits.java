@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache.persistence;
 
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Used to fetch a record's raw bytes and user bits.
@@ -24,7 +24,7 @@ import org.apache.geode.internal.serialization.KnownVersion;
 public class BytesAndBits {
   private final byte[] data;
   private final byte userBits;
-  private KnownVersion version;
+  private Version version;
 
   public BytesAndBits(byte[] data, byte userBits) {
     this.data = data;
@@ -39,11 +39,11 @@ public class BytesAndBits {
     return this.userBits;
   }
 
-  public void setVersion(KnownVersion v) {
+  public void setVersion(Version v) {
     this.version = v;
   }
 
-  public KnownVersion getVersion() {
+  public Version getVersion() {
     return this.version;
   }
 }

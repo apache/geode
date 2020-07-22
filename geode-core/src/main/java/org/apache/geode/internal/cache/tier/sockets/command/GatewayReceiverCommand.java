@@ -45,7 +45,7 @@ import org.apache.geode.internal.cache.wan.BatchException70;
 import org.apache.geode.internal.cache.wan.GatewayReceiverStats;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.pdx.PdxConfigurationException;
 import org.apache.geode.pdx.PdxRegistryMismatchException;
@@ -802,7 +802,7 @@ public class GatewayReceiverCommand extends BaseCommand {
     // For older gateway senders, we need to send back an exception
     // they can deserialize.
     if ((servConn.getClientVersion() == null
-        || servConn.getClientVersion().isOlderThan(KnownVersion.GFE_80))
+        || servConn.getClientVersion().isOlderThan(Version.GFE_80))
         && exception instanceof PdxRegistryMismatchException) {
       PdxConfigurationException newException =
           new PdxConfigurationException(exception.getMessage());

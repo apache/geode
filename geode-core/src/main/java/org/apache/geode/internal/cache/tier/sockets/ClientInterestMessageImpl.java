@@ -29,8 +29,8 @@ import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Class <code>ClientInterestMessageImpl</code> represents an update to the a client's interest
@@ -135,9 +135,9 @@ public class ClientInterestMessageImpl implements ClientMessage {
 
   @Override
   public Message getMessage(CacheClientProxy proxy, boolean notify) throws IOException {
-    KnownVersion clientVersion = proxy.getVersion();
+    Version clientVersion = proxy.getVersion();
     Message message = null;
-    if (clientVersion.isNotOlderThan(KnownVersion.GFE_57)) {
+    if (clientVersion.isNotOlderThan(Version.GFE_57)) {
       message = getGFEMessage();
     } else {
       throw new IOException(
@@ -148,7 +148,7 @@ public class ClientInterestMessageImpl implements ClientMessage {
   }
 
   protected Message getGFEMessage() throws IOException {
-    Message message = new Message(isRegister() ? 7 : 6, KnownVersion.CURRENT);
+    Message message = new Message(isRegister() ? 7 : 6, Version.CURRENT);
     message.setTransactionId(0);
 
     // Set the message type
@@ -304,7 +304,7 @@ public class ClientInterestMessageImpl implements ClientMessage {
   }
 
   @Override
-  public KnownVersion[] getSerializationVersions() {
+  public Version[] getSerializationVersions() {
     return null;
   }
 }

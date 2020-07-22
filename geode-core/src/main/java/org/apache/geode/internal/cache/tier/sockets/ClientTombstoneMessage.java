@@ -27,8 +27,8 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 public class ClientTombstoneMessage extends ClientUpdateMessageImpl {
 
@@ -76,14 +76,14 @@ public class ClientTombstoneMessage extends ClientUpdateMessageImpl {
    */
   @Override
   protected Message getMessage(CacheClientProxy proxy, byte[] latestValue) throws IOException {
-    if (KnownVersion.GFE_70.compareTo(proxy.getVersion()) <= 0) {
+    if (Version.GFE_70.compareTo(proxy.getVersion()) <= 0) {
       return getGFE70Message(proxy.getVersion());
     } else {
       return null;
     }
   }
 
-  protected Message getGFE70Message(KnownVersion clientVersion) {
+  protected Message getGFE70Message(Version clientVersion) {
     Message message = null;
 
     // The format:

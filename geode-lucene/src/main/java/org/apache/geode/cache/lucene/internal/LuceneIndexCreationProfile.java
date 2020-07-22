@@ -29,7 +29,7 @@ import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
 import org.apache.geode.internal.VersionedDataSerializable;
 import org.apache.geode.internal.cache.CacheServiceProfile;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 
 public class LuceneIndexCreationProfile implements CacheServiceProfile, VersionedDataSerializable {
 
@@ -216,7 +216,7 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, Versione
   }
 
   @Override
-  public KnownVersion[] getSerializationVersions() {
-    return new KnownVersion[] {KnownVersion.GEODE_1_4_0};
+  public Version[] getSerializationVersions() {
+    return new Version[] {Version.GEODE_1_4_0};
   }
 }

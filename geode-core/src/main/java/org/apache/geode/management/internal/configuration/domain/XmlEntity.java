@@ -47,7 +47,7 @@ import org.apache.geode.internal.VersionedDataSerializable;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils.XPathContext;
@@ -426,8 +426,8 @@ public class XmlEntity implements VersionedDataSerializable {
   }
 
   @Override
-  public KnownVersion[] getSerializationVersions() {
-    return new KnownVersion[] {KnownVersion.GEODE_1_1_1};
+  public Version[] getSerializationVersions() {
+    return new Version[] {Version.GEODE_1_1_1};
   }
 
   @Override

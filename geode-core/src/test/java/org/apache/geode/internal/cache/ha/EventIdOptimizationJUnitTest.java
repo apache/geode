@@ -29,7 +29,7 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
 import org.apache.geode.test.junit.categories.ClientServerTest;
@@ -176,14 +176,14 @@ public class EventIdOptimizationJUnitTest {
   @Test
   public void testEventIDForGEODE100Member() throws IOException, ClassNotFoundException {
     InternalDistributedMember distributedMember = new InternalDistributedMember("localhost", 10999);
-    HeapDataOutputStream hdos = new HeapDataOutputStream(256, KnownVersion.CURRENT);
+    HeapDataOutputStream hdos = new HeapDataOutputStream(256, Version.CURRENT);
     distributedMember.writeEssentialData(hdos);
     byte[] memberBytes = hdos.toByteArray();
     EventID eventID = new EventID(memberBytes, 1, 1);
 
 
-    HeapDataOutputStream hdos90 = new HeapDataOutputStream(256, KnownVersion.GFE_90);
-    VersionedDataOutputStream dop = new VersionedDataOutputStream(hdos90, KnownVersion.GFE_90);
+    HeapDataOutputStream hdos90 = new HeapDataOutputStream(256, Version.GFE_90);
+    VersionedDataOutputStream dop = new VersionedDataOutputStream(hdos90, Version.GFE_90);
 
     eventID.toData(dop, InternalDataSerializer.createSerializationContext(dop));
 
@@ -191,12 +191,12 @@ public class EventIdOptimizationJUnitTest {
 
 
     VersionedDataInputStream dataInputStream =
-        new VersionedDataInputStream(bais, KnownVersion.GFE_90);
+        new VersionedDataInputStream(bais, Version.GFE_90);
 
     EventID eventID2 = new EventID();
     eventID2.fromData(dataInputStream, mock(DeserializationContext.class));
 
-    assertEquals(distributedMember, eventID2.getDistributedMember(KnownVersion.GFE_90));
+    assertEquals(distributedMember, eventID2.getDistributedMember(Version.GFE_90));
 
     assertEquals(memberBytes.length + 17, eventID2.getMembershipID().length);
   }

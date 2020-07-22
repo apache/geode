@@ -27,7 +27,7 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.net.BufferPool;
 import org.apache.geode.internal.net.NioFilter;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -46,7 +46,7 @@ public class MsgReader {
 
 
 
-  MsgReader(Connection conn, NioFilter nioFilter, KnownVersion version) {
+  MsgReader(Connection conn, NioFilter nioFilter, Version version) {
     this.conn = conn;
     this.ioFilter = nioFilter;
     this.byteBufferInputStream =

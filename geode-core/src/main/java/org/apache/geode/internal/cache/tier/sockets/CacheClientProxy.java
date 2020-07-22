@@ -79,7 +79,7 @@ import org.apache.geode.internal.logging.LogWriterImpl;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.security.AccessControl;
@@ -242,7 +242,7 @@ public class CacheClientProxy implements ClientSession {
   /**
    * The version of the client
    */
-  private KnownVersion clientVersion;
+  private Version clientVersion;
 
   /**
    * A map of region name as key and integer as its value. Basically, it stores the names of the
@@ -313,7 +313,7 @@ public class CacheClientProxy implements ClientSession {
    */
   protected CacheClientProxy(CacheClientNotifier ccn, Socket socket,
       ClientProxyMembershipID proxyID, boolean isPrimary, byte clientConflation,
-      KnownVersion clientVersion, long acceptorId, boolean notifyBySubscription,
+      Version clientVersion, long acceptorId, boolean notifyBySubscription,
       SecurityService securityService, Subject subject, StatisticsClock statisticsClock)
       throws CacheException {
     this(ccn.getCache(), ccn, socket, proxyID, isPrimary, clientConflation, clientVersion,
@@ -326,7 +326,7 @@ public class CacheClientProxy implements ClientSession {
   @VisibleForTesting
   protected CacheClientProxy(InternalCache cache, CacheClientNotifier ccn, Socket socket,
       ClientProxyMembershipID proxyID, boolean isPrimary, byte clientConflation,
-      KnownVersion clientVersion, long acceptorId, boolean notifyBySubscription,
+      Version clientVersion, long acceptorId, boolean notifyBySubscription,
       SecurityService securityService, Subject subject, StatisticsClock statisticsClock,
       StatisticsFactory statisticsFactory,
       CacheClientProxyStatsFactory cacheClientProxyStatsFactory,
@@ -358,7 +358,7 @@ public class CacheClientProxy implements ClientSession {
     initializeClientAuths();
   }
 
-  KnownVersion getClientVersion() {
+  Version getClientVersion() {
     return clientVersion;
   }
 
@@ -405,7 +405,7 @@ public class CacheClientProxy implements ClientSession {
   }
 
   private void initializeTransientFields(Socket socket, ClientProxyMembershipID pid, boolean ip,
-      byte cc, KnownVersion vers) {
+      byte cc, Version vers) {
     this._socket = socket;
     this.proxyID = pid;
     this.connected = true;
@@ -1171,7 +1171,7 @@ public class CacheClientProxy implements ClientSession {
     // If the client is not 7.0.1 or greater and the key of interest is a list,
     // then create an individual message for each entry in the list since the
     // client doesn't support a ClientInterestMessageImpl containing a list.
-    if (KnownVersion.GFE_701.compareTo(this.clientVersion) > 0
+    if (Version.GFE_701.compareTo(this.clientVersion) > 0
         && message.getKeyOfInterest() instanceof List) {
       for (Iterator i = ((List) message.getKeyOfInterest()).iterator(); i.hasNext();) {
         this._messageDispatcher.enqueueMessage(
@@ -1826,7 +1826,7 @@ public class CacheClientProxy implements ClientSession {
    * @param ip whether this proxy represents the primary
    */
   protected void reinitialize(Socket socket, ClientProxyMembershipID proxyId, Cache cache,
-      boolean ip, byte cc, KnownVersion ver) {
+      boolean ip, byte cc, Version ver) {
     // Re-initialize transient fields
     initializeTransientFields(socket, proxyId, ip, cc, ver);
     getCacheClientNotifier().getAcceptorStats().incCurrentQueueConnections();
@@ -1874,7 +1874,7 @@ public class CacheClientProxy implements ClientSession {
     return this._messageDispatcher._messageQueue.getRegion();
   }
 
-  public KnownVersion getVersion() {
+  public Version getVersion() {
     return this.clientVersion;
   }
 

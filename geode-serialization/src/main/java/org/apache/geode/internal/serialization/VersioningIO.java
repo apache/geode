@@ -31,7 +31,7 @@ public class VersioningIO {
    */
   public static short readOrdinal(DataInput in) throws IOException {
     final byte ordinal = in.readByte();
-    if (ordinal != KnownVersion.TOKEN_ORDINAL) {
+    if (ordinal != Version.TOKEN_ORDINAL) {
       return ordinal;
     } else {
       return in.readShort();
@@ -47,8 +47,7 @@ public class VersioningIO {
    * @param out the {@link DataOutput} to write the ordinal write to
    * @param ordinal the version to be written
    * @param compressed if true, then use single byte for ordinal < 128, and three bytes for beyond
-   *        that, else always use three bytes where the first byte is
-   *        {@link KnownVersion#TOKEN_ORDINAL};
+   *        that, else always use three bytes where the first byte is {@link Version#TOKEN_ORDINAL};
    *        former
    *        mode is useful for interoperatibility with previous versions while latter to use fixed
    *        size for writing version; typically former will be used for P2P/client-server
@@ -61,7 +60,7 @@ public class VersioningIO {
     if (compressed && ordinal <= Byte.MAX_VALUE) {
       out.writeByte(ordinal);
     } else {
-      out.writeByte(KnownVersion.TOKEN_ORDINAL);
+      out.writeByte(Version.TOKEN_ORDINAL);
       out.writeShort(ordinal);
     }
   }
@@ -74,7 +73,7 @@ public class VersioningIO {
   public static short readOrdinalFromInputStream(InputStream is) throws IOException {
     final int ordinal = is.read();
     if (ordinal != -1) {
-      if (ordinal != KnownVersion.TOKEN_ORDINAL_INT) {
+      if (ordinal != Version.TOKEN_ORDINAL_INT) {
         return (short) ordinal;
       } else {
         // two byte ordinal
@@ -100,14 +99,13 @@ public class VersioningIO {
    * @param buffer the {@link ByteBuffer} to write the ordinal write to
    * @param ordinal the version to be written
    * @param compressed if true, then use single byte for ordinal < 128, and three bytes for beyond
-   *        that, else always use three bytes where the first byte is
-   *        {@link KnownVersion#TOKEN_ORDINAL}
+   *        that, else always use three bytes where the first byte is {@link Version#TOKEN_ORDINAL}
    */
   public static void writeOrdinal(ByteBuffer buffer, short ordinal, boolean compressed) {
     if (compressed && ordinal <= Byte.MAX_VALUE) {
       buffer.put((byte) ordinal);
     } else {
-      buffer.put(KnownVersion.TOKEN_ORDINAL);
+      buffer.put(Version.TOKEN_ORDINAL);
       buffer.putShort(ordinal);
     }
   }

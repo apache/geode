@@ -27,7 +27,7 @@ import org.apache.geode.internal.serialization.BufferDataOutputStream;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.DSFIDSerializerFactory;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
@@ -119,7 +119,7 @@ public class HostAndPortTest {
     DSFIDSerializer dsfidSerializer = new DSFIDSerializerFactory().create();
     dsfidSerializer.registerDSFID(HOST_AND_PORT, HostAndPort.class);
     HostAndPort hostAndPort1 = new HostAndPort("127.0.0.1", 8091);
-    BufferDataOutputStream out = new BufferDataOutputStream(100, KnownVersion.CURRENT);
+    BufferDataOutputStream out = new BufferDataOutputStream(100, Version.CURRENT);
     dsfidSerializer.getObjectSerializer().writeObject(hostAndPort1, out);
     HostAndPort hostAndPort2 = dsfidSerializer.getObjectDeserializer()
         .readObject(new ByteArrayDataInput(out.toByteArray()));
@@ -133,7 +133,7 @@ public class HostAndPortTest {
     DSFIDSerializer dsfidSerializer = new DSFIDSerializerFactory().create();
     dsfidSerializer.registerDSFID(HOST_AND_PORT, HostAndPort.class);
     HostAndPort hostAndPort1 = new HostAndPort("unresolvable host name", 8091);
-    BufferDataOutputStream out = new BufferDataOutputStream(100, KnownVersion.CURRENT);
+    BufferDataOutputStream out = new BufferDataOutputStream(100, Version.CURRENT);
     dsfidSerializer.getObjectSerializer().writeObject(hostAndPort1, out);
     HostAndPort hostAndPort2 = dsfidSerializer.getObjectDeserializer()
         .readObject(new ByteArrayDataInput(out.toByteArray()));
@@ -153,7 +153,7 @@ public class HostAndPortTest {
     DSFIDSerializer dsfidSerializer = new DSFIDSerializerFactory().create();
     dsfidSerializer.registerDSFID(HOST_AND_PORT, HostAndPort.class);
     HostAndPort hostAndPort1 = new HostAndPort(null, 8091);
-    BufferDataOutputStream out = new BufferDataOutputStream(100, KnownVersion.CURRENT);
+    BufferDataOutputStream out = new BufferDataOutputStream(100, Version.CURRENT);
     dsfidSerializer.getObjectSerializer().writeObject(hostAndPort1, out);
     HostAndPort hostAndPort2 = dsfidSerializer.getObjectDeserializer()
         .readObject(new ByteArrayDataInput(out.toByteArray()));

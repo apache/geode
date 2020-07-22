@@ -39,7 +39,7 @@ import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -274,7 +274,7 @@ public class RemoveAllOp {
 
     @Override
     protected Message createResponseMessage() {
-      return new ChunkedMessage(2, KnownVersion.CURRENT);
+      return new ChunkedMessage(2, Version.CURRENT);
     }
 
     @Override

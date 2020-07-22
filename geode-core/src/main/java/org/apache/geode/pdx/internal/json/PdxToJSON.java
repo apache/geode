@@ -30,7 +30,7 @@ import com.fasterxml.jackson.core.JsonGenerator.Feature;
 
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.internal.EnumInfo;
@@ -52,7 +52,7 @@ public class PdxToJSON {
 
   public String getJSON() {
     JsonFactory jf = new JsonFactory();
-    HeapDataOutputStream hdos = new HeapDataOutputStream(KnownVersion.CURRENT);
+    HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
     try {
       JsonGenerator jg = jf.createJsonGenerator(hdos, JsonEncoding.UTF8);
       enableDisableJSONGeneratorFeature(jg);
@@ -68,7 +68,7 @@ public class PdxToJSON {
 
   public byte[] getJSONByteArray() {
     JsonFactory jf = new JsonFactory();
-    HeapDataOutputStream hdos = new HeapDataOutputStream(KnownVersion.CURRENT);
+    HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
     try {
       JsonGenerator jg = jf.createJsonGenerator(hdos, JsonEncoding.UTF8);
       enableDisableJSONGeneratorFeature(jg);

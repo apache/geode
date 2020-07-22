@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.sequencelog.GraphType;
 import org.apache.geode.internal.sequencelog.model.GraphSet;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 
 public class GraphReader {
 
@@ -66,7 +66,7 @@ public class GraphReader {
     if (areGemfireLogs) {
       // TODO - probably don't need to go all the way
       // to a binary format here, but this is quick and easy.
-      HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT);
+      HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
       GemfireLogConverter.convertFiles(out, files);
       InputStreamReader reader = new InputStreamReader(out.getInputStream());
       reader.addToGraphs(graphs, filter);

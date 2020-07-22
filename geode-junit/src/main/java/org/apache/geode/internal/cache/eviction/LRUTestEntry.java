@@ -32,7 +32,7 @@ import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 
 class LRUTestEntry implements EvictableEntry {
 
@@ -64,7 +64,7 @@ class LRUTestEntry implements EvictableEntry {
   @Override
   public boolean fillInValue(final InternalRegion region, final InitialImageOperation.Entry entry,
       final ByteArrayDataInput in, final DistributionManager distributionManager,
-      final KnownVersion version) {
+      final Version version) {
     return false;
   }
 

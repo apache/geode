@@ -60,7 +60,7 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.test.junit.categories.OffHeapTest;
 
 /**
@@ -323,7 +323,7 @@ public class OffHeapValidationJUnitTest {
     String key = "keyString";
     String value = "this is a string";
     region.put(key, value);
-    HeapDataOutputStream hdos = new HeapDataOutputStream(KnownVersion.CURRENT);
+    HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
     DataSerializer.writeObject(value, hdos);
     byte[] uncompressedBytes = hdos.toByteArray();
     byte[] expectedValue = SnappyCompressor.getDefaultInstance().compress(uncompressedBytes);

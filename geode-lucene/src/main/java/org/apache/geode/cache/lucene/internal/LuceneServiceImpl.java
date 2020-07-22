@@ -81,7 +81,7 @@ import org.apache.geode.internal.cache.RegionListener;
 import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionOrdinal;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
@@ -105,7 +105,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
       Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "luceneReindex");
 
   // Change this to the correct version once reindexing on an existing region is enabled
-  public static short LUCENE_REINDEX_ENABLED_VERSION_ORDINAL = KnownVersion.CURRENT_ORDINAL;
+  public static short LUCENE_REINDEX_ENABLED_VERSION_ORDINAL = Version.CURRENT_ORDINAL;
 
   public LuceneServiceImpl() {}
 
@@ -726,7 +726,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
   private boolean isAnyRemoteMemberVersionLessThanGeode1_7_0(
       Set<InternalDistributedMember> remoteMembers) {
     for (InternalDistributedMember remoteMember : remoteMembers) {
-      if (remoteMember.getVersionOrdinalObject().ordinal() < KnownVersion.GEODE_1_7_0.ordinal()) {
+      if (remoteMember.getVersionOrdinalObject().ordinal() < Version.GEODE_1_7_0.ordinal()) {
         return true;
       }
     }
