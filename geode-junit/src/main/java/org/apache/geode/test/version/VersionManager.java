@@ -15,6 +15,7 @@
 package org.apache.geode.test.version;
 
 import static java.util.Collections.unmodifiableList;
+import static org.apache.geode.test.version.TestVersion.compare;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,6 +28,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.JavaVersion;
 import org.apache.commons.lang3.SystemUtils;
@@ -157,6 +159,19 @@ public class VersionManager {
     return result;
   }
 
+  /**
+   * Returns a {@link List} of known versions from {@code startInclusive} (inclusive) to
+   * {@code endExclusive} (exclusive).
+   *
+   * @param startInclusive the (inclusive) initial version.
+   * @param endExclusive the exclusive final version.
+   * @return list of known version within the specified bounds.
+   */
+  public List<String> getVersionsWithinRange(String startInclusive, String endExclusive) {
+    return testVersions.stream()
+        .filter(v -> compare(v, startInclusive) >= 0 && compare(v, endExclusive) < 0)
+        .collect(Collectors.toList());
+  }
 
   private void checkForLoadFailure() {
     if (!loadFailure.isEmpty()) {
