@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal.netty;
 
 
 import java.io.IOException;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Supplier;
 
 import io.netty.buffer.ByteBuf;
@@ -67,6 +68,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private final Supplier<Boolean> allowUnsupportedSupplier;
   private final Runnable shutdownInvoker;
   private final RedisStats redisStats;
+  private final LinkedBlockingQueue<Command> commandQueue = new LinkedBlockingQueue<>();
 
   private boolean isAuthenticated;
 
@@ -108,17 +110,15 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
     Command command = (Command) msg;
-    try {
-      if (logger.isDebugEnabled()) {
-        logger.debug("Executing Redis command: {}", command);
-      }
-
-      executeCommand(ctx, command);
-    } catch (Exception e) {
-      logger.warn("Execution of Redis command {} failed: {}", command, e);
-      throw e;
+    command.setChannelHandlerContext(ctx);
+    if (!commandQueue.isEmpty()) {
+      commandQueue.offer(command);
+    } else if (command.getCommandType().isAsync()) {
+      commandQueue.offer(command);
+      startAsyncCommandExecution(command);
+    } else {
+      executeCommand(command);
     }
-
   }
 
   /**
@@ -186,41 +186,118 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     ctx.close();
   }
 
-  private void executeCommand(ChannelHandlerContext ctx, Command command) {
-    RedisResponse response;
 
-    if (!isAuthenticated()) {
-      response = handleUnAuthenticatedCommand(command);
-      writeToChannel(response);
-      return;
+  private void startAsyncCommandExecution(Command command) {
+    if (logger.isDebugEnabled()) {
+      logger.debug("Starting execution of async Redis command: {}", command);
     }
-
-    if (command.isUnsupported() && !allowUnsupportedCommands()) {
-      writeToChannel(
-          RedisResponse.error(command.getCommandType() + RedisConstants.ERROR_UNSUPPORTED_COMMAND));
-      return;
-    }
-
-    if (command.isUnimplemented()) {
-      logger.info("Failed " + command.getCommandType() + " because it is not implemented.");
-      writeToChannel(RedisResponse.error(command.getCommandType() + " is not implemented."));
-      return;
-    }
-
     final long start = redisStats.startCommand(command.getCommandType());
+    command.setAsyncStartTime(start);
+    command.execute(this);
+  }
+
+  public void endAsyncCommandExecution(Command command, ByteBuf response) {
+    Command head = takeFromCommandQueue();
+    if (head != command) {
+      throw new IllegalStateException(
+          "expected " + command + " but found " + head + " in the queue");
+    }
     try {
-      response = command.execute(this);
-      if (response == null) {
-        return;
-      }
-      logResponse(response);
       writeToChannel(response);
     } finally {
-      redisStats.endCommand(command.getCommandType(), start);
+      redisStats.endCommand(command.getCommandType(), command.getAsyncStartTime());
     }
+    drainCommandQueue();
+  }
 
-    if (command.isOfType(RedisCommandType.QUIT)) {
-      channelInactive(ctx);
+  public void endAsyncCommandExecution(Command command, Throwable exception) {
+    Command head = takeFromCommandQueue();
+    if (head != command) {
+      throw new IllegalStateException(
+          "expected " + command + " but found " + head + " in the queue");
+    }
+    try {
+      exceptionCaught(command.getChannelHandlerContext(), exception);
+    } finally {
+      redisStats.endCommand(command.getCommandType(), command.getAsyncStartTime());
+    }
+    drainCommandQueue();
+  }
+
+  private Command takeFromCommandQueue() {
+    try {
+      return commandQueue.take();
+    } catch (InterruptedException e) {
+      Thread.interrupted();
+      throw new IllegalStateException("unexpected interrupt");
+    }
+  }
+
+  /**
+   * execute all commands in the queue until an async one is found.
+   * If an async one is found start it.
+   */
+  private void drainCommandQueue() {
+    Command command;
+    while ((command = commandQueue.peek()) != null) {
+      if (command.getCommandType().isAsync()) {
+        startAsyncCommandExecution(command);
+        return;
+      } else {
+        takeFromCommandQueue();
+        try {
+          executeCommand(command);
+        } catch (Throwable ex) {
+          exceptionCaught(command.getChannelHandlerContext(), ex);
+        }
+      }
+    }
+  }
+
+  private void executeCommand(Command command) {
+    RedisResponse response;
+    try {
+      if (logger.isDebugEnabled()) {
+        logger.debug("Executing Redis command: {}", command);
+      }
+
+      if (!isAuthenticated()) {
+        response = handleUnAuthenticatedCommand(command);
+        writeToChannel(response);
+        return;
+      }
+
+      if (command.isUnsupported() && !allowUnsupportedCommands()) {
+        writeToChannel(
+            RedisResponse
+                .error(command.getCommandType() + RedisConstants.ERROR_UNSUPPORTED_COMMAND));
+        return;
+      }
+
+      if (command.isUnimplemented()) {
+        logger.info("Failed " + command.getCommandType() + " because it is not implemented.");
+        writeToChannel(RedisResponse.error(command.getCommandType() + " is not implemented."));
+        return;
+      }
+
+      final long start = redisStats.startCommand(command.getCommandType());
+      try {
+        response = command.execute(this);
+        if (response == null) {
+          return;
+        }
+        logResponse(response);
+        writeToChannel(response);
+      } finally {
+        redisStats.endCommand(command.getCommandType(), start);
+      }
+
+      if (command.isOfType(RedisCommandType.QUIT)) {
+        channelInactive(command.getChannelHandlerContext());
+      }
+    } catch (Exception e) {
+      logger.warn("Execution of Redis command {} failed: {}", command, e);
+      throw e;
     }
   }
 
@@ -306,6 +383,4 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   public PubSub getPubSub() {
     return pubsub;
   }
-
-
 }
