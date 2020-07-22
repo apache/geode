@@ -44,8 +44,9 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
@@ -64,6 +65,9 @@ public class PartitionedRegionClearBackwardCompatibilityDUnitTest implements Ser
   private static final Integer BUCKETS = 13;
   private static final Integer ENTRY_COUNT = 1500;
   private static final String REGION_NAME = "PartitionedRegion";
+  private static final String ALL_SERVERS_POOL_NAME = "allServers";
+  private static final String NEW_SERVERS_POOL_NAME = "newServers";
+  private static final String OLD_SERVERS_POOL_NAME = "oldServers";
   private static final String TEST_CASE_NAME = "[{index}] {method}(Version:{0}, RegionType:{1})";
 
   @Rule
@@ -73,13 +77,14 @@ public class PartitionedRegionClearBackwardCompatibilityDUnitTest implements Ser
   public ClientCacheRule clientCacheRule = new ClientCacheRule();
 
   @Rule
-  public DistributedRule distributedRule = new DistributedRule(3);
+  public DistributedRule distributedRule = new DistributedRule(4);
 
   @Rule
   public DistributedDiskDirRule distributedDiskDirRule = new DistributedDiskDirRule();
 
   private VM client;
-  private VM server;
+  private VM server1;
+  private VM server2;
   private VM oldServer;
 
   static RegionShortcut[] regionTypes() {
@@ -97,7 +102,7 @@ public class PartitionedRegionClearBackwardCompatibilityDUnitTest implements Ser
     RegionShortcut[] regionShortcuts = regionTypes();
     // TODO: Change the upper bound once we know which version will contain the clear feature.
     List<String> versions = VersionManager.getInstance()
-        .getVersionsWithinRange(Version.GEODE_1_10_0.getName(), Version.GEODE_1_14_0.getName());
+        .getVersionsWithinRange(KnownVersion.GEODE_1_10_0.getName(), KnownVersion.GEODE_1_14_0.getName());
 
     Arrays.stream(regionShortcuts).forEach(regionShortcut -> versions
         .forEach(version -> parameters.add(new Object[] {version, regionShortcut})));
@@ -105,35 +110,47 @@ public class PartitionedRegionClearBackwardCompatibilityDUnitTest implements Ser
     return parameters.toArray();
   }
 
-  private void initServer(RegionShortcut regionShortcut, int serverPort) throws IOException {
+  private void initServer(int serverPort) throws IOException {
     cacheRule.createCache();
-
-    PartitionAttributes<String, String> attributes =
-        new PartitionAttributesFactory<String, String>()
-            .setTotalNumBuckets(BUCKETS)
-            .create();
-
-    cacheRule.getCache()
-        .<String, String>createRegionFactory(regionShortcut)
-        .setPartitionAttributes(attributes)
-        .create(REGION_NAME);
-
     CacheServer cacheServer = cacheRule.getCache().addCacheServer();
     cacheServer.setPort(serverPort);
     cacheServer.start();
   }
 
-  private void initClient() {
+  private void initClient(String poolName) {
     clientCacheRule.getClientCache()
         .createClientRegionFactory(ClientRegionShortcut.PROXY)
+        .setPoolName(poolName)
         .create(REGION_NAME);
   }
 
-  private void verifyRegionEntries() {
-    asList(server, oldServer).forEach(vm -> vm.invoke(() -> {
+  private void createRegionOnServers(RegionShortcut regionShortcut, VM... serverVms) {
+    asList(serverVms).forEach(vm -> vm.invoke(() -> {
+      PartitionAttributes<String, String> attributes =
+          new PartitionAttributesFactory<String, String>()
+              .setTotalNumBuckets(BUCKETS)
+              .create();
+
+      cacheRule.getCache()
+          .<String, String>createRegionFactory(regionShortcut)
+          .setPartitionAttributes(attributes)
+          .create(REGION_NAME);
+    }));
+  }
+
+  private void assertRegionEntries(VM... serverVms) {
+    asList(serverVms).forEach(vm -> vm.invoke(() -> {
       Region<String, String> region = cacheRule.getCache().getRegion(REGION_NAME);
       IntStream.range(0, ENTRY_COUNT)
           .forEach(i -> assertThat(region.get(String.valueOf(i))).isEqualTo("Value_" + i));
+    }));
+  }
+
+  private void assertRegionIsEmpty(VM... serverVms) {
+    asList(serverVms).forEach(vm -> vm.invoke(() -> {
+      Region<String, String> region = cacheRule.getCache().getRegion(REGION_NAME);
+      assertThat(region.isEmpty()).isTrue();
+      assertThat(region.size()).isEqualTo(0);
     }));
   }
 
@@ -142,29 +159,69 @@ public class PartitionedRegionClearBackwardCompatibilityDUnitTest implements Ser
       Region<String, String> region = clientCacheRule.getClientCache().getRegion(REGION_NAME);
       IntStream.range(0, ENTRY_COUNT).forEach(i -> region.put(String.valueOf(i), "Value_" + i));
     });
-
-    verifyRegionEntries();
   }
 
-  public void parametrizedSetUp(String oldVersion, RegionShortcut regionShortcut) {
+  public void parametrizedSetUp(String oldVersion, String poolName) {
     final Host host = Host.getHost(0);
-    int[] ports = getRandomAvailableTCPPortsForDUnitSite(2);
+    int[] ports = getRandomAvailableTCPPortsForDUnitSite(3);
 
-    server = getVM(0);
-    client = host.getVM(oldVersion, 1);
-    oldServer = host.getVM(oldVersion, 2);
+    server1 = getVM(0);
+    server2 = getVM(1);
+    client = host.getVM(oldVersion, 3);
+    oldServer = host.getVM(oldVersion, 4);
 
-    server.invoke(() -> initServer(regionShortcut, ports[0]));
-    oldServer.invoke(() -> initServer(regionShortcut, ports[1]));
+    server1.invoke(() -> initServer(ports[0]));
+    server2.invoke(() -> initServer(ports[1]));
+    oldServer.invoke(() -> initServer(ports[2]));
 
     client.invoke(() -> {
-      final ClientCacheFactory clientCacheFactory = new ClientCacheFactory();
-      clientCacheFactory
-          .addPoolServer("localhost", ports[0])
-          .addPoolServer("localhost", ports[1]);
-      clientCacheRule.createClientCache(clientCacheFactory);
-      initClient();
+      clientCacheRule.createClientCache(new ClientCacheFactory());
+
+      PoolManager.createFactory()
+          .addServer("localhost", ports[0])
+          .addServer("localhost", ports[1])
+          .addServer("localhost", ports[2])
+          .create(ALL_SERVERS_POOL_NAME);
+
+      PoolManager.createFactory()
+          .addServer("localhost", ports[0])
+          .addServer("localhost", ports[1])
+          .create(NEW_SERVERS_POOL_NAME);
+
+      PoolManager.createFactory()
+          .addServer("localhost", ports[2])
+          .create(OLD_SERVERS_POOL_NAME);
+
+      initClient(poolName);
     });
+  }
+
+  @Test
+  @TestCaseName(TEST_CASE_NAME)
+  @Parameters(method = "versionsAndRegionTypes")
+  public void clearInitiatedFromPeerShouldSucceedWhenRegionToClearIsOnlyHostedByNewMembers(
+      String version, RegionShortcut regionShortcut) {
+    parametrizedSetUp(version, NEW_SERVERS_POOL_NAME);
+    createRegionOnServers(regionShortcut, server1, server2);
+    populateRegion();
+    assertRegionEntries(server1, server2);
+
+    server1.invoke(() -> cacheRule.getCache().getRegion(REGION_NAME).clear());
+    assertRegionIsEmpty(server1, server2);
+  }
+
+  @Test
+  @TestCaseName(TEST_CASE_NAME)
+  @Parameters(method = "versionsAndRegionTypes")
+  public void clearInitiatedFromClientShouldSucceedWhenRegionToClearIsOnlyHostedByNewMembers(
+      String version, RegionShortcut regionShortcut) {
+    parametrizedSetUp(version, NEW_SERVERS_POOL_NAME);
+    createRegionOnServers(regionShortcut, server1, server2);
+    populateRegion();
+    assertRegionEntries(server1, server2);
+
+    client.invoke(() -> clientCacheRule.getClientCache().getRegion(REGION_NAME).clear());
+    assertRegionIsEmpty(server1, server2);
   }
 
   @Test
@@ -172,15 +229,17 @@ public class PartitionedRegionClearBackwardCompatibilityDUnitTest implements Ser
   @Parameters(method = "versionsAndRegionTypes")
   public void clearInitiatedFromOldServerShouldThrowUnsupportedOperationException(String version,
       RegionShortcut regionShortcut) {
-    parametrizedSetUp(version, regionShortcut);
+    parametrizedSetUp(version, ALL_SERVERS_POOL_NAME);
+    createRegionOnServers(regionShortcut, server1, server2, oldServer);
     populateRegion();
+    assertRegionEntries(server1, server2, oldServer);
 
     oldServer.invoke(() -> {
       assertThatThrownBy(() -> cacheRule.getCache().getRegion(REGION_NAME).clear())
           .isInstanceOf(UnsupportedOperationException.class);
     });
 
-    verifyRegionEntries();
+    assertRegionEntries(server1, server2, oldServer);
   }
 
   @Test
@@ -188,15 +247,17 @@ public class PartitionedRegionClearBackwardCompatibilityDUnitTest implements Ser
   @Parameters(method = "versionsAndRegionTypes")
   public void clearInitiatedFromClientShouldFailWhenThereIsAtLeastOneServerOlderThanPRClearReleaseVersion(
       String version, RegionShortcut regionShortcut) {
-    parametrizedSetUp(version, regionShortcut);
+    parametrizedSetUp(version, ALL_SERVERS_POOL_NAME);
+    createRegionOnServers(regionShortcut, server1, server2, oldServer);
     populateRegion();
+    assertRegionEntries(server1, server2, oldServer);
 
     client.invoke(() -> {
       // TODO: Should fail with a new type of ClearException.
       clientCacheRule.getClientCache().getRegion(REGION_NAME).clear();
     });
 
-    verifyRegionEntries();
+    assertRegionEntries(server1, server2, oldServer);
   }
 
   @Test
@@ -204,14 +265,16 @@ public class PartitionedRegionClearBackwardCompatibilityDUnitTest implements Ser
   @Parameters(method = "versionsAndRegionTypes")
   public void clearInitiatedFromServerShouldFailWhenThereIsAtLeastOneServerOlderThanPRClearReleaseVersion(
       String version, RegionShortcut regionShortcut) {
-    parametrizedSetUp(version, regionShortcut);
+    parametrizedSetUp(version, ALL_SERVERS_POOL_NAME);
+    createRegionOnServers(regionShortcut, server1, server2, oldServer);
     populateRegion();
+    assertRegionEntries(server1, server2, oldServer);
 
-    server.invoke(() -> {
+    server1.invoke(() -> {
       // TODO: Should fail with a new type of ClearException.
       cacheRule.getCache().getRegion(REGION_NAME).clear();
     });
 
-    verifyRegionEntries();
+    assertRegionEntries(server1, server2, oldServer);
   }
 }
