@@ -279,15 +279,11 @@ public class ColocationHelper {
   }
 
   /**
-   * An utility method to retrieve all partitioned regions(excluding self) in a colocation chain<br>
+   * A utility method to retrieve all partitioned regions(excluding self) in a colocation chain<br>
    * <p>
-   * For example, shipmentPR is colocated with orderPR and orderPR is colocated with customerPR <br>
-   * <br>
-   * getAllColocationRegions(customerPR) --> List{orderPR, shipmentPR}<br>
-   * getAllColocationRegions(orderPR) --> List{customerPR, shipmentPR}<br>
-   * getAllColocationRegions(shipmentPR) --> List{customerPR, orderPR}<br>
    *
-   * @return List of all partitioned regions (excluding self) in a colocated chain
+   * @return Map<String, PartitionedRegion> of all partitioned regions (excluding self) in a
+   *         colocated chain. Keys are the full paths of the PartitionedRegion values.
    * @since GemFire 5.8Beta
    */
   public static Map<String, PartitionedRegion> getAllColocationRegions(
