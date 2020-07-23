@@ -382,7 +382,8 @@ public class PartitionedRegionClear {
   }
 
   protected void assignAllPrimaryBuckets() {
-    PartitionRegionHelper.assignBucketsToPartitions(partitionedRegion);
+    PartitionedRegion leader = ColocationHelper.getLeaderRegion(partitionedRegion);
+    PartitionRegionHelper.assignBucketsToPartitions(leader);
   }
 
   protected void handleClearFromDepartedMember(InternalDistributedMember departedMember) {
