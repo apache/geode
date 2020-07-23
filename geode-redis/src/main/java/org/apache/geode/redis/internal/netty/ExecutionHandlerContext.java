@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal.netty;
 
 
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Supplier;
 
@@ -68,6 +69,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private final Supplier<Boolean> allowUnsupportedSupplier;
   private final Runnable shutdownInvoker;
   private final RedisStats redisStats;
+  private final ExecutorService backgroundExecutor;
   private final LinkedBlockingQueue<Command> commandQueue = new LinkedBlockingQueue<>();
 
   private boolean isAuthenticated;
@@ -82,6 +84,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       Supplier<Boolean> allowUnsupportedSupplier,
       Runnable shutdownInvoker,
       RedisStats redisStats,
+      ExecutorService backgroundExecutor,
       byte[] password) {
     this.channel = channel;
     this.regionProvider = regionProvider;
@@ -89,6 +92,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     this.allowUnsupportedSupplier = allowUnsupportedSupplier;
     this.shutdownInvoker = shutdownInvoker;
     this.redisStats = redisStats;
+    this.backgroundExecutor = backgroundExecutor;
     this.client = new Client(channel);
     this.byteBufAllocator = this.channel.alloc();
     this.authPassword = password;
@@ -394,5 +398,9 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   public PubSub getPubSub() {
     return pubsub;
+  }
+
+  public ExecutorService getBackgroundExecutor() {
+    return backgroundExecutor;
   }
 }

@@ -16,8 +16,6 @@
 package org.apache.geode.redis.internal.executor.pubsub;
 
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import io.netty.buffer.ByteBuf;
 
@@ -29,15 +27,12 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class PublishExecutor extends AbstractExecutor {
 
-  private ExecutorService executorService = Executors.newSingleThreadExecutor();
-
   @Override
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
-    executorService.submit(new PublishingRunnable(context, command));
+    context.getBackgroundExecutor().submit(new PublishingRunnable(context, command));
     return null;
   }
-
 
   public static class PublishingRunnable implements Runnable {
 
