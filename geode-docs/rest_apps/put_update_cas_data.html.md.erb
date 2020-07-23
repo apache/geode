@@ -58,51 +58,51 @@ http://<hostname_or_http-service-bind-address>:<http-service-port>/geode/v1/{reg
 <td>@old</td>
 <td>Compare this value to the existing value in the region.</td>
 <td><pre class="pre codeblock"><code>{
-         &quot;@type&quot;:  &quot;org.apache.geode.web.rest.domain.Order&quot;,
-         &quot;purchaseOrderNo&quot;: 1121,
-         &quot;customerId&quot;: 1012,
-         &quot;description&quot;:  &quot;Order for  XYZ Corp&quot;,
-         &quot;orderDate&quot;:  &quot;02/10/2014&quot;,
-         &quot;deliveryDate&quot;:  &quot;02/20/2014&quot;,
-         &quot;contact&quot;:  &quot;Jelly Bean&quot;,
-         &quot;email&quot;:  &quot;jelly.bean@example.com&quot;,
-         &quot;phone&quot;:  &quot;01-2048096&quot;,
-         &quot;items&quot;: [
-            {
-                 &quot;itemNo&quot;: 1,
-                 &quot;description&quot;:  &quot;Product-100&quot;,
-                 &quot;quantity&quot;: 12,
-                 &quot;unitPrice&quot;: 5,
-                 &quot;totalPrice&quot;: 60
-            }
-        ],
-         &quot;totalPrice&quot;: 225
-    }</code></pre></td>
+   &quot;@type&quot;:  &quot;org.apache.geode.web.rest.domain.Order&quot;,
+   &quot;purchaseOrderNo&quot;: 1121,
+   &quot;customerId&quot;: 1012,
+   &quot;description&quot;:  &quot;Order for  XYZ Corp&quot;,
+   &quot;orderDate&quot;:  &quot;02/10/2014&quot;,
+   &quot;deliveryDate&quot;:  &quot;02/20/2014&quot;,
+   &quot;contact&quot;:  &quot;Jelly Bean&quot;,
+   &quot;email&quot;:  &quot;jelly.bean@example.com&quot;,
+   &quot;phone&quot;:  &quot;01-2048096&quot;,
+   &quot;items&quot;: [
+      {
+         &quot;itemNo&quot;: 1,
+         &quot;description&quot;:  &quot;Product-100&quot;,
+         &quot;quantity&quot;: 12,
+         &quot;unitPrice&quot;: 5,
+         &quot;totalPrice&quot;: 60
+      }
+  ],
+   &quot;totalPrice&quot;: 225
+}</code></pre></td>
 </tr>
 <tr>
 <td>@new</td>
 <td>If @old value matches existing value, use this value to replace the existing value.</td>
 <td><pre class="pre codeblock"><code>{
-         &quot;@type&quot;:  &quot;org.apache.geode.web.rest.domain.Order&quot;,
-         &quot;purchaseOrderNo&quot;: 1121,
-         &quot;customerId&quot;: 1013,
-         &quot;description&quot;:  &quot;Order for  New Corp&quot;,
-         &quot;orderDate&quot;:  &quot;02/10/2014&quot;,
-         &quot;deliveryDate&quot;:  &quot;02/25/2014&quot;,
-         &quot;contact&quot;:  &quot;Vanilla Bean&quot;,
-         &quot;email&quot;:  &quot;vanilla.bean@example.com&quot;,
-         &quot;phone&quot;:  &quot;01-2048096&quot;,
-         &quot;items&quot;: [
-            {
-                 &quot;itemNo&quot;: 12345,
-                 &quot;description&quot;:  &quot;part 123&quot;,
-                 &quot;quantity&quot;: 12,
-                 &quot;unitPrice&quot;: 29.99,
-                 &quot;totalPrice&quot;: 149.95
-            }
-        ],
+   &quot;@type&quot;:  &quot;org.apache.geode.web.rest.domain.Order&quot;,
+   &quot;purchaseOrderNo&quot;: 1121,
+   &quot;customerId&quot;: 1013,
+   &quot;description&quot;:  &quot;Order for  New Corp&quot;,
+   &quot;orderDate&quot;:  &quot;02/10/2014&quot;,
+   &quot;deliveryDate&quot;:  &quot;02/25/2014&quot;,
+   &quot;contact&quot;:  &quot;Vanilla Bean&quot;,
+   &quot;email&quot;:  &quot;vanilla.bean@example.com&quot;,
+   &quot;phone&quot;:  &quot;01-2048096&quot;,
+   &quot;items&quot;: [
+      {
+         &quot;itemNo&quot;: 12345,
+         &quot;description&quot;:  &quot;part 123&quot;,
+         &quot;quantity&quot;: 12,
+         &quot;unitPrice&quot;: 29.99,
          &quot;totalPrice&quot;: 149.95
-    }</code></pre></td>
+      }
+  ],
+   &quot;totalPrice&quot;: 149.95
+}</code></pre></td>
 </tr>
 </tbody>
 </table>
