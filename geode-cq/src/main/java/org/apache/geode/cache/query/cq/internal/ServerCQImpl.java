@@ -367,10 +367,12 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
       this.removeFromCqMap();
 
       // Stat update.
-      if (stateBeforeClosing == CqStateImpl.RUNNING) {
-        cqService.stats().decCqsActive();
-      } else if (stateBeforeClosing == CqStateImpl.STOPPED) {
-        cqService.stats().decCqsStopped();
+      if (!cqName.equals(serverCqName)) {
+        if (stateBeforeClosing == CqStateImpl.RUNNING) {
+          cqService.stats().decCqsActive();
+        } else if (stateBeforeClosing == CqStateImpl.STOPPED) {
+          cqService.stats().decCqsStopped();
+        }
       }
 
       // Clean-up the CQ Results Cache.
@@ -444,8 +446,10 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
 
       // Change state and stats on the client side
       this.cqState.setState(CqStateImpl.STOPPED);
-      this.cqService.stats().incCqsStopped();
-      this.cqService.stats().decCqsActive();
+      if (!cqName.equals(serverCqName)) {
+        this.cqService.stats().incCqsStopped();
+        this.cqService.stats().decCqsActive();
+      }
       if (logger.isDebugEnabled()) {
         logger.debug("Successfully stopped the CQ. {}", cqName);
       }
