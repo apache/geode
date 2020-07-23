@@ -438,9 +438,15 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
   }
 
   public void addShadowPartitionedRegionForUserPR(PartitionedRegion userPR) {
+    addShadowPartitionedRegionForUserPR(userPR, null);
+  }
+
+  public void addShadowPartitionedRegionForUserPR(PartitionedRegion userPR,
+      PartitionedRegion childPR) {
     if (logger.isDebugEnabled()) {
-      logger.debug("{} addShadowPartitionedRegionForUserPR: Attempting to create queue region: {}",
-          this, userPR.getDisplayName());
+      logger.debug(
+          "{} addShadowPartitionedRegionForUserPR: Attempting to create queue region: {}; child region: {}",
+          this, userPR.getDisplayName(), childPR == null ? "null" : childPR.getDisplayName());
     }
     this.sender.getLifeCycleLock().writeLock().lock();
 
@@ -456,7 +462,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         // though, internally, colocate the GatewaySender's shadowPR with the leader PR in
         // colocation chain
         if (!this.userRegionNameToShadowPRMap.containsKey(leaderRegionName)) {
-          addShadowPartitionedRegionForUserPR(ColocationHelper.getLeaderRegion(userPR));
+          addShadowPartitionedRegionForUserPR(ColocationHelper.getLeaderRegion(userPR), userPR);
         }
         return;
       }
@@ -464,7 +470,8 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       if (this.userRegionNameToShadowPRMap.containsKey(regionName))
         return;
 
-      if (userPR.getDataPolicy().withPersistence() && !sender.isPersistenceEnabled()) {
+      if ((childPR == null ? userPR : childPR).getDataPolicy().withPersistence()
+          && !sender.isPersistenceEnabled()) {
         throw new GatewaySenderException(
             String.format(
                 "Non persistent gateway sender %s can not be attached to persistent region %s",

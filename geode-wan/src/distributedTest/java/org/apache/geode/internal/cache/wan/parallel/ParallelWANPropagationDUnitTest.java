@@ -19,12 +19,16 @@ import static org.junit.Assert.fail;
 
 import java.util.Set;
 
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.EntryExistsException;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -40,6 +44,7 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({WanTest.class})
+@RunWith(JUnitParamsRunner.class)
 public class ParallelWANPropagationDUnitTest extends WANTestBase {
   private static final long serialVersionUID = 1L;
 
@@ -1019,7 +1024,8 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
    * that same AEQ
    */
   @Test
-  public void testParallelSenderAttachedToChildRegionButNotToParentRegion() {
+  @Parameters(method = "getRegionShortcuts")
+  public void testParallelSenderAttachedToChildRegionButNotToParentRegion(RegionShortcut shortcut) {
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
@@ -1037,7 +1043,7 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
 
     // create leader (parent) PR on site1
     vm3.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "PARENT_PR", null, 0,
-        100, isOffHeap()));
+        100, isOffHeap(), shortcut));
     String parentRegionFullPath =
         (String) vm3.invoke(() -> WANTestBase.getRegionFullPath(getTestMethodName() + "PARENT_PR"));
 
@@ -1125,4 +1131,7 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
 
   }
 
+  private static RegionShortcut[] getRegionShortcuts() {
+    return new RegionShortcut[] {RegionShortcut.PARTITION, RegionShortcut.PARTITION_PERSISTENT};
+  }
 }
