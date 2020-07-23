@@ -34,7 +34,6 @@ public class PublishExecutor extends AbstractExecutor {
   @Override
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
-
     executorService.submit(new PublishingRunnable(context, command));
     return null;
   }

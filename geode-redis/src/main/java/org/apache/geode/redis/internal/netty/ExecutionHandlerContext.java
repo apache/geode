@@ -111,13 +111,22 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
     Command command = (Command) msg;
     command.setChannelHandlerContext(ctx);
-    if (!commandQueue.isEmpty()) {
-      commandQueue.offer(command);
-    } else if (command.getCommandType().isAsync()) {
-      commandQueue.offer(command);
-      startAsyncCommandExecution(command);
-    } else {
+    if (!command.getCommandType().isAsync() && commandQueue.isEmpty()) {
       executeCommand(command);
+      return;
+    }
+    synchronized (commandQueue) {
+      boolean isEmpty = commandQueue.isEmpty();
+      // need to check again while synchronized in case a background thread
+      // emptied the queue concurrently
+      if (!command.getCommandType().isAsync() && isEmpty) {
+        executeCommand(command);
+        return;
+      }
+      commandQueue.offer(command);
+      if (command.getCommandType().isAsync() && isEmpty) {
+        startAsyncCommandExecution(command);
+      }
     }
   }
 
@@ -186,7 +195,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     ctx.close();
   }
 
-
   private void startAsyncCommandExecution(Command command) {
     if (logger.isDebugEnabled()) {
       logger.debug("Starting execution of async Redis command: {}", command);
@@ -197,31 +205,35 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   }
 
   public void endAsyncCommandExecution(Command command, ByteBuf response) {
-    Command head = takeFromCommandQueue();
-    if (head != command) {
-      throw new IllegalStateException(
-          "expected " + command + " but found " + head + " in the queue");
+    synchronized (commandQueue) {
+      Command head = takeFromCommandQueue();
+      if (head != command) {
+        throw new IllegalStateException(
+            "expected " + command + " but found " + head + " in the queue");
+      }
+      try {
+        writeToChannel(response);
+      } finally {
+        redisStats.endCommand(command.getCommandType(), command.getAsyncStartTime());
+      }
+      drainCommandQueue();
     }
-    try {
-      writeToChannel(response);
-    } finally {
-      redisStats.endCommand(command.getCommandType(), command.getAsyncStartTime());
-    }
-    drainCommandQueue();
   }
 
   public void endAsyncCommandExecution(Command command, Throwable exception) {
-    Command head = takeFromCommandQueue();
-    if (head != command) {
-      throw new IllegalStateException(
-          "expected " + command + " but found " + head + " in the queue");
+    synchronized (commandQueue) {
+      Command head = takeFromCommandQueue();
+      if (head != command) {
+        throw new IllegalStateException(
+            "expected " + command + " but found " + head + " in the queue");
+      }
+      try {
+        exceptionCaught(command.getChannelHandlerContext(), exception);
+      } finally {
+        redisStats.endCommand(command.getCommandType(), command.getAsyncStartTime());
+      }
+      drainCommandQueue();
     }
-    try {
-      exceptionCaught(command.getChannelHandlerContext(), exception);
-    } finally {
-      redisStats.endCommand(command.getCommandType(), command.getAsyncStartTime());
-    }
-    drainCommandQueue();
   }
 
   private Command takeFromCommandQueue() {
