@@ -266,8 +266,6 @@ The CDDL Version 1.1 (https://javaee.github.io/glassfish/LICENSE)
 Apache Geode bundles the following files under the Common Development and
 Distribution License:
 
-  - activation v1.1.0
-    (https://www.oracle.com/java/technologies/java-beans-activation.html)
   - javax.activation v1.2.0
     (https://www.oracle.com/technetwork/java/javase/jaf-135115.html)
   - javax.mail v1.6.2 (http://www.oracle.com/)
