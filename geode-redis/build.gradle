@@ -87,3 +87,12 @@ configurations{
     exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
   }
 }
+
+tasks.register("redisAPITest") {
+  dependsOn ':geode-assembly:installDist'
+  doLast {
+    exec {
+      executable "../ci/scripts/execute_redis_tests.sh"
+    }
+  }
+}
