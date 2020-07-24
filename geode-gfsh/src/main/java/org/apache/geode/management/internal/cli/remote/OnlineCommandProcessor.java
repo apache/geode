@@ -27,6 +27,7 @@ import org.springframework.util.StringUtils;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.internal.CommandProcessor;
+import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.security.SecurityService;
