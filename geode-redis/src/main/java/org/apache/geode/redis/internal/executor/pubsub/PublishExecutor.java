@@ -17,11 +17,8 @@ package org.apache.geode.redis.internal.executor.pubsub;
 
 import java.util.List;
 
-import io.netty.buffer.ByteBuf;
-
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
-import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
@@ -53,7 +50,7 @@ public class PublishExecutor extends AbstractExecutor {
         long publishCount =
             context.getPubSub()
                 .publish(context.getRegionProvider().getDataRegion(), channelName, message);
-        ByteBuf response = Coder.getIntegerResponse(context.getByteBufAllocator(), publishCount);
+        RedisResponse response = RedisResponse.integer(publishCount);
         context.endAsyncCommandExecution(command, response);
       } catch (Throwable ex) {
         context.endAsyncCommandExecution(command, ex);

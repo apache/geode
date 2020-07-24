@@ -100,10 +100,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     redisStats.addClient();
   }
 
-  public ChannelFuture writeToChannel(ByteBuf message) {
-    return channel.writeAndFlush(message, channel.newPromise());
-  }
-
   public ChannelFuture writeToChannel(RedisResponse response) {
     return channel.writeAndFlush(response.encode(byteBufAllocator), channel.newPromise());
   }
@@ -116,16 +112,16 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     Command command = (Command) msg;
     command.setChannelHandlerContext(ctx);
     synchronized (commandQueue) {
-      boolean isEmpty = commandQueue.isEmpty();
-      boolean isAsync = command.getCommandType().isAsync();
-      if (!isAsync && isEmpty) {
-        executeCommand(command);
+      if (!commandQueue.isEmpty()) {
+        commandQueue.offer(command);
         return;
       }
-      commandQueue.offer(command);
-      if (isAsync && isEmpty) {
+      if (command.getCommandType().isAsync()) {
+        commandQueue.offer(command);
         startAsyncCommandExecution(command);
+        return;
       }
+      executeCommand(command);
     }
   }
 
@@ -203,7 +199,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     command.execute(this);
   }
 
-  public void endAsyncCommandExecution(Command command, ByteBuf response) {
+  public void endAsyncCommandExecution(Command command, RedisResponse response) {
     synchronized (commandQueue) {
       Command head = takeFromCommandQueue();
       if (head != command) {
