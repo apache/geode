@@ -115,20 +115,15 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
     Command command = (Command) msg;
     command.setChannelHandlerContext(ctx);
-    if (!command.getCommandType().isAsync() && commandQueue.isEmpty()) {
-      executeCommand(command);
-      return;
-    }
     synchronized (commandQueue) {
       boolean isEmpty = commandQueue.isEmpty();
-      // need to check again while synchronized in case a background thread
-      // emptied the queue concurrently
-      if (!command.getCommandType().isAsync() && isEmpty) {
+      boolean isAsync = command.getCommandType().isAsync();
+      if (!isAsync && isEmpty) {
         executeCommand(command);
         return;
       }
       commandQueue.offer(command);
-      if (command.getCommandType().isAsync() && isEmpty) {
+      if (isAsync && isEmpty) {
         startAsyncCommandExecution(command);
       }
     }
