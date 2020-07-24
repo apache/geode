@@ -1,0 +1,62 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+{% from 'shared_jinja.yml' import github_access with context %}
+
+---
+
+resources:
+- name: redis-fork
+  type: git
+  source:
+    uri: https://github.com/prettyClouds/redis.git
+    branch: tests-geode-redis
+
+- name: geode
+  type: git
+  source:
+    branch: ((geode-build-branch))
+    {{ github_access() | indent(4) }}
+
+- name: alpine-tools-image
+  type: docker-image
+  source:
+    username: ((docker-username))
+    password: ((docker-password))
+    repository: gcr.io/((gcp-project))/((pipeline-prefix))alpine-tools
+    tag: latest
+
+jobs:
+- name: run-the-tcl
+  public: ((public-pipelines))
+  serial: true
+  plan:
+  - get: alpine-tools-image
+    trigger: true
+  - get: geode
+    trigger: true
+  - get: redis-fork
+    trigger: true
+  - task: run-run-run
+    image: alpine-tools-image
+    config:
+      platform: linux
+      inputs:
+      - name: redis-fork
+      - name: geode
+      run:
+        path: geode/ci/pipelines/geode-redis/run.sh

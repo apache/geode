@@ -39,6 +39,7 @@ RUN apk --no-cache add \
       python3 \
       py3-pip \
       rsync \
+      tcl \
       util-linux \
   && gcloud config set core/disable_usage_reporting true \
   && gcloud config set component_manager/disable_update_check true \
