@@ -1227,7 +1227,7 @@ $.fn.jqGrid = function( pin ) {
 					ts.p._index[rid] = ts.p.data.length-1;
 				}
 				if(ts.p.gridview === false ) {
-					$("tbody:first",t).append(rowData.join(''));
+					$("tbody:first",t).append(escapeHTML(rowData.join('')));
 					$(ts).triggerHandler("jqGridAfterInsertRow", [rid, rd, xmlr]);
 					if(afterInsRow) {ts.p.afterInsertRow.call(ts,rid,rd,xmlr);}
 					rowData=[];
@@ -1244,9 +1244,9 @@ $.fn.jqGrid = function( pin ) {
 					$(ts).jqGrid('groupingRender',grpdata,ts.p.colModel.length);
 					grpdata = null;
 				} else if(ts.p.treeGrid === true && fpos > 0) {
-					$(ts.rows[fpos]).after(rowData.join(''));
+					$(ts.rows[fpos]).after(escapeHTML(rowData.join('')));
 				} else {
-					$("tbody:first",t).append(rowData.join(''));
+					$("tbody:first",t).append(escapeHTML(rowData.join('')));
 				}
 			}
 			if(ts.p.subGrid === true ) {
@@ -8078,7 +8078,7 @@ $.jgrid.extend({
 								tmp = $("td:eq("+i+")",obj.rows[ind]).html();
 							}
 						}
-						setme = this.align === 'right' && maxw !==0 ? true : false;
+						setme = this.align === 'right' && maxw !== 0;
 						var opt = $.extend({}, this.editoptions || {} ,{id:nm,name:nm}),
 						frmopt = $.extend({},{rowabove:false,rowcontent:''}, this.formoptions || {}),
 						rp = parseInt(frmopt.rowpos,10) || cnt+1,
@@ -8131,7 +8131,7 @@ $.jgrid.extend({
 						}
 						opt = $.extend({},obj.p.colModel[i].editoptions || {});
 						nm = $.jgrid.jqID("v_"+nm);
-						$("#"+nm+" span","#"+frmtb).html(tmp);
+						$("#"+nm+" span","#"+frmtb).html(escapeHTML(tmp));
 						if (hc) {$("#"+nm,"#"+frmtb).parents("tr:first").hide();}
 						cnt++;
 					}
@@ -10011,7 +10011,7 @@ addSubGrid : function( pos, sind ) {
 		//-------------------------
 		var subGridCell = function(trdiv,cell,pos)
 		{
-			var tddiv = $("<td align='"+ts.p.subGridModel[0].align[pos]+"'></td>").html(cell);
+			var tddiv = $("<td align='"+ts.p.subGridModel[0].align[pos]+"'></td>").html(escapeHTML(cell));
 			$(trdiv).append(tddiv);
 		};
 		var subGridXml = function(sjxml, sbid){
@@ -11102,7 +11102,7 @@ $.jgrid.extend({
 			plus = grp.plusicon,
 			tar = $("#"+$.jgrid.jqID(hid)),
 			r = tar.length ? tar[0].nextSibling : null,
-			tarspan = $("#"+$.jgrid.jqID(hid)+" span."+"tree-wrap-"+$t.p.direction),
+			tarspan = $("#"+$.jgrid.jqID(hid)+" span.tree-wrap-"+$t.p.direction),
 			collapsed = false;
 			if( tarspan.hasClass(minus) ) {
 				if(grp.showSummaryOnHide) {

@@ -138,8 +138,8 @@ function parseData(data, mode) {
                		value += parameters[++i].replace( /\s\s*$/, '' ); // right trim
                }               
                for(var s=2;s<pair.length;s++){ value +='=' + pair[s]; }
-               value = value.replace( /"/g, '\\"' ); // escape quotation mark (")
-               value = value.replace( /^\s\s*/, '' ).replace( /\s\s*$/, '' ); // trim  
+               value = value.replace(/\\/g, '\\\\').replace( /"/g, '\\"' ); // escape backslash (\) and quotation mark (")
+               value = value.replace( /^\s\s*/, '' ).replace( /\s\s*$/, '' ); // trim
                
                /** Mode: bundle keys in a map */
                if(mode == 'map' || mode == 'both') {

@@ -939,7 +939,7 @@ public class CompactRangeIndex extends AbstractIndex {
       // either of them is null and operator is other than == or !=
       if (result == QueryService.UNDEFINED) {
         // Undefined is added to results for != conditions only
-        if (operator != OQLLexerTokenTypes.TOK_NE || operator != OQLLexerTokenTypes.TOK_NE_ALT) {
+        if (operator == OQLLexerTokenTypes.TOK_NE || operator == OQLLexerTokenTypes.TOK_NE_ALT) {
           return Boolean.TRUE;
         } else {
           return Boolean.FALSE;

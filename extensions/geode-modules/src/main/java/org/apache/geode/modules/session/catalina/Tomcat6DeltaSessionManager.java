@@ -35,7 +35,7 @@ public class Tomcat6DeltaSessionManager extends DeltaSessionManager<Tomcat6Commi
    *
    */
   @Override
-  public void start() {
+  public synchronized void start() {
     if (getLogger().isDebugEnabled()) {
       getLogger().debug(this + ": Starting");
     }
@@ -71,7 +71,7 @@ public class Tomcat6DeltaSessionManager extends DeltaSessionManager<Tomcat6Commi
    *
    */
   @Override
-  public void stop() {
+  public synchronized void stop() {
     if (getLogger().isDebugEnabled()) {
       getLogger().debug(this + ": Stopping");
     }

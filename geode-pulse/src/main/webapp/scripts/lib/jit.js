@@ -8450,7 +8450,7 @@ Layouts.Tree = (function() {
       var that = this;
       $.each(orns, function(orn) {
         //calculate layout
-          design(that.graph, node, prop, that.config, orn, prop);
+          design(that.graph, node, prop, that.config, orn);
           var i = [ 'x', 'y' ][+(orn == "left" || orn == "right")];
           //absolutize
           (function red(node) {
