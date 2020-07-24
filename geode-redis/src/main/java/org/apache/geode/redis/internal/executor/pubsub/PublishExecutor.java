@@ -27,12 +27,34 @@ public class PublishExecutor extends AbstractExecutor {
   @Override
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
-    List<byte[]> args = command.getProcessedCommand();
-
-    long publishCount =
-        context.getPubSub().publish(getDataRegion(context), args.get(1), args.get(2));
-
-    return RedisResponse.integer(publishCount);
+    context.getBackgroundExecutor().submit(new PublishingRunnable(context, command));
+    return null;
   }
 
+  public static class PublishingRunnable implements Runnable {
+
+    private final ExecutionHandlerContext context;
+    private final Command command;
+
+    public PublishingRunnable(ExecutionHandlerContext context, Command command) {
+      this.context = context;
+      this.command = command;
+    }
+
+    @Override
+    public void run() {
+      List<byte[]> args = command.getProcessedCommand();
+      byte[] channelName = args.get(1);
+      byte[] message = args.get(2);
+      try {
+        long publishCount =
+            context.getPubSub()
+                .publish(context.getRegionProvider().getDataRegion(), channelName, message);
+        RedisResponse response = RedisResponse.integer(publishCount);
+        context.endAsyncCommandExecution(command, response);
+      } catch (Throwable ex) {
+        context.endAsyncCommandExecution(command, ex);
+      }
+    }
+  }
 }
