@@ -196,6 +196,12 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
       PartitionedRegion prQ) {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     try {
+      long prevKey = ((Long) key - prQ.getTotalNumberOfBuckets());
+      if (brq.containsKey(prevKey)) {
+        brq.destroyKey(prevKey);
+        logger.info("Destroyed undrained key {} for shadowPR {} for bucket {}", prevKey,
+            prQ.getName(), brq.getId());
+      }
       brq.destroyKey(key);
       if (!brq.getBucketAdvisor().isPrimary()) {
         prQ.getParallelGatewaySender().getStatistics().decSecondaryQueueSize();
