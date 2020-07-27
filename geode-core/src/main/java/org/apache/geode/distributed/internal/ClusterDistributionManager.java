@@ -1784,19 +1784,15 @@ public class ClusterDistributionManager implements DistributionManager {
   /**
    * Returns true if id was removed. Returns false if it was not in the list of managers.
    */
-  private boolean removeManager(InternalDistributedMember theId, boolean crashed, String p_reason) {
-    String reason = p_reason;
-
-    reason = prettifyReason(reason);
+  private void removeManager(InternalDistributedMember theId, boolean crashed, String p_reason) {
     if (logger.isDebugEnabled()) {
+      String reason = prettifyReason(p_reason);
       logger.debug("DistributionManager: removing member <{}>; crashed {}; reason = {}", theId,
           crashed, reason);
     }
     removeHostedLocators(theId);
 
     redundancyZones.remove(theId);
-
-    return true;
   }
 
   /**
@@ -1866,41 +1862,54 @@ public class ClusterDistributionManager implements DistributionManager {
   void shutdownMessageReceived(InternalDistributedMember theId, String reason) {
     removeHostedLocators(theId);
     distribution.shutdownMessageReceived(theId, reason);
+    handleManagerDeparture(theId, false, reason, false);
   }
 
   @Override
-  public void handleManagerDeparture(InternalDistributedMember theId, boolean p_crashed,
-      String p_reason) {
-
+  public void handleManagerDeparture(InternalDistributedMember theId, boolean memberCrashed,
+      String reason, boolean fromViewChange) {
     alertingService.removeAlertListener(theId);
-
-    int vmType = theId.getVmKind();
-    if (vmType == ADMIN_ONLY_DM_TYPE) {
-      removeUnfinishedStartup(theId, true);
-      handleConsoleShutdown(theId, p_crashed, p_reason);
-      return;
-    }
 
     removeUnfinishedStartup(theId, true);
 
-    if (removeManager(theId, p_crashed, p_reason)) {
-      if (theId.getVmKind() != ClusterDistributionManager.LOCATOR_DM_TYPE) {
-        stats.incNodes(-1);
-      }
-      String msg;
-      if (p_crashed && !shouldInhibitMembershipWarnings()) {
-        msg =
-            "Member at {} unexpectedly left the distributed cache: {}";
-        addMemberEvent(new MemberCrashedEvent(theId, p_reason));
-      } else {
-        msg =
-            "Member at {} gracefully left the distributed cache: {}";
-        addMemberEvent(new MemberDepartedEvent(theId, p_reason));
-      }
-      logger.info(msg, new Object[] {theId, prettifyReason(p_reason)});
-
-      executors.handleManagerDeparture(theId);
+    int vmType = theId.getVmKind();
+    if (vmType == ADMIN_ONLY_DM_TYPE) {
+      handleConsoleShutdown(theId, memberCrashed, reason);
+      return;
     }
+
+    if (!fromViewChange) {
+      if (!isCurrentMember(theId)) {
+        // this is notification from a shutdown message received from a member that is no longer
+        // part of the cluster
+        return;
+      }
+      // else this is from a shutdown message so continue & notify listeners
+    } else {
+      if (!memberCrashed) {
+        // member left the view normally - we've already received a shutdown message and notified
+        // listeners, so there's nothing more to do here
+        return;
+      }
+    }
+
+    removeManager(theId, memberCrashed, reason);
+    if (theId.getVmKind() != ClusterDistributionManager.LOCATOR_DM_TYPE) {
+      stats.incNodes(-1);
+    }
+    String msg;
+    if (memberCrashed && !shouldInhibitMembershipWarnings()) {
+      msg =
+          "Member at {} unexpectedly left the distributed cache: {}";
+      addMemberEvent(new MemberCrashedEvent(theId, reason));
+    } else {
+      msg =
+          "Member at {} gracefully left the distributed cache: {}";
+      addMemberEvent(new MemberDepartedEvent(theId, reason));
+    }
+    logger.info(msg, new Object[] {theId, prettifyReason(reason)});
+
+    executors.handleManagerDeparture(theId);
   }
 
   private void handleManagerSuspect(InternalDistributedMember suspect,
@@ -2366,10 +2375,10 @@ public class ClusterDistributionManager implements DistributionManager {
           message.setReason(reason); // added for #37950
           handleIncomingDMsg(message);
         }
-        dm.handleManagerDeparture(theId, crashed, reason);
       } catch (DistributedSystemDisconnectedException se) {
         // let's not get huffy about it
       }
+      dm.handleManagerDeparture(theId, crashed, reason, true);
     }
 
     @Override

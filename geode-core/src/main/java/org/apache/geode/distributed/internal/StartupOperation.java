@@ -75,11 +75,10 @@ public class StartupOperation {
     if (this.newlyDeparted != null && !this.newlyDeparted.isEmpty()) {
       // tell the reply processor not to wait for the recipients that didn't
       // get the message
-      // Vector viewMembers = dm.getViewMembers();
       for (Iterator it = this.newlyDeparted.iterator(); it.hasNext();) {
         InternalDistributedMember id = (InternalDistributedMember) it.next();
         this.dm.handleManagerDeparture(id, false,
-            "left the membership view");
+            "left the membership view", false);
         proc.memberDeparted(this.dm, id, true);
       }
     }
