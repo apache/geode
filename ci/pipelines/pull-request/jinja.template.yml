@@ -27,6 +27,7 @@ groups:
   - {{test.name}}Test{{java_test_version.name}}
   {%- endfor %}
 {%- endfor %}
+  - RedisTests
 resources:
 - name: geode
   type: pull-request
