@@ -15,6 +15,7 @@
 package org.apache.geode.redis.internal.executor.string;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -52,5 +53,11 @@ public class SetEXIntegrationTest {
     jedis.setex("key", 20, "value");
 
     assertThat(jedis.ttl("key")).isGreaterThanOrEqualTo(15);
+  }
+
+  @Test
+  public void testSetEXWithIllegalSeconds() {
+    assertThatThrownBy(() -> jedis.setex("key", -1, "value"))
+        .hasMessage("ERR invalid expire time in setex");
   }
 }
