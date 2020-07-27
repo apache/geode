@@ -120,9 +120,14 @@ class NullRedisSet extends RedisSet {
       ByteArrayWrapper destination,
       ArrayList<Set<ByteArrayWrapper>> nonDestinationSets) {
     RedisSet destinationSet = helper.getRedisSet(destination);
-    RedisSet redisSet = new RedisSet(computeSetOp(setOp, nonDestinationSets, destinationSet));
-    helper.getRegion().put(destination, redisSet);
-    return redisSet.scard();
+    Set<ByteArrayWrapper> result = computeSetOp(setOp, nonDestinationSets, destinationSet);
+    if (result.isEmpty()) {
+      helper.getRegion().remove(destination);
+      return 0;
+    } else {
+      helper.getRegion().put(destination, new RedisSet(result));
+      return result.size();
+    }
   }
 
   private Set<ByteArrayWrapper> computeSetOp(SetOp setOp,
