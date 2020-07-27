@@ -41,7 +41,7 @@ resources:
     tag: latest
 
 jobs:
-- name: run-the-tcl
+- name: RedisTests
   public: ((public-pipelines))
   serial: true
   plan:
@@ -59,4 +59,4 @@ jobs:
       - name: redis-fork
       - name: geode
       run:
-        path: geode/ci/pipelines/geode-redis/run.sh
+        path: geode/ci/pipelines/geode-redis/execute_redis_tests.sh
