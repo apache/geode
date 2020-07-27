@@ -152,6 +152,24 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     dataStore3.invoke(() -> verifyRegionSize(false, expectedNum));
   }
 
+  private void verifyDatastoreStats(MemberVM datastore) {
+    datastore.invoke(() -> {
+      PartitionedRegion region = (PartitionedRegion) getRegion(false);
+      long clearCount = 0L;
+
+      for (BucketRegion bucket : region.getDataStore().getAllLocalBucketRegions()) {
+        if (clearCount == 0) {
+          clearCount = bucket.getCachePerfStats().getBucketClearCount();
+        }
+        assertThat(bucket.getCachePerfStats().getBucketClearCount()).isEqualTo(clearCount)
+            .isNotEqualTo(0);
+      }
+
+      assertThat(region.getCachePerfStats().getRegionClearCount()).isEqualTo(1);
+      assertThat(region.getCachePerfStats().getPartitionedRegionClearDuration()).isGreaterThan(0);
+    });
+  }
+
   private void verifyClientRegionSize(int expectedNum) {
     client1.invoke(() -> verifyRegionSize(true, expectedNum));
     // TODO: notify register clients
@@ -168,13 +186,6 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     int destroys =
         destroysByRegion.get(REGION_NAME) == null ? 0 : destroysByRegion.get(REGION_NAME).get();
     return destroys;
-  };
-
-  SerializableCallableIF<Integer> getStatClearCount = () -> {
-    Region region = getRegion(false);
-    long clearCount = ((LocalRegion) region).getCachePerfStats().getRegionClearCount();
-
-    return (int) clearCount;
   };
 
   SerializableCallableIF<Integer> getBucketRegionWriterClears = () -> {
@@ -359,51 +370,9 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     verifyServerRegionSize(0);
 
     // Verify the stats were properly updated for the bucket regions
-    dataStore1.invoke(() -> {
-      PartitionedRegion region = (PartitionedRegion) getRegion(false);
-      long clearCount = 0L;
-
-      for (BucketRegion bucket : region.getDataStore().getAllLocalBucketRegions()) {
-        if (clearCount == 0) {
-          clearCount = bucket.getCachePerfStats().getBucketClearCount();
-        }
-        assertThat(bucket.getCachePerfStats().getBucketClearCount()).isEqualTo(clearCount)
-            .isNotEqualTo(0);
-      }
-
-      assertThat(region.getCachePerfStats().getRegionClearCount()).isEqualTo(1);
-      assertThat(region.getCachePerfStats().getPartitionedRegionClearDuration()).isGreaterThan(0);
-    });
-
-    dataStore2.invoke(() -> {
-      PartitionedRegion region = (PartitionedRegion) getRegion(false);
-      long clearCount = 0L;
-
-      for (BucketRegion bucket : region.getDataStore().getAllLocalBucketRegions()) {
-        if (clearCount == 0) {
-          clearCount = bucket.getCachePerfStats().getBucketClearCount();
-        }
-        assertThat(bucket.getCachePerfStats().getBucketClearCount()).isEqualTo(clearCount)
-            .isNotEqualTo(0);
-      }
-
-      assertThat(region.getCachePerfStats().getRegionClearCount()).isEqualTo(1);
-    });
-
-    dataStore3.invoke(() -> {
-      PartitionedRegion region = (PartitionedRegion) getRegion(false);
-      long clearCount = 0L;
-
-      for (BucketRegion bucket : region.getDataStore().getAllLocalBucketRegions()) {
-        if (clearCount == 0) {
-          clearCount = bucket.getCachePerfStats().getBucketClearCount();
-        }
-        assertThat(bucket.getCachePerfStats().getBucketClearCount()).isEqualTo(clearCount)
-            .isNotEqualTo(0);
-      }
-
-      assertThat(region.getCachePerfStats().getRegionClearCount()).isEqualTo(1);
-    });
+    verifyDatastoreStats(dataStore1);
+    verifyDatastoreStats(dataStore2);
+    verifyDatastoreStats(dataStore3);
 
 
     // The accessor shouldn't increment the region clear count

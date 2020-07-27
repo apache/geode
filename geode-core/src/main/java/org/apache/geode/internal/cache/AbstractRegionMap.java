@@ -347,7 +347,7 @@ public abstract class AbstractRegionMap extends BaseRegionMap
         if (lr instanceof BucketRegion) {
           stats.incBucketClearCount();
         } else {
-          stats.incClearCount();
+          stats.incRegionClearCount();
         }
 
       }

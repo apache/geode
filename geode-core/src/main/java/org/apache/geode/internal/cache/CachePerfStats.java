@@ -1379,7 +1379,7 @@ public class CachePerfStats {
     return stats.getLong(partitionedRegionClearDurationId);
   }
 
-  public void incClearCount() {
+  public void incRegionClearCount() {
     stats.incLong(regionClearsId, 1L);
   }
 

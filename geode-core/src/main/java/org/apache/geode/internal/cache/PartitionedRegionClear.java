@@ -123,6 +123,7 @@ public class PartitionedRegionClear {
 
   public Set<Integer> clearRegionLocal(RegionEventImpl regionEvent) {
     Set<Integer> clearedBuckets = new HashSet<>();
+    Long clearStartTime = System.nanoTime();
     setMembershipChange(false);
     // Synchronized to handle the requester departure.
     synchronized (lockForListenerAndClientNotification) {
@@ -163,6 +164,7 @@ public class PartitionedRegionClear {
       }
     }
     incClearCount();
+    incClearDuration(System.nanoTime() - clearStartTime);
     return clearedBuckets;
   }
 
@@ -328,12 +330,10 @@ public class PartitionedRegionClear {
 
   void doClear(RegionEventImpl regionEvent, boolean cacheWrite) {
     String lockName = CLEAR_OPERATION + partitionedRegion.getName();
-    long clearStartTime = 0;
 
     try {
       // distributed lock to make sure only one clear op is in progress in the cluster.
       acquireDistributedClearLock(lockName);
-      clearStartTime = System.nanoTime();
 
       // Force all primary buckets to be created before clear.
       assignAllPrimaryBuckets();
@@ -372,7 +372,6 @@ public class PartitionedRegionClear {
       }
     } finally {
       releaseDistributedClearLock(lockName);
-      incClearDuration(System.nanoTime() - clearStartTime);
     }
   }
 
@@ -382,9 +381,7 @@ public class PartitionedRegionClear {
         && partitionedRegion.getDataStore().getAllLocalBucketRegions().size() != 0) {
       CachePerfStats stats = partitionedRegion.getCachePerfStats();
       if (stats != null) {
-        logger.info("BR inc PR Region count:" + stats.getClass().getName() + ":"
-            + partitionedRegion.getFullPath(), new Exception());
-        stats.incClearCount();
+        stats.incRegionClearCount();
       }
     }
   }
@@ -393,8 +390,6 @@ public class PartitionedRegionClear {
     if (partitionedRegion != null && partitionedRegion.getTotalNumberOfBuckets() != 0) {
       CachePerfStats stats = partitionedRegion.getCachePerfStats();
       if (stats != null) {
-        logger.info("BR inc PR Duration by + " + durationNanos + " ns:" + stats.getClass().getName()
-            + ":" + partitionedRegion.getFullPath(), new Exception());
         stats.incPartitionedRegionClearDuration(durationNanos);
       }
     }
