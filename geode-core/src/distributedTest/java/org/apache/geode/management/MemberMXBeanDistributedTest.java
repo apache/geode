@@ -94,12 +94,19 @@ public class MemberMXBeanDistributedTest implements
         assertThat(sumOfBuckets).isEqualTo(expectedBuckets);
 
       });
+      final String tempRegioName = regionName + i;
 
       gfsh.executeAndAssertThat("create region"
-          + " --name=" + regionName + i
+          + " --name=" + tempRegioName
           + " --type=PARTITION_PERSISTENT"
           + " --total-num-buckets=1000"
           + " --colocated-with=" + regionName).statusIsSuccess();
+
+      server1.invoke(() -> createBuckets(tempRegioName));
+      server2.invoke(() -> createBuckets(tempRegioName));
+      server3.invoke(() -> createBuckets(tempRegioName));
+      server4.invoke(() -> createBuckets(tempRegioName));
+
     }
 
     await().untilAsserted(() -> {
