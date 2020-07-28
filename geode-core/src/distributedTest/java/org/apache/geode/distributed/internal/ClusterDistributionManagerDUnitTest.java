@@ -235,7 +235,7 @@ public class ClusterDistributionManagerDUnitTest extends CacheTestCase {
       shutdownMessage.setDistributionManagerId(distributionManager.getDistributionManagerId());
       distributionManager.putOutgoing(shutdownMessage);
     });
-    await().atMost(10, TimeUnit.SECONDS).until(() -> listenerInvoked.get());
+    await().until(() -> listenerInvoked.get());
   }
 
 

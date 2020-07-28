@@ -399,7 +399,7 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
   public String toString() {
     StringBuilder sb = new StringBuilder(100);
 
-    sb.append("GMSMember[");
+    sb.append("MemberData[");
     if (name != null && name.length() > 0) {
       sb.append("name=").append(name).append(';');
     }
