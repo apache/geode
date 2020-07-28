@@ -225,8 +225,7 @@ public interface DistributionManager extends ReplySender {
    *
    * @see ShutdownMessage#process
    */
-  void handleManagerDeparture(InternalDistributedMember theId, boolean crashed, String reason,
-      boolean fromViewChange);
+  void handleManagerDeparture(InternalDistributedMember theId, boolean crashed, String reason);
 
   OperationExecutors getExecutors();
 

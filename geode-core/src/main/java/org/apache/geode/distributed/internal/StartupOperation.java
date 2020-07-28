@@ -78,7 +78,7 @@ public class StartupOperation {
       for (Iterator it = this.newlyDeparted.iterator(); it.hasNext();) {
         InternalDistributedMember id = (InternalDistributedMember) it.next();
         this.dm.handleManagerDeparture(id, false,
-            "left the membership view", false);
+            "left the membership view");
         proc.memberDeparted(this.dm, id, true);
       }
     }

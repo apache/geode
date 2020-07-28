@@ -1848,11 +1848,22 @@ public class ClusterDistributionManager implements DistributionManager {
   void shutdownMessageReceived(InternalDistributedMember theId, String reason) {
     removeHostedLocators(theId);
     distribution.shutdownMessageReceived(theId, reason);
-    handleManagerDeparture(theId, false, reason, false);
+    handleManagerDeparture(theId, false, reason);
   }
 
+  /*
+   * handleManagerDeparted may be invoked multiple times for a member identifier.
+   * We allow this and inform listeners on each invocation, but only perform some
+   * actions (such as decrementing the node count) if the change came from a
+   * membership view.
+   */
   @Override
   public void handleManagerDeparture(InternalDistributedMember theId, boolean memberCrashed,
+      String reason) {
+    handleManagerDeparture(theId, memberCrashed, reason, false);
+  }
+
+  private void handleManagerDeparture(InternalDistributedMember theId, boolean memberCrashed,
       String reason, boolean fromViewChange) {
     alertingService.removeAlertListener(theId);
 
@@ -1865,13 +1876,14 @@ public class ClusterDistributionManager implements DistributionManager {
     }
 
     if (logger.isDebugEnabled()) {
-      logger.debug("DistributionManager: removing member <{}>; crashed {}; reason = {}", theId,
-          memberCrashed, prettifyReason(reason));
+      logger.debug(
+          "DistributionManager: removing member <{}>; crashed {}; reason = {} fromView = {}", theId,
+          memberCrashed, prettifyReason(reason), fromViewChange);
     }
     removeHostedLocators(theId);
     redundancyZones.remove(theId);
 
-    if (theId.getVmKind() != ClusterDistributionManager.LOCATOR_DM_TYPE) {
+    if (fromViewChange && theId.getVmKind() != ClusterDistributionManager.LOCATOR_DM_TYPE) {
       stats.incNodes(-1);
     }
     String msg;
@@ -1884,9 +1896,10 @@ public class ClusterDistributionManager implements DistributionManager {
           "Member at {} gracefully left the distributed cache: {}";
       addMemberEvent(new MemberDepartedEvent(theId, reason));
     }
-    logger.info(msg, new Object[] {theId, prettifyReason(reason)});
-
-    executors.handleManagerDeparture(theId);
+    if (fromViewChange) {
+      logger.info(msg, new Object[] {theId, prettifyReason(reason)});
+      executors.handleManagerDeparture(theId);
+    }
   }
 
   private void handleManagerSuspect(InternalDistributedMember suspect,

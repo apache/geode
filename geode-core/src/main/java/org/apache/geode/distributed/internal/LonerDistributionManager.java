@@ -287,7 +287,7 @@ public class LonerDistributionManager implements DistributionManager {
 
   @Override
   public void handleManagerDeparture(InternalDistributedMember p_id, boolean crashed,
-      String reason, boolean fromViewChange) {}
+      String reason) {}
 
   public LogWriterI18n getLoggerI18n() {
     return this.logger;
