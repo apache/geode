@@ -1106,7 +1106,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
     if (drId >= 0 && drId <= 255) {
       bb.put((byte) drId);
     } else {
-      byte bytesNeeded = (byte) Oplog.bytesNeeded(drId);
+      byte bytesNeeded = Oplog.bytesNeeded(drId);
       bb.put(bytesNeeded);
       byte[] bytes = new byte[bytesNeeded];
       for (int i = bytesNeeded - 1; i >= 0; i--) {
@@ -1126,7 +1126,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
     if (drId >= 0 && drId <= 255) {
       dos.write((byte) drId);
     } else {
-      byte bytesNeeded = (byte) Oplog.bytesNeeded(drId);
+      byte bytesNeeded = Oplog.bytesNeeded(drId);
       dos.write(bytesNeeded);
       byte[] bytes = new byte[bytesNeeded];
       for (int i = bytesNeeded - 1; i >= 0; i--) {

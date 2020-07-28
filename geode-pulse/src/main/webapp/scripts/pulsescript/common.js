@@ -77,13 +77,13 @@ function customizeUI() {
       var grabValue = $(this).attr('data-prod-custom');
       var customDisplayValue = jQuery.i18n.prop(grabValue);
       if ($(this).is("div")) {
-        $(this).html(customDisplayValue);
+        $(this).html(escapeHTML(customDisplayValue));
       } else if ($(this).is("img")) {
         $(this).attr('src', customDisplayValue);
       } else if ($(this).is("a")) {
         $(this).attr('href', customDisplayValue);
       } else if ($(this).is("span")) {
-        $(this).html(customDisplayValue);
+        $(this).html(escapeHTML(customDisplayValue));
       }
     });
 
@@ -1637,10 +1637,10 @@ function escapeHTML(htmlContent) {
 //Function to unescape html entities
 function unescapeHTML(htmlContent) {
   return unescapedHTML = htmlContent
-      .replace(/&amp;/g, '&')
       .replace(/&lt;/g, '<')
       .replace(/&gt;/g, '>')
       .replace(/&quot;/g, '"')
       .replace(/&#x27;/g, "'")
-      .replace(/&#x60;/g, '`');
+      .replace(/&#x60;/g, '`')
+      .replace(/&amp;/g, '&');
 }

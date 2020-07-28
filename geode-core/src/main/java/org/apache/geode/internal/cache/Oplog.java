@@ -3331,11 +3331,11 @@ public class Oplog implements CompactableOplog, Flushable {
    * Return the number of bytes needed to encode the given long. Value returned will be >= 1 and <=
    * 8.
    */
-  static int bytesNeeded(long v) {
+  static byte bytesNeeded(long v) {
     if (v < 0) {
       v = ~v;
     }
-    return ((64 - Long.numberOfLeadingZeros(v)) / 8) + 1;
+    return (byte) (((64 - Long.numberOfLeadingZeros(v)) / 8) + 1);
   }
 
   /**
@@ -6520,7 +6520,7 @@ public class Oplog implements CompactableOplog, Flushable {
     private final byte[] drIdBytes = new byte[DiskInitFile.DR_ID_MAX_BYTES];
     private byte[] keyBytes;
     private final byte[] deltaIdBytes = new byte[8];
-    private int deltaIdBytesLength;
+    private byte deltaIdBytesLength;
     private long newEntryBase;
     private DiskStoreID diskStoreId;
     private OPLOG_TYPE magic;
@@ -6780,7 +6780,7 @@ public class Oplog implements CompactableOplog, Flushable {
         this.drIdLength = 1;
         this.drIdBytes[0] = (byte) drId;
       } else {
-        byte bytesNeeded = (byte) Oplog.bytesNeeded(drId);
+        byte bytesNeeded = bytesNeeded(drId);
         this.drIdLength = bytesNeeded + 1;
         this.drIdBytes[0] = bytesNeeded;
         for (int i = bytesNeeded; i >= 1; i--) {
