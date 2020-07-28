@@ -56,7 +56,7 @@ scp ${SSH_OPTIONS} ${SCRIPTDIR}/capture-call-stacks.sh geode@${INSTANCE_IP_ADDRE
 if [[ -n "${PARALLEL_DUNIT}" && "${PARALLEL_DUNIT}" == "true" ]]; then
   PARALLEL_DUNIT="-PparallelDunit -PdunitDockerUser=geode -PdunitDockerImage=\$(docker images --format '{{.Repository}}:{{.Tag}}')"
   if [ -n "${DUNIT_PARALLEL_FORKS}" ]; then
-    DUNIT_PARALLEL_FORKS="-PdunitParallelForks=${DUNIT_PARALLEL_FORKS} --max-worker=${DUNIT_PARALLEL_FORKS}"
+    DUNIT_PARALLEL_FORKS="-PdunitParallelForks=${DUNIT_PARALLEL_FORKS}"
   fi
 else
   PARALLEL_DUNIT=""
@@ -88,8 +88,11 @@ GRADLE_ARGS=" \
     -PcompileJVMVer=${JAVA_BUILD_VERSION} \
     -PtestJVM=${JAVA_TEST_PATH} \
     -PtestJVMVer=${JAVA_TEST_VERSION} \
+    ${PARALLEL_DUNIT} \
+    ${DUNIT_PARALLEL_FORKS} \
     ${DEFAULT_GRADLE_TASK_OPTIONS} \
     ${GRADLE_SKIP_TASK_OPTIONS} \
+    ${GRADLE_TASK} \
     ${GRADLE_TASK_OPTIONS} \
     ${GRADLE_GLOBAL_ARGS}"
 
@@ -104,9 +107,5 @@ EXEC_COMMAND="bash -c 'echo Building with: $SEP \
   cp gradlew gradlewStrict $SEP \
   sed -e 's/JAVA_HOME/GRADLE_JVM/g' -i.bak gradlewStrict $SEP \
   GRADLE_JVM=${JAVA_BUILD_PATH} ./gradlewStrict ${GRADLE_ARGS}'"
-
 echo "${EXEC_COMMAND}"
-ssh ${SSH_OPTIONS} geode@${INSTANCE_IP_ADDRESS} "${EXEC_COMMAND} assemble"
-
-echo "${EXEC_COMMAND}"
-ssh ${SSH_OPTIONS} geode@${INSTANCE_IP_ADDRESS} "${EXEC_COMMAND} ${PARALLEL_DUNIT} ${DUNIT_PARALLEL_FORKS} ${GRADLE_TASK}"
+ssh ${SSH_OPTIONS} geode@${INSTANCE_IP_ADDRESS} "${EXEC_COMMAND}"
