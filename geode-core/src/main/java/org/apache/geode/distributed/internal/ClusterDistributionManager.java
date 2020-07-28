@@ -1860,11 +1860,6 @@ public class ClusterDistributionManager implements DistributionManager {
   @Override
   public void handleManagerDeparture(InternalDistributedMember theId, boolean memberCrashed,
       String reason) {
-    handleManagerDeparture(theId, memberCrashed, reason, false);
-  }
-
-  private void handleManagerDeparture(InternalDistributedMember theId, boolean memberCrashed,
-      String reason, boolean fromViewChange) {
     alertingService.removeAlertListener(theId);
 
     removeUnfinishedStartup(theId, true);
@@ -1877,13 +1872,13 @@ public class ClusterDistributionManager implements DistributionManager {
 
     if (logger.isDebugEnabled()) {
       logger.debug(
-          "DistributionManager: removing member <{}>; crashed {}; reason = {} fromView = {}", theId,
-          memberCrashed, prettifyReason(reason), fromViewChange);
+          "DistributionManager: removing member <{}>; crashed {}; reason = {}", theId,
+          memberCrashed, prettifyReason(reason));
     }
     removeHostedLocators(theId);
     redundancyZones.remove(theId);
 
-    if (fromViewChange && theId.getVmKind() != ClusterDistributionManager.LOCATOR_DM_TYPE) {
+    if (theId.getVmKind() != ClusterDistributionManager.LOCATOR_DM_TYPE) {
       stats.incNodes(-1);
     }
     String msg;
@@ -1896,10 +1891,8 @@ public class ClusterDistributionManager implements DistributionManager {
           "Member at {} gracefully left the distributed cache: {}";
       addMemberEvent(new MemberDepartedEvent(theId, reason));
     }
-    if (fromViewChange) {
-      logger.info(msg, new Object[] {theId, prettifyReason(reason)});
-      executors.handleManagerDeparture(theId);
-    }
+    logger.info(msg, new Object[] {theId, prettifyReason(reason)});
+    executors.handleManagerDeparture(theId);
   }
 
   private void handleManagerSuspect(InternalDistributedMember suspect,
@@ -2365,7 +2358,7 @@ public class ClusterDistributionManager implements DistributionManager {
           message.setReason(reason); // added for #37950
           handleIncomingDMsg(message);
         }
-        dm.handleManagerDeparture(theId, crashed, reason, true);
+        dm.handleManagerDeparture(theId, crashed, reason);
       } catch (DistributedSystemDisconnectedException se) {
         // ignored
       }
