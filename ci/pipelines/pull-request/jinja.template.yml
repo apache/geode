@@ -50,7 +50,7 @@ resources:
     depth: 1
     paths:
     - ci/*
-    uri: https://github.com/apache/geode.git
+    uri: https://github.com/{{repository.fork}}/geode.git
 - name: concourse-metadata-resource
   type: concourse-metadata-resource
   source: {}
@@ -89,7 +89,7 @@ resource_types:
   type: docker-image
   source:
     password: ((!docker-password))
-    repository: gcr.io/apachegeode-ci/((pipeline-prefix))concourse-metadata-resource
+    repository: gcr.io/((gcp-project))/((pipeline-prefix))concourse-metadata-resource
     tag: latest
     username: ((!docker-username))
 jobs:
