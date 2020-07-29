@@ -142,7 +142,7 @@ tests:
   name: Upgrade
 - ARTIFACT_SLUG: redistests
   CALL_STACK_TIMEOUT: '1200'
-  CPUS: '2'
+  CPUS: '8'
   DUNIT_PARALLEL_FORKS: '0'
   EXECUTE_TEST_TIMEOUT: 30m
   GRADLE_TASK: ':geode-redis:redisAPITest'
