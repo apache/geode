@@ -21,6 +21,7 @@ import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -81,6 +82,7 @@ public class JsonSerializationTest {
     String json = "{'name':'test','group':'group1'}";
     when(cms.create(any())).thenReturn(new ClusterManagementRealizationResult());
     context.perform(post("/v1/regions").content(json))
+        .andExpect(header().string("content-type", "application/json;charset=UTF-8"))
         .andExpect(status().isCreated());
     verify(cms, atLeastOnce()).create(regionConfigCaptor.capture());
     Region value = regionConfigCaptor.getValue();

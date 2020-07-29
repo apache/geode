@@ -17,7 +17,6 @@ package org.apache.geode.management.internal.rest.converter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpOutputMessage;
@@ -31,7 +30,6 @@ import org.springframework.util.Assert;
  * @see org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
  * @since GemFire 0.0.1
  */
-@SuppressWarnings("unused")
 public class CustomMappingJackson2HttpMessageConverter extends MappingJackson2HttpMessageConverter {
 
   protected static final int INITIAL_BYTE_ARRAY_BUFFER_SIZE = 8192;
@@ -39,16 +37,14 @@ public class CustomMappingJackson2HttpMessageConverter extends MappingJackson2Ht
   @Override
   protected void writeInternal(final Object object, final HttpOutputMessage outputMessage)
       throws IOException, HttpMessageNotWritableException {
-    HttpOutputMessageWrapper outputMessageWrapper =
+    BufferingHttpOutputMessageWrapper outputMessageWrapper =
         new BufferingHttpOutputMessageWrapper(outputMessage);
     super.writeInternal(object, outputMessageWrapper);
     outputMessageWrapper.flush();
   }
 
-  protected static class BufferingHttpOutputMessageWrapper implements HttpOutputMessageWrapper {
-
+  protected static class BufferingHttpOutputMessageWrapper implements HttpOutputMessage {
     private final ByteArrayOutputStream outputStream;
-
     private final HttpOutputMessage httpOutputMessage;
 
     protected BufferingHttpOutputMessageWrapper(final HttpOutputMessage httpOutputMessage) {
@@ -58,7 +54,7 @@ public class CustomMappingJackson2HttpMessageConverter extends MappingJackson2Ht
     }
 
     @Override
-    public OutputStream getBody() throws IOException {
+    public OutputStream getBody() {
       return outputStream;
     }
 
@@ -77,79 +73,4 @@ public class CustomMappingJackson2HttpMessageConverter extends MappingJackson2Ht
       outputStream.reset();
     }
   }
-
-  /**
-   * While sound idea in theory to "count the bytes as you stream/write", thus preserving memory,
-   * this does not work in practice since the HTTP headers must be written to the HTTP output stream
-   * response before the body!
-   */
-  protected static class ContentLengthAccessibleHttpOutputMessageWrapper
-      implements HttpOutputMessageWrapper {
-
-    private final ByteCountingOutputStream outputStream;
-
-    private final HttpOutputMessage httpOutputMessage;
-
-    protected ContentLengthAccessibleHttpOutputMessageWrapper(
-        final HttpOutputMessage httpOutputMessage) throws IOException {
-      Assert.notNull(httpOutputMessage, "The HttpOutputMessage instance to wrap must not be null!");
-      this.httpOutputMessage = httpOutputMessage;
-      this.outputStream = new ByteCountingOutputStream(this.httpOutputMessage.getBody());
-    }
-
-    @Override
-    public OutputStream getBody() throws IOException {
-      return outputStream;
-    }
-
-    public long getContentLength() {
-      return outputStream.getByteCount();
-    }
-
-    @Override
-    public HttpHeaders getHeaders() {
-      return httpOutputMessage.getHeaders();
-    }
-
-    public void flush() throws IOException {
-      getHeaders().setContentLength(getContentLength());
-    }
-  }
-
-  protected interface HttpOutputMessageWrapper extends HttpOutputMessage {
-
-    long getContentLength();
-
-    void flush() throws IOException;
-
-  }
-
-  protected static class ByteCountingOutputStream extends OutputStream {
-
-    private AtomicLong byteCount = new AtomicLong(0l);
-
-    private final OutputStream outputStream;
-
-    protected ByteCountingOutputStream(final OutputStream outputStream) {
-      Assert.notNull(outputStream, "The OutputStream to wrap must not be null!");
-      this.outputStream = outputStream;
-    }
-
-    protected long getByteCount() {
-      return byteCount.get();
-    }
-
-    @Override
-    public void write(final int byteData) throws IOException {
-      outputStream.write(byteData);
-      byteCount.incrementAndGet();
-    }
-
-    @Override
-    public void write(byte[] b, int off, int len) throws IOException {
-      outputStream.write(b, off, len);
-      byteCount.addAndGet(len);
-    }
-  }
-
 }

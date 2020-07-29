@@ -20,6 +20,7 @@ import static org.apache.geode.management.configuration.Links.URI_VERSION;
 import static org.apache.geode.management.internal.Constants.INCLUDE_CLASS_HEADER;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -38,6 +39,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -73,6 +75,27 @@ public class RestTemplateClusterManagementServiceTransport
   public RestTemplateClusterManagementServiceTransport(RestTemplate restTemplate) {
     this.restTemplate = restTemplate;
     this.restTemplate.setErrorHandler(DEFAULT_ERROR_HANDLER);
+
+    // configur the rest template to use a speciic jackson converter
+    List<HttpMessageConverter<?>> messageConverters = restTemplate.getMessageConverters();
+    MappingJackson2HttpMessageConverter jackson2HttpMessageConverter = messageConverters.stream()
+        .filter(MappingJackson2HttpMessageConverter.class::isInstance)
+        .map(MappingJackson2HttpMessageConverter.class::cast)
+        .findFirst().orElse(null);
+
+    if (jackson2HttpMessageConverter == null) {
+      jackson2HttpMessageConverter = new MappingJackson2HttpMessageConverter();
+      messageConverters.add(jackson2HttpMessageConverter);
+    }
+
+    jackson2HttpMessageConverter.setPrettyPrint(false);
+    // the client should use a mapper that would ignore unknown properties in case the server
+    // is a newer version than the client
+    jackson2HttpMessageConverter
+        .setObjectMapper(GeodeJsonMapper.getMapperIgnoringUnknownProperties());
+    // if we don't set the default charset here, the request will use ServletRequest's default
+    // charset which is ISO-8859
+    jackson2HttpMessageConverter.setDefaultCharset(StandardCharsets.UTF_8);
   }
 
   public RestTemplateClusterManagementServiceTransport(
@@ -134,17 +157,6 @@ public class RestTemplateClusterManagementServiceTransport
 
     requestFactory.setHttpClient(clientBuilder.build());
     restTemplate.setRequestFactory(requestFactory);
-
-    // configure our own ObjectMapper
-    MappingJackson2HttpMessageConverter messageConverter =
-        new MappingJackson2HttpMessageConverter();
-    messageConverter.setPrettyPrint(false);
-    // the client should use a mapper that would ignore unknown properties in case the server
-    // is a newer version than the client
-    messageConverter.setObjectMapper(GeodeJsonMapper.getMapperIgnoringUnknownProperties());
-    restTemplate.getMessageConverters().removeIf(
-        m -> m.getClass().getName().equals(MappingJackson2HttpMessageConverter.class.getName()));
-    restTemplate.getMessageConverters().add(messageConverter);
   }
 
   @Override
