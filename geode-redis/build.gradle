@@ -90,7 +90,9 @@ configurations{
 
 tasks.register("redisAPITest") {
   dependsOn ':geode-assembly:installDist'
-  exec {
-    executable "./ci/scripts/execute_redis_tests.sh"
+  doLast {
+    exec {
+      executable "./ci/scripts/execute_redis_tests.sh"
+    }
   }
 }

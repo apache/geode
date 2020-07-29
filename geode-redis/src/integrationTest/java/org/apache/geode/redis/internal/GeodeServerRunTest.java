@@ -29,7 +29,7 @@ public class GeodeServerRunTest {
   public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
   @Test
-//  @Ignore("This is a no-op test to conveniently run redis api for geode server for local development/testing purposes")
+  @Ignore("This is a no-op test to conveniently run redis api for geode server for local development/testing purposes")
   public void runGeodeServer() {
     LogService.getLogger().warn("Server running on port: " + server.getPort());
     while (true) {
