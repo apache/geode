@@ -37,6 +37,13 @@ public class Command {
   private ByteArrayWrapper bytes;
 
   /**
+   * Constructor used to create a static marker Command for shutting down executors.
+   */
+  Command() {
+    commandElems = null;
+    commandType = null;
+  }
+  /**
    * Constructor for {@link Command}. Must initialize Command with a {@link SocketChannel} and a
    * {@link List} of command elements
    *
