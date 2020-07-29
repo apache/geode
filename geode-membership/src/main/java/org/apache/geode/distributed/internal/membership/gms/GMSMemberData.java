@@ -401,9 +401,9 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
 
     sb.append("MemberData[");
     if (name != null && name.length() > 0) {
-      sb.append("name=").append(name);
+      sb.append("name=").append(name).append(';');
     }
-    sb.append(";addr=").append(inetAddr).append(";port=").append(udpPort)
+    sb.append("addr=").append(inetAddr).append(";port=").append(udpPort)
         .append(";kind=").append(vmKind).append(";processId=").append(processId)
         .append(";viewId=").append(vmViewId);
     if (getVersionOrdinal() != Version.CURRENT_ORDINAL) {
