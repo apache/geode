@@ -94,7 +94,7 @@ public class RestTemplateClusterManagementServiceTransport
     jackson2HttpMessageConverter
         .setObjectMapper(GeodeJsonMapper.getMapperIgnoringUnknownProperties());
     // if we don't set the default charset here, the request will use ServletRequest's default
-    // charset which is ISO-8859
+    // charset which may not be UTF-8
     jackson2HttpMessageConverter.setDefaultCharset(StandardCharsets.UTF_8);
   }
 
