@@ -49,6 +49,7 @@ apt-get install -y --no-install-recommends \
     python3 \
     python3-pip \
     rsync \
+    tcl \
     tmux \
     unzip \
     vim

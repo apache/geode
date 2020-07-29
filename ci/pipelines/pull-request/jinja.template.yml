@@ -27,7 +27,6 @@ groups:
   - {{test.name}}Test{{java_test_version.name}}
   {%- endfor %}
 {%- endfor %}
-  - RedisTests
 resources:
 - name: geode
   type: pull-request
@@ -419,57 +418,3 @@ jobs:
         get_params: {skip_download: true}
 {% endfor %}
 {% endfor %}
-
-
-
-- name: RedisTests
-  public: true
-  plan:
-  - get: alpine-tools-image
-  - get: geode
-    trigger: true
-    version: every
-    attempts: 2
-    params:
-      integration_tool: rebase
-  - get: geode-ci
-    attempts: 2
-  - do:
-    - put: pull-request-job-pending
-      resource: geode-status
-      params:
-        context: RedisTests
-        path: geode
-        status: pending
-      get_params: {skip_download: true}
-  - do:
-    - task: execute_tests
-      image: alpine-tools-image
-      config:
-        platform: linux
-        run:
-          path: geode-ci/ci/pipelines/geode-redis/execute_redis_tests.sh
-        inputs:
-          - name: geode
-          - name: geode-ci
-        outputs:
-          - name: geode-results
-      timeout: 30m
-      on_failure:
-        do:
-          - put: pull-request-job-failure
-            resource: geode-status
-            params:
-              context: RedisTests
-              path: geode
-              status: failure
-            get_params: {skip_download: true}
-      on_success:
-        do:
-          - put: pull-request-job-success
-            resource: geode-status
-            params:
-              context: RedisTests
-              path: geode
-              status: success
-            get_params: {skip_download: true}
