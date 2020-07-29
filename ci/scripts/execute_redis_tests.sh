@@ -23,6 +23,8 @@ pushd redis
 git checkout tests-geode-redis
 popd
 
+pwd
+
 ./geode/geode-assembly/build/install/apache-geode/bin/gfsh start server \
   --J=-Denable-redis-unsupported-commands=true \
   --name=server1 \
