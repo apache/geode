@@ -71,6 +71,7 @@ import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1127,6 +1128,9 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   private void validateConfigurationProperties(final Map<Object, Object> props) {
     for (Object o : props.keySet()) {
       String propertyName = (String) o;
+      if (isInternalPropertyName(propertyName)) {
+        continue;
+      }
       Object value = null;
       try {
         Method method = getters.get(propertyName);
@@ -1531,7 +1535,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         Map.Entry me = (Map.Entry) it.next();
         String propName = (String) me.getKey();
         props.put(propName, me.getValue());
-        if (specialPropName(propName)) {
+        if (isSpecialPropertyName(propName)) {
           continue;
         }
         String propVal = (String) me.getValue();
@@ -1544,12 +1548,32 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     }
   }
 
-  private static boolean specialPropName(String propName) {
-    return propName.equalsIgnoreCase(CLUSTER_SSL_ENABLED)
-        || propName.equals(SECURITY_PEER_AUTH_INIT) || propName.equals(SECURITY_PEER_AUTHENTICATOR)
-        || propName.equals(LOG_WRITER_NAME) || propName.equals(DS_CONFIG_NAME)
-        || propName.equals(SECURITY_LOG_WRITER_NAME) || propName.equals(LOG_OUTPUTSTREAM_NAME)
-        || propName.equals(SECURITY_LOG_OUTPUTSTREAM_NAME);
+  /**
+   * internal configuration properties not in ConfigurationProperties but that may be in
+   * properties fed to a DistributionConfigImpl constructor.
+   */
+  static Set<String> internalPropertyNames = new HashSet<>(Arrays.asList(
+      LOG_WRITER_NAME, DS_CONFIG_NAME,
+      DS_QUORUM_CHECKER_NAME, DS_RECONNECTING_NAME,
+      SECURITY_LOG_WRITER_NAME, LOG_OUTPUTSTREAM_NAME,
+      SECURITY_LOG_OUTPUTSTREAM_NAME));
+
+  /**
+   * a collection of configuration properties that are used to skip some security properties
+   * during initialization due to dependency issues
+   */
+  static Set<String> specialPropertyNames = new HashSet<>(Arrays.asList(CLUSTER_SSL_ENABLED,
+      SECURITY_PEER_AUTH_INIT, SECURITY_PEER_AUTHENTICATOR,
+      LOG_WRITER_NAME, DS_CONFIG_NAME,
+      SECURITY_LOG_WRITER_NAME, LOG_OUTPUTSTREAM_NAME,
+      SECURITY_LOG_OUTPUTSTREAM_NAME));
+
+  boolean isInternalPropertyName(String propName) {
+    return internalPropertyNames.contains(propName);
+  }
+
+  boolean isSpecialPropertyName(String propName) {
+    return specialPropertyNames.contains(propName);
   }
 
   @Override
@@ -1636,7 +1660,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
       String propName = (String) me.getKey();
       // if ssl-enabled is set to true before the mcast port is set to 0, then it will error.
       // security should not be enabled before the mcast port is set to 0.
-      if (specialPropName(propName)) {
+      if (isSpecialPropertyName(propName)) {
         continue;
       }
       Object propVal = me.getValue();

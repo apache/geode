@@ -186,6 +186,19 @@ public class DistributionConfigJUnitTest {
   }
 
   @Test
+  public void internalPropertiesAreIgnoredInSameAsCheck() {
+    DistributionConfigImpl config = new DistributionConfigImpl(new Properties());
+    Properties configProperties = new Properties();
+    configProperties.putAll(config.getProps());
+    assertThat(config.isInternalPropertyName(DistributionConfig.DS_QUORUM_CHECKER_NAME)).isTrue();
+    assertThat(config.sameAs(DistributionConfigImpl.produce(configProperties, false))).isTrue();
+    assertThat(config.sameAs(DistributionConfigImpl.produce(configProperties, true))).isTrue();
+    configProperties.setProperty(DistributionConfig.DS_QUORUM_CHECKER_NAME, "quorum checker");
+    assertThat(config.sameAs(DistributionConfigImpl.produce(configProperties, false))).isTrue();
+    assertThat(config.sameAs(DistributionConfigImpl.produce(configProperties, true))).isTrue();
+  }
+
+  @Test
   public void everyAttrHasValidGetter() {
     for (String attr : attributes.keySet()) {
       Method getter = getters.get(attr);
