@@ -14,8 +14,6 @@
  */
 package org.apache.geode.internal.cache.ha;
 
-import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -64,7 +62,7 @@ public class QueueRemovalMessage extends PooledDistributionMessage {
    * Set the message list
    */
   void setMessagesList(List messages) {
-    this.messagesList = uncheckedCast(messages);
+    this.messagesList = messages;
   }
 
   /**

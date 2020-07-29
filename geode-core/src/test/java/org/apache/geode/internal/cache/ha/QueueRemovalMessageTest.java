@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.ha;
 
-import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -61,14 +60,15 @@ public class QueueRemovalMessageTest {
   private final int region2EventSize = 2;
 
   @Before
+  @SuppressWarnings("unchecked")
   public void setup() {
     queueRemovalMessage = spy(new QueueRemovalMessage());
     messagesList = new LinkedList<>();
     queueRemovalMessage.setMessagesList(messagesList);
 
     long maxWaitTimeForInitialization = 30000;
-    when(cache.getRegion(regionName1)).thenReturn(uncheckedCast(region1));
-    when(cache.getRegion(regionName2)).thenReturn(uncheckedCast(region2));
+    when(cache.getRegion(regionName1)).thenReturn(region1);
+    when(cache.getRegion(regionName2)).thenReturn((region2));
     when(region1.getOwnerWithWait(maxWaitTimeForInitialization)).thenReturn(regionQueue1);
     when(region2.getOwnerWithWait(maxWaitTimeForInitialization)).thenReturn(regionQueue2);
     when(regionQueue1.isQueueInitialized()).thenReturn(true);
