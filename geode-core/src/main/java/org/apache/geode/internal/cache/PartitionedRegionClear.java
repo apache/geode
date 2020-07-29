@@ -387,7 +387,9 @@ public class PartitionedRegionClear {
   }
 
   void incClearDuration(long durationNanos) {
-    if (partitionedRegion != null && partitionedRegion.getTotalNumberOfBuckets() != 0) {
+    if (partitionedRegion != null && partitionedRegion.getDataStore() != null
+        && partitionedRegion.getDataStore().getAllLocalBucketRegions() != null
+        && partitionedRegion.getDataStore().getAllLocalBucketRegions().size() != 0) {
       CachePerfStats stats = partitionedRegion.getCachePerfStats();
       if (stats != null) {
         stats.incPartitionedRegionClearDuration(durationNanos);

@@ -156,13 +156,13 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     datastore.invoke(() -> {
       PartitionedRegion region = (PartitionedRegion) getRegion(false);
       long clearCount = 0L;
+      int bucketCount = region.getDataStore().getAllLocalBucketRegions().size();
 
       for (BucketRegion bucket : region.getDataStore().getAllLocalBucketRegions()) {
         if (clearCount == 0) {
           clearCount = bucket.getCachePerfStats().getBucketClearCount();
         }
-        assertThat(bucket.getCachePerfStats().getBucketClearCount()).isEqualTo(clearCount)
-            .isNotEqualTo(0);
+        assertThat(bucket.getCachePerfStats().getBucketClearCount()).isEqualTo(bucketCount);
       }
 
       assertThat(region.getCachePerfStats().getRegionClearCount()).isEqualTo(1);
@@ -380,25 +380,6 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
       PartitionedRegion region = (PartitionedRegion) getRegion(false);
       assertThat(region.getCachePerfStats().getRegionClearCount()).isEqualTo(0);
     });
-
-    // do the region destroy to compare that the same callbacks will be triggered
-    dataStore1.invoke(() -> {
-      Region region = getRegion(false);
-      region.destroyRegion();
-    });
-
-    assertThat(dataStore1.invoke(getWriterDestroys)).isEqualTo(dataStore1.invoke(getWriterClears))
-        .isEqualTo(0);
-    assertThat(dataStore2.invoke(getWriterDestroys)).isEqualTo(dataStore2.invoke(getWriterClears))
-        .isEqualTo(0);
-    assertThat(dataStore3.invoke(getWriterDestroys)).isEqualTo(dataStore3.invoke(getWriterClears))
-        .isEqualTo(0);
-    assertThat(accessor.invoke(getWriterDestroys)).isEqualTo(accessor.invoke(getWriterClears))
-        .isEqualTo(1);
-
-    assertThat(accessor.invoke(getBucketRegionWriterDestroys))
-        .isEqualTo(accessor.invoke(getBucketRegionWriterClears))
-        .isEqualTo(0);
   }
 
   @Test
