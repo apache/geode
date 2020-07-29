@@ -57,10 +57,14 @@ public class AvailablePortJUnitTest {
 
     assertFalse(AvailablePort.isPortAvailable(port, AvailablePort.SOCKET,
         InetAddress.getByName(LOOPBACK_ADDRESS)));
-    // Get local host will return the hostname for the server, so this should succeed, since we're
-    // bound to the loopback address only.
-    assertTrue(
-        AvailablePort.isPortAvailable(port, AvailablePort.SOCKET, InetAddress.getLocalHost()));
+
+    InetAddress localHostAddress = InetAddress.getLocalHost();
+    // The next assertion assumes that the local host address is not a loopback address. Skip the
+    // assertion on host machines that don't satisfy the assumption.
+    if (!localHostAddress.isLoopbackAddress()) {
+      assertTrue(AvailablePort.isPortAvailable(port, AvailablePort.SOCKET, localHostAddress));
+    }
+
     // This should test all interfaces.
     assertFalse(AvailablePort.isPortAvailable(port, AvailablePort.SOCKET));
   }
