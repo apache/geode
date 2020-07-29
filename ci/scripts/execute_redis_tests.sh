@@ -20,7 +20,7 @@
 cd ..
 git clone https://github.com/prettyClouds/redis.git
 pushd redis
-git co tests-geode-redis
+git checkout tests-geode-redis
 popd
 
 ./geode/geode-assembly/build/install/apache-geode/bin/gfsh start server \
@@ -28,7 +28,7 @@ popd
   --name=server1 \
   --redis-port=6380 \
   --redis-bind-address=127.0.0.1 \
-  --redis-password=foobar
+  --redis-password=hugz
 
 cd redis
 ./runtest --host 127.0.0.1 --port 6380 --single unit/auth

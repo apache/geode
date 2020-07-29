@@ -33,7 +33,7 @@ curl -sSL https://dl.google.com/linux/linux_signing_key.pub | apt-key add -
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
 apt-get update
 set +e && apt-get purge -y google-cloud-sdk lxc-docker && set -e
-apt-get install -y --no-install-recommends \
+DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     aptitude \
     ca-certificates \
     cgroupfs-mount \
