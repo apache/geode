@@ -71,7 +71,11 @@ public class ConcurrentLoopingThreads {
         throw new RuntimeException(e);
       }
       for (int i = 0; i < iterationCount; i++) {
-        runnable.accept(i);
+        try {
+          runnable.accept(i);
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
         Thread.yield();
       }
     }

@@ -207,6 +207,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
             "expected " + command + " but found " + head + " in the queue");
       }
       try {
+        logResponse(response);
         writeToChannel(response);
       } finally {
         redisStats.endCommand(command.getCommandType(), command.getAsyncStartTime());
