@@ -688,7 +688,11 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
       return; // Explicit deletion, no upcall.
     }
 
-    listener.memberDeparted(dm, crashed, reason);
+    if (!shutdownMembers.containsKey(dm)) {
+      // if we've received a shutdown message then DistributionManager will already have
+      // notified listeners
+      listener.memberDeparted(dm, crashed, reason);
+    }
   }
 
   /**

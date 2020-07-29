@@ -211,6 +211,34 @@ public class ClusterDistributionManagerDUnitTest extends CacheTestCase {
         .until(() -> !membershipManager.isSurpriseMember(member));
   }
 
+  @Test
+  public void shutdownMessageCausesListenerInvocation() {
+    final AtomicBoolean listenerInvoked = new AtomicBoolean();
+    vm1.invoke("join the cluster", () -> getSystem().getDistributedMember()); // lead member
+    system = getSystem(); // non-lead member
+    // this membership listener will be invoked when the shutdown message is received
+    system.getDistributionManager().addMembershipListener(new MembershipListener() {
+      @Override
+      public void memberDeparted(DistributionManager distributionManager,
+          InternalDistributedMember id, boolean crashed) {
+        assertThat(crashed).isFalse();
+        listenerInvoked.set(Boolean.TRUE);
+      }
+    });
+    final InternalDistributedMember memberID = system.getDistributedMember();
+    locatorvm.invoke("send a shutdown message", () -> {
+      final DistributionManager distributionManager =
+          ((InternalDistributedSystem) Locator.getLocator().getDistributedSystem())
+              .getDistributionManager();
+      final ShutdownMessage shutdownMessage = new ShutdownMessage();
+      shutdownMessage.setRecipient(memberID);
+      shutdownMessage.setDistributionManagerId(distributionManager.getDistributionManagerId());
+      distributionManager.putOutgoing(shutdownMessage);
+    });
+    await().until(() -> listenerInvoked.get());
+  }
+
+
   /**
    * Tests that a severe-level alert is generated if a member does not respond with an ack quickly
    * enough. vm0 and vm1 create a region and set ack-severe-alert-threshold. vm1 has a cache
