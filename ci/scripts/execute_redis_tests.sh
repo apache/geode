@@ -20,7 +20,7 @@
 cd ..
 git clone https://github.com/prettyClouds/redis.git
 pushd redis
-git co tests-geode-redis
+git checkout tests-geode-redis
 popd
 
 ./geode/geode-assembly/build/install/apache-geode/bin/gfsh start server \
