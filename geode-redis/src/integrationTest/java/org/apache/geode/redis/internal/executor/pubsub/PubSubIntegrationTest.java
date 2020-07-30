@@ -24,7 +24,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -45,7 +44,6 @@ public class PubSubIntegrationTest {
   static Jedis publisher;
   static Jedis subscriber;
   static final int REDIS_CLIENT_TIMEOUT = 100000;
-  public static final int JEDIS_TIMEOUT = Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @ClassRule
   public static GeodeRedisServerRule server = new GeodeRedisServerRule();
@@ -63,11 +61,6 @@ public class PubSubIntegrationTest {
   public static void tearDown() {
     subscriber.close();
     publisher.close();
-  }
-
-  @After
-  public void afterMethodTearDown() {
-    System.gc();
   }
 
   public int getPort() {
@@ -385,12 +378,12 @@ public class PubSubIntegrationTest {
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
     waitFor(() -> !subscriberThread.isAlive());
 
-    List<String> unsubscribedChannels = mockSubscriber.unsubscribeInfos.stream().map(x -> x.channel)
-        .collect(Collectors.toList());
+    List<String> unsubscribedChannels = mockSubscriber.unsubscribeInfos.stream()
+        .map(x -> x.channel).collect(Collectors.toList());
     assertThat(unsubscribedChannels).containsExactlyInAnyOrder("salutations", "yuletide");
 
-    List<Integer> channelCounts = mockSubscriber.unsubscribeInfos.stream().map(x -> x.count)
-        .collect(Collectors.toList());
+    List<Integer> channelCounts = mockSubscriber.unsubscribeInfos.stream()
+        .map(x -> x.count).collect(Collectors.toList());
     assertThat(channelCounts).containsExactlyInAnyOrder(1, 0);
 
   }
@@ -410,12 +403,12 @@ public class PubSubIntegrationTest {
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
     waitFor(() -> !subscriberThread.isAlive());
 
-    List<String> unsubscribedChannels = mockSubscriber.unsubscribeInfos.stream().map(x -> x.channel)
-        .collect(Collectors.toList());
+    List<String> unsubscribedChannels = mockSubscriber.unsubscribeInfos.stream()
+        .map(x -> x.channel).collect(Collectors.toList());
     assertThat(unsubscribedChannels).containsExactlyInAnyOrder("salutations", "yuletide");
 
-    List<Integer> channelCounts = mockSubscriber.unsubscribeInfos.stream().map(x -> x.count)
-        .collect(Collectors.toList());
+    List<Integer> channelCounts = mockSubscriber.unsubscribeInfos.stream()
+        .map(x -> x.count).collect(Collectors.toList());
     assertThat(channelCounts).containsExactlyInAnyOrder(1, 0);
 
     Long result = publisher.publish("salutations", "greetings");
@@ -436,9 +429,9 @@ public class PubSubIntegrationTest {
     mockSubscriber.punsubscribe("yul*", "sal*");
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
     waitFor(() -> !subscriberThread.isAlive());
-    assertThat(mockSubscriber.punsubscribeInfos)
-        .containsExactly(new MockSubscriber.UnsubscribeInfo("yul*", 1),
-            new MockSubscriber.UnsubscribeInfo("sal*", 0));
+    assertThat(mockSubscriber.punsubscribeInfos).containsExactly(
+        new MockSubscriber.UnsubscribeInfo("yul*", 1),
+        new MockSubscriber.UnsubscribeInfo("sal*", 0));
   }
 
   @Test
@@ -455,9 +448,9 @@ public class PubSubIntegrationTest {
     mockSubscriber.punsubscribe();
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
     waitFor(() -> !subscriberThread.isAlive());
-    assertThat(mockSubscriber.punsubscribeInfos)
-        .containsExactly(new MockSubscriber.UnsubscribeInfo("sal*", 1),
-            new MockSubscriber.UnsubscribeInfo("yul*", 0));
+    assertThat(mockSubscriber.punsubscribeInfos).containsExactly(
+        new MockSubscriber.UnsubscribeInfo("sal*", 1),
+        new MockSubscriber.UnsubscribeInfo("yul*", 0));
   }
 
   @Test
@@ -595,7 +588,8 @@ public class PubSubIntegrationTest {
 
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
     mockSubscriber.psubscribe("sal*s");
-    GeodeAwaitility.await().during(5, TimeUnit.SECONDS)
+    GeodeAwaitility.await()
+        .during(5, TimeUnit.SECONDS)
         .until(() -> mockSubscriber.getSubscribedChannels() == 1);
 
     String message = "hello-" + System.currentTimeMillis();
@@ -681,8 +675,8 @@ public class PubSubIntegrationTest {
   }
 
   private void waitFor(Callable<Boolean> booleanCallable) {
-    GeodeAwaitility.await().atMost(30, TimeUnit.SECONDS).ignoreExceptions() // ignoring socket
-                                                                            // closed exceptions
+    GeodeAwaitility.await()
+        .ignoreExceptions() // ignoring socket closed exceptions
         .until(booleanCallable);
   }
 }

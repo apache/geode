@@ -19,8 +19,6 @@ import java.nio.channels.SocketChannel;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import io.netty.channel.ChannelHandlerContext;
-
 import org.apache.geode.redis.internal.RedisCommandType;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.RedisResponse;
@@ -177,25 +175,5 @@ public class Command {
   public String wrongNumberOfArgumentsError() {
     return String.format("wrong number of arguments for '%s' command",
         getCommandType().toString().toLowerCase());
-  }
-
-  private long asyncStartTime;
-
-  public void setAsyncStartTime(long start) {
-    asyncStartTime = start;
-  }
-
-  public long getAsyncStartTime() {
-    return asyncStartTime;
-  }
-
-  private ChannelHandlerContext channelHandlerContext;
-
-  public void setChannelHandlerContext(ChannelHandlerContext ctx) {
-    channelHandlerContext = ctx;
-  }
-
-  public ChannelHandlerContext getChannelHandlerContext() {
-    return channelHandlerContext;
   }
 }

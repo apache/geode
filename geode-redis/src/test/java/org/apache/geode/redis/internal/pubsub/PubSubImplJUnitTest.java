@@ -22,6 +22,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.DefaultChannelPromise;
@@ -29,7 +31,6 @@ import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import org.junit.Test;
 
-import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Client;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
@@ -42,7 +43,8 @@ public class PubSubImplJUnitTest {
     ExecutionHandlerContext mockContext = mock(ExecutionHandlerContext.class);
 
     FailingChannelFuture mockFuture = new FailingChannelFuture();
-    when(mockContext.writeToChannel((RedisResponse) any())).thenReturn(mockFuture);
+    when(mockContext.writeToChannel((ByteBuf) any())).thenReturn(mockFuture);
+    when(mockContext.getByteBufAllocator()).thenReturn(new PooledByteBufAllocator());
 
     Client deadClient = mock(Client.class);
     when(deadClient.isDead()).thenReturn(true);

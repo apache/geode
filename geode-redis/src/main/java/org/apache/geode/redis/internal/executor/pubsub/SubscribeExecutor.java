@@ -42,6 +42,8 @@ public class SubscribeExecutor extends AbstractExecutor {
       items.add(item);
     }
 
+    context.changeChannelEventLoopGroup(context.getSubscriberGroup());
+
     return RedisResponse.flattenedArray(items);
   }
 

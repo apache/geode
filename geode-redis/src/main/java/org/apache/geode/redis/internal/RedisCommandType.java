@@ -401,10 +401,6 @@ public enum RedisCommandType {
     return supportLevel == UNIMPLEMENTED;
   }
 
-  public boolean isAsync() {
-    return this == PUBLISH;
-  }
-
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext executionHandlerContext) {
     parameterRequirements.checkParameters(command, executionHandlerContext);
