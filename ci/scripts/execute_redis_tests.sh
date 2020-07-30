@@ -24,10 +24,15 @@ git checkout tests-geode-redis
 popd
 
 pwd
-dirname $(dirname $(readlink -f $(which javac)))
-java -XshowSettings:properties -version 2>&1 > /dev/null | grep 'java.home'
 
-JAVA_HOME="$(java -XshowSettings:properties -version 2>&1 > /dev/null | grep 'java.home')"
+#dirname $(dirname $(readlink -f $(which javac)))
+#java -XshowSettings:properties -version 2>&1 > /dev/null | grep 'java.home'
+#
+#JAVA_HOME="$(java -XshowSettings:properties -version 2>&1 > /dev/null | grep 'java.home')"
+#export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+
+[ -L /etc/alternatives/java ]
+JAVA_HOME="$(readlink -f /etc/alternatives/java | sed -e 's/\/jre\/bin\/java$//')"
 echo $JAVA_HOME
 
 ./geode-assembly/build/install/apache-geode/bin/gfsh start server \
