@@ -39,7 +39,7 @@ failCount=0
 JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64" \
 ../geode-assembly/build/install/apache-geode/bin/gfsh start server \
   --J=-Denable-redis-unsupported-commands=true \
-  --name=server1 \
+  --name=server2 \
   --server-port=0 \
   --redis-port=6379 \
   --redis-bind-address=127.0.0.1
