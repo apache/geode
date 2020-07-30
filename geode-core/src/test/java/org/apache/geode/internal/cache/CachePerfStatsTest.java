@@ -38,7 +38,8 @@ import static org.apache.geode.internal.cache.CachePerfStats.loadsCompletedId;
 import static org.apache.geode.internal.cache.CachePerfStats.missesId;
 import static org.apache.geode.internal.cache.CachePerfStats.netloadsCompletedId;
 import static org.apache.geode.internal.cache.CachePerfStats.netsearchesCompletedId;
-import static org.apache.geode.internal.cache.CachePerfStats.partitionedRegionClearDurationId;
+import static org.apache.geode.internal.cache.CachePerfStats.partitionedRegionClearLocalDurationId;
+import static org.apache.geode.internal.cache.CachePerfStats.partitionedRegionClearTotalDurationId;
 import static org.apache.geode.internal.cache.CachePerfStats.putAllsId;
 import static org.apache.geode.internal.cache.CachePerfStats.putTimeId;
 import static org.apache.geode.internal.cache.CachePerfStats.putsId;
@@ -437,10 +438,17 @@ public class CachePerfStatsTest {
   }
 
   @Test
-  public void incPartitionedRegionClearDurationIncrementsPartitionedRegionClearDuration() {
-    cachePerfStats.incPartitionedRegionClearDuration(100L);
+  public void incPartitionedRegionClearLocalDurationIncrementsPartitionedRegionClearLocalDuration() {
+    cachePerfStats.incPartitionedRegionClearLocalDuration(100L);
 
-    assertThat(statistics.getLong(partitionedRegionClearDurationId)).isEqualTo(100L);
+    assertThat(statistics.getLong(partitionedRegionClearLocalDurationId)).isEqualTo(100L);
+  }
+
+  @Test
+  public void incPartitionedRegionClearTotalDurationIncrementsPartitionedRegionClearTotalDuration() {
+    cachePerfStats.incPartitionedRegionClearTotalDuration(100L);
+
+    assertThat(statistics.getLong(partitionedRegionClearTotalDurationId)).isEqualTo(100L);
   }
 
   /**

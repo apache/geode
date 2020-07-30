@@ -152,7 +152,7 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     dataStore3.invoke(() -> verifyRegionSize(false, expectedNum));
   }
 
-  private void verifyDatastoreStats(MemberVM datastore) {
+  private void verifyDatastoreStats(MemberVM datastore, boolean isCoordinator) {
     datastore.invoke(() -> {
       PartitionedRegion region = (PartitionedRegion) getRegion(false);
       long clearCount = 0L;
@@ -166,7 +166,15 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
       }
 
       assertThat(region.getCachePerfStats().getRegionClearCount()).isEqualTo(1);
-      assertThat(region.getCachePerfStats().getPartitionedRegionClearDuration()).isGreaterThan(0);
+      assertThat(region.getCachePerfStats().getPartitionedRegionClearLocalDuration())
+          .isGreaterThan(0);
+      if (isCoordinator) {
+        assertThat(region.getCachePerfStats().getPartitionedRegionClearTotalDuration())
+            .isGreaterThan(0);
+      } else {
+        assertThat(region.getCachePerfStats().getPartitionedRegionClearTotalDuration())
+            .isEqualTo(0);
+      }
     });
   }
 
@@ -370,9 +378,9 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     verifyServerRegionSize(0);
 
     // Verify the stats were properly updated for the bucket regions
-    verifyDatastoreStats(dataStore1);
-    verifyDatastoreStats(dataStore2);
-    verifyDatastoreStats(dataStore3);
+    verifyDatastoreStats(dataStore1, true);
+    verifyDatastoreStats(dataStore2, false);
+    verifyDatastoreStats(dataStore3, false);
 
 
     // The accessor shouldn't increment the region clear count

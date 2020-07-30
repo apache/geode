@@ -123,7 +123,7 @@ public class PartitionedRegionClear {
 
   public Set<Integer> clearRegionLocal(RegionEventImpl regionEvent) {
     Set<Integer> clearedBuckets = new HashSet<>();
-    Long clearStartTime = System.nanoTime();
+    long clearStartTime = System.nanoTime();
     setMembershipChange(false);
     // Synchronized to handle the requester departure.
     synchronized (lockForListenerAndClientNotification) {
@@ -157,14 +157,17 @@ public class PartitionedRegionClear {
           doAfterClear(regionEvent);
         } finally {
           partitionedRegion.getDataStore().unlockBucketCreationForRegionClear();
+          if (clearedBuckets.size() != 0) {
+            partitionedRegion.getCachePerfStats().incRegionClearCount();
+            partitionedRegion.getCachePerfStats()
+                .incPartitionedRegionClearLocalDuration(System.nanoTime() - clearStartTime);
+          }
         }
       } else {
         // Non data-store with client queue and listener
         doAfterClear(regionEvent);
       }
     }
-    incClearCount();
-    incClearDuration(System.nanoTime() - clearStartTime);
     return clearedBuckets;
   }
 
@@ -330,10 +333,12 @@ public class PartitionedRegionClear {
 
   void doClear(RegionEventImpl regionEvent, boolean cacheWrite) {
     String lockName = CLEAR_OPERATION + partitionedRegion.getName();
+    long clearStartTime = 0;
 
     try {
       // distributed lock to make sure only one clear op is in progress in the cluster.
       acquireDistributedClearLock(lockName);
+      clearStartTime = System.nanoTime();
 
       // Force all primary buckets to be created before clear.
       assignAllPrimaryBuckets();
@@ -372,32 +377,12 @@ public class PartitionedRegionClear {
       }
     } finally {
       releaseDistributedClearLock(lockName);
-    }
-  }
-
-  void incClearCount() {
-    if (partitionedRegion != null && partitionedRegion.getDataStore() != null
-        && partitionedRegion.getDataStore().getAllLocalBucketRegions() != null
-        && partitionedRegion.getDataStore().getAllLocalBucketRegions().size() != 0) {
-      CachePerfStats stats = partitionedRegion.getCachePerfStats();
-      if (stats != null) {
-        stats.incRegionClearCount();
+      if (partitionedRegion != null) {
+        partitionedRegion.getCachePerfStats()
+            .incPartitionedRegionClearTotalDuration(System.nanoTime() - clearStartTime);
       }
     }
   }
-
-  void incClearDuration(long durationNanos) {
-    if (partitionedRegion != null && partitionedRegion.getDataStore() != null
-        && partitionedRegion.getDataStore().getAllLocalBucketRegions() != null
-        && partitionedRegion.getDataStore().getAllLocalBucketRegions().size() != 0) {
-      CachePerfStats stats = partitionedRegion.getCachePerfStats();
-      if (stats != null) {
-        stats.incPartitionedRegionClearDuration(durationNanos);
-      }
-    }
-  }
-
-
 
   protected void invokeCacheWriter(RegionEventImpl regionEvent) {
     try {
