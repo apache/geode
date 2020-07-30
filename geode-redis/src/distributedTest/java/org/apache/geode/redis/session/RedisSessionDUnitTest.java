@@ -27,7 +27,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.test.junit.categories.RedisTest;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
@@ -40,8 +39,8 @@ public class RedisSessionDUnitTest extends SessionDUnitTest {
   @BeforeClass
   public static void setup() {
     SessionDUnitTest.setup();
-    startSpringApp(APP1, DEFAULT_SESSION_TIMEOUT, ports.get(SERVER1)); //, ports.get(SERVER2));
-    startSpringApp(APP2, DEFAULT_SESSION_TIMEOUT, ports.get(SERVER2)); //, ports.get(SERVER1));
+    startSpringApp(APP1, DEFAULT_SESSION_TIMEOUT, ports.get(SERVER1)); // , ports.get(SERVER2));
+    startSpringApp(APP2, DEFAULT_SESSION_TIMEOUT, ports.get(SERVER2)); // , ports.get(SERVER1));
   }
 
   @Test
@@ -57,12 +56,12 @@ public class RedisSessionDUnitTest extends SessionDUnitTest {
 
   @Test
   public void createSessionsConcurrently() throws ExecutionException, InterruptedException {
-//    new ConcurrentLoopingThreads(10,
-//        (i) -> should_storeSession(),
-//        (i) -> should_storeSession(),
-//        (i) -> should_storeSession(),
-//        (i) -> should_storeSession()
-//    ).run();
+    // new ConcurrentLoopingThreads(10,
+    // (i) -> should_storeSession(),
+    // (i) -> should_storeSession(),
+    // (i) -> should_storeSession(),
+    // (i) -> should_storeSession()
+    // ).run();
 
     AtomicBoolean running = new AtomicBoolean(true);
     CountDownLatch latch = new CountDownLatch(1);
@@ -70,19 +69,20 @@ public class RedisSessionDUnitTest extends SessionDUnitTest {
     Future<Void> future1 = executor.submit(() -> sessionCreator(1, 100, running, latch));
     Future<Void> future2 = executor.submit(() -> sessionCreator(2, 100, running, latch));
     Future<Void> future3 = executor.submit(() -> sessionCreator(3, 100, running, latch));
-//    Future<Void> future4 = executor.submit(() -> sessionCreator(4, 100, running, latch));
-//    Future<Void> future5 = executor.submit(() -> sessionCreator(5, 100, running, latch));
+    // Future<Void> future4 = executor.submit(() -> sessionCreator(4, 100, running, latch));
+    // Future<Void> future5 = executor.submit(() -> sessionCreator(5, 100, running, latch));
 
     latch.countDown();
 
     future1.get();
     future2.get();
     future3.get();
-//    future4.get();
-//    future5.get();
+    // future4.get();
+    // future5.get();
   }
 
-  private void sessionCreator(int index, int iterations, AtomicBoolean running, CountDownLatch latch)
+  private void sessionCreator(int index, int iterations, AtomicBoolean running,
+      CountDownLatch latch)
       throws InterruptedException {
     int iterationCount = 0;
     latch.await();
@@ -95,7 +95,7 @@ public class RedisSessionDUnitTest extends SessionDUnitTest {
       } catch (Exception e) {
         running.set(false);
         throw new RuntimeException("BANG " + noteName, e);
-//        e.printStackTrace();
+        // e.printStackTrace();
       }
 
       iterationCount++;
