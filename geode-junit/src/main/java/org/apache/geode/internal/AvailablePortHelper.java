@@ -14,61 +14,22 @@
  */
 package org.apache.geode.internal;
 
-
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.SocketException;
 
-
 /**
- * Provides helper methods for acquiring a set of unique available ports. It is not safe to simply
+ * Provides helper methods for acquiring a set of distinct available ports. It is not safe to simply
  * call AvailablePort.getRandomAvailablePort several times in a row without doing something to
  * ensure that they are unique. Although they are random, it is possible for subsequent calls to
  * getRandomAvailablePort to return the same integer, unless that port is put into use before
  * further calls to getRandomAvailablePort.
  */
 public abstract class AvailablePortHelper {
-
   /**
-   * Returns array of unique randomly available tcp ports of specified count.
-   */
-  public static int[] getRandomAvailableTCPPorts(int count) {
-    return getRandomAvailableTCPPortRange(count);
-  }
-
-  /**
-   * Returns an array of unique randomly available tcp ports
-   *
-   * @param count number of desired ports
-   * @return the ports
-   */
-  public static int[] getRandomAvailableTCPPortRange(final int count) {
-    return getRandomAvailableTCPPortsForDUnitSite(count);
-  }
-
-  /**
-   * Returns array of unique randomly available tcp ports of specified count.
-   */
-  public static int[] getRandomAvailableTCPPortsForDUnitSite(final int count) {
-    int[] ports = new int[count];
-    for (int i = 0; i < count; ++i) {
-      ports[i] = getRandomAvailablePortForDUnitSite();
-    }
-    return ports;
-  }
-
-
-  /**
-   * Returns array of unique randomly available tcp ports of specified count.
-   */
-  public static int getRandomAvailablePortForDUnitSite() {
-    return getRandomAvailableTCPPort();
-  }
-
-  /**
-   * Returns available ephemeral TCP port.
+   * Returns an available ephemeral TCP port.
    */
   public static int getRandomAvailableTCPPort() {
     try (final ServerSocket socket = bindEphemeralTcpSocket()) {
@@ -79,7 +40,23 @@ public abstract class AvailablePortHelper {
   }
 
   /**
-   * Returns available ephemeral UDP port.
+   * Returns the requested number of distinct, available, ephemeral TCP ports.
+   * Note that though the ports returned by each call are distinct from each other,
+   * subsequent calls may return the same ports as previous calls.
+   *
+   * @param count number of desired ports
+   * @return the ports
+   */
+  public static int[] getRandomAvailableTCPPorts(int count) {
+    int[] ports = new int[count];
+    for (int i = 0; i < count; ++i) {
+      ports[i] = getRandomAvailableTCPPort();
+    }
+    return ports;
+  }
+
+  /**
+   * Returns an available ephemeral UDP port.
    */
   public static int getRandomAvailableUDPPort() {
     try (final DatagramSocket socket = bindEphemeralUdpSocket()) {
@@ -98,6 +75,4 @@ public abstract class AvailablePortHelper {
     socket.bind(new InetSocketAddress(0));
     return socket;
   }
-
-
 }

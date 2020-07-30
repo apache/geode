@@ -33,7 +33,6 @@ import static org.apache.geode.distributed.internal.OperationExecutors.SERIAL_EX
 import static org.apache.geode.internal.AvailablePort.MULTICAST;
 import static org.apache.geode.internal.AvailablePort.SOCKET;
 import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPortRange;
 import static org.apache.geode.internal.inet.LocalHostUtil.getLocalHost;
 import static org.apache.geode.test.dunit.DistributedTestUtils.getDUnitLocatorPort;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
@@ -77,6 +76,7 @@ import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.SerialDistributionMessage;
 import org.apache.geode.distributed.internal.SizeableRunnable;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
@@ -102,7 +102,7 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
     this.locatorPort = getRandomAvailablePort(SOCKET);
     this.tcpPort = getRandomAvailablePort(SOCKET);
 
-    int[] portRange = getRandomAvailableTCPPortRange(3);
+    int[] portRange = AvailablePortHelper.getRandomAvailableTCPPorts(3);
     this.lowerBoundOfPortRange = portRange[0];
     this.upperBoundOfPortRange = portRange[portRange.length - 1];
   }

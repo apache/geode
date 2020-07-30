@@ -56,7 +56,7 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
   @Ignore
   @Test
   public void testGatewaySenderEventListenerInvocationWithoutLocator() {
-    int mPort = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+    int mPort = AvailablePortHelper.getRandomAvailableTCPPort();
     vm4.invoke(() -> WANTestBase.createCacheWithoutLocator(mPort));
     vm5.invoke(() -> WANTestBase.createCacheWithoutLocator(mPort));
     vm6.invoke(() -> WANTestBase.createCacheWithoutLocator(mPort));
@@ -226,7 +226,7 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
   @Test
   public void testGatewaySenderEventListener_GatewayOperations() {
 
-    int mPort = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+    int mPort = AvailablePortHelper.getRandomAvailableTCPPort();
     vm4.invoke(() -> WANTestBase.createCacheWithoutLocator(mPort));
     vm5.invoke(() -> WANTestBase.createCacheWithoutLocator(mPort));
     vm6.invoke(() -> WANTestBase.createCacheWithoutLocator(mPort));

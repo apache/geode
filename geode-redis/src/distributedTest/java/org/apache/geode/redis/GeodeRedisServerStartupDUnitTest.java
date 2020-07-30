@@ -224,7 +224,7 @@ public class GeodeRedisServerStartupDUnitTest {
 
   @Test
   public void startupFailsGivenPortAlreadyInUse() throws Exception {
-    int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+    int port = AvailablePortHelper.getRandomAvailableTCPPort();
 
     addIgnoredException("Could not start Server");
     try (Socket interferingSocket = new Socket()) {
