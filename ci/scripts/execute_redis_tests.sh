@@ -25,7 +25,7 @@ popd
 
 pwd
 
-./geode/geode-assembly/build/install/apache-geode/bin/gfsh start server \
+./geode-assembly/build/install/apache-geode/bin/gfsh start server \
   --J=-Denable-redis-unsupported-commands=true \
   --name=server1 \
   --redis-port=6380 \
@@ -34,8 +34,8 @@ pwd
 
 cd redis
 ./runtest --host 127.0.0.1 --port 6380 --single unit/auth
-
-../geode/geode-assembly/build/install/apache-geode/bin/gfsh start server \
+pwd
+../geode-assembly/build/install/apache-geode/bin/gfsh start server \
   --J=-Denable-redis-unsupported-commands=true \
   --name=server1 \
   --server-port=0 \
