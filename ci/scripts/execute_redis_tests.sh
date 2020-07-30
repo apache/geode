@@ -24,9 +24,11 @@ git checkout tests-geode-redis
 popd
 
 pwd
-which java
-JAVA_HOME="export JAVA_HOME=~/geode/java-11-openjdk-amd64"
-ls ~/geode
+dirname $(dirname $(readlink -f $(which javac)))
+java -XshowSettings:properties -version 2>&1 > /dev/null | grep 'java.home'
+
+JAVA_HOME="$(java -XshowSettings:properties -version 2>&1 > /dev/null | grep 'java.home')"
+echo $JAVA_HOME
 
 ./geode-assembly/build/install/apache-geode/bin/gfsh start server \
   --J=-Denable-redis-unsupported-commands=true \
