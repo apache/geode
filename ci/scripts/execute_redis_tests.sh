@@ -23,7 +23,8 @@ pushd redis
 git checkout tests-geode-redis
 popd
 
-pwd
+echo "JAVAAAAAAAAAAAAAAAAAAAA"
+$(which java)
 
 #dirname $(dirname $(readlink -f $(which javac)))
 #java -XshowSettings:properties -version 2>&1 > /dev/null | grep 'java.home'
@@ -31,9 +32,9 @@ pwd
 #JAVA_HOME="$(java -XshowSettings:properties -version 2>&1 > /dev/null | grep 'java.home')"
 #export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 
-[ -L /etc/alternatives/java ]
-JAVA_HOME="$(readlink -f /etc/alternatives/java | sed -e 's/\/jre\/bin\/java$//')"
-echo $JAVA_HOME
+#[ -L /etc/alternatives/java ]
+#JAVA_HOME="$(readlink -f /etc/alternatives/java | sed -e 's/\/jre\/bin\/java$//')"
+#echo $JAVA_HOME
 
 ./geode-assembly/build/install/apache-geode/bin/gfsh start server \
   --J=-Denable-redis-unsupported-commands=true \
@@ -44,7 +45,7 @@ echo $JAVA_HOME
 
 cd redis
 ./runtest --host 127.0.0.1 --port 6380 --single unit/auth
-pwd
+
 ../geode-assembly/build/install/apache-geode/bin/gfsh start server \
   --J=-Denable-redis-unsupported-commands=true \
   --name=server1 \
