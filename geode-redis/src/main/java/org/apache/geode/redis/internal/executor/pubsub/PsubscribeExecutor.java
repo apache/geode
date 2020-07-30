@@ -20,32 +20,44 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
-import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.pubsub.SubscribeResult;
 
 public class PsubscribeExecutor extends AbstractExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
-    Collection<Collection<?>> items = new ArrayList<>();
+    Collection<SubscribeResult> results = new ArrayList<>();
     for (int i = 1; i < command.getProcessedCommand().size(); i++) {
+      byte[] patternBytes = command.getProcessedCommand().get(i);
+      SubscribeResult result =
+          context.getPubSub().psubscribe(patternBytes, context, context.getClient());
+      results.add(result);
+    }
+
+    Collection<Collection<?>> items = new ArrayList<>();
+    for (SubscribeResult result : results) {
       Collection<Object> item = new ArrayList<>();
-      byte[] pattern = command.getProcessedCommand().get(i);
-      long subscribedChannels =
-          context.getPubSub().psubscribe(
-              new GlobPattern(new String(pattern)), context, context.getClient());
-
       item.add("psubscribe");
-      item.add(pattern);
-      item.add(subscribedChannels);
-
+      item.add(result.getChannel());
+      item.add(result.getChannelCount());
       items.add(item);
     }
 
-    return RedisResponse.flattenedArray(items);
+    RedisResponse response = RedisResponse.flattenedArray(items);
+    response.setAfterWriteCallback(() -> {
+      for (SubscribeResult result : results) {
+        if (result.getSubscription() != null) {
+          result.getSubscription().readyToPublish();
+        }
+      }
+    });
+
+    return response;
+
   }
 
 }

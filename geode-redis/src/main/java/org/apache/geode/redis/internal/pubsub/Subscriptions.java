@@ -98,20 +98,29 @@ public class Subscriptions {
     return subscriptions.size();
   }
 
-  public synchronized long subscribe(byte[] channel, ExecutionHandlerContext context,
+  public synchronized SubscribeResult subscribe(byte[] channel, ExecutionHandlerContext context,
       Client client) {
+    Subscription createdSubscription = null;
     if (!exists(channel, client)) {
-      add(new ChannelSubscription(client, channel, context));
+      createdSubscription = new ChannelSubscription(client, channel, context);
+      add(createdSubscription);
     }
-    return findSubscriptions(client).size();
+    long channelCount = findSubscriptions(client).size();
+    return new SubscribeResult(createdSubscription, channelCount, channel);
   }
 
-  public synchronized long psubscribe(GlobPattern pattern, ExecutionHandlerContext context,
+  public SubscribeResult psubscribe(byte[] patternBytes, ExecutionHandlerContext context,
       Client client) {
-    if (!exists(pattern, client)) {
-      add(new PatternSubscription(client, pattern, context));
+    GlobPattern pattern = new GlobPattern(new String(patternBytes));
+    Subscription createdSubscription = null;
+    synchronized (this) {
+      if (!exists(pattern, client)) {
+        createdSubscription = new PatternSubscription(client, pattern, context);
+        add(createdSubscription);
+      }
+      long channelCount = findSubscriptions(client).size();
+      return new SubscribeResult(createdSubscription, channelCount, patternBytes);
     }
-    return findSubscriptions(client).size();
   }
 
   public synchronized long unsubscribe(Object channelOrPattern, Client client) {

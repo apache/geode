@@ -48,6 +48,11 @@ public class MockSubscriber extends JedisPubSub {
   }
 
   @Override
+  public void onPSubscribe(String pattern, int subscribedChannels) {
+    latch.countDown();
+  }
+
+  @Override
   public void onMessage(String channel, String message) {
     receivedMessages.add(message);
   }

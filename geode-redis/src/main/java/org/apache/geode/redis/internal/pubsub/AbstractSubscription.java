@@ -16,20 +16,21 @@
 
 package org.apache.geode.redis.internal.pubsub;
 
-import io.netty.buffer.ByteBuf;
+import java.util.concurrent.CountDownLatch;
+
 import io.netty.channel.ChannelFutureListener;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Client;
-import org.apache.geode.redis.internal.netty.Coder;
-import org.apache.geode.redis.internal.netty.CoderException;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public abstract class AbstractSubscription implements Subscription {
   private static final Logger logger = LogService.getLogger();
   private final Client client;
   private final ExecutionHandlerContext context;
+  private final CountDownLatch readyForPublish = new CountDownLatch(1);
 
   AbstractSubscription(Client client, ExecutionHandlerContext context) {
     if (client == null) {
@@ -43,10 +44,20 @@ public abstract class AbstractSubscription implements Subscription {
   }
 
   @Override
+  public void readyToPublish() {
+    readyForPublish.countDown();
+  }
+
+  @Override
   public void publishMessage(byte[] channel, byte[] message,
       PublishResultCollector publishResultCollector) {
-    ByteBuf messageByteBuffer = constructResponse(channel, message);
-    writeToChannel(messageByteBuffer, publishResultCollector);
+    try {
+      readyForPublish.await();
+    } catch (InterruptedException e) {
+      Thread.interrupted();
+      // we must be shutting down; so just fall through and do the publish
+    }
+    writeToChannel(constructResponse(channel, message), publishResultCollector);
   }
 
   Client getClient() {
@@ -58,25 +69,17 @@ public abstract class AbstractSubscription implements Subscription {
     return this.client.equals(client);
   }
 
-  private ByteBuf constructResponse(byte[] channel, byte[] message) {
-    ByteBuf messageByteBuffer;
-    try {
-      messageByteBuffer = Coder.getArrayResponse(context.getByteBufAllocator(),
-          createResponse(channel, message));
-    } catch (CoderException e) {
-      logger.warn("Unable to encode publish message", e);
-      return null;
-    }
-    return messageByteBuffer;
+  private RedisResponse constructResponse(byte[] channel, byte[] message) {
+    return RedisResponse.array(createResponse(channel, message));
   }
 
   /**
-   * This method turns the response into a synchronous call. We want to determine if the response,
-   * to the client, resulted in an error - for example if the client has disconnected and the write
-   * fails. In such cases we need to be able to notify the caller.
+   * We want to determine if the response, to the client, resulted in an error - for example if
+   * the client has disconnected and the write fails. In such cases we need to be able to notify
+   * the caller.
    */
-  private void writeToChannel(ByteBuf messageByteBuffer, PublishResultCollector resultCollector) {
-    context.writeToChannel(messageByteBuffer)
+  private void writeToChannel(RedisResponse response, PublishResultCollector resultCollector) {
+    context.writeToChannel(response)
         .addListener((ChannelFutureListener) future -> {
           if (future.cause() == null) {
             resultCollector.success();

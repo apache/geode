@@ -44,6 +44,7 @@ public class PubSubIntegrationTest {
   static Jedis publisher;
   static Jedis subscriber;
   static final int REDIS_CLIENT_TIMEOUT = 100000;
+  public static final int JEDIS_TIMEOUT = Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @ClassRule
   public static GeodeRedisServerRule server = new GeodeRedisServerRule();
@@ -379,11 +380,13 @@ public class PubSubIntegrationTest {
     waitFor(() -> !subscriberThread.isAlive());
 
     List<String> unsubscribedChannels = mockSubscriber.unsubscribeInfos.stream()
-        .map(x -> x.channel).collect(Collectors.toList());
+        .map(x -> x.channel)
+        .collect(Collectors.toList());
     assertThat(unsubscribedChannels).containsExactlyInAnyOrder("salutations", "yuletide");
 
     List<Integer> channelCounts = mockSubscriber.unsubscribeInfos.stream()
-        .map(x -> x.count).collect(Collectors.toList());
+        .map(x -> x.count)
+        .collect(Collectors.toList());
     assertThat(channelCounts).containsExactlyInAnyOrder(1, 0);
 
   }
@@ -404,11 +407,13 @@ public class PubSubIntegrationTest {
     waitFor(() -> !subscriberThread.isAlive());
 
     List<String> unsubscribedChannels = mockSubscriber.unsubscribeInfos.stream()
-        .map(x -> x.channel).collect(Collectors.toList());
+        .map(x -> x.channel)
+        .collect(Collectors.toList());
     assertThat(unsubscribedChannels).containsExactlyInAnyOrder("salutations", "yuletide");
 
     List<Integer> channelCounts = mockSubscriber.unsubscribeInfos.stream()
-        .map(x -> x.count).collect(Collectors.toList());
+        .map(x -> x.count)
+        .collect(Collectors.toList());
     assertThat(channelCounts).containsExactlyInAnyOrder(1, 0);
 
     Long result = publisher.publish("salutations", "greetings");

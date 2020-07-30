@@ -11,29 +11,37 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
+ *
  */
 
-package org.apache.geode.redis.internal.executor.pubsub;
+package org.apache.geode.redis.internal.pubsub;
 
-import java.util.List;
+public class SubscribeResult {
+  private final Subscription subscription;
+  private final long channelCount;
+  private final byte[] channel;
 
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
-import org.apache.geode.redis.internal.executor.RedisResponse;
-import org.apache.geode.redis.internal.netty.Command;
-import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
+  public SubscribeResult(Subscription subscription, long channelCount, byte[] channel) {
+    this.subscription = subscription;
+    this.channelCount = channelCount;
+    this.channel = channel;
+  }
 
-public class PublishExecutor extends AbstractExecutor {
+  /**
+   * Returns the Subscription instance this subscribe operations created; possibly null.
+   */
+  public Subscription getSubscription() {
+    return subscription;
+  }
 
-  @Override
-  public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
+  /**
+   * returns the number of channels this subscribe operation subscribed to.
+   */
+  public long getChannelCount() {
+    return channelCount;
+  }
 
-    List<byte[]> args = command.getProcessedCommand();
-    byte[] channelName = args.get(1);
-    byte[] message = args.get(2);
-    long publishCount = context.getPubSub()
-        .publish(context.getRegionProvider().getDataRegion(), channelName, message);
-
-    return RedisResponse.integer(publishCount);
+  public byte[] getChannel() {
+    return channel;
   }
 }

@@ -17,6 +17,8 @@ package org.apache.geode.redis.internal.netty;
 
 
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Supplier;
 
 import io.netty.buffer.ByteBuf;
@@ -27,7 +29,6 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.EventLoopGroup;
 import io.netty.handler.codec.DecoderException;
 import org.apache.logging.log4j.Logger;
 
@@ -59,17 +60,21 @@ import org.apache.geode.redis.internal.pubsub.PubSub;
 public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   private static final Logger logger = LogService.getLogger();
+  private static final Command TERMINATE_COMMAND = new Command();
 
   private final Client client;
   private final Channel channel;
   private final RegionProvider regionProvider;
   private final PubSub pubsub;
-  private final EventLoopGroup subscriberGroup;
   private final ByteBufAllocator byteBufAllocator;
   private final byte[] authPassword;
   private final Supplier<Boolean> allowUnsupportedSupplier;
   private final Runnable shutdownInvoker;
   private final RedisStats redisStats;
+  private final ExecutorService backgroundExecutor;
+  private final int MAX_QUEUED_COMMANDS = 100;
+  private final LinkedBlockingQueue<Command> commandQueue =
+      new LinkedBlockingQueue<>(MAX_QUEUED_COMMANDS);
 
   private boolean isAuthenticated;
 
@@ -80,31 +85,59 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    * @param password Authentication password for each context, can be null
    */
   public ExecutionHandlerContext(Channel channel, RegionProvider regionProvider, PubSub pubsub,
-      EventLoopGroup subscriberGroup,
       Supplier<Boolean> allowUnsupportedSupplier,
       Runnable shutdownInvoker,
       RedisStats redisStats,
+      ExecutorService backgroundExecutor,
       byte[] password) {
     this.channel = channel;
     this.regionProvider = regionProvider;
     this.pubsub = pubsub;
-    this.subscriberGroup = subscriberGroup;
     this.allowUnsupportedSupplier = allowUnsupportedSupplier;
     this.shutdownInvoker = shutdownInvoker;
     this.redisStats = redisStats;
+    this.backgroundExecutor = backgroundExecutor;
     this.client = new Client(channel);
     this.byteBufAllocator = this.channel.alloc();
     this.authPassword = password;
     this.isAuthenticated = password == null;
     redisStats.addClient();
-  }
 
-  public ChannelFuture writeToChannel(ByteBuf message) {
-    return channel.writeAndFlush(message, channel.newPromise());
+    backgroundExecutor.submit(this::processCommandQueue);
   }
 
   public ChannelFuture writeToChannel(RedisResponse response) {
-    return channel.writeAndFlush(response.encode(byteBufAllocator), channel.newPromise());
+    if (response == null) {
+      return null;
+    }
+    return channel.writeAndFlush(response.encode(byteBufAllocator), channel.newPromise())
+        .addListener((ChannelFutureListener) f -> {
+          response.afterWrite();
+          logResponse(response);
+        });
+  }
+
+  private void processCommandQueue() {
+    while (true) {
+      Command command = takeCommandFromQueue();
+      if (command == TERMINATE_COMMAND) {
+        return;
+      }
+      try {
+        executeCommand(command);
+      } catch (Throwable ex) {
+        exceptionCaught(command.getChannelHandlerContext(), ex);
+      }
+    }
+  }
+
+  private Command takeCommandFromQueue() {
+    try {
+      return commandQueue.take();
+    } catch (InterruptedException e) {
+      logger.info("Command queue thread interrupted");
+      return TERMINATE_COMMAND;
+    }
   }
 
   /**
@@ -113,17 +146,8 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
     Command command = (Command) msg;
-    try {
-      if (logger.isDebugEnabled()) {
-        logger.debug("Executing Redis command: {}", command);
-      }
-
-      executeCommand(ctx, command);
-    } catch (Exception e) {
-      logger.warn("Execution of Redis command {} failed: {}", command, e);
-      throw e;
-    }
-
+    command.setChannelHandlerContext(ctx);
+    commandQueue.offer(command);
   }
 
   /**
@@ -186,43 +210,49 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     if (logger.isDebugEnabled()) {
       logger.debug("GeodeRedisServer-Connection closing with " + ctx.channel().remoteAddress());
     }
+    commandQueue.offer(TERMINATE_COMMAND);
     redisStats.removeClient();
     ctx.channel().close();
     ctx.close();
   }
 
-  private void executeCommand(ChannelHandlerContext ctx, Command command) {
-    RedisResponse response;
-
-    if (!isAuthenticated()) {
-      response = handleUnAuthenticatedCommand(command);
-      writeToChannel(response);
-      return;
-    }
-
-    if (command.isUnsupported() && !allowUnsupportedCommands()) {
-      writeToChannel(
-          RedisResponse.error(command.getCommandType() + RedisConstants.ERROR_UNSUPPORTED_COMMAND));
-      return;
-    }
-
-    if (command.isUnimplemented()) {
-      logger.info("Failed " + command.getCommandType() + " because it is not implemented.");
-      writeToChannel(RedisResponse.error(command.getCommandType() + " is not implemented."));
-      return;
-    }
-
-    final long start = redisStats.startCommand(command.getCommandType());
+  private void executeCommand(Command command) {
     try {
-      response = command.execute(this);
-      logResponse(response);
-      writeToChannel(response);
-    } finally {
-      redisStats.endCommand(command.getCommandType(), start);
-    }
+      if (logger.isDebugEnabled()) {
+        logger.debug("Executing Redis command: {}", command);
+      }
 
-    if (command.isOfType(RedisCommandType.QUIT)) {
-      channelInactive(ctx);
+      if (!isAuthenticated()) {
+        writeToChannel(handleUnAuthenticatedCommand(command));
+        return;
+      }
+
+      if (command.isUnsupported() && !allowUnsupportedCommands()) {
+        writeToChannel(
+            RedisResponse
+                .error(command.getCommandType() + RedisConstants.ERROR_UNSUPPORTED_COMMAND));
+        return;
+      }
+
+      if (command.isUnimplemented()) {
+        logger.info("Failed " + command.getCommandType() + " because it is not implemented.");
+        writeToChannel(RedisResponse.error(command.getCommandType() + " is not implemented."));
+        return;
+      }
+
+      final long start = redisStats.startCommand(command.getCommandType());
+      try {
+        writeToChannel(command.execute(this));
+      } finally {
+        redisStats.endCommand(command.getCommandType(), start);
+      }
+
+      if (command.isOfType(RedisCommandType.QUIT)) {
+        channelInactive(command.getChannelHandlerContext());
+      }
+    } catch (Exception e) {
+      logger.warn("Execution of Redis command {} failed: {}", command, e);
+      throw e;
     }
   }
 
@@ -239,20 +269,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       response = RedisResponse.customError(RedisConstants.ERROR_NOT_AUTH);
     }
     return response;
-  }
-
-  public EventLoopGroup getSubscriberGroup() {
-    return subscriberGroup;
-  }
-
-  public void changeChannelEventLoopGroup(EventLoopGroup newGroup) {
-    if (newGroup.equals(channel.eventLoop())) {
-      // already registered with newGroup
-      return;
-    }
-    channel.deregister().addListener((ChannelFutureListener) future -> {
-      newGroup.register(channel).sync();
-    });
   }
 
   private void logResponse(RedisResponse response) {
@@ -322,6 +338,5 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   public PubSub getPubSub() {
     return pubsub;
   }
-
 
 }

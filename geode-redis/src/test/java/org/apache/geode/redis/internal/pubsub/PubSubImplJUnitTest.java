@@ -22,8 +22,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.DefaultChannelPromise;
@@ -43,8 +41,7 @@ public class PubSubImplJUnitTest {
     ExecutionHandlerContext mockContext = mock(ExecutionHandlerContext.class);
 
     FailingChannelFuture mockFuture = new FailingChannelFuture();
-    when(mockContext.writeToChannel((ByteBuf) any())).thenReturn(mockFuture);
-    when(mockContext.getByteBufAllocator()).thenReturn(new PooledByteBufAllocator());
+    when(mockContext.writeToChannel(any())).thenReturn(mockFuture);
 
     Client deadClient = mock(Client.class);
     when(deadClient.isDead()).thenReturn(true);
@@ -52,6 +49,7 @@ public class PubSubImplJUnitTest {
     ChannelSubscription subscription =
         spy(new ChannelSubscription(deadClient,
             "sally".getBytes(), mockContext));
+    subscription.readyToPublish();
 
     subscriptions.add(subscription);
 

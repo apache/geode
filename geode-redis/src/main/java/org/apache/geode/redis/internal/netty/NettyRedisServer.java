@@ -26,6 +26,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.function.Supplier;
 
@@ -77,9 +78,9 @@ public class NettyRedisServer {
   private final Supplier<Boolean> allowUnsupportedSupplier;
   private final Runnable shutdownInvoker;
   private final RedisStats redisStats;
+  private final ExecutorService backgroundExecutor;
   private final EventLoopGroup selectorGroup;
   private final EventLoopGroup workerGroup;
-  private final EventLoopGroup subscriberGroup;
   private final InetAddress bindAddress;
   private final Channel serverChannel;
   private final int serverPort;
@@ -88,20 +89,20 @@ public class NettyRedisServer {
       RegionProvider regionProvider, PubSub pubsub,
       Supplier<Boolean> allowUnsupportedSupplier,
       Runnable shutdownInvoker, int port, String requestedAddress,
-      RedisStats redisStats) {
+      RedisStats redisStats, ExecutorService backgroundExecutor) {
     this.configSupplier = configSupplier;
     this.regionProvider = regionProvider;
     this.pubsub = pubsub;
     this.allowUnsupportedSupplier = allowUnsupportedSupplier;
     this.shutdownInvoker = shutdownInvoker;
     this.redisStats = redisStats;
+    this.backgroundExecutor = backgroundExecutor;
     if (port < RANDOM_PORT_INDICATOR) {
       throw new IllegalArgumentException("Redis port cannot be less than 0");
     }
     this.bindAddress = getBindAddress(requestedAddress);
     selectorGroup = createEventLoopGroup("Selector", false, 1);
     workerGroup = createEventLoopGroup("Worker", true, 0);
-    subscriberGroup = createEventLoopGroup("Subscriber", true, 0);
     serverChannel = createChannel(port);
     serverPort = getActualPort();
     logStartupMessage();
@@ -158,8 +159,9 @@ public class NettyRedisServer {
         pipeline.addLast(ByteToCommandDecoder.class.getSimpleName(), new ByteToCommandDecoder());
         pipeline.addLast(new WriteTimeoutHandler(10));
         pipeline.addLast(ExecutionHandlerContext.class.getSimpleName(),
-            new ExecutionHandlerContext(socketChannel, regionProvider, pubsub, subscriberGroup,
-                allowUnsupportedSupplier, shutdownInvoker, redisStats, redisPasswordBytes));
+            new ExecutionHandlerContext(socketChannel, regionProvider, pubsub,
+                allowUnsupportedSupplier, shutdownInvoker, redisStats, backgroundExecutor,
+                redisPasswordBytes));
       }
     };
   }
