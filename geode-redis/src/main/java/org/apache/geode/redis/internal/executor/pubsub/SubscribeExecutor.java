@@ -17,34 +17,55 @@ package org.apache.geode.redis.internal.executor.pubsub;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.function.Consumer;
 
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.pubsub.SubscribeResult;
 
 public class SubscribeExecutor extends AbstractExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
-    Collection<Collection<?>> items = new ArrayList<>();
+    Collection<SubscribeResult> results = new ArrayList<>();
     for (int i = 1; i < command.getProcessedCommand().size(); i++) {
-      Collection<Object> item = new ArrayList<>();
       byte[] channelName = command.getProcessedCommand().get(i);
-      long subscribedChannels =
+      SubscribeResult result =
           context.getPubSub().subscribe(channelName, context, context.getClient());
+      results.add(result);
+    }
 
+    Collection<Collection<?>> items = new ArrayList<>();
+    for (SubscribeResult result : results) {
+      Collection<Object> item = new ArrayList<>();
       item.add("subscribe");
-      item.add(channelName);
-      item.add(subscribedChannels);
-
+      item.add(result.getChannel());
+      item.add(result.getChannelCount());
       items.add(item);
     }
 
-    context.changeChannelEventLoopGroup(context.getSubscriberGroup());
+    Runnable callback = () -> {
+      Consumer<Boolean> innerCallback = success -> {
+        for (SubscribeResult result : results) {
+          if (result.getSubscription() != null) {
+            if (success) {
+              result.getSubscription().readyToPublish();
+            } else {
+              result.getSubscription().shutdown();
+            }
+          }
+        }
+      };
+      context.changeChannelEventLoopGroup(context.getSubscriberGroup(), innerCallback);
+    };
 
-    return RedisResponse.flattenedArray(items);
+    RedisResponse response = RedisResponse.flattenedArray(items);
+    response.setAfterWriteCallback(callback);
+
+    return response;
   }
 
 }

@@ -16,14 +16,14 @@
 
 package org.apache.geode.redis.internal.pubsub;
 
-import io.netty.buffer.ByteBuf;
+import java.util.concurrent.CountDownLatch;
+
 import io.netty.channel.ChannelFutureListener;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Client;
-import org.apache.geode.redis.internal.netty.Coder;
-import org.apache.geode.redis.internal.netty.CoderException;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public abstract class AbstractSubscription implements Subscription {
@@ -31,25 +31,61 @@ public abstract class AbstractSubscription implements Subscription {
   private final Client client;
   private final ExecutionHandlerContext context;
 
-  AbstractSubscription(Client client, ExecutionHandlerContext context) {
+  // Two things have to happen before we are ready to publish:
+  // 1 - we need to make sure the subscriber has switched EventLoopGroups
+  // 2 - the response to the SUBSCRIBE command has been submitted to the client
+  private final CountDownLatch readyForPublish = new CountDownLatch(1);
+  private final Subscriptions subscriptions;
+  private boolean running = true;
+
+  AbstractSubscription(Client client, ExecutionHandlerContext context,
+      Subscriptions subscriptions) {
     if (client == null) {
       throw new IllegalArgumentException("client cannot be null");
     }
     if (context == null) {
       throw new IllegalArgumentException("context cannot be null");
     }
+    if (subscriptions == null) {
+      throw new IllegalArgumentException("subscriptions cannot be null");
+    }
     this.client = client;
     this.context = context;
+    this.subscriptions = subscriptions;
+  }
+
+  @Override
+  public void readyToPublish() {
+    readyForPublish.countDown();
   }
 
   @Override
   public void publishMessage(byte[] channel, byte[] message,
       PublishResultCollector publishResultCollector) {
-    ByteBuf messageByteBuffer = constructResponse(channel, message);
-    writeToChannel(messageByteBuffer, publishResultCollector);
+    try {
+      readyForPublish.await();
+    } catch (InterruptedException e) {
+      // we must be shutting down or registration failed
+      Thread.interrupted();
+      running = false;
+    }
+
+    if (running) {
+      writeToChannel(constructResponse(channel, message), publishResultCollector);
+    } else {
+      publishResultCollector.failure(client);
+    }
   }
 
-  Client getClient() {
+  @Override
+  public synchronized void shutdown() {
+    running = false;
+    subscriptions.remove(client);
+    // release any threads currently waiting to publish
+    readyToPublish();
+  }
+
+  public Client getClient() {
     return client;
   }
 
@@ -58,25 +94,17 @@ public abstract class AbstractSubscription implements Subscription {
     return this.client.equals(client);
   }
 
-  private ByteBuf constructResponse(byte[] channel, byte[] message) {
-    ByteBuf messageByteBuffer;
-    try {
-      messageByteBuffer = Coder.getArrayResponse(context.getByteBufAllocator(),
-          createResponse(channel, message));
-    } catch (CoderException e) {
-      logger.warn("Unable to encode publish message", e);
-      return null;
-    }
-    return messageByteBuffer;
+  private RedisResponse constructResponse(byte[] channel, byte[] message) {
+    return RedisResponse.array(createResponse(channel, message));
   }
 
   /**
-   * This method turns the response into a synchronous call. We want to determine if the response,
-   * to the client, resulted in an error - for example if the client has disconnected and the write
-   * fails. In such cases we need to be able to notify the caller.
+   * We want to determine if the response, to the client, resulted in an error - for example if
+   * the client has disconnected and the write fails. In such cases we need to be able to notify
+   * the caller.
    */
-  private void writeToChannel(ByteBuf messageByteBuffer, PublishResultCollector resultCollector) {
-    context.writeToChannel(messageByteBuffer)
+  private void writeToChannel(RedisResponse response, PublishResultCollector resultCollector) {
+    context.writeToChannel(response)
         .addListener((ChannelFutureListener) future -> {
           if (future.cause() == null) {
             resultCollector.success();

@@ -32,8 +32,20 @@ public class RedisResponse {
 
   private final Function<ByteBufAllocator, ByteBuf> coderCallback;
 
+  private Runnable afterWriteCallback;
+
   private RedisResponse(Function<ByteBufAllocator, ByteBuf> coderCallback) {
     this.coderCallback = coderCallback;
+  }
+
+  public void setAfterWriteCallback(Runnable callback) {
+    afterWriteCallback = callback;
+  }
+
+  public void afterWrite() {
+    if (afterWriteCallback != null) {
+      afterWriteCallback.run();
+    }
   }
 
   public ByteBuf encode(ByteBufAllocator allocator) {

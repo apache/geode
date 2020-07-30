@@ -57,4 +57,11 @@ public interface Subscription {
    * pattern is returned.
    */
   byte[] getChannelName();
+
+  /**
+   * Called once this subscriber is ready to have publishMessage called
+   */
+  void readyToPublish();
+
+  void shutdown();
 }

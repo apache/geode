@@ -86,12 +86,13 @@ public class PubSubImpl implements PubSub {
   }
 
   @Override
-  public long subscribe(byte[] channel, ExecutionHandlerContext context, Client client) {
+  public SubscribeResult subscribe(byte[] channel, ExecutionHandlerContext context, Client client) {
     return subscriptions.subscribe(channel, context, client);
   }
 
   @Override
-  public long psubscribe(GlobPattern pattern, ExecutionHandlerContext context, Client client) {
+  public SubscribeResult psubscribe(byte[] pattern, ExecutionHandlerContext context,
+      Client client) {
     return subscriptions.psubscribe(pattern, context, client);
   }
 
@@ -142,7 +143,6 @@ public class PubSubImpl implements PubSub {
 
   @VisibleForTesting
   long publishMessageToSubscribers(byte[] channel, byte[] message) {
-
     List<Subscription> foundSubscriptions = subscriptions
         .findSubscriptions(channel);
     if (foundSubscriptions.isEmpty()) {

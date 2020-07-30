@@ -42,8 +42,8 @@ public class PubSubNativeRedisAcceptanceTest extends PubSubIntegrationTest {
   public static void setUp() {
     redisContainer = new GenericContainer<>("redis:5.0.6").withExposedPorts(6379);
     redisContainer.start();
-    subscriber = new Jedis("localhost", redisContainer.getFirstMappedPort(), REDIS_CLIENT_TIMEOUT);
-    publisher = new Jedis("localhost", redisContainer.getFirstMappedPort(), REDIS_CLIENT_TIMEOUT);
+    subscriber = new Jedis("localhost", redisContainer.getFirstMappedPort(), JEDIS_TIMEOUT);
+    publisher = new Jedis("localhost", redisContainer.getFirstMappedPort(), JEDIS_TIMEOUT);
   }
 
   @AfterClass
@@ -55,4 +55,5 @@ public class PubSubNativeRedisAcceptanceTest extends PubSubIntegrationTest {
   public int getPort() {
     return redisContainer.getFirstMappedPort();
   }
+
 }

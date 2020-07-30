@@ -20,10 +20,22 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Queue;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -32,6 +44,8 @@ import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
 
+import org.apache.geode.logging.internal.log4j.api.FastLogger;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.GeodeRedisServerRule;
 import org.apache.geode.redis.mocks.MockBinarySubscriber;
 import org.apache.geode.redis.mocks.MockSubscriber;
@@ -43,7 +57,7 @@ import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 public class PubSubIntegrationTest {
   static Jedis publisher;
   static Jedis subscriber;
-  static final int REDIS_CLIENT_TIMEOUT = 100000;
+  public static final int JEDIS_TIMEOUT = Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @ClassRule
   public static GeodeRedisServerRule server = new GeodeRedisServerRule();
@@ -53,8 +67,8 @@ public class PubSubIntegrationTest {
 
   @BeforeClass
   public static void setUp() {
-    subscriber = new Jedis("localhost", server.getPort(), REDIS_CLIENT_TIMEOUT);
-    publisher = new Jedis("localhost", server.getPort(), REDIS_CLIENT_TIMEOUT);
+    subscriber = new Jedis("localhost", server.getPort(), JEDIS_TIMEOUT);
+    publisher = new Jedis("localhost", server.getPort(), JEDIS_TIMEOUT);
   }
 
   @AfterClass
@@ -379,11 +393,13 @@ public class PubSubIntegrationTest {
     waitFor(() -> !subscriberThread.isAlive());
 
     List<String> unsubscribedChannels = mockSubscriber.unsubscribeInfos.stream()
-        .map(x -> x.channel).collect(Collectors.toList());
+        .map(x -> x.channel)
+        .collect(Collectors.toList());
     assertThat(unsubscribedChannels).containsExactlyInAnyOrder("salutations", "yuletide");
 
     List<Integer> channelCounts = mockSubscriber.unsubscribeInfos.stream()
-        .map(x -> x.count).collect(Collectors.toList());
+        .map(x -> x.count)
+        .collect(Collectors.toList());
     assertThat(channelCounts).containsExactlyInAnyOrder(1, 0);
 
   }
@@ -404,11 +420,13 @@ public class PubSubIntegrationTest {
     waitFor(() -> !subscriberThread.isAlive());
 
     List<String> unsubscribedChannels = mockSubscriber.unsubscribeInfos.stream()
-        .map(x -> x.channel).collect(Collectors.toList());
+        .map(x -> x.channel)
+        .collect(Collectors.toList());
     assertThat(unsubscribedChannels).containsExactlyInAnyOrder("salutations", "yuletide");
 
     List<Integer> channelCounts = mockSubscriber.unsubscribeInfos.stream()
-        .map(x -> x.count).collect(Collectors.toList());
+        .map(x -> x.count)
+        .collect(Collectors.toList());
     assertThat(channelCounts).containsExactlyInAnyOrder(1, 0);
 
     Long result = publisher.publish("salutations", "greetings");
@@ -455,7 +473,7 @@ public class PubSubIntegrationTest {
 
   @Test
   public void testTwoSubscribersOneChannel() {
-    Jedis subscriber2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    Jedis subscriber2 = new Jedis("localhost", getPort(), JEDIS_TIMEOUT);
     MockSubscriber mockSubscriber1 = new MockSubscriber();
     MockSubscriber mockSubscriber2 = new MockSubscriber();
 
@@ -525,7 +543,7 @@ public class PubSubIntegrationTest {
 
   @Test
   public void testDeadSubscriber() {
-    Jedis deadSubscriber = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    Jedis deadSubscriber = new Jedis("localhost", getPort(), JEDIS_TIMEOUT);
 
     MockSubscriber mockSubscriber = new MockSubscriber();
 
@@ -672,6 +690,158 @@ public class PubSubIntegrationTest {
 
     assertThat(mockSubscriber.getReceivedMessages()).containsExactly("hello");
     assertThat(mockSubscriber.getReceivedPMessages()).containsExactly("hello");
+  }
+
+  private Jedis getConnection() {
+    Exception lastException = null;
+
+    for (int i = 0; i < 10; i++) {
+      Jedis client = null;
+      try {
+        client = new Jedis("localhost", server.getPort(), JEDIS_TIMEOUT);
+        client.ping();
+        return client;
+      } catch (Exception e) {
+        lastException = e;
+        if (client != null) {
+          try {
+            client.close();
+          } catch (Exception ignore) {
+          }
+        }
+      }
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
+
+    throw new RuntimeException("Tried 10 times, but could not get a good connection.",
+        lastException);
+  }
+
+  int doPublishing(int index, int minimumIterations, AtomicBoolean running) {
+    int iterationCount = 0;
+    int publishedMessages = 0;
+    Jedis client = getConnection();
+    try {
+      while (iterationCount < minimumIterations || running.get()) {
+        publishedMessages += client.publish("my-channel", "boo-" + index + "-" + iterationCount);
+        iterationCount++;
+      }
+    } finally {
+      client.close();
+    }
+
+    return publishedMessages;
+  }
+
+  int makeSubscribers(int index, int minimumIterations, AtomicBoolean running)
+      throws InterruptedException, ExecutionException {
+    ExecutorService executor = Executors.newFixedThreadPool(100);
+    // ExecutorService secondaryExecutor = Executors.newCachedThreadPool();
+    Queue<Future<Void>> workQ = new ConcurrentLinkedQueue<>();
+
+    Future<Integer> consumer = executor.submit(() -> {
+      int subscribersProcessed = 0;
+      while (subscribersProcessed < minimumIterations || running.get()) {
+        if (workQ.isEmpty()) {
+          Thread.yield();
+          continue;
+        }
+        Future<Void> f = workQ.poll();
+        try {
+          f.get();
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
+        subscribersProcessed++;
+      }
+      return subscribersProcessed;
+    });
+
+    int iterationCount = 0;
+    String channel = "my-channel";
+    while (iterationCount < minimumIterations || running.get()) {
+      Future<Void> f = executor.submit(() -> {
+        Jedis client = getConnection();
+        ExecutorService secondaryExecutor = Executors.newSingleThreadExecutor();
+        MockSubscriber mockSubscriber = new MockSubscriber();
+        AtomicReference<Thread> innerThread = new AtomicReference<>();
+        Future<Void> inner = secondaryExecutor.submit(() -> {
+          innerThread.set(Thread.currentThread());
+          try {
+            client.subscribe(mockSubscriber, channel);
+          } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+          }
+          return null;
+        });
+        mockSubscriber.awaitSubscribe(channel);
+        if (inner.isDone()) {
+          throw new RuntimeException("inner completed before unsubscribe");
+        }
+
+        mockSubscriber.unsubscribe(channel);
+
+        try {
+          inner.get(30, TimeUnit.SECONDS);
+        } catch (TimeoutException e) {
+          LogService.getLogger().debug("=> {} {}", innerThread.get(), innerThread.get().getState());
+          for (StackTraceElement st : innerThread.get().getStackTrace()) {
+            LogService.getLogger().debug("-> {}", st);
+          }
+          throw new RuntimeException("inner.get() timed out after unsubscribe");
+        }
+
+        mockSubscriber.awaitUnsubscribe(channel);
+        client.close();
+        secondaryExecutor.shutdownNow();
+
+        return null;
+      });
+      workQ.add(f);
+      iterationCount++;
+    }
+
+    int result = consumer.get();
+    executor.shutdownNow();
+    // secondaryExecutor.shutdownNow();
+    return result;
+  }
+
+  @Test
+  public void concurrentSubscribers_andPublishers_doesNotHang()
+      throws InterruptedException, ExecutionException {
+    Logger logger = LogService.getLogger("org.apache.geode.redis");
+    Configurator.setAllLevels(logger.getName(), Level.getLevel("DEBUG"));
+    FastLogger.setDelegating(true);
+
+    AtomicBoolean running = new AtomicBoolean(true);
+
+    Future<Integer> makeSubscribersFuture1 =
+        executor.submit(() -> makeSubscribers(1, 10000, running));
+    Future<Integer> makeSubscribersFuture2 =
+        executor.submit(() -> makeSubscribers(2, 10000, running));
+
+    Future<Integer> publish1 = executor.submit(() -> doPublishing(1, 10000, running));
+    Future<Integer> publish2 = executor.submit(() -> doPublishing(2, 10000, running));
+    Future<Integer> publish3 = executor.submit(() -> doPublishing(3, 10000, running));
+    Future<Integer> publish4 = executor.submit(() -> doPublishing(4, 10000, running));
+    Future<Integer> publish5 = executor.submit(() -> doPublishing(5, 10000, running));
+
+    running.set(false);
+
+    assertThat(makeSubscribersFuture1.get()).isGreaterThanOrEqualTo(10);
+    assertThat(makeSubscribersFuture2.get()).isGreaterThanOrEqualTo(10);
+
+    assertThat(publish1.get()).isGreaterThan(0);
+    assertThat(publish2.get()).isGreaterThan(0);
+    assertThat(publish3.get()).isGreaterThan(0);
+    assertThat(publish4.get()).isGreaterThan(0);
+    assertThat(publish5.get()).isGreaterThan(0);
   }
 
   private void waitFor(Callable<Boolean> booleanCallable) {
