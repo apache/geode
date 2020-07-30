@@ -16,12 +16,14 @@
 
 package org.apache.geode.redis.internal.pubsub;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelFutureListener;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Client;
+import org.apache.geode.redis.internal.netty.Coder;
+import org.apache.geode.redis.internal.netty.CoderException;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public abstract class AbstractSubscription implements Subscription {
@@ -43,7 +45,8 @@ public abstract class AbstractSubscription implements Subscription {
   @Override
   public void publishMessage(byte[] channel, byte[] message,
       PublishResultCollector publishResultCollector) {
-    writeToChannel(constructResponse(channel, message), publishResultCollector);
+    ByteBuf messageByteBuffer = constructResponse(channel, message);
+    writeToChannel(messageByteBuffer, publishResultCollector);
   }
 
   Client getClient() {
@@ -55,8 +58,16 @@ public abstract class AbstractSubscription implements Subscription {
     return this.client.equals(client);
   }
 
-  private RedisResponse constructResponse(byte[] channel, byte[] message) {
-    return RedisResponse.array(createResponse(channel, message));
+  private ByteBuf constructResponse(byte[] channel, byte[] message) {
+    ByteBuf messageByteBuffer;
+    try {
+      messageByteBuffer = Coder.getArrayResponse(context.getByteBufAllocator(),
+          createResponse(channel, message));
+    } catch (CoderException e) {
+      logger.warn("Unable to encode publish message", e);
+      return null;
+    }
+    return messageByteBuffer;
   }
 
   /**
@@ -64,8 +75,8 @@ public abstract class AbstractSubscription implements Subscription {
    * to the client, resulted in an error - for example if the client has disconnected and the write
    * fails. In such cases we need to be able to notify the caller.
    */
-  private void writeToChannel(RedisResponse response, PublishResultCollector resultCollector) {
-    context.writeToChannel(response)
+  private void writeToChannel(ByteBuf messageByteBuffer, PublishResultCollector resultCollector) {
+    context.writeToChannel(messageByteBuffer)
         .addListener((ChannelFutureListener) future -> {
           if (future.cause() == null) {
             resultCollector.success();

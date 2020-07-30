@@ -93,9 +93,7 @@ public class GeodeRedisServer {
         new PassiveExpirationManager(regionProvider.getDataRegion(), redisStats);
     nettyRedisServer = new NettyRedisServer(() -> cache.getInternalDistributedSystem().getConfig(),
         regionProvider, pubSub,
-        this::allowUnsupportedCommands, this::shutdown, port, bindAddress, redisStats,
-        cache.getInternalDistributedSystem().getDistributionManager().getExecutors()
-            .getWaitingThreadPool());
+        this::allowUnsupportedCommands, this::shutdown, port, bindAddress, redisStats);
   }
 
   public void setAllowUnsupportedCommands(boolean allowUnsupportedCommands) {

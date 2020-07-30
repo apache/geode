@@ -30,7 +30,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -40,7 +39,6 @@ import org.junit.Test;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisException;
 
-import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.redis.MockSubscriber;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -51,7 +49,6 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 public class PubSubDUnitTest {
 
   public static final String CHANNEL_NAME = "salutations";
-  public static final int JEDIS_TIMEOUT = Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @ClassRule
   public static RedisClusterStartupRule cluster = new RedisClusterStartupRule(6);
@@ -129,67 +126,6 @@ public class PubSubDUnitTest {
   }
 
   @Test
-  public void shouldNotHang_givenPublishingAndSubscribingSimultaneously() {
-    ArrayList<Thread> threads = new ArrayList<>();
-    AtomicInteger subscribeCount = new AtomicInteger();
-    AtomicInteger publishCount = new AtomicInteger();
-    Random random = new Random();
-
-    for (int i = 0; i < 200; i++) {
-      String channelName = "theBestChannel" + i;
-      Thread thread = new LoggingThread(channelName, () -> {
-        ArrayList<MockSubscriber> mockSubscribers = new ArrayList<>();
-        ArrayList<JedisWithLatch> clients = new ArrayList<>();
-        for (int j = 0; j < 5; j++) {
-          CountDownLatch latch = new CountDownLatch(1);
-          MockSubscriber mockSubscriber = new MockSubscriber(latch);
-          executor.submit(() -> {
-            Jedis client = getConnection(random);
-            JedisWithLatch jedisWithLatch = new JedisWithLatch(client);
-            clients.add(jedisWithLatch);
-            client.subscribe(mockSubscriber, channelName);
-            subscribeCount.getAndIncrement();
-            jedisWithLatch.finishSubscribe();
-          });
-          try {
-            latch.await();
-          } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-          }
-          mockSubscribers.add(mockSubscriber);
-        }
-
-        Jedis localPublisher = getConnection(random);
-        localPublisher.publish(channelName, "hi");
-        publishCount.getAndIncrement();
-        try {
-          localPublisher.close();
-        } catch (Exception ex) {
-        }
-
-        mockSubscribers.forEach(s -> {
-          GeodeAwaitility.await().ignoreExceptions()
-              .until(() -> s.getReceivedMessages().get(0).equals("hi"));
-          s.unsubscribe(channelName);
-        });
-        clients.forEach(JedisWithLatch::close);
-      });
-      threads.add(thread);
-      thread.start();
-    }
-
-    threads.forEach(thread -> {
-      try {
-        thread.join();
-      } catch (InterruptedException e) {
-        throw new RuntimeException(e);
-      }
-    });
-    assertThat(publishCount.get()).isEqualTo(200);
-    assertThat(subscribeCount.get()).isEqualTo(1000);
-  }
-
-  @Test
   public void shouldContinueToFunction_whenOneServerShutsDownGracefully_givenTwoSubscribersOnePublisher()
       throws InterruptedException {
     CountDownLatch latch = new CountDownLatch(2);
@@ -197,12 +133,13 @@ public class PubSubDUnitTest {
     MockSubscriber mockSubscriber1 = new MockSubscriber(latch);
     MockSubscriber mockSubscriber2 = new MockSubscriber(latch);
 
-    Future<Void> subscriber1Future =
-        executor.submit(() -> subscriber1.subscribe(mockSubscriber1, CHANNEL_NAME));
-    Future<Void> subscriber2Future =
-        executor.submit(() -> subscriber2.subscribe(mockSubscriber2, CHANNEL_NAME));
+    Future<Void> subscriber1Future = executor.submit(
+        () -> subscriber1.subscribe(mockSubscriber1, CHANNEL_NAME));
+    Future<Void> subscriber2Future = executor.submit(
+        () -> subscriber2.subscribe(mockSubscriber2, CHANNEL_NAME));
 
-    assertThat(latch.await(30, TimeUnit.SECONDS)).as("channel subscription was not received")
+    assertThat(latch.await(30, TimeUnit.SECONDS))
+        .as("channel subscription was not received")
         .isTrue();
 
     Long result = publisher1.publish(CHANNEL_NAME, "hello");
@@ -227,12 +164,13 @@ public class PubSubDUnitTest {
     MockSubscriber mockSubscriber1 = new MockSubscriber(latch);
     MockSubscriber mockSubscriber2 = new MockSubscriber(latch);
 
-    Future<Void> subscriber1Future =
-        executor.submit(() -> subscriber1.subscribe(mockSubscriber1, CHANNEL_NAME));
-    Future<Void> subscriber2Future =
-        executor.submit(() -> subscriber2.subscribe(mockSubscriber2, CHANNEL_NAME));
+    Future<Void> subscriber1Future = executor.submit(
+        () -> subscriber1.subscribe(mockSubscriber1, CHANNEL_NAME));
+    Future<Void> subscriber2Future = executor.submit(
+        () -> subscriber2.subscribe(mockSubscriber2, CHANNEL_NAME));
 
-    assertThat(latch.await(30, TimeUnit.SECONDS)).as("channel subscription was not received")
+    assertThat(latch.await(30, TimeUnit.SECONDS))
+        .as("channel subscription was not received")
         .isTrue();
 
     Long result = publisher1.publish(CHANNEL_NAME, "hello");
@@ -278,12 +216,13 @@ public class PubSubDUnitTest {
     MockSubscriber mockSubscriber1 = new MockSubscriber(latch);
     MockSubscriber mockSubscriber2 = new MockSubscriber(latch);
 
-    Future<Void> subscriber1Future =
-        executor.submit(() -> subscriber1.subscribe(mockSubscriber1, CHANNEL_NAME));
-    Future<Void> subscriber2Future =
-        executor.submit(() -> subscriber2.subscribe(mockSubscriber2, CHANNEL_NAME));
+    Future<Void> subscriber1Future = executor.submit(
+        () -> subscriber1.subscribe(mockSubscriber1, CHANNEL_NAME));
+    Future<Void> subscriber2Future = executor.submit(
+        () -> subscriber2.subscribe(mockSubscriber2, CHANNEL_NAME));
 
-    assertThat(latch.await(30, TimeUnit.SECONDS)).as("channel subscription was not received")
+    assertThat(latch.await(30, TimeUnit.SECONDS))
+        .as("channel subscription was not received")
         .isTrue();
 
     Long resultPublisher1 = publisher1.publish(CHANNEL_NAME, "hello");
@@ -310,12 +249,13 @@ public class PubSubDUnitTest {
     MockSubscriber mockSubscriber1 = new MockSubscriber(latch);
     MockSubscriber mockSubscriber2 = new MockSubscriber(latch);
 
-    Future<Void> subscriber1Future =
-        executor.submit(() -> subscriber1.subscribe(mockSubscriber1, CHANNEL_NAME));
-    Future<Void> subscriber2Future =
-        executor.submit(() -> subscriber2.subscribe(mockSubscriber2, CHANNEL_NAME));
+    Future<Void> subscriber1Future = executor.submit(
+        () -> subscriber1.subscribe(mockSubscriber1, CHANNEL_NAME));
+    Future<Void> subscriber2Future = executor.submit(
+        () -> subscriber2.subscribe(mockSubscriber2, CHANNEL_NAME));
 
-    assertThat(latch.await(30, TimeUnit.SECONDS)).as("channel subscription was not received")
+    assertThat(latch.await(30, TimeUnit.SECONDS))
+        .as("channel subscription was not received")
         .isTrue();
 
     Long result = publisher1.publish(CHANNEL_NAME, "hello");
@@ -337,12 +277,13 @@ public class PubSubDUnitTest {
     MockSubscriber mockSubscriber1 = new MockSubscriber(latch);
     MockSubscriber mockSubscriber2 = new MockSubscriber(latch);
 
-    Future<Void> subscriber1Future =
-        executor.submit(() -> subscriber1.subscribe(mockSubscriber1, CHANNEL_NAME));
-    Future<Void> subscriber2Future =
-        executor.submit(() -> subscriber2.subscribe(mockSubscriber2, CHANNEL_NAME));
+    Future<Void> subscriber1Future = executor.submit(
+        () -> subscriber1.subscribe(mockSubscriber1, CHANNEL_NAME));
+    Future<Void> subscriber2Future = executor.submit(
+        () -> subscriber2.subscribe(mockSubscriber2, CHANNEL_NAME));
 
-    assertThat(latch.await(30, TimeUnit.SECONDS)).as("channel subscription was not received")
+    assertThat(latch.await(30, TimeUnit.SECONDS))
+        .as("channel subscription was not received")
         .isTrue();
 
     List<Future<Void>> futures = new LinkedList<>();
@@ -469,8 +410,10 @@ public class PubSubDUnitTest {
   }
 
   private void waitForRestart() {
-    await().untilAsserted(
-        () -> gfsh.executeAndAssertThat("list members").statusIsSuccess().hasTableSection()
+    await()
+        .untilAsserted(() -> gfsh.executeAndAssertThat("list members")
+            .statusIsSuccess()
+            .hasTableSection()
             .hasColumn("Name")
             .containsOnly("locator-0", "server-1", "server-2", "server-3", "server-4", "server-5"));
   }
@@ -481,49 +424,5 @@ public class PubSubDUnitTest {
 
   private void reconnectSubscriber2() {
     subscriber2 = new Jedis(LOCAL_HOST, redisServerPort2);
-  }
-
-
-  private static class JedisWithLatch {
-    public final Jedis jedis;
-    public final CountDownLatch latch;
-
-    JedisWithLatch(Jedis jedis) {
-      this.latch = new CountDownLatch(1);
-      this.jedis = jedis;
-    }
-
-    public void finishSubscribe() {
-      latch.countDown();
-    }
-
-    public void close() {
-      try {
-        latch.await();
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-      jedis.close();
-    }
-  }
-
-  private Jedis getConnection(Random random) {
-    Jedis client;
-
-    for (int i = 0; i < 10; i++) {
-      int randPort = random.nextInt(4) + 1;
-      client = new Jedis("localhost", cluster.getRedisPort(randPort), JEDIS_TIMEOUT);
-      try {
-        client.ping();
-        return client;
-      } catch (Exception e) {
-        try {
-          client.close();
-        } catch (Exception exception) {
-
-        }
-      }
-    }
-    throw new RuntimeException("Tried 10 times, but could not get a good connection.");
   }
 }
