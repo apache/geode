@@ -193,9 +193,11 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.LogWriter;
@@ -1287,6 +1289,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    *
    * @since GemFire 4.0
    */
+  @InternalConfigAttribute
   String LOG_WRITER_NAME = "log-writer";
 
   /**
@@ -1295,6 +1298,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    *
    * @since GemFire 7.0
    */
+  @InternalConfigAttribute
   String DS_CONFIG_NAME = "ds-config";
 
   /**
@@ -1303,12 +1307,14 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    *
    * @since GemFire 8.1
    */
+  @InternalConfigAttribute
   String DS_RECONNECTING_NAME = "ds-reconnecting";
 
   /**
    * The name of an internal property that specifies the quorum checker for the system that was
    * forcibly disconnected. This should be used if the DS_RECONNECTING_NAME property is used.
    */
+  @InternalConfigAttribute
   String DS_QUORUM_CHECKER_NAME = "ds-quorum-checker";
 
   /**
@@ -1317,6 +1323,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    *
    * @since GemFire 5.5
    */
+  @InternalConfigAttribute
   String SECURITY_LOG_WRITER_NAME = "security-log-writer";
 
   /**
@@ -1326,6 +1333,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    *
    * @since GemFire 5.0
    */
+  @InternalConfigAttribute
   String LOG_OUTPUTSTREAM_NAME = "log-output-stream";
 
   /**
@@ -1335,6 +1343,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    *
    * @since GemFire 5.5
    */
+  @InternalConfigAttribute
   String SECURITY_LOG_OUTPUTSTREAM_NAME = "security-log-output-stream";
 
   /**
@@ -5369,6 +5378,8 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   @MakeImmutable
   Map<String, ConfigAttribute> attributes = new HashMap<>();
   @MakeImmutable
+  Set<String> internalAttributeNames = new HashSet<>();
+  @MakeImmutable
   Map<String, Method> setters = new HashMap<>();
   @MakeImmutable
   Map<String, Method> getters = new HashMap<>();
@@ -5379,11 +5390,19 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
     List<String> atts = new ArrayList<>();
     for (Field field : DistributionConfig.class.getDeclaredFields()) {
       if (field.isAnnotationPresent(ConfigAttribute.class)) {
+        field.setAccessible(true);
         try {
           atts.add((String) field.get(null));
           attributes.put((String) field.get(null), field.getAnnotation(ConfigAttribute.class));
         } catch (IllegalAccessException e) {
-          e.printStackTrace();
+          // field.setAccessible() will throw a SecurityException if it fails
+        }
+      } else if (field.isAnnotationPresent(InternalConfigAttribute.class)) {
+        field.setAccessible(true);
+        try {
+          internalAttributeNames.add((String) field.get(null));
+        } catch (IllegalAccessException e) {
+          // field.setAccessible() will throw a SecurityException if it fails
         }
       }
     }

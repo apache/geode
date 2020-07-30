@@ -1128,7 +1128,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   private void validateConfigurationProperties(final Map<Object, Object> props) {
     for (Object o : props.keySet()) {
       String propertyName = (String) o;
-      if (isInternalPropertyName(propertyName)) {
+      if (isInternalAttribute(propertyName)) {
         continue;
       }
       Object value = null;
@@ -1549,31 +1549,31 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   }
 
   /**
-   * internal configuration properties not in ConfigurationProperties but that may be in
-   * properties fed to a DistributionConfigImpl constructor.
-   */
-  static Set<String> internalPropertyNames = new HashSet<>(Arrays.asList(
-      LOG_WRITER_NAME, DS_CONFIG_NAME,
-      DS_QUORUM_CHECKER_NAME, DS_RECONNECTING_NAME,
-      SECURITY_LOG_WRITER_NAME, LOG_OUTPUTSTREAM_NAME,
-      SECURITY_LOG_OUTPUTSTREAM_NAME));
-
-  /**
    * a collection of configuration properties that are used to skip some security properties
    * during initialization due to dependency issues
    */
-  static Set<String> specialPropertyNames = new HashSet<>(Arrays.asList(CLUSTER_SSL_ENABLED,
+  private Set<String> specialPropertyNames = new HashSet<>(Arrays.asList(CLUSTER_SSL_ENABLED,
       SECURITY_PEER_AUTH_INIT, SECURITY_PEER_AUTHENTICATOR,
       LOG_WRITER_NAME, DS_CONFIG_NAME,
       SECURITY_LOG_WRITER_NAME, LOG_OUTPUTSTREAM_NAME,
       SECURITY_LOG_OUTPUTSTREAM_NAME));
 
-  boolean isInternalPropertyName(String propName) {
-    return internalPropertyNames.contains(propName);
-  }
-
   boolean isSpecialPropertyName(String propName) {
     return specialPropertyNames.contains(propName);
+  }
+
+  /**
+   * returns true if the given name is annotated as an InternalConfigAttribute.
+   * These attributes are used to hold internal, runtime objects such as
+   * an auto-reconnect quorum checker and are not settable as distributed system
+   * properties.
+   */
+  boolean isInternalAttribute(String propName) {
+    return internalAttributeNames.contains(propName);
+  }
+
+  Set<String> getInternalAttributeNames() {
+    return Collections.unmodifiableSet(internalAttributeNames);
   }
 
   @Override
