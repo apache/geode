@@ -26,11 +26,17 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -119,5 +125,27 @@ public class RestTemplateClusterManagementServiceTransportTest {
     verify(restTemplate).exchange(eq("/v1/operations/rebalances/opId"), eq(HttpMethod.GET),
         any(HttpEntity.class),
         eq(ClusterManagementOperationResult.class));
+  }
+
+  @Test
+  public void configureTemplate() throws Exception {
+    RestTemplate template = new RestTemplate();
+    MappingJackson2HttpMessageConverter converter =
+        getMappingJackson2HttpMessageConverter(template);
+    assertThat(converter.getDefaultCharset()).isNull();
+    ObjectMapper objectMapper = converter.getObjectMapper();
+    new RestTemplateClusterManagementServiceTransport(template);
+
+    // after the constructor, the template will be configured with a jackson converter
+    assertThat(converter.getDefaultCharset()).isEqualTo(StandardCharsets.UTF_8);
+  }
+
+  private MappingJackson2HttpMessageConverter getMappingJackson2HttpMessageConverter(
+      RestTemplate template) {
+    List<HttpMessageConverter<?>> messageConverters = template.getMessageConverters();
+    return messageConverters.stream()
+        .filter(MappingJackson2HttpMessageConverter.class::isInstance)
+        .map(MappingJackson2HttpMessageConverter.class::cast)
+        .findFirst().orElse(null);
   }
 }

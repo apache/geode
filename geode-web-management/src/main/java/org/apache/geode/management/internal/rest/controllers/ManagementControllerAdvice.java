@@ -16,7 +16,6 @@ package org.apache.geode.management.internal.rest.controllers;
 
 import static org.apache.geode.management.internal.Constants.INCLUDE_CLASS_HEADER;
 
-import java.nio.charset.Charset;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -83,7 +82,7 @@ public class ManagementControllerAdvice implements ResponseBodyAdvice<Object> {
       }
       json = qualifyHrefsInJsonText(json, requestContext);
       response.getHeaders().add(HttpHeaders.CONTENT_TYPE,
-          "application/json; charset=" + Charset.defaultCharset().toString());
+          "application/json;charset=UTF-8");
       response.getBody().write(json.getBytes());
       response.close();
       return null;

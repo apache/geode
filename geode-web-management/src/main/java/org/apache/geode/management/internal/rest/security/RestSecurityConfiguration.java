@@ -86,7 +86,6 @@ public class RestSecurityConfiguration extends WebSecurityConfigurerAdapter {
   }
 
   protected void configure(HttpSecurity http) throws Exception {
-
     http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
         .authorizeRequests()
         .antMatchers("/docs/**", "/swagger-ui.html", "/",
@@ -112,9 +111,7 @@ public class RestSecurityConfiguration extends WebSecurityConfigurerAdapter {
   }
 
   private class AuthenticationFailedHandler implements AuthenticationEntryPoint {
-
-    @SuppressWarnings("deprecation")
-    private static final String CONTENT_TYPE = MediaType.APPLICATION_JSON_UTF8_VALUE;
+    private static final String CONTENT_TYPE = MediaType.APPLICATION_JSON_VALUE;
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
