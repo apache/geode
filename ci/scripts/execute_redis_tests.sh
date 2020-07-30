@@ -17,12 +17,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#cd ..
+cd ..
 git clone --config transfer.fsckObjects=false https://github.com/prettyClouds/redis.git
-pushd redis
+cd redis
 git checkout tests-geode-redis
 
-#JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"  \
+JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"  \
 ../geode-assembly/build/install/apache-geode/bin/gfsh start server \
   --J=-Denable-redis-unsupported-commands=true \
   --name=server1 \
@@ -36,7 +36,7 @@ failCount=0
 
 ((failCount+=$?))
 
-#JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64" \
+JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64" \
 ../geode-assembly/build/install/apache-geode/bin/gfsh start server \
   --J=-Denable-redis-unsupported-commands=true \
   --name=server1 \
