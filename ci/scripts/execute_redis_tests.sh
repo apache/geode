@@ -28,7 +28,7 @@ JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"  \
   --name=server1 \
   --redis-port=6380 \
   --redis-bind-address=127.0.0.1 \
-  --redis-password=hugz
+  --redis-password=foobar
 
 failCount=0
 
