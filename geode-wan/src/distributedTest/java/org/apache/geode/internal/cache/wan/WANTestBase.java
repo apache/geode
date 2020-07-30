@@ -31,8 +31,6 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -225,7 +223,7 @@ public class WANTestBase extends org.apache.geode.test.dunit.DistributedTestCase
     postSetUpWANTestBase();
   }
 
-  protected void postSetUpWANTestBase() throws Exception {
+  protected void postSetUpWANTestBase() {
     // nothing
   }
 
@@ -2333,24 +2331,24 @@ public class WANTestBase extends org.apache.geode.test.dunit.DistributedTestCase
   public static <K, V> void putGivenKeyValue(String regionName, Map<K, V> keyValues) {
     Region<K, V> r = cache.getRegion(SEPARATOR + regionName);
     assertNotNull(r);
-    for (Object key : keyValues.keySet()) {
+    for (K key : keyValues.keySet()) {
       r.put(key, keyValues.get(key));
     }
   }
 
-  public static void doOrderAndShipmentPutsInsideTransactions(Map keyValues,
+  public static <K, V> void doOrderAndShipmentPutsInsideTransactions(Map<K, V> keyValues,
       int eventsPerTransaction) {
-    Region orderRegion = cache.getRegion(orderRegionName);
-    Region shipmentRegion = cache.getRegion(shipmentRegionName);
+    Region<K, V> orderRegion = cache.getRegion(orderRegionName);
+    Region<K, V> shipmentRegion = cache.getRegion(shipmentRegionName);
     assertNotNull(orderRegion);
     assertNotNull(shipmentRegion);
     int eventInTransaction = 0;
     CacheTransactionManager cacheTransactionManager = cache.getCacheTransactionManager();
-    for (Object key : keyValues.keySet()) {
+    for (K key : keyValues.keySet()) {
       if (eventInTransaction == 0) {
         cacheTransactionManager.begin();
       }
-      Region r;
+      Region<K, V> r;
       if (key instanceof OrderId) {
         r = orderRegion;
       } else {
@@ -2367,9 +2365,9 @@ public class WANTestBase extends org.apache.geode.test.dunit.DistributedTestCase
     }
   }
 
-  public static void doPutsInsideTransactions(String regionName, Map keyValues,
+  public static <K, V> void doPutsInsideTransactions(String regionName, Map<K, V> keyValues,
       int eventsPerTransaction) {
-    Region r = cache.getRegion(Region.SEPARATOR + regionName);
+    Region<K, V> r = cache.getRegion(Region.SEPARATOR + regionName);
     assertNotNull(r);
     int eventInTransaction = 0;
     CacheTransactionManager cacheTransactionManager = cache.getCacheTransactionManager();
@@ -2687,7 +2685,7 @@ public class WANTestBase extends org.apache.geode.test.dunit.DistributedTestCase
 
   public static void doTxPutsWithRetryIfError(String regionName, final long putsPerTransaction,
       final long transactions, long offset) {
-    Region r = cache.getRegion(Region.SEPARATOR + regionName);
+    Region<Long, String> r = cache.getRegion(Region.SEPARATOR + regionName);
     assertNotNull(r);
 
     long keyOffset = offset * ((putsPerTransaction + (10 * transactions)) * 100);

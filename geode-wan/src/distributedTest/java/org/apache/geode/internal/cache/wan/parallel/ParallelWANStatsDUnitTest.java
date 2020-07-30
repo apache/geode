@@ -341,7 +341,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
 
     startSenderInVMs("ln", vm4, vm5, vm6, vm7);
 
-    final Map<Object, Object> custKeyValue = new HashMap<>();
+    final Map<CustId, Customer> custKeyValue = new HashMap<>();
     int intCustId = 1;
     CustId custId = new CustId(intCustId);
     custKeyValue.put(custId, new Customer());
@@ -411,7 +411,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
 
     startSenderInVMs("ln", vm4, vm5, vm6, vm7);
 
-    final Map<Object, Object> custKeyValue = new HashMap<>();
+    final Map<CustId, Customer> custKeyValue = new HashMap<>();
     int intCustId = 1;
     CustId custId = new CustId(intCustId);
     custKeyValue.put(custId, new Customer());
@@ -745,7 +745,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
 
     startSenderInVMs("ln", vm4);
 
-    final Map<Object, Object> custKeyValue = new HashMap<>();
+    final Map<CustId, Customer> custKeyValue = new HashMap<>();
     int intCustId = 1;
     CustId custId = new CustId(intCustId);
     custKeyValue.put(custId, new Customer());
@@ -814,7 +814,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     startSenderInVMs("ln", vm4);
 
 
-    final Map<Object, Object> custKeyValue = new HashMap<>();
+    final Map<CustId, Customer> custKeyValue = new HashMap<>();
     int intCustId = 1;
     CustId custId = new CustId(intCustId);
     custKeyValue.put(custId, new Customer());

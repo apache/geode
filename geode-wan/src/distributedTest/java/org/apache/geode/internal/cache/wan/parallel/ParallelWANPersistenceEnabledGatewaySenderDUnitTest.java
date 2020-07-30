@@ -1627,7 +1627,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
     String diskStore4 = (String) vm7.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
         true, 100, 10, false, true, null, null, true));
 
-    LogWriterUtils.getLogWriter()
+    getLogWriter()
         .info("The DS are: " + diskStore1 + "," + diskStore2 + "," + diskStore3 + "," + diskStore4);
 
     // create PR on remote site
@@ -1659,7 +1659,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
 
     // start puts in region on local site
     vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName(), 3000));
-    LogWriterUtils.getLogWriter().info("Completed puts in the region");
+    getLogWriter().info("Completed puts in the region");
 
     // --------------------close and rebuild local site
     // -------------------------------------------------
@@ -1671,20 +1671,20 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
     vm7.invoke(() -> WANTestBase.stopSender("ln"));
 
 
-    LogWriterUtils.getLogWriter().info("Stopped all the senders.");
+    getLogWriter().info("Stopped all the senders.");
 
     // start the senders in async mode. This will ensure that the
     // node of shadow PR that went down last will come up first
     startSenderInVMsAsync("ln", vm4, vm5, vm6, vm7);
 
-    LogWriterUtils.getLogWriter().info("Waiting for senders running.");
+    getLogWriter().info("Waiting for senders running.");
     // wait for senders running
     vm4.invoke(waitForSenderRunnable());
     vm5.invoke(waitForSenderRunnable());
     vm6.invoke(waitForSenderRunnable());
     vm7.invoke(waitForSenderRunnable());
 
-    LogWriterUtils.getLogWriter().info("All the senders are now running...");
+    getLogWriter().info("All the senders are now running...");
 
     // ----------------------------------------------------------------------------------------------------
 
@@ -1721,7 +1721,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
     String diskStore4 = (String) vm7.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
         true, 100, 10, false, true, null, null, true));
 
-    LogWriterUtils.getLogWriter()
+    getLogWriter()
         .info("The DS are: " + diskStore1 + "," + diskStore2 + "," + diskStore3 + "," + diskStore4);
 
     // create PR on remote site
@@ -1745,11 +1745,11 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
     vm6.invoke(waitForSenderRunnable());
     vm7.invoke(waitForSenderRunnable());
 
-    LogWriterUtils.getLogWriter().info("All senders are running.");
+    getLogWriter().info("All senders are running.");
 
     // start puts in region on local site
     vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName(), 3000));
-    LogWriterUtils.getLogWriter().info("Completed puts in the region");
+    getLogWriter().info("Completed puts in the region");
 
 
     vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName(), 0));
@@ -1765,7 +1765,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
     vm6.invoke(() -> WANTestBase.stopSender("ln"));
     vm7.invoke(() -> WANTestBase.stopSender("ln"));
 
-    LogWriterUtils.getLogWriter().info("Stopped all the senders.");
+    getLogWriter().info("Stopped all the senders.");
 
     // create receiver on remote site
     createReceiverInVMs(vm2, vm3);
@@ -1773,21 +1773,21 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
     vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName(), 0));
     vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName(), 0));
 
-    LogWriterUtils.getLogWriter().info("Start all the senders.");
+    getLogWriter().info("Start all the senders.");
 
     vm4.invoke(() -> WANTestBase.startSenderwithCleanQueues("ln"));
     vm5.invoke(() -> WANTestBase.startSenderwithCleanQueues("ln"));
     vm6.invoke(() -> WANTestBase.startSenderwithCleanQueues("ln"));
     vm7.invoke(() -> WANTestBase.startSenderwithCleanQueues("ln"));
 
-    LogWriterUtils.getLogWriter().info("Waiting for senders running.");
+    getLogWriter().info("Waiting for senders running.");
     // wait for senders running
     vm4.invoke(waitForSenderRunnable());
     vm5.invoke(waitForSenderRunnable());
     vm6.invoke(waitForSenderRunnable());
     vm7.invoke(waitForSenderRunnable());
 
-    LogWriterUtils.getLogWriter().info("All the senders are now running...");
+    getLogWriter().info("All the senders are now running...");
 
     // ----------------------------------------------------------------------------------------------------
 
@@ -1823,7 +1823,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
     String diskStore3 = (String) vm6.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
         true, 100, 10, false, true, null, null, true));
 
-    LogWriterUtils.getLogWriter()
+    getLogWriter()
         .info("The DS are: " + diskStore1 + "," + diskStore2 + "," + diskStore3);
 
     // create PR on remote site
@@ -1852,7 +1852,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
 
     // start puts in region on local site
     vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName(), 3000));
-    LogWriterUtils.getLogWriter().info("Completed puts in the region");
+    getLogWriter().info("Completed puts in the region");
 
     // --------------------close and rebuild local site
     // -------------------------------------------------
@@ -1863,7 +1863,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
     vm6.invoke(() -> WANTestBase.stopSender("ln"));
 
 
-    LogWriterUtils.getLogWriter().info("Stopped all the senders.");
+    getLogWriter().info("Stopped all the senders.");
 
 
     vm7.invoke(() -> createCache(lnPort));
@@ -1881,13 +1881,13 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
     // node of shadow PR that went down last will come up first
     startSenderInVMsAsync("ln", vm4, vm5, vm6);
 
-    LogWriterUtils.getLogWriter().info("Waiting for senders running.");
+    getLogWriter().info("Waiting for senders running.");
     // wait for senders running
     vm4.invoke(waitForSenderRunnable());
     vm5.invoke(waitForSenderRunnable());
     vm6.invoke(waitForSenderRunnable());
 
-    LogWriterUtils.getLogWriter().info("All the senders are now running...");
+    getLogWriter().info("All the senders are now running...");
 
     // ----------------------------------------------------------------------------------------------------
 
