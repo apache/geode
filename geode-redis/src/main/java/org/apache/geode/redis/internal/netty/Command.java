@@ -43,6 +43,7 @@ public class Command {
     commandElems = null;
     commandType = null;
   }
+
   /**
    * Constructor for {@link Command}. Must initialize Command with a {@link SocketChannel} and a
    * {@link List} of command elements
