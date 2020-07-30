@@ -157,7 +157,7 @@ public class PartitionedRegionClear {
           doAfterClear(regionEvent);
         } finally {
           partitionedRegion.getDataStore().unlockBucketCreationForRegionClear();
-          if (clearedBuckets.size() != 0) {
+          if (clearedBuckets.size() != 0 && partitionedRegion.getCachePerfStats() != null) {
             partitionedRegion.getCachePerfStats().incRegionClearCount();
             partitionedRegion.getCachePerfStats()
                 .incPartitionedRegionClearLocalDuration(System.nanoTime() - clearStartTime);
@@ -377,7 +377,7 @@ public class PartitionedRegionClear {
       }
     } finally {
       releaseDistributedClearLock(lockName);
-      if (partitionedRegion != null) {
+      if (partitionedRegion.getCachePerfStats() != null) {
         partitionedRegion.getCachePerfStats()
             .incPartitionedRegionClearTotalDuration(System.nanoTime() - clearStartTime);
       }
