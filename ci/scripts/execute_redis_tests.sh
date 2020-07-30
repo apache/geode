@@ -25,7 +25,8 @@ popd
 
 pwd
 which java
-JAVA_HOME="export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64"
+JAVA_HOME="export JAVA_HOME=~/geode/java-11-openjdk-amd64"
+ls ~/geode
 
 ./geode-assembly/build/install/apache-geode/bin/gfsh start server \
   --J=-Denable-redis-unsupported-commands=true \
