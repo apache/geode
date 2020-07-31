@@ -14,8 +14,8 @@
  */
 package org.apache.geode.internal.cache.wan.misc;
 
-import static org.assertj.core.api.Assertions.fail;
 import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertNotNull;
 
 import org.junit.Ignore;

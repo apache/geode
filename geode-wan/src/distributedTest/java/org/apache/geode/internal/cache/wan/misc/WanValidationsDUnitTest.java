@@ -74,7 +74,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
   }
 
   private void verifyIdConsistencyWarning(String regionName, boolean expected,
-                                          boolean gatewaySenderId) {
+      boolean gatewaySenderId) {
     Region<Object, Object> r = cache.getRegion(SEPARATOR + regionName);
     SenderIdMonitor senderIdMonitor = getSenderIdMonitor(r);
 
@@ -86,7 +86,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
   }
 
   private void verifyIdConsistencyWarningOnVms(String regionName, boolean expected,
-                                               boolean gatewaySenderId) {
+      boolean gatewaySenderId) {
     for (VM vm : asList(vm4, vm5, vm6, vm7)) {
       vm.invoke(() -> verifyIdConsistencyWarning(regionName, expected, gatewaySenderId));
     }
@@ -139,8 +139,8 @@ public class WanValidationsDUnitTest extends WANTestBase {
     vm5.invoke(() -> {
       assertThatThrownBy(
           () -> createReplicatedRegion(getTestMethodName() + "_RR", "ln2,ln3", isOffHeap()))
-          .isInstanceOf(IllegalStateException.class)
-          .hasMessageContaining("Cannot create Region");
+              .isInstanceOf(IllegalStateException.class)
+              .hasMessageContaining("Cannot create Region");
     });
   }
 
@@ -154,8 +154,8 @@ public class WanValidationsDUnitTest extends WANTestBase {
     vm5.invoke(() -> {
       assertThatThrownBy(() -> createReplicatedRegionWithAsyncEventQueue(
           getTestMethodName() + "_RR", "ln2", isOffHeap()))
-          .isInstanceOf(IllegalStateException.class)
-          .hasMessageContaining("Cannot create Region");
+              .isInstanceOf(IllegalStateException.class)
+              .hasMessageContaining("Cannot create Region");
     });
   }
 
@@ -184,8 +184,8 @@ public class WanValidationsDUnitTest extends WANTestBase {
     vm5.invoke(() -> {
       assertThatThrownBy(() -> createPartitionedRegion(getTestMethodName() + "_PR", "ln2,ln3", 1,
           100, isOffHeap()))
-          .isInstanceOf(IllegalStateException.class)
-          .hasMessageContaining("Cannot create Region");
+              .isInstanceOf(IllegalStateException.class)
+              .hasMessageContaining("Cannot create Region");
     });
   }
 
@@ -213,8 +213,8 @@ public class WanValidationsDUnitTest extends WANTestBase {
     vm5.invoke(() -> {
       assertThatThrownBy(() -> createPartitionedRegion(getTestMethodName() + "_PR", "ln2,ln3", 1,
           100, isOffHeap()))
-          .isInstanceOf(IllegalStateException.class)
-          .hasMessageContaining("Cannot create Region");
+              .isInstanceOf(IllegalStateException.class)
+              .hasMessageContaining("Cannot create Region");
     });
   }
 
@@ -233,8 +233,8 @@ public class WanValidationsDUnitTest extends WANTestBase {
           "ln1_Parallel,ln2_Parallel", null, isOffHeap());
       assertThatThrownBy(() -> createPartitionedRegionWithSerialParallelSenderIds(
           getTestMethodName() + "_PR2", null, "ln1_Parallel,ln2_Parallel", null, isOffHeap()))
-          .isInstanceOf(IllegalStateException.class)
-          .hasMessageContaining("cannot have the same parallel gateway sender id");
+              .isInstanceOf(IllegalStateException.class)
+              .hasMessageContaining("cannot have the same parallel gateway sender id");
     });
   }
 
@@ -321,8 +321,8 @@ public class WanValidationsDUnitTest extends WANTestBase {
       createSenderForValidations("ln", 2, false, 100, false, false, null, null, true, false);
       assertThatThrownBy(() -> createSenderForValidations("ln", 2, true, 100, false, false, null,
           null, true, false))
-          .isInstanceOf(IllegalStateException.class)
-          .hasMessageContaining("is already defined in this cache");
+              .isInstanceOf(IllegalStateException.class)
+              .hasMessageContaining("is already defined in this cache");
     });
   }
 
@@ -337,9 +337,9 @@ public class WanValidationsDUnitTest extends WANTestBase {
     vm2.invoke(() -> {
       assertThatThrownBy(() -> createSenderForValidations("ln", 2, true, 100, false, false, null,
           null, true, false))
-          .isInstanceOf(IllegalStateException.class)
-          .hasMessageContaining(
-              "because another cache has the same sender as serial gateway sender");
+              .isInstanceOf(IllegalStateException.class)
+              .hasMessageContaining(
+                  "because another cache has the same sender as serial gateway sender");
     });
   }
 
@@ -355,9 +355,9 @@ public class WanValidationsDUnitTest extends WANTestBase {
     vm2.invoke(() -> {
       assertThatThrownBy(() -> createSenderForValidations("ln", 2, false, 100, false, false, null,
           null, true, false))
-          .isInstanceOf(IllegalStateException.class)
-          .hasMessageContaining(
-              "because another cache has the same sender as parallel gateway sender");
+              .isInstanceOf(IllegalStateException.class)
+              .hasMessageContaining(
+                  "because another cache has the same sender as parallel gateway sender");
     });
   }
 
@@ -428,9 +428,9 @@ public class WanValidationsDUnitTest extends WANTestBase {
     vm2.invoke(() -> {
       assertThatThrownBy(() -> createSenderForValidations("ln", 2, false, 100, true, false, null,
           null, true, false))
-          .isInstanceOf(IllegalStateException.class)
-          .hasMessageContaining(
-              "another cache has the same Gateway Sender defined with isBatchConflationEnabled");
+              .isInstanceOf(IllegalStateException.class)
+              .hasMessageContaining(
+                  "another cache has the same Gateway Sender defined with isBatchConflationEnabled");
     });
   }
 
@@ -445,9 +445,9 @@ public class WanValidationsDUnitTest extends WANTestBase {
     vm2.invoke(() -> {
       assertThatThrownBy(() -> createSenderForValidations("ln", 3, false, 100, false, false, null,
           null, true, false))
-          .isInstanceOf(IllegalStateException.class)
-          .hasMessageContaining(
-              "because another cache has the same Gateway Sender defined with remote ds id");
+              .isInstanceOf(IllegalStateException.class)
+              .hasMessageContaining(
+                  "because another cache has the same Gateway Sender defined with remote ds id");
     });
   }
 
@@ -462,9 +462,9 @@ public class WanValidationsDUnitTest extends WANTestBase {
     vm2.invoke(() -> {
       assertThatThrownBy(() -> createSenderForValidations("ln", 2, false, 100, false, true, null,
           null, true, false))
-          .isInstanceOf(IllegalStateException.class)
-          .hasMessageContaining(
-              "because another cache has the same Gateway Sender defined with isPersistentEnabled");
+              .isInstanceOf(IllegalStateException.class)
+              .hasMessageContaining(
+                  "because another cache has the same Gateway Sender defined with isPersistentEnabled");
     });
   }
 
@@ -478,9 +478,9 @@ public class WanValidationsDUnitTest extends WANTestBase {
     vm2.invoke(() -> {
       assertThatThrownBy(() -> createSenderForValidations("ln", 2, false, 50, false, false, null,
           null, true, false))
-          .isInstanceOf(IllegalStateException.class)
-          .hasMessageContaining(
-              "because another cache has the same Gateway Sender defined with alertThreshold");
+              .isInstanceOf(IllegalStateException.class)
+              .hasMessageContaining(
+                  "because another cache has the same Gateway Sender defined with alertThreshold");
     });
   }
 
@@ -494,9 +494,9 @@ public class WanValidationsDUnitTest extends WANTestBase {
     vm2.invoke(() -> {
       assertThatThrownBy(() -> createSenderForValidations("ln", 2, false, 100, false, false, null,
           null, false, false))
-          .isInstanceOf(IllegalStateException.class)
-          .hasMessageContaining(
-              "because another cache has the same Gateway Sender defined with manual start");
+              .isInstanceOf(IllegalStateException.class)
+              .hasMessageContaining(
+                  "because another cache has the same Gateway Sender defined with manual start");
     });
   }
 
@@ -515,9 +515,9 @@ public class WanValidationsDUnitTest extends WANTestBase {
     vm2.invoke(() -> {
       assertThatThrownBy(() -> createSenderForValidations("ln", 2, false, 100, false, false,
           eventFilters, null, true, false))
-          .isInstanceOf(IllegalStateException.class)
-          .hasMessageContaining(
-              "because another cache has the same Gateway Sender defined with GatewayEventFilters");
+              .isInstanceOf(IllegalStateException.class)
+              .hasMessageContaining(
+                  "because another cache has the same Gateway Sender defined with GatewayEventFilters");
 
     });
   }
@@ -538,9 +538,9 @@ public class WanValidationsDUnitTest extends WANTestBase {
     vm2.invoke(() -> {
       assertThatThrownBy(() -> createSenderForValidations("ln", 2, false, 100, false, false,
           eventFilters, null, true, false))
-          .isInstanceOf(IllegalStateException.class)
-          .hasMessageContaining(
-              "because another cache has the same Gateway Sender defined with GatewayEventFilters");
+              .isInstanceOf(IllegalStateException.class)
+              .hasMessageContaining(
+                  "because another cache has the same Gateway Sender defined with GatewayEventFilters");
     });
   }
 
@@ -561,9 +561,9 @@ public class WanValidationsDUnitTest extends WANTestBase {
     vm2.invoke(() -> {
       assertThatThrownBy(() -> createSenderForValidations("ln", 2, false, 100, false, false, null,
           transportFilters, true, false))
-          .isInstanceOf(IllegalStateException.class)
-          .hasMessageContaining(
-              "because another cache has the same Gateway Sender defined with GatewayTransportFilters");
+              .isInstanceOf(IllegalStateException.class)
+              .hasMessageContaining(
+                  "because another cache has the same Gateway Sender defined with GatewayTransportFilters");
     });
   }
 
@@ -584,9 +584,9 @@ public class WanValidationsDUnitTest extends WANTestBase {
     vm2.invoke(() -> {
       assertThatThrownBy(() -> createSenderForValidations("ln", 2, false, 100, false, false, null,
           transportFilters, true, false))
-          .isInstanceOf(IllegalStateException.class)
-          .hasMessageContaining(
-              "because another cache has the same Gateway Sender defined with GatewayTransportFilters");
+              .isInstanceOf(IllegalStateException.class)
+              .hasMessageContaining(
+                  "because another cache has the same Gateway Sender defined with GatewayTransportFilters");
     });
   }
 
@@ -600,9 +600,9 @@ public class WanValidationsDUnitTest extends WANTestBase {
     vm2.invoke(() -> {
       assertThatThrownBy(() -> createSenderForValidations("ln", 2, false, 100, false, false, null,
           null, true, true))
-          .isInstanceOf(IllegalStateException.class)
-          .hasMessageContaining(
-              "because another cache has the same Gateway Sender defined with isDiskSynchronous");
+              .isInstanceOf(IllegalStateException.class)
+              .hasMessageContaining(
+                  "because another cache has the same Gateway Sender defined with isDiskSynchronous");
     });
   }
 
@@ -622,9 +622,9 @@ public class WanValidationsDUnitTest extends WANTestBase {
     vm2.invoke(() -> {
       assertThatThrownBy(() -> createConcurrentSender("ln", 2, true, 100, 10, false, false, null,
           true, 4, OrderPolicy.KEY))
-          .isInstanceOf(IllegalStateException.class)
-          .hasMessageContaining(
-              "because another cache has the same Gateway Sender defined with dispatcherThread");
+              .isInstanceOf(IllegalStateException.class)
+              .hasMessageContaining(
+                  "because another cache has the same Gateway Sender defined with dispatcherThread");
     });
   }
 
@@ -643,9 +643,9 @@ public class WanValidationsDUnitTest extends WANTestBase {
     vm2.invoke(() -> {
       assertThatThrownBy(() -> createConcurrentSender("ln", 2, true, 100, 10, false, false, null,
           true, 5, OrderPolicy.PARTITION))
-          .isInstanceOf(IllegalStateException.class)
-          .hasMessageContaining(
-              "because another cache has the same Gateway Sender defined with orderPolicy");
+              .isInstanceOf(IllegalStateException.class)
+              .hasMessageContaining(
+                  "because another cache has the same Gateway Sender defined with orderPolicy");
     });
   }
 
@@ -1012,9 +1012,9 @@ public class WanValidationsDUnitTest extends WANTestBase {
 
       assertThatThrownBy(
           () -> addAsyncEventQueueThroughAttributesMutator(regionName, asyncEventQueueId))
-          .isInstanceOf(AsyncEventQueueConfigurationException.class)
-          .hasMessage("Parallel Async Event Queue " + asyncEventQueueId
-              + " can not be used with replicated region " + SEPARATOR + regionName);
+              .isInstanceOf(AsyncEventQueueConfigurationException.class)
+              .hasMessage("Parallel Async Event Queue " + asyncEventQueueId
+                  + " can not be used with replicated region " + SEPARATOR + regionName);
     });
   }
 
@@ -1076,19 +1076,19 @@ public class WanValidationsDUnitTest extends WANTestBase {
     vm4.invoke(() -> createSender("ln1", 2, true, 10, 100, false, false, null, false));
     assertThatThrownBy(() -> vm4.invoke(
         () -> createPartitionedRegionWithPersistence(getTestMethodName() + "_PR", "ln1", 1, 100)))
-        .withFailMessage(
-            "Expected GatewaySenderException with incompatible gateway sender ids and region")
-        .hasRootCauseInstanceOf(GatewaySenderException.class)
-        .hasStackTraceContaining("can not be attached to persistent region ");
+            .withFailMessage(
+                "Expected GatewaySenderException with incompatible gateway sender ids and region")
+            .hasRootCauseInstanceOf(GatewaySenderException.class)
+            .hasStackTraceContaining("can not be attached to persistent region ");
 
     vm5.invoke(
         () -> createPartitionedRegionWithPersistence(getTestMethodName() + "_PR", "ln1", 1, 100));
     assertThatThrownBy(
         () -> vm5.invoke(() -> createSender("ln1", 2, true, 10, 100, false, false, null, false)))
-        .withFailMessage(
-            "Expected GatewaySenderException with incompatible gateway sender ids and region")
-        .hasRootCauseInstanceOf(GatewaySenderException.class)
-        .hasStackTraceContaining("can not be attached to persistent region ");
+            .withFailMessage(
+                "Expected GatewaySenderException with incompatible gateway sender ids and region")
+            .hasRootCauseInstanceOf(GatewaySenderException.class)
+            .hasStackTraceContaining("can not be attached to persistent region ");
   }
 
   /**
