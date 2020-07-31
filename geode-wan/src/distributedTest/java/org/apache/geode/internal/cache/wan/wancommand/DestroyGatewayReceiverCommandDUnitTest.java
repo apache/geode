@@ -122,8 +122,9 @@ public class DestroyGatewayReceiverCommandDUnitTest {
     server5 = clusterStartupRule.startServerVM(5, locator1Port);
 
     gfsh.executeAndAssertThat(createGatewayReceiverCommand("false")).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5")
-        .tableHasColumnWithValuesContaining("Message",
+        .hasTableSection().hasColumn("Member")
+        .containsExactlyInAnyOrder("server-3", "server-4", "server-5")
+        .hasColumn("Message").containsExactlyInAnyOrder(
             "GatewayReceiver created on member \"server-3\"",
             "GatewayReceiver created on member \"server-4\"",
             "GatewayReceiver created on member \"server-5\"");
@@ -138,7 +139,8 @@ public class DestroyGatewayReceiverCommandDUnitTest {
         new CommandStringBuilder(DestroyGatewayReceiverCommand.DESTROY_GATEWAYRECEIVER);
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
         .doesNotContainOutput("change is not persisted")
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5");
+        .hasTableSection().hasColumn("Member")
+        .containsExactlyInAnyOrder("server-3", "server-4", "server-5");
     VMProvider.invokeInEveryMember(WANCommandUtils::verifyReceiverDoesNotExist, server3, server4,
         server5);
   }
@@ -151,8 +153,9 @@ public class DestroyGatewayReceiverCommandDUnitTest {
     server5 = clusterStartupRule.startServerVM(5, locator1Port);
 
     gfsh.executeAndAssertThat(createGatewayReceiverCommand("false")).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5")
-        .tableHasColumnWithValuesContaining("Message",
+        .hasTableSection().hasColumn("Member")
+        .containsExactlyInAnyOrder("server-3", "server-4", "server-5")
+        .hasColumn("Message").containsExactlyInAnyOrder(
             "GatewayReceiver created on member \"server-3\"",
             "GatewayReceiver created on member \"server-4\"",
             "GatewayReceiver created on member \"server-5\"");
@@ -169,7 +172,7 @@ public class DestroyGatewayReceiverCommandDUnitTest {
             .addOption(CliStrings.MEMBER, server3.getName());
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
         .containsOutput("change is not persisted")
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3");
+        .hasTableSection().hasColumn("Member").containsExactlyInAnyOrder("server-3");
     verifyConfigHasGatewayReceiver("cluster");
 
     VMProvider.invokeInEveryMember(WANCommandUtils::verifyReceiverDoesNotExist, server3);
@@ -186,8 +189,9 @@ public class DestroyGatewayReceiverCommandDUnitTest {
     server5 = clusterStartupRule.startServerVM(5, locator1Port);
 
     gfsh.executeAndAssertThat(createGatewayReceiverCommand("false")).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5")
-        .tableHasColumnWithValuesContaining("Message",
+        .hasTableSection().hasColumn("Member")
+        .containsExactlyInAnyOrder("server-3", "server-4", "server-5")
+        .hasColumn("Message").containsExactlyInAnyOrder(
             "GatewayReceiver created on member \"server-3\"",
             "GatewayReceiver created on member \"server-4\"",
             "GatewayReceiver created on member \"server-5\"");
@@ -204,12 +208,13 @@ public class DestroyGatewayReceiverCommandDUnitTest {
             .addOption(CliStrings.MEMBER, server3.getName());
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
         .containsOutput("change is not persisted")
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3");
+        .hasTableSection().hasColumn("Member").containsExactlyInAnyOrder("server-3");
     verifyConfigHasGatewayReceiver("cluster");
 
     csb = new CommandStringBuilder(DestroyGatewayReceiverCommand.DESTROY_GATEWAYRECEIVER);
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5");
+        .hasTableSection().hasColumn("Member")
+        .containsExactlyInAnyOrder("server-3", "server-4", "server-5");
     verifyConfigDoesNotHaveGatewayReceiver("cluster");
 
     VMProvider.invokeInEveryMember(WANCommandUtils::verifyReceiverDoesNotExist, server3, server4,
@@ -222,8 +227,8 @@ public class DestroyGatewayReceiverCommandDUnitTest {
     server3 = clusterStartupRule.startServerVM(3, locator1Port);
 
     gfsh.executeAndAssertThat(createGatewayReceiverCommand("false")).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3")
-        .tableHasColumnWithValuesContaining("Message",
+        .hasTableSection().hasColumn("Member").containsExactlyInAnyOrder("server-3")
+        .hasColumn("Message").containsExactlyInAnyOrder(
             "GatewayReceiver created on member \"server-3\"");
     verifyConfigHasGatewayReceiver("cluster");
 
@@ -238,13 +243,13 @@ public class DestroyGatewayReceiverCommandDUnitTest {
             .addOption(CliStrings.MEMBER, server3.getName());
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
         .containsOutput("change is not persisted")
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3");
+        .hasTableSection().hasColumn("Member").containsExactlyInAnyOrder("server-3");
     verifyConfigHasGatewayReceiver("cluster");
 
     csb = new CommandStringBuilder(DestroyGatewayReceiverCommand.DESTROY_GATEWAYRECEIVER);
     gfsh.executeAndAssertThat(csb.toString()).statusIsError()
         .doesNotContainOutput("change is not persisted")
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3");
+        .hasTableSection().hasColumn("Member").containsExactlyInAnyOrder("server-3");
     verifyConfigHasGatewayReceiver("cluster");
 
     VMProvider.invokeInEveryMember(WANCommandUtils::verifyReceiverDoesNotExist, server3);
@@ -256,8 +261,8 @@ public class DestroyGatewayReceiverCommandDUnitTest {
     server3 = clusterStartupRule.startServerVM(3, locator1Port);
 
     gfsh.executeAndAssertThat(createGatewayReceiverCommand("false")).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3")
-        .tableHasColumnWithValuesContaining("Message",
+        .hasTableSection().hasColumn("Member").containsExactlyInAnyOrder("server-3")
+        .hasColumn("Message").containsExactlyInAnyOrder(
             "GatewayReceiver created on member \"server-3\"");
     verifyConfigHasGatewayReceiver("cluster");
 
@@ -272,14 +277,14 @@ public class DestroyGatewayReceiverCommandDUnitTest {
             .addOption(CliStrings.MEMBER, server3.getName());
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
         .containsOutput("change is not persisted")
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3");
+        .hasTableSection().hasColumn("Member").containsExactlyInAnyOrder("server-3");
     verifyConfigHasGatewayReceiver("cluster");
 
     csb = new CommandStringBuilder(DestroyGatewayReceiverCommand.DESTROY_GATEWAYRECEIVER)
         .addOption(CliStrings.IFEXISTS);
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
         .doesNotContainOutput("change is not persisted")
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3");
+        .hasTableSection().hasColumn("Member").containsExactlyInAnyOrder("server-3");
     verifyConfigDoesNotHaveGatewayReceiver("cluster");
 
     VMProvider.invokeInEveryMember(WANCommandUtils::verifyReceiverDoesNotExist, server3);
@@ -293,8 +298,9 @@ public class DestroyGatewayReceiverCommandDUnitTest {
     server5 = clusterStartupRule.startServerVM(5, locator1Port);
 
     gfsh.executeAndAssertThat(createGatewayReceiverCommand("true")).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5")
-        .tableHasColumnWithValuesContaining("Message",
+        .hasTableSection().hasColumn("Member")
+        .containsExactlyInAnyOrder("server-3", "server-4", "server-5")
+        .hasColumn("Message").containsExactlyInAnyOrder(
             "GatewayReceiver created on member \"server-3\"",
             "GatewayReceiver created on member \"server-4\"",
             "GatewayReceiver created on member \"server-5\"");
@@ -310,7 +316,7 @@ public class DestroyGatewayReceiverCommandDUnitTest {
             .addOption(CliStrings.MEMBER, server3.getName());
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
         .containsOutput("change is not persisted")
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3");
+        .hasTableSection().hasColumn("Member").containsExactlyInAnyOrder("server-3");
     VMProvider.invokeInEveryMember(WANCommandUtils::verifyReceiverDoesNotExist, server3);
     VMProvider.invokeInEveryMember(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000,
         "localhost", 100000, 512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS), server4,
@@ -326,8 +332,9 @@ public class DestroyGatewayReceiverCommandDUnitTest {
 
     gfsh.executeAndAssertThat(
         createGatewayReceiverCommand("false", CliStrings.MEMBER + ":server-4,server-5"))
-        .statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder("Member", "server-4", "server-5")
-        .tableHasColumnWithValuesContaining("Message",
+        .statusIsSuccess().hasTableSection().hasColumn("Member")
+        .containsExactlyInAnyOrder("server-4", "server-5")
+        .hasColumn("Message").containsExactlyInAnyOrder(
             "GatewayReceiver created on member \"server-4\"",
             "GatewayReceiver created on member \"server-5\"");
     VMProvider.invokeInEveryMember(WANCommandUtils::verifyReceiverDoesNotExist, server3);
@@ -336,7 +343,7 @@ public class DestroyGatewayReceiverCommandDUnitTest {
         new CommandStringBuilder(DestroyGatewayReceiverCommand.DESTROY_GATEWAYRECEIVER)
             .addOption(CliStrings.MEMBER, server3.getName());
     gfsh.executeAndAssertThat(csb.toString()).statusIsError()
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3");
+        .hasTableSection().hasColumn("Member").containsExactlyInAnyOrder("server-3");
   }
 
   @Test
@@ -349,7 +356,7 @@ public class DestroyGatewayReceiverCommandDUnitTest {
         new CommandStringBuilder(DestroyGatewayReceiverCommand.DESTROY_GATEWAYRECEIVER);
     gfsh.executeAndAssertThat(csb.toString()).statusIsError()
         .doesNotContainOutput("change is not persisted")
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4");
+        .hasTableSection().hasColumn("Member").containsExactlyInAnyOrder("server-3", "server-4");
   }
 
   @Test
@@ -366,8 +373,8 @@ public class DestroyGatewayReceiverCommandDUnitTest {
         new CommandStringBuilder(DestroyGatewayReceiverCommand.DESTROY_GATEWAYRECEIVER)
             .addOption(CliStrings.IFEXISTS, "true").addOption(CliStrings.MEMBER, server3.getName());
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3")
-        .tableHasColumnWithValuesContaining("Status", "IGNORED");
+        .hasTableSection().hasColumn("Member").containsExactlyInAnyOrder("server-3")
+        .hasColumn("Status").containsExactlyInAnyOrder("IGNORED");
   }
 
   @Test
@@ -378,8 +385,9 @@ public class DestroyGatewayReceiverCommandDUnitTest {
     server5 = startServerWithGroups(5, "Grp2", locator1Port);
 
     gfsh.executeAndAssertThat(createGatewayReceiverCommand("false", CliStrings.GROUP + ":Grp1"))
-        .statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4")
-        .tableHasColumnWithValuesContaining("Message",
+        .statusIsSuccess().hasTableSection().hasColumn("Member")
+        .containsExactlyInAnyOrder("server-3", "server-4")
+        .hasColumn("Message").containsExactlyInAnyOrder(
             "GatewayReceiver created on member \"server-3\"",
             "GatewayReceiver created on member \"server-4\"");
     verifyConfigHasGatewayReceiver("Grp1");
@@ -395,7 +403,7 @@ public class DestroyGatewayReceiverCommandDUnitTest {
             .addOption(CliStrings.GROUP, "Grp1");
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
         .doesNotContainOutput("change is not persisted")
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4");
+        .hasTableSection().hasColumn("Member").containsExactlyInAnyOrder("server-3", "server-4");
     verifyConfigDoesNotHaveGatewayReceiver("Grp1");
     verifyConfigDoesNotHaveGatewayReceiver("cluster");
 
@@ -410,13 +418,15 @@ public class DestroyGatewayReceiverCommandDUnitTest {
     server5 = startServerWithGroups(5, "Grp3", locator1Port);
 
     gfsh.executeAndAssertThat(createGatewayReceiverCommand("false", CliStrings.GROUP + ":Grp1"))
-        .statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder("Member", "server-3")
-        .tableHasColumnWithValuesContaining("Message",
-            "GatewayReceiver created on member \"server-3\"");
+        .statusIsSuccess().hasTableSection().hasColumn("Member")
+        .containsExactlyInAnyOrder("server-3")
+        .hasColumn("Message")
+        .containsExactlyInAnyOrder("GatewayReceiver created on member \"server-3\"");
     gfsh.executeAndAssertThat(createGatewayReceiverCommand("false", CliStrings.GROUP + ":Grp2"))
-        .statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder("Member", "server-4")
-        .tableHasColumnWithValuesContaining("Message",
-            "GatewayReceiver created on member \"server-4\"");
+        .statusIsSuccess().hasTableSection().hasColumn("Member")
+        .containsExactlyInAnyOrder("server-4")
+        .hasColumn("Message")
+        .containsExactlyInAnyOrder("GatewayReceiver created on member \"server-4\"");
     verifyConfigHasGatewayReceiver("Grp1");
     verifyConfigHasGatewayReceiver("Grp2");
     verifyConfigDoesNotHaveGatewayReceiver("cluster");
@@ -431,7 +441,7 @@ public class DestroyGatewayReceiverCommandDUnitTest {
             .addOption(CliStrings.GROUP, "Grp1,Grp2");
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
         .doesNotContainOutput("change is not persisted")
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4");
+        .hasTableSection().hasColumn("Member").containsExactlyInAnyOrder("server-3", "server-4");
     verifyConfigDoesNotHaveGatewayReceiver("Grp1");
     verifyConfigDoesNotHaveGatewayReceiver("Grp2");
     verifyConfigDoesNotHaveGatewayReceiver("cluster");
@@ -447,13 +457,15 @@ public class DestroyGatewayReceiverCommandDUnitTest {
     server5 = startServerWithGroups(5, "Grp3", locator1Port);
 
     gfsh.executeAndAssertThat(createGatewayReceiverCommand("false", CliStrings.GROUP + ":Grp1"))
-        .statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder("Member", "server-3")
-        .tableHasColumnWithValuesContaining("Message",
-            "GatewayReceiver created on member \"server-3\"");
+        .statusIsSuccess().hasTableSection().hasColumn("Member")
+        .containsExactlyInAnyOrder("server-3")
+        .hasColumn("Message")
+        .containsExactlyInAnyOrder("GatewayReceiver created on member \"server-3\"");
     gfsh.executeAndAssertThat(createGatewayReceiverCommand("false", CliStrings.GROUP + ":Grp2"))
-        .statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder("Member", "server-4")
-        .tableHasColumnWithValuesContaining("Message",
-            "GatewayReceiver created on member \"server-4\"");
+        .statusIsSuccess().hasTableSection().hasColumn("Member")
+        .containsExactlyInAnyOrder("server-4")
+        .hasColumn("Message")
+        .containsExactlyInAnyOrder("GatewayReceiver created on member \"server-4\"");
     verifyConfigHasGatewayReceiver("Grp1");
     verifyConfigHasGatewayReceiver("Grp2");
     verifyConfigDoesNotHaveGatewayReceiver("cluster");
@@ -468,7 +480,7 @@ public class DestroyGatewayReceiverCommandDUnitTest {
             .addOption(CliStrings.GROUP, "Grp1");
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
         .doesNotContainOutput("change is not persisted")
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3");
+        .hasTableSection().hasColumn("Member").containsExactlyInAnyOrder("server-3");
     verifyConfigDoesNotHaveGatewayReceiver("Grp1");
     verifyConfigHasGatewayReceiver("Grp2");
     verifyConfigDoesNotHaveGatewayReceiver("cluster");
@@ -486,9 +498,10 @@ public class DestroyGatewayReceiverCommandDUnitTest {
     server5 = startServerWithGroups(5, "Grp3", locator1Port);
 
     gfsh.executeAndAssertThat(createGatewayReceiverCommand("false", CliStrings.GROUP + ":Grp2"))
-        .statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder("Member", "server-4")
-        .tableHasColumnWithValuesContaining("Message",
-            "GatewayReceiver created on member \"server-3\"",
+        .statusIsSuccess().hasTableSection().hasColumn("Member")
+        .containsExactlyInAnyOrder("server-4")
+        .hasColumn("Message")
+        .containsExactlyInAnyOrder("GatewayReceiver created on member \"server-3\"",
             "GatewayReceiver created on member \"server-4\"");
     verifyConfigHasGatewayReceiver("Grp2");
     verifyConfigDoesNotHaveGatewayReceiver("cluster");
@@ -504,7 +517,8 @@ public class DestroyGatewayReceiverCommandDUnitTest {
             .addOption(CliStrings.GROUP, "Grp1,Grp2,Grp3");
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
         .doesNotContainOutput("change is not persisted")
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5");
+        .hasTableSection().hasColumn("Member")
+        .containsExactlyInAnyOrder("server-3", "server-4", "server-5");
     verifyConfigDoesNotHaveGatewayReceiver("Grp1");
     verifyConfigDoesNotHaveGatewayReceiver("cluster");
 
@@ -519,9 +533,10 @@ public class DestroyGatewayReceiverCommandDUnitTest {
     server5 = startServerWithGroups(5, "Grp3", locator1Port);
 
     gfsh.executeAndAssertThat(createGatewayReceiverCommand("false", CliStrings.GROUP + ":Grp2"))
-        .statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder("Member", "server-4")
-        .tableHasColumnWithValuesContaining("Message",
-            "GatewayReceiver created on member \"server-3\"",
+        .statusIsSuccess().hasTableSection().hasColumn("Member")
+        .containsExactlyInAnyOrder("server-4")
+        .hasColumn("Message")
+        .containsExactlyInAnyOrder("GatewayReceiver created on member \"server-3\"",
             "GatewayReceiver created on member \"server-4\"");
     verifyConfigHasGatewayReceiver("Grp2");
     verifyConfigDoesNotHaveGatewayReceiver("cluster");
@@ -537,9 +552,10 @@ public class DestroyGatewayReceiverCommandDUnitTest {
             .addOption(CliStrings.IFEXISTS, "true").addOption(CliStrings.GROUP, "Grp1,Grp2,Grp3");
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
         .doesNotContainOutput("change is not persisted")
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5")
-        .tableHasRowWithValues("Member", "Status", "server-3", "IGNORED")
-        .tableHasRowWithValues("Member", "Status", "server-5", "IGNORED");
+        .hasTableSection().hasColumn("Member")
+        .containsExactlyInAnyOrder("server-3", "server-4", "server-5")
+        .hasAnyRow().contains("Member", "Status", "server-3", "IGNORED")
+        .hasAnyRow().contains("Member", "Status", "server-5", "IGNORED");
     verifyConfigDoesNotHaveGatewayReceiver("Grp1");
     verifyConfigDoesNotHaveGatewayReceiver("cluster");
 

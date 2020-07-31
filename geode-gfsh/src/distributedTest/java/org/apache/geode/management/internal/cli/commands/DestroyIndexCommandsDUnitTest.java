@@ -89,50 +89,48 @@ public class DestroyIndexCommandsDUnitTest {
   }
 
   @Test
-  @SuppressWarnings("deprecation")
   public void testDestroyAllIndexesOnRegion() {
     gfsh.executeAndAssertThat("destroy index --region=" + REGION_1).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Status", "OK", "OK")
-        .tableHasColumnWithExactValuesInAnyOrder("Message",
+        .hasTableSection().hasColumn("Status").containsExactlyInAnyOrder("OK", "OK")
+        .hasColumn("Message").containsExactlyInAnyOrder(
             "Destroyed all indexes on region REGION1", "Destroyed all indexes on region REGION1");
 
     assertIndexCount(REGION_1, 0);
 
     // Check idempotency
     gfsh.executeAndAssertThat("destroy index --if-exists --region=" + REGION_1).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Status", "OK", "OK")
-        .tableHasColumnWithExactValuesInAnyOrder("Message",
+        .hasTableSection().hasColumn("Status").containsExactlyInAnyOrder("OK", "OK")
+        .hasColumn("Message").containsExactlyInAnyOrder(
             "Destroyed all indexes on region REGION1", "Destroyed all indexes on region REGION1");
   }
 
   @Test
-  @SuppressWarnings("deprecation")
   public void testDestroyOneIndexOnRegion() {
     gfsh.executeAndAssertThat("destroy index --name=" + INDEX_1 + " --region=" + REGION_1)
-        .statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder("Message",
+        .statusIsSuccess().hasTableSection().hasColumn("Message").containsExactlyInAnyOrder(
             "Destroyed index INDEX1 on region REGION1", "Destroyed index INDEX1 on region REGION1");
     assertIndexCount(REGION_1, 1);
 
     // Check idempotency
     gfsh.executeAndAssertThat(
         "destroy index --if-exists --name=" + INDEX_1 + " --region=" + REGION_1).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Status", "IGNORED", "IGNORED")
-        .tableHasColumnWithExactValuesInAnyOrder("Message", "Index named \"INDEX1\" not found",
+        .hasTableSection().hasColumn("Status").containsExactlyInAnyOrder("IGNORED", "IGNORED")
+        .hasColumn("Message").containsExactlyInAnyOrder("Index named \"INDEX1\" not found",
             "Index named \"INDEX1\" not found");
     assertIndexCount(REGION_1, 1);
 
     // Check error result is correct
     gfsh.executeAndAssertThat("destroy index --name=" + INDEX_1 + " --region=" + REGION_1)
-        .tableHasColumnWithExactValuesInAnyOrder("Status", "ERROR", "ERROR").statusIsError()
-        .tableHasColumnWithExactValuesInAnyOrder("Message", "Index named \"INDEX1\" not found",
+        .statusIsError()
+        .hasTableSection().hasColumn("Status").containsExactlyInAnyOrder("ERROR", "ERROR")
+        .hasColumn("Message").containsExactlyInAnyOrder("Index named \"INDEX1\" not found",
             "Index named \"INDEX1\" not found");
   }
 
   @Test
-  @SuppressWarnings("deprecation")
   public void testDestroyAllIndexesOnOneMember() {
     gfsh.executeAndAssertThat("destroy index --member=server-1").statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Message", "Destroyed all indexes");
+        .hasTableSection().hasColumn("Message").containsExactlyInAnyOrder("Destroyed all indexes");
 
     server1.invoke(() -> {
       Cache cache = ClusterStartupRule.getCache();
@@ -146,15 +144,14 @@ public class DestroyIndexCommandsDUnitTest {
 
     // Check idempotency
     gfsh.executeAndAssertThat("destroy index --if-exists --member=server-1").statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Message", "Destroyed all indexes");
+        .hasTableSection().hasColumn("Message").containsExactlyInAnyOrder("Destroyed all indexes");
   }
 
   @Test
-  @SuppressWarnings("deprecation")
   public void testDestroyOneIndexOnOneMember() {
     gfsh.executeAndAssertThat("destroy index --name=" + INDEX_1 + " --member=server-1")
         .statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Message", "Destroyed index INDEX1");
+        .hasTableSection().hasColumn("Message").containsExactlyInAnyOrder("Destroyed index INDEX1");
 
     server1.invoke(() -> {
       Cache cache = ClusterStartupRule.getCache();
@@ -168,21 +165,21 @@ public class DestroyIndexCommandsDUnitTest {
 
     // Check idempotency
     gfsh.executeAndAssertThat("destroy index --if-exists --name=" + INDEX_1 + " --member=server-1")
-        .statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder("Status", "IGNORED")
-        .tableHasColumnWithExactValuesInAnyOrder("Message", "Index named \"INDEX1\" not found");
+        .statusIsSuccess().hasTableSection().hasColumn("Status")
+        .containsExactlyInAnyOrder("IGNORED")
+        .hasColumn("Message").containsExactlyInAnyOrder("Index named \"INDEX1\" not found");
 
     // Check error result is correct
     gfsh.executeAndAssertThat("destroy index --name=" + INDEX_1 + " --member=server-1")
-        .statusIsError().tableHasColumnWithExactValuesInAnyOrder("Status", "ERROR")
-        .tableHasColumnWithExactValuesInAnyOrder("Message", "Index named \"INDEX1\" not found");
+        .statusIsError().hasTableSection().hasColumn("Status").containsExactlyInAnyOrder("ERROR")
+        .hasColumn("Message").containsExactlyInAnyOrder("Index named \"INDEX1\" not found");
   }
 
   @Test
-  @SuppressWarnings("deprecation")
   public void testPartialSuccessResultDestroyOneIndex() {
     gfsh.executeAndAssertThat("destroy index --name=" + INDEX_1 + " --member=server-1")
-        .statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder("Status", "OK")
-        .tableHasColumnWithExactValuesInAnyOrder("Message", "Destroyed index INDEX1");
+        .statusIsSuccess().hasTableSection().hasColumn("Status").containsExactlyInAnyOrder("OK")
+        .hasColumn("Message").containsExactlyInAnyOrder("Destroyed index INDEX1");
 
     server1.invoke(() -> {
       Cache cache = ClusterStartupRule.getCache();
@@ -196,8 +193,8 @@ public class DestroyIndexCommandsDUnitTest {
 
     // Check error on partial failure
     gfsh.executeAndAssertThat("destroy index --name=" + INDEX_1).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Status", "ERROR", "OK")
-        .tableHasColumnWithExactValuesInAnyOrder("Message", "Index named \"INDEX1\" not found",
+        .hasTableSection().hasColumn("Status").containsExactlyInAnyOrder("ERROR", "OK")
+        .hasColumn("Message").containsExactlyInAnyOrder("Index named \"INDEX1\" not found",
             "Destroyed index INDEX1");
 
     assertIndexCount(REGION_1, 1);
@@ -208,13 +205,13 @@ public class DestroyIndexCommandsDUnitTest {
   public void destroyIndexOnOneGroupWithoutAssociatedClusterConfig() {
     gfsh.executeAndAssertThat("destroy index --name=" + INDEX_1 + " --group=" + GROUP_1)
         .statusIsSuccess().tableHasColumnWithValuesContaining("Member", "server-1")
-        .tableHasColumnWithExactValuesInAnyOrder("Status", "OK")
-        .tableHasColumnWithExactValuesInAnyOrder("Message", "Destroyed index INDEX1");
+        .hasTableSection().hasColumn("Status").containsExactlyInAnyOrder("OK")
+        .hasColumn("Message").containsExactlyInAnyOrder("Destroyed index INDEX1");
 
     gfsh.executeAndAssertThat("destroy index --name=" + INDEX_2 + " --group=" + GROUP_2)
         .statusIsSuccess().tableHasColumnWithValuesContaining("Member", "server-2")
-        .tableHasColumnWithExactValuesInAnyOrder("Status", "OK")
-        .tableHasColumnWithExactValuesInAnyOrder("Message", "Destroyed index INDEX2");
+        .hasTableSection().hasColumn("Status").containsExactlyInAnyOrder("OK")
+        .hasColumn("Message").containsExactlyInAnyOrder("Destroyed index INDEX2");
 
     // The index count on each server and the cluster config will now have diverged because the
     // index+region were not originally defined per group but at the cluster level.
@@ -237,7 +234,6 @@ public class DestroyIndexCommandsDUnitTest {
   }
 
   @Test
-  @SuppressWarnings("deprecation")
   public void destroyIndexOnRegionNotInClusterConfig() {
     IgnoredException.addIgnoredException("failed to update cluster config for cluster");
     IgnoredException.addIgnoredException(
@@ -251,8 +247,8 @@ public class DestroyIndexCommandsDUnitTest {
     });
 
     gfsh.executeAndAssertThat("destroy index --name=INDEX3" + " --region=REGION3").statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Status", "OK", "ERROR")
-        .tableHasColumnWithExactValuesInAnyOrder("Message",
+        .hasTableSection().hasColumn("Status").containsExactlyInAnyOrder("OK", "ERROR")
+        .hasColumn("Message").containsExactlyInAnyOrder(
             "Destroyed index INDEX3 on region REGION3", "Region \"REGION3\" not found");
 
     assertIndexCount(REGION_1, 2);

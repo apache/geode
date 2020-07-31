@@ -67,7 +67,7 @@ public class CreateAsyncEventQueueCommandDUnitTest {
     gfsh.connectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     gfsh.executeAndAssertThat(VALID_COMMAND + " --id=queue").statusIsSuccess()
         .containsOutput(CommandExecutor.SERVICE_NOT_RUNNING_CHANGE_NOT_PERSISTED)
-        .tableHasColumnWithExactValuesInAnyOrder("Status", "OK").tableHasRowCount(1);
+        .hasTableSection().hasColumn("Status").containsExactlyInAnyOrder("OK");
   }
 
   @Test
@@ -89,8 +89,8 @@ public class CreateAsyncEventQueueCommandDUnitTest {
     // create a queue with the same id would result in failure
     gfsh.executeAndAssertThat(VALID_COMMAND + " --id=queue").statusIsError()
         .tableHasRowCount(2)
-        .tableHasColumnWithExactValuesInAnyOrder("Status", "ERROR", "ERROR")
-        .tableHasColumnWithExactValuesInAnyOrder("Message",
+        .hasTableSection().hasColumn("Status").containsExactlyInAnyOrder("ERROR", "ERROR")
+        .hasColumn("Message").containsExactlyInAnyOrder(
             " java.lang.IllegalStateException: A GatewaySender with id AsyncEventQueue_queue is already defined in this cache.",
             " java.lang.IllegalStateException: A GatewaySender with id AsyncEventQueue_queue is already defined in this cache.");
 

@@ -143,8 +143,8 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
     int socketReadTimeout = GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT + 1000;
     String command = CliStrings.CREATE_GATEWAYSENDER + " --" + CliStrings.CREATE_GATEWAYSENDER__ID
         + "=ln" + " --" + CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID + "=2" + " --"
-        + CliStrings.CREATE_GATEWAYSENDER__PARALLEL + "=false" + " --"
-        + CliStrings.CREATE_GATEWAYSENDER__MANUALSTART + "=true" + " --"
+        + CliStrings.CREATE_GATEWAYSENDER__PARALLEL + "=false"
+        + deprecatedCreateGatewaySenderManualStart() + " --"
         + CliStrings.CREATE_GATEWAYSENDER__SOCKETBUFFERSIZE + "=1000" + " --"
         + CliStrings.CREATE_GATEWAYSENDER__SOCKETREADTIMEOUT + "=" + socketReadTimeout + " --"
         + CliStrings.CREATE_GATEWAYSENDER__ENABLEBATCHCONFLATION + "=true" + " --"
@@ -182,14 +182,19 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
         server3);
   }
 
+  @SuppressWarnings("deprecation")
+  private String deprecatedCreateGatewaySenderManualStart() {
+    return " --" + CliStrings.CREATE_GATEWAYSENDER__MANUALSTART + "=true";
+  }
+
   /**
    * GatewaySender with single dispatcher thread
    */
   @Test
   public void testCreateDestroyGatewaySenderWithSingleDispatcherThread() {
     String command = CliStrings.CREATE_GATEWAYSENDER + " --" + CliStrings.CREATE_GATEWAYSENDER__ID
-        + "=ln" + " --" + CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID + "=2" + " --"
-        + CliStrings.CREATE_GATEWAYSENDER__MANUALSTART + "=true" + " --"
+        + "=ln" + " --" + CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID + "=2" +
+        deprecatedCreateGatewaySenderManualStart() + " --"
         + CliStrings.CREATE_GATEWAYSENDER__SOCKETBUFFERSIZE + "=1000" + " --"
         + CliStrings.CREATE_GATEWAYSENDER__DISPATCHERTHREADS + "=1" + " --"
         + CliStrings.CREATE_GATEWAYSENDER__GROUPTRANSACTIONEVENTS + "=true";
@@ -227,8 +232,8 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
     int socketReadTimeout = GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT + 1000;
     String command = CliStrings.CREATE_GATEWAYSENDER + " --" + CliStrings.CREATE_GATEWAYSENDER__ID
         + "=ln" + " --" + CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID + "=2" + " --"
-        + CliStrings.CREATE_GATEWAYSENDER__PARALLEL + "=false" + " --"
-        + CliStrings.CREATE_GATEWAYSENDER__MANUALSTART + "=true" + " --"
+        + CliStrings.CREATE_GATEWAYSENDER__PARALLEL + "=false" +
+        deprecatedCreateGatewaySenderManualStart() + " --"
         + CliStrings.CREATE_GATEWAYSENDER__SOCKETBUFFERSIZE + "=1000" + " --"
         + CliStrings.CREATE_GATEWAYSENDER__SOCKETREADTIMEOUT + "=" + socketReadTimeout + " --"
         + CliStrings.CREATE_GATEWAYSENDER__ENABLEBATCHCONFLATION + "=true" + " --"
@@ -280,8 +285,8 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
     int socketReadTimeout = GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT + 1000;
     String command = CliStrings.CREATE_GATEWAYSENDER + " --" + CliStrings.CREATE_GATEWAYSENDER__ID
         + "=ln" + " --" + CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID + "=2" + " --"
-        + CliStrings.CREATE_GATEWAYSENDER__PARALLEL + "=false" + " --"
-        + CliStrings.CREATE_GATEWAYSENDER__MANUALSTART + "=true" + " --"
+        + CliStrings.CREATE_GATEWAYSENDER__PARALLEL + "=false" +
+        deprecatedCreateGatewaySenderManualStart() + " --"
         + CliStrings.CREATE_GATEWAYSENDER__SOCKETBUFFERSIZE + "=1000" + " --"
         + CliStrings.CREATE_GATEWAYSENDER__SOCKETREADTIMEOUT + "=" + socketReadTimeout + " --"
         + CliStrings.CREATE_GATEWAYSENDER__ENABLEBATCHCONFLATION + "=true" + " --"

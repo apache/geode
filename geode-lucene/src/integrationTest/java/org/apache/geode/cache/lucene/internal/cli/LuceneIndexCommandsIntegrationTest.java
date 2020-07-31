@@ -95,8 +95,8 @@ public class LuceneIndexCommandsIntegrationTest {
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_LIST_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE_LIST_INDEX__STATS, "true");
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Documents", "0")
-        .tableHasColumnWithExactValuesInAnyOrder("Index Name", "index");
+        .hasTableSection().hasColumn("Documents").containsExactlyInAnyOrder("0")
+        .hasColumn("Index Name").containsExactlyInAnyOrder("index");
   }
 
   @Test
@@ -121,8 +121,8 @@ public class LuceneIndexCommandsIntegrationTest {
     csb.addOption(LuceneCliStrings.LUCENE_LIST_INDEX__STATS, "true");
 
     gfsh.executeAndAssertThat(csb.toString())
-        .tableHasColumnWithExactValuesInAnyOrder("Status", "NOT_INITIALIZED")
-        .tableHasColumnWithExactValuesInAnyOrder("Index Name", INDEX_NAME);
+        .hasTableSection().hasColumn("Status").containsExactlyInAnyOrder("NOT_INITIALIZED")
+        .hasColumn("Index Name").containsExactlyInAnyOrder(INDEX_NAME);
   }
 
   @Test
@@ -518,7 +518,7 @@ public class LuceneIndexCommandsIntegrationTest {
     csb.addOption(LuceneCliStrings.LUCENE_SEARCH_INDEX__LIMIT, "2");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("key", "A", "G");
+        .hasTableSection().hasColumn("key").containsExactlyInAnyOrder("A", "G");
   }
 
   @Test
@@ -542,7 +542,7 @@ public class LuceneIndexCommandsIntegrationTest {
     csb.addOption(LuceneCliStrings.LUCENE_SEARCH_INDEX__DEFAULT_FIELD, "field2");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("key", "C");
+        .hasTableSection().hasColumn("key").containsExactlyInAnyOrder("C");
   }
 
   @Test
@@ -600,7 +600,7 @@ public class LuceneIndexCommandsIntegrationTest {
     csb.addOption(LuceneCliStrings.LUCENE_SEARCH_INDEX__KEYSONLY, "true");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("key", "C", "G", "E", "A");
+        .hasTableSection().hasColumn("key").containsExactlyInAnyOrder("C", "G", "E", "A");
   }
 
   @Test

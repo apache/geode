@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.wan.parallel;
 
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -72,7 +73,7 @@ public class ParallelGatewaySenderImplTest {
     when(cache.getGatewaySenderLockService()).thenReturn(distributedLockService);
 
     LocalRegion region = mock(LocalRegion.class);
-    when(cache.getRegion(any())).thenReturn(region);
+    when(cache.getRegion(any())).thenReturn(uncheckedCast(region));
     when(region.containsKey(any())).thenReturn(true);
     when(region.get(any())).thenReturn(1);
 

@@ -332,7 +332,7 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
     gfsh.executeAndAssertThat(
         String.format("backup disk-store --dir=%s --baseline-dir=%s", diskDirs, backupDir))
         .statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "locator-0", "server-1");
+        .hasTableSection().hasColumn("Member").containsExactlyInAnyOrder("locator-0", "server-1");
   }
 
   @Test

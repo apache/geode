@@ -89,7 +89,8 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigTestBase {
     new ClusterConfig(CLUSTER, GROUP2).verify(server2);
 
     gfshConnector.executeAndAssertThat("list members").statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Name", "locator-0", "server-1", "server-2");
+        .hasTableSection().hasColumn("Name")
+        .containsExactlyInAnyOrder("locator-0", "server-1", "server-2");
   }
 
   @Test

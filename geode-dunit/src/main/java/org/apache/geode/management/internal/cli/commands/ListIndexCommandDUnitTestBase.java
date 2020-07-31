@@ -73,15 +73,15 @@ public class ListIndexCommandDUnitTestBase {
   @Test
   public void testListIndexes() throws Exception {
     gfsh.executeAndAssertThat(CliStrings.LIST_INDEX).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Member Name", server.getName());
+        .hasTableSection().hasColumn("Member Name").containsExactlyInAnyOrder(server.getName());
   }
 
   @Test
   public void testListIndexesWithStats() throws Exception {
     gfsh.executeAndAssertThat(CliStrings.LIST_INDEX + " --with-stats").statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Member Name", server.getName())
-        .tableHasColumnWithExactValuesInAnyOrder("Updates", "1")
-        .tableHasColumnWithExactValuesInAnyOrder("Keys", "1")
-        .tableHasColumnWithExactValuesInAnyOrder("Values", "1");
+        .hasTableSection().hasColumn("Member Name").containsExactlyInAnyOrder(server.getName())
+        .hasColumn("Updates").containsExactlyInAnyOrder("1")
+        .hasColumn("Keys").containsExactlyInAnyOrder("1")
+        .hasColumn("Values").containsExactlyInAnyOrder("1");
   }
 }

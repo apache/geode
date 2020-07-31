@@ -116,14 +116,9 @@ public class StopGatewayReceiverCommandDUnitTest implements Serializable {
     locatorSite1.invoke(() -> validateGatewayReceiverMXBeanProxy(getMember(server2.getVM()), true));
     locatorSite1.invoke(() -> validateGatewayReceiverMXBeanProxy(getMember(server3.getVM()), true));
 
-    String command = CliStrings.STOP_GATEWAYRECEIVER;
-    CommandResult cmdResult = gfsh.executeCommand(command);
-    assertThat(cmdResult).isNotNull();
-
-    TabularResultModel resultData = cmdResult.getResultData()
-        .getTableSection(CliStrings.STOP_GATEWAYRECEIVER);
-    List<String> status = resultData.getValuesInColumn("Result");
-    assertThat(status).containsExactlyInAnyOrder("OK", "OK", "OK");
+    gfsh.executeAndAssertThat(CliStrings.STOP_GATEWAYRECEIVER)
+        .hasTableSection(CliStrings.STOP_GATEWAYRECEIVER).hasColumn("Result")
+        .containsExactlyInAnyOrder("OK", "OK", "OK");
 
     locatorSite1
         .invoke(() -> validateGatewayReceiverMXBeanProxy(getMember(server1.getVM()), false));
