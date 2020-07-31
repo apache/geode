@@ -15,6 +15,7 @@
 package org.apache.geode.redis.internal.executor.set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -113,6 +114,27 @@ public class SUnionIntegrationTest {
     Set<String> newNotEmptySet = jedis.smembers("newNotEmpty");
     assertThat(newNotEmptySize).isEqualTo(secondSet.length);
     assertThat(newNotEmptySet).containsExactlyInAnyOrder(secondSet);
+  }
+
+  @Test
+  public void testSUnionStore_withNonExistentKeys() {
+    String[] firstSet = new String[] {"pear", "apple", "plum", "orange", "peach"};
+    jedis.sadd("set1", firstSet);
+
+    Long resultSize = jedis.sunionstore("set1", "nonExistent1", "nonExistent2");
+    assertThat(resultSize).isEqualTo(0);
+    assertThat(jedis.exists("set1")).isFalse();
+  }
+
+  @Test
+  public void testSUnionStore_withNonSetKey() {
+    String[] firstSet = new String[] {"pear", "apple", "plum", "orange", "peach"};
+    jedis.sadd("set1", firstSet);
+    jedis.set("string1", "value1");
+
+    assertThatThrownBy(() -> jedis.sunionstore("set1", "string1"))
+        .hasMessage("WRONGTYPE Operation against a key holding the wrong kind of value");
+    assertThat(jedis.exists("set1")).isTrue();
   }
 
   @Test
