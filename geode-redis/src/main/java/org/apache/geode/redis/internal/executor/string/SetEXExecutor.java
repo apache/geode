@@ -33,7 +33,7 @@ public class SetEXExecutor extends StringExecutor implements Extendable {
       "The expiration argument provided was not a number";
 
   private static final String ERROR_SECONDS_NOT_LEGAL =
-      "The expiration argument must be greater than 0";
+      "invalid expire time in setex";
 
   private static final String SUCCESS = "OK";
 
