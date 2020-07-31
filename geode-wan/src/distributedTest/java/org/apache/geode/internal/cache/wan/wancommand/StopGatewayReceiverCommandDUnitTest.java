@@ -159,16 +159,9 @@ public class StopGatewayReceiverCommandDUnitTest implements Serializable {
     DistributedMember server1DM = getMember(server1.getVM());
     String command =
         CliStrings.STOP_GATEWAYRECEIVER + " --" + CliStrings.MEMBER + "=" + server1DM.getId();
-    CommandResult cmdResult = gfsh.executeCommand(command);
-    assertThat(cmdResult).isNotNull();
-
-    String strCmdResult = cmdResult.toString();
-    assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
-
-    TabularResultModel resultData = cmdResult.getResultData()
-        .getTableSection(CliStrings.STOP_GATEWAYRECEIVER);
-    List<String> messages = resultData.getValuesInColumn("Message");
-    assertThat(messages.get(0)).contains("is stopped on member");
+    gfsh.executeAndAssertThat(command).statusIsSuccess()
+        .hasTableSection(CliStrings.STOP_GATEWAYRECEIVER).hasColumn("Message").asList()
+        .allMatch(s -> s.contains("is stopped on member"));
 
     locatorSite1
         .invoke(() -> validateGatewayReceiverMXBeanProxy(getMember(server1.getVM()), false));
