@@ -220,11 +220,19 @@ public class SetsIntegrationTest {
   }
 
   @Test
-  public void srandmemberCount_returnsTwoMembers() {
+  public void srandmemberNegativeCount_returnsThreeMembers() {
     jedis.sadd("key", "m1", "m2", "m3");
     List<String> results = jedis.srandmember("key", -3);
     assertThat(results).hasSize(3);
     assertThat(results).containsAnyOf("m1", "m2", "m3");
+  }
+
+  @Test
+  public void srandmemberNegativeCount_givenSmallSet_returnsThreeMembers() {
+    jedis.sadd("key", "m1");
+    List<String> results = jedis.srandmember("key", -3);
+    assertThat(results).hasSize(3);
+    assertThat(results).containsAnyOf("m1");
   }
 
   @Test

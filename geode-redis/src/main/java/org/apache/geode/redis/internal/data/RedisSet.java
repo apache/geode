@@ -128,7 +128,7 @@ public class RedisSet extends AbstractRedisData {
       count = -count;
     }
 
-    if (membersSize <= count && count != 1) {
+    if (!duplicatesAllowed && membersSize <= count && count != 1) {
       return new ArrayList<>(members);
     }
 
