@@ -38,7 +38,6 @@ import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheConfig.AsyncEventQueue;
 import org.apache.geode.cache.configuration.DeclarableType;
-import org.apache.geode.cache.configuration.RegionAttributesDataPolicy;
 import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.connectors.jdbc.JdbcAsyncWriter;
@@ -387,8 +386,7 @@ public class CreateMappingCommand extends SingleGfshCommand {
       String queueName) {
     AsyncEventQueue asyncEventQueue = new AsyncEventQueue();
     asyncEventQueue.setId(queueName);
-    boolean isPartitioned = attributes.getDataPolicy().equals(RegionAttributesDataPolicy.PARTITION)
-        || attributes.getDataPolicy().equals(RegionAttributesDataPolicy.PERSISTENT_PARTITION);
+    boolean isPartitioned = MappingCommandUtils.isPartition(attributes);
     asyncEventQueue.setParallel(isPartitioned);
     DeclarableType listener = new DeclarableType();
     listener.setClassName(JdbcAsyncWriter.class.getName());

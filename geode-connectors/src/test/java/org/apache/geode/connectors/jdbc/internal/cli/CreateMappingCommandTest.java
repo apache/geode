@@ -42,6 +42,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheConfig.AsyncEventQueue;
 import org.apache.geode.cache.configuration.CacheElement;
@@ -629,6 +630,23 @@ public class CreateMappingCommandTest {
     when(cacheConfig.getAsyncEventQueues()).thenReturn(queueList);
     when(matchingRegionAttributes.getDataPolicy())
         .thenReturn(RegionAttributesDataPolicy.PARTITION);
+
+    createRegionMappingCommand.updateConfigForGroup(null, cacheConfig, arguments);
+
+    assertThat(queueList.get(0).isParallel()).isTrue();
+  }
+
+  @Test
+  public void updateClusterConfigWithOneMatchingPartitionedRegionRefidCreatesParallelAsyncEventQueue() {
+    List<RegionConfig> list = new ArrayList<>();
+    List<CacheElement> listCacheElements = new ArrayList<>();
+    when(matchingRegion.getCustomRegionElements()).thenReturn(listCacheElements);
+    list.add(matchingRegion);
+    when(cacheConfig.getRegions()).thenReturn(list);
+    List<CacheConfig.AsyncEventQueue> queueList = new ArrayList<>();
+    when(cacheConfig.getAsyncEventQueues()).thenReturn(queueList);
+    when(matchingRegionAttributes.getDataPolicy()).thenReturn(null);
+    when(matchingRegionAttributes.getRefid()).thenReturn(RegionShortcut.PARTITION.name());
 
     createRegionMappingCommand.updateConfigForGroup(null, cacheConfig, arguments);
 
