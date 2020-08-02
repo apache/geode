@@ -262,7 +262,7 @@ public class Launcher {
 
   private void printUsage(final Gfsh gfsh, final PrintStream stream) {
     int terminalWidth = gfsh.getTerminalWidth();
-    stream.print("Pivotal GemFire(R) v");
+    stream.print(GemFireVersion.getProductName() + " v");
     stream.print(GemFireVersion.getGemFireVersion());
     stream.println(" Command Line Shell" + GfshParser.LINE_SEPARATOR);
     stream.println("USAGE");
