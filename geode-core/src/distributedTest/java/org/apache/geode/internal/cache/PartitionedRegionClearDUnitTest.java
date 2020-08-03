@@ -387,6 +387,8 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     accessor.invoke(() -> {
       PartitionedRegion region = (PartitionedRegion) getRegion(false);
       assertThat(region.getCachePerfStats().getRegionClearCount()).isEqualTo(0);
+      assertThat(region.getCachePerfStats().getPartitionedRegionClearLocalDuration()).isEqualTo(0);
+      assertThat(region.getCachePerfStats().getPartitionedRegionClearTotalDuration()).isEqualTo(0);
     });
   }
 
