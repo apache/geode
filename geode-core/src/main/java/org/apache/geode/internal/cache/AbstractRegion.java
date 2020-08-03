@@ -1896,4 +1896,9 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   protected interface PoolFinder {
     PoolImpl find(String poolName);
   }
+
+  @VisibleForTesting
+  ConcurrentHashMap<RegionEntry, EntryExpiryTask> getEntryExpiryTasks() {
+    return entryExpiryTasks;
+  }
 }
