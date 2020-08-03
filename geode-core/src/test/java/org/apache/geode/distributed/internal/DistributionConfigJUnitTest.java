@@ -55,6 +55,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -182,6 +183,31 @@ public class DistributionConfigJUnitTest {
         }
       }
 
+    }
+  }
+
+  @Test
+  public void internalPropertiesAreIgnoredInSameAsCheck() {
+    DistributionConfigImpl config = new DistributionConfigImpl(new Properties());
+    Properties configProperties = new Properties();
+    configProperties.putAll(config.getProps());
+    Set<String> internalAttributeNames = config.getInternalAttributeNames();
+    assertThat(internalAttributeNames).isNotEmpty();
+    // make sure that DS_QUORUM_CHECKER_NAME is tested (GEODE-8389)
+    assertThat(internalAttributeNames).contains(DistributionConfig.DS_QUORUM_CHECKER_NAME);
+    for (String attributeName : config.getInternalAttributeNames()) {
+      assertThat(config.isInternalAttribute(attributeName)).isTrue()
+          .withFailMessage(
+              attributeName + " is not considered to be internal, but is annotated to be internal");
+      assertThat(config.sameAs(DistributionConfigImpl.produce(configProperties, false))).isTrue()
+          .withFailMessage("sameAs failed for " + attributeName);
+      assertThat(config.sameAs(DistributionConfigImpl.produce(configProperties, true))).isTrue()
+          .withFailMessage("sameAs failed for " + attributeName);
+      configProperties.put(attributeName, new Object());
+      assertThat(config.sameAs(DistributionConfigImpl.produce(configProperties, false))).isTrue()
+          .withFailMessage("sameAs failed for " + attributeName);
+      assertThat(config.sameAs(DistributionConfigImpl.produce(configProperties, true))).isTrue()
+          .withFailMessage("sameAs failed for " + attributeName);
     }
   }
 
