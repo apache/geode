@@ -22,7 +22,8 @@ git clone --config transfer.fsckObjects=false https://github.com/prettyClouds/re
 cd redis
 git checkout tests-geode-redis
 
-JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"  \
+export JAVA_HOME=${JAVA_TEST_PATH}
+
 ../geode-assembly/build/install/apache-geode/bin/gfsh start server \
   --J=-Denable-redis-unsupported-commands=true \
   --name=server1 \
@@ -36,7 +37,7 @@ failCount=0
 
 ((failCount+=$?))
 
-JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64" \
+
 ../geode-assembly/build/install/apache-geode/bin/gfsh start server \
   --J=-Denable-redis-unsupported-commands=true \
   --name=server2 \

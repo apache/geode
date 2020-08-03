@@ -45,7 +45,7 @@ resources:
 - name: geode-ci
   type: git
   source:
-    branch: pipelining
+    branch: new-pr
     depth: 1
     paths:
     - ci/*
