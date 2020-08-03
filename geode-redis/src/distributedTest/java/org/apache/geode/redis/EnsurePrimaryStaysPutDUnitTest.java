@@ -173,6 +173,7 @@ public class EnsurePrimaryStaysPutDUnitTest {
   private static String awaitForPrimary(Region<String, String> region) {
     AtomicReference<String> lastPrimary =
         new AtomicReference<>(PartitionRegionHelper.getPrimaryMemberForKey(region, KEY).getName());
+
     GeodeAwaitility.await()
         .during(10, TimeUnit.SECONDS)
         .atMost(60, TimeUnit.SECONDS)
