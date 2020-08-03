@@ -22,7 +22,9 @@ import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
 import static org.apache.geode.redis.internal.GeodeRedisServer.ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM;
 
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 import io.lettuce.core.ClientOptions;
@@ -40,9 +42,12 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.session.springRedisTestApplication.config.DUnitSocketAddressResolver;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
@@ -182,6 +187,8 @@ public class NonPrimaryMemberCrashDUnit {
 
 //    clusterStartUp.crashVM(1);
 
+    assert(connection.isOpen()==true);
+
     try {
       clusterStartUp.crashVM(1);
     }
@@ -199,9 +206,30 @@ public class NonPrimaryMemberCrashDUnit {
 
 //    clusterStartUp.crashVM(3);
 //    server3 = startRedisVM(3, redisPorts[2]);
+    assert(connection.isOpen()==false);
 
-  assert(connection.isOpen()==false);
 
+  }
+
+
+  private static String awaitForPrimary(Region<String, String> region) {
+
+    AtomicReference<String> lastPrimary =
+        new AtomicReference<>(PartitionRegionHelper.getPrimaryMemberForKey(region, KEY).getName());
+
+    GeodeAwaitility.await()
+        .during(10, TimeUnit.SECONDS)
+        .atMost(60, TimeUnit.SECONDS)
+        .until(() -> {
+
+          String currentPrimary =
+              PartitionRegionHelper.getPrimaryMemberForKey(region, KEY).getName();
+
+          return lastPrimary.getAndSet(currentPrimary).equals(currentPrimary);
+
+        });
+
+    return lastPrimary.get();
   }
 
 
