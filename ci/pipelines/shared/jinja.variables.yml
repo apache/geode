@@ -151,7 +151,7 @@ tests:
   PARALLEL_DUNIT: 'false'
   PARALLEL_GRADLE: 'true'
   PLATFORM: linux
-  RAM: '16'
+  RAM: '8'
   name: Redis
 - ARTIFACT_SLUG: stressnewtestfiles
   CALL_STACK_TIMEOUT: '20700'

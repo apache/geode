@@ -18,11 +18,16 @@
 # limitations under the License.
 
 cd ..
+
+# We are currently using a personal fork for this repo because our code does not implement all
+# Redis commands.  Once all commands needed to run relevant test files are implemented, we hope to
+# use Redis's repo instead.
 git clone --config transfer.fsckObjects=false https://github.com/prettyClouds/redis.git
 cd redis
 git checkout tests-geode-redis
 
-JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"  \
+export JAVA_HOME=${JAVA_TEST_PATH}
+
 ../geode-assembly/build/install/apache-geode/bin/gfsh start server \
   --J=-Denable-redis-unsupported-commands=true \
   --name=server1 \
@@ -36,7 +41,7 @@ failCount=0
 
 ((failCount+=$?))
 
-JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64" \
+
 ../geode-assembly/build/install/apache-geode/bin/gfsh start server \
   --J=-Denable-redis-unsupported-commands=true \
   --name=server2 \
