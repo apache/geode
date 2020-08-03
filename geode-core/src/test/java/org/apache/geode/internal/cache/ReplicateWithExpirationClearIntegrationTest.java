@@ -22,6 +22,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -47,15 +48,24 @@ public class ReplicateWithExpirationClearIntegrationTest {
     cache = new CacheFactory().set(LOCATORS, "").set(MCAST_PORT, "0").create();
   }
 
+  @After
+  public void tearDown() {
+    cache.close();
+  }
+
   @Test
   public void clearDoesNotLeaveEntryExpiryTaskInRegion() {
     RegionFactory<String, String> regionFactory = cache.createRegionFactory(REPLICATE);
     regionFactory.setEntryTimeToLive(new ExpirationAttributes(2000, DESTROY));
     Region<String, String> region = regionFactory.create(regionName);
-    LocalRegion localRegion = (LocalRegion) region;
-    region.put("key", "value");
-    assertThat(localRegion.getEntryExpiryTasks()).hasSize(1);
-    region.clear();
-    assertThat(localRegion.getEntryExpiryTasks()).isEmpty();
+    try {
+      LocalRegion localRegion = (LocalRegion) region;
+      region.put("key", "value");
+      assertThat(localRegion.getEntryExpiryTasks()).hasSize(1);
+      region.clear();
+      assertThat(localRegion.getEntryExpiryTasks()).isEmpty();
+    } finally {
+      region.destroyRegion();
+    }
   }
 }
