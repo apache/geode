@@ -154,6 +154,7 @@ configure([repeatDistributedTest, repeatIntegrationTest, repeatUpgradeTest, repe
   times = Integer.parseInt(repeat)
   useJUnit {}
   outputs.upToDateWhen { false }
+  failFast true
 
   if (project.hasProperty("failOnNoMatchingTests")) {
     filter {
