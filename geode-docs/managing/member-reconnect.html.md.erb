@@ -72,7 +72,7 @@ The `DistributedSystem` and `Cache` API provide several methods you can use to t
 -   `DistributedSystem.getReconnectedSystem()` returns the reconnected DistributedSystem.
 -   `DistributedSystem.stopReconnecting()` stops the reconnection process and ensures that the DistributedSystem stays in a disconnected state.
 -   `Cache.isReconnecting()` returns true if the cache is attempting to reconnect to a cluster.
--   `Cache.waitForReconnect(long, TimeUnit)` waits for a period of time, and then returns a boolean value to indicate whether the DistributedSystem has reconnected. Use a value of -1 seconds to wait indefinitely until the reconnect completes or the cache shuts down. Use a value of 0 seconds as a quick probe to determine if the member has reconnected.
+-   `Cache.waitUntilReconnected(long, TimeUnit)` waits for a period of time, and then returns a boolean value to indicate whether the DistributedSystem has reconnected. Use a value of -1 seconds to wait indefinitely until the reconnect completes or the cache shuts down. Use a value of 0 seconds as a quick probe to determine if the member has reconnected.
 -   `Cache.getReconnectedCache()` returns the reconnected Cache.
 -   `Cache.stopReconnecting()` stops the reconnection process and ensures that the DistributedSystem stays in a disconnected state.
 
