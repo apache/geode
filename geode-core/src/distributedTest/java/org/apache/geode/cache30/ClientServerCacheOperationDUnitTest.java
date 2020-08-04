@@ -124,7 +124,7 @@ public class ClientServerCacheOperationDUnitTest implements Serializable {
   }
 
   @Test
-  public void largeObjectGetWithReadTimeoutThrowsException() {
+  public void largeObjectGetWithReadTimeout() {
     VM server1 = VM.getVM(0);
     VM server2 = VM.getVM(1);
     VM server3 = VM.getVM(2);
@@ -154,7 +154,7 @@ public class ClientServerCacheOperationDUnitTest implements Serializable {
       List list = new ArrayList(listSize);
 
       for (int i = 0; i < listSize; i++) {
-        list.add(new byte[45 * 1000 * 1000]);
+        list.add(new byte[75 * 1000 * 1000]);
       }
 
       region.put("key", list);
@@ -172,7 +172,7 @@ public class ClientServerCacheOperationDUnitTest implements Serializable {
       Pool pool = PoolManager.createFactory()
           .addLocator("localhost", locatorPort)
           .setSocketBufferSize(100)
-          .setReadTimeout(100)
+          .setReadTimeout(50)
           .create("testPool");
 
       Region region = clientCacheRule.getClientCache()
