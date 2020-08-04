@@ -23,6 +23,7 @@ import static org.apache.geode.redis.internal.GeodeRedisServer.ENABLE_REDIS_UNSU
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -45,6 +46,9 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.control.RebalanceFactory;
+import org.apache.geode.cache.control.RebalanceResults;
+import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.InternalCache;
@@ -82,7 +86,6 @@ public class NonPrimaryMemberCrashDUnit {
   private StatefulRedisConnection<String, String> connection;
   private RedisCommands<String, String> commands;
 
-  private static InternalCache cache;
 
   @Rule
   public ExecutorServiceRule executor = new ExecutorServiceRule();
@@ -173,23 +176,12 @@ public class NonPrimaryMemberCrashDUnit {
   }
 
   @Test
-  public void given_SecondaryServerCrashesDuringOperation_then_ClientConnectionToPrimaryShouldBeLost()
-      throws Exception {
+  public void given_SecondaryServerCrashes_then_ClientConnectionToPrimaryShouldBeMaintained() {
 
     String key = "key";
     String value = "value";
 
-    //primary server
-    //secondnary server
-    // Create entry and return name of primary
-
     String primaryMemberForKey = getNameOfPrimaryServerForKey(key, value);
-
-    //      return awaitForPrimary(region);
-
-//    // who is primary?
-    MemberVM primaryServer = primaryMemberForKey.equals("server-1") ? server1 : server2;
-    MemberVM secondaryServer = primaryMemberForKey.equals("server-1") ? server2 : server1;
 
     int secondaryServerindex = primaryMemberForKey.equals("server-1") ? 2 : 1;
 
@@ -197,7 +189,36 @@ public class NonPrimaryMemberCrashDUnit {
         redisPortForPrimary =
         primaryMemberForKey.equals("server-1") ? "" + redisPorts[0] : "" + redisPorts[1];
 
-//    secondary = primaryMemberForKey.equals("server-1") ? server2 : server1;
+    StatefulRedisConnection<String, String> connectionToClientOnPrimary =
+        connectClientRedisServerOnPort(redisPortForPrimary);
+
+    assert (connectionToClientOnPrimary.isOpen() == true);
+
+    try {
+      clusterStartUp.crashVM(secondaryServerindex);
+    } catch (Exception e) {
+    }
+
+    assert (connectionToClientOnPrimary.isOpen() == true);
+  }
+
+
+  @Test
+  public void given_SecondaryServerCrashesDuringOperation_then_ClientConnectionToPrimaryShouldBeLost() {
+
+    String key = "key";
+    String value = "value";
+
+    String primaryMemberForKey = getNameOfPrimaryServerForKey(key, value);
+
+    int secondaryServerindex = primaryMemberForKey.equals("server-1") ? 2 : 1;
+
+    String
+        redisPortForPrimary =
+        primaryMemberForKey.equals("server-1") ? "" + redisPorts[0] : "" + redisPorts[1];
+
+    int redisPortForSecondary =
+        primaryMemberForKey.equals("server-1") ? redisPorts[1] : redisPorts[0];
 
     StatefulRedisConnection<String, String> connectionToClientOnPrimary =
         connectClientRedisServerOnPort(redisPortForPrimary);
@@ -207,32 +228,58 @@ public class NonPrimaryMemberCrashDUnit {
     AtomicBoolean running1 = new AtomicBoolean(true);
     AtomicBoolean running2 = new AtomicBoolean(true);
 
-    Runnable task1 = () -> appendPerformAndVerify(0, 20000, running1);
-    Runnable task2 = () -> appendPerformAndVerify(1, 20000, running2);
+    Runnable task1 = () -> renamePerformAndVerify(0, 20, running1);
+    Runnable task2 = () -> renamePerformAndVerify(1, 20, running2);
 
     Future<Void> future1 = executor.runAsync(task1);
     Future<Void> future2 = executor.runAsync(task2);
 
-    future1.get();
-    future2.get();
+    try {
+      future1.get();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    } catch (ExecutionException e) {
+      e.printStackTrace();
+    }
+
+    try {
+      future2.get();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    } catch (ExecutionException e) {
+      e.printStackTrace();
+    }
 
     try {
       clusterStartUp.crashVM(secondaryServerindex);
-      running1.set(false);
-      running2.set(false);
-      //todo really need to get these again?
-      future1.get();
-      future2.get();
+      MemberVM newlyStartedServer = startRedisVM(secondaryServerindex, redisPortForSecondary);
+      rebalanceAllRegions(newlyStartedServer);
 
     } catch (Exception e) {
-      assertThat(e).hasMessageContaining ("memberDeparted");
+    }
+
+    running1.set(false);
+    running2.set(false);
+
+    try {
+      future1.get();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    } catch (ExecutionException e) {
+      e.printStackTrace();
+    }
+    try {
+      future2.get();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    } catch (ExecutionException e) {
+      e.printStackTrace();
     }
 
     assert (connectionToClientOnPrimary.isOpen() == false);
   }
 
   private String getNameOfPrimaryServerForKey(String key, String value) {
-//    InternalCache cache = clusterStartUp.getCache();
 
     return server1.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
@@ -268,7 +315,8 @@ public class NonPrimaryMemberCrashDUnit {
 //    return getPrimaryWhenAvailable(region, key);
   }
 
-  private static String getPrimaryWhenAvailable(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key) {
+  private static String getPrimaryWhenAvailable(Region<ByteArrayWrapper, RedisData> region,
+                                                ByteArrayWrapper key) {
 
     AtomicReference<String> lastPrimary =
         new AtomicReference<>(
@@ -289,6 +337,38 @@ public class NonPrimaryMemberCrashDUnit {
     return lastPrimary.get();
   }
 
+
+  private void renamePerformAndVerify(int index, int minimumIterations, AtomicBoolean isRunning) {
+    String newKey = null;
+    String baseKey = "rename-key-" + index;
+    commands.set(baseKey + "-0", "value");
+    int iterationCount = 0;
+
+    while (iterationCount < minimumIterations || isRunning.get()) {
+      String oldKey = baseKey + "-" + iterationCount;
+      newKey = baseKey + "-" + (iterationCount + 1);
+      try {
+        commands.rename(oldKey, newKey);
+        iterationCount += 1;
+      } catch (RedisCommandExecutionException e) {
+        if (e.getMessage().contains("memberDeparted")) {
+          if (doWithRetry(() -> commands.exists(oldKey)) == 0) {
+            iterationCount += 1;
+          }
+        } else if (e.getMessage().contains("no such key")) {
+          iterationCount += 1;
+        } else {
+          throw e;
+        }
+      }
+    }
+
+    assertThat(commands.keys(baseKey + "-*").size()).isEqualTo(1);
+    assertThat(commands.exists(newKey)).isEqualTo(1);
+
+    logger.info("--->>> RENAME test ran {} iterations", iterationCount);
+  }
+
   private void appendPerformAndVerify(int index, int minimumIterations, AtomicBoolean isRunning) {
     String key = "append-key-" + index;
     int iterationCount = 0;
@@ -302,6 +382,7 @@ public class NonPrimaryMemberCrashDUnit {
 
         //TODO member departed?  hmmm....
         if (e.getMessage().contains("memberDeparted")) {
+          LogService.getLogger().info("loggin'");
           if (doWithRetry(() -> commands.get(key)).endsWith(appendString)) {
             iterationCount += 1;
           }
@@ -322,6 +403,20 @@ public class NonPrimaryMemberCrashDUnit {
     }
 
     logger.info("--->>> APPEND test ran {} iterations", iterationCount);
+  }
+
+  private static void rebalanceAllRegions(MemberVM vm) {
+    vm.invoke(() -> {
+      ResourceManager manager = ClusterStartupRule.getCache().getResourceManager();
+
+      RebalanceFactory factory = manager.createRebalanceFactory();
+
+      try {
+        RebalanceResults result = factory.start().getResults();
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
+    });
   }
 
   private <T> T doWithRetry(Supplier<T> supplier) {
