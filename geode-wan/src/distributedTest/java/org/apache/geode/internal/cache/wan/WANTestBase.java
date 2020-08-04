@@ -48,6 +48,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -85,6 +87,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.DataSerializable;
 import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
@@ -92,6 +95,7 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.EntryEvent;
@@ -112,6 +116,9 @@ import org.apache.geode.cache.client.internal.ConnectionStats;
 import org.apache.geode.cache.client.internal.LocatorDiscoveryCallbackAdapter;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.client.internal.locator.wan.LocatorMembershipListener;
+import org.apache.geode.cache.execute.Execution;
+import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.persistence.PartitionOfflineException;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
@@ -142,6 +149,7 @@ import org.apache.geode.internal.cache.InternalCacheBuilder;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionQueue;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.execute.data.CustId;
 import org.apache.geode.internal.cache.execute.data.Customer;
 import org.apache.geode.internal.cache.execute.data.Order;
@@ -4381,5 +4389,40 @@ public class WANTestBase extends DistributedTestCase {
     vm.invoke(checkProxySender);
   }
 
+  public static void disableTmpDroppedEvents(String senderId, boolean toDisable) {
+    Object[] arguments = new Object[] {senderId, toDisable};
+    Set<DistributedMember> members = new HashSet<>(cache.getMembers());
+    members.add(cache.getDistributedSystem().getDistributedMember());
+    Execution<Set, Boolean, Boolean> execution =
+        FunctionService.onMembers(members).setArguments(arguments);
+    // Execution<Set, Boolean, Boolean> execution =
+    // FunctionService.onMembers(cache.getDistributedSystem().getAllOtherMembers()).setArguments(arguments);
+    execution.execute(new DisableTmpDroppedEventsFunction());
+  }
+
+  static class DisableTmpDroppedEventsFunction
+      implements InternalFunction, Declarable, DataSerializable {
+    @Override
+    public void execute(FunctionContext context) {
+      Object[] arguments = (Object[]) context.getArguments();
+      Cache cache = context.getCache();
+      String senderId = (String) arguments[0];
+      Boolean disableTmpDroppedEvents = (Boolean) arguments[1];
+
+      AbstractGatewaySender sender =
+          (AbstractGatewaySender) context.getCache().getGatewaySender(senderId);
+      sender.setDisableTmpDroppedEvents(disableTmpDroppedEvents);
+    }
+
+    @Override
+    public void toData(DataOutput out) throws IOException {
+
+    }
+
+    @Override
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+
+    }
+  }
 
 }

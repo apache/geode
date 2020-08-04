@@ -180,6 +180,8 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   protected volatile ConcurrentLinkedQueue<EntryEventImpl> tmpDroppedEvents =
       new ConcurrentLinkedQueue<>();
+
+  private volatile boolean disableTmpDroppedEvents = false;
   /**
    * The number of seconds to wait before stopping the GatewaySender. Default is 0 seconds.
    */
@@ -912,6 +914,10 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     return false;
   }
 
+  public void setDisableTmpDroppedEvents(boolean disableTmpDroppedEvents) {
+    this.disableTmpDroppedEvents = disableTmpDroppedEvents;
+  }
+
   @Override
   public AbstractGatewaySenderEventProcessor getEventProcessor() {
     return this.eventProcessor;
@@ -1036,7 +1042,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       // If this gateway is not running, return
       if (!isRunning()) {
         if (this.isPrimary()) {
-          if (this.startTime < 0
+          if (!disableTmpDroppedEvents && this.startTime < 0
               && System.currentTimeMillis() + this.startTime < maxWaitTimeForSenderToStart) {
             tmpDroppedEvents.add(clonedEvent);
             if (isDebugEnabled) {
