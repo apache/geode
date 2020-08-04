@@ -39,9 +39,17 @@ public class PrimaryHandler implements TcpHandler {
   private TcpServer tcpServer;
   private int locatorWaitTime;
 
-  PrimaryHandler(TcpHandler fallbackHandler, int locatorWaitTime) {
+  @FunctionalInterface
+  interface Sleeper {
+    void sleep(long msToSleep) throws InterruptedException;
+  }
+
+  private Sleeper sleeper;
+
+  PrimaryHandler(TcpHandler fallbackHandler, int locatorWaitTime, Sleeper sleeper) {
     this.locatorWaitTime = locatorWaitTime;
     this.fallbackHandler = fallbackHandler;
+    this.sleeper = sleeper;
     allHandlers.add(fallbackHandler);
   }
 
@@ -82,12 +90,13 @@ public class PrimaryHandler implements TcpHandler {
           locatorWaitTime = 30;
         }
         giveup = System.currentTimeMillis() + locatorWaitTime * 1000L;
-        try {
-          Thread.sleep(1000);
-        } catch (InterruptedException ignored) {
-          // running in an executor - no need to set the interrupted flag on the thread
-          return null;
-        }
+      }
+
+      try {
+        sleeper.sleep(1000);
+      } catch (InterruptedException ignored) {
+        // running in an executor - no need to set the interrupted flag on the thread
+        return null;
       }
     }
     logger.info(
