@@ -24,6 +24,7 @@ package org.apache.geode.cache.query.data;
 import java.io.Serializable;
 
 public class City implements Serializable {
+  public int id;
   public String name;
   public int zip;
 
@@ -38,6 +39,7 @@ public class City implements Serializable {
     /* this is for the test to have 50% of the objects belonging to one city */
     this.name = arr1[i % 2];
     this.zip = 425125 + i;
+    this.id = i;
   }// end of constructor 2
 
   ////////////////////////////
