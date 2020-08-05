@@ -126,8 +126,7 @@ public class SInterIntegrationTest {
 
   @Test
   public void testSInterStore_withNonExistentKeys() {
-    String[] firstSet = new String[] {"pear", "apple", "plum", "orange", "peach"};
-    jedis.sadd("set1", firstSet);
+    jedis.set("set1", "stringValue");
 
     Long resultSize = jedis.sinterstore("set1", "nonExistent1", "nonExistent2");
     assertThat(resultSize).isEqualTo(0);
