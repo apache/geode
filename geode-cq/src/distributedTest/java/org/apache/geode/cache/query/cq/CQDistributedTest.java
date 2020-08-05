@@ -51,13 +51,14 @@ public class CQDistributedTest implements Serializable {
 
   private MemberVM locator;
   private MemberVM server;
-  private int locator1Port;
+  private MemberVM server2;
 
   private CqAttributes cqa;
   private QueryService qs;
   private TestCqListener testListener;
   private TestCqListener2 testListener2;
 
+  private Region region;
 
   @Rule
   public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
@@ -69,8 +70,11 @@ public class CQDistributedTest implements Serializable {
     server = clusterStartupRule.startServerVM(3, locator1Port);
     createServerRegion(server, RegionShortcut.PARTITION);
 
+    server2 = clusterStartupRule.startServerVM(4, locator1Port);
+    createServerRegion(server2, RegionShortcut.PARTITION);
+
     ClientCache clientCache = createClientCache(locator1Port);
-    Region region =
+    region =
         clientCache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create("region");
 
     qs = clientCache.getQueryService();
@@ -232,6 +236,39 @@ public class CQDistributedTest implements Serializable {
     await().untilAsserted(() -> assertThat(testListener2.onEventCreateCalls).isEqualTo(2));
     await().untilAsserted(() -> assertThat(testListener2.onEventUpdateCalls).isEqualTo(0));
   }
+
+  @Test
+  public void cqWithTransaction2Servers() throws Exception {
+
+    qs.newCq("Select * from /region r where r.ID = 1", cqa).execute();
+
+    final CacheTransactionManager txMgr = region.getCache().getCacheTransactionManager();
+
+    // CREATE new entry
+    for (int i = 0; i < 4; i++) {
+      txMgr.begin();
+      region.put(i, new Portfolio(1));
+      txMgr.commit();
+    }
+
+    // UPDATE
+    for (int i = 0; i < 4; i++) {
+      txMgr.begin();
+      region.put(i, new Portfolio(0));
+      txMgr.commit();
+    }
+
+    // CREATE
+    for (int i = 0; i < 4; i++) {
+      txMgr.begin();
+      region.put(i, new Portfolio(1));
+      txMgr.commit();
+    }
+
+    await().untilAsserted(() -> assertThat(testListener2.onEventCreateCalls).isEqualTo(8));
+    await().untilAsserted(() -> assertThat(testListener2.onEventUpdateCalls).isEqualTo(0));
+  }
+
 
   private class TestCqListener implements CqListener, Serializable {
     public int onEventCalls = 0;
