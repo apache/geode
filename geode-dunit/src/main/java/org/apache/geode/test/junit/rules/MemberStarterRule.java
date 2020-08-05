@@ -68,6 +68,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.CacheServerMXBean;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.DistributedSystemMXBean;
@@ -280,7 +281,9 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   public T withJMXManager(boolean useProductDefaultPorts) {
     if (!useProductDefaultPorts) {
       // do no override these properties if already exists
-      properties.putIfAbsent(JMX_MANAGER_PORT, valueOf(portSupplier.getAvailablePort()));
+      int suppliedPort = portSupplier.getAvailablePort();
+      LogService.getLogger().info("DHE: MemberStarterRule reserved JMX port {}", suppliedPort);
+      properties.putIfAbsent(JMX_MANAGER_PORT, valueOf(suppliedPort));
       this.jmxPort = Integer.parseInt(properties.getProperty(JMX_MANAGER_PORT));
     } else {
       // the real port numbers will be set after we started the server/locator.

@@ -20,6 +20,10 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.SocketException;
 
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.logging.internal.log4j.api.LogService;
+
 /**
  * Provides helper methods for acquiring a set of distinct available ports. It is not safe to simply
  * call AvailablePort.getRandomAvailablePort several times in a row without doing something to
@@ -28,12 +32,16 @@ import java.net.SocketException;
  * further calls to getRandomAvailablePort.
  */
 public abstract class AvailablePortHelper {
+  private static final Logger logger = LogService.getLogger();
+
   /**
    * Returns an available ephemeral TCP port.
    */
   public static int getRandomAvailableTCPPort() {
     try (final ServerSocket socket = bindEphemeralTcpSocket()) {
-      return socket.getLocalPort();
+      int port = socket.getLocalPort();
+      logger.info("DHE: reserved port {} APH.getRandomAvailableTCPPort()", port);
+      return port;
     } catch (IOException e) {
       throw new IllegalStateException(e);
     }
@@ -60,7 +68,9 @@ public abstract class AvailablePortHelper {
    */
   public static int getRandomAvailableUDPPort() {
     try (final DatagramSocket socket = bindEphemeralUdpSocket()) {
-      return socket.getLocalPort();
+      int port = socket.getLocalPort();
+      logger.info("DHE: reserved port {} APH.getRandomAvailableUDPPort()", port);
+      return port;
     } catch (SocketException e) {
       throw new IllegalStateException(e);
     }

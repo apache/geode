@@ -357,6 +357,7 @@ public class ManagementAgent {
     // Otherwise, we wouldn't be able to use a single port.
 
     // Start an RMI registry on port <port>.
+    logger.info("DHE: Starting RMI registry on port {}", port);
     registry = LocateRegistry.createRegistry(port, rmiClientSocketFactory, rmiServerSocketFactory);
 
     // Retrieve the PlatformMBeanServer.
@@ -379,6 +380,7 @@ public class ManagementAgent {
     // RMI Registry. We can do so because we're using \*the same\* client
     // and server socket factories, for the registry itself \*and\* for this
     // object.
+    logger.info("DHE: Binding RMIJRMPServer on port {}", port);
     final RMIServerImpl stub =
         new RMIJRMPServerImpl(port, rmiClientSocketFactory, rmiServerSocketFactory, env);
 
@@ -398,6 +400,7 @@ public class ManagementAgent {
     //
     // We construct a JMXServiceURL corresponding to what we have done
     // for our stub...
+    logger.info("DHE: Creating JXMServiceURL on port {}", port);
     final JMXServiceURL url = new JMXServiceURL("service:jmx:rmi://" + hostname + ":" + port
         + "/jndi/rmi://" + hostname + ":" + port + "/jmxrmi");
 
@@ -406,6 +409,7 @@ public class ManagementAgent {
     // JDK 1.5 cannot use JMXConnectorServerFactory because of
     // http://bugs.sun.com/view_bug.do?bug_id=5107423
     // but we're using JDK 1.6
+    logger.info("DHE: Creating RMIConnectorServer on port {}", port);
     jmxConnectorServer =
         new RMIConnectorServer(new JMXServiceURL("rmi", hostname, port), env, stub, mbs) {
           @Override

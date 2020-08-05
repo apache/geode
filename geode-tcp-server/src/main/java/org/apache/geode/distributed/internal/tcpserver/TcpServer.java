@@ -209,6 +209,8 @@ public class TcpServer {
       // GEODE-4176 - set the port from a wild-card bind so that handlers know the correct value
 
       if (this.port <= 0) {
+        logger.info("DHE: TcpServer bound to EPHEMERAL port {} on {}", srv_sock.getLocalPort(),
+            bind_address);
         this.port = srv_sock.getLocalPort();
       }
       if (logger.isInfoEnabled()) {

@@ -29,9 +29,12 @@ import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.Random;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.inet.LocalHostUtil;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -39,12 +42,18 @@ import org.apache.geode.util.internal.GeodeGlossary;
  * selected available port.
  */
 public class AvailablePort {
+  private static final Logger logger = LogService.getLogger();
 
-  /** Is the port available for a Socket (TCP) connection? */
+
+  /**
+   * Is the port available for a Socket (TCP) connection?
+   */
   public static final int SOCKET = 0;
   public static final int AVAILABLE_PORTS_LOWER_BOUND = 20001;// 20000/udp is securid
   public static final int AVAILABLE_PORTS_UPPER_BOUND = 29999;// 30000/tcp is spoolfax
-  /** Is the port available for a JGroups (UDP) multicast connection */
+  /**
+   * Is the port available for a JGroups (UDP) multicast connection
+   */
   public static final int MULTICAST = 1;
 
   /////////////////////// Static Methods ///////////////////////
@@ -147,9 +156,7 @@ public class AvailablePort {
           }
         }
       }
-    }
-
-    else {
+    } else {
       throw new IllegalArgumentException(String.format("Unknown protocol: %s",
           Integer.valueOf(protocol)));
     }
@@ -269,14 +276,20 @@ public class AvailablePort {
    */
   public static int getRandomAvailablePort(int protocol, InetAddress addr,
       boolean useMembershipPortRange) {
+    int fails = 0;
     while (true) {
       int port = getRandomWildcardBindPortNumber(useMembershipPortRange);
       if (isPortAvailable(port, protocol, addr)) {
         // don't return the products default multicast port
         if (!(protocol == MULTICAST && port == DistributionConfig.DEFAULT_MCAST_PORT)) {
+          logger.info(
+              "DHE: reserved port {} AP.getRandomAvailablePort({},{},{})" +
+                  " after testing {} unavailable ports",
+              port, protocol, addr, useMembershipPortRange, fails);
           return port;
         }
       }
+      fails++;
     }
   }
 
@@ -291,9 +304,14 @@ public class AvailablePort {
       int rangeTop) {
     for (int port = rangeBase; port <= rangeTop; port++) {
       if (isPortAvailable(port, protocol, addr)) {
+        logger.info("DHE: reserved port {} AP.getRandomAvailablePortInRange(,{},{},{},{}) " +
+            " after testing {} unavailable ports",
+            port, protocol, addr, rangeBase, rangeTop, port - rangeBase);
         return port;
       }
     }
+    logger.info("DHE: AP.getAvailablePortInRange({},{},{},{}) FAILED to reserve a port",
+        protocol, addr, rangeBase, rangeTop);
     return -1;
   }
 
@@ -306,11 +324,17 @@ public class AvailablePort {
    * @throws IllegalArgumentException <code>protocol</code> is unknown
    */
   public static int getRandomAvailablePortWithMod(int protocol, InetAddress addr, int mod) {
+    int fails = 0;
     while (true) {
       int port = getRandomWildcardBindPortNumber();
       if (isPortAvailable(port, protocol, addr) && (port % mod) == 0) {
+        logger.info(
+            "DHE: reserved port {} AP.getRandomAvailablePortWithMod({},{},{})"
+                + " after testing {} unavailable or unsatisfactory ports",
+            port, protocol, addr, mod, fails);
         return port;
       }
+      fails++;
     }
   }
 
@@ -354,13 +378,21 @@ public class AvailablePort {
     // do "5 times the numberOfPorts" iterations to select a port number. This will ensure that
     // each of the ports from given port range get a chance at least once
     int numberOfRetrys = numberOfPorts * 5;
+    int fails = 0;
     for (int i = 0; i < numberOfRetrys; i++) {
       int port = rand.nextInt(numberOfPorts + 1) + rangeBase;// add 1 to numberOfPorts so that
       // rangeTop also gets included
       if (isPortAvailable(port, protocol, getAddress(protocol))) {
+        logger.info(
+            "DHE: reserved port {} AP.getRandomAvailablePortInRange({},{},{})" +
+                " after testing {} unavailable ports",
+            port, rangeBase, rangeTop, protocol, fails);
         return port;
       }
+      fails++;
     }
+    logger.info("DHE: AP.getRandomAvailablePortInRange({},{},{}) FAILED to reserve a port",
+        rangeBase, rangeTop, protocol);
     return -1;
   }
 
