@@ -87,7 +87,7 @@ public class ClientServerCacheOperationDUnitTest implements Serializable {
     List list = new ArrayList(listSize);
 
     for (int i = 0; i < listSize; i++) {
-      list.add(new byte[45 * 1000 * 1000]);
+      list.add(new byte[60 * 1000 * 1000]);
     }
 
     client.invoke(() -> {
@@ -96,7 +96,7 @@ public class ClientServerCacheOperationDUnitTest implements Serializable {
       Pool pool = PoolManager.createFactory()
           .addLocator("localhost", locatorPort)
           .setSocketBufferSize(100)
-          .setReadTimeout(100)
+          .setReadTimeout(25)
           .create("testPool");
 
       Region region = clientCacheRule.getClientCache()
