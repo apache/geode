@@ -140,6 +140,19 @@ tests:
   PLATFORM: linux
   RAM: '210'
   name: Upgrade
+- ARTIFACT_SLUG: redistests
+  CALL_STACK_TIMEOUT: '1200'
+  CPUS: '4'
+  DUNIT_PARALLEL_FORKS: '0'
+  EXECUTE_TEST_TIMEOUT: 30m
+  GRADLE_TASK: ':geode-redis:redisAPITest'
+  MAX_IN_FLIGHT: 1
+  ONLY_JDK: 11
+  PARALLEL_DUNIT: 'false'
+  PARALLEL_GRADLE: 'true'
+  PLATFORM: linux
+  RAM: '8'
+  name: Redis
 - ARTIFACT_SLUG: stressnewtestfiles
   CALL_STACK_TIMEOUT: '20700'
   CPUS: '96'
