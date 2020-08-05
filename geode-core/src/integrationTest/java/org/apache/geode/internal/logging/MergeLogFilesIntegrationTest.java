@@ -115,11 +115,15 @@ public class MergeLogFilesIntegrationTest {
 
   @Test
   public void testDircountZero() throws Exception {
-    final String resourcePath = MergeLogFilesIntegrationTest.class.getResource(".")
-        .getPath();
+    final String resourcePath1 =
+        MergeLogFilesIntegrationTest.class.getResource("dir1" + separator + "systemlog.txt")
+            .getPath();
+    final String resourcePath2 =
+        MergeLogFilesIntegrationTest.class.getResource("dir2" + separator + "systemlog.txt")
+            .getPath();
     final List<File> files = Arrays.asList(
-        new File(resourcePath + separator + "dir1" + separator + "systemlog.txt"),
-        new File(resourcePath + separator + "dir2" + separator + "systemlog.txt"));
+        new File(resourcePath1),
+        new File(resourcePath2));
     Map<String, MergeLogFiles.DisplayNameAndFileStream> logFiles =
         MergeLogFiles.getStringDisplayNameAndFileStreamMap(
             files,
