@@ -114,7 +114,11 @@ public class MergeLogFiles {
    */
   public static boolean mergeLogFiles(final Map<String, InputStream> logFiles,
       final PrintWriter mergedFile) {
-    return mergeLogFiles(logFiles, mergedFile, false, false, false, new LinkedList<>());
+    Map<String, DisplayNameAndFileStream> newMap = new HashMap<>();
+    for (Map.Entry<String, InputStream> entry : logFiles.entrySet()) {
+      newMap.put(entry.getKey(), new DisplayNameAndFileStream(entry.getKey(), entry.getValue()));
+    }
+    return mergeLogFiles(newMap, mergedFile, false, false, false, new LinkedList<>());
   }
 
   /**
@@ -131,7 +135,7 @@ public class MergeLogFiles {
    * @throws IllegalArgumentException If the length of {@code logFiles} is not the same as the
    *         length of {@code logFileNames}
    */
-  public static boolean mergeLogFiles(final Map<String, InputStream> logFiles,
+  public static boolean mergeLogFiles(final Map<String, DisplayNameAndFileStream> logFiles,
       final PrintWriter mergedFile, final boolean tabOut, final boolean suppressBlanks,
       final boolean multithreaded, final List<String> patterns) {
     return Sorter.mergeLogFiles(logFiles, mergedFile, tabOut, suppressBlanks, multithreaded,
@@ -303,7 +307,18 @@ public class MergeLogFiles {
       nickNames = findPIDs(files, mergedFile);
     }
 
-    Map<String, InputStream> logFiles = new HashMap<>();
+    Map<String, DisplayNameAndFileStream> logFiles =
+        getStringDisplayNameAndFileStreamMap(files, dirCount, findPIDs, nickNames);
+
+    mergeLogFiles(logFiles, mergedFile, tabOut, suppressBlanks, multithreaded,
+        patterns);
+
+    ExitCode.NORMAL.doSystemExit();
+  }
+
+  static Map<String, DisplayNameAndFileStream> getStringDisplayNameAndFileStreamMap(
+      List<File> files, int dirCount, boolean findPIDs, List nickNames) throws IOException {
+    Map<String, DisplayNameAndFileStream> logFiles = new HashMap<>();
     for (int i = 0; i < files.size(); i++) {
       File file = files.get(i);
 
@@ -331,13 +346,10 @@ public class MergeLogFiles {
 
         logFileName = sb.toString();
       }
-      logFiles.put(logFileName, new FileInputStream(file));
+      logFiles.put(file.getPath(),
+          new DisplayNameAndFileStream(logFileName, new FileInputStream(file)));
     }
-
-    mergeLogFiles(logFiles, mergedFile, tabOut, suppressBlanks, multithreaded,
-        patterns);
-
-    ExitCode.NORMAL.doSystemExit();
+    return logFiles;
   }
 
   /**
@@ -803,7 +815,7 @@ public class MergeLogFiles {
      * @throws IllegalArgumentException If the length of {@code logFiles} is not the same as
      *         the length of {@code logFileNames}
      */
-    public static boolean mergeLogFiles(final Map<String, InputStream> logFiles,
+    public static boolean mergeLogFiles(final Map<String, DisplayNameAndFileStream> logFiles,
         final PrintWriter mergedFile, final boolean tabOut, final boolean suppressBlanks,
         final boolean multithreaded, final Iterable<String> patterns) {
       List<Pattern> compiledPatterns = new LinkedList<>();
@@ -815,12 +827,14 @@ public class MergeLogFiles {
       ReaderGroup group =
           new ReaderGroup("Reader threads");
       Collection<Reader> readers = new ArrayList<>(logFiles.size());
-      for (Map.Entry<String, InputStream> e : logFiles.entrySet()) {
+      for (DisplayNameAndFileStream nameAndFileStream : logFiles.values()) {
         if (multithreaded) {
-          readers.add(new ThreadedReader(e.getValue(), e.getKey(), group, tabOut,
+          readers.add(new ThreadedReader(nameAndFileStream.getInputStream(),
+              nameAndFileStream.getDisplayName(), group, tabOut,
               suppressBlanks, compiledPatterns));
         } else {
-          readers.add(new NonThreadedReader(e.getValue(), e.getKey(), group, tabOut,
+          readers.add(new NonThreadedReader(nameAndFileStream.getInputStream(),
+              nameAndFileStream.getDisplayName(), group, tabOut,
               suppressBlanks, compiledPatterns));
         }
       }
@@ -923,6 +937,24 @@ public class MergeLogFiles {
         return 1;
       }
       return compare;
+    }
+  }
+
+  static class DisplayNameAndFileStream {
+    private final String displayName;
+    private final InputStream inputStream;
+
+    public String getDisplayName() {
+      return displayName;
+    }
+
+    public InputStream getInputStream() {
+      return inputStream;
+    }
+
+    DisplayNameAndFileStream(String displayName, InputStream inputStream) {
+      this.displayName = displayName;
+      this.inputStream = inputStream;
     }
   }
 }
