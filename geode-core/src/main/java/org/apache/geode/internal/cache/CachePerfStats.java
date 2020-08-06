@@ -21,6 +21,7 @@ import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.PoolStatHelper;
 import org.apache.geode.distributed.internal.QueueStatHelper;
 import org.apache.geode.internal.NanoTimer;
@@ -154,6 +155,17 @@ public class CachePerfStats {
   static final int compressionDecompressionsId;
   static final int compressionPreCompressedBytesId;
   static final int compressionPostCompressedBytesId;
+
+  @VisibleForTesting
+  static final int handlingNetsearchesInProgressId;
+  @VisibleForTesting
+  static final int handlingNetsearchesCompletedId;
+  @VisibleForTesting
+  static final int handlingNetsearchesTimeId;
+  @VisibleForTesting
+  static final int handlingNetsearchesFailedId;
+  @VisibleForTesting
+  static final int handlingNetsearchesFailedTimeId;
 
   static {
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
@@ -332,6 +344,17 @@ public class CachePerfStats {
     final String evictByCriteria_evaluationTimeDesc =
         "Total time taken for evaluation of user expression during eviction";
 
+    final String handlingNetsearchesInProgressDesc =
+        "Current number of threads handling a network search initiated by a remote cache.";
+    final String handlingNetsearchesCompletedDesc =
+        "Total number of times handling a network search initiated by a remote cache completed with success.";
+    final String handlingNetsearchesTimeDesc =
+        "Total time spent handling successful network searches for remote caches.";
+    final String handlingNetsearchesFailedDesc =
+        "Total number of times handling a network search initiated by a remote cache failed without success.";
+    final String handlingNetsearchesFailedTimeDesc =
+        "Total time spent handling failed network searches for remote caches.";
+
     type = f.createType("CachePerfStats", "Statistics about GemFire cache performance",
         new StatisticDescriptor[] {
             f.createIntGauge("loadsInProgress", loadsInProgressDesc, "operations"),
@@ -491,7 +514,19 @@ public class CachePerfStats {
             f.createLongCounter("evictByCriteria_evaluations", evictByCriteria_evaluationsDesc,
                 "operations"),
             f.createLongCounter("evictByCriteria_evaluationTime",
-                evictByCriteria_evaluationTimeDesc, "nanoseconds")});
+                evictByCriteria_evaluationTimeDesc, "nanoseconds"),
+
+            f.createLongGauge("handlingNetsearchesInProgress", handlingNetsearchesInProgressDesc,
+                "operations"),
+            f.createLongCounter("handlingNetsearchesCompleted", handlingNetsearchesCompletedDesc,
+                "operations"),
+            f.createLongCounter("handlingNetsearchesTime", handlingNetsearchesTimeDesc,
+                "nanoseconds"),
+            f.createLongCounter("handlingNetsearchesFailed", handlingNetsearchesFailedDesc,
+                "operations"),
+            f.createLongCounter("handlingNetsearchesFailedTime", handlingNetsearchesFailedTimeDesc,
+                "nanoseconds")
+        });
 
     loadsInProgressId = type.nameToId("loadsInProgress");
     loadsCompletedId = type.nameToId("loadsCompleted");
@@ -612,6 +647,12 @@ public class CachePerfStats {
     compressionDecompressionsId = type.nameToId("decompressions");
     compressionPreCompressedBytesId = type.nameToId("preCompressedBytes");
     compressionPostCompressedBytesId = type.nameToId("postCompressedBytes");
+
+    handlingNetsearchesInProgressId = type.nameToId("handlingNetsearchesInProgress");
+    handlingNetsearchesCompletedId = type.nameToId("handlingNetsearchesCompleted");
+    handlingNetsearchesTimeId = type.nameToId("handlingNetsearchesTime");
+    handlingNetsearchesFailedId = type.nameToId("handlingNetsearchesFailed");
+    handlingNetsearchesFailedTimeId = type.nameToId("handlingNetsearchesFailedTime");
   }
 
   /** The Statistics object that we delegate most behavior to */
@@ -1448,5 +1489,37 @@ public class CachePerfStats {
     if (clock.isEnabled()) {
       stats.incLong(exportTimeId, getTime() - start);
     }
+  }
+
+  /**
+   * @return the timestamp that marks the start of the operation
+   */
+  public long startHandlingNetsearch() {
+    stats.incLong(handlingNetsearchesInProgressId, 1);
+    return getTime();
+  }
+
+  /**
+   * @param start the timestamp taken when the operation started
+   * @param success true if handling the netsearch was successful
+   */
+  public void endHandlingNetsearch(long start, boolean success) {
+    long ts = getTime();
+    if (success) {
+      stats.incLong(handlingNetsearchesCompletedId, 1);
+      stats.incLong(handlingNetsearchesTimeId, ts - start);
+    } else {
+      stats.incLong(handlingNetsearchesFailedId, 1);
+      stats.incLong(handlingNetsearchesFailedTimeId, ts - start);
+    }
+    stats.incLong(handlingNetsearchesInProgressId, -1);
+  }
+
+  public long getHandlingNetsearchesCompleted() {
+    return stats.getLong(handlingNetsearchesCompletedId);
+  }
+
+  public long getHandlingNetsearchesFailed() {
+    return stats.getLong(handlingNetsearchesFailedId);
   }
 }

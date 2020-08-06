@@ -32,6 +32,11 @@ import static org.apache.geode.internal.cache.CachePerfStats.evictorJobsStartedI
 import static org.apache.geode.internal.cache.CachePerfStats.getInitialImagesCompletedId;
 import static org.apache.geode.internal.cache.CachePerfStats.getTimeId;
 import static org.apache.geode.internal.cache.CachePerfStats.getsId;
+import static org.apache.geode.internal.cache.CachePerfStats.handlingNetsearchesCompletedId;
+import static org.apache.geode.internal.cache.CachePerfStats.handlingNetsearchesFailedId;
+import static org.apache.geode.internal.cache.CachePerfStats.handlingNetsearchesFailedTimeId;
+import static org.apache.geode.internal.cache.CachePerfStats.handlingNetsearchesInProgressId;
+import static org.apache.geode.internal.cache.CachePerfStats.handlingNetsearchesTimeId;
 import static org.apache.geode.internal.cache.CachePerfStats.indexUpdateCompletedId;
 import static org.apache.geode.internal.cache.CachePerfStats.invalidatesId;
 import static org.apache.geode.internal.cache.CachePerfStats.loadsCompletedId;
@@ -52,6 +57,7 @@ import static org.apache.geode.internal.cache.CachePerfStats.txRollbackChangesId
 import static org.apache.geode.internal.cache.CachePerfStats.txRollbacksId;
 import static org.apache.geode.internal.cache.CachePerfStats.updatesId;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -62,6 +68,7 @@ import org.junit.Test;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
+import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.statistics.StatisticsManager;
 import org.apache.geode.internal.statistics.StripedStatisticsImpl;
 
@@ -74,6 +81,7 @@ public class CachePerfStatsTest {
   private static final long CLOCK_TIME = 10;
 
   private Statistics statistics;
+  private StatisticsClock statisticsClock;
   private CachePerfStats cachePerfStats;
 
   @Before
@@ -84,11 +92,16 @@ public class CachePerfStatsTest {
     StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
 
     statistics = new StripedStatisticsImpl(statisticsType, TEXT_ID, 1, 1, statisticsManager);
+    statisticsClock = mock(StatisticsClock.class);
 
+    when(statisticsClock.isEnabled())
+        .thenReturn(true);
+    when(statisticsClock.getTime())
+        .thenReturn(CLOCK_TIME);
     when(statisticsFactory.createAtomicStatistics(eq(statisticsType), eq(TEXT_ID)))
         .thenReturn(statistics);
 
-    cachePerfStats = new CachePerfStats(statisticsFactory, TEXT_ID, () -> CLOCK_TIME);
+    cachePerfStats = new CachePerfStats(statisticsFactory, TEXT_ID, statisticsClock);
   }
 
   @Test
@@ -1131,5 +1144,99 @@ public class CachePerfStatsTest {
     cachePerfStats.incEntryCount(-2);
 
     assertThat(statistics.getLong(entryCountId)).isEqualTo(-2);
+  }
+
+  @Test
+  public void handlingNetsearchesInProgressIsZeroByDefault() {
+    assertThat(statistics.getLong(handlingNetsearchesInProgressId)).isZero();
+  }
+
+  @Test
+  public void handlingNetsearchesCompletedIsZeroByDefault() {
+    assertThat(statistics.getLong(handlingNetsearchesCompletedId)).isZero();
+  }
+
+  @Test
+  public void handlingNetsearchesTimeIsZeroByDefault() {
+    assertThat(statistics.getLong(handlingNetsearchesTimeId)).isZero();
+  }
+
+  @Test
+  public void handlingNetsearchesFailedIsZeroByDefault() {
+    assertThat(statistics.getLong(handlingNetsearchesFailedId)).isZero();
+  }
+
+  @Test
+  public void handlingNetsearchesFailedTimeIsZeroByDefault() {
+    assertThat(statistics.getLong(handlingNetsearchesFailedTimeId)).isZero();
+  }
+
+  @Test
+  public void startHandlingNetsearchIncreasesHandlingNetsearchesInProgress() {
+    doReturn(1L, 10L).when(statisticsClock).getTime();
+
+    cachePerfStats.startHandlingNetsearch();
+
+    assertThat(statistics.getLong(handlingNetsearchesInProgressId)).isOne();
+  }
+
+  @Test
+  public void endHandlingNetsearchIncreasesHandlingNetsearchesCompletedIfSuccess() {
+    doReturn(1L, 10L).when(statisticsClock).getTime();
+    long startTime = cachePerfStats.startHandlingNetsearch();
+
+    cachePerfStats.endHandlingNetsearch(startTime, true);
+
+    assertThat(statistics.getLong(handlingNetsearchesCompletedId)).isOne();
+  }
+
+  @Test
+  public void endHandlingNetsearchIncreasesHandlingNetsearchesTimeIfSuccess() {
+    doReturn(1L, 10L).when(statisticsClock).getTime();
+    long startTime = cachePerfStats.startHandlingNetsearch();
+
+    cachePerfStats.endHandlingNetsearch(startTime, true);
+
+    assertThat(statistics.getLong(handlingNetsearchesTimeId)).isEqualTo(9);
+  }
+
+  @Test
+  public void endHandlingNetsearchIncreasesHandlingNetsearchesFailedIfNotSuccess() {
+    doReturn(1L, 10L).when(statisticsClock).getTime();
+    long startTime = cachePerfStats.startHandlingNetsearch();
+
+    cachePerfStats.endHandlingNetsearch(startTime, false);
+
+    assertThat(statistics.getLong(handlingNetsearchesFailedId)).isOne();
+  }
+
+  @Test
+  public void endHandlingNetsearchIncreasesHandlingNetsearchesFailedTimeIfNotSuccess() {
+    doReturn(1L, 10L).when(statisticsClock).getTime();
+    long startTime = cachePerfStats.startHandlingNetsearch();
+
+    cachePerfStats.endHandlingNetsearch(startTime, false);
+
+    assertThat(statistics.getLong(handlingNetsearchesFailedTimeId)).isEqualTo(9);
+  }
+
+  @Test
+  public void endHandlingNetsearchDecreasesHandlingNetsearchesInProgressIfSuccess() {
+    doReturn(1L, 10L).when(statisticsClock).getTime();
+    long startTime = cachePerfStats.startHandlingNetsearch();
+
+    cachePerfStats.endHandlingNetsearch(startTime, true);
+
+    assertThat(statistics.getLong(handlingNetsearchesInProgressId)).isZero();
+  }
+
+  @Test
+  public void endHandlingNetsearchDecreasesHandlingNetsearchesInProgressIfNotSuccess() {
+    doReturn(1L, 10L).when(statisticsClock).getTime();
+    long startTime = cachePerfStats.startHandlingNetsearch();
+
+    cachePerfStats.endHandlingNetsearch(startTime, false);
+
+    assertThat(statistics.getLong(handlingNetsearchesInProgressId)).isZero();
   }
 }
