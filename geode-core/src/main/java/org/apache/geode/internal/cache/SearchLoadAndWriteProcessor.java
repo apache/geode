@@ -1866,10 +1866,16 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       boolean authoritative = false;
       VersionTag versionTag = null;
 
+      InternalCache cache = dm.getExistingCache();
+
       final InitializationLevel oldLevel =
           LocalRegion.setThreadInitLevelRequirement(BEFORE_INITIAL_IMAGE);
+      LocalRegion region = (LocalRegion) cache.getRegion(this.regionName);
+      CachePerfStats stats =
+          region == null ? cache.getCachePerfStats() : region.getRegionPerfStats();
+      long startHandlingTime = stats.startHandlingNetsearch();
+      boolean handlingSuccess = false;
       try {
-        LocalRegion region = (LocalRegion) dm.getExistingCache().getRegion(this.regionName);
         if (region != null) {
           setClearCountReference(region);
           try {
@@ -1883,7 +1889,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
                   versionTag = versionStamp.asVersionTag();
                 }
                 Object eov = region.getNoLRU(this.key, false, true, true); // OFFHEAP: incrc, copy
-                                                                           // bytes, decrc
+                // bytes, decrc
                 if (eov != null) {
                   if (eov == Token.INVALID || eov == Token.LOCAL_INVALID) {
                     // nothing?
@@ -1916,6 +1922,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
                         ebvLen = ebv.length;
                       }
                     }
+                    handlingSuccess = true;
                   } else {
                     requestorTimedOut = true;
                   }
@@ -1953,6 +1960,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
         replyWithNull(dm);
       } finally {
         LocalRegion.setThreadInitLevelRequirement(oldLevel);
+        stats.endHandlingNetsearch(startHandlingTime, handlingSuccess);
       }
     }
 
