@@ -26,12 +26,14 @@ import java.util.concurrent.Future;
 
 import javax.management.ObjectName;
 
+import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.GatewaySenderMXBean;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
@@ -39,11 +41,14 @@ import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
+import org.apache.geode.management.internal.configuration.functions.GatewaySenderManageFunction;
+import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class StartGatewaySenderCommand extends GfshCommand {
+  private static final Logger logger = LogService.getLogger();
 
   @CliCommand(value = CliStrings.START_GATEWAYSENDER, help = CliStrings.START_GATEWAYSENDER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
@@ -77,10 +82,8 @@ public class StartGatewaySenderCommand extends GfshCommand {
       return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
 
-    if (!sendAllStartingMessage(dsMembers, cache, service, id)) {
-      return ResultModel
-          .createError("Unable to send pre start message to all members hosting the sender");
-    }
+    // TODO handle error situations when invoking sendAllStartingMessage
+    setNotAllGatewaySenderInstancesStopped(dsMembers, id);
 
     ExecutorService execService =
         LoggingExecutors.newCachedThreadPool("Start Sender Command Thread ", true);
@@ -161,37 +164,16 @@ public class StartGatewaySenderCommand extends GfshCommand {
     return resultModel;
   }
 
-  private boolean sendAllStartingMessage(Set<DistributedMember> dsMembers, Cache cache,
-      SystemManagementService service, String senderId) {
-    ExecutorService execService =
-        LoggingExecutors.newCachedThreadPool("Start Sender Command Thread ", true);
+  private List<CliFunctionResult> setNotAllGatewaySenderInstancesStopped(
+      Set<DistributedMember> dsMembers, String senderId) {
 
-    List<Callable<Boolean>> callables = new ArrayList<>();
+    Object[] arguments = {new Boolean(false), senderId};
+    List<CliFunctionResult> resultsList =
+        executeAndGetFunctionResult(GatewaySenderManageFunction.INSTANCE, arguments, dsMembers);
 
-    boolean success = true;
-    for (DistributedMember member : dsMembers) {
-      callables.add(() -> {
-        GatewaySenderMXBean bean;
-        if (cache.getDistributedSystem().getDistributedMember().getId().equals(member.getId())) {
-          bean = service.getLocalGatewaySenderMXBean(senderId);
-        } else {
-          ObjectName objectName = service.getGatewaySenderMBeanName(member, senderId);
-          bean = service.getMBeanProxy(objectName, GatewaySenderMXBean.class);
-        }
-        if (bean != null) {
-          bean.setMustQueueDroppedEvents(true);
-        }
-        return false;
-      });
-    }
+    logger.info("resultList after calling setNotAllGatewaySenderInstancesStopped(): {}",
+        resultsList);
 
-    try {
-      execService.invokeAll(callables);
-    } catch (InterruptedException ite) {
-      success = false;
-    } finally {
-      execService.shutdown();
-    }
-    return success;
+    return resultsList;
   }
 }

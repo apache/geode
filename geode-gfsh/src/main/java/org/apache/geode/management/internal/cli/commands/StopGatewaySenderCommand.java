@@ -15,16 +15,19 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import java.util.List;
 import java.util.Set;
 
 import javax.management.ObjectName;
 
+import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.GatewaySenderMXBean;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
@@ -32,11 +35,14 @@ import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
+import org.apache.geode.management.internal.configuration.functions.GatewaySenderManageFunction;
+import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class StopGatewaySenderCommand extends GfshCommand {
+  private static final Logger logger = LogService.getLogger();
 
   @CliCommand(value = CliStrings.STOP_GATEWAYSENDER, help = CliStrings.STOP_GATEWAYSENDER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
@@ -98,24 +104,20 @@ public class StopGatewaySenderCommand extends GfshCommand {
       }
     }
 
-    sendAllStoppedMessage(dsMembers, cache, service, senderId);
+    // TODO handle possible errors after sending stop message.
+    setAllGatewaySenderInstancesStopped(dsMembers, cache, service, senderId);
 
     return resultModel;
   }
 
-  private void sendAllStoppedMessage(Set<DistributedMember> dsMembers, Cache cache,
+  private List<CliFunctionResult> setAllGatewaySenderInstancesStopped(
+      Set<DistributedMember> dsMembers, Cache cache,
       SystemManagementService service, String senderId) {
-    GatewaySenderMXBean bean;
-    for (DistributedMember member : dsMembers) {
-      if (cache.getDistributedSystem().getDistributedMember().getId().equals(member.getId())) {
-        bean = service.getLocalGatewaySenderMXBean(senderId);
-      } else {
-        ObjectName objectName = service.getGatewaySenderMBeanName(member, senderId);
-        bean = service.getMBeanProxy(objectName, GatewaySenderMXBean.class);
-      }
-      if (bean != null) {
-        bean.setMustQueueDroppedEvents(false);
-      }
-    }
+    Object[] arguments = {new Boolean(true), senderId};
+    List<CliFunctionResult> resultsList =
+        executeAndGetFunctionResult(GatewaySenderManageFunction.INSTANCE, arguments, dsMembers);
+
+    logger.info("resultList after calling setAllGatewaySenderInstancesStopped(): {}", resultsList);
+    return resultsList;
   }
 }
