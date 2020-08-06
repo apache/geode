@@ -22,6 +22,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
@@ -35,21 +37,13 @@ public class PrimaryHandlerTest {
     final AtomicInteger sleepCount = new AtomicInteger();
     final TcpHandler fallbackHandler = null;
     final int locatorWaitTime = 5;
-    final long startTime = System.currentTimeMillis();
+    final List<Long> clockTimes = Arrays.asList(0L, 1000L, 2000L, 3000L, 4000L, 5000L);
     PrimaryHandler primaryHandler = new PrimaryHandler(fallbackHandler, locatorWaitTime,
-        x -> {
-          sleepCount.incrementAndGet();
-          Thread.sleep(x);
-        });
-    // process a request that has no handler - this should loop calling the sleep function
-    // until locatorWaitTime elapses
+        () -> clockTimes.get(sleepCount.get()),
+        x -> sleepCount.incrementAndGet());
     final Object result = primaryHandler.processRequest(new Object());
-    // under normal circumstances we'd have locatorWaitTime sleeps, but delays might make it fewer
-    // so let's just make sure there were at least two
-    assertThat(sleepCount.get()).isGreaterThan(1);
+    assertThat(sleepCount.get()).isEqualTo(locatorWaitTime);
     assertThat(result).isNull();
-    assertThat(System.currentTimeMillis())
-        .isGreaterThanOrEqualTo(startTime + (1000 * locatorWaitTime));
   }
 
   @Test
@@ -62,7 +56,7 @@ public class PrimaryHandlerTest {
     });
     final int locatorWaitTime = 5;
     PrimaryHandler primaryHandler = new PrimaryHandler(fallbackHandler, locatorWaitTime,
-        x -> Thread.sleep(x));
+        null, null);
     // process a request that has no handler - this should invoke fallbackHandler
     final Object request = new Object();
     final Object result = primaryHandler.processRequest(request);
@@ -81,7 +75,7 @@ public class PrimaryHandlerTest {
     });
     final int locatorWaitTime = 5;
     PrimaryHandler primaryHandler = new PrimaryHandler(registeredHandler, locatorWaitTime,
-        x -> Thread.sleep(x));
+        null, null);
     primaryHandler.addHandler(FindCoordinatorRequest.class, registeredHandler);
     // process a request that has a registered handler - this should invoke registeredHandler
     final Object request = new FindCoordinatorRequest<>();
