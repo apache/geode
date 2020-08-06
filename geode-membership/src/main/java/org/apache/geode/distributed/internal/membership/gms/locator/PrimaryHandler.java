@@ -39,9 +39,26 @@ public class PrimaryHandler implements TcpHandler {
   private TcpServer tcpServer;
   private int locatorWaitTime;
 
-  PrimaryHandler(TcpHandler fallbackHandler, int locatorWaitTime) {
+  @FunctionalInterface
+  interface Sleeper {
+    void sleep(long msToSleep) throws InterruptedException;
+  }
+
+  @FunctionalInterface
+  interface MillisecondProvider {
+    long millisecondTime();
+  }
+
+  private final MillisecondProvider millisecondProvider;
+  private Sleeper sleeper;
+
+  PrimaryHandler(TcpHandler fallbackHandler, int locatorWaitTime,
+      MillisecondProvider millisecondProvider,
+      Sleeper sleeper) {
     this.locatorWaitTime = locatorWaitTime;
     this.fallbackHandler = fallbackHandler;
+    this.millisecondProvider = millisecondProvider;
+    this.sleeper = sleeper;
     allHandlers.add(fallbackHandler);
   }
 
@@ -58,7 +75,7 @@ public class PrimaryHandler implements TcpHandler {
   @Override
   public Object processRequest(Object request) throws IOException {
     long giveup = 0;
-    while (giveup == 0 || System.currentTimeMillis() < giveup) {
+    while (giveup == 0 || millisecondProvider.millisecondTime() < giveup) {
       TcpHandler handler;
       if (request instanceof PeerLocatorRequest) {
         handler = handlerMapping.get(PeerLocatorRequest.class);
@@ -81,13 +98,14 @@ public class PrimaryHandler implements TcpHandler {
           // always retry some number of times
           locatorWaitTime = 30;
         }
-        giveup = System.currentTimeMillis() + locatorWaitTime * 1000L;
-        try {
-          Thread.sleep(1000);
-        } catch (InterruptedException ignored) {
-          // running in an executor - no need to set the interrupted flag on the thread
-          return null;
-        }
+        giveup = millisecondProvider.millisecondTime() + locatorWaitTime * 1000L;
+      }
+
+      try {
+        sleeper.sleep(1000);
+      } catch (InterruptedException ignored) {
+        // running in an executor - no need to set the interrupted flag on the thread
+        return null;
       }
     }
     logger.info(

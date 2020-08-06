@@ -72,7 +72,9 @@ public class MembershipLocatorImpl<ID extends MemberIdentifier> implements Membe
       MembershipLocatorStatistics locatorStats, Path workingDirectory,
       MembershipConfig config)
       throws MembershipConfigurationException, UnknownHostException {
-    handler = new PrimaryHandler(fallbackHandler, config.getLocatorWaitTime());
+    handler =
+        new PrimaryHandler(fallbackHandler, config.getLocatorWaitTime(),
+            () -> System.currentTimeMillis(), x -> Thread.sleep(x));
     String host = bindAddress == null ? LocalHostUtil.getLocalHostName()
         : bindAddress.getHostName();
     String threadName = "Distribution Locator on " + host + ": " + port;
