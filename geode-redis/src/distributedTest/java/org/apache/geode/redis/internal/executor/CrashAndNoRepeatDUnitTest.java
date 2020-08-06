@@ -30,7 +30,7 @@ import java.util.function.Supplier;
 
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.RedisClient;
-import io.lettuce.core.RedisCommandExecutionException;
+import io.lettuce.core.RedisException;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
 import io.lettuce.core.resource.ClientResources;
@@ -75,8 +75,8 @@ public class CrashAndNoRepeatDUnitTest {
   private static int[] redisPorts;
 
   private RedisClient redisClient;
-  private StatefulRedisConnection<String, String> connection;
-  private RedisCommands<String, String> commands;
+  private volatile StatefulRedisConnection<String, String> connection;
+  private volatile RedisCommands<String, String> commands;
 
   @Rule
   public ExecutorServiceRule executor = new ExecutorServiceRule();
@@ -136,10 +136,16 @@ public class CrashAndNoRepeatDUnitTest {
 
     redisClient = RedisClient.create(resources, "redis://localhost");
     redisClient.setOptions(ClientOptions.builder()
-        .autoReconnect(true)
+        .autoReconnect(false)
         .build());
     connection = redisClient.connect();
     commands = connection.sync();
+  }
+
+  private synchronized RedisCommands<String, String> reconnect() {
+    connection = redisClient.connect();
+    commands = connection.sync();
+    return commands;
   }
 
   @After
@@ -260,8 +266,9 @@ public class CrashAndNoRepeatDUnitTest {
     while (true) {
       try {
         return supplier.get();
-      } catch (RedisCommandExecutionException ex) {
-        if (!ex.getMessage().contains("memberDeparted")) {
+      } catch (RedisException ex) {
+        if (!ex.getMessage().contains("Connection reset by peer")
+            || ex.getMessage().contains("Connection disconnected")) {
           throw ex;
         }
       }
@@ -280,9 +287,10 @@ public class CrashAndNoRepeatDUnitTest {
       try {
         commands.rename(oldKey, newKey);
         iterationCount += 1;
-      } catch (RedisCommandExecutionException e) {
-        if (e.getMessage().contains("memberDeparted")) {
-          if (doWithRetry(() -> commands.exists(oldKey)) == 0) {
+      } catch (RedisException e) {
+        if (e.getMessage().contains("Connection reset by peer")
+            || e.getMessage().contains("Connection disconnected")) {
+          if (doWithRetry(() -> reconnect().exists(oldKey)) == 0) {
             iterationCount += 1;
           }
         } else if (e.getMessage().contains("no such key")) {
@@ -304,13 +312,14 @@ public class CrashAndNoRepeatDUnitTest {
     int iterationCount = 0;
 
     while (iterationCount < minimumIterations || isRunning.get()) {
-      String appendString = "" + iterationCount % 2;
+      String appendString = "-" + key + "-" + iterationCount + "-";
       try {
         commands.append(key, appendString);
         iterationCount += 1;
-      } catch (RedisCommandExecutionException e) {
-        if (e.getMessage().contains("memberDeparted")) {
-          if (doWithRetry(() -> commands.get(key)).endsWith(appendString)) {
+      } catch (RedisException e) {
+        if (e.getMessage().contains("Connection reset by peer")
+            || e.getMessage().contains("Connection disconnected")) {
+          if (doWithRetry(() -> reconnect().get(key)).endsWith(appendString)) {
             iterationCount += 1;
           }
         } else {
@@ -320,13 +329,17 @@ public class CrashAndNoRepeatDUnitTest {
     }
 
     String storedString = commands.get(key);
+    int idx = 0;
     for (int i = 0; i < iterationCount; i++) {
-      String expectedValue = "" + i % 2;
-      if (!expectedValue.equals("" + storedString.charAt(i))) {
-        Assert.fail("unexpected " + storedString.charAt(i) + " at index " + i + " in string "
+      String expectedValue = "-" + key + "-" + i + "-";
+      String foundValue = storedString.substring(idx, idx + expectedValue.length());
+      if (!expectedValue.equals(foundValue)) {
+        Assert.fail("unexpected " + foundValue + " at index " + i + " iterationCount="
+            + iterationCount + " in string "
             + storedString);
         break;
       }
+      idx += expectedValue.length();
     }
 
     logger.info("--->>> APPEND test ran {} iterations", iterationCount);
