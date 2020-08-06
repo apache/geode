@@ -30,7 +30,9 @@ done
 SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 . ${SCRIPTDIR}/shared_utilities.sh
-is_source_from_pr_testable || exit 0
+pushd geode 2>&1 >> /dev/null
+  is_source_from_pr_testable || exit 0
+popd 2>&1 >> /dev/null
 
 INSTANCE_NAME="$(cat instance-data/instance-name)"
 PERMITTED_ZONES=($(gcloud compute zones list --filter="name~'us-central.*'" --format=json | jq -r .[].name))

@@ -35,7 +35,9 @@ if [[ -z "${GRADLE_TASK}" ]]; then
 fi
 
 . ${SCRIPTDIR}/shared_utilities.sh
-is_source_from_pr_testable || exit 0
+pushd geode 2>&1 >> /dev/null
+  is_source_from_pr_testable || exit 0
+popd 2>&1 >> /dev/null
 
 REPODIR=$(cd geode; git rev-parse --show-toplevel)
 

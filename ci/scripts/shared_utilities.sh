@@ -77,15 +77,13 @@ get-full-version() {
 }
 
 is_source_from_pr_testable() {
-  pushd ${SCRIPTDIR} 2>&1 >> /dev/null
-    base_dir=$(git rev-parse --show-toplevel)
-  popd 2>&1 >> /dev/null
-  github_pr_dir="${base_dir}/.git/resource"
+  local base_dir=$(git rev-parse --show-toplevel)
+  local github_pr_dir="${base_dir}/.git/resource"
   pushd ${base_dir} 2>&1 >> /dev/null
     local return_code=0
     if [ -d "${github_pr_dir}" ]; then
       # Modify this path list with directories to exclude
-      exclude_dirs="ci dev-tools etc geode-book geode-docs"
+      local exclude_dirs="ci dev-tools etc geode-book geode-docs"
       for d in $(echo ${exclude_dirs}); do
         local exclude_pathspec="${exclude_pathspec} :(exclude,glob)${d}/**"
       done
