@@ -81,13 +81,14 @@ is_source_from_pr_testable() {
     base_dir=$(git rev-parse --show-toplevel)
   popd 2>&1 >> /dev/null
   github_pr_dir="${base_dir}/.git/resource"
-  exclude_dirs="ci dev-tools etc geode-book geode-docs"
   pushd ${base_dir} 2>&1 >> /dev/null
-    for d in $(echo ${exclude_dirs}); do
-      local exclude_pathspec="${exclude_pathspec} :(exclude,glob)${d}/**"
-    done
     local return_code=0
     if [ -d "${github_pr_dir}" ]; then
+      # Modify this path list with directories to exclude
+      exclude_dirs="ci dev-tools etc geode-book geode-docs"
+      for d in $(echo ${exclude_dirs}); do
+        local exclude_pathspec="${exclude_pathspec} :(exclude,glob)${d}/**"
+      done
       pushd ${base_dir} &> /dev/null
         local files=$(git diff --name-only $(cat "${github_pr_dir}/base_sha") $(cat "${github_pr_dir}/head_sha") -- . $(echo ${exclude_pathspec}))
       popd &> /dev/null
