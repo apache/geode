@@ -29,6 +29,7 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.EventLoopGroup;
 import io.netty.handler.codec.DecoderException;
 import org.apache.logging.log4j.Logger;
 
@@ -71,7 +72,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private final Supplier<Boolean> allowUnsupportedSupplier;
   private final Runnable shutdownInvoker;
   private final RedisStats redisStats;
-  private final ExecutorService backgroundExecutor;
+  private final EventLoopGroup subscriberGroup;
   private final int MAX_QUEUED_COMMANDS = 100;
   private final LinkedBlockingQueue<Command> commandQueue =
       new LinkedBlockingQueue<>(MAX_QUEUED_COMMANDS);
@@ -89,6 +90,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       Runnable shutdownInvoker,
       RedisStats redisStats,
       ExecutorService backgroundExecutor,
+      EventLoopGroup subscriberGroup,
       byte[] password) {
     this.channel = channel;
     this.regionProvider = regionProvider;
@@ -96,7 +98,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     this.allowUnsupportedSupplier = allowUnsupportedSupplier;
     this.shutdownInvoker = shutdownInvoker;
     this.redisStats = redisStats;
-    this.backgroundExecutor = backgroundExecutor;
+    this.subscriberGroup = subscriberGroup;
     this.client = new Client(channel);
     this.byteBufAllocator = this.channel.alloc();
     this.authPassword = password;
@@ -147,7 +149,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
     Command command = (Command) msg;
     command.setChannelHandlerContext(ctx);
-    commandQueue.offer(command);
+    commandQueue.put(command);
   }
 
   /**
@@ -160,6 +162,20 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       return;
     }
     writeToChannel(getExceptionResponse(ctx, cause));
+  }
+
+  public EventLoopGroup getSubscriberGroup() {
+    return subscriberGroup;
+  }
+
+  public void changeChannelEventLoopGroup(EventLoopGroup newGroup) {
+    if (newGroup.equals(channel.eventLoop())) {
+      // already registered with newGroup
+      return;
+    }
+    channel.deregister().addListener((ChannelFutureListener) future -> {
+      newGroup.register(channel).sync();
+    });
   }
 
   private RedisResponse getExceptionResponse(ChannelHandlerContext ctx, Throwable cause) {

@@ -20,8 +20,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Queue;
+import java.util.Random;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import org.junit.AfterClass;
@@ -677,6 +685,131 @@ public class PubSubIntegrationTest {
 
     assertThat(mockSubscriber.getReceivedMessages()).containsExactly("hello");
     assertThat(mockSubscriber.getReceivedPMessages()).containsExactly("hello");
+  }
+
+  private Jedis getConnection(Random random) {
+    Jedis client;
+    Exception lastException = null;
+
+    for (int i = 0; i < 10; i++) {
+      int randPort = random.nextInt(4) + 1;
+      client = new Jedis("localhost", server.getPort(), 60000);
+      try {
+        client.ping();
+        return client;
+      } catch (Exception e) {
+        lastException = e;
+        try {
+          client.close();
+        } catch (Exception exception) {
+        }
+      }
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
+
+    throw new RuntimeException("Tried 10 times, but could not get a good connection.",
+        lastException);
+  }
+
+  private int doPublishing(int index, int minimumIterations, AtomicBoolean running) {
+    int iterationCount = 0;
+    int publishedMessages = 0;
+    Random random = new Random();
+    Jedis client = getConnection(random);
+
+    while (iterationCount < minimumIterations || running.get()) {
+      publishedMessages += client.publish("my-channel", "boo-" + index + "-" + iterationCount);
+      iterationCount++;
+    }
+
+    return publishedMessages;
+  }
+
+  private int makeSubscribers(int minimumIterations, AtomicBoolean running)
+      throws InterruptedException, ExecutionException {
+    Random random = new Random();
+    ExecutorService executor = Executors.newFixedThreadPool(100);
+    ExecutorService secondaryExecutor = Executors.newCachedThreadPool();
+    Queue<Future<Void>> workQ = new ConcurrentLinkedQueue<>();
+
+    Future<Integer> consumer = executor.submit(() -> {
+      int subscribersProcessed = 0;
+      while (subscribersProcessed < minimumIterations || running.get()) {
+        if (workQ.isEmpty()) {
+          Thread.yield();
+          continue;
+        }
+        Future<Void> f = workQ.poll();
+        try {
+          f.get();
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
+        subscribersProcessed++;
+      }
+      return subscribersProcessed;
+    });
+
+    int iterationCount = 0;
+    String channel = "my-channel";
+    while (iterationCount < minimumIterations || running.get()) {
+      Future<Void> f = executor.submit(() -> {
+        Jedis client = getConnection(random);
+        MockSubscriber mockSubscriber = new MockSubscriber();
+        Future<Void> inner = secondaryExecutor.submit(() -> {
+          try {
+            client.subscribe(mockSubscriber, channel);
+          } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+          }
+          return null;
+        });
+        mockSubscriber.awaitSubscribe();
+        mockSubscriber.unsubscribe(channel);
+        mockSubscriber.awaitUnsubscribe();
+        inner.get();
+        client.close();
+
+        return null;
+      });
+      workQ.add(f);
+      iterationCount++;
+    }
+
+    return consumer.get();
+  }
+
+  @Test
+  public void concurrentSubscribers_andPublishers_doesNotHang()
+      throws InterruptedException, ExecutionException {
+    AtomicBoolean running = new AtomicBoolean(true);
+
+    Future<Integer> makeSubscribersFuture1 =
+        executor.submit(() -> makeSubscribers(10000, running));
+    Future<Integer> makeSubscribersFuture2 =
+        executor.submit(() -> makeSubscribers(10000, running));
+
+    Future<Integer> publish1 = executor.submit(() -> doPublishing(1, 100000, running));
+    Future<Integer> publish2 = executor.submit(() -> doPublishing(2, 100000, running));
+    Future<Integer> publish3 = executor.submit(() -> doPublishing(3, 100000, running));
+    Future<Integer> publish4 = executor.submit(() -> doPublishing(4, 100000, running));
+    Future<Integer> publish5 = executor.submit(() -> doPublishing(5, 100000, running));
+
+    running.set(false);
+
+    assertThat(makeSubscribersFuture1.get()).isGreaterThanOrEqualTo(10);
+    assertThat(makeSubscribersFuture2.get()).isGreaterThanOrEqualTo(10);
+
+    assertThat(publish1.get()).isGreaterThan(0);
+    assertThat(publish2.get()).isGreaterThan(0);
+    assertThat(publish3.get()).isGreaterThan(0);
+    assertThat(publish4.get()).isGreaterThan(0);
+    assertThat(publish5.get()).isGreaterThan(0);
   }
 
   private void waitFor(Callable<Boolean> booleanCallable) {

@@ -168,6 +168,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'org.testcontainers', name: 'testcontainers', version: '1.13.0')
         api(group: 'pl.pragmatists', name: 'JUnitParams', version: '1.1.0')
         api(group: 'redis.clients', name: 'jedis', version: '3.2.0')
+        api(group: 'io.lettuce', name: 'lettuce-core', version: '5.2.1.RELEASE')
         api(group: 'xerces', name: 'xercesImpl', version: '2.12.0')
       }
     }

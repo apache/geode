@@ -51,6 +51,7 @@ dependencies {
   integrationTestImplementation(project(':geode-junit'))
   integrationTestImplementation(sourceSets.commonTest.output)
   integrationTestImplementation('redis.clients:jedis')
+  integrationTestImplementation('io.lettuce:lettuce-core')
   integrationTestRuntime(project(':geode-log4j'))
 
   acceptanceTestImplementation(sourceSets.integrationTest.output)

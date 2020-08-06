@@ -81,6 +81,7 @@ public class NettyRedisServer {
   private final ExecutorService backgroundExecutor;
   private final EventLoopGroup selectorGroup;
   private final EventLoopGroup workerGroup;
+  private final EventLoopGroup subscriberGroup;
   private final InetAddress bindAddress;
   private final Channel serverChannel;
   private final int serverPort;
@@ -103,6 +104,7 @@ public class NettyRedisServer {
     this.bindAddress = getBindAddress(requestedAddress);
     selectorGroup = createEventLoopGroup("Selector", false, 1);
     workerGroup = createEventLoopGroup("Worker", true, 0);
+    subscriberGroup = createEventLoopGroup("Subscriber", true, 0);
     serverChannel = createChannel(port);
     serverPort = getActualPort();
     logStartupMessage();
@@ -161,7 +163,7 @@ public class NettyRedisServer {
         pipeline.addLast(ExecutionHandlerContext.class.getSimpleName(),
             new ExecutionHandlerContext(socketChannel, regionProvider, pubsub,
                 allowUnsupportedSupplier, shutdownInvoker, redisStats, backgroundExecutor,
-                redisPasswordBytes));
+                subscriberGroup, redisPasswordBytes));
       }
     };
   }

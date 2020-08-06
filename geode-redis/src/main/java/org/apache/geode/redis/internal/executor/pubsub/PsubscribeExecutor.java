@@ -30,6 +30,9 @@ public class PsubscribeExecutor extends AbstractExecutor {
   @Override
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
+
+    context.changeChannelEventLoopGroup(context.getSubscriberGroup());
+
     Collection<SubscribeResult> results = new ArrayList<>();
     for (int i = 1; i < command.getProcessedCommand().size(); i++) {
       byte[] patternBytes = command.getProcessedCommand().get(i);
