@@ -89,7 +89,10 @@ public class ClientServerCacheOperationDUnitTest implements Serializable {
       Pool pool = PoolManager.createFactory()
           .addLocator("localhost", locatorPort)
           .setSocketBufferSize(50)
-          .setReadTimeout(50)
+          .setReadTimeout(40)
+          .setPingInterval(200)
+          .setSocketConnectTimeout(50)
+          .setServerConnectionTimeout(50)
           .create("testPool");
 
       Region region = clientCacheRule.getClientCache()
