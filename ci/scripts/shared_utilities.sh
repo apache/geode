@@ -77,10 +77,12 @@ get-full-version() {
 }
 
 is_source_from_pr_testable() {
-  base_dir=$(git rev-parse --show-toplevel)
+  pushd ${SCRIPTDIR} 2>&1 >> /dev/null
+    base_dir=$(git rev-parse --show-toplevel)
+  popd 2>&1 >> /dev/null
   github_pr_dir="${base_dir}/.git/resource"
   exclude_dirs="ci dev-tools etc geode-book geode-docs"
-  pushd ${base_dir} 2>&1 > /dev/null
+  pushd ${base_dir} 2>&1 >> /dev/null
     for d in $(echo ${exclude_dirs}); do
       local exclude_pathspec="${exclude_pathspec} :(exclude,glob)${d}/**"
     done
@@ -98,6 +100,6 @@ is_source_from_pr_testable() {
     else
       >&2 echo "repo is not from a PR"
     fi
-  popd 2>&1 > /dev/null
+  popd 2>&1 >> /dev/null
   return ${return_code}
 }
