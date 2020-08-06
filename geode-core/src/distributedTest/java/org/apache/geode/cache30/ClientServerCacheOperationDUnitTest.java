@@ -44,7 +44,7 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 @Category({ClientServerTest.class})
 public class ClientServerCacheOperationDUnitTest implements Serializable {
 
-  private String regionName = "TestRegion";
+  private String regionName = "CsTestRegion";
 
   @Rule
   public DistributedRule distributedRule = new DistributedRule();
@@ -61,6 +61,8 @@ public class ClientServerCacheOperationDUnitTest implements Serializable {
     VM server2 = VM.getVM(1);
     VM client = VM.getVM(2);
 
+    final int byteSize = 60 * 1000 * 1000;
+    final int listSize = 2;
     final int locatorPort = DistributedTestUtils.getLocatorPort();
 
     server1.invoke(() -> createServerCache());
@@ -76,11 +78,10 @@ public class ClientServerCacheOperationDUnitTest implements Serializable {
       regionFactory.create(regionName);
     });
 
-    int listSize = 2;
-    List list = new ArrayList(listSize);
+    List<byte[]> list = new ArrayList(listSize);
 
     for (int i = 0; i < listSize; i++) {
-      list.add(new byte[60 * 1000 * 1000]);
+      list.add(new byte[byteSize]);
     }
 
     client.invoke(() -> {
@@ -107,14 +108,21 @@ public class ClientServerCacheOperationDUnitTest implements Serializable {
 
     server1.invoke(() -> {
       Region region = cacheRule.getCache().getRegion(regionName);
-      assertThat(region.size()).isEqualTo(0);
+      List value = (List)region.get("key");
+      if (value != null) {
+        assertThat(value.size()).isEqualTo(listSize);
+        list.forEach((b) -> assertThat(b.length).isEqualTo(byteSize));
+      }
     });
 
     client.invoke(() -> {
       Region region = clientCacheRule.getClientCache().getRegion(regionName);
       assertThat(region.size()).isEqualTo(0);
-      Object value = region.get("key");
-      assertThat(value).isNull();
+      List value = (List)region.get("key");
+      if (value != null) {
+        assertThat(value.size()).isEqualTo(listSize);
+        list.forEach((b) -> assertThat(b.length).isEqualTo(byteSize));
+      }
     });
 
   }
