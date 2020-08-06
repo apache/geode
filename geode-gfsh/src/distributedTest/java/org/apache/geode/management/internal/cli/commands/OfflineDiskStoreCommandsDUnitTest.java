@@ -22,9 +22,16 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
 import java.util.Arrays;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -34,6 +41,7 @@ import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.DiskStoreFactory;
@@ -45,7 +53,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
-import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 @RunWith(JUnitParamsRunner.class)
 public class OfflineDiskStoreCommandsDUnitTest implements Serializable {
@@ -63,7 +70,7 @@ public class OfflineDiskStoreCommandsDUnitTest implements Serializable {
   public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
-  public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
+  public transient TemporaryFolder temporaryFolder = new TemporaryFolder();
 
 
   private Properties createLocatorConfiguration(int localLocatorPort) {
@@ -144,6 +151,58 @@ public class OfflineDiskStoreCommandsDUnitTest implements Serializable {
     gfsh.executeAndAssertThat(
         baseCommand + " --name=" + DISK_STORE_ID + " --disk-dirs=" + diskDirs)
         .statusIsSuccess();
+  }
+
+  @Test
+  @Parameters({"compact offline-disk-store", "describe offline-disk-store",
+      "validate offline-disk-store",
+      "alter disk-store --region=testRegion --enable-statistics=true"})
+  public void testThreadHangWithOfflineDiskStoreCommands(String baseCommand) throws IOException {
+    VM locator = getVM(0);
+    VM server = getVM(1);
+    final int ENTRIES = 100000;
+    int site1Port = getRandomAvailableTCPPortsForDUnitSite(1)[0];
+    String fileName = "dumpFile.txt";
+    String threadName = "Asynchronous disk writer for region";
+    int counter = 0;
+
+    File diskStoreDirectory1 = temporaryFolder.newFolder("diskDir1");
+
+    File[] diskStoreDirectories =
+        new File[] {diskStoreDirectory1};
+    String diskDirs = Arrays.stream(diskStoreDirectories).map(File::getAbsolutePath)
+        .collect(Collectors.joining(","));
+
+    locator.invoke(() -> cacheRule.createCache(createLocatorConfiguration(site1Port)));
+    server.invoke(() -> cacheRule.createCache(createServerConfiguration(site1Port)));
+    server.invoke(() -> {
+      createServerWithRegionAndPersistentRegion(diskStoreDirectories);
+      Region<String, String> region = cacheRule.getCache().getRegion(REGION_NAME);
+      IntStream.range(0, ENTRIES).forEach(i -> region.put("Key_" + i, "Value_" + i));
+    });
+    locator.invoke(this::gracefullyDisconnect);
+    server.invoke(this::gracefullyDisconnect);
+
+    gfsh.executeAndAssertThat(
+        baseCommand + " --name=" + DISK_STORE_ID + " --disk-dirs=" + diskDirs)
+        .statusIsSuccess();
+
+    BufferedWriter writer = new BufferedWriter(new FileWriter(fileName));
+    ThreadMXBean bean = ManagementFactory.getThreadMXBean();
+    ThreadInfo[] infos = bean.dumpAllThreads(true, true);
+    for (ThreadInfo info : infos) {
+      if (info.toString().contains(threadName))
+        writer.append(info.toString());
+    }
+
+    try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
+      String line;
+      while ((line = br.readLine()) != null) {
+        if (line.contains(threadName))
+          counter++;
+      }
+    }
+    assertThat(counter).isEqualTo(0);
   }
 
   @Test
