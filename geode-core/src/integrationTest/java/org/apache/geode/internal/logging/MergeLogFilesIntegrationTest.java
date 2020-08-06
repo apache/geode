@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.logging;
 
+import static java.io.File.separator;
 import static org.apache.geode.logging.internal.spi.LogWriterLevel.ALL;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,14 +22,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.regex.Matcher;
@@ -106,6 +111,34 @@ public class MergeLogFilesIntegrationTest {
     }
 
     assertThat(lastValue).isEqualTo(999);
+  }
+
+  @Test
+  public void testDircountZero() throws Exception {
+    final String resourcePath1 =
+        MergeLogFilesIntegrationTest.class.getResource("dir1" + separator + "systemlog.txt")
+            .getPath();
+    final String resourcePath2 =
+        MergeLogFilesIntegrationTest.class.getResource("dir2" + separator + "systemlog.txt")
+            .getPath();
+    final List<File> files = Arrays.asList(
+        new File(resourcePath1),
+        new File(resourcePath2));
+    Map<String, MergeLogFiles.DisplayNameAndFileStream> logFiles =
+        MergeLogFiles.getStringDisplayNameAndFileStreamMap(
+            files,
+            0, false, null);
+    try {
+      assertThat(logFiles.size()).isEqualTo(2);
+    } finally {
+      logFiles.values().stream().forEach(displayNameAndFileStream -> {
+        try {
+          displayNameAndFileStream.getInputStream().close();
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+      });
+    }
   }
 
   /**
