@@ -16,7 +16,7 @@
 package org.apache.geode.management;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
 
@@ -87,16 +87,22 @@ public class MemberMXBeanDistributedTest implements
           server2.invoke(() -> getBucketsInitialized()) +
           server3.invoke(() -> getBucketsInitialized()) +
           server4.invoke(() -> getBucketsInitialized());
-      assertEquals("Expected bucket count is 1000, and actual count is " + sumOfBuckets,
-          sumOfBuckets, 1000);
+      assertThat(sumOfBuckets).isEqualTo(1000);
     });
 
     for (int i = 1; i < 4; i++) {
+      final String tempRegioName = regionName + i;
+
       gfsh.executeAndAssertThat("create region"
-          + " --name=" + regionName + i
+          + " --name=" + tempRegioName
           + " --type=PARTITION_PERSISTENT"
           + " --total-num-buckets=1000"
           + " --colocated-with=" + regionName).statusIsSuccess();
+
+      server1.invoke(() -> createBuckets(tempRegioName));
+      server2.invoke(() -> createBuckets(tempRegioName));
+      server3.invoke(() -> createBuckets(tempRegioName));
+      server4.invoke(() -> createBuckets(tempRegioName));
     }
 
     await().untilAsserted(() -> {
@@ -104,8 +110,7 @@ public class MemberMXBeanDistributedTest implements
           server2.invoke(() -> getBucketsInitialized()) +
           server3.invoke(() -> getBucketsInitialized()) +
           server4.invoke(() -> getBucketsInitialized());
-      assertEquals("Expected bucket count is 4000, and actual count is " + sumOfBuckets,
-          sumOfBuckets, 4000);
+      assertThat(sumOfBuckets).isEqualTo(4000);
     });
 
   }
