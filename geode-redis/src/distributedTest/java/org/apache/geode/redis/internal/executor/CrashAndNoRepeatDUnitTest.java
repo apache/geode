@@ -26,30 +26,25 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Properties;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
-import io.lettuce.core.ClientOptions;
-import io.lettuce.core.RedisClient;
-import io.lettuce.core.RedisException;
-import io.lettuce.core.api.StatefulRedisConnection;
-import io.lettuce.core.api.sync.RedisCommands;
-import io.lettuce.core.resource.ClientResources;
 import org.apache.logging.log4j.Logger;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 
 import org.apache.geode.cache.control.RebalanceFactory;
 import org.apache.geode.cache.control.RebalanceResults;
 import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.redis.session.springRedisTestApplication.config.DUnitSocketAddressResolver;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
@@ -73,10 +68,9 @@ public class CrashAndNoRepeatDUnitTest {
   private static MemberVM server3;
 
   private static int[] redisPorts;
-
-  private RedisClient redisClient;
-  private volatile StatefulRedisConnection<String, String> connection;
-  private volatile RedisCommands<String, String> commands;
+  private static final String LOCAL_HOST = "127.0.0.1";
+  private static final int JEDIS_TIMEOUT =
+      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Rule
   public ExecutorServiceRule executor = new ExecutorServiceRule();
@@ -119,41 +113,10 @@ public class CrashAndNoRepeatDUnitTest {
 
   }
 
-  @Before
-  public void before() {
-    String redisPort1 = "" + redisPorts[0];
-    String redisPort2 = "" + redisPorts[1];
-    String redisPort3 = "" + redisPorts[2];
-    // For now only tell the client about redisPort1.
-    // That server is never restarted so clients should
-    // never fail due to the server they are connected to failing.
-    DUnitSocketAddressResolver dnsResolver =
-        new DUnitSocketAddressResolver(new String[] {redisPort1});
-
-    ClientResources resources = ClientResources.builder()
-        .socketAddressResolver(dnsResolver)
-        .build();
-
-    redisClient = RedisClient.create(resources, "redis://localhost");
-    redisClient.setOptions(ClientOptions.builder()
-        .autoReconnect(false)
-        .build());
-    connection = redisClient.connect();
-    commands = connection.sync();
+  private synchronized Jedis connect(AtomicReference<Jedis> jedisRef) {
+    jedisRef.set(new Jedis(LOCAL_HOST, redisPorts[0], JEDIS_TIMEOUT));
+    return jedisRef.get();
   }
-
-  private synchronized RedisCommands<String, String> reconnect() {
-    connection = redisClient.connect();
-    commands = connection.sync();
-    return commands;
-  }
-
-  @After
-  public void after() {
-    connection.close();
-    redisClient.shutdown();
-  }
-
 
   private MemberVM startRedisVM(int vmID, int redisPort) {
     int locatorPort = locator.getPort();
@@ -172,15 +135,10 @@ public class CrashAndNoRepeatDUnitTest {
     AtomicBoolean running3 = new AtomicBoolean(true);
     AtomicBoolean running4 = new AtomicBoolean(false);
 
-    Runnable task1 = null;
-    Runnable task2 = null;
-    Runnable task3 = null;
-    Runnable task4 = null;
-
-    task1 = () -> appendPerformAndVerify(0, 20000, running1);
-    task2 = () -> appendPerformAndVerify(1, 20000, running2);
-    task3 = () -> appendPerformAndVerify(3, 20000, running3);
-    task4 = () -> appendPerformAndVerify(4, 1000, running4);
+    Runnable task1 = () -> appendPerformAndVerify(0, 20000, running1);
+    Runnable task2 = () -> appendPerformAndVerify(1, 20000, running2);
+    Runnable task3 = () -> appendPerformAndVerify(3, 20000, running3);
+    Runnable task4 = () -> appendPerformAndVerify(4, 1000, running4);
 
     Future<Void> future1 = executor.runAsync(task1);
     Future<Void> future2 = executor.runAsync(task2);
@@ -221,15 +179,10 @@ public class CrashAndNoRepeatDUnitTest {
     AtomicBoolean running3 = new AtomicBoolean(true);
     AtomicBoolean running4 = new AtomicBoolean(false);
 
-    Runnable task1 = null;
-    Runnable task2 = null;
-    Runnable task3 = null;
-    Runnable task4 = null;
-
-    task1 = () -> renamePerformAndVerify(0, 20000, running1);
-    task2 = () -> renamePerformAndVerify(1, 20000, running2);
-    task3 = () -> renamePerformAndVerify(3, 20000, running3);
-    task4 = () -> renamePerformAndVerify(4, 1000, running4);
+    Runnable task1 = () -> renamePerformAndVerify(0, 20000, running1);
+    Runnable task2 = () -> renamePerformAndVerify(1, 20000, running2);
+    Runnable task3 = () -> renamePerformAndVerify(3, 20000, running3);
+    Runnable task4 = () -> renamePerformAndVerify(4, 1000, running4);
 
     Future<Void> future1 = executor.runAsync(task1);
     Future<Void> future2 = executor.runAsync(task2);
@@ -266,9 +219,8 @@ public class CrashAndNoRepeatDUnitTest {
     while (true) {
       try {
         return supplier.get();
-      } catch (RedisException ex) {
-        if (!ex.getMessage().contains("Connection reset by peer")
-            || ex.getMessage().contains("Connection disconnected")) {
+      } catch (JedisConnectionException ex) {
+        if (!ex.getMessage().contains("Unexpected end of stream.")) {
           throw ex;
         }
       }
@@ -276,59 +228,62 @@ public class CrashAndNoRepeatDUnitTest {
   }
 
   private void renamePerformAndVerify(int index, int minimumIterations, AtomicBoolean isRunning) {
+    final AtomicReference<Jedis> jedisRef = new AtomicReference<>();
+    connect(jedisRef);
     String newKey = null;
     String baseKey = "rename-key-" + index;
-    commands.set(baseKey + "-0", "value");
+    jedisRef.get().set(baseKey + "-0", "value");
     int iterationCount = 0;
 
     while (iterationCount < minimumIterations || isRunning.get()) {
       String oldKey = baseKey + "-" + iterationCount;
       newKey = baseKey + "-" + (iterationCount + 1);
       try {
-        commands.rename(oldKey, newKey);
+        jedisRef.get().rename(oldKey, newKey);
         iterationCount += 1;
-      } catch (RedisException e) {
-        if (e.getMessage().contains("Connection reset by peer")
-            || e.getMessage().contains("Connection disconnected")) {
-          if (doWithRetry(() -> reconnect().exists(oldKey)) == 0) {
+      } catch (JedisConnectionException ex) {
+        if (ex.getMessage().contains("Unexpected end of stream.")) {
+          if (!doWithRetry(() -> connect(jedisRef).exists(oldKey))) {
             iterationCount += 1;
           }
-        } else if (e.getMessage().contains("no such key")) {
+        } else if (ex.getMessage().contains("no such key")) {
           iterationCount += 1;
         } else {
-          throw e;
+          throw ex;
         }
       }
     }
 
-    assertThat(commands.keys(baseKey + "-*").size()).isEqualTo(1);
-    assertThat(commands.exists(newKey)).isEqualTo(1);
+    assertThat(jedisRef.get().keys(baseKey + "-*").size()).isEqualTo(1);
+    assertThat(jedisRef.get().exists(newKey)).isTrue();
 
     logger.info("--->>> RENAME test ran {} iterations", iterationCount);
+    jedisRef.get().disconnect();
   }
 
   private void appendPerformAndVerify(int index, int minimumIterations, AtomicBoolean isRunning) {
     String key = "append-key-" + index;
     int iterationCount = 0;
+    final AtomicReference<Jedis> jedisRef = new AtomicReference<>();
+    connect(jedisRef);
 
     while (iterationCount < minimumIterations || isRunning.get()) {
       String appendString = "-" + key + "-" + iterationCount + "-";
       try {
-        commands.append(key, appendString);
+        jedisRef.get().append(key, appendString);
         iterationCount += 1;
-      } catch (RedisException e) {
-        if (e.getMessage().contains("Connection reset by peer")
-            || e.getMessage().contains("Connection disconnected")) {
-          if (doWithRetry(() -> reconnect().get(key)).endsWith(appendString)) {
+      } catch (JedisConnectionException ex) {
+        if (ex.getMessage().contains("Unexpected end of stream.")) {
+          if (doWithRetry(() -> connect(jedisRef).get(key)).endsWith(appendString)) {
             iterationCount += 1;
           }
         } else {
-          throw e;
+          throw ex;
         }
       }
     }
 
-    String storedString = commands.get(key);
+    String storedString = jedisRef.get().get(key);
     int idx = 0;
     for (int i = 0; i < iterationCount; i++) {
       String expectedValue = "-" + key + "-" + i + "-";
@@ -343,6 +298,7 @@ public class CrashAndNoRepeatDUnitTest {
     }
 
     logger.info("--->>> APPEND test ran {} iterations", iterationCount);
+    jedisRef.get().disconnect();
   }
 
   private static void rebalanceAllRegions(MemberVM vm) {
