@@ -387,6 +387,7 @@ public class PubSubDUnitTest {
     String CHANNEL_NAME = "best_channel_ever";
 
     List<Jedis> clients = new ArrayList<>();
+    List<MockSubscriber> subscribers = new ArrayList<>();
 
     // Build up an initial set of subscribers
     for (int i = 0; i < CLIENT_COUNT; i++) {
@@ -398,6 +399,7 @@ public class PubSubDUnitTest {
       executor.submit(() -> client.subscribe(mockSubscriber, CHANNEL_NAME));
       latch.await();
 
+      subscribers.add(mockSubscriber);
       clients.add(client);
     }
 
@@ -410,13 +412,17 @@ public class PubSubDUnitTest {
 
     assertThat(result).isEqualTo(CLIENT_COUNT * 10);
 
+    subscribers.forEach(x -> {
+      x.unsubscribe();
+      x.awaitUnsubscribe();
+    });
     clients.forEach(Jedis::close);
   }
 
   @Test
   public void testPubSubWithManyClientsDisconnecting() throws Exception {
     int CLIENT_COUNT = 10;
-    int ITERATIONS = 400;
+    int ITERATIONS = 1000;
 
     Random random = new Random();
     List<Jedis> clients = new ArrayList<>();
