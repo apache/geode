@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.logging;
 
-import static java.io.File.separator;
 import static org.apache.geode.logging.internal.spi.LogWriterLevel.ALL;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -45,6 +44,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.ErrorCollector;
 
 import org.apache.geode.LogWriter;
+import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
@@ -115,12 +115,11 @@ public class MergeLogFilesIntegrationTest {
 
   @Test
   public void testDircountZero() throws Exception {
-    final String resourcePath1 =
-        MergeLogFilesIntegrationTest.class.getResource("dir1" + separator + "systemlog.txt")
-            .getPath();
-    final String resourcePath2 =
-        MergeLogFilesIntegrationTest.class.getResource("dir2" + separator + "systemlog.txt")
-            .getPath();
+    final String file = MergeLogFilesIntegrationTest.class
+        .getResource("MergeLogFilesIntegrationTest.txt").getPath();
+    final String path = new File(file).getParentFile().getPath();
+    final String resourcePath1 = IOUtils.appendToPath(path, "dir1", "systemlog.txt");
+    final String resourcePath2 = IOUtils.appendToPath(path, "dir2", "systemlog.txt");
     final List<File> files = Arrays.asList(
         new File(resourcePath1),
         new File(resourcePath2));
