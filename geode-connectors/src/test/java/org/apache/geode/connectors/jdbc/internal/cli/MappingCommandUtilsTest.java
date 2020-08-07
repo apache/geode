@@ -168,6 +168,25 @@ public class MappingCommandUtilsTest {
   }
 
   @Test
+  public void testIsPartitionWithLocalRefidReturnsFalse() {
+    when(regionAttributesType.getRefid()).thenReturn(RegionShortcut.LOCAL.name());
+
+    boolean result = MappingCommandUtils.isPartition(regionAttributesType);
+
+    assertThat(result).isEqualTo(false);
+  }
+
+  @Test
+  public void testIsPartitionWithDataPolicyAndRefidIsNullReturnsFalse() {
+    when(regionAttributesType.getDataPolicy()).thenReturn(null);
+    when(regionAttributesType.getRefid()).thenReturn(null);
+
+    boolean result = MappingCommandUtils.isPartition(regionAttributesType);
+
+    assertThat(result).isEqualTo(false);
+  }
+
+  @Test
   public void testIsPartitionWithReplicateDataPolicyReturnsFalse() {
     when(regionAttributesType.getDataPolicy()).thenReturn(RegionAttributesDataPolicy.REPLICATE);
 
