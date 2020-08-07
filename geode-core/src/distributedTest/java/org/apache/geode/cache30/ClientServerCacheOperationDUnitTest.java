@@ -61,7 +61,7 @@ public class ClientServerCacheOperationDUnitTest implements Serializable {
     VM server2 = VM.getVM(1);
     VM client = VM.getVM(2);
 
-    final int byteSize = 60 * 1000 * 1000;
+    final int byteSize = 40 * 1000 * 1000;
     final int listSize = 2;
     final int locatorPort = DistributedTestUtils.getLocatorPort();
 
@@ -108,7 +108,7 @@ public class ClientServerCacheOperationDUnitTest implements Serializable {
 
     server1.invoke(() -> {
       Region region = cacheRule.getCache().getRegion(regionName);
-      List value = (List)region.get("key");
+      List value = (List) region.get("key");
       if (value != null) {
         assertThat(value.size()).isEqualTo(listSize);
         list.forEach((b) -> assertThat(b.length).isEqualTo(byteSize));
@@ -118,7 +118,7 @@ public class ClientServerCacheOperationDUnitTest implements Serializable {
     client.invoke(() -> {
       Region region = clientCacheRule.getClientCache().getRegion(regionName);
       assertThat(region.size()).isEqualTo(0);
-      List value = (List)region.get("key");
+      List value = (List) region.get("key");
       if (value != null) {
         assertThat(value.size()).isEqualTo(listSize);
         list.forEach((b) -> assertThat(b.length).isEqualTo(byteSize));
