@@ -109,9 +109,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   }
 
   public ChannelFuture writeToChannel(RedisResponse response) {
-    if (response == null) {
-      return null;
-    }
     return channel.writeAndFlush(response.encode(byteBufAllocator), channel.newPromise())
         .addListener((ChannelFutureListener) f -> {
           response.afterWrite();
