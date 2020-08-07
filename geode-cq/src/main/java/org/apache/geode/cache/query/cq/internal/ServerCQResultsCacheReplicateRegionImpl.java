@@ -167,6 +167,11 @@ class ServerCQResultsCacheReplicateRegionImpl implements ServerCQResultsCache {
   }
 
   @Override
+  public boolean isKeyDestroyed(Object key) {
+    return false;
+  }
+
+  @Override
   public void clear() {
     // Clean-up the CQ Results Cache.
     synchronized (LOCK) {
