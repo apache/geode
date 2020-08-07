@@ -117,6 +117,7 @@ public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
       logger.info("Started {}", this);
 
       enqueueTempEvents();
+      startTime = System.currentTimeMillis();
     } finally {
       this.getLifeCycleLock().writeLock().unlock();
     }
@@ -193,6 +194,7 @@ public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
     InternalDistributedSystem system =
         (InternalDistributedSystem) this.cache.getDistributedSystem();
     system.handleResourceEvent(ResourceEvent.GATEWAYSENDER_STOP, this);
+    stopTime = System.currentTimeMillis();
   }
 
   @Override

@@ -111,6 +111,7 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
           .info("Started  {}", this);
 
       enqueueTempEvents();
+      startTime = System.currentTimeMillis();
     } finally {
       this.getLifeCycleLock().writeLock().unlock();
     }
@@ -186,6 +187,7 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
         (InternalDistributedSystem) this.cache.getDistributedSystem();
     system.handleResourceEvent(ResourceEvent.GATEWAYSENDER_STOP, this);
 
+    stopTime = System.currentTimeMillis();
     // this.eventProcessor = null;
   }
 

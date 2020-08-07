@@ -102,6 +102,7 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
       logger.info("Started {}", this);
 
       enqueueTempEvents();
+      startTime = System.currentTimeMillis();
     } finally {
       this.getLifeCycleLock().writeLock().unlock();
     }
@@ -135,6 +136,7 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
       system.handleResourceEvent(ResourceEvent.GATEWAYSENDER_STOP, this);
 
       clearTempEventsAfterSenderStopped();
+      stopTime = System.currentTimeMillis();
       // Keep the eventProcessor around so we can ask it for the regionQueues later.
       // Tests expect to be able to do this.
     } finally {

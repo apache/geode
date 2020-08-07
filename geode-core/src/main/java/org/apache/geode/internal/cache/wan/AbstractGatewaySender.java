@@ -94,7 +94,9 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   protected String id;
 
-  protected long startTime;
+  protected long startTime = 0;
+
+  protected long stopTime = 0;
 
   protected PoolImpl proxy;
 
@@ -219,6 +221,8 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   private boolean removeFromQueueOnException = GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION;
 
+  private int maxWaitTimeForSenderToStop = 15000;
+
   /**
    * A unique (per <code>GatewaySender</code> id) index used when modifying <code>EventIDs</code>.
    * Unlike the serialNumber, the eventIdIndex matches for the same <code>GatewaySender</code>
@@ -255,6 +259,11 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     this.isPersistence = attrs.isPersistenceEnabled();
     this.alertThreshold = attrs.getAlertThreshold();
     this.manualStart = attrs.isManualStart();
+    if (manualStart) {
+      stopTime = System.currentTimeMillis();
+    } else {
+      startTime = System.currentTimeMillis();
+    }
     this.isParallel = attrs.isParallel();
     this.groupTransactionEvents = attrs.mustGroupTransactionEvents();
     this.isForInternalUse = attrs.isForInternalUse();
@@ -1034,9 +1043,14 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       // If this gateway is not running, return
       if (!isRunning()) {
         if (this.isPrimary()) {
-          tmpDroppedEvents.add(clonedEvent);
-          if (isDebugEnabled) {
-            logger.debug("add to tmpDroppedEvents for evnet {}", clonedEvent);
+          // Only queue events when starting or for a max of maxWaitTimeForSenderToStop when
+          // stopping.
+          if ((startTime > stopTime)
+              || (System.currentTimeMillis() < stopTime + maxWaitTimeForSenderToStop)) {
+            tmpDroppedEvents.add(clonedEvent);
+            if (isDebugEnabled) {
+              logger.debug("add to tmpDroppedEvents for event {}", clonedEvent);
+            }
           }
         }
         if (isDebugEnabled) {

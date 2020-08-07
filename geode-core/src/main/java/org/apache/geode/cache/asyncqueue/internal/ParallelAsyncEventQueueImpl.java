@@ -110,6 +110,7 @@ public class ParallelAsyncEventQueueImpl extends AbstractGatewaySender {
       logger.info("Started  {}", this);
 
       enqueueTempEvents();
+      startTime = System.currentTimeMillis();
     } finally {
       this.getLifeCycleLock().writeLock().unlock();
     }
@@ -139,6 +140,7 @@ public class ParallelAsyncEventQueueImpl extends AbstractGatewaySender {
       system.handleResourceEvent(ResourceEvent.GATEWAYSENDER_STOP, this);
 
       clearTempEventsAfterSenderStopped();
+      stopTime = System.currentTimeMillis();
     } finally {
       this.getLifeCycleLock().writeLock().unlock();
     }

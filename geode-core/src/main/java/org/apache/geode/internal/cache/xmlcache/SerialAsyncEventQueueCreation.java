@@ -42,13 +42,19 @@ public class SerialAsyncEventQueueCreation extends AbstractGatewaySender impleme
       List<Integer> remoteDSIds) {}
 
   @Override
-  public void start() {}
+  public void start() {
+    startTime = System.currentTimeMillis();
+  }
 
   @Override
-  public void startWithCleanQueue() {}
+  public void startWithCleanQueue() {
+    start();
+  }
 
   @Override
-  public void stop() {}
+  public void stop() {
+    stopTime = System.currentTimeMillis();
+  }
 
   @Override
   public void rebalance() {
