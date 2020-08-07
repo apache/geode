@@ -20,20 +20,19 @@ import java.util.Set;
 
 import javax.management.ObjectName;
 
-import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.GatewaySenderMXBean;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.GfshCommand;
+import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
@@ -115,7 +114,7 @@ public class StopGatewaySenderCommand extends SingleGfshCommand {
   private List<CliFunctionResult> setAllGatewaySenderInstancesStopped(
       Set<DistributedMember> dsMembers, Cache cache,
       SystemManagementService service, String senderId) {
-    Object[] arguments = {new Boolean(true), senderId};
+    Object[] arguments = {senderId, new Boolean(true)};
     List<CliFunctionResult> resultsList =
         executeAndGetFunctionResult(GatewaySenderManageFunction.INSTANCE, arguments, dsMembers);
 

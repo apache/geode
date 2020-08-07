@@ -242,10 +242,6 @@ public class GatewaySenderMBeanBridge {
     return sender.isParallel();
   }
 
-  public boolean mustGroupTransactionEvents() {
-    return sender.mustGroupTransactionEvents();
-  }
-
   /** Statistics Related Attributes **/
 
 
@@ -334,8 +330,4 @@ public class GatewaySenderMBeanBridge {
   public int getEventsExceedingAlertThreshold() {
     return getStatistic(StatsKey.GATEWAYSENDER_EVENTS_EXCEEDING_ALERT_THRESHOLD).intValue();
   }
-
-  public void setMustQueueDroppedEvents(boolean mustQueueDroppedEvents) {
-    this.sender.setMustQueueDroppedEvents(mustQueueDroppedEvents);
-  };
 }

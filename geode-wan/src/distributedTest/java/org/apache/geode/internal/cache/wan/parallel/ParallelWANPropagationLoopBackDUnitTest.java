@@ -442,12 +442,12 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
    * Site-NY: dsid=1: senderId="ln": vm3, vm6
    * NY site's sender's manual-start=true
    *
-   * Stop the sender in NY and set mustQueueDroppedEvents to false
+   * Stop the sender in NY and set allInstancesStopped to true
    * Make sure the events put from NY site will be dropped but not added to tmpDroppedEvents.
    * Start the sender, and make sure the dropped events are not sent to LN.
    */
   @Test
-  public void stoppedSenderShouldNotAddReceivedEventsIntoTmpDroppedIfMustQueueDroppedEventsIsSetToFalse()
+  public void stoppedSenderShouldNotAddReceivedEventsIntoTmpDroppedIfAllInstancesStoppedIsSetToTrue()
       throws Exception {
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(2));
     Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(1, lnPort));
@@ -487,7 +487,7 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
 
     // stop sender on site-ny
     stopSenderInVMsAsync("ln", vm3, vm5);
-    setMustQueueDroppedEventsInSenderInVMsAsync("ln", false, vm3, vm5);
+    setAllInstancesStoppedInSenderInVMsAsync("ln", true, vm3, vm5);
 
     // do next 100 puts on site-ny
     vm3.invoke(() -> WANTestBase.doPutsFrom(getTestMethodName() + "_PR", 0, 100));
@@ -514,7 +514,7 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
    * Site-NY: dsid=1: senderId="ln": vm3, vm6
    * NY site's sender's manual-start=true
    * <p>
-   * Stop the sender in NY and do not set mustQueueDroppedEvents (by default it is set to true)
+   * Stop the sender in NY and do not set allInstancesStopped (by default it is set to false)
    * Make sure the events put from NY site will be added to tmpDroppedEvents.
    * Start the sender, and make sure the dropped events have been removed and that
    * those events are not sent to LN.
@@ -627,7 +627,7 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
         vm2.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 10000));
 
     // start sender on site-ny
-    setMustQueueDroppedEventsInSenderInVMsAsync("ny", true, vm2, vm4);
+    setAllInstancesStoppedInSenderInVMsAsync("ny", false, vm2, vm4);
     startSenderInVMsAsync("ny", vm2, vm4);
 
     inv.join();
@@ -644,12 +644,12 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
     // vm2.invoke(() -> stopSender("ny"));
     // vm4.invoke(() -> stopSender("ny"));
     stopSenderInVMsAsync("ny", vm2, vm4);
-    setMustQueueDroppedEventsInSenderInVMsAsync("ny", false, vm2, vm4);
+    setAllInstancesStoppedInSenderInVMsAsync("ny", true, vm2, vm4);
 
     inv = vm2.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 10000));
 
     // start sender on site-ny
-    setMustQueueDroppedEventsInSenderInVMsAsync("ny", true, vm2, vm4);
+    setAllInstancesStoppedInSenderInVMsAsync("ny", false, vm2, vm4);
     startSenderInVMsAsync("ny", vm4, vm2);
 
     inv.join();

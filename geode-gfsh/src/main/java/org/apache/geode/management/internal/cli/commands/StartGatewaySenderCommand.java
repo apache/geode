@@ -167,7 +167,7 @@ public class StartGatewaySenderCommand extends GfshCommand {
   private List<CliFunctionResult> setNotAllGatewaySenderInstancesStopped(
       Set<DistributedMember> dsMembers, String senderId) {
 
-    Object[] arguments = {new Boolean(false), senderId};
+    Object[] arguments = {senderId, new Boolean(false)};
     List<CliFunctionResult> resultsList =
         executeAndGetFunctionResult(GatewaySenderManageFunction.INSTANCE, arguments, dsMembers);
 

@@ -21,9 +21,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.internal.cache.execute.InternalFunction;
-import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 
 public class GatewaySenderManageFunction implements InternalFunction {
@@ -32,7 +30,6 @@ public class GatewaySenderManageFunction implements InternalFunction {
 
   @Immutable
   public static final GatewaySenderManageFunction INSTANCE = new GatewaySenderManageFunction();
-
   private static final String ID = GatewaySenderManageFunction.class.getName();
 
   @Override
@@ -40,12 +37,10 @@ public class GatewaySenderManageFunction implements InternalFunction {
     return true;
   }
 
-
   /**
-   * This function is used to report all the gateway sender instances for a given sender
-   * if all intances are stopped. In order to do so, it invokes the setMustQueueDroppedEvents()
-   * method
-   * on every gateway sender instance for the gateway sender passed as a parameter.
+   * This function is used to report to each gateway sender instance for a given sender
+   * if all intances are stopped. In order to do so, it invokes the setAllInstancesStopped()
+   * method on every gateway sender instance for the gateway sender passed as a parameter.
    * The function requires an Object[] as context.getArguments() in which
    * - the first parameter must be a Boolean stating of all gateway sender instances are stopped
    * - the second parameter must be a String containing the name of the sender.
@@ -54,36 +49,15 @@ public class GatewaySenderManageFunction implements InternalFunction {
   public void execute(FunctionContext context) {
     String memberName = context.getMemberName();
     try {
-      Object[] arguments;
-
-      Boolean stop = getStopFromArguments(context.getArguments());
-      if (stop == null) {
-        context.getResultSender().lastResult(new CliFunctionResult("", false,
-            "Wrong arguments passed"));
-        return;
-      }
-      String senderId = getSenderIdFromArguments(context.getArguments());
-      if (senderId == null) {
-        context.getResultSender().lastResult(new CliFunctionResult("", false,
-            "Wrong arguments passed"));
-        return;
-      }
-
+      Object[] arguments = (Object[]) context.getArguments();
+      String senderId = (String) arguments[0];
+      Boolean stop = (Boolean) arguments[1];
       Cache cache = context.getCache();
       GatewaySender sender = cache.getGatewaySender(senderId);
-
-      if (sender == null) {
-        context.getResultSender().lastResult(new CliFunctionResult(memberName, false,
-            String.format("Sender '%s' does not exist", senderId)));
-        return;
-      }
-
-      sender.setMustQueueDroppedEvents(!stop);
-      XmlEntity xmlEntity = new XmlEntity(CacheXml.GATEWAY_SENDER, "name", senderId);
-      context.getResultSender().lastResult(new CliFunctionResult(memberName, xmlEntity,
+      sender.setAllInstancesStopped(stop);
+      context.getResultSender().lastResult(new CliFunctionResult(memberName,
           String.format("Set mustQueueTempDroppedEvents to '%b', for Sender '%s'", !stop,
               senderId)));
-
     } catch (IllegalStateException ex) {
       context.getResultSender()
           .lastResult(new CliFunctionResult(memberName, false, ex.getMessage()));
@@ -106,43 +80,5 @@ public class GatewaySenderManageFunction implements InternalFunction {
   @Override
   public boolean isHA() {
     return false;
-  }
-
-  private Object[] getArrayArguments(Object arguments) {
-    if (arguments == null || !(arguments instanceof Object[])) {
-      return null;
-    }
-    Object[] arrayArguments = (Object[]) arguments;
-
-    if (arrayArguments.length < 2) {
-      return null;
-    }
-    return arrayArguments;
-  }
-
-  private Boolean getStopFromArguments(Object arguments) {
-    Object[] arrayArguments = getArrayArguments(arguments);
-
-    if (arrayArguments == null) {
-      return null;
-    }
-
-    if (!(arrayArguments[0] instanceof Boolean)) {
-      return null;
-    }
-    return (Boolean) arrayArguments[0];
-  }
-
-  private String getSenderIdFromArguments(Object arguments) {
-    Object[] arrayArguments = getArrayArguments(arguments);
-
-    if (arrayArguments == null) {
-      return null;
-    }
-
-    if (!(arrayArguments[1] instanceof String)) {
-      return null;
-    }
-    return (String) arrayArguments[1];
   }
 }

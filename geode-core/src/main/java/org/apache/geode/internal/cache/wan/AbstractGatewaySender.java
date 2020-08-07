@@ -181,7 +181,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   protected volatile ConcurrentLinkedQueue<EntryEventImpl> tmpDroppedEvents =
       new ConcurrentLinkedQueue<>();
 
-  private volatile boolean mustQueueDroppedEvents = true;
+  private volatile boolean allInstancesStopped = false;
 
   /**
    * The number of seconds to wait before stopping the GatewaySender. Default is 0 seconds.
@@ -259,7 +259,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     this.alertThreshold = attrs.getAlertThreshold();
     this.manualStart = attrs.isManualStart();
     if (manualStart) {
-      mustQueueDroppedEvents = false;
+      allInstancesStopped = true;
     }
     this.isParallel = attrs.isParallel();
     this.groupTransactionEvents = attrs.mustGroupTransactionEvents();
@@ -917,13 +917,13 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   }
 
   @Override
-  public boolean mustQueueDroppedEvents() {
-    return mustQueueDroppedEvents;
+  public boolean allInstancesStopped() {
+    return allInstancesStopped;
   }
 
   @Override
-  public void setMustQueueDroppedEvents(boolean mustQueueDroppedEvents) {
-    this.mustQueueDroppedEvents = mustQueueDroppedEvents;
+  public void setAllInstancesStopped(boolean allInstancesStopped) {
+    this.allInstancesStopped = allInstancesStopped;
   }
 
   @Override
@@ -1049,7 +1049,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
       // If this gateway is not running, return
       if (!isRunning()) {
-        if (isPrimary() && mustQueueDroppedEvents()) {
+        if (isPrimary() && !allInstancesStopped()) {
           tmpDroppedEvents.add(clonedEvent);
           if (isDebugEnabled) {
             logger.debug("add to tmpDroppedEvents for evnet {}", clonedEvent);

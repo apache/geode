@@ -1709,12 +1709,12 @@ public class WANTestBase extends DistributedTestCase {
     }
   }
 
-  public static void setMustQueueDroppedEventsInSenderInVMsAsync(String senderId,
-      boolean mustQueueDroppedEvents, VM... vms) {
+  public static void setAllInstancesStoppedInSenderInVMsAsync(String senderId,
+      boolean allInstancesStopped, VM... vms) {
     List<AsyncInvocation> tasks = new LinkedList<>();
     for (VM vm : vms) {
       tasks.add(vm.invokeAsync(
-          () -> getSender(senderId).setMustQueueDroppedEvents(mustQueueDroppedEvents)));
+          () -> getSender(senderId).setAllInstancesStopped(allInstancesStopped)));
     }
     for (AsyncInvocation invocation : tasks) {
       try {
