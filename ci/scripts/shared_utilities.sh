@@ -75,3 +75,30 @@ get-full-version() {
   (>&2 echo "Full product VERSION is ${FULL_PRODUCT_VERSION}")
   echo ${FULL_PRODUCT_VERSION}
 }
+
+is_source_from_pr_testable() {
+  local base_dir=$(git rev-parse --show-toplevel)
+  local github_pr_dir="${base_dir}/.git/resource"
+  pushd ${base_dir} 2>&1 >> /dev/null
+    local return_code=0
+    if [ -d "${github_pr_dir}" ]; then
+      # Modify this path list with directories to exclude
+      local exclude_dirs="ci dev-tools etc geode-book geode-docs"
+      for d in $(echo ${exclude_dirs}); do
+        local exclude_pathspec="${exclude_pathspec} :(exclude,glob)${d}/**"
+      done
+      pushd ${base_dir} &> /dev/null
+        local files=$(git diff --name-only $(cat "${github_pr_dir}/base_sha") $(cat "${github_pr_dir}/head_sha") -- . $(echo ${exclude_pathspec}))
+      popd &> /dev/null
+      if [[ -z "${files}" ]]; then
+        >&2 echo "Code changes are from CI only"
+        return_code=1
+      else
+        >&2 echo "real code change here!"
+      fi
+    else
+      >&2 echo "repo is not from a PR"
+    fi
+  popd 2>&1 >> /dev/null
+  return ${return_code}
+}

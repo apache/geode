@@ -358,6 +358,7 @@ jobs:
             path: geode-ci/ci/scripts/rsync_code_down.sh
           inputs:
           - name: geode-ci
+          - name: geode
           - name: instance-data
           outputs:
           - name: geode-results
@@ -379,6 +380,7 @@ jobs:
               run:
                 path: geode-ci/ci/scripts/archive_results.sh
               inputs:
+              - name: geode
               - name: concourse-metadata-resource
               - name: geode-ci
               - name: geode-build-version
@@ -391,6 +393,7 @@ jobs:
               run:
                 path: geode-ci/ci/scripts/delete_instance.sh
               inputs:
+              - name: geode
               - name: geode-ci
               - name: instance-data
             timeout: 1h
@@ -605,6 +608,7 @@ jobs:
           run:
             path: geode-ci/ci/scripts/delete_instance.sh
           inputs:
+          - name: geode
           - name: geode-ci
           - name: instance-data
         timeout: 1h
@@ -699,6 +703,7 @@ jobs:
               run:
                 path: geode-ci/ci/scripts/rsync_code_down.sh
               inputs:
+              - name: geode
               - name: geode-ci
               - name: instance-data-{{java_test_version.name}}
                 path: instance-data
@@ -723,6 +728,7 @@ jobs:
                   run:
                     path: geode-ci/ci/scripts/archive_results.sh
                   inputs:
+                  - name: geode
                   - name: concourse-metadata-resource
                   - name: geode-ci
                   - name: geode-build-version
@@ -736,6 +742,7 @@ jobs:
                   run:
                     path: geode-ci/ci/scripts/delete_instance.sh
                   inputs:
+                  - name: geode
                   - name: geode-ci
                   - name: instance-data-{{java_test_version.name}}
                     path: instance-data

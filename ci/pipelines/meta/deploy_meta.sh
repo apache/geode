@@ -130,6 +130,8 @@ YML
     echo "Target ${FLY_TARGET} already exists."
   fi
 
+  FLY=${FLY:-$(which fly)}
+
   set -e
   if [[ ${UPSTREAM_FORK} != "apache" ]]; then
     ${FLY} -t ${FLY_TARGET} status || \

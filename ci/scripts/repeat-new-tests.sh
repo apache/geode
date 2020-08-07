@@ -27,6 +27,12 @@ while [[ -h "$SOURCE" ]]; do # resolve $SOURCE until the file is no longer a sym
 done
 SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
+. ${SCRIPTDIR}/shared_utilities.sh
+
+pushd geode 2>&1 >> /dev/null
+  is_source_from_pr_testable || exit 0
+popd 2>&1 >> /dev/null
+
 function changes_for_path() {
   pushd geode >> /dev/null
     local path="$1" # only expand once in the line below

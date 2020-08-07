@@ -50,7 +50,10 @@ fi
 
 if [[ -d geode ]]; then
   pushd geode
-  GEODE_SHA=$(git rev-parse --verify HEAD)
+    . ${SCRIPTDIR}/shared_utilities.sh
+    is_source_from_pr_testable || exit 0
+
+    GEODE_SHA=$(git rev-parse --verify HEAD)
   popd
 else
   GEODE_SHA="unknown"
