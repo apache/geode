@@ -2479,7 +2479,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         logger.warn("Error stopping service " + service, t);
       }
     }
-    services.clear();
   }
 
   private void closeOffHeapEvictor() {

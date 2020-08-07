@@ -130,6 +130,7 @@ public class NettyRedisServer {
       closeFuture = serverChannel.closeFuture();
     }
     workerGroup.shutdownGracefully();
+    subscriberGroup.shutdownGracefully();
     Future<?> bossFuture = selectorGroup.shutdownGracefully();
     if (serverChannel != null) {
       serverChannel.close();
