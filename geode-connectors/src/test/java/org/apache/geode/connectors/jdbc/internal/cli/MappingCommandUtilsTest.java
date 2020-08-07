@@ -24,9 +24,12 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheConfig.AsyncEventQueue;
 import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.cache.configuration.RegionAttributesDataPolicy;
+import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
@@ -40,12 +43,14 @@ public class MappingCommandUtilsTest {
   ConfigurationPersistenceService configurationPersistenceService;
   CacheConfig cacheConfig;
   RegionConfig regionConfig;
+  RegionAttributesType regionAttributesType;
 
   @Before
   public void setup() {
     configurationPersistenceService = mock(ConfigurationPersistenceService.class);
     cacheConfig = mock(CacheConfig.class);
     regionConfig = mock(RegionConfig.class);
+    regionAttributesType = mock(RegionAttributesType.class);
   }
 
   @Test
@@ -130,6 +135,62 @@ public class MappingCommandUtilsTest {
     when(cacheConfig.getAsyncEventQueues()).thenReturn(asyncEventQueues);
 
     boolean result = MappingCommandUtils.isMappingSynchronous(cacheConfig, regionConfig);
+
+    assertThat(result).isEqualTo(false);
+  }
+
+  @Test
+  public void testIsPartitionWithPartitionDataPolicyReturnsTrue() {
+    when(regionAttributesType.getDataPolicy()).thenReturn(RegionAttributesDataPolicy.PARTITION);
+
+    boolean result = MappingCommandUtils.isPartition(regionAttributesType);
+
+    assertThat(result).isEqualTo(true);
+  }
+
+  @Test
+  public void testIsPartitionWithPersistentPartitionDataPolicyReturnsTrue() {
+    when(regionAttributesType.getDataPolicy())
+        .thenReturn(RegionAttributesDataPolicy.PERSISTENT_PARTITION);
+
+    boolean result = MappingCommandUtils.isPartition(regionAttributesType);
+
+    assertThat(result).isEqualTo(true);
+  }
+
+  @Test
+  public void testIsPartitionWithPersistentPartitionRefidReturnsTrue() {
+    when(regionAttributesType.getRefid()).thenReturn(RegionShortcut.PARTITION.name());
+
+    boolean result = MappingCommandUtils.isPartition(regionAttributesType);
+
+    assertThat(result).isEqualTo(true);
+  }
+
+  @Test
+  public void testIsPartitionWithLocalRefidReturnsFalse() {
+    when(regionAttributesType.getRefid()).thenReturn(RegionShortcut.LOCAL.name());
+
+    boolean result = MappingCommandUtils.isPartition(regionAttributesType);
+
+    assertThat(result).isEqualTo(false);
+  }
+
+  @Test
+  public void testIsPartitionWithDataPolicyAndRefidIsNullReturnsFalse() {
+    when(regionAttributesType.getDataPolicy()).thenReturn(null);
+    when(regionAttributesType.getRefid()).thenReturn(null);
+
+    boolean result = MappingCommandUtils.isPartition(regionAttributesType);
+
+    assertThat(result).isEqualTo(false);
+  }
+
+  @Test
+  public void testIsPartitionWithReplicateDataPolicyReturnsFalse() {
+    when(regionAttributesType.getDataPolicy()).thenReturn(RegionAttributesDataPolicy.REPLICATE);
+
+    boolean result = MappingCommandUtils.isPartition(regionAttributesType);
 
     assertThat(result).isEqualTo(false);
   }

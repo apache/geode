@@ -20,6 +20,7 @@ import static org.apache.geode.cache.Region.SEPARATOR_CHAR;
 
 import java.util.ArrayList;
 
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionAttributesDataPolicy;
@@ -98,6 +99,16 @@ public class MappingCommandUtils {
     } else {
       return false;
     }
+  }
+
+  public static boolean isPartition(RegionAttributesType attributesType) {
+    boolean isPartitioned = false;
+    if (attributesType.getDataPolicy() != null) {
+      isPartitioned = attributesType.getDataPolicy().isPartition();
+    } else if (attributesType.getRefid() != null) {
+      isPartitioned = RegionShortcut.valueOf(attributesType.getRefid()).isPartition();
+    }
+    return isPartitioned;
   }
 
   public static String createAsyncEventQueueName(String regionPath) {
