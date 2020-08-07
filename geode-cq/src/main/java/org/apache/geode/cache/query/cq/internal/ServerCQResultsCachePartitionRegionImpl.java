@@ -127,6 +127,11 @@ class ServerCQResultsCachePartitionRegionImpl implements ServerCQResultsCache {
   }
 
   @Override
+  public boolean isKeyDestroyed(Object key) {
+    return (cqResultKeys.get(key) == Token.DESTROYED);
+  }
+
+  @Override
   public void clear() {
     cqResultKeys.clear();
   }

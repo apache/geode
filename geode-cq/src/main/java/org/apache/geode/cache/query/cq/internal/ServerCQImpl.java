@@ -333,6 +333,14 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
     return serverCQResultsCache.isOldValueRequiredForQueryProcessing(key);
   }
 
+  @Override
+  public boolean isKeyDestroyed(Object key) {
+    if (!serverCQResultsCache.contains(key)) {
+      return false;
+    }
+    return serverCQResultsCache.isKeyDestroyed(key);
+  }
+
   /**
    * Closes the Query. On Client side, sends the cq close request to server. On Server side, takes
    * care of repository cleanup.

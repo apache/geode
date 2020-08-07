@@ -77,6 +77,11 @@ public interface ServerCQ extends InternalCqQuery {
   boolean isOldValueRequiredForQueryProcessing(Object key);
 
   /**
+   * Returns true if key is in destroy token mode.
+   */
+  boolean isKeyDestroyed(Object key);
+
+  /**
    * Closes the Query. On Client side, sends the cq close request to server. On Server side, takes
    * care of repository cleanup.
    *
