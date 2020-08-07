@@ -255,8 +255,6 @@ public interface GatewaySenderMXBean {
    */
   boolean isParallel();
 
-  boolean mustGroupTransactionEvents();
-
   /**
    * Returns the host and port information of GatewayReceiver to which this gateway sender is
    * connected.
@@ -273,8 +271,6 @@ public interface GatewaySenderMXBean {
    */
   int getEventsExceedingAlertThreshold();
 
-  /**
-   * Tells the GatewaySender to queue or not queue dropped events while stopped.
-   */
-  void setMustQueueDroppedEvents(boolean mustQueueDroppedEvents);
+
+
 }

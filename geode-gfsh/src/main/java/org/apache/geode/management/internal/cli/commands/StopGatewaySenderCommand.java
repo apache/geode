@@ -20,6 +20,8 @@ import java.util.Set;
 
 import javax.management.ObjectName;
 
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
@@ -41,7 +43,7 @@ import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class StopGatewaySenderCommand extends GfshCommand {
+public class StopGatewaySenderCommand extends SingleGfshCommand {
   private static final Logger logger = LogService.getLogger();
 
   @CliCommand(value = CliStrings.STOP_GATEWAYSENDER, help = CliStrings.STOP_GATEWAYSENDER__HELP)
@@ -119,5 +121,11 @@ public class StopGatewaySenderCommand extends GfshCommand {
 
     logger.info("resultList after calling setAllGatewaySenderInstancesStopped(): {}", resultsList);
     return resultsList;
+  }
+
+  @Override
+  public boolean updateConfigForGroup(String group, CacheConfig config, Object configObject) {
+    // What should I do here?
+    return false;
   }
 }

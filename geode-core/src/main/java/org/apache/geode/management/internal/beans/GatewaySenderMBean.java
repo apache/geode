@@ -215,11 +215,6 @@ public class GatewaySenderMBean extends NotificationBroadcasterSupport
   }
 
   @Override
-  public boolean mustGroupTransactionEvents() {
-    return bridge.mustGroupTransactionEvents();
-  }
-
-  @Override
   public String getGatewayReceiver() {
     return bridge.getGatewayReceiver();
   }
@@ -241,9 +236,4 @@ public class GatewaySenderMBean extends NotificationBroadcasterSupport
   public int getEventsExceedingAlertThreshold() {
     return bridge.getEventsExceedingAlertThreshold();
   }
-
-  @Override
-  public void setMustQueueDroppedEvents(boolean mustQueueDroppedEvents) {
-    bridge.setMustQueueDroppedEvents(mustQueueDroppedEvents);
-  };
 }
