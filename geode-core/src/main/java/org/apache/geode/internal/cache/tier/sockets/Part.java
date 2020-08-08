@@ -401,11 +401,8 @@ public class Part {
         }
       } else {
         HeapDataOutputStream hdos = (HeapDataOutputStream) this.part;
-        try {
-          hdos.sendTo(out, buf);
-        } finally {
-          hdos.rewind();
-        }
+        hdos.sendTo(out, buf);
+        hdos.rewind();
       }
     }
   }
@@ -434,11 +431,8 @@ public class Part {
         }
       } else {
         HeapDataOutputStream hdos = (HeapDataOutputStream) this.part;
-        try {
-          hdos.sendTo(buf);
-        } finally {
-          hdos.rewind();
-        }
+        hdos.sendTo(buf);
+        hdos.rewind();
       }
     }
   }
@@ -503,11 +497,8 @@ public class Part {
         }
       } else {
         HeapDataOutputStream hdos = (HeapDataOutputStream) this.part;
-        try {
-          hdos.sendTo(sc, buf);
-        } finally {
-          hdos.rewind();
-        }
+        hdos.sendTo(sc, buf);
+        hdos.rewind();
       }
     }
   }
