@@ -30,9 +30,7 @@ done
 SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 source ${SCRIPTDIR}/shared_utilities.sh
 
-pushd geode 2>&1 >> /dev/null
-  is_source_from_pr_testable || exit 0
-popd 2>&1 >> /dev/null
+is_source_from_pr_testable "geode" "$(get_geode_pr_exclusion_dirs)" || exit 0
 
 if [[ -z "${GRADLE_TASK}" ]]; then
   echo "GRADLE_TASK must be set. exiting..."
