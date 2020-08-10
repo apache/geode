@@ -26,6 +26,8 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Operation;
@@ -35,10 +37,12 @@ import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.jndi.JNDIInvoker;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.PdxInstance;
 
 @Experimental
 public class SqlHandler {
+  private static final Logger logger = LogService.getLogger();
   private final InternalCache cache;
   private final RegionMapping regionMapping;
   private final DataSource dataSource;
@@ -214,6 +218,7 @@ public class SqlHandler {
       EntryColumnData entryColumnData =
           getEntryColumnData(tableMetaData, key, value, operation);
       int updateCount = 0;
+      SQLException firstSqlEx = null;
       try (PreparedStatement statement =
           getPreparedStatement(connection, tableMetaData, entryColumnData, operation)) {
         updateCount = executeWriteStatement(statement, entryColumnData, operation);
@@ -221,6 +226,7 @@ public class SqlHandler {
         if (operation.isDestroy()) {
           throw e;
         }
+        firstSqlEx = e;
       }
 
       // Destroy action not guaranteed to modify any database rows
@@ -234,6 +240,10 @@ public class SqlHandler {
             getPreparedStatement(connection, tableMetaData, entryColumnData, upsertOp)) {
           updateCount = executeWriteStatement(upsertStatement, entryColumnData, operation);
         }
+      }
+
+      if (updateCount <= 0 && firstSqlEx != null) {
+        throw firstSqlEx;
       }
 
       assert updateCount == 1 : "expected 1 but updateCount was: " + updateCount;
@@ -255,6 +265,10 @@ public class SqlHandler {
       TableMetaDataView tableMetaData, EntryColumnData entryColumnData, Operation operation)
       throws SQLException {
     String sqlStr = getSqlString(tableMetaData, entryColumnData, operation);
+    if (logger.isDebugEnabled()) {
+      logger.debug("SQL:{} key:{} value:{}", sqlStr, entryColumnData.getEntryKeyColumnData(),
+          entryColumnData.getEntryValueColumnData());
+    }
     return connection.prepareStatement(sqlStr);
   }
 
