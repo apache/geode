@@ -171,7 +171,11 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       return;
     }
     channel.deregister().addListener((ChannelFutureListener) future -> {
-      newGroup.register(channel).sync();
+      synchronized (channel) {
+        if (!channel.isRegistered()) {
+          newGroup.register(channel).sync();
+        }
+      }
       callback.run();
     });
   }
