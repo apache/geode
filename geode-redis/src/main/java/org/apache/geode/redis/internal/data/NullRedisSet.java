@@ -119,8 +119,7 @@ class NullRedisSet extends RedisSet {
   private int doSetOpWhileLocked(SetOp setOp, CommandHelper helper,
       ByteArrayWrapper destination,
       ArrayList<Set<ByteArrayWrapper>> nonDestinationSets) {
-    RedisSet destinationSet = helper.getRedisSet(destination);
-    Set<ByteArrayWrapper> result = computeSetOp(setOp, nonDestinationSets, destinationSet);
+    Set<ByteArrayWrapper> result = computeSetOp(setOp, nonDestinationSets, helper, destination);
     if (result.isEmpty()) {
       helper.getRegion().remove(destination);
       return 0;
@@ -132,14 +131,15 @@ class NullRedisSet extends RedisSet {
 
   private Set<ByteArrayWrapper> computeSetOp(SetOp setOp,
       ArrayList<Set<ByteArrayWrapper>> nonDestinationSets,
-      RedisSet redisSet) {
+      CommandHelper helper,
+      ByteArrayWrapper destination) {
     Set<ByteArrayWrapper> result = null;
     if (nonDestinationSets.isEmpty()) {
       return emptySet();
     }
     for (Set<ByteArrayWrapper> set : nonDestinationSets) {
       if (set == null) {
-        set = redisSet.smembers();
+        set = helper.getRedisSet(destination).smembers();
       }
       if (result == null) {
         result = set;
