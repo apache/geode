@@ -57,7 +57,7 @@ Use either cache handlers or membership handlers in any single application. Do n
 <tr>
 <td><code class="ph codeph">CacheWriter</code></td>
 <td><code class="ph codeph">RegionEvent</code>, <code class="ph codeph">EntryEvent</code></td>
-<td>Receives events for <em>pending</em> changes to the region and its data entries in this member or one of its peers. Has the ability to abort the operations in question. Extends <code class="ph codeph">CacheCallback</code> interface. Installed in region. Receives events from anywhere in the distributed region, so you can install one in one member for the entire distributed region. Receives events only in primary data store in partitioned regions, so install one in every data store.</td>
+<td>Receives events for <em>pending</em> changes to the region and its data entries in this member or one of its peers. Has the ability to cancel the operations in question. Extends <code class="ph codeph">CacheCallback</code> interface. Installed in region. Receives events from anywhere in the distributed region, so you can install one in one member for the entire distributed region. Receives events only in primary data store in partitioned regions, so install one in every data store.</td>
 </tr>
 <tr>
 <td><code class="ph codeph">ClientMembershipListener</code></td>
@@ -97,7 +97,7 @@ Extends <code class="ph codeph">CacheCallback</code> interface. Installed in cac
 <tr>
 <td><code class="ph codeph">TransactionWriter</code></td>
 <td><code class="ph codeph">TransactionEvent</code> with embedded list of <code class="ph codeph">EntryEvent</code></td>
-<td>Receives events for <em>pending</em> transaction commits. Has the ability to abort the transaction. Extends <code class="ph codeph">CacheCallback</code> interface. Installed in cache using transaction manager. At most one writer is called per transaction. Install a writer in every transaction host.</td>
+<td>Receives events for <em>pending</em> transaction commits. Has the ability to cancel the transaction. Extends <code class="ph codeph">CacheCallback</code> interface. Installed in cache using transaction manager. At most one writer is called per transaction. Install a writer in every transaction host.</td>
 </tr>
 <tr>
 <td><code class="ph codeph">UniversalMembershipListenerAdapter</code>

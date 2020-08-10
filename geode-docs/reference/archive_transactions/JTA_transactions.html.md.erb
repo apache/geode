@@ -83,7 +83,7 @@ This figure shows the high-level operation of a JTA global transaction whose res
 An externally coordinated JTA global transaction is run in the following manner:
 
 1.  Each region operation looks up for presence of a global transaction. If one is detected, then a <%=vars.product_name%> transaction is started automatically, and we register a `javax.transaction.Synchronization` callback with the external JTA transaction manager.
-2.  At transaction commit, <%=vars.product_name%> gets a `beforeCommit()` callback from the external JTA transaction manager. <%=vars.product_name%> does all locking and conflict detection at this time. If this fails, an exception is thrown back to JTA transaction manager, which then aborts the transaction.
+2.  At transaction commit, <%=vars.product_name%> gets a `beforeCommit()` callback from the external JTA transaction manager. <%=vars.product_name%> does all locking and conflict detection at this time. If this fails, an exception is thrown back to JTA transaction manager, which then cancels the transaction.
 3.  After a successful `beforeCommit()`callback, JTA transaction manager asks other data sources to commit their transaction.
 4.  <%=vars.product_name%> then gets a `afterCommit()` callback in which changes are applied to the cache and distributed to other members.
 

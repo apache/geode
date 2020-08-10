@@ -108,7 +108,7 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 
 ## <a id="cc-transaction-writer" class="no-quick-link"></a>&lt;transaction-writer&gt;
 
-When you commit a transaction, a TransactionWriter can perform additional tasks, including aborting the transaction.
+When you commit a transaction, a TransactionWriter can perform additional tasks, including cancelling the transaction.
 
 Specify the Java class and its initialization parameters with the `<class-name>` and `<parameter>` sub-elements. See [&lt;class-name&gt; and &lt;parameter&gt;](cache_xml.html#class-name_parameter).
 
@@ -1473,7 +1473,7 @@ For partitioned regions, if you want to have a cache loader, install an instance
 
 ## <a id="cc-id_k3w_3qw_bm" class="no-quick-link"></a>&lt;cache-writer&gt;
 
-An event-handler plug-in that allows you to receive before-event notification for changes to the region and its entries. It also has the ability to abort events. At most, one cache writer can be defined in each member for the region. A cache writer may be invoked remotely from other members that have the region defined.
+An event-handler plug-in that allows you to receive before-event notification for changes to the region and its entries. It also has the ability to cancel events. At most, one cache writer can be defined in each member for the region. A cache writer may be invoked remotely from other members that have the region defined.
 
 **API:** `org.apache.geode.cache.RegionFactory.setCacheWriter`
 

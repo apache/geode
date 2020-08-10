@@ -1358,7 +1358,7 @@ These statistics track status on partitioned region data copies. The primary sta
 <b>Note:</b>
 <p>If this value remains low, then partitioned region data is at risk and may be lost if another data store is lost.</p>
 </div>
-A healthy partitioned region will maintain a value equal to configuredRedundantCopies. The user should add one or more data stores if the value remains low. High-availability may result in a brief fluctuation, but it should return to a value equal to configuredRedundantCopies if there are sufficient data stores present (that is, killing one data store will cause its data to fail over to another data store).</td>
+A healthy partitioned region will maintain a value equal to configuredRedundantCopies. The user should add one or more data stores if the value remains low. High-availability may result in a brief fluctuation, but it should return to a value equal to configuredRedundantCopies if there are sufficient data stores present (that is, terminating one data store will cause its data to fail over to another data store).</td>
 </tr>
 <tr>
 <td><code class="ph codeph">configuredRedundantCopies</code></td>
@@ -1371,7 +1371,7 @@ A healthy partitioned region will maintain a value equal to configuredRedundantC
 <b>Note:</b>
 <p>If this value remains above zero, then partitioned region data is at risk and may be lost if another data store is lost.</p>
 </div>
-This value will be above zero whenever actualRedundantCopies is less than configuredRedundantCopies. A healthy partitioned region will maintain a value of zero. The user should add one or more datstores if this value remains above zero. High-availability may result in a brief fluctuation, but it should return to zero if there are sufficient data stores present (that is, killing one data store will cause its data to fail over to another data store).</td>
+This value will be above zero whenever actualRedundantCopies is less than configuredRedundantCopies. A healthy partitioned region will maintain a value of zero. The user should add one or more datstores if this value remains above zero. High-availability may result in a brief fluctuation, but it should return to zero if there are sufficient data stores present (that is, terminating one data store will cause its data to fail over to another data store).</td>
 </tr>
 </tbody>
 </table>

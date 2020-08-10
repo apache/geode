@@ -36,7 +36,7 @@ The figure shows the following process:
 4.  The server member distributes the event to its peers and also places it into the subscription queue for Client2 because that client has previously registered interest in entry X.
 5.  The event for entry X is sent out of the queue to Client2. When this happens is indeterminate.
 
-Client to server distribution uses the client pool connections to send updates to the server. Any region with a named pool automatically forwards updates to the server. Client cache modifications pass first through a client `CacheWriter`, if one is defined, then to the server through the client pool, and then finally to the client cache itself. A cache writer, either on the client or server side, may abort the operation.
+Client to server distribution uses the client pool connections to send updates to the server. Any region with a named pool automatically forwards updates to the server. Client cache modifications pass first through a client `CacheWriter`, if one is defined, then to the server through the client pool, and then finally to the client cache itself. A cache writer, either on the client or server side, may cancel the operation.
 
 | Change in Client Cache                              | Effect on Server Cache                                                                                    |
 |-----------------------------------------------------|-----------------------------------------------------------------------------------------------------------|

@@ -132,8 +132,8 @@ ordinary circumstances.
 Especially on systems with a small number of members,
 using a `kill` instead of a `gfsh stop` can cause the partition detection
 mechanism to place the system in an end state that will wait forever to
-reconnect to the killed server,
-and there will be no way to restart that killed server.
+reconnect to the terminated server,
+and there will be no way to restart that terminated server.
 If a `kill` command appears the only way to rid the system of a server,
 then `kill` *all* the processes of the cluster
 or use `kill -INT`, which will allow an orderly shutdown of the process. 
