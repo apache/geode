@@ -49,7 +49,9 @@ failCount=0
   --redis-port=6379 \
   --redis-bind-address=127.0.0.1
 
-./runtest --host 127.0.0.1 --port 6379 --single unit/type/set --single unit/expire
+./runtest --host 127.0.0.1 --port 6379 --single unit/type/set --single unit/expire \
+--single unit/type/hash --single unit/type/string --single unit/type/srandmember \
+--single unit/quit --single unit/pubsub
 
 ((failCount+=$?))
 
