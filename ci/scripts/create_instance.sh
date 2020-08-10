@@ -48,10 +48,11 @@ if [[ -z "${IMAGE_FAMILY_NAME}" ]]; then
   exit 1
 fi
 
+. ${SCRIPTDIR}/shared_utilities.sh
+is_source_from_pr_testable "geode" "$(get_geode_pr_exclusion_dirs)" || exit 0
+
 if [[ -d geode ]]; then
   pushd geode
-    . ${SCRIPTDIR}/shared_utilities.sh
-    is_source_from_pr_testable || exit 0
 
     GEODE_SHA=$(git rev-parse --verify HEAD)
   popd

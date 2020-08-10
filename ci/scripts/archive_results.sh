@@ -31,10 +31,7 @@ SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 source ${BASE_DIR}/concourse-metadata-resource/concourse_metadata
 source ${SCRIPTDIR}/shared_utilities.sh
-
-pushd geode 2>&1 >> /dev/null
-  is_source_from_pr_testable || exit 0
-popd 2>&1 >> /dev/null
+is_source_from_pr_testable "geode" "$(get_geode_pr_exclusion_dirs)" || exit 0
 
 BUILDROOT=$(pwd)
 DEST_DIR=${BUILDROOT}/geode-results
