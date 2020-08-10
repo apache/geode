@@ -139,7 +139,7 @@ For each member with persistent data, a full backup includes the following:
     -   `gemfire.properties`, including the properties with which the member was started.
     -   `cache.xml`, if used.
 
-    These configuration files are not automatically restored, to avoid interfering with more recent configurations. In particular, if these are extracted from a master `jar` file, copying the separate files into your working area can override the files in the `jar`. If you want to back up and restore these files, add them as custom `<backup>` elements.
+    These configuration files are not automatically restored, to avoid interfering with more recent configurations. In particular, if these are extracted from a primary `jar` file, copying the separate files into your working area can override the files in the `jar`. If you want to back up and restore these files, add them as custom `<backup>` elements.
 -   A restore script, called `restore.bat` on Windows, and called `restore.sh` on Linux. This script may later be used to do a restore. The script copies files back to their original locations.
 
 ## <a id="backup_restore_disk_store__section_59E23EEA4AB24374A45B99A8B44FD49B" class="no-quick-link"></a>What an Incremental Online Backup Saves
