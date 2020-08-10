@@ -89,17 +89,11 @@ public class PubSubDUnitTest {
     locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, "15000");
 
     locator = cluster.startLocatorVM(0, locatorProperties);
-    Properties props = new Properties();
-    props.setProperty("statistic-archive-file", "stats1.gfs");
-    server1 = cluster.startRedisVM(1, props, locator.getPort());
-    props.setProperty("statistic-archive-file", "stats2.gfs");
-    server2 = cluster.startRedisVM(2, props, locator.getPort());
-    props.setProperty("statistic-archive-file", "stats3.gfs");
-    server3 = cluster.startRedisVM(3, props, locator.getPort());
-    props.setProperty("statistic-archive-file", "stats4.gfs");
-    server4 = cluster.startRedisVM(4, props, locator.getPort());
-    props.setProperty("statistic-archive-file", "stats5.gfs");
-    server5 = cluster.startServerVM(5, props, locator.getPort());
+    server1 = cluster.startRedisVM(1, locator.getPort());
+    server2 = cluster.startRedisVM(2, locator.getPort());
+    server3 = cluster.startRedisVM(3, locator.getPort());
+    server4 = cluster.startRedisVM(4, locator.getPort());
+    server5 = cluster.startServerVM(5, locator.getPort());
 
     redisServerPort1 = cluster.getRedisPort(1);
     redisServerPort2 = cluster.getRedisPort(2);
