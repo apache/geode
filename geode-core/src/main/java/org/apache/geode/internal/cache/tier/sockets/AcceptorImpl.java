@@ -528,7 +528,9 @@ public class AcceptorImpl implements Acceptor, Runnable {
         }
         ServerSocketChannel channel = ServerSocketChannel.open();
         serverSock = channel.socket();
-        serverSock.setReuseAddress(true);
+        if (port != 0) { // Do not set reuse address for ephemeral ports.
+          serverSock.setReuseAddress(true);
+        }
 
         // Set the receive buffer size before binding the socket so that large
         // buffers will be allocated on accepted sockets (see

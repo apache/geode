@@ -217,7 +217,6 @@ public class TcpServer {
         logger.info("Locator was created at " + new Date());
         logger.info("Listening on port " + getPort() + " bound on address " + bind_address);
       }
-      srv_sock.setReuseAddress(true);
     }
   }
 

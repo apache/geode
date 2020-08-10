@@ -65,7 +65,9 @@ class SCClusterSocketCreator extends ClusterSocketCreatorImpl {
     }
     ServerSocketFactory ssf = coreSocketCreator.getSslContext().getServerSocketFactory();
     SSLServerSocket serverSocket = (SSLServerSocket) ssf.createServerSocket();
-    serverSocket.setReuseAddress(true);
+    if (nport != 0) { // Do not set reuse address for ephemeral ports.
+      serverSocket.setReuseAddress(true);
+    }
     // If necessary, set the receive buffer size before binding the socket so
     // that large buffers will be allocated on accepted sockets (see
     // java.net.ServerSocket.setReceiverBufferSize javadocs)

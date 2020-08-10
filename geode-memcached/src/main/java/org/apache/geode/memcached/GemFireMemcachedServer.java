@@ -179,7 +179,9 @@ public class GemFireMemcachedServer {
     ServerSocketChannel channel = ServerSocketChannel.open();
     final ServerSocket serverSocket = channel.socket();
     serverSocket.setReceiveBufferSize(getSocketBufferSize());
-    serverSocket.setReuseAddress(true);
+    if (serverPort != 0) { // Do not set reuse address for ephemeral ports.
+      serverSocket.setReuseAddress(true);
+    }
     serverSocket.bind(new InetSocketAddress(getBindAddress(), serverPort));
     logger.info("DHE: " + getClass() + ".createServerSocket() bound socket to port "
         + serverSocket.getLocalPort());

@@ -694,7 +694,9 @@ public class SocketCreator extends TcpSocketCreatorImpl {
     } else {
       printConfig();
       ServerSocket result = new TransportFilterServerSocket(transportFilters);
-      result.setReuseAddress(true);
+      if (nport != 0) { // Do not set reuse address for ephemeral ports.
+        result.setReuseAddress(true);
+      }
       // Set the receive buffer size before binding the socket so
       // that large buffers will be allocated on accepted sockets (see
       // java.net.ServerSocket.setReceiverBufferSize javadocs)
