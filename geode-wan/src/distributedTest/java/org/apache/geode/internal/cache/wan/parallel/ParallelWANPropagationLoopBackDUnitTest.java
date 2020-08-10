@@ -552,6 +552,7 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
     // tmpDroppedEvents is to make sure all senders' queues are drained
     vm2.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ny"));
     vm4.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ny"));
+
     // verify site-ny should not received events in tempDroppedEvents because all senders are down
     vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 100));
     vm5.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 100));
@@ -563,10 +564,10 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
    * Site-NY: dsid=1: senderId="ln": vm3, vm5
    * NY site's sender's manual-start=true
    * <p>
-   * Stop the sender in NY
-   * Make sure the events put from NY site will be added to tmpDroppedEvents.
+   * Stop the sender in LN
+   * Make sure the events put from LN site will be added to tmpDroppedEvents.
    * Start the sender, and make sure the dropped events have been removed and that
-   * those events are not sent to LN.
+   * those events are not sent to NY.
    */
   // TODO Should we keep this test case?
   @Test
@@ -602,34 +603,40 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
     vm5.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ln", 1, 100,
         isOffHeap()));
 
-    // start sender on site-ln
-
+    // start sender on site-ny
     startSenderInVMs("ny", vm2, vm4);
 
-    // start sender on site-ny
+    // start sender on site-ln
     startSenderInVMsAsync("ln", vm3, vm5);
 
-    // stop sender on site-ny
+    // stop sender on site-ln
     stopSenderInVMsAsync("ln", vm3, vm5);
 
-    // do next 100 puts on site-ny
+    // do next 100 puts on site-ln
     vm3.invoke(() -> WANTestBase.doPutsFrom(getTestMethodName() + "_PR", 0, 100));
 
-    // verify site-ny has 100 entries
+    // verify tmpDroppedEvents is 0 now at site-ln
+    vm3.invoke(() -> WANTestBase.verifyTmpDroppedEventSize("ln", 100));
+    vm5.invoke(() -> WANTestBase.verifyTmpDroppedEventSize("ln", 100));
+
+    // verify site-ln has 100 entries
     vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 100));
     vm5.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 100));
 
-    // start sender on site-ny
+    // start sender on site-ln
     startSenderInVMsAsync("ln", vm3, vm5);
 
-    // verify site-ln has not received the events from site-ny because they were dropped
+    // verify site-ny has not received the events from site-ny because they were dropped
     vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 0));
     vm4.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 0));
 
-    // verify tmpDroppedEvents is 0 now at site-ny
+    // verify tmpDroppedEvents is 0 now at site-ln
     vm3.invoke(() -> WANTestBase.verifyTmpDroppedEventSize("ln", 0));
     vm5.invoke(() -> WANTestBase.verifyTmpDroppedEventSize("ln", 0));
 
+    // tmpDroppedEvents is to make sure all senders' queues are drained
+    vm3.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
+    vm5.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
   }
 
   /**
@@ -643,7 +650,7 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
    * Make sure there are no events in tmpDroppedEvents and the queues are drained.
    */
   @Test
-  public void startedSenderShouldEventuallyDrainQueues()
+  public void startingSenderWhileReceivingEventsShouldQueueDroppedEventsAndEventuallyDrainQueues()
       throws Exception {
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(2));
     Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(1, lnPort));
@@ -691,8 +698,6 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
     vm4.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ny"));
 
     // stop sender on site-ny
-    // vm2.invoke(() -> stopSender("ny"));
-    // vm4.invoke(() -> stopSender("ny"));
     stopSenderInVMsAsync("ny", vm2, vm4);
 
     inv = vm2.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 10000));
