@@ -30,7 +30,11 @@ public abstract class AbstractSubscription implements Subscription {
   private static final Logger logger = LogService.getLogger();
   private final Client client;
   private final ExecutionHandlerContext context;
-  private final CountDownLatch readyForPublish = new CountDownLatch(1);
+
+  // Two things have to happen before we are ready to publish:
+  // 1 - we need to make sure the subscriber has switched EventLoopGroups
+  // 2 - the response to the SUBSCRIBE command has been submitted to the client
+  private final CountDownLatch readyForPublish = new CountDownLatch(2);
 
   AbstractSubscription(Client client, ExecutionHandlerContext context) {
     if (client == null) {

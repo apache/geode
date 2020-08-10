@@ -165,13 +165,14 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     return subscriberGroup;
   }
 
-  public void changeChannelEventLoopGroup(EventLoopGroup newGroup) {
+  public void changeChannelEventLoopGroup(EventLoopGroup newGroup, Runnable callback) {
     if (newGroup.equals(channel.eventLoop())) {
       // already registered with newGroup
       return;
     }
     channel.deregister().addListener((ChannelFutureListener) future -> {
       newGroup.register(channel).sync();
+      callback.run();
     });
   }
 

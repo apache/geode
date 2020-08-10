@@ -31,8 +31,6 @@ public class PsubscribeExecutor extends AbstractExecutor {
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
 
-    context.changeChannelEventLoopGroup(context.getSubscriberGroup());
-
     Collection<SubscribeResult> results = new ArrayList<>();
     for (int i = 1; i < command.getProcessedCommand().size(); i++) {
       byte[] patternBytes = command.getProcessedCommand().get(i);
@@ -50,14 +48,18 @@ public class PsubscribeExecutor extends AbstractExecutor {
       items.add(item);
     }
 
-    RedisResponse response = RedisResponse.flattenedArray(items);
-    response.setAfterWriteCallback(() -> {
+
+    Runnable callback = () -> {
       for (SubscribeResult result : results) {
         if (result.getSubscription() != null) {
           result.getSubscription().readyToPublish();
         }
       }
-    });
+    };
+
+    RedisResponse response = RedisResponse.flattenedArray(items);
+    response.setAfterWriteCallback(callback);
+    context.changeChannelEventLoopGroup(context.getSubscriberGroup(), callback);
 
     return response;
 
