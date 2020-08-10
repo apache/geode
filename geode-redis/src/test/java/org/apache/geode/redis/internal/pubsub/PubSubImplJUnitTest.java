@@ -50,6 +50,7 @@ public class PubSubImplJUnitTest {
         spy(new ChannelSubscription(deadClient,
             "sally".getBytes(), mockContext));
     subscription.readyToPublish();
+    subscription.readyToPublish();
 
     subscriptions.add(subscription);
 
