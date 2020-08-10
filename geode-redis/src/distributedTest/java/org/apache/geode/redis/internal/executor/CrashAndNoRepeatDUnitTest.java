@@ -135,8 +135,8 @@ public class CrashAndNoRepeatDUnitTest {
     AtomicBoolean running3 = new AtomicBoolean(true);
     AtomicBoolean running4 = new AtomicBoolean(false);
 
-    Runnable task1 = () -> appendPerformAndVerify(0, 20000, running1);
-    Runnable task2 = () -> appendPerformAndVerify(1, 20000, running2);
+    Runnable task1 = () -> appendPerformAndVerify(1, 20000, running1);
+    Runnable task2 = () -> appendPerformAndVerify(2, 20000, running2);
     Runnable task3 = () -> appendPerformAndVerify(3, 20000, running3);
     Runnable task4 = () -> appendPerformAndVerify(4, 1000, running4);
 
@@ -179,8 +179,8 @@ public class CrashAndNoRepeatDUnitTest {
     AtomicBoolean running3 = new AtomicBoolean(true);
     AtomicBoolean running4 = new AtomicBoolean(false);
 
-    Runnable task1 = () -> renamePerformAndVerify(0, 20000, running1);
-    Runnable task2 = () -> renamePerformAndVerify(1, 20000, running2);
+    Runnable task1 = () -> renamePerformAndVerify(1, 20000, running1);
+    Runnable task2 = () -> renamePerformAndVerify(2, 20000, running2);
     Runnable task3 = () -> renamePerformAndVerify(3, 20000, running3);
     Runnable task4 = () -> renamePerformAndVerify(4, 1000, running4);
 
@@ -274,6 +274,14 @@ public class CrashAndNoRepeatDUnitTest {
         iterationCount += 1;
       } catch (JedisConnectionException ex) {
         if (ex.getMessage().contains("Unexpected end of stream.")) {
+          if (!doWithRetry(() -> connect(jedisRef).get(key)).endsWith(appendString)) {
+            // give some time for the in-flight op to be done
+            try {
+              Thread.sleep(1000);
+            } catch (InterruptedException e) {
+              Thread.interrupted();
+            }
+          }
           if (doWithRetry(() -> connect(jedisRef).get(key)).endsWith(appendString)) {
             iterationCount += 1;
           }
