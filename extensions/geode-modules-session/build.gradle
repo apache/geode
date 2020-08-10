@@ -24,21 +24,24 @@ evaluationDependsOn(":geode-core")
 
 
 dependencies {
-  compile(platform(project(':boms:geode-all-bom')))
-  compile(project(':extensions:geode-modules-session-internal')) {
+  api(platform(project(':boms:geode-all-bom')))
+  implementation(project(':extensions:geode-modules-session-internal')) {
     exclude module: 'geode-modules'
   }
-  compile(project(':geode-core'))
+  implementation(project(':geode-core'))
+  implementation('javax.servlet:javax.servlet-api')
+  implementation('org.apache.tomcat:servlet-api:' + DependencyConstraints.get('tomcat6.version'))
+  implementation('org.slf4j:slf4j-api')
+  implementation('javax.servlet:javax.servlet-api')
+  implementation('org.apache.tomcat:servlet-api:' + DependencyConstraints.get('tomcat6.version'))
+  implementation('org.slf4j:slf4j-api')
+
+
   integrationTestImplementation(project(':extensions:geode-modules'))
   integrationTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
   integrationTestImplementation(project(':geode-logging'))
-
-  implementation('javax.servlet:javax.servlet-api')
-  implementation('org.apache.tomcat:servlet-api:' + DependencyConstraints.get('tomcat6.version'))
-  implementation('org.slf4j:slf4j-api')
-
   integrationTestImplementation('com.mockrunner:mockrunner-servlet') {
     exclude group: 'jboss'
     exclude group: 'xerces'
@@ -58,7 +61,6 @@ dependencies {
     // this version of httpunit contains very outdated xercesImpl
     exclude group: 'xerces'
   }
-  integrationTestImplementation('org.slf4j:slf4j-api')
 
   integrationTestRuntimeOnly('xerces:xercesImpl')
 }

@@ -21,22 +21,22 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
 
 dependencies {
-  compile(platform(project(':boms:geode-all-bom')))
+  api(platform(project(':boms:geode-all-bom')))
+  api(project(':geode-core'))
+  api(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
+
   implementation(project(':geode-logging'))
   implementation(project(':geode-serialization'))
   implementation(project(':geode-membership'))
   implementation(project(':geode-tcp-server'))
-  implementation(project(':geode-core'))
   implementation(project(':geode-gfsh'))
   implementation(project(':geode-log4j')) {
     exclude module: 'geode-core'
   }
 
-  compile(project(':geode-junit')) {
-    exclude module: 'geode-core'
-  }
-
-  implementation('com.jayway.jsonpath:json-path')
+  distributedTestImplementation 'com.jayway.jsonpath:json-path'
   implementation('org.apache.logging.log4j:log4j-api')
   implementation('org.apache.logging.log4j:log4j-core')
   implementation('commons-io:commons-io')
@@ -52,18 +52,17 @@ dependencies {
     ext.optional = true
   }
   implementation('com.google.guava:guava')
-  implementation('com.github.stefanbirkner:system-rules') {
-    exclude module: 'junit-dep'
-  }
 
   implementation('org.assertj:assertj-core')
   implementation('org.mockito:mockito-core')
   implementation('org.awaitility:awaitility')
-  implementation('pl.pragmatists:JUnitParams')
 
   implementation('junit:junit') {
     exclude module: 'hamcrest-core'
   }
+
+  testImplementation('pl.pragmatists:JUnitParams')
+
 
   distributedTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
 }

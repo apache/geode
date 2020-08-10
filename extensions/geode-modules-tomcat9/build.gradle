@@ -24,7 +24,7 @@ evaluationDependsOn(":geode-core")
 
 
 dependencies {
-  compile(platform(project(':boms:geode-all-bom')))
+  api(platform(project(':boms:geode-all-bom')))
   api(project(':extensions:geode-modules')) {
     exclude group: 'org.apache.tomcat'
   }
@@ -39,7 +39,6 @@ dependencies {
   implementation('org.apache.tomcat:tomcat-juli:' + DependencyConstraints.get('tomcat9.version'))
   implementation('javax.servlet:javax.servlet-api:4.0.1')
 
-  testImplementation('org.httpunit:httpunit')
   testImplementation('junit:junit')
   testImplementation('org.assertj:assertj-core')
   testImplementation('org.mockito:mockito-core')

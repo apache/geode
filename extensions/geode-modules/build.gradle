@@ -23,11 +23,12 @@ evaluationDependsOn(":geode-core")
 
 
 dependencies {
-  compile(platform(project(':boms:geode-all-bom')))
+  api(platform(project(':boms:geode-all-bom')))
+  api(project(':geode-core'))
+
   implementation(project(':geode-logging'))
   implementation(project(':geode-membership'))
   implementation(project(':geode-serialization'))
-  compile(project(':geode-core'))
   integrationTestImplementation(project(':extensions:geode-modules-test')) {
     exclude module: 'geode-modules'
   }

@@ -17,13 +17,28 @@
 
 allprojects {
   apply plugin: 'nebula.lint'
-  gradleLint.rules = []
-  gradleLint.rules += 'overridden-dependency-version'
-  gradleLint.rules += 'unused-dependency'
-  gradleLint.rules += 'unused-exclude-by-dep'
-  gradleLint.rules += 'unused-exclude-by-conf'
-
-  gradleLint.alwaysRun = false
-  fixGradleLint.mustRunAfter(':combineReports')
-  lintGradle.mustRunAfter(':combineReports')
+  gradleLint {
+    rules = [
+            'archaic-wrapper',
+            'unused-dependency',
+    ]
+    criticalRules = [
+            'deprecated-dependency-configuration'
+    ]
+    excludedRules = [
+            'plugin-renamed',
+            'all-dependency',
+            'minimum-dependency-version',
+            'dependency-tuple-expression',
+            'unused-dependency-exclude',
+            'dependency-parentheses',
+            'undeclared-dependency',
+            'recommended-versions'
+    ]
+    reportFormat = 'html'
+    autoLintAfterFailure = false
+  }
+}
+rootProject.tasks.named('check').configure {
+  dependsOn('criticalLintGradle')
 }

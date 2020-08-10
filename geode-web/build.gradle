@@ -40,13 +40,13 @@ dependencies {
     exclude module: 'spring-web'
     exclude module: 'spring-core'
   }
-
   providedCompile(platform(project(':boms:geode-all-bom')))
   providedCompile('javax.servlet:javax.servlet-api')
   providedCompile('org.apache.logging.log4j:log4j-api')
 
-  implementation('org.springframework:spring-webmvc')
+
   implementation('org.apache.commons:commons-lang3')
+  implementation('org.springframework:spring-webmvc')
 
   runtimeOnly('org.springframework:spring-aspects') {
     exclude module: 'aspectjweaver'
@@ -64,6 +64,7 @@ dependencies {
   distributedTestImplementation(project(':geode-common'))
   distributedTestImplementation(project(':geode-dunit'))
   distributedTestImplementation('pl.pragmatists:JUnitParams')
+  distributedTestImplementation('org.apache.commons:commons-lang3')
 
   distributedTestRuntimeOnly(files(war.destinationDir))
 

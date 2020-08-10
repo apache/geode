@@ -162,7 +162,7 @@ dependencies {
     //These bom dependencies are used to constrain the versions of the dependencies listed below
     api(platform(project(':boms:geode-all-bom')))
     compileOnly(platform(project(':boms:geode-all-bom')))
-    testCompileOnly(platform(project(':boms:geode-all-bom')))
+
     // As plugin configurations that do not extend from compile,
     // we must explicitly impose version constraints on these configurations.
     antlr platform(project(':boms:geode-all-bom'))
@@ -282,10 +282,6 @@ dependencies {
     implementation('org.apache.logging.log4j:log4j-api')
 
 
-    implementation('io.swagger:swagger-annotations') {
-        ext.optional = true
-    }
-
     runtimeOnly(project(':geode-http-service')) {
         ext.optional = true
     }
@@ -337,11 +333,12 @@ dependencies {
 
     testImplementation(files("${System.getProperty('java.home')}/../lib/tools.jar"))
 
-    testRuntime('commons-collections:commons-collections')
-    testRuntime('commons-configuration:commons-configuration')
-    testRuntime('commons-io:commons-io')
-    testRuntime('commons-validator:commons-validator')
-    testRuntime('com.pholser:junit-quickcheck-generators')
+  testRuntimeOnly('commons-collections:commons-collections')
+  testRuntimeOnly('commons-configuration:commons-configuration')
+  testRuntimeOnly('commons-io:commons-io')
+  testRuntimeOnly('commons-validator:commons-validator')
+  testRuntimeOnly('com.pholser:junit-quickcheck-generators')
+  testRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
     integrationTestImplementation(project(':geode-gfsh'))
     integrationTestImplementation(project(':geode-junit')) {
@@ -355,14 +352,14 @@ dependencies {
     }
     integrationTestImplementation(project(':geode-concurrency-test'))
     integrationTestImplementation('org.apache.bcel:bcel')
-    integrationTestImplementation('org.apache.logging.log4j:log4j-core')
     integrationTestImplementation('org.powermock:powermock-core')
     integrationTestImplementation('org.powermock:powermock-module-junit4')
     integrationTestImplementation('org.powermock:powermock-api-mockito2')
     integrationTestImplementation('pl.pragmatists:JUnitParams')
     integrationTestImplementation('com.tngtech.archunit:archunit-junit4')
+    integrationTestImplementation('org.apache.logging.log4j:log4j-core')
 
-    integrationTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
+    integrationTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
     integrationTestRuntimeOnly('org.apache.derby:derby')
     integrationTestRuntimeOnly('xerces:xercesImpl')

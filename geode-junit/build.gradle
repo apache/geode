@@ -21,7 +21,7 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
 
 dependencies {
-  compile(platform(project(':boms:geode-all-bom')))
+  api(platform(project(':boms:geode-all-bom')))
 
   compileOnly(project(':geode-core'))
   compileOnly(project(':geode-logging'))
@@ -35,29 +35,27 @@ dependencies {
   api('org.assertj:assertj-core')
   api('org.mockito:mockito-core')
 
+  gradleLint.fixme('2021-01-01', 'unused-dependency') {
+    api('com.fasterxml.jackson.core:jackson-databind')
+    api('com.github.stefanbirkner:system-rules') {
+      exclude module: 'junit-dep'
+    }
+    api('com.google.guava:guava')
+    api('com.jayway.jsonpath:json-path')
+    api('commons-io:commons-io')
 
-  api('com.fasterxml.jackson.core:jackson-annotations')
-  api('com.fasterxml.jackson.core:jackson-databind')
-  api('com.github.stefanbirkner:system-rules') {
-    exclude module: 'junit-dep'
+    api('org.apache.commons:commons-lang3')
+    api('org.apache.logging.log4j:log4j-api')
+
+    api('org.awaitility:awaitility')
+    api('org.bouncycastle:bcpkix-jdk15on')
+    api('org.hamcrest:hamcrest-all')
+    api('io.micrometer:micrometer-core')
   }
-  api('com.google.guava:guava')
-  api('com.jayway.jsonpath:json-path')
-  api('commons-io:commons-io')
-  
-  api('org.apache.commons:commons-lang3')
-  api('org.apache.logging.log4j:log4j-api')
-  
-  api('org.awaitility:awaitility')
-  api('org.bouncycastle:bcpkix-jdk15on')
-  api('org.hamcrest:hamcrest-all')
-  api('io.micrometer:micrometer-core')
-  
-  api('org.skyscreamer:jsonassert')
 
   testImplementation('pl.pragmatists:JUnitParams')
 
-  testRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
+  testRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
 }
 
 test {

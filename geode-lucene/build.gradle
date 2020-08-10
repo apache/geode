@@ -21,7 +21,7 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
 
 dependencies {
-  compile(platform(project(':boms:geode-all-bom')))
+  api(platform(project(':boms:geode-all-bom')))
 
   api(project(':geode-core'))
   api('org.apache.lucene:lucene-core')
@@ -51,9 +51,6 @@ dependencies {
   testImplementation('pl.pragmatists:JUnitParams')
   testImplementation('com.pholser:junit-quickcheck-core')
   testImplementation('com.carrotsearch.randomizedtesting:randomizedtesting-runner')
-  testImplementation('org.powermock:powermock-core')
-  testImplementation('org.powermock:powermock-module-junit4')
-  testImplementation('org.powermock:powermock-api-mockito2')
 
 
   distributedTestImplementation(project(':geode-junit'))

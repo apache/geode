@@ -28,7 +28,7 @@ dependencies {
   implementation(project(':geode-core'))
   implementation(project(':geode-logging'))
   implementation('org.apache.commons:commons-lang3')
-
+  implementation('commons-io:commons-io')
   implementation('org.apache.logging.log4j:log4j-api')
   implementation('org.apache.logging.log4j:log4j-core')
 
@@ -49,7 +49,6 @@ dependencies {
   jmhImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
-  jmhImplementation('junit:junit')
   jmhImplementation('org.assertj:assertj-core')
   jmhImplementation('org.mockito:mockito-core')
 
@@ -58,7 +57,6 @@ dependencies {
   }
   testImplementation('junit:junit')
   testImplementation('org.assertj:assertj-core')
-  testImplementation('org.mockito:mockito-core')
 
   integrationTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
@@ -67,20 +65,13 @@ dependencies {
   integrationTestImplementation('org.apache.logging.log4j:log4j-core::tests')
   integrationTestImplementation('org.apache.logging.log4j:log4j-core::test-sources')
   integrationTestImplementation('org.assertj:assertj-core')
+  integrationTestImplementation('org.mockito:mockito-core')
+  integrationTestImplementation('org.awaitility:awaitility')
+  integrationTestImplementation('org.mockito:mockito-core')
 
   distributedTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
-  distributedTestImplementation('commons-io:commons-io')
-  distributedTestImplementation('junit:junit')
-  distributedTestImplementation('org.apache.commons:commons-lang3')
-  distributedTestImplementation('org.assertj:assertj-core')
-  distributedTestImplementation('org.awaitility:awaitility')
-  distributedTestImplementation('org.hamcrest:hamcrest-all')
-  distributedTestImplementation('org.hamcrest:hamcrest-core')
-  distributedTestImplementation('org.hamcrest:hamcrest-library')
-  distributedTestImplementation('org.mockito:mockito-core')
-  distributedTestImplementation('pl.pragmatists:JUnitParams')
 }
 
 jmh {

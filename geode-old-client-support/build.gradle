@@ -25,11 +25,10 @@ dependencies {
   implementation(project(':geode-core'))
   implementation(project(':geode-logging'))
   implementation(project(':geode-serialization'))
+
+
   distributedTestImplementation(project(':geode-dunit')){
     exclude module: 'geode-core'
   }
-
-
-  distributedTestImplementation('junit:junit')
 }
 

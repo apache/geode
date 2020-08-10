@@ -22,9 +22,9 @@ apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 
 
 dependencies {
-  compile(platform(project(':boms:geode-all-bom')))
-  compile(project(':extensions:geode-modules'))
-  compile(project(':geode-core'))
+  api(platform(project(':boms:geode-all-bom')))
+  implementation(project(':extensions:geode-modules'))
+  implementation(project(':geode-core'))
   implementation(project(':geode-logging'))
 
   implementation('javax.servlet:javax.servlet-api')

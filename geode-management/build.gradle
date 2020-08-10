@@ -21,10 +21,9 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 apply from: "${project.projectDir}/../gradle/warnings.gradle"
 
 dependencies {
-  compile(platform(project(':boms:geode-all-bom')))
+  api(platform(project(':boms:geode-all-bom')))
   implementation('org.apache.commons:commons-lang3')
   implementation('com.fasterxml.jackson.core:jackson-databind')
-  implementation('com.fasterxml.jackson.core:jackson-core')
   implementation('com.fasterxml.jackson.core:jackson-annotations')
   implementation('org.springframework:spring-web')
   implementation('org.apache.httpcomponents:httpclient')
@@ -41,6 +40,8 @@ dependencies {
   testImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
+  testImplementation('org.awaitility:awaitility')
+  testImplementation('com.fasterxml.jackson.core:jackson-core')
 
   testCompileOnly(platform(project(':boms:geode-all-bom')))
   testCompileOnly('io.swagger:swagger-annotations')
@@ -48,5 +49,4 @@ dependencies {
   integrationTestImplementation(project(':geode-dunit'))
   integrationTestImplementation(project(':geode-junit'))
   integrationTestImplementation('junit:junit')
-  integrationTestImplementation('org.awaitility:awaitility')
 }

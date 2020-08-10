@@ -23,7 +23,7 @@ plugins {
   id "eclipse"
   id "com.diffplug.gradle.spotless" version "3.28.0" apply false
   id "com.github.ben-manes.versions" version "0.28.0" apply false
-  id "nebula.lint" version "16.4.0" apply false
+  id "nebula.lint" version "16.9.1" apply false
   id "com.palantir.docker" version "0.22.1" apply false
   id "io.spring.dependency-management" version "1.0.9.RELEASE" apply false
   id "org.ajoberstar.grgit" version "4.0.1" apply false

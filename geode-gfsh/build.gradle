@@ -26,6 +26,20 @@ dependencies {
     api(project(':geode-core'))
     api(project(':geode-common'))
 
+    //Spring shell is used by the gfsh cli. It's unclear why we can exclude
+    //So many transitive dependencies - are these really optional?
+    //GfshCommand is a public API class that depends on spring shell
+    api('org.springframework.shell:spring-shell') {
+        exclude module: 'aopalliance'
+        exclude module: 'asm'
+        exclude module: 'cglib'
+        exclude module: 'guava'
+        exclude module: 'spring-aop'
+        exclude module: 'spring-context-support'
+        exclude module: 'spring-core'
+    }
+  
+  
     implementation(project(':geode-logging'))
     implementation(project(':geode-membership'))
     implementation(project(':geode-serialization'))
@@ -34,29 +48,42 @@ dependencies {
     implementation('org.apache.commons:commons-lang3')
     implementation('com.healthmarketscience.rmiio:rmiio')
     implementation('com.fasterxml.jackson.core:jackson-databind')
+    implementation('net.sf.jopt-simple:jopt-simple')
 
-//    //Find bugs is used in multiple places in the code to suppress findbugs warnings
+    //Log4j is used everywhere
+    implementation('org.apache.logging.log4j:log4j-api')
+
+    //Spring core is used by the the gfsh cli
+    implementation('org.springframework:spring-core') {
+        ext.optional = true
+    }
+
+    testCompileOnly(platform(project(':boms:geode-all-bom')))
+    testCompileOnly('io.swagger:swagger-annotations')
+    testImplementation(project(':geode-junit'))
+    //Find bugs is used in multiple places in the code to suppress findbugs warnings
     testImplementation('com.github.stephenc.findbugs:findbugs-annotations')
     testImplementation('org.springframework:spring-test')
-    integrationTestImplementation('org.powermock:powermock-module-junit4')
-    integrationTestImplementation('org.powermock:powermock-api-mockito2')
-    testImplementation(project(':geode-junit'))
 
     integrationTestImplementation(project(':geode-dunit'))
+    integrationTestImplementation('org.powermock:powermock-module-junit4')
+    integrationTestImplementation('org.powermock:powermock-api-mockito2')
     integrationTestImplementation('pl.pragmatists:JUnitParams')
     integrationTestRuntimeOnly('org.apache.derby:derby')
-    
+ 
+  
     distributedTestImplementation(project(':geode-dunit'))
     distributedTestImplementation('pl.pragmatists:JUnitParams')
     distributedTestRuntimeOnly('org.apache.derby:derby')
+    distributedTestImplementation('org.awaitility:awaitility')
 
     testCompileOnly(platform(project(':boms:geode-all-bom')))
     testCompileOnly('io.swagger:swagger-annotations')
 
+  
     upgradeTestImplementation(project(':geode-junit'))
     upgradeTestImplementation(project(':geode-dunit'))
 
-    upgradeTestImplementation('org.awaitility:awaitility')
     upgradeTestImplementation('org.assertj:assertj-core')
     upgradeTestImplementation('junit:junit')
     upgradeTestImplementation('xml-apis:xml-apis:2.0.2')
@@ -70,18 +97,5 @@ dependencies {
     //Spring core is used by the the gfsh cli
     implementation('org.springframework:spring-core') {
         ext.optional = true
-    }
-
-    //Spring shell is used by the gfsh cli. It's unclear why we can exclude
-    //So many transitive dependencies - are these really optional?
-    //GfshCommand is a public API class that depends on spring shell
-    api('org.springframework.shell:spring-shell') {
-        exclude module: 'aopalliance'
-        exclude module: 'asm'
-        exclude module: 'cglib'
-        exclude module: 'guava'
-        exclude module: 'spring-aop'
-        exclude module: 'spring-context-support'
-        exclude module: 'spring-core'
     }
 }

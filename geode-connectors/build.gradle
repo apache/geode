@@ -48,7 +48,7 @@ task downloadJdbcJars(type:Copy) {
 }
 
 dependencies {
-  compile(platform(project(':boms:geode-all-bom')))
+  api(platform(project(':boms:geode-all-bom')))
 
   implementation(project(':geode-logging'))
   implementation(project(':geode-serialization'))
@@ -84,9 +84,6 @@ dependencies {
   implementation('org.apache.commons:commons-lang3')
   implementation('javax.xml.bind:jaxb-api')
   implementation('org.apache.logging.log4j:log4j-api')
-  implementation('org.apache.logging.log4j:log4j-jcl') {
-    ext.optional = true
-  }
   implementation('org.springframework.shell:spring-shell') {
     exclude module: 'aopalliance'
     exclude module: 'asm'
@@ -102,12 +99,9 @@ dependencies {
   testImplementation('pl.pragmatists:JUnitParams')
 
   integrationTestImplementation('junit:junit')
-  integrationTestImplementation('org.assertj:assertj-core')
-  integrationTestImplementation('pl.pragmatists:JUnitParams')
 
   distributedTestImplementation('junit:junit')
   distributedTestImplementation('org.assertj:assertj-core')
-  distributedTestImplementation('org.mockito:mockito-core')
   distributedTestImplementation('pl.pragmatists:JUnitParams')
   distributedTestRuntimeOnly('org.apache.derby:derby')
 
@@ -119,7 +113,6 @@ dependencies {
   acceptanceTestImplementation('org.awaitility:awaitility')
   acceptanceTestImplementation('org.mockito:mockito-core')
   acceptanceTestImplementation('com.palantir.docker.compose:docker-compose-rule-core')
-  acceptanceTestImplementation('pl.pragmatists:JUnitParams')
   acceptanceTestImplementation('com.palantir.docker.compose:docker-compose-rule-junit4')
 
   acceptanceTestRuntimeOnly('mysql:mysql-connector-java')

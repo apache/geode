@@ -163,7 +163,7 @@ task downloadWebServers(type:Copy) {
 }
 
 dependencies {
-  compile(platform(project(':boms:geode-all-bom')))
+  api(platform(project(':boms:geode-all-bom')))
   gfshDependencies(platform(project(':boms:geode-all-bom')))
 
   dependentProjectNames.each {
@@ -207,15 +207,11 @@ dependencies {
   integrationTestImplementation(project(':geode-pulse'))
   integrationTestImplementation(project(':geode-assembly:geode-assembly-test'))
   integrationTestImplementation(project(':geode-logging'))
-  integrationTestImplementation('org.apache.httpcomponents:httpclient')
   integrationTestImplementation('org.springframework:spring-beans')
-  integrationTestImplementation('org.springframework:spring-context')
   integrationTestImplementation('org.springframework:spring-web')
-  integrationTestImplementation('org.springframework.security:spring-security-oauth2-core')
-  integrationTestImplementation('org.springframework.security:spring-security-oauth2-client')
-  integrationTestImplementation('org.springframework.security:spring-security-oauth2-jose')
+  integrationTestImplementation('org.apache.httpcomponents:httpcore')
+  integrationTestImplementation('org.springframework:spring-context')
   integrationTestImplementation('javax.annotation:javax.annotation-api')
-  integrationTestImplementation('javax.servlet:javax.servlet-api')
 
   integrationTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
@@ -223,6 +219,7 @@ dependencies {
   // these two modules are for testing only
   integrationTestRuntimeOnly('com.fasterxml.jackson.datatype:jackson-datatype-joda')
   integrationTestRuntimeOnly('joda-time:joda-time')
+
 
   distributedTestCompileOnly(platform(project(':boms:geode-all-bom')))
   distributedTestCompileOnly('io.swagger:swagger-annotations')
@@ -254,6 +251,7 @@ dependencies {
   distributedTestRuntimeOnly('io.swagger:swagger-annotations')
   distributedTestRuntimeOnly(project(':geode-wan'))
 
+
   // geodeArchives is a direct reflection of what is contained in geode-dependencies.jar. To that
   // end only add _test_ dependencies to acceptanceTestCompile/Runtime. All other product
   // dependencies should be a part of geodeArchives and should not need to be added as individual
@@ -279,7 +277,6 @@ dependencies {
   uiTestImplementation(project(':geode-pulse:geode-pulse-test'))
   uiTestImplementation(project(':geode-assembly:geode-assembly-test'))
   uiTestImplementation('org.seleniumhq.selenium:selenium-api')
-  uiTestImplementation('org.seleniumhq.selenium:selenium-remote-driver')
   uiTestImplementation('org.seleniumhq.selenium:selenium-support')
 
   uiTestRuntimeOnly(project(':geode-core'))

@@ -26,10 +26,11 @@ apply from: "${project.projectDir}/../gradle/warnings.gradle"
 jar.enabled = true
 
 dependencies {
-  compile(platform(project(':boms:geode-all-bom')))
+  api(platform(project(':boms:geode-all-bom')))
   compileOnly(platform(project(':boms:geode-all-bom')))
   providedCompile(platform(project(':boms:geode-all-bom')))
 
+  implementation(project(':geode-core'))
   implementation('org.springframework.security:spring-security-core')
   implementation('javax.servlet:javax.servlet-api')
   implementation('mx4j:mx4j') {
@@ -48,12 +49,9 @@ dependencies {
   implementation('org.springframework:spring-beans')
 
   // Needed to fully use log4j instead of commons-logging.
-  implementation('org.apache.logging.log4j:log4j-jcl')
   implementation('org.apache.logging.log4j:log4j-api')
 
-  implementation('commons-beanutils:commons-beanutils')
   implementation('commons-collections:commons-collections')
-  implementation('commons-digester:commons-digester')
   implementation('org.apache.commons:commons-lang3')
   implementation('org.apache.commons:commons-text')
   implementation('org.springframework.ldap:spring-ldap-core')
@@ -83,9 +81,6 @@ dependencies {
     exclude module: 'aopalliance'
     exclude module: 'aspectjweaver'
   }
-  implementation('org.springframework:spring-tx')
-  implementation('com.fasterxml.jackson.core:jackson-annotations')
-  implementation('com.fasterxml.jackson.core:jackson-core')
   implementation('com.fasterxml.jackson.core:jackson-databind')
 
   compileOnly('org.mortbay.jetty:servlet-api')
@@ -104,10 +99,6 @@ dependencies {
   testImplementation(project(':geode-log4j')) {
     exclude module: 'geode-core'
   }
-  testImplementation('org.springframework:spring-test')
-  testImplementation('org.powermock:powermock-core')
-  testImplementation('org.powermock:powermock-module-junit4')
-  testImplementation('org.powermock:powermock-api-mockito2')
 
 
   integrationTestImplementation(project(':geode-core'))
@@ -120,11 +111,7 @@ dependencies {
 
   integrationTestImplementation(project(':geode-pulse'))
   integrationTestImplementation(project(':geode-pulse:geode-pulse-test'))
-  integrationTestImplementation('org.powermock:powermock-core')
-  integrationTestImplementation('org.powermock:powermock-module-junit4')
-  integrationTestImplementation('org.powermock:powermock-api-mockito2')
   integrationTestImplementation('org.springframework:spring-test')
-  integrationTestImplementation('org.springframework:spring-webmvc')
   integrationTestImplementation('org.springframework.security:spring-security-test')
 
   integrationTestImplementation('junit:junit')
@@ -140,7 +127,7 @@ dependencies {
     exclude module: 'geode-core'
   }
   uiTestImplementation(project(':geode-pulse:geode-pulse-test'))
-  uiTestImplementation('org.seleniumhq.selenium:selenium-remote-driver')
+  uiTestImplementation('com.vaadin.external.google:android-json')
 }
 
 def generatedResources = "$buildDir/generated-resources/main"

@@ -22,14 +22,21 @@ apply from: "${project.projectDir}/../gradle/warnings.gradle"
 
 
 dependencies {
-  compile(platform(project(':boms:geode-all-bom')))
-  compile(project(':geode-common'))
-  compile(project(':geode-protobuf-messages'))
+  api(platform(project(':boms:geode-all-bom')))
+  
+  
+  implementation(project(':geode-common'))
+  implementation(project(':geode-protobuf-messages'))
+  implementation('com.google.protobuf:protobuf-java')
+  
+  
   testImplementation(project(':geode-core'))
   testImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
   testImplementation(project(':geode-protobuf'))
+  
+  
   integrationTestImplementation(project(':geode-core'))
   integrationTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
@@ -38,13 +45,6 @@ dependencies {
     exclude module: 'geode-core'
   }
   integrationTestImplementation(project(':geode-protobuf'))
-
-  implementation('com.google.protobuf:protobuf-java')
-
-  testImplementation('com.github.stefanbirkner:system-rules') {
-    exclude module: 'junit-dep'
-  }
-
   integrationTestImplementation(project(':geode-logging'))
   integrationTestImplementation(project(':geode-serialization'))
   integrationTestImplementation('com.github.stefanbirkner:system-rules') {
