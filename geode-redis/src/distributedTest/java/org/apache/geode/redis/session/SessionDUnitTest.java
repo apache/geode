@@ -135,27 +135,15 @@ public abstract class SessionDUnitTest {
 
   protected String createNewSessionWithNote(int sessionApp, String note) {
     HttpEntity<String> request = new HttpEntity<>(note);
-    boolean noteAdded = false;
     String sessionCookie = "";
-    do {
-      try {
-        HttpHeaders resultHeaders = new RestTemplate()
-            .postForEntity(
-                "http://localhost:" + ports.get(sessionApp)
-                    + "/addSessionNote",
-                request,
-                String.class)
-            .getHeaders();
-        sessionCookie = resultHeaders.getFirst("Set-Cookie");
-        noteAdded = true;
-      } catch (HttpServerErrorException e) {
-        if (e.getMessage().contains("memberDeparted")) {
-          // retry
-        } else {
-          throw e;
-        }
-      }
-    } while (!noteAdded);
+    HttpHeaders resultHeaders = new RestTemplate()
+        .postForEntity(
+            "http://localhost:" + ports.get(sessionApp)
+                + "/addSessionNote",
+            request,
+            String.class)
+        .getHeaders();
+    sessionCookie = resultHeaders.getFirst("Set-Cookie");
 
     return sessionCookie;
   }
@@ -193,29 +181,12 @@ public abstract class SessionDUnitTest {
     List<String> notes = new ArrayList<>();
     Collections.addAll(notes, getSessionNotes(sessionApp, sessionCookie));
     HttpEntity<String> request = new HttpEntity<>(note, requestHeaders);
-    boolean noteAdded = false;
-    do {
-      try {
-        new RestTemplate()
-            .postForEntity(
-                "http://localhost:" + ports.get(sessionApp) + "/addSessionNote",
-                request,
-                String.class)
-            .getHeaders();
-        noteAdded = true;
-      } catch (HttpServerErrorException e) {
-        if (e.getMessage().contains("memberDeparted")) {
-          List<String> updatedNotes = new ArrayList<>();
-          Collections.addAll(updatedNotes, getSessionNotes(sessionApp, sessionCookie));
-          if (notes.containsAll(updatedNotes)) {
-            noteAdded = true;
-          }
-          e.printStackTrace();
-        } else {
-          throw e;
-        }
-      }
-    } while (!noteAdded);
+    new RestTemplate()
+        .postForEntity(
+            "http://localhost:" + ports.get(sessionApp) + "/addSessionNote",
+            request,
+            String.class)
+        .getHeaders();
   }
 
   protected String getSessionId(String sessionCookie) {
