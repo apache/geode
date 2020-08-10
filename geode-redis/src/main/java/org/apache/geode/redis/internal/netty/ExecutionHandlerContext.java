@@ -165,7 +165,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     return subscriberGroup;
   }
 
-  public void changeChannelEventLoopGroup(EventLoopGroup newGroup, Runnable callback) {
+  public synchronized void changeChannelEventLoopGroup(EventLoopGroup newGroup, Runnable callback) {
     if (newGroup.equals(channel.eventLoop())) {
       // already registered with newGroup
       return;
