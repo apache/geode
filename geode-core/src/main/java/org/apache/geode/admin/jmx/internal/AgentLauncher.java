@@ -475,13 +475,12 @@ public class AgentLauncher {
     options.put(DIR, IOUtils.tryGetCanonicalFileElseGetAbsoluteFile(new File(".")));
 
     for (final String arg : args) {
-      if (arg.equals("stop") || arg.equals("status")) {
-        // expected
-      } else if (arg.startsWith("-dir=")) {
-        processDirOption(options, arg.substring("-dir=".length()));
-      } else {
-        throw new Exception(
-            String.format("Unknown argument: %s", arg));
+      if (!arg.equals("stop") && !arg.equals("status")) {
+        if (arg.startsWith("-dir=")) {
+          processDirOption(options, arg.substring("-dir=".length()));
+        } else {
+          throw new Exception(String.format("Unknown argument: %s", arg));
+        }
       }
     }
 

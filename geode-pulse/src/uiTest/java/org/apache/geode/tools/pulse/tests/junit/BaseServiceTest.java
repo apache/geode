@@ -154,11 +154,6 @@ public abstract class BaseServiceTest {
             .println("BaseServiceTest :: HTTP request status : " + loginResponse.getStatusLine());
 
         List<Cookie> cookies = cookieStore.getCookies();
-        if (cookies.isEmpty()) {
-        } else {
-          for (int i = 0; i < cookies.size(); i++) {
-          }
-        }
       } finally {
         if (loginResponse != null)
           loginResponse.close();

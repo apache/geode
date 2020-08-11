@@ -429,9 +429,8 @@ public class StatArchiveHandler implements SampleHandler {
    *         archiveId to the name for supporting file rolling
    */
   File getRollingArchiveName(File archive, boolean archiveClosed) {
-    if (mainArchiveId != -1) {
-      // leave mainArchiveId as is. Bump archiveId.
-    } else {
+    // If the below evaluates to false, leave mainArchiveId as is. Bump archiveId.
+    if (mainArchiveId == -1) {
       archiveDir = archive.getAbsoluteFile().getParentFile();
       boolean mainArchiveIdCalculated = false;
       if (config.getLogFile().isPresent()) {
@@ -487,9 +486,8 @@ public class StatArchiveHandler implements SampleHandler {
           .append(this.rollingFileHandler.formatId(0)).append(".marker");
       File marker = new File(buf.toString());
       if (marker.exists()) {
-        if (!marker.delete()) {
-          // could not delete it; nothing to be done
-        }
+        // If we could not delete it; nothing to be done
+        marker.delete();
       }
     }
     if (!archiveClosed) {
@@ -509,9 +507,8 @@ public class StatArchiveHandler implements SampleHandler {
       File marker = new File(buf.toString());
       if (!marker.exists()) {
         try {
-          if (!marker.createNewFile()) {
-            // could not create it; that is ok
-          }
+          // If we could not create it; that is ok
+          marker.createNewFile();
         } catch (IOException ignore) {
           // If we can't create the marker that is ok
         }
@@ -561,9 +558,8 @@ public class StatArchiveHandler implements SampleHandler {
     File marker = new File(buf.toString());
     if (!marker.exists()) {
       try {
-        if (!marker.createNewFile()) {
-          // could not create it; that is ok
-        }
+        // if we could not create it; that is ok
+        marker.createNewFile();
       } catch (IOException ignore) {
         // If we can't create the marker that is ok
       }

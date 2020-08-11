@@ -244,9 +244,8 @@ public class DiskRegion extends AbstractDiskRegion {
       // this.scheduleCompaction();
       if (GIIStatus.didFullGII(giiStatus)) {
         destroyRemainingRecoveredEntries(drs);
-      } else if (GIIStatus.didDeltaGII(giiStatus)) {
         // TODO: not sure if we should destroy old tombstones for deltaGII
-      } else if (getRegionVersionVector() != null) {
+      } else if (!GIIStatus.didDeltaGII(giiStatus) && getRegionVersionVector() != null) {
         destroyOldTomstones(drs);
       }
       releaseRecoveryData();

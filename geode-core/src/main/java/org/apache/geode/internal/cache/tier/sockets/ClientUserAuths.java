@@ -120,8 +120,6 @@ public class ClientUserAuths {
             this.cleanUserAuth(oldUaa);
             // add durable(increment)
             uaa.setDurable();
-          } else {
-            // if looks extra call from client
           }
         } else {
           uaa.setDurable();

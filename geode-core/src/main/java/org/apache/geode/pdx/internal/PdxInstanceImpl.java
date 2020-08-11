@@ -298,18 +298,19 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
         }
         case OBJECT: {
           Object objectValue = ur.readObject(ft);
-          if (objectValue == null) {
-            // default value of null does not modify hashCode.
-          } else if (objectValue.getClass().isArray()) {
-            Class<?> myComponentType = objectValue.getClass().getComponentType();
-            if (myComponentType.isPrimitive()) {
-              ByteSource buffer = getRaw(ft);
-              hashCode = hashCode * 31 + buffer.hashCode();
+          // default value of null does not modify hashCode.
+          if (objectValue != null) {
+            if (!objectValue.getClass().isArray()) {
+              hashCode = hashCode * 31 + objectValue.hashCode();
             } else {
-              hashCode = hashCode * 31 + Arrays.deepHashCode((Object[]) objectValue);
+              Class<?> myComponentType = objectValue.getClass().getComponentType();
+              if (myComponentType.isPrimitive()) {
+                ByteSource buffer = getRaw(ft);
+                hashCode = hashCode * 31 + buffer.hashCode();
+              } else {
+                hashCode = hashCode * 31 + Arrays.deepHashCode((Object[]) objectValue);
+              }
             }
-          } else {
-            hashCode = hashCode * 31 + objectValue.hashCode();
           }
           break;
         }

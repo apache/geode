@@ -14,6 +14,8 @@
  */
 package org.apache.geode.redis.internal;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -32,7 +34,6 @@ public class GeodeServerRunTest {
   @Ignore("This is a no-op test to conveniently run redis api for geode server for local development/testing purposes")
   public void runGeodeServer() {
     LogService.getLogger().warn("Server running on port: " + server.getPort());
-    while (true) {
-    }
+    await().until(() -> false);
   }
 }

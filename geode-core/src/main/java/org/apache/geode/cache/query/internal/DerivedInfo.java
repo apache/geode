@@ -255,19 +255,13 @@ public class DerivedInfo {
     context.cachePut(CompiledValue.CAN_APPLY_LIMIT_AT_INDEX, originalCanApplyLimit);
     context.cachePut(CompiledValue.CAN_APPLY_ORDER_BY_AT_INDEX, originalCanApplyOrderBy);
     ObjectType ot = indexInfo._index.getResultSetType();
-    // The following if block is not currently used other than the else
-    // This would be needed once we figure out how to handle nested object indexes (range, map, etc)
+    // Once we figure out how to handle nested object indexes (range, map, etc), this should be
+    // expanded to an if/else block with individual cases for ot.isStructType(), ot.isMapType() and
+    // ot.isCollectionType().
     // The issue we have right now with these indexes is the results will come back as a tuple, if
-    // we use those as is, we end up
-    // reusing the evaluated values even if they did not come from the top level object leading to
-    // duplicate results or incorrect tupling
-    if (ot.isStructType()) {
-      // createObjectResultsFromStructResults(indexInfo, sr);
-    } else if (ot.isMapType()) {
-
-    } else if (ot.isCollectionType()) {
-
-    } else {
+    // we use those as is, we end up reusing the evaluated values even if they did not come from the
+    // top level object leading to duplicate results or incorrect tupling
+    if (!ot.isStructType() && !ot.isMapType() && !ot.isCollectionType()) {
       this.addDerivedResults(dcc.getIndexInfo(context)[0], sr);
     }
   }

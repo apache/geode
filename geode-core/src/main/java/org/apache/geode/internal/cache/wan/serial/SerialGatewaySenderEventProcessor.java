@@ -660,11 +660,9 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
           Long mapValue =
               Long.valueOf(System.currentTimeMillis() + AbstractGatewaySender.TOKEN_TIMEOUT);
           Long oldv = this.unprocessedTokens.put(gatewayEvent.getEventId(), mapValue);
+          // TODO add an assertion that oldv is non-null
           if (oldv == null) {
             statistics.incUnprocessedTokensAddedByPrimary();
-          } else {
-            // its ok for oldv to be non-null
-            // this shouldn't happen anymore @todo add an assertion here
           }
         }
       } else {
@@ -772,9 +770,6 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
               break;
             }
           }
-          if (count > 0) {
-            // statistics.incUnprocessedTokensRemovedByTimeout(count);
-          }
         }
         if (forceEventReap || this.unprocessedEvents.size() > REAP_THRESHOLD) {
           Iterator<Map.Entry<EventID, EventWrapper>> it =
@@ -793,9 +788,6 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
               // all done try again
               break;
             }
-          }
-          if (count > 0) {
-            // statistics.incUnprocessedEventsRemovedByTimeout(count);
           }
         }
       } else {

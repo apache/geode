@@ -72,11 +72,7 @@ public class PutUserCredentials extends BaseCommand {
           serverConnection.setAsTrue(RESPONDED);
         }
 
-      } else {
-        // need to throw some exeception
       }
-    } else {
-      // need to throw exception
     }
   }
 

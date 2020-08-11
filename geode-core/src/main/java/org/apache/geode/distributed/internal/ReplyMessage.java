@@ -105,9 +105,9 @@ public class ReplyMessage extends HighPriorityDistributionMessage {
         logger.debug("Replying with entry-not-found: {}", exception.getCause().getMessage());
       } else if (cause instanceof ConcurrentCacheModificationException) {
         logger.debug("Replying with concurrent-modification-exception");
-      } else if (cause instanceof CancelException) {
-        // no need to log this - it will show up in normal debug-level logs when the reply is sent
-      } else {
+        // no need to log CancelException - it will show up in normal debug-level logs when the
+        // reply is sent
+      } else if (!(cause instanceof CancelException)) {
         logger.debug("Replying with exception: " + m, exception);
       }
     }

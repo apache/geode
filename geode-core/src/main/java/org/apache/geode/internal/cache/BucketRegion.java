@@ -695,9 +695,6 @@ public class BucketRegion extends DistributedRegion implements Bucket {
           } finally {
             partitionedRegion.getPrStats().endSendReplication(start);
           }
-        } else {
-          // consolidate the UpdateOperation for each entry into a PutAllMessage
-          // basicPutPart3 takes care of this
         }
       }
 

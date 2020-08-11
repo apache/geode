@@ -2002,60 +2002,60 @@ public abstract class InternalDataSerializer extends DataSerializer {
       checkPdxCompatible(o, ensurePdxCompatibility);
       BasicSerializable bs = (BasicSerializable) o;
       dsfidSerializer.write(bs, out);
-    } else if (autoSerialized(o, out)) {
-      // all done
-    } else if (o instanceof DataSerializable.Replaceable) {
-      // do this first to fix bug 31609
-      // do this before DataSerializable
-      Object replacement = ((DataSerializable.Replaceable) o).replace();
-      basicWriteObject(replacement, out, ensurePdxCompatibility);
+      // If autoSerialized() returns true, we don't need to continue
+    } else if (!autoSerialized(o, out)) {
+      if (o instanceof DataSerializable.Replaceable) {
+        // do this first to fix bug 31609
+        // do this before DataSerializable
+        Object replacement = ((DataSerializable.Replaceable) o).replace();
+        basicWriteObject(replacement, out, ensurePdxCompatibility);
 
-    } else if (o instanceof PdxSerializable) {
-      writePdx(out, GemFireCacheImpl
-          .getForPdx("PDX registry is unavailable because the Cache has been closed."), o, null);
-    } else if (o instanceof DataSerializable) {
-      if (isDebugEnabled_SERIALIZER) {
-        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing DataSerializable: {}", o);
-      }
-      checkPdxCompatible(o, ensurePdxCompatibility);
-
-      Class c = o.getClass();
-      // Is "c" a user class registered with an Instantiator?
-      int classId = InternalInstantiator.getClassId(c);
-      if (classId != 0) {
-        writeUserDataSerializableHeader(classId, out);
-      } else {
-        out.writeByte(DSCODE.DATA_SERIALIZABLE.toByte());
-        DataSerializer.writeClass(c, out);
-      }
-      invokeToData(o, out);
-    } else if (o instanceof Sendable) {
-      if (!(o instanceof PdxInstance) || o instanceof PdxInstanceEnum) {
+      } else if (o instanceof PdxSerializable) {
+        writePdx(out, GemFireCacheImpl
+            .getForPdx("PDX registry is unavailable because the Cache has been closed."), o, null);
+      } else if (o instanceof DataSerializable) {
+        if (isDebugEnabled_SERIALIZER) {
+          logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing DataSerializable: {}", o);
+        }
         checkPdxCompatible(o, ensurePdxCompatibility);
-      }
-      ((Sendable) o).sendTo(out);
-    } else if (writeWellKnownObject(o, out, ensurePdxCompatibility)) {
-      // Nothing more to do...
-    } else {
-      checkPdxCompatible(o, ensurePdxCompatibility);
-      if (logger.isTraceEnabled(LogMarker.SERIALIZER_ANNOUNCE_TYPE_WRITTEN_VERBOSE)) {
-        logger.trace(LogMarker.SERIALIZER_ANNOUNCE_TYPE_WRITTEN_VERBOSE,
-            "DataSerializer Serializing an instance of {}", o.getClass().getName());
-      }
 
-      /*
-       * If the (internally known) ThreadLocal named "DataSerializer.DISALLOW_JAVA_SERIALIZATION" is
-       * set, then an exception will be thrown if we try to do standard Java Serialization. This is
-       * used to catch Java serialization early for the case where the data is being sent to a
-       * non-Java client
-       */
-      if (disallowJavaSerialization() && o instanceof Serializable) {
-        throw new NotSerializableException(
-            String.format("%s is not DataSerializable and Java Serialization is disallowed",
-                o.getClass().getName()));
-      }
+        Class c = o.getClass();
+        // Is "c" a user class registered with an Instantiator?
+        int classId = InternalInstantiator.getClassId(c);
+        if (classId != 0) {
+          writeUserDataSerializableHeader(classId, out);
+        } else {
+          out.writeByte(DSCODE.DATA_SERIALIZABLE.toByte());
+          DataSerializer.writeClass(c, out);
+        }
+        invokeToData(o, out);
+      } else if (o instanceof Sendable) {
+        if (!(o instanceof PdxInstance) || o instanceof PdxInstanceEnum) {
+          checkPdxCompatible(o, ensurePdxCompatibility);
+        }
+        ((Sendable) o).sendTo(out);
+        // If writeWellKnownObject() returns true, we don't need to continue
+      } else if (!writeWellKnownObject(o, out, ensurePdxCompatibility)) {
+        checkPdxCompatible(o, ensurePdxCompatibility);
+        if (logger.isTraceEnabled(LogMarker.SERIALIZER_ANNOUNCE_TYPE_WRITTEN_VERBOSE)) {
+          logger.trace(LogMarker.SERIALIZER_ANNOUNCE_TYPE_WRITTEN_VERBOSE,
+              "DataSerializer Serializing an instance of {}", o.getClass().getName());
+        }
 
-      writeSerializableObject(o, out);
+        /*
+         * If the (internally known) ThreadLocal named "DataSerializer.DISALLOW_JAVA_SERIALIZATION"
+         * is set, then an exception will be thrown if we try to do standard Java Serialization.
+         * This is used to catch Java serialization early for the case where the data is being sent
+         * to a non-Java client
+         */
+        if (disallowJavaSerialization() && o instanceof Serializable) {
+          throw new NotSerializableException(
+              String.format("%s is not DataSerializable and Java Serialization is disallowed",
+                  o.getClass().getName()));
+        }
+
+        writeSerializableObject(o, out);
+      }
     }
   }
 

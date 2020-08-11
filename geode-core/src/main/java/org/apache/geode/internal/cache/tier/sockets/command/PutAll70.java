@@ -220,15 +220,6 @@ public class PutAll70 extends BaseCommand {
             map = ((UpdateOnlyMap) map).getInternalMap();
           }
         }
-      } else {
-        // no auth, so update the map based on isObjectMap here
-        /*
-         * Collection entries = map.entrySet(); Iterator iterator = entries.iterator(); Map.Entry
-         * mapEntry = null; while (iterator.hasNext()) { mapEntry = (Map.Entry)iterator.next();
-         * Object currkey = mapEntry.getKey(); byte[] serializedValue = (byte[])mapEntry.getValue();
-         * boolean isObject = ((Boolean)isObjectMap.get(currkey)).booleanValue(); if (isObject) {
-         * map.put(currkey, CachedDeserializableFactory.create(serializedValue)); } }
-         */
       }
 
       if (logger.isDebugEnabled()) {

@@ -794,10 +794,10 @@ public class DLockGrantor {
         dLockLessorDepartureHandler.waitForInProcessDepartures();
       }
       checkDestroyed();
+      // If this evaluates to false, the request has been added to suspendQueue for deferred
+      // handling
       if (acquireLockPermission(request)) {
         handlePermittedLockRequest(request);
-      } else {
-        // request has been added to suspendQueue for deferred handling
       }
     } finally {
       releaseDestroyReadLock();
@@ -822,30 +822,24 @@ public class DLockGrantor {
     try {
 
       // try to grant immediately if not currently granted...
-      if (grant.grantLockToRequest(request)) {
-        // do nothing
-      }
-
-      // if request was local and then interrupted/released...
-      else if (request.responded()) {
-        // do nothing
-      }
-
-      // if request was a failed try-lock...
-      else if (request.isTryLock()) {
-        cleanupSuspendState(request);
-        request.respondWithTryLockFailed(request.getObjectName());
-      }
-
-      // if request has timed out...
-      else if (request.checkForTimeout()) {
-        cleanupSuspendState(request);
-      }
-
-      // schedule into waiting queue for eventual granting...
-      else {
-        grant.schedule(request);
-        this.thread.checkTimeToWait(calcWaitMillisFromNow(request), false);
+      if (!grant.grantLockToRequest(request)) {
+        // if request was local and then interrupted/released...
+        if (!request.responded()) {
+          // if request was a failed try-lock...
+          if (request.isTryLock()) {
+            cleanupSuspendState(request);
+            request.respondWithTryLockFailed(request.getObjectName());
+          }
+          // if request has timed out...
+          else if (request.checkForTimeout()) {
+            cleanupSuspendState(request);
+          }
+          // schedule into waiting queue for eventual granting...
+          else {
+            grant.schedule(request);
+            this.thread.checkTimeToWait(calcWaitMillisFromNow(request), false);
+          }
+        }
       }
     } finally {
       grant.decAccess();
@@ -3543,9 +3537,8 @@ public class DLockGrantor {
           // Not necessary to reset the interrupt bit, we're going to go
           // away of our own accord.
 
-          if (this.shutdown) {
-            // ok to ignore since this thread will now shutdown
-          } else {
+          // ok to ignore if this thread is shutting down, otherwise log a warning
+          if (!this.shutdown) {
             logger.warn("DLockGrantorThread was unexpectedly interrupted",
                 e);
             // do not set interrupt flag since this thread needs to resume

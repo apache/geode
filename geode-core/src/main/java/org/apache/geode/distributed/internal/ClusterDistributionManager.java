@@ -1344,14 +1344,10 @@ public class ClusterDistributionManager implements DistributionManager {
     synchronized (allMembershipListenersLock) {
       Set<MembershipListener> newAllMembershipListeners =
           new HashSet<>(allMembershipListeners);
-      if (!newAllMembershipListeners.remove(l)) {
-        // There seems to be a race condition in which
-        // multiple departure events can be registered
-        // on the same peer. We regard this as benign.
-        // FIXME when membership events become sane again
-        // String s = "MembershipListener was never registered";
-        // throw new IllegalArgumentException(s);
-      }
+      // There seems to be a race condition in which
+      // multiple departure events can be registered
+      // on the same peer. We regard this as benign.
+      newAllMembershipListeners.remove(l);
       allMembershipListeners = newAllMembershipListeners;
     }
   }

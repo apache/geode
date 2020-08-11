@@ -61,21 +61,10 @@ public class TestHeapLRU {
         System.err.println("Interrupted"); // FIXME should throw
       }
     });
-    // thread.start();
-
-    // ArrayList list = new ArrayList();
     for (int i = 0; i < Integer.MAX_VALUE; i++) {
-      if (i % 1000 == 0) {
-        // System.out.println("i = " + i);
-        // list = new ArrayList();
-
-      } else {
-        // list.add(new Integer(i));
-      }
 
       Integer key = new Integer(i % 10000);
       long[] value = new long[2000];
-      // System.out.println("Put " + key + " -> " + value);
       region.put(key, value);
     }
   }

@@ -16,6 +16,7 @@ package org.apache.geode.internal.offheap;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.offheap.MemoryAllocatorImpl.FREE_OFF_HEAP_MEMORY_PROPERTY;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -48,7 +49,9 @@ import java.util.Vector;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializer;
@@ -70,10 +73,14 @@ import org.apache.geode.test.junit.categories.OffHeapTest;
 @Category({OffHeapTest.class})
 public class OffHeapValidationJUnitTest {
 
+  @Rule
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+
   private GemFireCacheImpl cache;
 
   @Before
   public void setUp() throws Exception {
+    System.setProperty(FREE_OFF_HEAP_MEMORY_PROPERTY, "true");
     this.cache = createCache();
   }
 
@@ -223,18 +230,21 @@ public class OffHeapValidationJUnitTest {
                   + Arrays.toString((byte[]) values.dataValue) + " but was "
                   + Arrays.toString((byte[]) block.getDataValue()),
               Arrays.equals((byte[]) values.dataValue, (byte[]) block.getDataValue()));
-        } else if (values.dataType.contains("[")) {
           // TODO: multiple dimension arrays or non-byte arrays
-        } else if (values.dataValue instanceof Collection) {
-          int diff = joint((Collection<?>) values.dataValue, (Collection<?>) block.getDataValue());
-          assertEquals(i + ":" + values.dataType, 0, diff);
-        } else if (values.dataValue instanceof IdentityHashMap) {
-          // TODO
-        } else if (values.dataValue instanceof Map) {
-          int diff = joint((Map<?, ?>) values.dataValue, (Map<?, ?>) block.getDataValue());
-          assertEquals(i + ":" + values.dataType, 0, diff);
-        } else {
-          assertEquals(i + ":" + values.dataType, values.dataValue, block.getDataValue());
+        } else if (!values.dataType.contains("[")) {
+          if (values.dataValue instanceof Collection) {
+            int diff =
+                joint((Collection<?>) values.dataValue, (Collection<?>) block.getDataValue());
+            assertEquals(i + ":" + values.dataType, 0, diff);
+            // TODO IdentityHashMap
+          } else if (!(values.dataValue instanceof IdentityHashMap)) {
+            if (values.dataValue instanceof Map) {
+              int diff = joint((Map<?, ?>) values.dataValue, (Map<?, ?>) block.getDataValue());
+              assertEquals(i + ":" + values.dataType, 0, diff);
+            } else {
+              assertEquals(i + ":" + values.dataType, values.dataValue, block.getDataValue());
+            }
+          }
         }
         block = block.getNextBlock();
         i++;

@@ -765,18 +765,14 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
             } finally {
               brq.getInitializationLock().readLock().unlock();
             }
-          } else if (isDREvent) {
-            // in case of DR with PGS, if shadow bucket is not found event after
-            // above search then it means that bucket is not intended for this
-            // node. So lets not add this event in temp queue event as we are
-            // doing it for PRevent
+            // in case of DR with PGS, if shadow bucket is not found event after above search then
+            // it means that bucket is not intended for this node. So lets not add this event in
+            // temp queue event as we are doing it for PRevent
             // does not put onto the queue
-          } else {
-            // We have to handle the case where brq is null because the
-            // colocation
-            // chain is getting destroyed one by one starting from child region
-            // i.e this bucket due to moveBucket operation
-            // In that case we don't want to store this event.
+          } else if (!isDREvent) {
+            // We have to handle the case where brq is null because the colocation chain is getting
+            // destroyed one by one starting from child region i.e this bucket due to moveBucket
+            // operation In that case we don't want to store this event.
             if (prQ.getColocatedWithRegion().getRegionAdvisor().getBucketAdvisor(bucketId)
                 .isShadowBucketDestroyed(bucketFullPath)) {
               if (isDebugEnabled) {
@@ -823,7 +819,6 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
               }
             }
           }
-
         } finally {
           LocalRegion.setThreadInitLevelRequirement(oldLevel);
         }

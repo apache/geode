@@ -149,6 +149,7 @@ public class CPUContentionService {
   private Runnable watchForStop(BooleanSupplier stopCondition) {
     return () -> {
       while (!Thread.currentThread().isInterrupted() && !stopCondition.getAsBoolean()) {
+        // Intentionally empty block
       }
       stop();
     };

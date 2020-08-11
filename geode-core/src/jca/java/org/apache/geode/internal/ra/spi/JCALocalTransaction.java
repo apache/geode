@@ -124,11 +124,9 @@ public class JCALocalTransaction implements LocalTransaction {
     try {
       this.gfTxMgr.rollback();
     } catch (IllegalStateException ise) {
-      // It is possible that the GFE transaction has already been rolled back.
-      if (ise.getMessage()
-          .equals("Thread does not have an active transaction")) {
-        // ignore
-      } else {
+      // It is possible that the GFE transaction has already been rolled back. In that case, ignore
+      // the IllegalStateException
+      if (!ise.getMessage().equals("Thread does not have an active transaction")) {
         throw new ResourceException(ise);
       }
     } catch (RuntimeException e) {

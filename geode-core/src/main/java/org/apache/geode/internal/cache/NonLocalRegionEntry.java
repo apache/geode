@@ -94,12 +94,11 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
     }
     Assert.assertTrue(this.value != Token.NOT_AVAILABLE,
         "getEntry did not fault value in from disk");
-    this.lastModified = 0l;// re.getStatistics().getLastModifiedTime();
+    this.lastModified = 0L;// re.getStatistics().getLastModifiedTime();
     this.isRemoved = Token.isRemoved(value);
+    // TODO need to get version information from transaction entries if re is not an EntrySnapshot
     if (re instanceof EntrySnapshot) {
       this.versionTag = ((EntrySnapshot) re).getVersionTag();
-    } else {
-      // TODO need to get version information from transaction entries
     }
   }
 

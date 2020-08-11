@@ -157,11 +157,10 @@ public class RangeIndex extends AbstractIndex {
       }
 
       if (indxResultSet != null) {
-        if (indxResultSet.getClass().getName().startsWith("org.apache.geode.internal.cache.Token$")
-            || indxResultSet == QueryService.UNDEFINED) {
-          // do nothing, Entries are either removed or invalidated or destroyed
-          // by other thread.
-        } else {
+        // If the below evaluates to false, do nothing. Entries are either removed or invalidated or
+        // destroyed by other thread.
+        if (!indxResultSet.getClass().getName().startsWith("org.apache.geode.internal.cache.Token$")
+            && indxResultSet != QueryService.UNDEFINED) {
           undefinedSet.add(indxResultSet);
         }
       }
@@ -464,11 +463,10 @@ public class RangeIndex extends AbstractIndex {
       this.internalIndexStats.incNumValues(1);
     } else if (key == QueryService.UNDEFINED) {
       if (value != null) {
-        if (value.getClass().getName().startsWith("org.apache.geode.internal.cache.Token$")
-            || value == QueryService.UNDEFINED) {
-          // do nothing, Entries are either removed or invalidated or destroyed
-          // by other thread.
-        } else {
+        // If the below evaluates to false, do nothing. Entries are either removed or invalidated or
+        // destroyed by other thread.
+        if (!value.getClass().getName().startsWith("org.apache.geode.internal.cache.Token$")
+            && value != QueryService.UNDEFINED) {
           undefinedMappedEntries.add(entry, value);
           this.internalIndexStats.incNumValues(1);
         }

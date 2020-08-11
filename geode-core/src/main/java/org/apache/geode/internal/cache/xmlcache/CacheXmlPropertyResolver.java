@@ -119,9 +119,7 @@ public class CacheXmlPropertyResolver implements PropertyResolver {
       resolvedString =
           helper.parseResolvablePropString(stringWithPrefixAndSuffix, this, new HashSet<String>());
     } catch (IllegalArgumentException e) {
-      if (ignoreUnresolvedProperties) {
-        // Do Nothing
-      } else {
+      if (!ignoreUnresolvedProperties) {
         logger.error("Format of the string {} used for perameterization is unresolvable",
             stringWithPrefixAndSuffix);
       }

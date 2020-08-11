@@ -74,9 +74,8 @@ public class WANConfigurationJUnitTest {
       sender1.start();
       fail("Expected IllegalStateException but not thrown");
     } catch (Exception e) {
-      if ((e instanceof IllegalStateException && e.getMessage().startsWith(
+      if (!(e instanceof IllegalStateException && e.getMessage().startsWith(
           "Locators must be configured before starting gateway-sender."))) {
-      } else {
         fail("Expected IllegalStateException but received :" + e);
       }
     }
@@ -121,10 +120,8 @@ public class WANConfigurationJUnitTest {
       fact.create("NYSender", 2);
       fail("Expected IllegalStateException but not thrown");
     } catch (Exception e) {
-      if (e instanceof IllegalStateException
-          && e.getMessage().contains("A GatewaySender with id")) {
-
-      } else {
+      if (!(e instanceof IllegalStateException && e.getMessage()
+          .contains("A GatewaySender with id"))) {
         fail("Expected IllegalStateException but received :" + e);
       }
     }
@@ -146,9 +143,8 @@ public class WANConfigurationJUnitTest {
       factory.addGatewaySenderId(sender1.getId());
       fail("Expected IllegalArgumentException but not thrown");
     } catch (Exception e) {
-      if (e instanceof IllegalArgumentException && e.getMessage().contains("is already added")) {
-
-      } else {
+      if (!(e instanceof IllegalArgumentException && e.getMessage()
+          .contains("is already added"))) {
         fail("Expected IllegalStateException but received :" + e);
       }
     }
@@ -216,8 +212,7 @@ public class WANConfigurationJUnitTest {
       GatewaySender sender1 = fact.create("NYSender", 2);
       fail("Expected GatewaySenderException but not thrown");
     } catch (GatewaySenderException e) {
-      if (e.getMessage().contains("can not be created with dispatcher threads less than 1")) {
-      } else {
+      if (!e.getMessage().contains("can not be created with dispatcher threads less than 1")) {
         fail("Expected IllegalStateException but received :" + e);
       }
     }
@@ -395,10 +390,8 @@ public class WANConfigurationJUnitTest {
       fail(
           "Expected GatewaySenderException. When a sender is added , remoteDSId should not be provided.");
     } catch (Exception e) {
-      if (e instanceof GatewaySenderException && e.getMessage().contains(
-          "cannot define a remote site because at least AsyncEventListener is already added.")) {
-
-      } else {
+      if (!(e instanceof GatewaySenderException && e.getMessage().contains(
+          "cannot define a remote site because at least AsyncEventListener is already added."))) {
         fail("Expected GatewaySenderException but received :" + e);
       }
     }

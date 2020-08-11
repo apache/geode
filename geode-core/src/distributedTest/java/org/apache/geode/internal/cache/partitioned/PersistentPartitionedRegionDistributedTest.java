@@ -1534,21 +1534,18 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
     Set<?> keys = region.keySet();
     assertThatThrownBy(() -> {
       for (Object key : keys) {
-        // nothing
       }
     }).isInstanceOf(PartitionOfflineException.class);
 
     Collection<?> values = region.values();
     assertThatThrownBy(() -> {
       for (Object value : values) {
-        // nothing
       }
     }).isInstanceOf(PartitionOfflineException.class);
 
     Set<?> entries = region.entrySet();
     assertThatThrownBy(() -> {
       for (Object entry : entries) {
-        // nothing
       }
     }).isInstanceOf(PartitionOfflineException.class);
 

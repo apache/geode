@@ -445,9 +445,7 @@ public class LinuxProcFsStatistics {
         other_recv_errs += recv_errs;
         other_recv_drop += recv_drop;
 
-        if (isloopback) {
-          /* loopback_xmit_packets = xmit_packets; */
-        } else {
+        if (!isloopback) {
           other_xmit_packets += xmit_packets;
           other_xmit_bytes += xmit_bytes;
         }
@@ -861,7 +859,7 @@ public class LinuxProcFsStatistics {
       long l = 0L;
       try {
         l = Long.parseLong(number);
-      } catch (NumberFormatException nfe) {
+      } catch (NumberFormatException ignore) {
       }
       return l;
     }

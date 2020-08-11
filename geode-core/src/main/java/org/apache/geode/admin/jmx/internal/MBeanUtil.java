@@ -373,7 +373,7 @@ public class MBeanUtil {
           notifications.put(type, null);
         }
       }
-
+      // refreshInterval must be over 0 to do anything...
       if (refreshInterval > 0) {
         // add notification to the refresh timer...
         timerNotificationId = refreshTimer.addNotification(type.getType(), // type
@@ -384,8 +384,6 @@ public class MBeanUtil {
 
         // put an entry into the map for the listener...
         notifications.put(type, timerNotificationId);
-      } else {
-        // do nothing! refreshInterval must be over 0 to do anything...
       }
     } catch (java.lang.RuntimeException e) {
       logStackTrace(Level.WARN, e);

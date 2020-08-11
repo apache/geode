@@ -702,9 +702,7 @@ public class RemoteCQTransactionDUnitTest extends JUnit4CacheTestCase {
     private boolean oneCreate;
 
     public void checkSuccess() throws Exception {
-      if (oneDestroy && oneCreate) {
-        // chill
-      } else {
+      if (!(oneDestroy && oneCreate)) {
         fail("Didn't get both events. oneDestroy=" + oneDestroy + " oneCreate=" + oneCreate);
       }
     }

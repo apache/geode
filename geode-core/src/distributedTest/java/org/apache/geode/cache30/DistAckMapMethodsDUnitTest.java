@@ -20,6 +20,7 @@
  */
 package org.apache.geode.cache30;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -562,9 +563,9 @@ public class DistAckMapMethodsDUnitTest extends JUnit4DistributedTestCase { // T
       inOb2 = new Integer(1);
       assertEquals("beforeDestroy", remRegion.get(inOb2).toString());
 
-      // wait till listeber switches afterDestroy to true
-      while (!afterDestroy) {
-      }
+      // wait till listener switches afterDestroy to true
+      await().until(() -> afterDestroy);
+
       // to test cacheListener
       inOb2 = new Integer(3);
       assertEquals("afterDestroy", remRegion.get(inOb2).toString());

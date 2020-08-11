@@ -481,12 +481,11 @@ public class IndexCreationMsg extends PartitionMessage {
         waitForCacheException();
       } catch (RuntimeException re) {
         if (re instanceof PartitionedRegionException) {
-          if (re.getCause() instanceof RegionNotFoundException) {
-            // Region may not be available at the receiver.
-            // ignore the exception.
-            // This will happen when the region on the remote end is still in
-            // initialization mode and is not yet created the region ID.
-          } else {
+          // Region may not be available at the receiver.
+          // ignore the RegionNotFoundException.
+          // This will happen when the region on the remote end is still in
+          // initialization mode and is not yet created the region ID.
+          if (!(re.getCause() instanceof RegionNotFoundException)) {
             throw re;
           }
         } else {

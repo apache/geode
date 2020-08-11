@@ -165,9 +165,6 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
 
     String bytesThresholdString = properties.getProperty(CacheXml.BYTES_THRESHOLD);
     if (bytesThresholdString != null) {
-      if (this.isSynchronous) {
-        // log warning, no use setting time if is synchronous
-      }
       this.bytesThreshold = verifyLongInString(bytesThresholdString, CacheXml.BYTES_THRESHOLD);
     } else {
       this.bytesThreshold = 0L;
@@ -175,9 +172,6 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
 
     String timeIntervalString = properties.getProperty(CacheXml.TIME_INTERVAL);
     if (timeIntervalString != null) {
-      if (this.isSynchronous) {
-        // log warning, no use setting time if is synchronous
-      }
       this.timeInterval = verifyLongInString(timeIntervalString, CacheXml.TIME_INTERVAL);
     } else {
       if (!this.isSynchronous && this.bytesThreshold == 0) {

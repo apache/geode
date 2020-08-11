@@ -348,28 +348,29 @@ public class PutAllOp {
                 if (isDebugEnabled) {
                   logger.debug("part({}) contained {}", partNo, o);
                 }
-                if (o == null) {
-                  // no response is an okay response
-                } else if (o instanceof byte[]) {
-                  if (prSingleHopEnabled) {
-                    byte[] bytesReceived = part.getSerializedForm();
-                    if (bytesReceived[0] != ClientMetadataService.INITIAL_VERSION) { // nw hop
-                      if (region != null) {
+                // no response is an okay response, so do nothing if o is null
+                if (o != null) {
+                  if (o instanceof byte[]) {
+                    if (prSingleHopEnabled) {
+                      byte[] bytesReceived = part.getSerializedForm();
+                      // nw hop
+                      if (bytesReceived[0] != ClientMetadataService.INITIAL_VERSION
+                          && region != null) {
                         try {
                           ClientMetadataService cms = region.getCache().getClientMetadataService();
                           cms.scheduleGetPRMetaData(region, false, bytesReceived[1]);
-                        } catch (CacheClosedException e) {
+                        } catch (CacheClosedException ignore) {
                         }
                       }
                     }
+                  } else if (o instanceof Throwable) {
+                    String s = "While performing a remote putAll";
+                    exceptionRef[0] = new ServerOperationException(s, (Throwable) o);
+                  } else {
+                    VersionedObjectList chunk = (VersionedObjectList) o;
+                    chunk.replaceNullIDs(con.getEndpoint().getMemberId());
+                    result.addAll(chunk);
                   }
-                } else if (o instanceof Throwable) {
-                  String s = "While performing a remote putAll";
-                  exceptionRef[0] = new ServerOperationException(s, (Throwable) o);
-                } else {
-                  VersionedObjectList chunk = (VersionedObjectList) o;
-                  chunk.replaceNullIDs(con.getEndpoint().getMemberId());
-                  result.addAll(chunk);
                 }
               } catch (Exception e) {
                 exceptionRef[0] = new ServerOperationException("Unable to deserialize value", e);

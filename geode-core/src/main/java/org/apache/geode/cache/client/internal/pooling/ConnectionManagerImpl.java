@@ -965,14 +965,11 @@ public class ConnectionManagerImpl implements ConnectionManager {
       if (!allConnections.isEmpty()) {
         final long now = System.nanoTime();
         for (PooledConnection pc : allConnections) {
-          if (pc.shouldDestroy()) {
-            // this con has already been destroyed so ignore it
-          } else if (currentServer.equals(pc.getServer())) {
-            {
-              long life = pc.remainingLife(now, lifetimeTimeoutNanos);
-              if (life <= 0) {
-                return true;
-              }
+          // if this con has already been destroyed, ignore it
+          if (!pc.shouldDestroy() && currentServer.equals(pc.getServer())) {
+            long life = pc.remainingLife(now, lifetimeTimeoutNanos);
+            if (life <= 0) {
+              return true;
             }
           }
         }
@@ -988,13 +985,8 @@ public class ConnectionManagerImpl implements ConnectionManager {
       if (!allConnections.isEmpty()) {
         final long now = System.nanoTime();
         for (PooledConnection pc : allConnections) {
-          if (pc.hasIdleExpired(now, idleTimeoutNanos)) {
-            // this con has already idle expired so ignore it
-            continue;
-          } else if (pc.shouldDestroy()) {
-            // this con has already been destroyed so ignore it
-            continue;
-          } else {
+          // if this con has already idle expired or been destroyed, ignore it
+          if (!(pc.hasIdleExpired(now, idleTimeoutNanos) || pc.shouldDestroy())) {
             long life = pc.remainingLife(now, lifetimeTimeoutNanos);
             if (life > 0) {
               if (rescheduleOk) {
@@ -1023,12 +1015,8 @@ public class ConnectionManagerImpl implements ConnectionManager {
           if (pc.remainingLife(now, lifetimeTimeoutNanos) > 0) {
             // no more connections whose lifetime could have expired
             break;
-            // note don't ignore idle connections because they are still connected
-            // } else if (pc.remainingIdle(now, idleTimeoutNanos) <= 0) {
-            // // this con has already idle expired so ignore it
-          } else if (pc.shouldDestroy()) {
-            // this con has already been destroyed so ignore it
-          } else if (sl.equals(pc.getEndpoint().getLocation())) {
+            // if this connection has already been destroyed, ignore it
+          } else if (!pc.shouldDestroy() && sl.equals(pc.getEndpoint().getLocation())) {
             // we found a connection to whose lifetime we can extend
             it.remove();
             pc.setBirthDate(now);

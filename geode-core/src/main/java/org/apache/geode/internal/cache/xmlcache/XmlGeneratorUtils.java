@@ -166,19 +166,16 @@ public class XmlGeneratorUtils {
 
       handler.startElement("", PARAMETER, PARAMETER, atts);
 
+      // Ignore the value if it's not a String or Declarable
       if (value instanceof String) {
         String sValue = (String) value;
         handler.startElement("", STRING, STRING, EMPTY);
         handler.characters(sValue.toCharArray(), 0, sValue.length());
         handler.endElement("", STRING, STRING);
-
       } else if (value instanceof Declarable) {
         handler.startElement("", DECLARABLE, DECLARABLE, EMPTY);
         addDeclarable(handler, (Declarable) value);
         handler.endElement("", DECLARABLE, DECLARABLE);
-
-      } else {
-        // Ignore it
       }
 
       handler.endElement("", PARAMETER, PARAMETER);

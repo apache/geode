@@ -513,9 +513,8 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
         gtx.setRollbackOnly();
       else if (status == Status.STATUS_COMMITTING)
         gtx.setStatus(Status.STATUS_ROLLING_BACK);
-      else if (status == Status.STATUS_ROLLING_BACK)
-        ; // Dont do anything
-      else {
+      // Dont do anything if status == STATUS_ROLLING_BACK
+      else if (status != Status.STATUS_ROLLING_BACK) {
         String exception =
             String.format("Transaction cannot be marked for rollback. Transcation status, %s",
                 Integer.valueOf(status));

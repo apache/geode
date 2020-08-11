@@ -1043,10 +1043,10 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
 
     if (m.isPreparing()) {
       if (this.preparedView != null && this.preparedView.getViewId() >= view.getViewId()) {
-        if (this.preparedView.getViewId() == view.getViewId() &&
-            this.preparedView.getCreator().equals(view.getCreator())) {
-          // this can happen if we received two prepares during auto-reconnect
-        } else {
+        // The inverse of this case can happen if we received two prepares during auto-reconnect, so
+        // in that case, do nothing
+        if (this.preparedView.getViewId() != view.getViewId() ||
+            !this.preparedView.getCreator().equals(view.getCreator())) {
           // send the conflicting view to the creator of this new view
           services.getMessenger()
               .send(new ViewAckMessage<>(view.getViewId(), m.getSender(), this.preparedView));
@@ -1358,10 +1358,9 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
         if (rsp.getRejectionMessage() != null) {
           joinResponse[0] = rsp;
           joinResponse.notifyAll();
-        } else if (rsp.getCurrentView() != null) {
-          // ignore - we get to join when we receive a view. Joining earlier may
-          // confuse other members if we've reused an old address
-        } else {
+          // If the current view is not null, ignore - we get to join when we receive a view.
+          // Joining earlier may confuse other members if we've reused an old address
+        } else if (rsp.getCurrentView() == null) {
           // we got secret key lets add it
           services.getMessenger().setClusterSecretKey(rsp.getSecretPk());
         }

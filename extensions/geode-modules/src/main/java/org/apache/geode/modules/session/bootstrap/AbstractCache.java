@@ -111,6 +111,7 @@ public abstract class AbstractCache {
   public void close() {
     getCache().close();
     while (!getCache().isClosed()) {
+      // Intentionally empty block
     }
 
 

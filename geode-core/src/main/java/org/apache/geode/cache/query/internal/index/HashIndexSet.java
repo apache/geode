@@ -734,9 +734,8 @@ public class HashIndexSet implements Set {
       if (keysToRemove != null) {
         while (pos < objects.length) {
           current = objects[pos];
-          if (current == null || current.equals(REMOVED)) {
-            // continue searching
-          } else if (notMatchingAnyKeyToRemove(keysToRemove, current)) {
+          if (current != null && !current.equals(REMOVED) && notMatchingAnyKeyToRemove(keysToRemove,
+              current)) {
             return true;
           }
           setPos(pos + 1);

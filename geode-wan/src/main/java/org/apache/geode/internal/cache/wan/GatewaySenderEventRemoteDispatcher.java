@@ -132,12 +132,13 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
         // it
         destroyConnection();
       }
-      if (this.sender.getProxy() == null || this.sender.getProxy().isDestroyed()) {
-        // if our pool is shutdown then just be silent
-      } else if (RecoverableExceptionPredicates.isRecoverableWhenReadingAck(ex)) {
-        sleepBeforeRetry();
-      } else {
-        logAndStopProcessor(ex);
+      // if our pool is shutdown then just be silent
+      if (this.sender.getProxy() != null && !this.sender.getProxy().isDestroyed()) {
+        if (RecoverableExceptionPredicates.isRecoverableWhenReadingAck(ex)) {
+          sleepBeforeRetry();
+        } else {
+          logAndStopProcessor(ex);
+        }
       }
     } finally {
       messageProcessingAttempted.accept(true);
@@ -158,18 +159,19 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
       }
     } catch (GatewaySenderException ge) {
       Throwable t = ge.getCause();
-      if (this.sender.getProxy() == null || this.sender.getProxy().isDestroyed()) {
-        // if our pool is shutdown then just be silent
-      } else if (RecoverableExceptionPredicates.isRecoverableWhenDispatchingBatch(t)) {
-        this.processor.handleException();
-        sleepBeforeRetry();
-        if (logger.isDebugEnabled()) {
-          logger.debug(
-              "Failed to dispatch a batch with id {} due to non-fatal exception {}.  Retrying in {} ms",
-              this.processor.getBatchId(), t, RETRY_WAIT_TIME);
+      // if our pool is shutdown then just be silent
+      if (this.sender.getProxy() != null && !this.sender.getProxy().isDestroyed()) {
+        if (RecoverableExceptionPredicates.isRecoverableWhenDispatchingBatch(t)) {
+          this.processor.handleException();
+          sleepBeforeRetry();
+          if (logger.isDebugEnabled()) {
+            logger.debug(
+                "Failed to dispatch a batch with id {} due to non-fatal exception {}.  Retrying in {} ms",
+                this.processor.getBatchId(), t, RETRY_WAIT_TIME);
+          }
+        } else {
+          logAndStopProcessor(ge);
         }
-      } else {
-        logAndStopProcessor(ge);
       }
     } catch (CancelException e) {
       logAndStopProcessor(e);

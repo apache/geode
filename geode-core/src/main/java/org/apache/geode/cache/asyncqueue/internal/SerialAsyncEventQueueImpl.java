@@ -249,9 +249,8 @@ public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
     EventID originalEventId = clonedEvent.getEventId();
     long originalThreadId = originalEventId.getThreadID();
     long newThreadId = originalThreadId;
-    if (ThreadIdentifier.isWanTypeThreadID(newThreadId)) {
-      // This thread id has already been converted. Do nothing.
-    } else {
+    // If isWanTypeThreadID() returns true, this thread id has already been converted. Do nothing.
+    if (!ThreadIdentifier.isWanTypeThreadID(newThreadId)) {
       newThreadId = ThreadIdentifier.createFakeThreadIDForParallelGSPrimaryBucket(0,
           originalThreadId, getEventIdIndex());
     }

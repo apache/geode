@@ -182,12 +182,11 @@ public class MaxPoolSizeDUnitTest extends JUnit4DistributedTestCase {
       sm.execute(sql);
       conn.close();
     } catch (SQLException se) {
+      // If we see the message below, disregard - this happens sometimes on unit test runs on slower
+      // machines
       if (!se.getMessage().contains("A lock could not be obtained within the time requested")) {
         LogWriterUtils.getLogWriter().fine("destroy table sql exception: " + se);
         throw se;
-      } else {
-        // disregard - this happens sometimes on unit test runs on slower
-        // machines
       }
     }
     closeCache();

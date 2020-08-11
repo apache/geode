@@ -2124,22 +2124,17 @@ public class PartitionedRegion extends LocalRegion
 
     // Drop Duplicates if this is a DISTINCT query
     boolean allowsDuplicates = results.getCollectionType().allowsDuplicates();
-    // No need to apply the limit to the SelectResults.
-    // We know that even if we do not apply the limit,
-    // the results will satisfy the limit
-    // as it has been evaluated in the iteration of List to
-    // populate the SelectsResuts
-    // So if the results is instance of ResultsBag or is a StructSet or
-    // a ResultsSet, if the limit exists, the data set size will
-    // be exactly matching the limit
+    // No need to apply the limit to the SelectResults. We know that even if we do not apply the
+    // limit, the results will satisfy the limit as it has been evaluated in the iteration of List
+    // to populate the SelectsResuts. So if the results is instance of ResultsBag or is a StructSet
+    // or a ResultsSet, if the limit exists, the data set size will be exactly matching the limit
     if (selectExpr.isDistinct()) {
-      // don't just convert to a ResultsSet (or StructSet), since
-      // the bags can convert themselves to a Set more efficiently
+      // don't just convert to a ResultsSet (or StructSet), since the bags can convert themselves to
+      // a Set more efficiently
       ObjectType elementType = results.getCollectionType().getElementType();
-      if (selectExpr.getOrderByAttrs() != null) {
-        // Set limit also, its not applied while building the final result set as order by is
-        // involved.
-      } else if (allowsDuplicates) {
+      // Set limit also, its not applied while building the final result set as order by is
+      // involved.
+      if (selectExpr.getOrderByAttrs() == null && allowsDuplicates) {
         results = new ResultsCollectionWrapper(elementType, results.asSet());
       }
       if (selectExpr.isCount() && (results.isEmpty() || selectExpr.isDistinct())) {
@@ -9478,9 +9473,7 @@ public class PartitionedRegion extends LocalRegion
             HeapEvictor.BUCKET_SORTING_INTERVAL);
       }
     }
-    if (!bucketSortedOnce.get()) {
-      while (bucketSortedOnce.get() == false);
-    }
+    while (!bucketSortedOnce.get());
     List<BucketRegion> bucketList = new ArrayList<>(this.sortedBuckets);
     return bucketList;
   }

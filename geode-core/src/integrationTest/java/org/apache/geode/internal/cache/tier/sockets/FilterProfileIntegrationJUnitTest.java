@@ -14,19 +14,19 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import java.text.ParseException;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+
 import java.util.concurrent.CountDownLatch;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.AttributesFactory;
-import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.cache.query.CacheUtils;
 import org.apache.geode.internal.cache.FilterProfile;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
@@ -34,14 +34,23 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 @Category({ClientSubscriptionTest.class})
 public class FilterProfileIntegrationJUnitTest {
 
-  private static String regionName = "test";
-  private static int numElem = 120;
+  private InternalCache cache;
+
+  @Before
+  public void setUp() throws Exception {
+    cache = (InternalCache) new CacheFactory().create();
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    cache.close();
+  }
 
   @Test
-  public void testFilterProfile() throws Exception {
-    Cache cache = CacheUtils.getCache();
+  public void testFilterProfile() {
     try {
-      createLocalRegion();
+      String regionName = "test";
+      cache.createRegionFactory().setDataPolicy(DataPolicy.NORMAL).create(regionName);
       LocalRegion region = (LocalRegion) cache.getRegion(regionName);
       final FilterProfile filterProfile = new FilterProfile(region);
       filterProfile.registerClientInterest("clientId", ".*", InterestType.REGULAR_EXPRESSION,
@@ -50,20 +59,13 @@ public class FilterProfileIntegrationJUnitTest {
       final FilterProfileTestHook hook = new FilterProfileTestHook();
       FilterProfile.testHook = hook;
 
-      new Thread(new Runnable() {
-        @Override
-        public void run() {
-          while (hook.getCount() != 1) {
-
-          }
-          filterProfile.unregisterClientInterest("clientId", ".*", InterestType.REGULAR_EXPRESSION);
-
-        }
+      new Thread(() -> {
+        await().until(() -> hook.getCount() == 1);
+        filterProfile.unregisterClientInterest("clientId", ".*", InterestType.REGULAR_EXPRESSION);
       }).start();
       filterProfile.hasAllKeysInterestFor("clientId");
     } finally {
       cache.getDistributedSystem().disconnect();
-      cache.close();
     }
   }
 
@@ -93,18 +95,5 @@ public class FilterProfileIntegrationJUnitTest {
       latch.countDown();
     }
 
-  };
-
-  /**
-   * Helper Methods
-   */
-
-  private void createLocalRegion() throws ParseException {
-    Cache cache = CacheUtils.getCache();
-    AttributesFactory attributesFactory = new AttributesFactory();
-    attributesFactory.setDataPolicy(DataPolicy.NORMAL);
-    RegionAttributes regionAttributes = attributesFactory.create();
-    Region region = cache.createRegion(regionName, regionAttributes);
   }
-
 }

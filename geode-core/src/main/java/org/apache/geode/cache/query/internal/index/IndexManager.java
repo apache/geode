@@ -463,9 +463,7 @@ public class IndexManager {
     if (nodeType != OQLLexerTokenTypes.Identifier && nodeType != OQLLexerTokenTypes.METHOD_INV) {
       if (nodeType == OQLLexerTokenTypes.TOK_LBRACK && !helper.isMapTypeIndex()
           && helper.modifiedIndexExpr instanceof MapIndexable) {
-        if (((MapIndexable) helper.modifiedIndexExpr).getIndexingKeys().size() == 1) {
-
-        } else {
+        if (((MapIndexable) helper.modifiedIndexExpr).getIndexingKeys().size() != 1) {
           return false;
         }
       } else {

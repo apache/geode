@@ -1959,10 +1959,9 @@ public class DiskInitFile implements DiskInitFileInterpreter {
     try {
       if (clearOplogEntryId != DiskStoreImpl.INVALID_ID) {
         this.ifTotalRecordCount++;
+        // If this evaluates to false, we now have one record to gc (the previous clear).
         if (dr.getClearOplogEntryId() == DiskStoreImpl.INVALID_ID) {
           this.ifLiveRecordCount++;
-        } else {
-          // we now have one record to gc (the previous clear).
         }
         dr.setClearOplogEntryId(clearOplogEntryId);
         if (clearOplogEntryId > clearOplogEntryIdHWM) {
@@ -1982,10 +1981,9 @@ public class DiskInitFile implements DiskInitFileInterpreter {
     lock(true);
     try {
       this.ifTotalRecordCount++;
+      // If this evaluates to false, we now have one record to gc (the previous clear).
       if (dr.getClearRVV() == null) {
         this.ifLiveRecordCount++;
-      } else {
-        // we now have one record to gc (the previous clear).
       }
       dr.setClearRVV(rvv);
       writeClearRecord(dr, rvv);

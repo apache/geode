@@ -959,9 +959,8 @@ public class Oplog implements CompactableOplog, Flushable {
         getOplogSet().drfDelete(this.oplogId);
         deleteFile(this.drf);
       }
-    } else if (needsCompaction()) {
-      // just leave it in the list it is already in
-    } else {
+      // just leave it in the list it is already in if needsCompaction() returns true
+    } else if (!needsCompaction()) {
       // remove it from the compactable list
       getOplogSet().removeOplog(getOplogId(),
           true/*

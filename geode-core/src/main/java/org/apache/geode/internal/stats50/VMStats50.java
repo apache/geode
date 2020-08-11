@@ -159,12 +159,11 @@ public class VMStats50 implements VMStatsContract {
       try {
         Class c =
             ClassPathLoader.getLatest().forName("com.sun.management.UnixOperatingSystemMXBean");
+        // leave them null if the below is false
         if (c.isInstance(osBean)) {
           m1 = c.getMethod("getMaxFileDescriptorCount", new Class[] {});
           m2 = c.getMethod("getOpenFileDescriptorCount", new Class[] {});
           bean = osBean;
-        } else {
-          // leave them null
         }
         // Always set ProcessCpuTime
         m3 = osBean.getClass().getMethod("getProcessCpuTime", new Class[] {});

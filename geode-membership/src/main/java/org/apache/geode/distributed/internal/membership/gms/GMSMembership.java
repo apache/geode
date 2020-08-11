@@ -1705,16 +1705,15 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
     // remoteId != null
     latestViewWriteLock.lock();
     try {
-      if (latestView == null) {
-        // Not sure how this would happen, but see bug 38460.
-        // No view?? Not found!
-      } else if (latestView.contains(remoteId)) {
-        // ARB: check if remoteId is already in membership view.
-        // If not, then create a latch if needed and wait for the latch to open.
-        foundRemoteId = true;
-      } else if ((currentLatch = this.memberLatch.get(remoteId)) == null) {
-        currentLatch = new CountDownLatch(1);
-        this.memberLatch.put(remoteId, currentLatch);
+      if (latestView != null) {
+        if (latestView.contains(remoteId)) {
+          // ARB: check if remoteId is already in membership view.
+          // If not, then create a latch if needed and wait for the latch to open.
+          foundRemoteId = true;
+        } else if ((currentLatch = this.memberLatch.get(remoteId)) == null) {
+          currentLatch = new CountDownLatch(1);
+          this.memberLatch.put(remoteId, currentLatch);
+        }
       }
     } finally {
       latestViewWriteLock.unlock();

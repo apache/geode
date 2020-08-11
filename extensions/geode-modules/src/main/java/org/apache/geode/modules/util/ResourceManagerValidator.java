@@ -42,13 +42,9 @@ public class ResourceManagerValidator {
     if (vmVendor.startsWith("Sun") || vmVendor.startsWith("Apple")) {
       // java.vm.vendor = Sun Microsystems Inc. || java.vm.vendor = Apple Inc.
       validateSunArguments(cache, rm, inputArguments);
-    } else if (vmVendor.startsWith("IBM")) {
-      // java.vm.vendor = IBM Corporation
-      // TODO validate IBM input arguments
-    } else if (vmVendor.startsWith("BEA")) {
-      // java.vm.vendor = BEA Systems, Inc.
-      // TODO validate JRockit input arguments
     }
+    // TODO validate IBM input arguments (vmVendor.startsWith("IBM"))
+    // TODO validate JRockit input arguments (vmVendor.startsWith("BEA"))
   }
 
   private static void validateSunArguments(GemFireCache cache, ResourceManager rm,

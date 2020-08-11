@@ -93,9 +93,7 @@ public class QueuedOperation {
             if (ee.getVersionTag() != null) {
               time = ee.getVersionTag().getVersionTimeStamp();
             }
-            if (AbstractUpdateOperation.doPutOrCreate(lr, ee, time)) {
-              // am I done?
-            }
+            AbstractUpdateOperation.doPutOrCreate(lr, ee, time);
           } catch (ConcurrentCacheModificationException e) {
             // operation was rejected by the cache's concurrency control mechanism as being old
           }

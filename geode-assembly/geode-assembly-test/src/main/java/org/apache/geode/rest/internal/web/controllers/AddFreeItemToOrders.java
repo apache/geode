@@ -45,21 +45,17 @@ public class AddFreeItemToOrders implements Function {
   @Override
   public void execute(FunctionContext context) {
     Region region = null;
-    List<Object> vals = new ArrayList<Object>();
-    List<Object> keys = new ArrayList<Object>();
-    List<Object> argsList = new ArrayList<Object>();
-    Object[] argsArray = null;
+    List<Object> vals = new ArrayList<>();
+    List<Object> keys = new ArrayList<>();
+    List<Object> argsList = new ArrayList<>();
+    Object[] argsArray;
 
-    if (context.getArguments() instanceof Boolean) {
-
-    } else if (context.getArguments() instanceof String) {
-      String arg = (String) context.getArguments();
-    } else if (context.getArguments() instanceof Vector) {
-
-    } else if (context.getArguments() instanceof Object[]) {
+    if (context.getArguments() instanceof Object[]) {
       argsArray = (Object[]) context.getArguments();
       argsList = Arrays.asList(argsArray);
-    } else {
+    } else if (!((context.getArguments() instanceof Boolean)
+        || (context.getArguments() instanceof Vector)
+        || (context.getArguments() instanceof String))) {
       System.out.println("AddFreeItemToOrders : Invalid Arguments");
     }
 

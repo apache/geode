@@ -122,8 +122,6 @@ public class DistributionLocator {
           ExitCode.FATAL.doSystemExit();
         }
         address = InetAddress.getByName(args[1]);
-      } else {
-        // address = null; // was InetAddress.getLocalHost(); (redundant assignment)
       }
       if (args.length > 2) {
         peerLocator = "true".equalsIgnoreCase(args[2]);

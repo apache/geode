@@ -1073,35 +1073,36 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
   private void startRegionAttributes(Attributes atts) {
     RegionAttributesCreation attrs = new RegionAttributesCreation(this.cache);
     String scope = atts.getValue(SCOPE);
-    if (scope == null) {
-    } else if (scope.equals(LOCAL)) {
-      attrs.setScope(Scope.LOCAL);
-    } else if (scope.equals(DISTRIBUTED_NO_ACK)) {
-      attrs.setScope(Scope.DISTRIBUTED_NO_ACK);
-    } else if (scope.equals(DISTRIBUTED_ACK)) {
-      attrs.setScope(Scope.DISTRIBUTED_ACK);
-    } else if (scope.equals(GLOBAL)) {
-      attrs.setScope(Scope.GLOBAL);
-    } else {
-      throw new InternalGemFireException(
-          String.format("Unknown scope: %s", scope));
+    if (scope != null) {
+      if (scope.equals(LOCAL)) {
+        attrs.setScope(Scope.LOCAL);
+      } else if (scope.equals(DISTRIBUTED_NO_ACK)) {
+        attrs.setScope(Scope.DISTRIBUTED_NO_ACK);
+      } else if (scope.equals(DISTRIBUTED_ACK)) {
+        attrs.setScope(Scope.DISTRIBUTED_ACK);
+      } else if (scope.equals(GLOBAL)) {
+        attrs.setScope(Scope.GLOBAL);
+      } else {
+        throw new InternalGemFireException(
+            String.format("Unknown scope: %s", scope));
+      }
     }
     String mirror = atts.getValue(MIRROR_TYPE);
-    if (mirror == null) {
-    } else if (mirror.equals(NONE)) {
-      attrs.setMirrorType(MirrorType.NONE);
-    } else if (mirror.equals(KEYS)) {
-      attrs.setMirrorType(MirrorType.KEYS);
-    } else if (mirror.equals(KEYS_VALUES)) {
-      attrs.setMirrorType(MirrorType.KEYS_VALUES);
-    } else {
-      throw new InternalGemFireException(
-          String.format("Unknown mirror type: %s", mirror));
+    if (mirror != null) {
+      if (mirror.equals(NONE)) {
+        attrs.setMirrorType(MirrorType.NONE);
+      } else if (mirror.equals(KEYS)) {
+        attrs.setMirrorType(MirrorType.KEYS);
+      } else if (mirror.equals(KEYS_VALUES)) {
+        attrs.setMirrorType(MirrorType.KEYS_VALUES);
+      } else {
+        throw new InternalGemFireException(
+            String.format("Unknown mirror type: %s", mirror));
+      }
     }
-    {
-      String dp = atts.getValue(DATA_POLICY);
-      if (dp == null) {
-      } else if (dp.equals(NORMAL_DP)) {
+    String dp = atts.getValue(DATA_POLICY);
+    if (dp != null) {
+      if (dp.equals(NORMAL_DP)) {
         attrs.setDataPolicy(DataPolicy.NORMAL);
       } else if (dp.equals(PRELOADED_DP)) {
         attrs.setDataPolicy(DataPolicy.PRELOADED);
@@ -1120,7 +1121,6 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
             String.format("Unknown data policy: %s", dp));
       }
     }
-
     String initialCapacity = atts.getValue(INITIAL_CAPACITY);
     if (initialCapacity != null) {
       attrs.setInitialCapacity(parseInt(initialCapacity));
@@ -1559,9 +1559,6 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
   private void endDiskDir() {
     StringBuffer dirName = (StringBuffer) stack.pop();
     File dir = new File(dirName.toString().trim());
-    if (!dir.exists()) {
-
-    }
     stack.push(dir);
   }
 
@@ -2658,7 +2655,6 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       startCacheServer(atts);
     } else if (qName.equals(CACHE_SERVER)) {
       startCacheServer(atts);
-    } else if (qName.equals(LOAD_PROBE)) {
     } else if (qName.equals(CONNECTION_POOL)) {
       startPool(atts);
     } else if (qName.equals(CLIENT_SUBSCRIPTION)) {
@@ -2669,13 +2665,8 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       startGatewaySender(atts);
     } else if (qName.equals(GATEWAY_RECEIVER)) {
       startGatewayReceiver(atts);
-    } else if (qName.equals(GATEWAY_EVENT_FILTER)) {
-    } else if (qName.equals(GATEWAY_TRANSPORT_FILTER)) {
-    } else if (qName.equals(GATEWAY_EVENT_LISTENER)) {
-    } else if (qName.equals(GATEWAY_EVENT_SUBSTITUTION_FILTER)) {
     } else if (qName.equals(ASYNC_EVENT_QUEUE)) {
       startAsyncEventQueue(atts);
-    } else if (qName.equals(GATEWAY_CONFLICT_RESOLVER)) {
     } else if (qName.equals(LOCATOR)) {
       doLocator(atts);
     } else if (qName.equals(REGION)) {
@@ -2686,22 +2677,12 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       startRegionAttributes(atts);
     } else if (qName.equals(DISK_STORE)) {
       startDiskStore(atts);
-    } else if (qName.equals(KEY_CONSTRAINT)) {
-    } else if (qName.equals(VALUE_CONSTRAINT)) {
-    } else if (qName.equals(INDEX_UPDATE_TYPE)) {
-    } else if (qName.equals(REGION_TIME_TO_LIVE)) {
-    } else if (qName.equals(REGION_IDLE_TIME)) {
-    } else if (qName.equals(ENTRY_TIME_TO_LIVE)) {
-    } else if (qName.equals(ENTRY_IDLE_TIME)) {
     } else if (qName.equals(EXPIRATION_ATTRIBUTES)) {
       startExpirationAttributes(atts);
     } else if (qName.equals(SERVER)) {
       doServer(atts);
-    } else if (qName.equals(CUSTOM_EXPIRY)) {
     } else if (qName.equals(SUBSCRIPTION_ATTRIBUTES)) {
       startSubscriptionAttributes(atts);
-    } else if (qName.equals(ENTRY)) {
-    } else if (qName.equals(CLASS_NAME)) {
     } else if (qName.equals(PARAMETER)) {
       startParameter(atts);
     } else if (qName.equals(DISK_WRITE_ATTRIBUTES)) {
@@ -2710,10 +2691,8 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       startSynchronousWrites();
     } else if (qName.equals(ASYNCHRONOUS_WRITES)) {
       startAsynchronousWrites(atts);
-    } else if (qName.equals(DISK_DIRS)) {
     } else if (qName.equals(DISK_DIR)) {
       startDiskDir(atts);
-    } else if (qName.equals(GROUP)) {
     } else if (qName.equals(PARTITION_ATTRIBUTES)) {
       startPartitionAttributes(atts);
     } else if (qName.equals(FIXED_PARTITION_ATTRIBUTES)) {
@@ -2726,9 +2705,6 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       startPartitionProperties(atts, LOCAL_PROPERTIES);
     } else if (qName.equals(GLOBAL_PROPERTIES)) {
       startPartitionProperties(atts, GLOBAL_PROPERTIES);
-    } else if (qName.equals(CACHE_LOADER)) {
-    } else if (qName.equals(CACHE_WRITER)) {
-    } else if (qName.equals(EVICTION_ATTRIBUTES)) {
     } else if (qName.equals(LRU_ENTRY_COUNT)) {
       startLRUEntryCount(atts); // internal to eviction-attributes
     } else if (qName.equals(LRU_MEMORY_SIZE)) {
@@ -2738,12 +2714,6 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       startLRUMemorySize(atts);
     } else if (qName.equals(LRU_HEAP_PERCENTAGE)) {
       startLRUHeapPercentage(atts); // internal to eviction-attributes
-    } else if (qName.equals(CACHE_LISTENER)) {
-    } else if (qName.equals(ASYNC_EVENT_LISTENER)) {
-    } else if (qName.equals(KEY)) {
-    } else if (qName.equals(VALUE)) {
-    } else if (qName.equals(STRING)) {
-    } else if (qName.equals(DECLARABLE)) {
     } else if (qName.equals(INDEX)) {
       // Asif: Create an object of type IndexCreationData &
       // push it in stack
@@ -2755,9 +2725,6 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       startPrimaryKeyIndex(atts);
     } else if (qName.equals(TRANSACTION_MANAGER)) {
       startCacheTransactionManager();
-    } else if (qName.equals(TRANSACTION_LISTENER)) {
-    } else if (qName.equals(TRANSACTION_WRITER)) {
-    } else if (qName.equals(JNDI_BINDINGS)) { // added by Nand Kishor
     } else if (qName.equals(JNDI_BINDING)) { // added by Nand Kishor
       // Asif: Push the BindingCreation object in the stack
       Map gfSpecific = new HashMap();
@@ -2771,41 +2738,50 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       List vendorSpecific = bc.getVendorSpecificList();
       // Rohit: Add a ConfigProperty Data Object to the list.
       vendorSpecific.add(new ConfigProperty());
-    } else if (qName.equals(CONFIG_PROPERTY_NAME)) {
-    } else if (qName.equals(CONFIG_PROPERTY_VALUE)) {
-    } else if (qName.equals(CONFIG_PROPERTY_TYPE)) {
-    } else if (qName.equals(PARTITION_RESOLVER)) {
-    } else if (qName.equals(PARTITION_LISTENER)) {
     } else if (qName.equals(FUNCTION_SERVICE)) {
       startFunctionService();
-    } else if (qName.equals(FUNCTION)) {
     } else if (qName.equals(TOP_SERIALIZER_REGISTRATION)) {
       startSerializerRegistration();
     } else if (qName.equals(INITIALIZER)) {
       startInitializer();
     } else if (qName.equals(INSTANTIATOR_REGISTRATION)) {
       startInstantiator(atts);
-    } else if (qName.equals(SERIALIZER_REGISTRATION)) {
-      // do nothing
     } else if (qName.equals(RESOURCE_MANAGER)) {
       startResourceManager(atts);
-    } else if (qName.equals(BACKUP)) {
-      // do nothing
     } else if (qName.equals(PDX)) {
       startPdx(atts);
-    } else if (qName.equals(PDX_SERIALIZER)) {
-      // do nothing
-    } else if (qName.equals(COMPRESSOR)) {
-    } else if (qName.equals(SOCKET_FACTORY)) {
-    } else {
+    } else if (!isXmlElementRequiringNoStartAction(qName)) {
       final XmlParser delegate = getDelegate(namespaceURI);
       if (null == delegate) {
         throw new CacheXmlException(
             String.format("Unknown XML element %s", qName));
       }
-
       delegate.startElement(namespaceURI, localName, qName, atts);
     }
+  }
+
+  // This method checks if the given qName is any of the CacheXml elements for which no action is
+  // taken during parsing for startElement()
+  private boolean isXmlElementRequiringNoStartAction(String qName) {
+    return qName.equals(ASYNC_EVENT_LISTENER) || qName.equals(BACKUP)
+        || qName.equals(CACHE_LISTENER) || qName.equals(CACHE_LOADER) || qName.equals(CACHE_WRITER)
+        || qName.equals(CLASS_NAME) || qName.equals(COMPRESSOR)
+        || qName.equals(CONFIG_PROPERTY_NAME) || qName.equals(CONFIG_PROPERTY_TYPE)
+        || qName.equals(CONFIG_PROPERTY_VALUE) || qName.equals(CUSTOM_EXPIRY)
+        || qName.equals(DECLARABLE) || qName.equals(DISK_DIRS) || qName.equals(ENTRY)
+        || qName.equals(ENTRY_IDLE_TIME) || qName.equals(ENTRY_TIME_TO_LIVE)
+        || qName.equals(EVICTION_ATTRIBUTES) || qName.equals(FUNCTION)
+        || qName.equals(GATEWAY_CONFLICT_RESOLVER) || qName.equals(GATEWAY_EVENT_FILTER)
+        || qName.equals(GATEWAY_EVENT_LISTENER) || qName.equals(GATEWAY_EVENT_SUBSTITUTION_FILTER)
+        || qName.equals(GATEWAY_TRANSPORT_FILTER) || qName.equals(GROUP)
+        || qName.equals(INDEX_UPDATE_TYPE) || qName.equals(JNDI_BINDINGS) || qName.equals(KEY)
+        || qName.equals(KEY_CONSTRAINT) || qName.equals(LOAD_PROBE)
+        || qName.equals(PARTITION_LISTENER) || qName.equals(PARTITION_RESOLVER)
+        || qName.equals(PDX_SERIALIZER) || qName.equals(REGION_IDLE_TIME)
+        || qName.equals(REGION_TIME_TO_LIVE) || qName.equals(SERIALIZER_REGISTRATION)
+        || qName.equals(SOCKET_FACTORY) || qName.equals(STRING)
+        || qName.equals(TRANSACTION_LISTENER) || qName.equals(TRANSACTION_WRITER)
+        || qName.equals(VALUE) || qName.equals(VALUE_CONSTRAINT);
   }
 
   /**
@@ -2995,8 +2971,6 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
         endCustomExpiry();
       } else if (qName.equals(DISK_WRITE_ATTRIBUTES)) {
         endDiskWriteAttributes();
-      } else if (qName.equals(SYNCHRONOUS_WRITES)) {
-      } else if (qName.equals(ASYNCHRONOUS_WRITES)) {
       } else if (qName.equals(DISK_DIRS)) {
         endDiskDirs();
       } else if (qName.equals(DISK_DIR)) {
@@ -3015,10 +2989,6 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
         endMembershipAttributes();
       } else if (qName.equals(REQUIRED_ROLE)) {
         endRequiredRole();
-      } else if (qName.equals(EXPIRATION_ATTRIBUTES)) {
-      } else if (qName.equals(CUSTOM_EXPIRY)) {
-        endCustomExpiry();
-      } else if (qName.equals(SUBSCRIPTION_ATTRIBUTES)) {
       } else if (qName.equals(ENTRY)) {
         endEntry();
       } else if (qName.equals(CLASS_NAME)) {
@@ -3029,9 +2999,6 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
         endCacheLoader();
       } else if (qName.equals(CACHE_WRITER)) {
         endCacheWriter();
-      } else if (qName.equals(EVICTION_ATTRIBUTES)) {
-      } else if (qName.equals(LRU_ENTRY_COUNT)) {
-        // internal to eviction-attributes
       } else if (qName.equals(LRU_MEMORY_SIZE)) {
         endLRUMemorySize(); // internal to eviction-attributes
       } else if (qName.equals(LRU_HEAP_PERCENTAGE)) {
@@ -3040,23 +3007,18 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
         endCacheListener();
       } else if (qName.equals(ASYNC_EVENT_LISTENER)) {
         endAsyncEventListener();
-      } else if (qName.equals(KEY)) {
-      } else if (qName.equals(VALUE)) {
       } else if (qName.equals(STRING)) {
         endString();
       } else if (qName.equals(DECLARABLE)) {
         endDeclarable();
-      } else if (qName.equals(FUNCTIONAL)) {
       } else if (qName.equals(INDEX)) {
         endIndex();
-      } else if (qName.equals(PRIMARY_KEY)) {
       } else if (qName.equals(TRANSACTION_MANAGER)) {
         endCacheTransactionManager();
       } else if (qName.equals(TRANSACTION_LISTENER)) {
         endTransactionListener();
       } else if (qName.equals(TRANSACTION_WRITER)) {
         endTransactionWriter();
-      } else if (qName.equals(JNDI_BINDINGS)) {
       } else if (qName.equals(JNDI_BINDING)) {
         BindingCreation bc = (BindingCreation) this.stack.pop();
         Map map = bc.getGFSpecificMap();
@@ -3068,12 +3030,12 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
             logger.warn("jndi-binding creation of {} failed with: {}", map.get("jndi-name"), ex);
           }
         }
-      } else if (qName.equals(CONFIG_PROPERTY_BINDING)) {
       } else if (qName.equals(CONFIG_PROPERTY_NAME)) {
         String name = null;
-        if (this.stack.peek() instanceof StringBuffer)
+        if (this.stack.peek() instanceof StringBuffer) {
           // Pop the config-property-name element value from the stack.
           name = ((StringBuffer) this.stack.pop()).toString();
+        }
         BindingCreation bc = (BindingCreation) this.stack.peek();
         List vsList = bc.getVendorSpecificList();
         ConfigProperty cp = (ConfigProperty) vsList.get(vsList.size() - 1);
@@ -3089,8 +3051,9 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       } else if (qName.equals(CONFIG_PROPERTY_VALUE)) {
         String value = null;
         // Pop the config-property-value element value from the stack.
-        if (this.stack.peek() instanceof StringBuffer)
+        if (this.stack.peek() instanceof StringBuffer) {
           value = ((StringBuffer) this.stack.pop()).toString();
+        }
         BindingCreation bc = (BindingCreation) this.stack.peek();
         List vsList = bc.getVendorSpecificList();
         ConfigProperty cp = (ConfigProperty) vsList.get(vsList.size() - 1);
@@ -3098,8 +3061,9 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
         cp.setValue(value);
       } else if (qName.equals(CONFIG_PROPERTY_TYPE)) {
         String type = null;
-        if (this.stack.peek() instanceof StringBuffer)
+        if (this.stack.peek() instanceof StringBuffer) {
           type = ((StringBuffer) this.stack.pop()).toString();
+        }
         BindingCreation bc = (BindingCreation) this.stack.peek();
         List vsList = bc.getVendorSpecificList();
         ConfigProperty cp = (ConfigProperty) vsList.get(vsList.size() - 1);
@@ -3111,14 +3075,6 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
         } else {
           cp.setType(type);
         }
-      } else if (qName.equals(LRU_MEMORY_SIZE)) { // internal to eviction-attributes
-        // Visit startLRUMemorySize() to know the begining
-        // of lru-memory-size eviction configuration
-        endLRUMemorySize();
-      } else if (qName.equals(LOCATOR)) {
-        // nothing needed
-      } else if (qName.equals(SERVER)) {
-        // nothing needed
       } else if (qName.equals(PARTITION_RESOLVER)) {
         endPartitionResolver();
       } else if (qName.equals(PARTITION_LISTENER)) {
@@ -3139,15 +3095,13 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
         endResourceManager();
       } else if (qName.equals(BACKUP)) {
         endBackup();
-      } else if (qName.equals(PDX)) {
-        // nothing needed
       } else if (qName.equals(PDX_SERIALIZER)) {
         endPdxSerializer();
       } else if (qName.equals(COMPRESSOR)) {
         endCompressor();
       } else if (qName.equals(SOCKET_FACTORY)) {
         endSocketFactory();
-      } else {
+      } else if (!isXmlElementRequiringNoEndAction(qName)) {
         final XmlParser delegate = getDelegate(namespaceURI);
         if (null == delegate) {
           throw new CacheXmlException(
@@ -3161,6 +3115,15 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
           "A CacheException was thrown while parsing XML.",
           ex);
     }
+  }
+
+  private boolean isXmlElementRequiringNoEndAction(String qName) {
+    return qName.equals(ASYNCHRONOUS_WRITES) || qName.equals(CONFIG_PROPERTY_BINDING)
+        || qName.equals(EVICTION_ATTRIBUTES) || qName.equals(EXPIRATION_ATTRIBUTES)
+        || qName.equals(FUNCTIONAL) || qName.equals(JNDI_BINDINGS) || qName.equals(KEY)
+        || qName.equals(VALUE) || qName.equals(LOCATOR) || qName.equals(LRU_ENTRY_COUNT)
+        || qName.equals(PDX) || qName.equals(PRIMARY_KEY) || qName.equals(SERVER)
+        || qName.equals(SUBSCRIPTION_ATTRIBUTES) || qName.equals(SYNCHRONOUS_WRITES);
   }
 
   private void endSocketFactory() {

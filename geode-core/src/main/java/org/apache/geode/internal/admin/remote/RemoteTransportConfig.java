@@ -151,9 +151,6 @@ public class RemoteTransportConfig implements TransportConfig {
         DistributionLocatorId id = (DistributionLocatorId) it.next();
         if (id.isMcastId()) {
           mid = id;
-          // System.out.println("mcast id: " + id);
-        } else {
-          // System.out.println("non-mcast id: " + id);
         }
       }
     }

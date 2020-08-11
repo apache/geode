@@ -278,16 +278,16 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
     String myName = getName();
     String otherName = other.getName();
     if (!(other.isPartial() || this.isPartial())) {
-      if (myName == null && otherName == null) {
-        // do nothing
-      } else if (myName == null) {
-        return -1;
-      } else if (otherName == null) {
-        return 1;
-      } else {
-        int i = myName.compareTo(otherName);
-        if (i != 0) {
-          return i;
+      if (!(myName == null && otherName == null)) {
+        if (myName == null) {
+          return -1;
+        } else if (otherName == null) {
+          return 1;
+        } else {
+          int i = myName.compareTo(otherName);
+          if (i != 0) {
+            return i;
+          }
         }
       }
     }

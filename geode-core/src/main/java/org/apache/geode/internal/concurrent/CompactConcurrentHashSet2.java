@@ -1587,8 +1587,9 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
 
               Thread w;
               int ls;
-              do {
-              } while (!U.compareAndSwapInt(this, LOCKSTATE, ls = lockState, ls - READER));
+              while (!U.compareAndSwapInt(this, LOCKSTATE, ls = lockState, ls - READER)) {
+                // Intentionally empty block
+              }
               if (ls == (READER | WAITER) && (w = waiter) != null)
                 LockSupport.unpark(w);
             }

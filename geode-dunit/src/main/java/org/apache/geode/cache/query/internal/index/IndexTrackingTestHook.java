@@ -53,10 +53,11 @@ public class IndexTrackingTestHook implements PartitionedRegionQueryEvaluator.Te
     assertTrue(observer instanceof IndexTrackingQueryObserver);
     IndexTrackingQueryObserver gfObserver = (IndexTrackingQueryObserver) observer;
 
-    if (spot == 1) { // before index lookup
-    } else if (spot == 2) { // before key range index lookup
-    } else if (spot == 3) { // End of afterIndexLookup call
-    } else if (spot == 4) { // Before resetting indexInfoMap
+    // 1 = before key range index lookup
+    // 2 = End of afterIndexLookup call
+    // 3 = before index lookup
+    // 4 = Before resetting indexInfoMap
+    if (spot == 4) {
       Map map = gfObserver.getUsedIndexes();
       assertEquals(1, map.size());
 

@@ -165,9 +165,8 @@ public abstract class SessionDUnitTest {
             .getBody();
         sesssionObtained = true;
       } catch (HttpServerErrorException e) {
-        if (e.getMessage().contains("Internal Server Error")) {
-          // retry
-        } else {
+        // retry if not an Internal Server Error
+        if (e.getMessage() == null || !e.getMessage().contains("Internal Server Error")) {
           throw e;
         }
       }

@@ -429,11 +429,9 @@ public class RegionManagementDUnitTest implements Serializable {
     assertThat(fixedPartitionAttributesData).isNotNull();
     assertThat(fixedPartitionAttributesData).hasSize(3);
 
-    for (FixedPartitionAttributesData aFixedPartitionAttributesData : fixedPartitionAttributesData) {
-      // TODO: add real assertions for FixedPartitionAttributesData
-      // LogWriterUtils.getLogWriter().info("<ExpectedString> Fixed PR Data is " +
-      // fixedPartitionAttributesData[i] + "</ExpectedString> ");
-    }
+    // TODO: add real assertions for FixedPartitionAttributesData
+    // LogWriterUtils.getLogWriter().info("<ExpectedString> Fixed PR Data is " +
+    // fixedPartitionAttributesData[i] + "</ExpectedString> ");
   }
 
   private List<FixedPartitionAttributes> createFixedPartitionList(final int primaryIndex) {
@@ -1034,11 +1032,9 @@ public class RegionManagementDUnitTest implements Serializable {
       assertThat(fixedPrData).isNotNull();
       assertThat(fixedPrData).hasSize(3);
 
-      for (FixedPartitionAttributesData aFixedPrData : fixedPrData) {
-        // TODO: add real assertions for FixedPartitionAttributesData
-        // LogWriterUtils.getLogWriter().info("<ExpectedString> Remote PR Data is " +
-        // fixedPrData[i] + "</ExpectedString> ");
-      }
+      // TODO: add real assertions for FixedPartitionAttributesData
+      // LogWriterUtils.getLogWriter().info("<ExpectedString> Remote PR Data is " +
+      // fixedPrData[i] + "</ExpectedString> ");
     }
   }
 

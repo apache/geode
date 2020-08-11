@@ -908,9 +908,7 @@ public interface DiskEntry extends RegionEntry {
           caughtCacheClosed = true;
           throw e;
         } finally {
-          if (caughtCacheClosed) {
-            // 47616: not to set the value to be removedFromDisk since it failed to persist
-          } else {
+          if (!caughtCacheClosed) {
             // Ensure that the value is rightly set despite clear so
             // that it can be distributed correctly
             entry.setValueWithContext(region, newValue); // OFFHEAP newValue was already
@@ -1002,17 +1000,15 @@ public interface DiskEntry extends RegionEntry {
             updateStats(dr, region, 0/* InVM */, -1/* OnDisk */, -oldValueLength);
           } else if (!Token.isInvalidOrRemoved(oldValue)) {
             updateStats(dr, region, -1/* InVM */, 0/* OnDisk */, 0);
-          } else {
-            // oldValue was also a token which is neither in vm or on disk.
-          }
+          } // otherwise, oldValue was also a token which is neither in vm or on disk.
+
         } else { // we have a value to put in the vm
           if (oldValue == null) {
             updateStats(dr, region, 1/* InVM */, -1/* OnDisk */, -oldValueLength);
           } else if (Token.isInvalidOrRemoved(oldValue)) {
             updateStats(dr, region, 1/* InVM */, 0/* OnDisk */, 0/* overflowBytesOnDisk */);
-          } else {
-            // old value was also in vm so no change
-          }
+          } // otherwise, old value was also in vm so no change
+
         }
       }
       if (entry instanceof EvictableEntry) {
@@ -1372,10 +1368,9 @@ public interface DiskEntry extends RegionEntry {
             } else if (!wasAlreadyPendingAsync) {
               scheduledAsyncHere = true;
               did.setPendingAsync(true);
-            } else {
-              // it may have been scheduled to be written (isBackup==true)
-              // and now we are faulting it out
-            }
+            } // otherwise, it may have been scheduled to be written (isBackup==true) and now we are
+              // faulting it out
+
           }
 
           // If async then if it does not need to be written (because it already was)
@@ -1481,30 +1476,31 @@ public interface DiskEntry extends RegionEntry {
                     if (dr.isBackup()) {
                       did.setKeyId(DiskRegion.INVALID_ID); // fix for bug 41340
                     }
-                  } else if ((Token.isInvalid(entryVal) || entryVal == Token.TOMBSTONE)
-                      && !dr.isBackup()) {
                     // no need to write invalid or tombstones to disk if overflow only
-                  } else if (entryVal != null) {
-                    writeToDisk(entry, region, true);
-                    assert !dr.isSync();
-                    // Only setValue to null if this was an evict.
-                    // We could just be a backup that is writing async.
-                    if (!Token.isInvalid(entryVal) && (entryVal != Token.TOMBSTONE)
-                        && entry instanceof EvictableEntry
-                        && ((EvictableEntry) entry).isEvicted()) {
-                      // Moved this here to fix bug 40116.
-                      region.updateSizeOnEvict(entry.getKey(), entryValSize);
-                      updateStats(dr, region, -1/* InVM */, 1/* OnDisk */, did.getValueLength());
-                      entry.handleValueOverflow(region);
-                      entry.setValueWithContext(region, null);
+                  } else if ((!Token.isInvalid(entryVal) && entryVal != Token.TOMBSTONE)
+                      || dr.isBackup()) {
+                    if (entryVal != null) {
+                      writeToDisk(entry, region, true);
+                      assert !dr.isSync();
+                      // Only setValue to null if this was an evict.
+                      // We could just be a backup that is writing async.
+                      if (!Token.isInvalid(entryVal) && (entryVal != Token.TOMBSTONE)
+                          && entry instanceof EvictableEntry
+                          && ((EvictableEntry) entry).isEvicted()) {
+                        // Moved this here to fix bug 40116.
+                        region.updateSizeOnEvict(entry.getKey(), entryValSize);
+                        updateStats(dr, region, -1/* InVM */, 1/* OnDisk */, did.getValueLength());
+                        entry.handleValueOverflow(region);
+                        entry.setValueWithContext(region, null);
+                      }
+                    } else {
+                      // if we have a version tag we need to record the operation
+                      // to update the RVV
+                      if (tag != null) {
+                        Helper.doAsyncFlush(tag, region);
+                      }
+                      return;
                     }
-                  } else {
-                    // if we have a version tag we need to record the operation
-                    // to update the RVV
-                    if (tag != null) {
-                      DiskEntry.Helper.doAsyncFlush(tag, region);
-                    }
-                    return;
                   }
                 } catch (RegionClearedException ignore) {
                   // no need to do the op since it was clobbered by a region clear

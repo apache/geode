@@ -99,9 +99,7 @@ public abstract class StatisticsMonitor {
 
   private void monitorStatisticIds(final long millisTimeStamp,
       final List<ResourceInstance> resourceInstances) {
-    if (!this.statisticIds.isEmpty()) {
-      // TODO:
-    }
+    // TODO
   }
 
   protected void notifyListeners(final StatisticsNotification notification) {

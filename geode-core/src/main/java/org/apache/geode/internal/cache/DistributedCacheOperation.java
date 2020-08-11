@@ -436,9 +436,7 @@ public abstract class DistributedCacheOperation {
             }
           }
         }
-        if (!reliableOp || region.isNoDistributionOk()) {
-          // nothing needs be done in this case
-        } else {
+        if (reliableOp && !region.isNoDistributionOk()) {
           region.handleReliableDistribution(Collections.emptySet());
         }
 
@@ -1267,9 +1265,8 @@ public abstract class DistributedCacheOperation {
 
     public void sendReply(InternalDistributedMember recipient, int pId, ReplyException rex,
         ReplySender dm) {
-      if (pId == 0 && (dm instanceof DistributionManager) && !this.directAck) {// Fix for #41871
-        // distributed-no-ack message. Don't respond
-      } else {
+      // Don't respond to distributed-no-ack messages.
+      if (pId != 0 || (!(dm instanceof DistributionManager)) || this.directAck) {
         ReplyMessage.send(recipient, pId, rex, dm, !this.appliedOperation, this.closed, false,
             isInternal());
       }

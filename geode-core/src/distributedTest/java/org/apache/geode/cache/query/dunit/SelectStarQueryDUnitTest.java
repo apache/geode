@@ -320,14 +320,12 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
             for (Object rs : res) {
               if (rs instanceof StructImpl) {
                 for (Object obj : ((StructImpl) rs).getFieldValues()) {
-                  if (obj instanceof PortfolioPdx || obj instanceof PositionPdx) {
-                  } else {
+                  if (!(obj instanceof PortfolioPdx) && !(obj instanceof PositionPdx)) {
                     fail("Result objects for remote client query: " + queries[i]
                         + " should be instance of PortfolioPdx and not " + obj.getClass());
                   }
                 }
-              } else if (rs instanceof PortfolioPdx) {
-              } else {
+              } else if (!(rs instanceof PortfolioPdx)) {
                 fail("Result objects for remote client query: " + queries[i]
                     + " should be instance of PortfolioPdx and not " + rs.getClass());
               }
@@ -377,14 +375,12 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
             for (Object rs : res) {
               if (rs instanceof StructImpl) {
                 for (Object obj : ((StructImpl) rs).getFieldValues()) {
-                  if (obj instanceof PortfolioPdx || obj instanceof PositionPdx) {
-                  } else {
+                  if (!(obj instanceof PortfolioPdx) && !(obj instanceof PositionPdx)) {
                     fail("Result objects for remote client query: " + queries[i]
                         + " should be instance of PortfolioPdx and not " + obj.getClass());
                   }
                 }
-              } else if (rs instanceof PortfolioPdx) {
-              } else {
+              } else if (!(rs instanceof PortfolioPdx)) {
                 fail("Result objects for remote client query: " + queries[i]
                     + " should be instance of PortfolioPdx and not " + rs.getClass());
               }
@@ -486,14 +482,12 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
             for (Object rs : res) {
               if (rs instanceof StructImpl) {
                 for (Object obj : ((StructImpl) rs).getFieldValues()) {
-                  if (obj instanceof PortfolioPdx || obj instanceof PositionPdx) {
-                  } else {
+                  if (!(obj instanceof PortfolioPdx) && !(obj instanceof PositionPdx)) {
                     fail("Result objects for remote client query: " + multipleRegionQueries[i]
                         + " should be instance of PortfolioPdx and not " + obj.getClass());
                   }
                 }
-              } else if (rs instanceof PortfolioPdx) {
-              } else {
+              } else if (!(rs instanceof PortfolioPdx)) {
                 fail("Result objects for remote client query: " + multipleRegionQueries[i]
                     + " should be instance of PortfolioPdx and not " + rs.getClass());
               }
@@ -545,14 +539,12 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
             for (Object rs : res) {
               if (rs instanceof StructImpl) {
                 for (Object obj : ((StructImpl) rs).getFieldValues()) {
-                  if (obj instanceof PortfolioPdx || obj instanceof PositionPdx) {
-                  } else {
+                  if (!(obj instanceof PortfolioPdx) && !(obj instanceof PositionPdx)) {
                     fail("Result objects for remote client query: " + multipleRegionQueries[i]
                         + " should be instance of PortfolioPdx and not " + obj.getClass());
                   }
                 }
-              } else if (rs instanceof PortfolioPdx) {
-              } else {
+              } else if (!(rs instanceof PortfolioPdx)) {
                 fail("Result objects for remote client query: " + multipleRegionQueries[i]
                     + " should be instance of PortfolioPdx and not " + rs.getClass());
               }
@@ -1006,14 +998,12 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
             for (Object rs : res) {
               if (rs instanceof StructImpl) {
                 for (Object obj : ((StructImpl) rs).getFieldValues()) {
-                  if (obj instanceof PortfolioPdx || obj instanceof PositionPdx) {
-                  } else {
+                  if (!(obj instanceof PortfolioPdx) && !(obj instanceof PositionPdx)) {
                     fail("Result objects for remote client query: " + multipleRegionQueries[i]
                         + " should be instance of PortfolioPdx and not " + obj.getClass());
                   }
                 }
-              } else if (rs instanceof PortfolioPdx) {
-              } else {
+              } else if (!(rs instanceof PortfolioPdx)) {
                 fail("Result objects for remote client query: " + multipleRegionQueries[i]
                     + " should be instance of PortfolioPdx and not " + rs.getClass());
               }
@@ -1076,14 +1066,12 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
             for (Object rs : res) {
               if (rs instanceof StructImpl) {
                 for (Object obj : ((StructImpl) rs).getFieldValues()) {
-                  if (obj instanceof PortfolioPdx || obj instanceof PositionPdx) {
-                  } else {
+                  if (!(obj instanceof PortfolioPdx) && !(obj instanceof PositionPdx)) {
                     fail("Result objects for remote client query: " + multipleRegionQueries[i]
                         + " should be instance of PortfolioPdx and not " + obj.getClass());
                   }
                 }
-              } else if (rs instanceof PortfolioPdx) {
-              } else {
+              } else if (!(rs instanceof PortfolioPdx)) {
                 fail("Result objects for remote client query: " + multipleRegionQueries[i]
                     + " should be instance of PortfolioPdx and not " + rs.getClass());
               }
@@ -1174,14 +1162,12 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
             for (Object rs : res) {
               if (rs instanceof StructImpl) {
                 for (Object obj : ((StructImpl) rs).getFieldValues()) {
-                  if (obj instanceof PortfolioPdx || obj instanceof PositionPdx) {
-                  } else {
+                  if (!(obj instanceof PortfolioPdx) && !(obj instanceof PositionPdx)) {
                     fail("Result objects for remote client query: " + queries[i]
                         + " should be instance of PortfolioPdx and not " + obj.getClass());
                   }
                 }
-              } else if (rs instanceof PortfolioPdx) {
-              } else {
+              } else if (!(rs instanceof PortfolioPdx)) {
                 fail("Result objects for remote client query: " + queries[i]
                     + " should be instance of PortfolioPdx and not " + rs.getClass());
               }
@@ -1232,14 +1218,12 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
             for (Object rs : res) {
               if (rs instanceof StructImpl) {
                 for (Object obj : ((StructImpl) rs).getFieldValues()) {
-                  if (obj instanceof PortfolioPdx || obj instanceof PositionPdx) {
-                  } else {
+                  if (!(obj instanceof PortfolioPdx) && !(obj instanceof PositionPdx)) {
                     fail("Result objects for remote client query: " + queries[i]
                         + " should be instance of PortfolioPdx and not " + obj.getClass());
                   }
                 }
-              } else if (rs instanceof PortfolioPdx) {
-              } else {
+              } else if (!(rs instanceof PortfolioPdx)) {
                 fail("Result objects for remote client query: " + queries[i]
                     + " should be instance of PortfolioPdx and not " + rs.getClass());
               }
@@ -1285,14 +1269,12 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
             for (Object rs : res) {
               if (rs instanceof StructImpl) {
                 for (Object obj : ((StructImpl) rs).getFieldValues()) {
-                  if (obj instanceof PdxInstance) {
-                  } else {
+                  if (!(obj instanceof PdxInstance)) {
                     fail("Result objects for remote client query: " + queries[i]
                         + " should be instance of PdxInstance and not " + obj.getClass());
                   }
                 }
-              } else if (rs instanceof PdxInstance) {
-              } else {
+              } else if (!(rs instanceof PdxInstance)) {
                 fail("Result objects for remote client query: " + queries[i]
                     + " should be instance of PdxInstance and not " + rs.getClass());
               }
@@ -1383,16 +1365,13 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
             for (Object rs : res) {
               if (rs instanceof StructImpl) {
                 for (Object obj : ((StructImpl) rs).getFieldValues()) {
-                  if (obj instanceof PortfolioPdx || obj instanceof PositionPdx) {
-                  } else if (obj instanceof PortfolioPdx || obj instanceof PositionPdx) {
-                  } else {
+                  if (!(obj instanceof PortfolioPdx) && !(obj instanceof PositionPdx)) {
                     fail("Result objects for remote client query: " + queries[i]
                         + " should be instance of PortfolioPdx or PortfolioPdx and not "
                         + obj.getClass());
                   }
                 }
-              } else if (rs instanceof PortfolioPdx) {
-              } else {
+              } else if (!(rs instanceof PortfolioPdx)) {
                 fail("Result objects for remote client query: " + queries[i]
                     + " should be instance of PortfolioPdx and not " + rs.getClass());
               }
@@ -1443,16 +1422,13 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
             for (Object rs : res) {
               if (rs instanceof StructImpl) {
                 for (Object obj : ((StructImpl) rs).getFieldValues()) {
-                  if (obj instanceof PortfolioPdx || obj instanceof PositionPdx) {
-                  } else if (obj instanceof PortfolioPdx || obj instanceof PositionPdx) {
-                  } else {
+                  if (!(obj instanceof PortfolioPdx) && !(obj instanceof PositionPdx)) {
                     fail("Result objects for remote client query: " + queries[i]
                         + " should be instance of PortfolioPdx or PortfolioPdx and not "
                         + obj.getClass());
                   }
                 }
-              } else if (rs instanceof PortfolioPdx) {
-              } else {
+              } else if (!(rs instanceof PortfolioPdx)) {
                 fail("Result objects for remote client query: " + queries[i]
                     + " should be instance of PortfolioPdx and not " + rs.getClass());
               }
@@ -1496,15 +1472,13 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
             for (Object rs : res) {
               if (rs instanceof StructImpl) {
                 for (Object obj : ((StructImpl) rs).getFieldValues()) {
-                  if (obj instanceof PortfolioPdx || obj instanceof PositionPdx) {
-                  } else if (obj instanceof PdxInstance) {
-                  } else {
+                  if (!(obj instanceof PortfolioPdx) && !(obj instanceof PositionPdx)
+                      && !(obj instanceof PdxInstance)) {
                     fail("Result objects for remote client query: " + queries[i]
                         + " should be instance of PdxInstance and not " + obj.getClass());
                   }
                 }
-              } else if (rs instanceof PdxInstance || rs instanceof PortfolioPdx) {
-              } else {
+              } else if (!(rs instanceof PdxInstance) && !(rs instanceof PortfolioPdx)) {
                 fail("Result objects for remote client query: " + queries[i]
                     + " should be instance of PdxInstance and not " + rs.getClass());
               }
@@ -1589,14 +1563,12 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
             for (Object rs : res) {
               if (rs instanceof StructImpl) {
                 for (Object obj : ((StructImpl) rs).getFieldValues()) {
-                  if (obj instanceof PortfolioPdx || obj instanceof PositionPdx) {
-                  } else {
+                  if (!(obj instanceof PortfolioPdx) && !(obj instanceof PositionPdx)) {
                     fail("Result objects for remote client query: " + queries[i]
                         + " should be instance of PortfolioPdx and not " + obj.getClass());
                   }
                 }
-              } else if (rs instanceof PortfolioPdx) {
-              } else {
+              } else if (!(rs instanceof PortfolioPdx)) {
                 fail("Result objects for remote client query: " + queries[i]
                     + " should be instance of PortfolioPdx and not " + rs.getClass());
               }

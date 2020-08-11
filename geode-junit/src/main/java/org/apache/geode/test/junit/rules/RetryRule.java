@@ -83,9 +83,6 @@ public class RetryRule implements TestRule, Serializable {
 
     protected void evaluate(final Statement base, final Description description,
         final int retryCount) throws Throwable {
-      if (retryCount == 0) {
-
-      }
       Throwable caughtThrowable = null;
 
       for (int count = 0; count < retryCount; count++) {

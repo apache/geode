@@ -4354,9 +4354,8 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       utx.commit();
       fail("Do not get expected RollbackException");
     } catch (Exception e) {
-      if (e instanceof RollbackException) {
-        // expected exception.
-      } else {
+      // RollbackException is expected and can be ignored.
+      if (!(e instanceof RollbackException)) {
         Assert.fail("Unexpected exception while doing JTA Transaction1 ", e);
       }
     } finally {

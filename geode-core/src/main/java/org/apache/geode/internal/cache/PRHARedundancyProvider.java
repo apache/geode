@@ -1069,12 +1069,9 @@ public class PRHARedundancyProvider {
         // error condition, so you also need to check to see if the JVM
         // is still usable:
         SystemFailure.checkFailure();
-        if (e instanceof ForceReattemptException) {
-          // no log needed
-        } else if (e instanceof CancelException
-            || e.getCause() != null && e.getCause() instanceof CancelException) {
-          // no need to log exceptions caused by cache closure
-        } else {
+        // no need to log exceptions caused by cache closure or ForceReattemptException
+        if (!(e instanceof ForceReattemptException) && !(e instanceof CancelException)
+            && (e.getCause() == null || !(e.getCause() instanceof CancelException))) {
           logger.warn("Exception creating partition on {}", targetMember, e);
         }
         return false;
@@ -1168,9 +1165,7 @@ public class PRHARedundancyProvider {
           // no need to log exceptions caused by cache closure
           return ManageBucketRsp.CLOSED;
         }
-        if (e instanceof ForceReattemptException) {
-          // no log needed
-        } else {
+        if (!(e instanceof ForceReattemptException)) {
           logger.warn("Exception creating partition on {}", targetMember, e);
         }
         return ManageBucketRsp.NO;

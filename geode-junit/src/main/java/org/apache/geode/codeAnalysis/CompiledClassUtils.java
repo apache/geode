@@ -301,9 +301,8 @@ public class CompiledClassUtils {
     String line;
     while ((line = in.readLine()) != null) {
       line = line.trim();
-      if (line.startsWith("#") || line.startsWith("//")) {
-        // comment line
-      } else {
+      // Not a comment line
+      if (!line.startsWith("#") && !line.startsWith("//")) {
         result.add(new ClassAndVariableDetails(line));
       }
     }

@@ -20,8 +20,10 @@
  */
 package org.apache.geode.cache30;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.fail;
+import static org.junit.Assert.assertFalse;
 
 import java.util.Properties;
 
@@ -117,8 +119,7 @@ public class ClearMultiVmCallBkDUnitTest extends JUnit4DistributedTestCase { // 
     vm0.invoke(() -> ClearMultiVmCallBkDUnitTest.clearMethod());
     LogWriterUtils.getLogWriter().fine("Did clear successfully");
 
-    while (afterClear) {
-    }
+    await().untilAsserted(() -> assertFalse(afterClear));
 
     int Regsize = vm0.invoke(() -> ClearMultiVmCallBkDUnitTest.sizeMethod());
     assertEquals(1, Regsize);
@@ -144,8 +145,7 @@ public class ClearMultiVmCallBkDUnitTest extends JUnit4DistributedTestCase { // 
     vm1.invoke(() -> ClearMultiVmCallBkDUnitTest.clearMethod());
     LogWriterUtils.getLogWriter().fine("Did clear successfully");
 
-    while (afterClear) {
-    }
+    await().untilAsserted(() -> assertFalse(afterClear));
 
     int Regsize = vm0.invoke(() -> ClearMultiVmCallBkDUnitTest.sizeMethod());
     assertEquals(1, Regsize);

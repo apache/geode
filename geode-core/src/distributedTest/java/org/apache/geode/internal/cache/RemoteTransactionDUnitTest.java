@@ -1622,8 +1622,6 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         CacheListener listener = r.getAttributes().getCacheListeners()[0];
         if (listener instanceof TestCacheListener) {
           e = ((TestCacheListener) listener).ex;
-        } else {
-          // e = ((ClientListener)listener).???
         }
         if (e != null) {
           throw e;
@@ -1635,8 +1633,6 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         CacheListener listener = r.getAttributes().getCacheListeners()[0];
         if (listener instanceof TestCacheListener) {
           e = ((TestCacheListener) listener).ex;
-        } else {
-          // e = ((ClientListener)listener).???
         }
         if (e != null) {
           throw e;
@@ -3693,9 +3689,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
     private boolean oneCreate;
 
     public void checkSuccess() throws Exception {
-      if (oneDestroy && oneCreate) {
-        // chill
-      } else {
+      if (!(oneDestroy && oneCreate)) {
         fail("Didn't get both events. oneDestroy=" + oneDestroy + " oneCreate=" + oneCreate);
       }
     }

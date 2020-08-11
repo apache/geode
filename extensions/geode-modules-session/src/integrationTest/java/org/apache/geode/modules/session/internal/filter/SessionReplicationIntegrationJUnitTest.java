@@ -1097,9 +1097,8 @@ public class SessionReplicationIntegrationJUnitTest {
           c.setPath(value);
         } else if ("secure".equalsIgnoreCase(param)) {
           c.setSecure(true);
-        } else if ("httponly".equalsIgnoreCase(param)) {
-          // Ignored??
-        } else {
+          // Ignore the case where param == "httponly"?
+        } else if (!"httponly".equalsIgnoreCase(param)) {
           if (c == null) {
             c = new Cookie(param, value);
           } else {

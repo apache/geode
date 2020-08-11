@@ -3062,9 +3062,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
             assertEquals(5, sr.size());
             if (i == 1) {
               for (Object o : sr) {
-                if (o == null) {
-                } else if (o instanceof String) {
-                } else {
+                if (o != null && !(o instanceof String)) {
                   fail("Result should be either null or String and not " + o.getClass());
                 }
               }
@@ -3095,9 +3093,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
             assertEquals(5, sr.size());
             if (i == 1) {
               for (Object o : sr) {
-                if (o == null) {
-                } else if (o instanceof String) {
-                } else {
+                if (o != null && !(o instanceof String)) {
                   fail("Result should be either null or String and not " + o.getClass());
                 }
               }
@@ -3129,9 +3125,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
             assertEquals(5, sr.size());
             if (i == 1) {
               for (Object o : sr) {
-                if (o == null) {
-                } else if (o instanceof String) {
-                } else {
+                if (o != null && !(o instanceof String)) {
                   fail("Result should be either null or String and not " + o.getClass());
                 }
               }
@@ -3302,9 +3296,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
             assertEquals(5, sr.size());
             if (i == 1) {
               for (Object o : sr) {
-                if (o == null) {
-                } else if (o instanceof String) {
-                } else {
+                if (o != null && !(o instanceof String)) {
                   fail("Result should be either null or String and not " + o.getClass());
                 }
               }

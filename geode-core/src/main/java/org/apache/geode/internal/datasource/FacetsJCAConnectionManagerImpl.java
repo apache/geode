@@ -172,8 +172,6 @@ public class FacetsJCAConnectionManagerImpl
         Transaction txn = transManager.getTransaction();
         if (txn == null) {
           mannPoolCache.returnPooledConnectionToPool(conn);
-        } else {
-          // do nothing.
         }
       } catch (Exception se) {
         se.printStackTrace();

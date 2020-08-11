@@ -1619,10 +1619,9 @@ public abstract class AbstractRegionMap extends BaseRegionMap
                   }
                 } // synchronized re
               } // re != null
-              else {
-                // At this point, either it's not in GII mode, or the placeholder
-                // is in region, do nothing
-              }
+              // At this point, either it's not in GII mode, or the placeholder
+              // is in region, do nothing
+
               if (!entryExisted) {
                 owner.checkEntryNotFound(event.getKey());
               }

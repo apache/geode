@@ -1884,10 +1884,8 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
                 }
                 Object eov = region.getNoLRU(this.key, false, true, true); // OFFHEAP: incrc, copy
                                                                            // bytes, decrc
-                if (eov != null) {
-                  if (eov == Token.INVALID || eov == Token.LOCAL_INVALID) {
-                    // nothing?
-                  } else if (dm.cacheTimeMillis() - startTime < timeoutMs) {
+                if (eov != null && eov != Token.INVALID && eov != Token.LOCAL_INVALID) {
+                  if (dm.cacheTimeMillis() - startTime < timeoutMs) {
                     if (!region.isExpiredWithRegardTo(this.key, this.ttl, this.idleTime)) {
                       lastModifiedCacheTime = entry.getLastModified();
                       if (eov instanceof CachedDeserializable) {

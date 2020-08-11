@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.GeneralSecurityException;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 import org.apache.geode.annotations.Experimental;
@@ -100,12 +99,7 @@ public class ProtobufDriver implements Driver {
           .setDisconnectClientRequest(
               ConnectionAPI.DisconnectClientRequest.newBuilder().setReason("Driver closed"))
           .build();
-      final ConnectionAPI.DisconnectClientResponse disconnectClientResponse =
-          channel.sendRequest(disconnectClientRequest, MessageTypeCase.DISCONNECTCLIENTRESPONSE)
-              .getDisconnectClientResponse();
-      if (Objects.isNull(disconnectClientResponse)) {
-        // The server did not acknowledge the disconnect request; ignore for now.
-      }
+      channel.sendRequest(disconnectClientRequest, MessageTypeCase.DISCONNECTCLIENTRESPONSE);
     } catch (IOException ioe) {
       // NOP
     } finally {

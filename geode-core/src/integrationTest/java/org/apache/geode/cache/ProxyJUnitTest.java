@@ -17,6 +17,7 @@ package org.apache.geode.cache;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -1122,10 +1123,10 @@ public class ProxyJUnitTest {
   }
 
   /**
-   * Waits (hot) until the system time changes.
+   * Waits until the system time changes.
    */
   private void waitForSystemTimeChange() {
     long start = System.currentTimeMillis();
-    while (System.currentTimeMillis() == start);
+    await().until(() -> System.currentTimeMillis() != start);
   }
 }

@@ -180,9 +180,8 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
       assertTrue("Expected exception was not thrown", isFirstFunc);
     } catch (Exception exp) {
       if (!isFirstFunc) {
-        if (exp instanceof TransactionException && exp.getMessage()
+        if (!(exp instanceof TransactionException) || !exp.getMessage()
             .startsWith("Function execution is not colocated with transaction.")) {
-        } else {
           logger.info("Expected to catch TransactionException but caught exception " + exp, exp);
           Assert.fail("Expected to catch TransactionException but caught exception ", exp);
         }
@@ -253,8 +252,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
           fail("Expected exception was not thrown");
         } catch (FunctionException fe) {
           LogWriterUtils.getLogWriter().info("Caught Expected exception");
-          if (fe.getCause() instanceof TransactionDataNotColocatedException) {
-          } else {
+          if (!(fe.getCause() instanceof TransactionDataNotColocatedException)) {
             throw new TestException(
                 "Expected to catch FunctionException with cause TransactionDataNotColocatedException"
                     + " but cause is  " + fe.getCause(),

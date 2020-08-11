@@ -1883,9 +1883,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     if (Token.isInvalidOrRemoved(oldVal)) {
       oldVal = null;
     } else {
-      if (mustBeAvailable || oldVal == null || areOldValuesEnabled()) {
-        // set oldValue to oldVal
-      } else {
+      if (!mustBeAvailable && oldVal != null && !areOldValuesEnabled()) {
         oldVal = Token.NOT_AVAILABLE;
       }
     }

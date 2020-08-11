@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache30;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -249,8 +251,8 @@ public class CacheStatisticsPartitionedRegionDUnitTest extends JUnit4CacheTestCa
    */
   private void waitForClockToChange(Region region, long millisecs) {
     long time = ((InternalRegion) region).cacheTimeMillis();
-    while (time >= ((InternalRegion) region).cacheTimeMillis() + millisecs) {
-    }
+    await().untilAsserted(() -> assertThat(((InternalRegion) region).cacheTimeMillis() + millisecs)
+        .isGreaterThanOrEqualTo(time));
   }
 
 

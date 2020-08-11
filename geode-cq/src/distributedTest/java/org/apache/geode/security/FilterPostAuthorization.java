@@ -181,8 +181,6 @@ public class FilterPostAuthorization implements AccessControl {
         putContext.setSerializedValue(serializedValue, isObject);
         return true;
       }
-    } else if (opCode.equals(OperationCode.PUTALL)) {
-      // no need for now
     } else if (opCode.isQuery() || opCode.isExecuteCQ()) {
       QueryOperationContext queryContext = (QueryOperationContext) context;
       Object value = queryContext.getQueryResult();

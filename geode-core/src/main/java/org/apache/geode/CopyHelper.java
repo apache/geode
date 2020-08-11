@@ -175,9 +175,8 @@ public final class CopyHelper {
             // try using Serialization
           } catch (InvocationTargetException ex) {
             Throwable cause = ex.getTargetException();
-            if (cause instanceof CloneNotSupportedException) {
-              // try using Serialization
-            } else {
+            // If the cause is a CloneNotSupportedException, ignore and try with serialization
+            if (!(cause instanceof CloneNotSupportedException)) {
               throw new CopyException("Clone failed.",
                   cause != null ? cause : ex);
             }

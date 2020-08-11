@@ -266,9 +266,7 @@ public class SocketCloser {
       // Sun's NIO implementation has been known to throw Errors
       // that are caused by IOExceptions. If this is the case, it's
       // okay.
-      if (e.getCause() instanceof IOException) {
-        // okay...
-      } else {
+      if (!(e.getCause() instanceof IOException)) {
         throw e;
       }
     }

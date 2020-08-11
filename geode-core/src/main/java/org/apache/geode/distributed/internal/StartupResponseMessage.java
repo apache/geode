@@ -140,9 +140,7 @@ public class StartupResponseMessage extends DistributionMessage
   @Override
   protected void process(ClusterDistributionManager dm) {
 
-    if (this.interfaces == null || this.interfaces.size() == 0) {
-      // this.rejectionMessage = "Peer " + getSender() + " has no network interfaces";
-    } else {
+    if (this.interfaces != null && this.interfaces.size() != 0) {
       dm.setEquivalentHosts(this.interfaces);
     }
     dm.setDistributedSystemId(this.distributedSystemId);

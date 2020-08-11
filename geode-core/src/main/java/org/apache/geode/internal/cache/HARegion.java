@@ -392,8 +392,6 @@ public class HARegion extends DistributedRegion {
           } finally {
             event.release();
           }
-          if (txState == null) {
-          }
         } catch (CacheWriterException cwe) {
           // @todo smenon Log the exception
         }

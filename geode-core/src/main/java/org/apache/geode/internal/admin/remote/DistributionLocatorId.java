@@ -151,16 +151,11 @@ public class DistributionLocatorId implements java.io.Serializable {
     int optionsIndex = marshalled.indexOf(',');
     if (optionsIndex > 0) {
       String[] options = marshalled.substring(optionsIndex).split(",");
-      for (int i = 0; i < options.length; i++) {
-        String[] optionFields = options[i].split("=");
-        if (optionFields.length == 2) {
-          if (optionFields[0].equalsIgnoreCase("peer")) {
-            // this setting is deprecated
-            // this.peerLocator = Boolean.valueOf(optionFields[1]).booleanValue();
-          } else if (optionFields[0].equalsIgnoreCase("server")) {
-            // this setting is deprecated
-            // this.serverLocator = Boolean.valueOf(optionFields[1]).booleanValue();
-          } else if (optionFields[0].equalsIgnoreCase("hostname-for-clients")) {
+      for (String option : options) {
+        String[] optionFields = option.split("=");
+        if (optionFields.length == 2 && !optionFields[0].equalsIgnoreCase("peer")
+            && !optionFields[0].equalsIgnoreCase("server")) {
+          if (optionFields[0].equalsIgnoreCase("hostname-for-clients")) {
             this.hostnameForClients = optionFields[1];
           } else {
             throw new IllegalArgumentException(marshalled + " invalid option " + optionFields[0]

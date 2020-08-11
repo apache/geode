@@ -221,15 +221,14 @@ public class NestedQueryJUnitTest {
         SEPARATOR + "Portfolios.values['0'].positions.values");
 
     for (int i = 0; i < queries.length; i++) {
-      Query q = null;
+      Query q;
       try {
         q = CacheUtils.getQueryService().newQuery(queries[i]);
         QueryObserverImpl observer2 = new QueryObserverImpl();
         QueryObserverHolder.setInstance(observer2);
         r[i][1] = (SelectResults) q.execute();
 
-        if (observer2.isIndexesUsed == true) {
-        } else if (i != 3) {
+        if (!observer2.isIndexesUsed && i != 3) {
           fail("Index not used");
         }
         resType2 = (r[i][1]).getCollectionType().getElementType();
@@ -237,7 +236,7 @@ public class NestedQueryJUnitTest {
         set2 = ((r[i][1]).asSet());
 
       } catch (Exception e) {
-        throw new AssertionError(q.getQueryString(), e);
+        throw new AssertionError(queries[i], e);
       }
     }
     for (int j = 0; j <= 1; j++) {
