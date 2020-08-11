@@ -1762,6 +1762,11 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
     vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName(), 3000));
     LogWriterUtils.getLogWriter().info("Completed puts in the region");
 
+
+    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName(), 0));
+    vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName(), 0));
+    LogWriterUtils.getLogWriter().info("Check that no events are propagated to remote site");
+
     // --------------------close and rebuild local site
     // -------------------------------------------------
     // stop the senders
