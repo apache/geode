@@ -1003,7 +1003,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
       if (otherHolder == null) {
         return false;
       } else {
-        return !holder.isNewerThanOrCanFillExceptionsFor(otherHolder)
+        return otherHolder.dominates(holder)
             && otherHolder.getVersion() > gcVersion;
       }
     }
