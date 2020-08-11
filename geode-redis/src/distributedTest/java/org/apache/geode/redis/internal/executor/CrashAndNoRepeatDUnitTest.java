@@ -274,6 +274,14 @@ public class CrashAndNoRepeatDUnitTest {
         iterationCount += 1;
       } catch (JedisConnectionException ex) {
         if (ex.getMessage().contains("Unexpected end of stream.")) {
+          if (!doWithRetry(() -> connect(jedisRef).get(key)).endsWith(appendString)) {
+            // give some time for the in-flight op to be done
+            try {
+              Thread.sleep(1000);
+            } catch (InterruptedException e) {
+              Thread.interrupted();
+            }
+          }
           if (doWithRetry(() -> connect(jedisRef).get(key)).endsWith(appendString)) {
             iterationCount += 1;
           }
