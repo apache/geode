@@ -63,7 +63,7 @@ dependencies {
     exclude module: 'spring-boot-starter-tomcat'
   }
   acceptanceTestImplementation('org.springframework.boot:spring-boot-starter-data-redis')
-  acceptanceTestRuntime('org.springframework.session:spring-session-data-redis')
+  acceptanceTestRuntimeOnly('org.springframework.session:spring-session-data-redis')
 
 
   distributedTestImplementation('org.apache.logging.log4j:log4j-core')

@@ -36,7 +36,6 @@ dependencies {
     exclude module: 'geode-core'
   }
 
-  distributedTestImplementation 'com.jayway.jsonpath:json-path'
   implementation('org.apache.logging.log4j:log4j-api')
   implementation('org.apache.logging.log4j:log4j-core')
   implementation('commons-io:commons-io')
@@ -64,6 +63,7 @@ dependencies {
   testImplementation('pl.pragmatists:JUnitParams')
 
 
+  distributedTestImplementation('com.jayway.jsonpath:json-path')
   distributedTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
 }
 
