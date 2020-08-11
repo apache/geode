@@ -162,6 +162,7 @@ dependencies {
     //These bom dependencies are used to constrain the versions of the dependencies listed below
     api(platform(project(':boms:geode-all-bom')))
     compileOnly(platform(project(':boms:geode-all-bom')))
+    testCompileOnly(platform(project(':boms:geode-all-bom')))
 
     // As plugin configurations that do not extend from compile,
     // we must explicitly impose version constraints on these configurations.
@@ -280,6 +281,10 @@ dependencies {
 
     //Log4j is used everywhere
     implementation('org.apache.logging.log4j:log4j-api')
+
+    implementation('io.swagger:swagger-annotations') {
+        ext.optional = true
+    }
 
 
     runtimeOnly(project(':geode-http-service')) {

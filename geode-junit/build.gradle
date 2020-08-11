@@ -36,6 +36,7 @@ dependencies {
   api('org.mockito:mockito-core')
 
   gradleLint.fixme('2021-01-01', 'unused-dependency') {
+    api('com.fasterxml.jackson.core:jackson-annotations')
     api('com.fasterxml.jackson.core:jackson-databind')
     api('com.github.stefanbirkner:system-rules') {
       exclude module: 'junit-dep'

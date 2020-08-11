@@ -237,10 +237,11 @@ dependencies {
   }
   distributedTestImplementation(project(':extensions:session-testing-war'))
   distributedTestImplementation(project(':geode-assembly:geode-assembly-test'))
-  distributedTestImplementation('org.apache.httpcomponents:httpclient')
-  distributedTestImplementation('org.springframework:spring-web')
   distributedTestImplementation(project(':geode-management'))
   distributedTestImplementation(project(':geode-web-management'))
+  distributedTestImplementation('org.apache.httpcomponents:httpclient')
+  distributedTestImplementation('com.fasterxml.jackson.core:jackson-core')
+  distributedTestImplementation('org.springframework:spring-web')
   distributedTestImplementation('com.arakelian:java-jq')
   distributedTestImplementation('javax.servlet:javax.servlet-api')
 
