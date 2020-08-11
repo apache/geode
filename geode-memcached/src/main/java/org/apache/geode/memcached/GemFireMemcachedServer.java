@@ -181,6 +181,8 @@ public class GemFireMemcachedServer {
     serverSocket.setReceiveBufferSize(getSocketBufferSize());
     serverSocket.setReuseAddress(true);
     serverSocket.bind(new InetSocketAddress(getBindAddress(), serverPort));
+    logger.info("DHE: " + getClass() + ".createServerSocket() bound socket to port "
+        + serverSocket.getLocalPort());
     if (logger.fineEnabled()) {
       logger.fine("GemFireMemcachedServer configured socket buffer size:" + getSocketBufferSize());
     }

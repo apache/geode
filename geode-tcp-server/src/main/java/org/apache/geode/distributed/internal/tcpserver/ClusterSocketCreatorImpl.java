@@ -21,11 +21,16 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.logging.internal.log4j.api.LogService;
+
 /**
  * ClusterSocketCreatorImpl is constructed and held by a TcpSocketCreator. It is
  * accessed through the method {@link TcpSocketCreator#forCluster()}.
  */
 public class ClusterSocketCreatorImpl implements ClusterSocketCreator {
+  private static final Logger logger = LogService.getLogger();
   private final TcpSocketCreatorImpl socketCreator;
 
   protected ClusterSocketCreatorImpl(TcpSocketCreatorImpl socketCreator) {
@@ -70,6 +75,8 @@ public class ClusterSocketCreatorImpl implements ClusterSocketCreator {
     }
     try {
       result.bind(new InetSocketAddress(bindAddr, nport), backlog);
+      logger.info("DHE: {}.createServerSocket() bound server to port {}", getClass(),
+          result.getLocalPort());
     } catch (BindException e) {
       BindException throwMe =
           new BindException(String.format("Failed to create server socket on %s[%s]",

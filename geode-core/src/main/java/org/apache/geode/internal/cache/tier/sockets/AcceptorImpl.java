@@ -541,6 +541,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
         for (;;) {
           try {
             serverSock.bind(new InetSocketAddress(getBindAddress(), port), backLog);
+            logger.info("DHE: AcceptorImpl() bound server to port {}", serverSock.getLocalPort());
             break;
           } catch (SocketException b) {
             if (System.currentTimeMillis() > tilt) {

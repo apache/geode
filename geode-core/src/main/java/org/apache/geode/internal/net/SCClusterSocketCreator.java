@@ -24,12 +24,16 @@ import javax.net.ServerSocketFactory;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLServerSocket;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.distributed.internal.tcpserver.ClusterSocketCreatorImpl;
 import org.apache.geode.internal.admin.SSLConfig;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.net.SSLParameterExtension;
 
 class SCClusterSocketCreator extends ClusterSocketCreatorImpl {
+  private static final Logger logger = LogService.getLogger();
   private final SocketCreator coreSocketCreator;
 
   protected SCClusterSocketCreator(SocketCreator socketCreator) {
@@ -69,6 +73,8 @@ class SCClusterSocketCreator extends ClusterSocketCreatorImpl {
       serverSocket.setReceiveBufferSize(socketBufferSize);
     }
     serverSocket.bind(new InetSocketAddress(bindAddr, nport), backlog);
+    logger.info("DHE: {}.createServerSocket() bound socket to port {}", getClass(),
+        serverSocket.getLocalPort());
     finishServerSocket(serverSocket);
     return serverSocket;
   }

@@ -701,6 +701,8 @@ public class SocketCreator extends TcpSocketCreatorImpl {
       result.setReceiveBufferSize(socketBufferSize);
       try {
         result.bind(new InetSocketAddress(bindAddr, nport), backlog);
+        logger.info("DHE: {}.createServerSocket() bound socket to port {}", getClass(),
+            result.getLocalPort());
       } catch (BindException e) {
         BindException throwMe = new BindException(
             String.format("Failed to create server socket on %s[%s]", bindAddr, nport));
