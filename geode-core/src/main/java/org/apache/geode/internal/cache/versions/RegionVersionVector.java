@@ -996,16 +996,11 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
 
   private boolean isGCVersionDominatedByOtherHolder(Long gcVersion,
       RegionVersionHolder<T> otherHolder) {
-    if (gcVersion == null || gcVersion == 0) {
+    if (gcVersion == null || gcVersion.longValue() == 0) {
       return true;
     } else {
-      RegionVersionHolder<T> holder = new RegionVersionHolder<T>(gcVersion);
-      if (otherHolder == null) {
-        return false;
-      } else {
-        return otherHolder.dominates(holder)
-            && otherHolder.getVersion() > gcVersion;
-      }
+      RegionVersionHolder<T> holder = new RegionVersionHolder<T>(gcVersion.longValue());
+      return !holder.isNewerThanOrCanFillExceptionsFor(otherHolder);
     }
   }
 
