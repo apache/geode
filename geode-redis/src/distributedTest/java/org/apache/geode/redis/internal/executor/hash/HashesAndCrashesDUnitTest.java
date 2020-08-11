@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Supplier;
 
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.RedisClient;
@@ -241,18 +240,6 @@ public class HashesAndCrashesDUnitTest {
     future3.get();
   }
 
-  private <T> T doWithRetry(Supplier<T> supplier) {
-    while (true) {
-      try {
-        return supplier.get();
-      } catch (RedisCommandExecutionException ex) {
-        if (!ex.getMessage().contains("memberDeparted")) {
-          throw ex;
-        }
-      }
-    }
-  }
-
   private void hsetPerformAndVerify(int index, int minimumIterations, AtomicBoolean isRunning) {
     String key = "hset-key-" + index;
     int iterationCount = 0;
@@ -262,12 +249,7 @@ public class HashesAndCrashesDUnitTest {
       try {
         commands.hset(key, fieldName, "value-" + iterationCount);
         iterationCount += 1;
-      } catch (RedisCommandExecutionException e) {
-        if (e.getMessage().contains("memberDeparted")) {
-          if (doWithRetry(() -> commands.hexists(key, fieldName))) {
-            iterationCount += 1;
-          }
-        }
+      } catch (RedisCommandExecutionException ignore) {
       }
     }
 
@@ -289,12 +271,7 @@ public class HashesAndCrashesDUnitTest {
       try {
         commands.sadd(key, member);
         iterationCount += 1;
-      } catch (RedisCommandExecutionException e) {
-        if (e.getMessage().contains("memberDeparted")) {
-          if (doWithRetry(() -> commands.sismember(key, member))) {
-            iterationCount += 1;
-          }
-        }
+      } catch (RedisCommandExecutionException ignore) {
       }
     }
 
@@ -318,12 +295,7 @@ public class HashesAndCrashesDUnitTest {
       try {
         commands.set(key, key);
         iterationCount += 1;
-      } catch (RedisCommandExecutionException e) {
-        if (e.getMessage().contains("memberDeparted")) {
-          if (doWithRetry(() -> commands.exists(key)) == 1) {
-            iterationCount += 1;
-          }
-        }
+      } catch (RedisCommandExecutionException ignore) {
       }
     }
 
