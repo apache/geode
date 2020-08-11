@@ -575,6 +575,9 @@ public class TombstoneService {
           synchronized (expiredTombstonesLock) {
             for (Tombstone t : expiredTombstones) {
               DistributedRegion tr = (DistributedRegion) t.region;
+              if (!tr.isInitialized()) {
+                continue;
+              }
               tr.getVersionVector().recordGCVersion(t.getMemberID(), t.getRegionVersion());
               if (!reapedKeys.containsKey(tr)) {
                 reapedKeys.put(tr, Collections.emptySet());
