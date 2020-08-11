@@ -131,18 +131,15 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    */
   @Override
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-    RedisResponse exceptionResponse = getExceptionResponse(ctx, cause);
-    if (exceptionResponse != null) {
-      writeToChannel(exceptionResponse);
+    if (cause instanceof IOException) {
+      channelInactive(ctx);
+      return;
     }
+    writeToChannel(getExceptionResponse(ctx, cause));
   }
 
   private RedisResponse getExceptionResponse(ChannelHandlerContext ctx, Throwable cause) {
     RedisResponse response;
-    if (cause instanceof IOException) {
-      channelInactive(ctx);
-      return null;
-    }
 
     if (cause instanceof FunctionException
         && !(cause instanceof FunctionInvocationTargetException)) {
@@ -169,10 +166,11 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       response = RedisResponse.error(cause.getMessage());
     } else if (cause instanceof FunctionInvocationTargetException) {
       // This indicates a member departed
-      logger.warn(
-          "Closing client connection because one of the servers doing this operation departed.");
-      channelInactive(ctx);
-      response = null;
+      String errorMsg = cause.getMessage();
+      if (!errorMsg.contains("memberDeparted")) {
+        errorMsg = "memberDeparted: " + errorMsg;
+      }
+      response = RedisResponse.error(errorMsg);
     } else {
       if (logger.isErrorEnabled()) {
         logger.error("GeodeRedisServer-Unexpected error handler for " + ctx.channel(), cause);

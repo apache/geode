@@ -37,6 +37,7 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.exceptions.JedisException;
 
 import org.apache.geode.redis.MockSubscriber;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -177,7 +178,21 @@ public class PubSubDUnitTest {
 
     cluster.crashVM(2);
 
-    result = publisher1.publish(CHANNEL_NAME, "hello again");
+    // Depending on the timing of this call, it may catch a function error (due to member departed)
+    // and return 0 as a result. Regardless, it should NOT hang.
+    boolean published = false;
+    do {
+      try {
+        result = publisher1.publish(CHANNEL_NAME, "hello again");
+        published = true;
+      } catch (JedisException ex) {
+        if (ex.getMessage().contains("memberDeparted")) {
+          // retry
+        } else {
+          throw ex;
+        }
+      }
+    } while (!published);
     assertThat(result).isLessThanOrEqualTo(1);
 
     mockSubscriber1.unsubscribe(CHANNEL_NAME);
