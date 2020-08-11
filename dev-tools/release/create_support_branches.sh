@@ -165,7 +165,8 @@ sed -e "s/^version =.*/version = ${NEWVERSION}-build.0/" -i.bak gradle.propertie
 #  initial_version: 1.13.0-((stuff)).0
 sed -e "s/^  initial_version:[^-]*\(-[^.0-9]*\)[.0-9]*/  initial_version: ${NEWVERSION}\1.0/" -i.bak ./ci/pipelines/shared/jinja.variables.yml
 
-VER=geode-serialization/src/main/java/org/apache/geode/internal/serialization/Version.java
+VER=geode-serialization/src/main/java/org/apache/geode/internal/serialization/KnownVersion.java
+[ -r $VER ] || VER=geode-serialization/src/main/java/org/apache/geode/internal/serialization/Version.java
 #add the new ordinal and Version constants and set them as current&highest
 CURORD=$(cat $VER | awk '/private static final short GEODE_.*_ORDINAL/{print $NF}' | tr -d ';' | sort -n | tail -1)
 NEWORD=$(( CURORD + 5 ))
