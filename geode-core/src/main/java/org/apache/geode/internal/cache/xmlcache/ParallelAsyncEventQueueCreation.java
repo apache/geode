@@ -43,19 +43,13 @@ public class ParallelAsyncEventQueueCreation extends AbstractGatewaySender
       List<Integer> remoteDSIds) {}
 
   @Override
-  public void start() {
-    startTime = System.currentTimeMillis();
-  }
+  public void start() {}
 
   @Override
-  public void startWithCleanQueue() {
-    start();
-  }
+  public void startWithCleanQueue() {}
 
   @Override
-  public void stop() {
-    stopTime = System.currentTimeMillis();
-  }
+  public void stop() {}
 
   @Override
   public void rebalance() {

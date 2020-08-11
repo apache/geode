@@ -82,6 +82,7 @@ public class ParallelAsyncEventQueueImpl extends AbstractGatewaySender {
               "Locators must be configured before starting gateway-sender.");
         }
       }
+
       /*
        * Now onwards all processing will happen through
        * "ConcurrentParallelGatewaySenderEventProcessor" we have made
@@ -96,6 +97,7 @@ public class ParallelAsyncEventQueueImpl extends AbstractGatewaySender {
       }
       eventProcessor.start();
       waitForRunningStatus();
+      startTime = System.currentTimeMillis();
 
       // Only notify the type registry if this is a WAN gateway queue
       if (!isAsyncEventQueue()) {
@@ -110,7 +112,6 @@ public class ParallelAsyncEventQueueImpl extends AbstractGatewaySender {
       logger.info("Started  {}", this);
 
       enqueueTempEvents();
-      startTime = System.currentTimeMillis();
     } finally {
       this.getLifeCycleLock().writeLock().unlock();
     }
@@ -133,6 +134,8 @@ public class ParallelAsyncEventQueueImpl extends AbstractGatewaySender {
       // stop the running threads, open sockets if any
       ((ConcurrentParallelGatewaySenderQueue) this.eventProcessor.getQueue()).cleanUp();
 
+      stopTime = System.currentTimeMillis();
+
       logger.info("Stopped  {}", this);
 
       InternalDistributedSystem system =
@@ -140,7 +143,6 @@ public class ParallelAsyncEventQueueImpl extends AbstractGatewaySender {
       system.handleResourceEvent(ResourceEvent.GATEWAYSENDER_STOP, this);
 
       clearTempEventsAfterSenderStopped();
-      stopTime = System.currentTimeMillis();
     } finally {
       this.getLifeCycleLock().writeLock().unlock();
     }

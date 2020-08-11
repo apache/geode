@@ -99,10 +99,11 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
       InternalDistributedSystem system = this.cache.getInternalDistributedSystem();
       system.handleResourceEvent(ResourceEvent.GATEWAYSENDER_START, this);
 
+      startTime = System.currentTimeMillis();
+
       logger.info("Started {}", this);
 
       enqueueTempEvents();
-      startTime = System.currentTimeMillis();
     } finally {
       this.getLifeCycleLock().writeLock().unlock();
     }
@@ -129,6 +130,8 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
       // stop the running threads, open sockets if any
       ((ConcurrentParallelGatewaySenderQueue) this.eventProcessor.getQueue()).cleanUp();
 
+      stopTime = System.currentTimeMillis();
+
       logger.info("Stopped  {}", this);
 
       InternalDistributedSystem system =
@@ -136,7 +139,6 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
       system.handleResourceEvent(ResourceEvent.GATEWAYSENDER_STOP, this);
 
       clearTempEventsAfterSenderStopped();
-      stopTime = System.currentTimeMillis();
       // Keep the eventProcessor around so we can ask it for the regionQueues later.
       // Tests expect to be able to do this.
     } finally {

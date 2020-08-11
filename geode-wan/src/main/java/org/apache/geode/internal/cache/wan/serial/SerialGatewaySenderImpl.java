@@ -96,7 +96,7 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
       }
       eventProcessor.start();
       waitForRunningStatus();
-      this.startTime = System.currentTimeMillis();
+      startTime = System.currentTimeMillis();
 
       // Only notify the type registry if this is a WAN gateway queue
       if (!isAsyncEventQueue()) {
@@ -111,7 +111,6 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
           .info("Started  {}", this);
 
       enqueueTempEvents();
-      startTime = System.currentTimeMillis();
     } finally {
       this.getLifeCycleLock().writeLock().unlock();
     }
@@ -145,6 +144,7 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
       for (AsyncEventListener listener : this.listeners) {
         listener.close();
       }
+      stopTime = System.currentTimeMillis();
       logger.info("Stopped  {}", this);
 
       clearTempEventsAfterSenderStopped();
@@ -187,7 +187,6 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
         (InternalDistributedSystem) this.cache.getDistributedSystem();
     system.handleResourceEvent(ResourceEvent.GATEWAYSENDER_STOP, this);
 
-    stopTime = System.currentTimeMillis();
     // this.eventProcessor = null;
   }
 
