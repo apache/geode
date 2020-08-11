@@ -794,11 +794,11 @@ public class PubSubIntegrationTest {
     Future<Integer> makeSubscribersFuture2 =
         executor.submit(() -> makeSubscribers(10000, running));
 
-    Future<Integer> publish1 = executor.submit(() -> doPublishing(1, 100000, running));
-    Future<Integer> publish2 = executor.submit(() -> doPublishing(2, 100000, running));
-    Future<Integer> publish3 = executor.submit(() -> doPublishing(3, 100000, running));
-    Future<Integer> publish4 = executor.submit(() -> doPublishing(4, 100000, running));
-    Future<Integer> publish5 = executor.submit(() -> doPublishing(5, 100000, running));
+    Future<Integer> publish1 = executor.submit(() -> doPublishing(1, 10000, running));
+    Future<Integer> publish2 = executor.submit(() -> doPublishing(2, 10000, running));
+    Future<Integer> publish3 = executor.submit(() -> doPublishing(3, 10000, running));
+    Future<Integer> publish4 = executor.submit(() -> doPublishing(4, 10000, running));
+    Future<Integer> publish5 = executor.submit(() -> doPublishing(5, 10000, running));
 
     running.set(false);
 
