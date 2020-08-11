@@ -169,6 +169,13 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       response = RedisResponse.error(cause.getMessage());
     } else if (cause instanceof FunctionInvocationTargetException) {
       // This indicates a member departed
+      // Pause for a second before doing the disconnect to give any part of
+      // this operation that is in flight a chance to complete
+      try {
+        Thread.sleep(1000);
+      } catch (InterruptedException e) {
+        Thread.interrupted();
+      }
       logger.warn(
           "Closing client connection because one of the servers doing this operation departed.");
       channelInactive(ctx);
