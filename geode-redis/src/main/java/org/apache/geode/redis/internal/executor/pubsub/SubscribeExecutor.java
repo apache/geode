@@ -48,16 +48,18 @@ public class SubscribeExecutor extends AbstractExecutor {
     }
 
     Runnable callback = () -> {
-      for (SubscribeResult result : results) {
-        if (result.getSubscription() != null) {
-          result.getSubscription().readyToPublish();
+      Runnable innerCallback = () -> {
+        for (SubscribeResult result : results) {
+          if (result.getSubscription() != null) {
+            result.getSubscription().readyToPublish();
+          }
         }
-      }
+      };
+      context.changeChannelEventLoopGroup(context.getSubscriberGroup(), innerCallback);
     };
 
     RedisResponse response = RedisResponse.flattenedArray(items);
     response.setAfterWriteCallback(callback);
-    context.changeChannelEventLoopGroup(context.getSubscriberGroup(), callback);
 
     return response;
   }
