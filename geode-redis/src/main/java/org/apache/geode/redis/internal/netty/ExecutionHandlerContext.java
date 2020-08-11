@@ -73,7 +73,8 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private final Runnable shutdownInvoker;
   private final RedisStats redisStats;
   private final EventLoopGroup subscriberGroup;
-  private final int MAX_QUEUED_COMMANDS = 100;
+  private final int MAX_QUEUED_COMMANDS =
+      Integer.getInteger("geode.redis.commandQueueSize", 1000);
   private final LinkedBlockingQueue<Command> commandQueue =
       new LinkedBlockingQueue<>(MAX_QUEUED_COMMANDS);
 
