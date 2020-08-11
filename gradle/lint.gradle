@@ -36,6 +36,7 @@ allprojects {
             'recommended-versions'
     ]
     reportFormat = 'html'
+    alwaysRun = false
     autoLintAfterFailure = false
   }
 }
