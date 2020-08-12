@@ -603,15 +603,17 @@ public class TombstoneService {
             // for PR buckets we have to keep track of the keys removed because clients have
             // them all lumped in a single non-PR region
             DistributedRegion tr = (DistributedRegion) t.region;
-            boolean tombstoneWasStillInRegionMap =
-                tr.getRegionMap().removeTombstone(t.entry, t, false, true);
-            if (tombstoneWasStillInRegionMap && hasToTrackKeysForClients(tr)) {
-              Set<Object> keys = reapedKeys.get(tr);
-              if (keys.isEmpty()) {
-                keys = new HashSet<Object>();
-                reapedKeys.put(tr, keys);
+            if (reapedKeys.containsKey(tr)) {
+              boolean tombstoneWasStillInRegionMap =
+                  tr.getRegionMap().removeTombstone(t.entry, t, false, true);
+              if (tombstoneWasStillInRegionMap && hasToTrackKeysForClients(tr)) {
+                Set<Object> keys = reapedKeys.get(tr);
+                if (keys.isEmpty()) {
+                  keys = new HashSet<Object>();
+                  reapedKeys.put(tr, keys);
+                }
+                keys.add(t.entry.getKey());
               }
-              keys.add(t.entry.getKey());
             }
             return true;
           });
