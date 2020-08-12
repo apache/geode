@@ -373,7 +373,7 @@ public class TombstoneService {
     return this.replicatedTombstoneSweeper.getBlockGCLock();
   }
 
-  private static class Tombstone extends CompactVersionHolder {
+  protected static class Tombstone extends CompactVersionHolder {
     // tombstone overhead size
     public static final int PER_TOMBSTONE_OVERHEAD =
         ReflectionSingleObjectSizer.REFERENCE_SIZE // queue's reference to the tombstone
@@ -452,7 +452,7 @@ public class TombstoneService {
     protected void beforeSleepChecks() {}
   }
 
-  private static class ReplicateTombstoneSweeper extends TombstoneSweeper {
+  protected static class ReplicateTombstoneSweeper extends TombstoneSweeper {
     /**
      * Used to execute batch gc message execution in the background.
      */
@@ -540,7 +540,8 @@ public class TombstoneService {
     }
 
     /** expire a batch of tombstones */
-    private void expireBatch() {
+
+    protected void expireBatch() {
       // fix for bug #46087 - OOME due to too many GC threads
       if (this.batchExpirationInProgress) {
         // incorrect return due to race between this and waiting-pool GC thread is okay
