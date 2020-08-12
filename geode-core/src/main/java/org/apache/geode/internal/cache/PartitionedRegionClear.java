@@ -158,8 +158,8 @@ public class PartitionedRegionClear {
         } finally {
           partitionedRegion.getDataStore().unlockBucketCreationForRegionClear();
           if (clearedBuckets.size() != 0 && partitionedRegion.getCachePerfStats() != null) {
-            partitionedRegion.getCachePerfStats().incRegionClearCount();
-            partitionedRegion.getCachePerfStats()
+            partitionedRegion.getRegionCachePerfStats().incRegionClearCount();
+            partitionedRegion.getRegionCachePerfStats()
                 .incPartitionedRegionClearLocalDuration(System.nanoTime() - clearStartTime);
           }
         }
@@ -378,7 +378,7 @@ public class PartitionedRegionClear {
     } finally {
       releaseDistributedClearLock(lockName);
       if (partitionedRegion.getCachePerfStats() != null) {
-        partitionedRegion.getCachePerfStats()
+        partitionedRegion.getRegionCachePerfStats()
             .incPartitionedRegionClearTotalDuration(System.nanoTime() - clearStartTime);
       }
     }

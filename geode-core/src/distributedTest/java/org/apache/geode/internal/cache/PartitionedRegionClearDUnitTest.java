@@ -165,14 +165,16 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
         assertThat(bucket.getCachePerfStats().getBucketClearCount()).isEqualTo(bucketCount);
       }
 
-      assertThat(region.getCachePerfStats().getRegionClearCount()).isEqualTo(1);
-      assertThat(region.getCachePerfStats().getPartitionedRegionClearLocalDuration())
+      CachePerfStats stats = region.getRegionCachePerfStats();
+
+      assertThat(stats.getRegionClearCount()).isEqualTo(1);
+      assertThat(stats.getPartitionedRegionClearLocalDuration())
           .isGreaterThan(0);
       if (isCoordinator) {
-        assertThat(region.getCachePerfStats().getPartitionedRegionClearTotalDuration())
+        assertThat(stats.getPartitionedRegionClearTotalDuration())
             .isGreaterThan(0);
       } else {
-        assertThat(region.getCachePerfStats().getPartitionedRegionClearTotalDuration())
+        assertThat(stats.getPartitionedRegionClearTotalDuration())
             .isEqualTo(0);
       }
     });
@@ -386,6 +388,8 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     // The accessor shouldn't increment the region clear count
     accessor.invoke(() -> {
       PartitionedRegion region = (PartitionedRegion) getRegion(false);
+
+      assertThat(region.getRegionCachePerfStats()).isNull();
       assertThat(region.getCachePerfStats().getRegionClearCount()).isEqualTo(0);
       assertThat(region.getCachePerfStats().getPartitionedRegionClearLocalDuration()).isEqualTo(0);
       assertThat(region.getCachePerfStats().getPartitionedRegionClearTotalDuration()).isEqualTo(0);
