@@ -378,8 +378,11 @@ public class PartitionedRegionClear {
     } finally {
       releaseDistributedClearLock(lockName);
       if (partitionedRegion.getCachePerfStats() != null) {
-        partitionedRegion.getRegionCachePerfStats()
-            .incPartitionedRegionClearTotalDuration(System.nanoTime() - clearStartTime);
+        CachePerfStats stats = partitionedRegion.getRegionCachePerfStats();
+        if (stats != null) {
+          partitionedRegion.getRegionCachePerfStats()
+              .incPartitionedRegionClearTotalDuration(System.nanoTime() - clearStartTime);
+        }
       }
     }
   }
