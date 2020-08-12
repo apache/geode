@@ -443,6 +443,7 @@ org/apache/geode/management/internal/beans/QueryDataFunction$LocalQueryFunction,
 org/apache/geode/management/internal/beans/stats/StatType,false
 org/apache/geode/management/internal/configuration/domain/SharedConfigurationStatus,false
 org/apache/geode/management/internal/configuration/functions/DownloadJarFunction,true,1
+org/apache/geode/management/internal/configuration/functions/GatewaySenderManageFunction,true,-6022504778575202026
 org/apache/geode/management/internal/configuration/functions/GetClusterConfigurationFunction,false
 org/apache/geode/management/internal/configuration/functions/GetRegionNamesFunction,false
 org/apache/geode/management/internal/configuration/functions/RecreateCacheFunction,false
