@@ -40,7 +40,7 @@ public class RedisSessionDUnitTest extends SessionDUnitTest {
     String sessionId = getSessionId(sessionCookie);
 
     Map<String, String> sessionInfo =
-        jedisConnetedToServer1.hgetAll("spring:session:sessions:" + sessionId);
+        jedisConnectedToServer1.hgetAll("spring:session:sessions:" + sessionId);
 
     assertThat(sessionInfo.get("sessionAttr:NOTES")).contains("note1");
   }

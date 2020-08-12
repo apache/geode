@@ -70,7 +70,7 @@ public abstract class SessionDUnitTest {
   protected static final Map<Integer, Integer> ports = new HashMap<>();
   public static ConfigurableApplicationContext springApplicationContext;
 
-  protected static Jedis jedisConnetedToServer1;
+  protected static Jedis jedisConnectedToServer1;
   protected static final int JEDIS_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
@@ -87,19 +87,19 @@ public abstract class SessionDUnitTest {
     ports.put(SERVER1, cluster.getRedisPort(SERVER1));
     ports.put(SERVER2, cluster.getRedisPort(SERVER2));
 
-    jedisConnetedToServer1 = new Jedis("localhost", ports.get(SERVER1), JEDIS_TIMEOUT);
+    jedisConnectedToServer1 = new Jedis("localhost", ports.get(SERVER1), JEDIS_TIMEOUT);
   }
 
   @AfterClass
   public static void cleanupAfterClass() {
-    jedisConnetedToServer1.disconnect();
+    jedisConnectedToServer1.disconnect();
     stopSpringApp(APP1);
     stopSpringApp(APP2);
   }
 
   @After
   public void cleanupAfterTest() {
-    jedisConnetedToServer1.flushAll();
+    jedisConnectedToServer1.flushAll();
   }
 
   protected static void startRedisServer(int server) {

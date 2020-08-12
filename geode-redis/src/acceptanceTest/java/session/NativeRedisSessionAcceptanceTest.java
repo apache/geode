@@ -39,7 +39,7 @@ public class NativeRedisSessionAcceptanceTest extends RedisSessionDUnitTest {
     ports.put(APP2, availablePorts[1]);
     ports.put(SERVER1, redisContainer.getFirstMappedPort());
 
-    jedisConnetedToServer1 = new Jedis("localhost", ports.get(SERVER1), JEDIS_TIMEOUT);
+    jedisConnectedToServer1 = new Jedis("localhost", ports.get(SERVER1), JEDIS_TIMEOUT);
     startSpringApp(APP1, DEFAULT_SESSION_TIMEOUT, ports.get(SERVER1));
     startSpringApp(APP2, DEFAULT_SESSION_TIMEOUT, ports.get(SERVER1));
   }
