@@ -129,6 +129,7 @@ public class CrashAndNoRepeatDUnitTest {
   }
 
   @Test
+  @Ignore("GEODE-8393")
   public void givenServerCrashesDuringAPPEND_thenDataIsNotLost() throws Exception {
     AtomicBoolean running1 = new AtomicBoolean(true);
     AtomicBoolean running2 = new AtomicBoolean(true);
