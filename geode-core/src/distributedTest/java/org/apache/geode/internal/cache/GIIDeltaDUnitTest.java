@@ -497,7 +497,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
 
     // If fullGII, the key size in gii chunk is 3, i.e. key1,key3,key5. key2 is GCed.
     // If delta GII, the key size should be 1 (key5(T) which is unfinished operation)
-    verifyDeltaSizeFromStats(R, 3, 0);
+    verifyDeltaSizeFromStats(R, 1, 1);
   }
 
   /**
@@ -1534,9 +1534,9 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     assertEquals(0, count);
     verifyDeltaSizeFromStats(R, 1, 1); // deltaGII, key1 in delta
 
-    // tombstone key2, key5 should be GCed at R
-    verifyTombstoneExist(R, "key2", false, false);
-    verifyTombstoneExist(R, "key5", false, false);
+    // tombstone key2, key5 should still exist and expired at R
+    verifyTombstoneExist(R, "key2", true, true);
+    verifyTombstoneExist(R, "key5", true, true);
 
     // tombstone key2, key5 should still exist and expired at P
     verifyTombstoneExist(P, "key2", true, true);
@@ -1544,10 +1544,10 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
 
     RegionVersionVector p_rvv = getRVV(P);
     RegionVersionVector r_rvv = getRVV(R);
-    out.println("GGG:p_rvv=" + p_rvv.fullToString() + ":r_rvv=" + r_rvv.fullToString());
+    out.println("p_rvv=" + p_rvv.fullToString() + ":r_rvv=" + r_rvv.fullToString());
 
-    waitForToVerifyRVV(R, memberP, 7, null, 4); // R's rvv=p7, gc=4
-    waitForToVerifyRVV(R, memberR, 6, null, 5); // R's rvv=r6, gc=5
+    waitForToVerifyRVV(R, memberP, 7, null, 0); // R's rvv=p7, gc=0
+    waitForToVerifyRVV(R, memberR, 6, null, 0); // R's rvv=r6, gc=0
     waitForToVerifyRVV(P, memberP, 7, null, 0); // P's rvv=p7, gc=0
     waitForToVerifyRVV(P, memberR, 6, null, 0); // P's rvv=r6, gc=0
   }
@@ -2704,7 +2704,6 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
           assertTrue(entry != null && entry.getRegionEntry().isTombstone());
         }
 
-        System.out.println("GGG:new timeout=" + TombstoneService.REPLICATE_TOMBSTONE_TIMEOUT);
         if (entry == null || !entry.getRegionEntry().isTombstone()) {
           return (false == expectExist);
         } else {
