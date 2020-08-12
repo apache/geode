@@ -23,6 +23,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.lettuce.core.ClientOptions;
+import io.lettuce.core.RedisClient;
+import io.lettuce.core.api.StatefulRedisConnection;
+import io.lettuce.core.api.sync.RedisCommands;
+import io.lettuce.core.resource.ClientResources;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -39,12 +44,11 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
-import redis.clients.jedis.Jedis;
 
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.logging.internal.log4j.api.FastLogger;
 import org.apache.geode.redis.session.springRedisTestApplication.RedisSpringTestApplication;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
+import org.apache.geode.redis.session.springRedisTestApplication.config.DUnitSocketAddressResolver;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
@@ -70,36 +74,60 @@ public abstract class SessionDUnitTest {
   protected static final Map<Integer, Integer> ports = new HashMap<>();
   public static ConfigurableApplicationContext springApplicationContext;
 
-  protected static Jedis jedisConnectedToServer1;
-  protected static final int JEDIS_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
+  private static RedisClient redisClient;
+  private static StatefulRedisConnection<String, String> connection;
+  protected static RedisCommands<String, String> commands;
 
   @BeforeClass
   public static void setup() {
+    setupAppPorts();
+    setupGeodeRedis();
+    setupClient();
+  }
+
+  protected static void setupAppPorts() {
     int[] availablePorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
     ports.put(APP1, availablePorts[0]);
     ports.put(APP2, availablePorts[1]);
+  }
 
+  protected static void setupGeodeRedis() {
     cluster.startLocatorVM(LOCATOR);
     startRedisServer(SERVER1);
     startRedisServer(SERVER2);
-
     ports.put(SERVER1, cluster.getRedisPort(SERVER1));
     ports.put(SERVER2, cluster.getRedisPort(SERVER2));
+  }
 
-    jedisConnectedToServer1 = new Jedis("localhost", ports.get(SERVER1), JEDIS_TIMEOUT);
+  protected static void setupSpringApps(long sessionTimeout) {
+    startSpringApp(APP1, sessionTimeout, ports.get(SERVER1), ports.get(SERVER2));
+    startSpringApp(APP2, sessionTimeout, ports.get(SERVER2), ports.get(SERVER1));
+  }
+
+  protected static void setupClient() {
+    DUnitSocketAddressResolver dnsResolver =
+        new DUnitSocketAddressResolver(new String[] {"" + ports.get(SERVER1)});
+    ClientResources resources = ClientResources.builder()
+        .socketAddressResolver(dnsResolver)
+        .build();
+    redisClient = RedisClient.create(resources, "redis://localhost");
+    redisClient.setOptions(ClientOptions.builder()
+        .autoReconnect(true)
+        .build());
+    connection = redisClient.connect();
+    commands = connection.sync();
   }
 
   @AfterClass
   public static void cleanupAfterClass() {
-    jedisConnectedToServer1.disconnect();
+    connection.close();
     stopSpringApp(APP1);
     stopSpringApp(APP2);
   }
 
   @After
   public void cleanupAfterTest() {
-    jedisConnectedToServer1.flushAll();
+    commands.flushall();
   }
 
   protected static void startRedisServer(int server) {

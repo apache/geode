@@ -19,9 +19,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.testcontainers.containers.GenericContainer;
-import redis.clients.jedis.Jedis;
 
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.redis.session.SessionExpirationDUnitTest;
 import org.apache.geode.test.junit.rules.IgnoreOnWindowsRule;
 
@@ -32,17 +30,19 @@ public class NativeRedisSessionExpirationAcceptanceTest extends SessionExpiratio
 
   @BeforeClass
   public static void setup() {
-    GenericContainer redisContainer = new GenericContainer<>("redis:5.0.6").withExposedPorts(6379);
-    redisContainer.start();
-    int[] availablePorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    ports.put(APP1, availablePorts[0]);
-    ports.put(APP2, availablePorts[1]);
-    ports.put(SERVER1, redisContainer.getFirstMappedPort());
-
-    jedisConnectedToServer1 = new Jedis("localhost", ports.get(SERVER1), JEDIS_TIMEOUT);
+    setupAppPorts();
+    setupNativeRedis();
+    setupClient();
     startSpringApp(APP1, SHORT_SESSION_TIMEOUT, ports.get(SERVER1));
     startSpringApp(APP2, SHORT_SESSION_TIMEOUT, ports.get(SERVER1));
   }
+
+  protected static void setupNativeRedis() {
+    GenericContainer redisContainer = new GenericContainer<>("redis:5.0.6").withExposedPorts(6379);
+    redisContainer.start();
+    ports.put(SERVER1, redisContainer.getFirstMappedPort());
+  }
+
 
   @Test
   public void sessionShouldTimeout_whenAppFailsOverToAnotherRedisServer() {

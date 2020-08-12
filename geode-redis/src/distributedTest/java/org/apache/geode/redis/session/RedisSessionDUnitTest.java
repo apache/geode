@@ -30,8 +30,7 @@ public class RedisSessionDUnitTest extends SessionDUnitTest {
   @BeforeClass
   public static void setup() {
     SessionDUnitTest.setup();
-    startSpringApp(APP1, DEFAULT_SESSION_TIMEOUT, ports.get(SERVER1), ports.get(SERVER2));
-    startSpringApp(APP2, DEFAULT_SESSION_TIMEOUT, ports.get(SERVER2), ports.get(SERVER1));
+    setupSpringApps(DEFAULT_SESSION_TIMEOUT);
   }
 
   @Test
@@ -40,7 +39,7 @@ public class RedisSessionDUnitTest extends SessionDUnitTest {
     String sessionId = getSessionId(sessionCookie);
 
     Map<String, String> sessionInfo =
-        jedisConnectedToServer1.hgetAll("spring:session:sessions:" + sessionId);
+        commands.hgetall("spring:session:sessions:" + sessionId);
 
     assertThat(sessionInfo.get("sessionAttr:NOTES")).contains("note1");
   }
