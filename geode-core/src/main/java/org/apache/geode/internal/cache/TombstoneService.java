@@ -373,7 +373,7 @@ public class TombstoneService {
     return this.replicatedTombstoneSweeper.getBlockGCLock();
   }
 
-  private static class Tombstone extends CompactVersionHolder {
+  protected static class Tombstone extends CompactVersionHolder {
     // tombstone overhead size
     public static final int PER_TOMBSTONE_OVERHEAD =
         ReflectionSingleObjectSizer.REFERENCE_SIZE // queue's reference to the tombstone
@@ -452,7 +452,7 @@ public class TombstoneService {
     protected void beforeSleepChecks() {}
   }
 
-  private static class ReplicateTombstoneSweeper extends TombstoneSweeper {
+  protected static class ReplicateTombstoneSweeper extends TombstoneSweeper {
     /**
      * Used to execute batch gc message execution in the background.
      */
@@ -540,7 +540,8 @@ public class TombstoneService {
     }
 
     /** expire a batch of tombstones */
-    private void expireBatch() {
+
+    protected void expireBatch() {
       // fix for bug #46087 - OOME due to too many GC threads
       if (this.batchExpirationInProgress) {
         // incorrect return due to race between this and waiting-pool GC thread is okay
@@ -575,6 +576,9 @@ public class TombstoneService {
           synchronized (expiredTombstonesLock) {
             for (Tombstone t : expiredTombstones) {
               DistributedRegion tr = (DistributedRegion) t.region;
+              if (!tr.isInitialized()) {
+                continue;
+              }
               tr.getVersionVector().recordGCVersion(t.getMemberID(), t.getRegionVersion());
               if (!reapedKeys.containsKey(tr)) {
                 reapedKeys.put(tr, Collections.emptySet());
@@ -600,15 +604,17 @@ public class TombstoneService {
             // for PR buckets we have to keep track of the keys removed because clients have
             // them all lumped in a single non-PR region
             DistributedRegion tr = (DistributedRegion) t.region;
-            boolean tombstoneWasStillInRegionMap =
-                tr.getRegionMap().removeTombstone(t.entry, t, false, true);
-            if (tombstoneWasStillInRegionMap && hasToTrackKeysForClients(tr)) {
-              Set<Object> keys = reapedKeys.get(tr);
-              if (keys.isEmpty()) {
-                keys = new HashSet<Object>();
-                reapedKeys.put(tr, keys);
+            if (reapedKeys.containsKey(tr)) {
+              boolean tombstoneWasStillInRegionMap =
+                  tr.getRegionMap().removeTombstone(t.entry, t, false, true);
+              if (tombstoneWasStillInRegionMap && hasToTrackKeysForClients(tr)) {
+                Set<Object> keys = reapedKeys.get(tr);
+                if (keys.isEmpty()) {
+                  keys = new HashSet<Object>();
+                  reapedKeys.put(tr, keys);
+                }
+                keys.add(t.entry.getKey());
               }
-              keys.add(t.entry.getKey());
             }
             return true;
           });
