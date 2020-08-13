@@ -10,7 +10,7 @@
 
 ## <a name="introduction"></a>Introduction
 
-The Redis API for Geode allow an application to send Redis commands to Geode. This will allow users to 
+The Redis API for Geode allows an application to send Redis commands to Geode. This will allow users to 
 switch seamlessly from native Redis to Geode as a data store/caching solution. 
 
 The API allows Geode to listen for and interpret incoming Redis commands on a designated port.  The 
