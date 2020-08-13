@@ -694,6 +694,14 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
     vm4.invoke(() -> WANTestBase.verifyTmpDroppedEventSize("ny", 0));
 
     // tmpDroppedEvents is to make sure all senders' queues are drained
+    // Note that the following checks may fail with the timeouts solution because when the
+    // senders are started, they come from a situation in which dropped events are not stored by the
+    // primary
+    // (setAllSendersStopped == false).
+    // If during start of the gateway sender, a secondary queues an event before the primary has set
+    // the
+    // startTimeout then that event will not be dropped.
+    // This is the problem with the timeouts solution.
     vm2.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ny"));
     vm4.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ny"));
 
