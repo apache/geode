@@ -10,7 +10,7 @@
 
 ## <a name="introduction"></a>Introduction
 
-The Redis API for Geode allow an application to send Redis commands to Geode. This will allow users to 
+The Redis API for Geode allow an application to send Redis 5 commands to Geode. This will allow users to 
 switch seamlessly from native Redis to Geode as a data store/caching solution. 
 
 The API allows Geode to listen for and interpret incoming Redis commands on a designated port.  The 
@@ -18,7 +18,7 @@ current set of supported Redis commands are listed [here](#redis-commands).
 
 ## <a name="how-to-try-it"></a>How To Try It
 
-We’ll build the develop branch of Apache Geode and then connect the Redis-CLI to that instance. Once 
+We’ll build the develop branch of Apache Geode and then connect the [Redis-CLI](https://redis.io/topics/quickstart) to that instance. Once 
 we have established that the Redis APIs are available, we’ll connect a Spring Session Data Redis 
 application.
 
@@ -68,13 +68,12 @@ connection, the locator directs the client to one of the least loaded servers. L
 
     For example:
     ```commandline
-    gfsh> start server --name=redisServer1 --locators=localhost[10334] --server-port=0 --redis-port=6379 --redis-bind-address=127.0.0.1
+    gfsh> start server --name=redisServer1 --locators=localhost[10334] --server-port=0 --redis-port=6379
     ```
     * --name: A name you create for your server.
     * --locators: This is the location of the locator you started in step 1. 
     * --server-port: The port that Geode clients connect to.
     * --redis-port: The port that your Redis client will connect to.
-    * --redis-bind-address: This will be the address your client uses to connect. 
 
     Your Geode instance should now be up and running (1 locator and 1 server) and ready to accept Redis 
     commands.  
@@ -95,7 +94,7 @@ make sure you change the `--name=` and `--redis-port=` parameters.
 
 For example: 
    ```commandLine
-   $ start server --name=redisServer2 --locators=localhost[10334] --server-port=0 --redis-port=6380 --redis-bind-address=127.0.0.1
+   $ start server --name=redisServer2 --locators=localhost[10334] --server-port=0 --redis-port=6380
    ```
 
 ### <a name="shutting-down"></a>Shutting Down 
