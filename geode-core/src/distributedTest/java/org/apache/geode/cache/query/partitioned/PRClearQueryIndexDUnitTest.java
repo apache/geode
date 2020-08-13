@@ -20,9 +20,11 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.junit.rules.VMProvider.invokeInEveryMember;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -41,21 +43,28 @@ import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.data.City;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.dunit.AsyncInvocation;
+import org.apache.geode.test.dunit.DUnitBlackboard;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.ClientCacheRule;
+import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 public class PRClearQueryIndexDUnitTest {
   public static final String MUMBAI_QUERY = "select * from /cities c where c.name = 'MUMBAI'";
   public static final String ID_10_QUERY = "select * from /cities c where c.id = 10";
   @ClassRule
-  public static ClusterStartupRule cluster = new ClusterStartupRule(2, true);
+  public static ClusterStartupRule cluster = new ClusterStartupRule(4, true);
 
   private static MemberVM server1;
   private static MemberVM server2;
 
+  private static DUnitBlackboard blackboard;
+
   @Rule
   public ClientCacheRule clientCacheRule = new ClientCacheRule();
+
+  @Rule
+  public ExecutorServiceRule executor = ExecutorServiceRule.builder().build();
 
   private ClientCache clientCache;
   private Region cities;
@@ -64,10 +73,10 @@ public class PRClearQueryIndexDUnitTest {
   @BeforeClass
   public static void beforeClass() {
     int locatorPort = ClusterStartupRule.getDUnitLocatorPort();
-    server1 = cluster.startServerVM(0, s -> s.withConnectionToLocator(locatorPort)
+    server1 = cluster.startServerVM(1, s -> s.withConnectionToLocator(locatorPort)
         .withProperty(SERIALIZABLE_OBJECT_FILTER, "org.apache.geode.cache.query.data.*")
         .withRegion(RegionShortcut.PARTITION, "cities"));
-    server2 = cluster.startServerVM(1, s -> s.withConnectionToLocator(locatorPort)
+    server2 = cluster.startServerVM(2, s -> s.withConnectionToLocator(locatorPort)
         .withProperty(SERIALIZABLE_OBJECT_FILTER, "org.apache.geode.cache.query.data.*")
         .withRegion(RegionShortcut.PARTITION, "cities"));
 
@@ -113,8 +122,8 @@ public class PRClearQueryIndexDUnitTest {
   }
 
   @Test
-  public void createAndRemoveIndexWhileClear() throws Exception {
-    IntStream.range(0, 20).forEach(i -> cities.put(i, new City(i)));
+  public void createIndexWhileClear() throws Exception {
+    IntStream.range(0, 100).forEach(i -> cities.put(i, new City(i)));
 
     // create index while clear
     AsyncInvocation createIndex = server1.invokeAsync("create index", () -> {
@@ -138,13 +147,24 @@ public class PRClearQueryIndexDUnitTest {
 
     IntStream.range(0, 10).forEach(i -> cities.put(i, new City(i)));
     assertThat(((SelectResults) query.execute()).size()).isEqualTo(10);
+  }
+
+  @Test
+  public void removeIndexWhileClear() throws Exception {
+    // create cityZip index
+    server1.invoke("create index", () -> {
+      Cache cache = ClusterStartupRule.getCache();
+      QueryService queryService = cache.getQueryService();
+      Index cityZip = queryService.createIndex("cityZip", "c.zip", "/cities c");
+      assertThat(cityZip).isNotNull();
+    });
 
     // remove index while clear
     // removeIndex has to be invoked on each server. It's not distributed
     AsyncInvocation removeIndex1 = server1.invokeAsync("remove index",
-        PRClearQueryIndexDUnitTest::removeIndex);
+        PRClearQueryIndexDUnitTest::removeCityZipIndex);
     AsyncInvocation removeIndex2 = server2.invokeAsync("remove index",
-        PRClearQueryIndexDUnitTest::removeIndex);
+        PRClearQueryIndexDUnitTest::removeCityZipIndex);
 
     cities.clear();
     removeIndex1.await();
@@ -162,12 +182,14 @@ public class PRClearQueryIndexDUnitTest {
     }, server1, server2);
   }
 
-  private static void removeIndex() {
+  private static void removeCityZipIndex() {
     Cache cache = ClusterStartupRule.getCache();
     QueryService qs = cache.getQueryService();
     Region<Object, Object> region = cache.getRegion("cities");
     Index cityZip = qs.getIndex(region, "cityZip");
-    qs.removeIndex(cityZip);
+    if (cityZip != null) {
+      qs.removeIndex(cityZip);
+    }
   }
 
   @Test
@@ -223,5 +245,83 @@ public class PRClearQueryIndexDUnitTest {
       assertThat(((SelectResults) query.execute()).size()).isEqualTo(0);
       assertThat(((SelectResults) query2.execute()).size()).isEqualTo(0);
     });
+  }
+
+  @Test
+  public void concurrentClearAndPut() throws Exception {
+    AsyncInvocation puts = server1.invokeAsync(() -> {
+      Cache cache = ClusterStartupRule.getCache();
+      Region region = cache.getRegion("cities");
+      for (int i = 0; i < 1000; i++) {
+        // wait for gate to open
+        getBlackboard().waitForGate("proceedToPut", 60, TimeUnit.SECONDS);
+        region.put(i, new City(i));
+      }
+    });
+
+    AsyncInvocation clears = server2.invokeAsync(() -> {
+      Cache cache = ClusterStartupRule.getCache();
+      Region region = cache.getRegion("cities");
+      // do clear 10 times
+      for (int i = 0; i < 10; i++) {
+        try {
+          // don't allow put to proceed. It's like "close the gate"
+          getBlackboard().clearGate("proceedToPut");
+          region.clear();
+          verifyIndexesAfterClear();
+        } finally {
+          // allow put to proceed. It's like "open the gate"
+          getBlackboard().signalGate("proceedToPut");
+        }
+      }
+    });
+
+    puts.await();
+    clears.await();
+  }
+
+  @Test
+  public void serverLeavingAndJoiningWhilePutAndClear() throws Exception {
+    int locatorPort = ClusterStartupRule.getDUnitLocatorPort();
+    Future<Void> startStopServer = executor.submit(() -> {
+      for (int i = 0; i < 3; i++) {
+        MemberVM server3 = cluster.startServerVM(3, s -> s.withConnectionToLocator(locatorPort)
+            .withProperty(SERIALIZABLE_OBJECT_FILTER, "org.apache.geode.cache.query.data.*")
+            .withRegion(RegionShortcut.PARTITION, "cities"));
+        server3.stop(false);
+      }
+    });
+
+    Future<Void> putAndClear = executor.submit(() -> {
+      for (int i = 0; i < 30; i++) {
+        IntStream.range(0, 100).forEach(j -> cities.put(j, new City(j)));
+        cities.clear();
+        QueryService queryService = clientCache.getQueryService();
+        Query query = queryService.newQuery(MUMBAI_QUERY);
+        Query query2 = queryService.newQuery(ID_10_QUERY);
+        assertThat(((SelectResults) query.execute()).size()).isEqualTo(0);
+        assertThat(((SelectResults) query2.execute()).size()).isEqualTo(0);
+      }
+    });
+    startStopServer.get(60, TimeUnit.SECONDS);
+    putAndClear.get(60, TimeUnit.SECONDS);
+  }
+
+  private static DUnitBlackboard getBlackboard() {
+    if (blackboard == null) {
+      blackboard = new DUnitBlackboard();
+    }
+    return blackboard;
+  }
+
+  @After
+  public void tearDown() {
+    invokeInEveryMember(() -> {
+      if (blackboard != null) {
+        blackboard.clearGate("proceedToPut");
+      }
+      // remove the cityZip index
+      removeCityZipIndex();
+    }, server1, server2);
   }
 }
