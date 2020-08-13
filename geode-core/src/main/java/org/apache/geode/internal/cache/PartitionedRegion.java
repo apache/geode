@@ -1254,11 +1254,7 @@ public class PartitionedRegion extends LocalRegion
   void distributeUpdatedProfileOnSenderCreation() {
     if (!(this.isClosed || this.isLocallyDestroyed)) {
       // tell others of the change in status
-      // alberto Is the below sentence necessary? It provokes a different behavior of Geode between
-      // creating a region with a gateway sender and creating it and then altering it.
-      // This method is called by addGatewaySenderId which is called when altering the region
-      // to add a new sender but not when creating the region with the sender.
-      // this.requiresNotification = true;
+      this.requiresNotification = true;
       new UpdateAttributesProcessor(this).distribute(false);
     }
   }
@@ -1267,8 +1263,14 @@ public class PartitionedRegion extends LocalRegion
   public void addGatewaySenderId(String gatewaySenderId) {
     super.addGatewaySenderId(gatewaySenderId);
     new UpdateAttributesProcessor(this).distribute();
-    ((PartitionedRegion) this).distributeUpdatedProfileOnSenderCreation();
     GatewaySender sender = getCache().getGatewaySender(gatewaySenderId);
+    // alberto distributeUpdatedProfileOnSenderCreation() is not called
+    // when creating the region with the gateway sender. If called here
+    // it provokes a different behavior between creating a region with
+    // a gateway sender and creating it and then altering it.
+    if (sender != null && !sender.isParallel()) {
+      ((PartitionedRegion) this).distributeUpdatedProfileOnSenderCreation();
+    }
     if (sender != null && sender.isParallel() && sender.isRunning()) {
       AbstractGatewaySender senderImpl = (AbstractGatewaySender) sender;
       ((ConcurrentParallelGatewaySenderQueue) senderImpl.getQueues().toArray(new RegionQueue[1])[0])
