@@ -126,9 +126,19 @@ public class SDiffIntegrationTest {
 
   @Test
   public void testSDiffStore_withNonExistentKeys() {
-    jedis.set("set1", "stringValue");
+    String[] firstSet = new String[] {"pear", "apple", "plum", "orange", "peach"};
+    jedis.sadd("set1", firstSet);
 
     Long resultSize = jedis.sdiffstore("set1", "nonExistent1", "nonExistent2");
+    assertThat(resultSize).isEqualTo(0);
+    assertThat(jedis.exists("set1")).isFalse();
+  }
+
+  @Test
+  public void testSDiffStore_withNonExistentKeys_andNonSetTarget() {
+    jedis.set("string1", "stringValue");
+
+    Long resultSize = jedis.sdiffstore("string1", "nonExistent1", "nonExistent2");
     assertThat(resultSize).isEqualTo(0);
     assertThat(jedis.exists("set1")).isFalse();
   }

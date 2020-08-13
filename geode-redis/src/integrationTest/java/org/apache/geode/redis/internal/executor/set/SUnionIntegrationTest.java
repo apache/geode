@@ -118,9 +118,19 @@ public class SUnionIntegrationTest {
 
   @Test
   public void testSUnionStore_withNonExistentKeys() {
-    jedis.set("set1", "stringValue");
+    String[] firstSet = new String[] {"pear", "apple", "plum", "orange", "peach"};
+    jedis.sadd("set1", firstSet);
 
     Long resultSize = jedis.sunionstore("set1", "nonExistent1", "nonExistent2");
+    assertThat(resultSize).isEqualTo(0);
+    assertThat(jedis.exists("set1")).isFalse();
+  }
+
+  @Test
+  public void testSUnionStore_withNonExistentKeys_andNonSetTarget() {
+    jedis.set("string1", "stringValue");
+
+    Long resultSize = jedis.sunionstore("string1", "nonExistent1", "nonExistent2");
     assertThat(resultSize).isEqualTo(0);
     assertThat(jedis.exists("set1")).isFalse();
   }
