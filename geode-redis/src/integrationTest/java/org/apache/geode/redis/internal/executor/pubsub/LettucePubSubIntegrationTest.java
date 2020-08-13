@@ -24,7 +24,8 @@ import java.util.concurrent.Future;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisFuture;
 import io.lettuce.core.pubsub.StatefulRedisPubSubConnection;
-import org.junit.BeforeClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -34,7 +35,7 @@ import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 public class LettucePubSubIntegrationTest {
 
   private static final String CHANNEL = "best-channel";
-  private static RedisClient client;
+  private RedisClient client;
 
   @ClassRule
   public static GeodeRedisServerRule server = new GeodeRedisServerRule();
@@ -42,13 +43,20 @@ public class LettucePubSubIntegrationTest {
   @ClassRule
   public static ExecutorServiceRule executor = new ExecutorServiceRule();
 
-  @BeforeClass
-  public static void beforeClass() {
+  @Before
+  public void before() {
     client = RedisClient.create("redis://localhost:" + server.getPort());
   }
 
+  @After
+  public void after() {
+    client.shutdown();
+  }
+
+
   @Test
-  public void insanity() throws Exception {
+  public void concurrentPublishersToMultipleSubscribers_doNotLosePublishMessages()
+      throws Exception {
     int subscriberCount = 50;
     int publisherCount = 10;
     int publishIterations = 10000;
