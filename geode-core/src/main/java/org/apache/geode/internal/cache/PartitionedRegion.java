@@ -1254,7 +1254,11 @@ public class PartitionedRegion extends LocalRegion
   void distributeUpdatedProfileOnSenderCreation() {
     if (!(this.isClosed || this.isLocallyDestroyed)) {
       // tell others of the change in status
-      this.requiresNotification = true;
+      // alberto Is the below sentence necessary? It provokes a different behavior of Geode between
+      // creating a region with a gateway sender and creating it and then altering it.
+      // This method is called by addGatewaySenderId which is called when altering the region
+      // to add a new sender but not when creating the region with the sender.
+      // this.requiresNotification = true;
       new UpdateAttributesProcessor(this).distribute(false);
     }
   }
