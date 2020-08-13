@@ -446,7 +446,6 @@ public class PubSubDUnitTest {
     // Abnormally close and recreate new subscribers without unsubscribing
     for (int i = 0; i < ITERATIONS; i++) {
       int candy = random.nextInt(CLIENT_COUNT);
-      // int localI = i;
       clients.get(candy).close();
 
       Jedis client = new Jedis("localhost", redisServerPort1);
