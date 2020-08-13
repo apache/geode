@@ -37,6 +37,7 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 
 import org.apache.geode.redis.MockSubscriber;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -177,7 +178,20 @@ public class PubSubDUnitTest {
 
     cluster.crashVM(2);
 
-    result = publisher1.publish(CHANNEL_NAME, "hello again");
+    boolean published = false;
+    do {
+      try {
+        result = publisher1.publish(CHANNEL_NAME, "hello again");
+        published = true;
+      } catch (JedisConnectionException ex) {
+        if (ex.getMessage().contains("Unexpected end of stream.")) {
+          publisher1 = new Jedis(LOCAL_HOST, redisServerPort3, 120000);
+          // fall through and retry
+        } else {
+          throw ex;
+        }
+      }
+    } while (!published);
     assertThat(result).isLessThanOrEqualTo(1);
 
     mockSubscriber1.unsubscribe(CHANNEL_NAME);
