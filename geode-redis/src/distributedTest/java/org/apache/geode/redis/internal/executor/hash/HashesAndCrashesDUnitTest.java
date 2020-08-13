@@ -21,6 +21,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.REDIS_BIND_AD
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
 import static org.apache.geode.redis.internal.GeodeRedisServer.ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM;
+import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
@@ -28,11 +29,11 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Supplier;
 
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisCommandExecutionException;
+import io.lettuce.core.RedisException;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
 import io.lettuce.core.resource.ClientResources;
@@ -47,6 +48,7 @@ import org.junit.Test;
 import org.apache.geode.cache.control.RebalanceFactory;
 import org.apache.geode.cache.control.RebalanceResults;
 import org.apache.geode.cache.control.ResourceManager;
+import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.session.springRedisTestApplication.config.DUnitSocketAddressResolver;
@@ -121,6 +123,7 @@ public class HashesAndCrashesDUnitTest {
 
   @Before
   public void before() {
+    addIgnoredException(FunctionException.class);
     String redisPort1 = "" + redisPorts[0];
     String redisPort2 = "" + redisPorts[1];
     String redisPort3 = "" + redisPorts[2];
@@ -241,18 +244,6 @@ public class HashesAndCrashesDUnitTest {
     future3.get();
   }
 
-  private <T> T doWithRetry(Supplier<T> supplier) {
-    while (true) {
-      try {
-        return supplier.get();
-      } catch (RedisCommandExecutionException ex) {
-        if (!ex.getMessage().contains("memberDeparted")) {
-          throw ex;
-        }
-      }
-    }
-  }
-
   private void hsetPerformAndVerify(int index, int minimumIterations, AtomicBoolean isRunning) {
     String key = "hset-key-" + index;
     int iterationCount = 0;
@@ -262,11 +253,12 @@ public class HashesAndCrashesDUnitTest {
       try {
         commands.hset(key, fieldName, "value-" + iterationCount);
         iterationCount += 1;
-      } catch (RedisCommandExecutionException e) {
-        if (e.getMessage().contains("memberDeparted")) {
-          if (doWithRetry(() -> commands.hexists(key, fieldName))) {
-            iterationCount += 1;
-          }
+      } catch (RedisCommandExecutionException ignore) {
+      } catch (RedisException ex) {
+        if (ex.getMessage().contains("Connection reset by peer")) {
+          // ignore it
+        } else {
+          throw ex;
         }
       }
     }
@@ -289,11 +281,12 @@ public class HashesAndCrashesDUnitTest {
       try {
         commands.sadd(key, member);
         iterationCount += 1;
-      } catch (RedisCommandExecutionException e) {
-        if (e.getMessage().contains("memberDeparted")) {
-          if (doWithRetry(() -> commands.sismember(key, member))) {
-            iterationCount += 1;
-          }
+      } catch (RedisCommandExecutionException ignore) {
+      } catch (RedisException ex) {
+        if (ex.getMessage().contains("Connection reset by peer")) {
+          // ignore it
+        } else {
+          throw ex;
         }
       }
     }
@@ -318,11 +311,12 @@ public class HashesAndCrashesDUnitTest {
       try {
         commands.set(key, key);
         iterationCount += 1;
-      } catch (RedisCommandExecutionException e) {
-        if (e.getMessage().contains("memberDeparted")) {
-          if (doWithRetry(() -> commands.exists(key)) == 1) {
-            iterationCount += 1;
-          }
+      } catch (RedisCommandExecutionException ignore) {
+      } catch (RedisException ex) {
+        if (ex.getMessage().contains("Connection reset by peer")) {
+          // ignore it
+        } else {
+          throw ex;
         }
       }
     }

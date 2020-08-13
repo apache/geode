@@ -45,8 +45,7 @@ public class SessionExpirationDUnitTest extends SessionDUnitTest {
   @BeforeClass
   public static void setup() {
     SessionDUnitTest.setup();
-    startSpringApp(APP1, SHORT_SESSION_TIMEOUT, ports.get(SERVER1), ports.get(SERVER2));
-    startSpringApp(APP2, SHORT_SESSION_TIMEOUT, ports.get(SERVER2), ports.get(SERVER1));
+    setupSpringApps(SHORT_SESSION_TIMEOUT);
   }
 
   @Test
@@ -76,7 +75,7 @@ public class SessionExpirationDUnitTest extends SessionDUnitTest {
 
     refreshSession(sessionCookie, APP2);
 
-    assertThat(jedisConnetedToServer1.ttl("spring:session:sessions:expires:" + sessionId))
+    assertThat(commands.ttl("spring:session:sessions:expires:" + sessionId))
         .isGreaterThan(0);
 
     assertThat(getSessionNotes(APP1, sessionCookie)).isNotNull();
@@ -110,8 +109,7 @@ public class SessionExpirationDUnitTest extends SessionDUnitTest {
 
   private void waitForTheSessionToExpire(String sessionId) {
     GeodeAwaitility.await().ignoreExceptions().atMost((SHORT_SESSION_TIMEOUT + 5), TimeUnit.SECONDS)
-        .until(
-            () -> jedisConnetedToServer1.ttl("spring:session:sessions:expires:" + sessionId) == -2);
+        .until(() -> commands.ttl("spring:session:sessions:expires:" + sessionId) == -2);
   }
 
   private void refreshSession(String sessionCookie, int sessionApp) {
