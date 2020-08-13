@@ -54,7 +54,7 @@ public class TimeIntegrationTest {
 
     assertThat(timestamp).hasSize(2);
     assertThat(Long.parseLong(timestamp.get(0))).isGreaterThan(0);
-    assertThat(Long.parseLong(timestamp.get(1))).isGreaterThan(0);
+    assertThat(Long.parseLong(timestamp.get(1))).isNotNegative();
   }
 
 }
