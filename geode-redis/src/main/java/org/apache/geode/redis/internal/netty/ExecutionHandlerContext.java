@@ -76,7 +76,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private final int MAX_QUEUED_COMMANDS =
       Integer.getInteger("geode.redis.commandQueueSize", 1000);
   private final LinkedBlockingQueue<Command> commandQueue =
-      new LinkedBlockingQueue<>(MAX_QUEUED_COMMANDS);
+      new LinkedBlockingQueue<>();
 
   private boolean isAuthenticated;
 
