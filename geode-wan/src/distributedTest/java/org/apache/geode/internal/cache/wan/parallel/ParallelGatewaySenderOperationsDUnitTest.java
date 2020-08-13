@@ -53,17 +53,21 @@ import org.apache.geode.GemFireIOException;
 import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.execute.Execution;
+import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
+import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.cache.tier.sockets.MessageTooLargeException;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.internal.offheap.MemoryAllocatorImpl;
 import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
+import org.apache.geode.management.internal.configuration.functions.GatewaySenderManageFunction;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -464,6 +468,8 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
       AsyncInvocation async = vm4.invokeAsync(() -> doPuts(getUniqueName() + "_PR", 5000));
 
       // when puts are happening by another thread, start the senders
+
+      setAllGatewaySenderInstancesStopped("ln", false);
       startSenderInVMsAsync("ln", vm4, vm5, vm6, vm7);
 
       async.join();
@@ -917,6 +923,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     createPartitionedRegions(createAccessors);
 
     if (startSenders) {
+      setAllGatewaySenderInstancesStopped("ln", false);
       startSenderInVMs("ln", vm4, vm5, vm6, vm7);
     }
   }
@@ -955,6 +962,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     vm5.invoke(() -> stopSender("ln"));
     vm6.invoke(() -> stopSender("ln"));
     vm7.invoke(() -> stopSender("ln"));
+    setAllGatewaySenderInstancesStopped("ln", true);
   }
 
   private void waitForSendersRunning() {
@@ -969,5 +977,15 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     vm5.invoke(() -> validateParallelSenderQueueAllBucketsDrained("ln"));
     vm6.invoke(() -> validateParallelSenderQueueAllBucketsDrained("ln"));
     vm7.invoke(() -> validateParallelSenderQueueAllBucketsDrained("ln"));
+  }
+
+
+  private void setAllGatewaySenderInstancesStopped(String senderId, boolean stopped) {
+    vm4.invoke(() -> {
+      Object[] arguments = {senderId, new Boolean(stopped)};
+      Execution execution = FunctionService.onMembers().setArguments(arguments);
+      ((AbstractExecution) execution).setIgnoreDepartedMembers(true);
+      execution.execute(GatewaySenderManageFunction.INSTANCE);
+    });
   }
 }

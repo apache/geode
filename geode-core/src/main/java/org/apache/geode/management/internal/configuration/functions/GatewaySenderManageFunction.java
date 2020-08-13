@@ -54,9 +54,15 @@ public class GatewaySenderManageFunction implements InternalFunction {
       Boolean stop = (Boolean) arguments[1];
       Cache cache = context.getCache();
       GatewaySender sender = cache.getGatewaySender(senderId);
+      if (sender == null) {
+        context.getResultSender()
+            .lastResult(
+                new CliFunctionResult(memberName, false, "sender " + senderId + " not found "));
+        return;
+      }
       sender.setAllInstancesStopped(stop);
       context.getResultSender().lastResult(new CliFunctionResult(memberName,
-          String.format("Set mustQueueTempDroppedEvents to '%b', for Sender '%s'", !stop,
+          String.format("Set allInstancesStopped to '%b', for Sender '%s'", stop,
               senderId)));
     } catch (IllegalStateException ex) {
       context.getResultSender()
