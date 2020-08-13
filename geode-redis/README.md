@@ -18,9 +18,9 @@ current set of supported Redis commands are listed [here](#redis-commands).
 
 ## <a name="how-to-try-it"></a>How To Try It
 
-We’ll build the develop branch of Apache Geode and then connect the Redis-CLI to that instance.  
-Once we have established that the Redis APIs are available, we’ll connect a Spring Session Data 
-Redis application.
+We’ll build the develop branch of Apache Geode and then connect the Redis-CLI to that instance. Once 
+we have established that the Redis APIs are available, we’ll connect a Spring Session Data Redis 
+application.
 
 ### <a name="building-apache-geode"></a>Building Apache Geode
 The Apache Geode source code can be found here
@@ -76,19 +76,18 @@ connection, the locator directs the client to one of the least loaded servers. L
     * --redis-port: The port that your Redis client will connect to.
     * --redis-bind-address: This will be the address your client uses to connect. 
 
+    Your Geode instance should now be up and running (1 locator and 1 server) and ready to accept Redis 
+    commands.  
 
-Your Geode instance should now be up and running (1 locator and 1 server) and ready to accept Redis 
-commands.  
+    **Keep this terminal open and running so that you can easily shutdown the Geode instance when you are 
+    done working locally.**
 
-Keep this terminal open and running so that you can easily shutdown the Geode instance when you are 
-done working locally.
-
-To confirm that things are running correctly, in a separate terminal run:
-  ```commandline
-$ redis-cli
-  ```
-If working correctly you should now be in the redis-cli and see `127.0.0.1:6379>`.  If you run the 
-`PING` command you should receive a response of `PONG`. 
+3. To confirm that things are running correctly, in a separate terminal run:
+      ```commandline
+    $ redis-cli
+      ```
+    If working correctly you should now be in the redis-cli and see `127.0.0.1:6379>`.  If you run the 
+    `PING` command you should receive a response of `PONG`.
 
 ### <a name="adding-a-server"></a>Adding an Additional Geode Redis Server 
 If you’re interested in testing Geode scalability, in GFSH run the start server command again BUT 
