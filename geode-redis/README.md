@@ -10,7 +10,7 @@
 
 ## <a name="introduction"></a>Introduction
 
-The Redis API for Geode allow an application to send Redis 5 commands to Geode. This will allow users to 
+The Redis API for Geode allows an application to send Redis commands to Geode. This will allow users to 
 switch seamlessly from native Redis to Geode as a data store/caching solution. 
 
 The API allows Geode to listen for and interpret incoming Redis commands on a designated port.  The 
@@ -18,9 +18,7 @@ current set of supported Redis commands are listed [here](#redis-commands).
 
 ## <a name="how-to-try-it"></a>How To Try It
 
-We’ll build the develop branch of Apache Geode and then connect the [Redis-CLI](https://redis.io/topics/quickstart) to that instance. Once 
-we have established that the Redis APIs are available, we’ll connect a Spring Session Data Redis 
-application.
+We’ll build the develop branch of Apache Geode and then connect the [Redis-CLI](https://redis.io/topics/quickstart) to that instance.
 
 ### <a name="building-apache-geode"></a>Building Apache Geode
 The Apache Geode source code can be found here
