@@ -51,7 +51,6 @@ import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 public class PubSubIntegrationTest {
   static Jedis publisher;
   static Jedis subscriber;
-  static final int REDIS_CLIENT_TIMEOUT = 100000;
   public static final int JEDIS_TIMEOUT = Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @ClassRule
@@ -62,8 +61,8 @@ public class PubSubIntegrationTest {
 
   @BeforeClass
   public static void setUp() {
-    subscriber = new Jedis("localhost", server.getPort(), REDIS_CLIENT_TIMEOUT);
-    publisher = new Jedis("localhost", server.getPort(), REDIS_CLIENT_TIMEOUT);
+    subscriber = new Jedis("localhost", server.getPort(), JEDIS_TIMEOUT);
+    publisher = new Jedis("localhost", server.getPort(), JEDIS_TIMEOUT);
   }
 
   @AfterClass
@@ -468,7 +467,7 @@ public class PubSubIntegrationTest {
 
   @Test
   public void testTwoSubscribersOneChannel() {
-    Jedis subscriber2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    Jedis subscriber2 = new Jedis("localhost", getPort(), JEDIS_TIMEOUT);
     MockSubscriber mockSubscriber1 = new MockSubscriber();
     MockSubscriber mockSubscriber2 = new MockSubscriber();
 
@@ -538,7 +537,7 @@ public class PubSubIntegrationTest {
 
   @Test
   public void testDeadSubscriber() {
-    Jedis deadSubscriber = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    Jedis deadSubscriber = new Jedis("localhost", getPort(), JEDIS_TIMEOUT);
 
     MockSubscriber mockSubscriber = new MockSubscriber();
 
@@ -693,7 +692,7 @@ public class PubSubIntegrationTest {
 
     for (int i = 0; i < 10; i++) {
       int randPort = random.nextInt(4) + 1;
-      client = new Jedis("localhost", server.getPort(), 60000);
+      client = new Jedis("localhost", server.getPort(), JEDIS_TIMEOUT);
       try {
         client.ping();
         return client;
@@ -720,10 +719,13 @@ public class PubSubIntegrationTest {
     int publishedMessages = 0;
     Random random = new Random();
     Jedis client = getConnection(random);
-
-    while (iterationCount < minimumIterations || running.get()) {
-      publishedMessages += client.publish("my-channel", "boo-" + index + "-" + iterationCount);
-      iterationCount++;
+    try {
+      while (iterationCount < minimumIterations || running.get()) {
+        publishedMessages += client.publish("my-channel", "boo-" + index + "-" + iterationCount);
+        iterationCount++;
+      }
+    } finally {
+      client.close();
     }
 
     return publishedMessages;
