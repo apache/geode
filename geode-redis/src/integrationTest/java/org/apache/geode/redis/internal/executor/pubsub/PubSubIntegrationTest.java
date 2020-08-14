@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
@@ -48,6 +49,7 @@ import org.apache.geode.test.junit.categories.RedisTest;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 @Category({RedisTest.class})
+@Ignore("test may be hanging")
 public class PubSubIntegrationTest {
   static Jedis publisher;
   static Jedis subscriber;
