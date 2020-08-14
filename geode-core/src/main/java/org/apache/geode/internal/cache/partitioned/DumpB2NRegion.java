@@ -254,7 +254,7 @@ public class DumpB2NRegion extends PartitionMessage {
   }
 
   public static class DumpB2NResponse extends PartitionResponse {
-    public final ArrayList primaryInfos = new ArrayList();
+    public final ArrayList<Object[]> primaryInfos = new ArrayList<>();
 
     public DumpB2NResponse(InternalDistributedSystem dm, Set initMembers) {
       super(dm, initMembers);
@@ -279,7 +279,7 @@ public class DumpB2NRegion extends PartitionMessage {
       super.process(msg);
     }
 
-    public List waitForPrimaryInfos() throws ForceReattemptException {
+    public List<Object[]> waitForPrimaryInfos() throws ForceReattemptException {
       try {
         waitForCacheException();
       } catch (ForceReattemptException e) {
