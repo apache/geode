@@ -17,7 +17,9 @@ package org.apache.geode.internal.cache.wan.parallel;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -73,6 +75,22 @@ public class ParallelGatewaySenderQueueJUnitTest {
     metaRegionFactory = mock(MetaRegionFactory.class);
     queue = new ParallelGatewaySenderQueue(sender, Collections.emptySet(), 0, 1, metaRegionFactory,
         false);
+  }
+
+  @Test
+  public void whenDataRegionNotReadyShouldNotThrowException() throws Exception {
+    GatewaySenderEventImpl event = mock(GatewaySenderEventImpl.class);
+    when(event.makeHeapCopyIfOffHeap()).thenReturn(event);
+    when(event.getRegion()).thenReturn(null);
+    when(event.getRegionPath()).thenReturn("/testRegion");
+    Mockito.doThrow(new IllegalStateException()).when(event).release();
+    Queue backingList = new LinkedList();
+    backingList.add(event);
+
+    queue = spy(queue);
+    doReturn(true).when(queue).isDREvent(any(), any());
+    boolean putDone = queue.put(event);
+    assertThat(putDone).isFalse();
   }
 
   @Test
