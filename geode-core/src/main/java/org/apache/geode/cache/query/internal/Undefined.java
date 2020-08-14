@@ -40,12 +40,9 @@ public class Undefined implements DataSerializableFixedID, Comparable, Serializa
 
   private static final long serialVersionUID = 6643107525908324141L;
 
+  @SuppressWarnings("lgtm[java/useless-null-check]")
   public Undefined() {
     Support.assertState(QueryService.UNDEFINED == null, "UNDEFINED constant already instantiated");
-
-    // org.apache.persistence.CanonicalizationHelper
-    // .putCanonicalObj("com/gemstone/persistence/query/QueryService.UNDEFINED",
-    // this);
   }
 
   @Override

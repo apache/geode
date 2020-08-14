@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal.security;
 
 import java.io.ObjectInputStream;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -182,7 +183,7 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
       results = mbs.getAttributes(name, attributes);
     } catch (Exception e) {
       throw new GemFireSecurityException(
-          "error getting values of attributes :" + attributes + " from " + name,
+          "error getting values of attributes :" + Arrays.toString(attributes) + " from " + name,
           e);
     }
     return results;

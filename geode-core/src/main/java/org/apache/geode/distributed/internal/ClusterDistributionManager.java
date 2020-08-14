@@ -1380,13 +1380,16 @@ public class ClusterDistributionManager implements DistributionManager {
 
   /**
    * This stalls waiting for the current membership view (as seen by the membership manager) to be
-   * acknowledged by all membership listeners
+   * acknowledged by all membership listeners.
    */
+  @SuppressWarnings("lgtm[java/constant-comparison]")
   void waitForViewInstallation(long id) throws InterruptedException {
     if (id <= membershipViewIdAcknowledged) {
       return;
     }
     synchronized (membershipViewIdGuard) {
+      // The LGTM alert for this line is suppressed as it fails to take into account the value of
+      // membershipViewIdAcknowledged being modified by another thread
       while (membershipViewIdAcknowledged < id && !stopper.isCancelInProgress()) {
         if (logger.isDebugEnabled()) {
           logger.debug("waiting for view {}.  Current DM view processed by all listeners is {}", id,

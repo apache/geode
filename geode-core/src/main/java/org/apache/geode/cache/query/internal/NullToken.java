@@ -33,6 +33,7 @@ import org.apache.geode.internal.serialization.SerializationContext;
  */
 public class NullToken implements DataSerializableFixedID, Comparable {
 
+  @SuppressWarnings("lgtm[java/useless-null-check]")
   public NullToken() {
     Support.assertState(IndexManager.NULL == null, "NULL constant already instantiated");
   }

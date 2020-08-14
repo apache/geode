@@ -6521,7 +6521,7 @@ public class Oplog implements CompactableOplog, Flushable {
     private final byte[] drIdBytes = new byte[DiskInitFile.DR_ID_MAX_BYTES];
     private byte[] keyBytes;
     private final byte[] deltaIdBytes = new byte[8];
-    private byte deltaIdBytesLength;
+    private int deltaIdBytesLength;
     private long newEntryBase;
     private DiskStoreID diskStoreId;
     private OPLOG_TYPE magic;
@@ -6653,7 +6653,7 @@ public class Oplog implements CompactableOplog, Flushable {
         long delta = calcDelta(oplogKeyId, this.opCode);
         this.deltaIdBytesLength = bytesNeeded(delta);
         this.size += this.deltaIdBytesLength;
-        this.opCode += (this.deltaIdBytesLength & 0xFF) - 1;
+        this.opCode += (byte) ((this.deltaIdBytesLength & 0xFF) - 1);
         for (int i = this.deltaIdBytesLength - 1; i >= 0; i--) {
           this.deltaIdBytes[i] = (byte) (delta & 0xFF);
           delta >>= 8;
@@ -6750,7 +6750,7 @@ public class Oplog implements CompactableOplog, Flushable {
         long delta = calcDelta(keyId, this.opCode);
         this.deltaIdBytesLength = bytesNeeded(delta);
         this.size += this.deltaIdBytesLength;
-        this.opCode += (byte) (this.deltaIdBytesLength & 0xFF) - 1;
+        this.opCode += (byte) ((this.deltaIdBytesLength & 0xFF) - 1);
         for (int i = this.deltaIdBytesLength - 1; i >= 0; i--) {
           this.deltaIdBytes[i] = (byte) (delta & 0xFF);
           delta >>= 8;
