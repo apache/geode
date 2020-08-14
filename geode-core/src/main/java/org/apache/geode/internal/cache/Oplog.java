@@ -1748,29 +1748,33 @@ public class Oplog implements CompactableOplog, Flushable {
                         oplogKeyId));
               }
             }
-            DiskEntry de = drs.getDiskEntry(key);
-            if (de == null) {
-              if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
-                logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE,
-                    "readNewEntry oplogKeyId=<{}> drId={} userBits={} oplogOffset={} valueLen={}",
-                    oplogKeyId, drId, userBits, oplogOffset, valueLength);
-              }
-              DiskEntry.RecoveredEntry re = createRecoveredEntry(valueBytes, valueLength, userBits,
-                  getOplogId(), oplogOffset, oplogKeyId, false, version, in);
-              if (tag != null) {
-                re.setVersionTag(tag);
-              }
-              initRecoveredEntry(drs.getDiskRegionView(), drs.initializeRecoveredEntry(key, re));
-              drs.getDiskRegionView().incRecoveredEntryCount();
-              this.stats.incRecoveredEntryCreates();
-              krfEntryCount++;
-            } else {
-              DiskId curdid = de.getDiskId();
-              // assert curdid.getOplogId() != getOplogId();
-              if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
-                logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE,
-                    "ignore readNewEntry because getOplogId()={} != curdid.getOplogId()={} for drId={} key={}",
-                    getOplogId(), curdid.getOplogId(), drId, key);
+            if (drs != null) {
+              DiskEntry de = drs.getDiskEntry(key);
+              if (de == null) {
+                if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+                  logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE,
+                      "readNewEntry oplogKeyId=<{}> drId={} userBits={} oplogOffset={} valueLen={}",
+                      oplogKeyId, drId, userBits, oplogOffset, valueLength);
+                }
+                DiskEntry.RecoveredEntry
+                    re =
+                    createRecoveredEntry(valueBytes, valueLength, userBits,
+                        getOplogId(), oplogOffset, oplogKeyId, false, version, in);
+                if (tag != null) {
+                  re.setVersionTag(tag);
+                }
+                initRecoveredEntry(drs.getDiskRegionView(), drs.initializeRecoveredEntry(key, re));
+                drs.getDiskRegionView().incRecoveredEntryCount();
+                this.stats.incRecoveredEntryCreates();
+                krfEntryCount++;
+              } else {
+                DiskId curdid = de.getDiskId();
+                // assert curdid.getOplogId() != getOplogId();
+                if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+                  logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE,
+                      "ignore readNewEntry because getOplogId()={} != curdid.getOplogId()={} for drId={} key={}",
+                      getOplogId(), curdid.getOplogId(), drId, key);
+                }
               }
             }
           }
@@ -2541,10 +2545,12 @@ public class Oplog implements CompactableOplog, Flushable {
           if (isPhase1()) {
             CompactionRecord cr = new CompactionRecord(keyBytes, crOffset);
             getRecoveryMap().put(oplogKeyId, cr);
-            drs.getDiskRegionView().incRecoveredEntryCount();
+            if (drs != null) {
+              drs.getDiskRegionView().incRecoveredEntryCount();
+            }
             this.stats.incRecoveredEntryCreates();
           } else { // phase2
-            Assert.assertTrue(p2cr != null, "First pass did not find create a compaction record");
+            Assert.assertNotNull(p2cr, "First pass did not find create a compaction record");
             getOplogSet().getChild().copyForwardForOfflineCompact(oplogKeyId, p2cr.getKeyBytes(),
                 objValue, userBits, drId, tag);
             if (isPersistRecoveryDebugEnabled) {
@@ -2566,29 +2572,31 @@ public class Oplog implements CompactableOplog, Flushable {
                       oplogKeyId));
             }
           }
-          DiskEntry de = drs.getDiskEntry(key);
-          if (de == null) {
-            if (isPersistRecoveryDebugEnabled) {
-              logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE,
-                  "readNewEntry oplogKeyId=<{}> drId={} key={} userBits={} oplogOffset={} valueLen={} tag={}",
-                  oplogKeyId, drId, key, userBits, oplogOffset, valueLength, tag);
-            }
-            DiskEntry.RecoveredEntry re = createRecoveredEntry(objValue, valueLength, userBits,
-                getOplogId(), oplogOffset, oplogKeyId, recoverValue, version, in);
-            if (tag != null) {
-              re.setVersionTag(tag);
-            }
-            initRecoveredEntry(drs.getDiskRegionView(), drs.initializeRecoveredEntry(key, re));
-            drs.getDiskRegionView().incRecoveredEntryCount();
-            this.stats.incRecoveredEntryCreates();
+          if (drs != null) {
+            DiskEntry de = drs.getDiskEntry(key);
+            if (de == null) {
+              if (isPersistRecoveryDebugEnabled) {
+                logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE,
+                    "readNewEntry oplogKeyId=<{}> drId={} key={} userBits={} oplogOffset={} valueLen={} tag={}",
+                    oplogKeyId, drId, key, userBits, oplogOffset, valueLength, tag);
+              }
+              DiskEntry.RecoveredEntry re = createRecoveredEntry(objValue, valueLength, userBits,
+                  getOplogId(), oplogOffset, oplogKeyId, recoverValue, version, in);
+              if (tag != null) {
+                re.setVersionTag(tag);
+              }
+              initRecoveredEntry(drs.getDiskRegionView(), drs.initializeRecoveredEntry(key, re));
+              drs.getDiskRegionView().incRecoveredEntryCount();
+              this.stats.incRecoveredEntryCreates();
 
-          } else {
-            DiskId curdid = de.getDiskId();
-            assert curdid.getOplogId() != getOplogId();
-            if (isPersistRecoveryDebugEnabled) {
-              logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE,
-                  "ignore readNewEntry because getOplogId()={} != curdid.getOplogId()={} for drId={} key={}",
-                  getOplogId(), curdid.getOplogId(), drId, key);
+            } else {
+              DiskId curdid = de.getDiskId();
+              assert curdid.getOplogId() != getOplogId();
+              if (isPersistRecoveryDebugEnabled) {
+                logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE,
+                    "ignore readNewEntry because getOplogId()={} != curdid.getOplogId()={} for drId={} key={}",
+                    getOplogId(), curdid.getOplogId(), drId, key);
+              }
             }
           }
         }
@@ -2719,7 +2727,7 @@ public class Oplog implements CompactableOplog, Flushable {
           incSkipped(); // we are going to compact the previous record away
           cr.update(crOffset);
         } else { // phase2
-          Assert.assertTrue(p2cr != null, "First pass did not find create a compaction record");
+          Assert.assertNotNull(p2cr, "First pass did not find create a compaction record");
           getOplogSet().getChild().copyForwardForOfflineCompact(oplogKeyId, p2cr.getKeyBytes(),
               objValue, userBits, drId, tag);
           if (isPersistRecoveryDebugEnabled) {
@@ -2732,38 +2740,40 @@ public class Oplog implements CompactableOplog, Flushable {
       } else {
         // Check the actual region to see if it has this key from
         // a previous recovered oplog.
-        DiskEntry de = drs.getDiskEntry(key);
+        if (drs != null) {
+          DiskEntry de = drs.getDiskEntry(key);
 
-        // This may actually be create, if the previous create or modify
-        // of this entry was cleared through the RVV clear.
-        if (de == null) {
-          DiskRegionView drv = drs.getDiskRegionView();
-          // and create an entry
-          DiskEntry.RecoveredEntry re = createRecoveredEntry(objValue, valueLength, userBits,
-              getOplogId(), oplogOffset, oplogKeyId, recoverValue, version, in);
-          if (tag != null) {
-            re.setVersionTag(tag);
+          // This may actually be create, if the previous create or modify
+          // of this entry was cleared through the RVV clear.
+          if (de == null) {
+            DiskRegionView drv = drs.getDiskRegionView();
+            // and create an entry
+            DiskEntry.RecoveredEntry re = createRecoveredEntry(objValue, valueLength, userBits,
+                getOplogId(), oplogOffset, oplogKeyId, recoverValue, version, in);
+            if (tag != null) {
+              re.setVersionTag(tag);
+            }
+            if (isPersistRecoveryDebugEnabled) {
+              logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE,
+                  "readModEntryWK init oplogKeyId=<{}> drId={} key=<{}> oplogOffset={} userBits={} valueLen={} tag={}",
+                  oplogKeyId, drId, key, oplogOffset, userBits, valueLength, tag);
+            }
+            initRecoveredEntry(drv, drs.initializeRecoveredEntry(key, re));
+            drs.getDiskRegionView().incRecoveredEntryCount();
+            this.stats.incRecoveredEntryCreates();
+
+          } else {
+            DiskEntry.RecoveredEntry re = createRecoveredEntry(objValue, valueLength, userBits,
+                getOplogId(), oplogOffset, oplogKeyId, recoverValue, version, in);
+            if (tag != null) {
+              re.setVersionTag(tag);
+            }
+            de = drs.updateRecoveredEntry(key, re);
+            updateRecoveredEntry(drs.getDiskRegionView(), de, re);
+
+            this.stats.incRecoveredEntryUpdates();
+
           }
-          if (isPersistRecoveryDebugEnabled) {
-            logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE,
-                "readModEntryWK init oplogKeyId=<{}> drId={} key=<{}> oplogOffset={} userBits={} valueLen={} tag={}",
-                oplogKeyId, drId, key, oplogOffset, userBits, valueLength, tag);
-          }
-          initRecoveredEntry(drv, drs.initializeRecoveredEntry(key, re));
-          drs.getDiskRegionView().incRecoveredEntryCount();
-          this.stats.incRecoveredEntryCreates();
-
-        } else {
-          DiskEntry.RecoveredEntry re = createRecoveredEntry(objValue, valueLength, userBits,
-              getOplogId(), oplogOffset, oplogKeyId, recoverValue, version, in);
-          if (tag != null) {
-            re.setVersionTag(tag);
-          }
-          de = drs.updateRecoveredEntry(key, re);
-          updateRecoveredEntry(drs.getDiskRegionView(), de, re);
-
-          this.stats.incRecoveredEntryUpdates();
-
         }
       }
     } else {
@@ -2936,10 +2946,12 @@ public class Oplog implements CompactableOplog, Flushable {
         if (isPhase1()) {
           CompactionRecord cr = new CompactionRecord(keyBytes, crOffset);
           getRecoveryMap().put(oplogKeyId, cr);
-          drs.getDiskRegionView().incRecoveredEntryCount();
+          if (drs != null) {
+            drs.getDiskRegionView().incRecoveredEntryCount();
+          }
           this.stats.incRecoveredEntryCreates();
         } else { // phase2
-          Assert.assertTrue(p2cr != null, "First pass did not find create a compaction record");
+          Assert.assertNotNull(p2cr, "First pass did not find create a compaction record");
           getOplogSet().getChild().copyForwardForOfflineCompact(oplogKeyId, p2cr.getKeyBytes(),
               objValue, userBits, drId, tag);
           if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
@@ -2960,34 +2972,38 @@ public class Oplog implements CompactableOplog, Flushable {
         }
         // Check the actual region to see if it has this key from
         // a previous recovered oplog.
-        DiskEntry de = drs.getDiskEntry(key);
-        if (de == null) {
-          DiskRegionView drv = drs.getDiskRegionView();
-          // and create an entry
-          DiskEntry.RecoveredEntry re = createRecoveredEntry(objValue, valueLength, userBits,
-              getOplogId(), oplogOffset, oplogKeyId, recoverValue, version, in);
-          if (tag != null) {
-            re.setVersionTag(tag);
-          }
-          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
-            logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE,
-                "readModEntryWK init oplogKeyId=<{}> drId={} key={} oplogOffset={} userBits={} valueLen={} tag={}",
-                oplogKeyId, drId, key, oplogOffset, userBits, valueLength, tag);
-          }
-          initRecoveredEntry(drv, drs.initializeRecoveredEntry(key, re));
-          drs.getDiskRegionView().incRecoveredEntryCount();
-          this.stats.incRecoveredEntryCreates();
+        if (drs != null) {
+          DiskEntry de = drs.getDiskEntry(key);
+          if (de == null) {
+            DiskRegionView drv = drs.getDiskRegionView();
+            // and create an entry
+            DiskEntry.RecoveredEntry re = createRecoveredEntry(objValue, valueLength, userBits,
+                getOplogId(), oplogOffset, oplogKeyId, recoverValue, version, in);
+            if (tag != null) {
+              re.setVersionTag(tag);
+            }
+            if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+              logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE,
+                  "readModEntryWK init oplogKeyId=<{}> drId={} key={} oplogOffset={} userBits={} valueLen={} tag={}",
+                  oplogKeyId, drId, key, oplogOffset, userBits, valueLength, tag);
+            }
+            initRecoveredEntry(drv, drs.initializeRecoveredEntry(key, re));
+            drs.getDiskRegionView().incRecoveredEntryCount();
+            this.stats.incRecoveredEntryCreates();
 
-        } else {
-          DiskId curdid = de.getDiskId();
-          assert curdid
-              .getOplogId() != getOplogId() : "Mutiple ModEntryWK in the same oplog for getOplogId()="
-                  + getOplogId() + " , curdid.getOplogId()=" + curdid.getOplogId() + " , for drId="
-                  + drId + " , key=" + key;
-          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
-            logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE,
-                "ignore readModEntryWK because getOplogId()={} != curdid.getOplogId()={} for drId={} key={}",
-                getOplogId(), curdid.getOplogId(), drId, key);
+          } else {
+            DiskId curdid = de.getDiskId();
+            assert curdid
+                .getOplogId() != getOplogId() :
+                "Mutiple ModEntryWK in the same oplog for getOplogId()="
+                    + getOplogId() + " , curdid.getOplogId()=" + curdid.getOplogId()
+                    + " , for drId="
+                    + drId + " , key=" + key;
+            if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+              logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE,
+                  "ignore readModEntryWK because getOplogId()={} != curdid.getOplogId()={} for drId={} key={}",
+                  getOplogId(), curdid.getOplogId(), drId, key);
+            }
           }
         }
       }
@@ -3583,7 +3599,7 @@ public class Oplog implements CompactableOplog, Flushable {
             logger.trace(LogMarker.PERSIST_WRITES_VERBOSE,
                 "basicCreate: id=<{}> key=<{}> valueOffset={} userBits={} valueLen={} valueBytes={} drId={} versionTag={} oplog#{}",
                 abs(id.getKeyId()), entry.getKey(), startPosForSynchOp, userBits,
-                (value != null ? value.getLength() : 0), value.getBytesAsString(), dr.getId(), tag,
+                value.getLength(), value.getBytesAsString(), dr.getId(), tag,
                 getOplogId());
           }
           id.setOffsetInOplog(startPosForSynchOp);
@@ -5653,7 +5669,7 @@ public class Oplog implements CompactableOplog, Flushable {
       if (!olf.f.exists())
         return;
       assert olf.RAFClosed;
-      if (!olf.RAFClosed || olf.raf != null) {
+      if (!olf.RAFClosed && olf.raf != null) {
         try {
           olf.raf.close();
           olf.RAFClosed = true;
@@ -6848,11 +6864,12 @@ public class Oplog implements CompactableOplog, Flushable {
           write(olf, this.drIdBytes, this.drIdLength);
           bytesWritten += this.drIdLength;
         }
-        assert this.versionsBytes.length > 0;
-        write(olf, this.versionsBytes, this.versionsBytes.length);
-        bytesWritten += this.versionsBytes.length;
+        if (this.versionsBytes != null && this.versionsBytes.length > 0) {
+          write(olf, this.versionsBytes, this.versionsBytes.length);
+          bytesWritten += this.versionsBytes.length;
+        }
       } else {
-        if (this.notToUseUserBits == false) {
+        if (!this.notToUseUserBits) {
           writeByte(olf, this.userBits);
           bytesWritten++;
         }
