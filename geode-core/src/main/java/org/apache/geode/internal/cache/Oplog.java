@@ -1756,8 +1756,7 @@ public class Oplog implements CompactableOplog, Flushable {
                       "readNewEntry oplogKeyId=<{}> drId={} userBits={} oplogOffset={} valueLen={}",
                       oplogKeyId, drId, userBits, oplogOffset, valueLength);
                 }
-                DiskEntry.RecoveredEntry
-                    re =
+                DiskEntry.RecoveredEntry re =
                     createRecoveredEntry(valueBytes, valueLength, userBits,
                         getOplogId(), oplogOffset, oplogKeyId, false, version, in);
                 if (tag != null) {
@@ -2994,8 +2993,7 @@ public class Oplog implements CompactableOplog, Flushable {
           } else {
             DiskId curdid = de.getDiskId();
             assert curdid
-                .getOplogId() != getOplogId() :
-                "Mutiple ModEntryWK in the same oplog for getOplogId()="
+                .getOplogId() != getOplogId() : "Mutiple ModEntryWK in the same oplog for getOplogId()="
                     + getOplogId() + " , curdid.getOplogId()=" + curdid.getOplogId()
                     + " , for drId="
                     + drId + " , key=" + key;

@@ -204,12 +204,11 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
     @Override
     public void run() {
-      PartitionedRegion prQ = null;
       GatewaySenderEventImpl event = (GatewaySenderEventImpl) conflatableObject;
+      String regionPath =
+          ColocationHelper.getLeaderRegion((PartitionedRegion) event.getRegion()).getFullPath();
+      PartitionedRegion prQ = userRegionNameToShadowPRMap.get(regionPath);
       try {
-        String regionPath =
-            ColocationHelper.getLeaderRegion((PartitionedRegion) event.getRegion()).getFullPath();
-        prQ = userRegionNameToShadowPRMap.get(regionPath);
         destroyEventFromQueue(prQ, bucketId, previousTailKeyTobeRemoved);
       } catch (EntryNotFoundException e) {
         if (logger.isDebugEnabled()) {
@@ -232,7 +231,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         // ClassNotFoundException
         try {
           deserializedObject = EntryEventImpl.deserialize(serializedBytesCast);
-        } catch (Exception e) {
+        } catch (Exception ignore) {
         }
       }
       return deserializedObject;
@@ -1583,7 +1582,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
   public int localSize(boolean includeSecondary) {
     int size = 0;
     for (PartitionedRegion prQ : this.userRegionNameToShadowPRMap.values()) {
-      if (prQ != null && prQ.getDataStore() != null) {
+      if (prQ.getDataStore() != null) {
         if (includeSecondary) {
           size += prQ.getDataStore().getSizeOfLocalBuckets();
         } else {
