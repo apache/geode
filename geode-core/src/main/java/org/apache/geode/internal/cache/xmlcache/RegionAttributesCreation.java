@@ -1544,6 +1544,15 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
         setMulticastEnabled(parent.getMulticastEnabled());
       }
     }
+    if (!hasOffHeap()) {
+      if (parentIsUserSpecified) {
+        if (parentWithHas.hasOffHeap()) {
+          setOffHeap(parent.getOffHeap());
+        }
+      } else {
+        setOffHeap(parent.getOffHeap());
+      }
+    }
   }
 
   @Override
