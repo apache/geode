@@ -785,7 +785,10 @@ public class PubSubIntegrationTest {
       iterationCount++;
     }
 
-    return consumer.get();
+    int result = consumer.get();
+    executor.shutdownNow();
+    secondaryExecutor.shutdownNow();
+    return result;
   }
 
   @Test
