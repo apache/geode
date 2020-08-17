@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Queue;
-import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
@@ -35,7 +34,6 @@ import java.util.stream.Collectors;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
@@ -49,7 +47,6 @@ import org.apache.geode.test.junit.categories.RedisTest;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 @Category({RedisTest.class})
-@Ignore("test may be hanging")
 public class PubSubIntegrationTest {
   static Jedis publisher;
   static Jedis subscriber;
@@ -688,21 +685,22 @@ public class PubSubIntegrationTest {
     assertThat(mockSubscriber.getReceivedPMessages()).containsExactly("hello");
   }
 
-  private Jedis getConnection(Random random) {
-    Jedis client;
+  private Jedis getConnection() {
     Exception lastException = null;
 
     for (int i = 0; i < 10; i++) {
-      int randPort = random.nextInt(4) + 1;
-      client = new Jedis("localhost", server.getPort(), JEDIS_TIMEOUT);
+      Jedis client = null;
       try {
+        client = new Jedis("localhost", server.getPort(), JEDIS_TIMEOUT);
         client.ping();
         return client;
       } catch (Exception e) {
         lastException = e;
-        try {
-          client.close();
-        } catch (Exception exception) {
+        if (client != null) {
+          try {
+            client.close();
+          } catch (Exception ignore) {
+          }
         }
       }
       try {
@@ -719,8 +717,7 @@ public class PubSubIntegrationTest {
   private int doPublishing(int index, int minimumIterations, AtomicBoolean running) {
     int iterationCount = 0;
     int publishedMessages = 0;
-    Random random = new Random();
-    Jedis client = getConnection(random);
+    Jedis client = getConnection();
     try {
       while (iterationCount < minimumIterations || running.get()) {
         publishedMessages += client.publish("my-channel", "boo-" + index + "-" + iterationCount);
@@ -735,7 +732,6 @@ public class PubSubIntegrationTest {
 
   private int makeSubscribers(int minimumIterations, AtomicBoolean running)
       throws InterruptedException, ExecutionException {
-    Random random = new Random();
     ExecutorService executor = Executors.newFixedThreadPool(100);
     ExecutorService secondaryExecutor = Executors.newCachedThreadPool();
     Queue<Future<Void>> workQ = new ConcurrentLinkedQueue<>();
@@ -762,7 +758,7 @@ public class PubSubIntegrationTest {
     String channel = "my-channel";
     while (iterationCount < minimumIterations || running.get()) {
       Future<Void> f = executor.submit(() -> {
-        Jedis client = getConnection(random);
+        Jedis client = getConnection();
         MockSubscriber mockSubscriber = new MockSubscriber();
         Future<Void> inner = secondaryExecutor.submit(() -> {
           try {
