@@ -21,15 +21,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 
-import org.apache.logging.log4j.Logger;
-import redis.clients.jedis.Client;
 import redis.clients.jedis.JedisPubSub;
 
-import org.apache.geode.logging.internal.log4j.api.LogService;
-
 public class MockSubscriber extends JedisPubSub {
-  private static final Logger logger = LogService.getLogger();
-  private Client client;
   private final CountDownLatch subscriptionLatch;
   private final CountDownLatch unsubscriptionLatch;
   private final List<String> receivedMessages = Collections.synchronizedList(new ArrayList<>());

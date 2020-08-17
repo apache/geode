@@ -36,7 +36,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisException;
@@ -131,7 +130,6 @@ public class PubSubDUnitTest {
   }
 
   @Test
-  @Ignore("Is this test hanging?")
   public void shouldNotHang_givenPublishingAndSubscribingSimultaneously() {
     ArrayList<Thread> threads = new ArrayList<>();
     AtomicInteger subscribeCount = new AtomicInteger();
@@ -144,18 +142,28 @@ public class PubSubDUnitTest {
         ArrayList<MockSubscriber> mockSubscribers = new ArrayList<>();
         ArrayList<JedisWithLatch> clients = new ArrayList<>();
         for (int j = 0; j < 5; j++) {
+          String subscriber = "subscriber " + j;
           CountDownLatch latch = new CountDownLatch(1);
           MockSubscriber mockSubscriber = new MockSubscriber(latch);
+
           executor.submit(() -> {
-            Jedis client = getConnection(random);
-            JedisWithLatch jedisWithLatch = new JedisWithLatch(client);
-            clients.add(jedisWithLatch);
-            client.subscribe(mockSubscriber, channelName);
-            subscribeCount.getAndIncrement();
-            jedisWithLatch.finishSubscribe();
+            try {
+              Jedis client = getConnection(random);
+              JedisWithLatch jedisWithLatch = new JedisWithLatch(client);
+              clients.add(jedisWithLatch);
+              client.subscribe(mockSubscriber, channelName);
+              subscribeCount.getAndIncrement();
+              jedisWithLatch.finishSubscribe();
+            } catch (Exception e) {
+              throw e;
+            }
           });
+
           try {
-            latch.await();
+            if (!latch.await(JEDIS_TIMEOUT, TimeUnit.MILLISECONDS)) {
+              throw new RuntimeException(
+                  "Timeout exceeded waiting for subscribe to finish    " + subscribeCount.get());
+            }
           } catch (InterruptedException e) {
             throw new RuntimeException(e);
           }
@@ -481,7 +489,8 @@ public class PubSubDUnitTest {
     await().untilAsserted(
         () -> gfsh.executeAndAssertThat("list members").statusIsSuccess().hasTableSection()
             .hasColumn("Name")
-            .containsOnly("locator-0", "server-1", "server-2", "server-3", "server-4", "server-5"));
+            .containsOnly("locator-0", "server-1", "server-2", "server-3", "server-4",
+                "server-5"));
   }
 
   private void reconnectSubscriber1() {
@@ -517,19 +526,20 @@ public class PubSubDUnitTest {
   }
 
   private Jedis getConnection(Random random) {
-    Jedis client;
+    Jedis client = null;
 
     for (int i = 0; i < 10; i++) {
       int randPort = random.nextInt(4) + 1;
-      client = new Jedis("localhost", cluster.getRedisPort(randPort), JEDIS_TIMEOUT);
       try {
+        client = new Jedis("localhost", cluster.getRedisPort(randPort), JEDIS_TIMEOUT);
         client.ping();
         return client;
       } catch (Exception e) {
         try {
-          client.close();
+          if (client != null) {
+            client.close();
+          }
         } catch (Exception exception) {
-
         }
       }
     }
