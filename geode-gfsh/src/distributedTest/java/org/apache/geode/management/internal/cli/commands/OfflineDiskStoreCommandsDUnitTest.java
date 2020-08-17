@@ -154,7 +154,7 @@ public class OfflineDiskStoreCommandsDUnitTest implements Serializable {
   }
 
   @Test
-  @Parameters({"compact offline-disk-store", "describe offline-disk-store",
+  @Parameters({"describe offline-disk-store",
       "validate offline-disk-store",
       "alter disk-store --region=testRegion --enable-statistics=true"})
   public void testThreadHangWithOfflineDiskStoreCommands(String baseCommand) throws IOException {
@@ -194,6 +194,8 @@ public class OfflineDiskStoreCommandsDUnitTest implements Serializable {
       if (info.toString().contains(threadName))
         writer.append(info.toString());
     }
+
+    writer.close();
 
     try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
       String line;
