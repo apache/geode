@@ -49,7 +49,7 @@ import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-@Ignore("test may be hanging")
+
 public class PubSubDUnitTest {
 
   public static final String CHANNEL_NAME = "salutations";
@@ -131,6 +131,7 @@ public class PubSubDUnitTest {
   }
 
   @Test
+  @Ignore("Is this test hanging?")
   public void shouldNotHang_givenPublishingAndSubscribingSimultaneously() {
     ArrayList<Thread> threads = new ArrayList<>();
     AtomicInteger subscribeCount = new AtomicInteger();
