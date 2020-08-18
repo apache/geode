@@ -15,8 +15,11 @@
 package org.apache.geode.internal.net;
 
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -34,6 +37,7 @@ import javax.net.ssl.SSLSocket;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.stubbing.Answer;
 
 import org.apache.geode.test.junit.categories.MembershipTest;
 
@@ -116,14 +120,49 @@ public class SocketCreatorJUnitTest {
     SSLEngine engine = mock(SSLEngine.class);
     when(engine.getSSLParameters()).thenReturn(parameters);
 
-    engine.setEnableSessionCreation(true);
+    final Object[] setProtocols = new Object[1];
+    doAnswer((Answer<Void>) invocation -> {
+      setProtocols[0] = invocation.getArgument(0);
+      return null;
+    }).when(engine).setEnabledProtocols(any(String[].class));
+
+    final Object[] setCiphers = new Object[1];
+    doAnswer((Answer<Void>) invocation -> {
+      setCiphers[0] = invocation.getArgument(0);
+      return null;
+    }).when(engine).setEnabledCipherSuites(any(String[].class));
+
     socketCreator.configureSSLEngine(engine, "somehost", 12345, true);
 
     verify(engine).setUseClientMode(isA(Boolean.class));
     verify(engine).setSSLParameters(parameters);
     verify(engine).setEnabledCipherSuites(isA(String[].class));
-    verify(engine).setEnabledProtocols(isA(String[].class));
+    assertThat(setProtocols[0]).isNotNull();
+    String[] protocolStrings = (String[]) setProtocols[0];
+    assertThat(protocolStrings[0].equals("someProtocol"));
+    String[] cipherStrings = (String[]) setCiphers[0];
+    assertThat(cipherStrings[0].equals("someCipher"));
     verify(engine, never()).setNeedClientAuth(isA(Boolean.class));
+  }
+
+  @Test
+  public void configureSSLEngineUsingAny() {
+    SSLConfig config = new SSLConfig.Builder().setCiphers("any").setEnabled(true)
+        .setProtocols("any").setRequireAuth(true).setKeystore("someKeystore.jks")
+        .setAlias("someAlias").setTruststore("someTruststore.jks")
+        .setEndpointIdentificationEnabled(true).build();
+    SSLContext context = mock(SSLContext.class);
+    SSLParameters parameters = mock(SSLParameters.class);
+
+    SocketCreator socketCreator = new SocketCreator(config, context);
+
+    SSLEngine engine = mock(SSLEngine.class);
+    when(engine.getSSLParameters()).thenReturn(parameters);
+
+    socketCreator.configureSSLEngine(engine, "somehost", 12345, true);
+
+    verify(engine, never()).setEnabledCipherSuites(isA(String[].class));
+    verify(engine, never()).setEnabledProtocols(isA(String[].class));
   }
 
   private String getSingleKeyKeystore() {
