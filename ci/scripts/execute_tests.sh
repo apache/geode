@@ -66,13 +66,17 @@ fi
 
 case $ARTIFACT_SLUG in
   windows*)
+    echo "Making environment adjustments for windows."
     JAVA_BUILD_PATH=C:/java${JAVA_BUILD_VERSION}
     JAVA_TEST_PATH=C:/java${JAVA_TEST_VERSION}
+    GRADLE_SKIP_TASK_OPTIONS="${GRADLE_SKIP_TASK_OPTIONS} -x docker"
     SEP=";"
     ;;
   *)
     JAVA_BUILD_PATH=/usr/lib/jvm/java-${JAVA_BUILD_VERSION}-openjdk-amd64
     JAVA_TEST_PATH=/usr/lib/jvm/java-${JAVA_TEST_VERSION}-openjdk-amd64
+    # JAVA_BUILD_PATH=/usr/lib/jvm/bellsoft-java${JAVA_BUILD_VERSION}-amd64
+    # JAVA_TEST_PATH=/usr/lib/jvm/bellsoft-java${JAVA_TEST_VERSION}-amd64
     SEP="&&"
     ;;
 esac
