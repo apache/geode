@@ -25,8 +25,6 @@ import javax.net.ssl.SSLContext;
 
 import org.junit.Test;
 
-import org.apache.geode.internal.admin.SSLConfig;
-
 public class SSLUtilTest {
 
   @Test(expected = NoSuchAlgorithmException.class)

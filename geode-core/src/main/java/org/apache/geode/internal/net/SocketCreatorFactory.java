@@ -23,7 +23,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 
 public class SocketCreatorFactory {

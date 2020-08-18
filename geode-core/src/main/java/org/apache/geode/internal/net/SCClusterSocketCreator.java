@@ -26,7 +26,6 @@ import javax.net.ssl.SSLServerSocket;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.distributed.internal.tcpserver.ClusterSocketCreatorImpl;
-import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.net.SSLParameterExtension;
 
 class SCClusterSocketCreator extends ClusterSocketCreatorImpl {

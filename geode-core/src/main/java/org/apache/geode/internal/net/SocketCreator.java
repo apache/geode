@@ -78,7 +78,6 @@ import org.apache.geode.distributed.internal.tcpserver.AdvancedSocketCreatorImpl
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreatorImpl;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.wan.TransportFilterServerSocket;
 import org.apache.geode.internal.cache.wan.TransportFilterSocketFactory;
 import org.apache.geode.internal.inet.LocalHostUtil;
@@ -194,6 +193,12 @@ public class SocketCreator extends TcpSocketCreatorImpl {
   public SocketCreator(final SSLConfig sslConfig) {
     this.sslConfig = sslConfig;
     initialize();
+  }
+
+  @VisibleForTesting
+  SocketCreator(final SSLConfig sslConfig, SSLContext sslContext) {
+    this.sslConfig = sslConfig;
+    this.sslContext = sslContext;
   }
 
   /** returns the hostname or address for this client */
@@ -544,16 +549,48 @@ public class SocketCreator extends TcpSocketCreatorImpl {
   /**
    * Returns an SSLEngine that can be used to perform TLS handshakes and communication
    */
-  public SSLEngine createSSLEngine(String hostName, int port) {
+  public SSLEngine createSSLEngine(String hostName, int port, boolean clientSocket) {
     SSLEngine engine = getSslContext().createSSLEngine(hostName, port);
+    configureSSLEngine(engine, hostName, port, clientSocket);
+    return engine;
+  }
+
+  @VisibleForTesting
+  void configureSSLEngine(SSLEngine engine, String hostName, int port, boolean clientSocket) {
+    SSLParameters parameters = engine.getSSLParameters();
+    boolean updateEngineWithParameters = false;
     if (sslConfig.doEndpointIdentification()) {
       // set server-names so that endpoint identification algorithms can find what's expected
-      SSLParameters parameters = engine.getSSLParameters();
       if (setServerNames(parameters, new HostAndPort(hostName, port))) {
-        engine.setSSLParameters(parameters);
+        updateEngineWithParameters = true;
       }
     }
-    return engine;
+
+    engine.setUseClientMode(clientSocket);
+    if (!clientSocket) {
+      engine.setNeedClientAuth(sslConfig.isRequireAuth());
+    }
+
+    if (clientSocket) {
+      if (checkAndEnableHostnameValidation(engine.getSSLParameters())) {
+        updateEngineWithParameters = true;
+      } ;
+    }
+
+    String[] protocols = this.sslConfig.getProtocolsAsStringArray();
+
+    if (protocols != null && !"any".equalsIgnoreCase(protocols[0])) {
+      engine.setEnabledProtocols(protocols);
+    }
+
+    String[] ciphers = this.sslConfig.getCiphersAsStringArray();
+    if (ciphers != null && !"any".equalsIgnoreCase(ciphers[0])) {
+      engine.setEnabledCipherSuites(ciphers);
+    }
+
+    if (updateEngineWithParameters) {
+      engine.setSSLParameters(parameters);
+    }
   }
 
   /**
@@ -575,15 +612,6 @@ public class SocketCreator extends TcpSocketCreatorImpl {
       ByteBuffer peerNetBuffer,
       BufferPool bufferPool)
       throws IOException {
-    engine.setUseClientMode(clientSocket);
-    if (!clientSocket) {
-      engine.setNeedClientAuth(sslConfig.isRequireAuth());
-    }
-
-    if (clientSocket) {
-      SSLParameters modifiedParams = checkAndEnableHostnameValidation(engine.getSSLParameters());
-      engine.setSSLParameters(modifiedParams);
-    }
     while (!socketChannel.finishConnect()) {
       try {
         Thread.sleep(50);
@@ -627,18 +655,21 @@ public class SocketCreator extends TcpSocketCreatorImpl {
     return nioSslEngine;
   }
 
-  private SSLParameters checkAndEnableHostnameValidation(SSLParameters sslParameters) {
+  /**
+   * @return true if the parameters have been modified by this method
+   */
+  private boolean checkAndEnableHostnameValidation(SSLParameters sslParameters) {
     if (sslConfig.doEndpointIdentification()) {
       sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
-    } else {
-      if (!hostnameValidationDisabledLogShown) {
-        logger.info("Your SSL configuration disables hostname validation. "
-            + "ssl-endpoint-identification-enabled should be set to true when SSL is enabled. "
-            + "Please refer to the Apache GEODE SSL Documentation for SSL Property: ssl‑endpoint‑identification‑enabled");
-        hostnameValidationDisabledLogShown = true;
-      }
+      return true;
     }
-    return sslParameters;
+    if (!hostnameValidationDisabledLogShown) {
+      logger.info("Your SSL configuration disables hostname validation. "
+          + "ssl-endpoint-identification-enabled should be set to true when SSL is enabled. "
+          + "Please refer to the Apache GEODE SSL Documentation for SSL Property: ssl‑endpoint‑identification‑enabled");
+      hostnameValidationDisabledLogShown = true;
+    }
+    return false;
   }
 
   /**
@@ -728,17 +759,24 @@ public class SocketCreator extends TcpSocketCreatorImpl {
       sslSocket.setUseClientMode(true);
       sslSocket.setEnableSessionCreation(true);
 
-      SSLParameters modifiedParams =
+      SSLParameters parameters = sslSocket.getSSLParameters();
+      boolean updateSSLParameters =
           checkAndEnableHostnameValidation(sslSocket.getSSLParameters());
 
-      setServerNames(modifiedParams, addr);
+      if (setServerNames(parameters, addr)) {
+        updateSSLParameters = true;
+      } ;
 
       SSLParameterExtension sslParameterExtension = this.sslConfig.getSSLParameterExtension();
       if (sslParameterExtension != null) {
-        modifiedParams =
-            sslParameterExtension.modifySSLClientSocketParameters(modifiedParams);
+        parameters =
+            sslParameterExtension.modifySSLClientSocketParameters(parameters);
+        updateSSLParameters = true;
       }
-      sslSocket.setSSLParameters(modifiedParams);
+
+      if (updateSSLParameters) {
+        sslSocket.setSSLParameters(parameters);
+      }
 
       String[] protocols = this.sslConfig.getProtocolsAsStringArray();
 
