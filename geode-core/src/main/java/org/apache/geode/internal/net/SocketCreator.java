@@ -761,7 +761,7 @@ public class SocketCreator extends TcpSocketCreatorImpl {
 
       SSLParameters parameters = sslSocket.getSSLParameters();
       boolean updateSSLParameters =
-          checkAndEnableHostnameValidation(sslSocket.getSSLParameters());
+          checkAndEnableHostnameValidation(parameters);
 
       if (setServerNames(parameters, addr)) {
         updateSSLParameters = true;
