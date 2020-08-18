@@ -128,7 +128,7 @@ public class ManagementServiceImpl implements ManagementService {
     if (matchingComponentServiceType.isPresent()) {
       ComponentManagementService<?> componentManagementService = matchingComponentServiceType.get();
       ServiceResult<Boolean> createServiceInstanceResult =
-          componentManagementService.init(moduleService, logger, args);
+          componentManagementService.init(moduleService, args);
 
       if (createServiceInstanceResult.isSuccessful()) {
         return Success.of(componentManagementService);
