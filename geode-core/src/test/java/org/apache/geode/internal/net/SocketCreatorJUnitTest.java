@@ -26,7 +26,6 @@ import java.net.BindException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.List;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
@@ -125,7 +124,6 @@ public class SocketCreatorJUnitTest {
     verify(engine).setEnabledCipherSuites(isA(String[].class));
     verify(engine).setEnabledProtocols(isA(String[].class));
     verify(engine, never()).setNeedClientAuth(isA(Boolean.class));
-    verify(parameters).setServerNames(isA(List.class));
   }
 
   private String getSingleKeyKeystore() {

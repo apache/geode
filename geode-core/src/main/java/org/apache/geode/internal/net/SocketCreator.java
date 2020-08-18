@@ -572,9 +572,9 @@ public class SocketCreator extends TcpSocketCreatorImpl {
     }
 
     if (clientSocket) {
-      if (checkAndEnableHostnameValidation(engine.getSSLParameters())) {
+      if (checkAndEnableHostnameValidation(parameters)) {
         updateEngineWithParameters = true;
-      } ;
+      }
     }
 
     String[] protocols = this.sslConfig.getProtocolsAsStringArray();
