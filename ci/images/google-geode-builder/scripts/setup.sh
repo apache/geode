@@ -29,8 +29,10 @@ apt-get install -y --no-install-recommends \
 
 echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list
 echo "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+echo "deb [arch=amd64] https://apt.bell-sw.com/ stable main" | sudo tee /etc/apt/sources.list.d/bellsoft.list
 curl -sSL https://dl.google.com/linux/linux_signing_key.pub | apt-key add -
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+curl -fsSL https://download.bell-sw.com/pki/GPG-KEY-bellsoft | apt-key add -
 apt-get update
 set +e && apt-get purge -y google-cloud-sdk lxc-docker && set -e
 DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
@@ -57,7 +59,9 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
 cp -R /etc/alternatives /etc/keep-alternatives
 apt-get install -y --no-install-recommends \
     openjdk-8-jdk \
-    openjdk-11-jdk
+    openjdk-11-jdk \
+    bellsoft-java11 \
+    bellsoft-java8
 rm -rf /etc/alternatives
 mv /etc/keep-alternatives /etc/alternatives
 
