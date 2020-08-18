@@ -17,20 +17,14 @@
 package org.apache.geode.redis.internal.netty;
 
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import io.netty.channel.Channel;
-import io.netty.util.concurrent.GenericFutureListener;
 
 public class Client {
   private Channel channel;
-  private static final AtomicInteger clientCount = new AtomicInteger(0);
 
   public Client(Channel remoteAddress) {
     this.channel = remoteAddress;
-    this.channel.closeFuture().addListener((GenericFutureListener) f -> {
-      // System.err.println("!!!!!!!!!!!!! closed client " + clientCount.getAndIncrement());
-    });
   }
 
   @Override
