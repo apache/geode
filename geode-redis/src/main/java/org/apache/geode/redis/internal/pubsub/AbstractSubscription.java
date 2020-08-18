@@ -64,7 +64,7 @@ public abstract class AbstractSubscription implements Subscription {
     writeToChannel(constructResponse(channel, message), publishResultCollector);
   }
 
-  Client getClient() {
+  public Client getClient() {
     return client;
   }
 

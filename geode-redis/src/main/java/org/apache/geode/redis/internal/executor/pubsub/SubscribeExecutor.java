@@ -18,10 +18,12 @@ package org.apache.geode.redis.internal.executor.pubsub;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.pubsub.AbstractSubscription;
 import org.apache.geode.redis.internal.pubsub.SubscribeResult;
 
 public class SubscribeExecutor extends AbstractExecutor {
@@ -44,12 +46,16 @@ public class SubscribeExecutor extends AbstractExecutor {
       item.add(result.getChannel());
       item.add(result.getChannelCount());
       items.add(item);
+      LogService.getLogger().debug("--->>> Executing SUBSCRIBE from "
+          + ((AbstractSubscription) result.getSubscription()).getClient().toString());
     }
 
     Runnable callback = () -> {
       Runnable innerCallback = () -> {
         for (SubscribeResult result : results) {
           if (result.getSubscription() != null) {
+            LogService.getLogger().debug("--->>> Calling readyToPublish for "
+                + ((AbstractSubscription) result.getSubscription()).getClient().toString());
             result.getSubscription().readyToPublish();
           }
         }

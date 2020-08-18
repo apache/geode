@@ -31,6 +31,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -39,6 +43,7 @@ import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
 
+import org.apache.geode.logging.internal.log4j.api.FastLogger;
 import org.apache.geode.redis.GeodeRedisServerRule;
 import org.apache.geode.redis.mocks.MockBinarySubscriber;
 import org.apache.geode.redis.mocks.MockSubscriber;
@@ -790,6 +795,10 @@ public class PubSubIntegrationTest {
   @Test
   public void concurrentSubscribers_andPublishers_doesNotHang()
       throws InterruptedException, ExecutionException {
+    Logger logger = LogManager.getLogger("org.apache.geode.redis.internal");
+    Configurator.setAllLevels(logger.getName(), Level.getLevel("DEBUG"));
+    FastLogger.setDelegating(true);
+
     AtomicBoolean running = new AtomicBoolean(true);
 
     Future<Integer> makeSubscribersFuture1 =

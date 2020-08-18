@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
@@ -39,6 +40,8 @@ public class UnsubscribeExecutor extends AbstractExecutor {
 
     Collection<Collection<?>> response = unsubscribe(context, channelNames);
 
+    LogService.getLogger()
+        .debug("--->>> Executing UNSUBSCRIBE for " + context.getClient().toString());
     return RedisResponse.flattenedArray(response);
   }
 
