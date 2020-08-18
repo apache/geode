@@ -417,4 +417,21 @@ public class ConnectCommandTest {
         .statusIsError()
         .containsOutput("Cannot use a 1.14 gfsh client to connect to a 1.9 cluster");
   }
+
+  @Test
+  public void connectToManagerBySerializationVersion() {
+    when(gfsh.getVersion()).thenReturn("0.0.0");
+    when(gfsh.getGeodeSerializationVersion()).thenReturn("1.14.0");
+    when(operationInvoker.getRemoteVersion()).thenReturn("0.0.0");
+    when(operationInvoker.getRemoteGeodeSerializationVersion()).thenReturn("1.14.0");
+    when(operationInvoker.isConnected()).thenReturn(true);
+
+    ResultModel resultModel = new ResultModel();
+    when(connectCommand.jmxConnect(any(), anyBoolean(), any(), any(), anyBoolean()))
+        .thenReturn(resultModel);
+
+    gfshParserRule.executeAndAssertThat(connectCommand, "connect --locator=localhost:4040")
+        .statusIsSuccess()
+        .doesNotContainOutput("Cannot use a 0.0.0 gfsh client to connect to a 0.0.0 cluster");
+  }
 }
