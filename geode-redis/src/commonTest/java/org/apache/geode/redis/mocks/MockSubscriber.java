@@ -20,8 +20,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import redis.clients.jedis.JedisPubSub;
+
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public class MockSubscriber extends JedisPubSub {
   private final CountDownLatch subscriptionLatch;
@@ -69,9 +72,14 @@ public class MockSubscriber extends JedisPubSub {
     subscriptionLatch.countDown();
   }
 
+  private static final int AWAIT_TIMEOUT_MILLIS =
+      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
+
   public void awaitSubscribe() {
     try {
-      subscriptionLatch.await();
+      if (!subscriptionLatch.await(AWAIT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)) {
+        throw new RuntimeException("awaitSubscribe timed out");
+      }
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     }
@@ -85,7 +93,9 @@ public class MockSubscriber extends JedisPubSub {
 
   public void awaitUnsubscribe() {
     try {
-      unsubscriptionLatch.await();
+      if (!unsubscriptionLatch.await(AWAIT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)) {
+        throw new RuntimeException("awaitUnsubscribe timed out");
+      }
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     }
