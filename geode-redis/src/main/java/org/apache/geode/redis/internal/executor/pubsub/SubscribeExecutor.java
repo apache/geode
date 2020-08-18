@@ -46,8 +46,10 @@ public class SubscribeExecutor extends AbstractExecutor {
       item.add(result.getChannel());
       item.add(result.getChannelCount());
       items.add(item);
-      LogService.getLogger().debug("--->>> Executing SUBSCRIBE from "
-          + ((AbstractSubscription) result.getSubscription()).getClient().toString());
+      if (result.getSubscription() != null) {
+        LogService.getLogger().debug("--->>> Executing SUBSCRIBE from "
+            + ((AbstractSubscription) result.getSubscription()).getClient());
+      }
     }
 
     Runnable callback = () -> {
@@ -55,7 +57,7 @@ public class SubscribeExecutor extends AbstractExecutor {
         for (SubscribeResult result : results) {
           if (result.getSubscription() != null) {
             LogService.getLogger().debug("--->>> Calling readyToPublish for "
-                + ((AbstractSubscription) result.getSubscription()).getClient().toString());
+                + ((AbstractSubscription) result.getSubscription()).getClient());
             result.getSubscription().readyToPublish();
           }
         }

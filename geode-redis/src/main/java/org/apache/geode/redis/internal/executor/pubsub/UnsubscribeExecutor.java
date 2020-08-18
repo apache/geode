@@ -41,7 +41,7 @@ public class UnsubscribeExecutor extends AbstractExecutor {
     Collection<Collection<?>> response = unsubscribe(context, channelNames);
 
     LogService.getLogger()
-        .debug("--->>> Executing UNSUBSCRIBE for " + context.getClient().toString());
+        .debug("--->>> Executing UNSUBSCRIBE for " + context.getClient());
     return RedisResponse.flattenedArray(response);
   }
 
