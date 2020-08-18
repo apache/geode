@@ -695,13 +695,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
     String regionPath = value.getRegionPath();
     if (!isDREvent) {
-      Region region = sender.getCache().getRegion(regionPath);
-      if (region == null) {
-        if (isDebugEnabled) {
-          logger.debug("The PR " + regionPath + " has not finished initializing.");
-        }
-        region = value.getRegion();
-      }
+      Region region = sender.getCache().getRegion(regionPath, true);
       regionPath = ColocationHelper.getLeaderRegion((PartitionedRegion) region).getFullPath();
     }
     if (isDebugEnabled) {
