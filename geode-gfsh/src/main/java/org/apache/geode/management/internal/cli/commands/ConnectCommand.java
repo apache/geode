@@ -171,6 +171,17 @@ public class ConnectCommand extends OfflineGfshCommand {
     // since 1.14, only allow gfsh to connect to cluster that's older than 1.10
     String remoteVersion = null;
     String gfshVersion = gfsh.getVersion();
+    // First: see if serialization versions matches (only works with Geode 1.12 or later cluster)
+    try {
+      String gfshGeodeSerializationVersion = gfsh.getGeodeSerializationVersion();
+      String remoteGeodeSerializationVersion = invoker.getRemoteGeodeSerializationVersion();
+      if (gfshGeodeSerializationVersion.equals(remoteGeodeSerializationVersion)) {
+        return result;
+      }
+    } catch (Exception ignore) {
+    }
+
+    // Fallback: make assumptions based on the product version
     try {
       remoteVersion = invoker.getRemoteVersion();
       int minorVersion = Integer.parseInt(versionComponent(remoteVersion, VERSION_MINOR));
