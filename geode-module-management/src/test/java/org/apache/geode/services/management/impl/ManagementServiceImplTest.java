@@ -63,7 +63,7 @@ public class ManagementServiceImplTest {
         componentManagementService)));
 
     when(componentManagementService.canCreateComponent(any())).thenReturn(true);
-    when(componentManagementService.init(any(), any(), any())).thenReturn(Success.SUCCESS_TRUE);
+    when(componentManagementService.init(any(), any())).thenReturn(Success.SUCCESS_TRUE);
 
     ComponentIdentifier componentIdentifier = new ComponentIdentifier("TestComponent");
     assertThat(managementService.createComponent(componentIdentifier).isSuccessful()).isTrue();
@@ -106,7 +106,7 @@ public class ManagementServiceImplTest {
         componentManagementService)));
 
     when(componentManagementService.canCreateComponent(any())).thenReturn(true);
-    when(componentManagementService.init(any(), any(), any()))
+    when(componentManagementService.init(any(), any()))
         .thenReturn(Failure.of("We want to see this failure message"));
 
     ComponentIdentifier componentIdentifier = new ComponentIdentifier("TestComponent");
@@ -123,7 +123,7 @@ public class ManagementServiceImplTest {
         componentManagementService)));
 
     when(componentManagementService.canCreateComponent(any())).thenReturn(true);
-    when(componentManagementService.init(any(), any(), any())).thenReturn(Success.of(true));
+    when(componentManagementService.init(any(), any())).thenReturn(Success.of(true));
 
     ComponentIdentifier componentIdentifier = new ComponentIdentifier("TestComponent");
     assertThat(managementService.createComponent(componentIdentifier).isSuccessful()).isTrue();
@@ -150,7 +150,7 @@ public class ManagementServiceImplTest {
         componentManagementService)));
 
     when(componentManagementService.canCreateComponent(any())).thenReturn(true);
-    when(componentManagementService.init(any(), any(), any())).thenReturn(Success.of(true));
+    when(componentManagementService.init(any(), any())).thenReturn(Success.of(true));
     when(componentManagementService.close(any())).thenReturn(Success.of(true));
 
     ComponentIdentifier componentIdentifier = new ComponentIdentifier("TestComponent");
@@ -166,7 +166,7 @@ public class ManagementServiceImplTest {
         componentManagementService)));
 
     when(componentManagementService.canCreateComponent(any())).thenReturn(true);
-    when(componentManagementService.init(any(), any(), any())).thenReturn(Success.of(true));
+    when(componentManagementService.init(any(), any())).thenReturn(Success.of(true));
 
     assertThat(
         managementService.createComponent(new ComponentIdentifier("TestComponent")).isSuccessful())
@@ -191,7 +191,7 @@ public class ManagementServiceImplTest {
         componentManagementService)));
 
     when(componentManagementService.canCreateComponent(any())).thenReturn(true);
-    when(componentManagementService.init(any(), any(), any())).thenReturn(Success.of(true));
+    when(componentManagementService.init(any(), any())).thenReturn(Success.of(true));
 
     when(componentManagementService.close(any()))
         .thenReturn(Failure.of("Underlying Component destroy failure"));

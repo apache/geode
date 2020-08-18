@@ -21,8 +21,14 @@ import static org.apache.geode.services.result.impl.Success.SUCCESS_TRUE;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.spi.LoggerContextFactory;
+import org.apache.logging.log4j.spi.Provider;
+import org.apache.logging.log4j.util.ProviderUtil;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Cache;
@@ -55,11 +61,11 @@ public class CacheComponentManagementService implements ComponentManagementServi
    * {@inheritDoc}
    */
   @Override
-  public ServiceResult<Boolean> init(ModuleService moduleService, Logger logger,
-      Object[] args) {
+  public ServiceResult<Boolean> init(ModuleService moduleService, Object[] args) {
     ServiceResult<Boolean> validationResult = validateInputParameters(moduleService, logger);
     if (validationResult.isSuccessful()) {
-      this.logger = logger;
+      reconfigureLog4jToUseGeodeLoggingFormat();
+      this.logger = LogManager.getLogger();
       CacheFactory cacheFactory = new CacheFactory((Properties) args[0]);
       cacheFactory.setModuleService(moduleService);
       cache = cacheFactory.create();
@@ -68,6 +74,33 @@ public class CacheComponentManagementService implements ComponentManagementServi
       return createCacheServer(args);
     }
     return validationResult;
+  }
+
+  private void reconfigureLog4jToUseGeodeLoggingFormat() {
+    System.setProperty("log4j.configurationFile", "log4j2.xml");
+    final SortedMap<Integer, LoggerContextFactory> factories = new TreeMap<>();
+    // note that the following initial call to ProviderUtil may block until a Provider has been
+    // installed when
+    // running in an OSGi environment
+    if (ProviderUtil.hasProviders()) {
+      for (final Provider provider : ProviderUtil.getProviders()) {
+        final Class<? extends LoggerContextFactory> factoryClass =
+            provider.loadLoggerContextFactory();
+        if (factoryClass != null) {
+          try {
+            factories.put(provider.getPriority(), factoryClass.newInstance());
+          } catch (final Exception e) {
+            e.printStackTrace();
+            // LOGGER.error("Unable to create class {} specified in provider URL {}",
+            // factoryClass.getName(), provider
+            // .getUrl(), e);
+          }
+        }
+      }
+      if (factories.size() == 1) {
+        LogManager.setFactory(factories.values().stream().findFirst().get());
+      }
+    }
   }
 
   private ServiceResult<Boolean> createCacheServer(Object[] args) {
@@ -79,6 +112,7 @@ public class CacheComponentManagementService implements ComponentManagementServi
     try {
       cacheServer.start();
     } catch (IOException e) {
+      logger.error(e);
       return Failure.of(e);
     }
     return SUCCESS_TRUE;
