@@ -16,8 +16,6 @@ package org.apache.geode.services.management;
 
 import java.util.Optional;
 
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.services.management.impl.ComponentIdentifier;
 import org.apache.geode.services.module.ModuleService;
 import org.apache.geode.services.result.ServiceResult;
