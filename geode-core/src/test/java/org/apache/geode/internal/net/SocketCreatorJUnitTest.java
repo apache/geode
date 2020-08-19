@@ -15,6 +15,7 @@
 package org.apache.geode.internal.net;
 
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.mock;
@@ -117,15 +118,17 @@ public class SocketCreatorJUnitTest {
     SSLEngine engine = mock(SSLEngine.class);
     when(engine.getSSLParameters()).thenReturn(parameters);
 
-    ArgumentCaptor<String[]> engineArgumentCaptor = ArgumentCaptor.forClass(String[].class);
-
     socketCreator.configureSSLEngine(engine, "somehost", 12345, true);
 
     verify(engine).setUseClientMode(isA(Boolean.class));
     verify(engine).setSSLParameters(parameters);
-    verify(engine).setEnabledProtocols(engineArgumentCaptor.capture());
-    verify(engine).setEnabledCipherSuites(engineArgumentCaptor.capture());
     verify(engine, never()).setNeedClientAuth(isA(Boolean.class));
+
+    ArgumentCaptor<String[]> stringArrayCaptor = ArgumentCaptor.forClass(String[].class);
+    verify(engine).setEnabledProtocols(stringArrayCaptor.capture());
+    assertThat(stringArrayCaptor.getValue()).containsExactly("someProtocol");
+    verify(engine).setEnabledCipherSuites(stringArrayCaptor.capture());
+    assertThat(stringArrayCaptor.getValue()).containsExactly("someCipher");
   }
 
   @Test
