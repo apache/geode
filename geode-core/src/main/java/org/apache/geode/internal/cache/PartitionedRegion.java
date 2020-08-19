@@ -572,6 +572,14 @@ public class PartitionedRegion extends LocalRegion
     return this.partitionListeners;
   }
 
+  public CachePerfStats getRegionCachePerfStats() {
+    if (dataStore != null && dataStore.getAllLocalBucketRegions().size() > 0) {
+      BucketRegion bucket = dataStore.getAllLocalBucketRegions().iterator().next();
+      return bucket.getCachePerfStats();
+    }
+    return null;
+  }
+
   /**
    * Return canonical representation for a bucket (for logging)
    *

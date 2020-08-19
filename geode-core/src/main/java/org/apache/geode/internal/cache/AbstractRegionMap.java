@@ -344,7 +344,12 @@ public abstract class AbstractRegionMap extends BaseRegionMap
     if (lr != null && !(lr instanceof HARegion)) {
       CachePerfStats stats = lr.getCachePerfStats();
       if (stats != null) {
-        stats.incClearCount();
+        if (lr.isUsedForPartitionedRegionBucket()) {
+          stats.incBucketClearCount();
+        } else {
+          stats.incRegionClearCount();
+        }
+
       }
     }
   }
