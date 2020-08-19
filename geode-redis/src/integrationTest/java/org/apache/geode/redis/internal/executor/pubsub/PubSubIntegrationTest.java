@@ -817,17 +817,11 @@ public class PubSubIntegrationTest {
     assertThat(makeSubscribersFuture1.get()).isGreaterThanOrEqualTo(10);
     assertThat(makeSubscribersFuture2.get()).isGreaterThanOrEqualTo(10);
 
-    assertThat(publish1.get()).isZero();
-    assertThat(publish2.get()).isZero();
-    assertThat(publish3.get()).isZero();
-    assertThat(publish4.get()).isZero();
-    assertThat(publish5.get()).isZero();
-
-    // assertThat(publish1.get()).isGreaterThan(0);
-    // assertThat(publish2.get()).isGreaterThan(0);
-    // assertThat(publish3.get()).isGreaterThan(0);
-    // assertThat(publish4.get()).isGreaterThan(0);
-    // assertThat(publish5.get()).isGreaterThan(0);
+    assertThat(publish1.get()).isGreaterThan(0);
+    assertThat(publish2.get()).isGreaterThan(0);
+    assertThat(publish3.get()).isGreaterThan(0);
+    assertThat(publish4.get()).isGreaterThan(0);
+    assertThat(publish5.get()).isGreaterThan(0);
   }
 
   private void waitFor(Callable<Boolean> booleanCallable) {
