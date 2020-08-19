@@ -760,7 +760,7 @@ public class PubSubIntegrationTest {
     });
 
     int iterationCount = 0;
-    String channel = "my-channel-" + index + "-" + iterationCount;
+    String channel = "my-channel";
     while (iterationCount < minimumIterations || running.get()) {
       Future<Void> f = executor.submit(() -> {
         Jedis client = getConnection();
