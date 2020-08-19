@@ -32,13 +32,11 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.query.Index;
-import org.apache.geode.cache.query.IndexInvalidException;
 import org.apache.geode.cache.query.IndexStatistics;
 import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryService;
@@ -132,13 +130,8 @@ public class PRClearQueryIndexDUnitTest {
     AsyncInvocation createIndex = server1.invokeAsync("create index", () -> {
       Cache cache = ClusterStartupRule.getCache();
       QueryService queryService = cache.getQueryService();
-      try {
-        Index cityZip = queryService.createIndex("cityZip", "c.zip", "/cities c");
-        assertThat(cityZip).isNotNull();
-      } catch (IndexInvalidException e) {
-        // someetimees the index creation will fail due to entry being destroyed
-        assertThat(e.getRootCause()).isInstanceOf(EntryDestroyedException.class);
-      }
+      Index cityZip = queryService.createIndex("cityZip", "c.zip", "/cities c");
+      assertThat(cityZip).isNotNull();
     });
 
     // do clear at the same time
@@ -155,6 +148,39 @@ public class PRClearQueryIndexDUnitTest {
     assertThat(((SelectResults) query.execute()).size()).isEqualTo(0);
 
     IntStream.range(0, 10).forEach(i -> cities.put(i, new City(i)));
+    assertThat(((SelectResults) query.execute()).size()).isEqualTo(10);
+  }
+
+  @Test
+  public void createIndexWhileClearOnReplicateRegion() throws Exception {
+    invokeInEveryMember(() -> {
+      Cache cache = ClusterStartupRule.getCache();
+      cache.createRegionFactory(RegionShortcut.PARTITION)
+          .create("replicateCities");
+    }, server1, server2);
+
+    Region replicateCities = clientCacheRule.createProxyRegion("replicateCities");
+    IntStream.range(0, 100).forEach(i -> replicateCities.put(i, new City(i)));
+
+    // create index while clear
+    AsyncInvocation createIndex = server1.invokeAsync("create index on replicate regions", () -> {
+      Cache cache = ClusterStartupRule.getCache();
+      QueryService queryService = cache.getQueryService();
+      Index cityZip = queryService.createIndex("cityZip_replicate", "c.zip", "/replicateCities c");
+      assertThat(cityZip).isNotNull();
+    });
+
+    // do clear at the same time
+    replicateCities.clear();
+    createIndex.await();
+
+    QueryService queryService = clientCache.getQueryService();
+    Query query =
+        queryService
+            .newQuery("select * from /replicateCities c where c.zip < " + (City.ZIP_START + 10));
+    assertThat(((SelectResults) query.execute()).size()).isEqualTo(0);
+
+    IntStream.range(0, 10).forEach(i -> replicateCities.put(i, new City(i)));
     assertThat(((SelectResults) query.execute()).size()).isEqualTo(10);
   }
 
