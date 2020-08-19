@@ -371,7 +371,7 @@ public class ConnectCommandTest {
 
     ResultModel resultModel = new ResultModel();
     when(connectCommand.jmxConnect(any(), anyBoolean(), any(), any(), anyBoolean()))
-            .thenReturn(resultModel);
+        .thenReturn(resultModel);
 
     gfshParserRule.executeAndAssertThat(connectCommand, "connect --locator=localhost:4040")
         .statusIsSuccess()
