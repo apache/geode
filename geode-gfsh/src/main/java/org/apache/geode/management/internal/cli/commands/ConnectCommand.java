@@ -168,17 +168,13 @@ public class ConnectCommand extends OfflineGfshCommand {
       return result;
     }
 
-    // since 1.14, only allow gfsh to connect to cluster that's older than 1.10
     String remoteVersion = null;
-    String gfshVersion = gfsh.getVersion();
+    String remoteGeodeSerializationVersion = null;
     try {
       remoteVersion = invoker.getRemoteVersion();
-      int minorVersion = Integer.parseInt(versionComponent(remoteVersion, VERSION_MINOR));
-      if (versionComponent(remoteVersion, VERSION_MAJOR).equals("1") && minorVersion >= 10 ||
-          versionComponent(remoteVersion, VERSION_MAJOR).equals("9") && minorVersion >= 9) {
-        InfoResultModel versionInfo = result.addInfo("versionInfo");
-        versionInfo.addLine("You are connected to a cluster of version: " + remoteVersion);
-        return result;
+      try {
+        remoteGeodeSerializationVersion = invoker.getRemoteGeodeSerializationVersion();
+      } catch (Exception ignore) {
       }
     } catch (Exception ex) {
       // if unable to get the remote version, we are certainly talking to
@@ -186,24 +182,48 @@ public class ConnectCommand extends OfflineGfshCommand {
       gfsh.logInfo("failed to get the the remote version.", ex);
     }
 
-    // fallback: see if serialization versions matches (Geode 1.12 or later cluster)
-    try {
-      String gfshGeodeSerializationVersion = gfsh.getGeodeSerializationVersion();
-      String remoteGeodeSerializationVersion = invoker.getRemoteGeodeSerializationVersion();
-      if (gfshGeodeSerializationVersion.equals(remoteGeodeSerializationVersion)) {
-        return result;
-      }
-    } catch (Exception ignore) {
+    String ourSerializationVersion = gfsh.getGeodeSerializationVersion();
+    if (isCompatible(ourSerializationVersion, remoteVersion, remoteGeodeSerializationVersion)) {
+      InfoResultModel versionInfo = result.addInfo("versionInfo");
+      versionInfo.addLine("You are connected to a cluster of version: " + remoteVersion);
+      return result;
     }
 
     // will reach here only when remoteVersion is not available or does not match
     invoker.stop();
+    String gfshVersion = gfsh.getVersion();
     if (remoteVersion == null) {
       return ResultModel.createError(
           String.format("Cannot use a %s gfsh client to connect to this cluster.", gfshVersion));
     } else {
       return ResultModel.createError(String.format(
           "Cannot use a %s gfsh client to connect to a %s cluster.", gfshVersion, remoteVersion));
+    }
+  }
+
+  /**
+   * because remote serialization version was not exposed until 1.12, but we are compatible back to
+   * 1.10, then any 1.x remote serialization version implies compatibility; otherwise make some
+   * narrow assumptions about product version numbers known to be associated with 1.10/1.11 to fill
+   * the gap.
+   *
+   * It seems reasonable to commit to future compatibility with any future Geode of the same major,
+   * but we should probably draw the line somewhere and not promise that gfsh 1.x will be eternally
+   * compatible with Geode 2.x and later
+   */
+  static boolean isCompatible(String ourSerializationVersion, String remoteVersion,
+      String remoteSerializationVersion) {
+    String ourMajor = versionComponent(ourSerializationVersion, VERSION_MAJOR);
+    if (remoteSerializationVersion != null) {
+      return versionComponent(remoteSerializationVersion, VERSION_MAJOR).equals(ourMajor);
+    } else if (ourMajor.equals("1") && remoteVersion != null) {
+      String remoteMajorVersion = versionComponent(remoteVersion, VERSION_MAJOR);
+      int remoteMinorVersion = Integer.parseInt(versionComponent(remoteVersion, VERSION_MINOR));
+      return remoteMajorVersion.equals("9") && remoteMinorVersion == 9 ||
+          remoteMajorVersion.equals("1") && remoteMinorVersion == 10 ||
+          remoteMajorVersion.equals("1") && remoteMinorVersion == 11;
+    } else {
+      return false;
     }
   }
 
