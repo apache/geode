@@ -113,7 +113,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     return channel.writeAndFlush(response.encode(byteBufAllocator), channel.newPromise())
         .addListener((ChannelFutureListener) f -> {
           response.afterWrite();
-          logResponse(response);
+          logResponse(response, channel.remoteAddress().toString());
         });
   }
 
@@ -291,11 +291,11 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     return response;
   }
 
-  private void logResponse(RedisResponse response) {
+  private void logResponse(RedisResponse response, String extraMessage) {
     if (logger.isDebugEnabled() && response != null) {
       ByteBuf buf = response.encode(new UnpooledByteBufAllocator(false));
-      logger.debug("Redis command returned: {}",
-          Command.getHexEncodedString(buf.array(), buf.readableBytes()));
+      logger.debug("Redis command returned: {} - {}",
+          Command.getHexEncodedString(buf.array(), buf.readableBytes()), extraMessage);
     }
   }
 
