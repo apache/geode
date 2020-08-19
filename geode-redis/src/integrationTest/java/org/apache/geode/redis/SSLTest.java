@@ -26,7 +26,7 @@ import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
 
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.admin.SSLConfig;
+import org.apache.geode.internal.net.SSLConfig;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.test.junit.categories.RedisTest;

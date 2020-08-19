@@ -20,8 +20,6 @@ import java.util.List;
 
 import javax.net.ssl.SSLException;
 
-import org.apache.geode.internal.admin.SSLConfig;
-
 /*
  * This test class will fail the TLS handshake with an SSLException, by default.
  */

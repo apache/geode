@@ -1709,7 +1709,7 @@ public class Connection implements Runnable {
       InetSocketAddress address = (InetSocketAddress) channel.getRemoteAddress();
       SSLEngine engine =
           getConduit().getSocketCreator().createSSLEngine(address.getHostString(),
-              address.getPort());
+              address.getPort(), clientSocket);
 
       int packetBufferSize = engine.getSession().getPacketBufferSize();
       if (inputBuffer == null || inputBuffer.capacity() < packetBufferSize) {
