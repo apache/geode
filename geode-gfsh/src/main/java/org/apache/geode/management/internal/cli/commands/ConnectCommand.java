@@ -219,8 +219,6 @@ public class ConnectCommand extends OfflineGfshCommand {
    */
   static boolean shouldConnect(String ourSerializationVersion, String remoteVersion,
       String remoteSerializationVersion) {
-    int ourMajor = Integer.parseInt(versionComponent(ourSerializationVersion, VERSION_MAJOR));
-
     // pre 1.5
     if (remoteVersion == null) {
       return false;
@@ -228,23 +226,28 @@ public class ConnectCommand extends OfflineGfshCommand {
 
     // at least 1.12 (but only promise forward compatibility within same major)
     if (remoteSerializationVersion != null) {
-      int remoteMajor =
-          Integer.parseInt(versionComponent(remoteSerializationVersion, VERSION_MAJOR));
+      int ourMajor = versionComponent(ourSerializationVersion, VERSION_MAJOR);
+      int remoteMajor = versionComponent(remoteSerializationVersion, VERSION_MAJOR);
       // assume Geode 2.x will support backward compatibility to 1.x
-      return remoteMajor <= ourMajor;
+      return remoteMajor >= 1 && remoteMajor <= ourMajor;
     }
 
     // after 1.5 but before 1.12, use remoteVersion to determine if 1.10 or after
-    int remoteMajorVersion = Integer.parseInt(versionComponent(remoteVersion, VERSION_MAJOR));
-    int remoteMinorVersion = Integer.parseInt(versionComponent(remoteVersion, VERSION_MINOR));
+    int remoteMajorVersion = versionComponent(remoteVersion, VERSION_MAJOR);
+    int remoteMinorVersion = versionComponent(remoteVersion, VERSION_MINOR);
     return remoteMajorVersion == 9 && remoteMinorVersion == 9 ||
         remoteMajorVersion == 1 && remoteMinorVersion == 10 ||
         remoteMajorVersion == 1 && remoteMinorVersion == 11;
   }
 
-  private static String versionComponent(String version, int component) {
+  private static int versionComponent(String version, int component) {
     String[] versionComponents = StringUtils.split(version, '.');
-    return versionComponents.length >= component + 1 ? versionComponents[component] : "";
+    try {
+      return versionComponents.length >= component + 1
+          ? Integer.parseInt(versionComponents[component]) : -1;
+    } catch (Exception invalidFormat) {
+      return -1;
+    }
   }
 
   /**

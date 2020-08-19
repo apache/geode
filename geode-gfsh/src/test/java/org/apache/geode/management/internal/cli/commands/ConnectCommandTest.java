@@ -464,6 +464,7 @@ public class ConnectCommandTest {
     assertThat(ConnectCommand.shouldConnect("1", "1.13.0", "1.13.0")).isTrue();
     assertThat(ConnectCommand.shouldConnect("1", "1.14.0", "1.14.0")).isTrue();
     assertThat(ConnectCommand.shouldConnect("1", "2.0.0", "2.0.0")).isFalse();
+    assertThat(ConnectCommand.shouldConnect("1", "badstring", "badstring")).isFalse();
   }
 
   @Test
@@ -479,5 +480,6 @@ public class ConnectCommandTest {
     assertThat(ConnectCommand.shouldConnect("2", "1.13.0", "1.13.0")).isTrue();
     assertThat(ConnectCommand.shouldConnect("2", "1.14.0", "1.14.0")).isTrue();
     assertThat(ConnectCommand.shouldConnect("2", "2.0.0", "2.0.0")).isTrue();
+    assertThat(ConnectCommand.shouldConnect("2", "badstring", "badstring")).isFalse();
   }
 }
