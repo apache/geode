@@ -17,7 +17,9 @@ package org.apache.geode.internal.cache.wan.parallel;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -36,6 +38,7 @@ import org.mockito.stubbing.Answer;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.AbstractBucketRegionQueue;
@@ -68,6 +71,52 @@ public class ParallelGatewaySenderQueueJUnitTest {
     when(sender.getLifeCycleLock()).thenReturn(new ReentrantReadWriteLock());
     metaRegionFactory = mock(MetaRegionFactory.class);
     queue = new ParallelGatewaySenderQueue(sender, Collections.emptySet(), 0, 1, metaRegionFactory);
+  }
+
+  @Test
+  public void whenReplicatedDataRegionNotReadyShouldNotThrowException() throws Exception {
+    GatewaySenderEventImpl event = mock(GatewaySenderEventImpl.class);
+    when(event.makeHeapCopyIfOffHeap()).thenReturn(event);
+    when(event.getRegion()).thenReturn(null);
+    String regionPath = "/testRegion";
+    when(event.getRegionPath()).thenReturn(regionPath);
+    Mockito.doThrow(new IllegalStateException()).when(event).release();
+    Queue backingList = new LinkedList();
+    backingList.add(event);
+
+    queue = spy(queue);
+    doReturn(true).when(queue).isDREvent(any(), any());
+    boolean putDone = queue.put(event);
+    assertThat(putDone).isFalse();
+  }
+
+  @Test
+  public void whenPartitionedDataRegionNotReadyShouldNotThrowException() throws Exception {
+    GatewaySenderEventImpl event = mock(GatewaySenderEventImpl.class);
+    when(event.makeHeapCopyIfOffHeap()).thenReturn(event);
+    when(event.getRegion()).thenReturn(null);
+    String regionPath = "/testRegion";
+    when(event.getRegionPath()).thenReturn(regionPath);
+    PartitionedRegion region = mock(PartitionedRegion.class);
+    when(region.getFullPath()).thenReturn(regionPath);
+    when(cache.getRegion(regionPath, true)).thenReturn(region);
+    PartitionAttributes pa = mock(PartitionAttributes.class);
+    when(region.getPartitionAttributes()).thenReturn(pa);
+    when(pa.getColocatedWith()).thenReturn(null);
+
+    Mockito.doThrow(new IllegalStateException()).when(event).release();
+    Queue backingList = new LinkedList();
+    backingList.add(event);
+
+    BucketRegionQueue bucketRegionQueue = mockBucketRegionQueue(backingList);
+
+    TestableParallelGatewaySenderQueue queue = new TestableParallelGatewaySenderQueue(sender,
+        Collections.emptySet(), 0, 1, metaRegionFactory);
+    queue.setMockedAbstractBucketRegionQueue(bucketRegionQueue);
+
+    queue = spy(queue);
+    boolean putDone = queue.put(event);
+    assertThat(putDone).isFalse();
   }
 
   @Test

@@ -663,15 +663,13 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
     boolean isDREvent = isDREvent(sender.getCache(), value);
 
-    Region region = value.getRegion();
-    String regionPath = null;
-    if (isDREvent) {
-      regionPath = region.getFullPath();
-    } else {
+    String regionPath = value.getRegionPath();
+    if (!isDREvent) {
+      Region region = sender.getCache().getRegion(regionPath, true);
       regionPath = ColocationHelper.getLeaderRegion((PartitionedRegion) region).getFullPath();
     }
     if (isDebugEnabled) {
-      logger.debug("Put is for the region {}", region);
+      logger.debug("Put is for the region {}", regionPath);
     }
     if (!this.userRegionNameToShadowPRMap.containsKey(regionPath)) {
       if (isDebugEnabled) {
