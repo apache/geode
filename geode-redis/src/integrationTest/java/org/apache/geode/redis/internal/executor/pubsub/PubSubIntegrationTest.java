@@ -28,6 +28,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
@@ -775,9 +776,19 @@ public class PubSubIntegrationTest {
           return null;
         });
         mockSubscriber.awaitSubscribe(channel);
+        if (inner.isDone()) {
+          throw new RuntimeException("inner completed before unsubscribe");
+        }
+
         mockSubscriber.unsubscribe(channel);
+
+        try {
+          inner.get(10, TimeUnit.SECONDS);
+        } catch (TimeoutException e) {
+          throw new RuntimeException("inner.get() timed out after unsubscribe");
+        }
+
         mockSubscriber.awaitUnsubscribe(channel);
-        inner.get();
         client.close();
 
         return null;

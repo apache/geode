@@ -63,19 +63,19 @@ public class MockSubscriber extends JedisPubSub {
 
   @Override
   public void onMessage(String channel, String message) {
-    logger.debug("onMessage - {} {}", channel, message);
+    // logger.debug("onMessage - {} {}", channel, message);
     receivedMessages.add(message);
   }
 
   @Override
   public void onPMessage(String pattern, String channel, String message) {
-    logger.debug("onPMessage - {} {}", channel, message);
+    // logger.debug("onPMessage - {} {}", channel, message);
     receivedPMessages.add(message);
   }
 
   @Override
   public void onSubscribe(String channel, int subscribedChannels) {
-    logger.debug("onSubscribe - {} {}", channel, subscribedChannels);
+    // logger.debug("onSubscribe - {} {}", channel, subscribedChannels);
     subscriptionLatch.countDown();
   }
 
