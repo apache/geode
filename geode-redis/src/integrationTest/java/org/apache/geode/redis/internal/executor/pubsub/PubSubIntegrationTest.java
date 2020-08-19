@@ -30,6 +30,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Level;
@@ -766,7 +767,9 @@ public class PubSubIntegrationTest {
       Future<Void> f = executor.submit(() -> {
         Jedis client = getConnection();
         MockSubscriber mockSubscriber = new MockSubscriber();
+        AtomicReference<Thread> innerThread = new AtomicReference<>();
         Future<Void> inner = secondaryExecutor.submit(() -> {
+          innerThread.set(Thread.currentThread());
           try {
             client.subscribe(mockSubscriber, channel);
           } catch (Exception e) {
@@ -785,6 +788,9 @@ public class PubSubIntegrationTest {
         try {
           inner.get(30, TimeUnit.SECONDS);
         } catch (TimeoutException e) {
+          for (StackTraceElement st : innerThread.get().getStackTrace()) {
+            System.err.println(st);
+          }
           throw new RuntimeException("inner.get() timed out after unsubscribe");
         }
 
