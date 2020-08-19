@@ -22,11 +22,15 @@ import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.logging.log4j.Logger;
 import redis.clients.jedis.JedisPubSub;
 
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public class MockSubscriber extends JedisPubSub {
+  private static final Logger logger = LogService.getLogger();
+
   private final CountDownLatch subscriptionLatch;
   private final CountDownLatch unsubscriptionLatch;
   private final List<String> receivedMessages = Collections.synchronizedList(new ArrayList<>());
@@ -59,26 +63,29 @@ public class MockSubscriber extends JedisPubSub {
 
   @Override
   public void onMessage(String channel, String message) {
+    logger.info("onMessage - {} {}", channel, message);
     receivedMessages.add(message);
   }
 
   @Override
   public void onPMessage(String pattern, String channel, String message) {
+    logger.info("onPMessage - {} {}", channel, message);
     receivedPMessages.add(message);
   }
 
   @Override
   public void onSubscribe(String channel, int subscribedChannels) {
+    logger.info("onSubscribe - {} {}", channel, subscribedChannels);
     subscriptionLatch.countDown();
   }
 
   private static final int AWAIT_TIMEOUT_MILLIS =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
-  public void awaitSubscribe() {
+  public void awaitSubscribe(String channel) {
     try {
       if (!subscriptionLatch.await(AWAIT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)) {
-        throw new RuntimeException("awaitSubscribe timed out");
+        throw new RuntimeException("awaitSubscribe timed out for channel: " + channel);
       }
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
@@ -87,14 +94,15 @@ public class MockSubscriber extends JedisPubSub {
 
   @Override
   public void onUnsubscribe(String channel, int subscribedChannels) {
+    logger.info("onUnsubscribe - {} {}", channel, subscribedChannels);
     unsubscribeInfos.add(new UnsubscribeInfo(channel, subscribedChannels));
     unsubscriptionLatch.countDown();
   }
 
-  public void awaitUnsubscribe() {
+  public void awaitUnsubscribe(String channel) {
     try {
       if (!unsubscriptionLatch.await(AWAIT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)) {
-        throw new RuntimeException("awaitUnsubscribe timed out");
+        throw new RuntimeException("awaitUnsubscribe timed out for channel: " + channel);
       }
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
