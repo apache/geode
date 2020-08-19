@@ -36,8 +36,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.api.MembershipInformation;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.admin.TransportConfig;
+import org.apache.geode.internal.net.SSLConfig;
 
 /**
  * Tranport config for RemoteGfManagerAgent.

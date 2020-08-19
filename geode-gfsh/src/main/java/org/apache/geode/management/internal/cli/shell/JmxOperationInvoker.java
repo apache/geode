@@ -51,7 +51,7 @@ import com.healthmarketscience.rmiio.RemoteOutputStreamClient;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.admin.SSLConfig;
+import org.apache.geode.internal.net.SSLConfig;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.logging.internal.log4j.api.LogService;

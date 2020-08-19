@@ -28,7 +28,7 @@ import javax.rmi.ssl.SslRMIClientSocketFactory;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
-import org.apache.geode.internal.admin.SSLConfig;
+import org.apache.geode.internal.net.SSLConfig;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
