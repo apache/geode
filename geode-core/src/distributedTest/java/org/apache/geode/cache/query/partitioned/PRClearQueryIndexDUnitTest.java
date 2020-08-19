@@ -32,10 +32,13 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.query.Index;
+import org.apache.geode.cache.query.IndexInvalidException;
 import org.apache.geode.cache.query.IndexStatistics;
 import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryService;
@@ -129,10 +132,16 @@ public class PRClearQueryIndexDUnitTest {
     AsyncInvocation createIndex = server1.invokeAsync("create index", () -> {
       Cache cache = ClusterStartupRule.getCache();
       QueryService queryService = cache.getQueryService();
-      Index cityZip = queryService.createIndex("cityZip", "c.zip", "/cities c");
-      assertThat(cityZip).isNotNull();
+      try {
+        Index cityZip = queryService.createIndex("cityZip", "c.zip", "/cities c");
+        assertThat(cityZip).isNotNull();
+      } catch (IndexInvalidException e) {
+        // someetimees the index creation will fail due to entry being destroyed
+        assertThat(e.getRootCause()).isInstanceOf(EntryDestroyedException.class);
+      }
     });
 
+    // do clear at the same time
     cities.clear();
     createIndex.await();
 
@@ -295,7 +304,13 @@ public class PRClearQueryIndexDUnitTest {
     Future<Void> putAndClear = executor.submit(() -> {
       for (int i = 0; i < 30; i++) {
         IntStream.range(0, 100).forEach(j -> cities.put(j, new City(j)));
-        cities.clear();
+        try {
+          cities.clear();
+        } catch (ServerOperationException e) {
+          assertThat(e.getCause().getMessage())
+              .contains("Unable to clear all the buckets from the partitioned region cities")
+              .contains("either data (buckets) moved or member departed");
+        }
         QueryService queryService = clientCache.getQueryService();
         Query query = queryService.newQuery(MUMBAI_QUERY);
         Query query2 = queryService.newQuery(ID_10_QUERY);
