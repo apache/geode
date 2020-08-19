@@ -26,7 +26,6 @@ import org.apache.logging.log4j.Logger;
 import redis.clients.jedis.JedisPubSub;
 
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public class MockSubscriber extends JedisPubSub {
   private static final Logger logger = LogService.getLogger();
@@ -79,8 +78,8 @@ public class MockSubscriber extends JedisPubSub {
     subscriptionLatch.countDown();
   }
 
-  private static final int AWAIT_TIMEOUT_MILLIS =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
+  private static final int AWAIT_TIMEOUT_MILLIS = 30000;
+  // Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   public void awaitSubscribe(String channel) {
     try {
@@ -94,7 +93,7 @@ public class MockSubscriber extends JedisPubSub {
 
   @Override
   public void onUnsubscribe(String channel, int subscribedChannels) {
-    logger.debug("onUnsubscribe - {} {}", channel, subscribedChannels);
+    // logger.debug("onUnsubscribe - {} {}", channel, subscribedChannels);
     unsubscribeInfos.add(new UnsubscribeInfo(channel, subscribedChannels));
     unsubscriptionLatch.countDown();
   }

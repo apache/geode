@@ -783,7 +783,7 @@ public class PubSubIntegrationTest {
         mockSubscriber.unsubscribe(channel);
 
         try {
-          inner.get(10, TimeUnit.SECONDS);
+          inner.get(30, TimeUnit.SECONDS);
         } catch (TimeoutException e) {
           throw new RuntimeException("inner.get() timed out after unsubscribe");
         }
