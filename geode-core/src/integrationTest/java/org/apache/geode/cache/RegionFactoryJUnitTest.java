@@ -1121,6 +1121,55 @@ public class RegionFactoryJUnitTest {
     }
   }
 
+  @Test
+  public void testRegionOffHeapAttributeInherent() throws Exception {
+    File xmlFile = null;
+    try {
+      final Properties gemfireProperties = createGemFireProperties();
+      gemfireProperties.put(MCAST_TTL, "64");
+      gemfireProperties.put("off-heap-memory-size", "4096m");
+      final String xmlFileName = getName() + "-cache.xml";
+      gemfireProperties.put(CACHE_XML_FILE, xmlFileName);
+      xmlFile = new File(xmlFileName);
+      xmlFile.delete();
+      xmlFile.createNewFile();
+      FileWriter f = new FileWriter(xmlFile);
+      final String attrsId1 = getName() + "-attrsId1";
+      final String attrsId2 = getName() + "-attrsId2";
+
+      f.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n"
+          + "<cache "
+          + "    xmlns=\"http://geode.apache.org/schema/cache\"\n"
+          + "    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+          + "    xsi:schemaLocation=\"http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd\"\n"
+          + "    version=\"1.0\">\n"
+          + " <region-attributes id=\"" + attrsId1
+          + "\" off-heap=\"true\" statistics-enabled=\"true\" scope=\"distributed-ack\">\n"
+          + " </region-attributes>\n"
+          + " <region-attributes id=\"" + attrsId2 + "\" refid=\"" + attrsId1 + "\">\n"
+          + " </region-attributes>\n"
+          + "</cache>");
+      f.close();
+
+      RegionFactory factory = new RegionFactory(gemfireProperties, attrsId2);
+      r1 = factory.create(this.r1Name);
+      assertBasicRegionFunctionality(r1, r1Name);
+      assertEquals(gemfireProperties.get(MCAST_TTL),
+          r1.getCache().getDistributedSystem().getProperties().get(MCAST_TTL));
+      assertEquals(gemfireProperties.get(CACHE_XML_FILE),
+          r1.getCache().getDistributedSystem().getProperties().get(CACHE_XML_FILE));
+      RegionAttributes ra = r1.getAttributes();
+      assertEquals(ra.getStatisticsEnabled(), true);
+      assertEquals(ra.getScope().isDistributedAck(), true);
+      assertEquals(ra.getOffHeap(), true);
+    } finally {
+      if (xmlFile != null) {
+        xmlFile.delete();
+      }
+    }
+  }
+
+
   private String getName() {
     return getClass().getSimpleName() + "_" + testName.getMethodName();
   }
