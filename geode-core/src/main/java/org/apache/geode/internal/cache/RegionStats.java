@@ -135,7 +135,9 @@ public interface RegionStats {
 
   void incEvictWorkTime(long delta);
 
-  void incClearCount();
+  void incBucketClearCount();
+
+  void incRegionClearCount();
 
   void incPRQueryRetries();
 
