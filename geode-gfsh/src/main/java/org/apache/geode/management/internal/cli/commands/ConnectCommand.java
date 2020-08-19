@@ -35,7 +35,7 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.internal.admin.SSLConfig;
+import org.apache.geode.internal.net.SSLConfig;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SSLUtil;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;

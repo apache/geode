@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.admin;
+package org.apache.geode.internal.net;
 
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_CIPHERS;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_ENABLED;
@@ -28,7 +28,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.net.SSLUtil;
 import org.apache.geode.internal.security.CallbackInstantiator;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.net.SSLParameterExtension;

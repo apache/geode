@@ -31,7 +31,6 @@ import javax.net.ssl.X509TrustManager;
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.internal.admin.SSLConfig;
 
 public class SSLUtil {
   /**

@@ -168,7 +168,7 @@ public class SSLSocketHostNameVerificationIntegrationTest {
     this.clientSocket = clientChannel.socket();
 
     SSLEngine sslEngine =
-        this.socketCreator.createSSLEngine(this.localHost.getHostName(), 1234);
+        this.socketCreator.createSSLEngine(this.localHost.getHostName(), 1234, true);
 
     try {
       this.socketCreator.handshakeSSLSocketChannel(clientSocket.getChannel(),
@@ -200,7 +200,7 @@ public class SSLSocketHostNameVerificationIntegrationTest {
       try {
         socket = serverSocket.accept();
         SocketCreator sc = SocketCreatorFactory.getSocketCreatorForComponent(CLUSTER);
-        final SSLEngine sslEngine = sc.createSSLEngine(this.localHost.getHostName(), 1234);
+        final SSLEngine sslEngine = sc.createSSLEngine(this.localHost.getHostName(), 1234, false);
         engine =
             sc.handshakeSSLSocketChannel(socket.getChannel(),
                 sslEngine,
