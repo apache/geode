@@ -63,19 +63,19 @@ public class MockSubscriber extends JedisPubSub {
 
   @Override
   public void onMessage(String channel, String message) {
-    logger.info("onMessage - {} {}", channel, message);
+    logger.debug("onMessage - {} {}", channel, message);
     receivedMessages.add(message);
   }
 
   @Override
   public void onPMessage(String pattern, String channel, String message) {
-    logger.info("onPMessage - {} {}", channel, message);
+    logger.debug("onPMessage - {} {}", channel, message);
     receivedPMessages.add(message);
   }
 
   @Override
   public void onSubscribe(String channel, int subscribedChannels) {
-    logger.info("onSubscribe - {} {}", channel, subscribedChannels);
+    logger.debug("onSubscribe - {} {}", channel, subscribedChannels);
     subscriptionLatch.countDown();
   }
 
@@ -94,7 +94,7 @@ public class MockSubscriber extends JedisPubSub {
 
   @Override
   public void onUnsubscribe(String channel, int subscribedChannels) {
-    logger.info("onUnsubscribe - {} {}", channel, subscribedChannels);
+    logger.debug("onUnsubscribe - {} {}", channel, subscribedChannels);
     unsubscribeInfos.add(new UnsubscribeInfo(channel, subscribedChannels));
     unsubscriptionLatch.countDown();
   }
