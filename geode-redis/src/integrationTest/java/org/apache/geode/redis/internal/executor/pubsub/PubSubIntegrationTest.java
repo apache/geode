@@ -786,7 +786,7 @@ public class PubSubIntegrationTest {
         mockSubscriber.unsubscribe(channel);
 
         try {
-          // inner.get(1, TimeUnit.NANOSECONDS);
+          // inner.get(1, TimeUnit.MILLISECONDS);
           inner.get(30, TimeUnit.SECONDS);
         } catch (TimeoutException e) {
           LogService.getLogger().debug("=> {} {}", innerThread.get(), innerThread.get().getState());

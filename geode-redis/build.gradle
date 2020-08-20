@@ -28,6 +28,12 @@ facets {
   }
 }
 
+repositories {
+  flatDir {
+    dirs "${System.env.PWD}/maven-local"
+  }
+}
+
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
   implementation(project(':geode-serialization'))
@@ -45,12 +51,12 @@ dependencies {
 
   commonTestImplementation(project(':geode-junit'))
   commonTestImplementation(project(':geode-dunit'))
-  commonTestImplementation('redis.clients:jedis')
+  commonTestImplementation('redis.clients:jedis:3.4.0-SNAPSHOT')
 
   integrationTestImplementation(project(':geode-dunit'))
   integrationTestImplementation(project(':geode-junit'))
   integrationTestImplementation(sourceSets.commonTest.output)
-  integrationTestImplementation('redis.clients:jedis')
+  integrationTestImplementation('redis.clients:jedis:3.4.0-SNAPSHOT')
   integrationTestImplementation('io.lettuce:lettuce-core')
   integrationTestImplementation('org.apache.logging.log4j:log4j-core')
   integrationTestRuntime(project(':geode-log4j'))
@@ -60,7 +66,7 @@ dependencies {
   acceptanceTestImplementation(sourceSets.commonTest.output)
   acceptanceTestImplementation(project(':geode-dunit'))
   acceptanceTestImplementation(project(':geode-junit'))
-  acceptanceTestImplementation('redis.clients:jedis')
+  acceptanceTestImplementation('redis.clients:jedis:3.4.0-SNAPSHOT')
   acceptanceTestImplementation('org.testcontainers:testcontainers')
   acceptanceTestRuntime(project(':geode-log4j'))
   acceptanceTestImplementation('org.springframework.boot:spring-boot-starter-web') {
@@ -72,7 +78,7 @@ dependencies {
   distributedTestCompile('org.apache.logging.log4j:log4j-core')
   distributedTestImplementation(project(':geode-dunit'))
   distributedTestImplementation(sourceSets.commonTest.output)
-  distributedTestImplementation('redis.clients:jedis')
+  distributedTestImplementation('redis.clients:jedis:3.4.0-SNAPSHOT')
   distributedTestImplementation('io.lettuce:lettuce-core')
 
   distributedTestCompile('javax.servlet:javax.servlet-api')
