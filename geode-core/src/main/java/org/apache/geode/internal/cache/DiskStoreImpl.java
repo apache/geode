@@ -460,7 +460,7 @@ public class DiskStoreImpl implements DiskStore {
     } else {
       this.asyncQueue = new ForceableLinkedBlockingQueue<Object>();
     }
-    if (!isValidating() && !isOfflineCompacting()) {
+    if (!isOffline()) {
       startAsyncFlusher();
     }
 

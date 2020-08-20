@@ -17,11 +17,15 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.mockito.Mockito.spy;
 
+import java.io.File;
+import java.io.IOException;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.internal.cache.DiskInitFile;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.i18n.CliStrings;
@@ -54,5 +58,34 @@ public class AlterDiskStoreCommandIntegrationTest {
 
     gfsh.executeAndAssertThat(command, commandString).statusIsError()
         .containsOutput("Cannot use the --remove=true parameter with any other parameters");
+  }
+
+  @Test
+  public void testDirValidation() throws IOException {
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_DISK_STORE);
+    csb.addOption(CliStrings.ALTER_DISK_STORE__DISKSTORENAME, "diskStoreName");
+    csb.addOption(CliStrings.ALTER_DISK_STORE__REGIONNAME, "regionName");
+    csb.addOption(CliStrings.ALTER_DISK_STORE__DISKDIRS, "wrongDiskDir");
+    csb.addOption(CliStrings.ALTER_DISK_STORE__CONCURRENCY__LEVEL, "5");
+    String commandString = csb.toString();
+
+    gfsh.executeAndAssertThat(command, commandString).statusIsError()
+        .containsOutput("Could not find disk-dirs: \"wrongDiskDir");
+  }
+
+  @Test
+  public void testNameValidation() throws IOException {
+    String diskStoreName = "diskStoreName";
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_DISK_STORE);
+    csb.addOption(CliStrings.ALTER_DISK_STORE__DISKSTORENAME, diskStoreName);
+    csb.addOption(CliStrings.ALTER_DISK_STORE__REGIONNAME, "regionName");
+    csb.addOption(CliStrings.ALTER_DISK_STORE__DISKDIRS, tempDir.getRoot().toString());
+    csb.addOption(CliStrings.ALTER_DISK_STORE__CONCURRENCY__LEVEL, "5");
+    String commandString = csb.toString();
+
+    gfsh.executeAndAssertThat(command, commandString).statusIsError()
+        .containsOutput(
+            "The init file " + tempDir.getRoot().toString() + File.separator + "BACKUP"
+                + diskStoreName + DiskInitFile.IF_FILE_EXT + " does not exist.");
   }
 }
