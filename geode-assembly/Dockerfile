@@ -14,8 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM openjdk:11
-# FROM bellsoft/liberica-openjdk-debian:11
+# FROM openjdk:11
+FROM bellsoft/liberica-openjdk-debian:11
 COPY geode /geode
 ENV GEODE_HOME="/geode"
 ENV PATH="${GEODE_HOME}/bin:${PATH}"

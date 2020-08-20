@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-FROM openjdk:8
+FROM bellsoft/liberica-openjdk-debian:8
 ENTRYPOINT []
 
 ARG CHROME_DRIVER_VERSION=2.35
@@ -33,6 +33,7 @@ RUN chmod +x /usr/local/bin/tini \
   && apt-get install -y --no-install-recommends \
     apt-transport-https \
     lsb-release \
+    gnupg2 \
   && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
   && echo "deb http://packages.cloud.google.com/apt cloud-sdk-$(lsb_release -c -s) main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list \
   && echo "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list \
@@ -47,6 +48,7 @@ RUN chmod +x /usr/local/bin/tini \
     cgroupfs-mount \
     docker-ce \
     docker-compose \
+    git \
     golang \
     google-chrome-stable \
     google-cloud-sdk \
