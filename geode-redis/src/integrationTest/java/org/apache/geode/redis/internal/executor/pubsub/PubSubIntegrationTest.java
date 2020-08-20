@@ -740,7 +740,7 @@ public class PubSubIntegrationTest {
   private int makeSubscribers(int index, int minimumIterations, AtomicBoolean running)
       throws InterruptedException, ExecutionException {
     ExecutorService executor = Executors.newFixedThreadPool(100);
-    // ExecutorService secondaryExecutor = Executors.newCachedThreadPool();
+    ExecutorService secondaryExecutor = Executors.newCachedThreadPool();
     Queue<Future<Void>> workQ = new ConcurrentLinkedQueue<>();
 
     Future<Integer> consumer = executor.submit(() -> {
@@ -768,7 +768,6 @@ public class PubSubIntegrationTest {
         Jedis client = getConnection();
         MockSubscriber mockSubscriber = new MockSubscriber();
         AtomicReference<Thread> innerThread = new AtomicReference<>();
-        ExecutorService secondaryExecutor = Executors.newSingleThreadExecutor();
         Future<Void> inner = secondaryExecutor.submit(() -> {
           innerThread.set(Thread.currentThread());
           try {
