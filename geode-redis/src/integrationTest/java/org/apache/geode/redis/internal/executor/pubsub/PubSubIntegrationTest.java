@@ -789,9 +789,9 @@ public class PubSubIntegrationTest {
           // inner.get(1, TimeUnit.NANOSECONDS);
           inner.get(30, TimeUnit.SECONDS);
         } catch (TimeoutException e) {
-          System.err.println("=> " + innerThread.get() + " " + innerThread.get().getState());
+          LogService.getLogger().debug("=> {} {}", innerThread.get(), innerThread.get().getState());
           for (StackTraceElement st : innerThread.get().getStackTrace()) {
-            System.err.println("-> " + st);
+            LogService.getLogger().debug("-> {}", st);
           }
           throw new RuntimeException("inner.get() timed out after unsubscribe");
         }
