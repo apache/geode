@@ -419,7 +419,7 @@ public class PubSubDUnitTest {
 
     subscribers.forEach(x -> {
       x.unsubscribe();
-      x.awaitUnsubscribe();
+      x.awaitUnsubscribe(CHANNEL_NAME);
     });
     clients.forEach(Jedis::close);
   }
