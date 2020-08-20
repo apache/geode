@@ -798,7 +798,6 @@ public class PubSubIntegrationTest {
 
         mockSubscriber.awaitUnsubscribe(channel);
         client.close();
-        secondaryExecutor.shutdownNow();
 
         return null;
       });
@@ -808,7 +807,7 @@ public class PubSubIntegrationTest {
 
     int result = consumer.get();
     executor.shutdownNow();
-    // secondaryExecutor.shutdownNow();
+    secondaryExecutor.shutdownNow();
     return result;
   }
 
