@@ -524,7 +524,7 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
   @Parameters({"compact offline-disk-store", "describe offline-disk-store",
       "upgrade offline-disk-store", "validate offline-disk-store",
       "alter disk-store --region=testRegion --enable-statistics=true"})
-  public void offlineDiskStoreCommandShouldNotPassIfDiskStoreFileDoesNotExist(
+  public void offlineDiskStoreCommandShouldFailWhenDiskStoreFileDoesNotExist(
       String baseCommand) {
     Path diskStorePath =
         Paths.get(tempDir.getRoot().getAbsolutePath());

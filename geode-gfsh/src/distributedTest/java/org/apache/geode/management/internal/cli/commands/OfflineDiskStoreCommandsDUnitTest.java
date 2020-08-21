@@ -125,7 +125,8 @@ public class OfflineDiskStoreCommandsDUnitTest implements Serializable {
   @Parameters({"compact offline-disk-store", "describe offline-disk-store",
       "validate offline-disk-store",
       "alter disk-store --region=testRegion --enable-statistics=true"})
-  public void testOfflineCommandsWithMultipleDirs(String baseCommand) throws IOException {
+  public void offlineDiskStoreCommandsSupportDiskStoresWithMultipleDirectories(String baseCommand)
+      throws IOException {
     VM locator = getVM(0);
     VM server = getVM(1);
     final int ENTRIES = 100000;
@@ -157,7 +158,8 @@ public class OfflineDiskStoreCommandsDUnitTest implements Serializable {
   @Parameters({"describe offline-disk-store",
       "validate offline-disk-store",
       "alter disk-store --region=testRegion --enable-statistics=true"})
-  public void testThreadHangWithOfflineDiskStoreCommands(String baseCommand) throws IOException {
+  public void offlineDiskStoreCommandsDoNotLeaveLingeringThreadsRunning(String baseCommand)
+      throws IOException {
     VM locator = getVM(0);
     VM server = getVM(1);
     final int ENTRIES = 100000;
@@ -211,7 +213,7 @@ public class OfflineDiskStoreCommandsDUnitTest implements Serializable {
   @Parameters({"compact offline-disk-store", "describe offline-disk-store",
       "validate offline-disk-store",
       "alter disk-store --region=testRegion --enable-statistics=true"})
-  public void testOfflineCommandsWithMultipleDirsAndWrongName(String baseCommand)
+  public void offlineDiskStoreCommandShouldFailWhenDiskStoreFileDoesNotExist(String baseCommand)
       throws IOException {
     VM locator = getVM(0);
     VM server = getVM(1);

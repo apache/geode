@@ -18,7 +18,6 @@ package org.apache.geode.management.internal.cli.commands;
 import static org.mockito.Mockito.spy;
 
 import java.io.File;
-import java.io.IOException;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -61,7 +60,7 @@ public class AlterDiskStoreCommandIntegrationTest {
   }
 
   @Test
-  public void testDirValidation() throws IOException {
+  public void testDirValidation() {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_DISK_STORE);
     csb.addOption(CliStrings.ALTER_DISK_STORE__DISKSTORENAME, "diskStoreName");
     csb.addOption(CliStrings.ALTER_DISK_STORE__REGIONNAME, "regionName");
@@ -74,7 +73,7 @@ public class AlterDiskStoreCommandIntegrationTest {
   }
 
   @Test
-  public void testNameValidation() throws IOException {
+  public void testNameValidation() {
     String diskStoreName = "diskStoreName";
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_DISK_STORE);
     csb.addOption(CliStrings.ALTER_DISK_STORE__DISKSTORENAME, diskStoreName);
