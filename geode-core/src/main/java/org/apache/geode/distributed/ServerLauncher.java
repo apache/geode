@@ -2154,7 +2154,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
       if (serverPort < 0 || serverPort > 65535) {
         throw new IllegalArgumentException(
-            "The port on which the Server will listen must be between 1 and 65535 inclusive.");
+            "The port on which the Server will listen must be between 0 and 65535 inclusive.");
       }
 
       if (serverPort == 0) {

@@ -1728,7 +1728,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       // NOTE if the user were to specify a port number of 0, then java.net.ServerSocket will pick
       // an ephemeral port
       // to bind the socket, which we do not want.
-      if (port != null && (port < 0 || port > 65535)) {
+      if (port != null && (port < 1 || port > 65535)) {
         throw new IllegalArgumentException(
             String.format(
                 "The port on which the %s will listen must be between 1 and 65535 inclusive.",

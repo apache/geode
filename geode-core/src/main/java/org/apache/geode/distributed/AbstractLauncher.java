@@ -115,16 +115,6 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
   }
 
   /**
-   * Asserts that the specified port is available on all network interfaces on this local system.
-   *
-   * @param port an integer indicating the network port to listen for client network requests.
-   * @throws BindException if the network port is not available.
-   */
-  protected static void assertPortAvailable(final int port) throws BindException {
-    assertPortAvailable(null, port);
-  }
-
-  /**
    * Asserts that the specified port is available on the specified network interface, indicated by
    * it's assigned IP address, on this local system.
    *
