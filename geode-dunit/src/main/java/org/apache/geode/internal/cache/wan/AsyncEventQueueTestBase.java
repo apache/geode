@@ -180,7 +180,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
       Locator.getLocator().stop();
     }
     AsyncEventQueueTestBase test = new AsyncEventQueueTestBase();
-    int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+    int port = AvailablePortHelper.getRandomAvailableTCPPort();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     // props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + dsId);
@@ -193,7 +193,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
 
   public static Integer createFirstRemoteLocator(int dsId, int remoteLocPort) {
     AsyncEventQueueTestBase test = new AsyncEventQueueTestBase();
-    int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+    int port = AvailablePortHelper.getRandomAvailableTCPPort();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + dsId);
@@ -944,7 +944,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
     InternalDistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
     GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
-    int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+    int port = AvailablePortHelper.getRandomAvailableTCPPort();
     fact.setStartPort(port);
     fact.setEndPort(port);
     fact.setManualStart(true);

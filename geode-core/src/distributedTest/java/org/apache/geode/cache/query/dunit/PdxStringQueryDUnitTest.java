@@ -2011,7 +2011,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
       public Object call() throws Exception {
         Region r1 = getCache().createRegionFactory(RegionShortcut.PARTITION).create(regionName);
         CacheServer server = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+        int port = AvailablePortHelper.getRandomAvailableTCPPort();
         server.setPort(port);
         server.start();
         return port;
@@ -2025,7 +2025,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
         Region r1 = getCache().createRegionFactory(RegionShortcut.PARTITION).create(regionName);
 
         CacheServer server = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+        int port = AvailablePortHelper.getRandomAvailableTCPPort();
         server.setPort(port);
         server.start();
         return port;

@@ -2725,7 +2725,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
         getCache().createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
 
         CacheServer server = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+        int port = AvailablePortHelper.getRandomAvailableTCPPort();
         server.setPort(port);
         server.start();
         return port;
@@ -2739,7 +2739,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
         Region r1 = getCache().createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
 
         CacheServer server = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+        int port = AvailablePortHelper.getRandomAvailableTCPPort();
         server.setPort(port);
         server.start();
         return port;
@@ -2831,7 +2831,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
         Region r1 = getCache().createRegionFactory(RegionShortcut.PARTITION).create(regionName);
 
         CacheServer server = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+        int port = AvailablePortHelper.getRandomAvailableTCPPort();
         server.setPort(port);
         server.start();
         return port;
@@ -2845,7 +2845,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
         Region r1 = getCache().createRegionFactory(RegionShortcut.PARTITION).create(regionName);
 
         CacheServer server = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+        int port = AvailablePortHelper.getRandomAvailableTCPPort();
         server.setPort(port);
         server.start();
         return port;
@@ -2859,7 +2859,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
         Region r1 = getCache().createRegionFactory(RegionShortcut.PARTITION).create(regionName);
 
         CacheServer server = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+        int port = AvailablePortHelper.getRandomAvailableTCPPort();
         server.setPort(port);
         server.start();
         return port;
@@ -2977,7 +2977,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
         Region r1 = getCache().createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
 
         CacheServer server = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+        int port = AvailablePortHelper.getRandomAvailableTCPPort();
         server.setPort(port);
         server.start();
         return port;
@@ -2991,7 +2991,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
         Region r1 = getCache().createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
 
         CacheServer server = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+        int port = AvailablePortHelper.getRandomAvailableTCPPort();
         server.setPort(port);
         server.start();
         return port;
@@ -3214,7 +3214,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
         Region r1 = getCache().createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
 
         CacheServer server = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+        int port = AvailablePortHelper.getRandomAvailableTCPPort();
         server.setPort(port);
         server.start();
         return port;
@@ -3228,7 +3228,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
         Region r1 = getCache().createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
 
         CacheServer server = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+        int port = AvailablePortHelper.getRandomAvailableTCPPort();
         server.setPort(port);
         server.start();
         return port;
@@ -3350,7 +3350,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
         Region r1 = getCache().createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
 
         CacheServer server = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+        int port = AvailablePortHelper.getRandomAvailableTCPPort();
         server.setPort(port);
         server.start();
         return port;
@@ -3439,7 +3439,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
       public Object call() throws Exception {
         Region r1 = getCache().createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
         CacheServer server = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+        int port = AvailablePortHelper.getRandomAvailableTCPPort();
         server.setPort(port);
         server.start();
         return port;

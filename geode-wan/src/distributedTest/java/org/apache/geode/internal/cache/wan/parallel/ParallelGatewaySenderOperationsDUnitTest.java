@@ -15,7 +15,7 @@
 package org.apache.geode.internal.cache.wan.parallel;
 
 import static org.apache.geode.distributed.internal.DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPortsForDUnitSite;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.internal.cache.tier.sockets.Message.MAX_MESSAGE_SIZE_PROPERTY;
 import static org.apache.geode.internal.util.ArrayUtils.asList;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
@@ -660,7 +660,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     String site2SenderId = "site2-sender";
     String site3SenderId = "site3-sender";
     String regionName = testName.getMethodName();
-    int[] ports = getRandomAvailableTCPPortsForDUnitSite(3);
+    int[] ports = getRandomAvailableTCPPorts(3);
     int site1Port = ports[0];
     int site2Port = ports[1];
     int site3Port = ports[2];

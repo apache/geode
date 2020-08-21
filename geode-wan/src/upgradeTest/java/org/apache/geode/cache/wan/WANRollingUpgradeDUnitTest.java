@@ -261,7 +261,7 @@ public abstract class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
 
   private void addCacheServer() throws Exception {
     CacheServer server = getCache().addCacheServer();
-    int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+    int port = AvailablePortHelper.getRandomAvailableTCPPort();
     server.setPort(port);
     server.start();
   }

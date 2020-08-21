@@ -58,11 +58,11 @@ public class WANLocatorServerDUnitTest extends WANTestBase {
   @Test
   public void test_3Locators_2Servers() {
 
-    int port1 = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+    int port1 = AvailablePortHelper.getRandomAvailableTCPPort();
 
-    int port2 = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+    int port2 = AvailablePortHelper.getRandomAvailableTCPPort();
 
-    int port3 = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+    int port3 = AvailablePortHelper.getRandomAvailableTCPPort();
 
     vm0.invoke(() -> WANLocatorServerDUnitTest.createLocator(port1, port2, port3, port1));
 
@@ -109,7 +109,7 @@ public class WANLocatorServerDUnitTest extends WANTestBase {
     InternalDistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
     GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
-    int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+    int port = AvailablePortHelper.getRandomAvailableTCPPort();
     fact.setStartPort(port);
     fact.setEndPort(port);
     fact.setManualStart(true);
@@ -131,7 +131,7 @@ public class WANLocatorServerDUnitTest extends WANTestBase {
     InternalDistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
     CacheServer server = cache.addCacheServer();
-    int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+    int port = AvailablePortHelper.getRandomAvailableTCPPort();
     server.setPort(port);
     try {
       server.start();
