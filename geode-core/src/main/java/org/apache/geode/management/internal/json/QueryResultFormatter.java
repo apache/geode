@@ -21,6 +21,7 @@ import java.io.StringWriter;
 import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -41,6 +42,8 @@ import com.fasterxml.jackson.databind.type.ArrayType;
 
 public class QueryResultFormatter extends AbstractJSONFormatter {
 
+  public static final String DATE_FORMAT_PATTERN =
+      "EEE " + new SimpleDateFormat().toLocalizedPattern() + " zzz";
   /**
    * map contains the named objects to be serialized
    */
@@ -74,8 +77,10 @@ public class QueryResultFormatter extends AbstractJSONFormatter {
       TypeSerializationEnforcerModule typeModule =
           new TypeSerializationEnforcerModule(nonOverridableSerializers);
 
-      // Consistency: use the default date format java.sql.Date as well as java.util.Date.
+      // Consistency: use the same date format java.sql.Date as well as java.util.Date.
       mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+      SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT_PATTERN);
+      mapper.setDateFormat(sdf);
       typeModule.addSerializer(java.sql.Date.class, new SqlDateSerializer(mapper.getDateFormat()));
 
       // Register module
