@@ -572,6 +572,10 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
 
   @ConfigAttributeChecker(name = MEMBERSHIP_PORT_RANGE)
   protected int[] checkMembershipPortRange(int[] value) {
+    if (0 == value[0] && 0 == value[1]) {
+      return value;
+    }
+
     minMaxCheck(MEMBERSHIP_PORT_RANGE, value[0], 1024, value[1]);
     minMaxCheck(MEMBERSHIP_PORT_RANGE, value[1], value[0], 65535);
 
