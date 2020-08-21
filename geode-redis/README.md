@@ -6,7 +6,8 @@
 [Starting a Geode Server with Redis Enabled](#starting-a-server)  
 [Adding an Additional Geode Redis Server](#adding-a-server)  
 [Shutting Down](#shutting-down)  
-[Redis Commands](#redis-commands)  
+[Redis Commands](#redis-commands)
+
 
 ## <a name="introduction"></a>Introduction
 
@@ -15,14 +16,16 @@ switch seamlessly from native Redis to Geode as a data store/caching solution.
 
 The API allows Geode to listen for and interpret incoming Redis commands on a designated port.
 
-**Note:** Not all Redis commands are currently supported. The current set of supported Redis commands is listed [here](#redis-commands). 
-
 ## <a name="how-to-try-it"></a>How To Try It
 
 The Redis API for Geode is currently in early access. We’ll build the develop branch of Apache Geode
 and then connect the [Redis-CLI](https://redis.io/topics/quickstart) to that instance.
 
-**Note:** Currently Geode requires Java 8 JDK to build.
+**Note:** Currently Geode requires **Java 8 JDK** to build.
+
+### <a name="building-apache-geode"></a>Supported Redis Commands
+
+Not all Redis commands are currently supported. The current set of supported Redis commands is listed [here](#redis-command-status).
 
 ### <a name="building-apache-geode"></a>Building Apache Geode
 The Apache Geode source code can be found here
@@ -95,7 +98,7 @@ connection, the locator directs the client to one of the least loaded servers.
     If working correctly you should now be in the redis-cli and see `127.0.0.1:6379>`.  If you run the 
     `PING` command you should receive a response of `PONG`.
 
-### <a name="adding-a-server"></a>Adding an Additional Geode Redis Server (OPTIONAL)
+### <a name="adding-a-server"></a>Optional - Adding an Additional Geode Redis Server
 If you’re interested in testing Geode scalability, in GFSH run the start server command again BUT 
 make sure you change the `--name=` and `--redis-port=` parameters. 
 
@@ -129,6 +132,8 @@ The Redis API for Geode currently implements a subset of the full Redis command 
 are **unsupported** (see table below). Unsupported commands are available to use, but have not been
 fully tested. There is no guarantee they will work exactly as expected.
 
+#### <a name="enable-unsupported-commands"></a>Enabling Unsupported Commands
+
 If you already have Geode servers running with Redis enabled, you can execute the following
 command with gfsh to enable unsupported commands:
 
@@ -147,6 +152,8 @@ start server \
   --redis-bind-address=<redisBindAddress> \
   --redis-password=<redisPassword>
 ```
+
+#### <a name="redis-command-status"></a>Redis Command Status [Return to top](#introduction)
 
 | Supported Commands 	| Unsupported Commands<br>(Implemented - not tested) 	|    Commands Not Implemented   	|
 |-----------------------|-------------------------------------------------------|-----------------------------------|
