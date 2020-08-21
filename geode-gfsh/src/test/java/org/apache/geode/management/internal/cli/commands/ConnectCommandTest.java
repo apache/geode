@@ -301,28 +301,40 @@ public class ConnectCommandTest {
   }
 
   @Test
-  public void connectToManagerWithDifferentMajorVersion() {
+  public void connectToManagerWithOlderMajorVersionAllowed() {
     when(gfsh.getVersion()).thenReturn("2.2");
-    when(operationInvoker.getRemoteVersion()).thenReturn("1.2");
-    when(operationInvoker.isConnected()).thenReturn(true);
-    gfshParserRule.executeAndAssertThat(connectCommand, "connect --locator=localhost:4040")
-        .statusIsError()
-        .containsOutput("Cannot use a 2.2 gfsh client to connect to a 1.2 cluster.");
-  }
-
-  @Test
-  public void connectToManagerWithDifferentMinorVersion() {
-    when(gfsh.getVersion()).thenReturn("1.2");
-    when(operationInvoker.getRemoteVersion()).thenReturn("1.3");
-    when(operationInvoker.isConnected()).thenReturn(true);
-    gfshParserRule.executeAndAssertThat(connectCommand, "connect --locator=localhost:4040")
-        .statusIsError()
-        .containsOutput("Cannot use a 1.2 gfsh client to connect to a 1.3 cluster.");
-  }
-
-  @Test
-  public void connectToManagerOlderThan1_10() {
     when(operationInvoker.getRemoteVersion()).thenReturn("1.10");
+    when(gfsh.getGeodeSerializationVersion()).thenReturn("2.2");
+    when(operationInvoker.getRemoteGeodeSerializationVersion()).thenReturn("1.10");
+    when(operationInvoker.isConnected()).thenReturn(true);
+
+    ResultModel resultModel = new ResultModel();
+    when(connectCommand.jmxConnect(any(), anyBoolean(), any(), any(), anyBoolean()))
+        .thenReturn(resultModel);
+
+    gfshParserRule.executeAndAssertThat(connectCommand, "connect --locator=localhost:4040")
+        .statusIsSuccess()
+        .doesNotContainOutput("Cannot use a 2.2 gfsh client to connect to a 1.10 cluster.");
+  }
+
+  @Test
+  public void connectToManagerWithNewerMajorVersionNotAllowed() {
+    when(gfsh.getVersion()).thenReturn("1.2");
+    when(operationInvoker.getRemoteVersion()).thenReturn("2.2");
+    when(gfsh.getGeodeSerializationVersion()).thenReturn("1.2");
+    when(operationInvoker.getRemoteGeodeSerializationVersion()).thenReturn("2.2");
+    when(operationInvoker.isConnected()).thenReturn(true);
+    gfshParserRule.executeAndAssertThat(connectCommand, "connect --locator=localhost:4040")
+        .statusIsError()
+        .containsOutput("Cannot use a 1.2 gfsh client to connect to a 2.2 cluster.");
+  }
+
+  @Test
+  public void connectToManager1_10() {
+    when(operationInvoker.getRemoteVersion()).thenReturn("1.10");
+    when(gfsh.getGeodeSerializationVersion()).thenReturn("1.14");
+    when(operationInvoker.getRemoteGeodeSerializationVersion())
+        .thenThrow(new RuntimeException("serialization version not available"));
     when(operationInvoker.isConnected()).thenReturn(true);
 
     ResultModel resultModel = new ResultModel();
@@ -337,6 +349,7 @@ public class ConnectCommandTest {
   @Test
   public void connectToOlderManagerWithNoRemoteVersion() {
     when(gfsh.getVersion()).thenReturn("1.14");
+    when(gfsh.getGeodeSerializationVersion()).thenReturn("1.14");
     when(operationInvoker.getRemoteVersion())
         .thenThrow(new RuntimeException("release version not available"));
     when(operationInvoker.isConnected()).thenReturn(true);
@@ -349,11 +362,63 @@ public class ConnectCommandTest {
   @Test
   public void connectToManagerBefore1_10() {
     when(gfsh.getVersion()).thenReturn("1.14");
+    when(gfsh.getGeodeSerializationVersion()).thenReturn("1.14");
     when(operationInvoker.getRemoteVersion()).thenReturn("1.9");
+    when(operationInvoker.getRemoteGeodeSerializationVersion())
+        .thenThrow(new RuntimeException("serialization version not available"));
     when(operationInvoker.isConnected()).thenReturn(true);
 
     gfshParserRule.executeAndAssertThat(connectCommand, "connect --locator=localhost:4040")
         .statusIsError()
         .containsOutput("Cannot use a 1.14 gfsh client to connect to a 1.9 cluster");
+  }
+
+  @Test
+  public void connectToManagerBySerializationVersion() {
+    when(gfsh.getVersion()).thenReturn("0.0.0");
+    when(gfsh.getGeodeSerializationVersion()).thenReturn("1.14.0");
+    when(operationInvoker.getRemoteVersion()).thenReturn("0.0.0");
+    when(operationInvoker.getRemoteGeodeSerializationVersion()).thenReturn("1.14.0");
+    when(operationInvoker.isConnected()).thenReturn(true);
+
+    ResultModel resultModel = new ResultModel();
+    when(connectCommand.jmxConnect(any(), anyBoolean(), any(), any(), anyBoolean()))
+        .thenReturn(resultModel);
+
+    gfshParserRule.executeAndAssertThat(connectCommand, "connect --locator=localhost:4040")
+        .statusIsSuccess()
+        .doesNotContainOutput("Cannot use a 0.0.0 gfsh client to connect to a 0.0.0 cluster");
+  }
+
+  @Test
+  public void isCompatibleWOneDotX() {
+    assertThat(ConnectCommand.shouldConnect("1", null, null)).isFalse();
+    assertThat(ConnectCommand.shouldConnect("1", "1.5.0", null)).isFalse();
+    assertThat(ConnectCommand.shouldConnect("1", "1.9.0", null)).isFalse();
+    assertThat(ConnectCommand.shouldConnect("1", "1.10.0", null)).isTrue();
+    assertThat(ConnectCommand.shouldConnect("1", "1.11.0", null)).isTrue();
+    assertThat(ConnectCommand.shouldConnect("1", "9.9.0", null)).isTrue();
+    assertThat(ConnectCommand.shouldConnect("1", "9.9.0", "9.9.0")).isFalse();
+    assertThat(ConnectCommand.shouldConnect("1", "1.12.0", "1.12.0")).isTrue();
+    assertThat(ConnectCommand.shouldConnect("1", "1.13.0", "1.13.0")).isTrue();
+    assertThat(ConnectCommand.shouldConnect("1", "1.14.0", "1.14.0")).isTrue();
+    assertThat(ConnectCommand.shouldConnect("1", "2.0.0", "2.0.0")).isFalse();
+    assertThat(ConnectCommand.shouldConnect("1", "badstring", "badstring")).isFalse();
+  }
+
+  @Test
+  public void isCompatibleTwoDotX() {
+    assertThat(ConnectCommand.shouldConnect("1", null, null)).isFalse();
+    assertThat(ConnectCommand.shouldConnect("2", "1.5.0", null)).isFalse();
+    assertThat(ConnectCommand.shouldConnect("2", "1.9.0", null)).isFalse();
+    assertThat(ConnectCommand.shouldConnect("2", "1.10.0", null)).isTrue();
+    assertThat(ConnectCommand.shouldConnect("2", "1.11.0", null)).isTrue();
+    assertThat(ConnectCommand.shouldConnect("2", "9.9.0", null)).isTrue();
+    assertThat(ConnectCommand.shouldConnect("2", "9.9.0", "9.9.0")).isFalse();
+    assertThat(ConnectCommand.shouldConnect("2", "1.12.0", "1.12.0")).isTrue();
+    assertThat(ConnectCommand.shouldConnect("2", "1.13.0", "1.13.0")).isTrue();
+    assertThat(ConnectCommand.shouldConnect("2", "1.14.0", "1.14.0")).isTrue();
+    assertThat(ConnectCommand.shouldConnect("2", "2.0.0", "2.0.0")).isTrue();
+    assertThat(ConnectCommand.shouldConnect("2", "badstring", "badstring")).isFalse();
   }
 }
