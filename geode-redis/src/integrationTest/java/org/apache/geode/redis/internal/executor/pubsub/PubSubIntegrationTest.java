@@ -740,7 +740,7 @@ public class PubSubIntegrationTest {
   private int makeSubscribers(int index, int minimumIterations, AtomicBoolean running)
       throws InterruptedException, ExecutionException {
     ExecutorService executor = Executors.newFixedThreadPool(100);
-    ExecutorService secondaryExecutor = Executors.newFixedThreadPool(100);
+    // ExecutorService secondaryExecutor = Executors.newCachedThreadPool();
     Queue<Future<Void>> workQ = new ConcurrentLinkedQueue<>();
 
     Future<Integer> consumer = executor.submit(() -> {
@@ -766,6 +766,7 @@ public class PubSubIntegrationTest {
     while (iterationCount < minimumIterations || running.get()) {
       Future<Void> f = executor.submit(() -> {
         Jedis client = getConnection();
+        ExecutorService secondaryExecutor = Executors.newSingleThreadExecutor();
         MockSubscriber mockSubscriber = new MockSubscriber();
         AtomicReference<Thread> innerThread = new AtomicReference<>();
         Future<Void> inner = secondaryExecutor.submit(() -> {
@@ -786,7 +787,6 @@ public class PubSubIntegrationTest {
         mockSubscriber.unsubscribe(channel);
 
         try {
-          // inner.get(1, TimeUnit.MILLISECONDS);
           inner.get(30, TimeUnit.SECONDS);
         } catch (TimeoutException e) {
           LogService.getLogger().debug("=> {} {}", innerThread.get(), innerThread.get().getState());
@@ -798,6 +798,7 @@ public class PubSubIntegrationTest {
 
         mockSubscriber.awaitUnsubscribe(channel);
         client.close();
+        secondaryExecutor.shutdownNow();
 
         return null;
       });
@@ -807,7 +808,7 @@ public class PubSubIntegrationTest {
 
     int result = consumer.get();
     executor.shutdownNow();
-    secondaryExecutor.shutdownNow();
+    // secondaryExecutor.shutdownNow();
     return result;
   }
 
