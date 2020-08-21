@@ -784,6 +784,8 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     doOnePut(P, 9, "key3");
     waitForToVerifyRVV(P, memberP, 9, null, 0);
     waitForToVerifyRVV(R, memberP, 9, exceptionlist2, 0);
+    verifyTombstoneExist(P, "key1", true, false);
+    waitToVerifyKey(R, "key1", generateValue(P));
 
     byte[] R_rvv_bytes = getRVVByteArray(R, REGION_NAME);
     closeCache(R);
@@ -793,7 +795,11 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     waitForToVerifyRVV(P, memberR, 6, exceptionlist, 0); // P's rvv=r6(3-6), gc=0
     P.invoke(() -> GIIDeltaDUnitTest.resetSlowGII());
 
-    // restart and gii, R's rvv should be the same as P's
+    // Restart and GII. Even R's rvv==P9, higher than P's rvvGC==P8, We should do still do full GII
+    // because the exception P9(7-9) caused R's RVV cannot dominate P's rvvGC.
+    // At the entries point of view, P8 at P is GCed, but R still has key1, so we have to do
+    // fullGII.
+    // R's rvv will become the same as P's after GII.
     checkIfFullGII(P, REGION_NAME, R_rvv_bytes, true);
     createDistributedRegion(R);
     waitForToVerifyRVV(R, memberP, 9, null, 8); // R's rvv=p9, gc=8
@@ -805,6 +811,8 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
 
     // In fullGII, the key size in gii chunk is 2. They are: key3, key5
     verifyDeltaSizeFromStats(R, 2, 0);
+    waitToVerifyKey(P, "key1", null);
+    waitToVerifyKey(R, "key1", null);
   }
 
   /**
@@ -1695,11 +1703,80 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * P and R are peers, each holds a DR. Each does a few operations to make RVV=P7,R6, RVVGC=P0,R0
-   * for both members. P8 is clear() operation. After that, R offline. Run P9 is a put. Restart R. R
-   * will do deltaGII to get P9 as delta
+   * for both members. P8 is clear() operation. After that, run P9 R7 as put. R offline. Run P10 as
+   * another put.
+   * Restart R. R will do deltaGII to get P10 as delta
    */
   @Test
   public void testDeltaGIIAfterClear() throws Throwable {
+    prepareForEachTest();
+    final DiskStoreID memberP = getMemberID(P);
+    final DiskStoreID memberR = getMemberID(R);
+    final long[] exceptionlist = {4, 5};
+
+    assertEquals(0, DistributedCacheOperation.SLOW_DISTRIBUTION_MS);
+    prepareCommonTestData(6);
+    // let r4,r5,r6 to succeed
+    doOnePut(R, 4, "key4");
+    doOneDestroy(R, 5, "key5");
+    doOnePut(R, 6, "key1");
+
+    doOnePut(P, 7, "key1");
+
+    waitForToVerifyRVV(P, memberP, 7, null, 0); // P's rvv=p7, gc=0
+    waitForToVerifyRVV(P, memberR, 6, null, 0); // P's rvv=r6, gc=0
+    waitForToVerifyRVV(R, memberP, 7, null, 0); // R's rvv=P7, gc=0
+    waitForToVerifyRVV(R, memberR, 6, null, 0); // R's rvv=r6, gc=0
+
+    // Note: since R is still online, clear will do flush message which will be blocked by the
+    // test CDL (to create unfinished operation). So in this test, no exception
+    doOneClear(P, 8);
+    // clear() increased P's version with 1 to P8
+    // after clear, P and R's RVVGC == RVV
+    waitForToVerifyRVV(P, memberP, 8, null, 8); // P's rvv=p8, gc=8
+    waitForToVerifyRVV(P, memberR, 6, null, 6); // P's rvv=r6, gc=6
+    waitForToVerifyRVV(R, memberP, 8, null, 8); // R's rvv=p8, gc=8
+    waitForToVerifyRVV(R, memberR, 6, null, 6); // R's rvv=r6, gc=6
+    doOnePut(R, 7, "key5");
+    doOnePut(P, 9, "key3");
+
+    // shutdown R
+    byte[] R_rvv_bytes = getRVVByteArray(R, REGION_NAME);
+    closeCache(R);
+
+    // do a put at P to get some delta
+    doOnePut(P, 10, "key4");
+    waitForToVerifyRVV(P, memberP, 10, null, 8);
+    waitForToVerifyRVV(P, memberR, 7, null, 6);
+
+    // restart R to deltaGII
+    checkIfFullGII(P, REGION_NAME, R_rvv_bytes, false);
+
+    // shutdown P and restart
+    closeCache(P);
+    createDistributedRegion(P);
+    waitForToVerifyRVV(P, memberP, 10, null, 8);
+    waitForToVerifyRVV(P, memberR, 7, null, 6);
+
+    createDistributedRegion(R);
+    waitForToVerifyRVV(R, memberP, 10, null, 8);
+    waitForToVerifyRVV(R, memberR, 7, null, 6);
+
+    RegionVersionVector p_rvv = getRVV(P);
+    RegionVersionVector r_rvv = getRVV(R);
+    assertSameRVV(p_rvv, r_rvv); // after gii, rvv should be the same
+
+    verifyDeltaSizeFromStats(R, 1, 1);
+  }
+
+  /**
+   * P and R are peers, each holds a DR. Each does a few operations to make RVV=P7,R6, RVVGC=P0,R0
+   * for both members. P8 is clear() operation. After that, R offline. Run P9 as another put.
+   * Restart R. R will do deltaGII to get P9 because even R's rvv==P's rvvGC on R but their RVVGC
+   * are the same.
+   */
+  @Test
+  public void sameRVVGCTriggerDeltaGII() throws Throwable {
     prepareForEachTest();
     final DiskStoreID memberP = getMemberID(P);
     final DiskStoreID memberR = getMemberID(R);
@@ -1734,7 +1811,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     closeCache(R);
 
     // do a put at P to get some delta
-    doOnePut(P, 9, "key3");
+    doOnePut(P, 9, "key4");
     waitForToVerifyRVV(P, memberP, 9, null, 8);
     waitForToVerifyRVV(P, memberR, 6, null, 6);
 
@@ -1812,11 +1889,11 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     async3.getResult(MAX_WAIT);
 
     // clear() increased P's version with 1 to P8
-    // after clear, P and R's RVVGC == RVV
+    // after clear, P and R's RVVGC == RVV, but their RVVGC are same, so it will still be deltaGII
     waitForToVerifyRVV(P, memberP, 8, null, 8); // P's rvv=r8, gc=8
     waitForToVerifyRVV(P, memberR, 6, null, 6); // P's rvv=r6, gc=6
 
-    // retart R again to do fullGII
+    // retart R again to do deltaGII
     closeCache(R);
     createDistributedRegion(R);
 

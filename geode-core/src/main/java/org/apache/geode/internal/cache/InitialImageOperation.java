@@ -1656,7 +1656,8 @@ public class InitialImageOperation {
           // [bruce] I suppose it's possible to have this check return a list of
           // specific versions that the sender is missing. The current check
           // just stops when it finds the first inconsistency
-          if (!rgn.getVersionVector().isNewerThanOrCanFillExceptionsFor(this.versionVector)) {
+          if (!rgn.getVersionVector().isNewerThanOrCanFillExceptionsFor(this.versionVector)
+              && rgn.getVersionVector().isRVVGCDominatedBy(this.versionVector)) {
             // Delta GII might have unfinished operations to send. Otherwise,
             // no need to send any data. This is a synchronization request and this region's
             // vector doesn't have anything that the other region needs
