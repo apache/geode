@@ -31,7 +31,7 @@ public interface MembershipConfig {
   int SMALL_CLUSTER_SIZE = 9;
 
   @MakeImmutable
-  int[] DEFAULT_MEMBERSHIP_PORT_RANGE = {41000, 61000};
+  int[] DEFAULT_MEMBERSHIP_PORT_RANGE = {0, 0};
 
   int DEFAULT_LOCATOR_WAIT_TIME = 0;
   String DEFAULT_SECURITY_UDP_DHALGO = "";

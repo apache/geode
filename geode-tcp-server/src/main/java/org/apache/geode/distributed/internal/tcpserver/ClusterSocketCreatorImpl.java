@@ -64,7 +64,9 @@ public class ClusterSocketCreatorImpl implements ClusterSocketCreator {
       throw new UnsupportedOperationException();
     }
     ServerSocket result = new ServerSocket();
-    result.setReuseAddress(true);
+    if (nport != 0) {
+      result.setReuseAddress(true);
+    }
     if (socketBufferSize != -1) {
       result.setReceiveBufferSize(socketBufferSize);
     }

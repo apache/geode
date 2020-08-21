@@ -35,6 +35,7 @@ import org.apache.geode.util.internal.GeodeGlossary;
 public class AdvancedSocketCreatorImpl implements AdvancedSocketCreator {
   public static final boolean ENABLE_TCP_KEEP_ALIVE;
   private static Logger logger = LogService.getLogger();
+
   static {
     // customers want tcp/ip keep-alive turned on by default
     // to avoid dropped connections. It can be turned off by setting this
@@ -67,16 +68,17 @@ public class AdvancedSocketCreatorImpl implements AdvancedSocketCreator {
 
   @Override
   public Socket connect(HostAndPort addr, int timeout,
-      ConnectionWatcher optionalWatcher, boolean allowClientSocketFactory, int socketBufferSize,
-      boolean useSSL) throws IOException {
+                        ConnectionWatcher optionalWatcher, boolean allowClientSocketFactory,
+                        int socketBufferSize,
+                        boolean useSSL) throws IOException {
     return connect(addr, timeout, optionalWatcher, allowClientSocketFactory, socketBufferSize,
         useSSL, Socket::new);
   }
 
   @Override
   public Socket connect(HostAndPort addr, int timeout,
-      ConnectionWatcher optionalWatcher, boolean allowClientSocketFactory,
-      int socketBufferSize, boolean useSSL, TcpSocketFactory socketFactory)
+                        ConnectionWatcher optionalWatcher, boolean allowClientSocketFactory,
+                        int socketBufferSize, boolean useSSL, TcpSocketFactory socketFactory)
       throws IOException {
     if (useSSL) {
       throw new IllegalArgumentException();
@@ -112,56 +114,78 @@ public class AdvancedSocketCreatorImpl implements AdvancedSocketCreator {
     return socket;
   }
 
+  private ServerSocket createServerSocketEphemeral(InetAddress ba, int backlog,
+                                                             boolean isBindAddress, boolean useNIO,
+                                                             int tcpBufferSize,
+                                                             boolean sslConnection)
+      throws IOException {
+    if (useNIO) {
+      ServerSocketChannel channel = ServerSocketChannel.open();
+      ServerSocket socket = channel.socket();
+      InetSocketAddress address = new InetSocketAddress(isBindAddress ? ba : null, 0);
+      socket.bind(address, backlog);
+      return socket;
+    }
+
+    return socketCreator.clusterSocketCreator.createServerSocket(0,
+          backlog, isBindAddress ? ba : null,
+          tcpBufferSize, sslConnection);
+  }
+
   @Override
   public final ServerSocket createServerSocketUsingPortRange(InetAddress ba, int backlog,
       boolean isBindAddress, boolean useNIO,
       int tcpBufferSize, int[] tcpPortRange,
       boolean sslConnection) throws IOException {
-    try {
-      // Get a random port from range.
-      int startingPort = tcpPortRange[0]
-          + ThreadLocalRandom.current().nextInt(tcpPortRange[1] - tcpPortRange[0] + 1);
-      int localPort = startingPort;
-      int portLimit = tcpPortRange[1];
-
-      while (true) {
-        if (localPort > portLimit) {
-          if (startingPort != 0) {
-            localPort = tcpPortRange[0];
-            portLimit = startingPort - 1;
-            startingPort = 0;
-          } else {
-            throw noFreePortException(
-                String.format("Unable to find a free port in the membership-port-range: [%d,%d]",
-                    tcpPortRange[0], tcpPortRange[1]));
-          }
-        }
-        ServerSocket socket = null;
-        try {
-          if (useNIO) {
-            ServerSocketChannel channel = ServerSocketChannel.open();
-            socket = channel.socket();
-
-            InetSocketAddress address =
-                new InetSocketAddress(isBindAddress ? ba : null, localPort);
-            socket.bind(address, backlog);
-          } else {
-            socket = socketCreator.clusterSocketCreator.createServerSocket(localPort,
-                backlog, isBindAddress ? ba : null,
-                tcpBufferSize, sslConnection);
-          }
-          return socket;
-        } catch (java.net.SocketException ex) {
-          if (socket != null && !socket.isClosed()) {
-            socket.close();
-          }
-          localPort++;
-        }
-      }
-    } catch (IOException e) {
-      throw problemCreatingSocketInPortRangeException(
-          "unable to create a socket in the membership-port range", e);
+    if (0 == tcpPortRange[0] || 0 == tcpPortRange[1]) {
+      return createServerSocketEphemeral(ba, backlog, isBindAddress, useNIO, tcpBufferSize, sslConnection);
     }
+    throw new IllegalStateException("Ranges should be disabled right now.");
+//    try {
+//      // Get a random port from range.
+//      int startingPort = tcpPortRange[0]
+//          + ThreadLocalRandom.current().nextInt(tcpPortRange[1] - tcpPortRange[0] + 1);
+//      int localPort = startingPort;
+//      int portLimit = tcpPortRange[1];
+//
+//      while (true) {
+//        if (localPort > portLimit) {
+//          if (startingPort != 0) {
+//            localPort = tcpPortRange[0];
+//            portLimit = startingPort - 1;
+//            startingPort = 0;
+//          } else {
+//            throw noFreePortException(
+//                String.format("Unable to find a free port in the membership-port-range: [%d,%d]",
+//                    tcpPortRange[0], tcpPortRange[1]));
+//          }
+//        }
+//        ServerSocket socket = null;
+//        try {
+//          if (useNIO) {
+//            ServerSocketChannel channel = ServerSocketChannel.open();
+//            socket = channel.socket();
+//
+//            InetSocketAddress address =
+//                new InetSocketAddress(isBindAddress ? ba : null, localPort);
+//            socket.bind(address, backlog);
+//          } else {
+//            socket = socketCreator.clusterSocketCreator.createServerSocket(localPort,
+//                backlog, isBindAddress ? ba : null,
+//                tcpBufferSize, sslConnection);
+//          }
+//          return socket;
+//        } catch (java.net.SocketException ex) {
+//          if (socket != null && !socket.isClosed()) {
+//            socket.close();
+//          }
+//          localPort++;
+//        }
+//      }
+//    } catch (IOException e) {
+//      throw problemCreatingSocketInPortRangeException(
+//          "unable to create a socket in the membership-port range", e);
+//    }
   }
 
   /**
