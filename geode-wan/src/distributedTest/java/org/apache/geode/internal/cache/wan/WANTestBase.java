@@ -314,7 +314,7 @@ public class WANTestBase extends DistributedTestCase {
   public static Integer createFirstLocatorWithDSId(int dsId) {
     stopOldLocator();
     WANTestBase test = new WANTestBase();
-    int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+    int port = AvailablePortHelper.getRandomAvailableTCPPort();
     test.startLocator(dsId, port, port, -1, true);
     return port;
   }
@@ -322,7 +322,7 @@ public class WANTestBase extends DistributedTestCase {
   public static Integer createFirstPeerLocator(int dsId) {
     stopOldLocator();
     WANTestBase test = new WANTestBase();
-    int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+    int port = AvailablePortHelper.getRandomAvailableTCPPort();
     test.startLocator(dsId, port, port, -1, false);
     return port;
   }
@@ -330,7 +330,7 @@ public class WANTestBase extends DistributedTestCase {
   public static Integer createSecondLocator(int dsId, int locatorPort) {
     stopOldLocator();
     WANTestBase test = new WANTestBase();
-    int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+    int port = AvailablePortHelper.getRandomAvailableTCPPort();
     test.startLocator(dsId, locatorPort, port, -1, true);
     return port;
   }
@@ -338,7 +338,7 @@ public class WANTestBase extends DistributedTestCase {
   public static Integer createSecondPeerLocator(int dsId, int locatorPort) {
     stopOldLocator();
     WANTestBase test = new WANTestBase();
-    int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+    int port = AvailablePortHelper.getRandomAvailableTCPPort();
     test.startLocator(dsId, locatorPort, port, -1, false);
     return port;
   }
@@ -346,7 +346,7 @@ public class WANTestBase extends DistributedTestCase {
   public static Integer createFirstRemoteLocator(int dsId, int remoteLocPort) {
     stopOldLocator();
     WANTestBase test = new WANTestBase();
-    int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+    int port = AvailablePortHelper.getRandomAvailableTCPPort();
     test.startLocator(dsId, port, port, remoteLocPort, true);
     return port;
   }
@@ -360,7 +360,7 @@ public class WANTestBase extends DistributedTestCase {
   public static Integer createFirstRemotePeerLocator(int dsId, int remoteLocPort) {
     stopOldLocator();
     WANTestBase test = new WANTestBase();
-    int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+    int port = AvailablePortHelper.getRandomAvailableTCPPort();
     test.startLocator(dsId, port, port, remoteLocPort, false);
     return port;
   }
@@ -368,7 +368,7 @@ public class WANTestBase extends DistributedTestCase {
   public static Integer createSecondRemoteLocator(int dsId, int localPort, int remoteLocPort) {
     stopOldLocator();
     WANTestBase test = new WANTestBase();
-    int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+    int port = AvailablePortHelper.getRandomAvailableTCPPort();
     test.startLocator(dsId, localPort, port, remoteLocPort, true);
     return port;
   }
@@ -390,14 +390,14 @@ public class WANTestBase extends DistributedTestCase {
   public static Integer createSecondRemotePeerLocator(int dsId, int localPort, int remoteLocPort) {
     stopOldLocator();
     WANTestBase test = new WANTestBase();
-    int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+    int port = AvailablePortHelper.getRandomAvailableTCPPort();
     test.startLocator(dsId, localPort, port, remoteLocPort, false);
     return port;
   }
 
   public static int createReceiverInSecuredCache() {
     GatewayReceiverFactory fact = WANTestBase.cache.createGatewayReceiverFactory();
-    int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+    int port = AvailablePortHelper.getRandomAvailableTCPPort();
     fact.setStartPort(port);
     fact.setEndPort(port);
     fact.setManualStart(true);
@@ -2038,7 +2038,7 @@ public class WANTestBase extends DistributedTestCase {
 
   public static int createReceiver() {
     GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
-    int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+    int port = AvailablePortHelper.getRandomAvailableTCPPort();
     fact.setStartPort(port);
     fact.setEndPort(port);
     fact.setManualStart(true);
@@ -2080,7 +2080,7 @@ public class WANTestBase extends DistributedTestCase {
     InternalDistributedSystem ds = test.getSystem(gemFireProps);
     cache = CacheFactory.create(ds);
     GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
-    int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+    int port = AvailablePortHelper.getRandomAvailableTCPPort();
     fact.setStartPort(port);
     fact.setEndPort(port);
     fact.setManualStart(true);
@@ -2103,7 +2103,7 @@ public class WANTestBase extends DistributedTestCase {
     InternalDistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
     GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
-    int receiverPort = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+    int receiverPort = AvailablePortHelper.getRandomAvailableTCPPort();
     fact.setStartPort(receiverPort);
     fact.setEndPort(receiverPort);
     fact.setManualStart(true);
@@ -2196,7 +2196,7 @@ public class WANTestBase extends DistributedTestCase {
     cache.createDiskStoreFactory().setDiskDirs(new File[] {pdxDir}).setMaxOplogSize(1)
         .create("pdxStore");
     GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
-    int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+    int port = AvailablePortHelper.getRandomAvailableTCPPort();
     fact.setStartPort(port);
     fact.setEndPort(port);
     fact.setManualStart(true);

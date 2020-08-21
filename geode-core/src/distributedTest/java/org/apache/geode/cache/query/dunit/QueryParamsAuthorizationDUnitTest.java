@@ -74,7 +74,7 @@ public class QueryParamsAuthorizationDUnitTest extends JUnit4CacheTestCase {
       Cache cache = getCache(cf);
       cache.createRegionFactory(RegionShortcut.REPLICATE).create(regName);
       CacheServer server = cache.addCacheServer();
-      int serverPort = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+      int serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
       server.setPort(serverPort);
       server.start();
       return serverPort;

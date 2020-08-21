@@ -17,7 +17,7 @@ package org.apache.geode.management.internal.cli.commands;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPortsForDUnitSite;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -130,7 +130,7 @@ public class OfflineDiskStoreCommandsDUnitTest implements Serializable {
     VM locator = getVM(0);
     VM server = getVM(1);
     final int ENTRIES = 100000;
-    int site1Port = getRandomAvailableTCPPortsForDUnitSite(1)[0];
+    int site1Port = getRandomAvailableTCPPort();
 
     File diskStoreDirectory1 = temporaryFolder.newFolder("diskDir1");
     File diskStoreDirectory2 = temporaryFolder.newFolder("diskDir2");
@@ -163,7 +163,7 @@ public class OfflineDiskStoreCommandsDUnitTest implements Serializable {
     VM locator = getVM(0);
     VM server = getVM(1);
     final int ENTRIES = 100000;
-    int site1Port = getRandomAvailableTCPPortsForDUnitSite(1)[0];
+    int site1Port = getRandomAvailableTCPPort();
     String threadName = "Asynchronous disk writer for region";
     int counter = 0;
 
@@ -218,7 +218,7 @@ public class OfflineDiskStoreCommandsDUnitTest implements Serializable {
     VM locator = getVM(0);
     VM server = getVM(1);
     final int ENTRIES = 100000;
-    int site1Port = getRandomAvailableTCPPortsForDUnitSite(1)[0];
+    int site1Port = getRandomAvailableTCPPort();
 
     File diskStoreDirectory1 = temporaryFolder.newFolder("diskDir1");
     File diskStoreDirectory2 = temporaryFolder.newFolder("diskDir2");

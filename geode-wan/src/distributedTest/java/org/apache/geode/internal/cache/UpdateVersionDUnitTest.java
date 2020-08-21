@@ -535,7 +535,7 @@ public class UpdateVersionDUnitTest extends JUnit4DistributedTestCase {
 
   private Integer createFirstRemoteLocator(int dsId, int remoteLocPort) {
     UpdateVersionDUnitTest test = new UpdateVersionDUnitTest();
-    int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+    int port = AvailablePortHelper.getRandomAvailableTCPPort();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + dsId);
@@ -619,7 +619,7 @@ public class UpdateVersionDUnitTest extends JUnit4DistributedTestCase {
     InternalDistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
     GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
-    int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+    int port = AvailablePortHelper.getRandomAvailableTCPPort();
     fact.setStartPort(port);
     fact.setEndPort(port);
     GatewayReceiver receiver = fact.create();
@@ -691,7 +691,7 @@ public class UpdateVersionDUnitTest extends JUnit4DistributedTestCase {
 
   private Integer createFirstLocatorWithDSId(int dsId) {
     UpdateVersionDUnitTest test = new UpdateVersionDUnitTest();
-    int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+    int port = AvailablePortHelper.getRandomAvailableTCPPort();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + dsId);

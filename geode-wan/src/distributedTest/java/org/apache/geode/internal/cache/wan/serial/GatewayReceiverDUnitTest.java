@@ -229,7 +229,7 @@ public class GatewayReceiverDUnitTest extends WANTestBase {
 
   public static GatewayReceiver createAndReturnReceiver() {
     GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
-    int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+    int port = AvailablePortHelper.getRandomAvailableTCPPort();
     fact.setStartPort(port);
     fact.setEndPort(port);
     fact.setManualStart(true);
@@ -246,7 +246,7 @@ public class GatewayReceiverDUnitTest extends WANTestBase {
 
   public static GatewayReceiver createAndReturnUnstartedReceiver() {
     GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
-    int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+    int port = AvailablePortHelper.getRandomAvailableTCPPort();
     fact.setStartPort(port);
     fact.setEndPort(port);
     fact.setManualStart(true);
