@@ -40,7 +40,7 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.logging.internal.log4j.LogWriterLogger;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.logging.internal.spi.LogConfig;
@@ -77,7 +77,7 @@ public class LoggingWithLocatorIntegrationTest {
         testName.getMethodName() + "-system-" + System.currentTimeMillis() + ".log");
     securityLogFile = new File("");
 
-    port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    port = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
   }
 
   @After

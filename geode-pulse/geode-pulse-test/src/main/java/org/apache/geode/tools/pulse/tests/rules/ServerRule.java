@@ -25,7 +25,8 @@ import java.util.Properties;
 
 import org.junit.rules.ExternalResource;
 
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.InternalHttpService;
 import org.apache.geode.internal.net.SSLConfig;
 import org.apache.geode.tools.pulse.internal.data.PulseConstants;
@@ -67,7 +68,7 @@ public class ServerRule extends ExternalResource {
   private void startServer() throws Exception {
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
     String jmxPropertiesFile = classLoader.getResource("test.properties").getPath();
-    int jmxPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int jmxPort = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     System.setProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_PORT, Integer.toString(jmxPort));
     server = Server.createServer(jmxPort, jmxPropertiesFile, jsonAuthFile);
     server.start();
@@ -78,7 +79,7 @@ public class ServerRule extends ExternalResource {
     System.setProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_EMBEDDED,
         String.valueOf(Boolean.TRUE));
 
-    int httpPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int httpPort = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     jetty = new InternalHttpService();
     jetty.createJettyServer(LOCALHOST, httpPort, new SSLConfig.Builder().build());
     jetty.addWebApplication(PULSE_CONTEXT, getPulseWarPath(), new HashMap<>());

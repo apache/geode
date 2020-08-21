@@ -44,7 +44,8 @@ import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.server.ClientSubscriptionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheServer;
@@ -63,7 +64,7 @@ public class CacheClientNotifierDUnitTest extends WANTestBase {
 
   private int createCacheServerWithCSC(VM vm, final boolean withCSC, final int capacity,
       final String policy, final String diskStoreName) {
-    final int serverPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final int serverPort = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
 
     SerializableRunnable createCacheServer = new SerializableRunnable() {
       @Override

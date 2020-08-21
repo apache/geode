@@ -51,7 +51,7 @@ import org.apache.geode.cache.client.internal.ClientMetadataService;
 import org.apache.geode.cache.client.internal.ClientPartitionAdvisor;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.execute.data.CustId;
 import org.apache.geode.internal.cache.execute.data.OrderId;
 import org.apache.geode.internal.cache.execute.data.ShipmentId;
@@ -156,7 +156,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
 
   @Test
   public void test_SingleHopWith2ServerGroup() {
-    int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port3 = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     final String host0 = NetworkUtils.getServerHostName();
     final String locator = host0 + "[" + port3 + "]";
     member3
@@ -190,7 +190,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
 
   @Test
   public void test_SingleHopWith2ServerGroup2() {
-    int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port3 = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     final String host0 = NetworkUtils.getServerHostName();
     final String locator = host0 + "[" + port3 + "]";
     member3
@@ -224,7 +224,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
 
   @Test
   public void test_SingleHopWith2ServerGroup2WithoutSystemProperty() {
-    int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port3 = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     final String host0 = NetworkUtils.getServerHostName();
     final String locator = host0 + "[" + port3 + "]";
     member3
@@ -253,7 +253,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
 
   @Test
   public void test_SingleHopWithServerGroupAccessor() {
-    int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port3 = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     final String host0 = NetworkUtils.getServerHostName();
     final String locator = host0 + "[" + port3 + "]";
     member3
@@ -286,7 +286,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
 
   @Test
   public void test_SingleHopWithServerGroupOneServerInTwoGroups() {
-    int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port3 = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     final String host0 = NetworkUtils.getServerHostName();
     final String locator = host0 + "[" + port3 + "]";
     member3
@@ -319,7 +319,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
 
   @Test
   public void test_SingleHopWithServerGroupWithOneDefaultServer() {
-    int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port3 = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     final String host0 = NetworkUtils.getServerHostName();
     final String locator = host0 + "[" + port3 + "]";
     member3
@@ -352,7 +352,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
 
   @Test
   public void test_SingleHopWithServerGroupClientServerGroupNull() {
-    int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port3 = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     final String host0 = NetworkUtils.getServerHostName();
     final String locator = host0 + "[" + port3 + "]";
     member3
@@ -385,7 +385,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
 
   @Test
   public void test_SingleHopWithServerGroupTwoClientServerGroup() {
-    int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port3 = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     final String host0 = NetworkUtils.getServerHostName();
     final String locator = host0 + "[" + port3 + "]";
     member3
@@ -432,7 +432,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
 
   @Test
   public void test_SingleHopWithServerGroupTwoClientServerGroup2() {
-    int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port3 = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     final String host0 = NetworkUtils.getServerHostName();
     final String locator = host0 + "[" + port3 + "]";
     member3
@@ -476,7 +476,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
 
   @Test
   public void test_SingleHopWithServerGroupTwoClientOneWithOneWithoutServerGroup() {
-    int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port3 = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     final String host0 = NetworkUtils.getServerHostName();
     final String locator = host0 + "[" + port3 + "]";
     member3
@@ -515,7 +515,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
 
   @Test
   public void test_SingleHopWithServerGroup2ClientInOneVMServerGroup() {
-    int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port3 = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     final String host0 = NetworkUtils.getServerHostName();
     final String locator = host0 + "[" + port3 + "]";
     member3
@@ -559,7 +559,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
 
   @Test
   public void test_SingleHopWithServerGroupColocatedRegionsInDifferentGroup() {
-    int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port3 = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     final String host0 = NetworkUtils.getServerHostName();
     final String locator = host0 + "[" + port3 + "]";
     member3
@@ -730,7 +730,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
       }
       server.setGroups(a);
     }
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     server.setPort(port);
     server.setHostnameForClients("localhost");
     try {
@@ -814,7 +814,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
       }
       server.setGroups(a);
     }
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     server.setPort(port);
     server.setHostnameForClients("localhost");
     try {

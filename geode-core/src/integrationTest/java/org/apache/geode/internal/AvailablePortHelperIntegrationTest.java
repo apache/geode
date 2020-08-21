@@ -16,21 +16,27 @@ package org.apache.geode.internal;
 
 import static java.util.Arrays.stream;
 import static java.util.Comparator.naturalOrder;
-import static org.apache.geode.internal.AvailablePort.AVAILABLE_PORTS_LOWER_BOUND;
-import static org.apache.geode.internal.AvailablePort.AVAILABLE_PORTS_UPPER_BOUND;
-import static org.apache.geode.internal.AvailablePort.MULTICAST;
+import static org.apache.geode.internal.AvailablePortHelper.MULTICAST;
+import static org.apache.geode.internal.AvailablePortHelper.isPortAvailable;
+import static org.apache.geode.internal.AvailablePortHelper.AVAILABLE_PORTS_LOWER_BOUND;
+import static org.apache.geode.internal.AvailablePortHelper.AVAILABLE_PORTS_UPPER_BOUND;
+import static org.apache.geode.internal.AvailablePortHelper.SOCKET;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPortRange;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPortRangeKeepers;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableUDPPort;
 import static org.apache.geode.internal.AvailablePortHelper.initializeUniquePortRange;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeFalse;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
+import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -47,7 +53,9 @@ import org.junit.rules.ErrorCollector;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.internal.AvailablePort.Keeper;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.lang.SystemUtils;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 @RunWith(JUnitParamsRunner.class)
 public class AvailablePortHelperIntegrationTest {
@@ -225,7 +233,7 @@ public class AvailablePortHelperIntegrationTest {
   public void getRandomAvailableUDPPort_returnsAvailableUdpPort() {
     int udpPort = getRandomAvailableUDPPort();
 
-    assertThat(AvailablePort.isPortAvailable(udpPort, MULTICAST))
+    assertThat(isPortAvailable(udpPort, MULTICAST))
         .isTrue();
   }
 
@@ -296,6 +304,45 @@ public class AvailablePortHelperIntegrationTest {
           .doesNotContainAnyElementsOf(ports);
 
       previousPorts.addAll(ports);
+    }
+  }
+
+  private static final String LOOPBACK_ADDRESS =
+      LocalHostUtil.preferIPv6Addresses() ? "::1" : "127.0.0.1";
+
+  private InetAddress getLoopback() throws UnknownHostException {
+    return InetAddress.getByName(LOOPBACK_ADDRESS);
+  }
+
+  @Test
+  public void testIsPortAvailable() throws IOException {
+    try (ServerSocket socket = new ServerSocket()) {
+      int port = AvailablePortHelper.getRandomAvailablePort(SOCKET);
+      socket.bind(new InetSocketAddress(getLoopback(), port));
+
+      assertFalse(AvailablePort.isPortAvailable(port, SOCKET,
+          InetAddress.getByName(LOOPBACK_ADDRESS)));
+
+      InetAddress localHostAddress = InetAddress.getLocalHost();
+      // The next assertion assumes that the local host address is not a loopback address. Skip the
+      // assertion on host machines that don't satisfy the assumption.
+      if (!localHostAddress.isLoopbackAddress()) {
+        assertTrue(AvailablePort.isPortAvailable(port, SOCKET, localHostAddress));
+      }
+
+      // This should test all interfaces.
+      assertFalse(isPortAvailable(port, SOCKET));
+    }
+  }
+
+  @Test
+  public void testWildcardAddressBound() throws IOException {
+    try (ServerSocket socket = new ServerSocket()) {
+      int port = AvailablePortHelper.getRandomAvailablePort(AvailablePort.SOCKET);
+      socket.bind(new InetSocketAddress((InetAddress) null, port));
+      System.out.println(
+          "bind addr=" + System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "bind-address"));
+      assertFalse(isPortAvailable(port, AvailablePort.SOCKET));
     }
   }
 

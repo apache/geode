@@ -31,8 +31,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.TCP_PORT;
 import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_ACK_WAIT_THRESHOLD;
 import static org.apache.geode.distributed.internal.OperationExecutors.SERIAL_EXECUTOR;
 import static org.apache.geode.internal.AvailablePort.MULTICAST;
-import static org.apache.geode.internal.AvailablePort.SOCKET;
-import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
+import static org.apache.geode.internal.AvailablePortHelper.SOCKET;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailablePort;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPortRange;
 import static org.apache.geode.internal.inet.LocalHostUtil.getLocalHost;
 import static org.apache.geode.test.dunit.DistributedTestUtils.getDUnitLocatorPort;
@@ -102,7 +102,7 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
     this.locatorPort = getRandomAvailablePort(SOCKET);
     this.tcpPort = getRandomAvailablePort(SOCKET);
 
-    int[] portRange = getRandomAvailableTCPPortRange(3, true);
+    int[] portRange = getRandomAvailableTCPPortRange(3);
     this.lowerBoundOfPortRange = portRange[0];
     this.upperBoundOfPortRange = portRange[portRange.length - 1];
   }

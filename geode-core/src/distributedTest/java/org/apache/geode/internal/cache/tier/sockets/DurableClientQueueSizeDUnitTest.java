@@ -43,7 +43,7 @@ import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
@@ -296,7 +296,7 @@ public class DurableClientQueueSizeDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static Integer createCacheServer() throws Exception {
-    return createCacheServer(AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET));
+    return createCacheServer(AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET));
   }
 
   @SuppressWarnings("deprecation")

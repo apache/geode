@@ -62,7 +62,7 @@ import org.apache.geode.distributed.internal.Distribution;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.api.MemberDisconnectedException;
 import org.apache.geode.distributed.internal.membership.api.MembershipManagerHelper;
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -172,7 +172,7 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
         } else {
           getCache().createRegionFactory(RegionShortcut.PARTITION).create(PR_REG_NAME);
         }
-        int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+        int port = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
         CacheServer s = getCache().addCacheServer();
         s.setPort(port);
         s.start();

@@ -58,7 +58,7 @@ import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.management.internal.JmxManagerLocatorRequest;
@@ -180,7 +180,7 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
     VM server = host.getVM(1);
     VM client = host.getVM(2);
 
-    int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int locatorPort = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     locator.invoke("Start Locator", () -> startLocator(locator.getHost(), locatorPort, ""));
 
     String locators = NetworkUtils.getServerHostName(locator.getHost()) + "[" + locatorPort + "]";
@@ -219,7 +219,7 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
     VM server = host.getVM(1);
 
     // Step 1:
-    final int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final int locatorPort = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     locator.invoke("Start Locator", () -> startLocator(locator.getHost(), locatorPort, ""));
 
     String locators = NetworkUtils.getServerHostName(locator.getHost()) + "[" + locatorPort + "]";

@@ -28,8 +28,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
-import static org.apache.geode.internal.AvailablePort.SOCKET;
-import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
+import static org.apache.geode.internal.AvailablePortHelper.SOCKET;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailablePort;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;

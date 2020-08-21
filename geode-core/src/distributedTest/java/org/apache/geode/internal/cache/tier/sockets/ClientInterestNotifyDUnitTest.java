@@ -45,7 +45,7 @@ import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -429,7 +429,7 @@ public class ClientInterestNotifyDUnitTest extends JUnit4DistributedTestCase {
     cacheServer.createRegion(REGION_NAME2, attrs);
     cacheServer.createRegion(REGION_NAME3, attrs);
     CacheServer server = cacheServer.addCacheServer();
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     server.setPort(port);
     server.setNotifyBySubscription(true);
     server.setSocketBufferSize(32768);

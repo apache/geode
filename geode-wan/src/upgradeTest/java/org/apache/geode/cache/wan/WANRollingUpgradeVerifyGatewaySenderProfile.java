@@ -20,7 +20,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
@@ -39,7 +39,7 @@ public class WANRollingUpgradeVerifyGatewaySenderProfile extends WANRollingUpgra
     VM currentServer = host.getVM(VersionManager.CURRENT_VERSION, 2);
 
     // Start locator
-    final int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final int port = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     oldLocator.invoke(() -> DistributedTestUtils.deleteLocatorStateFile(port));
     final String locators = NetworkUtils.getServerHostName(host) + "[" + port + "]";
     oldLocator.invoke(() -> startLocator(port, 0, locators, ""));

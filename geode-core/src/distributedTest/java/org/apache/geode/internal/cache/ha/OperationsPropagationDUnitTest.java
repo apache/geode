@@ -35,7 +35,7 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache30.ClientServerTestCase;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
@@ -139,7 +139,7 @@ public class OperationsPropagationDUnitTest extends JUnit4DistributedTestCase {
 
     CacheServerImpl server = (CacheServerImpl) cache.addCacheServer();
     assertNotNull(server);
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     server.setPort(port);
     server.setNotifyBySubscription(true);
     server.start();

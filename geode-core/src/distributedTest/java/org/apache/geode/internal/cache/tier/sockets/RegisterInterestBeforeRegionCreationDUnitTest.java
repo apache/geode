@@ -38,7 +38,7 @@ import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.CacheObserverAdapter;
 import org.apache.geode.internal.cache.CacheObserverHolder;
 import org.apache.geode.internal.cache.CacheServerImpl;
@@ -207,7 +207,7 @@ public class RegisterInterestBeforeRegionCreationDUnitTest extends JUnit4Distrib
     }
     CacheServerImpl server = (CacheServerImpl) cache.addCacheServer();
     assertNotNull(server);
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     server.setPort(port);
     server.setNotifyBySubscription(true);
     server.start();

@@ -38,7 +38,7 @@ import org.apache.geode.cache.client.internal.ConnectionFactoryImpl;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.tier.ConnectionProxy;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
@@ -121,7 +121,7 @@ public class BackwardCompatibilityHigherVersionClientDUnitTest extends JUnit4Dis
     factory.setDataPolicy(DataPolicy.REPLICATE);
     RegionAttributes attrs = factory.create();
     cache.createRegion(REGION_NAME, attrs);
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     CacheServer server1 = cache.addCacheServer();
     server1.setPort(port);
     server1.setNotifyBySubscription(true);

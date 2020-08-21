@@ -44,7 +44,7 @@ import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Host;
@@ -479,7 +479,7 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends JUnit4Distribu
     cache.createRegion(REGION_NAME2, attrs);
 
     CacheServer server = cache.addCacheServer();
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     server.setPort(port);
     // ensures updates to be sent instead of invalidations
     server.setNotifyBySubscription(true);

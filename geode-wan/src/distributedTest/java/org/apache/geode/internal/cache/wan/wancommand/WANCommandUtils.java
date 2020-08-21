@@ -45,7 +45,8 @@ import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.CacheServerAdvisor;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -263,8 +264,8 @@ public class WANCommandUtils implements Serializable {
   public static void createReceiver(int locPort) {
     Cache cache = ClusterStartupRule.getCache();
     GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
-    fact.setStartPort(AvailablePort.AVAILABLE_PORTS_LOWER_BOUND);
-    fact.setEndPort(AvailablePort.AVAILABLE_PORTS_UPPER_BOUND);
+    fact.setStartPort(AvailablePortHelper.AVAILABLE_PORTS_LOWER_BOUND);
+    fact.setEndPort(AvailablePortHelper.AVAILABLE_PORTS_UPPER_BOUND);
     fact.setManualStart(true);
     GatewayReceiver receiver = fact.create();
   }

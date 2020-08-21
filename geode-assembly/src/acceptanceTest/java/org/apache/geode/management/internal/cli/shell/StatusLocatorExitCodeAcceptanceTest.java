@@ -15,8 +15,8 @@
 package org.apache.geode.management.internal.cli.shell;
 
 import static java.util.Arrays.stream;
-import static org.apache.geode.internal.AvailablePort.SOCKET;
-import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
+import static org.apache.geode.internal.AvailablePortHelper.SOCKET;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailablePort;
 import static org.apache.geode.management.internal.cli.shell.DirectoryTree.printDirectoryTree;
 import static org.assertj.core.api.Assertions.assertThat;
 

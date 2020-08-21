@@ -33,51 +33,6 @@ import org.apache.geode.util.internal.GeodeGlossary;
  * multicast availability is tested in JGroupsMessengerJUnitTest
  */
 public class AvailablePortJUnitTest {
-  private static final String LOOPBACK_ADDRESS =
-      LocalHostUtil.preferIPv6Addresses() ? "::1" : "127.0.0.1";
 
-  private ServerSocket socket;
-
-  @After
-  public void tearDown() throws IOException {
-    if (socket != null) {
-      socket.close();
-    }
-  }
-
-  private InetAddress getLoopback() throws UnknownHostException {
-    return InetAddress.getByName(LOOPBACK_ADDRESS);
-  }
-
-  @Test
-  public void testIsPortAvailable() throws IOException {
-    socket = new ServerSocket();
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    socket.bind(new InetSocketAddress(getLoopback(), port));
-
-    assertFalse(AvailablePort.isPortAvailable(port, AvailablePort.SOCKET,
-        InetAddress.getByName(LOOPBACK_ADDRESS)));
-
-    InetAddress localHostAddress = InetAddress.getLocalHost();
-    // The next assertion assumes that the local host address is not a loopback address. Skip the
-    // assertion on host machines that don't satisfy the assumption.
-    if (!localHostAddress.isLoopbackAddress()) {
-      assertTrue(AvailablePort.isPortAvailable(port, AvailablePort.SOCKET, localHostAddress));
-    }
-
-    // This should test all interfaces.
-    assertFalse(AvailablePort.isPortAvailable(port, AvailablePort.SOCKET));
-  }
-
-  @Test
-  public void testWildcardAddressBound() throws IOException {
-    // assumeFalse(SystemUtils.isWindows()); // See bug #39368
-    socket = new ServerSocket();
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    socket.bind(new InetSocketAddress((InetAddress) null, port));
-    System.out.println(
-        "bind addr=" + System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "bind-address"));
-    assertFalse(AvailablePort.isPortAvailable(port, AvailablePort.SOCKET));
-  }
 
 }

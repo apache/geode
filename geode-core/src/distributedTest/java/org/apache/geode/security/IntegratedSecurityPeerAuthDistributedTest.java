@@ -28,7 +28,7 @@ import java.util.Properties;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
@@ -55,7 +55,7 @@ public class IntegratedSecurityPeerAuthDistributedTest extends JUnit4CacheTestCa
     server1 = host.getVM(1);
     server2 = host.getVM(2);
 
-    int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int locatorPort = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     locators = NetworkUtils.getServerHostName(host) + "[" + locatorPort + "]";
 
     locator.invoke(() -> {

@@ -43,7 +43,7 @@ import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.ClientServerObserverAdapter;
 import org.apache.geode.internal.cache.ClientServerObserverHolder;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -458,7 +458,7 @@ public class DurableResponseMatrixDUnitTest extends JUnit4DistributedTestCase {
     Region r = cache.createRegion(REGION_NAME, attrs);
     assertNotNull(r);
     CacheServer server1 = cache.addCacheServer();
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     server1.setPort(port);
     server1.setNotifyBySubscription(true);
     server1.start();

@@ -48,7 +48,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.ClientServerObserverAdapter;
 import org.apache.geode.internal.cache.ClientServerObserverHolder;
@@ -418,7 +418,7 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
     cacheServer.createRegion(REGION_NAME1, attrs1);
     cacheServer.createRegion(REGION_NAME2, attrs2);
     CacheServer server = cacheServer.addCacheServer();
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     server.setPort(port);
     server.setNotifyBySubscription(true);
     server.setSocketBufferSize(32768);

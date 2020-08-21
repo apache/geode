@@ -51,7 +51,7 @@ import org.apache.geode.cache.client.internal.ServerRegionProxy;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.ClientServerObserverAdapter;
 import org.apache.geode.internal.cache.ClientServerObserverHolder;
@@ -1015,7 +1015,7 @@ public class HAInterestTestCase extends JUnit4DistributedTestCase {
     cache.createRegion(REGION_NAME, factory.create());
 
     CacheServer server = cache.addCacheServer();
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     server.setPort(port);
     server.setMaximumTimeBetweenPings(180000);
     // ensures updates to be sent instead of invalidations
@@ -1033,7 +1033,7 @@ public class HAInterestTestCase extends JUnit4DistributedTestCase {
     cache.createRegion(REGION_NAME, attrs);
 
     CacheServer server = cache.addCacheServer();
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     server.setPort(port);
     // ensures updates to be sent instead of invalidations
     server.setNotifyBySubscription(true);

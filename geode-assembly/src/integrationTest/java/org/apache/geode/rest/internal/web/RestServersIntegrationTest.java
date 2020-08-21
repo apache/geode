@@ -27,7 +27,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.junit.categories.RestAPITest;
 import org.apache.geode.test.junit.rules.GeodeDevRestClient;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
@@ -49,7 +49,7 @@ public class RestServersIntegrationTest {
   public static void before() throws Exception {
     assumeTrue(
         "Default port was unavailable for testing.  Please ensure the testing environment is clean.",
-        AvailablePort.isPortAvailable(DEFAULT_HTTP_SERVICE_PORT, AvailablePort.SOCKET));
+        AvailablePortHelper.isPortAvailable(DEFAULT_HTTP_SERVICE_PORT, AvailablePortHelper.SOCKET));
     serverStarter.startServer();
     assertThat(serverStarter.getHttpPort()).isEqualTo(DEFAULT_HTTP_SERVICE_PORT);
     restClient = new GeodeDevRestClient("localhost", serverStarter.getHttpPort());

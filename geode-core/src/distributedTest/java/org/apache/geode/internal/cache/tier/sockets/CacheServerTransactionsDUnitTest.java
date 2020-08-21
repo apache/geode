@@ -47,7 +47,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
@@ -764,7 +764,7 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
     Region r1 = cache.createRegion(REGION_NAME, factory.create());
     assertNotNull(r1);
     CacheServer server1 = cache.addCacheServer();
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     server1.setPort(port);
     server1.setMaxThreads(maxThreads.intValue());
     server1.setNotifyBySubscription(true);

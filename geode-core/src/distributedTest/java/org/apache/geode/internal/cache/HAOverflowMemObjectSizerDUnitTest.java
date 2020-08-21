@@ -39,7 +39,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache30.ClientServerTestCase;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.eviction.MemoryLRUController;
 import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl;
@@ -136,7 +136,7 @@ public class HAOverflowMemObjectSizerDUnitTest extends JUnit4DistributedTestCase
     assertNotNull(region);
     CacheServer server1 = cache.addCacheServer();
     assertNotNull(server1);
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     server1.setPort(port);
     server1.setNotifyBySubscription(notification.booleanValue());
     server1.getClientSubscriptionConfig().setCapacity(capacity);

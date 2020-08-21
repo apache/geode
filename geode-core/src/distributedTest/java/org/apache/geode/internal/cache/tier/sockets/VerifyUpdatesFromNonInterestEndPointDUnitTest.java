@@ -40,7 +40,7 @@ import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.client.internal.ServerRegionProxy;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.dunit.Assert;
@@ -197,7 +197,7 @@ public class VerifyUpdatesFromNonInterestEndPointDUnitTest extends JUnit4Distrib
     RegionAttributes attrs = factory.create();
     cache.createRegion(REGION_NAME, attrs);
     CacheServer server1 = cache.addCacheServer();
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     server1.setPort(port);
     server1.setNotifyBySubscription(true);
     server1.start();

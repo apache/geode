@@ -48,7 +48,7 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.functions.TestFunction;
@@ -323,7 +323,7 @@ public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRCl
     ArrayList commonAttributes =
         createCommonServerAttributes("TestPartitionedRegion", null, 1, null);
 
-    final int portLocator = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final int portLocator = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     final String hostLocator = NetworkUtils.getServerHostName(server1.getHost());
     final String locator = hostLocator + "[" + portLocator + "]";
 
@@ -363,7 +363,7 @@ public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRCl
     ArrayList commonAttributes =
         createCommonServerAttributes("TestPartitionedRegion", null, 0, null);
 
-    final int portLocator = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final int portLocator = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     final String hostLocator = NetworkUtils.getServerHostName(server1.getHost());
     final String locator = hostLocator + "[" + portLocator + "]";
 
@@ -419,7 +419,7 @@ public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRCl
     cache = CacheFactory.create(ds);
 
     CacheServer server = cache.addCacheServer();
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     server.setPort(port);
     server.setHostnameForClients("localhost");
     try {

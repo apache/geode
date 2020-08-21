@@ -14,8 +14,6 @@
  */
 package org.apache.geode.internal;
 
-import static org.apache.geode.internal.AvailablePort.AVAILABLE_PORTS_LOWER_BOUND;
-import static org.apache.geode.internal.AvailablePort.AVAILABLE_PORTS_UPPER_BOUND;
 import static org.apache.geode.internal.AvailablePort.getAddress;
 
 import java.util.ArrayList;
@@ -33,6 +31,11 @@ import org.apache.geode.internal.AvailablePort.Keeper;
  * further calls to getRandomAvailablePort.
  */
 public class AvailablePortHelper {
+  public static final int SOCKET = AvailablePort.SOCKET;
+  public static final int MULTICAST = AvailablePort.MULTICAST;
+  public static final int AVAILABLE_PORTS_LOWER_BOUND = 20001;// 20000/udp is securid
+  public static final int AVAILABLE_PORTS_UPPER_BOUND = 29999;// 30000/tcp is spoolfax
+
   private final AtomicInteger currentAvailablePort;
 
   // Singleton object is only used to track the current ports
@@ -71,14 +74,14 @@ public class AvailablePortHelper {
   public static List<Keeper> getRandomAvailableTCPPortKeepers(int count) {
     List<Keeper> result = new ArrayList<>();
     while (result.size() < count) {
-      result.add(getUniquePortKeeper(AvailablePort.SOCKET));
+      result.add(getUniquePortKeeper(AvailablePortHelper.SOCKET));
     }
     return result;
   }
 
   public static int[] getRandomAvailableTCPPortRange(final int count) {
     List<Keeper> list =
-        getUniquePortRangeKeepers(AvailablePort.SOCKET, count);
+        getUniquePortRangeKeepers(AvailablePortHelper.SOCKET, count);
     int[] ports = new int[list.size()];
     int i = 0;
     for (Keeper k : list) {
@@ -90,7 +93,7 @@ public class AvailablePortHelper {
   }
 
   public static List<Keeper> getRandomAvailableTCPPortRangeKeepers(final int count) {
-    return getUniquePortRangeKeepers(AvailablePort.SOCKET,
+    return getUniquePortRangeKeepers(AvailablePortHelper.SOCKET,
         count);
   }
 
@@ -113,12 +116,12 @@ public class AvailablePortHelper {
     int[] ports = new int[count];
     int i = 0;
     while (i < count) {
-      int port = getUniquePort(AvailablePort.SOCKET);
+      int port = getUniquePort(AvailablePortHelper.SOCKET);
       // This logic is from AvailablePort.getRandomAvailablePortWithMod which this method used to
       // call. It seems like the check should be (port % FOO == site) for some FOO, but given how
       // widely this is used, it's not at all clear that no one's depending on the current behavior.
       while (port % site != 0) {
-        port = getUniquePort(AvailablePort.SOCKET);
+        port = getUniquePort(AvailablePortHelper.SOCKET);
       }
       ports[i] = port;
       ++i;
@@ -186,7 +189,7 @@ public class AvailablePortHelper {
   /**
    * Get keeper objects for the next unused, consecutive 'rangeSize' ports on this machine.
    *
-   * @param protocol - either AvailablePort.SOCKET (TCP) or AvailablePort.MULTICAST (UDP)
+   * @param protocol - either AvailablePortHelper.SOCKET (TCP) or AvailablePort.MULTICAST (UDP)
    * @param rangeSize - number of contiguous ports needed
    * @return Keeper objects associated with a range of ports satisfying the request
    */
@@ -243,5 +246,13 @@ public class AvailablePortHelper {
         return uniquePort;
       }
     }
+  }
+
+  public static int getRandomAvailablePort(int protocol) {
+    return AvailablePort.getRandomAvailablePort(protocol, getAddress(protocol));
+  }
+
+  public static boolean isPortAvailable(int port, int protocol) {
+    return AvailablePort.isPortAvailable(port, protocol, AvailablePort.getAddress(protocol));
   }
 }

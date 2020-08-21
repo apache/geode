@@ -40,7 +40,7 @@ import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.FilterProfile;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -413,7 +413,7 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
   public void testDurableClientWithRegistrationHA() {
 
     // Step 1: Start server1
-    PORT2 = new Integer(AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET));
+    PORT2 = new Integer(AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET));
 
     PORT1 = ((Integer) this.server1VM
         .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true))))
@@ -514,7 +514,7 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
   public void testDurableClientDisConnectWithRegistrationHA() {
 
     // Step 1: Start server1
-    PORT2 = new Integer(AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET));
+    PORT2 = new Integer(AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET));
 
     PORT1 = ((Integer) this.server1VM
         .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true))))

@@ -47,7 +47,7 @@ import org.apache.geode.cache.client.internal.RegisterInterestTracker;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.ClientServerObserver;
 import org.apache.geode.internal.cache.ClientServerObserverAdapter;
@@ -393,7 +393,7 @@ public class RedundancyLevelTestBase extends JUnit4DistributedTestCase {
 
     CacheServer server1 = cache.addCacheServer();
 
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     server1.setMaximumTimeBetweenPings(180000);
     server1.setPort(port);
     server1.start();

@@ -102,7 +102,7 @@ import org.apache.geode.cache.util.CacheWriterAdapter;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.execute.CustomerIDPartitionResolver;
 import org.apache.geode.internal.cache.execute.InternalFunctionService;
 import org.apache.geode.internal.cache.execute.data.CustId;
@@ -3737,7 +3737,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
     return (Integer) vm.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+        int port = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
         CacheServer s = getCache().addCacheServer();
         s.setPort(port);
         s.start();

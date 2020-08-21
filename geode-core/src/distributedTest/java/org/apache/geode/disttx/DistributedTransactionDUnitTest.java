@@ -44,7 +44,7 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.SubscriptionAttributes;
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.DistTXState;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -136,7 +136,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
     return (Integer) vm.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+        int port = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
         CacheServer s = getCache().addCacheServer();
         s.setPort(port);
         s.start();

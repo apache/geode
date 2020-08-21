@@ -48,7 +48,7 @@ import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.cache30.ClientServerTestCase;
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.offheap.MemoryAllocatorImpl;
 import org.apache.geode.test.dunit.Assert;
@@ -79,7 +79,7 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
     final VM server = host.getVM(0);
     final VM client = host.getVM(1);
     final String regionName = getUniqueName();
-    final int serverPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final int serverPort = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     final String serverHost = NetworkUtils.getServerHostName(server.getHost());
 
     createBridgeServer(server, regionName, serverPort, false, false);
@@ -429,7 +429,7 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
     final VM server = host.getVM(0);
     final VM client = host.getVM(1);
     final String regionName = getUniqueName();
-    final int serverPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final int serverPort = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     final String serverHost = NetworkUtils.getServerHostName(server.getHost());
 
     createBridgeServer(server, regionName, serverPort, false, true);
@@ -559,7 +559,7 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
     final VM server = host.getVM(0);
     final VM client = host.getVM(1);
     final String regionName = getUniqueName();
-    final int serverPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final int serverPort = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     final String serverHost = NetworkUtils.getServerHostName(server.getHost());
 
     createBridgeServer(server, regionName, serverPort, false, false);
@@ -623,7 +623,7 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
     final VM server = host.getVM(0);
     final VM client = host.getVM(1);
     final String regionName = getUniqueName();
-    final int serverPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final int serverPort = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     final String serverHost = NetworkUtils.getServerHostName(server.getHost());
     final int numLocalValues = 101;
 

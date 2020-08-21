@@ -56,7 +56,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache30.ClientServerTestCase;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.InternalCacheServer;
 import org.apache.geode.internal.cache.LocalRegion;
@@ -176,7 +176,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
     factory.setDataPolicy(DataPolicy.REPLICATE);
     factory.create(regionName);
 
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     CacheServer server1 = cache.addCacheServer();
     server1.setPort(port);
     if (ePolicy != null) {
@@ -196,7 +196,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
   }
 
   private static Integer createOneMoreBridgeServer(Boolean notifyBySubscription) throws Exception {
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     CacheServer server1 = cache.addCacheServer();
     server1.setPort(port);
     server1.setNotifyBySubscription(notifyBySubscription);

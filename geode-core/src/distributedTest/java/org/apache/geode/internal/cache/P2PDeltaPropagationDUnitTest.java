@@ -39,7 +39,7 @@ import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
@@ -281,7 +281,7 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     // 3. Assert that the peer with cache server receives delta bytes along with the full value.
     // 4. Assert that peer with no cache server receives full value but no delta bytes.
 
-    int port1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port1 = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
 
     Object replicate[] = new Object[] {Boolean.TRUE/* Delta */, DataPolicy.REPLICATE,
         Scope.DISTRIBUTED_ACK, Boolean.FALSE /* listener */};

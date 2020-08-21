@@ -22,7 +22,8 @@ import org.junit.Test;
 
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
@@ -44,7 +45,7 @@ public class MemberStarterRuleIntegrationTest {
 
   @Test
   public void testWithPortOnLocator() {
-    int targetPort = AvailablePort.getRandomAvailablePort(1);
+    int targetPort = AvailablePortHelper.getRandomAvailablePort(1);
     locator = new LocatorStarterRule().withPort(targetPort).withAutoStart();
     locator.before();
 
@@ -59,7 +60,7 @@ public class MemberStarterRuleIntegrationTest {
 
   @Test
   public void testWithPortOnServer() {
-    int targetPort = AvailablePort.getRandomAvailablePort(1);
+    int targetPort = AvailablePortHelper.getRandomAvailablePort(1);
     server = new ServerStarterRule().withPort(targetPort).withAutoStart();
     server.before();
 

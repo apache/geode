@@ -14,8 +14,8 @@
  */
 package org.apache.geode.security;
 
-import static org.apache.geode.internal.AvailablePort.SOCKET;
-import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
+import static org.apache.geode.internal.AvailablePortHelper.SOCKET;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailablePort;
 import static org.apache.geode.security.ClientAuthenticationTestUtils.createCacheClient;
 import static org.apache.geode.security.ClientAuthenticationTestUtils.createCacheServer;
 import static org.apache.geode.security.ClientAuthenticationTestUtils.registerAllInterest;

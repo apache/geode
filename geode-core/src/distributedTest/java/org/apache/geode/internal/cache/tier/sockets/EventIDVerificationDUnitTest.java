@@ -44,7 +44,7 @@ import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache.util.CacheWriterAdapter;
 import org.apache.geode.cache30.ClientServerTestCase;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.CacheObserverAdapter;
 import org.apache.geode.internal.cache.CacheObserverHolder;
 import org.apache.geode.internal.cache.EntryEventImpl;
@@ -345,7 +345,7 @@ public class EventIDVerificationDUnitTest extends JUnit4DistributedTestCase {
 
     RegionAttributes attrs = factory.create();
     cache.createRegion(REGION_NAME, attrs);
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     CacheServer server1 = cache.addCacheServer();
     server1.setPort(port);
     server1.setNotifyBySubscription(true);

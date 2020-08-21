@@ -45,7 +45,7 @@ import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.execute.CustomerIDPartitionResolver;
 import org.apache.geode.internal.cache.execute.data.CustId;
 import org.apache.geode.internal.cache.execute.data.Order;
@@ -73,7 +73,7 @@ public class TransactionsWithDeltaDUnitTest extends JUnit4CacheTestCase {
       public Object call() throws Exception {
         createRegion(accessor, 0, null);
         if (startServer) {
-          int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+          int port = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
           CacheServer s = getCache().addCacheServer();
           s.setPort(port);
           s.start();

@@ -63,7 +63,8 @@ import org.apache.geode.cache.util.CqListenerAdapter;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.compression.SnappyCompressor;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTestHelper;
@@ -786,7 +787,7 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
     CacheServer server1 = cache.addCacheServer();
     assertNotNull(server1);
 
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     server1.setPort(port);
     server1.start();
     assertTrue(server1.isRunning());
@@ -830,7 +831,7 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
     }
 
     CacheServer server = cache.addCacheServer();
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     server.setPort(port);
     // ensures updates to be sent instead of invalidations
     server.setNotifyBySubscription(true);

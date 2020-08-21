@@ -101,6 +101,7 @@ import org.apache.geode.distributed.internal.membership.api.MembershipManagerHel
 import org.apache.geode.distributed.internal.membership.api.MembershipView;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.tcp.Connection;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -258,7 +259,7 @@ public class LocatorDUnitTest implements Serializable {
   @Test
   @Ignore("GEODE=7760 - test sometimes hangs due to product issue")
   public void testCrashLocatorMultipleTimes() throws Exception {
-    port1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    port1 = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     DistributedTestUtils.deleteLocatorStateFile(port1);
     File logFile = new File("");
     File stateFile = new File("locator" + port1 + "state.dat");

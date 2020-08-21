@@ -46,7 +46,7 @@ import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache30.ClientServerTestCase;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
 import org.apache.geode.internal.cache.LocalRegion;
@@ -103,7 +103,7 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
     server0.invoke(() -> HAGIIDUnitTest.setSystemProperty());
 
 
-    PORT2 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    PORT2 = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     // Start the client
     client0.invoke(() -> HAGIIDUnitTest.createClientCache(NetworkUtils.getServerHostName(host),
         new Integer(PORT1), new Integer(PORT2)));
@@ -161,7 +161,7 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
     factory.setDataPolicy(DataPolicy.REPLICATE);
     RegionAttributes attrs = factory.create();
     cache.createRegion(REGION_NAME, attrs);
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     CacheServer server1 = cache.addCacheServer();
     server1.setPort(port);
     server1.setNotifyBySubscription(true);

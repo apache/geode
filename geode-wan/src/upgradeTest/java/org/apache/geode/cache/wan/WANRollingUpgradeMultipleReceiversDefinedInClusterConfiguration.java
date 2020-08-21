@@ -38,7 +38,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
@@ -144,7 +144,7 @@ public class WANRollingUpgradeMultipleReceiversDefinedInClusterConfiguration
     // Get old locator properties
     VM locator = Host.getHost(0).getVM(oldVersion, 0);
     String hostName = NetworkUtils.getServerHostName();
-    final int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final int locatorPort = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     final String locators = hostName + "[" + locatorPort + "]";
     // Start old locator
     locator.invoke(() -> {

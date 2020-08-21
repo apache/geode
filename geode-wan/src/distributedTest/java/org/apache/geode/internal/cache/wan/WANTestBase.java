@@ -130,7 +130,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.cache.BucketRegion;
@@ -2195,7 +2195,7 @@ public class WANTestBase extends DistributedTestCase {
       fail("Test " + test.getName() + " failed to start GatewayReceiver on port " + receiverPort);
     }
     CacheServer server = cache.addCacheServer();
-    int serverPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int serverPort = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     server.setPort(serverPort);
     server.setHostnameForClients("localhost");
     try {
@@ -2214,7 +2214,7 @@ public class WANTestBase extends DistributedTestCase {
     cache = CacheFactory.create(ds);
 
     CacheServer server = cache.addCacheServer();
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     server.setPort(port);
     server.setHostnameForClients("localhost");
     try {

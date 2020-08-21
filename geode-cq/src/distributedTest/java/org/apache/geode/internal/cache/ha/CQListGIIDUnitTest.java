@@ -59,7 +59,7 @@ import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache30.CertifiableTestCacheListener;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.LocalRegion;
@@ -202,7 +202,7 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
     Thread.sleep(2000);
     logger = cache.getLogger();
 
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     CacheServer server1 = cache.addCacheServer();
     server1.setPort(port);
     server1.setNotifyBySubscription(true);
@@ -224,7 +224,7 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static Integer createOneMoreBridgeServer(Boolean notifyBySubscription) throws Exception {
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     CacheServer server1 = cache.addCacheServer();
     server1.setPort(port);
     server1.setNotifyBySubscription(notifyBySubscription.booleanValue());

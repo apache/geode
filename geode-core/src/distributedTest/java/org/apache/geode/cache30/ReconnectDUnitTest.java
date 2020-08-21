@@ -94,7 +94,7 @@ import org.apache.geode.distributed.internal.ServerLocator;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.api.MembershipManagerHelper;
 import org.apache.geode.examples.SimpleSecurityManager;
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
@@ -134,7 +134,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
 
   @Override
   public final void postSetUp() throws Exception {
-    locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    locatorPort = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     final int locPort = locatorPort;
     Host.getHost(0).getVM(locatorVMNumber).invoke(new SerializableRunnable("start locator") {
       @Override

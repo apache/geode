@@ -55,7 +55,7 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.PartitionAttributesImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionTestHelper;
@@ -345,7 +345,7 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase {
         }
         CacheServer server = cache.addCacheServer();
         assertNotNull(server);
-        int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+        int port = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
         server.setPort(port);
         try {
           server.start();

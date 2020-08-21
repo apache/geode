@@ -40,7 +40,7 @@ import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -242,7 +242,7 @@ public class InterestResultPolicyDUnitTest extends JUnit4DistributedTestCase {
     RegionAttributes attrs = factory.create();
     cache.createRegion(REGION_NAME, attrs);
     CacheServer server = cache.addCacheServer();
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = AvailablePortHelper.getRandomAvailablePort(AvailablePortHelper.SOCKET);
     server.setPort(port);
     server.setNotifyBySubscription(true);
     server.setSocketBufferSize(32768);
