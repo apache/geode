@@ -13,12 +13,16 @@
 The Redis API for Geode allows an application to send Redis commands to Geode. This will allow users to 
 switch seamlessly from native Redis to Geode as a data store/caching solution. 
 
-The API allows Geode to listen for and interpret incoming Redis commands on a designated port.  The 
-current set of supported Redis commands are listed [here](#redis-commands). 
+The API allows Geode to listen for and interpret incoming Redis commands on a designated port.
+
+**Note:** Not all Redis commands are currently supported. The current set of supported Redis commands is listed [here](#redis-commands). 
 
 ## <a name="how-to-try-it"></a>How To Try It
 
-We’ll build the develop branch of Apache Geode and then connect the [Redis-CLI](https://redis.io/topics/quickstart) to that instance.
+The Redis API for Geode is currently in early access. We’ll build the develop branch of Apache Geode
+and then connect the [Redis-CLI](https://redis.io/topics/quickstart) to that instance.
+
+**Note:** Currently Geode requires Java 8 JDK to build.
 
 ### <a name="building-apache-geode"></a>Building Apache Geode
 The Apache Geode source code can be found here
@@ -35,7 +39,7 @@ The Apache Geode source code can be found here
 
 3. Build the Geode application without running the test (REQUIRES JAVA 8)
     ```commandline
-    $ ./gradlew build -x test
+    $ ./gradlew assemble
    ```
 
 4. Once the build has completed, navigate to the geode-assembly directory which contains the Apache 
@@ -54,10 +58,15 @@ You should now see GFSH starting up with a version of 1.14.x.-build.x
 ![screenshot of GFSH running in the terminal](gfsh.png)
 
 ### <a name="starting-a-server"></a>Starting a Geode Server with Redis Enabled
+**Note**: if you wish to run the Geode Redis API on the default Redis port (6379), make sure to stop
+any applications running on that port before starting the Geode server, especially any native Redis
+servers.
+
 Using GFSH enter the following commands:
 
 1. Start a locator. The locator tracks servers and server load. When a client requests a server 
-connection, the locator directs the client to one of the least loaded servers. Learn more. 
+connection, the locator directs the client to one of the least loaded servers.
+[Learn more](https://geode.apache.org/docs/guide/12/configuring/running/running_the_locator.html). 
    ```commandline
     gfsh> start locator
     ``` 
@@ -86,7 +95,7 @@ connection, the locator directs the client to one of the least loaded servers. L
     If working correctly you should now be in the redis-cli and see `127.0.0.1:6379>`.  If you run the 
     `PING` command you should receive a response of `PONG`.
 
-### <a name="adding-a-server"></a>Adding an Additional Geode Redis Server 
+### <a name="adding-a-server"></a>Adding an Additional Geode Redis Server (OPTIONAL)
 If you’re interested in testing Geode scalability, in GFSH run the start server command again BUT 
 make sure you change the `--name=` and `--redis-port=` parameters. 
 
@@ -115,6 +124,29 @@ Could not connect to Redis at 127.0.0.1:6379: Connection refused
 not connected>
 ```
 ### <a name="redis-commands"></a>Redis Commands
+
+The Redis API for Geode currently implements a subset of the full Redis command set. Some commands
+are **unsupported** (see table below). Unsupported commands are available to use, but have not been
+fully tested. There is no guarantee they will work exactly as expected.
+
+If you already have Geode servers running with Redis enabled, you can execute the following
+command with gfsh to enable unsupported commands:
+
+```pre
+redis --enable-unsupported-commands
+```
+
+You can also enable unsupported commands when you start the Geode server by setting the Java property `enable-redis-unsupported-commands=true`:
+
+```pre
+start server \
+  --J=-Denable-redis-unsupported-commands=true \
+  --name=<serverName> \
+  --locators=<locatorPort> \
+  --redis-port=<redisPort> \
+  --redis-bind-address=<redisBindAddress> \
+  --redis-password=<redisPassword>
+```
 
 | Supported Commands 	| Unsupported Commands<br>(Implemented - not tested) 	|    Commands Not Implemented   	|
 |-----------------------|-------------------------------------------------------|-----------------------------------|
