@@ -1716,7 +1716,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
     /**
      * Sets the port number used by the Locator to listen for client requests. The port number must
-     * be between 1 and 65535 inclusive.
+     * be between 0 and 65535 inclusive.
      *
      * @param port an Integer value indicating the port used by the Locator to listen for client
      *        requests.
@@ -1725,13 +1725,10 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      * @see #getPort()
      */
     public Builder setPort(final Integer port) {
-      // NOTE if the user were to specify a port number of 0, then java.net.ServerSocket will pick
-      // an ephemeral port
-      // to bind the socket, which we do not want.
-      if (port != null && (port < 1 || port > 65535)) {
+      if (port != null && (port < 0 || port > 65535)) {
         throw new IllegalArgumentException(
             String.format(
-                "The port on which the %s will listen must be between 1 and 65535 inclusive.",
+                "The port on which the %s will listen must be between 0 and 65535 inclusive.",
                 "Locator"));
       }
       this.port = port;
