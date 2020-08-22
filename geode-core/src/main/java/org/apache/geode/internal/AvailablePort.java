@@ -263,7 +263,7 @@ public class AvailablePort {
   }
 
   /**
-   * Returns a randomly selected available port in the range 5001 to 32767.
+   * Returns an ephemeral port.
    *
    * @param protocol The protocol to check (either {@link #SOCKET} or {@link #MULTICAST}).
    * @param addr the bind-address or mcast address to use
@@ -273,6 +273,8 @@ public class AvailablePort {
   static int getRandomAvailablePort(int protocol, InetAddress addr) {
     if (SOCKET == protocol) {
       return getEphemeralTcpPort(addr).release();
+    } else if (MULTICAST == protocol) {
+      return getEphemeralMulticastPort(addr).release();
     }
     throw new UnsupportedOperationException();
   }
@@ -288,10 +290,15 @@ public class AvailablePort {
     }
   }
 
-  private static int getEphemeralMulticastPort(final InetAddress addr) {
-    // TODO jbarrett
-
-    throw new UnsupportedOperationException();
+  protected static MulticastPortKeeper getEphemeralMulticastPort(final InetAddress inetAddress) {
+    // TODO jbarrett - reasonable timeout
+    while (true) {
+      try {
+        return new MulticastPortKeeper(inetAddress);
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
   }
 
   @Immutable
@@ -444,12 +451,70 @@ public class AvailablePort {
 
   }
 
-  public static class TcpPortKeeper implements Closeable {
+  public static abstract class PortKeeper implements Closeable {
+    public abstract int getPort();
+
+    public int release() {
+      try {
+        return getPort();
+      } finally {
+        safeCloseAndLog(this);
+      }
+    }
+
+    static void safeCloseAndLog(final Closeable closeable) {
+      try {
+        safeClose(closeable);
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+
+    static void safeClose(final Closeable closeable) throws IOException {
+      if (null != closeable) {
+        closeable.close();
+      }
+    }
+  }
+
+  public static class MulticastPortKeeper extends PortKeeper {
+    private final MulticastSocket multicastSocket;
+    private MulticastPortKeeper(final InetAddress inetAddress) throws IOException {
+      multicastSocket = new MulticastSocket();
+      try {
+        final InetAddress localHost = LocalHostUtil.getLocalHost();
+        multicastSocket.setInterface(localHost);
+        multicastSocket.setSoTimeout(Integer.getInteger("AvailablePort.timeout", 2000));
+        multicastSocket.setReuseAddress(true);
+        final byte[] buffer = new byte[] {'p', 'i', 'n', 'g'};
+        final InetAddress multicastAddress = inetAddress == null ? DistributionConfig.DEFAULT_MCAST_ADDRESS : inetAddress;
+        final InetSocketAddress multicastSocketAddress = new InetSocketAddress(multicastAddress, getPort());
+        multicastSocket.joinGroup(multicastAddress);
+        final DatagramPacket packet = new DatagramPacket(buffer, 0, buffer.length, multicastSocketAddress);
+        multicastSocket.send(packet);
+        multicastSocket.receive(packet);
+      } catch (IOException e) {
+        close();
+      }
+    }
+
+    @Override
+    public int getPort() {
+      return multicastSocket.getLocalPort();
+    }
+
+    @Override
+    public void close() throws IOException {
+      safeClose(multicastSocket);
+    }
+  }
+
+  public static class TcpPortKeeper extends PortKeeper {
     private final ServerSocket serverSocket;
     private final Socket client;
     private final Socket server;
 
-    public TcpPortKeeper(final InetAddress inetAddress) throws IOException {
+    private TcpPortKeeper(final InetAddress inetAddress) throws IOException {
       try {
         serverSocket = new ServerSocket();
         serverSocket.setReuseAddress(true);
@@ -463,16 +528,9 @@ public class AvailablePort {
       }
     }
 
+    @Override
     public int getPort() {
       return serverSocket.getLocalPort();
-    }
-
-    public int release() {
-      try {
-        return serverSocket.getLocalPort();
-      } finally {
-        safeCloseAndLog(this);
-      }
     }
 
     @Override
@@ -488,19 +546,6 @@ public class AvailablePort {
       }
     }
 
-    private void safeCloseAndLog(final Closeable closeable) {
-      try {
-        safeClose(closeable);
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
-    }
-
-    private void safeClose(final Closeable closeable) throws IOException {
-      if (null != closeable) {
-        closeable.close();
-      }
-    }
   }
 
 }

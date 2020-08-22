@@ -84,8 +84,7 @@ public class AvailablePortHelper extends AvailablePort {
    * Returns randomly available udp port.
    */
   public static int getRandomAvailableUDPPort() {
-    // TODO jbarrett - multicast
-    throw new UnsupportedOperationException("multicast");
+    return getEphemeralMulticastPort(getAddress(MULTICAST)).release();
   }
 
   private static TcpPortKeeper getTcpPortKeeper() {

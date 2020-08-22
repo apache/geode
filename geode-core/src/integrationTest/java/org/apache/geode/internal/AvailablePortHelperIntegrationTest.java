@@ -15,7 +15,6 @@
 package org.apache.geode.internal;
 
 import static java.util.Arrays.stream;
-import static java.util.Comparator.naturalOrder;
 import static org.apache.geode.internal.AvailablePortHelper.MULTICAST;
 import static org.apache.geode.internal.AvailablePortHelper.isPortAvailable;
 import static org.apache.geode.internal.AvailablePortHelper.SOCKET;
@@ -118,22 +117,6 @@ public class AvailablePortHelperIntegrationTest {
   }
 
   @Test
-  public void getRandomAvailableTCPPorts_returnsNaturallyOrderedPorts() {
-    int[] results = getRandomAvailableTCPPorts(10);
-
-    assertThat(results)
-        .isSortedAccordingTo(naturalOrder());
-  }
-
-  @Test
-  public void getRandomAvailableTCPPorts_returnsConsecutivePorts() {
-    int[] results = getRandomAvailableTCPPorts(10);
-
-    assertThatSequence(results)
-        .isConsecutive();
-  }
-
-  @Test
   public void getRandomAvailableTCPPortKeepers_returnsNoKeepers_ifCountIsZero() {
     List<TcpPortKeeper> results = getRandomAvailableTCPPortKeepers(0);
 
@@ -176,22 +159,6 @@ public class AvailablePortHelperIntegrationTest {
   }
 
   @Test
-  public void getRandomAvailableTCPPortKeepers_returnsNaturallyOrderedPorts() {
-    List<TcpPortKeeper> results = getRandomAvailableTCPPortKeepers(10);
-
-    assertThat(keeperPorts(results))
-        .isSortedAccordingTo(naturalOrder());
-  }
-
-  @Test
-  public void getRandomAvailableTCPPortKeepers_returnsConsecutivePorts() {
-    List<TcpPortKeeper> results = getRandomAvailableTCPPortKeepers(10);
-
-    assertThatSequence(keeperPorts(results))
-        .isConsecutive();
-  }
-
-  @Test
   public void getRandomAvailableUDPPort_returnsNonZeroUdpPort() {
     int udpPort = getRandomAvailableUDPPort();
 
@@ -203,8 +170,7 @@ public class AvailablePortHelperIntegrationTest {
   public void getRandomAvailableUDPPort_returnsAvailableUdpPort() {
     int udpPort = getRandomAvailableUDPPort();
 
-    assertThat(isPortAvailable(udpPort, MULTICAST))
-        .isTrue();
+    assertThat(isPortAvailable(udpPort, MULTICAST)).isTrue();
   }
 
   @Test
