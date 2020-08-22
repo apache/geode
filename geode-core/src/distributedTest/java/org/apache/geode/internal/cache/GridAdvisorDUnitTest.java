@@ -41,7 +41,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionAdvisee;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.internal.AvailablePort.Keeper;
+import org.apache.geode.internal.AvailablePort.TcpPortKeeper;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -71,18 +71,18 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
     VM vm2 = VM.getVM(2);
     VM vm3 = VM.getVM(3);
 
-    List<Keeper> freeTCPPorts = AvailablePortHelper.getRandomAvailableTCPPortKeepers(6);
-    final Keeper keeper1 = freeTCPPorts.get(0);
+    List<TcpPortKeeper> freeTCPPorts = AvailablePortHelper.getRandomAvailableTCPPortKeepers(6);
+    final TcpPortKeeper keeper1 = freeTCPPorts.get(0);
     final int port1 = keeper1.getPort();
-    final Keeper keeper2 = freeTCPPorts.get(1);
+    final TcpPortKeeper keeper2 = freeTCPPorts.get(1);
     final int port2 = keeper2.getPort();
-    final Keeper bsKeeper1 = freeTCPPorts.get(2);
+    final TcpPortKeeper bsKeeper1 = freeTCPPorts.get(2);
     final int bsPort1 = bsKeeper1.getPort();
-    final Keeper bsKeeper2 = freeTCPPorts.get(3);
+    final TcpPortKeeper bsKeeper2 = freeTCPPorts.get(3);
     final int bsPort2 = bsKeeper2.getPort();
-    final Keeper bsKeeper3 = freeTCPPorts.get(4);
+    final TcpPortKeeper bsKeeper3 = freeTCPPorts.get(4);
     final int bsPort3 = bsKeeper3.getPort();
-    final Keeper bsKeeper4 = freeTCPPorts.get(5);
+    final TcpPortKeeper bsKeeper4 = freeTCPPorts.get(5);
     final int bsPort4 = bsKeeper4.getPort();
 
     final String host0 = NetworkUtils.getServerHostName();
@@ -210,18 +210,18 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
     VM vm2 = VM.getVM(2);
     VM vm3 = VM.getVM(3);
 
-    List<Keeper> freeTCPPorts = AvailablePortHelper.getRandomAvailableTCPPortKeepers(6);
-    final Keeper keeper1 = freeTCPPorts.get(0);
+    List<TcpPortKeeper> freeTCPPorts = AvailablePortHelper.getRandomAvailableTCPPortKeepers(6);
+    final TcpPortKeeper keeper1 = freeTCPPorts.get(0);
     final int port1 = keeper1.getPort();
-    final Keeper keeper2 = freeTCPPorts.get(1);
+    final TcpPortKeeper keeper2 = freeTCPPorts.get(1);
     final int port2 = keeper2.getPort();
-    final Keeper bsKeeper1 = freeTCPPorts.get(2);
+    final TcpPortKeeper bsKeeper1 = freeTCPPorts.get(2);
     final int bsPort1 = bsKeeper1.getPort();
-    final Keeper bsKeeper2 = freeTCPPorts.get(3);
+    final TcpPortKeeper bsKeeper2 = freeTCPPorts.get(3);
     final int bsPort2 = bsKeeper2.getPort();
-    final Keeper bsKeeper3 = freeTCPPorts.get(4);
+    final TcpPortKeeper bsKeeper3 = freeTCPPorts.get(4);
     final int bsPort3 = bsKeeper3.getPort();
-    final Keeper bsKeeper4 = freeTCPPorts.get(5);
+    final TcpPortKeeper bsKeeper4 = freeTCPPorts.get(5);
     final int bsPort4 = bsKeeper4.getPort();
 
     final String host0 = NetworkUtils.getServerHostName();

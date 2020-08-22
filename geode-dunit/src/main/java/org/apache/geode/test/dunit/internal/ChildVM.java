@@ -57,7 +57,6 @@ public class ChildVM {
       Naming.rebind(name, dunitVM);
       JUnit4DistributedTestCase.initializeBlackboard();
       holder.signalVMReady();
-      AvailablePortHelper.initializeUniquePortRange(vmNum + 2); // hacky, locator is -2
       // This loop is here so this VM will die even if the master is mean killed.
       while (!stopMainLoop) {
         holder.ping();

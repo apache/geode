@@ -264,8 +264,8 @@ public class WANCommandUtils implements Serializable {
   public static void createReceiver(int locPort) {
     Cache cache = ClusterStartupRule.getCache();
     GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
-    fact.setStartPort(AvailablePortHelper.AVAILABLE_PORTS_LOWER_BOUND);
-    fact.setEndPort(AvailablePortHelper.AVAILABLE_PORTS_UPPER_BOUND);
+    fact.setStartPort(0);
+    fact.setEndPort(0);
     fact.setManualStart(true);
     GatewayReceiver receiver = fact.create();
   }

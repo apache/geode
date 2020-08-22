@@ -51,7 +51,6 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.api.MembershipManagerHelper;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
@@ -80,10 +79,10 @@ public class ReconnectWithClusterConfigurationDUnitTest implements Serializable 
 
   @Before
   public void setup() throws IOException {
-    List<AvailablePort.Keeper> randomAvailableTCPPortKeepers =
+    List<AvailablePort.TcpPortKeeper> randomAvailableTCPPortKeepers =
         AvailablePortHelper.getRandomAvailableTCPPortKeepers(NUM_LOCATORS);
     for (int i = 0; i < NUM_LOCATORS; i++) {
-      AvailablePort.Keeper keeper = randomAvailableTCPPortKeepers.get(i);
+      AvailablePort.TcpPortKeeper keeper = randomAvailableTCPPortKeepers.get(i);
       locatorPorts[i] = keeper.getPort();
     }
     final int[] locPorts = locatorPorts;

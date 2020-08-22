@@ -101,7 +101,6 @@ import org.apache.geode.distributed.internal.membership.api.MembershipManagerHel
 import org.apache.geode.distributed.internal.membership.api.MembershipView;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.tcp.Connection;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -1116,11 +1115,11 @@ public class LocatorDUnitTest implements Serializable {
 
   @Test
   public void testConcurrentLocatorStartup() throws Exception {
-    List<AvailablePort.Keeper> portKeepers =
+    List<AvailablePort.TcpPortKeeper> portKeepers =
         AvailablePortHelper.getRandomAvailableTCPPortKeepers(4);
     StringBuilder sb = new StringBuilder(100);
     for (int i = 0; i < portKeepers.size(); i++) {
-      AvailablePort.Keeper keeper = portKeepers.get(i);
+      AvailablePort.TcpPortKeeper keeper = portKeepers.get(i);
       sb.append("localhost[").append(keeper.getPort()).append("]");
       if (i < portKeepers.size() - 1) {
         sb.append(',');
@@ -1133,7 +1132,7 @@ public class LocatorDUnitTest implements Serializable {
     List<AsyncInvocation<Object>> asyncInvocations = new ArrayList<>(portKeepers.size());
 
     for (int i = 0; i < portKeepers.size(); i++) {
-      AvailablePort.Keeper keeper = portKeepers.get(i);
+      AvailablePort.TcpPortKeeper keeper = portKeepers.get(i);
       int port = keeper.getPort();
       keeper.release();
       AsyncInvocation<Object> startLocator = getVM(i).invokeAsync("start locator " + i, () -> {

@@ -72,7 +72,7 @@ import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.Struct;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.AvailablePort.Keeper;
+import org.apache.geode.internal.AvailablePort.TcpPortKeeper;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.entries.AbstractRegionEntry;
@@ -905,10 +905,10 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
         buildProperties(authenticator, accessor, false, extraAuthProps, extraAuthzProps);
 
     // Get ports for the servers
-    List<Keeper> randomAvailableTCPPortKeepers =
+    List<TcpPortKeeper> randomAvailableTCPPortKeepers =
         AvailablePortHelper.getRandomAvailableTCPPortKeepers(2);
-    Keeper port1Keeper = randomAvailableTCPPortKeepers.get(0);
-    Keeper port2Keeper = randomAvailableTCPPortKeepers.get(1);
+    TcpPortKeeper port1Keeper = randomAvailableTCPPortKeepers.get(0);
+    TcpPortKeeper port2Keeper = randomAvailableTCPPortKeepers.get(1);
     int port1 = port1Keeper.getPort();
     int port2 = port2Keeper.getPort();
 

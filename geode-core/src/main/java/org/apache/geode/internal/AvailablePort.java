@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
@@ -24,6 +25,7 @@ import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.net.NetworkInterface;
 import java.net.ServerSocket;
+import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
@@ -270,18 +272,16 @@ public class AvailablePort {
    */
   static int getRandomAvailablePort(int protocol, InetAddress addr) {
     if (SOCKET == protocol) {
-      return getEphemeralTcpPort(addr);
+      return getEphemeralTcpPort(addr).release();
     }
     throw new UnsupportedOperationException();
   }
 
-  private static int getEphemeralTcpPort(final InetAddress addr) {
-    // TODO jbarrett - more work needed.
+  protected static TcpPortKeeper getEphemeralTcpPort(final InetAddress inetAddress) {
+    // TODO jbarrett - reasonable timeout
     while (true) {
-      try (final ServerSocket serverSocket = new ServerSocket()) {
-        serverSocket.setReuseAddress(true);
-        serverSocket.bind(new InetSocketAddress(addr, 0));
-        return serverSocket.getLocalPort();
+      try {
+        return new TcpPortKeeper(inetAddress);
       } catch (IOException e) {
         e.printStackTrace();
       }
@@ -330,6 +330,7 @@ public class AvailablePort {
     private final transient ServerSocket ss;
     private final int port;
 
+
     public Keeper(ServerSocket ss, int port) {
       this.ss = ss;
       this.port = port;
@@ -347,13 +348,15 @@ public class AvailablePort {
     /**
      * Once you call this the socket will be freed and can then be reallocated by someone else.
      */
-    public void release() {
+    public int release() {
       try {
         if (this.ss != null) {
           this.ss.close();
         }
       } catch (IOException ignore) {
       }
+
+      return port;
     }
   }
 
@@ -439,6 +442,65 @@ public class AvailablePort {
 
     }
 
+  }
+
+  public static class TcpPortKeeper implements Closeable {
+    private final ServerSocket serverSocket;
+    private final Socket client;
+    private final Socket server;
+
+    public TcpPortKeeper(final InetAddress inetAddress) throws IOException {
+      try {
+        serverSocket = new ServerSocket();
+        serverSocket.setReuseAddress(true);
+        serverSocket.bind(new InetSocketAddress(inetAddress, 0));
+        client = new Socket();
+        client.connect(new InetSocketAddress(inetAddress, getPort()));
+        server = serverSocket.accept();
+      } catch (IOException e) {
+        safeCloseAndLog(this);
+        throw e;
+      }
+    }
+
+    public int getPort() {
+      return serverSocket.getLocalPort();
+    }
+
+    public int release() {
+      try {
+        return serverSocket.getLocalPort();
+      } finally {
+        safeCloseAndLog(this);
+      }
+    }
+
+    @Override
+    public void close() throws IOException {
+      try {
+        safeClose(server);
+      } finally {
+        try {
+          safeClose(client);
+        } finally {
+          safeClose(serverSocket);
+        }
+      }
+    }
+
+    private void safeCloseAndLog(final Closeable closeable) {
+      try {
+        safeClose(closeable);
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+
+    private void safeClose(final Closeable closeable) throws IOException {
+      if (null != closeable) {
+        closeable.close();
+      }
+    }
   }
 
 }

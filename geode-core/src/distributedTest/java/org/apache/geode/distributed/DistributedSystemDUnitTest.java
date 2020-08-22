@@ -33,7 +33,7 @@ import static org.apache.geode.distributed.internal.OperationExecutors.SERIAL_EX
 import static org.apache.geode.internal.AvailablePort.MULTICAST;
 import static org.apache.geode.internal.AvailablePortHelper.SOCKET;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailablePort;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPortRange;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.internal.inet.LocalHostUtil.getLocalHost;
 import static org.apache.geode.test.dunit.DistributedTestUtils.getDUnitLocatorPort;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
@@ -102,7 +102,7 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
     this.locatorPort = getRandomAvailablePort(SOCKET);
     this.tcpPort = getRandomAvailablePort(SOCKET);
 
-    int[] portRange = getRandomAvailableTCPPortRange(3);
+    int[] portRange = getRandomAvailableTCPPorts(3);
     this.lowerBoundOfPortRange = portRange[0];
     this.upperBoundOfPortRange = portRange[portRange.length - 1];
   }
