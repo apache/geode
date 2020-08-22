@@ -266,7 +266,8 @@ public class SqlHandler {
       throws SQLException {
     String sqlStr = getSqlString(tableMetaData, entryColumnData, operation);
     if (logger.isDebugEnabled()) {
-      logger.debug("SQL:{} key:{} value:{}", sqlStr, entryColumnData.getEntryKeyColumnData(),
+      logger.debug("Got SQL string:{} with key:{} value:{}", sqlStr,
+          entryColumnData.getEntryKeyColumnData(),
           entryColumnData.getEntryValueColumnData());
     }
     return connection.prepareStatement(sqlStr);

@@ -284,7 +284,7 @@ public abstract class JdbcWriterIntegrationTest {
   }
 
   @Test
-  public void putInstanceFieldLengthOversTableColumnLengthFails()
+  public void putInstanceFieldLengthGreaterThanTableColumnLengthFails()
       throws SQLException, RegionMappingExistsException {
     createTable();
     setupRegion("id");
@@ -398,7 +398,7 @@ public abstract class JdbcWriterIntegrationTest {
   }
 
   @Test
-  public void updateInstanceFieldLengthOversTableColumnLengthFails()
+  public void updateInstanceFieldLengthGreaterThanTableColumnLengthFails()
       throws SQLException, RegionMappingExistsException {
     createTable();
     setupRegion("id");
@@ -448,7 +448,7 @@ public abstract class JdbcWriterIntegrationTest {
   }
 
   @Test
-  public void updateBecomeInsertFieldLengthOversTableColumnLengthFails() throws Exception {
+  public void updateBecomeInsertFieldLengthGreaterThanTableColumnLengthFails() throws Exception {
     createTable();
     setupRegion("id");
     employees.put("1", pdx1);
@@ -463,7 +463,7 @@ public abstract class JdbcWriterIntegrationTest {
   }
 
   @Test
-  public void insertBecomeUpdateFieldLengthOversTableColumnLengthFails() throws Exception {
+  public void insertBecomeUpdateFieldLengthGreaterThanTableColumnLengthFails() throws Exception {
     createTable();
     setupRegion("id");
     statement.execute("Insert into " + REGION_TABLE_NAME + " values('1', 'bogus', 11)");
