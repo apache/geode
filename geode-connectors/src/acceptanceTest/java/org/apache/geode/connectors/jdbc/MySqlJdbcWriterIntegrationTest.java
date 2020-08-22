@@ -46,4 +46,9 @@ public class MySqlJdbcWriterIntegrationTest extends JdbcWriterIntegrationTest {
   protected boolean vendorSupportsSchemas() {
     return false;
   }
+
+  @Override
+  protected String getDataTooLongSqlErrorMessage() {
+    return "Data truncation: Data too long for column";
+  }
 }

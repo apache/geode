@@ -637,6 +637,21 @@ public class SqlHandlerTest {
     verify(insertStatement).close();
   }
 
+  @Test
+  public void whenInsertFailsWithExceptionAndNonUpdateFirstExceptionIsThrown() throws Exception {
+    when(statement.executeUpdate()).thenThrow(SQLException.class);
+    PreparedStatement updateStatement = mock(PreparedStatement.class);
+    when(updateStatement.executeUpdate()).thenReturn(0);
+    when(connection.prepareStatement(any())).thenReturn(statement).thenReturn(updateStatement);
+    when(value.getFieldNames()).thenReturn(Collections.emptyList());
+    thrown.expect(SQLException.class);
+
+    handler.write(region, Operation.CREATE, new Object(), value);
+
+    verify(statement).close();
+    verify(updateStatement).close();
+  }
+
   private void setupEmptyResultSet() throws SQLException {
     ResultSet result = mock(ResultSet.class);
     when(result.next()).thenReturn(false);

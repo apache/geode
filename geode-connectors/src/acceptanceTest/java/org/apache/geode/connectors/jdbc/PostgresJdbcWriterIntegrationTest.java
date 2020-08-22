@@ -103,4 +103,8 @@ public class PostgresJdbcWriterIntegrationTest extends JdbcWriterIntegrationTest
     assertThat(resultSet.next()).isFalse();
   }
 
+  @Override
+  protected String getDataTooLongSqlErrorMessage() {
+    return "ERROR: value too long for type character";
+  }
 }

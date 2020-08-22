@@ -60,8 +60,10 @@ public abstract class JdbcWriterIntegrationTest {
   protected JdbcWriter<Object, Object> jdbcWriter;
   protected PdxInstance pdx1;
   protected PdxInstance pdx2;
+  protected PdxInstance illegalPdx;
   protected Employee employee1;
   protected Employee employee2;
+  protected Employee illegalEmployee;
   protected final TestDataSourceFactory testDataSourceFactory =
       new TestDataSourceFactory(getConnectionUrl());
   protected String catalog;
@@ -80,14 +82,27 @@ public abstract class JdbcWriterIntegrationTest {
     pdx2 = cache.createPdxInstanceFactory(Employee.class.getName()).writeString("id", "2")
         .writeString("name", "Emp2")
         .writeInt("age", 21).create();
+    illegalPdx = cache.createPdxInstanceFactory(Employee.class.getName()).writeString("id", "99")
+        .writeString("name", "IllegalEmployee")
+        .writeInt("age", 33).create();
     employee1 = (Employee) pdx1.getObject();
     employee2 = (Employee) pdx2.getObject();
+    illegalEmployee = (Employee) illegalPdx.getObject();
     createTableInUnusedSchema();
   }
 
   protected void createTable() throws SQLException {
-    statement.execute("Create Table " + REGION_TABLE_NAME
-        + " (id varchar(10) primary key not null, name varchar(10), age int)");
+    createTable(true);
+  }
+
+  private void createTable(boolean hasPrimaryKey) throws SQLException {
+    if (hasPrimaryKey) {
+      statement.execute("Create Table " + REGION_TABLE_NAME
+          + " (id varchar(10) primary key not null, name varchar(10), age int)");
+    } else {
+      statement.execute("Create Table " + REGION_TABLE_NAME
+          + " (id varchar(10) not null, name varchar(10), age int)");
+    }
   }
 
   protected void createTableWithSchema() throws SQLException {
@@ -269,6 +284,18 @@ public abstract class JdbcWriterIntegrationTest {
   }
 
   @Test
+  public void putInstanceFieldLengthGreaterThanTableColumnLengthFails()
+      throws SQLException, RegionMappingExistsException {
+    createTable();
+    setupRegion("id");
+
+    Throwable thrown = catchThrowable(() -> employees.put("99", illegalEmployee));
+
+    assertThat(thrown).isInstanceOf(JdbcConnectorException.class);
+    assertThat(thrown.getMessage()).startsWith(getDataTooLongSqlErrorMessage());
+  }
+
+  @Test
   public void canDestroyFromTable() throws Exception {
     createTable();
     setupRegion("id");
@@ -371,6 +398,24 @@ public abstract class JdbcWriterIntegrationTest {
   }
 
   @Test
+  public void updateInstanceFieldLengthGreaterThanTableColumnLengthFails()
+      throws SQLException, RegionMappingExistsException {
+    createTable();
+    setupRegion("id");
+    employees.put("1", pdx1);
+
+    Throwable thrown = catchThrowable(() -> employees.put("1", illegalPdx));
+
+    assertThat(thrown).isInstanceOf(JdbcConnectorException.class);
+    assertThat(thrown.getMessage()).startsWith(getDataTooLongSqlErrorMessage());
+
+    ResultSet resultSet =
+        statement.executeQuery("select * from " + REGION_TABLE_NAME + " order by id asc");
+    assertRecordMatchesEmployee(resultSet, "1", employee1);
+    assertThat(resultSet.next()).isFalse();
+  }
+
+  @Test
   public void canUpdateBecomeInsert() throws Exception {
     createTable();
     setupRegion("id");
@@ -400,6 +445,53 @@ public abstract class JdbcWriterIntegrationTest {
         statement.executeQuery("select * from " + REGION_TABLE_NAME + " order by id asc");
     assertRecordMatchesEmployee(resultSet, "1", employee1);
     assertThat(resultSet.next()).isFalse();
+  }
+
+  @Test
+  public void updateBecomeInsertFieldLengthGreaterThanTableColumnLengthFails() throws Exception {
+    createTable();
+    setupRegion("id");
+    employees.put("1", pdx1);
+
+    statement.execute("delete from " + REGION_TABLE_NAME + " where id = '1'");
+    validateTableRowCount(0);
+
+    Throwable thrown = catchThrowable(() -> employees.put("1", illegalPdx));
+
+    assertThat(thrown).isInstanceOf(JdbcConnectorException.class);
+    assertThat(thrown.getMessage()).startsWith(getDataTooLongSqlErrorMessage());
+  }
+
+  @Test
+  public void insertBecomeUpdateFieldLengthGreaterThanTableColumnLengthFails() throws Exception {
+    createTable();
+    setupRegion("id");
+    statement.execute("Insert into " + REGION_TABLE_NAME + " values('1', 'bogus', 11)");
+    validateTableRowCount(1);
+
+    Throwable thrown = catchThrowable(() -> employees.put("1", illegalPdx));
+
+    assertThat(thrown).isInstanceOf(JdbcConnectorException.class);
+    assertThat(thrown.getMessage()).startsWith(getDataTooLongSqlErrorMessage());
+
+    ResultSet resultSet =
+        statement.executeQuery("select * from " + REGION_TABLE_NAME + " order by id asc");
+    assertRecordMatchesEmployee(resultSet, "1", new Employee("11", "bogus", 11));
+    assertThat(resultSet.next()).isFalse();
+  }
+
+  @Test
+  public void nonPrimaryKeyTableMultipleDataIsUpdated() throws Exception {
+    createTable(false);
+    setupRegion("id");
+    employees.put("2", pdx2);
+    statement.execute("Insert into " + REGION_TABLE_NAME + " values('2', 'bogus', 21)");
+    validateTableRowCount(2);
+
+    Throwable thrown = catchThrowable(() -> employees.put("2", pdx2));
+
+    assertThat(thrown).isInstanceOf(AssertionError.class);
+    assertThat(thrown.getMessage()).isEqualTo("expected 1 but updateCount was: 2");
   }
 
   protected Region<Object, Object> createRegionWithJDBCSynchronousWriter(String regionName,
@@ -437,4 +529,6 @@ public abstract class JdbcWriterIntegrationTest {
     assertThat(resultSet.getString("name")).isEqualTo(employee.getName());
     assertThat(resultSet.getInt("age")).isEqualTo(employee.getAge());
   }
+
+  protected abstract String getDataTooLongSqlErrorMessage();
 }
