@@ -185,6 +185,7 @@ public class StartLocatorCommandDUnitTest {
         + locatorPort + ") is not available on localhost.";
 
     try (Socket interferingProcess = new Socket()) {
+      interferingProcess.setReuseAddress(true);
       interferingProcess.bind(new InetSocketAddress(locatorPort));
 
       File workingDir = temporaryFolder.newFolder();

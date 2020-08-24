@@ -206,7 +206,7 @@ public class StartServerCommandDUnitTest implements Serializable {
         + "Network is unreachable; port (" + serverPort + ") is not available on localhost.";
 
     try (Socket interferingProcess = new Socket()) {
-      // make the target port unavailable
+      interferingProcess.setReuseAddress(true);
       interferingProcess.bind(new InetSocketAddress(serverPort));
 
       String command = new CommandStringBuilder(START_SERVER)
