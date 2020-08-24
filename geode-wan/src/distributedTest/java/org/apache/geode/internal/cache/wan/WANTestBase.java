@@ -66,6 +66,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutionException;
@@ -3611,6 +3612,37 @@ public class WANTestBase extends DistributedTestCase {
     AbstractGatewaySender ags = (AbstractGatewaySender) sender;
     await().untilAsserted(() -> assertEquals("Expected tmpDroppedEvents size: " + size
         + " but actual size: " + ags.getTmpDroppedEventSize(), size, ags.getTmpDroppedEventSize()));
+  }
+
+  public static void validateEmptyTempQueueMap(String senderId) {
+    Set<GatewaySender> senders = cache.getGatewaySenders();
+    GatewaySender sender = null;
+    for (GatewaySender s : senders) {
+      if (s.getId().equals(senderId)) {
+        sender = s;
+        break;
+      }
+    }
+
+    int size = 0;
+    Set queues = ((AbstractGatewaySender) sender).getQueues();
+    for (Object queue : queues) {
+      PartitionedRegion region =
+          (PartitionedRegion) ((ConcurrentParallelGatewaySenderQueue) queue).getRegion();
+      int buckets = region.getTotalNumberOfBuckets();
+      for (int bucket = 0; bucket < buckets; bucket++) {
+        BlockingQueue newQueue =
+            ((ConcurrentParallelGatewaySenderQueue) queue).getBucketTmpQueue((int) bucket);
+        if (newQueue != null) {
+          size += newQueue.size();
+        }
+      }
+    }
+
+    final int finalSize = size;
+    assertEquals("Expected elements in TempQueueMap: " + 0
+        + " but actual size: " + finalSize, 0, finalSize);
+
   }
 
   public static void verifyQueueSize(String senderId, int size) {
