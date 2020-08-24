@@ -483,6 +483,12 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
       final String prQName = sender.getId() + QSTRING + convertPathToName(userPR.getFullPath());
       prQ = (PartitionedRegion) cache.getRegion(prQName);
+
+      if ((prQ != null) && (this.index == 0) && this.cleanQueues) {
+        prQ.destroyRegion(null);
+        prQ = null;
+      }
+
       if (prQ == null) {
         RegionShortcut regionShortcut;
         if (sender.isPersistenceEnabled() && !isAccessor) {
@@ -550,19 +556,13 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         // Add the overflow statistics to the mbean
         addOverflowStatisticsToMBean(cache, prQ);
 
-        // Wait for buckets to be recovered.
-        prQ.shadowPRWaitForBucketRecovery();
+        if (!this.cleanQueues) {
+          // Wait for buckets to be recovered.
+          prQ.shadowPRWaitForBucketRecovery();
+        }
 
         if (logger.isDebugEnabled()) {
           logger.debug("{}: Created queue region: {}", this, prQ);
-        }
-        if (this.cleanQueues) {
-          // now, clean up the shadowPR's buckets on this node (primary as well as
-          // secondary) for a fresh start
-          Set<BucketRegion> localBucketRegions = prQ.getDataStore().getAllLocalBucketRegions();
-          for (BucketRegion bucketRegion : localBucketRegions) {
-            bucketRegion.clear();
-          }
         }
 
       } else {
@@ -629,14 +629,6 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     if (logger.isDebugEnabled()) {
       logger.debug("{}: No need to create the region as the region has been retrieved: {}", this,
           prQ);
-    }
-    // now, clean up the shadowPR's buckets on this node (primary as well as
-    // secondary) for a fresh start
-    if (this.cleanQueues) {
-      Set<BucketRegion> localBucketRegions = prQ.getDataStore().getAllLocalBucketRegions();
-      for (BucketRegion bucketRegion : localBucketRegions) {
-        bucketRegion.clear();
-      }
     }
   }
 
