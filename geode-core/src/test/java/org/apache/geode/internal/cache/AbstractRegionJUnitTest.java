@@ -115,10 +115,12 @@ public class AbstractRegionJUnitTest {
     DiskWriteAttributes diskWriteAttributes = mock(DiskWriteAttributes.class);
     when(regionAttributes.getDiskWriteAttributes()).thenReturn(diskWriteAttributes);
     RegionMapConstructor regionMapConstructor = mock(RegionMapConstructor.class);
+    LocalRegion.ServerRegionProxyConstructor proxyConstructor = mock(
+        LocalRegion.ServerRegionProxyConstructor.class);
     Function<LocalRegion, RegionPerfStats> regionPerfStatsFactory =
         (localRegion) -> mock(RegionPerfStats.class);
     AbstractRegion region = new LocalRegion("regionName", regionAttributes, null, Fakes.cache(),
-        new InternalRegionArguments(), null, regionMapConstructor, null, null, null,
+        new InternalRegionArguments(), null, regionMapConstructor, proxyConstructor, null, null,
         regionPerfStatsFactory, disabledClock());
     return region;
   }
