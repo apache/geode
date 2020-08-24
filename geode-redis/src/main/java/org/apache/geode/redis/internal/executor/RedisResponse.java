@@ -52,6 +52,10 @@ public class RedisResponse {
     return new RedisResponse((bba) -> Coder.getSimpleStringResponse(bba, stringValue));
   }
 
+  public static RedisResponse string(byte[] byteArray) {
+    return new RedisResponse((bba) -> Coder.getSimpleStringResponse(bba, byteArray));
+  }
+
   public static RedisResponse bulkString(Object value) {
     return new RedisResponse((bba) -> {
       try {
