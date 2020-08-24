@@ -46,7 +46,7 @@ import org.junit.Test;
 import org.junit.rules.ErrorCollector;
 import org.junit.runner.RunWith;
 
-import org.apache.geode.internal.AvailablePort.TcpPortKeeper;
+import org.apache.geode.internal.AvailablePortHelper.TcpPortKeeper;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.util.internal.GeodeGlossary;
 

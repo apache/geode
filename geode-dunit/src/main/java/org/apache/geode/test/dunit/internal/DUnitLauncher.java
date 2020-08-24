@@ -193,7 +193,7 @@ public class DUnitLauncher {
     DUNIT_SUSPECT_FILE.deleteOnExit();
 
     // create an RMI registry and add an object to share our tests config
-    int namingPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    int namingPort = AvailablePortHelper.getRandomAvailableTCPPort(null);
     Registry registry = LocateRegistry.createRegistry(namingPort);
     System.setProperty(RMI_PORT_PARAM, "" + namingPort);
 

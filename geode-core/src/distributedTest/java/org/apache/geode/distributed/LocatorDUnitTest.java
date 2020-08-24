@@ -1115,11 +1115,11 @@ public class LocatorDUnitTest implements Serializable {
 
   @Test
   public void testConcurrentLocatorStartup() throws Exception {
-    List<AvailablePort.TcpPortKeeper> portKeepers =
+    List<AvailablePortHelper.TcpPortKeeper> portKeepers =
         AvailablePortHelper.getRandomAvailableTCPPortKeepers(4);
     StringBuilder sb = new StringBuilder(100);
     for (int i = 0; i < portKeepers.size(); i++) {
-      AvailablePort.TcpPortKeeper keeper = portKeepers.get(i);
+      AvailablePortHelper.TcpPortKeeper keeper = portKeepers.get(i);
       sb.append("localhost[").append(keeper.getPort()).append("]");
       if (i < portKeepers.size() - 1) {
         sb.append(',');
@@ -1132,7 +1132,7 @@ public class LocatorDUnitTest implements Serializable {
     List<AsyncInvocation<Object>> asyncInvocations = new ArrayList<>(portKeepers.size());
 
     for (int i = 0; i < portKeepers.size(); i++) {
-      AvailablePort.TcpPortKeeper keeper = portKeepers.get(i);
+      AvailablePortHelper.TcpPortKeeper keeper = portKeepers.get(i);
       int port = keeper.getPort();
       keeper.release();
       AsyncInvocation<Object> startLocator = getVM(i).invokeAsync("start locator " + i, () -> {

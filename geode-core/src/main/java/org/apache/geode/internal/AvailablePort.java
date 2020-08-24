@@ -279,7 +279,7 @@ public class AvailablePort {
     throw new UnsupportedOperationException();
   }
 
-  protected static TcpPortKeeper getEphemeralTcpPort(final InetAddress inetAddress) {
+  private static TcpPortKeeper getEphemeralTcpPort(final InetAddress inetAddress) {
     // TODO jbarrett - reasonable timeout
     while (true) {
       try {
@@ -290,7 +290,7 @@ public class AvailablePort {
     }
   }
 
-  protected static MulticastPortKeeper getEphemeralMulticastPort(final InetAddress inetAddress) {
+  private static MulticastPortKeeper getEphemeralMulticastPort(final InetAddress inetAddress) {
     // TODO jbarrett - reasonable timeout
     while (true) {
       try {
