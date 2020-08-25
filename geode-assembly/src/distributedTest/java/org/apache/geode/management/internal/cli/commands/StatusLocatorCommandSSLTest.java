@@ -89,7 +89,7 @@ public class StatusLocatorCommandSSLTest {
   /**
    * This test expects member listening on default port.
    */
-  @IgnoreUntil(value = "decontainerization", until = "2020-08-01")
+  @IgnoreUntil(value = "decontainerization", until = "2020-09-01")
   @Test
   public void testWithMemberName() throws Exception {
     gfsh.executeAndAssertThat(STATUS_LOCATOR + " --name=locator-0" + " --security-properties-file="
@@ -99,7 +99,7 @@ public class StatusLocatorCommandSSLTest {
   /**
    * This test expects member listening on default port.
    */
-  @IgnoreUntil(value = "decontainerization", until = "2020-08-01")
+  @IgnoreUntil(value = "decontainerization", until = "2020-09-01")
   @Test
   public void testWithMemberId() throws Exception {
     gfsh.executeAndAssertThat(STATUS_LOCATOR + " --name=" + memberId
@@ -109,7 +109,7 @@ public class StatusLocatorCommandSSLTest {
   /**
    * This test expects member listening on default port.
    */
-  @IgnoreUntil(value = "decontainerization", until = "2020-08-01")
+  @IgnoreUntil(value = "decontainerization", until = "2020-09-01")
   @Test
   public void testWithDirOnline() throws Exception {
     gfsh.executeAndAssertThat(STATUS_LOCATOR + " --dir=" + workingDir
@@ -119,7 +119,7 @@ public class StatusLocatorCommandSSLTest {
   /**
    * This test expects member listening on default port.
    */
-  @IgnoreUntil(value = "decontainerization", until = "2020-08-01")
+  @IgnoreUntil(value = "decontainerization", until = "2020-09-01")
   @Test
   public void testWithDirOffline() throws Exception {
     gfsh.disconnect();
