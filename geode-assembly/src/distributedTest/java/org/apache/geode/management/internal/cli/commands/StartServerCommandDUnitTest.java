@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.internal.AvailablePort.SOCKET;
+import static org.apache.geode.internal.AvailablePort.getAddress;
 import static org.apache.geode.management.internal.i18n.CliStrings.CACHE_XML_NOT_FOUND_MESSAGE;
 import static org.apache.geode.management.internal.i18n.CliStrings.CREATE_REGION;
 import static org.apache.geode.management.internal.i18n.CliStrings.CREATE_REGION__REGION;
@@ -206,7 +208,7 @@ public class StartServerCommandDUnitTest implements Serializable {
 
     try (Socket interferingProcess = new Socket()) {
       interferingProcess.setReuseAddress(true);
-      interferingProcess.bind(new InetSocketAddress(serverPort));
+      interferingProcess.bind(new InetSocketAddress(getAddress(SOCKET), serverPort));
 
       String command = new CommandStringBuilder(START_SERVER)
           .addOption(START_SERVER__NAME, memberName)
