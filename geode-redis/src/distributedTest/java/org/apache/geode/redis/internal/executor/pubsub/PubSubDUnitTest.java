@@ -32,6 +32,9 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -41,8 +44,12 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisException;
 
 import org.apache.geode.logging.internal.executors.LoggingThread;
+import org.apache.geode.logging.internal.log4j.api.FastLogger;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.mocks.MockSubscriber;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
@@ -95,6 +102,14 @@ public class PubSubDUnitTest {
     server3 = cluster.startRedisVM(3, locator.getPort());
     server4 = cluster.startRedisVM(4, locator.getPort());
     server5 = cluster.startServerVM(5, locator.getPort());
+
+    for (VM v : Host.getHost(0).getAllVMs()) {
+      v.invoke(() -> {
+        Logger logger = LogService.getLogger("org.apache.geode.redis");
+        Configurator.setAllLevels(logger.getName(), Level.getLevel("DEBUG"));
+        FastLogger.setDelegating(true);
+      });
+    }
 
     redisServerPort1 = cluster.getRedisPort(1);
     redisServerPort2 = cluster.getRedisPort(2);
