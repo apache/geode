@@ -127,9 +127,9 @@ public class QueryResultFormatterTest {
     checkResult(javaDateResult,
         "{\"result\":[[\"java.util.Date\",\"" + expectedString + "\"]]}");
 
-    java.sql.Date sqlDatee = new java.sql.Date(0);
+    java.sql.Date sqlDate = new java.sql.Date(0);
     QueryResultFormatter sqlDateResult =
-        new QueryResultFormatter(100).add(RESULT, sqlDatee);
+        new QueryResultFormatter(100).add(RESULT, sqlDate);
     checkResult(sqlDateResult,
         "{\"result\":[[\"java.sql.Date\",\"" + expectedString + "\"]]}");
   }
