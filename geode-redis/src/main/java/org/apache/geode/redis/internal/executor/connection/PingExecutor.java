@@ -30,10 +30,10 @@ public class PingExecutor extends AbstractExecutor {
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
-    Object result = PING_RESPONSE;
+    byte[] result = PING_RESPONSE.getBytes();
     if (commandElems.size() > 1) {
       result = commandElems.get(1);
     }
-    return RedisResponse.bulkString(result);
+    return RedisResponse.string(result);
   }
 }

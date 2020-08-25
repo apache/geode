@@ -260,10 +260,13 @@ public class Coder {
 
   public static ByteBuf getSimpleStringResponse(ByteBufAllocator alloc, String string) {
     byte[] simpAr = stringToBytes(string);
+    return getSimpleStringResponse(alloc, simpAr);
+  }
 
-    ByteBuf response = alloc.buffer(simpAr.length + 20);
+  public static ByteBuf getSimpleStringResponse(ByteBufAllocator alloc, byte[] byteArray) {
+    ByteBuf response = alloc.buffer(byteArray.length + 20);
     response.writeByte(SIMPLE_STRING_ID);
-    response.writeBytes(simpAr);
+    response.writeBytes(byteArray);
     response.writeBytes(CRLFar);
     return response;
   }
