@@ -29,7 +29,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANA
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.management.internal.ManagementConstants.OBJECTNAME__CLIENTSERVICE_MXBEAN;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
-import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -610,4 +609,13 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   public String getName() {
     return name;
   }
+
+  /**
+   * Copied from {@link org.apache.geode.util.internal.UncheckedUtils} for upgrade tests.
+   */
+  @SuppressWarnings("unchecked")
+  private static <T> T uncheckedCast(Object object) {
+    return (T) object;
+  }
+
 }
