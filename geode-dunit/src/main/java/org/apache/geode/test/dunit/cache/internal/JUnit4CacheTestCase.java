@@ -22,6 +22,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.Properties;
 
@@ -53,6 +55,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.internal.DUnitLauncher;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.DistributedRule;
@@ -557,7 +560,7 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
 
   public static File getDiskDir() {
     int vmNum = VM.getCurrentVMNum();
-    File dir = new File("diskDir", "disk" + vmNum).getAbsoluteFile();
+    File dir = new File(new File(DUnitLauncher.DUNIT_DIR, "diskDir"), "disk" + vmNum).getAbsoluteFile();
     dir.mkdirs();
     return dir;
   }
