@@ -190,6 +190,16 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
         isOffHeap());
   }
 
+  protected SerializableRunnableIF createPartitionedRegionRedundancy1RunnableNoSenders() {
+    return () -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 1, 100,
+        isOffHeap());
+  }
+
+  protected SerializableRunnableIF createPartitionedRegionRedundancy0RunnableNoSenders() {
+    return () -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 0, 100,
+        isOffHeap());
+  }
+
   protected SerializableRunnableIF waitForSenderRunnable() {
     return () -> WANTestBase.waitForSenderRunningState("ln");
   }
@@ -1130,6 +1140,111 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
     assertEquals(2000, (vm2Acks + vm3Acks + vm4Acks + vm5Acks));
 
   }
+
+  /**
+   * Test that, when a parallel gateway sender is added to a partitioned region through attributes
+   * mutator, transaction events are not sent to all region members but only to those who are
+   * hosting the bucket for the event and thus, events are not stored in the bucketToTempQueueMap
+   * member of the ParallelGatewaySenderQueue.
+   * Redundancy = 1 in the partitioned region.
+   *
+   */
+  @Test
+  public void testParallelPropagationTxNotificationsNotSentToAllRegionMembersWhenAddingParallelGatewaySenderThroughAttributesMutator()
+      throws Exception {
+    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+
+    createCacheInVMs(nyPort, vm2, vm3);
+
+    createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
+
+    vm4.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
+    vm5.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
+    vm6.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
+    vm7.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
+
+    vm4.invoke(createPartitionedRegionRedundancy1RunnableNoSenders());
+    vm5.invoke(createPartitionedRegionRedundancy1RunnableNoSenders());
+    vm6.invoke(createPartitionedRegionRedundancy1RunnableNoSenders());
+    vm7.invoke(createPartitionedRegionRedundancy1RunnableNoSenders());
+
+    vm2.invoke(createReceiverPartitionedRegionRedundancy1());
+    vm3.invoke(createReceiverPartitionedRegionRedundancy1());
+
+    vm4.invoke(() -> addSenderThroughAttributesMutator(getTestMethodName() + "_PR", "ln"));
+    vm5.invoke(() -> addSenderThroughAttributesMutator(getTestMethodName() + "_PR", "ln"));
+    vm6.invoke(() -> addSenderThroughAttributesMutator(getTestMethodName() + "_PR", "ln"));
+    vm7.invoke(() -> addSenderThroughAttributesMutator(getTestMethodName() + "_PR", "ln"));
+
+    startSenderInVMs("ln", vm4, vm5, vm6, vm7);
+
+    vm4.invoke(waitForSenderRunnable());
+    vm5.invoke(waitForSenderRunnable());
+    vm6.invoke(waitForSenderRunnable());
+    vm7.invoke(waitForSenderRunnable());
+
+    vm4.invoke(() -> WANTestBase.doTxPuts(getTestMethodName() + "_PR"));
+
+    vm4.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 3));
+    vm4.invoke(() -> WANTestBase.verifyQueueSize("ln", 3));
+
+    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 0));
+    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 0));
+
+    vm4.invoke(() -> WANTestBase.validateEmptyBucketToTempQueueMap("ln"));
+    vm5.invoke(() -> WANTestBase.validateEmptyBucketToTempQueueMap("ln"));
+    vm6.invoke(() -> WANTestBase.validateEmptyBucketToTempQueueMap("ln"));
+    vm7.invoke(() -> WANTestBase.validateEmptyBucketToTempQueueMap("ln"));
+  }
+
+  /**
+   * Test that, when a parallel gateway sender is added to a partitioned region through attributes
+   * mutator, transaction events are not sent to all region members but only to those who are
+   * hosting the bucket for the event and thus, events are not stored in the bucketToTempQueueMap
+   * member of the ParallelGatewaySenderQueue.
+   * No redundancy in the partitioned region.
+   *
+   */
+  @Test
+  public void testParallelPropagationTxNotificationsNotSentToAllRegionMembersWhenAddingParallelGatewaySenderThroughAttributesMutatorNoRedundancy()
+      throws Exception {
+    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+
+    createCacheInVMs(nyPort, vm2, vm3);
+
+    createCacheInVMs(lnPort, vm4, vm5);
+
+    vm4.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
+    vm5.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
+
+    vm4.invoke(createPartitionedRegionRedundancy0RunnableNoSenders());
+    vm5.invoke(createPartitionedRegionRedundancy0RunnableNoSenders());
+
+    vm2.invoke(createReceiverPartitionedRegionRedundancy1());
+    vm3.invoke(createReceiverPartitionedRegionRedundancy1());
+
+    vm4.invoke(() -> addSenderThroughAttributesMutator(getTestMethodName() + "_PR", "ln"));
+    vm5.invoke(() -> addSenderThroughAttributesMutator(getTestMethodName() + "_PR", "ln"));
+
+    startSenderInVMs("ln", vm4, vm5);
+
+    vm4.invoke(waitForSenderRunnable());
+    vm5.invoke(waitForSenderRunnable());
+
+    vm4.invoke(() -> WANTestBase.doTxPuts(getTestMethodName() + "_PR"));
+
+    vm4.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 3));
+    vm4.invoke(() -> WANTestBase.verifyQueueSize("ln", 3));
+
+    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 0));
+    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 0));
+
+    vm4.invoke(() -> WANTestBase.validateEmptyBucketToTempQueueMap("ln"));
+    vm5.invoke(() -> WANTestBase.validateEmptyBucketToTempQueueMap("ln"));
+  }
+
 
   private static RegionShortcut[] getRegionShortcuts() {
     return new RegionShortcut[] {RegionShortcut.PARTITION, RegionShortcut.PARTITION_PERSISTENT};
