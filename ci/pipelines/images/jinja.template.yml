@@ -60,7 +60,7 @@ resources:
 - name: openjdk8-docker-image
   type: docker-image
   source:
-    repository: openjdk
+    repository: bellsoft/liberica-openjdk-debian
     tag: 8
 
 - name: google-geode-builder

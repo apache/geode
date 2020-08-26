@@ -25,7 +25,7 @@ benchmarks:
     options: ''
     max_in_flight: 4
   - title: '_with_ssl'
-    flag: '-PwithSsl -PtestJVM=/usr/lib/jvm/java-11-openjdk-amd64/'
+    flag: '-PwithSsl -PtestJVM=/usr/lib/jvm/bellsoft-java11-amd64'
     options: '--tests=*GetBenchmark --tests=*PutBenchmark'
     max_in_flight: 1
   - title: '_with_security_manager'

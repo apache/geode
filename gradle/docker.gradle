@@ -30,7 +30,7 @@
  * Additional properties that can be set are:
  *
  *  dunitDockerImage   - The docker image used for running parallel dunits. The
- *                       default image is 'openjdk:8'. The image is required to
+ *                       default image is 'bellsoft/liberica-openjdk-debian:8'. The image is required to
  *                       have 'JAVA_HOME' set as an environment variable.
  *  dunitParallelForks - The number of parallel containers that will be
  *                       launched. The default is 8.
