@@ -41,6 +41,8 @@ public class Undefined implements DataSerializableFixedID, Comparable, Serializa
   private static final long serialVersionUID = 6643107525908324141L;
 
   @SuppressWarnings("lgtm[java/useless-null-check]")
+  // The "useless null check" alert is suppressed here as the first time the constructor is called,
+  // QueryService.UNDEFINED is actually null, but subsequent times it is not
   public Undefined() {
     Support.assertState(QueryService.UNDEFINED == null, "UNDEFINED constant already instantiated");
   }
