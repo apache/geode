@@ -269,14 +269,15 @@ public class PRClearQueryIndexDUnitTest {
     Query query = queryService.newQuery(MUMBAI_QUERY);
     Query query2 = queryService.newQuery(ID_10_QUERY);
 
+    IntStream.range(0, 100).forEach(i -> cities.put(i, new City(i)));
+
     server1.invokeAsync(() -> {
       Cache cache = ClusterStartupRule.getCache();
       Region region = cache.getRegion("cities");
-      IntStream.range(0, 100).forEach(i -> region.put(i, new City(i)));
       region.clear();
     });
 
-    await().pollDelay(5, TimeUnit.MILLISECONDS).untilAsserted(() -> {
+    await().untilAsserted(() -> {
       assertThat(((SelectResults) query.execute()).size()).isEqualTo(0);
       assertThat(((SelectResults) query2.execute()).size()).isEqualTo(0);
     });
