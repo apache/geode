@@ -36,7 +36,6 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -124,11 +123,11 @@ public class PubSubDUnitTest {
     gfsh.connectAndVerify(locator);
   }
 
-  @Before
-  public void testSetup() {
-    subscriber1.flushAll();
-    subscriber2.flushAll();
-  }
+  // @Before
+  // public void testSetup() {
+  // subscriber1.flushAll();
+  // subscriber2.flushAll();
+  // }
 
   @AfterClass
   public static void tearDown() {
