@@ -1,6 +1,6 @@
 # Building the container image
 
-The current Dockerfile is based on the [OpenJDK image](https://hub.docker.com/_/openjdk/) and includes the officially released Apache Geode binaries which are verified via GPG _and_ SHA256.
+The current Dockerfile is based on the [Bellsoft Liberica OpenJDK image](https://hub.docker.com/r/bellsoft/liberica-openjdk-debian) and includes the officially released Apache Geode binaries which are verified via GPG _and_ SHA256.
 
 ```
 docker build .
