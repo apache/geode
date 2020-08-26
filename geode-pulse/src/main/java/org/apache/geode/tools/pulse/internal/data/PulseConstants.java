@@ -42,7 +42,6 @@ public class PulseConstants {
   public static final String PULSE_VERSION_PROPERTIES_FILE = "GemFireVersion.properties";
   public static final String PROPERTY_PULSE_VERSION = "Product-Version";
   public static final String PROPERTY_BUILD_ID = "Build-Id";
-  public static final String PROPERTY_BUILD_DATE = "Build-Date";
   public static final String PROPERTY_SOURCE_DATE = "Source-Date";
   public static final String PROPERTY_SOURCE_REVISION = "Source-Revision";
   public static final String PROPERTY_SOURCE_REPOSITORY = "Source-Repository";

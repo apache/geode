@@ -176,8 +176,6 @@ public class PulseAppListener implements ApplicationListener<ApplicationEvent> {
     pulseController.getPulseVersion()
         .setPulseBuildId(properties.getProperty(PulseConstants.PROPERTY_BUILD_ID, ""));
     pulseController.getPulseVersion()
-        .setPulseBuildDate(properties.getProperty(PulseConstants.PROPERTY_BUILD_DATE, ""));
-    pulseController.getPulseVersion()
         .setPulseSourceDate(properties.getProperty(PulseConstants.PROPERTY_SOURCE_DATE, ""));
     pulseController.getPulseVersion().setPulseSourceRevision(
         properties.getProperty(PulseConstants.PROPERTY_SOURCE_REVISION, ""));
