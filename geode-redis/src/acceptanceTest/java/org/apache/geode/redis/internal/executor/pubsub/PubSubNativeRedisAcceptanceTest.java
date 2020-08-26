@@ -17,26 +17,14 @@ package org.apache.geode.redis.internal.executor.pubsub;
 
 
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.config.Configurator;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestRule;
 import org.testcontainers.containers.GenericContainer;
 import redis.clients.jedis.Jedis;
 
-import org.apache.geode.logging.internal.log4j.api.FastLogger;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.junit.categories.RedisTest;
 import org.apache.geode.test.junit.rules.IgnoreOnWindowsRule;
 
@@ -68,35 +56,4 @@ public class PubSubNativeRedisAcceptanceTest extends PubSubIntegrationTest {
     return redisContainer.getFirstMappedPort();
   }
 
-  @Test
-  public void concurrentSubscribers_andPublishers_doesNotHang()
-      throws InterruptedException, ExecutionException {
-    Logger logger = LogService.getLogger("org.apache.geode.redis");
-    Configurator.setAllLevels(logger.getName(), Level.getLevel("DEBUG"));
-    FastLogger.setDelegating(true);
-
-    AtomicBoolean running = new AtomicBoolean(true);
-
-    Future<Integer> makeSubscribersFuture1 =
-        executor.submit(() -> makeSubscribers(1, 10000, running));
-    // Future<Integer> makeSubscribersFuture2 =
-    // executor.submit(() -> makeSubscribers(2, 10000, running));
-
-    Future<Integer> publish1 = executor.submit(() -> doPublishing(1, 10000, running));
-    // Future<Integer> publish2 = executor.submit(() -> doPublishing(2, 10000, running));
-    // Future<Integer> publish3 = executor.submit(() -> doPublishing(3, 10000, running));
-    // Future<Integer> publish4 = executor.submit(() -> doPublishing(4, 10000, running));
-    // Future<Integer> publish5 = executor.submit(() -> doPublishing(5, 10000, running));
-
-    running.set(false);
-
-    assertThat(makeSubscribersFuture1.get()).isGreaterThanOrEqualTo(10);
-    // assertThat(makeSubscribersFuture2.get()).isGreaterThanOrEqualTo(10);
-
-    assertThat(publish1.get()).isGreaterThan(0);
-    // assertThat(publish2.get()).isGreaterThan(0);
-    // assertThat(publish3.get()).isGreaterThan(0);
-    // assertThat(publish4.get()).isGreaterThan(0);
-    // assertThat(publish5.get()).isGreaterThan(0);
-  }
 }
