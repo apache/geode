@@ -34,16 +34,20 @@ public class ExpireAtNativeRedisAcceptanceTest extends ExpireAtIntegrationTest {
   @ClassRule
   public static TestRule ignoreOnWindowsRule = new IgnoreOnWindowsRule();
 
+  private static GenericContainer redisContainer;
+
   @BeforeClass
   public static void setUp() {
-    GenericContainer redisContainer = new GenericContainer<>("redis:5.0.6").withExposedPorts(6379);
+    redisContainer = new GenericContainer<>("redis:5.0.6").withExposedPorts(6379);
     redisContainer.start();
+
     jedis = new Jedis("localhost", redisContainer.getFirstMappedPort(), REDIS_CLIENT_TIMEOUT);
   }
 
   @AfterClass
   public static void classLevelTearDown() {
     jedis.close();
+    redisContainer.stop();
   }
 
 }
