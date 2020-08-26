@@ -442,6 +442,7 @@ public class PubSubDUnitTest {
   public void testPubSubWithManyClientsDisconnecting() throws Exception {
     int CLIENT_COUNT = 10;
     int ITERATIONS = 1000;
+    String LOCAL_CHANNEL_NAME = "clients_disconnecting_channel";
 
     Random random = new Random();
     List<Jedis> clients = new ArrayList<>();
@@ -453,7 +454,7 @@ public class PubSubDUnitTest {
 
       CountDownLatch latch = new CountDownLatch(1);
       MockSubscriber mockSubscriber = new MockSubscriber(latch);
-      executor.submit(() -> client.subscribe(mockSubscriber, CHANNEL_NAME));
+      executor.submit(() -> client.subscribe(mockSubscriber, LOCAL_CHANNEL_NAME));
       latch.await();
     }
 
@@ -461,7 +462,7 @@ public class PubSubDUnitTest {
     Jedis publishingClient = new Jedis("localhost", redisServerPort1);
     Callable<Void> callable = () -> {
       for (int j = 0; j < ITERATIONS; j++) {
-        publishingClient.publish(CHANNEL_NAME, "hello - " + j);
+        publishingClient.publish(LOCAL_CHANNEL_NAME, "hello - " + j);
       }
       return null;
     };
@@ -476,7 +477,7 @@ public class PubSubDUnitTest {
       Jedis client = new Jedis("localhost", redisServerPort1);
       CountDownLatch latch = new CountDownLatch(1);
       MockSubscriber mockSubscriber = new MockSubscriber(latch);
-      executor.submit(() -> client.subscribe(mockSubscriber, CHANNEL_NAME));
+      executor.submit(() -> client.subscribe(mockSubscriber, LOCAL_CHANNEL_NAME));
       latch.await();
 
       clients.set(candy, client);
