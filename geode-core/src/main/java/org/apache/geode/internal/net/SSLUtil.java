@@ -19,6 +19,7 @@ import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.Objects;
 
 import javax.net.ssl.KeyManager;
@@ -28,7 +29,9 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
+import org.apache.commons.lang3.JavaVersion;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 
 import org.apache.geode.annotations.VisibleForTesting;
 
@@ -38,6 +41,8 @@ public class SSLUtil {
    * this list as new algorithms become available and are supported by Geode. Remove old,
    * no-longer trusted algorithms.
    */
+  protected static final String[] DEFAULT_ALGORITMS_PRE_JAVA11 = {
+      "TLSv1.2"};
   protected static final String[] DEFAULT_ALGORITMS = {
       "TLSv1.3",
       "TLSv1.2"}; // TLSv1.3 is not available in JDK 8 at this time
@@ -47,7 +52,21 @@ public class SSLUtil {
   public static SSLContext getSSLContextInstance(SSLConfig sslConfig)
       throws NoSuchAlgorithmException {
     String[] protocols = sslConfig.getProtocolsAsStringArray();
-    return findSSLContextForProtocols(protocols, DEFAULT_ALGORITMS);
+    String[] protocolsForAny = getDefaultAlgorithms();
+    return findSSLContextForProtocols(protocols, protocolsForAny);
+  }
+
+  /**
+   * Returns the default algorithms that are used to search for an SSLContext
+   * when "any" is given as the protocol by the user.
+   */
+  public static String[] getDefaultAlgorithms() {
+    if (SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_11)) {
+      return DEFAULT_ALGORITMS;
+    } else {
+      // tlsv1.3 is not supported by Geode before JAVA 11
+      return DEFAULT_ALGORITMS_PRE_JAVA11;
+    }
   }
 
   /**
@@ -64,22 +83,34 @@ public class SSLUtil {
   protected static SSLContext findSSLContextForProtocols(final String[] protocols,
       final String[] protocolsForAny)
       throws NoSuchAlgorithmException {
+    SSLContext result = null;
     for (String protocol : protocols) {
       if (protocol.equalsIgnoreCase("any")) {
         try {
-          return findSSLContextForProtocols(protocolsForAny, new String[0]);
+          result = findSSLContextForProtocols(protocolsForAny, new String[0]);
+          break;
         } catch (NoSuchAlgorithmException e) {
           // none of the default algorithms is available - continue to see if there
           // are any others in the requested list
         }
       }
       try {
-        return SSLContext.getInstance(protocol);
+        result = SSLContext.getInstance(protocol);
+        break;
       } catch (NoSuchAlgorithmException e) {
         // continue
       }
     }
-    throw new NoSuchAlgorithmException();
+    if (result != null) {
+      if (result.getProtocol().equalsIgnoreCase("tlsv1.3") &&
+          SystemUtils.isJavaVersionAtMost(JavaVersion.JAVA_10)) {
+        throw new IllegalStateException("TLSv1.3 is not supported for this JRE - please use TLSv1.2"
+            + " or upgrade to Java 11");
+      }
+      return result;
+    }
+    throw new NoSuchAlgorithmException("unable to find support for configured TLS protocols: " +
+        Arrays.toString(protocols));
   }
 
   /** Read an array of values from a string, whitespace or comma separated. */
