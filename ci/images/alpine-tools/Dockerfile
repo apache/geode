@@ -21,7 +21,7 @@ RUN apk --no-cache add \
     musl-dev \
   && go get -v github.com/masterzen/winrm-cli
 
-FROM openjdk:8-jdk-alpine
+FROM bellsoft/liberica-openjdk-alpine:8
 
 COPY --from=winrm-builder /root/go/bin/winrm-cli /usr/local/bin/winrm
 COPY --from=google/cloud-sdk:alpine /google-cloud-sdk /google-cloud-sdk

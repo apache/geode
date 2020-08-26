@@ -94,7 +94,7 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: openjdk
+              repository: bellsoft/liberica-openjdk-debian
               tag: 8
           inputs:
             - name: geode
@@ -120,7 +120,7 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: openjdk
+              repository: bellsoft/liberica-openjdk-debian
               tag: 8
           inputs:
             - name: geode
@@ -150,7 +150,7 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: openjdk
+              repository: bellsoft/liberica-openjdk-debian
               tag: 11
           inputs:
             - name: geode-examples
@@ -176,7 +176,7 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: openjdk
+              repository: bellsoft/liberica-openjdk-debian
               tag: 8
           inputs:
             - name: geode-examples
@@ -207,7 +207,7 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: openjdk
+              repository: bellsoft/liberica-openjdk-debian
               tag: 8
           inputs:
             - name: geode-native
@@ -250,7 +250,7 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: openjdk
+              repository: bellsoft/liberica-openjdk-debian
               tag: 8
           inputs:
             - name: geode-native
@@ -298,7 +298,7 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: openjdk
+              repository: bellsoft/liberica-openjdk-debian
               tag: 8
           inputs:
             - name: geode
@@ -330,7 +330,7 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: openjdk
+              repository: bellsoft/liberica-openjdk-debian
               tag: 8
           inputs:
             - name: geode-benchmarks
@@ -367,7 +367,7 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: openjdk
+              repository: bellsoft/liberica-openjdk-debian
               tag: 8
           inputs:
             - name: geode
@@ -432,7 +432,7 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: openjdk
+              repository: bellsoft/liberica-openjdk-debian
               tag: 8
           inputs:
             - name: geode
