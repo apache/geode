@@ -5667,7 +5667,7 @@ public class Oplog implements CompactableOplog, Flushable {
       if (!olf.f.exists())
         return;
       assert olf.RAFClosed;
-      if (!olf.RAFClosed && olf.raf != null) {
+      if (olf.raf != null) {
         try {
           olf.raf.close();
           olf.RAFClosed = true;
