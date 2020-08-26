@@ -59,7 +59,6 @@ public class PulseVersionService implements PulseService {
     // Response
     responseJSON.put("pulseVersion", pulseController.getPulseVersion().getPulseVersion());
     responseJSON.put("buildId", pulseController.getPulseVersion().getPulseBuildId());
-    responseJSON.put("buildDate", pulseController.getPulseVersion().getPulseBuildDate());
     responseJSON.put("sourceDate", pulseController.getPulseVersion().getPulseSourceDate());
     responseJSON.put("sourceRevision", pulseController.getPulseVersion().getPulseSourceRevision());
     responseJSON.put("sourceRepository",

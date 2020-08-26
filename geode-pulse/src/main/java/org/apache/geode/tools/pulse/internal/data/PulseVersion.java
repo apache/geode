@@ -59,16 +59,6 @@ public class PulseVersion {
     this.pulseBuildId = pulseBuildId;
   }
 
-  private String pulseBuildDate;
-
-  public String getPulseBuildDate() {
-    return pulseBuildDate;
-  }
-
-  public void setPulseBuildDate(String pulseBuildDate) {
-    this.pulseBuildDate = pulseBuildDate;
-  }
-
   private String pulseSourceDate;
 
   public String getPulseSourceDate() {
@@ -102,7 +92,7 @@ public class PulseVersion {
   public String getPulseVersionLogMessage() {
     ResourceBundle resourceBundle = repository.getResourceBundle();
     return resourceBundle.getString("LOG_MSG_PULSE_VERSION") + " "
-        + this.getPulseVersion() + " " + this.getPulseBuildId() + " " + this.getPulseBuildDate();
+        + this.getPulseVersion() + " " + this.getPulseBuildId();
   }
 
 }

@@ -161,7 +161,6 @@ public class PulseController {
       // Response
       responseJSON.put("pulseVersion", pulseVersion.getPulseVersion());
       responseJSON.put("buildId", pulseVersion.getPulseBuildId());
-      responseJSON.put("buildDate", pulseVersion.getPulseBuildDate());
       responseJSON.put("sourceDate", pulseVersion.getPulseSourceDate());
       responseJSON.put("sourceRevision", pulseVersion.getPulseSourceRevision());
       responseJSON.put("sourceRepository", pulseVersion.getPulseSourceRepository());

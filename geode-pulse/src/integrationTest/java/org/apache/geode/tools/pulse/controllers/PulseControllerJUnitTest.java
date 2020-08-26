@@ -625,8 +625,7 @@ public class PulseControllerJUnitTest {
         .andExpect(jsonPath("$.PulseVersion.sourceRepository").value("not empty"))
         .andExpect(jsonPath("$.PulseVersion.pulseVersion").value("not empty"))
         .andExpect(jsonPath("$.PulseVersion.sourceRevision").value("not empty"))
-        .andExpect(jsonPath("$.PulseVersion.buildId").value("not empty"))
-        .andExpect(jsonPath("$.PulseVersion.buildDate").value("not empty"));
+        .andExpect(jsonPath("$.PulseVersion.buildId").value("not empty"));
   }
 
   @Test
@@ -680,7 +679,6 @@ public class PulseControllerJUnitTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.pulseVersion").isNotEmpty())
         .andExpect(jsonPath("$.buildId").isNotEmpty())
-        .andExpect(jsonPath("$.buildDate").isNotEmpty())
         .andExpect(jsonPath("$.sourceDate").isNotEmpty())
         .andExpect(jsonPath("$.sourceRevision").isNotEmpty())
         .andExpect(jsonPath("$.sourceRepository").isNotEmpty());
