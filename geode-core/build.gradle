@@ -76,22 +76,22 @@ task createVersionPropertiesFile(dependsOn: ':writeBuildInfo') {
         propertiesFile
     }
 
+    def props = [
+          "Product-Name"      : productName,
+          "Product-Version"   : version,
+          "Build-Id"          : "${System.env.USER} ${buildId}".toString(),
+          "Build-Platform"    : "${System.properties['os.name']} ${System.properties['os.version']} ${System.properties['os.arch']}".toString(),
+          "Build-Java-Vendor" : System.properties['java.vendor'],
+          "Build-Java-Version": System.properties['java.version']
+    ] as Properties
+
+    inputs.properties(props)
 
     doLast {
         def scmInfo = new Properties()
         new FileInputStream(scmInfoFile.singleFile).withStream { fis ->
             scmInfo.load(fis)
         }
-
-        def props = [
-                "Product-Name"      : productName,
-                "Product-Version"   : version,
-                "Build-Id"          : "${System.env.USER} ${buildId}".toString(),
-                "Build-Date"        : new Date().format('yyyy-MM-dd HH:mm:ss Z'),
-                "Build-Platform"    : "${System.properties['os.name']} ${System.properties['os.version']} ${System.properties['os.arch']}".toString(),
-                "Build-Java-Vendor" : System.properties['java.vendor'],
-                "Build-Java-Version": System.properties['java.version']
-        ] as Properties
         props.putAll(scmInfo)
 
         propertiesFile.getParentFile().mkdirs()
