@@ -53,7 +53,7 @@ RUN  apt-get update \
     java-common \
     bellsoft-java11 \
     bellsoft-java8 \
-  && update-java-alternatives -s java-1.8.0-openjdk-amd64 \
+  && update-java-alternatives -s bellsoft-java8-amd64 \
   && rm -rf /etc/alternatives \
   && mv /etc/keep-alternatives /etc/alternatives \
   && apt-get clean \
