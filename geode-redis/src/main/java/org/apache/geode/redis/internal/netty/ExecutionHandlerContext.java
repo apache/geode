@@ -113,7 +113,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     return channel.writeAndFlush(response.encode(byteBufAllocator), channel.newPromise())
         .addListener((ChannelFutureListener) f -> {
           response.afterWrite();
-          logResponse(response, channel.remoteAddress().toString());
+          logResponse(response, channel.remoteAddress().toString(), f.cause());
         });
   }
 
@@ -291,11 +291,16 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     return response;
   }
 
-  private void logResponse(RedisResponse response, String extraMessage) {
+  private void logResponse(RedisResponse response, String extraMessage, Throwable cause) {
     if (logger.isDebugEnabled() && response != null) {
       ByteBuf buf = response.encode(new UnpooledByteBufAllocator(false));
-      logger.debug("Redis command returned: {} - {}",
-          Command.getHexEncodedString(buf.array(), buf.readableBytes()), extraMessage);
+      if (cause == null) {
+        logger.debug("Redis command returned: {} - {}",
+            Command.getHexEncodedString(buf.array(), buf.readableBytes()), extraMessage);
+      } else {
+        logger.warn("Redis command FAILED to return: {} - {}",
+            Command.getHexEncodedString(buf.array(), buf.readableBytes()), extraMessage, cause);
+      }
     }
   }
 
