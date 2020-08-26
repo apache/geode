@@ -371,8 +371,9 @@ dependencies {
   integrationTestImplementation('com.tngtech.archunit:archunit-junit4')
 
 
-  integrationTestRuntimeOnly('org.apache.derby:derby')
-  integrationTestRuntimeOnly('xerces:xercesImpl')
+    integrationTestRuntimeOnly('org.apache.derby:derby')
+    integrationTestRuntimeOnly('xerces:xercesImpl')
+    integrationTestRuntimeOnly('com.fasterxml.jackson.datatype:jackson-datatype-jsr310')
 
   distributedTestImplementation(project(':geode-gfsh'))
   distributedTestImplementation(project(':geode-junit')) {
