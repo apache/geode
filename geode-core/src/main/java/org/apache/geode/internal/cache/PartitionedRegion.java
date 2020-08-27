@@ -1254,6 +1254,7 @@ public class PartitionedRegion extends LocalRegion
   void distributeUpdatedProfileOnSenderCreation() {
     if (!(this.isClosed || this.isLocallyDestroyed)) {
       // tell others of the change in status
+      requiresNotification = true;
       new UpdateAttributesProcessor(this).distribute(false);
     }
   }
@@ -1264,9 +1265,8 @@ public class PartitionedRegion extends LocalRegion
     new UpdateAttributesProcessor(this).distribute();
     GatewaySender sender = getCache().getGatewaySender(gatewaySenderId);
     if (sender != null && !sender.isParallel()) {
-      this.requiresNotification = true;
+      distributeUpdatedProfileOnSenderCreation();
     }
-    distributeUpdatedProfileOnSenderCreation();
     if (sender != null && sender.isParallel() && sender.isRunning()) {
       AbstractGatewaySender senderImpl = (AbstractGatewaySender) sender;
       ((ConcurrentParallelGatewaySenderQueue) senderImpl.getQueues().toArray(new RegionQueue[1])[0])
@@ -1314,9 +1314,8 @@ public class PartitionedRegion extends LocalRegion
     GatewaySender sender = getCache()
         .getGatewaySender(AsyncEventQueueImpl.getSenderIdFromAsyncEventQueueId(asyncEventQueueId));
     if (sender != null && !sender.isParallel()) {
-      this.requiresNotification = true;
+      distributeUpdatedProfileOnSenderCreation();
     }
-    distributeUpdatedProfileOnSenderCreation();
     if (sender != null && sender.isParallel() && sender.isRunning()) {
       AbstractGatewaySender senderImpl = (AbstractGatewaySender) sender;
       ((ConcurrentParallelGatewaySenderQueue) senderImpl.getQueues().toArray(new RegionQueue[1])[0])

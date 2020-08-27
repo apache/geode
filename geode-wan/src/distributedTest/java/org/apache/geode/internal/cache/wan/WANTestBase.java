@@ -1141,7 +1141,7 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   public static void enableConflation(String senderId) {
-    AbstractGatewaySender sender = getAbstractGatewaySender(senderId);
+    AbstractGatewaySender sender = (AbstractGatewaySender) getGatewaySender(senderId);
     sender.test_setBatchConflationEnabled(true);
   }
 
@@ -3100,7 +3100,7 @@ public class WANTestBase extends DistributedTestCase {
     IgnoredException exp1 =
         IgnoredException.addIgnoredException(ForceReattemptException.class.getName());
     try {
-      AbstractGatewaySender sender = getAbstractGatewaySender(senderId);
+      AbstractGatewaySender sender = (AbstractGatewaySender) getGatewaySender(senderId);
       if (sender.isPrimary()) {
         logger.info("Gateway sender is killed by a test");
         cache.getDistributedSystem().disconnect();
@@ -3112,18 +3112,6 @@ public class WANTestBase extends DistributedTestCase {
       exp1.remove();
       exln.remove();
     }
-  }
-
-  private static AbstractGatewaySender getAbstractGatewaySender(String senderId) {
-    Set<GatewaySender> senders = cache.getGatewaySenders();
-    AbstractGatewaySender sender = null;
-    for (GatewaySender s : senders) {
-      if (s.getId().equals(senderId)) {
-        sender = (AbstractGatewaySender) s;
-        break;
-      }
-    }
-    return sender;
   }
 
   public static void killSender() {
@@ -3459,14 +3447,14 @@ public class WANTestBase extends DistributedTestCase {
     GatewaySender sender = getGatewaySender(senderId);
 
     int size = 0;
-    Set queues = ((AbstractGatewaySender) sender).getQueues();
+    Set<RegionQueue> queues = ((AbstractGatewaySender) sender).getQueues();
     for (Object queue : queues) {
       PartitionedRegion region =
           (PartitionedRegion) ((ConcurrentParallelGatewaySenderQueue) queue).getRegion();
       int buckets = region.getTotalNumberOfBuckets();
       for (int bucket = 0; bucket < buckets; bucket++) {
-        BlockingQueue newQueue =
-            ((ConcurrentParallelGatewaySenderQueue) queue).getBucketTmpQueue((int) bucket);
+        BlockingQueue<GatewaySenderEventImpl> newQueue =
+            ((ConcurrentParallelGatewaySenderQueue) queue).getBucketTmpQueue(bucket);
         if (newQueue != null) {
           size += newQueue.size();
         }
@@ -3598,7 +3586,7 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   public static void verifySenderDestroyed(String senderId, boolean isParallel) {
-    AbstractGatewaySender sender = getAbstractGatewaySender(senderId);
+    AbstractGatewaySender sender = (AbstractGatewaySender) getGatewaySender(senderId);
     assertNull(sender);
 
     String queueRegionNameSuffix = null;
