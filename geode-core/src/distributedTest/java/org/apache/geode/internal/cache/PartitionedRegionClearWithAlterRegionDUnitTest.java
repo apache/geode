@@ -20,3 +20,5 @@ public class PartitionedRegionClearWithAlterRegionDUnitTest implements Serializa
 }
 
 // nothing
+
+// nothing
