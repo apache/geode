@@ -3049,11 +3049,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
             if (requireOldValue && result == null) {
               throw new EntryNotFoundException("entry not found for replace");
             }
-            if (!requireOldValue) {
-              if (!(Boolean) result) {
-                // customers don't see this exception
-                throw new EntryNotFoundException("entry found with wrong value");
-              }
+            if (!requireOldValue && result != null && !((Boolean) result)) {
+              // customers don't see this exception
+              throw new EntryNotFoundException("entry found with wrong value");
             }
           }
         }
@@ -3369,11 +3367,10 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         RegionEventImpl regionEvent =
             new RegionEventImpl(this, Operation.REGION_DESTROY, null, true, getMyId());
         regionEvent.setEventID(eventID);
-        FilterInfo clientRouting = routing;
-        if (clientRouting == null) {
-          clientRouting = fp.getLocalFilterRouting(regionEvent);
+        if (routing == null) {
+          routing = fp.getLocalFilterRouting(regionEvent);
         }
-        regionEvent.setLocalFilterInfo(clientRouting);
+        regionEvent.setLocalFilterInfo(routing);
         ClientUpdateMessage clientMessage =
             ClientTombstoneMessage.gc(this, regionGCVersions, eventID);
         CacheClientNotifier.notifyClients(regionEvent, clientMessage);
@@ -3450,7 +3447,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       checkEntryNotFound(keyInfo.getKey());
     }
     // OFFHEAP returned to callers
-    Object value = regionEntry.getValueInVM(this);
+    // The warning for regionEntry possibly being null is incorrect, as checkEntryNotFound() always
+    // throws, making the following line unreachable if regionEntry is null
+    Object value = regionEntry.getValueInVM(this); // lgtm [java/dereferenced-value-may-be-null]
     if (Token.isRemoved(value)) {
       checkEntryNotFound(keyInfo.getKey());
     }

@@ -209,7 +209,9 @@ public class SessionCachingFilter implements Filter {
       cookie.setPath("".equals(getContextPath()) ? "/" : getContextPath());
       cookie.setHttpOnly(cookieConfig.isHttpOnly());
       cookie.setSecure(cookieConfig.isSecure());
-      response.addCookie(cookie);
+      response.addCookie(cookie); // lgtm [java/insecure-cookie]
+      // The lgtm alert for the above line is suppressed as a false positive, since we are simply
+      // using the security setting from the context's cookie config
     }
 
     /**

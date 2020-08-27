@@ -911,9 +911,8 @@ public class PartitionedRegion extends LocalRegion
          * Don't bother logging membership activity if our region isn't ready.
          */
         if (isInitialized()) {
-          CacheProfile cacheProfile =
-              ((profile instanceof CacheProfile) ? (CacheProfile) profile : null);
-          Set<String> onlineMembers = new HashSet<String>();
+          CacheProfile cacheProfile = (CacheProfile) profile;
+          Set<String> onlineMembers = new HashSet<>();
 
           TransformUtils.transform(
               PartitionedRegion.this.distAdvisor.advisePersistentMembers().values(), onlineMembers,
@@ -2514,8 +2513,8 @@ public class PartitionedRegion extends LocalRegion
     }
     this.prStats.endRemoveAll(startTime);
     if (!keyToVersionMap.isEmpty()) {
-      for (Iterator it = successfulOps.getKeys().iterator(); it.hasNext();) {
-        successfulOps.addVersion(keyToVersionMap.get(it.next()));
+      for (Object o : successfulOps.getKeys()) {
+        successfulOps.addVersion(keyToVersionMap.get(o));
       }
       keyToVersionMap.clear();
     }
@@ -2641,9 +2640,7 @@ public class PartitionedRegion extends LocalRegion
             retryTime.waitToRetryNode();
           }
           event.setPossibleDuplicate(true);
-          if (prMsg != null) {
-            prMsg.setPossibleDuplicate(true);
-          }
+          prMsg.setPossibleDuplicate(true);
         } catch (PrimaryBucketException notPrimary) {
           if (isDebugEnabled) {
             logger.debug("Bucket {} on Node {} not primnary", notPrimary.getLocalizedMessage(),
@@ -7059,8 +7056,8 @@ public class PartitionedRegion extends LocalRegion
       DLockService ls1 = lockService;
       DLockService ls2 = other.lockService;
       if (ls1 == null || ls2 == null) {
-        if (ls1 != ls2)
-          return false;
+        // If both are null, return true, if only one is null, return false
+        return ls1 == ls2;
       }
       return ls1.equals(ls2);
     }
@@ -9056,20 +9053,21 @@ public class PartitionedRegion extends LocalRegion
    *         is the primary
    * @throws ForceReattemptException if the caller should reattempt this request
    */
-  public List getBucketOwnersForValidation(int bucketId) throws ForceReattemptException {
+  public List<Object[]> getBucketOwnersForValidation(int bucketId) throws ForceReattemptException {
     // bucketid 1 => "vm A", false | "vm B", false | "vm C", true | "vm D", false
     // bucketid 2 => List< Tuple(MemberId mem, Boolean isPrimary) >
 
     // remotely fetch each VM's bucket meta-data (versus looking at the bucket
     // advisor's data
     RuntimeException rte = null;
-    List remoteInfos = null;
+    List<Object[]> remoteInfos = new LinkedList<>();
     for (int i = 0; i < 3; i++) {
       rte = null;
       DumpB2NResponse response =
           DumpB2NRegion.send(getRegionAdvisor().adviseDataStore(), this, bucketId, true);
       try {
-        remoteInfos = new LinkedList(response.waitForPrimaryInfos());
+        remoteInfos.addAll(response.waitForPrimaryInfos());
+        break;
       } catch (TimeoutException e) {
         rte = e;
         logger.info("DumpB2NRegion failed to get PR {}, bucket id {}'s info due to {}, retrying...",
@@ -9592,7 +9590,7 @@ public class PartitionedRegion extends LocalRegion
           count++;
         }
       }
-      Assert.assertTrue(br != null, "Could not create storage for Entry");
+      Assert.assertNotNull(br, "Could not create storage for Entry");
       if (keyInfo.isCheckPrimary()) {
         br.checkForPrimary();
       }

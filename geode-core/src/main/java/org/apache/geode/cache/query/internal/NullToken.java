@@ -33,6 +33,9 @@ import org.apache.geode.internal.serialization.SerializationContext;
  */
 public class NullToken implements DataSerializableFixedID, Comparable {
 
+  @SuppressWarnings("lgtm[java/useless-null-check]")
+  // The "useless null check" alert is suppressed here as the first time the constructor is called,
+  // QueryService.NULL is actually null, but subsequent times it is not
   public NullToken() {
     Support.assertState(IndexManager.NULL == null, "NULL constant already instantiated");
   }

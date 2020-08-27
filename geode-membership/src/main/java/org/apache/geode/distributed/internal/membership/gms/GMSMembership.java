@@ -1716,7 +1716,8 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
 
     if (!foundRemoteId) {
       try {
-        if (currentLatch.await(membershipCheckTimeout, TimeUnit.MILLISECONDS)) {
+        if (currentLatch != null
+            && currentLatch.await(membershipCheckTimeout, TimeUnit.MILLISECONDS)) {
           foundRemoteId = true;
           // @todo
           // ARB: remove latch from memberLatch map if this is the last thread waiting on latch.

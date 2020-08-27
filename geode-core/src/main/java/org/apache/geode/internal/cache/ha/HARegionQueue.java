@@ -1824,7 +1824,7 @@ public class HARegionQueue implements RegionQueue {
                   InternalCqQuery cq =
                       ((InternalCqQuery) cqService.getClientCqFromServer(clientProxyID, cqName));
                   CqQueryVsdStats cqStats = cq.getVsdStats();
-                  if (cq != null && cqStats != null) {
+                  if (cqStats != null) {
                     cqStats.incNumHAQueuedEvents(incrementAmount);
                   }
                 }
