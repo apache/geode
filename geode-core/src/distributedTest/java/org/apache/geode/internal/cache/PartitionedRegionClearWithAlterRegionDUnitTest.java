@@ -17,5 +17,6 @@ package org.apache.geode.internal.cache;
 import java.io.Serializable;
 
 public class PartitionedRegionClearWithAlterRegionDUnitTest implements Serializable {
-
 }
+
+// nothing
