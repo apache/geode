@@ -62,4 +62,9 @@ public interface Subscription {
    * Called once this subscriber is ready to have publishMessage called
    */
   void readyToPublish();
+
+  /**
+   * Returns whether the Subscription is ready to receive published messages
+   */
+  boolean isReadyToPublish();
 }

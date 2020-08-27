@@ -55,4 +55,9 @@ public class DummySubscription implements Subscription {
 
   @Override
   public void readyToPublish() {}
+
+  @Override
+  public boolean isReadyToPublish() {
+    return true;
+  }
 }

@@ -143,7 +143,7 @@ public class PubSubDUnitTest {
     server5.stop();
   }
 
-  // @Test
+  @Test
   public void shouldNotHang_givenPublishingAndSubscribingSimultaneously() {
     ArrayList<Thread> threads = new ArrayList<>();
     AtomicInteger subscribeCount = new AtomicInteger();
@@ -214,7 +214,7 @@ public class PubSubDUnitTest {
     assertThat(subscribeCount.get()).isEqualTo(1000);
   }
 
-  // @Test
+  @Test
   public void shouldContinueToFunction_whenOneServerShutsDownGracefully_givenTwoSubscribersOnePublisher()
       throws InterruptedException {
     CountDownLatch latch = new CountDownLatch(2);
@@ -244,7 +244,7 @@ public class PubSubDUnitTest {
     reconnectSubscriber1();
   }
 
-  // @Test
+  @Test
   public void shouldContinueToFunction_whenOneServerShutsDownAbruptly_givenTwoSubscribersOnePublisher()
       throws InterruptedException {
     CountDownLatch latch = new CountDownLatch(2);
@@ -295,7 +295,7 @@ public class PubSubDUnitTest {
     reconnectSubscriber2();
   }
 
-  // @Test
+  @Test
   public void shouldContinueToFunction_whenOneServerShutsDownGracefully_givenTwoSubscribersTwoPublishers()
       throws InterruptedException {
     CountDownLatch latch = new CountDownLatch(2);
@@ -329,7 +329,7 @@ public class PubSubDUnitTest {
     reconnectSubscriber2();
   }
 
-  // @Test
+  @Test
   public void testSubscribePublishUsingDifferentServers() throws Exception {
     CountDownLatch latch = new CountDownLatch(2);
     MockSubscriber mockSubscriber1 = new MockSubscriber(latch);
@@ -353,7 +353,7 @@ public class PubSubDUnitTest {
     GeodeAwaitility.await().untilAsserted(subscriber2Future::get);
   }
 
-  // @Test
+  @Test
   public void testConcurrentPubSub() throws Exception {
     int CLIENT_COUNT = 10;
     int ITERATIONS = 1000;
@@ -400,7 +400,7 @@ public class PubSubDUnitTest {
     assertThat(mockSubscriber2.getReceivedMessages().size()).isEqualTo(CLIENT_COUNT * ITERATIONS);
   }
 
-  // @Test
+  @Test
   public void testPubSubWithMoreSubscribersThanNettyWorkerThreads() throws Exception {
     int CLIENT_COUNT = 1000;
     String CHANNEL_NAME = "best_channel_ever";

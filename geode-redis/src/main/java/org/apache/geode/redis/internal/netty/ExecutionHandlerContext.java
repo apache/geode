@@ -175,7 +175,12 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     channel.deregister().addListener((ChannelFutureListener) future -> {
       synchronized (channel) {
         if (!channel.isRegistered()) {
-          newGroup.register(channel).sync();
+          try {
+            newGroup.register(channel).sync();
+          } catch (Exception e) {
+            logger.warn("Unable to register new EventLoopGroup: {}", e.getMessage());
+            return;
+          }
         }
       }
       callback.run();

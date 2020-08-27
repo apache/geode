@@ -61,9 +61,10 @@ public class Subscriptions {
    * @param channelOrPattern the channel or pattern
    * @return a list of subscriptions
    */
-  public List<Subscription> findSubscriptions(byte[] channelOrPattern) {
+  public List<Subscription> findReadyToPublishSubscriptions(byte[] channelOrPattern) {
     return subscriptions.stream()
-        .filter(subscription -> subscription.matches(channelOrPattern))
+        .filter(subscription -> subscription.isReadyToPublish()
+            && subscription.matches(channelOrPattern))
         .collect(Collectors.toList());
   }
 
