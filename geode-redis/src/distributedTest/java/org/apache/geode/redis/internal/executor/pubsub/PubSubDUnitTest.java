@@ -31,6 +31,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
@@ -149,56 +150,68 @@ public class PubSubDUnitTest {
     AtomicInteger subscribeCount = new AtomicInteger();
     AtomicInteger publishCount = new AtomicInteger();
     Random random = new Random();
+    int SUBSCRIBER_COUNT = 5;
+    int CHANNEL_COUNT = 200;
 
-    for (int i = 0; i < 200; i++) {
+    for (int i = 0; i < CHANNEL_COUNT; i++) {
+      int localI = i;
       String channelName = "theBestChannel" + i;
       Thread thread = new LoggingThread(channelName, () -> {
-        ArrayList<MockSubscriber> mockSubscribers = new ArrayList<>();
-        ArrayList<JedisWithLatch> clients = new ArrayList<>();
-        for (int j = 0; j < 5; j++) {
-          String subscriber = "subscriber " + j;
-          CountDownLatch latch = new CountDownLatch(1);
-          MockSubscriber mockSubscriber = new MockSubscriber(latch);
+        List<MockSubscriber> mockSubscribers = new ArrayList<>();
+        List<Jedis> clients = new ArrayList<>();
+        List<Future<Void>> subscribeFutures = new ArrayList<>();
 
-          executor.submit(() -> {
-            try {
-              Jedis client = getConnection(random);
-              JedisWithLatch jedisWithLatch = new JedisWithLatch(client);
-              clients.add(jedisWithLatch);
-              client.subscribe(mockSubscriber, channelName);
-              subscribeCount.getAndIncrement();
-              jedisWithLatch.finishSubscribe();
-            } catch (Exception e) {
-              throw e;
-            }
+        for (int j = 0; j < SUBSCRIBER_COUNT; j++) {
+          MockSubscriber mockSubscriber = new MockSubscriber();
+          Future<Void> oneFuture = executor.submit(() -> {
+            Jedis client = getConnection(random);
+            clients.add(client);
+            client.subscribe(mockSubscriber, channelName);
+            subscribeCount.getAndIncrement();
           });
 
-          try {
-            if (!latch.await(JEDIS_TIMEOUT, TimeUnit.MILLISECONDS)) {
-              throw new RuntimeException(
-                  "Timeout exceeded waiting for subscribe to finish    " + subscribeCount.get());
-            }
-          } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-          }
+          subscribeFutures.add(oneFuture);
           mockSubscribers.add(mockSubscriber);
         }
 
+        mockSubscribers.forEach(x -> x.awaitSubscribe(channelName));
+
         Jedis localPublisher = getConnection(random);
-        localPublisher.publish(channelName, "hi");
+        // try {
+        // Thread.sleep(1000);
+        // } catch (InterruptedException e) {
+        // e.printStackTrace();
+        // }
+        String publishMessage = "best-message-ever-" + localI;
+        Long publishedMessages = localPublisher.publish(channelName, publishMessage);
         publishCount.getAndIncrement();
+
         try {
           localPublisher.close();
         } catch (Exception ex) {
         }
 
+        AtomicLong receivedMessageCount = new AtomicLong(0);
         mockSubscribers.forEach(s -> {
           GeodeAwaitility.await().ignoreExceptions()
-              .until(() -> s.getReceivedMessages().get(0).equals("hi"));
+              .until(() -> s.getReceivedMessages().get(0).equals(publishMessage));
+
+          receivedMessageCount.getAndAdd(s.getReceivedMessages().size());
           s.unsubscribe(channelName);
+          s.awaitUnsubscribe(channelName);
         });
-        clients.forEach(JedisWithLatch::close);
+
+        assertThat(receivedMessageCount.get()).as("publish inconsistency for " + publishMessage)
+            .isEqualTo(publishedMessages);
+
+        subscribeFutures
+            .forEach(f -> GeodeAwaitility.await().untilAsserted(() -> f.get(20, TimeUnit.SECONDS)));
+
+        for (Jedis client : clients) {
+          client.close();
+        }
       });
+
       threads.add(thread);
       thread.start();
     }
@@ -210,8 +223,8 @@ public class PubSubDUnitTest {
         throw new RuntimeException(e);
       }
     });
-    assertThat(publishCount.get()).isEqualTo(200);
-    assertThat(subscribeCount.get()).isEqualTo(1000);
+    assertThat(publishCount.get()).isEqualTo(CHANNEL_COUNT);
+    assertThat(subscribeCount.get()).isEqualTo(CHANNEL_COUNT * SUBSCRIBER_COUNT);
   }
 
   @Test
