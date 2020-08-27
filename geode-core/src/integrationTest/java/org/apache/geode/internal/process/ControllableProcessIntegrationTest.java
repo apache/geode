@@ -29,9 +29,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.distributed.AbstractLauncher.ServiceState;
 import org.apache.geode.internal.process.ControlFileWatchdog.ControlRequestHandler;
 import org.apache.geode.internal.process.io.EmptyFileWriter;
+import org.apache.geode.launcher.ServerLauncherConfig.ServiceInfo;
 
 public class ControllableProcessIntegrationTest {
 
@@ -178,7 +178,7 @@ public class ControllableProcessIntegrationTest {
     File statusRequestFile = new File(directory, processType.getStatusRequestFileName());
     File statusFile = new File(directory, processType.getStatusFileName());
 
-    ServiceState mockServiceState = mock(ServiceState.class);
+    ServiceInfo mockServiceState = mock(ServiceInfo.class);
     when(mockServiceState.toJson()).thenReturn("json");
     ControlNotificationHandler mockHandler = mock(ControlNotificationHandler.class);
     when(mockHandler.handleStatus()).thenReturn(mockServiceState);

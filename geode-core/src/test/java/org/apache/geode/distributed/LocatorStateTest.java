@@ -28,8 +28,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.distributed.AbstractLauncher.ServiceState;
-import org.apache.geode.distributed.AbstractLauncher.Status;
 import org.apache.geode.distributed.LocatorLauncher.LocatorState;
+import org.apache.geode.launcher.Status;
 
 /**
  * Unit tests for {@link LocatorLauncher.LocatorState}.

@@ -24,9 +24,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.distributed.AbstractLauncher;
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.internal.util.StopWatch;
+import org.apache.geode.launcher.Status;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
@@ -86,7 +86,7 @@ public class StopLocatorCommand extends OfflineGfshCommand {
       locatorLauncher.stop();
     }
 
-    if (AbstractLauncher.Status.ONLINE.equals(locatorState.getStatus())) {
+    if (Status.ONLINE.equals(locatorState.getStatus())) {
       getGfsh().logInfo(
           String.format(CliStrings.STOP_LOCATOR__STOPPING_LOCATOR_MESSAGE,
               locatorState.getWorkingDirectory(), locatorState.getServiceLocation(),

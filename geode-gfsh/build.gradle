@@ -25,7 +25,9 @@ dependencies {
 
     implementation(project(':geode-core'))
     implementation(project(':geode-common'))
+    compileOnly(project(':geode-module-launcher'))
 
+    compileOnly(project(':geode-process-utils'))
     implementation(project(':geode-logging'))
     implementation(project(':geode-membership'))
     implementation(project(':geode-serialization'))

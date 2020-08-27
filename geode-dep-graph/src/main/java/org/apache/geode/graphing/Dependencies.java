@@ -53,7 +53,7 @@ public class Dependencies {
     graph.addAttribute("ui.stylesheet", "node { fill-mode: dyn-plain;fill-color: green, red; }");
 
     String rootPath =
-        "/Users/ukohlmeyer/projects/geode/geode-assembly/build/install/apache-geode/lib";
+        "/Users/patrickjohnson/projects/geode/geode-assembly/build/install/apache-geode/lib";
 
     String version = "1.14.0-build.0";
 
@@ -65,7 +65,7 @@ public class Dependencies {
             .filter(file1 -> !file1.getName().contains("geode-core-dependencies"))
             .filter(file1 -> !file1.getName().contains("geode-dependencies"))
             .filter(file1 -> !file1.getName().contains("gfsh-dependencies"))
-            .filter(file1 -> !file1.getName().contains("geode-module-bootstrapping"))
+            // .filter(file1 -> !file1.getName().contains("geode-module-bootstrapping"))
             .collect(
                 Collectors.toList());
     Map<String, List<String>> depsMap = new HashMap<>();
@@ -75,6 +75,7 @@ public class Dependencies {
         JarFile jarFile = new JarFile(file1, true);
         Manifest manifest = jarFile.getManifest();
         String moduleName = manifest.getMainAttributes().getValue("Module-Name");
+        System.out.println("moduleName = " + moduleName);
         try {
           String id = moduleName + "-" + version;
           Node node = graph.addNode(id);
@@ -105,16 +106,19 @@ public class Dependencies {
           !StringUtils.isBlank(deps.get(1)) ? deps.get(1).split(" ") : new String[] {};
 
       Arrays.stream(moduleDeps)
-          .forEach(moduleDep -> graph.addEdge(name + "-" + moduleDep, name, moduleDep, true));
+          .forEach(moduleDep -> {
+            System.out.println("moduleDep = " + moduleDep);
+            graph.addEdge(name + "-" + moduleDep, name, moduleDep, true);
+          });
 
       Arrays.stream(classPathDeps).forEach(classPathDep -> {
         try {
-          String id = classPathDep;
-          Node node = graph.addNode(id);
-          node.addAttribute("ui.label", id);
+          Node node = graph.addNode(classPathDep);
+          node.addAttribute("ui.label", classPathDep);
           node.addAttribute("ui.color", 1);
-          Sprite sprite = spriteManager.addSprite(id.replaceAll(".", "_"));
-          sprite.attachToNode(id);
+          System.out.println("classPathDep = " + classPathDep);
+          Sprite sprite = spriteManager.addSprite(classPathDep.replaceAll(".", "_"));
+          sprite.attachToNode(classPathDep);
         } catch (IdAlreadyInUseException e) {
         }
         graph.addEdge(name + "-" + classPathDep, name, classPathDep, true);

@@ -27,6 +27,7 @@ dependencies {
   implementation(project(':geode-membership'))
   implementation(project(':geode-tcp-server'))
   implementation(project(':geode-core'))
+  implementation(project(':geode-process-utils'))
   implementation(project(':geode-gfsh'))
   compileOnly(project(':geode-common-services'))
   implementation(project(':geode-log4j')) {

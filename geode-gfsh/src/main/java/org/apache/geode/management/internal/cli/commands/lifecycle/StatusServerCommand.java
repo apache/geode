@@ -22,8 +22,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.distributed.AbstractLauncher;
 import org.apache.geode.distributed.ServerLauncher;
+import org.apache.geode.launcher.Status;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
@@ -72,8 +72,8 @@ public class StatusServerCommand extends OfflineGfshCommand {
 
       final ServerLauncher.ServerState status = serverLauncher.status();
 
-      if (status.getStatus().equals(AbstractLauncher.Status.NOT_RESPONDING)
-          || status.getStatus().equals(AbstractLauncher.Status.STOPPED)) {
+      if (status.getStatus().equals(Status.NOT_RESPONDING)
+          || status.getStatus().equals(Status.STOPPED)) {
         return ResultModel.createError(status.toString());
       }
       return ResultModel.createInfo(status.toString());

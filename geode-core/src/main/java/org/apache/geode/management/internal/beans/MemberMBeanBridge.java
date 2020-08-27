@@ -47,7 +47,6 @@ import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.LocatorLauncher;
-import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -81,6 +80,7 @@ import org.apache.geode.internal.statistics.platform.LinuxSystemStats;
 import org.apache.geode.internal.statistics.platform.ProcessStats;
 import org.apache.geode.internal.stats50.VMStats50;
 import org.apache.geode.internal.tcp.ConnectionTable;
+import org.apache.geode.launcher.ServerLauncherManager;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.logging.internal.spi.LogFile;
@@ -880,8 +880,8 @@ public class MemberMBeanBridge {
     if (LocatorLauncher.getInstance() != null) {
       return LocatorLauncher.getLocatorState().toJson();
     }
-    if (ServerLauncher.getInstance() != null) {
-      return ServerLauncher.getServerState().toJson();
+    if (ServerLauncherManager.getInstance() != null) {
+      return ServerLauncherManager.getServerState().toJson();
     }
 
     return null;

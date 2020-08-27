@@ -74,6 +74,8 @@ include 'geode-modules'
 include 'geode-module-management'
 include 'geode-module-bootstrapping'
 include 'geode-dep-graph'
+include 'geode-module-launcher'
+include 'geode-process-utils'
 
 
 ['1.0.0-incubating',
@@ -105,4 +107,3 @@ buildCache {
     enabled = true
   }
 }
-

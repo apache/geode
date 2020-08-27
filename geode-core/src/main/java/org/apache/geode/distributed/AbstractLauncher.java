@@ -16,7 +16,6 @@ package org.apache.geode.distributed;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.join;
-import static org.apache.commons.lang3.StringUtils.lowerCase;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.internal.lang.ClassUtils.forName;
 import static org.apache.geode.internal.lang.StringUtils.defaultString;
@@ -53,6 +52,7 @@ import org.apache.geode.internal.process.PidUnavailableException;
 import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.internal.util.ArgumentRedactor;
 import org.apache.geode.internal.util.SunAPINotFoundException;
+import org.apache.geode.launcher.Status;
 import org.apache.geode.logging.internal.OSProcess;
 import org.apache.geode.util.internal.GeodeGlossary;
 
@@ -706,7 +706,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
      * Gets the state of the GemFire service.
      *
      * @return a Status enumerated type representing the state of the GemFire service.
-     * @see org.apache.geode.distributed.AbstractLauncher.Status
+     * @see Status
      */
     public Status getStatus() {
       return status;
@@ -847,60 +847,6 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
     // the value of the String, or "" if value is null
     protected String toString(final String value) {
       return value != null ? value : "";
-    }
-  }
-
-  /**
-   * The Status enumerated type represents the various lifecycle states of a GemFire service (such
-   * as a Cache Server, a Locator or a Manager).
-   */
-  public enum Status {
-    NOT_RESPONDING("not responding"),
-    ONLINE("online"),
-    STARTING("starting"),
-    STOPPED("stopped");
-
-    private final String description;
-
-    Status(final String description) {
-      assert isNotBlank(description) : "The Status description must be specified!";
-      this.description = lowerCase(description);
-    }
-
-    /**
-     * Looks up the Status enum type by description. The lookup operation is case-insensitive.
-     *
-     * @param description a String value describing the Locator's status.
-     * @return a Status enumerated type matching the description.
-     */
-    public static Status valueOfDescription(final String description) {
-      for (Status status : values()) {
-        if (status.getDescription().equalsIgnoreCase(description)) {
-          return status;
-        }
-      }
-
-      return null;
-    }
-
-    /**
-     * Gets the description of the Status enum type.
-     *
-     * @return a String describing the Status enum type.
-     */
-    public String getDescription() {
-      return description;
-    }
-
-    /**
-     * Gets a String representation of the Status enum type.
-     *
-     * @return a String representing the Status enum type.
-     * @see #getDescription()
-     */
-    @Override
-    public String toString() {
-      return getDescription();
     }
   }
 

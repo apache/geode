@@ -50,7 +50,7 @@ public class StartServerCommandWorkingDirectoryTest {
             anyInt(), isNull(), anyInt(), anyInt(), isNull(), isNull(), anyInt(), isNull(),
             isNull(), anyInt(), isNull(), isNull(), anyBoolean(), isNull(), isNull(), anyInt(),
             anyInt(), isNull(), isNull(), anyBoolean(), anyBoolean(), isNull(), isNull(), isNull(),
-            isNull(), anyBoolean());
+            isNull(), anyBoolean(), anyBoolean());
 
     workingDirectoryCaptor = ArgumentCaptor.forClass(String.class);
   }
@@ -63,7 +63,7 @@ public class StartServerCommandWorkingDirectoryTest {
         .startServer(memberName, false, null, null, null, 0.0f, 0.0f, workingDirectory, false,
             false, false, 0.0f, 0.0f, false, null, null, null, false, null, null, null, 0, false,
             null, 0, null, 0, 0, null, 0, 0, null, null, 0, null, null, 0, null, null, false, null,
-            null, 0, 0, null, null, false, false, null, null, null, null, false);
+            null, 0, 0, null, null, false, false, null, null, null, null, false, false);
 
     verifyDoStartServerInvoked();
 
@@ -79,7 +79,7 @@ public class StartServerCommandWorkingDirectoryTest {
         .startServer(memberName, false, null, null, null, 0.0f, 0.0f, workingDirectory, false,
             false, false, 0.0f, 0.0f, false, null, null, null, false, null, null, null, 0, false,
             null, 0, null, 0, 0, null, 0, 0, null, null, 0, null, null, 0, null, null, false, null,
-            null, 0, 0, null, null, false, false, null, null, null, null, false);
+            null, 0, 0, null, null, false, false, null, null, null, null, false, false);
 
     verifyDoStartServerInvoked();
 
@@ -94,7 +94,7 @@ public class StartServerCommandWorkingDirectoryTest {
         .startServer(memberName, false, null, null, null, 0.0f, 0.0f, workingDirectory, false,
             false, false, 0.0f, 0.0f, false, null, null, null, false, null, null, null, 0, false,
             null, 0, null, 0, 0, null, 0, 0, null, null, 0, null, null, 0, null, null, false, null,
-            null, 0, 0, null, null, false, false, null, null, null, null, false);
+            null, 0, 0, null, null, false, false, null, null, null, null, false, false);
 
     verifyDoStartServerInvoked();
 
@@ -109,7 +109,7 @@ public class StartServerCommandWorkingDirectoryTest {
         .startServer(memberName, false, null, null, null, 0.0f, 0.0f, workingDirectory, false,
             false, false, 0.0f, 0.0f, false, null, null, null, false, null, null, null, 0, false,
             null, 0, null, 0, 0, null, 0, 0, null, null, 0, null, null, 0, null, null, false, null,
-            null, 0, 0, null, null, false, false, null, null, null, null, false);
+            null, 0, 0, null, null, false, false, null, null, null, null, false, false);
 
     verifyDoStartServerInvoked();
 
@@ -125,7 +125,7 @@ public class StartServerCommandWorkingDirectoryTest {
         .startServer(memberName, false, null, null, null, 0.0f, 0.0f, workingDirectory, false,
             false, false, 0.0f, 0.0f, false, null, null, null, false, null, null, null, 0, false,
             null, 0, null, 0, 0, null, 0, 0, null, null, 0, null, null, 0, null, null, false, null,
-            null, 0, 0, null, null, false, false, null, null, null, null, false);
+            null, 0, 0, null, null, false, false, null, null, null, null, false, false);
 
     verifyDoStartServerInvoked();
 
@@ -141,6 +141,6 @@ public class StartServerCommandWorkingDirectoryTest {
             anyInt(), anyInt(), isNull(), anyInt(), anyInt(), isNull(), isNull(), anyInt(),
             isNull(), isNull(), anyInt(), isNull(), isNull(), anyBoolean(), isNull(), isNull(),
             anyInt(), anyInt(), isNull(), isNull(), anyBoolean(), anyBoolean(), isNull(), isNull(),
-            isNull(), isNull(), anyBoolean());
+            isNull(), isNull(), anyBoolean(), anyBoolean());
   }
 }

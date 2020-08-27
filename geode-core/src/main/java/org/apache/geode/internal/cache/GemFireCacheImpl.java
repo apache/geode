@@ -1178,8 +1178,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     synchronized (GemFireCacheImpl.class) {
       cacheLifecycleListeners.add(listener);
     }
-    throw new IllegalStateException(
-        "The pool " + pool.getName() + " did not have multiuser-authentication set to true");
   }
 
   /**

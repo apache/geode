@@ -30,6 +30,7 @@ dependencies {
   compileOnly(platform(project(':boms:geode-all-bom')))
   providedCompile(platform(project(':boms:geode-all-bom')))
 
+  implementation(project(':geode-common'))
   implementation('org.springframework.security:spring-security-core')
   implementation('javax.servlet:javax.servlet-api')
   implementation('mx4j:mx4j') {
@@ -156,7 +157,7 @@ sourceSets {
 }
 
 task copyGemFireVersionFile(type: Copy) {
-  from project(':geode-core').createVersionPropertiesFile
+  from project(':geode-common').createVersionPropertiesFile
   into generatedResources
 }
 

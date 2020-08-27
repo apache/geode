@@ -45,7 +45,6 @@ import java.util.TreeMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -63,7 +62,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.control.ResourceManager;
@@ -95,6 +93,9 @@ import org.apache.geode.internal.process.ProcessLauncherContext;
 import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.internal.process.UnableToControlProcessException;
 import org.apache.geode.lang.AttachAPINotFoundException;
+import org.apache.geode.launcher.ServerLauncherConfig;
+import org.apache.geode.launcher.ServerLauncherManager;
+import org.apache.geode.launcher.Status;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.i18n.CliStrings;
@@ -114,7 +115,7 @@ import org.apache.geode.util.internal.GeodeGlossary;
  * @since GemFire 7.0
  */
 @SuppressWarnings("unused")
-public class ServerLauncher extends AbstractLauncher<String> {
+public class ServerLauncher extends AbstractLauncher<String> implements ServerLauncherConfig {
 
   private static final Logger log = LogService.getLogger();
 
@@ -181,9 +182,6 @@ public class ServerLauncher extends AbstractLauncher<String> {
   private static final String DEFAULT_SERVER_LOG_EXT = ".log";
   private static final String DEFAULT_SERVER_LOG_NAME = "gemfire";
   private static final String SERVER_SERVICE_NAME = "Server";
-
-  @MakeNotStatic
-  private static final AtomicReference<ServerLauncher> INSTANCE = new AtomicReference<>();
 
   @Immutable
   private static final ServerLauncherCacheProvider DEFAULT_CACHE_PROVIDER =
@@ -272,7 +270,11 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * @return the instance of ServerLauncher used to launcher a GemFire Cache Server in this VM.
    */
   public static ServerLauncher getInstance() {
-    return INSTANCE.get();
+    ServerLauncherConfig instance = ServerLauncherManager.getInstance();
+    if (instance instanceof ServerLauncher) {
+      return (ServerLauncher) instance;
+    }
+    return null;
   }
 
   /**
@@ -327,7 +329,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     controllerParameters = new ServerControllerParameters();
     startupCompletionAction = builder.getStartupCompletionAction();
     startupExceptionAction = builder.getStartupExceptionAction();
-    controlHandler = new ControlNotificationHandler() {
+    controlHandler = new ControlNotificationHandler<ServiceInfo>() {
       @Override
       public void handleStop() {
         if (isStoppable()) {
@@ -336,7 +338,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
       }
 
       @Override
-      public ServiceState<?> handleStatus() {
+      public ServiceInfo handleStatus() {
         return statusInProcess();
       }
     };
@@ -428,6 +430,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    *
    * @return a boolean indicating if buckets should be assigned upon Server start.
    */
+  @Override
   public boolean isAssignBuckets() {
     return assignBuckets;
   }
@@ -437,6 +440,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    *
    * @return a boolean value indicating whether to add a default cache server.
    */
+  @Override
   public boolean isDisableDefaultServer() {
     return disableDefaultServer;
   }
@@ -447,6 +451,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    *
    * @return boolean indicating if force has been enabled.
    */
+  @Override
   public boolean isForcing() {
     return force;
   }
@@ -470,6 +475,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    *
    * @return a boolean indicating if the cache will be rebalance when the GemFire server starts.
    */
+  @Override
   public boolean isRebalancing() {
     return rebalance;
   }
@@ -481,6 +487,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * @return a boolean value indicating if this launcher will redirect output to system logs when
    *         starting a new Server process
    */
+  @Override
   public boolean isRedirectingOutput() {
     return redirectOutput;
   }
@@ -538,6 +545,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * @return an InetAddress indicating the IP address that the Server is bound to listening for and
    *         accepting cache client connections in a client/server topology.
    */
+  @Override
   public InetAddress getServerBindAddress() {
     return serverBindAddress;
   }
@@ -579,6 +587,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * @return an Integer value indicating the port the Server is listening on for cache client
    *         connections in the client/server topology.
    */
+  @Override
   public Integer getServerPort() {
     return serverPort;
   }
@@ -626,6 +635,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * @return a boolean value indicating whether this GemFire Server was configured with Spring
    *         configuration meta-data.
    */
+  @Override
   public boolean isSpringXmlLocationSpecified() {
     return isNotBlank(springXmlLocation);
   }
@@ -640,42 +650,52 @@ public class ServerLauncher extends AbstractLauncher<String> {
     return workingDirectory;
   }
 
+  @Override
   public Float getCriticalHeapPercentage() {
     return criticalHeapPercentage;
   }
 
+  @Override
   public Float getEvictionHeapPercentage() {
     return evictionHeapPercentage;
   }
 
+  @Override
   public Float getCriticalOffHeapPercentage() {
     return criticalOffHeapPercentage;
   }
 
+  @Override
   public Float getEvictionOffHeapPercentage() {
     return evictionOffHeapPercentage;
   }
 
+  @Override
   public String getHostNameForClients() {
     return hostNameForClients;
   }
 
+  @Override
   public Integer getMaxConnections() {
     return maxConnections;
   }
 
+  @Override
   public Integer getMaxMessageCount() {
     return maxMessageCount;
   }
 
+  @Override
   public Integer getMessageTimeToLive() {
     return messageTimeToLive;
   }
 
+  @Override
   public Integer getMaxThreads() {
     return maxThreads;
   }
 
+  @Override
   public Integer getSocketBufferSize() {
     return socketBufferSize;
   }
@@ -785,7 +805,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
   public ServerState start() {
     long startTime = System.currentTimeMillis();
     if (isStartable()) {
-      INSTANCE.compareAndSet(null, this);
+      ServerLauncherManager.compareAndSet(null, this);
 
       try {
         process = getControllableProcess();
@@ -914,7 +934,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
       process = null;
     }
 
-    INSTANCE.compareAndSet(this, null);
+    ServerLauncherManager.compareAndSet(this, null);
 
     running.set(false);
   }
@@ -1262,7 +1282,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
       }
 
       // note: other thread may return Status.NOT_RESPONDING now
-      INSTANCE.compareAndSet(this, null);
+      ServerLauncherManager.compareAndSet(this, null);
       running.set(false);
       return new ServerState(this, Status.STOPPED);
     }
@@ -1430,7 +1450,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * properly configured and initialized instance of the ServerLauncher to control and run GemFire
    * servers (in particular, cache servers).
    */
-  public static class Builder {
+  public static class Builder implements ServerLauncherConfig.Builder {
 
     @Immutable
     protected static final Command DEFAULT_COMMAND = Command.UNSPECIFIED;
@@ -1777,6 +1797,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * @return a boolean indicating if buckets should be assigned upon Server start.
      * @see #setAssignBuckets(Boolean)
      */
+    @Override
     public Boolean getAssignBuckets() {
       return assignBuckets;
     }
@@ -1789,6 +1810,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * @return this Builder instance.
      * @see #getAssignBuckets()
      */
+    @Override
     public Builder setAssignBuckets(final Boolean assignBuckets) {
       this.assignBuckets = assignBuckets;
       return this;
@@ -1811,6 +1833,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * @return a boolean value indicating whether debug mode is enabled or disabled.
      * @see #setDebug(Boolean)
      */
+    @Override
     public Boolean getDebug() {
       return debug;
     }
@@ -1822,6 +1845,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * @return this Builder instance.
      * @see #getDebug()
      */
+    @Override
     public Builder setDebug(final Boolean debug) {
       this.debug = debug;
       return this;
@@ -1835,6 +1859,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      *         or when the JVM exits.
      * @see #setDeletePidFileOnStop(Boolean)
      */
+    @Override
     public Boolean getDeletePidFileOnStop() {
       return deletePidFileOnStop;
     }
@@ -1848,6 +1873,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * @return this Builder instance.
      * @see #getDeletePidFileOnStop()
      */
+    @Override
     public Builder setDeletePidFileOnStop(final Boolean deletePidFileOnStop) {
       this.deletePidFileOnStop = deletePidFileOnStop;
       return this;
@@ -1859,6 +1885,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * @return a boolean value indicating whether to add a default cache server.
      * @see #setDisableDefaultServer(Boolean)
      */
+    @Override
     public Boolean getDisableDefaultServer() {
       return disableDefaultServer;
     }
@@ -1871,6 +1898,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * @return this Builder instance.
      * @see #getDisableDefaultServer()
      */
+    @Override
     public Builder setDisableDefaultServer(final Boolean disableDefaultServer) {
       this.disableDefaultServer = disableDefaultServer;
       return this;
@@ -1895,6 +1923,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      *         exists.
      * @see #setForce(Boolean)
      */
+    @Override
     public Boolean getForce() {
       return force != null ? force : DEFAULT_FORCE;
     }
@@ -1908,6 +1937,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * @return this Builder instance.
      * @see #getForce()
      */
+    @Override
     public Builder setForce(final Boolean force) {
       this.force = force;
       return this;
@@ -1955,6 +1985,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * @return a boolean indicating if the cache will be rebalance when the GemFire server starts.
      * @see #setRebalance(Boolean)
      */
+    @Override
     public Boolean getRebalance() {
       return rebalance;
     }
@@ -1968,6 +1999,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * @return this Builder instance.
      * @see #getRebalance()
      */
+    @Override
     public Builder setRebalance(final Boolean rebalance) {
       this.rebalance = rebalance;
       return this;
@@ -1979,6 +2011,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * @return a String indicating the member name of this Server in GemFire.
      * @see #setMemberName(String)
      */
+    @Override
     public String getMemberName() {
       return memberName;
     }
@@ -1991,6 +2024,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * @throws IllegalArgumentException if the member name is invalid.
      * @see #getMemberName()
      */
+    @Override
     public Builder setMemberName(final String memberName) {
       if (isBlank(memberName)) {
         throw new IllegalArgumentException("The Server member name must be specified.");
@@ -2039,6 +2073,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      *         a Server
      * @see #setRedirectOutput(Boolean)
      */
+    @Override
     public Boolean getRedirectOutput() {
       return redirectOutput;
     }
@@ -2061,6 +2096,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * @return this Builder instance.
      * @see #getRedirectOutput()
      */
+    @Override
     public Builder setRedirectOutput(final Boolean redirectOutput) {
       this.redirectOutput = redirectOutput;
       return this;
@@ -2074,6 +2110,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      *         and accepting cache client connections in a client/server topology.
      * @see #setServerBindAddress(String)
      */
+    @Override
     public InetAddress getServerBindAddress() {
       return serverBindAddress;
     }
@@ -2094,6 +2131,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      *         hostname for the server bind address is unknown.
      * @see #getServerBindAddress()
      */
+    @Override
     public Builder setServerBindAddress(final String serverBindAddress) {
       if (isBlank(serverBindAddress)) {
         this.serverBindAddress = null;
@@ -2127,6 +2165,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      *         client connections in a client/server topology.
      * @see #setServerPort(Integer)
      */
+    @Override
     public Integer getServerPort() {
       return serverPort != null ? serverPort : getDefaultServerPort();
     }
@@ -2145,6 +2184,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * @throws IllegalArgumentException if the port number is not valid.
      * @see #getServerPort()
      */
+    @Override
     public Builder setServerPort(final Integer serverPort) {
       if (serverPort == null) {
         this.serverPort = null;
@@ -2176,6 +2216,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * @return a String indicating the location of the Spring XML configuration file.
      * @see #setSpringXmlLocation(String)
      */
+    @Override
     public String getSpringXmlLocation() {
       return springXmlLocation;
     }
@@ -2190,6 +2231,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * @return this Builder instance.
      * @see #getSpringXmlLocation()
      */
+    @Override
     public Builder setSpringXmlLocation(final String springXmlLocation) {
       this.springXmlLocation = springXmlLocation;
       return this;
@@ -2202,6 +2244,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * @return a String indicating the working directory pathname.
      * @see #setWorkingDirectory(String)
      */
+    @Override
     public String getWorkingDirectory() {
       return tryGetCanonicalPathElseGetAbsolutePath(
           new File(defaultIfBlank(workingDirectory, DEFAULT_WORKING_DIRECTORY)));
@@ -2220,6 +2263,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * @see #getWorkingDirectory()
      * @see FileNotFoundException
      */
+    @Override
     public Builder setWorkingDirectory(final String workingDirectory) {
       if (!new File(defaultIfBlank(workingDirectory, DEFAULT_WORKING_DIRECTORY)).isDirectory()) {
         throw new IllegalArgumentException(
@@ -2231,10 +2275,12 @@ public class ServerLauncher extends AbstractLauncher<String> {
       return this;
     }
 
+    @Override
     public Float getCriticalHeapPercentage() {
       return criticalHeapPercentage;
     }
 
+    @Override
     public Builder setCriticalHeapPercentage(final Float criticalHeapPercentage) {
       if (criticalHeapPercentage != null) {
         if (criticalHeapPercentage < 0 || criticalHeapPercentage > 100.0f) {
@@ -2247,10 +2293,12 @@ public class ServerLauncher extends AbstractLauncher<String> {
       return this;
     }
 
+    @Override
     public Float getCriticalOffHeapPercentage() {
       return criticalOffHeapPercentage;
     }
 
+    @Override
     public Builder setCriticalOffHeapPercentage(final Float criticalOffHeapPercentage) {
       if (criticalOffHeapPercentage != null) {
         if (criticalOffHeapPercentage < 0 || criticalOffHeapPercentage > 100.0f) {
@@ -2263,10 +2311,12 @@ public class ServerLauncher extends AbstractLauncher<String> {
       return this;
     }
 
+    @Override
     public Float getEvictionHeapPercentage() {
       return evictionHeapPercentage;
     }
 
+    @Override
     public Builder setEvictionHeapPercentage(final Float evictionHeapPercentage) {
       if (evictionHeapPercentage != null) {
         if (evictionHeapPercentage < 0 || evictionHeapPercentage > 100.0f) {
@@ -2279,10 +2329,12 @@ public class ServerLauncher extends AbstractLauncher<String> {
       return this;
     }
 
+    @Override
     public Float getEvictionOffHeapPercentage() {
       return evictionOffHeapPercentage;
     }
 
+    @Override
     public Builder setEvictionOffHeapPercentage(final Float evictionOffHeapPercentage) {
       if (evictionOffHeapPercentage != null) {
         if (evictionOffHeapPercentage < 0 || evictionOffHeapPercentage > 100.0f) {
@@ -2295,10 +2347,12 @@ public class ServerLauncher extends AbstractLauncher<String> {
       return this;
     }
 
+    @Override
     public String getHostNameForClients() {
       return hostNameForClients;
     }
 
+    @Override
     public Builder setHostNameForClients(String hostNameForClients) {
       if (isBlank(hostNameForClients)) {
         throw new IllegalArgumentException(
@@ -2309,10 +2363,12 @@ public class ServerLauncher extends AbstractLauncher<String> {
       return this;
     }
 
+    @Override
     public Integer getMaxConnections() {
       return maxConnections;
     }
 
+    @Override
     public Builder setMaxConnections(Integer maxConnections) {
       if (maxConnections != null && maxConnections < 1) {
         throw new IllegalArgumentException(
@@ -2322,10 +2378,12 @@ public class ServerLauncher extends AbstractLauncher<String> {
       return this;
     }
 
+    @Override
     public Integer getMaxMessageCount() {
       return maxMessageCount;
     }
 
+    @Override
     public Builder setMaxMessageCount(Integer maxMessageCount) {
       if (maxMessageCount != null && maxMessageCount < 1) {
         throw new IllegalArgumentException(
@@ -2335,10 +2393,12 @@ public class ServerLauncher extends AbstractLauncher<String> {
       return this;
     }
 
+    @Override
     public Integer getMaxThreads() {
       return maxThreads;
     }
 
+    @Override
     public Builder setMaxThreads(Integer maxThreads) {
       if (maxThreads != null && maxThreads < 1) {
         throw new IllegalArgumentException(
@@ -2348,10 +2408,12 @@ public class ServerLauncher extends AbstractLauncher<String> {
       return this;
     }
 
+    @Override
     public Integer getMessageTimeToLive() {
       return messageTimeToLive;
     }
 
+    @Override
     public Builder setMessageTimeToLive(Integer messageTimeToLive) {
       if (messageTimeToLive != null && messageTimeToLive < 1) {
         throw new IllegalArgumentException(String
@@ -2361,10 +2423,12 @@ public class ServerLauncher extends AbstractLauncher<String> {
       return this;
     }
 
+    @Override
     public Integer getSocketBufferSize() {
       return socketBufferSize;
     }
 
+    @Override
     public Builder setSocketBufferSize(Integer socketBufferSize) {
       if (socketBufferSize != null && socketBufferSize < 1) {
         throw new IllegalArgumentException(String.format(
@@ -2747,7 +2811,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
    *
    * @see AbstractLauncher.ServiceState
    */
-  public static class ServerState extends ServiceState<String> {
+  public static class ServerState extends ServiceState<String> implements
+      ServiceInfo {
 
     /**
      * Unmarshals a ServerState instance from the JSON String.

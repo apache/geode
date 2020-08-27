@@ -37,11 +37,11 @@ import org.junit.rules.ErrorCollector;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
-import org.apache.geode.distributed.AbstractLauncher.Status;
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.LocatorLauncher.Builder;
 import org.apache.geode.distributed.LocatorLauncher.LocatorState;
 import org.apache.geode.internal.process.io.EmptyFileWriter;
+import org.apache.geode.launcher.Status;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 /**

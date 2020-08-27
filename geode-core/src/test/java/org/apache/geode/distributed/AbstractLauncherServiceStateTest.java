@@ -21,11 +21,11 @@ import static org.apache.geode.distributed.AbstractLauncher.ServiceState.TO_STRI
 import static org.apache.geode.distributed.AbstractLauncher.ServiceState.TO_STRING_LOG_FILE;
 import static org.apache.geode.distributed.AbstractLauncher.ServiceState.TO_STRING_PROCESS_ID;
 import static org.apache.geode.distributed.AbstractLauncher.ServiceState.TO_STRING_UPTIME;
-import static org.apache.geode.distributed.AbstractLauncher.Status.NOT_RESPONDING;
-import static org.apache.geode.distributed.AbstractLauncher.Status.ONLINE;
-import static org.apache.geode.distributed.AbstractLauncher.Status.STARTING;
-import static org.apache.geode.distributed.AbstractLauncher.Status.STOPPED;
-import static org.apache.geode.distributed.AbstractLauncher.Status.valueOfDescription;
+import static org.apache.geode.launcher.Status.NOT_RESPONDING;
+import static org.apache.geode.launcher.Status.ONLINE;
+import static org.apache.geode.launcher.Status.STARTING;
+import static org.apache.geode.launcher.Status.STOPPED;
+import static org.apache.geode.launcher.Status.valueOfDescription;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -44,6 +44,7 @@ import org.junit.Test;
 
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.process.ProcessUtils;
+import org.apache.geode.launcher.Status;
 import org.apache.geode.management.internal.util.JsonUtil;
 
 /**

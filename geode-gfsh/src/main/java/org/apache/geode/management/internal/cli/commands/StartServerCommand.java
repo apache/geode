@@ -36,6 +36,8 @@ import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.internal.process.ProcessStreamReader;
 import org.apache.geode.internal.util.IOUtils;
+import org.apache.geode.launcher.ModuleServerLauncher;
+import org.apache.geode.launcher.ServerLauncherConfig;
 import org.apache.geode.logging.internal.OSProcess;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
@@ -176,7 +178,10 @@ public class StartServerCommand extends OfflineGfshCommand {
           help = CliStrings.START_SERVER__PASSWORD__HELP) String passwordToUse,
       @CliOption(key = CliStrings.START_SERVER__REDIRECT_OUTPUT, unspecifiedDefaultValue = "false",
           specifiedDefaultValue = "true",
-          help = CliStrings.START_SERVER__REDIRECT_OUTPUT__HELP) final Boolean redirectOutput)
+          help = CliStrings.START_SERVER__REDIRECT_OUTPUT__HELP) final Boolean redirectOutput,
+      @CliOption(key = CliStrings.START_SERVER_EXPERIMENTAL,
+          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
+          help = CliStrings.START_SERVER_EXPERIMENTAL_HELP) final Boolean experimental)
       throws Exception {
     // NOTICE: keep the parameters in alphabetical order based on their CliStrings.START_SERVER_*
     // text
@@ -209,7 +214,8 @@ public class StartServerCommand extends OfflineGfshCommand {
         redisPassword, messageTimeToLive, offHeapMemorySize, gemfirePropertiesFile, rebalance,
         gemfireSecurityPropertiesFile, serverBindAddress, serverPort, socketBufferSize,
         springXmlLocation, statisticsArchivePathname, requestSharedConfiguration, startRestApi,
-        httpServicePort, httpServiceBindAddress, userName, passwordToUse, redirectOutput);
+        httpServicePort, httpServiceBindAddress, userName, passwordToUse, redirectOutput,
+        experimental);
   }
 
   ResultModel doStartServer(String memberName, Boolean assignBuckets, String bindAddress,
@@ -228,7 +234,7 @@ public class StartServerCommand extends OfflineGfshCommand {
       Integer serverPort, Integer socketBufferSize, String springXmlLocation,
       String statisticsArchivePathname, Boolean requestSharedConfiguration, Boolean startRestApi,
       String httpServicePort, String httpServiceBindAddress, String userName, String passwordToUse,
-      Boolean redirectOutput)
+      Boolean redirectOutput, Boolean experimental)
       throws MalformedObjectNameException, IOException, InterruptedException {
     cacheXmlPathname = CliUtil.resolvePathname(cacheXmlPathname);
 
@@ -319,8 +325,9 @@ public class StartServerCommand extends OfflineGfshCommand {
       gemfireProperties.setProperty(ResourceConstants.PASSWORD, passwordToUse);
     }
 
-    ServerLauncher.Builder serverLauncherBuilder = new ServerLauncher.Builder()
-        .setAssignBuckets(assignBuckets).setDisableDefaultServer(disableDefaultServer)
+    ServerLauncherConfig.Builder serverLauncherBuilder = createServerLauncherBuilder(experimental);
+    serverLauncherBuilder.setAssignBuckets(assignBuckets)
+        .setDisableDefaultServer(disableDefaultServer)
         .setForce(force).setRebalance(rebalance).setRedirectOutput(redirectOutput)
         .setServerBindAddress(serverBindAddress).setServerPort(serverPort)
         .setSpringXmlLocation(springXmlLocation).setWorkingDirectory(workingDirectory)
@@ -336,14 +343,15 @@ public class StartServerCommand extends OfflineGfshCommand {
     if (memberName != null) {
       serverLauncherBuilder.setMemberName(memberName);
     }
-    ServerLauncher serverLauncher = serverLauncherBuilder.build();
+    ServerLauncherConfig serverLauncher = serverLauncherBuilder.build();
 
     String[] serverCommandLine = createStartServerCommandLine(serverLauncher, gemfirePropertiesFile,
         gemfireSecurityPropertiesFile, gemfireProperties, classpath, includeSystemClasspath,
         jvmArgsOpts, disableExitWhenOutOfMemory, initialHeap, maxHeap);
 
     if (getGfsh().getDebug()) {
-      getGfsh().logInfo(StringUtils.join(serverCommandLine, StringUtils.SPACE), null);
+      String commandLine = StringUtils.join(serverCommandLine, StringUtils.SPACE);
+      getGfsh().logInfo(commandLine, null);
     }
 
     Process serverProcess =
@@ -368,7 +376,7 @@ public class StartServerCommand extends OfflineGfshCommand {
         .inputStream(serverProcess.getErrorStream()).inputListener(inputListener)
         .readingMode(readingMode).continueReadingMillis(2 * 1000).build().start();
 
-    ServerLauncher.ServerState serverState;
+    ServerLauncherConfig.ServiceInfo serverState;
 
     String previousServerStatusMessage = null;
 
@@ -390,8 +398,9 @@ public class StartServerCommand extends OfflineGfshCommand {
             TimeUnit.MILLISECONDS.timedWait(this, 500);
           }
 
-          serverState = ServerLauncher.ServerState.fromDirectory(workingDirectory, memberName);
-
+          // serverState = ServerLauncher.ServerState.fromDirectory(workingDirectory,
+          // memberName);
+          serverState = serverLauncher.status();
           String currentServerStatusMessage = serverState.getStatusMessage();
 
           if (serverState.isStartingOrNotResponding()
@@ -421,7 +430,7 @@ public class StartServerCommand extends OfflineGfshCommand {
     Gfsh.println();
 
     final boolean asyncStart =
-        ServerLauncher.ServerState.isStartingNotRespondingOrNull(serverState);
+        ServerLauncherConfig.ServiceInfo.isStartingNotRespondingOrNull(serverState);
 
     if (asyncStart) { // async start
       Gfsh.print(String.format(CliStrings.ASYNC_PROCESS_LAUNCH_MESSAGE, SERVER_TERM_NAME));
@@ -431,12 +440,22 @@ public class StartServerCommand extends OfflineGfshCommand {
     }
   }
 
+  private ServerLauncherConfig.Builder createServerLauncherBuilder(Boolean experimental) {
+    ServerLauncherConfig.Builder serverLauncherBuilder;
+    if (experimental) {
+      serverLauncherBuilder = new ModuleServerLauncher.Builder();
+    } else {
+      serverLauncherBuilder = new ServerLauncher.Builder();
+    }
+    return serverLauncherBuilder;
+  }
+
   Process getProcess(String workingDir, String[] serverCommandLine) throws IOException {
     return new ProcessBuilder(serverCommandLine)
         .directory(new File(workingDir)).start();
   }
 
-  String[] createStartServerCommandLine(final ServerLauncher launcher,
+  String[] createStartServerCommandLine(final ServerLauncherConfig launcher,
       final File gemfirePropertiesFile, final File gemfireSecurityPropertiesFile,
       final Properties gemfireProperties, final String userClasspath,
       final Boolean includeSystemClasspath, final String[] jvmArgsOpts,
@@ -447,7 +466,18 @@ public class StartServerCommand extends OfflineGfshCommand {
     commandLine.add(StartMemberUtils.getJavaPath());
     commandLine.add("-server");
     commandLine.add("-classpath");
-    commandLine.add(getServerClasspath(Boolean.TRUE.equals(includeSystemClasspath), userClasspath));
+
+    // Determine whether to use normal or module classpath
+    if (launcher instanceof ModuleServerLauncher) {
+      commandLine.add(getModularClasspath());
+    } else {
+      commandLine
+          .add(getServerClasspath(Boolean.TRUE.equals(includeSystemClasspath), userClasspath));
+    }
+
+    if (StringUtils.isNotBlank(launcher.getMemberName())) {
+      gemfireProperties.setProperty(ConfigurationProperties.NAME, launcher.getMemberName());
+    }
 
     StartMemberUtils.addCurrentLocators(this, commandLine, gemfireProperties);
     StartMemberUtils.addGemFirePropertyFile(commandLine, gemfirePropertiesFile);
@@ -473,10 +503,12 @@ public class StartServerCommand extends OfflineGfshCommand {
     if (launcher.isRedirectingOutput()) {
       addOutputRedirect(commandLine);
     }
-    commandLine.add(ServerLauncher.class.getName());
+    commandLine.add(launcher.getClass().getName());
     commandLine.add(ServerLauncher.Command.START.getName());
 
     if (StringUtils.isNotBlank(launcher.getMemberName())) {
+      // Adding line to commandline to maintaining backwards compatibility with existing
+      // ServerLauncher
       commandLine.add(launcher.getMemberName());
     }
 
@@ -589,6 +621,10 @@ public class StartServerCommand extends OfflineGfshCommand {
 
     return StartMemberUtils.toClasspath(includeSystemClasspath,
         jarFilePathnames.toArray(new String[] {}), userClasspath);
+  }
+
+  String getModularClasspath() {
+    return StartMemberUtils.MODULES_DEPENDENCIES_JAR_PATHNAME;
   }
 
   private String[] getExtensionsJars() {

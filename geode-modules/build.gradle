@@ -154,11 +154,12 @@ tasks.test.dependsOn(moduleCopyTasks)
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
 
-  implementation(project(':geode-common-services'))
+  compileOnly(project(':geode-common-services'))
   implementation(project(':geode-common'))
   implementation('org.apache.commons:commons-lang3')
   implementation('org.apache.logging.log4j:log4j-api')
   implementation('org.jboss.modules:jboss-modules')
+  testCompileOnly(project(':geode-common-services'))
   testImplementation('junit:junit')
   testCompile(project(":geode-core"))
   testImplementation('org.assertj:assertj-core')
@@ -178,6 +179,4 @@ dependencies {
   module5WithManifestCompileOnly(sourceSets.test.output)
 
   module1WithManifestCompile('com.google.guava:guava')
-
-
 }

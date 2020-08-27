@@ -88,6 +88,8 @@ import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.internal.process.UnableToControlProcessException;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.lang.AttachAPINotFoundException;
+import org.apache.geode.launcher.ServerLauncherConfig.ServiceInfo;
+import org.apache.geode.launcher.Status;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.util.HostUtils;
 import org.apache.geode.management.internal.util.JsonUtil;
@@ -274,7 +276,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     this.workingDirectorySpecified = builder.isWorkingDirectorySpecified();
     this.workingDirectory = builder.getWorkingDirectory();
     this.controllerParameters = new LocatorControllerParameters();
-    this.controlHandler = new ControlNotificationHandler() {
+    this.controlHandler = new ControlNotificationHandler<ServiceInfo>() {
       @Override
       public void handleStop() {
         if (isStoppable()) {
@@ -283,7 +285,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       }
 
       @Override
-      public ServiceState<?> handleStatus() {
+      public ServiceInfo handleStatus() {
         return statusInProcess();
       }
     };
@@ -694,9 +696,9 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * @see #waitOnLocator()
    * @see #waitOnStatusResponse(long, long, java.util.concurrent.TimeUnit)
    * @see org.apache.geode.distributed.LocatorLauncher.LocatorState
-   * @see org.apache.geode.distributed.AbstractLauncher.Status#NOT_RESPONDING
-   * @see org.apache.geode.distributed.AbstractLauncher.Status#ONLINE
-   * @see org.apache.geode.distributed.AbstractLauncher.Status#STARTING
+   * @see Status#NOT_RESPONDING
+   * @see Status#ONLINE
+   * @see Status#STARTING
    */
   @SuppressWarnings("deprecation")
   public LocatorState start() {
@@ -801,7 +803,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * @throws AssertionError if the Locator has not been started and the reference is null
    *         (assertions must be enabled for the error to be thrown).
    * @see #failOnStart(Throwable)
-   * @see org.apache.geode.distributed.AbstractLauncher.Status
+   * @see Status
    * @see org.apache.geode.distributed.LocatorLauncher.LocatorState
    */
   public LocatorState waitOnLocator() {
@@ -909,7 +911,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * @return the Locator's state.
    * @see #start()
    * @see #stop()
-   * @see org.apache.geode.distributed.AbstractLauncher.Status
+   * @see Status
    * @see org.apache.geode.distributed.LocatorLauncher.LocatorState
    */
   public LocatorState status() {
@@ -1065,8 +1067,8 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * @see #start()
    * @see #status()
    * @see org.apache.geode.distributed.LocatorLauncher.LocatorState
-   * @see org.apache.geode.distributed.AbstractLauncher.Status#NOT_RESPONDING
-   * @see org.apache.geode.distributed.AbstractLauncher.Status#STOPPED
+   * @see Status#NOT_RESPONDING
+   * @see Status#STOPPED
    */
   public LocatorState stop() {
     final LocatorLauncher launcher = getInstance();
@@ -2043,7 +2045,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    *
    * @see org.apache.geode.distributed.AbstractLauncher.ServiceState
    */
-  public static class LocatorState extends ServiceState<String> {
+  public static class LocatorState extends ServiceState<String> implements ServiceInfo {
 
     /**
      * Unmarshals a LocatorState instance from the JSON String.

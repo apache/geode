@@ -36,6 +36,7 @@ dependencies {
   //in particular should not be duplicated in the war.
   providedCompile(project(':geode-logging'))
   compileOnly(project(':geode-core'))
+  compileOnly(project(':geode-common-services'))
   providedCompile(project(':geode-serialization'))
   providedCompile(project(':geode-gfsh')) {
     exclude module: 'spring-web'

@@ -62,7 +62,7 @@ public class DelegatingModuleFinder implements ModuleFinder {
       logger.debug("ModuleFinder for module named: " + moduleName + " already added");
     } else {
       finders = finders.add(new Tuple2<>(moduleName, finder));
-      logger.debug("Added finder " + finder);
+      logger.debug("Added finder for module name: " + moduleName);
     }
   }
 

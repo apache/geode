@@ -21,6 +21,57 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 apply from: "${project.projectDir}/../gradle/warnings.gradle"
 apply from: "${project.projectDir}/../gradle/jmh.gradle"
 
+def generatedResources = "$buildDir/generated-resources/main"
+
+sourceSets {
+  main {
+    output.dir(generatedResources, builtBy: 'createVersionPropertiesFile')
+  }
+  test {
+    output.dir(generatedResources, builtBy: 'createVersionPropertiesFile')
+  }
+}
+
+// Creates the version properties file and writes it to the classes dir
+task createVersionPropertiesFile(dependsOn: ':writeBuildInfo') {
+
+  def propertiesFile = file(generatedResources + "/org/apache/geode/internal/GemFireVersion.properties")
+  def scmInfoFile = rootProject.tasks.writeBuildInfo.outputs.files
+
+  inputs.files {
+    scmInfoFile
+  }
+  outputs.files {
+    propertiesFile
+  }
+
+
+  doLast {
+    def scmInfo = new Properties()
+    new FileInputStream(scmInfoFile.singleFile).withStream { fis ->
+      scmInfo.load(fis)
+    }
+
+    def props = [
+            "Product-Name"      : productName,
+            "Product-Version"   : version,
+            "Build-Id"          : "${System.env.USER} ${buildId}".toString(),
+            "Build-Date"        : new Date().format('yyyy-MM-dd HH:mm:ss Z'),
+            "Build-Platform"    : "${System.properties['os.name']} ${System.properties['os.version']} ${System.properties['os.arch']}".toString(),
+            "Build-Java-Vendor" : System.properties['java.vendor'],
+            "Build-Java-Version": System.properties['java.version']
+    ] as Properties
+    props.putAll(scmInfo)
+
+    propertiesFile.getParentFile().mkdirs()
+    new FileOutputStream(propertiesFile).withStream { fos ->
+      props.store(fos, '')
+    }
+  }
+}
+
+jar.dependsOn(createVersionPropertiesFile)
+
 dependencies {
   // main
   implementation(platform(project(':boms:geode-all-bom')))

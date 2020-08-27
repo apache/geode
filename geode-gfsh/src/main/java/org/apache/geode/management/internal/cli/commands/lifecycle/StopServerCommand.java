@@ -22,9 +22,9 @@ import java.util.concurrent.TimeUnit;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.distributed.AbstractLauncher;
 import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.internal.util.StopWatch;
+import org.apache.geode.launcher.Status;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
@@ -79,7 +79,7 @@ public class StopServerCommand extends OfflineGfshCommand {
       serverLauncher.stop();
     }
 
-    if (AbstractLauncher.Status.ONLINE.equals(serverState.getStatus())) {
+    if (Status.ONLINE.equals(serverState.getStatus())) {
       getGfsh().logInfo(
           String.format(CliStrings.STOP_SERVER__STOPPING_SERVER_MESSAGE,
               serverState.getWorkingDirectory(), serverState.getServiceLocation(),

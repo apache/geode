@@ -97,17 +97,6 @@ public class ModuleDescriptor {
   }
 
   /**
-   * Returns {@literal true} if this {@link ModuleDescriptor} is dependent on JDK path and
-   * {@literal false} otherwise.
-   *
-   * @return {@literal true} if this {@link ModuleDescriptor} is dependent on JDK path and
-   *         {@literal false} otherwise.
-   */
-  public boolean requiresJDKPaths() {
-    return requiresJDKPaths;
-  }
-
-  /**
    * A Builder used to construct a {@link ModuleDescriptor}
    */
   public static class Builder {

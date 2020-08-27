@@ -45,7 +45,7 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
-  <dependencies>GradleBuildWithGeodeCoreAcceptanceTest
+  <dependencies>
     <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-common-services</artifactId>

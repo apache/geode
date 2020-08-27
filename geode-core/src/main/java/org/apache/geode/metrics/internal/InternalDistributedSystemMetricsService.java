@@ -30,10 +30,10 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.util.CollectingServiceLoader;
 import org.apache.geode.internal.util.ListCollectingServiceLoader;
+import org.apache.geode.launcher.ServerLauncherManager;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.metrics.MetricsPublishingService;
 import org.apache.geode.services.module.ModuleService;
@@ -242,7 +242,7 @@ public class InternalDistributedSystemMetricsService implements MetricsService {
     private Supplier<CollectingServiceLoader<MetricsPublishingService>> serviceLoaderSupplier;
     private Set<MeterRegistry> persistentMeterRegistries = new HashSet<>();
     private BooleanSupplier hasLocator = Locator::hasLocator;
-    private BooleanSupplier hasCacheServer = () -> ServerLauncher.getInstance() != null;
+    private BooleanSupplier hasCacheServer = () -> ServerLauncherManager.getInstance() != null;
 
     @Override
     public MetricsService build(InternalDistributedSystem system, ModuleService moduleService) {

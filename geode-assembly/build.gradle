@@ -40,6 +40,7 @@ def dependentProjectNames = [
         ':geode-memcached',
         ':geode-modules',
         ':geode-old-client-support',
+        ':geode-process-utils',
         ':geode-protobuf',
         ':geode-protobuf-messages',
         ':geode-rebalancer',
@@ -48,7 +49,8 @@ def dependentProjectNames = [
         ':geode-tcp-server',
         ':geode-wan',
         ':geode-module-management',
-        ':geode-module-bootstrapping'
+        ':geode-module-bootstrapping',
+        ':geode-module-launcher'
 ]
 
 // These other dependencies are explicitly referenced throughout other copySpec
@@ -245,6 +247,7 @@ dependencies {
   distributedTestImplementation(project(':geode-serialization'))
   distributedTestImplementation(project(':geode-tcp-server'))
   distributedTestImplementation(project(':geode-core'))
+  distributedTestImplementation(project(':geode-process-utils'))
   distributedTestImplementation(project(':geode-log4j')) {
     exclude module: 'geode-core'
   }
@@ -282,6 +285,7 @@ dependencies {
   // don't have it be the same version as the outer gradle version.
   acceptanceTestImplementation('org.gradle:gradle-tooling-api:5.4.1')
   acceptanceTestImplementation(project(':geode-common-services'))
+  acceptanceTestImplementation(project(':geode-process-utils'))
 
   acceptanceTestImplementation('com.palantir.docker.compose:docker-compose-rule-core')
   acceptanceTestImplementation('com.palantir.docker.compose:docker-compose-rule-junit4')
@@ -311,6 +315,7 @@ dependencies {
   upgradeTestImplementation(project(':geode-assembly:geode-assembly-test'))
 
   upgradeTestCompileOnly(platform(project(':boms:geode-all-bom')))
+  upgradeTestCompile(project(':geode-common-services'))
   upgradeTestCompileOnly('io.swagger:swagger-annotations')
 
   upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
@@ -471,10 +476,14 @@ tasks.register('moduleDepsJar', Jar) {
   archiveName 'geode-modules-dependencies.jar'
   def modulesToRemove = [
           "geode-common",
+          "geode-logging",
           "geode-common-services",
           "geode-module-bootstrapping",
+          "geode-module-launcher",
           "geode-modules",
-          "geode-module-management"]
+          "geode-module-management",
+          "geode-process-utils",
+          "log4j-core"]
 
   inputs.files {
     configureDepsJar
@@ -483,7 +492,7 @@ tasks.register('moduleDepsJar', Jar) {
   doFirst {
 
     def classPathEntries = configureDepsJar.outputs.files.singleFile.text.split(' ')
-            .findAll { (it as String).startsWith("geode-") }
+            .findAll { (it as String).startsWith("geode-") || (it as String).startsWith("log4j-core") }
             .findAll {
               def result = false
               for (String moduleNameToRemove : modulesToRemove) {
@@ -508,7 +517,9 @@ tasks.register('geodeDepsJar', Jar) {
   def modulesToRemove = ["geode-common-services",
                          "geode-module-bootstrapping",
                          "geode-modules",
-                         "geode-module-management"]
+                          "geode-module-launcher",
+                         "geode-module-management",
+                          "geode-process-utils"]
 
   inputs.files {
     configureDepsJar

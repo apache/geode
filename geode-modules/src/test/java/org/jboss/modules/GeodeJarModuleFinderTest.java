@@ -68,12 +68,7 @@ public class GeodeJarModuleFinderTest {
   }
 
   @Before
-  public void setUp() throws Exception {
-    logger = LogManager.getLogger();
-  }
-
-  @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     logger = LogManager.getLogger();
   }
 

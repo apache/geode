@@ -23,8 +23,8 @@ import java.io.UncheckedIOException;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.distributed.AbstractLauncher.ServiceState;
 import org.apache.geode.internal.process.ControlFileWatchdog.ControlRequestHandler;
+import org.apache.geode.launcher.ServerLauncherConfig.ServiceInfo;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -186,8 +186,8 @@ public class FileControllableProcess implements ControllableProcess {
         false);
   }
 
-  static String fetchStatusWithValidation(final ControlNotificationHandler handler) {
-    ServiceState<?> state = handler.handleStatus();
+  static String fetchStatusWithValidation(final ControlNotificationHandler<ServiceInfo> handler) {
+    ServiceInfo state = handler.handleStatus();
     if (state == null) {
       throw new IllegalStateException("Null ServiceState is invalid");
     }

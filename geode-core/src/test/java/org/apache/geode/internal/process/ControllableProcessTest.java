@@ -23,7 +23,7 @@ import static org.mockito.Mockito.when;
 
 import org.junit.Test;
 
-import org.apache.geode.distributed.AbstractLauncher.ServiceState;
+import org.apache.geode.launcher.ServerLauncherConfig.ServiceInfo;
 
 /**
  * Unit tests for {@link FileControllableProcess}.
@@ -33,7 +33,7 @@ public class ControllableProcessTest {
   @Test
   public void fetchStatusWithValidationThrowsIfJsonIsNull() {
     ControlNotificationHandler handler = mock(ControlNotificationHandler.class);
-    ServiceState state = mock(ServiceState.class);
+    ServiceInfo state = mock(ServiceInfo.class);
     when(handler.handleStatus()).thenReturn(state);
     when(state.toJson()).thenReturn(null);
 
@@ -47,7 +47,7 @@ public class ControllableProcessTest {
   @Test
   public void fetchStatusWithValidationThrowsIfJsonIsEmpty() {
     ControlNotificationHandler handler = mock(ControlNotificationHandler.class);
-    ServiceState state = mock(ServiceState.class);
+    ServiceInfo state = mock(ServiceInfo.class);
     when(handler.handleStatus()).thenReturn(state);
     when(state.toJson()).thenReturn("");
 
@@ -61,7 +61,7 @@ public class ControllableProcessTest {
   @Test
   public void fetchStatusWithValidationThrowsIfJsonOnlyContainsSpaces() {
     ControlNotificationHandler handler = mock(ControlNotificationHandler.class);
-    ServiceState state = mock(ServiceState.class);
+    ServiceInfo state = mock(ServiceInfo.class);
     when(handler.handleStatus()).thenReturn(state);
     when(state.toJson()).thenReturn("  ");
 
@@ -75,7 +75,7 @@ public class ControllableProcessTest {
   @Test
   public void fetchStatusWithValidationThrowsIfJsonOnlyContainsTabs() {
     ControlNotificationHandler handler = mock(ControlNotificationHandler.class);
-    ServiceState state = mock(ServiceState.class);
+    ServiceInfo state = mock(ServiceInfo.class);
     when(handler.handleStatus()).thenReturn(state);
     when(state.toJson()).thenReturn("\t\t");
 
@@ -89,7 +89,7 @@ public class ControllableProcessTest {
   @Test
   public void fetchStatusWithValidationThrowsIfJsonOnlyContainsLineFeeds() {
     ControlNotificationHandler handler = mock(ControlNotificationHandler.class);
-    ServiceState state = mock(ServiceState.class);
+    ServiceInfo state = mock(ServiceInfo.class);
     when(handler.handleStatus()).thenReturn(state);
     when(state.toJson()).thenReturn(lineSeparator() + lineSeparator());
 
@@ -103,7 +103,7 @@ public class ControllableProcessTest {
   @Test
   public void fetchStatusWithValidationReturnsJsonIfItHasContent() {
     ControlNotificationHandler handler = mock(ControlNotificationHandler.class);
-    ServiceState state = mock(ServiceState.class);
+    ServiceInfo state = mock(ServiceInfo.class);
     when(handler.handleStatus()).thenReturn(state);
     String jsonContent = "json content";
     when(state.toJson()).thenReturn(jsonContent);
