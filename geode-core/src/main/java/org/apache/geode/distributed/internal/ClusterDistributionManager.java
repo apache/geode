@@ -1387,7 +1387,7 @@ public class ClusterDistributionManager implements DistributionManager {
       return;
     }
     synchronized (membershipViewIdGuard) {
-      while (membershipViewIdAcknowledged < id && !stopper.isCancelInProgress()) {
+      while (!stopper.isCancelInProgress()) {
         if (logger.isDebugEnabled()) {
           logger.debug("waiting for view {}.  Current DM view processed by all listeners is {}", id,
               membershipViewIdAcknowledged);
