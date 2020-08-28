@@ -72,6 +72,8 @@ public abstract class AbstractSubscription implements Subscription {
 
     if (running) {
       writeToChannel(constructResponse(channel, message), publishResultCollector);
+    } else {
+      publishResultCollector.failure(client);
     }
   }
 
