@@ -440,7 +440,7 @@ public class PubSubDUnitTest {
 
   @Test
   public void testPubSubWithManyClientsDisconnecting() throws Exception {
-    int CLIENT_COUNT = 10;
+    int CLIENT_COUNT = 1;
     int ITERATIONS = 1000;
     String LOCAL_CHANNEL_NAME = "disconnecting_channel";
 
@@ -464,6 +464,7 @@ public class PubSubDUnitTest {
       for (int j = 0; j < ITERATIONS; j++) {
         publishingClient.publish(LOCAL_CHANNEL_NAME, "hello - " + j);
       }
+      return null;
     };
 
     Future<Void> future = executor.submit(callable);
