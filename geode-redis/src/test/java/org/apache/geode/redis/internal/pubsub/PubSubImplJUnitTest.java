@@ -47,8 +47,7 @@ public class PubSubImplJUnitTest {
     when(deadClient.isDead()).thenReturn(true);
 
     ChannelSubscription subscription =
-        spy(new ChannelSubscription(deadClient,
-            "sally".getBytes(), mockContext));
+        spy(new ChannelSubscription(deadClient, "sally".getBytes(), mockContext, subscriptions));
     subscription.readyToPublish();
 
     subscriptions.add(subscription);

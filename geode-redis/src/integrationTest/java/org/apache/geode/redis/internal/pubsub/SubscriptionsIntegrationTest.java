@@ -108,7 +108,7 @@ public class SubscriptionsIntegrationTest {
     for (int i = 0; i < ITERATIONS; i++) {
       Client client = new Client(mock(Channel.class));
       clients.add(client);
-      subscriptions.add(new ChannelSubscription(client, "channel".getBytes(), context));
+      subscriptions.add(new ChannelSubscription(client, "channel".getBytes(), context, subscriptions));
     }
 
     new ConcurrentLoopingThreads(1,
@@ -128,7 +128,7 @@ public class SubscriptionsIntegrationTest {
     for (int i = 0; i < ITERATIONS; i++) {
       Client client = new Client(mock(Channel.class));
       clients.add(client);
-      subscriptions.add(new ChannelSubscription(client, "channel".getBytes(), context));
+      subscriptions.add(new ChannelSubscription(client, "channel".getBytes(), context, subscriptions));
     }
 
     new ConcurrentLoopingThreads(1,

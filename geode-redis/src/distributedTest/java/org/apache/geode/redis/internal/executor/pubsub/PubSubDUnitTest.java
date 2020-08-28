@@ -464,7 +464,6 @@ public class PubSubDUnitTest {
       for (int j = 0; j < ITERATIONS; j++) {
         publishingClient.publish(LOCAL_CHANNEL_NAME, "hello - " + j);
       }
-      return null;
     };
 
     Future<Void> future = executor.submit(callable);
