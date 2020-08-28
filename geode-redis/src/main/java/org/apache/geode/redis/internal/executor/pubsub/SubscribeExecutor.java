@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal.executor.pubsub;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.function.Consumer;
 
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
@@ -53,12 +54,16 @@ public class SubscribeExecutor extends AbstractExecutor {
     }
 
     Runnable callback = () -> {
-      Runnable innerCallback = () -> {
+      Consumer<Boolean> innerCallback = success -> {
         for (SubscribeResult result : results) {
           if (result.getSubscription() != null) {
-            LogService.getLogger().debug("--->>> Calling readyToPublish for "
-                + ((AbstractSubscription) result.getSubscription()).getClient());
-            result.getSubscription().readyToPublish();
+            if (success) {
+              LogService.getLogger().debug("--->>> Calling readyToPublish for "
+                  + ((AbstractSubscription) result.getSubscription()).getClient());
+              result.getSubscription().readyToPublish();
+            } else {
+              result.getSubscription().interruptAndRemove();
+            }
           }
         }
       };

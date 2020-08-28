@@ -19,6 +19,7 @@ package org.apache.geode.redis.internal.netty;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import io.netty.buffer.ByteBuf;
@@ -166,19 +167,26 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     return subscriberGroup;
   }
 
-  public synchronized void changeChannelEventLoopGroup(EventLoopGroup newGroup, Runnable callback) {
+  public synchronized void changeChannelEventLoopGroup(EventLoopGroup newGroup,
+      Consumer<Boolean> callback) {
     if (newGroup.equals(channel.eventLoop())) {
       // already registered with newGroup
-      callback.run();
+      callback.accept(true);
       return;
     }
     channel.deregister().addListener((ChannelFutureListener) future -> {
+      boolean registerSuccess = true;
       synchronized (channel) {
         if (!channel.isRegistered()) {
-          newGroup.register(channel).sync();
+          try {
+            newGroup.register(channel).sync();
+          } catch (Exception e) {
+            logger.warn("Unable to register new EventLoopGroup: {}", e.getMessage());
+            registerSuccess = false;
+          }
         }
       }
-      callback.run();
+      callback.accept(registerSuccess);
     });
   }
 

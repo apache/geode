@@ -18,6 +18,7 @@ package org.apache.geode.redis.internal.executor.pubsub;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.function.Consumer;
 
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
@@ -50,10 +51,14 @@ public class PsubscribeExecutor extends AbstractExecutor {
 
 
     Runnable callback = () -> {
-      Runnable innerCallback = () -> {
+      Consumer<Boolean> innerCallback = success -> {
         for (SubscribeResult result : results) {
           if (result.getSubscription() != null) {
-            result.getSubscription().readyToPublish();
+            if (success) {
+              result.getSubscription().readyToPublish();
+            } else {
+              result.getSubscription().interruptAndRemove();
+            }
           }
         }
       };

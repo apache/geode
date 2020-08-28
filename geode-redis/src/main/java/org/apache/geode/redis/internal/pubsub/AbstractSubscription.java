@@ -35,6 +35,8 @@ public abstract class AbstractSubscription implements Subscription {
   // 1 - we need to make sure the subscriber has switched EventLoopGroups
   // 2 - the response to the SUBSCRIBE command has been submitted to the client
   private final CountDownLatch readyForPublish = new CountDownLatch(1);
+  private Thread awaitingThread;
+  private boolean running = true;
 
   AbstractSubscription(Client client, ExecutionHandlerContext context) {
     if (client == null) {
@@ -55,13 +57,26 @@ public abstract class AbstractSubscription implements Subscription {
   @Override
   public void publishMessage(byte[] channel, byte[] message,
       PublishResultCollector publishResultCollector) {
+    awaitingThread = Thread.currentThread();
     try {
       readyForPublish.await();
     } catch (InterruptedException e) {
+      // we must be shutting down or registration failed
       Thread.interrupted();
-      // we must be shutting down; so just fall through and do the publish
+      running = false;
     }
-    writeToChannel(constructResponse(channel, message), publishResultCollector);
+
+    if (running) {
+      writeToChannel(constructResponse(channel, message), publishResultCollector);
+    }
+  }
+
+  @Override
+  public void interruptAndRemove() {
+    if (awaitingThread != null) {
+      awaitingThread.interrupt();
+    }
+    // remove....
   }
 
   public Client getClient() {

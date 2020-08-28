@@ -62,4 +62,6 @@ public interface Subscription {
    * Called once this subscriber is ready to have publishMessage called
    */
   void readyToPublish();
+
+  void interruptAndRemove();
 }
