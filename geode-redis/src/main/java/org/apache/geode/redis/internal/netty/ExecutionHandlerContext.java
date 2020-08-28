@@ -247,7 +247,8 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private void executeCommand(Command command) {
     try {
       if (logger.isDebugEnabled()) {
-        logger.debug("Executing Redis command: {}", command);
+        logger.debug("Executing Redis command: {} - {}", command,
+            channel.remoteAddress().toString());
       }
 
       if (!isAuthenticated()) {
