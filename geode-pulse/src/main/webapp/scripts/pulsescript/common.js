@@ -1511,7 +1511,6 @@ function getPulseVersion() {
     $('#pulseVersion').html(pulseVersion);
     $('#pulseVer').html(data.pulseVersion);
     $('#buildId').html(data.buildId);
-    $('#buildDate').html(data.buildDate);
     $('#sourceDate').html(data.sourceDate);
     $('#sourceRevision').html(data.sourceRevision);
     $('#sourceRepository').html(data.sourceRepository);

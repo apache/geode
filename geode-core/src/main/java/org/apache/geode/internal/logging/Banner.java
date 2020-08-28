@@ -226,7 +226,6 @@ public class Banner {
   public enum BannerHeader {
 
     LICENSE_START("Licensed to the Apache Software Foundation (ASF) under one or more"),
-    BUILD_DATE(VersionDescription.BUILD_DATE),
     BUILD_ID(VersionDescription.BUILD_ID),
     BUILD_JAVA_VERSION(VersionDescription.BUILD_JAVA_VERSION),
     BUILD_PLATFORM(VersionDescription.BUILD_PLATFORM),

@@ -59,7 +59,6 @@ public class PulseControllerTestContext {
   public PropertiesFileLoader propertiesLoader() {
     PropertiesFileLoader propertiesFileLoader = mock(PropertiesFileLoader.class);
     Properties properties = new Properties();
-    properties.setProperty(PulseConstants.PROPERTY_BUILD_DATE, "not empty");
     properties.setProperty(PulseConstants.PROPERTY_BUILD_ID, "not empty");
     properties.setProperty(PulseConstants.PROPERTY_PULSE_VERSION, "not empty");
     properties.setProperty(PulseConstants.PROPERTY_SOURCE_DATE, "not empty");

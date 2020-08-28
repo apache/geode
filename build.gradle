@@ -104,7 +104,9 @@ tasks.register('writeBuildInfo') {
   def scmInfo = this.readScmInfo("geode-core")
 
   inputs.property("Source-Revision", scmInfo.getProperty("Source-Revision"))
-  outputs.file buildInfo
+  outputs.files {
+    buildInfo
+  }
   doLast {
     buildInfo.getParentFile().mkdirs()
     new FileOutputStream(buildInfo).withStream { fos ->

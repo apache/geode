@@ -39,7 +39,6 @@ public class GemFireVersionJUnitTest {
     assertTrue(versionOutput.contains(VersionDescription.SOURCE_DATE));
     assertTrue(versionOutput.contains(VersionDescription.SOURCE_REVISION));
     assertTrue(versionOutput.contains(VersionDescription.SOURCE_REPOSITORY));
-    assertTrue(versionOutput.contains(VersionDescription.BUILD_DATE));
     assertTrue(versionOutput.contains(VersionDescription.BUILD_ID));
     assertTrue(versionOutput.contains(VersionDescription.BUILD_PLATFORM));
     assertTrue(versionOutput.contains(VersionDescription.BUILD_JAVA_VERSION));

@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal;
 
-import static org.apache.geode.internal.VersionDescription.BUILD_DATE;
 import static org.apache.geode.internal.VersionDescription.BUILD_ID;
 import static org.apache.geode.internal.VersionDescription.BUILD_JAVA_VERSION;
 import static org.apache.geode.internal.VersionDescription.BUILD_PLATFORM;
@@ -78,10 +77,6 @@ public class GemFireVersion {
 
   public static String getBuildId() {
     return getDescription().getProperty(BUILD_ID);
-  }
-
-  public static String getBuildDate() {
-    return getDescription().getProperty(BUILD_DATE);
   }
 
   public static String getBuildPlatform() {
