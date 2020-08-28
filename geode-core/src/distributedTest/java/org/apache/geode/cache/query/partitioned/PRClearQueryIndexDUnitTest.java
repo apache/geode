@@ -112,19 +112,19 @@ public class PRClearQueryIndexDUnitTest {
   public void clearOnEmptyRegion() throws Exception {
     cities.clear();
     invokeInEveryMember(() -> {
-      verifyIndexesAfterClear();
+      verifyIndexesAfterClear("cities", "cityId", "cityName");
     }, server1, server2);
 
     IntStream.range(0, 10).forEach(i -> cities.put(i, new City(i)));
     cities.clear();
     invokeInEveryMember(() -> {
-      verifyIndexesAfterClear();
+      verifyIndexesAfterClear("cities", "cityId", "cityName");
     }, server1, server2);
   }
 
   @Test
   public void createIndexWhileClear() throws Exception {
-    IntStream.range(0, 100).forEach(i -> cities.put(i, new City(i)));
+    IntStream.range(0, 1000).forEach(i -> cities.put(i, new City(i)));
 
     // create index while clear
     AsyncInvocation createIndex = server1.invokeAsync("create index", () -> {
@@ -134,12 +134,14 @@ public class PRClearQueryIndexDUnitTest {
       assertThat(cityZip).isNotNull();
     });
 
-    // do clear at the same time
-    cities.clear();
+    // do clear for 3 times at the same time to increease the concurrency of clear and createIndex
+    for (int i = 0; i < 3; i++) {
+      cities.clear();
+    }
     createIndex.await();
 
     invokeInEveryMember(() -> {
-      verifyIndexesAfterClear();
+      verifyIndexesAfterClear("cities", "cityId", "cityName");
     }, server1, server2);
 
     QueryService queryService = clientCache.getQueryService();
@@ -160,7 +162,7 @@ public class PRClearQueryIndexDUnitTest {
     }, server1, server2);
 
     Region replicateCities = clientCacheRule.createProxyRegion("replicateCities");
-    IntStream.range(0, 100).forEach(i -> replicateCities.put(i, new City(i)));
+    IntStream.range(0, 1000).forEach(i -> replicateCities.put(i, new City(i)));
 
     // create index while clear
     AsyncInvocation createIndex = server1.invokeAsync("create index on replicate regions", () -> {
@@ -170,9 +172,15 @@ public class PRClearQueryIndexDUnitTest {
       assertThat(cityZip).isNotNull();
     });
 
-    // do clear at the same time
-    replicateCities.clear();
+    // do clear at the same time for 3 timese
+    for (int i = 0; i < 3; i++) {
+      replicateCities.clear();
+    }
     createIndex.await();
+
+    invokeInEveryMember(() -> {
+      verifyIndexesAfterClear("replicateCities", "cityZip_replicate");
+    }, server1, server2);
 
     QueryService queryService = clientCache.getQueryService();
     Query query =
@@ -240,27 +248,24 @@ public class PRClearQueryIndexDUnitTest {
 
     cities.clear();
     invokeInEveryMember(() -> {
-      verifyIndexesAfterClear();
+      verifyIndexesAfterClear("cities", "cityId", "cityName");
     }, server1, server2);
 
     assertThat(((SelectResults) query.execute()).size()).isEqualTo(0);
     assertThat(((SelectResults) query2.execute()).size()).isEqualTo(0);
   }
 
-  private static void verifyIndexesAfterClear() {
+  private static void verifyIndexesAfterClear(String regionName, String... indexes) {
     InternalCache internalCache = ClusterStartupRule.getCache();
     QueryService qs = internalCache.getQueryService();
-    Region region = internalCache.getRegion("cities");
+    Region region = internalCache.getRegion(regionName);
     assertThat(region.size()).isEqualTo(0);
-    Index cityId = qs.getIndex(region, "cityId");
-    IndexStatistics cityIdStats = cityId.getStatistics();
-    Index cityName = qs.getIndex(region, "cityName");
-    IndexStatistics cityNameStats = cityName.getStatistics();
-
-    assertThat(cityIdStats.getNumberOfKeys()).isEqualTo(0);
-    assertThat(cityIdStats.getNumberOfValues()).isEqualTo(0);
-    assertThat(cityNameStats.getNumberOfKeys()).isEqualTo(0);
-    assertThat(cityNameStats.getNumberOfValues()).isEqualTo(0);
+    for (String indexName : indexes) {
+      Index index = qs.getIndex(region, indexName);
+      IndexStatistics statistics = index.getStatistics();
+      assertThat(statistics.getNumberOfKeys()).isEqualTo(0);
+      assertThat(statistics.getNumberOfValues()).isEqualTo(0);
+    }
   }
 
   @Test
@@ -304,7 +309,7 @@ public class PRClearQueryIndexDUnitTest {
           // don't allow put to proceed. It's like "close the gate"
           getBlackboard().clearGate("proceedToPut");
           region.clear();
-          verifyIndexesAfterClear();
+          verifyIndexesAfterClear("cities", "cityId", "cityName");
         } finally {
           // allow put to proceed. It's like "open the gate"
           getBlackboard().signalGate("proceedToPut");
