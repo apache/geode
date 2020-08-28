@@ -57,7 +57,7 @@ public class PsubscribeExecutor extends AbstractExecutor {
             if (success) {
               result.getSubscription().readyToPublish();
             } else {
-              result.getSubscription().interruptAndRemove();
+              result.getSubscription().shutdown();
             }
           }
         }

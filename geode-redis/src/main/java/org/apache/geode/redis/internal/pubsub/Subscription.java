@@ -63,5 +63,5 @@ public interface Subscription {
    */
   void readyToPublish();
 
-  void interruptAndRemove();
+  void shutdown();
 }

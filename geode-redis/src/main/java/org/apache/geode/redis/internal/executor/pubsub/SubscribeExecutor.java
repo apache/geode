@@ -62,7 +62,7 @@ public class SubscribeExecutor extends AbstractExecutor {
                   + ((AbstractSubscription) result.getSubscription()).getClient());
               result.getSubscription().readyToPublish();
             } else {
-              result.getSubscription().interruptAndRemove();
+              result.getSubscription().shutdown();
             }
           }
         }

@@ -442,7 +442,7 @@ public class PubSubDUnitTest {
   public void testPubSubWithManyClientsDisconnecting() throws Exception {
     int CLIENT_COUNT = 10;
     int ITERATIONS = 1000;
-    String LOCAL_CHANNEL_NAME = "clients_disconnecting_channel";
+    String LOCAL_CHANNEL_NAME = "disconnecting_channel";
 
     Random random = new Random();
     List<Jedis> clients = new ArrayList<>();

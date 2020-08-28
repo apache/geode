@@ -35,18 +35,23 @@ public abstract class AbstractSubscription implements Subscription {
   // 1 - we need to make sure the subscriber has switched EventLoopGroups
   // 2 - the response to the SUBSCRIBE command has been submitted to the client
   private final CountDownLatch readyForPublish = new CountDownLatch(1);
-  private Thread awaitingThread;
+  private final Subscriptions subscriptions;
   private boolean running = true;
 
-  AbstractSubscription(Client client, ExecutionHandlerContext context) {
+  AbstractSubscription(Client client, ExecutionHandlerContext context,
+      Subscriptions subscriptions) {
     if (client == null) {
       throw new IllegalArgumentException("client cannot be null");
     }
     if (context == null) {
       throw new IllegalArgumentException("context cannot be null");
     }
+    if (subscriptions == null) {
+      throw new IllegalArgumentException("subscriptions cannot be null");
+    }
     this.client = client;
     this.context = context;
+    this.subscriptions = subscriptions;
   }
 
   @Override
@@ -57,7 +62,6 @@ public abstract class AbstractSubscription implements Subscription {
   @Override
   public void publishMessage(byte[] channel, byte[] message,
       PublishResultCollector publishResultCollector) {
-    awaitingThread = Thread.currentThread();
     try {
       readyForPublish.await();
     } catch (InterruptedException e) {
@@ -72,11 +76,11 @@ public abstract class AbstractSubscription implements Subscription {
   }
 
   @Override
-  public void interruptAndRemove() {
-    if (awaitingThread != null) {
-      awaitingThread.interrupt();
-    }
-    // remove....
+  public synchronized void shutdown() {
+    running = false;
+    subscriptions.remove(client);
+    // release any threads currently waiting to publish
+    readyToPublish();
   }
 
   public Client getClient() {

@@ -102,7 +102,7 @@ public class Subscriptions {
       Client client) {
     Subscription createdSubscription = null;
     if (!exists(channel, client)) {
-      createdSubscription = new ChannelSubscription(client, channel, context);
+      createdSubscription = new ChannelSubscription(client, channel, context, this);
       add(createdSubscription);
     }
     long channelCount = findSubscriptions(client).size();
@@ -115,7 +115,7 @@ public class Subscriptions {
     Subscription createdSubscription = null;
     synchronized (this) {
       if (!exists(pattern, client)) {
-        createdSubscription = new PatternSubscription(client, pattern, context);
+        createdSubscription = new PatternSubscription(client, pattern, context, this);
         add(createdSubscription);
       }
       long channelCount = findSubscriptions(client).size();

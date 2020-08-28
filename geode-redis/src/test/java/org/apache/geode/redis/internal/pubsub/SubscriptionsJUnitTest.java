@@ -36,7 +36,8 @@ public class SubscriptionsJUnitTest {
     ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
     Client client = new Client(channel);
 
-    subscriptions.add(new ChannelSubscription(client, "subscriptions".getBytes(), context));
+    subscriptions
+        .add(new ChannelSubscription(client, "subscriptions".getBytes(), context, subscriptions));
 
     assertThat(subscriptions.exists("subscriptions".getBytes(), client)).isTrue();
     assertThat(subscriptions.exists("unknown".getBytes(), client)).isFalse();
@@ -51,7 +52,7 @@ public class SubscriptionsJUnitTest {
     Client client = new Client(channel);
     GlobPattern pattern = new GlobPattern("sub*s");
 
-    subscriptions.add(new PatternSubscription(client, pattern, context));
+    subscriptions.add(new PatternSubscription(client, pattern, context, subscriptions));
 
     assertThat(subscriptions.exists(pattern, client)).isTrue();
   }
@@ -66,7 +67,8 @@ public class SubscriptionsJUnitTest {
     GlobPattern globPattern1 = new GlobPattern("sub*s");
     GlobPattern globPattern2 = new GlobPattern("subscriptions");
 
-    subscriptions.add(new ChannelSubscription(client, "subscriptions".getBytes(), context));
+    subscriptions
+        .add(new ChannelSubscription(client, "subscriptions".getBytes(), context, subscriptions));
 
     assertThat(subscriptions.exists(globPattern1, client)).isFalse();
     assertThat(subscriptions.exists(globPattern2, client)).isFalse();
@@ -81,8 +83,9 @@ public class SubscriptionsJUnitTest {
     Client client = new Client(channel);
     GlobPattern globby = new GlobPattern("sub*s");
 
-    subscriptions.add(new ChannelSubscription(client, "subscriptions".getBytes(), context));
-    subscriptions.add(new PatternSubscription(client, globby, context));
+    subscriptions
+        .add(new ChannelSubscription(client, "subscriptions".getBytes(), context, subscriptions));
+    subscriptions.add(new PatternSubscription(client, globby, context, subscriptions));
 
     assertThat(subscriptions.exists(globby, client)).isTrue();
     assertThat(subscriptions.exists("subscriptions".getBytes(), client)).isTrue();
@@ -110,9 +113,9 @@ public class SubscriptionsJUnitTest {
     Client clientTwo = new Client(mockChannelTwo);
 
     ChannelSubscription subscriptionOne =
-        new ChannelSubscription(clientOne, "subscriptions".getBytes(), context);
+        new ChannelSubscription(clientOne, "subscriptions".getBytes(), context, subscriptions);
     ChannelSubscription subscriptionTwo =
-        new ChannelSubscription(clientTwo, "monkeys".getBytes(), context);
+        new ChannelSubscription(clientTwo, "monkeys".getBytes(), context, subscriptions);
 
     subscriptions.add(subscriptionOne);
     subscriptions.add(subscriptionTwo);
@@ -130,9 +133,9 @@ public class SubscriptionsJUnitTest {
     Client clientTwo = new Client(mockChannelTwo);
 
     ChannelSubscription subscriptionOne =
-        new ChannelSubscription(clientOne, "subscriptions".getBytes(), context);
+        new ChannelSubscription(clientOne, "subscriptions".getBytes(), context, subscriptions);
     ChannelSubscription subscriptionTwo =
-        new ChannelSubscription(clientTwo, "monkeys".getBytes(), context);
+        new ChannelSubscription(clientTwo, "monkeys".getBytes(), context, subscriptions);
 
     subscriptions.add(subscriptionOne);
     subscriptions.add(subscriptionTwo);
@@ -153,12 +156,12 @@ public class SubscriptionsJUnitTest {
     Client client = new Client(mockChannelOne);
 
     ChannelSubscription channelSubscriberOne =
-        new ChannelSubscription(client, "subscriptions".getBytes(), context);
+        new ChannelSubscription(client, "subscriptions".getBytes(), context, subscriptions);
     GlobPattern pattern = new GlobPattern("monkeys");
     PatternSubscription patternSubscriber = new PatternSubscription(client,
-        pattern, context);
+        pattern, context, subscriptions);
     ChannelSubscription channelSubscriberTwo =
-        new ChannelSubscription(client, "monkeys".getBytes(), context);
+        new ChannelSubscription(client, "monkeys".getBytes(), context, subscriptions);
 
     subscriptions.add(channelSubscriberOne);
     subscriptions.add(patternSubscriber);

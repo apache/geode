@@ -28,8 +28,9 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 class ChannelSubscription extends AbstractSubscription {
   private byte[] channel;
 
-  public ChannelSubscription(Client client, byte[] channel, ExecutionHandlerContext context) {
-    super(client, context);
+  public ChannelSubscription(Client client, byte[] channel, ExecutionHandlerContext context,
+      Subscriptions subscriptions) {
+    super(client, context, subscriptions);
 
     if (channel == null) {
       throw new IllegalArgumentException("channel cannot be null");

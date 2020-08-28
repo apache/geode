@@ -29,8 +29,9 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 class PatternSubscription extends AbstractSubscription {
   final GlobPattern pattern;
 
-  public PatternSubscription(Client client, GlobPattern pattern, ExecutionHandlerContext context) {
-    super(client, context);
+  public PatternSubscription(Client client, GlobPattern pattern, ExecutionHandlerContext context,
+      Subscriptions subscriptions) {
+    super(client, context, subscriptions);
 
     if (pattern == null) {
       throw new IllegalArgumentException("pattern cannot be null");
