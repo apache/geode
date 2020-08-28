@@ -459,7 +459,7 @@ public class PubSubDUnitTest {
     }
 
     // Start actively publishing in the background
-    Jedis publishingClient = new Jedis("localhost", redisServerPort1);
+    Jedis publishingClient = new Jedis("localhost", redisServerPort1, 60_000);
     Callable<Void> callable = () -> {
       for (int j = 0; j < ITERATIONS; j++) {
         publishingClient.publish(LOCAL_CHANNEL_NAME, "hello - " + j);
