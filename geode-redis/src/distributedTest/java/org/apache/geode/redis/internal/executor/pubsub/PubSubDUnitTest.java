@@ -124,12 +124,6 @@ public class PubSubDUnitTest {
     gfsh.connectAndVerify(locator);
   }
 
-  // @Before
-  // public void testSetup() {
-  // subscriber1.flushAll();
-  // subscriber2.flushAll();
-  // }
-
   @AfterClass
   public static void tearDown() {
     subscriber1.disconnect();
@@ -273,14 +267,14 @@ public class PubSubDUnitTest {
     assertThat(latch.await(30, TimeUnit.SECONDS)).as("channel subscription was not received")
         .isTrue();
 
-    Long result = publisher1.publish(CHANNEL_NAME, "hello");
-    assertThat(result).isEqualTo(2);
+    GeodeAwaitility.await().until(() -> publisher1.publish(CHANNEL_NAME, "hello") == 2);
 
     cluster.crashVM(2);
 
     // Depending on the timing of this call, it may catch a function error (due to member departed)
     // and return 0 as a result. Regardless, it should NOT hang.
     boolean published = false;
+    long result = 0;
     do {
       try {
         result = publisher1.publish(CHANNEL_NAME, "hello again");
@@ -356,8 +350,7 @@ public class PubSubDUnitTest {
     assertThat(latch.await(30, TimeUnit.SECONDS)).as("channel subscription was not received")
         .isTrue();
 
-    Long result = publisher1.publish(CHANNEL_NAME, "hello");
-    assertThat(result).isEqualTo(2);
+    GeodeAwaitility.await().until(() -> publisher1.publish(CHANNEL_NAME, "hello") == 2);
 
     mockSubscriber1.unsubscribe(CHANNEL_NAME);
     mockSubscriber2.unsubscribe(CHANNEL_NAME);
