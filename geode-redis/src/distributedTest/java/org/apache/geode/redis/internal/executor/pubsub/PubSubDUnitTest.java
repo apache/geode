@@ -177,11 +177,6 @@ public class PubSubDUnitTest {
         mockSubscribers.forEach(x -> x.awaitSubscribe(channelName));
 
         Jedis localPublisher = getConnection(random);
-        // try {
-        // Thread.sleep(1000);
-        // } catch (InterruptedException e) {
-        // e.printStackTrace();
-        // }
         String publishMessage = "best-message-ever-" + localI;
         Long publishedMessages = localPublisher.publish(channelName, publishMessage);
         publishCount.getAndIncrement();
@@ -193,8 +188,13 @@ public class PubSubDUnitTest {
 
         AtomicLong receivedMessageCount = new AtomicLong(0);
         mockSubscribers.forEach(s -> {
-          GeodeAwaitility.await().ignoreExceptions()
-              .until(() -> s.getReceivedMessages().get(0).equals(publishMessage));
+          if (publishedMessages == 5) {
+            GeodeAwaitility.await()
+                .atMost(10, TimeUnit.SECONDS)
+                .ignoreExceptions()
+                .until(() -> s.getReceivedMessages().size() > 0 && s.getReceivedMessages().get(0)
+                    .equals(publishMessage));
+          }
 
           receivedMessageCount.getAndAdd(s.getReceivedMessages().size());
           s.unsubscribe(channelName);
