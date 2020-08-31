@@ -28,7 +28,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -771,12 +770,7 @@ public class PubSubIntegrationTest {
         AtomicReference<Thread> innerThread = new AtomicReference<>();
         Future<Void> inner = secondaryExecutor.submit(() -> {
           innerThread.set(Thread.currentThread());
-          try {
-            client.subscribe(mockSubscriber, channel);
-          } catch (Exception e) {
-            e.printStackTrace();
-            throw e;
-          }
+          client.subscribe(mockSubscriber, channel);
           return null;
         });
         mockSubscriber.awaitSubscribe(channel);
@@ -788,12 +782,12 @@ public class PubSubIntegrationTest {
 
         try {
           inner.get(30, TimeUnit.SECONDS);
-        } catch (TimeoutException e) {
+        } catch (Exception e) {
           LogService.getLogger().debug("=> {} {}", innerThread.get(), innerThread.get().getState());
           for (StackTraceElement st : innerThread.get().getStackTrace()) {
             LogService.getLogger().debug("-> {}", st);
           }
-          throw new RuntimeException("inner.get() timed out after unsubscribe");
+          throw new RuntimeException("inner.get() errored after unsubscribe: " + e.getMessage());
         }
 
         mockSubscriber.awaitUnsubscribe(channel);
@@ -808,7 +802,7 @@ public class PubSubIntegrationTest {
 
     int result = consumer.get();
     executor.shutdownNow();
-    // secondaryExecutor.shutdownNow();
+
     return result;
   }
 
