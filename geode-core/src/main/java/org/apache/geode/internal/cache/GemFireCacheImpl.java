@@ -57,6 +57,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringBufferInputStream;
 import java.io.StringWriter;
@@ -1177,34 +1178,53 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public void saveCacheXmlForReconnect() {
-    // there are two versions of this method so it can be unit-tested
-    boolean sharedConfigEnabled = getDistributionManager().getConfig().getUseSharedConfiguration();
+    prepareForReconnect((pw) -> CacheXmlGenerator.generate((Cache) this, pw, false));
+  }
 
-    if (!Boolean.getBoolean(GEMFIRE_PREFIX + "autoReconnect-useCacheXMLFile")
-        && !sharedConfigEnabled) {
-      try {
-        logger.info("generating XML to rebuild the cache after reconnect completes");
-        StringPrintWriter pw = new StringPrintWriter();
-        CacheXmlGenerator.generate((Cache) this, pw, false);
-        String cacheXML = pw.toString();
-        getCacheConfig().setCacheXMLDescription(cacheXML);
-        logger.info("XML generation completed: {}", cacheXML);
-      } catch (CancelException e) {
-        logger.info("Unable to generate XML description for reconnect of cache due to exception",
-            e);
-      }
-    } else if (sharedConfigEnabled && !getCacheServers().isEmpty()) {
-      // we need to retain a cache-server description if this JVM was started by gfsh
-      List<CacheServerCreation> list = new ArrayList<>(getCacheServers().size());
-      for (Object o : getCacheServers()) {
-        CacheServerImpl cs = (CacheServerImpl) o;
-        if (cs.isDefaultServer()) {
-          CacheServerCreation bsc = new CacheServerCreation(this, cs);
-          list.add(bsc);
+
+  /**
+   * Testable version of saveCacheXmlForReconnect() that allows us to inject an XML generator
+   *
+   * @param xmlGenerator a consumer of a PrintWriter that generates a description of the Cache
+   */
+  protected void prepareForReconnect(Consumer<PrintWriter> xmlGenerator) {
+    boolean sharedConfigEnabled =
+        getInternalDistributedSystem().getConfig().getUseSharedConfiguration();
+
+    try {
+      if (!Boolean.getBoolean(GEMFIRE_PREFIX + "autoReconnect-useCacheXMLFile")
+          && !sharedConfigEnabled) {
+        try {
+          logger.info("generating XML to rebuild the cache after reconnect completes");
+          StringPrintWriter pw = new StringPrintWriter();
+          xmlGenerator.accept(pw);
+          String cacheXML = pw.toString();
+          getCacheConfig().setCacheXMLDescription(cacheXML);
+          logger.info("XML generation completed: {}", cacheXML);
+        } catch (CancelException e) {
+          logger.info("Unable to generate XML description for reconnect of cache due to exception",
+              e);
         }
+      } else if (sharedConfigEnabled && !getCacheServers().isEmpty()) {
+        // we need to retain a cache-server description if this JVM was started by gfsh
+        logger.info("saving cache server configuration for use with the cluster-configuration "
+            + "service on reconnect");
+        List<CacheServerCreation> list = new ArrayList<>(getCacheServers().size());
+        for (Object o : getCacheServers()) {
+          CacheServerImpl cs = (CacheServerImpl) o;
+          if (cs.isDefaultServer()) {
+            CacheServerCreation bsc = new CacheServerCreation(this, cs);
+            list.add(bsc);
+          }
+        }
+        getCacheConfig().setCacheServerCreation(list);
+        logger.info("cache server configuration saved");
       }
-      getCacheConfig().setCacheServerCreation(list);
-      logger.info("CacheServer configuration saved");
+    } catch (Throwable throwable) {
+      logger.info("Saving of cache configuration for auto-reconnect has failed.  "
+          + "Auto-reconnect will be disabled since the cache cannot be rebuilt.", throwable);
+      getInternalDistributedSystem().getConfig().setDisableAutoReconnect(true);
+
     }
   }
 

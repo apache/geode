@@ -19,7 +19,9 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -92,6 +94,7 @@ public class GemFireCacheImplTest {
     typeRegistry = mock(TypeRegistry.class);
 
     DistributionConfig distributionConfig = mock(DistributionConfig.class);
+    when(distributionConfig.getUseSharedConfiguration()).thenReturn(false);
     DistributionManager distributionManager = mock(DistributionManager.class);
     ReplyProcessor21 replyProcessor21 = mock(ReplyProcessor21.class);
 
@@ -660,6 +663,15 @@ public class GemFireCacheImplTest {
     assertThat(nTrue.get()).isEqualTo(11);
     // 9 threads return false for locking
     assertThat(nFalse.get()).isEqualTo(9);
+  }
+
+  @Test
+  public void cacheXmlGenerationErrorDisablesAutoReconnect() {
+    gemFireCacheImpl.prepareForReconnect((printWriter) -> {
+      throw new RuntimeException("error generating cache XML");
+    });
+    verify(internalDistributedSystem.getConfig()).setDisableAutoReconnect(Boolean.TRUE);
+    verify(cacheConfig, never()).setCacheXMLDescription(isA(String.class));
   }
 
   @SuppressWarnings({"LambdaParameterHidesMemberVariable", "OverlyCoupledMethod", "unchecked"})
