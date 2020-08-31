@@ -168,28 +168,27 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     return subscriberGroup;
   }
 
-  public void changeChannelEventLoopGroup(EventLoopGroup newGroup, Consumer<Boolean> callback) {
-    synchronized (channel) {
-      if (newGroup.equals(channel.eventLoop())) {
-        // already registered with newGroup
-        callback.accept(true);
-        return;
-      }
-      channel.deregister().addListener((ChannelFutureListener) future -> {
-        boolean registerSuccess = true;
-        synchronized (channel) {
-          if (!channel.isRegistered()) {
-            try {
-              newGroup.register(channel).sync();
-            } catch (Exception e) {
-              logger.warn("Unable to register new EventLoopGroup: {}", e.getMessage());
-              registerSuccess = false;
-            }
+  public synchronized void changeChannelEventLoopGroup(EventLoopGroup newGroup,
+      Consumer<Boolean> callback) {
+    if (newGroup.equals(channel.eventLoop())) {
+      // already registered with newGroup
+      callback.accept(true);
+      return;
+    }
+    channel.deregister().addListener((ChannelFutureListener) future -> {
+      boolean registerSuccess = true;
+      synchronized (channel) {
+        if (!channel.isRegistered()) {
+          try {
+            newGroup.register(channel).sync();
+          } catch (Exception e) {
+            logger.warn("Unable to register new EventLoopGroup: {}", e.getMessage());
+            registerSuccess = false;
           }
         }
-        callback.accept(registerSuccess);
-      });
-    }
+      }
+      callback.accept(registerSuccess);
+    });
   }
 
   private RedisResponse getExceptionResponse(ChannelHandlerContext ctx, Throwable cause) {

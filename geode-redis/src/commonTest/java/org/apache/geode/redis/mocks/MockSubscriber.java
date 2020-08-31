@@ -22,6 +22,7 @@ import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import redis.clients.jedis.Client;
 import redis.clients.jedis.JedisPubSub;
 
 public class MockSubscriber extends JedisPubSub {
@@ -34,6 +35,7 @@ public class MockSubscriber extends JedisPubSub {
       Collections.synchronizedList(new ArrayList<>());
   public final List<UnsubscribeInfo> punsubscribeInfos =
       Collections.synchronizedList(new ArrayList<>());
+  private String localSocketAddress;
 
   public MockSubscriber() {
     this(new CountDownLatch(1));
@@ -48,6 +50,23 @@ public class MockSubscriber extends JedisPubSub {
     this.unsubscriptionLatch = unsubscriptionLatch;
   }
 
+  @Override
+  public void proceed(Client client, String... channels) {
+    localSocketAddress = client.getSocket().getLocalSocketAddress().toString();
+    super.proceed(client, channels);
+  }
+
+  private void switchThreadName(String suffix) {
+    String threadName = Thread.currentThread().getName();
+    int suffixIndex = threadName.indexOf(" -- ");
+    if (suffixIndex >= 0) {
+      threadName = threadName.substring(0, suffixIndex);
+    }
+
+    threadName += " -- " + suffix + " [" + localSocketAddress + "]";
+    Thread.currentThread().setName(threadName);
+  }
+
   public List<String> getReceivedMessages() {
     return receivedMessages;
   }
@@ -58,16 +77,19 @@ public class MockSubscriber extends JedisPubSub {
 
   @Override
   public void onMessage(String channel, String message) {
+    switchThreadName(String.format("MESSAGE %s %s", channel, message));
     receivedMessages.add(message);
   }
 
   @Override
   public void onPMessage(String pattern, String channel, String message) {
+    switchThreadName(String.format("PMESSAGE %s %s %s", pattern, channel, message));
     receivedPMessages.add(message);
   }
 
   @Override
   public void onSubscribe(String channel, int subscribedChannels) {
+    switchThreadName(String.format("SUBSCRIBE %s", channel));
     subscriptionLatch.countDown();
   }
 
@@ -85,6 +107,7 @@ public class MockSubscriber extends JedisPubSub {
 
   @Override
   public void onUnsubscribe(String channel, int subscribedChannels) {
+    switchThreadName(String.format("UNSUBSCRIBE %s %d", channel, subscribedChannels));
     unsubscribeInfos.add(new UnsubscribeInfo(channel, subscribedChannels));
     unsubscriptionLatch.countDown();
   }
@@ -101,6 +124,7 @@ public class MockSubscriber extends JedisPubSub {
 
   @Override
   public void onPUnsubscribe(String pattern, int subscribedChannels) {
+    switchThreadName(String.format("PUNSUBSCRIBE %s %d", pattern, subscribedChannels));
     punsubscribeInfos.add(new UnsubscribeInfo(pattern, subscribedChannels));
   }
 
