@@ -79,7 +79,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private final int MAX_QUEUED_COMMANDS =
       Integer.getInteger("geode.redis.commandQueueSize", 1000);
   private final LinkedBlockingQueue<Command> commandQueue =
-      new LinkedBlockingQueue<>(100);
+      new LinkedBlockingQueue<>(MAX_QUEUED_COMMANDS);
 
   private boolean isAuthenticated;
 
@@ -168,27 +168,28 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     return subscriberGroup;
   }
 
-  public synchronized void changeChannelEventLoopGroup(EventLoopGroup newGroup,
-      Consumer<Boolean> callback) {
-    if (newGroup.equals(channel.eventLoop())) {
-      // already registered with newGroup
-      callback.accept(true);
-      return;
-    }
-    channel.deregister().addListener((ChannelFutureListener) future -> {
-      boolean registerSuccess = true;
-      synchronized (channel) {
-        if (!channel.isRegistered()) {
-          try {
-            newGroup.register(channel).sync();
-          } catch (Exception e) {
-            logger.warn("Unable to register new EventLoopGroup: {}", e.getMessage());
-            registerSuccess = false;
+  public void changeChannelEventLoopGroup(EventLoopGroup newGroup, Consumer<Boolean> callback) {
+    synchronized (channel) {
+      if (newGroup.equals(channel.eventLoop())) {
+        // already registered with newGroup
+        callback.accept(true);
+        return;
+      }
+      channel.deregister().addListener((ChannelFutureListener) future -> {
+        boolean registerSuccess = true;
+        synchronized (channel) {
+          if (!channel.isRegistered()) {
+            try {
+              newGroup.register(channel).sync();
+            } catch (Exception e) {
+              logger.warn("Unable to register new EventLoopGroup: {}", e.getMessage());
+              registerSuccess = false;
+            }
           }
         }
-      }
-      callback.accept(registerSuccess);
-    });
+        callback.accept(registerSuccess);
+      });
+    }
   }
 
   private RedisResponse getExceptionResponse(ChannelHandlerContext ctx, Throwable cause) {
@@ -313,7 +314,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
         logger.debug("Redis command returned: {} - {}",
             Command.getHexEncodedString(buf.array(), buf.readableBytes()), extraMessage);
       } else {
-        logger.warn("Redis command FAILED to return: {} - {}",
+        logger.debug("Redis command FAILED to return: {} - {}",
             Command.getHexEncodedString(buf.array(), buf.readableBytes()), extraMessage, cause);
       }
     }
