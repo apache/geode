@@ -14,34 +14,34 @@
  *
  */
 
-package org.apache.geode.redis.mocks;
+package org.apache.geode.redis.internal.pubsub;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
+public class SubscribeResult {
+  private final Subscription subscription;
+  private final long channelCount;
+  private final byte[] channel;
 
-import redis.clients.jedis.JedisPubSub;
-
-
-public class MockSubscriberWithLatch extends JedisPubSub {
-  private CountDownLatch latch;
-  private List<String> receivedMessages = new ArrayList<String>();
-
-  public MockSubscriberWithLatch(CountDownLatch latch) {
-    this.latch = latch;
+  public SubscribeResult(Subscription subscription, long channelCount, byte[] channel) {
+    this.subscription = subscription;
+    this.channelCount = channelCount;
+    this.channel = channel;
   }
 
-  public List<String> getReceivedMessages() {
-    return receivedMessages;
+  /**
+   * Returns the Subscription instance this subscribe operations created; possibly null.
+   */
+  public Subscription getSubscription() {
+    return subscription;
   }
 
-  @Override
-  public void onSubscribe(String channel, int subscribedChannels) {
-    latch.countDown();
+  /**
+   * returns the number of channels this subscribe operation subscribed to.
+   */
+  public long getChannelCount() {
+    return channelCount;
   }
 
-  @Override
-  public void onMessage(String channel, String message) {
-    receivedMessages.add(message);
+  public byte[] getChannel() {
+    return channel;
   }
 }
