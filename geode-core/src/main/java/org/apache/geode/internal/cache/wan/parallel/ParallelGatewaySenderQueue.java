@@ -694,7 +694,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
     String regionPath = value.getRegionPath();
     if (!isDREvent) {
-      Region region = sender.getCache().getRegion(regionPath, true);
+      Region region = sender.getCache().getRegionByPath(regionPath);
       regionPath = ColocationHelper.getLeaderRegion((PartitionedRegion) region).getFullPath();
     }
     if (isDebugEnabled) {

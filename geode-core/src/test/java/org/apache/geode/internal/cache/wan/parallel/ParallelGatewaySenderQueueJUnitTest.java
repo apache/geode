@@ -104,7 +104,7 @@ public class ParallelGatewaySenderQueueJUnitTest {
     when(event.getRegionPath()).thenReturn(regionPath);
     PartitionedRegion region = mock(PartitionedRegion.class);
     when(region.getFullPath()).thenReturn(regionPath);
-    when(cache.getRegion(regionPath, true)).thenReturn(region);
+    when(cache.getRegionByPath(regionPath)).thenReturn(region);
     PartitionAttributes pa = mock(PartitionAttributes.class);
     when(region.getPartitionAttributes()).thenReturn(pa);
     when(pa.getColocatedWith()).thenReturn(null);
