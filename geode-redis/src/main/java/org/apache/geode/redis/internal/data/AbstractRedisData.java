@@ -191,7 +191,9 @@ public abstract class AbstractRedisData implements RedisData {
         applyDelta(new RemsDeltaInfo(readArrayList(in)));
         break;
       case APPEND:
-        applyDelta(new AppendDeltaInfo(DataSerializer.readByteArray(in)));
+        int sequence = DataSerializer.readPrimitiveInt(in);
+        byte[] byteArray = DataSerializer.readByteArray(in);
+        applyDelta(new AppendDeltaInfo(byteArray, sequence));
         break;
     }
   }

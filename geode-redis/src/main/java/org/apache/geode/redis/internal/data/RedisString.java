@@ -35,6 +35,8 @@ import org.apache.geode.redis.internal.netty.Coder;
 public class RedisString extends AbstractRedisData {
   public static final NullRedisString NULL_REDIS_STRING = new NullRedisString();
 
+  private int appendSequence;
+
   private ByteArrayWrapper value;
 
   public RedisString(ByteArrayWrapper value) {
@@ -48,7 +50,8 @@ public class RedisString extends AbstractRedisData {
       Region<ByteArrayWrapper, RedisData> region,
       ByteArrayWrapper key) {
     valueAppend(appendValue.toBytes());
-    storeChanges(region, key, new AppendDeltaInfo(appendValue.toBytes()));
+    appendSequence++;
+    storeChanges(region, key, new AppendDeltaInfo(appendValue.toBytes(), appendSequence));
     return value.length();
   }
 
@@ -617,12 +620,14 @@ public class RedisString extends AbstractRedisData {
   @Override
   public void toData(DataOutput out) throws IOException {
     super.toData(out);
+    DataSerializer.writePrimitiveInt(appendSequence, out);
     DataSerializer.writeByteArray(value.toBytes(), out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
+    appendSequence = DataSerializer.readPrimitiveInt(in);
     value = new ByteArrayWrapper(DataSerializer.readByteArray(in));
   }
 
@@ -630,10 +635,19 @@ public class RedisString extends AbstractRedisData {
   protected void applyDelta(DeltaInfo deltaInfo) {
     AppendDeltaInfo appendDeltaInfo = (AppendDeltaInfo) deltaInfo;
     byte[] appendBytes = appendDeltaInfo.getBytes();
+
     if (value == null) {
       value = new ByteArrayWrapper(appendBytes);
+      appendSequence = appendDeltaInfo.getSequence();
     } else {
-      valueAppend(appendBytes);
+      if (appendDeltaInfo.getSequence() == appendSequence + 1) {
+        valueAppend(appendBytes);
+        appendSequence = appendDeltaInfo.getSequence();
+      } else if (appendDeltaInfo.getSequence() != appendSequence) {
+        // Exceptional case should never happen
+        throw new RuntimeException("Redis APPEND sequence mismatch - delta sequence number: "
+            + appendDeltaInfo.getSequence() + " current sequence number: " + appendSequence);
+      }
     }
   }
 

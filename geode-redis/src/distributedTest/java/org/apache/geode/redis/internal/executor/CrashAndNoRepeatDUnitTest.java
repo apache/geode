@@ -16,6 +16,7 @@
 
 package org.apache.geode.redis.internal.executor;
 
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_ENABLED;
@@ -42,8 +43,8 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import org.apache.geode.cache.control.RebalanceFactory;
 import org.apache.geode.cache.control.RebalanceResults;
 import org.apache.geode.cache.control.ResourceManager;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.redis.internal.GeodeRedisService;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -67,7 +68,7 @@ public class CrashAndNoRepeatDUnitTest {
   private static MemberVM server2;
   private static MemberVM server3;
 
-  private static int[] redisPorts;
+  private static int[] redisPorts = new int[3];
   private static final String LOCAL_HOST = "127.0.0.1";
   private static final int JEDIS_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
@@ -77,40 +78,47 @@ public class CrashAndNoRepeatDUnitTest {
 
   @BeforeClass
   public static void classSetup() throws Exception {
-    redisPorts = AvailablePortHelper.getRandomAvailableTCPPorts(3);
+    String log_level = "info";
     locatorProperties = new Properties();
     locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, "15000");
 
     locator = clusterStartUp.startLocatorVM(0, locatorProperties);
-
     int locatorPort = locator.getPort();
 
-    String redisPort1 = redisPorts[0] + "";
     server1 = clusterStartUp.startServerVM(1,
-        x -> x.withProperty(REDIS_PORT, redisPort1)
+        x -> x.withProperty(REDIS_PORT, "0")
             .withProperty(REDIS_ENABLED, "true")
+            .withProperty(LOG_LEVEL, log_level)
             .withProperty(REDIS_BIND_ADDRESS, "localhost")
             .withSystemProperty(ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM, "true")
             .withConnectionToLocator(locatorPort));
+    redisPorts[0] = getPort(server1);
 
-    String redisPort2 = redisPorts[1] + "";
     server2 = clusterStartUp.startServerVM(2,
-        x -> x.withProperty(REDIS_PORT, redisPort2)
+        x -> x.withProperty(REDIS_PORT, "0")
             .withProperty(REDIS_ENABLED, "true")
+            .withProperty(LOG_LEVEL, log_level)
             .withProperty(REDIS_BIND_ADDRESS, "localhost")
             .withSystemProperty(ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM, "true")
             .withConnectionToLocator(locatorPort));
+    redisPorts[1] = getPort(server2);
 
-    String redisPort3 = redisPorts[2] + "";
     server3 = clusterStartUp.startServerVM(3,
-        x -> x.withProperty(REDIS_PORT, redisPort3)
+        x -> x.withProperty(REDIS_PORT, "0")
             .withProperty(REDIS_ENABLED, "true")
+            .withProperty(LOG_LEVEL, log_level)
             .withProperty(REDIS_BIND_ADDRESS, "localhost")
             .withSystemProperty(ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM, "true")
             .withConnectionToLocator(locatorPort));
+    redisPorts[2] = getPort(server3);
 
     gfsh.connectAndVerify(locator);
+  }
 
+  private static int getPort(MemberVM vm) {
+    return vm.invoke(() -> ClusterStartupRule.getCache()
+        .getService(GeodeRedisService.class)
+        .getPort());
   }
 
   private synchronized Jedis connect(AtomicReference<Jedis> jedisRef) {
@@ -129,17 +137,14 @@ public class CrashAndNoRepeatDUnitTest {
   }
 
   @Test
-  @Ignore("GEODE-8393")
   public void givenServerCrashesDuringAPPEND_thenDataIsNotLost() throws Exception {
     AtomicBoolean running1 = new AtomicBoolean(true);
-    AtomicBoolean running2 = new AtomicBoolean(true);
-    AtomicBoolean running3 = new AtomicBoolean(true);
-    AtomicBoolean running4 = new AtomicBoolean(false);
+    AtomicBoolean running2 = new AtomicBoolean(false);
 
     Runnable task1 = () -> appendPerformAndVerify(1, 20000, running1);
-    Runnable task2 = () -> appendPerformAndVerify(2, 20000, running2);
-    Runnable task3 = () -> appendPerformAndVerify(3, 20000, running3);
-    Runnable task4 = () -> appendPerformAndVerify(4, 1000, running4);
+    Runnable task2 = () -> appendPerformAndVerify(2, 20000, running1);
+    Runnable task3 = () -> appendPerformAndVerify(3, 20000, running1);
+    Runnable task4 = () -> appendPerformAndVerify(4, 1000, running2);
 
     Future<Void> future1 = executor.runAsync(task1);
     Future<Void> future2 = executor.runAsync(task2);
@@ -164,8 +169,6 @@ public class CrashAndNoRepeatDUnitTest {
     rebalanceAllRegions(server3);
 
     running1.set(false);
-    running2.set(false);
-    running3.set(false);
 
     future1.get();
     future2.get();
@@ -285,6 +288,9 @@ public class CrashAndNoRepeatDUnitTest {
           }
           if (doWithRetry(() -> connect(jedisRef).get(key)).endsWith(appendString)) {
             iterationCount += 1;
+          } else {
+            LogService.getLogger().info("--->>> iterationCount not updated - will retry: "
+                + appendString);
           }
         } else {
           throw ex;
