@@ -2028,13 +2028,14 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
         return;
       }
 
-      listener.saveConfig();
-
-      Thread reconnectThread = new LoggingThread("DisconnectThread", false, () -> {
-        lifecycleListener.forcedDisconnect();
-        uncleanShutdown(reason, shutdownCause);
-      });
-      reconnectThread.start();
+      try {
+        listener.saveConfig();
+      } finally {
+        new LoggingThread("DisconnectThread", false, () -> {
+          lifecycleListener.forcedDisconnect();
+          uncleanShutdown(reason, shutdownCause);
+        }).start();
+      }
     }
 
 
