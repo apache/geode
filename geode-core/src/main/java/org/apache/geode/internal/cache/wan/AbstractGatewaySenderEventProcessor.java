@@ -970,7 +970,9 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
 
     filteredList.clear();
     eventQueueRemove(events.size());
-    final GatewaySenderStats statistics = this.sender.getStatistics();
+
+    logThresholdExceededAlerts(events);
+
     int queueSize = eventQueueSize();
 
     if (this.eventQueueSizeWarning && queueSize <= AbstractGatewaySender.QUEUE_SIZE_THRESHOLD) {
@@ -1037,24 +1039,32 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
       }
       eventQueueRemove(events.size());
 
-      final GatewaySenderStats statistics = this.sender.getStatistics();
+      logThresholdExceededAlerts(events);
+    }
+  }
 
-      // Log an alert for each event if necessary
-      if (this.sender.getAlertThreshold() > 0) {
-        Iterator it = events.iterator();
-        long currentTime = System.currentTimeMillis();
-        while (it.hasNext()) {
+  protected void logThresholdExceededAlerts(List<GatewaySenderEventImpl> events) {
+    // Log an alert for each event if necessary
+    if (getSender().getAlertThreshold() > 0) {
+      Iterator it = events.iterator();
+      long currentTime = System.currentTimeMillis();
+      while (it.hasNext()) {
+        try {
           Object o = it.next();
           if (o != null && o instanceof GatewaySenderEventImpl) {
             GatewaySenderEventImpl ge = (GatewaySenderEventImpl) o;
-            if (ge.getCreationTime() + this.sender.getAlertThreshold() < currentTime) {
+            if (ge.getCreationTime() + getSender().getAlertThreshold() < currentTime) {
               logger.warn(
                   "{} event for region={} key={} value={} was in the queue for {} milliseconds",
                   new Object[] {ge.getOperation(), ge.getRegionPath(), ge.getKey(),
                       ge.getValueAsString(true), currentTime - ge.getCreationTime()});
-              statistics.incEventsExceedingAlertThreshold();
+              getSender().getStatistics().incEventsExceedingAlertThreshold();
             }
           }
+        } catch (Exception e) {
+          logger.warn("Caught the following exception attempting to log threshold exceeded alert:",
+              e);
+          getSender().getStatistics().incEventsExceedingAlertThreshold();
         }
       }
     }
