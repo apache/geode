@@ -272,6 +272,7 @@ org/apache/geode/internal/admin/remote/DistributionLocatorId,true,65873901869719
 org/apache/geode/internal/admin/remote/EntryValueNodeImpl,false,fields:org/apache/geode/internal/admin/remote/EntryValueNodeImpl[],name:java/lang/String,primitive:boolean,primitiveVal:java/lang/Object,type:java/lang/String
 org/apache/geode/internal/cache/BucketAdvisor$SetFromMap,true,2454657854757543876,m:java/util/Map
 org/apache/geode/internal/cache/BucketNotFoundException,true,2898657229184289911
+org/apache/geode/internal/cache/BucketRegion$PrimaryMoveReadLockAcquired,false
 org/apache/geode/internal/cache/BucketRegion$SizeOp,false
 org/apache/geode/internal/cache/CacheClientStatus,true,-56148046466517217,_id:org/apache/geode/internal/cache/tier/sockets/ClientProxyMembershipID,_memberId:java/lang/String,_numberOfConnections:int,_socketAddresses:java/util/List,_socketPorts:java/util/List
 org/apache/geode/internal/cache/CommitReplyException,true,-7711083075296622596,exceptions:java/util/Set

@@ -5718,7 +5718,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   @Override
   public long basicPutPart2(EntryEventImpl event, RegionEntry entry, boolean isInitialized,
       long lastModified, boolean clearConflict) {
-
     final boolean isNewKey = event.getOperation().isCreate();
 
     // Invoke callbacks only if we are not creating a tombstone

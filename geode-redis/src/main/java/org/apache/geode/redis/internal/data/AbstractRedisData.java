@@ -24,7 +24,9 @@ import java.util.Objects;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InvalidDeltaException;
+import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.AppendDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
@@ -33,6 +35,9 @@ import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
 import org.apache.geode.redis.internal.delta.TimestampDeltaInfo;
 
 public abstract class AbstractRedisData implements RedisData {
+  private static final BucketRegion.PrimaryMoveReadLockAcquired primaryMoveReadLockAcquired =
+      new BucketRegion.PrimaryMoveReadLockAcquired();
+
   @Override
   public String toString() {
     return "expirationTimestamp=" + expirationTimestamp;
@@ -81,8 +86,11 @@ public abstract class AbstractRedisData implements RedisData {
   @Override
   public boolean rename(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper oldKey,
       ByteArrayWrapper newKey) {
-    region.put(newKey, this);
-    region.remove(oldKey);
+    region.put(newKey, this, primaryMoveReadLockAcquired);
+    try {
+      region.destroy(oldKey, primaryMoveReadLockAcquired);
+    } catch (EntryNotFoundException ignore) {
+    }
     return true;
   }
 

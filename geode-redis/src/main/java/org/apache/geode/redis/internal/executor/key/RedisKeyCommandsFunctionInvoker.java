@@ -31,9 +31,8 @@ import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.executor.RedisCommandsFunctionInvoker;
 
 /**
- * This class is used by netty redis key command executors
- * to invoke a geode function that will run on a
- * particular server to do the redis command.
+ * This class is used by netty redis key command executors to invoke a geode function that will run
+ * on a particular server to do the redis command.
  */
 public class RedisKeyCommandsFunctionInvoker extends RedisCommandsFunctionInvoker
     implements RedisKeyCommands {
@@ -74,9 +73,7 @@ public class RedisKeyCommandsFunctionInvoker extends RedisCommandsFunctionInvoke
 
 
   @Override
-  @SuppressWarnings("unchecked")
   public boolean rename(ByteArrayWrapper oldKey, ByteArrayWrapper newKey) {
-
     if (!region.containsKey(oldKey)) {
       return false;
     }
