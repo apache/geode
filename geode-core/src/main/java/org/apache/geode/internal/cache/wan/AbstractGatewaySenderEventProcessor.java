@@ -1046,20 +1046,15 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
   protected void logThresholdExceededAlerts(List<GatewaySenderEventImpl> events) {
     // Log an alert for each event if necessary
     if (getSender().getAlertThreshold() > 0) {
-      Iterator it = events.iterator();
       long currentTime = System.currentTimeMillis();
-      while (it.hasNext()) {
+      for (GatewaySenderEventImpl event : events) {
         try {
-          Object o = it.next();
-          if (o != null && o instanceof GatewaySenderEventImpl) {
-            GatewaySenderEventImpl ge = (GatewaySenderEventImpl) o;
-            if (ge.getCreationTime() + getSender().getAlertThreshold() < currentTime) {
-              logger.warn(
-                  "{} event for region={} key={} value={} was in the queue for {} milliseconds",
-                  new Object[] {ge.getOperation(), ge.getRegionPath(), ge.getKey(),
-                      ge.getValueAsString(true), currentTime - ge.getCreationTime()});
-              getSender().getStatistics().incEventsExceedingAlertThreshold();
-            }
+          if (event.getCreationTime() + getSender().getAlertThreshold() < currentTime) {
+            logger.warn(
+                "{} event for region={} key={} value={} was in the queue for {} milliseconds",
+                new Object[] {event.getOperation(), event.getRegionPath(), event.getKey(),
+                    event.getValueAsString(true), currentTime - event.getCreationTime()});
+            getSender().getStatistics().incEventsExceedingAlertThreshold();
           }
         } catch (Exception e) {
           logger.warn("Caught the following exception attempting to log threshold exceeded alert:",
