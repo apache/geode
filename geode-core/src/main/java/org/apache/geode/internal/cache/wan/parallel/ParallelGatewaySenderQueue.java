@@ -882,7 +882,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     }
   }
 
-  private void putIntoBucketRegionQueue(AbstractBucketRegionQueue brq, Object key,
+  void putIntoBucketRegionQueue(AbstractBucketRegionQueue brq, Object key,
       GatewaySenderEventImpl value) {
     boolean addedValueToQueue = false;
     try {
