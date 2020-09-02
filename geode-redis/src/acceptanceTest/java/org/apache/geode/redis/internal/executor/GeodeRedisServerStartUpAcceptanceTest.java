@@ -37,7 +37,7 @@ public class GeodeRedisServerStartUpAcceptanceTest {
   @Test
   public void shouldReturnErrorMessage_givenSamePortAndAddress() throws IOException {
 
-    int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+    int port = AvailablePortHelper.getRandomAvailableTCPPort();
 
     String startServerCommand = String.join(" ",
         "start server",
@@ -59,7 +59,7 @@ public class GeodeRedisServerStartUpAcceptanceTest {
   @Test
   public void shouldReturnErrorMessage_givenSamePortAndAllAddresses() throws IOException {
 
-    int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+    int port = AvailablePortHelper.getRandomAvailableTCPPort();
 
     String startServerCommand = String.join(" ",
         "start server",
