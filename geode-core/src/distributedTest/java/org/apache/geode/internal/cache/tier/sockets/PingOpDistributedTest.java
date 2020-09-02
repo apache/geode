@@ -15,7 +15,7 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static java.util.Arrays.asList;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPortsForDUnitSite;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -92,7 +92,7 @@ public class PingOpDistributedTest implements Serializable {
 
   @Before
   public void setUp() throws IOException {
-    int[] ports = getRandomAvailableTCPPortsForDUnitSite(2);
+    int[] ports = getRandomAvailableTCPPorts(2);
 
     client = getVM(0);
     server1 = getVM(1);
@@ -160,7 +160,7 @@ public class PingOpDistributedTest implements Serializable {
   public void pingReturnsErrorIfTheTargetServerIsNotAMember() {
     final String poolName = testName.getMethodName();
     parametrizedSetUp(poolName, Collections.singletonList(server1Port));
-    int notUsedPort = getRandomAvailableTCPPortsForDUnitSite(1)[0];
+    int notUsedPort = getRandomAvailableTCPPorts(1)[0];
     InternalDistributedMember fakeDistributedMember =
         new InternalDistributedMember("localhost", notUsedPort);
     client.invoke(() -> {
