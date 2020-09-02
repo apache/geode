@@ -713,12 +713,16 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
                 bucketFullPath, brq);
           }
           if (brq != null) {
+            boolean intializingLocked = brq.lockWhenRegionIsInitializing();
             brq.getInitializationLock().readLock().lock();
             try {
               putIntoBucketRegionQueue(brq, key, value);
               putDone = true;
             } finally {
               brq.getInitializationLock().readLock().unlock();
+              if (intializingLocked) {
+                brq.unlockWhenRegionIsInitializing();
+              }
             }
           } else if (isDREvent) {
             // in case of DR with PGS, if shadow bucket is not found event after
@@ -758,12 +762,16 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
                 brq = (AbstractBucketRegionQueue) prQ.getCache()
                     .getInternalRegionByPath(bucketFullPath);
                 if (brq != null) {
+                  boolean intializingLocked = brq.lockWhenRegionIsInitializing();
                   brq.getInitializationLock().readLock().lock();
                   try {
                     putIntoBucketRegionQueue(brq, key, value);
                     putDone = true;
                   } finally {
                     brq.getInitializationLock().readLock().unlock();
+                    if (intializingLocked) {
+                      brq.unlockWhenRegionIsInitializing();
+                    }
                   }
                 } else {
                   tempQueue.add(value);
@@ -832,7 +840,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     }
   }
 
-  private void putIntoBucketRegionQueue(AbstractBucketRegionQueue brq, Object key,
+  void putIntoBucketRegionQueue(AbstractBucketRegionQueue brq, Object key,
       GatewaySenderEventImpl value) {
     boolean addedValueToQueue = false;
     try {
