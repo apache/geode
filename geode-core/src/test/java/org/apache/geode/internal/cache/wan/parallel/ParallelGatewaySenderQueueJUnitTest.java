@@ -16,8 +16,11 @@ package org.apache.geode.internal.cache.wan.parallel;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -33,6 +36,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.InOrder;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 
@@ -42,11 +46,13 @@ import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.AbstractBucketRegionQueue;
+import org.apache.geode.internal.cache.BucketAdvisor;
 import org.apache.geode.internal.cache.BucketRegionQueue;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
+import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
@@ -69,6 +75,7 @@ public class ParallelGatewaySenderQueueJUnitTest {
     when(sender.getCache()).thenReturn(cache);
     when(sender.getMaximumQueueMemory()).thenReturn(100);
     when(sender.getLifeCycleLock()).thenReturn(new ReentrantReadWriteLock());
+    when(sender.getId()).thenReturn("");
     metaRegionFactory = mock(MetaRegionFactory.class);
     queue = new ParallelGatewaySenderQueue(sender, Collections.emptySet(), 0, 1, metaRegionFactory);
   }
@@ -117,6 +124,90 @@ public class ParallelGatewaySenderQueueJUnitTest {
     queue = spy(queue);
     boolean putDone = queue.put(event);
     assertThat(putDone).isFalse();
+  }
+
+  private void testEnqueueToBrqAfterLockFailedInitialImageReadLock(boolean isTmpQueue)
+      throws InterruptedException {
+    GatewaySenderEventImpl event = mock(GatewaySenderEventImpl.class);
+    String regionPath = "/userPR";
+    when(event.getRegionPath()).thenReturn(regionPath);
+    when(event.makeHeapCopyIfOffHeap()).thenReturn(event);
+    when(event.getRegion()).thenReturn(null);
+    when(event.getBucketId()).thenReturn(1);
+    when(event.getShadowKey()).thenReturn(100L);
+    when(sender.isPersistenceEnabled()).thenReturn(true);
+    PartitionedRegionDataStore prds = mock(PartitionedRegionDataStore.class);
+    PartitionedRegion prQ = mock(PartitionedRegion.class);
+    AbstractBucketRegionQueue brq = mock(AbstractBucketRegionQueue.class);
+    ReentrantReadWriteLock initializationLock = mock(ReentrantReadWriteLock.class);
+    ReentrantReadWriteLock.ReadLock readLock = mock(ReentrantReadWriteLock.ReadLock.class);
+    when(initializationLock.readLock()).thenReturn(readLock);
+    doNothing().when(readLock).lock();
+    doNothing().when(readLock).unlock();
+    doNothing().when(brq).unlockWhenRegionIsInitializing();
+    when(brq.getInitializationLock()).thenReturn(initializationLock);
+    when(brq.lockWhenRegionIsInitializing()).thenReturn(true);
+    when(prQ.getDataStore()).thenReturn(prds);
+    when(prQ.getCache()).thenReturn(cache);
+    when(prQ.getBucketName(1)).thenReturn("_B__PARALLEL_GATEWAY_SENDER_QUEUE_1");
+    when(prds.getLocalBucketById(1)).thenReturn(null);
+    PartitionedRegion userPR = mock(PartitionedRegion.class);
+    PartitionAttributes pa = mock(PartitionAttributes.class);
+    when(userPR.getPartitionAttributes()).thenReturn(pa);
+    when(pa.getColocatedWith()).thenReturn(null);
+    when(userPR.getDataPolicy()).thenReturn(DataPolicy.PERSISTENT_PARTITION);
+    when(userPR.getFullPath()).thenReturn(regionPath);
+    when(cache.getRegion("_PARALLEL_GATEWAY_SENDER_QUEUE")).thenReturn(prQ);
+    when(cache.getRegion(regionPath, true)).thenReturn(userPR);
+    when(prQ.getColocatedWithRegion()).thenReturn(userPR);
+    RegionAdvisor ra = mock(RegionAdvisor.class);
+    BucketAdvisor ba = mock(BucketAdvisor.class);
+    when(userPR.getRegionAdvisor()).thenReturn(ra);
+    when(ra.getBucketAdvisor(1)).thenReturn(ba);
+    when(ba.isShadowBucketDestroyed("/__PR/_B__PARALLEL_GATEWAY_SENDER_QUEUE_1")).thenReturn(false);
+
+    prepareBrq(brq, isTmpQueue);
+
+    Mockito.doThrow(new IllegalStateException()).when(event).release();
+    Queue backingList = new LinkedList();
+    backingList.add(event);
+
+    BucketRegionQueue bucketRegionQueue = mockBucketRegionQueue(backingList);
+
+    TestableParallelGatewaySenderQueue queue = new TestableParallelGatewaySenderQueue(sender,
+        Collections.emptySet(), 0, 1, metaRegionFactory);
+    queue.setMockedAbstractBucketRegionQueue(bucketRegionQueue);
+
+    InOrder inOrder = inOrder(brq, readLock);
+    queue = spy(queue);
+    queue.addShadowPartitionedRegionForUserPR(userPR);
+    doNothing().when(queue).putIntoBucketRegionQueue(eq(brq), any(), eq(event));
+    boolean putDone = queue.put(event);
+    assertThat(putDone).isTrue();
+    inOrder.verify(brq).lockWhenRegionIsInitializing();
+    inOrder.verify(readLock).lock();
+    inOrder.verify(readLock).unlock();
+    inOrder.verify(brq).unlockWhenRegionIsInitializing();
+  }
+
+  private void prepareBrq(AbstractBucketRegionQueue brq, boolean isTmpQueue) {
+    if (isTmpQueue) {
+      when(cache.getInternalRegionByPath("/__PR/_B__PARALLEL_GATEWAY_SENDER_QUEUE_1"))
+          .thenReturn(null).thenReturn(brq);
+    } else {
+      when(cache.getInternalRegionByPath("/__PR/_B__PARALLEL_GATEWAY_SENDER_QUEUE_1"))
+          .thenReturn(brq);
+    }
+  }
+
+  @Test
+  public void enqueueToInitializingBrqShouldLockFailedInitialImageReadLock() throws Exception {
+    testEnqueueToBrqAfterLockFailedInitialImageReadLock(false);
+  }
+
+  @Test
+  public void enqueueToTmpQueueShouldLockFailedInitialImageReadLock() throws Exception {
+    testEnqueueToBrqAfterLockFailedInitialImageReadLock(true);
   }
 
   @Test
