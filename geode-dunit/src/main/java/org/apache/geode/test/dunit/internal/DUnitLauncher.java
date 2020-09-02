@@ -14,6 +14,7 @@
  */
 package org.apache.geode.test.dunit.internal;
 
+import static java.util.Objects.isNull;
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_MANAGEMENT_REST_SERVICE;
@@ -35,6 +36,9 @@ import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
 import java.rmi.registry.LocateRegistry;
@@ -73,7 +77,6 @@ import org.apache.geode.test.greplogs.LogConsumer;
  * it leaves around.
  */
 public class DUnitLauncher {
-
   /**
    * change this to use a different log level in unit tests
    */
@@ -111,7 +114,6 @@ public class DUnitLauncher {
   private static final String SUSPECT_FILENAME = "dunit_suspect.log";
   private static File DUNIT_SUSPECT_FILE;
 
-  public static final String DUNIT_DIR = "dunit";
   public static final String WORKSPACE_DIR_PARAM = "WORKSPACE_DIR";
   public static final boolean LOCATOR_LOG_TO_DISK = Boolean.getBoolean("locatorLogToDisk");
 
@@ -126,9 +128,14 @@ public class DUnitLauncher {
 
   private static final VMEventNotifier vmEventNotifier = new VMEventNotifier();
 
+  /**
+   * The root directory for tests running in this JVM.
+   */
+  private static Path testRootDir = null;
   private static Master master;
 
-  private DUnitLauncher() {}
+  private DUnitLauncher() {
+  }
 
   private static boolean isHydra() {
     try {
@@ -191,6 +198,8 @@ public class DUnitLauncher {
     DUNIT_SUSPECT_FILE = new File(SUSPECT_FILENAME);
     DUNIT_SUSPECT_FILE.delete();
     DUNIT_SUSPECT_FILE.deleteOnExit();
+
+    initializeTestRootDir();
 
     // create an RMI registry and add an object to share our tests config
     int namingPort = AvailablePortHelper.getRandomAvailableTCPPort();
@@ -261,11 +270,11 @@ public class DUnitLauncher {
   private static void addSuspectFileAppender(final String workspaceDir) {
     final String suspectFilename = new File(workspaceDir, SUSPECT_FILENAME).getAbsolutePath();
 
-
     Object mainLogger = LogManager.getLogger(LoggingProvider.MAIN_LOGGER_NAME);
     if (!(mainLogger instanceof org.apache.logging.log4j.core.Logger)) {
       System.err.format(
-          "Unable to configure suspect file appender - cannot retrieve LoggerContext from type: %s\n",
+          "Unable to configure suspect file appender - cannot retrieve LoggerContext from type: "
+              + "%s\n",
           mainLogger.getClass().getName());
       return;
     }
@@ -274,7 +283,8 @@ public class DUnitLauncher {
         ((org.apache.logging.log4j.core.Logger) mainLogger).getContext();
 
     final PatternLayout layout = PatternLayout.createLayout(
-        "[%level{lowerCase=true} %date{yyyy/MM/dd HH:mm:ss.SSS z} <%thread> tid=%tid] %message%n%throwable%n",
+        "[%level{lowerCase=true} %date{yyyy/MM/dd HH:mm:ss.SSS z} <%thread> tid=%tid] "
+            + "%message%n%throwable%n",
         null, null, null, Charset.defaultCharset(), true, false, "", "");
 
     final FileAppender fileAppender = FileAppender.createAppender(suspectFilename, "true", "false",
@@ -400,4 +410,23 @@ public class DUnitLauncher {
   }
 
 
+  public static Path getTestRootDir() {
+    if (isNull(testRootDir)) {
+      // In the test worker JVM, launch() initializes testRootDir. So if testRootDir is null, this
+      // must be a ChildVM, and each ChildVM is started one directory below the test root.
+      // TODO: DHE I do not like assuming that we're one dir below the test root dir.
+      testRootDir = Paths.get("..").toAbsolutePath();
+      System.out
+          .printf("DHE: DUnitLauncher.testRootDir() setting testRootDir to %s%n", testRootDir);
+    }
+    return testRootDir;
+  }
+
+  private static void initializeTestRootDir() throws IOException {
+    Path currentWorkingDir = Paths.get(".").toAbsolutePath();
+    Path jvmRootDir = Files.createTempDirectory(currentWorkingDir, null);
+    testRootDir = jvmRootDir.resolve("dunit");
+    System.out.printf("DHE: DUnitLauncher.initializeTestRootDir() setting testRootDir to %s%n",
+        testRootDir);
+  }
 }
