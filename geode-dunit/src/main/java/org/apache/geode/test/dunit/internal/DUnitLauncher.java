@@ -134,8 +134,7 @@ public class DUnitLauncher {
   private static Path testRootDir = null;
   private static Master master;
 
-  private DUnitLauncher() {
-  }
+  private DUnitLauncher() {}
 
   private static boolean isHydra() {
     try {
@@ -415,7 +414,7 @@ public class DUnitLauncher {
       // In the test worker JVM, launch() initializes testRootDir. So if testRootDir is null, this
       // must be a ChildVM, and each ChildVM is started one directory below the test root.
       // TODO: DHE I do not like assuming that we're one dir below the test root dir.
-      testRootDir = Paths.get("..").toAbsolutePath();
+      testRootDir = Paths.get("..").normalize().toAbsolutePath();
       System.out
           .printf("DHE: DUnitLauncher.testRootDir() setting testRootDir to %s%n", testRootDir);
     }
@@ -423,7 +422,7 @@ public class DUnitLauncher {
   }
 
   private static void initializeTestRootDir() throws IOException {
-    Path currentWorkingDir = Paths.get(".").toAbsolutePath();
+    Path currentWorkingDir = Paths.get(".").normalize().toAbsolutePath();
     Path jvmRootDir = Files.createTempDirectory(currentWorkingDir, null);
     testRootDir = jvmRootDir.resolve("dunit");
     System.out.printf("DHE: DUnitLauncher.initializeTestRootDir() setting testRootDir to %s%n",
