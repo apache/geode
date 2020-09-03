@@ -69,6 +69,9 @@ public class HARegionQueueTest {
   private final List<EventID> chunk1 = new LinkedList<>();
   private final List<EventID> chunk2 = new LinkedList<>();
   private final InternalDistributedMember primary = mock(InternalDistributedMember.class);
+  private final ThreadIdentifier tid = mock(ThreadIdentifier.class);
+  private final HARegionQueue.DispatchedAndCurrentEvents wrapper =
+      new HARegionQueue.DispatchedAndCurrentEvents();
 
   @Before
   public void setup() throws IOException, ClassNotFoundException, InterruptedException {
@@ -226,19 +229,29 @@ public class HARegionQueueTest {
   }
 
   @Test
+  public void isRemovedReturnsTrueIfDispatchedAndCurrentEventsAreRemoved() {
+    HARegionQueue spy = spy(haRegionQueue);
+    doReturn(null).when(spy).getDispatchedAndCurrentEvents(id1);
+
+    assertThat(spy.isRemoved(id1)).isTrue();
+  }
+
+  @Test
   public void isRemovedReturnsFalseIfSequenceIdGreaterThanLastDispatched() {
     HARegionQueue spy = spy(haRegionQueue);
     when(id1.getSequenceID()).thenReturn(100L);
-    doReturn(99L).when(spy).getLastDispatchedSequenceId(id1);
+    wrapper.lastDispatchedSequenceId = 99L;
+    doReturn(wrapper).when(spy).getDispatchedAndCurrentEvents(id1);
 
     assertThat(spy.isRemoved(id1)).isFalse();
   }
 
   @Test
-  public void isRemovedReturnsTrueIfSequenceIdEqualLastDispatched() {
+  public void isRemovedReturnsTrueIfSequenceIdEqualsLastDispatched() {
     HARegionQueue spy = spy(haRegionQueue);
     when(id1.getSequenceID()).thenReturn(100L);
-    doReturn(100L).when(spy).getLastDispatchedSequenceId(id1);
+    wrapper.lastDispatchedSequenceId = 100L;
+    doReturn(wrapper).when(spy).getDispatchedAndCurrentEvents(id1);
 
     assertThat(spy.isRemoved(id1)).isTrue();
   }
@@ -247,7 +260,8 @@ public class HARegionQueueTest {
   public void isRemovedReturnsTrueIfSequenceIdLessThanLastDispatched() {
     HARegionQueue spy = spy(haRegionQueue);
     when(id1.getSequenceID()).thenReturn(90L);
-    doReturn(100L).when(spy).getLastDispatchedSequenceId(id1);
+    wrapper.lastDispatchedSequenceId = 100L;
+    doReturn(wrapper).when(spy).getDispatchedAndCurrentEvents(id1);
 
     assertThat(spy.isRemoved(id1)).isTrue();
   }

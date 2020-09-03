@@ -3970,10 +3970,16 @@ public class HARegionQueue implements RegionQueue {
   }
 
   boolean isRemoved(EventID eventId) {
-    if (eventId.getSequenceID() > getLastDispatchedSequenceId(eventId)) {
+    DispatchedAndCurrentEvents wrapper = getDispatchedAndCurrentEvents(eventId);
+    if (wrapper != null && eventId.getSequenceID() > wrapper.lastDispatchedSequenceId) {
       return false;
     }
     return true;
+  }
+
+  DispatchedAndCurrentEvents getDispatchedAndCurrentEvents(EventID eventId) {
+    ThreadIdentifier tid = getThreadIdentifier(eventId);
+    return (DispatchedAndCurrentEvents) eventsMap.get(tid);
   }
 
   public void synchronizeQueueWithPrimary(InternalDistributedMember primary, InternalCache cache) {
@@ -4021,7 +4027,7 @@ public class HARegionQueue implements RegionQueue {
           return;
         }
       } else {
-        for (List chunk : chunks) {
+        for (List<EventID> chunk : chunks) {
           if (!removeDispatchedEvents(primary, cache, chunk)) {
             return;
           }
