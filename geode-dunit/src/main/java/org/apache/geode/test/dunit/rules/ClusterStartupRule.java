@@ -363,7 +363,7 @@ public class ClusterStartupRule implements SerializableTestRule {
   }
 
   public File getWorkingDirRoot() {
-    return DUnitLauncher.getTestRootDir().toFile();
+    return DUnitLauncher.getSessionDir().toFile();
   }
 
   public static void stopElementInsideVM() {

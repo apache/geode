@@ -78,6 +78,7 @@ import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.security.SecurityManager;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
+import org.apache.geode.test.dunit.internal.DUnitLauncher;
 import org.apache.geode.test.junit.rules.accessible.AccessibleRestoreSystemProperties;
 import org.apache.geode.test.junit.rules.serializable.SerializableExternalResource;
 
@@ -166,7 +167,8 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
           // do not delete the pre-existing files
           .filter(f -> !firstLevelChildrenFile.contains(f))
           // do not delete the dunit folder that might have been created by dunit launcher
-          .filter(f -> !(f.isDirectory() && f.getName().equals("dunit")))
+          .filter(
+              f -> !(f.isDirectory() && f.getName().startsWith(DUnitLauncher.TEST_ROOT_DIR_PREFIX)))
           .forEach(FileUtils::deleteQuietly);
   }
 

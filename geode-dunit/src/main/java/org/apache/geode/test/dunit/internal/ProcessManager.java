@@ -122,7 +122,7 @@ class ProcessManager implements ChildVMLauncher {
 
   public static File getVMDir(String version, int vmNum) {
     String vmSubdirName = VM.getVMName(VersionManager.CURRENT_VERSION, vmNum);
-    return DUnitLauncher.getTestRootDir().resolve(vmSubdirName).toFile();
+    return DUnitLauncher.getSessionDir().resolve(vmSubdirName).toFile();
   }
 
   public synchronized void killVMs() {

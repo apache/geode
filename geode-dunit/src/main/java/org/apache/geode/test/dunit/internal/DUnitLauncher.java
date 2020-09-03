@@ -89,6 +89,7 @@ public class DUnitLauncher {
    */
   public static final boolean MAKE_NEW_WORKING_DIRS =
       Boolean.getBoolean("makeNewWorkingDirsOnBounce");
+  public static final String TEST_ROOT_DIR_PREFIX = "dunit-session-";
 
   static int locatorPort;
 
@@ -129,9 +130,9 @@ public class DUnitLauncher {
   private static final VMEventNotifier vmEventNotifier = new VMEventNotifier();
 
   /**
-   * The root directory for tests running in this JVM.
+   * The root directory for tests running in the current DUnit session in this JVM.
    */
-  private static Path testRootDir = null;
+  private static Path sessionDir = null;
   private static Master master;
 
   private DUnitLauncher() {}
@@ -198,7 +199,7 @@ public class DUnitLauncher {
     DUNIT_SUSPECT_FILE.delete();
     DUNIT_SUSPECT_FILE.deleteOnExit();
 
-    initializeTestRootDir();
+    initializeSessionDir();
 
     // create an RMI registry and add an object to share our tests config
     int namingPort = AvailablePortHelper.getRandomAvailableTCPPort();
@@ -409,23 +410,18 @@ public class DUnitLauncher {
   }
 
 
-  public static Path getTestRootDir() {
-    if (isNull(testRootDir)) {
-      // In the test worker JVM, launch() initializes testRootDir. So if testRootDir is null, this
-      // must be a ChildVM, and each ChildVM is started one directory below the test root.
-      // TODO: DHE I do not like assuming that we're one dir below the test root dir.
-      testRootDir = Paths.get("..").normalize().toAbsolutePath();
-      System.out
-          .printf("DHE: DUnitLauncher.testRootDir() setting testRootDir to %s%n", testRootDir);
+  public static Path getSessionDir() {
+    if (isNull(sessionDir)) {
+      // In the test worker JVM, launch() initializes sessionDir. So if sessionDir is null, this
+      // must be a ChildVM, and each ChildVM is started one directory below the session root.
+      // TODO: DHE I do not like assuming that we're one dir below the dunit session root dir.
+      sessionDir = Paths.get(".").normalize().toAbsolutePath();
     }
-    return testRootDir;
+    return sessionDir;
   }
 
-  private static void initializeTestRootDir() throws IOException {
+  private static void initializeSessionDir() throws IOException {
     Path currentWorkingDir = Paths.get(".").normalize().toAbsolutePath();
-    Path jvmRootDir = Files.createTempDirectory(currentWorkingDir, null);
-    testRootDir = jvmRootDir.resolve("dunit");
-    System.out.printf("DHE: DUnitLauncher.initializeTestRootDir() setting testRootDir to %s%n",
-        testRootDir);
+    sessionDir = Files.createTempDirectory(currentWorkingDir, TEST_ROOT_DIR_PREFIX);
   }
 }
