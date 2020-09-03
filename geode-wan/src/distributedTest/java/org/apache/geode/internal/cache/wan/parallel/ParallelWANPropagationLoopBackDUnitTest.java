@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.wan.parallel;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Wait;
@@ -648,8 +649,10 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
     // stop sender on site-ny
     vm3.invokeAsync(() -> stopSender("ln"));
     vm5.invokeAsync(() -> stopSender("ln"));
+    vm3.invoke(() -> {
+      FunctionService.registerFunction(new DisableTmpDroppedEventsFunction());
+    });
     vm3.invoke(() -> WANTestBase.disableTmpDroppedEvents("ln", true));
-    // vm5.invoke(() -> WANTestBase.disableTmpDroppedEvents("ln", true));
 
     // do next 100 puts on site-ny
     vm3.invoke(() -> WANTestBase.doPutsFrom(getTestMethodName() + "_PR", 0, 100));

@@ -4400,7 +4400,7 @@ public class WANTestBase extends DistributedTestCase {
     execution.execute(new DisableTmpDroppedEventsFunction());
   }
 
-  static class DisableTmpDroppedEventsFunction
+  public static class DisableTmpDroppedEventsFunction
       implements InternalFunction, Declarable, DataSerializable {
     @Override
     public void execute(FunctionContext context) {

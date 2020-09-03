@@ -259,6 +259,9 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     this.isPersistence = attrs.isPersistenceEnabled();
     this.alertThreshold = attrs.getAlertThreshold();
     this.manualStart = attrs.isManualStart();
+    // if (manualStart) {
+    // disableTmpDroppedEvents = true;
+    // }
     this.isParallel = attrs.isParallel();
     this.groupTransactionEvents = attrs.mustGroupTransactionEvents();
     this.isForInternalUse = attrs.isForInternalUse();
