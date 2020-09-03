@@ -46,10 +46,20 @@ public class GfshExecution {
   private static final String SCRIPT_EXIT_VALUE_DESCRIPTION =
       "Exit value from process started by [%s]";
 
+  private static final Predicate<File> IS_RUNNING_SERVER_DIRECTORY =
+      directory -> stream(directory.list())
+          .anyMatch(filename -> filename.endsWith("server.pid"));
+
   private static final Predicate<File> IS_SERVER_DIRECTORY = directory -> stream(directory.list())
-      .anyMatch(filename -> filename.endsWith("server.pid"));
+      .anyMatch(filename -> filename.endsWith("server.pid") || filename.contains("server.status"));
+
+  private static final Predicate<File> IS_RUNNING_LOCATOR_DIRECTORY =
+      directory -> stream(directory.list())
+          .anyMatch(filename -> filename.endsWith("locator.pid"));
+
   private static final Predicate<File> IS_LOCATOR_DIRECTORY = directory -> stream(directory.list())
-      .anyMatch(filename -> filename.endsWith("locator.pid"));
+      .anyMatch(
+          filename -> filename.endsWith("locator.pid") || filename.contains("locator.status"));
 
   private final Process process;
   private final File workingDir;
@@ -121,10 +131,10 @@ public class GfshExecution {
   }
 
   String[] getStopMemberCommands() {
-    Stream<String> stopServers = getServerDirs()
+    Stream<String> stopServers = getServerDirs(true)
         .stream()
         .map(f -> "stop server --dir=" + quoteArgument(f.toString()));
-    Stream<String> stopLocators = getLocatorDirs()
+    Stream<String> stopLocators = getLocatorDirs(true)
         .stream()
         .map(f -> "stop locator --dir=" + quoteArgument(f.toString()));
     return concat(stopServers, stopLocators)
@@ -150,17 +160,19 @@ public class GfshExecution {
     }
   }
 
-  private List<File> getServerDirs() {
+  private List<File> getServerDirs(boolean isRunning) {
+    Predicate<File> predicate = isRunning ? IS_RUNNING_SERVER_DIRECTORY : IS_SERVER_DIRECTORY;
     return findPotentialMemberDirectories()
         .stream()
-        .filter(IS_SERVER_DIRECTORY)
+        .filter(predicate)
         .collect(toList());
   }
 
-  private List<File> getLocatorDirs() {
+  private List<File> getLocatorDirs(boolean isRunning) {
+    Predicate<File> predicate = isRunning ? IS_RUNNING_LOCATOR_DIRECTORY : IS_LOCATOR_DIRECTORY;
     return findPotentialMemberDirectories()
         .stream()
-        .filter(IS_LOCATOR_DIRECTORY)
+        .filter(predicate)
         .collect(toList());
   }
 
@@ -178,8 +190,8 @@ public class GfshExecution {
   }
 
   private List<File> findLogFiles() {
-    List<File> servers = getServerDirs();
-    List<File> locators = getLocatorDirs();
+    List<File> servers = getServerDirs(false);
+    List<File> locators = getLocatorDirs(false);
 
     return concat(servers.stream(), locators.stream())
         .flatMap(GfshExecution::findLogFiles)
