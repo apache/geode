@@ -49,7 +49,7 @@ public class QueueSynchronizationProcessorTest {
   private final InternalCache cache = mock(InternalCache.class);
   private QueueSynchronizationProcessor.QueueSynchronizationMessage message;
   private QueueSynchronizationProcessor.QueueSynchronizationReplyMessage replyMessage;
-  private final List<EventID> eventIDS = new LinkedList<>();
+  private final List<EventID> eventIDs = new LinkedList<>();
   private final EventID id1 = mock(EventID.class);
   private final EventID id2 = mock(EventID.class);
   private final int processorId = 11;
@@ -58,8 +58,8 @@ public class QueueSynchronizationProcessorTest {
   @Before
   public void setup() {
     when((manager.getCache())).thenReturn(cache);
-    eventIDS.add(id1);
-    eventIDS.add(id2);
+    eventIDs.add(id1);
+    eventIDs.add(id2);
   }
 
   @Test
@@ -86,7 +86,7 @@ public class QueueSynchronizationProcessorTest {
   }
 
   private void setupMessage() {
-    message.setEventIdList(eventIDS);
+    message.setEventIdList(eventIDs);
     message.setProcessorId(processorId);
     replyMessage = mock(QueueSynchronizationProcessor.QueueSynchronizationReplyMessage.class);
     dispatched.add(id2);
@@ -130,12 +130,12 @@ public class QueueSynchronizationProcessorTest {
     message = spy(new QueueSynchronizationProcessor.QueueSynchronizationMessage());
     String regionName = "queueName";
     message.setRegionName(regionName);
-    message.setEventIdList(eventIDS);
+    message.setEventIdList(eventIDs);
     HARegion region = mock(HARegion.class);
     HARegionQueue queue = mock(HARegionQueue.class);
     when(cache.getRegion(regionName)).thenReturn(uncheckedCast(region));
     when(region.getOwner()).thenReturn(queue);
-    when(queue.getDispatchedOrRemovedEvents(eventIDS)).thenReturn(dispatched);
+    when(queue.getDispatchedEvents(eventIDs)).thenReturn(dispatched);
 
     assertThat(message.getDispatchedEvents(cache)).isEqualTo(dispatched);
   }

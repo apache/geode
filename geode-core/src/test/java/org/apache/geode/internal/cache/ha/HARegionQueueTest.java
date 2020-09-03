@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.ha;
 
 import static junit.framework.TestCase.assertEquals;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
@@ -60,7 +61,7 @@ public class HARegionQueueTest {
   private HARegionQueue haRegionQueue;
   private final HARegion haRegion = mock(HARegion.class);
   private final InternalCache internalCache = mock(InternalCache.class);
-  private final List<EventID> eventIDS = new LinkedList<>();
+  private final List<EventID> eventIDs = new LinkedList<>();
   private final EventID id1 = mock(EventID.class);
   private final EventID id2 = mock(EventID.class);
   private final EventID id3 = mock(EventID.class);
@@ -69,7 +70,6 @@ public class HARegionQueueTest {
   private final List<EventID> chunk1 = new LinkedList<>();
   private final List<EventID> chunk2 = new LinkedList<>();
   private final InternalDistributedMember primary = mock(InternalDistributedMember.class);
-  private final ThreadIdentifier tid = mock(ThreadIdentifier.class);
   private final HARegionQueue.DispatchedAndCurrentEvents wrapper =
       new HARegionQueue.DispatchedAndCurrentEvents();
 
@@ -209,12 +209,12 @@ public class HARegionQueueTest {
     HARegionQueue spy = spy(haRegionQueue);
     List<EventID> removedEvents;
     addEvents();
-    doReturn(false).when(spy).isRemoved(id1);
-    doReturn(true).when(spy).isRemoved(id2);
-    doReturn(true).when(spy).isRemoved(id3);
-    doReturn(false).when(spy).isRemoved(id4);
+    doReturn(false).when(spy).isDispatched(id1);
+    doReturn(true).when(spy).isDispatched(id2);
+    doReturn(true).when(spy).isDispatched(id3);
+    doReturn(false).when(spy).isDispatched(id4);
 
-    removedEvents = spy.getDispatchedOrRemovedEvents(eventIDS);
+    removedEvents = spy.getDispatchedEvents(eventIDs);
 
     assertThat(removedEvents.size()).isEqualTo(2);
     assertThat(removedEvents.contains(id2));
@@ -222,48 +222,48 @@ public class HARegionQueueTest {
   }
 
   private void addEvents() {
-    eventIDS.add(id1);
-    eventIDS.add(id2);
-    eventIDS.add(id3);
-    eventIDS.add(id4);
+    eventIDs.add(id1);
+    eventIDs.add(id2);
+    eventIDs.add(id3);
+    eventIDs.add(id4);
   }
 
   @Test
-  public void isRemovedReturnsTrueIfDispatchedAndCurrentEventsAreRemoved() {
+  public void isDispatchedReturnsTrueIfDispatchedAndCurrentEventsAreRemoved() {
     HARegionQueue spy = spy(haRegionQueue);
     doReturn(null).when(spy).getDispatchedAndCurrentEvents(id1);
 
-    assertThat(spy.isRemoved(id1)).isTrue();
+    assertThat(spy.isDispatched(id1)).isTrue();
   }
 
   @Test
-  public void isRemovedReturnsFalseIfSequenceIdGreaterThanLastDispatched() {
+  public void isDispatchedReturnsFalseIfSequenceIdGreaterThanLastDispatched() {
     HARegionQueue spy = spy(haRegionQueue);
     when(id1.getSequenceID()).thenReturn(100L);
     wrapper.lastDispatchedSequenceId = 99L;
     doReturn(wrapper).when(spy).getDispatchedAndCurrentEvents(id1);
 
-    assertThat(spy.isRemoved(id1)).isFalse();
+    assertThat(spy.isDispatched(id1)).isFalse();
   }
 
   @Test
-  public void isRemovedReturnsTrueIfSequenceIdEqualsLastDispatched() {
+  public void isDispatchedReturnsTrueIfSequenceIdEqualsLastDispatched() {
     HARegionQueue spy = spy(haRegionQueue);
     when(id1.getSequenceID()).thenReturn(100L);
     wrapper.lastDispatchedSequenceId = 100L;
     doReturn(wrapper).when(spy).getDispatchedAndCurrentEvents(id1);
 
-    assertThat(spy.isRemoved(id1)).isTrue();
+    assertThat(spy.isDispatched(id1)).isTrue();
   }
 
   @Test
-  public void isRemovedReturnsTrueIfSequenceIdLessThanLastDispatched() {
+  public void isDispatchedReturnsTrueIfSequenceIdLessThanLastDispatched() {
     HARegionQueue spy = spy(haRegionQueue);
     when(id1.getSequenceID()).thenReturn(90L);
     wrapper.lastDispatchedSequenceId = 100L;
     doReturn(wrapper).when(spy).getDispatchedAndCurrentEvents(id1);
 
-    assertThat(spy.isRemoved(id1)).isTrue();
+    assertThat(spy.isDispatched(id1)).isTrue();
   }
 
   @Test
@@ -334,12 +334,13 @@ public class HARegionQueueTest {
     HAEventWrapper wrapper2 = mock(HAEventWrapper.class);
     when(wrapper1.getEventId()).thenReturn(id1);
     when(wrapper2.getEventId()).thenReturn(id2);
-    Region.Entry entry1 = mock(Region.Entry.class);
-    Region.Entry entry2 = mock(Region.Entry.class);
-    Region.Entry entry3 = mock(Region.Entry.class);
+    Region.Entry<Object, Object> entry1 = uncheckedCast(mock(Region.Entry.class));
+    Region.Entry<Object, Object> entry2 = uncheckedCast(mock(Region.Entry.class));
+    Region.Entry<Object, Object> entry3 = uncheckedCast(mock(Region.Entry.class));
     when(entry1.getValue()).thenReturn(wrapper1);
+    when(entry2.getValue()).thenReturn(new Object());
     when(entry3.getValue()).thenReturn(wrapper2);
-    when(entry2.getValue()).thenReturn(id3);
+
 
     when(haRegion.getEntry(1L)).thenReturn(entry1);
     when(haRegion.getEntry(2L)).thenReturn(entry2);
@@ -348,9 +349,7 @@ public class HARegionQueueTest {
 
     giiEvents = spy.getGIIEvents();
 
-    assertThat(giiEvents.size()).isEqualTo(2);
-    assertThat(giiEvents.contains(id1));
-    assertThat(giiEvents.contains(id2));
+    assertThat(giiEvents).containsExactlyInAnyOrder(id1, id2);
   }
 
   @Test
@@ -371,8 +370,8 @@ public class HARegionQueueTest {
 
     spy.doSynchronizationWithPrimary(primary, internalCache);
 
-    verify(spy, never()).getChunks(eventIDS, maxChunkSize);
-    verify(spy, never()).removeDispatchedEvents(primary, internalCache, eventIDS);
+    verify(spy, never()).getChunks(eventIDs, maxChunkSize);
+    verify(spy, never()).removeDispatchedEvents(primary, internalCache, eventIDs);
     assertThat(spy.hasSynchronizedWithPrimary).isTrue();
     assertThat(spy.synchronizeWithPrimaryInProgress).isFalse();
   }
@@ -382,13 +381,13 @@ public class HARegionQueueTest {
     HARegionQueue spy = spy(haRegionQueue);
     int maxChunkSize = 1000;
     addEvents();
-    doReturn(eventIDS).when(spy).getGIIEvents();
-    doReturn(true).when(spy).removeDispatchedEvents(primary, internalCache, eventIDS);
+    doReturn(eventIDs).when(spy).getGIIEvents();
+    doReturn(true).when(spy).removeDispatchedEvents(primary, internalCache, eventIDs);
 
     spy.doSynchronizationWithPrimary(primary, internalCache);
 
-    verify(spy, never()).getChunks(eventIDS, maxChunkSize);
-    verify(spy).removeDispatchedEvents(primary, internalCache, eventIDS);
+    verify(spy, never()).getChunks(eventIDs, maxChunkSize);
+    verify(spy).removeDispatchedEvents(primary, internalCache, eventIDs);
     assertThat(spy.hasSynchronizedWithPrimary).isTrue();
     assertThat(spy.synchronizeWithPrimaryInProgress).isFalse();
   }
@@ -398,13 +397,13 @@ public class HARegionQueueTest {
     HARegionQueue spy = spy(haRegionQueue);
     int maxChunkSize = 1000;
     addEvents();
-    doReturn(eventIDS).when(spy).getGIIEvents();
-    doReturn(false).when(spy).removeDispatchedEvents(primary, internalCache, eventIDS);
+    doReturn(eventIDs).when(spy).getGIIEvents();
+    doReturn(false).when(spy).removeDispatchedEvents(primary, internalCache, eventIDs);
 
     spy.doSynchronizationWithPrimary(primary, internalCache);
 
-    verify(spy, never()).getChunks(eventIDS, maxChunkSize);
-    verify(spy).removeDispatchedEvents(primary, internalCache, eventIDS);
+    verify(spy, never()).getChunks(eventIDs, maxChunkSize);
+    verify(spy).removeDispatchedEvents(primary, internalCache, eventIDs);
     assertThat(spy.hasSynchronizedWithPrimary).isFalse();
     assertThat(spy.synchronizeWithPrimaryInProgress).isFalse();
   }
@@ -414,17 +413,17 @@ public class HARegionQueueTest {
     HARegionQueue spy = spy(haRegionQueue);
     int maxChunkSize = 1000;
     for (int i = 0; i < 1100; i++) {
-      eventIDS.add(mock(EventID.class));
+      eventIDs.add(mock(EventID.class));
     }
     createChunks();
-    doReturn(eventIDS).when(spy).getGIIEvents();
-    doReturn(chunks).when(spy).getChunks(eventIDS, maxChunkSize);
+    doReturn(eventIDs).when(spy).getGIIEvents();
+    doReturn(chunks).when(spy).getChunks(eventIDs, maxChunkSize);
     doReturn(true).when(spy).removeDispatchedEvents(primary, internalCache, chunk1);
     doReturn(true).when(spy).removeDispatchedEvents(primary, internalCache, chunk2);
 
     spy.doSynchronizationWithPrimary(primary, internalCache);
 
-    verify(spy).getChunks(eventIDS, maxChunkSize);
+    verify(spy).getChunks(eventIDs, maxChunkSize);
     verify(spy).removeDispatchedEvents(primary, internalCache, chunk1);
     verify(spy).removeDispatchedEvents(primary, internalCache, chunk2);
     assertThat(spy.hasSynchronizedWithPrimary).isTrue();
@@ -443,17 +442,17 @@ public class HARegionQueueTest {
     HARegionQueue spy = spy(haRegionQueue);
     int maxChunkSize = 1000;
     for (int i = 0; i < 1100; i++) {
-      eventIDS.add(mock(EventID.class));
+      eventIDs.add(mock(EventID.class));
     }
     createChunks();
-    doReturn(eventIDS).when(spy).getGIIEvents();
-    doReturn(chunks).when(spy).getChunks(eventIDS, maxChunkSize);
+    doReturn(eventIDs).when(spy).getGIIEvents();
+    doReturn(chunks).when(spy).getChunks(eventIDs, maxChunkSize);
     doReturn(true).when(spy).removeDispatchedEvents(primary, internalCache, chunk1);
     doReturn(false).when(spy).removeDispatchedEvents(primary, internalCache, chunk2);
 
     spy.doSynchronizationWithPrimary(primary, internalCache);
 
-    verify(spy).getChunks(eventIDS, maxChunkSize);
+    verify(spy).getChunks(eventIDs, maxChunkSize);
     verify(spy).removeDispatchedEvents(primary, internalCache, chunk1);
     verify(spy).removeDispatchedEvents(primary, internalCache, chunk2);
     assertThat(spy.hasSynchronizedWithPrimary).isFalse();
@@ -465,14 +464,15 @@ public class HARegionQueueTest {
     HARegionQueue spy = spy(haRegionQueue);
     addEvents();
     // add more events
-    eventIDS.add(mock(EventID.class));
-    eventIDS.add(mock(EventID.class));
+    eventIDs.add(mock(EventID.class));
+    eventIDs.add(mock(EventID.class));
+    int maxChunkSize = 2;
 
-    Collection<List<EventID>> myChunks = spy.getChunks(eventIDS, 2);
+    Collection<List<EventID>> myChunks = spy.getChunks(eventIDs, maxChunkSize);
 
-    assertThat(myChunks.size()).isEqualTo(3);
+    assertThat(myChunks.size()).isEqualTo(eventIDs.size() / maxChunkSize);
     for (List<EventID> chunk : myChunks) {
-      assertThat(chunk.size()).isEqualTo(2);
+      assertThat(chunk.size()).isEqualTo(maxChunkSize);
     }
   }
 
@@ -516,9 +516,9 @@ public class HARegionQueueTest {
   @Test
   public void removeDispatchedEventsReturnsFalseIfNotGettingEventsFromPrimary() {
     HARegionQueue spy = spy(haRegionQueue);
-    doReturn(null).when(spy).getDispatchedEventsFromPrimary(primary, internalCache, eventIDS);
+    doReturn(null).when(spy).getDispatchedEventsFromPrimary(primary, internalCache, eventIDs);
 
-    assertThat(spy.removeDispatchedEvents(primary, internalCache, eventIDS)).isFalse();
+    assertThat(spy.removeDispatchedEvents(primary, internalCache, eventIDs)).isFalse();
   }
 
   @Test
@@ -527,11 +527,11 @@ public class HARegionQueueTest {
     List<EventID> dispatched = new LinkedList<>();
     dispatched.add(id1);
     dispatched.add(id3);
-    doReturn(dispatched).when(spy).getDispatchedEventsFromPrimary(primary, internalCache, eventIDS);
+    doReturn(dispatched).when(spy).getDispatchedEventsFromPrimary(primary, internalCache, eventIDs);
     doReturn(true).when(spy).removeDispatchedEventAfterSyncWithPrimary(id1);
     doReturn(true).when(spy).removeDispatchedEventAfterSyncWithPrimary(id3);
 
-    assertThat(spy.removeDispatchedEvents(primary, internalCache, eventIDS)).isTrue();
+    assertThat(spy.removeDispatchedEvents(primary, internalCache, eventIDs)).isTrue();
   }
 
   @Test
@@ -540,10 +540,10 @@ public class HARegionQueueTest {
     List<EventID> dispatched = new LinkedList<>();
     dispatched.add(id1);
     dispatched.add(id3);
-    doReturn(dispatched).when(spy).getDispatchedEventsFromPrimary(primary, internalCache, eventIDS);
+    doReturn(dispatched).when(spy).getDispatchedEventsFromPrimary(primary, internalCache, eventIDs);
     doReturn(true).when(spy).removeDispatchedEventAfterSyncWithPrimary(id1);
     doReturn(false).when(spy).removeDispatchedEventAfterSyncWithPrimary(id3);
 
-    assertThat(spy.removeDispatchedEvents(primary, internalCache, eventIDS)).isFalse();
+    assertThat(spy.removeDispatchedEvents(primary, internalCache, eventIDs)).isFalse();
   }
 }

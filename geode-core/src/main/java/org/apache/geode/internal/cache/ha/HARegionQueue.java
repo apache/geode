@@ -18,7 +18,6 @@ import static org.apache.geode.cache.Region.SEPARATOR_CHAR;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.HA_REGION_QUEUE_EXPIRY_TIME_PROPERTY;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.THREAD_ID_EXPIRY_TIME_PROPERTY;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.getProductIntegerProperty;
-import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -3959,17 +3958,17 @@ public class HARegionQueue implements RegionQueue {
     return this.giiQueue;
   }
 
-  List<EventID> getDispatchedOrRemovedEvents(List<EventID> eventIds) {
-    List<EventID> removedEvents = new LinkedList<>();
+  List<EventID> getDispatchedEvents(List<EventID> eventIds) {
+    List<EventID> dispatchedEvents = new LinkedList<>();
     for (EventID eventId : eventIds) {
-      if (isRemoved(eventId)) {
-        removedEvents.add(eventId);
+      if (isDispatched(eventId)) {
+        dispatchedEvents.add(eventId);
       }
     }
-    return removedEvents;
+    return dispatchedEvents;
   }
 
-  boolean isRemoved(EventID eventId) {
+  boolean isDispatched(EventID eventId) {
     DispatchedAndCurrentEvents wrapper = getDispatchedAndCurrentEvents(eventId);
     if (wrapper != null && eventId.getSequenceID() > wrapper.lastDispatchedSequenceId) {
       return false;
@@ -4076,10 +4075,10 @@ public class HARegionQueue implements RegionQueue {
   List<EventID> getGIIEvents() {
     List<EventID> events = new LinkedList<>();
     for (long i = positionBeforeGII; i < positionAfterGII + 1; i++) {
-      Map.Entry entry = region.getEntry(i);
+      Map.Entry<?, ?> entry = region.getEntry(i);
       // could be already removed after processing QueueRemovalMessage
       if (entry != null && entry.getValue() instanceof HAEventWrapper) {
-        HAEventWrapper wrapper = uncheckedCast(entry.getValue());
+        HAEventWrapper wrapper = (HAEventWrapper) entry.getValue();
         events.add(wrapper.getEventId());
       }
     }
@@ -4090,7 +4089,8 @@ public class HARegionQueue implements RegionQueue {
     boolean interrupted = Thread.interrupted();
     try {
       if (logger.isDebugEnabled()) {
-        logger.debug("removing dispatched event after sync with primary on queue {} for {}",
+        logger.debug(
+            "After sync with primary for HARegionQueue {}, removing dispatched event with ID {}",
             regionName, id);
       }
       removeDispatchedEvents(id);
