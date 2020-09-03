@@ -612,7 +612,13 @@ public class GatewaySenderEventImpl
         // Using Arrays.toString(bav) can cause us to run out of memory
         return "byte[" + bav.length + "]";
       } else {
-        return v.toString();
+        String valueStr;
+        try {
+          valueStr = v.toString();
+        } catch (Exception e) {
+          valueStr = "Could not convert value to string because " + e;
+        }
+        return valueStr;
       }
     } else {
       return "";
