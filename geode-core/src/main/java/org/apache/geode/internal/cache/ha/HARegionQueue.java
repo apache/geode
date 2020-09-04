@@ -4033,8 +4033,7 @@ public class HARegionQueue implements RegionQueue {
         }
       }
       if (logger.isDebugEnabled()) {
-        logger.debug("hasSynchronizedWithPrimary has synced with primary {} on queue: {} ", primary,
-            regionName);
+        logger.debug("HARegionQueue {} has synced with primary on {}", regionName, primary);
       }
       hasSynchronizedWithPrimary.set(true);
     } finally {
@@ -4096,16 +4095,14 @@ public class HARegionQueue implements RegionQueue {
       removeDispatchedEvents(id);
     } catch (RegionDestroyedException ignore) {
       logger.info(
-          "Queue found destroyed while processing dispatched sequence ID after syn."
-              + " The event ID is {} for HARegion with name={}",
-          id, regionName);
+          "HARegionQueue {} was found to be destroyed when attempting to remove dispatched event with ID {} after sync",
+          regionName, id);
     } catch (CancelException ignore) {
       return false;
     } catch (CacheException e) {
       logger.error(String.format(
-          "Sync with primary got Exception when removing from the queue. The problem is with event ID, %s for HARegion with name=%s",
-          regionName, id),
-          e);
+          "HARegionQueue %s encountered an exception when attempting to remove event with ID %s from the queue",
+          regionName, id), e);
     } catch (InterruptedException ignore) {
       Thread.currentThread().interrupt();
       return false;

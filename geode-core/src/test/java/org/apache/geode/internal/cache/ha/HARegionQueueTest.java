@@ -205,20 +205,17 @@ public class HARegionQueueTest {
   }
 
   @Test
-  public void getDispatchedOrRemovedEventsReturnsRemovedEvents() {
+  public void getDispatchedEventsReturnsDispatchedEvents() {
     HARegionQueue spy = spy(haRegionQueue);
-    List<EventID> removedEvents;
     addEvents();
     doReturn(false).when(spy).isDispatched(id1);
     doReturn(true).when(spy).isDispatched(id2);
     doReturn(true).when(spy).isDispatched(id3);
     doReturn(false).when(spy).isDispatched(id4);
 
-    removedEvents = spy.getDispatchedEvents(eventIDs);
+    List<EventID> dispatchedEvents = spy.getDispatchedEvents(eventIDs);
 
-    assertThat(removedEvents.size()).isEqualTo(2);
-    assertThat(removedEvents.contains(id2));
-    assertThat(removedEvents.contains(id3));
+    assertThat(dispatchedEvents).containsExactlyInAnyOrder(id2, id3);
   }
 
   private void addEvents() {
