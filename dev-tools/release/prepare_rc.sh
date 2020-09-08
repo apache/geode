@@ -81,7 +81,7 @@ checkCommand doxygen
 
 echo ""
 echo "============================================================"
-echo "Checking gpg... (you will be prompted to enter passphase)"
+echo "Checking gpg... (you will be prompted to enter passphrase)"
 echo "============================================================"
 SECRING=~/.gnupg/secring.gpg
 ! [ -r $SECRING ] || SECRING=/dev/null
