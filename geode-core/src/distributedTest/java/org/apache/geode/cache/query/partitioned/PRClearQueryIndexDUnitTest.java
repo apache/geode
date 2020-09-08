@@ -338,16 +338,18 @@ public class PRClearQueryIndexDUnitTest {
         IntStream.range(0, 100).forEach(j -> cities.put(j, new City(j)));
         try {
           cities.clear();
+
+          // only verify if clear is successful
+          QueryService queryService = clientCache.getQueryService();
+          Query query = queryService.newQuery(MUMBAI_QUERY);
+          Query query2 = queryService.newQuery(ID_10_QUERY);
+          assertThat(((SelectResults) query.execute()).size()).isEqualTo(0);
+          assertThat(((SelectResults) query2.execute()).size()).isEqualTo(0);
         } catch (ServerOperationException e) {
           assertThat(e.getCause().getMessage())
               .contains("Unable to clear all the buckets from the partitioned region cities")
               .contains("either data (buckets) moved or member departed");
         }
-        QueryService queryService = clientCache.getQueryService();
-        Query query = queryService.newQuery(MUMBAI_QUERY);
-        Query query2 = queryService.newQuery(ID_10_QUERY);
-        assertThat(((SelectResults) query.execute()).size()).isEqualTo(0);
-        assertThat(((SelectResults) query2.execute()).size()).isEqualTo(0);
       }
     });
     startStopServer.get(60, TimeUnit.SECONDS);
