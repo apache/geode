@@ -84,6 +84,7 @@ resources:
 jobs:
   - name: build-geode-from-tag
     serial: true
+    public: true
     plan:
       - aggregate:
           - get: geode
@@ -119,6 +120,7 @@ jobs:
               ! $gfsh version --full | grep Oracle
   - name: build-geode-from-src-tgz
     serial: true
+    public: true
     plan:
       - aggregate:
           - get: geode
@@ -156,6 +158,7 @@ jobs:
               ! $gfsh version --full | grep Oracle
   - name: run-gfsh-from-tgz
     serial: true
+    public: true
     plan:
       - aggregate:
           - get: geode
@@ -192,6 +195,7 @@ jobs:
               ! $gfsh version --full | grep Oracle
   - name: run-geode-examples-jdk11
     serial: true
+    public: true
     plan:
       - aggregate:
           - get: geode-examples
@@ -220,6 +224,7 @@ jobs:
               ./gradlew runAll
   - name: run-geode-examples-from-src-tgz-jdk8
     serial: true
+    public: true
     plan:
       - aggregate:
           - get: geode-examples
@@ -253,6 +258,7 @@ jobs:
               ./gradlew -PgeodeReleaseUrl=https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION} -PgeodeRepositoryUrl=${STAGING_MAVEN} build runAll
   - name: build-geode-native-from-tag
     serial: true
+    public: true
     plan:
       - aggregate:
           - get: geode-native
@@ -297,6 +303,7 @@ jobs:
               cmake --build . --target install -- -j 4
   - name: build-geode-native-from-src-tgz
     serial: true
+    public: true
     plan:
       - aggregate:
           - get: geode-native
@@ -346,6 +353,7 @@ jobs:
               cmake --build . --target install -- -j 4
   - name: upthewaterspout
     serial: true
+    public: true
     plan:
       - aggregate:
           - get: geode
@@ -383,6 +391,7 @@ jobs:
               ./gradlew build -PmavenURL=${STAGING_MAVEN} -PdownloadURL=https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/ -Pversion=${FULL_VERSION}
   - name: benchmarks-test
     serial: true
+    public: true
     plan:
       - get: geode-benchmarks
         trigger: true
@@ -422,6 +431,7 @@ jobs:
               ./gradlew build test
   - name: verify-expected-files-and-keys
     serial: true
+    public: true
     plan:
       - aggregate:
           - get: geode
@@ -514,6 +524,7 @@ jobs:
               fi
   - name: verify-no-binaries
     serial: true
+    public: true
     plan:
       - aggregate:
           - get: geode
@@ -563,6 +574,7 @@ jobs:
               fi
   - name: verify-license
     serial: true
+    public: true
     plan:
       - aggregate:
           - get: geode
@@ -592,4 +604,5 @@ EOF
 fly -t concourse.apachegeode-ci.info-main login --team-name main --concourse-url https://concourse.apachegeode-ci.info/
 fly -t concourse.apachegeode-ci.info-main set-pipeline -p apache-support-${VERSION_MM//./-}-rc -c $PIPEYML
 fly -t concourse.apachegeode-ci.info-main unpause-pipeline -p apache-support-${VERSION_MM//./-}-rc
+fly -t concourse.apachegeode-ci.info-main expose-pipeline -p apache-support-${VERSION_MM//./-}-rc
 rm $PIPEYML
