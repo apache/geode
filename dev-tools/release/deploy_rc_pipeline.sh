@@ -105,6 +105,8 @@ jobs:
             - -ec
             - |
               set -ex
+              apt update -q
+              apt install -qq -y --no-install-recommends unzip git
               FULL_VERSION=$(cd geode && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               SHA=$(cd geode && git rev-parse HEAD)
@@ -138,6 +140,8 @@ jobs:
             - -ec
             - |
               set -ex
+              apt update -q
+              apt install -qq -y --no-install-recommends unzip git
               FULL_VERSION=$(cd geode && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               SHA=$(cd geode && git rev-parse HEAD)
@@ -173,6 +177,8 @@ jobs:
             - -ec
             - |
               set -ex
+              apt update -q
+              apt install -qq -y --no-install-recommends git
               FULL_VERSION=$(cd geode && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               SHA=$(cd geode && git rev-parse HEAD)
@@ -207,6 +213,8 @@ jobs:
             - -ec
             - |
               set -ex
+              apt update -q
+              apt install -qq -y --no-install-recommends unzip
               cd geode-examples
               java -version
               ./gradlew runAll
@@ -233,6 +241,8 @@ jobs:
             - -ec
             - |
               set -ex
+              apt update -q
+              apt install -qq -y --no-install-recommends unzip git
               FULL_VERSION=$(cd geode-examples && git describe --tags | sed -e 's#^rel/v##' -e 's#-.*##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               STAGING_MAVEN=$(cat geode-examples/gradle.properties | grep geodeRepositoryUrl | awk '{print $3}')
@@ -264,6 +274,8 @@ jobs:
             - -ec
             - |
               set -ex
+              apt update -q
+              apt install -qq -y --no-install-recommends git
               FULL_VERSION=$(cd geode-native && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               #use geode from binary dist
@@ -308,6 +320,8 @@ jobs:
             - -ec
             - |
               set -ex
+              apt update -q
+              apt install -qq -y --no-install-recommends unzip git
               FULL_VERSION=$(cd geode-native && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               # build geode from source
@@ -357,6 +371,8 @@ jobs:
             - -ec
             - |
               set -ex
+              apt update -q
+              apt install -qq -y --no-install-recommends unzip git gpg
               FULL_VERSION=$(cd geode && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               STAGING_MAVEN=$(cat geode-examples/gradle.properties | grep geodeRepositoryUrl | awk '{print $3}')
@@ -387,6 +403,8 @@ jobs:
             - -ec
             - |
               set -ex
+              apt update -q
+              apt install -qq -y --no-install-recommends unzip git keychain
               FULL_VERSION=$(cd geode-benchmarks && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               curl -L -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-benchmarks-${VERSION}-src.tgz > src.tgz
@@ -424,6 +442,8 @@ jobs:
             - -ec
             - |
               set -ex
+              apt update -q
+              apt install -qq -y --no-install-recommends git gpg
               FULL_VERSION=$(cd geode && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               curl -L -s https://dist.apache.org/repos/dist/dev/geode/KEYS > KEYS
@@ -513,6 +533,8 @@ jobs:
             - -ec
             - |
               set -e
+              apt update -q
+              apt install -qq -y --no-install-recommends git
               FULL_VERSION=$(cd geode && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               url=https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}
@@ -560,6 +582,8 @@ jobs:
             - -ec
             - |
               set -e
+              apt update -q
+              apt install -qq -y --no-install-recommends unzip git
               FULL_VERSION=$(cd geode && git describe --tags | sed -e 's#^rel/v##')
               geode/dev-tools/release/license_review.sh -v $FULL_VERSION
 EOF
