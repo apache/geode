@@ -275,6 +275,8 @@ public class IndexManager {
     }
 
     try {
+      ((LocalRegion) this.region).lockRVVForBulkOp();
+
       String projectionAttributes = "*"; // for now this is the only option
 
       if (getIndex(indexName) != null) {
@@ -425,7 +427,7 @@ public class IndexManager {
     } finally {
       this.cache.setPdxReadSerializedOverride(oldReadSerialized);
       ((TXManagerImpl) this.cache.getCacheTransactionManager()).unpauseTransaction(tx);
-
+      ((LocalRegion) this.region).unlockRVVForBulkOp();
     }
   }
 

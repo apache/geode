@@ -213,7 +213,7 @@ public class DefaultQueryService implements InternalQueryService {
       throw new UnsupportedOperationException(
           "Index creation on the server is not supported from the client.");
     }
-    PartitionedIndex parIndex = null;
+
     if (region == null) {
       region = getRegionFromPath(imports, fromClause);
     }
@@ -241,6 +241,7 @@ public class DefaultQueryService implements InternalQueryService {
       }
     }
     if (region instanceof PartitionedRegion) {
+      PartitionedIndex parIndex = null;
       try {
         parIndex = (PartitionedIndex) ((PartitionedRegion) region).createIndex(false, indexType,
             indexName, indexedExpression, fromClause, imports, loadEntries);
@@ -256,7 +257,6 @@ public class DefaultQueryService implements InternalQueryService {
       return parIndex;
 
     } else {
-
       IndexManager indexManager = IndexUtils.getIndexManager(this.cache, region, true);
       Index index = indexManager.createIndex(indexName, indexType, indexedExpression, fromClause,
           imports, null, null, loadEntries);
