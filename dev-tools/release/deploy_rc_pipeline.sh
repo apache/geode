@@ -418,6 +418,7 @@ jobs:
               apt-get install openssh-server --no-install-recommends -y
               echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config
               service ssh start
+              echo 'tasks.withType(JavaCompile) { options.encoding = "UTF-8" }' >> geode-benchmarks/build.gradle
               ./gradlew build test
   - name: verify-expected-files-and-keys
     serial: true
