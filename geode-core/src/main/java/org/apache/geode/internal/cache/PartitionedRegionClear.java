@@ -270,10 +270,13 @@ public class PartitionedRegionClear {
     } while (true);
   }
 
+  /**
+   * @return buckets that are cleared. empty set if any exception happened
+   */
   protected Set<Integer> attemptToSendPartitionedRegionClearMessage(RegionEventImpl event,
       PartitionedRegionClearMessage.OperationType op)
       throws ForceReattemptException {
-    Set<Integer> bucketsOperated = null;
+    Set<Integer> bucketsOperated = new HashSet<>();
 
     if (partitionedRegion.getPRRoot() == null) {
       if (logger.isDebugEnabled()) {
