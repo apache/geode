@@ -51,7 +51,7 @@ if [ -z "${NEW_VERSION}" ] ; then
     usage
 fi
 
-WORKSPACE=$(PWD)/license_tmp
+WORKSPACE=$(pwd)/license_tmp
 DOWNLOAD=${WORKSPACE}/download
 EXTRACT=${WORKSPACE}/extracted
 mkdir -p ${DOWNLOAD}

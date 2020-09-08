@@ -486,6 +486,7 @@ jobs:
                 grep "Copyright" "${tld}/NOTICE"
                 grep -q "Copyright.*${year}.*Apache Software Foundation" "${tld}/NOTICE"
                 #check that the declared license is of the correct type
+                tar xzf $file "${tld}/LICENSE"
                 head -1 "${tld}/LICENSE" | grep -q "Apache License"
               }
               verifyArtifactSizeSignatureLicenseNoticeAndCopyright apache-geode-${VERSION}-src 10000000 30000000
@@ -585,7 +586,7 @@ jobs:
               apt update -q
               apt install -qq -y --no-install-recommends unzip git
               FULL_VERSION=$(cd geode && git describe --tags | sed -e 's#^rel/v##')
-              geode/dev-tools/release/license_review.sh -v $FULL_VERSION
+              ./geode/dev-tools/release/license_review.sh -v $FULL_VERSION
 EOF
 fly -t concourse.apachegeode-ci.info-main login --team-name main --concourse-url https://concourse.apachegeode-ci.info/
 fly -t concourse.apachegeode-ci.info-main set-pipeline -p apache-support-${VERSION_MM//./-}-rc -c $PIPEYML
