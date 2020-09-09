@@ -148,7 +148,7 @@ public class TXState implements TXStateInterface {
   /** keeps track of results of txPutEntry */
   private Map<EventID, Boolean> seenResults = new HashMap<>();
   /** keeps track of TransactionDataRebalancedException during txPutEntry */
-  private Map<EventID, TransactionDataRebalancedException> failedExceptions = new HashMap<>();
+  private Map<EventID, TransactionDataRebalancedException> eventExceptions = new HashMap<>();
 
   @Immutable
   static final TXEntryState ENTRY_EXISTS = new TXEntryState();
@@ -211,14 +211,14 @@ public class TXState implements TXStateInterface {
   void recordEventException(EntryEventImpl event,
       TransactionDataRebalancedException exception) {
     if (event.getEventId() != null) {
-      this.failedExceptions.put(event.getEventId(), exception);
+      eventExceptions.put(event.getEventId(), exception);
     }
   }
 
   boolean getRecordedResultOrException(EntryEventImpl event) {
     boolean result = getRecordedResult(event);
-    if (!result && failedExceptions.containsKey(event.getEventId())) {
-      throw failedExceptions.get(event.getEventId());
+    if (!result && eventExceptions.containsKey(event.getEventId())) {
+      throw eventExceptions.get(event.getEventId());
     }
     return result;
   }
