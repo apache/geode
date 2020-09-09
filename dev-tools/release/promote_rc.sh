@@ -318,7 +318,7 @@ else
       git fetch origin
       git checkout support/${VERSION_MM}
       #this creates a merge commit that will then be ff-merged to master, so word it from that perspective
-      git merge -s ours origin/master -m "Replacing master with contents of support/${VERSION_MM} (${VERSION)"
+      git merge -s ours origin/master -m "Replacing master with contents of support/${VERSION_MM} (${VERSION})"
       git checkout master
       git merge support/${VERSION_MM}
       git push origin master
