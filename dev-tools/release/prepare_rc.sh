@@ -93,6 +93,12 @@ else
   echo "Hmm, gpg seems unhappy.  Check that you entered correct passphrase or refer to release wiki for troubleshooting."
   exit 1
 fi
+if ! gpg --list-keys ${SIGNING_KEY} | grep -q "${APACHE_USERNAME}@apache.org" ; then
+  echo "Please specify a gpg key that is associated with your apache email address."
+  echo "Expected: ${APACHE_USERNAME}@apache.org"
+  echo "Found:    $(gpg --list-keys ${SIGNING_KEY} | grep ^uid | sed -e 's/.*<//' -e 's/>.*//')"
+  exit 1
+fi
 
 
 set -x
