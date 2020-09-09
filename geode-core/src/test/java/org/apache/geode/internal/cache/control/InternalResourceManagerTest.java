@@ -18,19 +18,27 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 
 import org.junit.After;
 import org.junit.Before;
@@ -41,6 +49,7 @@ import org.junit.rules.ExpectedException;
 import org.apache.geode.Statistics;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 public class InternalResourceManagerTest {
 
@@ -50,6 +59,9 @@ public class InternalResourceManagerTest {
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
+
+  @Rule
+  public ExecutorServiceRule executorServiceRule = ExecutorServiceRule.builder().awaitTermination(60, SECONDS).build();
 
   @Before
   public void setup() {
@@ -187,5 +199,33 @@ public class InternalResourceManagerTest {
     CompletableFuture<Void> withManyStartupTasks = resourceManager.allOfStartupTasks();
 
     assertThat(withManyStartupTasks).isCompletedExceptionally();
+  }
+
+  @Test
+  public void GEODE8482() {
+    final int numThreads = 100;
+    final ExecutorService exec = Executors.newFixedThreadPool(numThreads);
+    CompletableFuture task = new CompletableFuture<>();
+    for (int i = 0; i < numThreads; i++) {
+        exec.execute(() -> {
+          try {
+            // Could run out of memory
+            while (true) {
+              resourceManager.addStartupTask(task);
+            }
+          } catch (ArrayIndexOutOfBoundsException exception) {
+            fail("Should not have ArrayIndexOutOfBoundsException");
+            exec.shutdownNow();
+          }
+          finally {
+            exec.shutdownNow();
+            try {
+              exec.awaitTermination(0, SECONDS);
+            } catch (InterruptedException e) {
+              e.printStackTrace();
+            }
+          }
+        });
+    }
   }
 }
