@@ -229,8 +229,9 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
   byte LATEST_LAST_ACCESS_TIME_MESSAGE = -20;
 
   byte REMOVE_CACHESERVER_PROFILE_UPDATE = -19;
-
-  // IDs -18 through -10 unused
+  byte QUEUE_SYNCHRONIZATION_MESSAGE = -18;
+  byte QUEUE_SYNCHRONIZATION_REPLY_MESSAGE = -17;
+  // IDs -16 through -10 unused
 
   byte PR_REMOVE_ALL_MESSAGE = -9;
   byte REMOVE_ALL_MESSAGE = -8;

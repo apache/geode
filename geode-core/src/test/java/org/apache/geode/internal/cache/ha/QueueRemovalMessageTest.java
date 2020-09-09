@@ -38,6 +38,7 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.HARegion;
 import org.apache.geode.internal.cache.InternalCache;
@@ -211,5 +212,25 @@ public class QueueRemovalMessageTest {
     doThrow(new RejectedExecutionException()).when(regionQueue2).removeDispatchedEvents(eventID2);
 
     assertThat(queueRemovalMessage.removeQueueEvent(regionName2, regionQueue2, eventID2)).isTrue();
+  }
+
+  @Test
+  public void synchronizeQueueWithPrimaryInvokedAfterProcessEachRegionQueue() {
+    addToMessagesList();
+    Iterator<Object> iterator = messagesList.iterator();
+    InternalDistributedMember sender = mock(InternalDistributedMember.class);
+    doReturn(sender).when(queueRemovalMessage).getSender();
+
+    queueRemovalMessage.processRegionQueues(cache, iterator);
+
+    verify(queueRemovalMessage).processRegionQueue(iterator, regionName1, region1EventSize,
+        regionQueue1);
+    verify(regionQueue1).synchronizeQueueWithPrimary(sender, cache);
+    verify(queueRemovalMessage).processRegionQueue(iterator, regionName2, region2EventSize,
+        regionQueue2);
+    verify(regionQueue2).synchronizeQueueWithPrimary(sender, cache);
+    verify(queueRemovalMessage).removeQueueEvent(regionName1, regionQueue1, eventID1);
+    verify(queueRemovalMessage).removeQueueEvent(regionName2, regionQueue2, eventID2);
+    verify(queueRemovalMessage).removeQueueEvent(regionName2, regionQueue2, eventID3);
   }
 }

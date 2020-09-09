@@ -98,6 +98,10 @@ public class QueueRemovalMessage extends PooledDistributionMessage {
       boolean succeed = processRegionQueue(iterator, regionName, size, hrq);
       if (!succeed) {
         return;
+      } else {
+        if (hrq != null) {
+          hrq.synchronizeQueueWithPrimary(getSender(), cache);
+        }
       }
     }
   }

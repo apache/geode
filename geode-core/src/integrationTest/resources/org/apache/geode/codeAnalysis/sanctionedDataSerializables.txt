@@ -1308,6 +1308,14 @@ org/apache/geode/internal/cache/ha/QueueRemovalMessage,2
 fromData,119
 toData,125
 
+org/apache/geode/internal/cache/ha/QueueSynchronizationProcessor$QueueSynchronizationMessage,2
+fromData,77
+toData,86
+
+org/apache/geode/internal/cache/ha/QueueSynchronizationProcessor$QueueSynchronizationReplyMessage,2
+fromData,76
+toData,80
+
 org/apache/geode/internal/cache/ha/ThreadIdentifier,2
 fromData,19
 toData,19

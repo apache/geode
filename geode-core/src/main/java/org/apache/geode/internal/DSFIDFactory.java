@@ -274,6 +274,7 @@ import org.apache.geode.internal.cache.control.SerializableRegionRedundancyStatu
 import org.apache.geode.internal.cache.control.SerializableRestoreRedundancyResultsImpl;
 import org.apache.geode.internal.cache.ha.HARegionQueue.DispatchedAndCurrentEvents;
 import org.apache.geode.internal.cache.ha.QueueRemovalMessage;
+import org.apache.geode.internal.cache.ha.QueueSynchronizationProcessor;
 import org.apache.geode.internal.cache.locks.TXLockBatch;
 import org.apache.geode.internal.cache.locks.TXLockIdImpl;
 import org.apache.geode.internal.cache.locks.TXLockUpdateParticipantsMessage;
@@ -581,6 +582,10 @@ public class DSFIDFactory implements DataSerializableFixedID {
     serializer.registerDSFID(ADD_CACHESERVER_PROFILE_UPDATE, AddCacheServerProfileMessage.class);
     serializer.registerDSFID(REMOVE_CACHESERVER_PROFILE_UPDATE,
         RemoveCacheServerProfileMessage.class);
+    serializer.registerDSFID(QUEUE_SYNCHRONIZATION_MESSAGE,
+        QueueSynchronizationProcessor.QueueSynchronizationMessage.class);
+    serializer.registerDSFID(QUEUE_SYNCHRONIZATION_REPLY_MESSAGE,
+        QueueSynchronizationProcessor.QueueSynchronizationReplyMessage.class);
     serializer.registerDSFID(SERVER_INTEREST_REGISTRATION_MESSAGE,
         ServerInterestRegistrationMessage.class);
     serializer.registerDSFID(FILTER_PROFILE_UPDATE, FilterProfile.OperationMessage.class);
