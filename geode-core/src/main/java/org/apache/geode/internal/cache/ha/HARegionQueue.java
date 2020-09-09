@@ -84,6 +84,7 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.Conflatable;
@@ -326,8 +327,9 @@ public class HARegionQueue implements RegionQueue {
   protected long maxQueueSizeHitCount = 0;
 
   final AtomicBoolean hasSynchronizedWithPrimary = new AtomicBoolean();
-  final AtomicBoolean synchronizeWithPrimaryInProgress = new AtomicBoolean();
+  final AtomicBoolean scheduleSynchronizationWithPrimaryInProgress = new AtomicBoolean();
   final AtomicBoolean doneGIIQueueing = new AtomicBoolean();
+  volatile long doneGIIQueueingTime;
   volatile long positionBeforeGII = 0;
   volatile long positionAfterGII = 0;
 
@@ -549,6 +551,7 @@ public class HARegionQueue implements RegionQueue {
           positionBeforeGII = 1;
         }
         doneGIIQueueing.set(true);
+        doneGIIQueueingTime = System.currentTimeMillis();
         if (isDebugEnabled) {
           logger.debug("{} done putting GII data into queue", this);
         }
@@ -3981,34 +3984,53 @@ public class HARegionQueue implements RegionQueue {
     return (DispatchedAndCurrentEvents) eventsMap.get(tid);
   }
 
-  public void synchronizeQueueWithPrimary(InternalDistributedMember primary, InternalCache cache) {
-    if (hasSynchronizedWithPrimary.get() || synchronizeWithPrimaryInProgress.get()
+  public synchronized void synchronizeQueueWithPrimary(InternalDistributedMember primary,
+      InternalCache cache) {
+    if (scheduleSynchronizationWithPrimaryInProgress.get() || hasSynchronizedWithPrimary.get()
         || !doneGIIQueueing.get()) {
+      // Order of the check is important here as timer scheduled thread
+      // setting hasSynchronizedWithPrimary to true first before setting
+      // scheduleSynchronizationWithPrimaryInProgress to false in doSynchronizationWithPrimary.
       return;
     }
-
     if (primary.getVersionOrdinal() < KnownVersion.GEODE_1_14_0.ordinal()) {
       if (logger.isDebugEnabled()) {
         logger.debug("Don't send to primary with version older than KnownVersion.GEODE_1_14_0");
       }
       return;
     }
-    runSynchronizationWithPrimary(primary, cache);
+    if (!hasSynchronizedWithPrimary.get() && !scheduleSynchronizationWithPrimaryInProgress.get()) {
+      scheduleSynchronizationWithPrimaryInProgress.set(true);
+    }
+    long delay = getDelay();
+    scheduleSynchronizationWithPrimary(primary, cache, delay);
   }
 
-  void runSynchronizationWithPrimary(InternalDistributedMember primary, InternalCache cache) {
-    cache.getDistributionManager().getExecutors().getWaitingThreadPool()
-        .execute(() -> doSynchronizationWithPrimary(primary, cache));
+  long getDelay() {
+    // Wait for in-flight events during gii to be distributed to the member with primary queue.
+    long waitTime = 15 * 1000;
+    long currentTime = getCurrentTime();
+    long elapsed = currentTime - doneGIIQueueingTime;
+    return elapsed < waitTime ? waitTime - elapsed : 0L;
+  }
+
+  long getCurrentTime() {
+    return System.currentTimeMillis();
+  }
+
+  synchronized void scheduleSynchronizationWithPrimary(InternalDistributedMember primary,
+      InternalCache cache, long delay) {
+    cache.getCCPTimer().schedule(new SystemTimer.SystemTimerTask() {
+      @Override
+      public void run2() {
+        doSynchronizationWithPrimary(primary, cache);
+      }
+    }, delay);
   }
 
   synchronized void doSynchronizationWithPrimary(InternalDistributedMember primary,
       InternalCache cache) {
-    if (hasSynchronizedWithPrimary.get()) {
-      return;
-    }
-    synchronizeWithPrimaryInProgress.set(true);
     int maxChunkSize = 1000;
-
     try {
       List<EventID> giiEvents = getGIIEvents();
       if (giiEvents.size() == 0) {
@@ -4037,7 +4059,7 @@ public class HARegionQueue implements RegionQueue {
       }
       hasSynchronizedWithPrimary.set(true);
     } finally {
-      synchronizeWithPrimaryInProgress.set(false);
+      scheduleSynchronizationWithPrimaryInProgress.set(false);
     }
   }
 

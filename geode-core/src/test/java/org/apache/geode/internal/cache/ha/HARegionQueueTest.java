@@ -72,6 +72,7 @@ public class HARegionQueueTest {
   private final InternalDistributedMember primary = mock(InternalDistributedMember.class);
   private final HARegionQueue.DispatchedAndCurrentEvents wrapper =
       new HARegionQueue.DispatchedAndCurrentEvents();
+  private final long delay = 1L;
 
   @Before
   public void setup() throws IOException, ClassNotFoundException, InterruptedException {
@@ -264,61 +265,67 @@ public class HARegionQueueTest {
   }
 
   @Test
-  public void doNotRunSynchronizationWithPrimaryIfHasDoneSynchronization() {
+  public void doNotScheduleSynchronizationWithPrimaryIfHasDoneSynchronization() {
     HARegionQueue spy = spy(haRegionQueue);
     spy.hasSynchronizedWithPrimary.set(true);
+    doReturn(delay).when(spy).getDelay();
 
     spy.synchronizeQueueWithPrimary(primary, internalCache);
-    verify(spy, never()).runSynchronizationWithPrimary(primary, internalCache);
+    verify(spy, never()).scheduleSynchronizationWithPrimary(primary, internalCache, delay);
   }
 
   @Test
-  public void doNotRunSynchronizationWithPrimaryIfSynchronizationIsInProgress() {
+  public void doNotScheduleSynchronizationWithPrimaryIfSynchronizationIsInProgress() {
     HARegionQueue spy = spy(haRegionQueue);
-    spy.synchronizeWithPrimaryInProgress.set(true);
+    spy.scheduleSynchronizationWithPrimaryInProgress.set(true);
+    doReturn(delay).when(spy).getDelay();
 
     spy.synchronizeQueueWithPrimary(primary, internalCache);
-    verify(spy, never()).runSynchronizationWithPrimary(primary, internalCache);
+    verify(spy, never()).scheduleSynchronizationWithPrimary(primary, internalCache, delay);
   }
 
   @Test
-  public void doNotRunSynchronizationWithPrimaryIfGIINotFinished() {
+  public void doNotScheduleSynchronizationWithPrimaryIfGIINotFinished() {
     HARegionQueue spy = spy(haRegionQueue);
+    doReturn(delay).when(spy).getDelay();
 
     spy.synchronizeQueueWithPrimary(primary, internalCache);
-    verify(spy, never()).runSynchronizationWithPrimary(primary, internalCache);
+    verify(spy, never()).scheduleSynchronizationWithPrimary(primary, internalCache, delay);
   }
 
   @Test
-  public void doNotRunSynchronizationWithPrimaryIfPrimaryHasOlderThanGEODE_1_14_0Version() {
+  public void doNotScheduleSynchronizationWithPrimaryIfPrimaryHasOlderThanGEODE_1_14_0Version() {
     HARegionQueue spy = spy(haRegionQueue);
     spy.doneGIIQueueing.set(true);
     when(primary.getVersionOrdinal()).thenReturn((short) (KnownVersion.GEODE_1_14_0.ordinal() - 1));
+    doReturn(delay).when(spy).getDelay();
 
     spy.synchronizeQueueWithPrimary(primary, internalCache);
-    verify(spy, never()).runSynchronizationWithPrimary(primary, internalCache);
+    verify(spy, never()).scheduleSynchronizationWithPrimary(primary, internalCache, delay);
   }
 
   @Test
-  public void runSynchronizationWithPrimaryIfPrimaryIsGEODE_1_14_0Version() {
+  public void scheduleSynchronizationWithPrimaryIfPrimaryIsGEODE_1_14_0Version() {
     HARegionQueue spy = spy(haRegionQueue);
     spy.doneGIIQueueing.set(true);
     when(primary.getVersionOrdinal()).thenReturn(KnownVersion.GEODE_1_14_0.ordinal());
-    doNothing().when(spy).runSynchronizationWithPrimary(primary, internalCache);
+    doReturn(delay).when(spy).getDelay();
+    doNothing().when(spy).scheduleSynchronizationWithPrimary(primary, internalCache, delay);
 
     spy.synchronizeQueueWithPrimary(primary, internalCache);
-    verify(spy).runSynchronizationWithPrimary(primary, internalCache);
+    verify(spy).scheduleSynchronizationWithPrimary(primary, internalCache, delay);
   }
 
   @Test
-  public void runSynchronizationWithPrimaryIfPrimaryIsLaterThanGEODE_1_14_0Version() {
+  public void scheduleSynchronizationWithPrimaryIfPrimaryIsLaterThanGEODE_1_14_0Version() {
     HARegionQueue spy = spy(haRegionQueue);
     spy.doneGIIQueueing.set(true);
     when(primary.getVersionOrdinal()).thenReturn((short) (KnownVersion.GEODE_1_14_0.ordinal() + 1));
-    doNothing().when(spy).runSynchronizationWithPrimary(primary, internalCache);
+    doReturn(delay).when(spy).getDelay();
+    doNothing().when(spy).scheduleSynchronizationWithPrimary(primary, internalCache, delay);
 
     spy.synchronizeQueueWithPrimary(primary, internalCache);
-    verify(spy).runSynchronizationWithPrimary(primary, internalCache);
+    verify(spy).scheduleSynchronizationWithPrimary(primary, internalCache, delay);
   }
 
   @Test
@@ -350,15 +357,6 @@ public class HARegionQueueTest {
   }
 
   @Test
-  public void doSynchronizationWithPrimaryReturnsIfHasDoneSynchronization() {
-    HARegionQueue spy = spy(haRegionQueue);
-    spy.hasSynchronizedWithPrimary.set(true);
-
-    spy.doSynchronizationWithPrimary(primary, internalCache);
-    verify(spy, never()).getGIIEvents();
-  }
-
-  @Test
   public void doSynchronizationWithPrimaryReturnsIfNoGIIEvents() {
     HARegionQueue spy = spy(haRegionQueue);
     int maxChunkSize = 1000;
@@ -370,7 +368,7 @@ public class HARegionQueueTest {
     verify(spy, never()).getChunks(eventIDs, maxChunkSize);
     verify(spy, never()).removeDispatchedEvents(primary, internalCache, eventIDs);
     assertThat(spy.hasSynchronizedWithPrimary).isTrue();
-    assertThat(spy.synchronizeWithPrimaryInProgress).isFalse();
+    assertThat(spy.scheduleSynchronizationWithPrimaryInProgress).isFalse();
   }
 
   @Test
@@ -386,7 +384,7 @@ public class HARegionQueueTest {
     verify(spy, never()).getChunks(eventIDs, maxChunkSize);
     verify(spy).removeDispatchedEvents(primary, internalCache, eventIDs);
     assertThat(spy.hasSynchronizedWithPrimary).isTrue();
-    assertThat(spy.synchronizeWithPrimaryInProgress).isFalse();
+    assertThat(spy.scheduleSynchronizationWithPrimaryInProgress).isFalse();
   }
 
   @Test
@@ -402,7 +400,7 @@ public class HARegionQueueTest {
     verify(spy, never()).getChunks(eventIDs, maxChunkSize);
     verify(spy).removeDispatchedEvents(primary, internalCache, eventIDs);
     assertThat(spy.hasSynchronizedWithPrimary).isFalse();
-    assertThat(spy.synchronizeWithPrimaryInProgress).isFalse();
+    assertThat(spy.scheduleSynchronizationWithPrimaryInProgress).isFalse();
   }
 
   @Test
@@ -424,7 +422,7 @@ public class HARegionQueueTest {
     verify(spy).removeDispatchedEvents(primary, internalCache, chunk1);
     verify(spy).removeDispatchedEvents(primary, internalCache, chunk2);
     assertThat(spy.hasSynchronizedWithPrimary).isTrue();
-    assertThat(spy.synchronizeWithPrimaryInProgress).isFalse();
+    assertThat(spy.scheduleSynchronizationWithPrimaryInProgress).isFalse();
   }
 
   private void createChunks() {
@@ -453,7 +451,7 @@ public class HARegionQueueTest {
     verify(spy).removeDispatchedEvents(primary, internalCache, chunk1);
     verify(spy).removeDispatchedEvents(primary, internalCache, chunk2);
     assertThat(spy.hasSynchronizedWithPrimary).isFalse();
-    assertThat(spy.synchronizeWithPrimaryInProgress).isFalse();
+    assertThat(spy.scheduleSynchronizationWithPrimaryInProgress).isFalse();
   }
 
   @Test
@@ -542,5 +540,30 @@ public class HARegionQueueTest {
     doReturn(false).when(spy).removeDispatchedEventAfterSyncWithPrimary(id3);
 
     assertThat(spy.removeDispatchedEvents(primary, internalCache, eventIDs)).isFalse();
+  }
+
+  @Test
+  public void getDelayReturnsTimeToWait() {
+    HARegionQueue spy = spy(haRegionQueue);
+    long waitTime = 15000L;
+    long currentTime = 5000L;
+    long doneGIIQueueingTime = 0L;
+    spy.doneGIIQueueingTime = doneGIIQueueingTime;
+    long elapsed = currentTime - doneGIIQueueingTime;
+    doReturn(currentTime).when(spy).getCurrentTime();
+
+    assertThat(spy.getDelay()).isEqualTo(waitTime - elapsed);
+  }
+
+  @Test
+  public void getDelayReturnsZeroIfExceedWaitTime() {
+    HARegionQueue spy = spy(haRegionQueue);
+    long waitTime = 15000L;
+    long doneGIIQueueingTime = 0L;
+    long currentTime = waitTime + doneGIIQueueingTime + 1;
+    spy.doneGIIQueueingTime = doneGIIQueueingTime;
+    doReturn(currentTime).when(spy).getCurrentTime();
+
+    assertThat(spy.getDelay()).isEqualTo(0);
   }
 }
