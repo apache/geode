@@ -146,7 +146,9 @@ public class TXState implements TXStateInterface {
   /** keeps track of events, so as not to re-apply events */
   protected Set<EventID> seenEvents = new HashSet<EventID>();
   /** keeps track of results of txPutEntry */
-  private Map<EventID, Boolean> seenResults = new HashMap<EventID, Boolean>();
+  private Map<EventID, Boolean> seenResults = new HashMap<>();
+  /** keeps track of TransactionDataRebalancedException during txPutEntry */
+  private Map<EventID, TransactionDataRebalancedException> failedExceptions = new HashMap<>();
 
   @Immutable
   static final TXEntryState ENTRY_EXISTS = new TXEntryState();
@@ -193,17 +195,32 @@ public class TXState implements TXStateInterface {
     }
   }
 
-  private void recordEventAndResult(EntryEventImpl event, boolean result) {
+  void recordEventAndResult(EntryEventImpl event, boolean result) {
     recordEvent(event);
     if (event.getEventId() != null) {
       this.seenResults.put(event.getEventId(), result);
     }
   }
 
-  private boolean getRecordedResult(EntryEventImpl event) {
+  boolean getRecordedResult(EntryEventImpl event) {
     assert event != null;
     assert this.seenResults.containsKey(event.getEventId());
     return this.seenResults.get(event.getEventId());
+  }
+
+  void recordEventException(EntryEventImpl event,
+      TransactionDataRebalancedException exception) {
+    if (event.getEventId() != null) {
+      this.failedExceptions.put(event.getEventId(), exception);
+    }
+  }
+
+  boolean getRecordedResultOrException(EntryEventImpl event) {
+    boolean result = getRecordedResult(event);
+    if (!result && failedExceptions.containsKey(event.getEventId())) {
+      throw failedExceptions.get(event.getEventId());
+    }
+    return result;
   }
 
   @Override
@@ -1374,14 +1391,14 @@ public class TXState implements TXStateInterface {
     }
 
     if (hasSeenEvent(event)) {
-      return getRecordedResult(event);
+      return getRecordedResultOrException(event);
     }
 
     // if requireOldValue then oldValue gets set in event
     // (even if ifNew and entry exists)
     // !!!:ezoerner:20080813 need to handle ifOld for transactional on
     // PRs when PRs become transactional
-    TXEntryState tx = null;
+    TXEntryState tx;
     boolean result = false;
     try {
       tx = txWriteEntry(region, event, ifNew, requireOldValue, expectedOldValue);
@@ -1392,6 +1409,10 @@ public class TXState implements TXStateInterface {
       }
     } catch (EntryNotFoundException e) {
       result = false;
+    } catch (TransactionDataRebalancedException e) {
+      result = false;
+      recordEventException(event, e);
+      throw e;
     } finally {
       recordEventAndResult(event, result);
     }
