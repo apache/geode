@@ -403,7 +403,7 @@ echo "============================================================"
 echo "Removing old versions from mirrors"
 echo "============================================================"
 set -x
-cd $SVN_RELEASE_DIR
+cd ${SVN_DIR}/../../release/geode
 svn update --set-depth immediates
 #identify the latest patch release for "N-2" (the latest 3 major.minor releases), remove anything else from mirrors (all releases remain available on non-mirrored archive site)
 RELEASES_TO_KEEP=3
