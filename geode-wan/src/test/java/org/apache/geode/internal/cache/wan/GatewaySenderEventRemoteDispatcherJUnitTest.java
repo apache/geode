@@ -17,12 +17,16 @@ package org.apache.geode.internal.cache.wan;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.Test;
 
-
+import org.apache.geode.cache.client.internal.Connection;
 
 public class GatewaySenderEventRemoteDispatcherJUnitTest {
   @Test
@@ -53,5 +57,23 @@ public class GatewaySenderEventRemoteDispatcherJUnitTest {
     dispatcher.setAckReaderThread(ackReaderThread);
     dispatcher.shutDownAckReaderConnection();
     assertTrue(ackReaderThread.isShutdown());
+  }
+
+  @Test
+  public void getConnectionShouldCreateNewConnectionWhenServerIsNull() {
+    AbstractGatewaySender sender = mock(AbstractGatewaySender.class);
+    when(sender.isParallel()).thenReturn(false);
+    AbstractGatewaySenderEventProcessor eventProcessor =
+        mock(AbstractGatewaySenderEventProcessor.class);
+    when(eventProcessor.getSender()).thenReturn(sender);
+    Connection connection = mock(Connection.class);
+    when(connection.isDestroyed()).thenReturn(false);
+    when(connection.getServer()).thenReturn(null);
+    GatewaySenderEventRemoteDispatcher dispatcher =
+        new GatewaySenderEventRemoteDispatcher(eventProcessor, connection);
+    dispatcher = spy(dispatcher);
+    doNothing().when(dispatcher).initializeConnection();
+    Connection newConnection = dispatcher.getConnection(true);
+    verify(dispatcher, times(1)).initializeConnection();
   }
 }

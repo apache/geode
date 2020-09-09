@@ -296,6 +296,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
     // THEN initialize the connection
     if (!this.sender.isParallel()) {
       if (this.connection == null || this.connection.isDestroyed()
+          || this.connection.getServer() == null
           || !this.connection.getServer().equals(this.sender.getServerLocation())) {
         if (logger.isDebugEnabled()) {
           logger.debug(
@@ -351,7 +352,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
    * Initializes the <code>Connection</code>.
    *
    */
-  private void initializeConnection() throws GatewaySenderException, GemFireSecurityException {
+  void initializeConnection() throws GatewaySenderException, GemFireSecurityException {
     if (ackReaderThread != null) {
       ackReaderThread.shutDownAckReaderConnection(connection);
     }
