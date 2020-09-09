@@ -160,6 +160,6 @@ set +x
 
 echo ""
 echo "============================================================"
-echo "Done setting support versions!"
+echo 'Done setting support versions!'
 echo "============================================================"
 cd ${GEODE}/../..

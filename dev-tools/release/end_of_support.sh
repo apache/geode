@@ -122,7 +122,7 @@ done
 
 echo ""
 echo "============================================================"
-echo "Done shutting down the support branch!"
+echo 'Done shutting down the support branch!'
 echo "============================================================"
 echo "Don't forget to remove the JIRA Release placeholder for any future ${VERSION_MM}.x"
 echo "Probably also a good idea to announce on the dev list that support/${VERSION_MM} has expired"

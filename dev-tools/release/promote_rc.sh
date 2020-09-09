@@ -91,7 +91,7 @@ fi
 function failMsg {
   errln=$1
   echo "ERROR: script did NOT complete successfully"
-  echo "Comment out any steps that already succeeded (approximately lines 94-$(( errln - 1 ))) and try again"
+  echo "Comment out any steps that already succeeded (approximately lines 99-$(( errln - 1 ))) and try again"
 }
 trap 'failMsg $LINENO' ERR
 
@@ -423,7 +423,7 @@ rm ../keep
 
 echo ""
 echo "============================================================"
-echo "Done promoting release artifacts!"
+echo 'Done promoting release artifacts!'
 echo "============================================================"
 cd ${GEODE}/../..
 echo "Next steps:"
@@ -441,4 +441,4 @@ M=$(date --date '+9 months' '+%a, %B %d %Y' 2>/dev/null || date -v +9m "+%a, %B 
 [ "${PATCH}" -ne 0 ] || echo "10. Mark your calendar for $M to run ${0%/*}/end_of_support.sh -v ${VERSION_MM}"
 echo "Bump support pipeline to ${VERSION_MM}.$(( PATCH + 1 )) by plussing BumpPatch in https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-support-${VERSION_MM//./-}-main?group=Semver%20Management"
 echo "Run ${0%/*}/set_versions.sh -v ${VERSION_MM}.$(( PATCH + 1 )) -s"
-echo "Finally, send announce email!"
+echo 'Finally, send announce email!'
