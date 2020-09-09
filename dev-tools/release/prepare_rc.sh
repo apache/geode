@@ -145,6 +145,10 @@ svn update --set-depth immediates --parents dist/release/geode
 svn update --set-depth infinity --parents dist/dev/geode
 set +x
 
+for REPO in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ${GEODE_BENCHMARKS} ; do
+  cd ${REPO}
+  git config user.email "${APACHE_USERNAME}@apache.org"
+done
 
 cd ${GEODE}/../..
 set -x
