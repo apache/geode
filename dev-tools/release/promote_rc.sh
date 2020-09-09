@@ -20,7 +20,7 @@ set -e
 usage() {
     echo "Usage: promote_rc.sh -v version_number -k your_full_gpg_public_key -g your_github_username"
     echo "  -v   The #.#.#.RC# version number to ship"
-    echo "  -k   Your 40-digit GPG fingerprint"
+    echo "  -k   Your 8 digit GPG key id (the last 8 digits of your gpg fingerprint)"
     echo "  -g   Your github username"
     exit 1
 }
@@ -50,11 +50,13 @@ if [[ ${FULL_VERSION} == "" ]] || [[ ${SIGNING_KEY} == "" ]] || [[ ${GITHUB_USER
     usage
 fi
 
+SIGNING_KEY=$(gpg --list-keys "${SIGNING_KEY}" | grep "${SIGNING_KEY}" | tr -d ' ')
+
 SIGNING_KEY=$(echo $SIGNING_KEY|sed 's/[^0-9A-Fa-f]//g')
 if [[ $SIGNING_KEY =~ ^[0-9A-Fa-f]{40}$ ]]; then
     true
 else
-    echo "Malformed signing key ${SIGNING_KEY}. Example valid key: '0000 0000 1111 1111 2222  2222 3333 3333 ABCD 1234'"
+    echo "Malformed signing key ${SIGNING_KEY}. Example valid key: ABCD1234"
     exit 1
 fi
 
