@@ -154,7 +154,7 @@ set +x
 
 echo ""
 echo "============================================================"
-echo "Removing -build suffix from version"
+echo "Keeping -build.0 suffix"
 echo "============================================================"
 cd ${GEODE}/../..
 set -x
@@ -168,7 +168,7 @@ echo "Building geode..."
 echo "============================================================"
 set -x
 cd ${GEODE}
-git clean -fdx && ./gradlew build -x test publishToMavenLocal -Paskpass -Psigning.keyId=${SIGNING_KEY} -Psigning.secretKeyRingFile=${HOME}/.gnupg/secring.gpg
+git clean -fdx && ./gradlew build -x test publishToMavenLocal -Pversion=${VERSION} -Paskpass -Psigning.keyId=${SIGNING_KEY} -Psigning.secretKeyRingFile=${HOME}/.gnupg/secring.gpg
 set +x
 
 
@@ -200,7 +200,7 @@ echo "Building geode-examples..."
 echo "============================================================"
 set -x
 cd ${GEODE_EXAMPLES}
-git clean -dxf && ./gradlew -PsignArchives -PgeodeReleaseUrl="file://${GEODE}/geode-assembly/build/geode-assembly/build/distributions/apache-geode-${VERSION}" -PgeodeRepositoryUrl="file://${HOME}/.m2/repository" -Psigning.keyId=${SIGNING_KEY} -Psigning.secretKeyRingFile=${HOME}/.gnupg/secring.gpg build
+git clean -dxf && ./gradlew -Pversion=${VERSION} -PsignArchives -PgeodeReleaseUrl="file://${GEODE}/geode-assembly/build/geode-assembly/build/distributions/apache-geode-${VERSION}" -PgeodeRepositoryUrl="file://${HOME}/.m2/repository" -Psigning.keyId=${SIGNING_KEY} -Psigning.secretKeyRingFile=${HOME}/.gnupg/secring.gpg build
 set +x
 
 
@@ -318,7 +318,7 @@ echo "PLEASE NOTE, the 2nd prompt will be for your apache (not gpg) password.  P
 echo "============================================================"
 set -x
 cd ${GEODE}
-./gradlew publish -Paskpass -Psigning.keyId=${SIGNING_KEY} -Psigning.secretKeyRingFile=${HOME}/.gnupg/secring.gpg -PmavenUsername=${APACHE_USERNAME}
+./gradlew publish -Pversion=${VERSION} -Paskpass -Psigning.keyId=${SIGNING_KEY} -Psigning.secretKeyRingFile=${HOME}/.gnupg/secring.gpg -PmavenUsername=${APACHE_USERNAME}
 set +x
 
 

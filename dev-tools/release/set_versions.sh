@@ -20,11 +20,12 @@ set -e
 usage() {
     echo "Usage: set_versions.sh -v version_number [-s]"
     echo "  -v   The #.#.# version number for the next release"
-    echo "  -s   append -build.0 to version number"
+    echo "  -s   configure examples to use latest snapshot instead of release"
     exit 1
 }
 
 FULL_VERSION=""
+
 
 while getopts ":v:snw:" opt; do
   case ${opt} in
@@ -32,7 +33,7 @@ while getopts ":v:snw:" opt; do
       VERSION=$OPTARG
       ;;
     s )
-      BUILDSUFFIX="-build.0"
+      EXAMPLES_USE_SNAPSHOTS=true
       ;;
     n )
       NOPUSH=true
@@ -56,9 +57,10 @@ if ! [[ $VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     exit 1
 fi
 
+BUILDSUFFIX="-build.0"
 VERSION_MM=${VERSION%.*}
 
-if [ -n "${BUILDSUFFIX}" ] ; then
+if [ "${EXAMPLES_USE_SNAPSHOTS}" = "true" ] ; then
   GEODEFOREXAMPLES="${VERSION_MM}.+"
 else
   GEODEFOREXAMPLES="${VERSION}"
@@ -103,7 +105,7 @@ fi
 function failMsg2 {
   errln=$1
   echo "ERROR: set_versions script did NOT complete successfully"
-  echo "Comment out any steps that already succeeded (approximately lines 74-$(( errln - 1 ))) and try again"
+  echo "Comment out any steps that already succeeded (approximately lines 76-$(( errln - 1 ))) and try again"
 }
 trap 'failMsg2 $LINENO' ERR
 
