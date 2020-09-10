@@ -315,6 +315,7 @@ else
   for DIR in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ${GEODE_BENCHMARKS} ; do
       set -x
       cd ${DIR}
+      git remote set-branches --add origin master
       git fetch origin
       git checkout support/${VERSION_MM}
       #this creates a merge commit that will then be ff-merged to master, so word it from that perspective
