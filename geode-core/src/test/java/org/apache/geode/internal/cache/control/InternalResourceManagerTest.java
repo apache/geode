@@ -18,7 +18,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -26,15 +25,11 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -221,8 +216,7 @@ public class InternalResourceManagerTest {
           }
         }
         done.set(true);
-      }
-      catch (Exception exception) {
+      } catch (Exception exception) {
         fail("Exception:" + exception);
         errorCollector.addError(exception);
       }
@@ -231,14 +225,13 @@ public class InternalResourceManagerTest {
     executorServiceRule.submit(() -> {
       try {
         resourceManager.addStartupTask(task);
-      }
-      catch (Exception exception) {
+      } catch (Exception exception) {
         fail("Exception:" + exception);
         errorCollector.addError(exception);
       }
     });
 
-    executorServiceRule.getExecutorService().awaitTermination(60,  SECONDS);
+    executorServiceRule.getExecutorService().awaitTermination(60, SECONDS);
     assertThat(done.get()).isTrue();
   }
 
@@ -257,8 +250,7 @@ public class InternalResourceManagerTest {
           }
         }
         done.set(true);
-      }
-      catch (Exception exception) {
+      } catch (Exception exception) {
         fail("Exception:" + exception);
         errorCollector.addError(exception);
       }
@@ -267,14 +259,13 @@ public class InternalResourceManagerTest {
     executorServiceRule.submit(() -> {
       try {
         resourceManager.allOfStartupTasks();
-      }
-      catch (Exception exception) {
+      } catch (Exception exception) {
         fail("Exception:" + exception);
         errorCollector.addError(exception);
       }
     });
 
-    executorServiceRule.getExecutorService().awaitTermination(60,  SECONDS);
+    executorServiceRule.getExecutorService().awaitTermination(60, SECONDS);
     assertThat(done.get()).isTrue();
   }
 
