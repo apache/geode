@@ -318,10 +318,11 @@ else
       git remote set-branches --add origin master
       git fetch origin
       git checkout support/${VERSION_MM}
+      git checkout -b release/${VERSION} rel/v${VERSION}
       #this creates a merge commit that will then be ff-merged to master, so word it from that perspective
-      git merge -s ours origin/master -m "Replacing master with contents of support/${VERSION_MM} (${VERSION})"
+      git merge -s ours origin/master -m "Replacing master with contents of rel/v${VERSION}"
       git checkout master
-      git merge support/${VERSION_MM}
+      git merge release/${VERSION}
       git push origin master
       set +x
   done
@@ -442,6 +443,7 @@ PATCH="${VERSION##*.}"
 [ "${PATCH}" -ne 0 ] || echo "10. Ask on the dev list for a volunteer to begin the chore of updating 3rd-party dependency versions on develop"
 M=$(date --date '+9 months' '+%a, %B %d %Y' 2>/dev/null || date -v +9m "+%a, %B %d %Y" 2>/dev/null || echo "9 months from now")
 [ "${PATCH}" -ne 0 ] || echo "11. Mark your calendar for $M to run ${0%/*}/end_of_support.sh -v ${VERSION_MM}"
+[ "${PATCH}" -ne 0 ] || echo "12. Log in to https://hub.docker.com/repository/docker/apachegeode/geode and update the latest Dockerfile linktext and url to ${VERSION_MM}"
 echo "Bump support pipeline to ${VERSION_MM}.$(( PATCH + 1 )) by plussing BumpPatch in https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-support-${VERSION_MM//./-}-main?group=Semver%20Management"
 echo "Run ${0%/*}/set_versions.sh -v ${VERSION_MM}.$(( PATCH + 1 )) -s"
 echo 'Finally, send announce email!'
