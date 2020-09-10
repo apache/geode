@@ -183,7 +183,7 @@ else
       -e '/ *mirror ".*www.*/d' \
       -e '/ *mirror ".*downloads.*/d' \
       -e 's# *mirror ".*archive.*#  mirror "https://archive.apache.org/dist/geode/'"${VERSION}"'/apache-geode-'"${VERSION}"'.tgz"\
-    mirror "https://downloads.apache.org/geode/'"${VERSION}"'/apache-geode-'"${VERSION}"'.tgz"#' \
+  mirror "https://downloads.apache.org/geode/'"${VERSION}"'/apache-geode-'"${VERSION}"'.tgz"#' \
       -e 's/ *sha256 ".*/  sha256 "'"${GEODE_SHA}"'"/' \
       -i.bak apache-geode.rb
   rm apache-geode.rb.bak
