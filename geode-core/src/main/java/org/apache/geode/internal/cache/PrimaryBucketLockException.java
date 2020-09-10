@@ -19,7 +19,7 @@ package org.apache.geode.internal.cache;
 import org.apache.geode.GemFireException;
 
 /**
- * Thrown by {@link PartitionedRegion#computeWithPrimaryLocked(Object, Runnable, boolean)}
+ * Thrown by {@link PartitionedRegion#computeWithPrimaryLocked(Object, Runnable)}
  * when it is unable to lock the primary bucket because it is no longer primary.
  */
 public class PrimaryBucketLockException extends GemFireException {

@@ -611,8 +611,7 @@ public class PartitionedRegion extends LocalRegion
     return redundancyTracker;
   }
 
-  public boolean computeWithPrimaryLocked(Object key, Runnable r)
-      throws PrimaryBucketLockException {
+  public void computeWithPrimaryLocked(Object key, Runnable r) throws PrimaryBucketLockException {
     int bucketId = PartitionedRegionHelper.getHashKey(this, null, key, null, null);
 
     BucketRegion br;
@@ -623,9 +622,7 @@ public class PartitionedRegion extends LocalRegion
     }
 
     try {
-      if (!br.doLockForPrimary(false)) {
-        return false;
-      }
+      br.doLockForPrimary(false);
     } catch (PrimaryBucketException e) {
       throw new PrimaryBucketLockException("retry since primary lock failed: " + e);
     }
@@ -635,7 +632,6 @@ public class PartitionedRegion extends LocalRegion
     } finally {
       br.doUnlockForPrimary();
     }
-    return true;
   }
 
 
@@ -3399,10 +3395,11 @@ public class PartitionedRegion extends LocalRegion
    * @throws PrimaryBucketException if the remote bucket was not the primary
    * @throws ForceReattemptException if the peer is no longer available
    */
-
   public boolean putRemotely(final DistributedMember recipient, final EntryEventImpl event,
       boolean ifNew, boolean ifOld, Object expectedOldValue, boolean requireOldValue)
       throws PrimaryBucketException, ForceReattemptException {
+    // boolean forceAck = basicGetWriter() != null
+    // || getDistributionAdvisor().adviseNetWrite().size() > 0;
     long eventTime = event.getEventTime(0L);
     PutMessage.PutResponse response = (PutMessage.PutResponse) PutMessage.send(recipient, this,
         event, eventTime, ifNew, ifOld, expectedOldValue, requireOldValue);
