@@ -127,6 +127,20 @@ done
 
 echo ""
 echo "============================================================"
+echo "Cleaning up RC tags"
+echo "============================================================"
+for DIR in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ${GEODE_BENCHMARKS} ; do
+    set -x
+    cd ${DIR}
+    git tag | grep "^rel/v${VERSION_MM}.*RC" | while read RCTAG ; do
+        git push origin --delete "$RCTAG"
+    done
+    set +x
+done
+
+
+echo ""
+echo "============================================================"
 echo 'Done shutting down the support branch!'
 echo "============================================================"
 echo "Don't forget to remove the JIRA Release placeholder for any future ${VERSION_MM}.x"
