@@ -36,6 +36,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.InternalGemFireError;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
@@ -654,5 +655,10 @@ public class InternalResourceManager implements ResourceManager {
       startupTasks.clear();
       return CompletableFuture.allOf(completableFutures);
     }
+  }
+
+  @VisibleForTesting
+  Collection<CompletableFuture<Void>> getStartupTasks() {
+    return startupTasks;
   }
 }

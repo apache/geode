@@ -27,8 +27,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
@@ -38,12 +38,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.IntStream;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ErrorCollector;
 import org.junit.rules.ExpectedException;
 
 import org.apache.geode.Statistics;
@@ -61,7 +63,10 @@ public class InternalResourceManagerTest {
   public ExpectedException thrown = ExpectedException.none();
 
   @Rule
-  public ExecutorServiceRule executorServiceRule = ExecutorServiceRule.builder().awaitTermination(60, SECONDS).build();
+  public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
+
+  @Rule
+  public ErrorCollector errorCollector = new ErrorCollector();
 
   @Before
   public void setup() {
@@ -202,30 +207,75 @@ public class InternalResourceManagerTest {
   }
 
   @Test
-  public void GEODE8482() {
-    final int numThreads = 100;
-    final ExecutorService exec = Executors.newFixedThreadPool(numThreads);
+  public void testConcurrentAddStartupTask() throws InterruptedException {
     CompletableFuture task = new CompletableFuture<>();
-    for (int i = 0; i < numThreads; i++) {
-        exec.execute(() -> {
-          try {
-            // Could run out of memory
-            while (true) {
-              resourceManager.addStartupTask(task);
-            }
-          } catch (ArrayIndexOutOfBoundsException exception) {
-            fail("Should not have ArrayIndexOutOfBoundsException");
-            exec.shutdownNow();
+    final AtomicBoolean done = new AtomicBoolean(false);
+    IntStream.range(0, 100).forEach(i -> resourceManager.addStartupTask(task));
+
+    executorServiceRule.submit(() -> {
+      try {
+        Collection<CompletableFuture<Void>> startupTasks = resourceManager.getStartupTasks();
+        synchronized (startupTasks) {
+          for (CompletableFuture<Void> startupTask : startupTasks) {
+            Thread.sleep(100);
           }
-          finally {
-            exec.shutdownNow();
-            try {
-              exec.awaitTermination(0, SECONDS);
-            } catch (InterruptedException e) {
-              e.printStackTrace();
-            }
-          }
-        });
-    }
+        }
+        done.set(true);
+      }
+      catch (Exception exception) {
+        fail("Exception:" + exception);
+        errorCollector.addError(exception);
+      }
+    });
+
+    executorServiceRule.submit(() -> {
+      try {
+        resourceManager.addStartupTask(task);
+      }
+      catch (Exception exception) {
+        fail("Exception:" + exception);
+        errorCollector.addError(exception);
+      }
+    });
+
+    executorServiceRule.getExecutorService().awaitTermination(60,  SECONDS);
+    assertThat(done.get()).isTrue();
   }
+
+  @Test
+  public void testConcurrentAllOfStartupTasks() throws InterruptedException {
+    CompletableFuture task = new CompletableFuture<>();
+    final AtomicBoolean done = new AtomicBoolean(false);
+    IntStream.range(0, 100).forEach(i -> resourceManager.addStartupTask(task));
+
+    executorServiceRule.submit(() -> {
+      try {
+        Collection<CompletableFuture<Void>> startupTasks = resourceManager.getStartupTasks();
+        synchronized (startupTasks) {
+          for (CompletableFuture<Void> startupTask : startupTasks) {
+            Thread.sleep(100);
+          }
+        }
+        done.set(true);
+      }
+      catch (Exception exception) {
+        fail("Exception:" + exception);
+        errorCollector.addError(exception);
+      }
+    });
+
+    executorServiceRule.submit(() -> {
+      try {
+        resourceManager.allOfStartupTasks();
+      }
+      catch (Exception exception) {
+        fail("Exception:" + exception);
+        errorCollector.addError(exception);
+      }
+    });
+
+    executorServiceRule.getExecutorService().awaitTermination(60,  SECONDS);
+    assertThat(done.get()).isTrue();
+  }
+
 }
