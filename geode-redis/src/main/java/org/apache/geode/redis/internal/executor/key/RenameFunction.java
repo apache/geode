@@ -51,7 +51,6 @@ public class RenameFunction implements InternalFunction {
     FunctionService.registerFunction(new RenameFunction(dataRegion, stripedExecutor, redisStats));
   }
 
-
   public RenameFunction(
       Region<ByteArrayWrapper, RedisData> dataRegion,
       StripedExecutor stripedExecutor,
@@ -72,6 +71,7 @@ public class RenameFunction implements InternalFunction {
       };
 
       partitionedRegion.computeWithPrimaryLocked(renameContext.getKeyToLock(), computation);
+
     } else {
       Object result = acquireLockIfNeeded(renameContext);
       context.getResultSender().lastResult(result);

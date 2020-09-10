@@ -34,11 +34,11 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.cache.control.RebalanceFactory;
 import org.apache.geode.cache.control.RebalanceResults;
@@ -176,7 +176,6 @@ public class CrashAndNoRepeatDUnitTest {
   }
 
   @Test
-  @Ignore("GEODE-8339")
   public void givenServerCrashesDuringRename_thenDataIsNotLost() throws Exception {
     AtomicBoolean running1 = new AtomicBoolean(true);
     AtomicBoolean running2 = new AtomicBoolean(true);
@@ -245,13 +244,15 @@ public class CrashAndNoRepeatDUnitTest {
       try {
         jedisRef.get().rename(oldKey, newKey);
         iterationCount += 1;
-      } catch (JedisConnectionException ex) {
+      } catch (JedisConnectionException | JedisDataException ex) {
         if (ex.getMessage().contains("Unexpected end of stream.")) {
           if (!doWithRetry(() -> connect(jedisRef).exists(oldKey))) {
             iterationCount += 1;
           }
         } else if (ex.getMessage().contains("no such key")) {
-          iterationCount += 1;
+          if (!doWithRetry(() -> connect(jedisRef).exists(oldKey))) {
+            iterationCount += 1;
+          }
         } else {
           throw ex;
         }
