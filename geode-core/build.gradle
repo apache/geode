@@ -143,6 +143,16 @@ configurations {
     extendsFrom api
     description 'a dependency that exposes the compiled classes'
   }
+
+  jmh {
+    extendsFrom testImplementation
+  }
+
+  raOutput
+}
+
+artifacts {
+  raOutput raJar
 }
 
 dependencies {
@@ -316,6 +326,7 @@ dependencies {
   testCompile('org.powermock:powermock-api-mockito2')
   testCompile('pl.pragmatists:JUnitParams')
   testImplementation('com.tngtech.archunit:archunit-junit4')
+  testImplementation(project(path: ':geode-core', configuration: 'raOutput'))
 
   testCompile files("${System.getProperty('java.home')}/../lib/tools.jar")
 
