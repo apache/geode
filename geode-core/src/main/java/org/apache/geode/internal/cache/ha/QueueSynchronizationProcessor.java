@@ -125,8 +125,10 @@ public class QueueSynchronizationProcessor extends ReplyProcessor21 {
       try {
         if (cache != null) {
           List<EventID> dispatched = getDispatchedEvents(cache);
-          replyMessage.setEventIds(dispatched);
-          replyMessage.setSuccess();
+          if (dispatched != null) {
+            replyMessage.setEventIds(dispatched);
+            replyMessage.setSuccess();
+          }
         }
       } catch (RuntimeException | Error e) {
         replyException = new ReplyException(e);
