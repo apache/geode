@@ -23,17 +23,24 @@ import org.apache.geode.DataSerializer;
 
 public class AppendDeltaInfo implements DeltaInfo {
   private final byte[] appendBytes;
+  private final int sequence;
 
-  public AppendDeltaInfo(byte[] value) {
+  public AppendDeltaInfo(byte[] value, int sequence) {
     appendBytes = value;
+    this.sequence = sequence;
   }
 
   public byte[] getBytes() {
     return appendBytes;
   }
 
+  public int getSequence() {
+    return sequence;
+  }
+
   public void serializeTo(DataOutput out) throws IOException {
     DataSerializer.writeEnum(DeltaType.APPEND, out);
+    DataSerializer.writePrimitiveInt(sequence, out);
     DataSerializer.writeByteArray(appendBytes, out);
   }
 }
