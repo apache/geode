@@ -81,7 +81,7 @@ checkCommand doxygen
 
 echo ""
 echo "============================================================"
-echo "Checking gpg... (you will be prompted to enter passphase)"
+echo "Checking gpg... (you will be prompted to enter passphrase)"
 echo "============================================================"
 SECRING=~/.gnupg/secring.gpg
 ! [ -r $SECRING ] || SECRING=/dev/null
@@ -91,6 +91,12 @@ if gpg --export-secret-keys > ${SECRING} && echo "1234" | gpg -o /dev/null --loc
   echo "PLEASE NOTE, the very last prompt will be for your apache password (not gpg).  Pay attention as the prompts look very similar."
 else
   echo "Hmm, gpg seems unhappy.  Check that you entered correct passphrase or refer to release wiki for troubleshooting."
+  exit 1
+fi
+if ! gpg --list-keys ${SIGNING_KEY} | grep -q "${APACHE_USERNAME}@apache.org" ; then
+  echo "Please specify a gpg key that is associated with your apache email address."
+  echo "Expected: ${APACHE_USERNAME}@apache.org"
+  echo "Found:    $(gpg --list-keys ${SIGNING_KEY} | grep ^uid | sed -e 's/.*<//' -e 's/>.*//')"
   exit 1
 fi
 
@@ -145,6 +151,10 @@ svn update --set-depth immediates --parents dist/release/geode
 svn update --set-depth infinity --parents dist/dev/geode
 set +x
 
+for REPO in ${GEODE} ${WORKSPACE}/geode-develop ${GEODE_EXAMPLES} ${GEODE_NATIVE} ${GEODE_BENCHMARKS} ${BREW_DIR} ; do
+  cd ${REPO}
+  git config user.email "${APACHE_USERNAME}@apache.org"
+done
 
 cd ${GEODE}/../..
 set -x
@@ -154,7 +164,7 @@ set +x
 
 echo ""
 echo "============================================================"
-echo "Removing -build suffix from version"
+echo "Keeping -build.0 suffix"
 echo "============================================================"
 cd ${GEODE}/../..
 set -x
@@ -168,7 +178,7 @@ echo "Building geode..."
 echo "============================================================"
 set -x
 cd ${GEODE}
-git clean -fdx && ./gradlew build -x test publishToMavenLocal -Paskpass -Psigning.keyId=${SIGNING_KEY} -Psigning.secretKeyRingFile=${HOME}/.gnupg/secring.gpg
+git clean -fdx && ./gradlew build -x test publishToMavenLocal -Pversion=${VERSION} -Paskpass -Psigning.keyId=${SIGNING_KEY} -Psigning.secretKeyRingFile=${HOME}/.gnupg/secring.gpg
 set +x
 
 
@@ -200,7 +210,7 @@ echo "Building geode-examples..."
 echo "============================================================"
 set -x
 cd ${GEODE_EXAMPLES}
-git clean -dxf && ./gradlew -PsignArchives -PgeodeReleaseUrl="file://${GEODE}/geode-assembly/build/geode-assembly/build/distributions/apache-geode-${VERSION}" -PgeodeRepositoryUrl="file://${HOME}/.m2/repository" -Psigning.keyId=${SIGNING_KEY} -Psigning.secretKeyRingFile=${HOME}/.gnupg/secring.gpg build
+git clean -dxf && ./gradlew -Pversion=${VERSION} -PsignArchives -PgeodeReleaseUrl="file://${GEODE}/geode-assembly/build/geode-assembly/build/distributions/apache-geode-${VERSION}" -PgeodeRepositoryUrl="file://${HOME}/.m2/repository" -Psigning.keyId=${SIGNING_KEY} -Psigning.secretKeyRingFile=${HOME}/.gnupg/secring.gpg build
 set +x
 
 
@@ -318,7 +328,7 @@ echo "PLEASE NOTE, the 2nd prompt will be for your apache (not gpg) password.  P
 echo "============================================================"
 set -x
 cd ${GEODE}
-./gradlew publish -Paskpass -Psigning.keyId=${SIGNING_KEY} -Psigning.secretKeyRingFile=${HOME}/.gnupg/secring.gpg -PmavenUsername=${APACHE_USERNAME}
+./gradlew publish -Pversion=${VERSION} -Paskpass -Psigning.keyId=${SIGNING_KEY} -Psigning.secretKeyRingFile=${HOME}/.gnupg/secring.gpg -PmavenUsername=${APACHE_USERNAME}
 set +x
 
 

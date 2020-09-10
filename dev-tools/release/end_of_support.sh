@@ -55,7 +55,6 @@ GEODE_NATIVE=$WORKSPACE/geode-native
 GEODE_BENCHMARKS=$WORKSPACE/geode-benchmarks
 set +x
 
-
 function failMsg1 {
   echo "ERROR: script did NOT complete successfully.  Please try again."
 }
@@ -83,6 +82,20 @@ git clone --branch support/${VERSION_MM} git@github.com:apache/geode-examples.gi
 git clone --branch support/${VERSION_MM} git@github.com:apache/geode-native.git
 git clone --branch support/${VERSION_MM} git@github.com:apache/geode-benchmarks.git
 set +x
+
+
+echo ""
+echo "============================================================"
+echo "Confirming end of support"
+echo "============================================================"
+cd ${GEODE}
+echo "Geode support branches should be kept for at least 9 months after initial release."
+echo "Geode ${VERSION_MM}.0 was released about $(git log -1 --format=%ar rel/v${VERSION_MM}.0)"
+read -p "To continue and delete support/${VERSION_MM} and all associated pipelines, type YES if you are sure: "
+if [ "$REPLY" != "YES" ] ; then
+  echo cancelled
+  exit 1
+fi
 
 
 function failMsg2 {
@@ -122,7 +135,21 @@ done
 
 echo ""
 echo "============================================================"
-echo "Done shutting down the support branch!"
+echo "Cleaning up RC tags"
+echo "============================================================"
+for DIR in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ${GEODE_BENCHMARKS} ; do
+    set -x
+    cd ${DIR}
+    git tag | grep "^rel/v${VERSION_MM}.*RC" | while read RCTAG ; do
+        git push origin --delete "$RCTAG"
+    done
+    set +x
+done
+
+
+echo ""
+echo "============================================================"
+echo 'Done shutting down the support branch!'
 echo "============================================================"
 echo "Don't forget to remove the JIRA Release placeholder for any future ${VERSION_MM}.x"
 echo "Probably also a good idea to announce on the dev list that support/${VERSION_MM} has expired"

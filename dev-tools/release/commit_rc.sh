@@ -109,7 +109,7 @@ set +x
 
 echo ""
 echo "============================================================"
-echo "Restoring -build suffix to version"
+echo "Keeping -build.0 suffix"
 echo "============================================================"
 cd ${GEODE}/../..
 set -x

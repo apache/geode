@@ -20,7 +20,7 @@ set -e
 usage() {
     echo "Usage: promote_rc.sh -v version_number -k your_full_gpg_public_key -g your_github_username"
     echo "  -v   The #.#.#.RC# version number to ship"
-    echo "  -k   Your 40-digit GPG fingerprint"
+    echo "  -k   Your 8 digit GPG key id (the last 8 digits of your gpg fingerprint)"
     echo "  -g   Your github username"
     exit 1
 }
@@ -50,11 +50,13 @@ if [[ ${FULL_VERSION} == "" ]] || [[ ${SIGNING_KEY} == "" ]] || [[ ${GITHUB_USER
     usage
 fi
 
+SIGNING_KEY=$(gpg --list-keys "${SIGNING_KEY}" | grep "${SIGNING_KEY}" | tr -d ' ')
+
 SIGNING_KEY=$(echo $SIGNING_KEY|sed 's/[^0-9A-Fa-f]//g')
 if [[ $SIGNING_KEY =~ ^[0-9A-Fa-f]{40}$ ]]; then
     true
 else
-    echo "Malformed signing key ${SIGNING_KEY}. Example valid key: '0000 0000 1111 1111 2222  2222 3333 3333 ABCD 1234'"
+    echo "Malformed signing key ${SIGNING_KEY}. Example valid key: ABCD1234"
     exit 1
 fi
 
@@ -89,7 +91,7 @@ fi
 function failMsg {
   errln=$1
   echo "ERROR: script did NOT complete successfully"
-  echo "Comment out any steps that already succeeded (approximately lines 94-$(( errln - 1 ))) and try again"
+  echo "Comment out any steps that already succeeded (approximately lines 99-$(( errln - 1 ))) and try again"
 }
 trap 'failMsg $LINENO' ERR
 
@@ -181,7 +183,7 @@ else
       -e '/ *mirror ".*www.*/d' \
       -e '/ *mirror ".*downloads.*/d' \
       -e 's# *mirror ".*archive.*#  mirror "https://archive.apache.org/dist/geode/'"${VERSION}"'/apache-geode-'"${VERSION}"'.tgz"\
-    mirror "https://downloads.apache.org/geode/'"${VERSION}"'/apache-geode-'"${VERSION}"'.tgz"#' \
+  mirror "https://downloads.apache.org/geode/'"${VERSION}"'/apache-geode-'"${VERSION}"'.tgz"#' \
       -e 's/ *sha256 ".*/  sha256 "'"${GEODE_SHA}"'"/' \
       -i.bak apache-geode.rb
   rm apache-geode.rb.bak
@@ -313,12 +315,14 @@ else
   for DIR in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ${GEODE_BENCHMARKS} ; do
       set -x
       cd ${DIR}
+      git remote set-branches --add origin master
       git fetch origin
       git checkout support/${VERSION_MM}
+      git checkout -b release/${VERSION} rel/v${VERSION}
       #this creates a merge commit that will then be ff-merged to master, so word it from that perspective
-      git merge -s ours origin/master -m "Replacing master with contents of support/${VERSION_MM} (${VERSION)"
+      git merge -s ours origin/master -m "Replacing master with contents of rel/v${VERSION}"
       git checkout master
-      git merge support/${VERSION_MM}
+      git merge release/${VERSION}
       git push origin master
       set +x
   done
@@ -401,7 +405,7 @@ echo "============================================================"
 echo "Removing old versions from mirrors"
 echo "============================================================"
 set -x
-cd $SVN_RELEASE_DIR
+cd ${SVN_DIR}/../../release/geode
 svn update --set-depth immediates
 #identify the latest patch release for "N-2" (the latest 3 major.minor releases), remove anything else from mirrors (all releases remain available on non-mirrored archive site)
 RELEASES_TO_KEEP=3
@@ -421,22 +425,25 @@ rm ../keep
 
 echo ""
 echo "============================================================"
-echo "Done promoting release artifacts!"
+echo 'Done promoting release artifacts!'
 echo "============================================================"
 cd ${GEODE}/../..
 echo "Next steps:"
 echo "1. Click 'Release' in http://repository.apache.org/ (if you haven't already)"
 echo "2. Go to https://github.com/${GITHUB_USER}/homebrew-core/pull/new/apache-geode-${VERSION} and submit the pull request"
 echo "3. Go to https://github.com/${GITHUB_USER}/geode/pull/new/add-${VERSION}-to-old-versions and create the pull request"
-echo "4. Validate docker image: docker run -it -p 10334:10334 -p 7575:7575 -p 1099:1099  apachegeode/geode"
+echo "4. Validate docker image: docker run -it apachegeode/geode"
 echo "5. Bulk-transition JIRA issues fixed in this release to Closed"
 echo "6. Wait overnight for apache mirror sites to sync"
 echo "7. Confirm that your homebrew PR passed its PR checks and was merged to master"
-echo "8. Check that documentation has been published to https://geode.apache.org/docs/"
+echo "8. Check that ${VERSION} documentation has been published to https://geode.apache.org/docs/"
+[ -z "$DID_REMOVE" ] || DID_REMOVE=" and ${DID_REMOVE} info has been removed"
+echo "9. Check that ${VERSION} download info has been published to https://geode.apache.org/releases/${DID_REMOVE}"
 PATCH="${VERSION##*.}"
-[ "${PATCH}" -ne 0 ] || echo "9. Ask on the dev list for a volunteer to begin the chore of updating 3rd-party dependency versions on develop"
+[ "${PATCH}" -ne 0 ] || echo "10. Ask on the dev list for a volunteer to begin the chore of updating 3rd-party dependency versions on develop"
 M=$(date --date '+9 months' '+%a, %B %d %Y' 2>/dev/null || date -v +9m "+%a, %B %d %Y" 2>/dev/null || echo "9 months from now")
-[ "${PATCH}" -ne 0 ] || echo "10. Mark your calendar for $M to run ${0%/*}/end_of_support.sh -v ${VERSION_MM}"
+[ "${PATCH}" -ne 0 ] || echo "11. Mark your calendar for $M to run ${0%/*}/end_of_support.sh -v ${VERSION_MM}"
+[ "${PATCH}" -ne 0 ] || echo "12. Log in to https://hub.docker.com/repository/docker/apachegeode/geode and update the latest Dockerfile linktext and url to ${VERSION_MM}"
 echo "Bump support pipeline to ${VERSION_MM}.$(( PATCH + 1 )) by plussing BumpPatch in https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-support-${VERSION_MM//./-}-main?group=Semver%20Management"
 echo "Run ${0%/*}/set_versions.sh -v ${VERSION_MM}.$(( PATCH + 1 )) -s"
-echo "Finally, send announce email!"
+echo 'Finally, send announce email!'
