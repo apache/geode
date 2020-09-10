@@ -55,6 +55,11 @@ GEODE_NATIVE=$WORKSPACE/geode-native
 GEODE_BENCHMARKS=$WORKSPACE/geode-benchmarks
 set +x
 
+read -p "This will delete support/${VERSION_MM} and all associated pipelines, type YES if you are sure: "
+if [ "$REPLY" != "YES" ] ; then
+  echo cancelled
+  exit 1
+fi
 
 function failMsg1 {
   echo "ERROR: script did NOT complete successfully.  Please try again."
