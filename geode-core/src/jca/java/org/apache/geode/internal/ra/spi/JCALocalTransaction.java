@@ -17,8 +17,6 @@ package org.apache.geode.internal.ra.spi;
 import javax.resource.ResourceException;
 import javax.resource.spi.LocalTransaction;
 import javax.resource.spi.LocalTransactionException;
-import javax.transaction.SystemException;
-import javax.transaction.TransactionManager;
 
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.CacheFactory;
@@ -50,43 +48,29 @@ public class JCALocalTransaction implements LocalTransaction {
 
   @Override
   public void begin() throws ResourceException {
-    try {
-      if (!this.initDone || this.cache.isClosed()) {
-        this.init();
+    if (!this.initDone || this.cache.isClosed()) {
+      this.init();
+    }
+    if (this.cache.getLogger().fineEnabled()) {
+      this.cache.getLogger().fine("JCALocalTransaction:begin invoked");
+    }
+    if (this.tid != null) {
+      throw new LocalTransactionException(
+          "Transaction with id=" + this.tid + " is already in progress");
+    }
+    TXStateProxy tsp = this.gfTxMgr.getTXState();
+    if (tsp == null) {
+      this.gfTxMgr.begin();
+      tsp = this.gfTxMgr.getTXState();
+      tsp.setJCATransaction();
+      this.tid = tsp.getTransactionId();
+      if (this.cache.getLogger().fineEnabled()) {
+        this.cache.getLogger()
+            .fine("JCALocalTransaction:begin completed transactionId=" + this.tid);
       }
-      LogWriter logger = this.cache.getLogger();
-      if (logger.fineEnabled()) {
-        logger.fine("JCALocalTransaction::begin:");
-      }
-      TransactionManager tm = this.cache.getJTATransactionManager();
-      if (this.tid != null) {
-        throw new LocalTransactionException(" A transaction is already in progress");
-      }
-      if (tm != null && tm.getTransaction() != null) {
-        if (logger.fineEnabled()) {
-          logger.fine("JCAManagedConnection: JTA transaction is on");
-        }
-        // This is having a JTA transaction. Assuming ignore jta flag is true,
-        // explicitly being a gemfire transaction.
-        TXStateProxy tsp = this.gfTxMgr.getTXState();
-        if (tsp == null) {
-          this.gfTxMgr.begin();
-          tsp = this.gfTxMgr.getTXState();
-          tsp.setJCATransaction();
-          this.tid = tsp.getTransactionId();
-          if (logger.fineEnabled()) {
-            logger.fine("JCALocalTransaction:begun GFE transaction");
-          }
-        } else {
-          throw new LocalTransactionException("GemFire is already associated with a transaction");
-        }
-      } else {
-        if (logger.fineEnabled()) {
-          logger.fine("JCAManagedConnection: JTA Transaction does not exist.");
-        }
-      }
-    } catch (SystemException e) {
-      throw new ResourceException(e);
+    } else {
+      throw new LocalTransactionException(
+          "Transaction with state=" + tsp + " is already in progress");
     }
   }
 
@@ -105,8 +89,7 @@ public class JCALocalTransaction implements LocalTransaction {
       this.gfTxMgr.commit();
       this.tid = null;
     } catch (Exception e) {
-      // TODO: consider wrapping the cause
-      throw new LocalTransactionException(e.toString());
+      throw new LocalTransactionException(e);
     }
   }
 
