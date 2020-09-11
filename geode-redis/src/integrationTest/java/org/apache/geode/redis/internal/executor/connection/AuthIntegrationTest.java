@@ -22,7 +22,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.After;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
 
@@ -33,9 +32,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.redis.internal.GeodeRedisServer;
-import org.apache.geode.test.junit.categories.RedisTest;
 
-@Category({RedisTest.class})
 public class AuthIntegrationTest {
 
   static final String PASSWORD = "pwd";

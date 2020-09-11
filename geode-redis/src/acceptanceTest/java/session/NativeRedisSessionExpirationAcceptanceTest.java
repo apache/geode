@@ -17,16 +17,13 @@ package session;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
-import org.testcontainers.containers.GenericContainer;
 
+import org.apache.geode.NativeRedisTestRule;
 import org.apache.geode.redis.session.SessionExpirationDUnitTest;
-import org.apache.geode.test.junit.rules.IgnoreOnWindowsRule;
 
 public class NativeRedisSessionExpirationAcceptanceTest extends SessionExpirationDUnitTest {
-
   @ClassRule
-  public static TestRule ignoreOnWindowsRule = new IgnoreOnWindowsRule();
+  public static NativeRedisTestRule redis = new NativeRedisTestRule();
 
   @BeforeClass
   public static void setup() {
@@ -38,9 +35,7 @@ public class NativeRedisSessionExpirationAcceptanceTest extends SessionExpiratio
   }
 
   protected static void setupNativeRedis() {
-    GenericContainer redisContainer = new GenericContainer<>("redis:5.0.6").withExposedPorts(6379);
-    redisContainer.start();
-    ports.put(SERVER1, redisContainer.getFirstMappedPort());
+    ports.put(SERVER1, redis.getPort());
   }
 
 
