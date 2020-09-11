@@ -36,6 +36,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.InternalGemFireError;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
@@ -637,7 +638,9 @@ public class InternalResourceManager implements ResourceManager {
    */
   public void addStartupTask(CompletableFuture<Void> startupTask) {
     Objects.requireNonNull(startupTask);
-    startupTasks.add(startupTask);
+    synchronized (startupTasks) {
+      startupTasks.add(startupTask);
+    }
   }
 
   /**
@@ -647,8 +650,15 @@ public class InternalResourceManager implements ResourceManager {
    * @return a CompletableFuture that completes when all of the startup tasks complete
    */
   public CompletableFuture<Void> allOfStartupTasks() {
-    CompletableFuture[] completableFutures = startupTasks.toArray(new CompletableFuture[0]);
-    startupTasks.clear();
-    return CompletableFuture.allOf(completableFutures);
+    synchronized (startupTasks) {
+      CompletableFuture[] completableFutures = startupTasks.toArray(new CompletableFuture[0]);
+      startupTasks.clear();
+      return CompletableFuture.allOf(completableFutures);
+    }
+  }
+
+  @VisibleForTesting
+  Collection<CompletableFuture<Void>> getStartupTasks() {
+    return startupTasks;
   }
 }
