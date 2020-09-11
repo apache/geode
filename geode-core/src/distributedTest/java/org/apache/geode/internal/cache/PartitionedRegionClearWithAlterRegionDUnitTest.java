@@ -14,9 +14,12 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.Serializable;
 import java.util.stream.IntStream;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -27,10 +30,14 @@ import org.apache.geode.cache.CacheLoaderException;
 import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.LoaderHelper;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionEvent;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.control.RebalanceOperation;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
@@ -39,10 +46,10 @@ import org.apache.geode.test.dunit.rules.DistributedRule;
 public class PartitionedRegionClearWithAlterRegionDUnitTest implements Serializable {
 
   @Rule
-  DistributedRule distributedRule = new DistributedRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
-  CacheRule cacheRule = new CacheRule();
+  public CacheRule cacheRule = new CacheRule();
 
   private VM server1;
 
@@ -50,22 +57,38 @@ public class PartitionedRegionClearWithAlterRegionDUnitTest implements Serializa
 
   private static final String REGION_NAME = "testRegion";
 
-  private static final int NUM_ENTRIES = 10000;
+  private static final int NUM_ENTRIES = 1000000;
 
-  @Test
-  public void testClearRegionWhileAddingCacheLoader() throws InterruptedException {
+
+  @Before
+  public void initialize() {
     server1 = VM.getVM(0);
     server2 = VM.getVM(1);
 
     server1.invoke(() -> {
       cacheRule.createCache();
-      Region region = cacheRule.getCache().createRegionFactory().create(REGION_NAME);
-      populateRegion();
+      cacheRule.getCache().createRegionFactory(RegionShortcut.PARTITION).setStatisticsEnabled(true).create(REGION_NAME);
     });
 
     server2.invoke(() -> {
       cacheRule.createCache();
+      cacheRule.getCache().createRegionFactory(RegionShortcut.PARTITION).setStatisticsEnabled(true).create(REGION_NAME);
     });
+
+    server1.invoke(() -> {
+      populateRegion();
+      Region region = cacheRule.getCache().getRegion(REGION_NAME);
+      assertThat(region.size()).isEqualTo(NUM_ENTRIES);
+    });
+
+    server2.invoke(() -> {
+      Region region = cacheRule.getCache().getRegion(REGION_NAME);
+      assertThat(region.size()).isEqualTo(NUM_ENTRIES);
+    });
+  }
+
+  @Test
+  public void testClearRegionWhileAddingCacheLoader() throws InterruptedException {
 
     AsyncInvocation asyncInvocation1 = server1.invokeAsync(() -> {
       cacheRule.getCache().getRegion(REGION_NAME).clear();
@@ -88,6 +111,18 @@ public class PartitionedRegionClearWithAlterRegionDUnitTest implements Serializa
     Region region = cacheRule.getCache().getRegion(REGION_NAME);
     AttributesMutator attributesMutator = region.getAttributesMutator();
     attributesMutator.setCacheLoader(new TestCacheLoader());
+  }
+
+  private void alterRegionSetCacheWriter() {
+    Region region = cacheRule.getCache().getRegion(REGION_NAME);
+    AttributesMutator attributesMutator = region.getAttributesMutator();
+    attributesMutator.setCacheWriter(new TestCacheWriter());
+  }
+
+  private void alterRegionSetCacheListener() {
+    Region region = cacheRule.getCache().getRegion(REGION_NAME);
+    AttributesMutator attributesMutator = region.getAttributesMutator();
+    attributesMutator.addCacheListener(new TestCacheListener());
   }
 
   private class TestCacheLoader implements CacheLoader {
@@ -122,7 +157,7 @@ public class PartitionedRegionClearWithAlterRegionDUnitTest implements Serializa
 
     @Override
     public void beforeRegionClear(RegionEvent event) throws CacheWriterException {
-      // TODO
+      System.out.println("beforeRegionClear");
     }
   }
 
@@ -160,7 +195,7 @@ public class PartitionedRegionClearWithAlterRegionDUnitTest implements Serializa
 
     @Override
     public void afterRegionClear(RegionEvent event) {
-      // TODO
+      System.out.println("afterRegionClear");
     }
 
     @Override
@@ -175,62 +210,115 @@ public class PartitionedRegionClearWithAlterRegionDUnitTest implements Serializa
   }
 
   @Test
-  public void testClearRegionWhileAddingCacheWriter() {
+  public void testClearRegionWhileAddingCacheWriter() throws InterruptedException {
+    AsyncInvocation asyncInvocation1 = server1.invokeAsync(() -> {
+      cacheRule.getCache().getRegion(REGION_NAME).clear();
+    });
 
+    AsyncInvocation asyncInvocation2 = server2.invokeAsync(() -> {
+      alterRegionSetCacheWriter();
+    });
+
+    asyncInvocation1.await();
+    asyncInvocation2.await();
   }
 
   @Test
-  public void testClearRegionWhileAddingCacheListener() {
+  public void testClearRegionWhileAddingCacheListener() throws InterruptedException {
+    AsyncInvocation asyncInvocation1 = server1.invokeAsync(() -> {
+      cacheRule.getCache().getRegion(REGION_NAME).clear();
+    });
 
+    AsyncInvocation asyncInvocation2 = server2.invokeAsync(() -> {
+      alterRegionSetCacheListener();
+    });
+
+    asyncInvocation1.await();
+    asyncInvocation2.await();
   }
 
   @Test
-  public void testClearRegionWhileChangingEviction() {
-    server1.invokeAsync(() -> {
+  public void testClearRegionWhileChangingEviction() throws InterruptedException {
+    AsyncInvocation asyncInvocation1 = server1.invokeAsync(() -> {
       Region region = cacheRule.getCache().getRegion(REGION_NAME);
       AttributesMutator attributesMutator = region.getAttributesMutator();
       attributesMutator.getEvictionAttributesMutator().setMaximum(1);
     });
+
+    AsyncInvocation asyncInvocation2 = server2.invokeAsync(() -> {
+      cacheRule.getCache().getRegion(REGION_NAME).clear();
+    });
+
+    asyncInvocation1.await();
+    asyncInvocation2.await();
   }
 
   @Test
-  public void testClearRegionWhileChangingRegionTTLExpiration() {
-    server1.invokeAsync(() -> {
+  public void testClearRegionWhileChangingRegionTTLExpiration() throws InterruptedException {
+    AsyncInvocation asyncInvocation1 = server1.invokeAsync(() -> {
       Region region = cacheRule.getCache().getRegion(REGION_NAME);
       AttributesMutator attributesMutator = region.getAttributesMutator();
       ExpirationAttributes expirationAttributes = new ExpirationAttributes();
       attributesMutator.setRegionTimeToLive(expirationAttributes);
     });
+
+    AsyncInvocation asyncInvocation2 = server2.invokeAsync(() -> {
+      cacheRule.getCache().getRegion(REGION_NAME).clear();
+    });
+
+    asyncInvocation1.await();
+    asyncInvocation2.await();
   }
 
   @Test
-  public void testClearRegionWhileChangingEntryTTLExpiration() {
-    server1.invokeAsync(() -> {
+  public void testClearRegionWhileChangingEntryTTLExpiration() throws InterruptedException {
+    AsyncInvocation asyncInvocation1 = server1.invokeAsync(() -> {
       Region region = cacheRule.getCache().getRegion(REGION_NAME);
       AttributesMutator attributesMutator = region.getAttributesMutator();
       ExpirationAttributes expirationAttributes = new ExpirationAttributes();
       attributesMutator.setEntryTimeToLive(expirationAttributes);
     });
+
+    AsyncInvocation asyncInvocation2 = server2.invokeAsync(() -> {
+      cacheRule.getCache().getRegion(REGION_NAME).clear();
+    });
+
+    asyncInvocation1.await();
+    asyncInvocation2.await();
   }
 
   @Test
-  public void testClearRegionWhileChangingRegionIdleExpiration() {
-    server1.invokeAsync(() -> {
+  public void testClearRegionWhileChangingRegionIdleExpiration() throws InterruptedException {
+    AsyncInvocation asyncInvocation1 = server1.invokeAsync(() -> {
       Region region = cacheRule.getCache().getRegion(REGION_NAME);
       AttributesMutator attributesMutator = region.getAttributesMutator();
       ExpirationAttributes expirationAttributes = new ExpirationAttributes();
       attributesMutator.setRegionIdleTimeout(expirationAttributes);
     });
+
+    AsyncInvocation asyncInvocation2 = server2.invokeAsync(() -> {
+      cacheRule.getCache().getRegion(REGION_NAME).clear();
+    });
+
+    asyncInvocation1.await();
+    asyncInvocation2.await();
   }
 
   @Test
-  public void testClearRegionWhileChangingEntryIdleExpiration() {
-    server1.invokeAsync(() -> {
+  public void testClearRegionWhileChangingEntryIdleExpiration() throws InterruptedException {
+    AsyncInvocation asyncInvocation1 = server1.invokeAsync(() -> {
       Region region = cacheRule.getCache().getRegion(REGION_NAME);
       AttributesMutator attributesMutator = region.getAttributesMutator();
-      ExpirationAttributes expirationAttributes = new ExpirationAttributes();
+      ExpirationAttributes expirationAttributes = new ExpirationAttributes(1, ExpirationAction.DESTROY);
       attributesMutator.setEntryIdleTimeout(expirationAttributes);
     });
+
+    AsyncInvocation asyncInvocation2 = server2.invokeAsync(() -> {
+      cacheRule.getCache().getRegion(REGION_NAME).clear();
+    });
+
+    asyncInvocation1.await();
+    asyncInvocation2.await();
   }
 
   // TODO: member join and leave when these operations are in progress
