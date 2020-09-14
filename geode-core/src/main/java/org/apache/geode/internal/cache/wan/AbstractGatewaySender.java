@@ -1120,13 +1120,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     if (this.eventProcessor != null) {
       this.eventProcessor.registerEventDroppedInPrimaryQueue(event);
     } else {
-      // Add empty event so that in case the event stays for long in
-      // tmpDroppedEvents it takes as little space as possible.
-      // No need to have all the contents of the event for a dropped one.
-      EntryEventImpl emptyEvent = new EntryEventImpl(event.getKey(), false);
-      emptyEvent.setRegion(event.getRegion());
-      emptyEvent.setTailKey(event.getTailKey());
-      tmpDroppedEvents.add(emptyEvent);
+      tmpDroppedEvents.add(event);
       if (isDebugEnabled) {
         logger.debug("added to tmpDroppedEvents event: {}", event);
       }
