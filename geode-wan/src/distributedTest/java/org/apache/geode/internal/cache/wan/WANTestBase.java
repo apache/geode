@@ -1646,6 +1646,20 @@ public class WANTestBase extends DistributedTestCase {
     }
   }
 
+  public static void stopSenderInVMsAsync(String senderId, VM... vms) {
+    List<AsyncInvocation> tasks = new LinkedList<>();
+    for (VM vm : vms) {
+      tasks.add(vm.invokeAsync(() -> stopSender(senderId)));
+    }
+    for (AsyncInvocation invocation : tasks) {
+      try {
+        invocation.await();
+      } catch (InterruptedException e) {
+        fail("Stopping senders was interrupted");
+      }
+    }
+  }
+
   public static void stopSender(String senderId) {
     final IgnoredException exln = IgnoredException.addIgnoredException("Could not connect");
     IgnoredException exp =
