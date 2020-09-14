@@ -6,6 +6,6 @@
 version: 2
 updates:
   - package-ecosystem: "maven" # See documentation for possible values
-    directory: "/boms/geode-all-bom/src/test/resources/pom.xml" # Location of package manifests
+    directory: "/boms/geode-all-bom/src/test/resources/" # Location of package manifests
     schedule:
       interval: "daily"
