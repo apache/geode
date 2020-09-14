@@ -25,6 +25,7 @@ import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
@@ -177,6 +178,7 @@ public class RedisStats {
     stats.incLong(clientId, -1);
   }
 
+  @VisibleForTesting
   public long getClients() {
     return stats.getLong(clientId);
   }
