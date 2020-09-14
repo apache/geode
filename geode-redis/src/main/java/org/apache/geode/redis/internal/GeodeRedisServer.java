@@ -16,6 +16,7 @@ package org.apache.geode.redis.internal;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -112,6 +113,12 @@ public class GeodeRedisServer {
     StatisticsClock statisticsClock =
         StatisticsClockFactory.clock(system.getConfig().getEnableTimeStatistics());
     return new RedisStats(system.getStatisticsManager(), statisticsClock);
+  }
+
+
+  @VisibleForTesting
+  public RedisStats getStats() {
+    return redisStats;
   }
 
   /**

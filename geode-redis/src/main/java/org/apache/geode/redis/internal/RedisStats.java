@@ -177,6 +177,10 @@ public class RedisStats {
     stats.incLong(clientId, -1);
   }
 
+  public long getClients() {
+    return stats.getLong(clientId);
+  }
+
   public long startPassiveExpirationCheck() {
     return getTime();
   }

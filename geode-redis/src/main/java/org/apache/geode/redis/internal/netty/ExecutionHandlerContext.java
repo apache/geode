@@ -19,6 +19,7 @@ package org.apache.geode.redis.internal.netty;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -76,6 +77,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private final Runnable shutdownInvoker;
   private final RedisStats redisStats;
   private final EventLoopGroup subscriberGroup;
+  private final AtomicBoolean channelInactive = new AtomicBoolean();
   private final int MAX_QUEUED_COMMANDS =
       Integer.getInteger("geode.redis.commandQueueSize", 1000);
   private final LinkedBlockingQueue<Command> commandQueue =
@@ -241,13 +243,16 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   @Override
   public void channelInactive(ChannelHandlerContext ctx) {
-    if (logger.isDebugEnabled()) {
-      logger.debug("GeodeRedisServer-Connection closing with " + ctx.channel().remoteAddress());
+    if (channelInactive.compareAndSet(false, true)) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("GeodeRedisServer-Connection closing with " + ctx.channel().remoteAddress());
+      }
+
+      commandQueue.offer(TERMINATE_COMMAND);
+      redisStats.removeClient();
+      ctx.channel().close();
+      ctx.close();
     }
-    commandQueue.offer(TERMINATE_COMMAND);
-    redisStats.removeClient();
-    ctx.channel().close();
-    ctx.close();
   }
 
   private void executeCommand(Command command) {
