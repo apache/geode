@@ -30,6 +30,6 @@ import org.junit.rules.RuleChain;
 public class IgnoreOnWindowsRule extends ExternalResource implements Serializable {
   @Override
   protected void before() throws Throwable {
-    Assume.assumeFalse(SystemUtils.IS_OS_WINDOWS);
+    Assume.assumeFalse("Test ignored on Windows.", SystemUtils.IS_OS_WINDOWS);
   }
 }

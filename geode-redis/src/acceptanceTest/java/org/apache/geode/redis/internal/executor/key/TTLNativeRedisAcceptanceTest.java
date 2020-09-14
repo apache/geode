@@ -17,23 +17,16 @@ package org.apache.geode.redis.internal.executor.key;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.rules.TestRule;
-import org.testcontainers.containers.GenericContainer;
 import redis.clients.jedis.Jedis;
 
-import org.apache.geode.test.junit.rules.IgnoreOnWindowsRule;
+import org.apache.geode.NativeRedisTestRule;
 
 public class TTLNativeRedisAcceptanceTest extends TTLIntegrationTest {
-
-  // Docker compose does not work on windows in CI. Ignore this test on windows
-  // Using a RuleChain to make sure we ignore the test before the rule comes into play
   @ClassRule
-  public static TestRule ignoreOnWindowsRule = new IgnoreOnWindowsRule();
+  public static NativeRedisTestRule redis = new NativeRedisTestRule();
 
   @BeforeClass
   public static void setUp() {
-    GenericContainer redisContainer = new GenericContainer<>("redis:5.0.6").withExposedPorts(6379);
-    redisContainer.start();
-    jedis = new Jedis("localhost", redisContainer.getFirstMappedPort(), 10000000);
+    jedis = new Jedis("localhost", redis.getPort(), 10000000);
   }
 }

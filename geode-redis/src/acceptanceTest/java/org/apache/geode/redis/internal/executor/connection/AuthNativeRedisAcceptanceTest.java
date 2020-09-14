@@ -20,15 +20,13 @@ import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import org.junit.rules.TestRule;
 import org.testcontainers.containers.GenericContainer;
 import redis.clients.jedis.Jedis;
 
-import org.apache.geode.test.junit.categories.RedisTest;
 import org.apache.geode.test.junit.rules.IgnoreOnWindowsRule;
 
-@Category({RedisTest.class})
 public class AuthNativeRedisAcceptanceTest extends AuthIntegrationTest {
 
   // Docker compose does not work on windows in CI. Ignore this test on windows
@@ -36,7 +34,13 @@ public class AuthNativeRedisAcceptanceTest extends AuthIntegrationTest {
   @ClassRule
   public static TestRule ignoreOnWindowsRule = new IgnoreOnWindowsRule();
 
-  private GenericContainer redisContainer;
+  // The ryuk container is responsible for cleanup at JVM exit. Since this class already closes the
+  // containers it starts, we do not need the ryuk container.
+  @ClassRule
+  public static EnvironmentVariables environmentVariables =
+      new EnvironmentVariables().set("TESTCONTAINERS_RYUK_DISABLED", "true");
+
+  private GenericContainer<?> redisContainer;
 
   @After
   public void tearDown() {
