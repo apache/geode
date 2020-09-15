@@ -219,9 +219,6 @@ dependencies {
   //Commons validator is used to validate inet addresses in membership
   implementation('commons-validator:commons-validator')
 
-  //javax.activation is runtime dependency for gfsh with java 11 (used by gfsh-over-http)
-  runtimeOnly('com.sun.activation:javax.activation')
-
   //jaxb is used by cluster configuration
   implementation('javax.xml.bind:jaxb-api')
 

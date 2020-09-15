@@ -34,7 +34,6 @@ j2objc-annotations
 jackson-annotations
 jackson-core
 jackson-databind
-javax.activation
 javax.activation-api
 javax.mail-api
 javax.resource-api

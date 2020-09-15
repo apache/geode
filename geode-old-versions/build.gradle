@@ -77,9 +77,6 @@ subprojects {
         new File(contentsFile.toAbsolutePath().toString()).text = file(unpackDest).listFiles()
       }
     }
-    project.assemble.dependsOn(project.downloadAndUnzipFile)
-    project.assemble.dependsOn(project.enumerateArchiveContents)
-
   }
 }
 
@@ -115,6 +112,10 @@ project.createGeodeClasspathsFile.mustRunAfter(clean)
 project.createGeodeClasspathsFile.inputs.files(getTasksByName('downloadAndUnzipFile', true))
 project.createGeodeClasspathsFile.inputs.files(getTasksByName('enumerateArchiveContents', true))
 project.jarTest.dependsOn(createGeodeClasspathsFile)
+
+tasks.named('build') {
+  dependsOn(tasks.named('createGeodeClasspathsFile'))
+}
 
 sourceSets {
   test {
