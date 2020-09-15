@@ -45,13 +45,10 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.FastLogger;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.redis.internal.GeodeRedisService;
 import org.apache.geode.redis.mocks.MockSubscriber;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
@@ -192,20 +189,12 @@ public class PubSubDUnitTest {
       threads.add(thread);
       thread.start();
     }
+
     threads.forEach(thread -> {
       try {
         thread.join();
       } catch (InterruptedException e) {
         throw new RuntimeException(e);
-      }
-    });
-
-    Invoke.invokeInEveryVM(() -> {
-      GeodeRedisService service = ClusterStartupRule.getCache().getService(GeodeRedisService.class);
-      if (service != null) {
-        GeodeAwaitility.await().untilAsserted(
-            () -> assertThat(service.getStats().getClients()).as("Number of clients should be 0 ")
-                .isEqualTo(0));
       }
     });
 

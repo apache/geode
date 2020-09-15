@@ -117,7 +117,7 @@ public class GeodeRedisServer {
 
 
   @VisibleForTesting
-  public RedisStats getStats() {
+  RedisStats getStats() {
     return redisStats;
   }
 

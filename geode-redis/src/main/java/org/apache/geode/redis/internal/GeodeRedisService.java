@@ -103,11 +103,6 @@ public class GeodeRedisService implements CacheService, ResourceEventsListener {
     return redisServer.getPort();
   }
 
-  @VisibleForTesting
-  public RedisStats getStats() {
-    return redisServer.getStats();
-  }
-
   public void setEnableUnsupported(boolean unsupported) {
     redisServer.setAllowUnsupportedCommands(unsupported);
   }

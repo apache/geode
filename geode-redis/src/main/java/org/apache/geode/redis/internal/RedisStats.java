@@ -179,7 +179,7 @@ public class RedisStats {
   }
 
   @VisibleForTesting
-  public long getClients() {
+  long getClients() {
     return stats.getLong(clientId);
   }
 
