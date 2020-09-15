@@ -30,9 +30,6 @@ compileTestJava {
 }
 
 test {
-  doFirst {
-    TestPropertiesWriter.writeTestProperties(buildDir, name)
-  }
   if (project.hasProperty('testMaxParallelForks')) {
     maxParallelForks = Integer.parseUnsignedInt(project.testMaxParallelForks)
   } else {
@@ -105,9 +102,6 @@ configure([integrationTest, distributedTest, performanceTest, acceptanceTest, ui
            upgradeTest]) {
   forkEvery 1
 
-  doFirst {
-    TestPropertiesWriter.writeTestProperties(buildDir, name)
-  }
   outputs.upToDateWhen { false }
 }
 
@@ -175,14 +169,23 @@ configure([repeatDistributedTest, repeatIntegrationTest, repeatUpgradeTest, repe
 
 // apply common test configuration
 gradle.taskGraph.whenReady({ graph ->
+  // Give each worker a unique subdir name to use for its tests 
+  def uniqueWorkerSubdir = UUID.randomUUID().toString()
   tasks.withType(Test).each { test ->
     check.dependsOn test
     test.configure {
       onlyIf { !Boolean.getBoolean('skip.tests') }
 
-      def resultsDir = TestPropertiesWriter.testResultsDir(buildDir, test.name)
-      test.workingDir = resultsDir
+      // Run the task in the worker's unique subdir
+      def uniqueTaskSubdir = new File(test.name, uniqueWorkerSubdir).toString()
 
+      doFirst {
+        TestPropertiesWriter.writeTestProperties(buildDir, uniqueTaskSubdir)
+      }
+
+      def resultsDir = TestPropertiesWriter.testResultsDir(buildDir, uniqueTaskSubdir)
+      test.workingDir = resultsDir
+      
       reports.html.destination = file "$buildDir/reports/$name"
       testLogging {
         exceptionFormat = 'full'
