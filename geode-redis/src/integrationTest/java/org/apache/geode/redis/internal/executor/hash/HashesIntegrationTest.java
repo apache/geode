@@ -45,7 +45,6 @@ import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.GeodeRedisServerRule;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.junit.categories.RedisTest;
 
 @Category({RedisTest.class})

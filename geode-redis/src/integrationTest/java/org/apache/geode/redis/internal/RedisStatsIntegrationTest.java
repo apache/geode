@@ -23,6 +23,7 @@ public class RedisStatsIntegrationTest {
     assertThat(server.getServer().getStats().getClients()).isEqualTo(initialClients + 1);
 
     jedis.close();
-    GeodeAwaitility.await().untilAsserted(() -> assertThat(server.getServer().getStats().getClients()).isEqualTo(initialClients));
+    GeodeAwaitility.await().untilAsserted(
+        () -> assertThat(server.getServer().getStats().getClients()).isEqualTo(initialClients));
   }
 }
