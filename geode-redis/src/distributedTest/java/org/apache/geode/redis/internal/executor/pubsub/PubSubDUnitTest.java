@@ -198,6 +198,8 @@ public class PubSubDUnitTest {
       }
     });
 
+    // change to force test to run in StressNewTest
+
     assertThat(publishCount.get()).isEqualTo(CHANNEL_COUNT * SUBSCRIBER_COUNT);
   }
 
