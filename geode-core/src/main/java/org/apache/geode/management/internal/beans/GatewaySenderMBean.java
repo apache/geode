@@ -134,6 +134,11 @@ public class GatewaySenderMBean extends NotificationBroadcasterSupport
   }
 
   @Override
+  public long getTotalQueueSizeBytesInUse() {
+    return bridge.getTotalQueueSizeBytesInUse();
+  }
+
+  @Override
   public boolean isBatchConflationEnabled() {
     return bridge.isBatchConflationEnabled();
   }
