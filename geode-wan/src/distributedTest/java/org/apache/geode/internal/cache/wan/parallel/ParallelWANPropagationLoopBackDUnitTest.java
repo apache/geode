@@ -37,8 +37,8 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
    */
   @Test
   public void testParallelPropagationLoopBack() {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     // create receiver on site1 and site2
     createCacheInVMs(lnPort, vm2, vm4, vm5);
@@ -138,9 +138,9 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
   @Test
   public void testParallelPropagationLoopBack3Sites() {
     // Create locators
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
-    Integer tkPort = (Integer) vm2.invoke(() -> WANTestBase.createFirstRemoteLocator(3, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer tkPort = vm2.invoke(() -> WANTestBase.createFirstRemoteLocator(3, lnPort));
 
     // create cache and receivers on all the 3 sites
     createCacheInVMs(lnPort, vm3, vm6);
@@ -227,9 +227,9 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
    */
   @Test
   public void testParallelPropagationLoopBack3SitesNtoNTopologyPutFromOneDS() {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
-    Integer tkPort = (Integer) vm2.invoke(() -> WANTestBase.createFirstRemoteLocator(3, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer tkPort = vm2.invoke(() -> WANTestBase.createFirstRemoteLocator(3, lnPort));
 
     createCacheInVMs(lnPort, vm3, vm6);
     createCacheInVMs(nyPort, vm4, vm7);
@@ -370,7 +370,7 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
    * Start the sender, make sure the events in tmpDroppedEvents are sent to LN finally
    */
   @Test
-  public void unstartedSenderShouldNotAddReceivedEventsIntoTmpDropped() throws Exception {
+  public void unstartedSenderShouldNotAddReceivedEventsIntoTmpDropped() {
     Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(2));
     Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(1, lnPort));
 
@@ -468,10 +468,10 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
     vm5.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ln", 1, 100,
         isOffHeap()));
 
-    AsyncInvocation inv =
+    AsyncInvocation<Void> inv =
         vm2.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 1000));
     startSenderInVMsAsync("ny", vm2, vm4);
-    inv.join();
+    inv.await();
 
     vm2.invoke(() -> WANTestBase.verifyTmpDroppedEventSize("ny", 0));
     vm4.invoke(() -> WANTestBase.verifyTmpDroppedEventSize("ny", 0));
@@ -519,10 +519,10 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
     vm5.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ln", 1, 100,
         isOffHeap()));
 
-    AsyncInvocation inv =
+    AsyncInvocation<Void> inv =
         vm2.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 1000));
     stopSenderInVMsAsync("ny", vm2, vm4);
-    inv.join();
+    inv.await();
 
     startSenderInVMsAsync("ny", vm2, vm4);
 
@@ -548,8 +548,7 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
    * Make sure there are no events in tmpDroppedEvents and the queues are drained.
    */
   @Test
-  public void stoppedSenderShouldNotAddEventsToTmpDroppedEventsButStillDrainQueuesWhenStarted()
-      throws Exception {
+  public void stoppedSenderShouldNotAddEventsToTmpDroppedEventsButStillDrainQueuesWhenStarted() {
     Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(2));
     Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(1, lnPort));
 
@@ -622,8 +621,7 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
    * Make sure there are no events in tmpDroppedEvents and the queues are drained.
    */
   @Test
-  public void stoppedPrimarySenderShouldNotAddEventsToTmpDroppedEventsButStillDrainQueuesWhenStarted()
-      throws Exception {
+  public void stoppedPrimarySenderShouldNotAddEventsToTmpDroppedEventsButStillDrainQueuesWhenStarted() {
     Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(2));
     Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(1, lnPort));
 

@@ -1647,7 +1647,7 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   public static void stopSenderInVMsAsync(String senderId, VM... vms) {
-    List<AsyncInvocation> tasks = new LinkedList<>();
+    List<AsyncInvocation<Void>> tasks = new LinkedList<>();
     for (VM vm : vms) {
       tasks.add(vm.invokeAsync(() -> stopSender(senderId)));
     }

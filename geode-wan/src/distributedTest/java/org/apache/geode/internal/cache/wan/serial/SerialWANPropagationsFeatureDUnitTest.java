@@ -35,8 +35,8 @@ public class SerialWANPropagationsFeatureDUnitTest extends WANTestBase {
 
   @Test
   public void testSerialReplicatedWanWithOverflow() {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
@@ -74,8 +74,8 @@ public class SerialWANPropagationsFeatureDUnitTest extends WANTestBase {
   @Test
   public void testSerialReplicatedWanWithPersistence() {
 
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -111,10 +111,10 @@ public class SerialWANPropagationsFeatureDUnitTest extends WANTestBase {
   }
 
   @Test
-  public void testReplicatedSerialPropagationWithConflation() throws Exception {
+  public void testReplicatedSerialPropagationWithConflation() {
 
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -149,10 +149,10 @@ public class SerialWANPropagationsFeatureDUnitTest extends WANTestBase {
   }
 
   @Test
-  public void testReplicatedSerialPropagationWithParallelThreads() throws Exception {
+  public void testReplicatedSerialPropagationWithParallelThreads() {
 
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -187,10 +187,10 @@ public class SerialWANPropagationsFeatureDUnitTest extends WANTestBase {
   }
 
   @Test
-  public void testSerialPropagationWithFilter() throws Exception {
+  public void testSerialPropagationWithFilter() {
 
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -226,10 +226,10 @@ public class SerialWANPropagationsFeatureDUnitTest extends WANTestBase {
   }
 
   @Test
-  public void testReplicatedSerialPropagationWithFilter() throws Exception {
+  public void testReplicatedSerialPropagationWithFilter() {
 
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -260,9 +260,9 @@ public class SerialWANPropagationsFeatureDUnitTest extends WANTestBase {
   }
 
   @Test
-  public void testReplicatedSerialPropagationWithFilter_AfterAck() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+  public void testReplicatedSerialPropagationWithFilter_AfterAck() {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm6, vm7);
     createReceiverInVMs(vm6, vm7);
@@ -288,8 +288,8 @@ public class SerialWANPropagationsFeatureDUnitTest extends WANTestBase {
     vm4.invoke(() -> WANTestBase.validateQueueContents("ln", 0));
     vm5.invoke(() -> WANTestBase.validateQueueContents("ln", 0));
 
-    Integer vm4Acks = (Integer) vm4.invoke(() -> WANTestBase.validateAfterAck("ln"));
-    Integer vm5Acks = (Integer) vm5.invoke(() -> WANTestBase.validateAfterAck("ln"));
+    Integer vm4Acks = vm4.invoke(() -> WANTestBase.validateAfterAck("ln"));
+    Integer vm5Acks = vm5.invoke(() -> WANTestBase.validateAfterAck("ln"));
 
     assertEquals(2000, (vm4Acks + vm5Acks));
 
@@ -310,7 +310,7 @@ public class SerialWANPropagationsFeatureDUnitTest extends WANTestBase {
    * Start the sender, make sure the events in tmpDroppedEvents are sent to LN finally
    */
   @Test
-  public void unstartedSenderShouldNotAddReceivedEventsIntoTmpDropped() throws Exception {
+  public void unstartedSenderShouldNotAddReceivedEventsIntoTmpDropped() {
     Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(2));
     Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(1, lnPort));
 
@@ -404,10 +404,10 @@ public class SerialWANPropagationsFeatureDUnitTest extends WANTestBase {
     vm5.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ln", 1, 100,
         isOffHeap()));
 
-    AsyncInvocation inv =
+    AsyncInvocation<Void> inv =
         vm2.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 1000));
     startSenderInVMsAsync("ny", vm2, vm4);
-    inv.join();
+    inv.await();
 
     vm2.invoke(() -> WANTestBase.verifyTmpDroppedEventSize("ny", 0));
     vm4.invoke(() -> WANTestBase.verifyTmpDroppedEventSize("ny", 0));
@@ -455,10 +455,10 @@ public class SerialWANPropagationsFeatureDUnitTest extends WANTestBase {
     vm5.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ln", 1, 100,
         isOffHeap()));
 
-    AsyncInvocation inv =
+    AsyncInvocation<Void> inv =
         vm2.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 1000));
     stopSenderInVMsAsync("ny", vm2, vm4);
-    inv.join();
+    inv.await();
 
     startSenderInVMsAsync("ny", vm2, vm4);
 
@@ -484,8 +484,7 @@ public class SerialWANPropagationsFeatureDUnitTest extends WANTestBase {
    * Make sure there are no events in tmpDroppedEvents and the queues are drained.
    */
   @Test
-  public void stoppedSenderShouldNotAddEventsToTmpDroppedEventsButStillDrainQueuesWhenStarted()
-      throws Exception {
+  public void stoppedSenderShouldNotAddEventsToTmpDroppedEventsButStillDrainQueuesWhenStarted() {
     Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(2));
     Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(1, lnPort));
 
@@ -558,8 +557,7 @@ public class SerialWANPropagationsFeatureDUnitTest extends WANTestBase {
    * Make sure there are no events in tmpDroppedEvents and the queues are drained.
    */
   @Test
-  public void stoppedPrimarySenderShouldNotAddEventsToTmpDroppedEventsButStillDrainQueuesWhenStarted()
-      throws Exception {
+  public void stoppedPrimarySenderShouldNotAddEventsToTmpDroppedEventsButStillDrainQueuesWhenStarted() {
     Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(2));
     Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(1, lnPort));
 

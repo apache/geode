@@ -1116,12 +1116,11 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   }
 
   private void recordDroppedEvent(EntryEventImpl event) {
-    final boolean isDebugEnabled = logger.isDebugEnabled();
     if (this.eventProcessor != null) {
       this.eventProcessor.registerEventDroppedInPrimaryQueue(event);
     } else {
       tmpDroppedEvents.add(event);
-      if (isDebugEnabled) {
+      if (logger.isDebugEnabled()) {
         logger.debug("added to tmpDroppedEvents event: {}", event);
       }
     }
