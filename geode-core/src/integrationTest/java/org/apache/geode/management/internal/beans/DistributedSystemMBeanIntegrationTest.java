@@ -113,7 +113,7 @@ public class DistributedSystemMBeanIntegrationTest {
   // gfsh doesn't attempt to format the date objects as of now, and it respect the json annotations
   // when listing out the headers
   @Test
-  public void queryUsingGfshDoesNotFormatDate() throws Exception {
+  public void queryAllUsingGfshDoesNotFormatDate() throws Exception {
     gfsh.connectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     TabularResultModelAssert tabularAssert =
         gfsh.executeAndAssertThat("query --query='" + SELECT_ALL + "'")
@@ -135,5 +135,14 @@ public class DistributedSystemMBeanIntegrationTest {
         .statusIsSuccess()
         .hasTableSection().hasColumns().asList()
         .containsExactlyInAnyOrder("id", "title");
+  }
+
+  @Test
+  public void documentZeroResultsBehavior() throws Exception {
+    String result = bean.queryData("select * from /testRegion r where r.id=0", "server", 100);
+    assertThat(result).isEqualTo("{\"result\":[{\"message\":\"No Data Found\"}]}");
+
+    result = bean.queryData("select id, title from /testRegion r where r.id=0", "server", 100);
+    assertThat(result).isEqualTo("{\"result\":[{\"message\":\"No Data Found\"}]}");
   }
 }
