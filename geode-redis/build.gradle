@@ -93,10 +93,6 @@ configurations{
   }
 }
 
-acceptanceTest {
-  environment 'GEODE_HOME', "$buildDir/../../geode-assembly/build/install/apache-geode"
-}
-
 tasks.register("redisAPITest") {
   dependsOn ':geode-assembly:installDist'
   doLast {
