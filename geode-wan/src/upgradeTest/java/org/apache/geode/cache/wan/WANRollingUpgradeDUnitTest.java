@@ -16,6 +16,7 @@ package org.apache.geode.cache.wan;
 
 import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
@@ -134,6 +135,8 @@ public abstract class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
     }
     props.setProperty(LOG_LEVEL, DUnitLauncher.logLevel);
     props.setProperty(ENABLE_CLUSTER_CONFIGURATION, String.valueOf(enableClusterConfiguration));
+    // Turn off HTTP service, otherwise second (and subsequent) locators will see a port conflict
+    props.setProperty(HTTP_SERVICE_PORT, String.valueOf(0));
     return props;
   }
 
