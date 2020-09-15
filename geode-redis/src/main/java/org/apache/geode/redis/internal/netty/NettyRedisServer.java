@@ -101,7 +101,7 @@ public class NettyRedisServer {
     if (port < RANDOM_PORT_INDICATOR) {
       throw new IllegalArgumentException("Redis port cannot be less than 0");
     }
-    selectorGroup = createEventLoopGroup("Selector", true, 1);
+    selectorGroup = createEventLoopGroup("Selector", false, 1);
     workerGroup = createEventLoopGroup("Worker", true, 0);
     subscriberGroup = createEventLoopGroup("Subscriber", true, 0);
     try {
