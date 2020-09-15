@@ -246,8 +246,8 @@ public class GeodeRedisServerStartupDUnitTest {
         .withProperty(REDIS_PORT, "" + port)
         .withProperty(REDIS_BIND_ADDRESS, "1.1.1.1")
         .withProperty(REDIS_ENABLED, "true")))
-        .hasStackTraceContaining(
-            "The redis-bind-address 1.1.1.1 is not a valid address for this machine");
+          .hasStackTraceContaining(
+              "The redis-bind-address 1.1.1.1 is not a valid address for this machine");
   }
 
   @Test
