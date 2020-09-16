@@ -253,7 +253,7 @@ public class PartitionedRegionClearWithAlterRegionDUnitTest implements Serializa
     asyncInvocation2.await();
   }
 
-  // @Test
+  @Test
   public void testMemberLeave() throws InterruptedException {
     initialize();
 
