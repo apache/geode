@@ -775,6 +775,13 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     return object;
   }
 
+  public void addRemovedEvent(EntryEventImpl droppedEvent) {
+    lock.writeLock().lock();
+    lastDispatchedKey = droppedEvent.getTailKey();
+    notifyAll();
+    lock.writeLock().unlock();
+  }
+
   @VisibleForTesting
   static class KeyAndEventPair {
     public final long key;

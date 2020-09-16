@@ -881,7 +881,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
 
   @Override
   protected void registerEventDroppedInPrimaryQueue(EntryEventImpl droppedEvent) {
-    sendBatchDestroyOperationForDroppedEvent(droppedEvent, -1);
+    ((SerialGatewaySenderQueue) queue).addRemovedEvent(droppedEvent);
   }
 
   private String printEventIdList(Set<EventID> eventIds) {

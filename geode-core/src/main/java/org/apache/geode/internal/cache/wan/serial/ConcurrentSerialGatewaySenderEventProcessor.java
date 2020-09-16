@@ -394,8 +394,7 @@ public class ConcurrentSerialGatewaySenderEventProcessor
     // modified event again for concurrent SGSEP
     int index = Math.abs(getHashCode(((EntryEventImpl) droppedEvent)) % this.processors.size());
     setModifiedEventId(droppedEvent, index);
-
-    this.processors.get(index).sendBatchDestroyOperationForDroppedEvent(droppedEvent, index);
+    ((SerialGatewaySenderQueue) processors.get(index).getQueue()).addRemovedEvent(droppedEvent);
   }
 
   @Override
