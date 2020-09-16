@@ -37,7 +37,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.alerting.internal.spi.AlertingAction;
-import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
@@ -712,7 +711,7 @@ public class ConnectionTable {
    *
    * @param beingSick a test hook to simulate a sick process
    */
-  void closeReceivers(boolean beingSick) {
+  private void closeReceivers(boolean beingSick) {
     synchronized (receivers) {
       for (Iterator it = receivers.iterator(); it.hasNext();) {
         Connection con = (Connection) it.next();
@@ -921,17 +920,6 @@ public class ConnectionTable {
       }
     }
   }
-
-  @VisibleForTesting
-  public static int getNumSenderSharedConnections() {
-    ConnectionTable ct = (ConnectionTable) lastInstance.get();
-    if (ct == null) {
-      return 0;
-    }
-    return (ct.getConduit().getStats().getSendersSU());
-  }
-
-
 
   /**
    * Clears lastInstance. Does not yet close underlying sockets, but probably not strictly
