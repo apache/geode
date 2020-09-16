@@ -17,13 +17,16 @@
 package org.apache.geode.redis.internal.executor.connection;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -38,19 +41,25 @@ public class QuitIntegrationTest {
   @ClassRule
   public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
-  @BeforeClass
-  public static void setUp() {
+  @Before
+  public void setUp() {
     jedis = new Jedis("localhost", server.getPort(), REDIS_CLIENT_TIMEOUT);
   }
 
-  @AfterClass
-  public static void tearDown() {
+  @After
+  public void tearDown() {
     jedis.close();
   }
 
   @Test
-  public void quit_ClosesConnection() {
+  public void quit_returnsOK() {
     String reply = jedis.quit();
-    assertThat(reply.equals("OK"));
+    assertThat(reply).isEqualTo("OK");
+  }
+
+  @Test
+  public void quit_closesConnection() {
+    jedis.sendCommand(Protocol.Command.QUIT);
+    assertThatThrownBy(() -> jedis.ping()).isInstanceOf(JedisConnectionException.class);
   }
 }
