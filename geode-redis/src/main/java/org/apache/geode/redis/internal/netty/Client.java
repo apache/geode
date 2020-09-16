@@ -19,6 +19,9 @@ package org.apache.geode.redis.internal.netty;
 import java.util.Objects;
 
 import io.netty.channel.Channel;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
+
 
 public class Client {
   private Channel channel;
@@ -42,6 +45,11 @@ public class Client {
   @Override
   public int hashCode() {
     return Objects.hash(channel);
+  }
+
+  public void addShutdownListener(
+      GenericFutureListener<? extends Future<? super Void>> shutdownListener) {
+    channel.closeFuture().addListener(shutdownListener);
   }
 
   public boolean isDead() {

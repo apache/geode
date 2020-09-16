@@ -58,6 +58,10 @@ public class PubSubImpl implements PubSub {
     registerPublishFunction();
   }
 
+  public int getSubscriptionCount() {
+    return subscriptions.size();
+  }
+
   @Override
   public long publish(
       Region<ByteArrayWrapper, RedisData> dataRegion,
