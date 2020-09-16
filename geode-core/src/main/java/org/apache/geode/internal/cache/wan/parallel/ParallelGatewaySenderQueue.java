@@ -1166,7 +1166,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     }
   }
 
-  public void sendQueueRemovalMesssageForDroppedEvent(PartitionedRegion prQ, int bucketId,
+  public void sendQueueRemovalMessageForDroppedEvent(PartitionedRegion prQ, int bucketId,
       Object key) {
     final HashMap<String, Map<Integer, List>> temp = new HashMap<String, Map<Integer, List>>();
     Map bucketIdToDispatchedKeys = new ConcurrentHashMap();
@@ -1714,7 +1714,8 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
    */
   public void cleanUp() {
     regionToDispatchedKeysMap.clear();
-    removalThread.shutdown();
+    // Do not stop the removalThread so that dropped events can be sent to secondary gateway senders
+    // removalThread.shutdown();
     cleanupConflationThreadPool(this.sender);
   }
 
