@@ -18,6 +18,7 @@ package org.apache.geode.redis.internal.pubsub;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -25,6 +26,7 @@ import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -106,7 +108,9 @@ public class SubscriptionsIntegrationTest {
     List<Client> clients = new LinkedList<>();
     ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
     for (int i = 0; i < ITERATIONS; i++) {
-      Client client = new Client(mock(Channel.class));
+      Channel channel = mock(Channel.class);
+      when(channel.closeFuture()).thenReturn(mock(ChannelFuture.class));
+      Client client = new Client(channel);
       clients.add(client);
       subscriptions
           .add(new ChannelSubscription(client, "channel".getBytes(), context, subscriptions));
@@ -127,7 +131,10 @@ public class SubscriptionsIntegrationTest {
     List<Client> clients = new LinkedList<>();
     ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
     for (int i = 0; i < ITERATIONS; i++) {
-      Client client = new Client(mock(Channel.class));
+      Channel channel = mock(Channel.class);
+      when(channel.closeFuture()).thenReturn(mock(ChannelFuture.class));
+      Client client = new Client(channel);
+
       clients.add(client);
       subscriptions
           .add(new ChannelSubscription(client, "channel".getBytes(), context, subscriptions));

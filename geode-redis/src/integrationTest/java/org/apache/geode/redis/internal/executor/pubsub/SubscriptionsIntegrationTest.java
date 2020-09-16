@@ -36,7 +36,7 @@ public class SubscriptionsIntegrationTest {
   public static ExecutorServiceRule executor = new ExecutorServiceRule();
 
   @Test
-  public void testForLeakySubscriptions() {
+  public void testForLeakedSubscriptions() {
 
     for (int i = 0; i < 100; i++) {
       Jedis client = new Jedis("localhost", server.getPort());
