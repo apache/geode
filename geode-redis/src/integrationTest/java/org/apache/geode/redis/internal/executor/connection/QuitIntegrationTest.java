@@ -25,6 +25,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
@@ -61,5 +62,25 @@ public class QuitIntegrationTest {
   public void quit_closesConnection() {
     jedis.sendCommand(Protocol.Command.QUIT);
     assertThatThrownBy(() -> jedis.ping()).isInstanceOf(JedisConnectionException.class);
+  }
+
+  private String randString() {
+    return Long.toHexString(Double.doubleToLongBits(Math.random()));
+  }
+
+  @Test
+  public void quit_preventsSubsequentCommandExecution() {
+    Pipeline pipeline = jedis.pipelined();
+
+    String key = randString();
+    String value = randString();
+
+    pipeline.sendCommand(Protocol.Command.QUIT, new String[] {});
+    pipeline.sendCommand(Protocol.Command.SET, key, value);
+
+    assertThatThrownBy(() -> pipeline.sync()).isInstanceOf(JedisConnectionException.class);
+
+    jedis = new Jedis("localhost", server.getPort(), REDIS_CLIENT_TIMEOUT);
+    assertThat(jedis.get(key)).isNull();
   }
 }

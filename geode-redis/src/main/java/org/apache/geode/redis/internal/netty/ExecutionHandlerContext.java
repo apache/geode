@@ -152,7 +152,9 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
     Command command = (Command) msg;
     command.setChannelHandlerContext(ctx);
-    commandQueue.put(command);
+    if (!channelInactive.get()) {
+      commandQueue.put(command);
+    }
   }
 
   /**
@@ -248,6 +250,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
         logger.debug("GeodeRedisServer-Connection closing with " + ctx.channel().remoteAddress());
       }
 
+      commandQueue.clear();
       commandQueue.offer(TERMINATE_COMMAND);
       redisStats.removeClient();
       ctx.channel().close();
