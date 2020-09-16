@@ -388,7 +388,7 @@ public class PubSubDUnitTest {
 
   @Test
   public void testPubSubWithMoreSubscribersThanNettyWorkerThreads() throws Exception {
-    int CLIENT_COUNT = 1000;
+    int CLIENT_COUNT = 200;
     String CHANNEL_NAME = "best_channel_ever";
 
     List<Jedis> clients = new ArrayList<>();
