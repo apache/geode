@@ -1267,25 +1267,27 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   public void uncleanShutdown(String reason, final Exception e) {
     inhibitForcedDisconnectLogging(false);
 
-    if (services.getShutdownCause() == null) {
-      services.setShutdownCause(e);
-    }
+    try {
+      if (services.getShutdownCause() == null) {
+        services.setShutdownCause(e);
+      }
 
-    if (cleanupTimer != null && !cleanupTimer.isShutdown()) {
-      cleanupTimer.shutdownNow();
-    }
+      if (cleanupTimer != null && !cleanupTimer.isShutdown()) {
+        cleanupTimer.shutdownNow();
+      }
 
-    lifecycleListener.disconnect(e);
+      lifecycleListener.disconnect(e);
 
-    // first shut down communication so we don't do any more harm to other
-    // members
-    services.emergencyClose();
-
-    if (e != null) {
-      try {
-        listener.membershipFailure(reason, e);
-      } catch (RuntimeException re) {
-        logger.warn("Exception caught while shutting down", re);
+      // first shut down communication so we don't do any more harm to other
+      // members
+      services.emergencyClose();
+    } finally {
+      if (e != null) {
+        try {
+          listener.membershipFailure(reason, e);
+        } catch (RuntimeException re) {
+          logger.warn("Exception caught while shutting down", re);
+        }
       }
     }
   }
