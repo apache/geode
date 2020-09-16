@@ -25,6 +25,7 @@ import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
@@ -175,6 +176,11 @@ public class RedisStats {
 
   public void removeClient() {
     stats.incLong(clientId, -1);
+  }
+
+  @VisibleForTesting
+  long getClients() {
+    return stats.getLong(clientId);
   }
 
   public long startPassiveExpirationCheck() {
