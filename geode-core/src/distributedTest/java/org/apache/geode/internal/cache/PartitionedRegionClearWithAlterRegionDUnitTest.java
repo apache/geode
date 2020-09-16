@@ -254,34 +254,6 @@ public class PartitionedRegionClearWithAlterRegionDUnitTest implements Serializa
     asyncInvocation2.await();
   }
 
-  @Ignore
-  // java.lang.IllegalStateException: The entry idle timout set in RegionAttributes is incompatible
-  // with entry idle timout used by other distributed members.
-  public void testMemberJoin() throws InterruptedException {
-    server3 = VM.getVM(2);
-    AsyncInvocation asyncInvocation3 = server3.invokeAsync(() -> {
-      cacheRule.createCache();
-      cacheRule.getCache().createRegionFactory(RegionShortcut.PARTITION).setStatisticsEnabled(true)
-          .create(REGION_NAME);
-    });
-
-    AsyncInvocation asyncInvocation1 = server1.invokeAsync(() -> {
-      cacheRule.getCache().getRegion(REGION_NAME).clear();
-    });
-
-    AsyncInvocation asyncInvocation2 = server2.invokeAsync(() -> {
-      Region region = cacheRule.getCache().getRegion(REGION_NAME);
-      AttributesMutator attributesMutator = region.getAttributesMutator();
-      ExpirationAttributes expirationAttributes =
-          new ExpirationAttributes(1, ExpirationAction.DESTROY);
-      attributesMutator.setEntryIdleTimeout(expirationAttributes);
-    });
-
-    asyncInvocation1.await();
-    asyncInvocation2.await();
-    asyncInvocation3.await();
-  }
-
   // @Test
   public void testMemberLeave() throws InterruptedException {
     initialize();
