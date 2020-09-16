@@ -22,7 +22,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.stream.IntStream;
 
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
