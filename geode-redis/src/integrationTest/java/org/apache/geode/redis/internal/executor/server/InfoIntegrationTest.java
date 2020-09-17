@@ -46,8 +46,7 @@ public class InfoIntegrationTest {
     jedis =
         new Jedis("localhost",
             server.getPort(),
-            REDIS_CLIENT_TIMEOUT
-        );
+            REDIS_CLIENT_TIMEOUT);
   }
 
   @AfterClass
@@ -163,6 +162,7 @@ public class InfoIntegrationTest {
     assertThat(actualResult).contains(SERVER_PROPERTIES);
     assertThat(actualResult).contains(PERSISTENCE_PROPERTIES);
   }
+
   @Test
   public void shouldReturnDefaultsGivenAllParameter() {
     String actualResult = jedis.info("all");
@@ -175,7 +175,6 @@ public class InfoIntegrationTest {
   public void shouldThrowExceptionIfGivenMoreThanOneParameter() {
     assertThatThrownBy(
         () -> jedis.sendCommand(
-            Protocol.Command.INFO, "Server", "Cluster")
-    ).hasMessageContaining("ERR syntax error");
+            Protocol.Command.INFO, "Server", "Cluster")).hasMessageContaining("ERR syntax error");
   }
 }

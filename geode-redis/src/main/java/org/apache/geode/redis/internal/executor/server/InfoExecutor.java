@@ -29,7 +29,7 @@ public class InfoExecutor extends AbstractExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command,
-                                      ExecutionHandlerContext context) {
+      ExecutionHandlerContext context) {
     final int TCP_PORT = context.getServerPort();
     final String CURRENT_REDIS_VERSION = "5.0.6";
     final String SERVER_STRING =
@@ -55,11 +55,12 @@ public class InfoExecutor extends AbstractExecutor {
 
     String resultsString;
 
-    if (commands.size() > 2) {
+    if (containsTooManyParameters(commands)) {
       throw new RedisParametersMismatchException(
           RedisConstants.ERROR_SYNTAX);
     }
-    if (commands.size() == 2) {
+    if (containsOptionalParameter(commands)) {
+
       String parameter = commands.get(1).toString();
       if (parameter.equalsIgnoreCase("server")) {
         resultsString = SERVER_STRING;
@@ -67,9 +68,9 @@ public class InfoExecutor extends AbstractExecutor {
         resultsString = CLUSTER_STRING;
       } else if (parameter.equalsIgnoreCase("persistence")) {
         resultsString = PERSISTENCE_STRING;
-      } else if(parameter.equalsIgnoreCase("default")){
+      } else if (parameter.equalsIgnoreCase("default")) {
         resultsString = INFO_STRING;
-      } else if(parameter.equalsIgnoreCase("all")){
+      } else if (parameter.equalsIgnoreCase("all")) {
         resultsString = INFO_STRING;
       } else {
         resultsString = "";
@@ -79,5 +80,13 @@ public class InfoExecutor extends AbstractExecutor {
     }
 
     return RedisResponse.bulkString(resultsString);
+  }
+
+  private boolean containsOptionalParameter(List<ByteArrayWrapper> commands) {
+    return commands.size() == 2;
+  }
+
+  private boolean containsTooManyParameters(List<ByteArrayWrapper> commands) {
+    return commands.size() > 2;
   }
 }
