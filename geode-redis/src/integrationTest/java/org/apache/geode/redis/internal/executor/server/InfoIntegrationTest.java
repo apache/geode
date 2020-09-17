@@ -15,18 +15,21 @@
 
 package org.apache.geode.redis.internal.executor.server;
 
-
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.util.Arrays;
+import java.util.List;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
-
 
 public class InfoIntegrationTest {
   public static Jedis jedis;
@@ -34,12 +37,17 @@ public class InfoIntegrationTest {
   public static int REDIS_CLIENT_TIMEOUT = 10000;
 
   @ClassRule
-  public static GeodeRedisServerRule server = new GeodeRedisServerRule()
-      .withProperty(LOG_LEVEL, "info");
+  public static GeodeRedisServerRule server =
+      new GeodeRedisServerRule()
+          .withProperty(LOG_LEVEL, "info");
 
   @BeforeClass
   public static void setUp() {
-    jedis = new Jedis("localhost", server.getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis =
+        new Jedis("localhost",
+            server.getPort(),
+            REDIS_CLIENT_TIMEOUT
+        );
   }
 
   @AfterClass
@@ -95,5 +103,79 @@ public class InfoIntegrationTest {
     String actualResult = jedis.info();
 
     assertThat(actualResult).contains(EXPECTED_RESULT);
+  }
+
+  final List<String> SERVER_PROPERTIES =
+      Arrays.asList(
+          "# Server",
+          "redis_version:",
+          "tcp_port:",
+          "redis_mode:");
+
+  final List<String> PERSISTENCE_PROPERTIES =
+      Arrays.asList(
+          "# Persistence",
+          "loading:");
+
+  final List<String> CLUSTER_PROPERTIES =
+      Arrays.asList(
+          "# Cluster",
+          "cluster_enabled:");
+
+  @Test
+  public void shouldReturnServerSectionsGivenServerSectionParameter() {
+    String actualResult = jedis.info("server");
+
+    assertThat(actualResult).contains(SERVER_PROPERTIES);
+    assertThat(actualResult).doesNotContain(CLUSTER_PROPERTIES);
+    assertThat(actualResult).doesNotContain(PERSISTENCE_PROPERTIES);
+  }
+
+  @Test
+  public void shouldReturnClusterSectionsGivenClusterSectionParameter() {
+    String actualResult = jedis.info("cluster");
+
+    assertThat(actualResult).contains(CLUSTER_PROPERTIES);
+    assertThat(actualResult).doesNotContain(SERVER_PROPERTIES);
+    assertThat(actualResult).doesNotContain(PERSISTENCE_PROPERTIES);
+  }
+
+  @Test
+  public void shouldReturnPersistenceSectionsGivenPersistenceSectionParameter() {
+    String actualResult = jedis.info("persistence");
+
+    assertThat(actualResult).contains(PERSISTENCE_PROPERTIES);
+    assertThat(actualResult).doesNotContain(SERVER_PROPERTIES);
+    assertThat(actualResult).doesNotContain(CLUSTER_PROPERTIES);
+  }
+
+  @Test
+  public void shouldReturnEmptyStringGivenUnknownParameter() {
+    String actualResult = jedis.info("nonesuch");
+    assertThat(actualResult).isEqualTo("");
+  }
+
+
+  @Test
+  public void shouldReturnDefaultsGivenDefaultParameter() {
+    String actualResult = jedis.info("default");
+    assertThat(actualResult).contains(CLUSTER_PROPERTIES);
+    assertThat(actualResult).contains(SERVER_PROPERTIES);
+    assertThat(actualResult).contains(PERSISTENCE_PROPERTIES);
+  }
+  @Test
+  public void shouldReturnDefaultsGivenAllParameter() {
+    String actualResult = jedis.info("all");
+    assertThat(actualResult).contains(CLUSTER_PROPERTIES);
+    assertThat(actualResult).contains(SERVER_PROPERTIES);
+    assertThat(actualResult).contains(PERSISTENCE_PROPERTIES);
+  }
+
+  @Test
+  public void shouldThrowExceptionIfGivenMoreThanOneParameter() {
+    assertThatThrownBy(
+        () -> jedis.sendCommand(
+            Protocol.Command.INFO, "Server", "Cluster")
+    ).hasMessageContaining("ERR syntax error");
   }
 }
