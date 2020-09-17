@@ -30,14 +30,15 @@ public class NativeRedisTestRule extends ExternalResource implements Serializabl
 
   private GenericContainer<?> redisContainer;
   private final RuleChain delegate;
+  private final int PORT_TO_EXPOSE = 6379;
 
   public NativeRedisTestRule() {
     delegate = RuleChain
         // Docker compose does not work on windows in CI. Ignore this test on windows
         // Using a RuleChain to make sure we ignore the test before the rule comes into play
         .outerRule(new IgnoreOnWindowsRule())
-        // The ryuk container is responsible for cleanup at JVM exit. Since this rule already closes
-        // the
+        // The ryuk container is responsible for cleanup at JVM exit.
+        // Since this rule already closes the
         // container it has started, we do not need the ryuk container.
         .around(new EnvironmentVariables().set("TESTCONTAINERS_RYUK_DISABLED", "true"));
   }
@@ -46,12 +47,20 @@ public class NativeRedisTestRule extends ExternalResource implements Serializabl
     return redisContainer.getFirstMappedPort();
   }
 
+  public int getExposedPort() {
+    return redisContainer.getExposedPorts().get(0);
+  }
+
   @Override
   public Statement apply(Statement base, Description description) {
     Statement containerStatement = new Statement() {
       @Override
       public void evaluate() throws Throwable {
-        redisContainer = new GenericContainer<>("redis:5.0.6").withExposedPorts(6379);
+
+        redisContainer =
+            new GenericContainer<>("redis:5.0.6")
+                .withExposedPorts(PORT_TO_EXPOSE);
+
         redisContainer.start();
         try {
           base.evaluate(); // This will run the test.

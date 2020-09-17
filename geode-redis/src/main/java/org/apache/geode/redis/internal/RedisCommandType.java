@@ -68,6 +68,7 @@ import org.apache.geode.redis.internal.executor.pubsub.SubscribeExecutor;
 import org.apache.geode.redis.internal.executor.pubsub.UnsubscribeExecutor;
 import org.apache.geode.redis.internal.executor.server.DBSizeExecutor;
 import org.apache.geode.redis.internal.executor.server.FlushAllExecutor;
+import org.apache.geode.redis.internal.executor.server.InfoExecutor;
 import org.apache.geode.redis.internal.executor.server.ShutDownExecutor;
 import org.apache.geode.redis.internal.executor.server.TimeExecutor;
 import org.apache.geode.redis.internal.executor.set.SAddExecutor;
@@ -255,6 +256,7 @@ public enum RedisCommandType {
   DBSIZE(new DBSizeExecutor(), UNSUPPORTED),
   FLUSHALL(new FlushAllExecutor(), UNSUPPORTED),
   FLUSHDB(new FlushAllExecutor(), UNSUPPORTED),
+  INFO(new InfoExecutor(), UNSUPPORTED),
   SHUTDOWN(new ShutDownExecutor(), UNSUPPORTED),
   TIME(new TimeExecutor(), UNSUPPORTED),
 
@@ -286,7 +288,6 @@ public enum RedisCommandType {
   GEORADIUS(null, UNIMPLEMENTED),
   GEORADIUSBYMEMBER(null, UNIMPLEMENTED),
   HELLO(null, UNIMPLEMENTED),
-  INFO(null, UNIMPLEMENTED),
   LATENCY(null, UNIMPLEMENTED),
   LASTSAVE(null, UNIMPLEMENTED),
   LINDEX(null, UNIMPLEMENTED),
