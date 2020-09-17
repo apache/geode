@@ -51,8 +51,10 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
+import org.apache.geode.test.dunit.rules.SerializableFunction;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 
 public class PubSubDUnitTest {
@@ -94,12 +96,17 @@ public class PubSubDUnitTest {
 
     locatorProperties = new Properties();
     locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, "15000");
-
     locator = cluster.startLocatorVM(0, locatorProperties);
-    server1 = cluster.startRedisVM(1, locator.getPort());
-    server2 = cluster.startRedisVM(2, locator.getPort());
-    server3 = cluster.startRedisVM(3, locator.getPort());
-    server4 = cluster.startRedisVM(4, locator.getPort());
+
+    int locatorPort = locator.getPort();
+    SerializableFunction<ServerStarterRule> operator = x -> x
+        .withSystemProperty("io.netty.eventLoopThreads", "10")
+        .withConnectionToLocator(locatorPort);
+
+    server1 = cluster.startRedisVM(1, operator);
+    server2 = cluster.startRedisVM(2, operator);
+    server3 = cluster.startRedisVM(3, operator);
+    server4 = cluster.startRedisVM(4, operator);
     server5 = cluster.startServerVM(5, locator.getPort());
 
     for (VM v : Host.getHost(0).getAllVMs()) {
@@ -388,7 +395,7 @@ public class PubSubDUnitTest {
 
   @Test
   public void testPubSubWithMoreSubscribersThanNettyWorkerThreads() throws Exception {
-    int CLIENT_COUNT = 1000;
+    int CLIENT_COUNT = 100;
     String CHANNEL_NAME = "best_channel_ever";
 
     List<Jedis> clients = new ArrayList<>();

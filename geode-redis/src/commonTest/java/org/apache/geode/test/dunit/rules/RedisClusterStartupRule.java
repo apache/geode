@@ -47,6 +47,10 @@ public class RedisClusterStartupRule extends ClusterStartupRule {
         .withConnectionToLocator(locatorPort));
   }
 
+  public MemberVM startRedisVM(int index, SerializableFunction<ServerStarterRule> ruleOperator) {
+    return startServerVM(index, x -> ruleOperator.apply(withRedis(x)));
+  }
+
   private ServerStarterRule withRedis(ServerStarterRule rule) {
     return rule.withProperty(REDIS_BIND_ADDRESS, "localhost")
         .withProperty(REDIS_PORT, "0")
