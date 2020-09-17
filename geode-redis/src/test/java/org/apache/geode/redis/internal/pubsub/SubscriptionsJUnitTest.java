@@ -18,8 +18,10 @@ package org.apache.geode.redis.internal.pubsub;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import org.junit.Test;
 
 import org.apache.geode.redis.internal.executor.GlobPattern;
@@ -33,8 +35,10 @@ public class SubscriptionsJUnitTest {
     Subscriptions subscriptions = new Subscriptions();
 
     Channel channel = mock(Channel.class);
-    ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
+    when(channel.closeFuture()).thenReturn(mock(ChannelFuture.class));
     Client client = new Client(channel);
+
+    ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
 
     subscriptions
         .add(new ChannelSubscription(client, "subscriptions".getBytes(), context, subscriptions));
@@ -48,8 +52,11 @@ public class SubscriptionsJUnitTest {
     Subscriptions subscriptions = new Subscriptions();
 
     Channel channel = mock(Channel.class);
-    ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
+    when(channel.closeFuture()).thenReturn(mock(ChannelFuture.class));
     Client client = new Client(channel);
+
+    ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
+
     GlobPattern pattern = new GlobPattern("sub*s");
 
     subscriptions.add(new PatternSubscription(client, pattern, context, subscriptions));
@@ -62,8 +69,11 @@ public class SubscriptionsJUnitTest {
     Subscriptions subscriptions = new Subscriptions();
 
     Channel channel = mock(Channel.class);
-    ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
+    when(channel.closeFuture()).thenReturn(mock(ChannelFuture.class));
     Client client = new Client(channel);
+
+    ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
+
     GlobPattern globPattern1 = new GlobPattern("sub*s");
     GlobPattern globPattern2 = new GlobPattern("subscriptions");
 
@@ -79,8 +89,10 @@ public class SubscriptionsJUnitTest {
     Subscriptions subscriptions = new Subscriptions();
 
     Channel channel = mock(Channel.class);
-    ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
+    when(channel.closeFuture()).thenReturn(mock(ChannelFuture.class));
     Client client = new Client(channel);
+    ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
+
     GlobPattern globby = new GlobPattern("sub*s");
 
     subscriptions
@@ -105,10 +117,11 @@ public class SubscriptionsJUnitTest {
   public void findSubscribers() {
     Subscriptions subscriptions = new Subscriptions();
 
+    ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
     Channel mockChannelOne = mock(Channel.class);
     Channel mockChannelTwo = mock(Channel.class);
-
-    ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
+    when(mockChannelOne.closeFuture()).thenReturn(mock(ChannelFuture.class));
+    when(mockChannelTwo.closeFuture()).thenReturn(mock(ChannelFuture.class));
     Client clientOne = new Client(mockChannelOne);
     Client clientTwo = new Client(mockChannelTwo);
 
@@ -126,11 +139,17 @@ public class SubscriptionsJUnitTest {
   @Test
   public void removeByClient() {
     Subscriptions subscriptions = new Subscriptions();
+
     Channel mockChannelOne = mock(Channel.class);
     Channel mockChannelTwo = mock(Channel.class);
-    ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
+
+    when(mockChannelOne.closeFuture()).thenReturn(mock(ChannelFuture.class));
+    when(mockChannelTwo.closeFuture()).thenReturn(mock(ChannelFuture.class));
+
     Client clientOne = new Client(mockChannelOne);
     Client clientTwo = new Client(mockChannelTwo);
+
+    ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
 
     ChannelSubscription subscriptionOne =
         new ChannelSubscription(clientOne, "subscriptions".getBytes(), context, subscriptions);
@@ -150,10 +169,11 @@ public class SubscriptionsJUnitTest {
   public void removeByClientAndPattern() {
 
     Subscriptions subscriptions = new Subscriptions();
-    Channel mockChannelOne = mock(Channel.class);
+    Channel channel = mock(Channel.class);
+    when(channel.closeFuture()).thenReturn(mock(ChannelFuture.class));
+    Client client = new Client(channel);
 
     ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
-    Client client = new Client(mockChannelOne);
 
     ChannelSubscription channelSubscriberOne =
         new ChannelSubscription(client, "subscriptions".getBytes(), context, subscriptions);

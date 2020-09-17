@@ -52,6 +52,8 @@ public abstract class AbstractSubscription implements Subscription {
     this.client = client;
     this.context = context;
     this.subscriptions = subscriptions;
+
+    client.addShutdownListener(future -> shutdown());
   }
 
   @Override
