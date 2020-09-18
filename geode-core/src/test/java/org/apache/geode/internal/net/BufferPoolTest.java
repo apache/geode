@@ -113,4 +113,57 @@ public class BufferPoolTest {
     assertThat(newBuffer.position()).isEqualTo(16384);
     assertThat(newBuffer.limit()).isEqualTo(newBuffer.capacity());
   }
+
+  @Test
+  public void checkBufferSizeAfterAllocation() throws Exception {
+    ByteBuffer buffer = bufferPool.acquireDirectReceiveBuffer(100);
+
+    ByteBuffer newBuffer =
+        bufferPool.acquireDirectReceiveBuffer(10000);
+    assertThat(buffer.isDirect()).isTrue();
+    assertThat(newBuffer.isDirect()).isTrue();
+    assertThat(buffer.capacity()).isEqualTo(100);
+    assertThat(newBuffer.capacity()).isEqualTo(10000);
+
+    // buffer should be ready to read the same amount of data
+    assertThat(buffer.position()).isEqualTo(0);
+    assertThat(buffer.limit()).isEqualTo(100);
+    assertThat(newBuffer.position()).isEqualTo(0);
+    assertThat(newBuffer.limit()).isEqualTo(10000);
+  }
+
+  @Test
+  public void checkBufferSizeAfterAcquire() throws Exception {
+    ByteBuffer buffer = bufferPool.acquireDirectReceiveBuffer(100);
+
+    ByteBuffer newBuffer =
+        bufferPool.acquireDirectReceiveBuffer(10000);
+    assertThat(buffer.capacity()).isEqualTo(100);
+    assertThat(newBuffer.capacity()).isEqualTo(10000);
+    assertThat(buffer.isDirect()).isTrue();
+    assertThat(newBuffer.isDirect()).isTrue();
+
+    assertThat(buffer.position()).isEqualTo(0);
+    assertThat(buffer.limit()).isEqualTo(100);
+    assertThat(newBuffer.position()).isEqualTo(0);
+    assertThat(newBuffer.limit()).isEqualTo(10000);
+
+    bufferPool.releaseReceiveBuffer(buffer);
+    bufferPool.releaseReceiveBuffer(newBuffer);
+
+    buffer = bufferPool.acquireDirectReceiveBuffer(1000);
+    newBuffer =
+        bufferPool.acquireDirectReceiveBuffer(15000);
+
+    assertThat(buffer.capacity()).isEqualTo(1000);
+    assertThat(newBuffer.capacity()).isEqualTo(15000);
+    assertThat(buffer.isDirect()).isTrue();
+    assertThat(newBuffer.isDirect()).isTrue();
+
+    assertThat(buffer.position()).isEqualTo(0);
+    assertThat(buffer.limit()).isEqualTo(1000);
+    assertThat(newBuffer.position()).isEqualTo(0);
+    assertThat(newBuffer.limit()).isEqualTo(15000);
+  }
+
 }

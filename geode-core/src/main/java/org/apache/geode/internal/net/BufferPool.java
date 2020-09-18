@@ -15,15 +15,20 @@
 package org.apache.geode.internal.net;
 
 import java.lang.ref.SoftReference;
+import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.util.IdentityHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import org.apache.geode.InternalGemFireException;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.internal.Assert;
 
 public class BufferPool {
   private final DMStats stats;
+
+  private Method parentOfSliceMethod;
 
   /**
    * Buffers may be acquired from the Buffers pool
@@ -85,21 +90,27 @@ public class BufferPool {
               stats.incReceiverBufferSize(-refSize, true);
             }
           }
-        } else if (bb.capacity() >= size) {
-          bb.rewind();
-          bb.limit(size);
-          return bb;
         } else {
-          // wasn't big enough so put it back in the queue
-          Assert.assertTrue(bufferQueue.offer(ref));
-          if (alreadySeen == null) {
-            alreadySeen = new IdentityHashMap<>();
-          }
-          if (alreadySeen.put(ref, ref) != null) {
-            // if it returns non-null then we have already seen this item
-            // so we have worked all the way through the queue once.
-            // So it is time to give up and allocate a new buffer.
-            break;
+          int capacity = bb.capacity();
+          if (capacity > size) {
+            bb.position(0).limit(size);
+            return bb.slice();
+          } else if (capacity == size) {
+            bb.rewind();
+            bb.limit(size);
+            return bb;
+          } else {
+            // wasn't big enough so put it back in the queue
+            Assert.assertTrue(bufferQueue.offer(ref));
+            if (alreadySeen == null) {
+              alreadySeen = new IdentityHashMap<>();
+            }
+            if (alreadySeen.put(ref, ref) != null) {
+              // if it returns non-null then we have already seen this item
+              // so we have worked all the way through the queue once.
+              // So it is time to give up and allocate a new buffer.
+              break;
+            }
           }
         }
         ref = bufferQueue.poll();
@@ -227,6 +238,7 @@ public class BufferPool {
    */
   private void releaseBuffer(ByteBuffer bb, boolean send) {
     if (bb.isDirect()) {
+      bb = getPoolableBuffer(bb);
       BBSoftReference bbRef = new BBSoftReference(bb, send);
       bufferQueue.offer(bbRef);
     } else {
@@ -236,6 +248,41 @@ public class BufferPool {
         stats.incReceiverBufferSize(-bb.capacity(), false);
       }
     }
+  }
+
+  /**
+   * If we hand out a buffer that is larger than the requested size we create a
+   * "slice" of the buffer having the requested capacity and hand that out instead.
+   * When we put the buffer back in the pool we need to find the original, non-sliced,
+   * buffer. This is held in DirectBuffer in its "attachment" field, which is a public
+   * method, though DirectBuffer is package-private.
+   */
+  @VisibleForTesting
+  public ByteBuffer getPoolableBuffer(ByteBuffer buffer) {
+    ByteBuffer result = buffer;
+    if (parentOfSliceMethod == null) {
+      Class clazz = buffer.getClass();
+      try {
+        Method method = clazz.getMethod("attachment");
+        method.setAccessible(true);
+        parentOfSliceMethod = method;
+      } catch (Exception e) {
+        throw new InternalGemFireException("unable to retrieve underlying byte buffer", e);
+      }
+    }
+    try {
+      Object attachment = parentOfSliceMethod.invoke(buffer);
+      if (attachment instanceof ByteBuffer) {
+        result = (ByteBuffer) attachment;
+      } else if (attachment != null) {
+        throw new InternalGemFireException(
+            "direct byte buffer attachment was not a byte buffer but a " +
+                attachment.getClass().getName());
+      }
+    } catch (Exception e) {
+      throw new InternalGemFireException("unable to retrieve underlying byte buffer", e);
+    }
+    return result;
   }
 
   /**

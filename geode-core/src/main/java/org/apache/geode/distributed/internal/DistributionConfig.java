@@ -1386,7 +1386,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   /**
    * The default value of the {@link ConfigurationProperties#SOCKET_BUFFER_SIZE} property
    */
-  int DEFAULT_SOCKET_BUFFER_SIZE = 32768;
+  static int DEFAULT_SOCKET_BUFFER_SIZE = 32768;
   /**
    * The minimum {@link ConfigurationProperties#SOCKET_BUFFER_SIZE}.
    * <p>
