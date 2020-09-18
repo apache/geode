@@ -14,7 +14,6 @@
  */
 package org.apache.geode.test.dunit.internal;
 
-import static java.util.Objects.isNull;
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_MANAGEMENT_REST_SERVICE;
@@ -36,9 +35,7 @@ import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
 import java.rmi.registry.LocateRegistry;
@@ -198,8 +195,6 @@ public class DUnitLauncher {
     DUNIT_SUSPECT_FILE = new File(SUSPECT_FILENAME);
     DUNIT_SUSPECT_FILE.delete();
     DUNIT_SUSPECT_FILE.deleteOnExit();
-
-    initializeSessionDir();
 
     // create an RMI registry and add an object to share our tests config
     int namingPort = AvailablePortHelper.getRandomAvailableTCPPort();
@@ -407,21 +402,5 @@ public class DUnitLauncher {
             + suspectStringBuilder);
       }
     }
-  }
-
-
-  public static Path getSessionDir() {
-    if (isNull(sessionDir)) {
-      // In the test worker JVM, launch() initializes sessionDir. So if sessionDir is null, this
-      // must be a ChildVM, and each ChildVM is started one directory below the session root.
-      // TODO: DHE I do not like assuming that we're one dir below the dunit session root dir.
-      sessionDir = Paths.get(".").normalize().toAbsolutePath();
-    }
-    return sessionDir;
-  }
-
-  private static void initializeSessionDir() throws IOException {
-    Path currentWorkingDir = Paths.get(".").normalize().toAbsolutePath();
-    sessionDir = Files.createTempDirectory(currentWorkingDir, TEST_ROOT_DIR_PREFIX);
   }
 }

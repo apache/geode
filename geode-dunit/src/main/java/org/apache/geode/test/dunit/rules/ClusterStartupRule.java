@@ -39,6 +39,7 @@ import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.test.TestRootDirectory;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.SerializableConsumerIF;
@@ -363,7 +364,7 @@ public class ClusterStartupRule implements SerializableTestRule {
   }
 
   public File getWorkingDirRoot() {
-    return DUnitLauncher.getSessionDir().toFile();
+    return TestRootDirectory.file();
   }
 
   public static void stopElementInsideVM() {

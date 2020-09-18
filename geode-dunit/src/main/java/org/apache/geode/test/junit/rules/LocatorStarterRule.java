@@ -16,7 +16,6 @@ package org.apache.geode.test.junit.rules;
 
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_MANAGEMENT_REST_SERVICE;
-import static org.apache.geode.distributed.Locator.startLocatorAndDS;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertTrue;
 
@@ -27,6 +26,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.test.TestRootDirectory;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 
 /**
@@ -90,7 +90,9 @@ public class LocatorStarterRule extends MemberStarterRule<LocatorStarterRule> im
   public void startLocator() {
     try {
       // this will start a jmx manager and admin rest service by default
-      locator = (InternalLocator) startLocatorAndDS(memberPort, null, properties);
+      locator = InternalLocator.startLocator(memberPort, null, null, null, null, true, properties,
+          null, TestRootDirectory
+              .path());
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }

@@ -40,6 +40,7 @@ import org.apache.commons.lang3.SystemUtils;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.test.TestRootDirectory;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.version.VersionManager;
 
@@ -122,7 +123,7 @@ class ProcessManager implements ChildVMLauncher {
 
   public static File getVMDir(String version, int vmNum) {
     String vmSubdirName = VM.getVMName(VersionManager.CURRENT_VERSION, vmNum);
-    return DUnitLauncher.getSessionDir().resolve(vmSubdirName).toFile();
+    return new File(TestRootDirectory.file(), vmSubdirName);
   }
 
   public synchronized void killVMs() {

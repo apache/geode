@@ -77,6 +77,7 @@ import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.security.SecurityManager;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
+import org.apache.geode.test.TestRootDirectory;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.internal.DUnitLauncher;
 import org.apache.geode.test.junit.rules.accessible.AccessibleRestoreSystemProperties;
@@ -162,7 +163,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
     TypeRegistry.init();
 
     // delete the first-level children files that are created in the tests
-    if (cleanWorkingDir)
+    if (cleanWorkingDir) {
       Arrays.stream(getWorkingDir().listFiles())
           // do not delete the pre-existing files
           .filter(f -> !firstLevelChildrenFile.contains(f))
@@ -170,6 +171,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
           .filter(
               f -> !(f.isDirectory() && f.getName().startsWith(DUnitLauncher.TEST_ROOT_DIR_PREFIX)))
           .forEach(FileUtils::deleteQuietly);
+    }
   }
 
   public T withPort(int memberPort) {
@@ -573,7 +575,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
 
   @Override
   public File getWorkingDir() {
-    return new File(System.getProperty("user.dir"));
+    return TestRootDirectory.file();
   }
 
   @Override
