@@ -88,7 +88,9 @@ public class MsgStreamerTest {
 
     when(connection1.getRemoteAddress()).thenReturn(member1);
     when(connection1.getRemoteVersion()).thenReturn(Version.CURRENT);
+    when(connection1.getSendBufferSize()).thenReturn(Connection.SMALL_BUFFER_SIZE);
     when(connection2.getRemoteAddress()).thenReturn(member2);
+    when(connection2.getSendBufferSize()).thenReturn(Connection.SMALL_BUFFER_SIZE);
     if (mixedDestinationVersions) {
       when(connection1.getRemoteVersion()).thenReturn(Version.GEODE_1_12_0);
     } else {

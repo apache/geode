@@ -121,8 +121,10 @@ public class BufferPoolTest {
 
     ByteBuffer newBuffer =
         bufferPool.acquireDirectReceiveBuffer(10000);
-    assertThat(buffer.capacity()).isGreaterThanOrEqualTo(4096);
-    assertThat(newBuffer.capacity()).isGreaterThanOrEqualTo(32768);
+    assertThat(buffer.isDirect()).isTrue();
+    assertThat(newBuffer.isDirect()).isTrue();
+    assertThat(buffer.capacity()).isEqualTo(100);
+    assertThat(newBuffer.capacity()).isEqualTo(10000);
 
     // buffer should be ready to read the same amount of data
     assertThat(buffer.position()).isEqualTo(0);
@@ -137,23 +139,35 @@ public class BufferPoolTest {
 
     ByteBuffer newBuffer =
         bufferPool.acquireDirectReceiveBuffer(10000);
-    assertThat(buffer.capacity()).isGreaterThanOrEqualTo(4096);
-    assertThat(newBuffer.capacity()).isGreaterThanOrEqualTo(32768);
+    assertThat(buffer.capacity()).isEqualTo(100);
+    assertThat(newBuffer.capacity()).isEqualTo(10000);
+    assertThat(buffer.isDirect()).isTrue();
+    assertThat(newBuffer.isDirect()).isTrue();
+    assertThat(bufferPool.getPoolableBuffer(buffer).capacity())
+        .isGreaterThanOrEqualTo(BufferPool.SMALL_BUFFER_SIZE);
+    assertThat(bufferPool.getPoolableBuffer(newBuffer).capacity())
+        .isGreaterThanOrEqualTo(BufferPool.MEDIUM_BUFFER_SIZE);
 
     assertThat(buffer.position()).isEqualTo(0);
     assertThat(buffer.limit()).isEqualTo(100);
     assertThat(newBuffer.position()).isEqualTo(0);
     assertThat(newBuffer.limit()).isEqualTo(10000);
+
     bufferPool.releaseReceiveBuffer(buffer);
     bufferPool.releaseReceiveBuffer(newBuffer);
 
     buffer = bufferPool.acquireDirectReceiveBuffer(1000);
-
     newBuffer =
         bufferPool.acquireDirectReceiveBuffer(15000);
 
-    assertThat(buffer.capacity()).isGreaterThanOrEqualTo(4096);
-    assertThat(newBuffer.capacity()).isGreaterThanOrEqualTo(32768);
+    assertThat(buffer.capacity()).isEqualTo(1000);
+    assertThat(newBuffer.capacity()).isEqualTo(15000);
+    assertThat(buffer.isDirect()).isTrue();
+    assertThat(newBuffer.isDirect()).isTrue();
+    assertThat(bufferPool.getPoolableBuffer(buffer).capacity())
+        .isGreaterThanOrEqualTo(BufferPool.SMALL_BUFFER_SIZE);
+    assertThat(bufferPool.getPoolableBuffer(newBuffer).capacity())
+        .isGreaterThanOrEqualTo(BufferPool.MEDIUM_BUFFER_SIZE);
 
     assertThat(buffer.position()).isEqualTo(0);
     assertThat(buffer.limit()).isEqualTo(1000);
