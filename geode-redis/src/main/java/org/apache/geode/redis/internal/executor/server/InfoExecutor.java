@@ -15,6 +15,7 @@
 
 package org.apache.geode.redis.internal.executor.server;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.geode.redis.internal.ParameterRequirements.RedisParametersMismatchException;
@@ -27,66 +28,120 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class InfoExecutor extends AbstractExecutor {
 
+  private final String CURRENT_REDIS_VERSION = "5.0.6";
+  private ExecutionHandlerContext context = null;
+
   @Override
   public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
-    final int TCP_PORT = context.getServerPort();
-    final String CURRENT_REDIS_VERSION = "5.0.6";
-    final String SERVER_STRING =
-        "# Server\r\n" +
-            "redis_version:" + CURRENT_REDIS_VERSION + "\r\n" +
-            "redis_mode:standalone\r\n" +
-            "tcp_port:" + TCP_PORT + "\r\n";
-    final String PERSISTENCE_STRING =
-        "# Persistence\r\n" +
-            "loading:0\r\n";
-    final String CLUSTER_STRING =
-        "# Cluster\r\n" +
-            "cluster_enabled:0\r\n";
-    final String SECTION_SEPARATOR = "\r\n";
-
-    final String INFO_STRING =
-        SERVER_STRING + SECTION_SEPARATOR +
-            PERSISTENCE_STRING + SECTION_SEPARATOR +
-            CLUSTER_STRING;
-
+                                      ExecutionHandlerContext context) {
+    this.context = context;
+    String resultsString;
     List<ByteArrayWrapper> commands =
         command.getProcessedCommandWrappers();
 
-    String resultsString;
-
     if (containsTooManyParameters(commands)) {
-      throw new RedisParametersMismatchException(
-          RedisConstants.ERROR_SYNTAX);
+      throw new RedisParametersMismatchException(RedisConstants.ERROR_SYNTAX);
     }
-    if (containsOptionalParameter(commands)) {
 
+    if (containsOptionalParameter(commands)) {
       String parameter = commands.get(1).toString();
-      if (parameter.equalsIgnoreCase("server")) {
-        resultsString = SERVER_STRING;
-      } else if (parameter.equalsIgnoreCase("cluster")) {
-        resultsString = CLUSTER_STRING;
-      } else if (parameter.equalsIgnoreCase("persistence")) {
-        resultsString = PERSISTENCE_STRING;
-      } else if (parameter.equalsIgnoreCase("default")) {
-        resultsString = INFO_STRING;
-      } else if (parameter.equalsIgnoreCase("all")) {
-        resultsString = INFO_STRING;
-      } else {
-        resultsString = "";
-      }
+      resultsString = getReturnValueFor(parameter);
     } else {
-      resultsString = INFO_STRING;
+      resultsString = getDefaultSectionsString();
     }
 
     return RedisResponse.bulkString(resultsString);
+  }
+
+  private String getReturnValueFor(String parameter) {
+    parameter = parameter.toUpperCase();
+
+    String resultsString;
+
+    if (isAKnownSection(parameter)) {
+      resultsString = getSectionInfo(parameter);
+    } else if (isAnotherKnownOption(parameter)) {
+      resultsString = getInfoForOption(parameter);
+    } else {
+      resultsString = "";
+    }
+
+    return resultsString;
+  }
+
+  private boolean isAKnownSection(String parameter) {
+    List knownSections =
+        Arrays.asList("SERVER", "CLUSTER", "PERSISTENCE");
+
+    return knownSections.contains(parameter);
+  }
+
+  private boolean isAnotherKnownOption(String parameter) {
+    List knownOptions =
+        Arrays.asList("DEFAULT", "ALL");
+
+    return knownOptions.contains(parameter);
+  }
+
+  private String getInfoForOption(String parameter) {
+    String infoString = null;
+    if (parameter.equals("DEFAULT")) {
+      infoString = getDefaultSectionsString();
+    } else if (parameter.equals("ALL")) {
+      infoString = getDefaultSectionsString();
+    }
+    return infoString;
+  }
+
+  private String getSectionInfo(String section) {
+    String sectionInfo = null;
+    if (section.equalsIgnoreCase("server")) {
+      sectionInfo = getServerSection();
+    } else if (
+        section.equalsIgnoreCase("cluster")) {
+      sectionInfo = getClusterSection();
+    } else if (section
+        .equalsIgnoreCase("persistence")) {
+      sectionInfo = getPersistenceSection();
+    }
+    return sectionInfo;
+  }
+
+  private boolean containsTooManyParameters(List<ByteArrayWrapper> commands) {
+    return commands.size() > 2;
   }
 
   private boolean containsOptionalParameter(List<ByteArrayWrapper> commands) {
     return commands.size() == 2;
   }
 
-  private boolean containsTooManyParameters(List<ByteArrayWrapper> commands) {
-    return commands.size() > 2;
+  private String getDefaultSectionsString() {
+    return getServerSection() + getSectionSeparator() +
+        getPersistenceSection() + getSectionSeparator() +
+        getClusterSection();
+  }
+
+  private String getSectionSeparator() {
+    return "\r\n";
+  }
+
+  private String getClusterSection() {
+    return "# Cluster\r\n" +
+        "cluster_enabled:0\r\n";
+  }
+
+  private String getServerSection() {
+
+    int TCP_PORT = this.context.getServerPort();
+
+    return "# Server\r\n" +
+        "redis_version:" + this.CURRENT_REDIS_VERSION + "\r\n" +
+        "redis_mode:standalone\r\n" +
+        "tcp_port:" + TCP_PORT + "\r\n";
+  }
+
+  private String getPersistenceSection() {
+    return "# Persistence\r\n" +
+        "loading:0\r\n";
   }
 }
