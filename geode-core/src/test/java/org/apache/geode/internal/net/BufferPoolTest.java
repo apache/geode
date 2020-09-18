@@ -135,9 +135,6 @@ public class BufferPoolTest {
 
   @Test
   public void checkBufferSizeAfterAcquire() throws Exception {
-    // allocate a small buffer and a larger buffer. Check their sizes, etc and then
-    // release and reacquire them. They should be from separate buffer pools so there
-    // should still be a small buffer and a larger buffer.
     ByteBuffer buffer = bufferPool.acquireDirectReceiveBuffer(100);
 
     ByteBuffer newBuffer =
@@ -147,9 +144,9 @@ public class BufferPoolTest {
     assertThat(buffer.isDirect()).isTrue();
     assertThat(newBuffer.isDirect()).isTrue();
     assertThat(bufferPool.getPoolableBuffer(buffer).capacity())
-        .isGreaterThanOrEqualTo(4096);
+        .isGreaterThanOrEqualTo(BufferPool.SMALL_BUFFER_SIZE);
     assertThat(bufferPool.getPoolableBuffer(newBuffer).capacity())
-        .isGreaterThanOrEqualTo(32768);
+        .isGreaterThanOrEqualTo(BufferPool.MEDIUM_BUFFER_SIZE);
 
     assertThat(buffer.position()).isEqualTo(0);
     assertThat(buffer.limit()).isEqualTo(100);
@@ -168,9 +165,9 @@ public class BufferPoolTest {
     assertThat(buffer.isDirect()).isTrue();
     assertThat(newBuffer.isDirect()).isTrue();
     assertThat(bufferPool.getPoolableBuffer(buffer).capacity())
-        .isGreaterThanOrEqualTo(4096);
+        .isGreaterThanOrEqualTo(BufferPool.SMALL_BUFFER_SIZE);
     assertThat(bufferPool.getPoolableBuffer(newBuffer).capacity())
-        .isGreaterThanOrEqualTo(32768);
+        .isGreaterThanOrEqualTo(BufferPool.MEDIUM_BUFFER_SIZE);
 
     assertThat(buffer.position()).isEqualTo(0);
     assertThat(buffer.limit()).isEqualTo(1000);

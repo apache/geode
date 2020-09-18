@@ -35,6 +35,8 @@ public class BufferPool {
   private final DMStats stats;
   private static final Logger logger = LogService.getLogger();
 
+  private Method parentOfSliceMethod;
+
   /**
    * Buffers may be acquired from the Buffers pool
    * or they may be allocated using Buffer.allocate(). This enum is used
@@ -68,10 +70,10 @@ public class BufferPool {
   private final ConcurrentLinkedQueue<BBSoftReference> bufferLargeQueue =
       new ConcurrentLinkedQueue<>();
 
-  private final int SMALL_BUFFER_SIZE = Connection.SMALL_BUFFER_SIZE;
+  static final int SMALL_BUFFER_SIZE = Connection.SMALL_BUFFER_SIZE;
 
 
-  private final int MEDIUM_BUFFER_SIZE = DistributionConfig.DEFAULT_SOCKET_BUFFER_SIZE;
+  static final int MEDIUM_BUFFER_SIZE = DistributionConfig.DEFAULT_SOCKET_BUFFER_SIZE;
 
 
   /**
@@ -130,7 +132,8 @@ public class BufferPool {
   }
 
   /**
-   * Acquire direct buffer with predefined default capacity (4096 or 32768)
+   * Acquire direct buffer with predefined default capacity (SMALL_BUFFER_SIZE or
+   * MEDIUM_BUFFER_SIZE)
    */
   private ByteBuffer acquirePredefinedFixedBuffer(boolean send, int size) {
     // set
@@ -328,11 +331,18 @@ public class BufferPool {
   @VisibleForTesting
   public ByteBuffer getPoolableBuffer(ByteBuffer buffer) {
     ByteBuffer result = buffer;
-    Class clazz = buffer.getClass();
+    if (parentOfSliceMethod == null) {
+      Class clazz = buffer.getClass();
+      try {
+        Method method = clazz.getMethod("attachment");
+        method.setAccessible(true);
+        parentOfSliceMethod = method;
+      } catch (Exception e) {
+        throw new InternalGemFireException("unable to retrieve underlying byte buffer", e);
+      }
+    }
     try {
-      Method method = clazz.getMethod("attachment");
-      method.setAccessible(true);
-      Object attachment = method.invoke(buffer);
+      Object attachment = parentOfSliceMethod.invoke(buffer);
       if (attachment instanceof ByteBuffer) {
         result = (ByteBuffer) attachment;
       } else if (attachment != null) {
