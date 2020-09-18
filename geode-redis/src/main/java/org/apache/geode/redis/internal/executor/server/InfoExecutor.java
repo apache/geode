@@ -35,7 +35,7 @@ public class InfoExecutor extends AbstractExecutor {
   public RedisResponse executeCommand(Command command,
                                       ExecutionHandlerContext context) {
     this.context = context;
-    String resultsString;
+    String result;
     List<ByteArrayWrapper> commands =
         command.getProcessedCommandWrappers();
 
@@ -45,12 +45,12 @@ public class InfoExecutor extends AbstractExecutor {
 
     if (containsOptionalParameter(commands)) {
       String parameter = commands.get(1).toString();
-      resultsString = getReturnValueFor(parameter);
+      result = getReturnValueFor(parameter);
     } else {
-      resultsString = getDefaultSectionsString();
+      result = getDefaultSectionsString();
     }
 
-    return RedisResponse.bulkString(resultsString);
+    return RedisResponse.bulkString(result);
   }
 
   private String getReturnValueFor(String parameter) {
