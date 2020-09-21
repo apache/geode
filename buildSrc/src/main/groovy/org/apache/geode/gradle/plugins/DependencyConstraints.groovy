@@ -144,7 +144,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'org.apache.bcel', name: 'bcel', version: '6.4.1')
         api(group: 'org.apache.commons', name: 'commons-lang3', version: get('commons-lang3.version'))
         api(group: 'org.apache.commons', name: 'commons-text', version: 1.8)
-        api(group: 'org.apache.derby', name: 'derby', version: '10.14.2.0')
+        api(group: 'org.apache.derby', name: 'derby', version: '10.15.2.0')
         api(group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.12')
         api(group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.4.13')
         api(group: 'org.apache.shiro', name: 'shiro-core', version: get('shiro.version'))
