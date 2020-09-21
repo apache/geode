@@ -175,7 +175,7 @@ class DependencyConstraints implements Plugin<Project> {
       }
     }
 
-    dependencySet(group: 'com.fasterxml.jackson.core', version: '2.10.1') {
+    dependencySet(group: 'com.fasterxml.jackson.core', version: '2.11.2') {
       entry('jackson-annotations')
       entry('jackson-core')
       entry('jackson-databind')
