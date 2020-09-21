@@ -171,7 +171,6 @@ public enum RedisCommandType {
 
   UNKNOWN(new UnknownExecutor(), SUPPORTED),
 
-
   /***************************************
    *** Unsupported Commands ***
    ***************************************/
@@ -256,7 +255,8 @@ public enum RedisCommandType {
   DBSIZE(new DBSizeExecutor(), UNSUPPORTED),
   FLUSHALL(new FlushAllExecutor(), UNSUPPORTED),
   FLUSHDB(new FlushAllExecutor(), UNSUPPORTED),
-  INFO(new InfoExecutor(), UNSUPPORTED),
+  INFO(new InfoExecutor(),
+      UNSUPPORTED, new MaximumParameterRequirements(2)),
   SHUTDOWN(new ShutDownExecutor(), UNSUPPORTED),
   TIME(new TimeExecutor(), UNSUPPORTED),
 

@@ -19,7 +19,7 @@ import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class MinimumParameterRequirements implements ParameterRequirements {
-  private int minimum;
+  private final int minimum;
 
   public MinimumParameterRequirements(int minimum) {
     this.minimum = minimum;

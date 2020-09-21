@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 import io.netty.channel.ChannelHandlerContext;
 
 import org.apache.geode.redis.internal.RedisCommandType;
+import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 
@@ -183,8 +184,16 @@ public class Command {
   }
 
   public String wrongNumberOfArgumentsError() {
-    return String.format("wrong number of arguments for '%s' command",
-        getCommandType().toString().toLowerCase());
+    String result;
+
+    if (getCommandType().equals(RedisCommandType.INFO)) {
+      result = RedisConstants.ERROR_SYNTAX;
+    } else {
+      result = String.format(
+          "wrong number of arguments for '%s' command",
+          getCommandType().toString().toLowerCase());
+    }
+    return result;
   }
 
   private long asyncStartTime;

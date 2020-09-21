@@ -17,8 +17,6 @@ package org.apache.geode.redis.internal.executor.server;
 
 import java.util.List;
 
-import org.apache.geode.redis.internal.ParameterRequirements.RedisParametersMismatchException;
-import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
@@ -34,20 +32,12 @@ public class InfoExecutor extends AbstractExecutor {
     List<ByteArrayWrapper> commands =
         command.getProcessedCommandWrappers();
 
-    if (containsTooManyParameters(commands)) {
-      throw new RedisParametersMismatchException(RedisConstants.ERROR_SYNTAX);
-    }
     if (containsSectionParameter(commands)) {
       result = getSpecifiedSection(context, commands);
     } else {
       result = getAllSections(context);
     }
-
     return RedisResponse.bulkString(result);
-  }
-
-  private boolean containsTooManyParameters(List<ByteArrayWrapper> commands) {
-    return commands.size() > 2;
   }
 
   private boolean containsSectionParameter(List<ByteArrayWrapper> commands) {

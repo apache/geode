@@ -19,7 +19,7 @@ import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class MaximumParameterRequirements implements ParameterRequirements {
-  private int maximum;
+  private final int maximum;
 
   public MaximumParameterRequirements(int maximum) {
     this.maximum = maximum;
