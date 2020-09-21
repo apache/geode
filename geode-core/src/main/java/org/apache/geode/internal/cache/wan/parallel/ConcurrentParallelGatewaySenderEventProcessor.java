@@ -165,12 +165,12 @@ public class ConcurrentParallelGatewaySenderEventProcessor
       return;
     }
     int bucketId = PartitionedRegionHelper.getHashKey((EntryOperation) droppedEvent);
+    long shadowKey = droppedEvent.getTailKey();
+
+    ParallelGatewaySenderQueue pgsq = (ParallelGatewaySenderQueue) cpgsq.getQueueByBucket(bucketId);
     boolean isPrimary = prQ.getRegionAdvisor().getBucketAdvisor(bucketId).isPrimary();
     if (isPrimary) {
-      long shadowKey = droppedEvent.getTailKey();
-      ParallelGatewaySenderQueue pgsq =
-          (ParallelGatewaySenderQueue) cpgsq.getQueueByBucket(bucketId);
-      pgsq.addRemovedEvent(prQ, bucketId, shadowKey);
+      pgsq.sendQueueRemovalMesssageForDroppedEvent(prQ, bucketId, shadowKey);
       this.sender.getStatistics().incEventsDroppedDueToPrimarySenderNotRunning();
       if (logger.isDebugEnabled()) {
         logger.debug("register dropped event for primary queue. BucketId is " + bucketId
