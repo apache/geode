@@ -17,10 +17,13 @@ package org.apache.geode.redis.internal.executor.pubsub;
 
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
 import org.apache.geode.redis.mocks.MockSubscriber;
@@ -36,11 +39,55 @@ public class SubscriptionsIntegrationTest {
   public static ExecutorServiceRule executor = new ExecutorServiceRule();
 
   @Test
-  public void testForLeakedSubscriptions() {
+  @Ignore("GEODE-8515")
+  public void testPingWhileSubscribed() {
+    Jedis client = new Jedis("localhost", server.getPort());
+    MockSubscriber mockSubscriber = new MockSubscriber();
 
+    executor.submit(() -> client.subscribe(mockSubscriber, "same"));
+    mockSubscriber.awaitSubscribe("same");
+    mockSubscriber.ping();
+    GeodeAwaitility.await()
+        .untilAsserted(() -> assertThat(mockSubscriber.getReceivedPings().size()).isEqualTo(1));
+    assertThat(mockSubscriber.getReceivedPings().get(0)).isEqualTo("");
+  }
+
+  @Test
+  public void testSubscribeWhileSubscribed() {
+    Jedis client = new Jedis("localhost", server.getPort());
+    MockSubscriber mockSubscriber = new MockSubscriber();
+
+    executor.submit(() -> client.subscribe(mockSubscriber, "same"));
+    mockSubscriber.awaitSubscribe("same");
+    mockSubscriber.psubscribe("sam*");
+    mockSubscriber.awaitPSubscribe("sam*");
+
+    Jedis publisher = new Jedis("localhost", server.getPort());
+    long publishCount = publisher.publish("same", "message");
+
+    assertThat(publishCount).isEqualTo(2L);
+    GeodeAwaitility.await()
+        .untilAsserted(() -> assertThat(mockSubscriber.getReceivedMessages()).hasSize(1));
+    GeodeAwaitility.await()
+        .untilAsserted(() -> assertThat(mockSubscriber.getReceivedPMessages()).hasSize(1));
+    assertThat(mockSubscriber.getReceivedEvents()).containsExactly("message", "pmessage");
+    mockSubscriber.unsubscribe();
+    client.close();
+  }
+
+  @Test
+  public void testUnsupportedCommandsWhileSubscribed() {
+    Jedis client = new Jedis("localhost", server.getPort());
+
+    client.sendCommand(Protocol.Command.SUBSCRIBE, "hello");
+    assertThatThrownBy(() -> client.set("not", "supported")).hasMessageContaining(
+        "ERR only (P)SUBSCRIBE / (P)UNSUBSCRIBE / PING / QUIT allowed in this context");
+  }
+
+  @Test
+  public void testForLeakedSubscriptions() {
     for (int i = 0; i < 100; i++) {
       Jedis client = new Jedis("localhost", server.getPort());
-      client.ping();
       MockSubscriber mockSubscriber = new MockSubscriber();
       executor.submit(() -> client.subscribe(mockSubscriber, "same"));
       mockSubscriber.awaitSubscribe("same");
