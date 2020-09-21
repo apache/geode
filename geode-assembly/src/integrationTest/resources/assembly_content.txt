@@ -974,7 +974,7 @@ javadoc/script.js
 javadoc/serialized-form.html
 javadoc/stylesheet.css
 lib/HdrHistogram-2.1.12.jar
-lib/HikariCP-3.4.2.jar
+lib/HikariCP-3.4.5.jar
 lib/LatencyUtils-2.0.3.jar
 lib/antlr-2.7.7.jar
 lib/classgraph-4.8.52.jar
