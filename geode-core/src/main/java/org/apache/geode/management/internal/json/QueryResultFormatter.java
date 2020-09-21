@@ -38,6 +38,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
+import com.fasterxml.jackson.databind.ser.ResolvableSerializer;
 import com.fasterxml.jackson.databind.type.ArrayType;
 
 public class QueryResultFormatter extends AbstractJSONFormatter {
@@ -216,6 +217,9 @@ public class QueryResultFormatter extends AbstractJSONFormatter {
       } else {
         gen.writeStartArray();
         gen.writeString(value.getClass().getCanonicalName());
+        if (defaultSerializer instanceof ResolvableSerializer) {
+          ((ResolvableSerializer) defaultSerializer).resolve(serializers);
+        }
         defaultSerializer.serialize(value, gen, serializers);
         gen.writeEndArray();
       }
