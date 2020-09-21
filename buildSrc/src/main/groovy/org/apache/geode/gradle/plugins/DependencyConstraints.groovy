@@ -89,7 +89,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'com.carrotsearch.randomizedtesting', name: 'randomizedtesting-runner', version: '2.7.8')
         api(group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-joda', version: '2.9.8')
         api(group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.11.2')
-        api(group: 'com.fasterxml.jackson.module', name: 'jackson-module-scala_2.10', version: '2.10.0')
+        api(group: 'com.fasterxml.jackson.module', name: 'jackson-module-scala_2.10', version: '2.11.2')
         api(group: 'com.github.davidmoten', name: 'geo', version: '0.7.7')
         api(group: 'com.github.stefanbirkner', name: 'system-rules', version: '1.19.0')
         api(group: 'com.github.stephenc.findbugs', name: 'findbugs-annotations', version: '1.3.9-1')
