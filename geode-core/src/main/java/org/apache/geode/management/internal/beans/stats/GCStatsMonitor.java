@@ -14,9 +14,9 @@
  */
 package org.apache.geode.management.internal.beans.stats;
 
-import java.util.Map;
 
 import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.Statistics;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.statistics.StatisticId;
 import org.apache.geode.internal.statistics.StatisticNotFoundException;
@@ -39,69 +39,71 @@ import org.apache.geode.internal.statistics.StatisticsNotification;
  * @see org.apache.geode.management.internal.beans.stats.MBeanStatsMonitor
  */
 public class GCStatsMonitor extends MBeanStatsMonitor {
+  // this class uses these volatile variables to make sure reads are reading the latest values
+  // it is not using the parent's siteMap which is not volatile to keep the stats values.
   private volatile long collections = 0;
   private volatile long collectionTime = 0;
-
-  long getCollections() {
-    return collections;
-  }
-
-  long getCollectionTime() {
-    return collectionTime;
-  }
 
   public GCStatsMonitor(String name) {
     super(name);
   }
 
-  void decreasePrevValues(Map<String, Number> statsMap) {
-    collections -= statsMap.getOrDefault(StatsKey.VM_GC_STATS_COLLECTIONS, 0).longValue();
-    collectionTime -= statsMap.getOrDefault(StatsKey.VM_GC_STATS_COLLECTION_TIME, 0).longValue();
-  }
+  @Override
+  // this will be called multiple times with different collector's stats
+  public void addStatisticsToMonitor(Statistics stats) {
+    monitor.addListener(this);// if already listener is added this will be a no-op
+    monitor.addStatistics(stats);
 
-  void increaseStats(String name, Number value) {
-    if (name.equals(StatsKey.VM_GC_STATS_COLLECTIONS)) {
-      collections += value.longValue();
-      return;
-    }
-
-    if (name.equals(StatsKey.VM_GC_STATS_COLLECTION_TIME)) {
-      collectionTime += value.longValue();
-      return;
+    // stats map should keep the sum of all the GC stats
+    StatisticDescriptor[] descriptors = stats.getType().getStatistics();
+    for (StatisticDescriptor d : descriptors) {
+      String name = d.getName();
+      Number value = stats.get(d);
+      if (name.equals(StatsKey.VM_GC_STATS_COLLECTIONS)) {
+        collections += value.longValue();
+      } else if (name.equals(StatsKey.VM_GC_STATS_COLLECTION_TIME)) {
+        collectionTime += value.longValue();
+      }
     }
   }
 
   @Override
   public Number getStatistic(String statName) {
     if (statName.equals(StatsKey.VM_GC_STATS_COLLECTIONS)) {
-      return getCollections();
+      return collections;
     }
 
     if (statName.equals(StatsKey.VM_GC_STATS_COLLECTION_TIME)) {
-      return getCollectionTime();
+      return collectionTime;
     }
-
     return 0;
   }
 
   @Override
   public void handleNotification(StatisticsNotification notification) {
-    decreasePrevValues(statsMap);
-
+    // sum up all the count and all the time in the stats included in this notification
+    long totalCount = 0;
+    long totalTime = 0;
     for (StatisticId statId : notification) {
       StatisticDescriptor descriptor = statId.getStatisticDescriptor();
       String name = descriptor.getName();
       Number value;
-
       try {
         value = notification.getValue(statId);
       } catch (StatisticNotFoundException e) {
         value = 0;
       }
-
       log(name, value);
-      increaseStats(name, value);
-      statsMap.put(name, value);
+      if (name.equals(StatsKey.VM_GC_STATS_COLLECTIONS)) {
+        totalCount += value.longValue();
+      }
+
+      else if (name.equals(StatsKey.VM_GC_STATS_COLLECTION_TIME)) {
+        totalTime += value.longValue();
+      }
     }
+
+    collections = totalCount;
+    collectionTime = totalTime;
   }
 }
