@@ -12,9 +12,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal.cli.json;
+package org.apache.geode.management.internal.json;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.map;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -33,7 +34,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
 import org.apache.geode.cache.query.data.CollectionHolder;
-import org.apache.geode.management.internal.json.QueryResultFormatter;
+import org.apache.geode.management.model.Employee;
 import org.apache.geode.management.model.Item;
 import org.apache.geode.management.model.Order;
 import org.apache.geode.management.model.SubOrder;
@@ -257,7 +258,7 @@ public class QueryResultFormatterTest {
     QueryResultFormatter queryResultFormatter =
         new QueryResultFormatter(100).add(RESULT, Currency.DIME);
     checkResult(queryResultFormatter,
-        "{\"result\":[[\"org.apache.geode.management.internal.cli.json.QueryResultFormatterTest.Currency\",\"DIME\"]]}");
+        "{\"result\":[[\"org.apache.geode.management.internal.json.QueryResultFormatterTest.Currency\",\"DIME\"]]}");
   }
 
   @Test
@@ -270,7 +271,7 @@ public class QueryResultFormatterTest {
 
     QueryResultFormatter queryResultFormatter = new QueryResultFormatter(100).add(RESULT, list);
     checkResult(queryResultFormatter,
-        "{\"result\":[[\"java.util.ArrayList\",{\"0\":[\"org.apache.geode.management.internal.cli.json.QueryResultFormatterTest.Currency\",\"DIME\"],\"1\":[\"org.apache.geode.management.internal.cli.json.QueryResultFormatterTest.Currency\",\"NICKLE\"],\"2\":[\"org.apache.geode.management.internal.cli.json.QueryResultFormatterTest.Currency\",\"QUARTER\"],\"3\":[\"org.apache.geode.management.internal.cli.json.QueryResultFormatterTest.Currency\",\"NICKLE\"]}]]}");
+        "{\"result\":[[\"java.util.ArrayList\",{\"0\":[\"org.apache.geode.management.internal.json.QueryResultFormatterTest.Currency\",\"DIME\"],\"1\":[\"org.apache.geode.management.internal.json.QueryResultFormatterTest.Currency\",\"NICKLE\"],\"2\":[\"org.apache.geode.management.internal.json.QueryResultFormatterTest.Currency\",\"QUARTER\"],\"3\":[\"org.apache.geode.management.internal.json.QueryResultFormatterTest.Currency\",\"NICKLE\"]}]]}");
   }
 
   @Test
@@ -279,7 +280,25 @@ public class QueryResultFormatterTest {
     QueryResultFormatter queryResultFormatter =
         new QueryResultFormatter(100).add(RESULT, enumContainer);
     checkResult(queryResultFormatter,
-        "{\"result\":[[\"org.apache.geode.management.internal.cli.json.QueryResultFormatterTest.EnumContainer\",{}]]}");
+        "{\"result\":[[\"org.apache.geode.management.internal.json.QueryResultFormatterTest.EnumContainer\",{}]]}");
+  }
+
+  @Test
+  public void testObjectWithJsonAnnotation() throws Exception {
+    Employee employee = new Employee();
+    employee.setId(10);
+    employee.setName("John");
+    employee.setTitle("Manager");
+    QueryResultFormatter queryResultFormatter = new QueryResultFormatter(100);
+    queryResultFormatter.add("result", employee);
+    // these to make sure we are keeping the pre 1.8 behavior
+    assertThat(queryResultFormatter.toString())
+        // make sure null values are serialized as well
+        .contains("\"address\":null")
+        // make sure we don't honor @JsonIgnore annotation
+        .contains("id")
+        // make sure we don't honor @JsonProperty annotation
+        .doesNotContain("Job Title");
   }
 
   private enum Currency {
