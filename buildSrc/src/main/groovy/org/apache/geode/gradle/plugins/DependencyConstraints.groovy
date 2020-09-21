@@ -141,7 +141,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'net.sourceforge.pmd', name: 'pmd-java', version: '6.27.0')
         api(group: 'net.sourceforge.pmd', name: 'pmd-test', version: '6.27.0')
         api(group: 'net.spy', name: 'spymemcached', version: '2.12.3')
-        api(group: 'org.apache.bcel', name: 'bcel', version: '6.4.1')
+        api(group: 'org.apache.bcel', name: 'bcel', version: '6.5.0')
         api(group: 'org.apache.commons', name: 'commons-lang3', version: get('commons-lang3.version'))
         api(group: 'org.apache.commons', name: 'commons-text', version: 1.8)
         api(group: 'org.apache.derby', name: 'derby', version: '10.15.2.0')
