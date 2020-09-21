@@ -21,7 +21,7 @@ import redis.clients.jedis.Jedis;
 
 import org.apache.geode.NativeRedisTestRule;
 
-public class InfoRedisAcceptanceTest extends InfoIntegrationTest {
+public class InfoNativeRedisAcceptanceTest extends InfoIntegrationTest {
 
   @ClassRule
   public static NativeRedisTestRule redis = new NativeRedisTestRule();
