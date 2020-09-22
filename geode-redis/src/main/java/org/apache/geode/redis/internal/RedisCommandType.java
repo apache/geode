@@ -256,7 +256,10 @@ public enum RedisCommandType {
   FLUSHALL(new FlushAllExecutor(), UNSUPPORTED),
   FLUSHDB(new FlushAllExecutor(), UNSUPPORTED),
   INFO(new InfoExecutor(),
-      UNSUPPORTED, new MaximumParameterRequirements(2)),
+      UNSUPPORTED,
+      new MaximumParameterRequirements(2,
+      RedisConstants.ERROR_SYNTAX)
+  ),
   SHUTDOWN(new ShutDownExecutor(), UNSUPPORTED),
   TIME(new TimeExecutor(), UNSUPPORTED),
 
