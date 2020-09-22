@@ -25,16 +25,12 @@ import java.util.concurrent.TimeUnit;
 import redis.clients.jedis.Client;
 import redis.clients.jedis.JedisPubSub;
 
-
 public class MockSubscriber extends JedisPubSub {
 
   private final CountDownLatch subscriptionLatch;
-  private final CountDownLatch psubscriptionLatch;
   private final CountDownLatch unsubscriptionLatch;
   private final List<String> receivedMessages = Collections.synchronizedList(new ArrayList<>());
   private final List<String> receivedPMessages = Collections.synchronizedList(new ArrayList<>());
-  private final List<String> receivedPings = Collections.synchronizedList(new ArrayList<>());
-  private final List<String> receivedEvents = Collections.synchronizedList(new ArrayList<>());
   public final List<UnsubscribeInfo> unsubscribeInfos =
       Collections.synchronizedList(new ArrayList<>());
   public final List<UnsubscribeInfo> punsubscribeInfos =
@@ -46,13 +42,11 @@ public class MockSubscriber extends JedisPubSub {
   }
 
   public MockSubscriber(CountDownLatch subscriptionLatch) {
-    this(subscriptionLatch, new CountDownLatch(1), new CountDownLatch(1));
+    this(subscriptionLatch, new CountDownLatch(1));
   }
 
-  public MockSubscriber(CountDownLatch subscriptionLatch, CountDownLatch unsubscriptionLatch,
-      CountDownLatch psubscriptionLatch) {
+  public MockSubscriber(CountDownLatch subscriptionLatch, CountDownLatch unsubscriptionLatch) {
     this.subscriptionLatch = subscriptionLatch;
-    this.psubscriptionLatch = psubscriptionLatch;
     this.unsubscriptionLatch = unsubscriptionLatch;
   }
 
@@ -81,26 +75,16 @@ public class MockSubscriber extends JedisPubSub {
     return new ArrayList<>(receivedPMessages);
   }
 
-  public List<String> getReceivedPings() {
-    return receivedPings;
-  }
-
-  public List<String> getReceivedEvents() {
-    return receivedEvents;
-  }
-
   @Override
   public void onMessage(String channel, String message) {
     switchThreadName(String.format("MESSAGE %s %s", channel, message));
     receivedMessages.add(message);
-    receivedEvents.add("message");
   }
 
   @Override
   public void onPMessage(String pattern, String channel, String message) {
     switchThreadName(String.format("PMESSAGE %s %s %s", pattern, channel, message));
     receivedPMessages.add(message);
-    receivedEvents.add("pmessage");
   }
 
   @Override
@@ -109,34 +93,12 @@ public class MockSubscriber extends JedisPubSub {
     subscriptionLatch.countDown();
   }
 
-  @Override
-  public void onPSubscribe(String pattern, int subscribedChannels) {
-    switchThreadName(String.format("PSUBSCRIBE %s", pattern));
-    psubscriptionLatch.countDown();
-  }
-
-  @Override
-  public void onPong(String pattern) {
-    switchThreadName(String.format("PONG %s", pattern));
-    receivedPings.add(pattern);
-  }
-
   private static final int AWAIT_TIMEOUT_MILLIS = 30000;
 
   public void awaitSubscribe(String channel) {
     try {
       if (!subscriptionLatch.await(AWAIT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)) {
         throw new RuntimeException("awaitSubscribe timed out for channel: " + channel);
-      }
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  public void awaitPSubscribe(String pattern) {
-    try {
-      if (!psubscriptionLatch.await(AWAIT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)) {
-        throw new RuntimeException("awaitSubscribe timed out for channel: " + pattern);
       }
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
