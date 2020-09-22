@@ -19,16 +19,32 @@ import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class MaximumParameterRequirements implements ParameterRequirements {
-  private int maximum;
+  private final int maximum;
+  private final String exceptionMessage;
 
   public MaximumParameterRequirements(int maximum) {
     this.maximum = maximum;
+    this.exceptionMessage = null;
   }
+
+  public MaximumParameterRequirements(int maximum, String exceptionMessage) {
+    this.maximum = maximum;
+    this.exceptionMessage = exceptionMessage;
+  }
+
 
   @Override
   public void checkParameters(Command command, ExecutionHandlerContext executionHandlerContext) {
+    String message;
+
+    if (this.exceptionMessage != null) {
+      message = this.exceptionMessage;
+    } else {
+      message = command.wrongNumberOfArgumentsErrorMessage();
+    }
+
     if (command.getProcessedCommand().size() > maximum) {
-      throw new RedisParametersMismatchException(command.wrongNumberOfArgumentsError());
+      throw new RedisParametersMismatchException(message);
     }
   }
 }

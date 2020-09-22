@@ -22,7 +22,7 @@ public class EvenParameterRequirements implements ParameterRequirements {
   @Override
   public void checkParameters(Command command, ExecutionHandlerContext executionHandlerContext) {
     if (!isEven(command.getProcessedCommand().size())) {
-      throw new RedisParametersMismatchException(command.wrongNumberOfArgumentsError());
+      throw new RedisParametersMismatchException(command.wrongNumberOfArgumentsErrorMessage());
     }
   }
 

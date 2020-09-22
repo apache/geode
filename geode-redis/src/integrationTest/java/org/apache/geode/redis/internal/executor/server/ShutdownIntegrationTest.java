@@ -44,7 +44,7 @@ public class ShutdownIntegrationTest {
   }
 
   @After
-  public void classLevelTearDown() {
+  public void tearDown() {
     jedis.close();
   }
 

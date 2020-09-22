@@ -182,9 +182,12 @@ public class Command {
     return type == getCommandType();
   }
 
-  public String wrongNumberOfArgumentsError() {
-    return String.format("wrong number of arguments for '%s' command",
+  public String wrongNumberOfArgumentsErrorMessage() {
+    String result;
+    result = String.format(
+        "wrong number of arguments for '%s' command",
         getCommandType().toString().toLowerCase());
+    return result;
   }
 
   private long asyncStartTime;

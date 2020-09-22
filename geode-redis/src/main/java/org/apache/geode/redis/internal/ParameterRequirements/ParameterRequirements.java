@@ -25,5 +25,4 @@ public interface ParameterRequirements {
   default ParameterRequirements and(ParameterRequirements moreRequirements) {
     return new MultipleParameterRequirements(this, moreRequirements);
   }
-
 }

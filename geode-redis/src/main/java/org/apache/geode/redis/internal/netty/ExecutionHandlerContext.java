@@ -83,6 +83,8 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private final LinkedBlockingQueue<Command> commandQueue =
       new LinkedBlockingQueue<>(MAX_QUEUED_COMMANDS);
 
+  private final int serverPort;
+
   private boolean isAuthenticated;
 
   /**
@@ -91,13 +93,16 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    * @param channel Channel used by this context, should be one to one
    * @param password Authentication password for each context, can be null
    */
-  public ExecutionHandlerContext(Channel channel, RegionProvider regionProvider, PubSub pubsub,
+  public ExecutionHandlerContext(Channel channel,
+      RegionProvider regionProvider,
+      PubSub pubsub,
       Supplier<Boolean> allowUnsupportedSupplier,
       Runnable shutdownInvoker,
       RedisStats redisStats,
       ExecutorService backgroundExecutor,
       EventLoopGroup subscriberGroup,
-      byte[] password) {
+      byte[] password,
+      int serverPort) {
     this.channel = channel;
     this.regionProvider = regionProvider;
     this.pubsub = pubsub;
@@ -109,6 +114,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     this.byteBufAllocator = this.channel.alloc();
     this.authPassword = password;
     this.isAuthenticated = password == null;
+    this.serverPort = serverPort;
     redisStats.addClient();
 
     backgroundExecutor.submit(this::processCommandQueue);
@@ -303,7 +309,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     return allowUnsupportedSupplier.get();
   }
 
-
   private RedisResponse handleUnAuthenticatedCommand(Command command) {
     RedisResponse response;
     if (command.isOfType(RedisCommandType.AUTH)) {
@@ -345,13 +350,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   }
 
   /**
-   * Get the channel for this context
-   *
-   *
-   * public Channel getChannel() { return this.channel; }
-   */
-
-  /**
    * Get the authentication password, this will be same server wide. It is exposed here as opposed
    * to {@link GeodeRedisServer}.
    */
@@ -373,6 +371,10 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    */
   public void setAuthenticationVerified() {
     this.isAuthenticated = true;
+  }
+
+  public int getServerPort() {
+    return serverPort;
   }
 
   public Client getClient() {

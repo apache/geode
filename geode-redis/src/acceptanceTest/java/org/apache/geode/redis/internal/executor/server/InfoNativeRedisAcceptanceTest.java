@@ -13,23 +13,26 @@
  * the License.
  */
 
-package org.apache.geode.redis.internal.ParameterRequirements;
+package org.apache.geode.redis.internal.executor.server;
 
-import org.apache.geode.redis.internal.netty.Command;
-import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import redis.clients.jedis.Jedis;
 
-public class MinimumParameterRequirements implements ParameterRequirements {
-  private final int minimum;
+import org.apache.geode.NativeRedisTestRule;
 
-  public MinimumParameterRequirements(int minimum) {
-    this.minimum = minimum;
-  }
+public class InfoNativeRedisAcceptanceTest extends InfoIntegrationTest {
+
+  @ClassRule
+  public static NativeRedisTestRule redis = new NativeRedisTestRule();
 
   @Override
-  public void checkParameters(Command command, ExecutionHandlerContext context) {
-    if (command.getProcessedCommand().size() < minimum) {
-      throw new RedisParametersMismatchException(command.wrongNumberOfArgumentsErrorMessage());
-    }
+  protected int getTCPPort() {
+    return redis.getExposedPort();
   }
 
+  @BeforeClass
+  public static void setUp() {
+    jedis = new Jedis("localhost", redis.getPort(), REDIS_CLIENT_TIMEOUT);
+  }
 }
