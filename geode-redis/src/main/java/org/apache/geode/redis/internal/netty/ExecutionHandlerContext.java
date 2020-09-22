@@ -283,6 +283,13 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
         return;
       }
 
+      if (!getPubSub().findSubscribedChannels(getClient()).isEmpty()) {
+        if (!command.getCommandType().isAllowedWhileSubscribed()) {
+          writeToChannel(RedisResponse
+              .error("only (P)SUBSCRIBE / (P)UNSUBSCRIBE / PING / QUIT allowed in this context"));
+        }
+      }
+
       final long start = redisStats.startCommand(command.getCommandType());
       try {
         writeToChannel(command.execute(this));
