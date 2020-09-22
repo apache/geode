@@ -133,7 +133,7 @@ repositories {
   ivy {
     url 'https://archive.apache.org/'
     patternLayout {
-      artifact '/dist/tomcat/tomcat-6/v6.0.37/bin/[organisation]-[module]-[revision].[ext]'
+      artifact '/dist/tomcat/tomcat-6/v6.0.53/bin/[organisation]-[module]-[revision].[ext]'
     }
   }
   // For gradle tooling dependencies
