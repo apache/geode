@@ -15,9 +15,9 @@
 
 package org.apache.geode.test;
 
+import static java.lang.System.identityHashCode;
 import static java.util.Objects.isNull;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
@@ -28,36 +28,64 @@ import java.nio.file.Paths;
  * Establishes the test root directory for files created by a test.
  * <p>
  * In a JVM launched directly by Gradle, the test root directory is named after the Gradle test
- * worker, and is a subdirectory in the JVM's working directory.
+ * worker, and is a subdirectory of the JVM's working directory.
  * <p>
  * In a JVM not launched directly by Gradle (such as a DUnit child VM), the test root directory
  * is the JVM's working directory.
  */
 public class TestRootDirectory {
   private static final String TEST_ROOT_DIR_PREFIX = "test-worker-jvm-";
-  private static Path root;
+  private static final Path PATH = create();
 
+  /**
+   * Returns the path to this JVM's test root directory.
+   */
   public static Path path() {
-    if (isNull(root)) {
-      root = createRootDir();
-    }
-    return root;
+    return PATH;
   }
 
-  public static File file() {
-    return path().toFile();
+  /**
+   * Returns a path uniquely identified by the owner and resolved against this JVM's
+   * {@link #path test root directory}. The path name identifies the owner based on its simple
+   * class name and identity hash code. This method merely returns a path, and does not create a
+   * file or directory. The owner (or caller) is responsible for all use of the path.
+   *
+   * @param owner the owner of the path
+   * @return a path uniquely identified the owner within this JVM
+   */
+  public static Path pathOwnedBy(Object owner) {
+    String name = String.format("%s-%x", owner.getClass().getSimpleName(), identityHashCode(owner));
+    return path().resolve(name);
   }
 
-  private static Path createRootDir() {
-    Path currentWorkingDirectory = Paths.get(".").normalize().toAbsolutePath();
+  /**
+   * Returns the path to a directory uniquely identified by the owner and resolved against this
+   * JVM's {@link #path test root directory}. The path name identifies the owner based on its
+   * simple class name and identity hash code. The directory is created if it does not already
+   * exist. If the directory exists, this method simply returns a path to it. The owner (or
+   * caller) is responsible for all use of the directory.
+   *
+   * @param owner the owner of the directory
+   * @return the path to the created directory
+   */
+  public static Path directoryOwnedBy(Object owner) {
+    return createDirectories(pathOwnedBy(owner));
+  }
+
+  private static Path create() {
+    Path jvmWorkingDirectory = Paths.get(".").toAbsolutePath().normalize();
     String workerName = System.getProperty("org.gradle.test.worker");
     if (isNull(workerName)) {
       // This JVM is not a Gradle test worker JVM.
-      return currentWorkingDirectory;
+      return jvmWorkingDirectory;
     }
-    Path workerTestRoot = currentWorkingDirectory.resolve(TEST_ROOT_DIR_PREFIX + workerName);
+    Path workerTestRoot = jvmWorkingDirectory.resolve(TEST_ROOT_DIR_PREFIX + workerName);
+    return createDirectories(workerTestRoot);
+  }
+
+  private static Path createDirectories(Path dir) {
     try {
-      return Files.createDirectories(workerTestRoot);
+      return Files.createDirectories(dir);
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }

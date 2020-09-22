@@ -364,7 +364,7 @@ public class ClusterStartupRule implements SerializableTestRule {
   }
 
   public File getWorkingDirRoot() {
-    return TestRootDirectory.file();
+    return TestRootDirectory.path().toFile();
   }
 
   public static void stopElementInsideVM() {

@@ -196,7 +196,7 @@ public class DUnitLauncher {
 
   private static void launch(boolean launchLocator) throws AlreadyBoundException, IOException,
       InterruptedException, NotBoundException {
-    DUNIT_SUSPECT_FILE = new File(TestRootDirectory.file(), SUSPECT_FILENAME);
+    DUNIT_SUSPECT_FILE = TestRootDirectory.path().resolve(SUSPECT_FILENAME).toFile();
     DUNIT_SUSPECT_FILE.delete();
     DUNIT_SUSPECT_FILE.deleteOnExit();
 

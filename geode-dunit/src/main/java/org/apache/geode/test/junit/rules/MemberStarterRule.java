@@ -27,15 +27,13 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.management.internal.ManagementConstants.OBJECTNAME__CLIENTSERVICE_MXBEAN;
+import static org.apache.geode.test.TestRootDirectory.directoryOwnedBy;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.file.Files;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -81,9 +79,7 @@ import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.security.SecurityManager;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
-import org.apache.geode.test.TestRootDirectory;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.internal.DUnitLauncher;
 import org.apache.geode.test.junit.rules.accessible.AccessibleRestoreSystemProperties;
 import org.apache.geode.test.junit.rules.serializable.SerializableExternalResource;
 
@@ -574,16 +570,11 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   }
 
   public abstract void waitTilFullyReconnected();
-  
+
   @Override
   public File getWorkingDir() {
     if (isNull(workingDir)) {
-      String dirName = String.format("%s-%x", getClass().getSimpleName(), System.identityHashCode(this));
-      try {
-        workingDir = Files.createDirectories(TestRootDirectory.path().resolve(dirName)).toFile();
-      } catch (IOException e) {
-        throw new UncheckedIOException(e);
-      }
+        workingDir = directoryOwnedBy(this).toFile();
     }
     return workingDir;
   }
