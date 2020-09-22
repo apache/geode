@@ -40,7 +40,7 @@ public class TomcatInstall extends ContainerInstall {
    * version, and other properties or XML attributes needed to setup tomcat containers within Cargo
    */
   public enum TomcatVersion {
-    TOMCAT6(6, "tomcat-6.0.53.zip"),
+    TOMCAT6(6, "tomcat-6.0.37.zip"),
     TOMCAT7(7, "tomcat-7.0.106.zip"),
     TOMCAT8(8, "tomcat-8.5.58.zip"),
     TOMCAT9(9, "tomcat-9.0.38.zip");
