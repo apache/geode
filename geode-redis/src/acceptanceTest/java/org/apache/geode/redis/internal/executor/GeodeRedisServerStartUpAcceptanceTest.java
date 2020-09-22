@@ -41,6 +41,7 @@ public class GeodeRedisServerStartUpAcceptanceTest {
 
     String startServerCommand = String.join(" ",
         "start server",
+        "--server-port", "0",
         "--name", "same-port-and-address-server",
         "--redis-bind-address", "localhost",
         "--redis-port", String.valueOf(port));
@@ -63,6 +64,7 @@ public class GeodeRedisServerStartUpAcceptanceTest {
 
     String startServerCommand = String.join(" ",
         "start server",
+        "--server-port", "0",
         "--name", "same-port-all-addresses-server",
         "--redis-port", String.valueOf(port));
     GfshExecution execution;
@@ -82,6 +84,7 @@ public class GeodeRedisServerStartUpAcceptanceTest {
 
     String startServerCommand = String.join(" ",
         "start server",
+        "--server-port", "0",
         "--name", "invalid-bind-server",
         "--redis-bind-address", "1.1.1.1");
     GfshExecution execution;
