@@ -184,9 +184,9 @@ public class Command {
 
   public String wrongNumberOfArgumentsErrorMessage() {
     String result;
-      result = String.format(
-          "wrong number of arguments for '%s' command",
-          getCommandType().toString().toLowerCase());
+    result = String.format(
+        "wrong number of arguments for '%s' command",
+        getCommandType().toString().toLowerCase());
     return result;
   }
 

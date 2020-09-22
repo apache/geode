@@ -258,8 +258,7 @@ public enum RedisCommandType {
   INFO(new InfoExecutor(),
       UNSUPPORTED,
       new MaximumParameterRequirements(2,
-      RedisConstants.ERROR_SYNTAX)
-  ),
+          RedisConstants.ERROR_SYNTAX)),
   SHUTDOWN(new ShutDownExecutor(), UNSUPPORTED),
   TIME(new TimeExecutor(), UNSUPPORTED),
 
