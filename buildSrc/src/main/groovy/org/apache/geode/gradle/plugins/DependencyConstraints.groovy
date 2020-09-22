@@ -196,7 +196,7 @@ class DependencyConstraints implements Plugin<Project> {
       entry('junit-quickcheck-generators')
     }
 
-    dependencySet(group: 'io.springfox', version: '3.0.0') {
+    dependencySet(group: 'io.springfox', version: '2.9.2') {
       entry('springfox-swagger-ui')
       entry('springfox-swagger2')
     }
