@@ -16,19 +16,10 @@ package org.apache.geode.modules.session.catalina;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -695,39 +686,6 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
     if (debugEnabled) {
       logger.debug("Unloading complete");
     }
-  }
-
-  FileInputStream getFileInputStream(File file) throws FileNotFoundException {
-    return new FileInputStream(file.getAbsolutePath());
-  }
-
-  BufferedInputStream getBufferedInputStream(FileInputStream fis) {
-    return new BufferedInputStream(fis);
-  }
-
-  ObjectInputStream getObjectInputStream(BufferedInputStream bis) throws IOException {
-    return new ObjectInputStream(bis);
-  }
-
-  FileOutputStream getFileOutputStream(File file) throws FileNotFoundException {
-    return new FileOutputStream(file.getAbsolutePath());
-  }
-
-  BufferedOutputStream getBufferedOutputStream(FileOutputStream fos) {
-    return new BufferedOutputStream(fos);
-  }
-
-  ObjectOutputStream getObjectOutputStream(BufferedOutputStream bos) throws IOException {
-    return new ObjectOutputStream(bos);
-  }
-
-  void writeToObjectOutputStream(ObjectOutputStream oos, List<?> listToWrite) throws IOException {
-    oos.writeObject(listToWrite.size());
-  }
-
-  int getSessionCountFromObjectInputStream(ObjectInputStream ois)
-      throws IOException, ClassNotFoundException {
-    return (Integer) ois.readObject();
   }
 
   @Override
