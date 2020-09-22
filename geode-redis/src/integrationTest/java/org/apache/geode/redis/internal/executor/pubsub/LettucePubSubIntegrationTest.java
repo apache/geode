@@ -16,14 +16,15 @@
 package org.apache.geode.redis.internal.executor.pubsub;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicLong;
 
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisFuture;
@@ -67,8 +68,14 @@ public class LettucePubSubIntegrationTest {
     StatefulRedisPubSubConnection<String, String> subscriber = client.connectPubSub();
     StatefulRedisPubSubConnection<String, String> publisher = client.connectPubSub();
     List<Map> messages = Collections.synchronizedList(new ArrayList<>());
+    AtomicLong subscriptionCount = new AtomicLong(0);
 
     RedisPubSubListener<String, String> listener = new RedisPubSubAdapter<String, String>() {
+      @Override
+      public void subscribed(String channel, long count) {
+        subscriptionCount.getAndSet(count);
+      }
+
       @Override
       public void message(String channel, String message) {
         Map<String, String> channelMessageMap = new HashMap<>();
@@ -81,6 +88,7 @@ public class LettucePubSubIntegrationTest {
     subscriber.sync().subscribe(CHANNEL);
     subscriber.sync().subscribe(CHANNEL);
     subscriber.sync().subscribe("newChannel!");
+    GeodeAwaitility.await().untilAsserted(() -> assertThat(subscriptionCount.get()).isEqualTo(2));
 
     long publishCount1 = publisher.sync().publish(CHANNEL, "message!");
     long publishCount2 = publisher.sync().publish("newChannel!", "message from new channel");
@@ -104,8 +112,14 @@ public class LettucePubSubIntegrationTest {
     StatefulRedisPubSubConnection<String, String> subscriber = client.connectPubSub();
     StatefulRedisPubSubConnection<String, String> publisher = client.connectPubSub();
     List<Map> messages = Collections.synchronizedList(new ArrayList<>());
+    AtomicLong psubscriptionCount = new AtomicLong(0);
 
     RedisPubSubListener<String, String> listener = new RedisPubSubAdapter<String, String>() {
+      @Override
+      public void psubscribed(String pattern, long count) {
+        psubscriptionCount.getAndSet(count);
+      }
+
       @Override
       public void message(String pattern, String channel, String message) {
         Map<String, String> patternMessageMap = new HashMap<>();
@@ -118,6 +132,7 @@ public class LettucePubSubIntegrationTest {
     subscriber.sync().psubscribe(PATTERN);
     subscriber.sync().psubscribe(PATTERN);
     subscriber.sync().psubscribe("new-*");
+    GeodeAwaitility.await().untilAsserted(() -> assertThat(psubscriptionCount.get()).isEqualTo(2));
 
     long publishCount1 = publisher.sync().publish(CHANNEL, "message!");
     long publishCount2 = publisher.sync().publish("new-channel!", "message from new channel");
@@ -138,12 +153,24 @@ public class LettucePubSubIntegrationTest {
 
   @Test
   @Ignore("GEODE-8498")
-  public void subscribePsubscribeSameClient() {
+  public void subscribePsubscribeSameClient() throws InterruptedException {
     StatefulRedisPubSubConnection<String, String> subscriber = client.connectPubSub();
     StatefulRedisPubSubConnection<String, String> publisher = client.connectPubSub();
     List<String> messages = Collections.synchronizedList(new ArrayList<>());
+    CountDownLatch subscriberLatch = new CountDownLatch(1);
+    CountDownLatch psubscriberLatch = new CountDownLatch(1);
 
     RedisPubSubListener<String, String> listener = new RedisPubSubAdapter<String, String>() {
+      @Override
+      public void subscribed(String channel, long count) {
+        subscriberLatch.countDown();
+      }
+
+      @Override
+      public void psubscribed(String pattern, long count) {
+        psubscriberLatch.countDown();
+      }
+
       @Override
       public void message(String channel, String message) {
         messages.add("message");
@@ -156,7 +183,9 @@ public class LettucePubSubIntegrationTest {
     };
     subscriber.addListener(listener);
     subscriber.sync().subscribe(CHANNEL);
+    subscriberLatch.await();
     subscriber.sync().psubscribe("best-*");
+    psubscriberLatch.await();
     long publishCount = publisher.sync().publish(CHANNEL, "message!");
 
 
@@ -168,10 +197,17 @@ public class LettucePubSubIntegrationTest {
   }
 
   @Test
-  public void multiUnsubscribe() {
+  public void multiUnsubscribe() throws InterruptedException {
     StatefulRedisPubSubConnection<String, String> subscriber = client.connectPubSub();
     List<Map> counts = Collections.synchronizedList(new ArrayList<>());
+    CountDownLatch subscriberLatch = new CountDownLatch(2);
+
     RedisPubSubListener<String, String> listener = new RedisPubSubAdapter<String, String>() {
+      @Override
+      public void subscribed(String channel, long count) {
+        subscriberLatch.countDown();
+      }
+
       @Override
       public void unsubscribed(String channel, long remainingSubscriptions) {
         Map<String, Long> channelCount = new HashMap<>();
@@ -182,6 +218,7 @@ public class LettucePubSubIntegrationTest {
     subscriber.addListener(listener);
     subscriber.sync().subscribe(CHANNEL);
     subscriber.sync().subscribe("new-channel!");
+    subscriberLatch.await();
     subscriber.sync().unsubscribe(CHANNEL);
     subscriber.sync().unsubscribe(CHANNEL);
     subscriber.sync().unsubscribe("new-channel!");
@@ -198,10 +235,16 @@ public class LettucePubSubIntegrationTest {
   }
 
   @Test
-  public void multiPunsubscribe() {
+  public void multiPunsubscribe() throws InterruptedException {
     StatefulRedisPubSubConnection<String, String> subscriber = client.connectPubSub();
     List<Map> counts = Collections.synchronizedList(new ArrayList<>());
+    CountDownLatch psubscriberLatch = new CountDownLatch(2);
     RedisPubSubListener<String, String> listener = new RedisPubSubAdapter<String, String>() {
+      @Override
+      public void psubscribed(String pattern, long count) {
+        psubscriberLatch.countDown();
+      }
+
       @Override
       public void punsubscribed(String pattern, long remainingSubscriptions) {
         Map<String, Long> patternCount = new HashMap<>();
@@ -213,6 +256,7 @@ public class LettucePubSubIntegrationTest {
     subscriber.addListener(listener);
     subscriber.sync().psubscribe(PATTERN);
     subscriber.sync().psubscribe("new-*");
+    psubscriberLatch.await();
     subscriber.sync().punsubscribe(PATTERN);
     subscriber.sync().punsubscribe(PATTERN);
     subscriber.sync().punsubscribe("new-*");
@@ -229,10 +273,23 @@ public class LettucePubSubIntegrationTest {
   }
 
   @Test
-  public void unsubscribePunsubscribe() {
+  public void unsubscribePunsubscribe() throws InterruptedException {
     StatefulRedisPubSubConnection<String, String> subscriber = client.connectPubSub();
     List<String> counts = Collections.synchronizedList(new ArrayList<>());
+    CountDownLatch subscriberLatch = new CountDownLatch(1);
+    CountDownLatch psubscriberLatch = new CountDownLatch(1);
     RedisPubSubListener<String, String> listener = new RedisPubSubAdapter<String, String>() {
+
+      @Override
+      public void subscribed(String channel, long count) {
+        subscriberLatch.countDown();
+      }
+
+      @Override
+      public void psubscribed(String pattern, long count) {
+        psubscriberLatch.countDown();
+      }
+
       @Override
       public void unsubscribed(String channel, long numUnsubscribed) {
         counts.add("unsubscribe");
@@ -245,7 +302,10 @@ public class LettucePubSubIntegrationTest {
     };
     subscriber.addListener(listener);
     subscriber.sync().subscribe(CHANNEL);
+    subscriberLatch.await();
     subscriber.sync().psubscribe("best-*");
+    psubscriberLatch.await();
+
     subscriber.sync().unsubscribe(CHANNEL);
     subscriber.sync().punsubscribe("best-*");
 
@@ -253,21 +313,20 @@ public class LettucePubSubIntegrationTest {
     assertThat(counts).containsExactly("unsubscribe", "punsubscribe");
   }
 
-  // Lettuce does not currently allow PING while subscribed
   @Test
-  public void pingWhileSubscribed() {
-    StatefulRedisPubSubConnection<String, String> subscriber = client.connectPubSub();
-    subscriber.sync().subscribe(CHANNEL);
-    assertThatThrownBy(() -> subscriber.sync().ping())
-        .hasMessageContaining("Command PING not allowed while subscribed");
-  }
-
-  @Test
-  public void quitWhileSubscribe() {
+  public void quitWhileSubscribe() throws InterruptedException {
     StatefulRedisPubSubConnection<String, String> subscriber = client.connectPubSub();
     StatefulRedisPubSubConnection<String, String> publisher = client.connectPubSub();
-
+    CountDownLatch subscriberLatch = new CountDownLatch(1);
+    RedisPubSubListener<String, String> listener = new RedisPubSubAdapter<String, String>() {
+      @Override
+      public void subscribed(String channel, long count) {
+        subscriberLatch.countDown();
+      }
+    };
+    subscriber.addListener(listener);
     subscriber.sync().subscribe(CHANNEL);
+    subscriberLatch.await();
 
     String quitResponse = subscriber.sync().quit();
     assertThat(quitResponse).isEqualTo("OK");

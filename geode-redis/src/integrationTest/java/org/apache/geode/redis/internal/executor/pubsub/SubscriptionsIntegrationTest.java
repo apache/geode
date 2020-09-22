@@ -82,6 +82,7 @@ public class SubscriptionsIntegrationTest {
     Jedis client = new Jedis("localhost", server.getPort());
 
     client.sendCommand(Protocol.Command.SUBSCRIBE, "hello");
+
     assertThatThrownBy(() -> client.set("not", "supported")).hasMessageContaining(
         "ERR only (P)SUBSCRIBE / (P)UNSUBSCRIBE / PING / QUIT allowed in this context");
     client.sendCommand(Protocol.Command.UNSUBSCRIBE);
