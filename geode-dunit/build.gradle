@@ -62,7 +62,7 @@ dependencies {
   implementation('pl.pragmatists:JUnitParams')
 
   implementation('junit:junit') {
-    exclude module: 'hamcrest-core'
+    exclude module: 'hamcrest'
   }
 
   distributedTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))

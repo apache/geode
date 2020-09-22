@@ -142,7 +142,8 @@ public class RebalanceIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(content().string(not(containsString("\"class\""))))
         .andExpect(
-            jsonPath("$.result[0].statusCode", Matchers.isOneOf("IN_PROGRESS", "ERROR", "OK")))
+            jsonPath("$.result[0].statusCode",
+                Matchers.is(Matchers.oneOf("IN_PROGRESS", "ERROR", "OK"))))
         .andExpect(jsonPath("$.result[0].links.self", Matchers.containsString("rebalances/")))
         .andExpect(jsonPath("$.statusCode", Matchers.is("OK")));
   }

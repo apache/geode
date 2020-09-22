@@ -43,7 +43,5 @@ dependencies {
 
   integrationTestImplementation('junit:junit')
   integrationTestImplementation('org.awaitility:awaitility')
-  integrationTestImplementation('org.hamcrest:hamcrest-all')
-  integrationTestImplementation('org.hamcrest:hamcrest-core')
-  integrationTestImplementation('org.hamcrest:hamcrest-library')
+  integrationTestImplementation('org.hamcrest:hamcrest')
 }

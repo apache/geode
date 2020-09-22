@@ -46,9 +46,7 @@ dependencies {
   distributedTestImplementation('mx4j:mx4j')
   distributedTestImplementation('org.assertj:assertj-core')
   distributedTestImplementation('org.awaitility:awaitility')
-  distributedTestImplementation('org.hamcrest:hamcrest-all')
-  distributedTestImplementation('org.hamcrest:hamcrest-core')
-  distributedTestImplementation('org.hamcrest:hamcrest-library')
+  distributedTestImplementation('org.hamcrest:hamcrest')
   distributedTestImplementation('pl.pragmatists:JUnitParams')
 
 

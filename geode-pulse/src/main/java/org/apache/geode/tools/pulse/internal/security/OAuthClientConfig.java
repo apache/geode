@@ -64,7 +64,7 @@ public class OAuthClientConfig {
   ClientRegistration clientRegistration() {
     return ClientRegistration.withRegistrationId(providerId)
         .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-        .redirectUriTemplate("{baseUrl}/login/oauth2/code/{registrationId}")
+        .redirectUri("{baseUrl}/login/oauth2/code/{registrationId}")
         .clientId(clientId)
         .clientSecret(clientSecret)
         .scope("openid", "CLUSTER:READ", "CLUSTER:WRITE", "DATA:READ", "DATA:WRITE")

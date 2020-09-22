@@ -30,7 +30,7 @@ dependencies {
   implementation(project(':geode-tcp-server'))
   implementation(project(':geode-core'))
 
-  compileOnly('org.apache.logging.log4j:log4j-api:2.13.1')
+  compileOnly('org.apache.logging.log4j:log4j-api:2.13.3')
   
   testImplementation(project(':geode-junit'))
   testImplementation('org.assertj:assertj-core')
@@ -49,10 +49,9 @@ dependencies {
   distributedTestImplementation('mx4j:mx4j')
   distributedTestImplementation('org.awaitility:awaitility')
   distributedTestImplementation('junit:junit')
-  distributedTestImplementation('org.hamcrest:hamcrest-core')
-  distributedTestImplementation('org.hamcrest:hamcrest-library')
+  distributedTestImplementation('org.hamcrest:hamcrest')
   distributedTestImplementation('org.mockito:mockito-core')
-  distributedTestImplementation('org.hamcrest:hamcrest-all')
+  distributedTestImplementation('org.hamcrest:hamcrest')
   distributedTestImplementation('org.apache.commons:commons-lang3')
   distributedTestImplementation('commons-io:commons-io')
   distributedTestImplementation('org.assertj:assertj-core')

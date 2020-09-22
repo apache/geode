@@ -128,9 +128,7 @@ dependencies {
   integrationTestImplementation('org.springframework.security:spring-security-test')
 
   integrationTestImplementation('junit:junit')
-  integrationTestImplementation('org.hamcrest:hamcrest-core')
-  integrationTestImplementation('org.hamcrest:hamcrest-library')
-  integrationTestImplementation('org.hamcrest:hamcrest-all')
+  integrationTestImplementation('org.hamcrest:hamcrest')
 
   uiTestRuntimeOnly(project(':geode-core'))
   uiTestImplementation(project(':geode-junit')) {
