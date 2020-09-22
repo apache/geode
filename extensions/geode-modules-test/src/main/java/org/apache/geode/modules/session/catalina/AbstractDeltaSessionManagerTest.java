@@ -233,24 +233,6 @@ public abstract class AbstractDeltaSessionManagerTest<DeltaSessionManagerT exten
   }
 
   @Test
-  public void loadLogsWarningAndDoesNotAddSessionWhenSessionStoreNotFound()
-      throws IOException, ClassNotFoundException {
-    final String contextPath = "contextPath";
-    final String expectedStoreDir = "";
-    final DeltaSession newSession = mock(DeltaSession.class);
-    final DeltaSession existingSession = mock(DeltaSession.class);
-
-    prepareMocksForLoadTest(contextPath, newSession, existingSession, expectedStoreDir);
-
-    doReturn(null).when(manager).getFileAtPath(any(), any());
-
-    manager.load();
-
-    verify(logger).debug("No session store file found");
-    verify(manager, times(0)).add(any());
-  }
-
-  @Test
   public void loadDoesNotAddSessionToManagerWithValidIdAndLessRecentAccessTime()
       throws IOException, ClassNotFoundException {
     final String contextPath = "contextPath";
@@ -424,11 +406,6 @@ public abstract class AbstractDeltaSessionManagerTest<DeltaSessionManagerT exten
     when(cache.getQueryService()).thenReturn(queryService);
     when(queryService.newQuery(anyString())).thenReturn(query);
     when(query.execute()).thenReturn(results);
-    doReturn(catalinaBaseSystemProp).when(manager)
-        .getSystemPropertyValue(DeltaSessionManager.catalinaBaseSystemProperty);
-    doReturn(systemFileSeparator).when(manager)
-        .getSystemPropertyValue(DeltaSessionManager.fileSeparatorSystemProperty);
-    doReturn(store).when(manager).getFileAtPath(expectedStoreDir, contextPath);
     doReturn(fos).when(manager).getFileOutputStream(store);
     doReturn(bos).when(manager).getBufferedOutputStream(fos);
     doReturn(oos).when(manager).getObjectOutputStream(bos);
@@ -459,9 +436,6 @@ public abstract class AbstractDeltaSessionManagerTest<DeltaSessionManagerT exten
     when(newSession.getLastAccessedTime()).thenReturn(1L);
     when(newSession.isValid()).thenReturn(true);
     when(existingSession.getLastAccessedTime()).thenReturn(0L);
-    doReturn(catalinaBaseSystemProp).when(manager).getSystemPropertyValue("catalina.base");
-    doReturn(systemFileSeparator).when(manager).getSystemPropertyValue("file.separator");
-    doReturn(store).when(manager).getFileAtPath(expectedStoreDir, contextPath);
     doReturn(fis).when(manager).getFileInputStream(store);
     doReturn(bis).when(manager).getBufferedInputStream(fis);
     doReturn(ois).when(manager).getObjectInputStream(bis);
