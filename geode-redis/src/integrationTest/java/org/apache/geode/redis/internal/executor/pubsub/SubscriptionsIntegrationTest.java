@@ -40,7 +40,7 @@ public class SubscriptionsIntegrationTest {
 
   @Test
   @Ignore("GEODE-8515")
-  public void testPingWhileSubscribed() {
+  public void pingWhileSubscribed() {
     Jedis client = new Jedis("localhost", server.getPort());
     MockSubscriber mockSubscriber = new MockSubscriber();
 
@@ -50,10 +50,12 @@ public class SubscriptionsIntegrationTest {
     GeodeAwaitility.await()
         .untilAsserted(() -> assertThat(mockSubscriber.getReceivedPings().size()).isEqualTo(1));
     assertThat(mockSubscriber.getReceivedPings().get(0)).isEqualTo("");
+    mockSubscriber.unsubscribe();
+    client.close();
   }
 
   @Test
-  public void testSubscribeWhileSubscribed() {
+  public void multiSubscribe() {
     Jedis client = new Jedis("localhost", server.getPort());
     MockSubscriber mockSubscriber = new MockSubscriber();
 
@@ -76,16 +78,18 @@ public class SubscriptionsIntegrationTest {
   }
 
   @Test
-  public void testUnsupportedCommandsWhileSubscribed() {
+  public void unallowedCommandsWhileSubscribed() {
     Jedis client = new Jedis("localhost", server.getPort());
 
     client.sendCommand(Protocol.Command.SUBSCRIBE, "hello");
     assertThatThrownBy(() -> client.set("not", "supported")).hasMessageContaining(
         "ERR only (P)SUBSCRIBE / (P)UNSUBSCRIBE / PING / QUIT allowed in this context");
+    client.sendCommand(Protocol.Command.UNSUBSCRIBE);
+    client.close();
   }
 
   @Test
-  public void testForLeakedSubscriptions() {
+  public void leakedSubscriptions() {
     for (int i = 0; i < 100; i++) {
       Jedis client = new Jedis("localhost", server.getPort());
       MockSubscriber mockSubscriber = new MockSubscriber();

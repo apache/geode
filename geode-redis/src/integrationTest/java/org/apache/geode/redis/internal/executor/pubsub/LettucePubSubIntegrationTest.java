@@ -33,6 +33,7 @@ import io.lettuce.core.pubsub.StatefulRedisPubSubConnection;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
@@ -62,7 +63,7 @@ public class LettucePubSubIntegrationTest {
   }
 
   @Test
-  public void testMultiSubscribeSameClient() {
+  public void multiSubscribeSameClient() {
     StatefulRedisPubSubConnection<String, String> subscriber = client.connectPubSub();
     StatefulRedisPubSubConnection<String, String> publisher = client.connectPubSub();
     List<Map> messages = Collections.synchronizedList(new ArrayList<>());
@@ -99,7 +100,7 @@ public class LettucePubSubIntegrationTest {
   }
 
   @Test
-  public void testMultiPsubscribeSameClient() {
+  public void multiPsubscribeSameClient() {
     StatefulRedisPubSubConnection<String, String> subscriber = client.connectPubSub();
     StatefulRedisPubSubConnection<String, String> publisher = client.connectPubSub();
     List<Map> messages = Collections.synchronizedList(new ArrayList<>());
@@ -136,7 +137,8 @@ public class LettucePubSubIntegrationTest {
   }
 
   @Test
-  public void testSubscribePsubscribeSameClient() {
+  @Ignore("GEODE-8498")
+  public void subscribePsubscribeSameClient() {
     StatefulRedisPubSubConnection<String, String> subscriber = client.connectPubSub();
     StatefulRedisPubSubConnection<String, String> publisher = client.connectPubSub();
     List<String> messages = Collections.synchronizedList(new ArrayList<>());
@@ -166,7 +168,7 @@ public class LettucePubSubIntegrationTest {
   }
 
   @Test
-  public void testMultiUnsubscribe() {
+  public void multiUnsubscribe() {
     StatefulRedisPubSubConnection<String, String> subscriber = client.connectPubSub();
     List<Map> counts = Collections.synchronizedList(new ArrayList<>());
     RedisPubSubListener<String, String> listener = new RedisPubSubAdapter<String, String>() {
@@ -196,7 +198,7 @@ public class LettucePubSubIntegrationTest {
   }
 
   @Test
-  public void testMultiPunsubscribe() {
+  public void multiPunsubscribe() {
     StatefulRedisPubSubConnection<String, String> subscriber = client.connectPubSub();
     List<Map> counts = Collections.synchronizedList(new ArrayList<>());
     RedisPubSubListener<String, String> listener = new RedisPubSubAdapter<String, String>() {
@@ -227,7 +229,7 @@ public class LettucePubSubIntegrationTest {
   }
 
   @Test
-  public void testUnsubscribePunsubscribe() {
+  public void unsubscribePunsubscribe() {
     StatefulRedisPubSubConnection<String, String> subscriber = client.connectPubSub();
     List<String> counts = Collections.synchronizedList(new ArrayList<>());
     RedisPubSubListener<String, String> listener = new RedisPubSubAdapter<String, String>() {
@@ -253,7 +255,7 @@ public class LettucePubSubIntegrationTest {
 
   // Lettuce does not currently allow PING while subscribed
   @Test
-  public void testSubscribePing() {
+  public void pingWhileSubscribed() {
     StatefulRedisPubSubConnection<String, String> subscriber = client.connectPubSub();
     subscriber.sync().subscribe(CHANNEL);
     assertThatThrownBy(() -> subscriber.sync().ping())
@@ -261,7 +263,7 @@ public class LettucePubSubIntegrationTest {
   }
 
   @Test
-  public void testSubscribeQuit() {
+  public void quitWhileSubscribe() {
     StatefulRedisPubSubConnection<String, String> subscriber = client.connectPubSub();
     StatefulRedisPubSubConnection<String, String> publisher = client.connectPubSub();
 
