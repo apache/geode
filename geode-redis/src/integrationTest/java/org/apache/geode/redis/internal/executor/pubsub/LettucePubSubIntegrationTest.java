@@ -33,7 +33,6 @@ import io.lettuce.core.pubsub.StatefulRedisPubSubConnection;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
@@ -137,7 +136,6 @@ public class LettucePubSubIntegrationTest {
   }
 
   @Test
-  @Ignore("GEODE-8498")
   public void subscribePsubscribeSameClient() {
     StatefulRedisPubSubConnection<String, String> subscriber = client.connectPubSub();
     StatefulRedisPubSubConnection<String, String> publisher = client.connectPubSub();
