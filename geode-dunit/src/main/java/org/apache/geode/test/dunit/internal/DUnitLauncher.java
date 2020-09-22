@@ -14,6 +14,7 @@
  */
 package org.apache.geode.test.dunit.internal;
 
+import static java.util.Objects.isNull;
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_MANAGEMENT_REST_SERVICE;
@@ -31,11 +32,12 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
-import java.nio.file.Path;
+import java.nio.file.Files;
 import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
 import java.rmi.registry.LocateRegistry;
@@ -58,6 +60,7 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.logging.internal.spi.LoggingProvider;
+import org.apache.geode.test.TestRootDirectory;
 import org.apache.geode.test.dunit.DUnitEnv;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
@@ -126,10 +129,11 @@ public class DUnitLauncher {
 
   private static final VMEventNotifier vmEventNotifier = new VMEventNotifier();
 
+  public static final String ROOT_DIR_NAME = "dunit";
   /**
-   * The root directory for tests running in the current DUnit session in this JVM.
+   * The root directory for VMs created by the DUnitLauncher in this JVM.
    */
-  private static Path sessionDir = null;
+  private static File rootDir = null;
   private static Master master;
 
   private DUnitLauncher() {}
@@ -192,7 +196,7 @@ public class DUnitLauncher {
 
   private static void launch(boolean launchLocator) throws AlreadyBoundException, IOException,
       InterruptedException, NotBoundException {
-    DUNIT_SUSPECT_FILE = new File(SUSPECT_FILENAME);
+    DUNIT_SUSPECT_FILE = new File(TestRootDirectory.file(), SUSPECT_FILENAME);
     DUNIT_SUSPECT_FILE.delete();
     DUNIT_SUSPECT_FILE.deleteOnExit();
 
@@ -402,5 +406,16 @@ public class DUnitLauncher {
             + suspectStringBuilder);
       }
     }
+  }
+
+  public static File rootDir() {
+    if (isNull(rootDir)) {
+      try {
+        rootDir = Files.createDirectories(TestRootDirectory.path().resolve(ROOT_DIR_NAME)).toFile();
+      } catch (IOException e) {
+        throw new UncheckedIOException(e);
+      }
+    }
+    return rootDir;
   }
 }

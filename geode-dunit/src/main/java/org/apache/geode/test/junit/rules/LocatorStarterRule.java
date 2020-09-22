@@ -26,7 +26,6 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.test.TestRootDirectory;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 
 /**
@@ -34,17 +33,23 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
  *
  * <p>
  * This rules allows you to create/start a locator using any @ConfigurationProperties, you can chain
- * the configuration of the rule like this: LocatorStarterRule locator = new LocatorStarterRule()
- * .withProperty(key, value) .withName(name) .withProperties(properties) .withSecurityManager(class)
- * .withJmxManager() etc, etc. If your rule calls withAutoStart(), the locator will be started
- * before your test code.
+ * the configuration of the rule like this:
+ * <pre>LocatorStarterRule locator = new LocatorStarterRule()
+ * .withProperty(key, value)
+ * .withName(name)
+ * .withProperties(properties)
+ * .withSecurityManager(class)
+ * .withJmxManager()
+ * ...</pre>
+ * <p>
+ * If your rule calls {@code withAutoStart()}, the locator will be started before your test code.
  *
  * <p>
  * In your test code, you can use the rule to access the locator's attributes, like the port
  * information, working dir, name, and the InternalLocator it creates.
  *
  * <p>
- * by default the rule starts a locator with jmx and cluster configuration service
+ * By default the rule starts a locator with jmx and cluster configuration service
  * you can turn off cluster configuration service to have your test
  * run faster if your test does not need them.
  *
@@ -91,8 +96,7 @@ public class LocatorStarterRule extends MemberStarterRule<LocatorStarterRule> im
     try {
       // this will start a jmx manager and admin rest service by default
       locator = InternalLocator.startLocator(memberPort, null, null, null, null, true, properties,
-          null, TestRootDirectory
-              .path());
+          null, getWorkingDir().toPath());
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }

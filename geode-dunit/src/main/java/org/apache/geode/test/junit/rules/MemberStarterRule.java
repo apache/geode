@@ -14,6 +14,7 @@
  */
 package org.apache.geode.test.junit.rules;
 
+import static java.util.Objects.isNull;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
@@ -32,6 +33,9 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -105,6 +109,10 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
 
   private List<File> firstLevelChildrenFile = new ArrayList<>();
   private boolean cleanWorkingDir = true;
+  /**
+   * A working directory unique to this rule.
+   */
+  private File workingDir;
 
   public static void setWaitUntilTimeout(int waitUntilTimeout) {
     WAIT_UNTIL_TIMEOUT = waitUntilTimeout;
@@ -164,13 +172,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
 
     // delete the first-level children files that are created in the tests
     if (cleanWorkingDir) {
-      Arrays.stream(getWorkingDir().listFiles())
-          // do not delete the pre-existing files
-          .filter(f -> !firstLevelChildrenFile.contains(f))
-          // do not delete the dunit folder that might have been created by dunit launcher
-          .filter(
-              f -> !(f.isDirectory() && f.getName().startsWith(DUnitLauncher.TEST_ROOT_DIR_PREFIX)))
-          .forEach(FileUtils::deleteQuietly);
+      FileUtils.deleteQuietly(getWorkingDir());
     }
   }
 
@@ -432,7 +434,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
    *
    * @param regionFactoryConsumer a lamda that allows you to customize the regionFactory
    * @param attributesFactoryConsumer a lamda that allows you to customize the
-   *        partitionAttributeFactory
+   * partitionAttributeFactory
    */
   public Region createPartitionRegion(String name, Consumer<RegionFactory> regionFactoryConsumer,
       Consumer<PartitionAttributesFactory> attributesFactoryConsumer) {
@@ -516,18 +518,18 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
    * reporting.
    *
    * @param supplier Method to retrieve the result to be tested, e.g.,
-   *        get a list of visible region mbeans
+   * get a list of visible region mbeans
    * @param examiner Method to evaluate the result provided by {@code provider}, e.g.,
-   *        get the length of the provided list.
-   *        Use {@link java.util.function.Function#identity()} if {@code assertionConsumer}
-   *        directly tests the value provided by {@code supplier}.
+   * get the length of the provided list.
+   * Use {@link java.util.function.Function#identity()} if {@code assertionConsumer}
+   * directly tests the value provided by {@code supplier}.
    * @param assertionConsumer assertThat styled condition on the output of {@code examiner} against
-   *        which
-   *        the {@code await().untilAsserted(...)} will be called. E.g.,
-   *        {@code beanCount -> assertThat(beanCount, is(5))}
+   * which
+   * the {@code await().untilAsserted(...)} will be called. E.g.,
+   * {@code beanCount -> assertThat(beanCount, is(5))}
    * @param assertionConsumerDescription A description of the {@code assertionConsumer} method,
-   *        for additional failure information should this call time out.
-   *        E.g., "Visible region mbean count should be 5"
+   * for additional failure information should this call time out.
+   * E.g., "Visible region mbean count should be 5"
    * @param timeout With {@code unit}, the maximum time to wait before raising an exception.
    * @param unit With {@code timeout}, the maximum time to wait before raising an exception.
    * @throws org.awaitility.core.ConditionTimeoutException The timeout has been reached
@@ -572,10 +574,18 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   }
 
   public abstract void waitTilFullyReconnected();
-
+  
   @Override
   public File getWorkingDir() {
-    return TestRootDirectory.file();
+    if (isNull(workingDir)) {
+      String dirName = String.format("%s-%x", getClass().getSimpleName(), System.identityHashCode(this));
+      try {
+        workingDir = Files.createDirectories(TestRootDirectory.path().resolve(dirName)).toFile();
+      } catch (IOException e) {
+        throw new UncheckedIOException(e);
+      }
+    }
+    return workingDir;
   }
 
   @Override
