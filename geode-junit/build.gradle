@@ -30,7 +30,7 @@ dependencies {
   compileOnly(project(':geode-gfsh'))
 
   api('junit:junit') {
-    exclude module: 'hamcrest-core'
+    exclude module: 'hamcrest'
   }
   api('org.assertj:assertj-core')
   api('org.mockito:mockito-core')
@@ -50,7 +50,7 @@ dependencies {
   
   api('org.awaitility:awaitility')
   api('org.bouncycastle:bcpkix-jdk15on')
-  api('org.hamcrest:hamcrest-all')
+  api('org.hamcrest:hamcrest')
   api('io.micrometer:micrometer-core')
   
   api('org.skyscreamer:jsonassert')

@@ -222,10 +222,8 @@ class DependencyConstraints implements Plugin<Project> {
       entry('lucene-test-framework')
     }
 
-    dependencySet(group: 'org.hamcrest', version: '1.3') {
-      entry('hamcrest-all')
-      entry('hamcrest-core')
-      entry('hamcrest-library')
+    dependencySet(group: 'org.hamcrest', version: '2.2') {
+      entry('hamcrest')
     }
 
     dependencySet(group: 'org.powermock', version: '2.0.2') {

@@ -60,8 +60,7 @@ dependencies {
   distributedTestImplementation(project(':geode-dunit'))
   distributedTestImplementation(project(':geode-lucene:geode-lucene-test'))
   distributedTestImplementation('pl.pragmatists:JUnitParams')
-  distributedTestImplementation('org.hamcrest:hamcrest-core')
-  distributedTestImplementation('org.hamcrest:hamcrest-library')
+  distributedTestImplementation('org.hamcrest:hamcrest')
 
 
   integrationTestImplementation(project(':geode-dunit'))
