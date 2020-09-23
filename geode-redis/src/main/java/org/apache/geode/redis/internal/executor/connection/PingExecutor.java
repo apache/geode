@@ -15,6 +15,7 @@
  */
 package org.apache.geode.redis.internal.executor.connection;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
@@ -31,9 +32,17 @@ public class PingExecutor extends AbstractExecutor {
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
     byte[] result = PING_RESPONSE.getBytes();
+    byte[] subscribeResult = "".getBytes();
     if (commandElems.size() > 1) {
       result = commandElems.get(1);
+      subscribeResult = result;
     }
+
+    if (!context.getPubSub().findSubscribedChannels(context.getClient()).isEmpty()) {
+      return RedisResponse
+          .array(Arrays.asList(PING_RESPONSE.toLowerCase().getBytes(), subscribeResult));
+    }
+
     return RedisResponse.string(result);
   }
 }

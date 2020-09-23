@@ -38,6 +38,42 @@ public class SubscriptionsIntegrationTest {
   @ClassRule
   public static ExecutorServiceRule executor = new ExecutorServiceRule();
 
+  // @Test
+  // public void pingWith
+  @Test
+  public void pingWhileSubscribed() {
+    Jedis client = new Jedis("localhost", server.getPort(), 1000000000);
+    MockSubscriber mockSubscriber = new MockSubscriber();
+
+    executor.submit(() -> client.subscribe(mockSubscriber, "same"));
+    mockSubscriber.awaitSubscribe("same");
+    mockSubscriber.ping();
+    GeodeAwaitility.await()
+        .untilAsserted(() -> assertThat(mockSubscriber.getReceivedPings().size()).isEqualTo(1));
+    assertThat(mockSubscriber.getReceivedPings().get(0)).isEqualTo("");
+    mockSubscriber.unsubscribe();
+    client.close();
+  }
+
+  @Test
+  public void pingWithArgumentWhileSubscribed() {
+    Jedis client = new Jedis("localhost", server.getPort());
+    MockSubscriber mockSubscriber = new MockSubscriber();
+
+    executor.submit(() -> client.subscribe(mockSubscriber, "same"));
+    mockSubscriber.awaitSubscribe("same");
+    mockSubscriber.ping("potato");
+    // JedisPubSub PING with message is not currently possible, will submit a PR
+    // (https://github.com/xetorthio/jedis/issues/2049)
+    // until then, we have to call this second ping to flush the client
+    mockSubscriber.ping();
+    GeodeAwaitility.await()
+        .untilAsserted(() -> assertThat(mockSubscriber.getReceivedPings().size()).isEqualTo(2));
+    assertThat(mockSubscriber.getReceivedPings().get(0)).isEqualTo("potato");
+    mockSubscriber.unsubscribe();
+    client.close();
+  }
+
   @Test
   @Ignore("GEODE-8515")
   public void pingWhileSubscribed() {
