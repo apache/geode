@@ -15,12 +15,17 @@
 package org.apache.geode.management.internal.beans.stats;
 
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.statistics.StatisticId;
 import org.apache.geode.internal.statistics.StatisticNotFoundException;
 import org.apache.geode.internal.statistics.StatisticsNotification;
+import org.apache.geode.internal.statistics.ValueMonitor;
 
 /**
  * This class acts as a monitor and listen for GC statistics updates on behalf of MemberMBean.
@@ -40,29 +45,49 @@ import org.apache.geode.internal.statistics.StatisticsNotification;
  */
 public class GCStatsMonitor extends MBeanStatsMonitor {
   // this class uses these volatile variables to make sure reads are reading the latest values
-  // it is not using the parent's siteMap which is not volatile to keep the stats values.
-  private volatile long collections = 0;
-  private volatile long collectionTime = 0;
+  // it is not using the parent's siteMap
+  // this stores each stat's uniqueId and its collection count
+  private volatile Map<Long, Number> collections;
+
+  // this stors eaech stat's uniqueId and its collectionTime
+  private volatile Map<Long, Number> collectionTime;
 
   public GCStatsMonitor(String name) {
-    super(name);
+    this(name, new ValueMonitor());
+  }
+
+  @VisibleForTesting
+  public GCStatsMonitor(String name, ValueMonitor valueMonitor) {
+    super(name, valueMonitor);
+    collections = new HashMap<>();
+    collectionTime = new HashMap<>();
+  }
+
+  long getCollections() {
+    return collections.values().stream().mapToLong(Number::longValue).sum();
+  }
+
+  long getCollectionTime() {
+    return collectionTime.values().stream().mapToLong(Number::longValue).sum();
   }
 
   @Override
-  // this will be called multiple times with different collector's stats
+  // this will be called multiple times initially with different collector's stats
   public void addStatisticsToMonitor(Statistics stats) {
     monitor.addListener(this);// if already listener is added this will be a no-op
     monitor.addStatistics(stats);
 
-    // stats map should keep the sum of all the GC stats
     StatisticDescriptor[] descriptors = stats.getType().getStatistics();
     for (StatisticDescriptor d : descriptors) {
       String name = d.getName();
       Number value = stats.get(d);
+      if (value == null) {
+        continue;
+      }
       if (name.equals(StatsKey.VM_GC_STATS_COLLECTIONS)) {
-        collections += value.longValue();
+        collections.put(stats.getUniqueId(), value);
       } else if (name.equals(StatsKey.VM_GC_STATS_COLLECTION_TIME)) {
-        collectionTime += value.longValue();
+        collectionTime.put(stats.getUniqueId(), value);
       }
     }
   }
@@ -70,20 +95,19 @@ public class GCStatsMonitor extends MBeanStatsMonitor {
   @Override
   public Number getStatistic(String statName) {
     if (statName.equals(StatsKey.VM_GC_STATS_COLLECTIONS)) {
-      return collections;
+      return getCollections();
     }
 
     if (statName.equals(StatsKey.VM_GC_STATS_COLLECTION_TIME)) {
-      return collectionTime;
+      return getCollectionTime();
     }
+
     return 0;
   }
 
   @Override
+  // this will be called each time a collector's stats changed
   public void handleNotification(StatisticsNotification notification) {
-    // sum up all the count and all the time in the stats included in this notification
-    long totalCount = 0;
-    long totalTime = 0;
     for (StatisticId statId : notification) {
       StatisticDescriptor descriptor = statId.getStatisticDescriptor();
       String name = descriptor.getName();
@@ -95,15 +119,12 @@ public class GCStatsMonitor extends MBeanStatsMonitor {
       }
       log(name, value);
       if (name.equals(StatsKey.VM_GC_STATS_COLLECTIONS)) {
-        totalCount += value.longValue();
+        collections.put(statId.getStatistics().getUniqueId(), value);
       }
 
       else if (name.equals(StatsKey.VM_GC_STATS_COLLECTION_TIME)) {
-        totalTime += value.longValue();
+        collectionTime.put(statId.getStatistics().getUniqueId(), value);
       }
     }
-
-    collections = totalCount;
-    collectionTime = totalTime;
   }
 }
