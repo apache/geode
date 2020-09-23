@@ -404,6 +404,20 @@ public enum RedisCommandType {
     return supportLevel == UNIMPLEMENTED;
   }
 
+  public boolean isAllowedWhileSubscribed() {
+    switch (this) {
+      case SUBSCRIBE:
+      case PSUBSCRIBE:
+      case UNSUBSCRIBE:
+      case PUNSUBSCRIBE:
+      case PING:
+      case QUIT:
+        return true;
+      default:
+        return false;
+    }
+  }
+
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext executionHandlerContext) {
     parameterRequirements.checkParameters(command, executionHandlerContext);
