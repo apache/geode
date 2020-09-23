@@ -43,6 +43,7 @@ fi
 NAME="$1"
 SRCH="$2"
 REPL="$3"
+OLDV="$SRCH"
 SRCH=${SRCH//./\\.}
 git grep -n --color "$SRCH" | cat
 git grep -l "$SRCH" | while read f; do
@@ -50,7 +51,7 @@ git grep -l "$SRCH" | while read f; do
   rm -f $f.bak
 done
 git add -p
-git commit -m "Bump $NAME from $OLDV to $NEWV"
+git commit -m "Bump $NAME from $OLDV to $REPL"
 if [ $(git diff | wc -l) -gt 0 ] ; then
   git stash
   git stash drop
