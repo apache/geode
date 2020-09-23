@@ -49,34 +49,27 @@ public class GeodeRedisServer {
    * The default Redis port as specified by their protocol, {@code DEFAULT_REDIS_SERVER_PORT}
    */
   public static final int DEFAULT_REDIS_SERVER_PORT = 6379;
-
   public static final String ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM =
       "enable-redis-unsupported-commands";
 
   private static final Logger logger = LogService.getLogger();
-
-
   private final boolean ENABLE_REDIS_UNSUPPORTED_COMMANDS =
       Boolean.getBoolean(ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM);
 
   private final PassiveExpirationManager passiveExpirationManager;
-
   private final NettyRedisServer nettyRedisServer;
-
   private final RegionProvider regionProvider;
   private final PubSub pubSub;
   private final RedisStats redisStats;
   private final ExecutorService redisCommandExecutor;
-
   private boolean shutdown;
-
 
   /**
    * Constructor for {@code GeodeRedisServer} that will configure the server to bind to the given
    * address and port.
    *
-   * @param bindAddress The address to which the server will attempt to bind to; null
-   *        causes it to bind to all local addresses.
+   * @param bindAddress The address to which the server will attempt to bind to; null causes it to
+   *        bind to all local addresses.
    * @param port The port the server will bind to, will throw an IllegalArgumentException if
    *        argument is less than 0. If the port is 0 a random port is assigned.
    */
@@ -93,13 +86,21 @@ public class GeodeRedisServer {
     CommandFunction.register(regionProvider.getDataRegion(), stripedExecutor, redisStats);
     RenameFunction.register(regionProvider.getDataRegion(), stripedExecutor, redisStats);
     RedisCommandFunction.register();
+
     passiveExpirationManager =
         new PassiveExpirationManager(regionProvider.getDataRegion(), redisStats);
-    redisCommandExecutor = LoggingExecutors.newCachedThreadPool("GeodeRedisServer-Command-", true);
-    nettyRedisServer = new NettyRedisServer(() -> cache.getInternalDistributedSystem().getConfig(),
-        regionProvider, pubSub,
-        this::allowUnsupportedCommands, this::shutdown, port, bindAddress, redisStats,
-        redisCommandExecutor);
+    redisCommandExecutor =
+        LoggingExecutors.newCachedThreadPool("Redis Command", true);
+    nettyRedisServer =
+        new NettyRedisServer(() -> cache.getInternalDistributedSystem().getConfig(),
+            regionProvider,
+            pubSub,
+            this::allowUnsupportedCommands,
+            this::shutdown,
+            port,
+            bindAddress,
+            redisStats,
+            redisCommandExecutor);
   }
 
   @VisibleForTesting

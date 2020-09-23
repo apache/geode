@@ -15,37 +15,35 @@
 
 package org.apache.geode.redis.internal.ParameterRequirements;
 
+import java.util.List;
+
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class MaximumParameterRequirements implements ParameterRequirements {
-  private final int maximum;
-  private final String errorMessage;
+public class RestrictedInputValuesParameterRequirements implements ParameterRequirements {
 
-  public MaximumParameterRequirements(int maximum) {
-    this(maximum, null);
+ private final List<String> allowedValues;
+
+  public RestrictedInputValuesParameterRequirements(List<String> allowedValues) {
+    this.allowedValues = allowedValues;
   }
-
-  public MaximumParameterRequirements(int maximum, String errorMessage) {
-    this.maximum = maximum;
-    this.errorMessage = errorMessage;
-  }
-
 
   @Override
-  public void checkParameters(Command command, ExecutionHandlerContext executionHandlerContext) {
-    if (command.getProcessedCommand().size() > maximum) {
-      throw new RedisParametersMismatchException(getErrorMessage(command));
-    }
+  public void checkParameters(Command command,
+      ExecutionHandlerContext executionHandlerContext) {
+    List<byte[]> parameters = command.getProcessedCommand();
+    String commandType = command.getCommandType().name();
+
+    parameters.forEach(parameter -> {
+      String parameterString = parameter.toString();
+      if (isNotAllowed(parameterString) &&
+          !parameterString.equalsIgnoreCase(commandType)) {
+        throw new RedisParametersMismatchException("");
+      }
+    });
   }
 
-  private String getErrorMessage(Command command) {
-    if (errorMessage != null) {
-      return errorMessage;
-    }
-
-    return command.wrongNumberOfArgumentsErrorMessage();
+  private boolean isNotAllowed(String parameterString) {
+    return (allowedValues.contains(parameterString));
   }
-
-
 }

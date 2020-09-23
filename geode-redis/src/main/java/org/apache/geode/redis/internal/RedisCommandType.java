@@ -26,6 +26,7 @@ import org.apache.geode.redis.internal.ParameterRequirements.MaximumParameterReq
 import org.apache.geode.redis.internal.ParameterRequirements.MinimumParameterRequirements;
 import org.apache.geode.redis.internal.ParameterRequirements.OddParameterRequirements;
 import org.apache.geode.redis.internal.ParameterRequirements.ParameterRequirements;
+import org.apache.geode.redis.internal.ParameterRequirements.RestrictedInputValuesParameterRequirements;
 import org.apache.geode.redis.internal.ParameterRequirements.SpopParameterRequirements;
 import org.apache.geode.redis.internal.ParameterRequirements.UnspecifiedParameterRequirements;
 import org.apache.geode.redis.internal.executor.Executor;
@@ -260,7 +261,9 @@ public enum RedisCommandType {
   DBSIZE(new DBSizeExecutor(), UNSUPPORTED, new ExactParameterRequirements(1)),
   FLUSHALL(new FlushAllExecutor(), UNSUPPORTED, new MaximumParameterRequirements(2, ERROR_SYNTAX)),
   FLUSHDB(new FlushAllExecutor(), UNSUPPORTED, new MaximumParameterRequirements(2, ERROR_SYNTAX)),
-  INFO(new InfoExecutor(), UNSUPPORTED, new MaximumParameterRequirements(2, ERROR_SYNTAX)),
+  INFO(new InfoExecutor(), UNSUPPORTED, new MaximumParameterRequirements(2, ERROR_SYNTAX)
+      .and(new RestrictedInputValuesParameterRequirements(
+          RedisConstants.ALLOWED_INFO_COMMANDS))),
   SHUTDOWN(new ShutDownExecutor(), UNSUPPORTED, new MaximumParameterRequirements(2, ERROR_SYNTAX)),
   TIME(new TimeExecutor(), UNSUPPORTED, new ExactParameterRequirements(1)),
 
