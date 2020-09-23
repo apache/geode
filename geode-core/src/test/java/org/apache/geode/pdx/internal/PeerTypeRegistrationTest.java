@@ -30,10 +30,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.internal.util.reflection.FieldSetter;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.Statistics;
@@ -122,14 +122,16 @@ public class PeerTypeRegistrationTest {
   }
 
   @Test
-  public void pdxPersistenceIsSetWithUserDefinedDiskStore() throws NoSuchFieldException {
+  public void pdxPersistenceIsSetWithUserDefinedDiskStore()
+      throws NoSuchFieldException, IllegalAccessException {
     PeerTypeRegistration peerTypeRegistration = spy(new PeerTypeRegistration(internalCache));
     doReturn(factory).when(internalCache).createRegionFactory();
     when(internalCache.getPdxPersistent()).thenReturn(true);
     CacheConfig config = mock(CacheConfig.class);
     when(internalCache.getCacheConfig()).thenReturn(config);
 
-    FieldSetter.setField(config, config.getClass().getField("pdxDiskStoreUserSet"), true);
+    Field field = config.getClass().getField("pdxDiskStoreUserSet");
+    field.setBoolean(config, Boolean.TRUE);
     final String diskStoreName = "userDiskStore";
     when(internalCache.getPdxDiskStore()).thenReturn(diskStoreName);
 

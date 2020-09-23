@@ -26,7 +26,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.time.Duration;
 import java.util.HashMap;
@@ -42,6 +41,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import org.apache.geode.internal.security.SecurityService;
@@ -61,7 +61,7 @@ public class LoginHandlerInterceptorTest {
   @Before
   public void setUp() {
     LoginHandlerInterceptor.getEnvironment().clear();
-    initMocks(this);
+    MockitoAnnotations.openMocks(this);
     interceptor = new LoginHandlerInterceptor(securityService);
   }
 

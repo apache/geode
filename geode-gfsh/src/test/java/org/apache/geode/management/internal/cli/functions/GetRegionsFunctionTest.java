@@ -21,7 +21,6 @@ import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.util.Collections;
 
@@ -29,6 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
@@ -60,7 +60,7 @@ public class GetRegionsFunctionTest {
 
   @Before
   public void setUp() {
-    initMocks(this);
+    MockitoAnnotations.openMocks(this);
 
     when(functionContext.<RegionInformation[]>getResultSender()).thenReturn(resultSender);
   }
