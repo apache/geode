@@ -42,6 +42,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import org.apache.geode.internal.security.SecurityService;
@@ -61,7 +62,7 @@ public class LoginHandlerInterceptorTest {
   @Before
   public void setUp() {
     LoginHandlerInterceptor.getEnvironment().clear();
-    initMocks(this);
+    MockitoAnnotations.openMocks(this);
     interceptor = new LoginHandlerInterceptor(securityService);
   }
 
