@@ -66,7 +66,7 @@ public class RedundancyCommand extends GfshCommand {
   public static final String SATISFIED_REDUNDANCY_SECTION = "satisfied-redundancy";
   public static final String PRIMARIES_INFO_SECTION = "primaries-info";
 
-  public static final Version ADDED_VERSION = Version.GEODE_1_13_0;
+  public static final Version ADDED_VERSION = Version.ERICSSONGEODE_1_13_0_1;
   public static final String INDENT = "  ";
 
   ResultModel execute(String[] includeRegions, String[] excludeRegions, boolean reassignPrimaries,

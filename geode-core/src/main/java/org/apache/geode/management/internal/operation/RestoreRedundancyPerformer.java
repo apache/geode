@@ -41,7 +41,7 @@ public class RestoreRedundancyPerformer
     implements OperationPerformer<RestoreRedundancyRequest, RestoreRedundancyResults> {
   @Immutable
   @VisibleForTesting
-  static final Version ADDED_VERSION = Version.GEODE_1_13_0;
+  static final Version ADDED_VERSION = Version.ERICSSONGEODE_1_13_0_1;
   private static final String NO_MEMBERS_WITH_VERSION_FOR_REGION =
       "No members with a version greater than or equal to %s were found for region %s";
   private static final String EXCEPTION_MEMBER_MESSAGE = "Exception occurred on member %s: %s";

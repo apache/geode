@@ -23,6 +23,7 @@ public class TestVersion implements Comparable, Serializable {
   private final int major;
   private final int minor;
   private final int release;
+  private int bugfix = 0;
 
   public static TestVersion valueOf(final String versionString) {
     return new TestVersion(versionString);
@@ -30,7 +31,7 @@ public class TestVersion implements Comparable, Serializable {
 
   public TestVersion(String versionString) {
     String[] split = versionString.split("\\.");
-    if (split.length != 3) {
+    if (split.length < 3) {
       throw new IllegalArgumentException("Expected a version string but received " + versionString);
     }
     major = Integer.parseInt(split[0]);
@@ -39,6 +40,10 @@ public class TestVersion implements Comparable, Serializable {
       split[2] = split[2].substring(0, split[2].length() - "-incubating".length());
     }
     release = Integer.parseInt(split[2]);
+    if (split.length == 4) {
+      String[] splitbugfix = versionString.split("\\-NORDIX");
+      bugfix = Integer.parseInt(splitbugfix[0]);
+    }
   }
 
   /**
@@ -51,7 +56,7 @@ public class TestVersion implements Comparable, Serializable {
 
   @Override
   public String toString() {
-    return "" + major + "." + minor + "." + release;
+    return "" + major + "." + minor + "." + release + "." + bugfix;
   }
 
 
@@ -74,10 +79,11 @@ public class TestVersion implements Comparable, Serializable {
     return Objects.hash(major, minor, release);
   }
 
-  public TestVersion(int major, int minor, int release) {
+  public TestVersion(int major, int minor, int release, int bugfix) {
     this.major = major;
     this.minor = minor;
     this.release = release;
+    this.bugfix = bugfix;
   }
 
   @Override
@@ -94,11 +100,15 @@ public class TestVersion implements Comparable, Serializable {
     if (comparison != 0) {
       return comparison;
     }
-    return Integer.compare(release, other.release);
+    comparison = Integer.compare(release, other.release);
+    if (comparison != 0) {
+      return comparison;
+    }
+    return Integer.compare(bugfix, other.bugfix);
   }
 
-  public int compareTo(int major, int minor, int patch) {
-    return compareTo(new TestVersion(major, minor, patch));
+  public int compareTo(int major, int minor, int release, int patch) {
+    return compareTo(new TestVersion(major, minor, release, patch));
   }
 
   public boolean lessThan(final TestVersion other) {

@@ -710,7 +710,7 @@ public class GatewaySenderEventImpl
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    toDataPre_GEODE_1_13_0_0(out, context);
+    toDataPre_ERICSSONGEODE_1_12_0_4(out, context);
     boolean hasTransaction = this.transactionId != null;
     DataSerializer.writeBoolean(hasTransaction, out);
     if (hasTransaction) {
@@ -719,7 +719,7 @@ public class GatewaySenderEventImpl
     }
   }
 
-  public void toDataPre_GEODE_1_13_0_0(DataOutput out,
+  public void toDataPre_ERICSSONGEODE_1_12_0_4(DataOutput out,
       SerializationContext context) throws IOException {
     toDataPre_GEODE_1_9_0_0(out, context);
     DataSerializer.writeBoolean(this.isConcurrencyConflict, out);
@@ -754,8 +754,8 @@ public class GatewaySenderEventImpl
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    fromDataPre_GEODE_1_13_0_0(in, context);
-    if (version >= Version.GEODE_1_13_0.ordinal()) {
+    fromDataPre_ERICSSONGEODE_1_12_0_4(in, context);
+    if (version >= Version.ERICSSONGEODE_1_12_0_4.ordinal()) {
       boolean hasTransaction = DataSerializer.readBoolean(in);
       if (hasTransaction) {
         this.isLastEventInTransaction = DataSerializer.readBoolean(in);
@@ -764,7 +764,7 @@ public class GatewaySenderEventImpl
     }
   }
 
-  public void fromDataPre_GEODE_1_13_0_0(DataInput in, DeserializationContext context)
+  public void fromDataPre_ERICSSONGEODE_1_12_0_4(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
     fromDataPre_GEODE_1_9_0_0(in, context);
     if (version >= Version.GEODE_1_9_0.ordinal()) {
@@ -1287,7 +1287,7 @@ public class GatewaySenderEventImpl
 
   @Override
   public Version[] getSerializationVersions() {
-    return new Version[] {Version.GEODE_1_9_0, Version.GEODE_1_13_0};
+    return new Version[] {Version.GEODE_1_9_0, Version.ERICSSONGEODE_1_12_0_4};
   }
 
   public int getSerializedValueSize() {

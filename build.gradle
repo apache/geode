@@ -53,6 +53,10 @@ allprojects {
     mavenLocal()
     mavenCentral()
     maven { url "https://repo.spring.io/release" }
+    maven {
+      url = "https://artifactory.nordix.org/artifactory/geode/"
+    }
+
   }
 
   buildRoot = buildRoot.trim()
