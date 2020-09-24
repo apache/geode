@@ -48,7 +48,6 @@ import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
-import org.apache.geode.internal.cache.partitioned.fixed.FixedPartitioningTestBase.Months_Accessor;
 import org.apache.geode.internal.cache.partitioned.fixed.QuarterPartitionResolver;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
@@ -784,6 +783,7 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
     assertEquals(expectedSet, got);
   }
 
-
-
+  public enum Months_Accessor {
+    JAN, FEB, MAR, APR, MAY, JUN, JUL, AUG, SEP
+  }
 }
