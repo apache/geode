@@ -31,6 +31,8 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
 import org.apache.geode.CancelCriterion;
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.Statistics;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -44,6 +46,7 @@ import org.apache.geode.internal.statistics.StatSamplerStats;
 import org.apache.geode.internal.statistics.StatisticsConfig;
 import org.apache.geode.internal.statistics.StatisticsManager;
 import org.apache.geode.internal.statistics.StatisticsRegistry;
+import org.apache.geode.internal.stats50.VMStats50;
 import org.apache.geode.logging.internal.spi.LogFile;
 import org.apache.geode.management.internal.beans.MemberMBeanBridge;
 import org.apache.geode.test.junit.categories.JMXTest;
@@ -63,6 +66,7 @@ public class MemberLevelStatsTest {
   private FunctionServiceStats funcServiceStats;
   private DistributionStats distributionStats;
   private DLockStats dlockStats;
+  private StatisticsManager statisticsManager;
 
   private DiskStoreStats[] diskStoreStatsArray;
   private PartitionedRegionStats[] partitionedRegionStatsArray;
@@ -71,7 +75,7 @@ public class MemberLevelStatsTest {
   public void setUp() throws Exception {
     DistributionStats.enableClockStats = true;
 
-    StatisticsManager statisticsManager = new StatisticsRegistry("TestStatisticsRegistry", 1);
+    statisticsManager = new StatisticsRegistry("TestStatisticsRegistry", 1);
     InternalDistributedSystem system = mock(InternalDistributedSystem.class);
     StatisticsConfig statisticsConfig = mock(StatisticsConfig.class);
     StatSamplerStats statSamplerStats =
@@ -103,7 +107,6 @@ public class MemberLevelStatsTest {
     memberMBeanBridge.addLockServiceStats(dlockStats);
     memberMBeanBridge.addProcessStats(statSampler.getProcessStats());
     memberMBeanBridge.addStatSamplerStats(statSamplerStats);
-    memberMBeanBridge.addVMStats(statSampler.getVMStats());
 
     diskStoreStatsArray = new DiskStoreStats[4];
     for (int i = 0; i < diskStoreStatsArray.length; i++) {
@@ -337,6 +340,41 @@ public class MemberLevelStatsTest {
     assertThat(memberMBeanBridge.getTotalBucketCount()).isZero();
     assertThat(memberMBeanBridge.getTotalBucketSize()).isZero();
     assertThat(memberMBeanBridge.getTotalPrimaryBucketCount()).isZero();
+  }
+
+  @Test
+  public void testVMStats() {
+    Statistics[] realStats = statisticsManager.findStatisticsByType(VMStats50.getGCType());
+    long[] totals = modifyStatsAndReturnTotalCountAndTime(10, 2500, realStats);
+    memberMBeanBridge.addVMStats(statSampler.getVMStats());
+    assertThat(memberMBeanBridge.getGarbageCollectionCount()).isEqualTo(totals[0]);
+    assertThat(memberMBeanBridge.getGarbageCollectionTime()).isEqualTo(totals[1]);
+
+    long[] newTotals = modifyStatsAndReturnTotalCountAndTime(20, 3500, realStats);
+    sampleStats();
+    assertThat(memberMBeanBridge.getGarbageCollectionCount()).isEqualTo(newTotals[0]);
+    assertThat(memberMBeanBridge.getGarbageCollectionTime()).isEqualTo(newTotals[1]);
+  }
+
+  private long[] modifyStatsAndReturnTotalCountAndTime(
+      long baseCount, long baseTime,
+      Statistics[] modifiedStats) {
+    long[] totalCountAndTime = {0, 0};
+    for (Statistics gcStat : modifiedStats) {
+      StatisticDescriptor[] statistics = gcStat.getType().getStatistics();
+      for (StatisticDescriptor d : statistics) {
+        if ("collections".equals(d.getName())) {
+          baseCount += 1;
+          gcStat.setLong(d, baseCount);
+          totalCountAndTime[0] += baseCount;
+        } else if ("collectionTime".equals(d.getName())) {
+          baseTime += 100;
+          gcStat.setLong(d, baseTime);
+          totalCountAndTime[1] += baseTime;
+        }
+      }
+    }
+    return totalCountAndTime;
   }
 
   private void sampleStats() {
