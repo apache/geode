@@ -93,6 +93,37 @@ public class CommandPipeliningIntegrationTest {
     assertThat(mockSubscriber.getReceivedMessages()).isEqualTo(expectedMessages);
   }
 
+
+  @Test
+  public void should_returnResultsOfPipelinedCommands_inCorrectOrder() {
+    Jedis jedis = new Jedis("localhost", server.getPort(), 10000000);
+    int NUMBER_OF_COMMANDS_IN_PIPELINE = 100;
+    int numberOfPipeLineRequests = 100000;
+
+    do {
+      Pipeline p = jedis.pipelined();
+      for (int i = 0; i < NUMBER_OF_COMMANDS_IN_PIPELINE; i++) {
+        p.echo(String.valueOf(i));
+      }
+
+      List<Object> results = p.syncAndReturnAll();
+      verifyResultOrder(NUMBER_OF_COMMANDS_IN_PIPELINE, results);
+      numberOfPipeLineRequests--;
+    } while (numberOfPipeLineRequests > 0);
+
+    jedis.flushAll();
+    jedis.close();
+  }
+
+  private void verifyResultOrder(int NUMBER_OF_COMMAND_IN_PIPELINE, List<Object> results) {
+    for (int i = 0; i < NUMBER_OF_COMMAND_IN_PIPELINE; i++) {
+      String expected = String.valueOf(i);
+      String currentVal = (String) results.get(i);
+
+      assertThat(currentVal).isEqualTo(expected);
+    }
+  }
+
   private void waitFor(Callable<Boolean> booleanCallable) {
     GeodeAwaitility.await()
         .ignoreExceptions() // ignoring socket closed exceptions
