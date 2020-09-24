@@ -117,9 +117,7 @@ public class CategoryWithParameterizedRunnerFactoryTest {
     request = request.filterWith(new CategoryFilter(
         (ExposedBlockJUnit4ClassRunnerWithParameters) runner.getChildren().get(0)));
     Result result = new JUnitCore().run(request);
-    assertEquals(
-        "Yeah!! This might actually mean we've upgraded to JUnit 4.13. Hurry up already and delete this hack.",
-        1, result.getRunCount());
+    assertEquals(2, result.getRunCount());
   }
 
   @Test

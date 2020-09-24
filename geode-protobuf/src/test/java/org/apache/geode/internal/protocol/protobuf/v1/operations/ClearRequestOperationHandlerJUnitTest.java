@@ -20,10 +20,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
@@ -39,9 +37,6 @@ public class ClearRequestOperationHandlerJUnitTest
     extends OperationHandlerJUnitTest<RegionAPI.ClearRequest, RegionAPI.ClearResponse> {
   private final String TEST_REGION = "test region";
   private final String MISSING_REGION = "missing region";
-
-  @Rule
-  public final ExpectedException expectedException = ExpectedException.none();
 
   @Before
   public void setUp() throws Exception {

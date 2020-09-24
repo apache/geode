@@ -27,10 +27,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -59,9 +57,6 @@ public class ExecuteFunctionOnGroupRequestOperationHandlerJUnitTest {
   private DistributionManager distributionManager;
   private ExecuteFunctionOnGroupRequestOperationHandler operationHandler;
   private ProtobufSerializationService serializationService;
-
-  @Rule
-  public final ExpectedException expectedException = ExpectedException.none();
 
   private static class TestFunction implements Function<Void> {
     // non-null iff function has been executed.

@@ -66,7 +66,7 @@ class DependencyConstraints implements Plugin<Project> {
     deps.put("protobuf-java.version", "3.11.4")
 
     // These versions are referenced in test.gradle, which is aggressively injected into all projects.
-    deps.put("junit.version", "4.12")
+    deps.put("junit.version", "4.13")
     deps.put("cglib.version", "3.3.0")
     return deps
   }
