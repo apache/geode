@@ -30,19 +30,23 @@ public class PingExecutor extends AbstractExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
-    byte[] result;
     RedisResponse redisResponse;
 
     if (context.getPubSub().findSubscribedChannels(context.getClient()).isEmpty()) {
-      result = PING_RESPONSE.getBytes();
+      byte[] result;
       if (commandElems.size() > 1) {
         result = commandElems.get(1);
+      } else {
+        result = PING_RESPONSE.getBytes();
       }
       redisResponse = RedisResponse.string(result);
     } else {
-      result = "".getBytes();
+      byte[] result;
+
       if (commandElems.size() > 1) {
         result = commandElems.get(1);
+      } else {
+        result = "".getBytes();
       }
       redisResponse =
           RedisResponse.array(Arrays.asList(PING_RESPONSE.toLowerCase().getBytes(), result));
