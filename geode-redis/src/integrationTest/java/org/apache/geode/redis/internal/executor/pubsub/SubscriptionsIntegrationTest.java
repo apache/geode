@@ -39,7 +39,7 @@ public class SubscriptionsIntegrationTest {
 
   @Test
   public void pingWhileSubscribed() {
-    Jedis client = new Jedis("localhost", server.getPort(), 1000000000);
+    Jedis client = new Jedis("localhost", server.getPort());
     MockSubscriber mockSubscriber = new MockSubscriber();
 
     executor.submit(() -> client.subscribe(mockSubscriber, "same"));

@@ -28,21 +28,26 @@ public class PingExecutor extends AbstractExecutor {
   private final String PING_RESPONSE = "PONG";
 
   @Override
-  public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
-    byte[] result = PING_RESPONSE.getBytes();
-    byte[] subscribeResult = "".getBytes();
-    if (commandElems.size() > 1) {
-      result = commandElems.get(1);
-      subscribeResult = result;
+    byte[] result;
+    RedisResponse redisResponse;
+
+    if (context.getPubSub().findSubscribedChannels(context.getClient()).isEmpty()) {
+      result = PING_RESPONSE.getBytes();
+      if (commandElems.size() > 1) {
+        result = commandElems.get(1);
+      }
+      redisResponse = RedisResponse.string(result);
+    } else {
+      result = "".getBytes();
+      if (commandElems.size() > 1) {
+        result = commandElems.get(1);
+      }
+      redisResponse =
+          RedisResponse.array(Arrays.asList(PING_RESPONSE.toLowerCase().getBytes(), result));
     }
 
-    if (!context.getPubSub().findSubscribedChannels(context.getClient()).isEmpty()) {
-      return RedisResponse
-          .array(Arrays.asList(PING_RESPONSE.toLowerCase().getBytes(), subscribeResult));
-    }
-
-    return RedisResponse.string(result);
+    return redisResponse;
   }
 }
