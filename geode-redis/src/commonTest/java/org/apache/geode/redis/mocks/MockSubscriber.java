@@ -31,6 +31,7 @@ public class MockSubscriber extends JedisPubSub {
   private final CountDownLatch subscriptionLatch;
   private final CountDownLatch psubscriptionLatch;
   private final CountDownLatch unsubscriptionLatch;
+  private final CountDownLatch pUnsubscriptionLatch;
   private final List<String> receivedMessages = Collections.synchronizedList(new ArrayList<>());
   private final List<String> receivedPMessages = Collections.synchronizedList(new ArrayList<>());
   private final List<String> receivedPings = Collections.synchronizedList(new ArrayList<>());
@@ -46,14 +47,16 @@ public class MockSubscriber extends JedisPubSub {
   }
 
   public MockSubscriber(CountDownLatch subscriptionLatch) {
-    this(subscriptionLatch, new CountDownLatch(1), new CountDownLatch(1));
+    this(subscriptionLatch, new CountDownLatch(1), new CountDownLatch(1), new CountDownLatch(1));
   }
 
   public MockSubscriber(CountDownLatch subscriptionLatch, CountDownLatch unsubscriptionLatch,
-      CountDownLatch psubscriptionLatch) {
+      CountDownLatch psubscriptionLatch,
+      CountDownLatch pUnsubscriptionLatch) {
     this.subscriptionLatch = subscriptionLatch;
     this.psubscriptionLatch = psubscriptionLatch;
     this.unsubscriptionLatch = unsubscriptionLatch;
+    this.pUnsubscriptionLatch = pUnsubscriptionLatch;
   }
 
   @Override
@@ -164,6 +167,18 @@ public class MockSubscriber extends JedisPubSub {
   public void onPUnsubscribe(String pattern, int subscribedChannels) {
     switchThreadName(String.format("PUNSUBSCRIBE %s %d", pattern, subscribedChannels));
     punsubscribeInfos.add(new UnsubscribeInfo(pattern, subscribedChannels));
+    pUnsubscriptionLatch.countDown();
+  }
+
+  public void awaitPunsubscribe(String pChannel) {
+
+    try {
+      if (!pUnsubscriptionLatch.await(AWAIT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)) {
+        throw new RuntimeException("awaitPUnsubscribe timed out for pattern: " + pChannel);
+      }
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public static class UnsubscribeInfo {

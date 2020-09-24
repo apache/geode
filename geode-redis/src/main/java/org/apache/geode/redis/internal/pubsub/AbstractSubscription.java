@@ -18,7 +18,7 @@ package org.apache.geode.redis.internal.pubsub;
 
 import java.util.concurrent.CountDownLatch;
 
-import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelFuture;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -101,18 +101,20 @@ public abstract class AbstractSubscription implements Subscription {
   }
 
   /**
-   * We want to determine if the response, to the client, resulted in an error - for example if
-   * the client has disconnected and the write fails. In such cases we need to be able to notify
-   * the caller.
+   * We want to determine if the response, to the client, resulted in an error - for example if the
+   * client has disconnected and the write fails. In such cases we need to be able to notify the
+   * caller.
    */
   private void writeToChannel(RedisResponse response, PublishResultCollector resultCollector) {
-    context.writeToChannel(response)
-        .addListener((ChannelFutureListener) future -> {
-          if (future.cause() == null) {
-            resultCollector.success();
-          } else {
-            resultCollector.failure(client);
-          }
-        });
+
+    ChannelFuture result = context.writeToChannel(response)
+        .syncUninterruptibly();
+
+    if (result.cause() == null) {
+      resultCollector.success();
+    } else {
+      resultCollector.failure(client);
+    }
+
   }
 }
