@@ -56,7 +56,11 @@ public class TestVersion implements Comparable, Serializable {
 
   @Override
   public String toString() {
-    return "" + major + "." + minor + "." + release + "." + bugfix;
+    String bugfixstr = "";
+    if (bugfix != 0) {
+      bugfixstr = "." + bugfix;
+    }
+    return "" + major + "." + minor + "." + release + bugfixstr;
   }
 
 
@@ -71,12 +75,13 @@ public class TestVersion implements Comparable, Serializable {
     TestVersion that = (TestVersion) o;
     return major == that.major &&
         minor == that.minor &&
-        release == that.release;
+        release == that.release &&
+        bugfix == that.bugfix;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(major, minor, release);
+    return Objects.hash(major, minor, release, bugfix);
   }
 
   public TestVersion(int major, int minor, int release, int bugfix) {
