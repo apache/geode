@@ -51,5 +51,6 @@ dependencies {
     exclude module: 'junit-dep'
   }
   integrationTestImplementation('junit:junit')
+  integrationTestImplementation('org.assertj:assertj-core')
   integrationTestImplementation('org.hamcrest:hamcrest')
 }

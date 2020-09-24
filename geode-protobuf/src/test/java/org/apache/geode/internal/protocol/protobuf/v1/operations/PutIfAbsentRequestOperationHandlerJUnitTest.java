@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -24,10 +25,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
@@ -48,9 +47,6 @@ public class PutIfAbsentRequestOperationHandlerJUnitTest extends OperationHandle
   private final String TEST_REGION = "test region";
   private Region regionMock;
   private PutIfAbsentRequestOperationHandler operationHandler;
-
-  @Rule
-  public final ExpectedException expectedException = ExpectedException.none();
 
   @Before
   public void setUp() throws Exception {
@@ -124,20 +120,20 @@ public class PutIfAbsentRequestOperationHandlerJUnitTest extends OperationHandle
   }
 
   @Test
-  public void unsetRegionGetsServerError() throws Exception {
-    expectedException.expect(RegionDestroyedException.class);
-    Result<RegionAPI.PutIfAbsentResponse> result1 =
-        operationHandler.process(serializationService, generateTestRequest(false, true),
-            TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
+  public void unsetRegionGetsServerError() {
+    assertThatThrownBy(
+        () -> operationHandler.process(serializationService, generateTestRequest(false, true),
+            TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub)))
+                .isInstanceOf(RegionDestroyedException.class);
   }
 
   @Test
   public void nonexistingRegionReturnsServerError() throws Exception {
     when(cacheStub.getRegion(TEST_REGION)).thenReturn(null);
 
-    expectedException.expect(RegionDestroyedException.class);
-    Result<RegionAPI.PutIfAbsentResponse> result1 = operationHandler.process(serializationService,
-        generateTestRequest(), TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
+    assertThatThrownBy(() -> operationHandler.process(serializationService,
+        generateTestRequest(), TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub)))
+            .isInstanceOf(RegionDestroyedException.class);
   }
 
   /**
