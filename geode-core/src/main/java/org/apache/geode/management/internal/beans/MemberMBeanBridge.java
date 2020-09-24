@@ -1250,11 +1250,11 @@ public class MemberMBeanBridge {
     return instCreatesRate + instPutsRate + instPutAllRate;
   }
 
-  long getGarbageCollectionTime() {
+  public long getGarbageCollectionTime() {
     return getGCStatistic(StatsKey.VM_GC_STATS_COLLECTION_TIME).longValue();
   }
 
-  long getGarbageCollectionCount() {
+  public long getGarbageCollectionCount() {
     return getGCStatistic(StatsKey.VM_GC_STATS_COLLECTIONS).longValue();
   }
 

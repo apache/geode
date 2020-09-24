@@ -15,9 +15,12 @@
 package org.apache.geode.management.internal.beans.stats;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -25,6 +28,12 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsType;
+import org.apache.geode.internal.statistics.StatisticId;
+import org.apache.geode.internal.statistics.StatisticsNotification;
+import org.apache.geode.internal.statistics.ValueMonitor;
 import org.apache.geode.test.junit.categories.StatisticsTest;
 
 @Category(StatisticsTest.class)
@@ -36,11 +45,12 @@ public class GCStatsMonitorTest {
 
   @Before
   public void setUp() {
-    gcStatsMonitor = new GCStatsMonitor(testName.getMethodName());
+    ValueMonitor valueMonitor = mock(ValueMonitor.class);
+    gcStatsMonitor = new GCStatsMonitor(testName.getMethodName(), valueMonitor);
 
     assertThat(gcStatsMonitor).isNotNull();
-    assertThat(gcStatsMonitor.getCollections()).isEqualTo(0);
-    assertThat(gcStatsMonitor.getCollectionTime()).isEqualTo(0);
+    assertThat(gcStatsMonitor.getCollections()).isEqualTo(0L);
+    assertThat(gcStatsMonitor.getCollectionTime()).isEqualTo(0L);
   }
 
   @Test
@@ -49,39 +59,80 @@ public class GCStatsMonitorTest {
   }
 
   @Test
-  public void getStatisticShouldReturnTheRecordedValueForHandledStatistics() {
-    gcStatsMonitor.increaseStats(StatsKey.VM_GC_STATS_COLLECTIONS, 10);
-    gcStatsMonitor.increaseStats(StatsKey.VM_GC_STATS_COLLECTION_TIME, 10000);
+  public void addStatsToMonitor() throws Exception {
+    Statistics stats = mock(Statistics.class);
+    when(stats.getUniqueId()).thenReturn(11L);
+    StatisticDescriptor d1 = mock(StatisticDescriptor.class);
+    when(d1.getName()).thenReturn(StatsKey.VM_GC_STATS_COLLECTIONS);
+    StatisticDescriptor d2 = mock(StatisticDescriptor.class);
+    when(d2.getName()).thenReturn(StatsKey.VM_GC_STATS_COLLECTION_TIME);
+    StatisticDescriptor[] descriptors = {d1, d2};
+    StatisticsType type = mock(StatisticsType.class);
+    when(stats.getType()).thenReturn(type);
+    when(type.getStatistics()).thenReturn(descriptors);
 
-    assertThat(gcStatsMonitor.getStatistic(StatsKey.VM_GC_STATS_COLLECTIONS)).isEqualTo(10L);
-    assertThat(gcStatsMonitor.getStatistic(StatsKey.VM_GC_STATS_COLLECTION_TIME)).isEqualTo(10000L);
+    when(stats.get(any(StatisticDescriptor.class))).thenReturn(8L, 300L);
+    gcStatsMonitor.addStatisticsToMonitor(stats);
+    assertThat(gcStatsMonitor.getCollections()).isEqualTo(8L);
+    assertThat(gcStatsMonitor.getCollectionTime()).isEqualTo(300L);
+
+    when(stats.getUniqueId()).thenReturn(12L);
+    when(stats.get(any(StatisticDescriptor.class))).thenReturn(10L, 500L);
+    gcStatsMonitor.addStatisticsToMonitor(stats);
+    // make sure the results are the sums of these two sets of numbers
+    assertThat(gcStatsMonitor.getCollections()).isEqualTo(18L);
+    assertThat(gcStatsMonitor.getCollectionTime()).isEqualTo(800L);
+
+    when(stats.getUniqueId()).thenReturn(11L);
+    when(stats.get(any(StatisticDescriptor.class))).thenReturn(9L, 400L);
+    gcStatsMonitor.addStatisticsToMonitor(stats);
+    // make sure this new set of numbers replaces thee old set with the same unique ID
+    assertThat(gcStatsMonitor.getCollections()).isEqualTo(19L);
+    assertThat(gcStatsMonitor.getCollectionTime()).isEqualTo(900L);
   }
 
   @Test
-  public void increaseStatsShouldIncrementStatisticsUsingTheSelectedValue() {
-    gcStatsMonitor.increaseStats(StatsKey.VM_GC_STATS_COLLECTIONS, 10);
-    gcStatsMonitor.increaseStats(StatsKey.VM_GC_STATS_COLLECTION_TIME, 10000);
-    assertThat(gcStatsMonitor.getStatistic(StatsKey.VM_GC_STATS_COLLECTIONS)).isEqualTo(10L);
-    assertThat(gcStatsMonitor.getStatistic(StatsKey.VM_GC_STATS_COLLECTION_TIME)).isEqualTo(10000L);
+  public void handleNotification() throws Exception {
+    StatisticsNotification notification = mock(StatisticsNotification.class);
+    Statistics stats = mock(Statistics.class);
+    when(stats.getUniqueId()).thenReturn(11L);
 
-    gcStatsMonitor.increaseStats(StatsKey.VM_GC_STATS_COLLECTIONS, 15);
-    gcStatsMonitor.increaseStats(StatsKey.VM_GC_STATS_COLLECTION_TIME, 20000);
-    assertThat(gcStatsMonitor.getStatistic(StatsKey.VM_GC_STATS_COLLECTIONS)).isEqualTo(25L);
-    assertThat(gcStatsMonitor.getStatistic(StatsKey.VM_GC_STATS_COLLECTION_TIME)).isEqualTo(30000L);
-  }
+    StatisticId s1 = mock(StatisticId.class);
+    when(s1.getStatistics()).thenReturn(stats);
+    StatisticDescriptor d1 = mock(StatisticDescriptor.class);
+    when(s1.getStatisticDescriptor()).thenReturn(d1);
+    when(d1.getName()).thenReturn(StatsKey.VM_GC_STATS_COLLECTIONS);
+    StatisticId s2 = mock(StatisticId.class);
+    when(s2.getStatistics()).thenReturn(stats);
+    StatisticDescriptor d2 = mock(StatisticDescriptor.class);
+    when(s2.getStatisticDescriptor()).thenReturn(d2);
+    when(d2.getName()).thenReturn(StatsKey.VM_GC_STATS_COLLECTION_TIME);
+    List<StatisticId> list = Arrays.asList(s1, s2);
+    when(notification.iterator()).thenReturn(list.iterator());
+    when(notification.getValue(s1)).thenReturn(6L);
+    when(notification.getValue(s2)).thenReturn(100L);
 
-  @Test
-  public void decreasePrevValuesShouldDecrementStatisticsUsingTheSelectedValue() {
-    gcStatsMonitor.increaseStats(StatsKey.VM_GC_STATS_COLLECTIONS, 10);
-    gcStatsMonitor.increaseStats(StatsKey.VM_GC_STATS_COLLECTION_TIME, 10000);
-    assertThat(gcStatsMonitor.getStatistic(StatsKey.VM_GC_STATS_COLLECTIONS)).isEqualTo(10L);
-    assertThat(gcStatsMonitor.getStatistic(StatsKey.VM_GC_STATS_COLLECTION_TIME)).isEqualTo(10000L);
-    Map<String, Number> statsMap = new HashMap<>();
-    statsMap.put(StatsKey.VM_GC_STATS_COLLECTIONS, 5);
-    statsMap.put(StatsKey.VM_GC_STATS_COLLECTION_TIME, 5000);
+    gcStatsMonitor.handleNotification(notification);
+    assertThat(gcStatsMonitor.getCollections()).isEqualTo(6L);
+    assertThat(gcStatsMonitor.getCollectionTime()).isEqualTo(100L);
 
-    gcStatsMonitor.decreasePrevValues(statsMap);
-    assertThat(gcStatsMonitor.getStatistic(StatsKey.VM_GC_STATS_COLLECTIONS)).isEqualTo(5L);
-    assertThat(gcStatsMonitor.getStatistic(StatsKey.VM_GC_STATS_COLLECTION_TIME)).isEqualTo(5000L);
+    // make sure a new set of number replaces the old one if they have the same
+    // uniqueId
+    when(notification.getValue(s1)).thenReturn(7L);
+    when(notification.getValue(s2)).thenReturn(200L);
+    when(notification.iterator()).thenReturn(list.iterator());
+    gcStatsMonitor.handleNotification(notification);
+    assertThat(gcStatsMonitor.getCollections()).isEqualTo(7L);
+    assertThat(gcStatsMonitor.getCollectionTime()).isEqualTo(200L);
+
+    // with a new set of stats with different uniqueId, then the value
+    // is the sum of the two
+    when(stats.getUniqueId()).thenReturn(12L);
+    when(notification.getValue(s1)).thenReturn(10L);
+    when(notification.getValue(s2)).thenReturn(300L);
+    when(notification.iterator()).thenReturn(list.iterator());
+    gcStatsMonitor.handleNotification(notification);
+    assertThat(gcStatsMonitor.getCollections()).isEqualTo(17L);
+    assertThat(gcStatsMonitor.getCollectionTime()).isEqualTo(500L);
   }
 }
