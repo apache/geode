@@ -21,6 +21,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -28,6 +32,7 @@ import org.junit.Test;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
 
+import org.apache.geode.logging.internal.log4j.api.FastLogger;
 import org.apache.geode.redis.mocks.MockSubscriber;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
@@ -83,6 +88,37 @@ public abstract class AbstractCommandPipeliningIntegrationTest implements RedisP
     waitFor(() -> !subscriberThread.isAlive());
 
     assertThat(mockSubscriber.getReceivedMessages()).isEqualTo(expectedMessages);
+  }
+
+  @Test
+  public void should_returnResultsOfPipelinedCommands_inCorrectOrder() {
+    Jedis jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    final int NUMBER_OF_COMMANDS_IN_PIPELINE = 100;
+    int numberOfPipeLineRequests = 1000;
+
+    do {
+      Pipeline p = jedis.pipelined();
+      for (int i = 0; i < NUMBER_OF_COMMANDS_IN_PIPELINE; i++) {
+        p.echo(String.valueOf(i));
+      }
+
+      List<Object> results = p.syncAndReturnAll();
+
+      verifyResultOrder(NUMBER_OF_COMMANDS_IN_PIPELINE, results);
+      numberOfPipeLineRequests--;
+    } while (numberOfPipeLineRequests > 0);
+
+    jedis.flushAll();
+    jedis.close();
+  }
+
+  private void verifyResultOrder(final int numberOfCommandInPipeline, List<Object> results) {
+    for (int i = 0; i < numberOfCommandInPipeline; i++) {
+      String expected = String.valueOf(i);
+      String currentVal = (String) results.get(i);
+
+      assertThat(currentVal).isEqualTo(expected);
+    }
   }
 
   private void waitFor(Callable<Boolean> booleanCallable) {
