@@ -1197,6 +1197,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
             }
           }
         } catch (IOException | ClassNotFoundException problem) {
+          logger.info("Unable to contact locator " + laddr + ": " + problem);
           logger.debug("Exception thrown when contacting a locator", problem);
           if (state.locatorsContacted == 0 && System.currentTimeMillis() < giveUpTime) {
             try {
