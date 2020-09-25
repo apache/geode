@@ -123,7 +123,7 @@ public class VM implements Serializable {
    * @param whichVM A zero-based identifier of the VM
    */
   public static VM getVM(String version, int whichVM) {
-    return Host.getHost(0).getVM(whichVM);
+    return Host.getHost(0).getVM(version, whichVM);
   }
 
   /**
