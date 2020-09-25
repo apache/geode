@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
@@ -39,7 +38,6 @@ public class SubscriptionsIntegrationTest {
   public static ExecutorServiceRule executor = new ExecutorServiceRule();
 
   @Test
-  @Ignore("GEODE-8515")
   public void pingWhileSubscribed() {
     Jedis client = new Jedis("localhost", server.getPort());
     MockSubscriber mockSubscriber = new MockSubscriber();
@@ -50,6 +48,25 @@ public class SubscriptionsIntegrationTest {
     GeodeAwaitility.await()
         .untilAsserted(() -> assertThat(mockSubscriber.getReceivedPings().size()).isEqualTo(1));
     assertThat(mockSubscriber.getReceivedPings().get(0)).isEqualTo("");
+    mockSubscriber.unsubscribe();
+    client.close();
+  }
+
+  @Test
+  public void pingWithArgumentWhileSubscribed() {
+    Jedis client = new Jedis("localhost", server.getPort());
+    MockSubscriber mockSubscriber = new MockSubscriber();
+
+    executor.submit(() -> client.subscribe(mockSubscriber, "same"));
+    mockSubscriber.awaitSubscribe("same");
+    mockSubscriber.ping("potato");
+    // JedisPubSub PING with message is not currently possible, will submit a PR
+    // (https://github.com/xetorthio/jedis/issues/2049)
+    // until then, we have to call this second ping to flush the client
+    mockSubscriber.ping();
+    GeodeAwaitility.await()
+        .untilAsserted(() -> assertThat(mockSubscriber.getReceivedPings().size()).isEqualTo(2));
+    assertThat(mockSubscriber.getReceivedPings().get(0)).isEqualTo("potato");
     mockSubscriber.unsubscribe();
     client.close();
   }
