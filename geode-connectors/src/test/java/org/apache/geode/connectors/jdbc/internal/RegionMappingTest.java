@@ -17,17 +17,12 @@ package org.apache.geode.connectors.jdbc.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 
 public class RegionMappingTest {
-
-  @Rule
-  public ExpectedException expectedException = ExpectedException.none();
 
   private String name;
   private String fieldName1;

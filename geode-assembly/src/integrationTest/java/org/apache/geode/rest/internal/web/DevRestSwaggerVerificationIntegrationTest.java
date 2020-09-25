@@ -17,7 +17,7 @@ package org.apache.geode.rest.internal.web;
 
 import static org.apache.geode.test.junit.rules.HttpResponseAssert.assertResponse;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.ClassRule;

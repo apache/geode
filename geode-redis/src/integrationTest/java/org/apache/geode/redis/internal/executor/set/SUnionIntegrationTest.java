@@ -26,10 +26,8 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 import redis.clients.jedis.Jedis;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
@@ -59,9 +57,6 @@ public class SUnionIntegrationTest {
   public void cleanup() {
     jedis.flushAll();
   }
-
-  @Rule
-  public ExpectedException exceptionRule = ExpectedException.none();
 
   @Test
   public void testSUnion() {

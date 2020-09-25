@@ -16,6 +16,7 @@ package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
 import static org.apache.geode.internal.protocol.TestExecutionContext.getNoAuthCacheExecutionContext;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -24,10 +25,8 @@ import java.util.Collections;
 import java.util.HashSet;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
@@ -46,9 +45,6 @@ public class GetSizeRequestOperationHandlerJUnitTest
     extends OperationHandlerJUnitTest<RegionAPI.GetSizeRequest, RegionAPI.GetSizeResponse> {
   private final String TEST_REGION1 = "test region 1";
   private Region<String, Integer> region1Stub;
-
-  @Rule
-  public ExpectedException expectedException = ExpectedException.none();
 
   @SuppressWarnings("unchecked")
   @Before
@@ -87,9 +83,8 @@ public class GetSizeRequestOperationHandlerJUnitTest
     when(emptyCache.rootRegions())
         .thenReturn(Collections.unmodifiableSet(new HashSet<Region<String, String>>()));
     String unknownRegionName = "UNKNOWN_REGION";
-    expectedException.expect(RegionDestroyedException.class);
-    operationHandler.process(serializationService,
+    assertThatThrownBy(() -> operationHandler.process(serializationService,
         MessageUtil.makeGetSizeRequest(unknownRegionName),
-        getNoAuthCacheExecutionContext(emptyCache));
+        getNoAuthCacheExecutionContext(emptyCache))).isInstanceOf(RegionDestroyedException.class);
   }
 }
