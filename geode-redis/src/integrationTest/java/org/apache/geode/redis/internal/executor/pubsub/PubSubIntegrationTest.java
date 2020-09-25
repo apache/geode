@@ -471,6 +471,64 @@ public class PubSubIntegrationTest {
   }
 
   @Test
+  public void ensureOrderingOfPublishedMessages() throws Exception {
+    AtomicBoolean running = new AtomicBoolean(true);
+
+    Future<Void> future1 =
+        executor.submit(() -> runSubscribeAndPublish(1, 10000, running));
+
+    running.set(false);
+    future1.get();
+  }
+
+  private void runSubscribeAndPublish(int index, int minimumIterations, AtomicBoolean running)
+      throws Exception {
+
+    int iterationCount = 0;
+    Jedis publisher = getConnection();
+
+    while (iterationCount < minimumIterations || running.get()) {
+      List<String> result = subscribeAndPublish(index, iterationCount, publisher);
+
+      assertThat(result)
+          .as("Failed at iteration " + iterationCount)
+          .containsExactly("message", "pmessage");
+
+      iterationCount++;
+    }
+  }
+
+  private List<String> subscribeAndPublish(int index, int iteration, Jedis localPublisher)
+      throws Exception {
+    String channel = index + ".foo.bar";
+    String pChannel = index + ".foo.*";
+
+    MockSubscriber mockSubscriber = new MockSubscriber();
+
+    try (Jedis localSubscriber = getConnection()) {
+      Future<Void> future =
+          executor.submit(() -> localSubscriber.subscribe(mockSubscriber, channel));
+
+      mockSubscriber.awaitSubscribe(channel);
+
+      mockSubscriber.psubscribe(pChannel);
+      mockSubscriber.awaitPSubscribe(pChannel);
+
+      localPublisher.publish(channel, "hello-" + index + "-" + iteration);
+
+      mockSubscriber.unsubscribe(channel);
+      mockSubscriber.awaitUnsubscribe(channel);
+      mockSubscriber.punsubscribe(pChannel);
+      mockSubscriber.awaitPunsubscribe(pChannel);
+
+      future.get();
+    }
+
+    return mockSubscriber.getReceivedEvents();
+  }
+
+
+  @Test
   public void testTwoSubscribersOneChannel() {
     Jedis subscriber2 = new Jedis("localhost", getPort(), JEDIS_TIMEOUT);
     MockSubscriber mockSubscriber1 = new MockSubscriber();

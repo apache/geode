@@ -78,6 +78,11 @@ public class PubSubImplJUnitTest {
     }
 
     @Override
+    public ChannelPromise syncUninterruptibly() {
+      return this;
+    }
+
+    @Override
     public Throwable cause() {
       return new RuntimeException("aeotunhasoen");
     }
