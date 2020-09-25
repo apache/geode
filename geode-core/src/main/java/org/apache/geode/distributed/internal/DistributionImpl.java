@@ -309,8 +309,10 @@ public class DistributionImpl implements Distribution {
       membership.checkCancelled();
     } catch (MembershipClosedException e) {
       if (e.getCause() instanceof MemberDisconnectedException) {
-        ForcedDisconnectException fde = new ForcedDisconnectException(e.getCause().getMessage());
-        throw new DistributedSystemDisconnectedException(e.getMessage(), fde);
+        logger.info("**** EB: DistributionImpl.checkCancelled throwing FDE: "
+            + e.getCause().getStackTrace());
+        throw new ForcedDisconnectException(e.getCause().getMessage());
+        // throw new DistributedSystemDisconnectedException(e.getMessage(), fde);
       }
       throw new DistributedSystemDisconnectedException(e.getMessage());
     }
