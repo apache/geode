@@ -36,7 +36,9 @@ import java.util.Set;
 
 import org.apache.shiro.subject.Subject;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.execute.Execution;
@@ -66,6 +68,9 @@ public class UserFunctionExecutionTest {
   private ResultSender<Object> resultSender;
   private InternalCacheForClientAccess filterCache;
   private ArgumentCaptor<CliFunctionResult> resultCaptor;
+
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
 
   @Before
   @SuppressWarnings("unchecked")

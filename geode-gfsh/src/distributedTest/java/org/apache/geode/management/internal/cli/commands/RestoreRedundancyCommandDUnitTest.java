@@ -38,9 +38,9 @@ import static org.apache.geode.management.internal.i18n.CliStrings.REDUNDANCY_IN
 import static org.apache.geode.management.internal.i18n.CliStrings.REDUNDANCY_REASSIGN_PRIMARIES;
 import static org.apache.geode.management.internal.i18n.CliStrings.RESTORE_REDUNDANCY;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertThat;
 
 import java.util.ArrayList;
 import java.util.Collections;

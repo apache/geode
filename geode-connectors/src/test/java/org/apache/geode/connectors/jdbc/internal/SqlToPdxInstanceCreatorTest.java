@@ -25,7 +25,9 @@ import java.util.Arrays;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
@@ -51,6 +53,9 @@ public class SqlToPdxInstanceCreatorTest {
   private RegionMapping regionMapping;
   private FieldMapping columnMapping = mock(FieldMapping.class);
   private PdxInstance pdxTemplate = mock(PdxInstance.class);
+
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
 
   @Before
   public void setup() throws Exception {

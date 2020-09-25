@@ -24,13 +24,16 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.ExpectedException;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.internal.protocol.TestExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
+import org.apache.geode.internal.protocol.protobuf.v1.Failure;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufRequestUtilities;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
@@ -48,6 +51,9 @@ public class PutRequestOperationHandlerJUnitTest
   private final String TEST_VALUE = "99";
   private final String TEST_REGION = "test region";
   private Region<Object, Object> regionMock;
+
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
 
   @SuppressWarnings("unchecked")
   @Before
@@ -93,13 +99,14 @@ public class PutRequestOperationHandlerJUnitTest
   }
 
   @Test
-  public void test_RegionNotFound() {
+  public void test_RegionNotFound() throws Exception {
     when(cacheStub.getRegion(TEST_REGION)).thenReturn(null);
     PutRequestOperationHandler operationHandler = new PutRequestOperationHandler();
+    expectedException.expect(RegionDestroyedException.class);
+    Result<?> result = operationHandler.process(serializationService, generateTestRequest(),
+        TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
+    assertThat(result).isInstanceOf(Failure.class);
 
-    assertThatThrownBy(() -> operationHandler.process(serializationService, generateTestRequest(),
-        TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub)))
-            .isInstanceOf(RegionDestroyedException.class);
   }
 
   private RegionAPI.PutRequest generateTestRequest() throws EncodingException {

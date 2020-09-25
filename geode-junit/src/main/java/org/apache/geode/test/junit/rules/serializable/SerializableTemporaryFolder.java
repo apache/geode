@@ -16,7 +16,6 @@ package org.apache.geode.test.junit.rules.serializable;
 
 import static org.apache.geode.test.junit.rules.serializable.FieldSerializationUtils.readField;
 import static org.apache.geode.test.junit.rules.serializable.FieldSerializationUtils.writeField;
-import static org.apache.geode.test.junit.rules.serializable.FieldsOfTemporaryFolder.FIELD_ASSURE_DELETION;
 import static org.apache.geode.test.junit.rules.serializable.FieldsOfTemporaryFolder.FIELD_FOLDER;
 import static org.apache.geode.test.junit.rules.serializable.FieldsOfTemporaryFolder.FIELD_PARENT_FOLDER;
 
@@ -77,15 +76,11 @@ public class SerializableTemporaryFolder extends TemporaryFolder implements Seri
   }
 
   public SerializableTemporaryFolder() {
-    this((File) null);
+    this(null);
   }
 
   public SerializableTemporaryFolder(File parentFolder) {
     super(parentFolder);
-  }
-
-  public SerializableTemporaryFolder(Builder builder) {
-    super(builder);
   }
 
   /**
@@ -104,7 +99,6 @@ public class SerializableTemporaryFolder extends TemporaryFolder implements Seri
     copyTo.set(directory);
     return this;
   }
-
 
   /**
    * Specifies conditions under which {@code copyTo} is performed. Default is {@code FAIL}.
@@ -189,25 +183,15 @@ public class SerializableTemporaryFolder extends TemporaryFolder implements Seri
 
     private final File parentFolder;
     private final File folder;
-    private final boolean assureDeletion;
 
     private SerializationProxy(SerializableTemporaryFolder instance) {
       parentFolder = (File) readField(TemporaryFolder.class, instance, FIELD_PARENT_FOLDER);
       folder = (File) readField(TemporaryFolder.class, instance, FIELD_FOLDER);
-      assureDeletion = (boolean) readField(TemporaryFolder.class, instance, FIELD_ASSURE_DELETION);
     }
 
     protected Object readResolve() {
-      Builder instanceBuilder = builder();
-      instanceBuilder.parentFolder(parentFolder);
-
-      if (assureDeletion) {
-        instanceBuilder.assureDeletion();
-      }
-
-      SerializableTemporaryFolder instance = new SerializableTemporaryFolder(instanceBuilder);
+      SerializableTemporaryFolder instance = new SerializableTemporaryFolder(parentFolder);
       writeField(TemporaryFolder.class, instance, FIELD_FOLDER, folder);
-
       return instance;
     }
   }

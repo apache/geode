@@ -15,7 +15,6 @@
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.entry;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -30,8 +29,10 @@ import java.util.Map;
 import java.util.Set;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.ExpectedException;
 
 import org.apache.geode.cache.CacheLoaderException;
 import org.apache.geode.cache.Region;
@@ -60,6 +61,9 @@ public class GetAllRequestOperationHandlerJUnitTest
   private static final String TEST_INVALID_KEY = "I'm a naughty key!";
   private static final String NO_VALUE_PRESENT_FOR_THIS_KEY = "no value present for this key";
   private Region<String, String> regionStub;
+
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
 
   @SuppressWarnings("unchecked")
   @Before
@@ -95,10 +99,12 @@ public class GetAllRequestOperationHandlerJUnitTest
     RegionAPI.GetAllRequest getRequest =
         ProtobufRequestUtilities.createGetAllRequest(TEST_REGION, keys);
 
-    assertThatThrownBy(() -> operationHandler.process(serializationServiceStub, getRequest,
-        TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub)))
-            .isInstanceOf(DecodingException.class);
+    expectedException.expect(DecodingException.class);
+    operationHandler.process(serializationServiceStub, getRequest,
+        TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
   }
+
+
 
   @Test
   public void processReturnsExpectedValuesForValidKeys() throws Exception {

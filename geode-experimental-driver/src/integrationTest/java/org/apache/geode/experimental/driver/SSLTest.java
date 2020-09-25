@@ -26,7 +26,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTOR
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.internal.Assert.assertTrue;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
@@ -43,6 +44,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.ExpectedException;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -57,6 +59,9 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 public class SSLTest {
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
 
   private final String DEFAULT_KEY_STORE =
       createTempFileFromResource(SSLTest.class, "default.keystore").getAbsolutePath();
@@ -129,8 +134,8 @@ public class SSLTest {
     // using TLSv1.2 specifically so that in jdk11 (by default using TLSv1.3) this won't take
     // too long to finish.
     startLocator(SERVER_KEY_STORE, SERVER_TRUST_STORE, true, "TLSv1.2", "any");
-    assertThatThrownBy(() -> new DriverFactory().addLocator("localhost", locatorPort).create())
-        .isInstanceOf(IOException.class);
+    expectedException.expect(IOException.class);
+    driver = new DriverFactory().addLocator("localhost", locatorPort).create();
   }
 
   @Test
@@ -148,10 +153,10 @@ public class SSLTest {
   public void driverCannotConnectWithBogusClientKeystore() throws Exception {
     startLocator(DEFAULT_KEY_STORE, DEFAULT_KEY_STORE, true, "any", "any");
     startServer();
-
-    assertThatThrownBy(() -> new DriverFactory().addLocator("localhost", locatorPort)
-        .setTrustStorePath(CLIENT_TRUST_STORE).setKeyStorePath(BOGUSCLIENT_KEY_STORE).create())
-            .isInstanceOfAny(SSLException.class, SocketException.class);
+    expectedException
+        .expect(anyOf(instanceOf(SSLException.class), instanceOf(SocketException.class)));
+    driver = new DriverFactory().addLocator("localhost", locatorPort)
+        .setTrustStorePath(CLIENT_TRUST_STORE).setKeyStorePath(BOGUSCLIENT_KEY_STORE).create();
   }
 
   @Test
@@ -160,10 +165,9 @@ public class SSLTest {
     // too long to finish.
     startLocator(BOGUSSERVER_KEY_STORE, SERVER_TRUST_STORE, true, "TLSv1.2", "any");
     startServer();
-
-    assertThatThrownBy(() -> new DriverFactory().addLocator("localhost", locatorPort)
-        .setTrustStorePath(CLIENT_TRUST_STORE).setKeyStorePath(CLIENT_KEY_STORE).create())
-            .isInstanceOf(SSLException.class);
+    expectedException.expect(SSLException.class);
+    driver = new DriverFactory().addLocator("localhost", locatorPort)
+        .setTrustStorePath(CLIENT_TRUST_STORE).setKeyStorePath(CLIENT_KEY_STORE).create();
   }
 
   @Test
@@ -181,10 +185,10 @@ public class SSLTest {
   public void driverCannotConnectIfProtocolsMismatch() throws Exception {
     startLocator(SERVER_KEY_STORE, SERVER_TRUST_STORE, true, "TLSv1.1", "any");
     startServer();
-
-    assertThatThrownBy(() -> new DriverFactory().addLocator("localhost", locatorPort)
+    expectedException.expect(SSLException.class);
+    driver = new DriverFactory().addLocator("localhost", locatorPort)
         .setTrustStorePath(CLIENT_TRUST_STORE).setKeyStorePath(CLIENT_KEY_STORE)
-        .setProtocols("TLSv1.2").create()).isInstanceOf(SSLException.class);
+        .setProtocols("TLSv1.2").create();
   }
 
   @Test
@@ -192,9 +196,9 @@ public class SSLTest {
     startLocator(SERVER_KEY_STORE, SERVER_TRUST_STORE, true, "any",
         "TLS_DHE_DSS_WITH_AES_128_CBC_SHA256");
     startServer();
-
-    assertThatThrownBy(() -> new DriverFactory().addLocator("localhost", locatorPort)
+    expectedException.expect(SSLException.class);
+    driver = new DriverFactory().addLocator("localhost", locatorPort)
         .setTrustStorePath(CLIENT_TRUST_STORE).setKeyStorePath(CLIENT_KEY_STORE)
-        .setCiphers("TLS_DHE_DSS_WITH_AES_128_CBC_SHA").create()).isInstanceOf(SSLException.class);
+        .setCiphers("TLS_DHE_DSS_WITH_AES_128_CBC_SHA").create();
   }
 }

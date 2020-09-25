@@ -15,7 +15,6 @@
 package org.apache.geode.connectors.jdbc.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -31,7 +30,9 @@ import java.util.Date;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.connectors.jdbc.JdbcConnectorException;
@@ -52,6 +53,9 @@ public class SqlToPdxInstanceTest {
 
   private ResultSet resultSet;
   private ResultSetMetaData metaData = mock(ResultSetMetaData.class);
+
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
 
   @Before
   public void setup() throws Exception {
@@ -114,11 +118,12 @@ public class SqlToPdxInstanceTest {
     when(resultSet.getString(1)).thenReturn("column1");
     when(resultSet.getString(2)).thenReturn("column2");
     sqlToPdxInstance.addMapping(COLUMN_NAME_2, PDX_FIELD_NAME_2, FieldType.STRING);
+    thrown.expect(JdbcConnectorException.class);
+    thrown.expectMessage("The jdbc-mapping does not contain the column name \""
+        + COLUMN_NAME_1
+        + "\". This is probably caused by a column being added to the table after the jdbc-mapping was created.");
 
-    assertThatThrownBy(() -> createPdxInstance()).isInstanceOf(JdbcConnectorException.class)
-        .hasMessageContaining("The jdbc-mapping does not contain the column name \""
-            + COLUMN_NAME_1
-            + "\". This is probably caused by a column being added to the table after the jdbc-mapping was created.");
+    createPdxInstance();
   }
 
   @Test
@@ -197,10 +202,10 @@ public class SqlToPdxInstanceTest {
     when(blob.length()).thenReturn((long) Integer.MAX_VALUE + 1);
     when(resultSet.getBlob(1)).thenReturn(blob);
     sqlToPdxInstance.addMapping(COLUMN_NAME_1, PDX_FIELD_NAME_1, fieldType);
+    thrown.expect(JdbcConnectorException.class);
+    thrown.expectMessage("Blob of length 2147483648 is too big to be converted to a byte array.");
 
-    assertThatThrownBy(() -> createPdxInstance()).isInstanceOf(JdbcConnectorException.class)
-        .hasMessageContaining(
-            "Blob of length 2147483648 is too big to be converted to a byte array.");
+    createPdxInstance();
   }
 
   @Test
@@ -305,9 +310,10 @@ public class SqlToPdxInstanceTest {
     sqlToPdxInstance.addMapping(COLUMN_NAME_1, PDX_FIELD_NAME_1, fieldType);
     String returnValue = "ReturnValue";
     when(resultSet.getObject(1)).thenReturn(returnValue);
+    thrown.expect(JdbcConnectorException.class);
+    thrown.expectMessage("Could not convert ");
 
-    assertThatThrownBy(() -> createPdxInstance()).isInstanceOf(JdbcConnectorException.class)
-        .hasMessageContaining("Could not convert ");
+    createPdxInstance();
   }
 
   @Test
@@ -317,9 +323,10 @@ public class SqlToPdxInstanceTest {
     sqlToPdxInstance.addMapping(COLUMN_NAME_1, PDX_FIELD_NAME_1, FieldType.STRING);
     sqlToPdxInstance.addMapping(COLUMN_NAME_2, PDX_FIELD_NAME_2, FieldType.STRING);
     when(resultSet.next()).thenReturn(true);
+    thrown.expect(JdbcConnectorException.class);
+    thrown.expectMessage("Multiple rows returned for query: ");
 
-    assertThatThrownBy(() -> createPdxInstance()).isInstanceOf(JdbcConnectorException.class)
-        .hasMessageContaining("Multiple rows returned for query: ");
+    createPdxInstance();
   }
 
   private PdxInstance createPdxInstance() throws SQLException {
