@@ -22,6 +22,7 @@ package org.apache.geode.internal.cache;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
 
 import java.io.File;
 import java.util.Collections;
@@ -31,6 +32,7 @@ import java.util.Set;
 import org.junit.Test;
 
 import org.apache.geode.StatisticsFactory;
+import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.test.dunit.ThreadUtils;
 
 /**
@@ -54,6 +56,7 @@ public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase {
    */
   @Test
   public void testBasicClose() {
+    assumeFalse(SystemUtils.isWindows());
     {
       deleteFiles();
       try {
