@@ -27,6 +27,7 @@ import java.util.Properties;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.TestContext;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
@@ -557,9 +558,7 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
 
   public static File getDiskDir() {
     int vmNum = VM.getCurrentVMNum();
-    File dir = new File("diskDir", "disk" + vmNum).getAbsoluteFile();
-    dir.mkdirs();
-    return dir;
+    return TestContext.directory().resolve("diskDir").resolve("disk" + vmNum).toFile();
   }
 
   /**

@@ -81,10 +81,11 @@ public class ClusterConfig implements Serializable {
 
 
   public void verify(MemberVM memberVM) throws ClassNotFoundException {
-    if (memberVM.isLocator())
+    if (memberVM.isLocator()) {
       verifyLocator(memberVM);
-    else
+    } else {
       verifyServer(memberVM);
+    }
   }
 
   public void verifyLocator(MemberVM locatorVM) {
@@ -123,11 +124,12 @@ public class ClusterConfig implements Serializable {
 
     });
 
-    File clusterConfigDir = new File(locatorVM.getWorkingDir(), "/cluster_config");
 
+    File clusterConfigDir = new File(locatorVM.getMember().getWorkingDir(), "/cluster_config");
     for (ConfigGroup configGroup : this.getGroups()) {
+      File groupDir = new File(clusterConfigDir, configGroup.name);
       Set<String> actualFiles =
-          toSetIgnoringHiddenFiles(new File(clusterConfigDir, configGroup.name).list());
+          toSetIgnoringHiddenFiles(groupDir.list());
 
       Set<String> expectedFiles = configGroup.getAllJarFiles();
       assertThat(actualFiles).isEqualTo(expectedFiles);
@@ -138,11 +140,17 @@ public class ClusterConfig implements Serializable {
     // verify files exist in filesystem
     Set<String> expectedJarNames = this.getJarNames().stream().collect(toSet());
 
+    File serverWorkingDir = serverVM.getWorkingDir();
     String[] actualJarFiles =
-        serverVM.getWorkingDir().list((dir, filename) -> filename.contains(".jar"));
+        serverWorkingDir.list((dir, filename) -> filename.contains(".jar"));
     Set<String> actualJarNames = Stream.of(actualJarFiles)
         .map(jar -> jar.replaceAll("\\.v\\d+\\.jar", ".jar")).collect(toSet());
 
+    try {
+      Thread.sleep(4000);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
     // We will end up with extra jars on disk if they are deployed and then undeployed
     assertThat(expectedJarNames).isSubsetOf(actualJarNames);
 
@@ -178,7 +186,6 @@ public class ClusterConfig implements Serializable {
       }
     });
   }
-
 
 
   private static Set<String> toSetIgnoringHiddenFiles(String[] array) {

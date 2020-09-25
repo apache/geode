@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 import java.io.FileWriter;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -48,6 +49,11 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
     clusterJar = createJarFileWithClass("Cluster", "cluster.jar", temporaryFolder.getRoot());
     group1Jar = createJarFileWithClass("Group1", "group1.jar", temporaryFolder.getRoot());
     group2Jar = createJarFileWithClass("Group2", "group2.jar", temporaryFolder.getRoot());
+  }
+
+  @After
+  public void pause() throws InterruptedException {
+    // Thread.sleep(20_000);
   }
 
   @Test

@@ -15,6 +15,8 @@
 package org.apache.geode.test.junit.rules;
 
 import static java.util.Objects.isNull;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
@@ -27,20 +29,24 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.management.internal.ManagementConstants.OBJECTNAME__CLIENTSERVICE_MXBEAN;
-import static org.apache.geode.test.TestRootDirectory.directoryOwnedBy;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -54,6 +60,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.assertj.core.api.Assertions;
 import org.awaitility.core.ConditionTimeoutException;
 
+import org.apache.geode.TestContext;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
@@ -103,7 +110,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   protected boolean autoStart = false;
   private final transient UniquePortSupplier portSupplier;
 
-  private List<File> firstLevelChildrenFile = new ArrayList<>();
+  private Set<File> previousTestRootFiles = new HashSet<>();
   private boolean cleanWorkingDir = true;
   /**
    * A working directory unique to this rule.
@@ -133,6 +140,8 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
 
   @Override
   public void before() {
+    previousTestRootFiles.addAll(filesIn(TestContext.directory().getParent()));
+
     try {
       restore.before();
     } catch (Throwable throwable) {
@@ -145,7 +154,6 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
       // use putIfAbsent if it was configured using withProperty
       properties.putIfAbsent(HTTP_SERVICE_PORT, "0");
     }
-    firstLevelChildrenFile = Arrays.asList(getWorkingDir().listFiles());
 
     for (String key : systemProperties.stringPropertyNames()) {
       System.setProperty(key, systemProperties.getProperty(key));
@@ -166,10 +174,12 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
     // This is required if PDX is in use and tests are run repeatedly.
     TypeRegistry.init();
 
-    // delete the first-level children files that are created in the tests
     if (cleanWorkingDir) {
       FileUtils.deleteQuietly(getWorkingDir());
     }
+    filesIn(TestContext.directory().getParent()).stream()
+        .filter(p -> !previousTestRootFiles.contains(p))
+        .forEach(System.out::println);
   }
 
   public T withPort(int memberPort) {
@@ -403,7 +413,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
     await().until(() -> bean.getClientIds().length == clientCount);
   }
 
-  /**
+  /*
    * Invoked in serverVM
    */
 
@@ -430,7 +440,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
    *
    * @param regionFactoryConsumer a lamda that allows you to customize the regionFactory
    * @param attributesFactoryConsumer a lamda that allows you to customize the
-   * partitionAttributeFactory
+   *        partitionAttributeFactory
    */
   public Region createPartitionRegion(String name, Consumer<RegionFactory> regionFactoryConsumer,
       Consumer<PartitionAttributesFactory> attributesFactoryConsumer) {
@@ -487,7 +497,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
         exactServerCount, diskStoreName);
     Supplier<List<String[]>> diskStoreSupplier = () -> dsMXBean.listMemberDiskstore()
         .values().stream().filter(x1 -> ArrayUtils.contains(x1, diskStoreName))
-        .collect(Collectors.toList());
+        .collect(toList());
 
     waitUntilEqual(diskStoreSupplier,
         x -> x.size(),
@@ -514,18 +524,18 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
    * reporting.
    *
    * @param supplier Method to retrieve the result to be tested, e.g.,
-   * get a list of visible region mbeans
+   *        get a list of visible region mbeans
    * @param examiner Method to evaluate the result provided by {@code provider}, e.g.,
-   * get the length of the provided list.
-   * Use {@link java.util.function.Function#identity()} if {@code assertionConsumer}
-   * directly tests the value provided by {@code supplier}.
+   *        get the length of the provided list.
+   *        Use {@link java.util.function.Function#identity()} if {@code assertionConsumer}
+   *        directly tests the value provided by {@code supplier}.
    * @param assertionConsumer assertThat styled condition on the output of {@code examiner} against
-   * which
-   * the {@code await().untilAsserted(...)} will be called. E.g.,
-   * {@code beanCount -> assertThat(beanCount, is(5))}
+   *        which
+   *        the {@code await().untilAsserted(...)} will be called. E.g.,
+   *        {@code beanCount -> assertThat(beanCount, is(5))}
    * @param assertionConsumerDescription A description of the {@code assertionConsumer} method,
-   * for additional failure information should this call time out.
-   * E.g., "Visible region mbean count should be 5"
+   *        for additional failure information should this call time out.
+   *        E.g., "Visible region mbean count should be 5"
    * @param timeout With {@code unit}, the maximum time to wait before raising an exception.
    * @param unit With {@code timeout}, the maximum time to wait before raising an exception.
    * @throws org.awaitility.core.ConditionTimeoutException The timeout has been reached
@@ -574,7 +584,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   @Override
   public File getWorkingDir() {
     if (isNull(workingDir)) {
-        workingDir = directoryOwnedBy(this).toFile();
+      workingDir = TestContext.subdirectoryOwnedBy(this).toFile();
     }
     return workingDir;
   }
@@ -597,5 +607,15 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   @Override
   public String getName() {
     return name;
+  }
+
+  private static Set<File> filesIn(Path dir) {
+    try {
+      return Files.list(dir)
+          .map(Path::toFile)
+          .collect(toSet());
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
   }
 }

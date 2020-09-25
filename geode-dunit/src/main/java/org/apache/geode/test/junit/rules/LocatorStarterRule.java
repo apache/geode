@@ -34,13 +34,16 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
  * <p>
  * This rules allows you to create/start a locator using any @ConfigurationProperties, you can chain
  * the configuration of the rule like this:
- * <pre>LocatorStarterRule locator = new LocatorStarterRule()
+ *
+ * <pre>
+ * LocatorStarterRule locator = new LocatorStarterRule()
  * .withProperty(key, value)
  * .withName(name)
  * .withProperties(properties)
  * .withSecurityManager(class)
  * .withJmxManager()
- * ...</pre>
+ * ...
+ * </pre>
  * <p>
  * If your rule calls {@code withAutoStart()}, the locator will be started before your test code.
  *

@@ -38,6 +38,7 @@ import java.net.InetAddress;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
 import java.rmi.registry.LocateRegistry;
@@ -54,13 +55,13 @@ import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.junit.Assert;
 
+import org.apache.geode.TestContext;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.logging.internal.spi.LoggingProvider;
-import org.apache.geode.test.TestRootDirectory;
 import org.apache.geode.test.dunit.DUnitEnv;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
@@ -89,7 +90,7 @@ public class DUnitLauncher {
    */
   public static final boolean MAKE_NEW_WORKING_DIRS =
       Boolean.getBoolean("makeNewWorkingDirsOnBounce");
-  public static final String TEST_ROOT_DIR_PREFIX = "dunit-session-";
+  private static final String SUSPECT_FILE = "dunit_suspect.log";
 
   static int locatorPort;
 
@@ -112,8 +113,7 @@ public class DUnitLauncher {
   static final String STARTUP_TIMEOUT_MESSAGE =
       "VMs did not start up within " + STARTUP_TIMEOUT / 1000 + " seconds";
 
-  private static final String SUSPECT_FILENAME = "dunit_suspect.log";
-  private static File DUNIT_SUSPECT_FILE;
+  // private static final String SUSPECT_FILENAME = "dunit_suspect_foo.log";
 
   public static final String WORKSPACE_DIR_PARAM = "WORKSPACE_DIR";
   public static final boolean LOCATOR_LOG_TO_DISK = Boolean.getBoolean("locatorLogToDisk");
@@ -129,11 +129,12 @@ public class DUnitLauncher {
 
   private static final VMEventNotifier vmEventNotifier = new VMEventNotifier();
 
-  public static final String ROOT_DIR_NAME = "dunit";
+  public static final String DUNIT_ROOT_DIR_NAME = "dunit";
+
   /**
-   * The root directory for VMs created by the DUnitLauncher in this JVM.
+   * The root directory for files and child VMs created by this JVM's DUnitLauncher.
    */
-  private static File rootDir = null;
+  private static Path dunitRootDir = null;
   private static Master master;
 
   private DUnitLauncher() {}
@@ -196,9 +197,9 @@ public class DUnitLauncher {
 
   private static void launch(boolean launchLocator) throws AlreadyBoundException, IOException,
       InterruptedException, NotBoundException {
-    DUNIT_SUSPECT_FILE = TestRootDirectory.path().resolve(SUSPECT_FILENAME).toFile();
-    DUNIT_SUSPECT_FILE.delete();
-    DUNIT_SUSPECT_FILE.deleteOnExit();
+    File dunitSuspectFile = dunitSuspectFile();
+    dunitSuspectFile.delete();
+    dunitSuspectFile.deleteOnExit();
 
     // create an RMI registry and add an object to share our tests config
     int namingPort = AvailablePortHelper.getRandomAvailableTCPPort();
@@ -266,9 +267,7 @@ public class DUnitLauncher {
    * later to scan for suspect strings. The pattern of the messages conforms to the original log
    * format so that hydra will be able to parse them.
    */
-  private static void addSuspectFileAppender(final String workspaceDir) {
-    final String suspectFilename = new File(workspaceDir, SUSPECT_FILENAME).getAbsolutePath();
-
+  private static void addSuspectFileAppender() {
     Object mainLogger = LogManager.getLogger(LoggingProvider.MAIN_LOGGER_NAME);
     if (!(mainLogger instanceof org.apache.logging.log4j.core.Logger)) {
       System.err.format(
@@ -286,9 +285,10 @@ public class DUnitLauncher {
             + "%message%n%throwable%n",
         null, null, null, Charset.defaultCharset(), true, false, "", "");
 
-    final FileAppender fileAppender = FileAppender.createAppender(suspectFilename, "true", "false",
-        DUnitLauncher.class.getName(), "true", "false", "false", "0", layout, null, null, null,
-        appenderContext.getConfiguration());
+    final FileAppender fileAppender =
+        FileAppender.createAppender(dunitSuspectFile().toString(), "true", "false",
+            DUnitLauncher.class.getName(), "true", "false", "false", "0", layout, null, null, null,
+            appenderContext.getConfiguration());
     fileAppender.start();
 
     LoggerConfig loggerConfig =
@@ -339,11 +339,7 @@ public class DUnitLauncher {
 
   public static void init(MasterRemote master) {
     DUnitEnv.set(new StandAloneDUnitEnv(master));
-    // fake out tests that are using a bunch of hydra stuff
-    String workspaceDir = System.getProperty(DUnitLauncher.WORKSPACE_DIR_PARAM);
-    workspaceDir = workspaceDir == null ? new File(".").getAbsolutePath() : workspaceDir;
-
-    addSuspectFileAppender(workspaceDir);
+    addSuspectFileAppender();
 
     // Free off heap memory when disconnecting from the distributed system
     System.setProperty(GEMFIRE_PREFIX + "free-off-heap-memory", "true");
@@ -358,12 +354,12 @@ public class DUnitLauncher {
       final LogConsumer logConsumer = new LogConsumer(true, expectedStrings, "log4j", 5);
 
       final StringBuilder suspectStringBuilder = new StringBuilder();
-
+      File dunitSuspectFile = dunitSuspectFile();
       BufferedReader buffReader = null;
       FileChannel fileChannel = null;
       try {
-        fileChannel = new FileOutputStream(DUNIT_SUSPECT_FILE, true).getChannel();
-        buffReader = new BufferedReader(new FileReader(DUNIT_SUSPECT_FILE));
+        fileChannel = new FileOutputStream(dunitSuspectFile, true).getChannel();
+        buffReader = new BufferedReader(new FileReader(dunitSuspectFile));
       } catch (FileNotFoundException e) {
         System.err.println("Could not find the suspect string output file: " + e);
         return;
@@ -408,14 +404,30 @@ public class DUnitLauncher {
     }
   }
 
-  public static File rootDir() {
-    if (isNull(rootDir)) {
+  private static File dunitSuspectFile() {
+    return dunitRootDir().resolve(SUSPECT_FILE).toFile();
+  }
+
+  private static boolean isChildVM() {
+    return System.getProperty(VM_NUM_PARAM) != null;
+  }
+
+  /**
+   * Returns the normalized, absolute path to the root directory of the DUnitLauncher used by a
+   * Test JVM and its child VMs.
+   */
+  public static Path dunitRootDir() {
+    if (isNull(dunitRootDir)) {
       try {
-        rootDir = Files.createDirectories(TestRootDirectory.path().resolve(ROOT_DIR_NAME)).toFile();
+        dunitRootDir = Files.createDirectories(dunitRootDirPath());
       } catch (IOException e) {
         throw new UncheckedIOException(e);
       }
     }
-    return rootDir;
+    return dunitRootDir;
+  }
+
+  private static Path dunitRootDirPath() {
+    return TestContext.runnerDirectory().resolve(DUNIT_ROOT_DIR_NAME);
   }
 }

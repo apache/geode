@@ -18,7 +18,7 @@ package org.apache.geode.test.junit.rules;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static org.apache.commons.io.FileUtils.deleteQuietly;
-import static org.apache.geode.test.TestRootDirectory.directoryOwnedBy;
+import static org.apache.geode.TestContext.subdirectoryOwnedBy;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -53,7 +53,7 @@ public class ServerLauncherBuilderRule extends SerializableExternalResource {
           .setServerPort(DEFAULT_SERVER_PORT)
           .setMemberName(DEFAULT_SERVER_NAME)
           .set(ConfigurationProperties.LOG_LEVEL, DEFAULT_LOG_LEVEL)
-          .setWorkingDirectory(directoryOwnedBy(this).toString());
+          .setWorkingDirectory(subdirectoryOwnedBy(this).toString());
     }
     return builder;
   }
