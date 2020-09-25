@@ -64,7 +64,7 @@ public class DeploymentTest {
     deployment.setDeployedTime("deployedTime");
     String json = mapper.writeValueAsString(deployment);
     Deployment newValue = mapper.readValue(json, Deployment.class);
-    assertThat(newValue).isEqualToComparingFieldByField(deployment);
+    assertThat(newValue).usingRecursiveComparison().isEqualTo(deployment);
   }
 
   @Test

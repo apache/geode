@@ -48,7 +48,7 @@ public class DeploymentInfoTest {
     deploymentInfo.setLastModified("lastModified");
     String json = mapper.writeValueAsString(deploymentInfo);
     DeploymentInfo newValue = mapper.readValue(json, DeploymentInfo.class);
-    assertThat(newValue).isEqualToComparingFieldByField(deploymentInfo);
+    assertThat(newValue).usingRecursiveComparison().isEqualTo(deploymentInfo);
   }
 
 }
