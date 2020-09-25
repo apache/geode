@@ -30,50 +30,50 @@ import org.apache.geode.test.dunit.VM;
  * JUnit Rule that provides SharedCounters in DistributedTest VMs.
  *
  * <p>
- * {@code SharedCountersRule} can be used in DistributedTests as a {@code Rule}:
+ * {@code DistributedCounters} can be used in DistributedTests as a {@code Rule}:
  *
  * <pre>
  * {@literal @}Rule
  * public DistributedRule distributedRule = new DistributedRule();
  *
  * {@literal @}Rule
- * public SharedCountersRule sharedCountersRule = new SharedCountersRule();
+ * public DistributedCounters distributedCounters = new DistributedCounters();
  *
  * {@literal @}Before
  * public void setUp() {
- *   sharedCountersRule.initialize("counter");
+ *   distributedCounters.initialize("counter");
  * }
  *
  * {@literal @}Test
  * public void incrementCounterInEveryVm() {
- *   sharedCountersRule.initialize("counter");
+ *   distributedCounters.initialize("counter");
  *   for (VM vm : getAllVMs()) {
  *     vm.invoke(() -> {
- *       sharedCountersRule.increment("counter");
+ *       distributedCounters.increment("counter");
  *     });
  *   }
- *   assertThat(sharedCountersRule.getTotal("counter")).isEqualTo(getVMCount());
+ *   assertThat(distributedCounters.getTotal("counter")).isEqualTo(getVMCount());
  * }
  * </pre>
  *
  * <p>
- * {@link SharedCountersRule.Builder} can also be used to construct an instance with more options:
+ * {@link DistributedCounters.Builder} can also be used to construct an instance with more options:
  *
  * <pre>
  * {@literal @}Rule
  * public DistributedRule distributedRule = new DistributedRule();
  *
  * {@literal @}Rule
- * public SharedCountersRule sharedCountersRule = SharedCountersRule.builder().withId("counter").build();
+ * public DistributedCounters distributedCounters = DistributedCounters.builder().withId("counter").build();
  *
  * {@literal @}Test
  * public void incrementCounterInEveryVm() {
  *   for (VM vm : getAllVMs()) {
  *     vm.invoke(() -> {
- *       sharedCountersRule.increment("counter");
+ *       distributedCounters.increment("counter");
  *     });
  *   }
- *   assertThat(sharedCountersRule.getTotal("counter")).isEqualTo(getVMCount());
+ *   assertThat(distributedCounters.getTotal("counter")).isEqualTo(getVMCount());
  * }
  * </pre>
  *
@@ -82,7 +82,7 @@ import org.apache.geode.test.dunit.VM;
  * {@code org.apache.geode.cache.ReplicateCacheListenerDistributedTest} in the tests of geode-core.
  */
 @SuppressWarnings("serial")
-public class SharedCountersRule extends AbstractDistributedRule {
+public class DistributedCounters extends AbstractDistributedRule {
 
   private static volatile Map<Serializable, AtomicInteger> counters;
 
@@ -94,11 +94,11 @@ public class SharedCountersRule extends AbstractDistributedRule {
     return new Builder();
   }
 
-  public SharedCountersRule() {
+  public DistributedCounters() {
     this(new Builder());
   }
 
-  private SharedCountersRule(final Builder builder) {
+  private DistributedCounters(final Builder builder) {
     idsToInitInBefore.addAll(builder.ids);
   }
 
@@ -156,7 +156,7 @@ public class SharedCountersRule extends AbstractDistributedRule {
    * Initialize an {@code AtomicInteger} with value of zero identified by {@code id} in every
    * {@code VM}.
    */
-  public SharedCountersRule initialize(final Serializable id) {
+  public DistributedCounters initialize(final Serializable id) {
     invoker().invokeInEveryVMAndController(() -> counters.putIfAbsent(id, new AtomicInteger()));
     return this;
   }
@@ -171,7 +171,7 @@ public class SharedCountersRule extends AbstractDistributedRule {
   /**
    * Increments the {@code AtomicInteger} identified by the specified {@code id}.
    */
-  public SharedCountersRule increment(final Serializable id) {
+  public DistributedCounters increment(final Serializable id) {
     counters.get(id).incrementAndGet();
     return this;
   }
@@ -180,7 +180,7 @@ public class SharedCountersRule extends AbstractDistributedRule {
    * Increments the {@code AtomicInteger} by the specified {@code delta} which may be a positive or
    * negative integer.
    */
-  public SharedCountersRule increment(final Serializable id, final int delta) {
+  public DistributedCounters increment(final Serializable id, final int delta) {
     counters.get(id).addAndGet(delta);
     return this;
   }
@@ -188,7 +188,7 @@ public class SharedCountersRule extends AbstractDistributedRule {
   /**
    * Increments the {@code AtomicInteger} identified by the specified {@code id}.
    */
-  public SharedCountersRule decrement(final Serializable id) {
+  public DistributedCounters decrement(final Serializable id) {
     counters.get(id).decrementAndGet();
     return this;
   }
@@ -196,7 +196,7 @@ public class SharedCountersRule extends AbstractDistributedRule {
   /**
    * Decrements the {@code AtomicInteger} by the specified {@code delta}.
    */
-  public SharedCountersRule decrement(final Serializable id, final int delta) {
+  public DistributedCounters decrement(final Serializable id, final int delta) {
     counters.get(id).addAndGet(-delta);
     return this;
   }
@@ -220,7 +220,7 @@ public class SharedCountersRule extends AbstractDistributedRule {
   }
 
   /**
-   * Builds an instance of SharedCountersRule
+   * Builds an instance of DistributedCounters
    */
   public static class Builder {
 
@@ -231,15 +231,15 @@ public class SharedCountersRule extends AbstractDistributedRule {
     }
 
     /**
-     * Initialize specified id when {@code SharedCountersRule} is built.
+     * Initialize specified id when {@code DistributedCounters} is built.
      */
     public Builder withId(final Serializable id) {
       ids.add(id);
       return this;
     }
 
-    public SharedCountersRule build() {
-      return new SharedCountersRule(this);
+    public DistributedCounters build() {
+      return new DistributedCounters(this);
     }
   }
 }
