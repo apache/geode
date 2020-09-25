@@ -42,6 +42,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.logging.log4j.Logger;
+import sun.print.resources.serviceui;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
@@ -1407,6 +1408,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
    */
   public void checkCancelled() throws MembershipClosedException {
     if (services.getCancelCriterion().isCancelInProgress()) {
+      logger.info("*** EB: GMSMembership.checkCancelled services.getShutdownCause(): " + services.getShutdownCause().getStackTrace());
       throw new MembershipClosedException("Distributed System is shutting down",
           services.getCancelCriterion().generateCancelledException(services.getShutdownCause()));
     }
