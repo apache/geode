@@ -101,9 +101,9 @@ import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.rules.DistributedErrorCollector;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.DistributedRule;
-import org.apache.geode.test.dunit.rules.SharedErrorCollector;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
@@ -152,7 +152,7 @@ public class DeltaPropagationDUnitTest implements Serializable {
   @Rule
   public SerializableTestName testName = new SerializableTestName();
   @Rule
-  public SharedErrorCollector errorCollector = new SharedErrorCollector();
+  public DistributedErrorCollector errorCollector = new DistributedErrorCollector();
 
   @Before
   public void setUp() {
@@ -1486,9 +1486,9 @@ public class DeltaPropagationDUnitTest implements Serializable {
 
   private static class ValidatingClientListener extends CacheListenerAdapter<String, Object> {
 
-    private final SharedErrorCollector errorCollector;
+    private final DistributedErrorCollector errorCollector;
 
-    private ValidatingClientListener(SharedErrorCollector errorCollector) {
+    private ValidatingClientListener(DistributedErrorCollector errorCollector) {
       this.errorCollector = errorCollector;
     }
 
@@ -1511,9 +1511,9 @@ public class DeltaPropagationDUnitTest implements Serializable {
 
   private static class SkipThirdDeltaValue extends ValidatingClientListener {
 
-    private final SharedErrorCollector errorCollector;
+    private final DistributedErrorCollector errorCollector;
 
-    private SkipThirdDeltaValue(SharedErrorCollector errorCollector) {
+    private SkipThirdDeltaValue(DistributedErrorCollector errorCollector) {
       super(errorCollector);
       this.errorCollector = errorCollector;
     }
@@ -1562,9 +1562,9 @@ public class DeltaPropagationDUnitTest implements Serializable {
 
   private static class DurableClientListener extends CacheListenerAdapter<String, Object> {
 
-    private final SharedErrorCollector errorCollector;
+    private final DistributedErrorCollector errorCollector;
 
-    private DurableClientListener(SharedErrorCollector errorCollector) {
+    private DurableClientListener(DistributedErrorCollector errorCollector) {
       this.errorCollector = errorCollector;
     }
 

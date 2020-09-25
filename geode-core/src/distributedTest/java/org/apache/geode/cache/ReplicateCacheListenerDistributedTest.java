@@ -31,9 +31,9 @@ import org.junit.Test;
 
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.test.dunit.rules.CacheRule;
+import org.apache.geode.test.dunit.rules.DistributedErrorCollector;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.dunit.rules.SharedCountersRule;
-import org.apache.geode.test.dunit.rules.SharedErrorCollector;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
@@ -72,7 +72,7 @@ public class ReplicateCacheListenerDistributedTest implements Serializable {
   public SharedCountersRule sharedCountersRule = new SharedCountersRule();
 
   @Rule
-  public SharedErrorCollector errorCollector = new SharedErrorCollector();
+  public DistributedErrorCollector errorCollector = new DistributedErrorCollector();
 
   @Before
   public void setUp() {

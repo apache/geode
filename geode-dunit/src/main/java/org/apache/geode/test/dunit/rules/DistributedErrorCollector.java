@@ -34,14 +34,14 @@ import org.apache.geode.test.junit.rules.accessible.AccessibleErrorCollector;
  * registered in multiple DistributedTest VMs.
  *
  * <p>
- * {@code SharedErrorCollector} can be used in DistributedTests as a {@code Rule}:
+ * {@code DistributedErrorCollector} can be used in DistributedTests as a {@code Rule}:
  *
  * <pre>
  * {@literal @}Rule
  * public DistributedRule distributedRule = new DistributedRule();
  *
  * {@literal @}Rule
- * public SharedErrorCollector errorCollector = new SharedErrorCollector();
+ * public DistributedErrorCollector errorCollector = new DistributedErrorCollector();
  *
  * {@literal @}Test
  * public void everyVmFailsAssertion() {
@@ -55,13 +55,13 @@ import org.apache.geode.test.junit.rules.accessible.AccessibleErrorCollector;
  * For a more thorough example, please see
  * {@code org.apache.geode.cache.ReplicateCacheListenerDistributedTest} in the tests of geode-core.
  */
-public class SharedErrorCollector extends AbstractDistributedRule {
+public class DistributedErrorCollector extends AbstractDistributedRule {
 
   private static volatile AccessibleErrorCollector errorCollector;
 
   private final Map<Integer, List<Throwable>> beforeBounceErrors = new HashMap<>();
 
-  public SharedErrorCollector() {
+  public DistributedErrorCollector() {
     // nothing
   }
 
@@ -136,5 +136,4 @@ public class SharedErrorCollector extends AbstractDistributedRule {
   private void invokeBefore() {
     errorCollector = new AccessibleErrorCollector();
   }
-
 }
