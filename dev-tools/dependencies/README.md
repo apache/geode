@@ -19,6 +19,7 @@ Step 2: filter out certain dependencies that we cannot change, such as:
 - protobuf
 - lucene
 - tomcat 6
+- archunit (13.0 and later get OOM on JDK8)
 
 Step 3: in some cases, maven suggests new majors, beta releases, or just wrong releases.
 Manually search for those dependencies on mavencentral to see if there is a better choice.
