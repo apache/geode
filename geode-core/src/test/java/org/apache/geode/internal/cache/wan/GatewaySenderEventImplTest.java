@@ -16,7 +16,11 @@ package org.apache.geode.internal.cache.wan;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
+
+import java.io.DataInput;
+import java.io.IOException;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -24,10 +28,16 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 
 import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.TransactionId;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderHelper;
+import org.apache.geode.internal.serialization.DSCODE;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.ObjectDeserializer;
 import org.apache.geode.test.fake.Fakes;
 
 public class GatewaySenderEventImplTest {
@@ -47,6 +57,33 @@ public class GatewaySenderEventImplTest {
     cache = Fakes.cache();
     InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
     when(cache.getDistributedSystem()).thenReturn(ids);
+  }
+
+  @Test
+  public void versionedFromData() throws IOException, ClassNotFoundException {
+    GatewaySenderEventImpl gatewaySenderEvent = spy(GatewaySenderEventImpl.class);
+    DataInput dataInput = mock(DataInput.class);
+    DeserializationContext deserializationContext = mock(DeserializationContext.class);
+    ObjectDeserializer objectDeserializer = mock(ObjectDeserializer.class);
+    EventID eventID = mock(EventID.class);
+    GatewaySenderEventCallbackArgument gatewaySenderEventCallbackArgument =
+        mock(GatewaySenderEventCallbackArgument.class);
+    TransactionId transactionId = mock(TransactionId.class);
+    when(deserializationContext.getDeserializer()).thenReturn(objectDeserializer);
+    when(objectDeserializer.readObject(dataInput)).thenReturn(eventID,
+        gatewaySenderEventCallbackArgument);
+    when(dataInput.readByte()).thenReturn(DSCODE.STRING.toByte());
+    when(dataInput.readBoolean()).thenReturn(true);
+    when(dataInput.readShort()).thenReturn(KnownVersion.GEODE_1_13_0.ordinal());
+
+    gatewaySenderEvent.fromData(dataInput, deserializationContext);
+    assertThat(gatewaySenderEvent.getTransactionId()).isNull();
+
+    when(dataInput.readShort()).thenReturn(KnownVersion.GEODE_1_14_0.ordinal());
+    when(objectDeserializer.readObject(dataInput)).thenReturn(eventID, new Object(),
+        gatewaySenderEventCallbackArgument, transactionId);
+    gatewaySenderEvent.fromData(dataInput, deserializationContext);
+    assertThat(gatewaySenderEvent.getTransactionId()).isNotNull();
   }
 
   @Test
@@ -106,4 +143,5 @@ public class GatewaySenderEventImplTest {
             "key1", "value1", 0, 0);
     assertThat(event).isNotEqualTo(eventDifferentRegion);
   }
+
 }
