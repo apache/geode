@@ -148,7 +148,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.12')
         api(group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.4.13')
         api(group: 'org.apache.shiro', name: 'shiro-core', version: get('shiro.version'))
-        api(group: 'org.assertj', name: 'assertj-core', version: '3.15.0')
+        api(group: 'org.assertj', name: 'assertj-core', version: '3.17.2')
         api(group: 'org.awaitility', name: 'awaitility', version: '4.0.3')
         api(group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.66')
         api(group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.8.1')
