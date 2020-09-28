@@ -428,6 +428,6 @@ public class DUnitLauncher {
   }
 
   private static Path dunitRootDirPath() {
-    return TestContext.runnerDirectory().resolve(DUNIT_ROOT_DIR_NAME);
+    return TestContext.runnerContextDirectory().resolve(DUNIT_ROOT_DIR_NAME);
   }
 }

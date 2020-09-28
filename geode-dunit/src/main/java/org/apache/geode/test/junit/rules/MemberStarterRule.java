@@ -140,7 +140,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
 
   @Override
   public void before() {
-    previousTestRootFiles.addAll(filesIn(TestContext.directory().getParent()));
+    previousTestRootFiles.addAll(filesIn(TestContext.contextDirectory().getParent()));
 
     try {
       restore.before();
@@ -177,7 +177,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
     if (cleanWorkingDir) {
       FileUtils.deleteQuietly(getWorkingDir());
     }
-    filesIn(TestContext.directory().getParent()).stream()
+    filesIn(TestContext.contextDirectory().getParent()).stream()
         .filter(p -> !previousTestRootFiles.contains(p))
         .forEach(System.out::println);
   }

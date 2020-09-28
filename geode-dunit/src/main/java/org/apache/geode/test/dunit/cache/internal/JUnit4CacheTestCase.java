@@ -558,7 +558,7 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
 
   public static File getDiskDir() {
     int vmNum = VM.getCurrentVMNum();
-    return TestContext.directory().resolve("diskDir").resolve("disk" + vmNum).toFile();
+    return TestContext.contextDirectory().resolve("diskDir").resolve("disk" + vmNum).toFile();
   }
 
   /**

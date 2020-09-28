@@ -28,8 +28,8 @@ import java.nio.file.Paths;
  */
 public class TestContext {
   private static final String RUNNER_DIR_PREFIX = "test-runner-";
-  private static Path runnerDirectory;
-  private static Path directory;
+  private static Path runnerContextDirectory;
+  private static Path contextDirectory;
 
   /**
    * Returns the path to this JVM's test context directory. When tests create files or
@@ -40,28 +40,28 @@ public class TestContext {
    * The location of the test context directory depends on the nature of the JVM:
    * <ul>
    * <li>
-   * If the JVM is a Gradle test worker, its test context directory is named after the Gradle
-   * test worker and resolved against the JVM's working directory.
+   * If the JVM is a Gradle test worker, its test context directory is named after the Gradle test
+   * worker and resolved against the JVM's working directory.
    * </li>
    * <li>
-   * If the JVM is not a Gradle test worker, its test context directory is its working
-   * directory.
+   * If the JVM is not a Gradle test worker, its test context directory is its working directory.
    * </li>
    * </ul>
    * <p>
    *
    * @return the absolute, normalized path to this JVM's test context directory
    */
-  public static Path directory() {
-    if (directory == null) {
-      directory = isTestRunnerJVM() ? createContextDirectory() : jvmWorkingDirectory();
+  public static Path contextDirectory() {
+    if (contextDirectory == null) {
+      contextDirectory = isTestRunnerJVM() ? createContextDirectory() : jvmWorkingDirectory();
     }
-    return directory;
+    return contextDirectory;
   }
 
   /**
    * Returns a path uniquely identified by the owner and resolved against this JVM's
-   * {@link #directory() test context directory}. The path name identifies the owner based on its
+   * {@link #contextDirectory() test context directory}. The path name identifies the owner
+   * based on its
    * simple class name and identity hash code. This method merely returns a path, and does not
    * create a file or directory. The owner (or caller) is responsible for all use of the path.
    *
@@ -69,12 +69,13 @@ public class TestContext {
    * @return an absolute, normalized path uniquely identified by the owner
    */
   public static Path pathOwnedBy(Object owner) {
-    return directory().resolve(ownerName(owner));
+    return contextDirectory().resolve(ownerName(owner));
   }
 
   /**
    * Returns the path to a directory uniquely identified by the owner and resolved against this
-   * JVM's {@link #directory() test context directory}. The path name identifies the owner based
+   * JVM's {@link #contextDirectory() test context directory}. The path name identifies the
+   * owner based
    * on its simple class name and identity hash code. The directory is created if it does not
    * already exist. If the directory exists, this method simply returns a path to it. The owner (or
    * caller) is responsible for all use of the directory.
@@ -91,39 +92,42 @@ public class TestContext {
   }
 
   /**
-   * Returns the path to the runner directory. The runner directory is the test context directory
-   * of the Gradle test worker JVM that is running the current test class. Most test code should
-   * use {@link #directory()} instead of this method.
+   * Returns the path to the test runner context directory. The test runner context directory is
+   * the test context directory of the Gradle test worker JVM that is running the current test
+   * class. Test code and most test framework code should use {@link #contextDirectory()} instead
+   * of this method.
    *
    * <p>
-   * The location of the runner directory depends on the nature of the JVM:
+   * The location of the test runner context directory depends on the nature of the JVM:
    * <ul>
    * <li>
-   * In a Gradle test worker JVM, the runner directory is the same as the test context
+   * In a Gradle test worker JVM, the test runner context directory is the same as the test context
    * directory.
    * </li>
    * <li>
-   * If the JVM is not a Gradle test worker, its runner directory is the working directory's
-   * nearest ancestor that is a runner directory, if there is such an ancestor.
+   * If the JVM is not a Gradle test worker, its test runner context directory is the working
+   * directory's nearest ancestor that is a test runner context directory, if there is such an
+   * ancestor.
    * </li>
    * <li>
    * If the JVM is not a Gradle test worker and its working directory is not contained in a
-   * runner directory, it has no runner directory.
+   * runner directory, it has no test runner context directory.
    * </li>
    * </ul>
    *
-   * @return the absolute, normalized path to this JVM's test runner directory
-   * @throws IllegalStateException if this JVM has no test runner directory
+   * @return the absolute, normalized path to this JVM's test runner context directory
+   * @throws IllegalStateException if this JVM has no test runner context directory
    */
-  public static Path runnerDirectory() {
-    if (runnerDirectory == null) {
-      runnerDirectory = isTestRunnerJVM() ? directory() : findRunnerDirectory();
+  public static Path runnerContextDirectory() {
+    if (runnerContextDirectory == null) {
+      runnerContextDirectory =
+          isTestRunnerJVM() ? contextDirectory() : findRunnerContextDirectory();
     }
-    return runnerDirectory;
+    return runnerContextDirectory;
   }
 
   private static Path createContextDirectory() {
-    return createDirectory(workerPath());
+    return createDirectory(contextDirectoryPath());
   }
 
   private static Path createDirectory(Path dir) {
@@ -134,7 +138,7 @@ public class TestContext {
     }
   }
 
-  private static Path findRunnerDirectory() {
+  private static Path findRunnerContextDirectory() {
     Path jvmWorkingDirectory = jvmWorkingDirectory();
     Path candidate = jvmWorkingDirectory.getParent();
     while (candidate != null) {
@@ -160,7 +164,7 @@ public class TestContext {
     return System.getProperty("org.gradle.test.worker");
   }
 
-  private static Path workerPath() {
+  private static Path contextDirectoryPath() {
     return jvmWorkingDirectory().resolve(RUNNER_DIR_PREFIX + workerName());
   }
 }
