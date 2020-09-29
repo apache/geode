@@ -25,6 +25,7 @@ import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.OperationAbortedException;
 import org.apache.geode.cache.PartitionedRegionPartialClearException;
+import org.apache.geode.cache.PartitionedRegionVersionException;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
@@ -288,8 +289,13 @@ public class PartitionedRegionClear {
       return bucketsOperated;
     }
 
+    if (!partitionedRegion.allServerVersionsSupportPartitionRegionClear()) {
+      throw new PartitionedRegionVersionException();
+    }
+
     final Set<InternalDistributedMember> configRecipients =
-        new HashSet<>(partitionedRegion.getRegionAdvisor().adviseAllPRNodes());
+        new HashSet<>(partitionedRegion.getRegionAdvisor()
+            .adviseAllPRNodes());
 
     try {
       final PartitionRegionConfig prConfig =
@@ -310,8 +316,7 @@ public class PartitionedRegionClear {
     try {
       PartitionedRegionClearMessage.PartitionedRegionClearResponse resp =
           new PartitionedRegionClearMessage.PartitionedRegionClearResponse(
-              partitionedRegion.getSystem(),
-              configRecipients);
+              partitionedRegion.getSystem(), configRecipients);
       PartitionedRegionClearMessage partitionedRegionClearMessage =
           new PartitionedRegionClearMessage(configRecipients, partitionedRegion, resp, op, event);
       partitionedRegionClearMessage.send();
@@ -361,6 +366,10 @@ public class PartitionedRegionClear {
       }
       try {
         Set<Integer> bucketsCleared = clearRegion(regionEvent);
+
+        if (!partitionedRegion.allServerVersionsSupportPartitionRegionClear()) {
+          throw new PartitionedRegionVersionException();
+        }
 
         if (partitionedRegion.getTotalNumberOfBuckets() != bucketsCleared.size()) {
           String message = "Unable to clear all the buckets from the partitioned region "

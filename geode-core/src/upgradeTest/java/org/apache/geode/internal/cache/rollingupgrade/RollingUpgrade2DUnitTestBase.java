@@ -41,6 +41,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.Logger;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -90,6 +91,7 @@ import org.apache.geode.internal.cache.Oplog;
 import org.apache.geode.internal.cache.Oplog.OPLOG_TYPE;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
@@ -120,6 +122,7 @@ import org.apache.geode.test.version.VersionManager;
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTestCase {
+  protected Logger logger = LogService.getLogger();
 
   @Parameterized.Parameters(name = "from_v{0}")
   public static Collection<String> data() {
@@ -422,7 +425,6 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
     }
   }
 
-  // ******** TEST HELPER METHODS ********/
   private void putAndVerify(String objectType, VM putter, String regionName, int start, int end,
       VM check1, VM check2, VM check3) throws Exception {
     if (objectType.equals("strings")) {
@@ -987,7 +989,7 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
     return clientCache;
   }
 
-  private static boolean assertRegionExists(GemFireCache cache, String regionName) {
+  protected static boolean assertRegionExists(GemFireCache cache, String regionName) {
     Region region = cache.getRegion(regionName);
     if (region == null) {
       throw new Error("Region: " + regionName + " does not exist");
@@ -995,7 +997,7 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
     return true;
   }
 
-  private static Region getRegion(GemFireCache cache, String regionName) {
+  protected static Region getRegion(GemFireCache cache, String regionName) {
     return cache.getRegion(regionName);
   }
 

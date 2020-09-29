@@ -223,6 +223,7 @@ javadoc/org/apache/geode/cache/PartitionResolver.html
 javadoc/org/apache/geode/cache/PartitionedRegionDistributionException.html
 javadoc/org/apache/geode/cache/PartitionedRegionPartialClearException.html
 javadoc/org/apache/geode/cache/PartitionedRegionStorageException.html
+javadoc/org/apache/geode/cache/PartitionedRegionVersionException.html
 javadoc/org/apache/geode/cache/Region.Entry.html
 javadoc/org/apache/geode/cache/Region.html
 javadoc/org/apache/geode/cache/RegionAccessException.html
