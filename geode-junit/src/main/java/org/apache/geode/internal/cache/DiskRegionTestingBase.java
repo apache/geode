@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -46,6 +47,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * DiskRegionTestingBase: This class is extended to write more JUnit tests for Disk Regions.
@@ -198,6 +200,19 @@ public abstract class DiskRegionTestingBase {
   protected void deleteFiles() {
     closeDiskStores();
     tempDir.delete();
+  }
+
+  protected void forceDeleteFiles() {
+    closeDiskStores();
+    File file = tempDir.getRoot();
+    File[] files = file.listFiles();
+    for (File each : files) {
+      try {
+        FileUtils.forceDelete(each);
+      } catch (IOException e) {
+        LogService.getLogger().error("Caught", e);
+      }
+    }
   }
 
   protected void closeDiskStores() {
