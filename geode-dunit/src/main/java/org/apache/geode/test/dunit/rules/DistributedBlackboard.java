@@ -28,7 +28,7 @@ import org.apache.geode.test.dunit.internal.InternalBlackboard;
 import org.apache.geode.test.dunit.internal.InternalBlackboardImpl;
 
 /**
- * BlackboardRule provides mailboxes and synchronization gateways for distributed tests.
+ * DistributedBlackboard provides mailboxes and synchronization gateways for distributed tests.
  *
  * <p>
  * Tests may use the blackboard to pass objects and status between JVMs with mailboxes instead of
@@ -45,8 +45,8 @@ import org.apache.geode.test.dunit.internal.InternalBlackboardImpl;
 @SuppressWarnings({"serial", "unused"})
 public class DistributedBlackboard extends AbstractDistributedRule implements Blackboard {
 
-  private static final AtomicReference<DUnitBlackboard> blackboard = new AtomicReference<>();
-  private static final AtomicReference<InternalBlackboard> internal = new AtomicReference<>();
+  private static final AtomicReference<DUnitBlackboard> BLACKBOARD = new AtomicReference<>();
+  private static final AtomicReference<InternalBlackboard> INTERNAL = new AtomicReference<>();
 
   private final Map<Integer, Map<String, Boolean>> keepGates = new ConcurrentHashMap<>();
   private final Map<Integer, Map<String, Serializable>> keepMailboxes = new ConcurrentHashMap<>();
@@ -68,8 +68,8 @@ public class DistributedBlackboard extends AbstractDistributedRule implements Bl
 
   @Override
   protected void beforeBounceVM(VM vm) {
-    keepGates.put(vm.getId(), vm.invoke(() -> internal.get().gates()));
-    keepMailboxes.put(vm.getId(), vm.invoke(() -> internal.get().mailboxes()));
+    keepGates.put(vm.getId(), vm.invoke(() -> INTERNAL.get().gates()));
+    keepMailboxes.put(vm.getId(), vm.invoke(() -> INTERNAL.get().mailboxes()));
   }
 
   @Override
@@ -79,60 +79,60 @@ public class DistributedBlackboard extends AbstractDistributedRule implements Bl
 
     vm.invoke(() -> {
       invokeBefore();
-      internal.get().putGates(keepGatesForVM);
-      internal.get().putMailboxes(keepMailboxesForVM);
+      INTERNAL.get().putGates(keepGatesForVM);
+      INTERNAL.get().putMailboxes(keepMailboxesForVM);
     });
   }
 
   private void invokeBefore() {
     InternalBlackboard internalBlackboard = InternalBlackboardImpl.getInstance();
-    internal.set(internalBlackboard);
-    blackboard.set(new DUnitBlackboard(internalBlackboard));
+    INTERNAL.set(internalBlackboard);
+    BLACKBOARD.set(new DUnitBlackboard(internalBlackboard));
   }
 
   private void invokeAfter() {
-    blackboard.set(null);
-    internal.set(null);
+    BLACKBOARD.set(null);
+    INTERNAL.set(null);
   }
 
   @Override
   public void initBlackboard() {
-    blackboard.get().initBlackboard();
+    BLACKBOARD.get().initBlackboard();
   }
 
   @Override
   public void signalGate(String gateName) {
-    blackboard.get().signalGate(gateName);
+    BLACKBOARD.get().signalGate(gateName);
   }
 
   @Override
   public void waitForGate(String gateName) throws TimeoutException, InterruptedException {
-    blackboard.get().waitForGate(gateName);
+    BLACKBOARD.get().waitForGate(gateName);
   }
 
   @Override
   public void waitForGate(String gateName, long timeout, TimeUnit units)
       throws TimeoutException, InterruptedException {
-    blackboard.get().waitForGate(gateName, timeout, units);
+    BLACKBOARD.get().waitForGate(gateName, timeout, units);
   }
 
   @Override
   public void clearGate(String gateName) {
-    blackboard.get().clearGate(gateName);
+    BLACKBOARD.get().clearGate(gateName);
   }
 
   @Override
   public boolean isGateSignaled(String gateName) {
-    return blackboard.get().isGateSignaled(gateName);
+    return BLACKBOARD.get().isGateSignaled(gateName);
   }
 
   @Override
   public <T> void setMailbox(String boxName, T value) {
-    blackboard.get().setMailbox(boxName, value);
+    BLACKBOARD.get().setMailbox(boxName, value);
   }
 
   @Override
   public <T> T getMailbox(String boxName) {
-    return blackboard.get().getMailbox(boxName);
+    return BLACKBOARD.get().getMailbox(boxName);
   }
 }
