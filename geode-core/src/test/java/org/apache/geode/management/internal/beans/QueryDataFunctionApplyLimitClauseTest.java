@@ -18,6 +18,7 @@ package org.apache.geode.management.internal.beans;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -76,4 +77,45 @@ public class QueryDataFunctionApplyLimitClauseTest {
         limit_0, queryResultSetLimit_100)).isEqualTo(selectQueryMissingSpaceAfterFromWithLimit);
   }
 
+  @Test
+  public void applyLimitClauseShouldTrimQuery() throws Exception {
+    String query = selectQuery + "\n";
+    assertThat(QueryDataFunction.applyLimitClause(query, limit_10, queryResultSetLimit_100))
+        .isEqualTo(selectQuery + " LIMIT " + limit_10);
+  }
+
+  @Test
+  public void applyLimitClauseShouldTrimQueryAndUseDefaultLimit() throws Exception {
+    String query = selectQuery + "\n";
+    assertThat(QueryDataFunction.applyLimitClause(query, limit_0, queryResultSetLimit_100))
+        .isEqualTo(selectQuery + " LIMIT " + queryResultSetLimit_100);
+  }
+
+  @Test
+  public void applyLimitClauseShouldIgnoreComments() throws Exception {
+    String query = "--comment\n" + selectQuery + "\n--comment\n";
+    assertThat(QueryDataFunction.applyLimitClause(query, limit_10, queryResultSetLimit_100))
+        .isEqualTo(selectQuery + " LIMIT " + limit_10);
+  }
+
+  @Test
+  public void applyLimitShouldIgnoreNewLinesBetweenAndAfterQuery() throws Exception {
+    String query = "select\n * from\n/testRegion\n";
+    assertThat(QueryDataFunction.applyLimitClause(query, limit_0, queryResultSetLimit_100))
+        .isEqualTo("select  * from /testRegion LIMIT 100");
+  }
+
+  @Test
+  public void shouldFailAtEmptyQuery() throws Exception {
+    assertThatThrownBy(() -> QueryDataFunction.applyLimitClause("", 0, 0))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("invalid query");
+  }
+
+  @Test
+  public void shouldFailWithCommentOnly() throws Exception {
+    assertThatThrownBy(() -> QueryDataFunction.applyLimitClause("--comment", 0, 0))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("invalid query");
+  }
 }
