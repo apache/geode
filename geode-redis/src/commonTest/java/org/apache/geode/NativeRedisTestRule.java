@@ -17,7 +17,6 @@ package org.apache.geode;
 
 import java.io.Serializable;
 
-import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.RuleChain;
 import org.junit.runner.Description;
@@ -36,11 +35,7 @@ public class NativeRedisTestRule extends ExternalResource implements Serializabl
     delegate = RuleChain
         // Docker compose does not work on windows in CI. Ignore this test on windows
         // Using a RuleChain to make sure we ignore the test before the rule comes into play
-        .outerRule(new IgnoreOnWindowsRule())
-        // The ryuk container is responsible for cleanup at JVM exit.
-        // Since this rule already closes the
-        // container it has started, we do not need the ryuk container.
-        .around(new EnvironmentVariables().set("TESTCONTAINERS_RYUK_DISABLED", "true"));
+        .outerRule(new IgnoreOnWindowsRule());
   }
 
   public int getPort() {
