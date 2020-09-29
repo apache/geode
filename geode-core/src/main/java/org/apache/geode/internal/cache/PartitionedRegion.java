@@ -251,6 +251,7 @@ import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.sequencelog.RegionLogger;
 import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.size.Sizeable;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.util.TransformUtils;
@@ -5327,6 +5328,29 @@ public class PartitionedRegion extends LocalRegion
 
     return this.totalNumberOfBuckets;
   }
+
+  /**
+   * This method returns total number of buckets for which the hosting server's version
+   * matches this one.
+   *
+   */
+  public int getTotalNumberOfBucketsThatCanBeCleared(Version version) {
+    int clearableBucketCount = 0;
+
+    for (int i = 0; i < getTotalNumberOfBuckets(); i++) {
+      InternalDistributedMember internalDistributedMember = this.getBucketPrimary(i);
+      if (internalDistributedMember != null) {
+        if (internalDistributedMember.getVersion().isNotOlderThan(version)) {
+          clearableBucketCount++;
+        }
+      } else { // The bucket was clearable unless we know otherwise.
+        clearableBucketCount++;
+      }
+    }
+    return clearableBucketCount;
+  }
+
+
 
   @Override
   public void basicDestroy(final EntryEventImpl event, final boolean cacheWrite,

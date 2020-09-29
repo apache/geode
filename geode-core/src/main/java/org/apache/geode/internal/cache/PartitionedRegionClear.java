@@ -30,6 +30,7 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class PartitionedRegionClear {
@@ -289,8 +290,16 @@ public class PartitionedRegionClear {
     }
 
     final Set<InternalDistributedMember> configRecipients =
-        new HashSet<>(partitionedRegion.getRegionAdvisor().adviseAllPRNodes());
+        new HashSet<>();
 
+    for (InternalDistributedMember internalDistributedMember : partitionedRegion.getRegionAdvisor()
+        .adviseAllPRNodes()) {
+
+      if (internalDistributedMember.getVersion().isNotOlderThan(this.partitionedRegion
+          .getRegionAdvisor().getDistributionManager().getDistributionManagerId().getVersion())) {
+        configRecipients.add(internalDistributedMember);
+      }
+    }
     try {
       final PartitionRegionConfig prConfig =
           partitionedRegion.getPRRoot().get(partitionedRegion.getRegionIdentifier());
@@ -299,7 +308,11 @@ public class PartitionedRegionClear {
         for (Node node : prConfig.getNodes()) {
           InternalDistributedMember idm = node.getMemberId();
           if (!idm.equals(partitionedRegion.getMyId())) {
-            configRecipients.add(idm);
+            if (idm.getVersion().isNotOlderThan(this.partitionedRegion
+                .getRegionAdvisor().getDistributionManager().getDistributionManagerId()
+                .getVersion())) {
+              configRecipients.add(idm);
+            }
           }
         }
       }
@@ -362,13 +375,19 @@ public class PartitionedRegionClear {
       try {
         Set<Integer> bucketsCleared = clearRegion(regionEvent);
 
-        if (partitionedRegion.getTotalNumberOfBuckets() != bucketsCleared.size()) {
+        Version versionOfServer = partitionedRegion.getRegionAdvisor()
+            .getDistributionManager().getDistributionManagerId().getVersion();
+
+        int clearableBucketCount = partitionedRegion
+            .getTotalNumberOfBucketsThatCanBeCleared(versionOfServer);
+
+        if (clearableBucketCount != bucketsCleared.size()) {
           String message = "Unable to clear all the buckets from the partitioned region "
               + partitionedRegion.getName()
               + ", either data (buckets) moved or member departed.";
 
           logger.warn(message + " expected to clear number of buckets: "
-              + partitionedRegion.getTotalNumberOfBuckets() +
+              + clearableBucketCount +
               " actual cleared: " + bucketsCleared.size());
 
           throw new PartitionedRegionPartialClearException(message);

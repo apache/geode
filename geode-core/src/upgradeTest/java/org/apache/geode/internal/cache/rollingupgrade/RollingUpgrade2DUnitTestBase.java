@@ -20,6 +20,7 @@ import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertFalse;
 import static org.apache.geode.test.dunit.Assert.assertTrue;
 import static org.apache.geode.test.dunit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -88,6 +89,7 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.Oplog;
 import org.apache.geode.internal.cache.Oplog.OPLOG_TYPE;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.test.dunit.Assert;
@@ -423,6 +425,20 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
   }
 
   // ******** TEST HELPER METHODS ********/
+  protected void prClearVerifyOldServersUnaffected(String objectType, VM putter, String regionName,
+      int start, int end, VM check1, VM check2, VM check3) throws Exception {
+
+    putter.invoke(() -> {
+      assertRegionExists(cache, regionName);
+      PartitionedRegion region = (PartitionedRegion) getRegion(cache, regionName);
+
+      long countOfClears = region.getCachePerfStats().getRegionClearCount();
+      region.clear();
+
+      assertThat(region.getCachePerfStats().getRegionClearCount()).isEqualTo(countOfClears + 1);
+    });
+  }
+
   private void putAndVerify(String objectType, VM putter, String regionName, int start, int end,
       VM check1, VM check2, VM check3) throws Exception {
     if (objectType.equals("strings")) {
