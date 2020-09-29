@@ -1034,10 +1034,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       // If this gateway is not running, return
       if (!isRunning()) {
         if (this.isPrimary()) {
-          tmpDroppedEvents.add(clonedEvent);
-          if (isDebugEnabled) {
-            logger.debug("add to tmpDroppedEvents for evnet {}", clonedEvent);
-          }
+          recordDroppedEvent(clonedEvent);
         }
         if (isDebugEnabled) {
           logger.debug("Returning back without putting into the gateway sender queue:" + event);
@@ -1118,6 +1115,17 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     }
   }
 
+  private void recordDroppedEvent(EntryEventImpl event) {
+    if (this.eventProcessor != null) {
+      this.eventProcessor.registerEventDroppedInPrimaryQueue(event);
+    } else {
+      tmpDroppedEvents.add(event);
+      if (logger.isDebugEnabled()) {
+        logger.debug("added to tmpDroppedEvents event: {}", event);
+      }
+    }
+  }
+
   @VisibleForTesting
   int getTmpDroppedEventSize() {
     return tmpDroppedEvents.size();
@@ -1138,7 +1146,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   public void enqueueTempEvents() {
     if (this.eventProcessor != null) {// Fix for defect #47308
       // process tmpDroppedEvents
-      EntryEventImpl droppedEvent = null;
+      EntryEventImpl droppedEvent;
       while ((droppedEvent = tmpDroppedEvents.poll()) != null) {
         this.eventProcessor.registerEventDroppedInPrimaryQueue(droppedEvent);
       }
