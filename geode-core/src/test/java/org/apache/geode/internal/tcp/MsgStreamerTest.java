@@ -90,7 +90,7 @@ public class MsgStreamerTest {
     // create a streamer for a Connection that has a buffer size that's larger than the
     // biggest message we can actually send. This is picked up by the MsgStreamer to allocate
     // a buffer
-    when(connection1.getSendBufferSize()).thenReturn(Connection.MAX_MSG_SIZE * 2);
+    when(connection1.getSendBufferSize()).thenReturn(Connection.MAX_MSG_SIZE + 1);
     List<Connection> connections = Arrays.asList(connection1);
 
     final BaseMsgStreamer msgStreamer =
