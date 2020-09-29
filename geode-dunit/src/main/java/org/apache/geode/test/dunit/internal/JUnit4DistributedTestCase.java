@@ -14,11 +14,13 @@
  */
 package org.apache.geode.test.dunit.internal;
 
+import static org.apache.geode.TestContext.contextDirectory;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARCHIVE_FILE;
 import static org.apache.geode.distributed.internal.InternalConfigurationPersistenceService.CLUSTER_CONFIG_DISK_DIR_PREFIX;
+import static org.apache.geode.internal.lang.SystemPropertyHelper.DEFAULT_DISK_DIRS_PROPERTY;
 import static org.apache.geode.test.dunit.DistributedTestUtils.getAllDistributedSystemProperties;
 import static org.apache.geode.test.dunit.DistributedTestUtils.unregisterInstantiatorsInThisVM;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
@@ -429,6 +431,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     assertNotNull("methodName must not be null", methodName);
     assertNotNull("defaultDiskStoreName must not be null", defaultDiskStoreName);
     setTestMethodName(methodName);
+    System.setProperty("geode." + DEFAULT_DISK_DIRS_PROPERTY, contextDirectory().toString());
     GemFireCacheImpl.setDefaultDiskStoreName(defaultDiskStoreName);
     setUpCreationStackGenerator();
   }
