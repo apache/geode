@@ -77,6 +77,31 @@ public class MsgStreamerTest {
     verify(pool, times(2)).releaseSenderBuffer(isA(ByteBuffer.class));
   }
 
+  @Test
+  public void streamerRespectsMaxMessageSize() {
+    InternalDistributedMember member1;
+    member1 = new InternalDistributedMember("localhost", 1234);
+
+    DistributionMessage message = new SerialAckedMessage();
+    message.setRecipients(Arrays.asList(member1));
+
+    when(connection1.getRemoteAddress()).thenReturn(member1);
+    when(connection1.getRemoteVersion()).thenReturn(Version.CURRENT);
+    // create a streamer for a Connection that has a buffer size that's larger than the
+    // biggest message we can actually send. This is picked up by the MsgStreamer to allocate
+    // a buffer
+    when(connection1.getSendBufferSize()).thenReturn(Connection.MAX_MSG_SIZE + 1);
+    List<Connection> connections = Arrays.asList(connection1);
+
+    final BaseMsgStreamer msgStreamer =
+        MsgStreamer.create(connections, message, false, stats, pool);
+    // the streamer ought to have limited the message buffer to MAX_MSG_SIZE
+    assertThat(((MsgStreamer) msgStreamer).getBuffer().capacity())
+        .isEqualTo(Connection.MAX_MSG_SIZE);
+  }
+
+
+
   protected BaseMsgStreamer createMsgStreamer(boolean mixedDestinationVersions) {
 
     InternalDistributedMember member1, member2;
@@ -92,9 +117,9 @@ public class MsgStreamerTest {
     when(connection2.getRemoteAddress()).thenReturn(member2);
     when(connection2.getSendBufferSize()).thenReturn(Connection.SMALL_BUFFER_SIZE);
     if (mixedDestinationVersions) {
-      when(connection1.getRemoteVersion()).thenReturn(Version.GEODE_1_12_0);
+      when(connection2.getRemoteVersion()).thenReturn(Version.GEODE_1_12_0);
     } else {
-      when(connection1.getRemoteVersion()).thenReturn(Version.CURRENT);
+      when(connection2.getRemoteVersion()).thenReturn(Version.CURRENT);
     }
     List<Connection> connections = Arrays.asList(connection1, connection2);
 
