@@ -42,7 +42,7 @@ import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.test.dunit.DistributedTestCase;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.rules.SharedErrorCollector;
+import org.apache.geode.test.dunit.rules.DistributedErrorCollector;
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
@@ -57,7 +57,7 @@ public class DistributionAdvisorDUnitTest extends DistributedTestCase {
   public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
 
   @Rule
-  public SharedErrorCollector errorCollector = new SharedErrorCollector();
+  public DistributedErrorCollector errorCollector = new DistributedErrorCollector();
 
   @Before
   public void setUp() {

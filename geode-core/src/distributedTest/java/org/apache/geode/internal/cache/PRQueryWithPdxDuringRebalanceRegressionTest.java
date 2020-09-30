@@ -45,8 +45,8 @@ import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.cache.partitioned.QueryMessage;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
+import org.apache.geode.test.dunit.rules.DistributedErrorCollector;
 import org.apache.geode.test.dunit.rules.DistributedRule;
-import org.apache.geode.test.dunit.rules.SharedErrorCollector;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
@@ -79,7 +79,7 @@ public class PRQueryWithPdxDuringRebalanceRegressionTest implements Serializable
   public SerializableTestName testName = new SerializableTestName();
 
   @Rule
-  public SharedErrorCollector errorCollector = new SharedErrorCollector();
+  public DistributedErrorCollector errorCollector = new DistributedErrorCollector();
 
   @Before
   public void setUp() {
