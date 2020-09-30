@@ -12,17 +12,15 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.dunit.internal;
+package org.apache.geode.test.dunit;
 
-import java.io.Serializable;
-import java.rmi.Remote;
-import java.rmi.RemoteException;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.apache.geode.test.awaitility.GeodeAwaitility;
+
 /**
- * InternalBlackboard provides mailboxes and synchronization gateways for distributed tests.
+ * Blackboard provides mailboxes and synchronization gateways for distributed tests.
  *
  * <p>
  * Tests may use the blackboard to pass objects and status between JVMs with mailboxes instead of
@@ -30,57 +28,52 @@ import java.util.concurrent.TimeoutException;
  * Java serialization.
  *
  * <p>
- * Gates may be used to synchronize operations between unit test JVMs. Combined with Awaitility
- * these can be used to test for conditions being met, actions having happened, etc.
+ * Gates may be used to synchronize operations between distributed test JVMs. Combined with
+ * Awaitility these can be used to test for conditions being met, actions having happened, etc.
+ *
+ * <p>
+ * Look for references to the given methods in your IDE for examples.
  */
-public interface InternalBlackboard extends Remote, Serializable {
+public interface Blackboard {
 
   /**
    * Resets the blackboard.
    */
-  void initBlackboard() throws RemoteException;
+  void initBlackboard();
 
   /**
    * Signals a boolean gate.
    */
-  void signalGate(String gateName) throws RemoteException;
+  void signalGate(String gateName);
 
   /**
-   * Waits for a gate to be signaled.
+   * Waits at most {@link GeodeAwaitility#getTimeout()} for a gate to be signaled.
+   */
+  void waitForGate(String gateName) throws TimeoutException, InterruptedException;
+
+  /**
+   * Waits at most the specified timeout for a gate to be signaled.
    */
   void waitForGate(String gateName, long timeout, TimeUnit units)
-      throws RemoteException, TimeoutException, InterruptedException;
+      throws TimeoutException, InterruptedException;
 
   /**
    * Clears a gate.
    */
-  void clearGate(String gateName) throws RemoteException;
+  void clearGate(String gateName);
 
   /**
    * Checks to see if a gate has been signaled.
    */
-  boolean isGateSignaled(String gateName) throws RemoteException;
+  boolean isGateSignaled(String gateName);
 
   /**
    * Puts an object into a mailbox slot. The object must be java-serializable.
    */
-  <T> void setMailbox(String boxName, T value) throws RemoteException;
+  <T> void setMailbox(String boxName, T value);
 
   /**
    * Retrieves an object from a mailbox slot.
    */
-  <T> T getMailbox(String boxName) throws RemoteException;
-
-  /**
-   * Pings the blackboard to make sure it's there.
-   */
-  void ping() throws RemoteException;
-
-  Map<String, Boolean> gates() throws RemoteException;
-
-  Map<String, Serializable> mailboxes() throws RemoteException;
-
-  void putGates(Map<String, Boolean> gates) throws RemoteException;
-
-  void putMailboxes(Map<String, Serializable> mailboxes) throws RemoteException;
+  <T> T getMailbox(String boxName);
 }
