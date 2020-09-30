@@ -343,7 +343,11 @@ jobs:
         {%- endif %}
           DUNIT_PARALLEL_FORKS: {{test.DUNIT_PARALLEL_FORKS}}
           GRADLE_TASK: {{test.GRADLE_TASK}}
+        {%- if test.GRADLE_TASK_OPTIONS %}
+          GRADLE_TASK_OPTIONS: {{test.GRADLE_TASK_OPTIONS}}
+        {%- else %}
           GRADLE_TASK_OPTIONS: ""
+        {%- endif %}
           MAINTENANCE_VERSION: {{repository.branch}}
           PARALLEL_DUNIT: {{test.PARALLEL_DUNIT}}
         {% if test.PARALLEL_GRADLE is defined %}
