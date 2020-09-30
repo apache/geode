@@ -269,8 +269,8 @@ jobs:
 {%- if test.PLATFORM=="linux" %}
       - get: geode
 {%- else %}
-      - get: geode-windows
-        resource: geode
+      - get: geode
+        resource: geode-windows
 {%- endif %}
         trigger: true
         version: every
