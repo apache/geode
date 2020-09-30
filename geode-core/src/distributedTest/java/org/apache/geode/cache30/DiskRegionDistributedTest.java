@@ -38,7 +38,6 @@ import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.eviction.EvictionCounters;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
-import org.apache.geode.test.dunit.rules.DistributedDiskDirRule;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
@@ -62,9 +61,6 @@ public class DiskRegionDistributedTest implements Serializable {
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
-
-  @Rule
-  public DistributedDiskDirRule diskDirsRule = new DistributedDiskDirRule();
 
   @Rule
   public SerializableTestName testName = new SerializableTestName();

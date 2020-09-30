@@ -29,12 +29,12 @@ import org.apache.geode.test.junit.rules.serializable.SerializableStatement;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestRule;
 
 class AbstractDistributedRule implements SerializableTestRule {
-
   private final int vmCount;
   private final RemoteInvoker invoker;
 
   // if you alter vmEventListener at all, make sure VmEventListenerDistributedTest still passes
   private volatile VMEventListener vmEventListener;
+  private final DefaultDiskDir defaultDiskDir = new DefaultDiskDir();
 
   AbstractDistributedRule() {
     this(DEFAULT_VM_COUNT);
@@ -65,11 +65,13 @@ class AbstractDistributedRule implements SerializableTestRule {
   }
 
   void beforeDistributedTest(final Description description) throws Throwable {
-    TestHistoryLogger.logTestHistory(description.getTestClass().getSimpleName(),
-        description.getMethodName());
+    String testClassName = description.getTestClass().getSimpleName();
+    String testMethodName = description.getMethodName();
+    TestHistoryLogger.logTestHistory(testClassName, testMethodName);
+    defaultDiskDir.create(testClassName + "-" + testMethodName);
     DUnitLauncher.launchIfNeeded(vmCount);
-    System.out.println("\n\n[setup] START TEST " + description.getClassName() + "."
-        + description.getMethodName());
+    System.out
+        .println("\n\n[setup] START TEST " + description.getClassName() + "." + testMethodName);
 
     vmEventListener = new InternalVMEventListener();
     VM.addVMEventListener(vmEventListener);
@@ -79,7 +81,7 @@ class AbstractDistributedRule implements SerializableTestRule {
   void afterDistributedTest(final Description description) throws Throwable {
     VM.removeVMEventListener(vmEventListener);
     after();
-
+    defaultDiskDir.delete();
     System.out.println("\n\n[setup] END TEST " + description.getTestClass().getSimpleName()
         + "." + description.getMethodName());
   }

@@ -14,14 +14,11 @@
  */
 package org.apache.geode.test.dunit.internal;
 
-import static org.apache.geode.TestContext.contextDirectory;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARCHIVE_FILE;
 import static org.apache.geode.distributed.internal.InternalConfigurationPersistenceService.CLUSTER_CONFIG_DISK_DIR_PREFIX;
-import static org.apache.geode.internal.lang.SystemPropertyHelper.DEFAULT_DISK_DIRS_PROPERTY;
-import static org.apache.geode.internal.lang.SystemPropertyHelper.GEODE_PREFIX;
 import static org.apache.geode.test.dunit.DistributedTestUtils.getAllDistributedSystemProperties;
 import static org.apache.geode.test.dunit.DistributedTestUtils.unregisterInstantiatorsInThisVM;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
@@ -29,7 +26,9 @@ import static org.apache.geode.test.dunit.Invoke.invokeInLocator;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
+import java.io.UncheckedIOException;
 import java.util.Arrays;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -55,6 +54,7 @@ import org.apache.geode.test.dunit.Disconnect;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
+import org.apache.geode.test.dunit.rules.DefaultDiskDir;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 import org.apache.geode.test.version.VersionManager;
@@ -76,6 +76,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
 
   private static final boolean logPerTest = Boolean.getBoolean("dunitLogPerTest");
 
+  private static final DefaultDiskDir defaultDiskDir = new DefaultDiskDir();
   private final DistributedTestFixture distributedTestFixture;
 
   /**
@@ -432,7 +433,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     assertNotNull("methodName must not be null", methodName);
     assertNotNull("defaultDiskStoreName must not be null", defaultDiskStoreName);
     setTestMethodName(methodName);
-    System.setProperty(GEODE_PREFIX + DEFAULT_DISK_DIRS_PROPERTY, contextDirectory().toString());
+    setUpDefaultDiskDir(methodName);
     GemFireCacheImpl.setDefaultDiskStoreName(defaultDiskStoreName);
     setUpCreationStackGenerator();
   }
@@ -558,6 +559,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     closeCache();
     DistributedRule.TearDown.tearDownInVM();
     cleanDiskDirs();
+    cleanDefaultDiskDir();
   }
 
   // TODO: this should move to CacheTestCase
@@ -591,5 +593,17 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
   private static void tearDownCreationStackGenerator() {
     InternalDistributedSystem.TEST_CREATION_STACK_GENERATOR
         .set(InternalDistributedSystem.DEFAULT_CREATION_STACK_GENERATOR);
+  }
+
+  private static void setUpDefaultDiskDir(String methodName) {
+    try {
+      defaultDiskDir.create(methodName);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+  }
+
+  private static void cleanDefaultDiskDir() {
+    defaultDiskDir.delete();
   }
 }
