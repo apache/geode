@@ -32,14 +32,14 @@ import org.junit.Test;
 import org.junit.rules.ErrorCollector;
 
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.rules.DistributedErrorCollector;
 import org.apache.geode.test.dunit.rules.DistributedRule;
-import org.apache.geode.test.dunit.rules.SharedErrorCollector;
 
 /**
- * Distributed tests for {@link SharedErrorCollector}.
+ * Distributed tests for {@link DistributedErrorCollector}.
  */
 @SuppressWarnings("serial")
-public class SharedErrorCollectorDistributedTest {
+public class DistributedErrorCollectorDistributedTest {
 
   private static final String MESSAGE = "Failure message";
 
@@ -191,7 +191,7 @@ public class SharedErrorCollectorDistributedTest {
   public static class CheckThatFailsInController {
 
     @Rule
-    public SharedErrorCollector errorCollector = new SharedErrorCollector();
+    public DistributedErrorCollector errorCollector = new DistributedErrorCollector();
 
     @Test
     public void assertionFailsInController() {
@@ -205,7 +205,7 @@ public class SharedErrorCollectorDistributedTest {
   public static class AddErrorInController {
 
     @Rule
-    public SharedErrorCollector errorCollector = new SharedErrorCollector();
+    public DistributedErrorCollector errorCollector = new DistributedErrorCollector();
 
     @Test
     public void exceptionInController() {
@@ -219,7 +219,7 @@ public class SharedErrorCollectorDistributedTest {
   public static class CheckThatFailsInDUnitVM implements Serializable {
 
     @Rule
-    public SharedErrorCollector errorCollector = new SharedErrorCollector();
+    public DistributedErrorCollector errorCollector = new DistributedErrorCollector();
 
     @Test
     public void assertionFailsInDUnitVM() {
@@ -233,7 +233,7 @@ public class SharedErrorCollectorDistributedTest {
   public static class CheckThatFailsInEveryDUnitVM implements Serializable {
 
     @Rule
-    public SharedErrorCollector errorCollector = new SharedErrorCollector();
+    public DistributedErrorCollector errorCollector = new DistributedErrorCollector();
 
     @Test
     public void assertionFailsInEveryDUnitVM() {
@@ -250,7 +250,7 @@ public class SharedErrorCollectorDistributedTest {
   public static class CheckThatFailsInEveryDUnitVMAndController implements Serializable {
 
     @Rule
-    public SharedErrorCollector errorCollector = new SharedErrorCollector();
+    public DistributedErrorCollector errorCollector = new DistributedErrorCollector();
 
     @Test
     public void assertionFailsInEveryDUnitVM() {
@@ -268,7 +268,7 @@ public class SharedErrorCollectorDistributedTest {
   public static class CheckThatFailsInMethodInDUnitVM implements Serializable {
 
     @Rule
-    public SharedErrorCollector errorCollector = new SharedErrorCollector();
+    public DistributedErrorCollector errorCollector = new DistributedErrorCollector();
 
     @Test
     public void assertionFailsInDUnitVM() {
@@ -286,7 +286,7 @@ public class SharedErrorCollectorDistributedTest {
   public static class AddErrorInDUnitVM implements Serializable {
 
     @Rule
-    public SharedErrorCollector errorCollector = new SharedErrorCollector();
+    public DistributedErrorCollector errorCollector = new DistributedErrorCollector();
 
     @Test
     public void exceptionInDUnitVM() {
@@ -300,7 +300,7 @@ public class SharedErrorCollectorDistributedTest {
   public static class AddErrorInEveryDUnitVM implements Serializable {
 
     @Rule
-    public SharedErrorCollector errorCollector = new SharedErrorCollector();
+    public DistributedErrorCollector errorCollector = new DistributedErrorCollector();
 
     @Test
     public void exceptionInEveryDUnitVM() {
@@ -317,7 +317,7 @@ public class SharedErrorCollectorDistributedTest {
   public static class AddErrorInEveryDUnitVMAndController implements Serializable {
 
     @Rule
-    public SharedErrorCollector errorCollector = new SharedErrorCollector();
+    public DistributedErrorCollector errorCollector = new DistributedErrorCollector();
 
     @Test
     public void exceptionInEveryDUnitVM() {
@@ -335,7 +335,7 @@ public class SharedErrorCollectorDistributedTest {
   public static class AddErrorInMethodInDUnitVM implements Serializable {
 
     @Rule
-    public SharedErrorCollector errorCollector = new SharedErrorCollector();
+    public DistributedErrorCollector errorCollector = new DistributedErrorCollector();
 
     @Test
     public void exceptionInDUnitVM() {
@@ -353,7 +353,7 @@ public class SharedErrorCollectorDistributedTest {
   public static class AddDUnitVM implements Serializable {
 
     @Rule
-    public SharedErrorCollector errorCollector = new SharedErrorCollector();
+    public DistributedErrorCollector errorCollector = new DistributedErrorCollector();
 
     @Test
     public void addDUnitVM() {
@@ -371,7 +371,7 @@ public class SharedErrorCollectorDistributedTest {
   public static class AddErrorInNewDUnitVM implements Serializable {
 
     @Rule
-    public SharedErrorCollector errorCollector = new SharedErrorCollector();
+    public DistributedErrorCollector errorCollector = new DistributedErrorCollector();
 
     @Test
     public void exceptionInNewDUnitVM() {
@@ -385,7 +385,7 @@ public class SharedErrorCollectorDistributedTest {
   public static class BounceDUnitVM implements Serializable {
 
     @Rule
-    public SharedErrorCollector errorCollector = new SharedErrorCollector();
+    public DistributedErrorCollector errorCollector = new DistributedErrorCollector();
 
     @Test
     public void addDUnitVM() {
@@ -399,7 +399,7 @@ public class SharedErrorCollectorDistributedTest {
   public static class AddErrorInBouncedDUnitVM implements Serializable {
 
     @Rule
-    public SharedErrorCollector errorCollector = new SharedErrorCollector();
+    public DistributedErrorCollector errorCollector = new DistributedErrorCollector();
 
     @Test
     public void exceptionInBouncedDUnitVM() {
@@ -414,7 +414,7 @@ public class SharedErrorCollectorDistributedTest {
   public static class AddErrorBeforeBouncingDUnitVM implements Serializable {
 
     @Rule
-    public SharedErrorCollector errorCollector = new SharedErrorCollector();
+    public DistributedErrorCollector errorCollector = new DistributedErrorCollector();
 
     @Test
     public void exceptionInBouncedDUnitVM() {
@@ -429,7 +429,7 @@ public class SharedErrorCollectorDistributedTest {
   public static class AddErrorBeforeAndAfterBouncingDUnitVM implements Serializable {
 
     @Rule
-    public SharedErrorCollector errorCollector = new SharedErrorCollector();
+    public DistributedErrorCollector errorCollector = new DistributedErrorCollector();
 
     @Test
     public void exceptionInBouncedDUnitVM() {
@@ -445,7 +445,7 @@ public class SharedErrorCollectorDistributedTest {
   public static class CheckSucceedsDoesNotThrow implements Serializable {
 
     @Rule
-    public SharedErrorCollector errorCollector = new SharedErrorCollector();
+    public DistributedErrorCollector errorCollector = new DistributedErrorCollector();
 
     @Test
     public void checkSucceeds() {
@@ -461,7 +461,7 @@ public class SharedErrorCollectorDistributedTest {
   public static class CheckSucceedsThrows implements Serializable {
 
     @Rule
-    public SharedErrorCollector errorCollector = new SharedErrorCollector();
+    public DistributedErrorCollector errorCollector = new DistributedErrorCollector();
 
     @Test
     public void checkSucceeds() {

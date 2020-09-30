@@ -61,8 +61,8 @@ import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.beans.MemberMBean;
 import org.apache.geode.management.internal.beans.SequenceNumber;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.rules.DistributedErrorCollector;
 import org.apache.geode.test.dunit.rules.DistributedRule;
-import org.apache.geode.test.dunit.rules.SharedErrorCollector;
 import org.apache.geode.test.junit.categories.ManagementTest;
 
 /**
@@ -114,7 +114,7 @@ public class DistributedSystemMXBeanWithNotificationsDistributedTest implements 
   public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
-  public SharedErrorCollector errorCollector = new SharedErrorCollector();
+  public DistributedErrorCollector errorCollector = new DistributedErrorCollector();
 
   @Before
   public void setUp() throws Exception {

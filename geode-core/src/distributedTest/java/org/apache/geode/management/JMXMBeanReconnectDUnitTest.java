@@ -72,8 +72,8 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.api.MemberDisconnectedException;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.rules.DistributedErrorCollector;
 import org.apache.geode.test.dunit.rules.DistributedRule;
-import org.apache.geode.test.dunit.rules.SharedErrorCollector;
 import org.apache.geode.test.junit.categories.JMXTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.GfshCommandRule.PortType;
@@ -119,7 +119,7 @@ public class JMXMBeanReconnectDUnitTest implements Serializable {
   @Rule
   public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
   @Rule
-  public SharedErrorCollector errorCollector = new SharedErrorCollector();
+  public DistributedErrorCollector errorCollector = new DistributedErrorCollector();
   @Rule
   public transient GfshCommandRule gfsh = new GfshCommandRule();
 
