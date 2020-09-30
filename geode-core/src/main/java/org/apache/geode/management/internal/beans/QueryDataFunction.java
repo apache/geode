@@ -210,7 +210,7 @@ public class QueryDataFunction implements Function, InternalEntity {
    */
   protected static String applyLimitClause(final String query, int limit,
       final int queryResultSetLimit) {
-    String[] lines = query.split("\n");
+    String[] lines = query.split(System.lineSeparator());
     List<String> queryStrings = new ArrayList();
     for (String line : lines) {
       // remove the comments

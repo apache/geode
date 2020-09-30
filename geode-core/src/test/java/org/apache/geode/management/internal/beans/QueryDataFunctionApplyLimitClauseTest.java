@@ -79,28 +79,30 @@ public class QueryDataFunctionApplyLimitClauseTest {
 
   @Test
   public void applyLimitClauseShouldTrimQuery() throws Exception {
-    String query = selectQuery + "\n";
+    String query = selectQuery + System.lineSeparator();
     assertThat(QueryDataFunction.applyLimitClause(query, limit_10, queryResultSetLimit_100))
         .isEqualTo(selectQuery + " LIMIT " + limit_10);
   }
 
   @Test
   public void applyLimitClauseShouldTrimQueryAndUseDefaultLimit() throws Exception {
-    String query = selectQuery + "\n";
+    String query = selectQuery + System.lineSeparator();
     assertThat(QueryDataFunction.applyLimitClause(query, limit_0, queryResultSetLimit_100))
         .isEqualTo(selectQuery + " LIMIT " + queryResultSetLimit_100);
   }
 
   @Test
   public void applyLimitClauseShouldIgnoreComments() throws Exception {
-    String query = "--comment\n" + selectQuery + "\n--comment\n";
+    String query = "--comment" + System.lineSeparator() + selectQuery + System.lineSeparator()
+        + "--comment" + System.lineSeparator();
     assertThat(QueryDataFunction.applyLimitClause(query, limit_10, queryResultSetLimit_100))
         .isEqualTo(selectQuery + " LIMIT " + limit_10);
   }
 
   @Test
   public void applyLimitShouldIgnoreNewLinesBetweenAndAfterQuery() throws Exception {
-    String query = "select\n * from\n/testRegion\n";
+    String query = "select" + System.lineSeparator() + " * from" + System.lineSeparator()
+        + "/testRegion" + System.lineSeparator();
     assertThat(QueryDataFunction.applyLimitClause(query, limit_0, queryResultSetLimit_100))
         .isEqualTo("select  * from /testRegion LIMIT 100");
   }
@@ -117,5 +119,13 @@ public class QueryDataFunctionApplyLimitClauseTest {
     assertThatThrownBy(() -> QueryDataFunction.applyLimitClause("--comment", 0, 0))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("invalid query");
+  }
+
+  @Test
+  public void brokenSelectAndBrokenFromClauseShouldAddLimitAsWell() throws Exception {
+    String query = "select r.name," + System.lineSeparator() + "r.id from" + System.lineSeparator()
+        + "/testRegion" + System.lineSeparator() + "r" + System.lineSeparator();
+    assertThat(QueryDataFunction.applyLimitClause(query, limit_0, queryResultSetLimit_100))
+        .isEqualTo("select r.name, r.id from /testRegion r LIMIT 100");
   }
 }
