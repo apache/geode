@@ -337,7 +337,9 @@ jobs:
           ARTIFACT_SLUG: {{test.ARTIFACT_SLUG}}
           JAVA_BUILD_VERSION: {{ java_build_version.version }}
           JAVA_TEST_VERSION: {{ java_test_version.version }}
+        {%- if test.CALL_STACK_TIMEOUT %}
           CALL_STACK_TIMEOUT: {{test.CALL_STACK_TIMEOUT}}
+        {%- endif %}
           DUNIT_PARALLEL_FORKS: {{test.DUNIT_PARALLEL_FORKS}}
           GRADLE_TASK: {{test.GRADLE_TASK}}
           GRADLE_TASK_OPTIONS: ""
