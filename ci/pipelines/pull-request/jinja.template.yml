@@ -270,6 +270,7 @@ jobs:
       - get: geode
 {%- else %}
       - get: geode-windows
+        resource: geode
 {%- endif %}
         trigger: true
         version: every
@@ -337,10 +338,16 @@ jobs:
           ARTIFACT_SLUG: {{test.ARTIFACT_SLUG}}
           JAVA_BUILD_VERSION: {{ java_build_version.version }}
           JAVA_TEST_VERSION: {{ java_test_version.version }}
+        {%- if test.CALL_STACK_TIMEOUT %}
           CALL_STACK_TIMEOUT: {{test.CALL_STACK_TIMEOUT}}
+        {%- endif %}
           DUNIT_PARALLEL_FORKS: {{test.DUNIT_PARALLEL_FORKS}}
           GRADLE_TASK: {{test.GRADLE_TASK}}
+        {%- if test.GRADLE_TASK_OPTIONS %}
+          GRADLE_TASK_OPTIONS: {{test.GRADLE_TASK_OPTIONS}}
+        {%- else %}
           GRADLE_TASK_OPTIONS: ""
+        {%- endif %}
           MAINTENANCE_VERSION: {{repository.branch}}
           PARALLEL_DUNIT: {{test.PARALLEL_DUNIT}}
         {% if test.PARALLEL_GRADLE is defined %}
