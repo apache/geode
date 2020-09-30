@@ -14,6 +14,9 @@
  */
 package org.apache.geode.test.dunit;
 
+import static java.util.concurrent.TimeUnit.MINUTES;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
+
 import java.rmi.RemoteException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -22,7 +25,7 @@ import org.apache.geode.test.dunit.internal.InternalBlackboard;
 import org.apache.geode.test.dunit.internal.InternalBlackboardImpl;
 
 /**
- * DUnitBlackboard provides mailboxes and synchronization gateways for distributed unit tests.
+ * DUnitBlackboard provides mailboxes and synchronization gateways for distributed tests.
  *
  * <p>
  * Tests may use the blackboard to pass objects and status between JVMs with mailboxes instead of
@@ -36,17 +39,19 @@ import org.apache.geode.test.dunit.internal.InternalBlackboardImpl;
  * <p>
  * Look for references to the given methods in your IDE for examples.
  */
-public class DUnitBlackboard {
+public class DUnitBlackboard implements Blackboard {
 
-  private InternalBlackboard blackboard;
+  private final InternalBlackboard blackboard;
 
   public DUnitBlackboard() {
-    blackboard = InternalBlackboardImpl.getInstance();
+    this(InternalBlackboardImpl.getInstance());
   }
 
-  /**
-   * resets the blackboard
-   */
+  public DUnitBlackboard(InternalBlackboard blackboard) {
+    this.blackboard = blackboard;
+  }
+
+  @Override
   public void initBlackboard() {
     try {
       blackboard.initBlackboard();
@@ -55,11 +60,8 @@ public class DUnitBlackboard {
     }
   }
 
-  /**
-   * signals a boolean gate
-   */
+  @Override
   public void signalGate(String gateName) {
-    // System.out.println(Thread.currentThread().getName()+": signaling gate " + gateName);
     try {
       blackboard.signalGate(gateName);
     } catch (RemoteException e) {
@@ -67,12 +69,15 @@ public class DUnitBlackboard {
     }
   }
 
-  /**
-   * wait for a gate to be signaled
-   */
+  @Override
+  public void waitForGate(String gateName)
+      throws TimeoutException, InterruptedException {
+    waitForGate(gateName, getTimeout().toMinutes(), MINUTES);
+  }
+
+  @Override
   public void waitForGate(String gateName, long timeout, TimeUnit units)
       throws TimeoutException, InterruptedException {
-    // System.out.println(Thread.currentThread().getName()+": waiting for gate " + gateName);
     try {
       blackboard.waitForGate(gateName, timeout, units);
     } catch (RemoteException e) {
@@ -80,9 +85,7 @@ public class DUnitBlackboard {
     }
   }
 
-  /**
-   * clear a gate
-   */
+  @Override
   public void clearGate(String gateName) {
     try {
       blackboard.clearGate(gateName);
@@ -91,9 +94,7 @@ public class DUnitBlackboard {
     }
   }
 
-  /**
-   * test to see if a gate has been signeled
-   */
+  @Override
   public boolean isGateSignaled(String gateName) {
     try {
       return blackboard.isGateSignaled(gateName);
@@ -102,9 +103,7 @@ public class DUnitBlackboard {
     }
   }
 
-  /**
-   * put an object into a mailbox slot. The object must be java-serializable
-   */
+  @Override
   public void setMailbox(String boxName, Object value) {
     try {
       blackboard.setMailbox(boxName, value);
@@ -113,14 +112,16 @@ public class DUnitBlackboard {
     }
   }
 
-  /**
-   * retrieve an object from a mailbox slot
-   */
+  @Override
   public <T> T getMailbox(String boxName) {
     try {
       return blackboard.getMailbox(boxName);
     } catch (RemoteException e) {
       throw new RuntimeException("remote call failed", e);
     }
+  }
+
+  public InternalBlackboard internal() {
+    return blackboard;
   }
 }
