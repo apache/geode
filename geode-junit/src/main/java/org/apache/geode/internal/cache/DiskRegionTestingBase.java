@@ -34,6 +34,7 @@ import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
+import org.junit.rules.ErrorCollector;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
@@ -47,7 +48,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * DiskRegionTestingBase: This class is extended to write more JUnit tests for Disk Regions.
@@ -80,6 +80,9 @@ public abstract class DiskRegionTestingBase {
 
   @Rule
   public TemporaryFolder tempDir = new TemporaryFolder();
+
+  @Rule
+  public ErrorCollector errorCollector = new ErrorCollector();
 
   @Before
   public final void setUp() throws Exception {
@@ -208,9 +211,11 @@ public abstract class DiskRegionTestingBase {
     File[] files = file.listFiles();
     for (File each : files) {
       try {
-        FileUtils.forceDelete(each);
+        if (!each.getName().contains(".gfs")) {
+          FileUtils.forceDelete(each);
+        }
       } catch (IOException e) {
-        LogService.getLogger().error("Caught", e);
+        errorCollector.addError(e);
       }
     }
   }
