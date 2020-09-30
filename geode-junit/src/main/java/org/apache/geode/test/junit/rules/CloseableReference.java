@@ -25,14 +25,15 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.apache.geode.test.junit.rules.serializable.SerializableExternalResource;
 
 /**
- * JUnit Rule that provides automated tearDown for an atomic reference. If the referenced value is
- * an {@code AutoCloseable} or {@code Closeable} then it will be auto-closed and set to null during
- * tear down.
+ * CloseableReference is a JUnit Rule that provides automated tearDown for an atomic reference. If
+ * the referenced value is an {@code AutoCloseable} or {@code Closeable} then it will be auto-closed
+ * and set to null during tear down.
  *
  * <p>
  * If the referenced value is not an {@code AutoCloseable} or {@code Closeable}, the
- * {@code CloseableReference} will use reflection to invoke any method named {@code close} or
- * {@code disconnect} regardless of what interfaces are implemented.
+ * {@code CloseableReference} will use reflection to invoke any method named {@code close},
+ * {@code disconnect}, or {@code stop} regardless of what interfaces are implemented unless
+ * {@code autoClose} is set to false.
  *
  * <p>
  * If the referenced value is null then it will be ignored during tear down.
@@ -101,7 +102,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableExternalResour
  * </pre>
  *
  * <p>
- * To disable autoClose in a test, specify {@code autoClose(false)}:
+ * To disable auto-closing in a test, specify {@code autoClose(false)}:
  *
  * <pre>
  * {@literal @}Rule
@@ -110,8 +111,8 @@ import org.apache.geode.test.junit.rules.serializable.SerializableExternalResour
  * </pre>
  *
  * <p>
- * The CloseableReference value will still be set to null during tear down even if autoClose is set
- * to false.
+ * The {@code CloseableReference} value will still be set to null during tear down even if
+ * auto-closing is disabled.
  */
 @SuppressWarnings({"serial", "WeakerAccess"})
 public class CloseableReference<V> extends SerializableExternalResource {

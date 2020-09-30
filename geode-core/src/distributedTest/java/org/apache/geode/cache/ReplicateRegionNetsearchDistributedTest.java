@@ -36,7 +36,7 @@ import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.rules.DistributedReference;
+import org.apache.geode.test.dunit.rules.DistributedCloseableReference;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
@@ -60,9 +60,11 @@ public class ReplicateRegionNetsearchDistributedTest implements Serializable {
   @Rule
   public DistributedRule distributedRule = new DistributedRule();
   @Rule
-  public DistributedReference<ServerLauncher> serverLauncher = new DistributedReference<>();
+  public DistributedCloseableReference<ServerLauncher> serverLauncher =
+      new DistributedCloseableReference<>();
   @Rule
-  public DistributedReference<ClientCache> clientCache = new DistributedReference<>();
+  public DistributedCloseableReference<ClientCache> clientCache =
+      new DistributedCloseableReference<>();
   @Rule
   public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
 
