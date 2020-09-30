@@ -90,7 +90,7 @@ resources:
   source:
     interval: 168h
     days: [Friday]
-    start: 3PM
+    start: 5PM
     stop: 11PM
     location: America/Los_Angeles
 - name: test-finish-time

@@ -144,8 +144,8 @@ jobs:
               GCP_PROJECT: ((gcp-project))
               GEODE_BRANCH: {{repository.branch}}
               GEODE_FORK: {{repository.fork}}
-              JAVA_BUILD_VERSION: 8
-              JAVA_TEST_VERSION: 8
+              JAVA_BUILD_VERSION: {{ java_build_version.version }}
+              JAVA_TEST_VERSION: {{ java_build_version.version }}
               IMAGE_FAMILY_NAME: ((pipeline-prefix))linux-geode-builder
             run:
               path: geode-ci/ci/scripts/create_instance.sh
@@ -159,7 +159,7 @@ jobs:
             - name: instance-data
             - name: attempts-log
               path: new
-          timeout: 15m
+          timeout: 20m
           attempts: 2
     - task: rsync_code_up
       image: alpine-tools-image
@@ -171,16 +171,17 @@ jobs:
         - name: geode-ci
         - name: geode
         - name: instance-data
-      timeout: 5m
+      timeout: 15m
+      attempts: 2
     - task: build
       image: alpine-tools-image
       config:
         platform: linux
         params:
-          JAVA_BUILD_VERSION: 8
+          JAVA_BUILD_VERSION: {{ java_build_version.version }}
           GRADLE_TASK: {{ build_test.GRADLE_TASK }}
           ARTIFACT_SLUG: {{build_test.ARTIFACT_SLUG}}
-          JAVA_TEST_VERSION: 8
+          JAVA_TEST_VERSION: {{ java_build_version.version }}
           CALL_STACK_TIMEOUT: {{build_test.CALL_STACK_TIMEOUT}}
           DUNIT_PARALLEL_FORKS: {{build_test.DUNIT_PARALLEL_FORKS}}
           GRADLE_TASK_OPTIONS: ""
@@ -213,7 +214,7 @@ jobs:
         config:
           platform: linux
           params:
-            JAVA_BUILD_VERSION: 8
+            JAVA_BUILD_VERSION: {{ java_build_version.version }}
             ARTIFACT_SLUG: {{build_test.ARTIFACT_SLUG}}
           run:
             path: geode-ci/ci/scripts/rsync_code_down.sh
@@ -223,7 +224,8 @@ jobs:
           - name: instance-data
           outputs:
           - name: geode-results
-        timeout: 5m
+        timeout: 15m
+        attempts: 2
       ensure:
         aggregate:
         - task: archive_results
@@ -324,7 +326,7 @@ jobs:
             - name: instance-data
             - name: attempts-log
               path: new
-          timeout: 15m
+          timeout: 20m
           attempts: 2
     - task: rsync_code_up-{{java_test_version.name}}
       image: alpine-tools-image
@@ -336,7 +338,8 @@ jobs:
         - name: geode
         - name: geode-ci
         - name: instance-data
-      timeout: 5m
+      timeout: 15m
+      attempts: 2
     - task: execute_tests-{{java_test_version.name}}
       image: alpine-tools-image
       config:
@@ -392,7 +395,7 @@ jobs:
         config:
           platform: linux
           params:
-            JAVA_BUILD_VERSION: 8
+            JAVA_BUILD_VERSION: {{ java_build_version.version }}
             ARTIFACT_SLUG: {{test.ARTIFACT_SLUG}}
           run:
             path: geode-ci/ci/scripts/rsync_code_down.sh
@@ -402,7 +405,8 @@ jobs:
           - name: instance-data
           outputs:
           - name: geode-results
-        timeout: 5m
+        timeout: 15m
+        attempts: 2
       ensure:
         aggregate:
         - task: archive-results-{{java_test_version.name}}
