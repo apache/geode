@@ -270,6 +270,7 @@ jobs:
       - get: geode
 {%- else %}
       - get: geode-windows
+        resource: geode
 {%- endif %}
         trigger: true
         version: every
