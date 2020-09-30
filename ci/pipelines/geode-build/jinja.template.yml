@@ -315,7 +315,8 @@ jobs:
         - name: geode-ci
         - name: geode
         - name: instance-data
-    timeout: 10m
+    timeout: 15m
+    attempts: 5
     on_failure:
       task: delete_instance
       image: alpine-tools-image
@@ -362,7 +363,8 @@ jobs:
           - name: instance-data
           outputs:
           - name: geode-results
-        timeout: 5m
+        timeout: 15m
+        attempts: 5
       ensure:
         do:
         - aggregate:
@@ -580,7 +582,8 @@ jobs:
       - name: geode-ci
       - name: geode
       - name: instance-data
-    timeout: 5m
+    timeout: 15m
+    attempts: 5
   - task: publish
     image: alpine-tools-image
     config:
