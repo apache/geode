@@ -76,10 +76,10 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.rules.DistributedBlackboard;
 import org.apache.geode.test.dunit.rules.DistributedDiskDirRule;
+import org.apache.geode.test.dunit.rules.DistributedErrorCollector;
 import org.apache.geode.test.dunit.rules.DistributedReference;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.DistributedRule;
-import org.apache.geode.test.dunit.rules.SharedErrorCollector;
 import org.apache.geode.test.junit.categories.PartitioningTest;
 
 /**
@@ -111,7 +111,7 @@ public class FixedPartitioningDUnitTest implements Serializable {
   @Rule
   public DistributedRestoreSystemProperties restoreProps = new DistributedRestoreSystemProperties();
   @Rule
-  public SharedErrorCollector errorCollector = new SharedErrorCollector();
+  public DistributedErrorCollector errorCollector = new DistributedErrorCollector();
   @Rule
   public DistributedBlackboard blackboard = new DistributedBlackboard();
 
