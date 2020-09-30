@@ -58,8 +58,8 @@ These `<disk-store>` attributes and subelements have corresponding `gfsh create 
 <td><code class="ph codeph">compaction-threshold</code></td>
 <td>Percentage (0..100) of live data (non-garbage content) remaining in the operation log, below which it is eligible for
 compaction. As garbage is created (by entry destroys, entry updates, and region destroys and
-creates) the percentage of remaining live data declines. Falling below this percentage does not make
-compaction occur&mdash;it makes the file eligible to be compacted when a compaction is performed.</td>
+creates) the percentage of remaining live data declines. Falling below this percentage initiates compaction
+if auto-compaction is turned on. If not, the file will be eligible for manual compaction at a later time.</td>
 <td>50</td>
 </tr>
 <tr>
