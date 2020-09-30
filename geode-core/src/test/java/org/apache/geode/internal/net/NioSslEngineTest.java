@@ -34,6 +34,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
@@ -196,11 +197,11 @@ public class NioSslEngineTest {
 
 
   @Test
-  public void checkClosed() {
+  public void checkClosed() throws Exception {
     nioSslEngine.checkClosed();
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test(expected = IOException.class)
   public void checkClosedThrows() throws Exception {
     when(mockEngine.wrap(any(ByteBuffer.class), any(ByteBuffer.class))).thenReturn(
         new SSLEngineResult(CLOSED, FINISHED, 0, 100));
@@ -340,7 +341,8 @@ public class NioSslEngineTest {
     when(mockEngine.wrap(any(ByteBuffer.class), any(ByteBuffer.class))).thenReturn(
         new SSLEngineResult(CLOSED, FINISHED, 0, 0));
     nioSslEngine.close(mockChannel);
-    assertThatThrownBy(() -> nioSslEngine.checkClosed()).isInstanceOf(IllegalStateException.class);
+    assertThatThrownBy(() -> nioSslEngine.checkClosed()).isInstanceOf(IOException.class)
+        .hasMessageContaining("NioSslEngine has been closed");
     nioSslEngine.close(mockChannel);
   }
 

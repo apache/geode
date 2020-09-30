@@ -212,9 +212,9 @@ public class NioSslEngine implements NioFilter {
     return bufferPool.expandWriteBufferIfNeeded(type, existing, desiredCapacity);
   }
 
-  void checkClosed() {
+  void checkClosed() throws IOException {
     if (closed) {
-      throw new IllegalStateException("NioSslEngine has been closed");
+      throw new IOException("NioSslEngine has been closed");
     }
   }
 

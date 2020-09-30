@@ -281,7 +281,7 @@ public class SSLSocketIntegrationTest {
           assertThatThrownBy(() -> {
             nioSslEngine.unwrap(ByteBuffer.wrap(new byte[0]));
           })
-              .isInstanceOf(IllegalStateException.class);
+              .isInstanceOf(IOException.class);
         }
       }
     }, this.testName.getMethodName() + "-server");
