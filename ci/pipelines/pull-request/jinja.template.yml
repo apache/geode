@@ -69,6 +69,13 @@ resources:
     repository: gcr.io/((gcp-project))/((pipeline-prefix))alpine-tools
     tag: latest
 
+- name: windows-builder-image-family
+  type: gci
+  source:
+    key: ((concourse-gcp-key))
+    family_project: ((gcp-project))
+    family: ((pipeline-prefix))windows-geode-builder
+
 - name: linux-builder-image-family
   type: gci
   source:
