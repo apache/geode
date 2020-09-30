@@ -22,7 +22,7 @@ groups:
 - name: main
   jobs:
   - {{ build_test.name }}
-{%- for test in tests if test.PLATFORM=="linux" %}
+{%- for test in tests %}
   {%- for java_test_version in (java_test_versions) if not java_test_version.name.endswith("JDK8") or test.name == "Unit" %}
   - {{test.name}}Test{{java_test_version.name}}
   {%- endfor %}
@@ -35,6 +35,14 @@ resources:
     repository: {{repository.fork}}/geode
     disable_ci_skip: false
     skip_ssl_verification: false
+- name: geode-windows
+  type: pull-request
+  source:
+    access_token: ((github-apachegeode-ci-read-only-token))
+    repository: {{repository.fork}}/geode
+    disable_ci_skip: false
+    skip_ssl_verification: false
+    labels: [windows]
 - name: geode-status
   type: pull-request
   source:
@@ -250,7 +258,7 @@ jobs:
         get_params: {skip_download: true}
 
 
-{% for test in tests if test.PLATFORM=="linux"%}
+{% for test in tests %}
   {%- for java_test_version in (java_test_versions) if not java_test_version.name.endswith("JDK8") or test.name == "Unit" %}
 - name: {{test.name}}Test{{java_test_version.name}}
   public: true
@@ -258,7 +266,11 @@ jobs:
   - do:
     - aggregate:
       - get: alpine-tools-image
+{%- if test.PLATFORM=="linux" %}
       - get: geode
+{%- else %}
+      - get: geode-windows
+{%- endif %}
         trigger: true
         version: every
         attempts: 2
