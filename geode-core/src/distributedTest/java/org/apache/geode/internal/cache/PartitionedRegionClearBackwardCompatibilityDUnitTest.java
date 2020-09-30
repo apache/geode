@@ -102,7 +102,8 @@ public class PartitionedRegionClearBackwardCompatibilityDUnitTest implements Ser
     RegionShortcut[] regionShortcuts = regionTypes();
     // TODO: Change the upper bound once we know which version will contain the clear feature.
     List<String> versions = VersionManager.getInstance()
-        .getVersionsWithinRange(KnownVersion.GEODE_1_10_0.getName(), KnownVersion.GEODE_1_14_0.getName());
+        .getVersionsWithinRange(KnownVersion.GEODE_1_10_0.getName(),
+            KnownVersion.GEODE_1_14_0.getName());
 
     Arrays.stream(regionShortcuts).forEach(regionShortcut -> versions
         .forEach(version -> parameters.add(new Object[] {version, regionShortcut})));
