@@ -68,7 +68,7 @@ class AbstractDistributedRule implements SerializableTestRule {
     String testClassName = description.getTestClass().getSimpleName();
     String testMethodName = description.getMethodName();
     TestHistoryLogger.logTestHistory(testClassName, testMethodName);
-    defaultDiskDir.create(testClassName + "-" + testMethodName);
+    defaultDiskDir.set();
     DUnitLauncher.launchIfNeeded(vmCount);
     System.out
         .println("\n\n[setup] START TEST " + description.getClassName() + "." + testMethodName);
@@ -81,7 +81,7 @@ class AbstractDistributedRule implements SerializableTestRule {
   void afterDistributedTest(final Description description) throws Throwable {
     VM.removeVMEventListener(vmEventListener);
     after();
-    defaultDiskDir.delete();
+    defaultDiskDir.clear();
     System.out.println("\n\n[setup] END TEST " + description.getTestClass().getSimpleName()
         + "." + description.getMethodName());
   }

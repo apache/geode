@@ -18,51 +18,32 @@ import static org.apache.geode.TestContext.contextDirectory;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.DEFAULT_DISK_DIRS_PROPERTY;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.GEODE_PREFIX;
 
-import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
-import java.nio.file.Files;
-import java.nio.file.Path;
-
-import org.apache.commons.io.FileUtils;
 
 /**
- * Creates and cleans up a default disk directory for this JVM.
+ * Manages the default disk directory system property.
  */
 public class DefaultDiskDir implements Serializable {
   private static final String PROPERTY_KEY = GEODE_PREFIX + DEFAULT_DISK_DIRS_PROPERTY;
-  private File dir;
+  boolean ownsDefaultDiskDirProperty;
 
   /**
-   * Creates a default disk directory and sets the associated system property to refer it. If the
-   * default disk directory property already has a value, this method does nothing.
-   *
-   * @param suffix a suffix for the name of the directory
-   * @throws IOException if an i/o error occurs
+   * Sets the default disk directory system property to a safe value if not already set.
    */
-  public void create(String suffix) throws IOException {
-    if (System.getProperty(PROPERTY_KEY) != null) {
-      // If the property is already set, some other code is managing the default disk dir.
-      return;
+  public void set() {
+    // If the property has no value, assume ownership of it
+    ownsDefaultDiskDirProperty = System.getProperty(PROPERTY_KEY) == null;
+    if (ownsDefaultDiskDirProperty) {
+      System.setProperty(PROPERTY_KEY, contextDirectory().toString());
     }
-    dir = createDiskDirectory(suffix).toFile();
-    System.setProperty(PROPERTY_KEY, dir.toString());
   }
 
   /**
-   * Deletes any default disk directory and property created by this {@code DefaultDiskDir}.
+   * Clears the default disk directory system property if set by this {@code DefaultDiskDir}.
    */
-  public void delete() {
-    if (dir != null) {
+  public void clear() {
+    if (ownsDefaultDiskDirProperty) {
       System.clearProperty(PROPERTY_KEY);
-      FileUtils.deleteQuietly(dir);
-      dir = null;
     }
-  }
-
-  private Path createDiskDirectory(String suffix) throws IOException {
-    String name = getClass().getSimpleName() + "-" + suffix;
-    Path path = contextDirectory().resolve(name);
-    return Files.createDirectories(path);
   }
 }

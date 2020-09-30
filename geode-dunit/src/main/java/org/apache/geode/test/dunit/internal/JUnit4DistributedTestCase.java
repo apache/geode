@@ -26,9 +26,7 @@ import static org.apache.geode.test.dunit.Invoke.invokeInLocator;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
-import java.io.UncheckedIOException;
 import java.util.Arrays;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -433,7 +431,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     assertNotNull("methodName must not be null", methodName);
     assertNotNull("defaultDiskStoreName must not be null", defaultDiskStoreName);
     setTestMethodName(methodName);
-    setUpDefaultDiskDir(methodName);
+    setDefaultDiskDir();
     GemFireCacheImpl.setDefaultDiskStoreName(defaultDiskStoreName);
     setUpCreationStackGenerator();
   }
@@ -595,15 +593,12 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
         .set(InternalDistributedSystem.DEFAULT_CREATION_STACK_GENERATOR);
   }
 
-  private static void setUpDefaultDiskDir(String methodName) {
-    try {
-      defaultDiskDir.create(methodName);
-    } catch (IOException e) {
-      throw new UncheckedIOException(e);
-    }
+  private static void cleanDefaultDiskDir() {
+    defaultDiskDir.clear();
   }
 
-  private static void cleanDefaultDiskDir() {
-    defaultDiskDir.delete();
+  private static void setDefaultDiskDir() {
+    defaultDiskDir.set();
   }
+
 }

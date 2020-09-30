@@ -59,32 +59,16 @@ public class TestContext {
   }
 
   /**
-   * Returns a path uniquely identified by the owner and resolved against this JVM's
-   * {@link #contextDirectory() test context directory}. The path name identifies the owner
-   * based on its
-   * simple class name and identity hash code. This method merely returns a path, and does not
-   * create a file or directory. The owner (or caller) is responsible for all use of the path.
-   *
-   * @param owner the owner of the path
-   * @return an absolute, normalized path uniquely identified by the owner
-   */
-  public static Path pathOwnedBy(Object owner) {
-    return contextDirectory().resolve(ownerName(owner));
-  }
-
-  /**
-   * Returns the path to a directory uniquely identified by the owner and resolved against this
-   * JVM's {@link #contextDirectory() test context directory}. The path name identifies the
-   * owner based
-   * on its simple class name and identity hash code. The directory is created if it does not
-   * already exist. If the directory exists, this method simply returns a path to it. The owner (or
-   * caller) is responsible for all use of the directory.
+   * Creates a directory at the path formed by joining this JVM's {@link #contextDirectory() test
+   * context directory} with an element that uniquely identifies the owner. The element that
+   * identifies the owner is formed from the owner's simple class name and identity hash code.
+   * If the directory already exists, this method simply returns the path to it.
    *
    * @param owner the owner of the directory
    * @return the absolute, normalized path to the subdirectory
    */
-  public static Path subdirectoryOwnedBy(Object owner) {
-    return createDirectory(pathOwnedBy(owner));
+  public static Path createContextSubdirectory(Object owner) {
+    return createDirectory(pathIdentifiedBy(owner));
   }
 
   public static boolean isTestRunnerJVM() {
@@ -126,6 +110,10 @@ public class TestContext {
     return runnerContextDirectory;
   }
 
+  private static Path contextDirectoryPath() {
+    return jvmWorkingDirectory().resolve(RUNNER_DIR_PREFIX + workerName());
+  }
+
   private static Path createContextDirectory() {
     return createDirectory(contextDirectoryPath());
   }
@@ -160,11 +148,11 @@ public class TestContext {
     return String.format("%s-%x", owner.getClass().getSimpleName(), identityHashCode(owner));
   }
 
-  private static String workerName() {
-    return System.getProperty("org.gradle.test.worker");
+  private static Path pathIdentifiedBy(Object owner) {
+    return contextDirectory().resolve(ownerName(owner));
   }
 
-  private static Path contextDirectoryPath() {
-    return jvmWorkingDirectory().resolve(RUNNER_DIR_PREFIX + workerName());
+  private static String workerName() {
+    return System.getProperty("org.gradle.test.worker");
   }
 }

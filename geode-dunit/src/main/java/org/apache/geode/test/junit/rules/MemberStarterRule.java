@@ -584,7 +584,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   @Override
   public File getWorkingDir() {
     if (isNull(workingDir)) {
-      workingDir = TestContext.subdirectoryOwnedBy(this).toFile();
+      workingDir = TestContext.createContextSubdirectory(this).toFile();
     }
     return workingDir;
   }
