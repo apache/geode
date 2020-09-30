@@ -308,7 +308,12 @@ jobs:
               path: geode-ci/ci/scripts/create_instance.sh
             inputs:
             - name: concourse-metadata-resource
+{%- if test.PLATFORM=="linux" %}
             - name: geode
+{%- else %}
+            - name: geode-windows
+              path: geode
+{%- endif %}
             - name: geode-ci
             - name: attempts-log
               path: old
@@ -325,7 +330,12 @@ jobs:
         run:
           path: geode-ci/ci/scripts/rsync_code_up.sh
         inputs:
+{%- if test.PLATFORM=="linux" %}
         - name: geode
+{%- else %}
+        - name: geode-windows
+          path: geode
+{%- endif %}
         - name: geode-ci
         - name: instance-data
       timeout: 5m
@@ -360,7 +370,12 @@ jobs:
           path: geode-ci/ci/scripts/execute_tests.sh
           {%- endif %}
         inputs:
+{%- if test.PLATFORM=="linux" %}
         - name: geode
+{%- else %}
+        - name: geode-windows
+          path: geode
+{%- endif %}
         - name: geode-ci
         - name: instance-data
       timeout: {{test.EXECUTE_TEST_TIMEOUT}}
@@ -385,7 +400,12 @@ jobs:
           run:
             path: geode-ci/ci/scripts/rsync_code_down.sh
           inputs:
+{%- if test.PLATFORM=="linux" %}
           - name: geode
+{%- else %}
+          - name: geode-windows
+            path: geode
+{%- endif %}
           - name: geode-ci
           - name: instance-data
           outputs:
@@ -407,7 +427,12 @@ jobs:
               path: geode-ci/ci/scripts/archive_results.sh
             inputs:
             - name: concourse-metadata-resource
+{%- if test.PLATFORM=="linux" %}
             - name: geode
+{%- else %}
+            - name: geode-windows
+              path: geode
+{%- endif %}
             - name: geode-ci
             - name: geode-results
         - task: delete_instance-{{java_test_version.name}}
@@ -417,7 +442,12 @@ jobs:
             run:
               path: geode-ci/ci/scripts/delete_instance.sh
             inputs:
+{%- if test.PLATFORM=="linux" %}
             - name: geode
+{%- else %}
+            - name: geode-windows
+              path: geode
+{%- endif %}
             - name: geode-ci
             - name: instance-data
           timeout: 1h
