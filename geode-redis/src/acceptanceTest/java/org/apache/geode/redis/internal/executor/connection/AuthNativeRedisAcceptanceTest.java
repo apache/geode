@@ -15,12 +15,10 @@
 package org.apache.geode.redis.internal.executor.connection;
 
 
-
 import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import org.junit.rules.TestRule;
 import org.testcontainers.containers.GenericContainer;
 import redis.clients.jedis.Jedis;
@@ -33,12 +31,6 @@ public class AuthNativeRedisAcceptanceTest extends AuthIntegrationTest {
   // Using a RuleChain to make sure we ignore the test before the rule comes into play
   @ClassRule
   public static TestRule ignoreOnWindowsRule = new IgnoreOnWindowsRule();
-
-  // The ryuk container is responsible for cleanup at JVM exit. Since this class already closes the
-  // containers it starts, we do not need the ryuk container.
-  @ClassRule
-  public static EnvironmentVariables environmentVariables =
-      new EnvironmentVariables().set("TESTCONTAINERS_RYUK_DISABLED", "true");
 
   private GenericContainer<?> redisContainer;
 
