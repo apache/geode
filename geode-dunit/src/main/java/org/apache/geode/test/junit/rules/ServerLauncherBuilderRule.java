@@ -18,7 +18,7 @@ package org.apache.geode.test.junit.rules;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static org.apache.commons.io.FileUtils.deleteQuietly;
-import static org.apache.geode.TestContext.createContextSubdirectory;
+import static org.apache.geode.test.TestContext.createContextSubdirectory;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;

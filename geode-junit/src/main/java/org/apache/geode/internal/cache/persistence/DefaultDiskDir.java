@@ -12,11 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.dunit.rules;
+package org.apache.geode.internal.cache.persistence;
 
-import static org.apache.geode.TestContext.contextDirectory;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.DEFAULT_DISK_DIRS_PROPERTY;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.GEODE_PREFIX;
+import static org.apache.geode.test.TestContext.contextDirectory;
 
 import java.io.Serializable;
 

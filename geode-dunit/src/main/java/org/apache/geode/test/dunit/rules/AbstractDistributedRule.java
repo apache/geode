@@ -21,6 +21,7 @@ import java.io.Serializable;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
+import org.apache.geode.internal.cache.persistence.DefaultDiskDir;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.VMEventListener;
 import org.apache.geode.test.dunit.internal.DUnitLauncher;

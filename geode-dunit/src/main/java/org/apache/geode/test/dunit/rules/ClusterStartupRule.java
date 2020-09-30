@@ -34,12 +34,12 @@ import org.apache.commons.lang3.JavaVersion;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
-import org.apache.geode.TestContext;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.test.TestContext;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.SerializableConsumerIF;

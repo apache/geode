@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode;
+package org.apache.geode.test;
 
 import static java.lang.System.identityHashCode;
 
