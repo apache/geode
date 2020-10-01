@@ -30,9 +30,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
+import org.junit.rules.ErrorCollector;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
@@ -78,6 +80,9 @@ public abstract class DiskRegionTestingBase {
 
   @Rule
   public TemporaryFolder tempDir = new TemporaryFolder();
+
+  @Rule
+  public ErrorCollector errorCollector = new ErrorCollector();
 
   @Before
   public final void setUp() throws Exception {
@@ -198,6 +203,21 @@ public abstract class DiskRegionTestingBase {
   protected void deleteFiles() {
     closeDiskStores();
     tempDir.delete();
+  }
+
+  protected void forceDeleteFiles() {
+    closeDiskStores();
+    File file = tempDir.getRoot();
+    File[] files = file.listFiles();
+    for (File each : files) {
+      try {
+        if (!each.getName().contains(".gfs")) {
+          FileUtils.forceDelete(each);
+        }
+      } catch (IOException e) {
+        errorCollector.addError(e);
+      }
+    }
   }
 
   protected void closeDiskStores() {
