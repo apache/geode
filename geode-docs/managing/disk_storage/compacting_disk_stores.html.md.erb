@@ -32,18 +32,21 @@ provides mechanisms for removing garbage to compact your log files.
 The system is configured by default to automatically compact any closed operation log when its non-garbage
 content drops below a certain percentage. This automatic compaction is well suited to most <%=vars.product_name%> implementations.
 In some circumstances, you may choose to  manually initiate compaction for online and
-offline disk stores. For the online disk store, the current operation log is not available for
-compaction, no matter how much garbage it contains.
+offline disk stores.
 
 ## <a id="compacting_disk_stores__section_98C6B6F48E4F4F0CB7749E426AF4D647" class="no-quick-link"></a>Log File Compaction for the Online Disk Store
 
 <img src="../../images/diskStores-3.gif" id="compacting_disk_stores__image_7E34CC58B13548B196DAA15F5B0A0ECA" class="image" />
 
+For the online disk store, the current operation log is not available for
+compaction, no matter how much garbage it contains. You can use `DiskStore.forceRoll` to close the current oplog, making it eligible for compaction.
+See [Disk Store Operation Logs](operation_logs.html) for details.
+
 Offline compaction runs essentially in the same way, but without the incoming cache operations. Also, because there is no currently open log, the compaction creates a new one to get started.
 
 ## <a id="compacting_disk_stores__section_96E774B5502648458E7742B37CA235FF" class="no-quick-link"></a>Run Online Compaction
 
-Old log files become eligible for online compaction when their garbage content surpasses a configured percentage of the total file. A record is garbage when its operation is superseded by a more recent operation for the same object. During compaction, the non-garbage records are added to the current log along with new cache operations. Online compaction does not block current system operations.
+Old log files become eligible for online compaction when their live data (non-garbage) content drops below a configured percentage of the total file. A record is garbage when its operation is superseded by a more recent operation for the same object. During compaction, the non-garbage records are added to the current log along with new cache operations. Online compaction does not block current system operations.
 
 -   **Automatic compaction**. When `auto-compact` is true, <%=vars.product_name%> automatically compacts each oplog when its non-garbage (live data) content drops below the `compaction-threshold`. This takes cycles from your other operations, so you may want to disable this and only do manual compaction, to control the timing.
 -   **Manual compaction**. To run manual compaction:
