@@ -29,6 +29,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.management.internal.ManagementConstants.OBJECTNAME__CLIENTSERVICE_MXBEAN;
+import static org.apache.geode.test.TestContext.contextDirectory;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -584,7 +585,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   @Override
   public File getWorkingDir() {
     if (isNull(workingDir)) {
-      workingDir = TestContext.createContextSubdirectory(this).toFile();
+      workingDir = contextDirectory().toFile();
     }
     return workingDir;
   }
