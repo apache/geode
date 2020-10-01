@@ -36,19 +36,19 @@ options.
 #### Specific Benchmark
 To list benchmarks.
 ```console
-java -jar geode-core/build/libs/geode-core-*-SNAPSHOT-jmh.jar -l
+java -jar geode-core/build/libs/geode-core-*-jmh.jar -l
 ```
 Run with specific benchmark.
 ```console
-java -jar geode-core/build/libs/geode-core-*-SNAPSHOT-jmh.jar <options> <benchmark>
+java -jar geode-core/build/libs/geode-core-*-jmh.jar <options> <benchmark>
 ```
 
 #### With JMH Profiler
 To get a list of available profilers.
 ```console
-java -jar geode-core/build/libs/geode-core-*-SNAPSHOT-jmh.jar -lprof
+java -jar geode-core/build/libs/geode-core-*-jmh.jar -lprof
 ```
 Run with specific profiler.
 ```console
-java -jar geode-core/build/libs/geode-core-*-SNAPSHOT-jmh.jar <options> -prof:<profiler> <benchmark>
+java -jar geode-core/build/libs/geode-core-*-jmh.jar <options> -prof:<profiler> <benchmark>
 ```
