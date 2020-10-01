@@ -1,2 +1,4 @@
 output/
 final_app/
+Gemfile.lock
+.rubyenv
