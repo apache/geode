@@ -14,7 +14,6 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
@@ -24,7 +23,6 @@ public class GetSetIntegrationTest extends AbstractGetSetIntegrationTest {
   @ClassRule
   public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
-  @BeforeClass
   @Override
   public int getPort() {
     return server.getPort();
