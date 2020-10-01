@@ -15,69 +15,18 @@
 
 package org.apache.geode.redis.internal.executor.key;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Test;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 
-public class PTTLIntegrationTest {
-
-  public static Jedis jedis;
-  public static int REDIS_CLIENT_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
+public class PTTLIntegrationTest extends AbstractPTTLIntegrationTest {
 
   @ClassRule
   public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
-  @BeforeClass
-  public static void setUp() {
-    jedis = new Jedis("localhost", server.getPort(), REDIS_CLIENT_TIMEOUT);
+  @Override
+  public int getPort() {
+    return server.getPort();
   }
 
-  @After
-  public void flushAll() {
-    jedis.flushAll();
-  }
-
-  @AfterClass
-  public static void tearDown() {
-    jedis.close();
-  }
-
-  @Test
-  public void shouldReturnNegativeTwo_givenKeyDoesNotExist() {
-    assertThat(jedis.pttl("doesNotExist")).isEqualTo(-2);
-  }
-
-  @Test
-  public void shouldReturnNegativeOne_givenKeyDoesNotHaveExpirationSet() {
-    jedis.set("orange", "crush");
-
-    assertThat(jedis.pttl("orange")).isEqualTo(-1);
-  }
-
-  @Test
-  public void shouldReturnCorrectExpiration_givenKeyHasExpirationSet() {
-    jedis.set("orange", "crush");
-    jedis.expire("orange", 20);
-
-    assertThat(jedis.pttl("orange")).isGreaterThan(1500);
-  }
-
-  @Test
-  public void shouldThrowError_givenMultipleKeys() {
-    jedis.set("orange", "crush");
-
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.PTTL, "orange", "blue"))
-        .hasMessageContaining("wrong number of arguments");
-  }
 }

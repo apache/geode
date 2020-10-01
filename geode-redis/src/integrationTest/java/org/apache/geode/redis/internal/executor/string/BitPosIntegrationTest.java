@@ -14,63 +14,19 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Test;
-import redis.clients.jedis.BitPosParams;
-import redis.clients.jedis.Jedis;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
 
-public class BitPosIntegrationTest {
-
-  static Jedis jedis;
+public class BitPosIntegrationTest extends AbstractBitPosIntegrationTest {
 
   @ClassRule
   public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
-  @BeforeClass
-  public static void setUp() {
-    jedis = new Jedis("localhost", server.getPort(), 10000000);
+  @Override
+  public int getPort() {
+    return server.getPort();
   }
 
-  @After
-  public void flushAll() {
-    jedis.flushAll();
-  }
-
-  @AfterClass
-  public static void tearDown() {
-    jedis.close();
-  }
-
-  @Test
-  public void bitpos_givenSetFails() {
-    jedis.sadd("key", "m1");
-    assertThatThrownBy(() -> jedis.bitpos("key", false)).hasMessageContaining("WRONGTYPE");
-    assertThatThrownBy(() -> jedis.bitpos("key", true)).hasMessageContaining("WRONGTYPE");
-  }
-
-  @Test
-  public void bitpos_givenNonExistentKeyReturnsExpectedValue() {
-    assertThat(jedis.bitpos("does not exist", false)).isEqualTo(0);
-    assertThat(jedis.bitpos("does not exist", true)).isEqualTo(-1);
-    assertThat(jedis.bitpos("does not exist", false, new BitPosParams(4, 7))).isEqualTo(0);
-    assertThat(jedis.bitpos("does not exist", true, new BitPosParams(4, 7))).isEqualTo(-1);
-    assertThat(jedis.exists("does not exist")).isFalse();
-  }
-
-  @Test
-  public void bitpos_givenEmptyKeyReturnsExpectedValue() {
-    jedis.set("emptyKey", "");
-    assertThat(jedis.bitpos("emptyKey", false)).isEqualTo(-1);
-    assertThat(jedis.bitpos("emptyKey", true)).isEqualTo(-1);
-    assertThat(jedis.bitpos("emptyKey", false, new BitPosParams(4, 7))).isEqualTo(-1);
-    assertThat(jedis.bitpos("emptyKey", true, new BitPosParams(4, 7))).isEqualTo(-1);
-  }
 }

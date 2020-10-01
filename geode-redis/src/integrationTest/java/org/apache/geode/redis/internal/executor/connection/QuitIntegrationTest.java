@@ -23,7 +23,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Protocol;
@@ -31,9 +30,7 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.junit.categories.RedisTest;
 
-@Category({RedisTest.class})
 public class QuitIntegrationTest {
   protected static int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());

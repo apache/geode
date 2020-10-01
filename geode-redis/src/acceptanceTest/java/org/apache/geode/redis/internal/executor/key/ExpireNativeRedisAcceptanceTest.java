@@ -15,25 +15,18 @@
 
 package org.apache.geode.redis.internal.executor.key;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import redis.clients.jedis.Jedis;
 
 import org.apache.geode.NativeRedisTestRule;
 
-public class ExpireNativeRedisAcceptanceTest extends ExpireIntegrationTest {
+public class ExpireNativeRedisAcceptanceTest extends AbstractExpireIntegrationTest {
+
   @ClassRule
   public static NativeRedisTestRule redis = new NativeRedisTestRule();
 
-  @BeforeClass
-  public static void setUp() {
-    jedis = new Jedis("localhost", redis.getPort(), REDIS_CLIENT_TIMEOUT);
-  }
-
-  @AfterClass
-  public static void classLevelTearDown() {
-    jedis.close();
+  @Override
+  public int getPort() {
+    return redis.getPort();
   }
 
 }

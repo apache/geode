@@ -14,57 +14,18 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Test;
-import redis.clients.jedis.Jedis;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
 
-public class SetNXIntegrationTest {
-
-  static Jedis jedis;
+public class SetNXIntegrationTest extends AbstractSetNXIntegrationTest {
 
   @ClassRule
   public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
-  @BeforeClass
-  public static void setUp() {
-    jedis = new Jedis("localhost", server.getPort(), 10000000);
+  @Override
+  public int getPort() {
+    return server.getPort();
   }
 
-  @After
-  public void flushAll() {
-    jedis.flushAll();
-  }
-
-  @AfterClass
-  public static void tearDown() {
-    jedis.close();
-  }
-
-  @Test
-  public void testSetNX() {
-    String key1 = randString();
-    String key2;
-    do {
-      key2 = randString();
-    } while (key2.equals(key1));
-
-    long response1 = jedis.setnx(key1, key1);
-    long response2 = jedis.setnx(key2, key2);
-    long response3 = jedis.setnx(key1, key2);
-
-    assertThat(response1).isEqualTo(1);
-    assertThat(response2).isEqualTo(1);
-    assertThat(response3).isEqualTo(0);
-  }
-
-  private String randString() {
-    return Long.toHexString(Double.doubleToLongBits(Math.random()));
-  }
 }

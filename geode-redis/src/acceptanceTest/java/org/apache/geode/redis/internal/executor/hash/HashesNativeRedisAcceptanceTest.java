@@ -14,30 +14,18 @@
  */
 package org.apache.geode.redis.internal.executor.hash;
 
-import java.util.Random;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import redis.clients.jedis.Jedis;
 
 import org.apache.geode.NativeRedisTestRule;
 
-public class HashesNativeRedisAcceptanceTest extends HashesIntegrationTest {
+public class HashesNativeRedisAcceptanceTest extends AbstractHashesIntegrationTest {
 
   @ClassRule
   public static NativeRedisTestRule redis = new NativeRedisTestRule();
 
-  @BeforeClass
-  public static void setUp() {
-    rand = new Random();
-    jedis = new Jedis("localhost", redis.getPort(), 10000000);
-    jedis2 = new Jedis("localhost", redis.getPort(), 10000000);
+  @Override
+  public int getPort() {
+    return redis.getPort();
   }
 
-  @AfterClass
-  public static void tearDown() {
-    jedis.close();
-    jedis2.close();
-  }
 }

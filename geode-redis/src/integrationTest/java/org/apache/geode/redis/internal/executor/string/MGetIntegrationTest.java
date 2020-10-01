@@ -14,53 +14,18 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Test;
-import redis.clients.jedis.Jedis;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
 
-public class MGetIntegrationTest {
-
-  static Jedis jedis;
+public class MGetIntegrationTest extends AbstractMGetIntegrationTest {
 
   @ClassRule
   public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
-  @BeforeClass
-  public static void setUp() {
-    jedis = new Jedis("localhost", server.getPort(), 10000000);
+  @Override
+  public int getPort() {
+    return server.getPort();
   }
 
-  @After
-  public void flushAll() {
-    jedis.flushAll();
-  }
-
-  @AfterClass
-  public static void tearDown() {
-    jedis.close();
-  }
-
-  @Test
-  public void testMGet_requestNonexistentKey_respondsWithNil() {
-    String key1 = "existingKey";
-    String key2 = "notReallyAKey";
-    String value1 = "theRealValue";
-    String[] keys = new String[2];
-    String[] expectedVals = new String[2];
-    keys[0] = key1;
-    keys[1] = key2;
-    expectedVals[0] = value1;
-    expectedVals[1] = null;
-
-    jedis.set(key1, value1);
-
-    assertThat(jedis.mget(keys)).containsExactly(expectedVals);
-  }
 }
