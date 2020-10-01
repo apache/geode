@@ -2008,6 +2008,8 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
 
       setShutdown();
 
+      logger.info("***** EB: GMSMembership.forceDisconnect(reason): " + reason);
+
       final Exception shutdownCause = new MemberDisconnectedException(reason);
 
       // cache the exception so it can be appended to ShutdownExceptions
