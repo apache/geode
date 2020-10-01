@@ -16,7 +16,8 @@
 package org.apache.geode.internal.ra.spi;
 
 import java.io.PrintWriter;
-import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -53,9 +54,9 @@ public class JCAManagedConnection implements ManagedConnection {
 
   private final JCAManagedConnectionFactory connectionFactory;
 
-  private final Set<GFConnectionImpl> connections = new CopyOnWriteHashSet<>();;
+  private final Set<GFConnectionImpl> connections = new CopyOnWriteHashSet<>();
 
-  private volatile JCALocalTransaction localTransaction = new JCALocalTransaction();;
+  private volatile JCALocalTransaction localTransaction = new JCALocalTransaction();
 
   JCAManagedConnection(JCAManagedConnectionFactory connectionFactory) {
     this.connectionFactory = connectionFactory;
@@ -78,20 +79,30 @@ public class JCAManagedConnection implements ManagedConnection {
 
   @Override
   public void cleanup() throws ResourceException {
-    synchronized (this.connections) {
-      Iterator<GFConnectionImpl> iterator = this.connections.iterator();
-      while (iterator.hasNext()) {
-        GFConnectionImpl connection = iterator.next();
-        connection.invalidate();
-        iterator.remove();
-      }
-    }
+    invalidateAndRemoveConnections();
     if (this.localTransaction == null || this.localTransaction.transactionInProgress()) {
       if (this.initialized && !isCacheClosed()) {
         this.localTransaction = new JCALocalTransaction(this.cache, this.transactionManager);
       } else {
         this.localTransaction = new JCALocalTransaction();
       }
+    }
+  }
+
+  /**
+   * Invalidate and remove the {@link GFConnectionImpl} from the connections collection.
+   * The approach to use removeAll instead of Iterator.remove is purely a performance optimization
+   * to avoid creating all the intermediary collections that will be created when using the single
+   * remove operation.
+   */
+  private void invalidateAndRemoveConnections() {
+    synchronized (this.connections) {
+      List<GFConnectionImpl> connectionsToRemove = new ArrayList<>();
+      for (GFConnectionImpl connection : this.connections) {
+        connection.invalidate();
+        connectionsToRemove.add(connection);
+      }
+      connections.removeAll(connectionsToRemove);
     }
   }
 
@@ -104,14 +115,7 @@ public class JCAManagedConnection implements ManagedConnection {
 
   @Override
   public void destroy() throws ResourceException {
-    synchronized (this.connections) {
-      Iterator<GFConnectionImpl> iterator = this.connections.iterator();
-      while (iterator.hasNext()) {
-        GFConnectionImpl connection = iterator.next();
-        connection.invalidate();
-        iterator.remove();
-      }
-    }
+    invalidateAndRemoveConnections();
     this.transactionManager = null;
     this.cache = null;
     this.localTransaction = null;
@@ -188,11 +192,10 @@ public class JCAManagedConnection implements ManagedConnection {
     this.localTransaction = null;
 
     synchronized (this.connections) {
-      Iterator<GFConnectionImpl> iterator = this.connections.iterator();
-      while (iterator.hasNext()) {
-        GFConnectionImpl connection = iterator.next();
+      List<GFConnectionImpl> connectionsToRemove = new LinkedList<>(connections);
+      for (GFConnectionImpl connection : connections) {
         connection.invalidate();
-
+        connectionsToRemove.add(connection);
         synchronized (this.listeners) {
           ConnectionEvent event =
               new ConnectionEvent(this, ConnectionEvent.CONNECTION_ERROR_OCCURRED, e);
@@ -201,9 +204,8 @@ public class JCAManagedConnection implements ManagedConnection {
             listener.connectionErrorOccurred(event);
           }
         }
-
-        iterator.remove();
       }
+      connections.removeAll(connectionsToRemove);
     }
   }
 
@@ -212,11 +214,10 @@ public class JCAManagedConnection implements ManagedConnection {
     this.connections.remove(connection);
 
     synchronized (this.listeners) {
-      Iterator<ConnectionEventListener> iterator = this.listeners.iterator();
       ConnectionEvent event = new ConnectionEvent(this, ConnectionEvent.CONNECTION_CLOSED);
       event.setConnectionHandle(connection);
-      while (iterator.hasNext()) {
-        iterator.next().connectionClosed(event);
+      for (ConnectionEventListener listener : this.listeners) {
+        listener.connectionClosed(event);
       }
     }
 
