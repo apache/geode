@@ -22,7 +22,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Set;
+import java.util.function.Consumer;
 
 /**
  * A Hash set where every modification makes an internal copy of a HashSet. Similar to
@@ -47,12 +49,36 @@ public class CopyOnWriteHashSet<T> implements Set<T>, Serializable {
   }
 
   /**
-   * Because I'm lazy, this iterator does not support modification of this set. If you need it, it
-   * shouldn't be too hard to implement.
+   * Create a custom {@link Iterator} implementation for the {@link CopyOnWriteHashSet}
    */
   @Override
   public Iterator<T> iterator() {
-    return Collections.unmodifiableSet(snapshot).iterator();
+    return new Iterator<T>() {
+
+      private Iterator<T> iterator = new LinkedList<>(snapshot).iterator();
+      private T currentElement;
+
+      @Override
+      public boolean hasNext() {
+        return iterator.hasNext();
+      }
+
+      @Override
+      public T next() {
+        currentElement = iterator.next();
+        return currentElement;
+      }
+
+      @Override
+      public void remove() {
+        snapshot.remove(currentElement);
+      }
+
+      @Override
+      public void forEachRemaining(Consumer<? super T> action) {
+        iterator.forEachRemaining(action);
+      }
+    };
   }
 
   @Override
