@@ -491,7 +491,11 @@ public class GenerateMBeanHTML extends DefaultHandler {
     }
 
     File htmlFile = new File(htmlFileName);
-    convert(new FileInputStream(xmlFile), new PrintWriter(new FileWriter(htmlFile), true));
+    try (FileInputStream fileInputStream = new FileInputStream(xmlFile);
+        FileWriter fileWriter = new FileWriter(htmlFile);
+        PrintWriter printWriter = new PrintWriter(fileWriter, true)) {
+      convert(fileInputStream, printWriter);
+    }
   }
 
 }

@@ -88,7 +88,10 @@ public class GemfireLogConverter {
       files[i - 1] = file;
     }
 
-    convertFiles(new BufferedOutputStream(new FileOutputStream(outputFile)), files);
+    try (FileOutputStream fileOutputStream = new FileOutputStream(outputFile);
+        BufferedOutputStream output = new BufferedOutputStream(fileOutputStream)) {
+      convertFiles(output, files);
+    }
   }
 
   private static ArrayList<Test> buildTests() {

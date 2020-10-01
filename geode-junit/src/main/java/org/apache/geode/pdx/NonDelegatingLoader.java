@@ -37,27 +37,28 @@ class NonDelegatingLoader extends ClassLoader {
     if (url == null) {
       throw new ClassNotFoundException();
     }
-    HeapDataOutputStream hoas = new HeapDataOutputStream(KnownVersion.CURRENT);
-    InputStream classStream;
-    try {
-      classStream = url.openStream();
-      while (true) {
-        byte[] chunk = new byte[1024];
-        int read = classStream.read(chunk);
-        if (read < 0) {
-          break;
+    try (HeapDataOutputStream hoas = new HeapDataOutputStream(KnownVersion.CURRENT)) {
+      InputStream classStream;
+      try {
+        classStream = url.openStream();
+        while (true) {
+          byte[] chunk = new byte[1024];
+          int read = classStream.read(chunk);
+          if (read < 0) {
+            break;
+          }
+          hoas.write(chunk, 0, read);
         }
-        hoas.write(chunk, 0, read);
+      } catch (IOException e) {
+        throw new ClassNotFoundException("Error reading class", e);
       }
-    } catch (IOException e) {
-      throw new ClassNotFoundException("Error reading class", e);
-    }
 
-    Class clazz = defineClass(name, hoas.toByteBuffer(), null);
-    if (resolve) {
-      resolveClass(clazz);
+      Class clazz = defineClass(name, hoas.toByteBuffer(), null);
+      if (resolve) {
+        resolveClass(clazz);
+      }
+      return clazz;
     }
-    return clazz;
   }
 
 }

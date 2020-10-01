@@ -1510,35 +1510,36 @@ public class AcceptorImpl implements Acceptor, Runnable {
 
   @Override
   public void refuseHandshake(OutputStream out, String message, byte exception) throws IOException {
-    HeapDataOutputStream hdos = new HeapDataOutputStream(32, KnownVersion.CURRENT);
-    DataOutputStream dos = new DataOutputStream(hdos);
-    // Write refused reply
-    dos.writeByte(exception);
+    try (HeapDataOutputStream hdos = new HeapDataOutputStream(32, KnownVersion.CURRENT)) {
+      DataOutputStream dos = new DataOutputStream(hdos);
+      // Write refused reply
+      dos.writeByte(exception);
 
-    // write dummy endpointType
-    dos.writeByte(0);
-    // write dummy queueSize
-    dos.writeInt(0);
+      // write dummy endpointType
+      dos.writeByte(0);
+      // write dummy queueSize
+      dos.writeInt(0);
 
-    // Write the server's member
-    DistributedMember member = InternalDistributedSystem.getAnyInstance().getDistributedMember();
-    HeapDataOutputStream memberDos = new HeapDataOutputStream(KnownVersion.CURRENT);
-    DataSerializer.writeObject(member, memberDos);
-    DataSerializer.writeByteArray(memberDos.toByteArray(), dos);
-    memberDos.close();
+      // Write the server's member
+      DistributedMember member = InternalDistributedSystem.getAnyInstance().getDistributedMember();
+      HeapDataOutputStream memberDos = new HeapDataOutputStream(KnownVersion.CURRENT);
+      DataSerializer.writeObject(member, memberDos);
+      DataSerializer.writeByteArray(memberDos.toByteArray(), dos);
+      memberDos.close();
 
-    // Write the refusal message
-    if (message == null) {
-      message = "";
+      // Write the refusal message
+      if (message == null) {
+        message = "";
+      }
+      dos.writeUTF(message);
+
+      // Write dummy delta-propagation property value. This will never be read at
+      // receiver because the exception byte above will cause the receiver code
+      // throw an exception before the below byte could be read.
+      dos.writeBoolean(Boolean.TRUE);
+
+      out.write(hdos.toByteArray());
     }
-    dos.writeUTF(message);
-
-    // Write dummy delta-propagation property value. This will never be read at
-    // receiver because the exception byte above will cause the receiver code
-    // throw an exception before the below byte could be read.
-    dos.writeBoolean(Boolean.TRUE);
-
-    out.write(hdos.toByteArray());
     out.flush();
   }
 

@@ -406,6 +406,13 @@ public class TcpServer {
         } catch (IOException ignore) {
           // ignore
         }
+        if (input != null) {
+          try {
+            input.close();
+          } catch (IOException ignore) {
+
+          }
+        }
       }
     });
   }

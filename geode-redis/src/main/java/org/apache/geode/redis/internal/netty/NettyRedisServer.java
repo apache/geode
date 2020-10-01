@@ -185,11 +185,10 @@ public class NettyRedisServer {
     }
 
     SslContext sslContext;
-    try {
+    try (FileInputStream fileInputStream =
+        new FileInputStream(sslConfigForComponent.getKeystore())) {
       KeyStore ks = KeyStore.getInstance("JKS");
-      ks.load(new FileInputStream(sslConfigForComponent.getKeystore()),
-          sslConfigForComponent.getKeystorePassword().toCharArray()/**/);
-
+      ks.load(fileInputStream, sslConfigForComponent.getKeystorePassword().toCharArray());
       // Set up key manager factory to use our key store
       KeyManagerFactory kmf =
           KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());

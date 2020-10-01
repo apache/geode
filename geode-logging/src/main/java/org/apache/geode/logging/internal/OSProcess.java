@@ -402,20 +402,21 @@ public class OSProcess {
       if (pid > 0 && pid != myPid[0]) {
         return false;
       }
-      CharArrayWriter cw = new CharArrayWriter(50000);
-      PrintWriter sb = new PrintWriter(cw, true);
-      sb.append("\n******** full thread dump ********\n");
-      ThreadMXBean bean = ManagementFactory.getThreadMXBean();
-      long[] threadIds = bean.getAllThreadIds();
-      ThreadInfo[] infos = bean.getThreadInfo(threadIds, true, true);
-      long thisThread = Thread.currentThread().getId();
-      for (int i = 0; i < infos.length; i++) {
-        if (i != thisThread && infos[i] != null) {
-          formatThreadInfo(infos[i], sb);
+      try (CharArrayWriter cw = new CharArrayWriter(50000)) {
+        PrintWriter sb = new PrintWriter(cw, true);
+        sb.append("\n******** full thread dump ********\n");
+        ThreadMXBean bean = ManagementFactory.getThreadMXBean();
+        long[] threadIds = bean.getAllThreadIds();
+        ThreadInfo[] infos = bean.getThreadInfo(threadIds, true, true);
+        long thisThread = Thread.currentThread().getId();
+        for (int i = 0; i < infos.length; i++) {
+          if (i != thisThread && infos[i] != null) {
+            formatThreadInfo(infos[i], sb);
+          }
         }
+        sb.flush();
+        logger.warn(cw.toString());
       }
-      sb.flush();
-      logger.warn(cw.toString());
       return true;
     } else {
       if (pid < 0)

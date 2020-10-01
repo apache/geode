@@ -314,10 +314,11 @@ public class Put65 extends BaseCommand {
             && clientVersion.isNotNewerThan(KnownVersion.GFE_651)) {
           // older clients don't know that Token is now a DSFID class, so we
           // put the token in a serialized form they can consume
-          HeapDataOutputStream str = new HeapDataOutputStream(KnownVersion.CURRENT);
-          DataOutput dstr = new DataOutputStream(str);
-          InternalDataSerializer.writeSerializableObject(oldValue, dstr);
-          oldValue = str.toByteArray();
+          try (HeapDataOutputStream str = new HeapDataOutputStream(KnownVersion.CURRENT)) {
+            DataOutput dstr = new DataOutputStream(str);
+            InternalDataSerializer.writeSerializableObject(oldValue, dstr);
+            oldValue = str.toByteArray();
+          }
         }
         result = true;
         // } catch (Exception e) {
@@ -349,10 +350,11 @@ public class Put65 extends BaseCommand {
               && clientVersion.isNotNewerThan(KnownVersion.GFE_651)) {
             // older clients don't know that Token is now a DSFID class, so we
             // put the token in a serialized form they can consume
-            HeapDataOutputStream str = new HeapDataOutputStream(KnownVersion.CURRENT);
-            DataOutput dstr = new DataOutputStream(str);
-            InternalDataSerializer.writeSerializableObject(oldValue, dstr);
-            oldValue = str.toByteArray();
+            try (HeapDataOutputStream str = new HeapDataOutputStream(KnownVersion.CURRENT)) {
+              DataOutput dstr = new DataOutputStream(str);
+              InternalDataSerializer.writeSerializableObject(oldValue, dstr);
+              oldValue = str.toByteArray();
+            }
           }
           if (isDebugEnabled) {
             logger.debug("returning {} from replace(K,V)", oldValue);

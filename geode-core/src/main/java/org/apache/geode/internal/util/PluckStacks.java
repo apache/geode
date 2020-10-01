@@ -17,7 +17,6 @@ package org.apache.geode.internal.util;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -67,13 +66,13 @@ public class PluckStacks {
 
     try {
       if (log.getName().endsWith(".gz")) {
-        reader = new LineNumberReader(
-            new InputStreamReader(new GZIPInputStream(new FileInputStream(log))));
+        try (FileInputStream fileInputStream = new FileInputStream(log);
+            GZIPInputStream gzipInputStream = new GZIPInputStream(fileInputStream)) {
+          reader = new LineNumberReader(new InputStreamReader(gzipInputStream));
+        }
       } else {
         reader = new LineNumberReader(new FileReader(log));
       }
-    } catch (FileNotFoundException e) {
-      return;
     } catch (IOException e) {
       return;
     }

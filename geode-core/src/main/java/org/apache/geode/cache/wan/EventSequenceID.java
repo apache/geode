@@ -45,9 +45,8 @@ public class EventSequenceID {
   public EventSequenceID(byte[] membershipID, long threadID, long sequenceID) {
     // convert the byte array of membershipID to a readable string
     Object mbr;
-    try {
-      mbr = InternalDistributedMember
-          .readEssentialData(new ByteArrayDataInput(membershipID));
+    try (ByteArrayDataInput byteArrayDataInput = new ByteArrayDataInput(membershipID)) {
+      mbr = InternalDistributedMember.readEssentialData(byteArrayDataInput);
     } catch (Exception e) {
       mbr = Arrays.toString(membershipID); // punt and use the bytes
     }

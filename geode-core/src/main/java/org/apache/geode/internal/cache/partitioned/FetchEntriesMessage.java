@@ -291,65 +291,65 @@ public class FetchEntriesMessage extends PartitionMessage {
       boolean sentLastChunk = false;
 
       // always write at least one chunk
-      final HeapDataOutputStream mos = new HeapDataOutputStream(
+      try (HeapDataOutputStream mos = new HeapDataOutputStream(
           InitialImageOperation.CHUNK_SIZE_IN_BYTES + 2048, Versioning
-              .getKnownVersionOrDefault(receiver.getVersion(), KnownVersion.CURRENT));
-      do {
-        mos.reset();
+              .getKnownVersionOrDefault(receiver.getVersion(), KnownVersion.CURRENT))) {
+        do {
+          mos.reset();
 
-        int avgItemSize = 0;
-        int itemCount = 0;
+          int avgItemSize = 0;
+          int itemCount = 0;
 
-        while ((mos.size() + avgItemSize) < InitialImageOperation.CHUNK_SIZE_IN_BYTES
-            && it.hasNext()) {
+          while ((mos.size() + avgItemSize) < InitialImageOperation.CHUNK_SIZE_IN_BYTES
+              && it.hasNext()) {
 
-          NonTXEntry entry = (NonTXEntry) it.next();
-          RegionEntry re = entry.getRegionEntry();
-          synchronized (re) {
-            Object value = re.getValueRetain(map, true);
-            try {
-              if (value == null) {
-                // only possible for disk entry
-                value = re.getSerializedValueOnDisk((LocalRegion) entry.getRegion());
-              }
-              if (!Token.isRemoved(value)) {
-                DataSerializer.writeObject(re.getKey(), mos);
-                if (Token.isInvalid(value)) {
-                  value = null;
+            NonTXEntry entry = (NonTXEntry) it.next();
+            RegionEntry re = entry.getRegionEntry();
+            synchronized (re) {
+              Object value = re.getValueRetain(map, true);
+              try {
+                if (value == null) {
+                  // only possible for disk entry
+                  value = re.getSerializedValueOnDisk((LocalRegion) entry.getRegion());
                 }
-                VersionStamp stamp = re.getVersionStamp();
-                VersionTag versionTag = stamp != null ? stamp.asVersionTag() : null;
-                if (versionTag != null) {
-                  versionTag.replaceNullIDs(map.getVersionMember());
-                }
-                DataSerializer.writeObject(value, mos);
-                DataSerializer.writeObject(versionTag, mos);
+                if (!Token.isRemoved(value)) {
+                  DataSerializer.writeObject(re.getKey(), mos);
+                  if (Token.isInvalid(value)) {
+                    value = null;
+                  }
+                  VersionStamp stamp = re.getVersionStamp();
+                  VersionTag versionTag = stamp != null ? stamp.asVersionTag() : null;
+                  if (versionTag != null) {
+                    versionTag.replaceNullIDs(map.getVersionMember());
+                  }
+                  DataSerializer.writeObject(value, mos);
+                  DataSerializer.writeObject(versionTag, mos);
 
-                // Note we track the itemCount so we can compute avgItemSize
-                itemCount++;
-                // Note we track avgItemSize to help us not to always go one item
-                // past the max chunk size. When we go past it causes us to grow
-                // the ByteBuffer that the chunk is stored in resulting in a copy
-                // of the data.
-                avgItemSize = mos.size() / itemCount;
+                  // Note we track the itemCount so we can compute avgItemSize
+                  itemCount++;
+                  // Note we track avgItemSize to help us not to always go one item
+                  // past the max chunk size. When we go past it causes us to grow
+                  // the ByteBuffer that the chunk is stored in resulting in a copy
+                  // of the data.
+                  avgItemSize = mos.size() / itemCount;
+                }
+              } finally {
+                OffHeapHelper.release(value);
               }
-            } finally {
-              OffHeapHelper.release(value);
             }
           }
-        }
 
-        // Write "end of chunk" entry to indicate end of chunk
-        DataSerializer.writeObject((Object) null, mos);
+          // Write "end of chunk" entry to indicate end of chunk
+          DataSerializer.writeObject((Object) null, mos);
 
-        // send 1 for last message if no more data
-        int lastMsg = it.hasNext() ? 0 : 1;
-        keepGoing = proc.executeWith(mos, lastMsg);
-        sentLastChunk = lastMsg == 1 && keepGoing;
+          // send 1 for last message if no more data
+          int lastMsg = it.hasNext() ? 0 : 1;
+          keepGoing = proc.executeWith(mos, lastMsg);
+          sentLastChunk = lastMsg == 1 && keepGoing;
 
-        // if this region is destroyed while we are sending data, then abort.
-      } while (keepGoing && it.hasNext());
-
+          // if this region is destroyed while we are sending data, then abort.
+        } while (keepGoing && it.hasNext());
+      }
       // return false if we were told to abort
       return sentLastChunk;
     }

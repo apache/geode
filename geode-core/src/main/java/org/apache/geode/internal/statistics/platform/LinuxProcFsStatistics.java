@@ -112,15 +112,18 @@ public class LinuxProcFsStatistics {
    */
   public static void refreshProcess(int pid, LocalStatisticsImpl stats) {
     // Just incase a pid is not available
-    if (pid == 0)
+    if (pid == 0) {
       return;
-    InputStreamReader isr = null;
-    BufferedReader br = null;
+    }
+
     try {
       File file = new File("/proc/" + pid + "/stat");
-      isr = new InputStreamReader(new FileInputStream(file));
-      br = new BufferedReader(isr, 2048);
-      String line = br.readLine();
+      String line;
+      try (FileInputStream fileInputStream = new FileInputStream(file);
+          InputStreamReader isr = new InputStreamReader(fileInputStream);
+          BufferedReader br = new BufferedReader(isr, 2048)) {
+        line = br.readLine();
+      }
       if (line == null) {
         return;
       }
@@ -141,11 +144,6 @@ public class LinuxProcFsStatistics {
       // as they are.
     } finally {
       tokenizer.releaseResources();
-      if (br != null)
-        try {
-          br.close();
-        } catch (IOException ignore) {
-        }
     }
   }
 
@@ -156,12 +154,11 @@ public class LinuxProcFsStatistics {
     }
     stats.setLong(LinuxSystemStats.processesLONG, getProcessCount());
     stats.setLong(LinuxSystemStats.cpusLONG, sys_cpus);
-    InputStreamReader isr = null;
-    BufferedReader br = null;
-    try {
-      isr = new InputStreamReader(new FileInputStream("/proc/stat"));
-      br = new BufferedReader(isr);
-      String line = null;
+    try (FileInputStream fileInputStream = new FileInputStream("/proc/stat");
+        InputStreamReader isr = new InputStreamReader(fileInputStream);
+        BufferedReader br = new BufferedReader(isr)) {
+
+      String line;
       while ((line = br.readLine()) != null) {
         try {
           if (line.startsWith(CPU_TOKEN)) {
@@ -202,13 +199,7 @@ public class LinuxProcFsStatistics {
           // just do not update what ever entry had the problem
         }
       }
-    } catch (IOException ioe) {
-    } finally {
-      if (br != null)
-        try {
-          br.close();
-        } catch (IOException ignore) {
-        }
+    } catch (IOException ignore) {
     }
     getLoadAvg(stats);
     getMemInfo(stats);
@@ -224,11 +215,9 @@ public class LinuxProcFsStatistics {
   // Example of /proc/loadavg
   // 0.00 0.00 0.07 1/218 7907
   private static void getLoadAvg(LocalStatisticsImpl stats) {
-    InputStreamReader isr = null;
-    BufferedReader br = null;
-    try {
-      isr = new InputStreamReader(new FileInputStream("/proc/loadavg"));
-      br = new BufferedReader(isr, 512);
+    try (FileInputStream fileInputStream = new FileInputStream("/proc/loadavg");
+        InputStreamReader isr = new InputStreamReader(fileInputStream);
+        BufferedReader br = new BufferedReader(isr, 512)) {
       String line = br.readLine();
       if (line == null) {
         return;
@@ -237,15 +226,9 @@ public class LinuxProcFsStatistics {
       stats.setDouble(LinuxSystemStats.loadAverage1DOUBLE, tokenizer.nextTokenAsDouble());
       stats.setDouble(LinuxSystemStats.loadAverage5DOUBLE, tokenizer.nextTokenAsDouble());
       stats.setDouble(LinuxSystemStats.loadAverage15DOUBLE, tokenizer.nextTokenAsDouble());
-    } catch (NoSuchElementException nsee) {
-    } catch (IOException ioe) {
+    } catch (NoSuchElementException | IOException ignore) {
     } finally {
       tokenizer.releaseResources();
-      if (br != null)
-        try {
-          br.close();
-        } catch (IOException ignore) {
-        }
     }
   }
 
@@ -256,27 +239,24 @@ public class LinuxProcFsStatistics {
    * @return the available memory in bytes
    */
   public static long getAvailableMemory(Logger logger) {
-    try {
-      BufferedReader br =
-          new BufferedReader(new InputStreamReader(new FileInputStream("/proc/meminfo")));
-      try {
-        long free = 0;
-        Pattern p = Pattern.compile("(.*)?:\\s+(\\d+)( kB)?");
+    long free = 0;
+    Pattern p = Pattern.compile("(.*)?:\\s+(\\d+)( kB)?");
 
-        String line;
-        while ((line = br.readLine()) != null) {
-          Matcher m = p.matcher(line);
-          if (m.matches() && ("MemFree".equals(m.group(1)) || "Cached".equals(m.group(1)))) {
-            free += Long.parseLong(m.group(2));
-          }
+    try (FileInputStream fileInputStream = new FileInputStream("/proc/meminfo");
+        InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
+        BufferedReader br = new BufferedReader(inputStreamReader)) {
+
+      String line;
+      while ((line = br.readLine()) != null) {
+        Matcher m = p.matcher(line);
+        if (m.matches() && ("MemFree".equals(m.group(1)) || "Cached".equals(m.group(1)))) {
+          free += Long.parseLong(m.group(2));
         }
-
-        // convert to bytes
-        return 1024 * free;
-
-      } finally {
-        br.close();
       }
+
+      // convert to bytes
+      return 1024 * free;
+
     } catch (IOException e) {
       logger.warn("Error determining free memory", e);
       return Long.MAX_VALUE;
@@ -288,11 +268,9 @@ public class LinuxProcFsStatistics {
   // Mem: 4118380544 3816050688 302329856 0 109404160 3060326400
   // Swap: 4194881536 127942656 4066938880
   private static void getMemInfo(LocalStatisticsImpl stats) {
-    InputStreamReader isr = null;
-    BufferedReader br = null;
-    try {
-      isr = new InputStreamReader(new FileInputStream("/proc/meminfo"));
-      br = new BufferedReader(isr);
+    try (FileInputStream fileInputStream = new FileInputStream("/proc/meminfo");
+        InputStreamReader isr = new InputStreamReader(fileInputStream);
+        BufferedReader br = new BufferedReader(isr)) {
       // Assume all values read in are in kB, convert to MB
       String line = null;
       while ((line = br.readLine()) != null) {
@@ -340,14 +318,9 @@ public class LinuxProcFsStatistics {
           // ignore and let that stat not to be updated this time
         }
       }
-    } catch (IOException ioe) {
+    } catch (IOException ignore) {
     } finally {
       tokenizer.releaseResources();
-      if (br != null)
-        try {
-          br.close();
-        } catch (IOException ignore) {
-        }
     }
   }
 
@@ -356,8 +329,9 @@ public class LinuxProcFsStatistics {
    * ListenOverflows=20 ListenDrops=21
    */
   private static void getNetStatStats(LocalStatisticsImpl stats) {
-    try (InputStreamReader isr = new InputStreamReader(new FileInputStream("/proc/net/netstat"))) {
-      BufferedReader br = new BufferedReader(isr);
+    try (FileInputStream fileInputStream = new FileInputStream("/proc/net/netstat");
+        InputStreamReader isr = new InputStreamReader(fileInputStream);
+        BufferedReader br = new BufferedReader(isr)) {
       String line;
       do {
         br.readLine(); // header
@@ -377,12 +351,10 @@ public class LinuxProcFsStatistics {
       stats.setLong(LinuxSystemStats.tcpExtListenDropsLONG, tcpListenDrops);
       stats.setLong(LinuxSystemStats.tcpExtListenOverflowsLONG, tcpListenOverflows);
 
-      br.close();
-      br = null;
       if (!soMaxConnProcessed) {
-        try (InputStreamReader soMaxConnIsr =
-            new InputStreamReader(new FileInputStream("/proc/sys/net/core/somaxconn"))) {
-          BufferedReader br2 = new BufferedReader(soMaxConnIsr);
+        try (FileInputStream fileInputStream2 = new FileInputStream("/proc/sys/net/core/somaxconn");
+            InputStreamReader soMaxConnIsr = new InputStreamReader(fileInputStream2);
+            BufferedReader br2 = new BufferedReader(soMaxConnIsr)) {
           line = br2.readLine();
           tokenizer.setString(line);
           soMaxConn = tokenizer.nextTokenAsInt();
@@ -392,8 +364,7 @@ public class LinuxProcFsStatistics {
 
       stats.setLong(LinuxSystemStats.tcpSOMaxConnLONG, soMaxConn);
 
-    } catch (NoSuchElementException nsee) {
-    } catch (IOException ioe) {
+    } catch (NoSuchElementException | IOException ignore) {
     } finally {
       tokenizer.releaseResources();
     }
@@ -406,11 +377,9 @@ public class LinuxProcFsStatistics {
    */
 
   private static void getNetStats(LocalStatisticsImpl stats) {
-    InputStreamReader isr = null;
-    BufferedReader br = null;
-    try {
-      isr = new InputStreamReader(new FileInputStream("/proc/net/dev"));
-      br = new BufferedReader(isr);
+    try (FileInputStream fileInputStream = new FileInputStream("/proc/net/dev");
+        InputStreamReader isr = new InputStreamReader(fileInputStream);
+        BufferedReader br = new BufferedReader(isr)) {
       br.readLine(); // Discard header info
       br.readLine(); // Discard header info
       long lo_recv_packets = 0, lo_recv_bytes = 0;
@@ -421,7 +390,7 @@ public class LinuxProcFsStatistics {
       String line = null;
       while ((line = br.readLine()) != null) {
         int index = line.indexOf(":");
-        boolean isloopback = (line.indexOf("lo:") != -1);
+        boolean isloopback = (line.contains("lo:"));
         tokenizer.setString(line.substring(index + 1).trim());
         long recv_bytes = tokenizer.nextTokenAsLong();
         long recv_packets = tokenizer.nextTokenAsLong();
@@ -467,15 +436,9 @@ public class LinuxProcFsStatistics {
       stats.setLong(LinuxSystemStats.xmitErrorsLONG, other_xmit_errs);
       stats.setLong(LinuxSystemStats.xmitDropsLONG, other_xmit_drop);
       stats.setLong(LinuxSystemStats.xmitCollisionsLONG, other_xmit_colls);
-    } catch (NoSuchElementException nsee) {
-    } catch (IOException ioe) {
+    } catch (NoSuchElementException | IOException ignore) {
     } finally {
       tokenizer.releaseResources();
-      if (br != null)
-        try {
-          br.close();
-        } catch (IOException ignore) {
-        }
     }
   }
 
@@ -593,17 +556,21 @@ public class LinuxProcFsStatistics {
       stats.setLong(LinuxSystemStats.iosInProgressLONG, iosInProgress);
       stats.setLong(LinuxSystemStats.timeIosInProgressLONG, timeIosInProgress);
       stats.setLong(LinuxSystemStats.ioTimeLONG, ioTime);
-    } catch (NoSuchElementException nsee) {
-      // org.apache.geode.distributed.internal.InternalDistributedSystem.getAnyInstance().getLogger().fine("unexpected
-      // NoSuchElementException line=" + line, nsee);
-    } catch (IOException ioe) {
+    } catch (NoSuchElementException | IOException ignore) {
     } finally {
       tokenizer.releaseResources();
-      if (br != null)
+      if (br != null) {
         try {
           br.close();
         } catch (IOException ignore) {
         }
+      }
+      if (isr != null) {
+        try {
+          isr.close();
+        } catch (IOException ignore) {
+        }
+      }
     }
   }
 
@@ -615,11 +582,9 @@ public class LinuxProcFsStatistics {
   // pswpout 14495
   private static void getVmStats(LocalStatisticsImpl stats) {
     assert hasProcVmStat != false : "getVmStats called when hasVmStat was false";
-    InputStreamReader isr = null;
-    BufferedReader br = null;
-    try {
-      isr = new InputStreamReader(new FileInputStream("/proc/vmstat"));
-      br = new BufferedReader(isr);
+    try (FileInputStream fileInputStream = new FileInputStream("/proc/vmstat");
+        InputStreamReader isr = new InputStreamReader(fileInputStream);
+        BufferedReader br = new BufferedReader(isr)) {
       String line = null;
       while ((line = br.readLine()) != null) {
         if (line.startsWith(PGPGIN)) {
@@ -636,14 +601,7 @@ public class LinuxProcFsStatistics {
               SpaceTokenizer.parseAsLong(line.substring(PSWPOUT.length())));
         }
       }
-    } catch (NoSuchElementException nsee) {
-    } catch (IOException ioe) {
-    } finally {
-      if (br != null)
-        try {
-          br.close();
-        } catch (IOException ignore) {
-        }
+    } catch (NoSuchElementException | IOException ignore) {
     }
   }
 

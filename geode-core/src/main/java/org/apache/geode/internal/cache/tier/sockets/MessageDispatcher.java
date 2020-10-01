@@ -752,10 +752,9 @@ public class MessageDispatcher extends LoggingThread {
     Object deserializedObject = serializedBytes;
     // This is a debugging method so ignore all exceptions like
     // ClassNotFoundException
-    try {
-      ByteArrayDataInput dis = new ByteArrayDataInput(serializedBytes);
+    try (ByteArrayDataInput dis = new ByteArrayDataInput(serializedBytes)) {
       deserializedObject = DataSerializer.readObject(dis);
-    } catch (Exception e) {
+    } catch (Exception ignore) {
     }
     return deserializedObject;
   }

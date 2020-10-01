@@ -173,9 +173,10 @@ public class SocketFactory {
 
     String trustStoreType = "jks";
     KeyStore keyStore = KeyStore.getInstance(trustStoreType);
-    FileInputStream fileInputStream = new FileInputStream(trustStorePath);
     char[] password = "password".toCharArray();
-    keyStore.load(fileInputStream, password);
+    try (FileInputStream fileInputStream = new FileInputStream(trustStorePath)) {
+      keyStore.load(fileInputStream, password);
+    }
 
     TrustManagerFactory tmf =
         TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
@@ -191,9 +192,10 @@ public class SocketFactory {
 
     String keyStoreType = "jks";
     KeyStore keyStore = KeyStore.getInstance(keyStoreType);
-    FileInputStream fileInputStream = new FileInputStream(keyStorePath);
     char[] password = "password".toCharArray();
-    keyStore.load(fileInputStream, password);
+    try (FileInputStream fileInputStream = new FileInputStream(keyStorePath)) {
+      keyStore.load(fileInputStream, password);
+    }
 
     KeyManagerFactory keyManagerFactory =
         KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
