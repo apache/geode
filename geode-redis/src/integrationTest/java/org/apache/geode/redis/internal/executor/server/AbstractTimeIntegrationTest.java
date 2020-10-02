@@ -11,23 +11,24 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
+ *
  */
 
-package org.apache.geode.redis.internal.executor.key;
+package org.apache.geode.redis.internal.executor.server;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.Protocol;
 
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
-public abstract class AbstractTypeIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractTimeIntegrationTest implements RedisPortSupplier {
 
   private Jedis jedis;
   private static final int REDIS_CLIENT_TIMEOUT =
@@ -39,46 +40,17 @@ public abstract class AbstractTypeIntegrationTest implements RedisPortSupplier {
   }
 
   @After
-  public void tearDown() {
-    jedis.flushAll();
+  public void classLevelTearDown() {
     jedis.close();
   }
 
   @Test
-  public void shouldReturnNone_givenKeyDoesNotExist() {
-    assertThat(jedis.type("doesNotExist")).isEqualTo("none");
+  public void timeCommandRespondsWIthTwoValues() {
+    List<String> timestamp = jedis.time();
+
+    assertThat(timestamp).hasSize(2);
+    assertThat(Long.parseLong(timestamp.get(0))).isGreaterThan(0);
+    assertThat(Long.parseLong(timestamp.get(1))).isNotNegative();
   }
 
-  @Test
-  public void shouldThrowError_givenTooFewArgs() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.TYPE))
-        .hasMessageContaining("wrong number of arguments");
-  }
-
-  @Test
-  public void shouldThrowError_givenTooManyArgs() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.TYPE, "orange", "blue"))
-        .hasMessageContaining("wrong number of arguments");
-  }
-
-  @Test
-  public void shouldReturnCorrectType_givenStringKey() {
-    jedis.set("orange", "crush");
-
-    assertThat(jedis.type("orange")).isEqualTo("string");
-  }
-
-  @Test
-  public void shouldReturnCorrectType_givenSetKey() {
-    jedis.sadd("orange", "crush");
-
-    assertThat(jedis.type("orange")).isEqualTo("set");
-  }
-
-  @Test
-  public void shouldReturnCorrectType_givenHashKey() {
-    jedis.hset("rem", "songs", "orange crush");
-
-    assertThat(jedis.type("rem")).isEqualTo("hash");
-  }
 }

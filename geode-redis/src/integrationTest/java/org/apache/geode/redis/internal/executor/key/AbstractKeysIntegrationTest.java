@@ -28,7 +28,7 @@ import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 public abstract class AbstractKeysIntegrationTest implements RedisPortSupplier {
 
   private Jedis jedis;
-  private static int REDIS_CLIENT_TIMEOUT =
+  private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before

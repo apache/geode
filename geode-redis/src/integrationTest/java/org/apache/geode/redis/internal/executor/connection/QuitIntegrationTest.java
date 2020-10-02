@@ -32,7 +32,7 @@ import org.apache.geode.redis.GeodeRedisServerRule;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public class QuitIntegrationTest {
-  protected static int REDIS_CLIENT_TIMEOUT =
+  protected static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
   protected static Jedis jedis;
 

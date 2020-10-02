@@ -11,22 +11,22 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
 
 package org.apache.geode.redis.internal.executor.server;
 
 import org.junit.ClassRule;
 
-import org.apache.geode.redis.GeodeRedisServerRule;
+import org.apache.geode.NativeRedisTestRule;
 
-public class TimeIntegrationTest extends AbstractTimeIntegrationTest {
+public class FlushAllNativeRedisAcceptanceTest extends AbstractFlushAllIntegrationTest {
 
   @ClassRule
-  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
+  public static NativeRedisTestRule redis = new NativeRedisTestRule();
 
   @Override
   public int getPort() {
-    return server.getPort();
+    return redis.getPort();
   }
+
 }

@@ -23,6 +23,7 @@ public class PubSubNativeRedisAcceptanceTest extends AbstractPubSubIntegrationTe
   @ClassRule
   public static NativeRedisTestRule redis = new NativeRedisTestRule();
 
+  @Override
   public int getPort() {
     return redis.getPort();
   }

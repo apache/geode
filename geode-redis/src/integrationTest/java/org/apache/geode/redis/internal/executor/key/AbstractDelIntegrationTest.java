@@ -33,7 +33,7 @@ public abstract class AbstractDelIntegrationTest implements RedisPortSupplier {
   private Jedis jedis;
   private Jedis jedis2;
   private static int ITERATION_COUNT = 4000;
-  private static int REDIS_CLIENT_TIMEOUT =
+  private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before

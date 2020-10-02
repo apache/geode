@@ -402,10 +402,4 @@ public abstract class AbstractRenameIntegrationTest implements RedisPortSupplier
     return strings;
   }
 
-  @Test
-  public void renamenxIsUnimplemented() {
-    assertThatThrownBy(() -> jedis.renamenx("foo", "newfoo"))
-        .hasMessageContaining("RENAMENX is not implemented.");
-  }
-
 }

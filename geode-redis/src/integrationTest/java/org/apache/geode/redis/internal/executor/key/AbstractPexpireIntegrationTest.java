@@ -28,7 +28,8 @@ import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 public abstract class AbstractPexpireIntegrationTest implements RedisPortSupplier {
 
   private Jedis jedis;
-  private static int REDIS_CLIENT_TIMEOUT = 10000000;
+  private static final int REDIS_CLIENT_TIMEOUT =
+      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {

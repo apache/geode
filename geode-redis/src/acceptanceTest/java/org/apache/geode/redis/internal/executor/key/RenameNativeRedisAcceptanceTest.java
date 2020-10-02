@@ -15,8 +15,6 @@
 package org.apache.geode.redis.internal.executor.key;
 
 import org.junit.ClassRule;
-import org.junit.Ignore;
-import org.junit.Test;
 
 import org.apache.geode.NativeRedisTestRule;
 
@@ -29,10 +27,5 @@ public class RenameNativeRedisAcceptanceTest extends AbstractRenameIntegrationTe
   public int getPort() {
     return redis.getPort();
   }
-
-  @Override
-  @Test
-  @Ignore("native redis does implement renamenx")
-  public void renamenxIsUnimplemented() {}
 
 }

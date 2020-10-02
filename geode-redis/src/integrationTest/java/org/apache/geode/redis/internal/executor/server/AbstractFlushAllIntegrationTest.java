@@ -16,57 +16,43 @@
 
 package org.apache.geode.redis.internal.executor.server;
 
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.exceptions.JedisConnectionException;
 
-import org.apache.geode.redis.GeodeRedisServerRule;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
+import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
-public class ShutdownIntegrationTest {
+public abstract class AbstractFlushAllIntegrationTest implements RedisPortSupplier {
 
-  public Jedis jedis;
-  public static final int REDIS_CLIENT_TIMEOUT =
+  private Jedis jedis;
+  private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
-
-  @Rule
-  public GeodeRedisServerRule server = new GeodeRedisServerRule()
-      .withProperty(LOG_LEVEL, "info");
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", server.getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
-  public void tearDown() {
+  public void teardown() {
     jedis.close();
   }
 
   @Test
-  public void shutdownActuallyShutsDownTheServer() {
-    // This is the default, but it's here just to be obvious
-    server.getServer().setAllowUnsupportedCommands(true);
-    jedis.shutdown();
+  public void flushAllDeletesAllDataTypes() {
+    jedis.sadd("set1", "value1");
+    jedis.hset("hash1", "field1", "member1");
+    jedis.set("string1", "value1");
 
-    assertThatThrownBy(() -> jedis.echo("foo")).isInstanceOf(JedisConnectionException.class);
-  }
-
-  @Test
-  public void shutdownIsDisabled_whenOnlySupportedCommandsAreAllowed() {
-    server.getServer().setAllowUnsupportedCommands(false);
-
-    // Unfortunately Jedis' shutdown() doesn't seem to throw a JedisDataException when the command
-    // returns an error.
-    jedis.shutdown();
+    jedis.flushAll();
 
     assertThat(jedis.keys("*")).isEmpty();
+    assertThat(jedis.get("string1")).isNull();
+    assertThat(jedis.smembers("set1")).isEmpty();
+    assertThat(jedis.hgetAll("hash1")).isEmpty();
   }
 }
