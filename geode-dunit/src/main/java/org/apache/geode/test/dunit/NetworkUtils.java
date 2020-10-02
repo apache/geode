@@ -21,6 +21,7 @@ import java.io.UncheckedIOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import org.apache.geode.annotations.internal.SuppressDeprecationForBackwardsCompatibilityTesting;
 import org.apache.geode.internal.net.SocketCreator;
 
 /**
@@ -50,6 +51,8 @@ public class NetworkUtils {
    *
    * @return an IP literal which honors java.net.preferIPvAddresses
    */
+  @SuppressDeprecationForBackwardsCompatibilityTesting
+  @SuppressWarnings("deprecation")
   public static String getIPLiteral() {
     try {
       return SocketCreator.getLocalHost().getHostAddress();
