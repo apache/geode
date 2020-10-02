@@ -14,6 +14,7 @@
  */
 package org.apache.geode.test.junit.rules;
 
+import static java.util.Collections.emptySet;
 import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
@@ -31,6 +32,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANA
 import static org.apache.geode.management.internal.ManagementConstants.OBJECTNAME__CLIENTSERVICE_MXBEAN;
 import static org.apache.geode.test.TestContext.contextDirectory;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.dunit.internal.DUnitLauncher.DUNIT_ROOT_DIR_NAME;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -39,7 +41,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
@@ -86,7 +87,6 @@ import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.security.SecurityManager;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
-import org.apache.geode.test.TestContext;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.junit.rules.accessible.AccessibleRestoreSystemProperties;
 import org.apache.geode.test.junit.rules.serializable.SerializableExternalResource;
@@ -111,7 +111,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   protected boolean autoStart = false;
   private final transient UniquePortSupplier portSupplier;
 
-  private Set<File> previousTestRootFiles = new HashSet<>();
+  private final Set<File> filesToRetainOnCleanup = new HashSet<>();
   private boolean cleanWorkingDir = true;
   /**
    * A working directory unique to this rule.
@@ -124,7 +124,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
 
   private static int WAIT_UNTIL_TIMEOUT = 30;
 
-  private AccessibleRestoreSystemProperties restore = new AccessibleRestoreSystemProperties();
+  private final AccessibleRestoreSystemProperties restore = new AccessibleRestoreSystemProperties();
 
   public MemberStarterRule() {
     this(new UniquePortSupplier());
@@ -141,7 +141,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
 
   @Override
   public void before() {
-    previousTestRootFiles.addAll(filesIn(TestContext.contextDirectory().getParent()));
+    rememberFilesToRetainOnCleanup();
 
     try {
       restore.before();
@@ -175,12 +175,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
     // This is required if PDX is in use and tests are run repeatedly.
     TypeRegistry.init();
 
-    if (cleanWorkingDir) {
-      FileUtils.deleteQuietly(getWorkingDir());
-    }
-    filesIn(TestContext.contextDirectory().getParent()).stream()
-        .filter(p -> !previousTestRootFiles.contains(p))
-        .forEach(System.out::println);
+    cleanWorkingDir();
   }
 
   public T withPort(int memberPort) {
@@ -610,10 +605,33 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
     return name;
   }
 
-  private static Set<File> filesIn(Path dir) {
+  private void rememberFilesToRetainOnCleanup() {
+    filesToRetainOnCleanup.addAll(workingDirFiles());
+    File dunitDir = contextDirectory().resolve(DUNIT_ROOT_DIR_NAME).toFile();
+    filesToRetainOnCleanup.add(dunitDir);
+  }
+
+  private void cleanWorkingDir() {
+    if (!cleanWorkingDir || workingDir == null) {
+      return;
+    }
+    if (workingDir.toPath().equals(contextDirectory())) {
+      workingDirFiles().stream()
+          .filter(file -> !filesToRetainOnCleanup.contains(file))
+          .forEach(FileUtils::deleteQuietly);
+    } else {
+      FileUtils.deleteQuietly(workingDir);
+    }
+    workingDir = null;
+  }
+
+  private Set<File> workingDirFiles() {
+    if (workingDir == null) {
+      return emptySet();
+    }
     try {
-      return Files.list(dir)
-          .map(Path::toFile)
+      return Files.list(workingDir.toPath())
+          .map(path -> path.normalize().toAbsolutePath().toFile())
           .collect(toSet());
     } catch (IOException e) {
       throw new UncheckedIOException(e);
