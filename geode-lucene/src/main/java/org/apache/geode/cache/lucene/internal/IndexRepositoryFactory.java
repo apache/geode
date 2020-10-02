@@ -44,7 +44,7 @@ public class IndexRepositoryFactory {
   private static final Logger logger = LogService.getLogger();
   public static final String FILE_REGION_LOCK_FOR_BUCKET_ID = "FileRegionLockForBucketId:";
   public static final String APACHE_GEODE_INDEX_COMPLETE = "APACHE_GEODE_INDEX_COMPLETE";
-  protected static final int GET_INDEX_WRITER_MAX_ATTEMPTS = 10;
+  protected static final int GET_INDEX_WRITER_MAX_ATTEMPTS = 200;
 
   public IndexRepositoryFactory() {}
 
