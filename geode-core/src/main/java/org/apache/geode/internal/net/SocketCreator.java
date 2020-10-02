@@ -68,6 +68,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.annotations.internal.DeprecatedButRequiredForBackwardsCompatibilityTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
@@ -155,8 +156,10 @@ public class SocketCreator extends TcpSocketCreatorImpl {
    * This method has migrated to LocalHostUtil but is kept in place here for
    * backward-compatibility testing.
    *
-   * @deprecated use LocalHostUtil.getLocalHost()
+   * @deprecated use {@link LocalHostUtil#getLocalHost()}
    */
+  @DeprecatedButRequiredForBackwardsCompatibilityTesting
+  @Deprecated
   public static InetAddress getLocalHost() throws UnknownHostException {
     return LocalHostUtil.getLocalHost();
   }
