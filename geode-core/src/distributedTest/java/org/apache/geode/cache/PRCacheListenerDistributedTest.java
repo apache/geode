@@ -39,9 +39,9 @@ import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.rules.CacheRule;
+import org.apache.geode.test.dunit.rules.DistributedCounters;
+import org.apache.geode.test.dunit.rules.DistributedErrorCollector;
 import org.apache.geode.test.dunit.rules.DistributedRule;
-import org.apache.geode.test.dunit.rules.SharedCountersRule;
-import org.apache.geode.test.dunit.rules.SharedErrorCollector;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
@@ -75,9 +75,9 @@ public class PRCacheListenerDistributedTest implements Serializable {
   @Rule
   public SerializableTestName testName = new SerializableTestName();
   @Rule
-  public SharedCountersRule sharedCountersRule = new SharedCountersRule();
+  public DistributedCounters sharedCountersRule = new DistributedCounters();
   @Rule
-  public SharedErrorCollector errorCollector = new SharedErrorCollector();
+  public DistributedErrorCollector errorCollector = new DistributedErrorCollector();
   protected String regionName;
 
   @Parameters
