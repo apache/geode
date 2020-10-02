@@ -1727,7 +1727,8 @@ public class Connection implements Runnable {
     if (getConduit().useSSL() && channel != null) {
       InetSocketAddress address = (InetSocketAddress) channel.getRemoteAddress();
       SSLEngine engine =
-          getConduit().getSocketCreator().createSSLEngine(address.getHostName(), address.getPort());
+          getConduit().getSocketCreator().createSSLEngine(address.getHostName(), address.getPort(),
+              clientSocket);
 
       int packetBufferSize = engine.getSession().getPacketBufferSize();
       if (inputBuffer == null || inputBuffer.capacity() < packetBufferSize) {
