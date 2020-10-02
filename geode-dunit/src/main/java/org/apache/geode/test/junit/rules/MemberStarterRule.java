@@ -14,7 +14,6 @@
  */
 package org.apache.geode.test.junit.rules;
 
-import static java.util.Collections.emptySet;
 import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
@@ -74,6 +73,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.api.MembershipManagerHelper;
 import org.apache.geode.internal.UniquePortSupplier;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.persistence.DefaultDiskDir;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.internal.net.SocketCreatorFactory;
@@ -99,6 +99,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableExternalResour
  * created in the test will be cleaned up after the test.
  */
 public abstract class MemberStarterRule<T> extends SerializableExternalResource implements Member {
+  private final DefaultDiskDir defaultDiskDir = new DefaultDiskDir();
   protected int memberPort = 0;
   protected int jmxPort = -1;
   protected int httpPort = -1;
@@ -142,6 +143,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   @Override
   public void before() {
     rememberFilesToRetainOnCleanup();
+    defaultDiskDir.set();
 
     try {
       restore.before();
@@ -175,6 +177,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
     // This is required if PDX is in use and tests are run repeatedly.
     TypeRegistry.init();
 
+    defaultDiskDir.clear();
     cleanWorkingDir();
   }
 
@@ -626,11 +629,8 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   }
 
   private Set<File> workingDirFiles() {
-    if (workingDir == null) {
-      return emptySet();
-    }
     try {
-      return Files.list(workingDir.toPath())
+      return Files.list(getWorkingDir().toPath())
           .map(path -> path.normalize().toAbsolutePath().toFile())
           .collect(toSet());
     } catch (IOException e) {

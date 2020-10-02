@@ -42,6 +42,7 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.internal.cache.execute.FunctionContextImpl;
 import org.apache.geode.management.internal.cli.functions.ExportLogsFunction;
+import org.apache.geode.test.TestContext;
 import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.categories.LoggingTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
@@ -64,11 +65,6 @@ public class LogExporterIntegrationTest {
     String className = getClass().getSimpleName();
     String dirName = String.format("%s-%x-%s", className, testInstanceID, testRunnerID);
     serverFilesDir = Files.createDirectories(Paths.get(dirName)).normalize().toAbsolutePath();
-  }
-
-  @After
-  public void deleteServerFilesDir() {
-    FileUtils.deleteQuietly(serverFilesDir.toFile());
   }
 
   @Test
