@@ -17,6 +17,7 @@
 package org.apache.geode.test.dunit.rules;
 
 import static org.apache.geode.test.dunit.VM.DEFAULT_VM_COUNT;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -25,31 +26,68 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * JUnit Rule that provides a static reference in every distributed test {@code VM}s including the
- * main JUnit controller {@code VM}. If the referenced value is an {@code AutoCloseable} or
- * {@code Closeable} then it will be auto-closed in every {@code VM} during tear down.
+ * DistributedCloseableReference is a JUnit Rule that provides automated tearDown for a static
+ * reference in every distributed test {@code VM}s including the main JUnit controller {@code VM}.
+ * If the referenced value is an {@code AutoCloseable} or {@code Closeable} then it will be
+ * auto-closed and set to null in every {@code VM} during tear down.
  *
  * <p>
  * If the referenced value is not an {@code AutoCloseable} or {@code Closeable}, the
- * {@code DistributedReference} will use reflection to invoke any method named {@code close} or
- * {@code disconnect} regardless of what interfaces are implemented.
+ * {@code DistributedCloseableReference} will use reflection to invoke any method named
+ * {@code close}, {@code disconnect}, or {@code stop} regardless of what interfaces are implemented
+ * unless {@code autoClose} is set to false.
  *
  * <p>
  * If the referenced value is null in any {@code VM} then it will be ignored in that {@code VM}
  * during tear down.
  *
  * <p>
- * In the following example, every {@code VM} has a {@code Cache} which will be auto-closed during
- * tear down:
+ * In the following example, every {@code VM} has a {@code ServerLauncher} which will be
+ * auto-stopped and set to null during tear down:
  *
  * <pre>
  * {@literal @}Rule
- * public DistributedReference&lt;Cache&gt; cache = new DistributedReference&lt;&gt;();
+ * public DistributedCloseableReference&lt;ServerLauncher&gt; server = new DistributedCloseableReference&lt;&gt;();
+ *
+ * {@literal @}Before
+ * public void setUp() throws IOException {
+ *   Properties configProperties = new Properties();
+ *   configProperties.setProperty(LOCATORS, DistributedRule.getLocators());
+ *
+ *   for (VM vm : toArray(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
+ *     vm.invoke(() -> {
+ *       server.set(new ServerLauncher.Builder()
+ *           .setMemberName("server" + getVMId())
+ *           .setDisableDefaultServer(true)
+ *           .setWorkingDirectory(temporaryFolder.newFolder("server" + getVMId()).getAbsolutePath())
+ *           .build());
+ *
+ *       server.get().start();
+ *     });
+ *   }
+ * }
+ *
+ * {@literal @}Test
+ * public void eachVmHasItsOwnServerCache() {
+ *   for (VM vm : toArray(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
+ *     vm.invoke(() -> {
+ *       assertThat(server.get().getCache()).isNotNull();
+ *     });
+ * }
+ * </pre>
+ *
+ * <p>
+ * In the following example, every {@code VM} has a {@code Cache} which will be auto-closed and set
+ * to null during tear down:
+ *
+ * <pre>
+ * {@literal @}Rule
+ * public DistributedCloseableReference&lt;Cache&gt; cache = new DistributedCloseableReference&lt;&gt;();
  *
  * {@literal @}Before
  * public void setUp() {
  *   Properties configProperties = new Properties();
- *   configProperties.setProperty(LOCATORS, DistributedTestUtils.getLocators());
+ *   configProperties.setProperty(LOCATORS, DistributedRule.getLocators());
  *
  *   for (VM vm : toArray(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
  *     vm.invoke(() -> {
@@ -62,7 +100,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * public void eachVmHasItsOwnCache() {
  *   for (VM vm : toArray(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
  *     vm.invoke(() -> {
- *       assertThat(cache.get()).isInstanceOf(Cache.class);
+ *       assertThat(cache.get()).isNotNull();
  *     });
  *   }
  * }
@@ -70,16 +108,16 @@ import java.util.concurrent.atomic.AtomicReference;
  *
  * <p>
  * In the following example, every {@code VM} has a {@code DistributedSystem} which will be
- * auto-disconnected during tear down:
+ * auto-disconnected and set to null during tear down:
  *
  * <pre>
  * {@literal @}Rule
- * public DistributedReference&lt;DistributedSystem&gt; system = new DistributedReference&lt;&gt;();
+ * public DistributedCloseableReference&lt;DistributedSystem&gt; system = new DistributedCloseableReference&lt;&gt;();
  *
  * {@literal @}Before
  * public void setUp() {
  *   Properties configProperties = new Properties();
- *   configProperties.setProperty(LOCATORS, DistributedTestUtils.getLocators());
+ *   configProperties.setProperty(LOCATORS, DistributedRule.getLocators());
  *
  *   for (VM vm : toArray(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
  *     vm.invoke(() -> {
@@ -89,43 +127,47 @@ import java.util.concurrent.atomic.AtomicReference;
  * }
  *
  * {@literal @}Test
- * public void eachVmHasItsOwnSystemConnection() {
+ * public void eachVmHasItsOwnDistributedSystemConnection() {
  *   for (VM vm : toArray(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
  *     vm.invoke(() -> {
- *       assertThat(system.get()).isInstanceOf(DistributedSystem.class);
+ *       assertThat(system.get()).isNotNull();
  *     });
  *   }
  * }
  * </pre>
  *
  * <p>
- * To disable autoClose in a test, specify {@code autoClose(false)}:
+ * To disable auto-closing in a test, specify {@code autoClose(false)}:
  *
  * <pre>
  * {@literal @}Rule
- * public DistributedReference&lt;DistributedSystem&gt; system =
- *     new DistributedReference&lt;&gt;().autoClose(false);
+ * public DistributedCloseableReference&lt;ServerLauncher&gt; serverLauncher =
+ *     new DistributedCloseableReference&lt;&gt;().autoClose(false);
  * </pre>
+ *
+ * <p>
+ * The {@code DistributedCloseableReference} value will still be set to null during tear down even
+ * if auto-closing is disabled.
  */
-@SuppressWarnings({"serial", "unused"})
-public class DistributedReference<V> extends AbstractDistributedRule {
+@SuppressWarnings({"serial", "unused", "WeakerAccess"})
+public class DistributedCloseableReference<V> extends AbstractDistributedRule {
 
-  private static final AtomicReference<Object> reference = new AtomicReference<>();
+  private static final AtomicReference<Object> REFERENCE = new AtomicReference<>();
 
   private final AtomicBoolean autoClose = new AtomicBoolean(true);
 
-  public DistributedReference() {
+  public DistributedCloseableReference() {
     this(DEFAULT_VM_COUNT);
   }
 
-  public DistributedReference(int vmCount) {
+  public DistributedCloseableReference(int vmCount) {
     super(vmCount);
   }
 
   /**
    * Set false to disable autoClose during tearDown. Default is true.
    */
-  public DistributedReference<V> autoClose(boolean value) {
+  public DistributedCloseableReference<V> autoClose(boolean value) {
     autoClose.set(value);
     return this;
   }
@@ -135,9 +177,8 @@ public class DistributedReference<V> extends AbstractDistributedRule {
    *
    * @return the current value
    */
-  @SuppressWarnings("unchecked")
   public V get() {
-    return (V) reference.get();
+    return uncheckedCast(REFERENCE.get());
   }
 
   /**
@@ -145,8 +186,9 @@ public class DistributedReference<V> extends AbstractDistributedRule {
    *
    * @param newValue the new value
    */
-  public void set(V newValue) {
-    reference.set(newValue);
+  public DistributedCloseableReference<V> set(V newValue) {
+    REFERENCE.set(newValue);
+    return this;
   }
 
   @Override
@@ -159,7 +201,7 @@ public class DistributedReference<V> extends AbstractDistributedRule {
     if (value == null) {
       return;
     }
-    reference.set(null);
+    REFERENCE.set(null);
 
     if (autoClose.get()) {
       autoClose(value);

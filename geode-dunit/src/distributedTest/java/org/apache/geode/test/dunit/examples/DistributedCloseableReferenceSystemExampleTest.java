@@ -16,10 +16,11 @@
  */
 package org.apache.geode.test.dunit.examples;
 
+import static java.util.Arrays.asList;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.test.dunit.VM.getController;
 import static org.apache.geode.test.dunit.VM.getVM;
-import static org.apache.geode.test.dunit.VM.toArray;
+import static org.apache.geode.test.dunit.rules.DistributedRule.getLocators;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
@@ -29,35 +30,34 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.test.dunit.DistributedTestUtils;
+import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.rules.DistributedReference;
+import org.apache.geode.test.dunit.rules.DistributedCloseableReference;
 
 @SuppressWarnings("serial")
-public class DistributedReferenceCacheExampleTest implements Serializable {
+public class DistributedCloseableReferenceSystemExampleTest implements Serializable {
 
   @Rule
-  public DistributedReference<Cache> cache = new DistributedReference<>();
+  public DistributedCloseableReference<DistributedSystem> system =
+      new DistributedCloseableReference<>();
 
   @Before
   public void setUp() {
     Properties configProperties = new Properties();
-    configProperties.setProperty(LOCATORS, DistributedTestUtils.getLocators());
+    configProperties.setProperty(LOCATORS, getLocators());
 
-    for (VM vm : toArray(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
+    for (VM vm : asList(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
       vm.invoke(() -> {
-        cache.set(new CacheFactory(configProperties).create());
+        system.set(DistributedSystem.connect(configProperties));
       });
     }
   }
 
   @Test
-  public void eachVmHasItsOwnCache() {
-    for (VM vm : toArray(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
+  public void eachVmHasItsOwnSystemConnection() {
+    for (VM vm : asList(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
       vm.invoke(() -> {
-        assertThat(cache.get()).isInstanceOf(Cache.class);
+        assertThat(system.get()).isNotNull();
       });
     }
   }
