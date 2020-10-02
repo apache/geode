@@ -1165,10 +1165,7 @@ public class FilterProfile implements DataSerializableFixedID {
       return true;
     }
     FilterInfo localFilterInfo = getLocalFilterInfo(event);
-    if (localFilterInfo != null) {
-      return false;
-    }
-    return true;
+    return localFilterInfo == null;
   }
 
   FilterInfo getLocalFilterInfo(CacheEvent event) {
