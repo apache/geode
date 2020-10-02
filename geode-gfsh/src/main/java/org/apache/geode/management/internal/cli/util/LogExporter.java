@@ -29,7 +29,6 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
@@ -181,12 +180,13 @@ public class LogExporter {
   }
 
   private List<Path> findFiles(Path workingDir, Predicate<Path> fileSelector) throws IOException {
-    Stream<Path> selectedFiles/* = null */;
     if (!workingDir.toFile().isDirectory()) {
       return Collections.emptyList();
     }
-    selectedFiles = Files.list(workingDir).filter(fileSelector).filter(this.logFilter::acceptsFile);
-
-    return selectedFiles.collect(toList());
+    return Files.list(workingDir)
+        .filter(Files::isRegularFile)
+        .filter(fileSelector)
+        .filter(this.logFilter::acceptsFile)
+        .collect(toList());
   }
 }
