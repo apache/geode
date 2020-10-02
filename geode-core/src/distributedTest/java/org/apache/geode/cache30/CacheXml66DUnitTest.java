@@ -122,6 +122,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
 import org.apache.geode.internal.cache.functions.TestFunction;
 import org.apache.geode.internal.cache.partitioned.fixed.QuarterPartitionResolver;
+import org.apache.geode.internal.cache.persistence.DefaultDiskDirs;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheTransactionManagerCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
@@ -531,9 +532,9 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     ClientSubscriptionConfig chaqf = server.getClientSubscriptionConfig();
     assertEquals("entry", chaqf.getEvictionPolicy());
     assertEquals(501, chaqf.getCapacity());
-    File curDir = new File(".").getAbsoluteFile();
+    File defaultDiskDir = DefaultDiskDirs.getDefaultDiskDirs()[0].getAbsoluteFile();
     File lockFile =
-        new File(curDir, "DRLK_IF" + GemFireCacheImpl.getDefaultDiskStoreName() + ".lk");
+        new File(defaultDiskDir, "DRLK_IF" + GemFireCacheImpl.getDefaultDiskStoreName() + ".lk");
     assertTrue(lockFile.exists());
   }
 
