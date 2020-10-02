@@ -17,11 +17,18 @@
 
 apply plugin: 'me.champeau.gradle.jmh'
 
+dependencies {
+  jmh(project(':geode-jmh'))
+}
+
 jmh {
   duplicateClassesStrategy = 'exclude'
   include = project.hasProperty('jmh.include') ? project.property('jmh.include').tokenize() : ['.*']
   profilers = project.hasProperty('jmh.profilers') ? project.property('jmh.profilers').tokenize() : []
   threads = project.hasProperty('jmh.threads') ? project.property('jmh.threads') as Integer : null
+  warmupIterations = project.hasProperty('jmh.warmupIterations') ? project.property('jmh.warmupIterations') as Integer : null
+  iterations = project.hasProperty('jmh.iterations') ? project.property('jmh.iterations') as Integer : null
+  timeOnIteration = project.hasProperty('jmh.timeOnIteration') ? project.property('jmh.timeOnIteration') as Integer : null
 }
 
 jmhJar {
