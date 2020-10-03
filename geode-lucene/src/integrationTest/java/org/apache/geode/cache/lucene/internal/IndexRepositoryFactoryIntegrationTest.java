@@ -20,6 +20,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
 
@@ -32,17 +33,16 @@ import org.mockito.stubbing.Answer;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.Region;
+import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.lucene.LuceneQuery;
 import org.apache.geode.cache.lucene.LuceneQueryException;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
-import org.apache.geode.cache.lucene.test.TestObject;
 import org.apache.geode.internal.cache.PartitionedRegion;
 
 public class IndexRepositoryFactoryIntegrationTest {
-  public Cache cache;
+  private Cache cache;
   public static final String INDEX_NAME = "testIndex";
   public static final String REGION_NAME = "testRegion";
   private IndexRepositoryFactory spyFactory;
@@ -54,10 +54,9 @@ public class IndexRepositoryFactoryIntegrationTest {
     LuceneServiceProvider.get(cache).createIndexFactory().setFields("field1", "field2")
         .create(INDEX_NAME, REGION_NAME);
 
-    Region<Object, Object> dataRegion =
-        cache.createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
-
-    dataRegion.put("A", new TestObject());
+    cache.createRegionFactory(RegionShortcut.PARTITION)
+        .setPartitionAttributes(new PartitionAttributesFactory<>().setTotalNumBuckets(10).create())
+        .create(REGION_NAME);
 
     spyFactory = spy(new IndexRepositoryFactory());
     PartitionedRepositoryManager.indexRepositoryFactory = spyFactory;
@@ -68,6 +67,7 @@ public class IndexRepositoryFactoryIntegrationTest {
 
   @After
   public void tearDown() {
+    PartitionedRepositoryManager.indexRepositoryFactory = new IndexRepositoryFactory();
     if (cache != null) {
       cache.close();
     }
@@ -78,14 +78,15 @@ public class IndexRepositoryFactoryIntegrationTest {
       throws IOException, LuceneQueryException {
     // To ensure that the specific bucket used in the query throws the IOException to trigger the
     // retry, throw once for every bucket in the region
-    int timesToThrow = ((PartitionedRegion) cache.getRegion(REGION_NAME)).getTotalNumberOfBuckets();
+    int numberOfBuckets =
+        ((PartitionedRegion) cache.getRegion(REGION_NAME)).getTotalNumberOfBuckets();
 
     doAnswer(new Answer<Object>() {
       private int times = 0;
 
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        if (times < timesToThrow) {
+        if (times < numberOfBuckets) {
           times++;
           throw new IOException();
         }
@@ -94,6 +95,9 @@ public class IndexRepositoryFactoryIntegrationTest {
     }).when(spyFactory).getIndexWriter(any(), any());
 
     luceneQuery.findKeys();
+
+    // The invocation should throw once for each bucket, then retry once for each bucket
+    verify(spyFactory, times(numberOfBuckets * 2)).getIndexWriter(any(), any());
   }
 
   @Test
