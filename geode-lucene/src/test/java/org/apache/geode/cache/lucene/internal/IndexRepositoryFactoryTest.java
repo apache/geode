@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.lucene.internal;
 
+import static org.apache.geode.cache.lucene.internal.IndexRepositoryFactory.GET_INDEX_WRITER_MAX_ATTEMPTS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -22,11 +23,13 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 
+import org.apache.lucene.index.IndexWriter;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -77,7 +80,8 @@ public class IndexRepositoryFactoryTest {
   }
 
   @Test
-  public void finishComputingRepositoryShouldReturnNullAndCleanOldRepositoryWhenFileAndChunkBucketIsNull() {
+  public void finishComputingRepositoryShouldReturnNullAndCleanOldRepositoryWhenFileAndChunkBucketIsNull()
+      throws IOException {
     doReturn(null).when(indexRepositoryFactory).getMatchingBucket(fileRegion, bucketId);
 
     IndexRepository indexRepository = indexRepositoryFactory.finishComputingRepository(0,
@@ -87,7 +91,8 @@ public class IndexRepositoryFactoryTest {
   }
 
   @Test
-  public void finishComputingRepositoryShouldReturnNullAndCleanOldRepositoryWhenFileAndChunkBucketIsNotPrimary() {
+  public void finishComputingRepositoryShouldReturnNullAndCleanOldRepositoryWhenFileAndChunkBucketIsNotPrimary()
+      throws IOException {
     when(fileAndChunkBucketAdvisor.isPrimary()).thenReturn(false);
 
     IndexRepository indexRepository = indexRepositoryFactory.finishComputingRepository(0,
@@ -97,7 +102,8 @@ public class IndexRepositoryFactoryTest {
   }
 
   @Test
-  public void finishComputingRepositoryShouldReturnOldRepositoryWhenNotNullAndNotClosed() {
+  public void finishComputingRepositoryShouldReturnOldRepositoryWhenNotNullAndNotClosed()
+      throws IOException {
     when(oldRepository.isClosed()).thenReturn(false);
     when(fileAndChunkBucketAdvisor.isPrimary()).thenReturn(true);
 
@@ -108,7 +114,8 @@ public class IndexRepositoryFactoryTest {
   }
 
   @Test
-  public void finishComputingRepositoryShouldReturnNullWhenLockCanNotBeAcquiredAndFileAndChunkBucketIsNotPrimary() {
+  public void finishComputingRepositoryShouldReturnNullWhenLockCanNotBeAcquiredAndFileAndChunkBucketIsNotPrimary()
+      throws IOException {
     when(oldRepository.isClosed()).thenReturn(true);
     when(fileAndChunkBucketAdvisor.isPrimary()).thenReturn(true).thenReturn(false);
     when(distributedLockService.lock(any(), anyLong(), anyLong())).thenReturn(false);
@@ -119,7 +126,7 @@ public class IndexRepositoryFactoryTest {
   }
 
   @Test
-  public void finishComputingRepositoryShouldReturnNullAndReleaseLockWhenIOExceptionIsThrownWhileBuildingTheIndex()
+  public void finishComputingRepositoryShouldThrowExceptionAndReleaseLockWhenIOExceptionIsThrownWhileBuildingTheIndex()
       throws IOException {
     when(oldRepository.isClosed()).thenReturn(true);
     when(fileAndChunkBucketAdvisor.isPrimary()).thenReturn(true);
@@ -127,9 +134,8 @@ public class IndexRepositoryFactoryTest {
     doThrow(new IOException("Test Exception")).when(indexRepositoryFactory)
         .buildIndexWriter(bucketId, fileAndChunkBucket, luceneIndex);
 
-    IndexRepository indexRepository = indexRepositoryFactory.finishComputingRepository(0,
-        serializer, userRegion, oldRepository, luceneIndex);
-    assertThat(indexRepository).isNull();
+    assertThatThrownBy(() -> indexRepositoryFactory.finishComputingRepository(0,
+        serializer, userRegion, oldRepository, luceneIndex)).isInstanceOf(IOException.class);
     verify(distributedLockService).unlock(any());
   }
 
@@ -145,5 +151,28 @@ public class IndexRepositoryFactoryTest {
     assertThatThrownBy(() -> indexRepositoryFactory.finishComputingRepository(0, serializer,
         userRegion, oldRepository, luceneIndex)).isInstanceOf(CacheClosedException.class);
     verify(distributedLockService).unlock(any());
+  }
+
+  @Test
+  public void buildIndexWriterRetriesCreatingIndexWriterWhenIOExceptionEncountered()
+      throws IOException {
+    IndexWriter writer = mock(IndexWriter.class);
+    doThrow(new IOException()).doReturn(writer).when(indexRepositoryFactory).getIndexWriter(any(),
+        any());
+    assertThat(indexRepositoryFactory.buildIndexWriter(bucketId, fileAndChunkBucket, luceneIndex))
+        .isEqualTo(writer);
+    verify(indexRepositoryFactory, times(2)).getIndexWriter(any(), any());
+  }
+
+  @Test
+  public void buildIndexWriterThrowsExceptionWhenIOExceptionConsistentlyEncountered()
+      throws IOException {
+    IOException testException = new IOException("Test exception");
+    doThrow(testException).when(indexRepositoryFactory).getIndexWriter(any(), any());
+    assertThatThrownBy(
+        () -> indexRepositoryFactory.buildIndexWriter(bucketId, fileAndChunkBucket, luceneIndex))
+            .isEqualTo(testException);
+    verify(indexRepositoryFactory, times(GET_INDEX_WRITER_MAX_ATTEMPTS)).getIndexWriter(any(),
+        any());
   }
 }
