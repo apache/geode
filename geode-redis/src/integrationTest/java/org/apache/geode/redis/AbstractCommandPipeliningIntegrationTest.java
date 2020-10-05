@@ -21,10 +21,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.config.Configurator;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -32,7 +28,6 @@ import org.junit.Test;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
 
-import org.apache.geode.logging.internal.log4j.api.FastLogger;
 import org.apache.geode.redis.mocks.MockSubscriber;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
