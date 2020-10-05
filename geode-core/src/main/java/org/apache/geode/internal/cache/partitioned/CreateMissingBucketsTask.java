@@ -33,17 +33,14 @@ public class CreateMissingBucketsTask extends RecoveryRunnable {
   public void run2() {
     PartitionedRegion partitionedRegion = redundancyProvider.getPartitionedRegion();
     int count = 0;
+    int sleepInterval = PartitionedRegionHelper.DEFAULT_WAIT_PER_RETRY_ITERATION;
 
-    while (!ColocationHelper.isColocationComplete(partitionedRegion)) {
-      // if in 5 retries region is still not colocated
-      // abort task
-      if (count > 4) {
-        return;
-      }
+    while (!ColocationHelper.isColocationComplete(partitionedRegion) && (count <= 20)) {
+
       // Didn't time out. Sleep a bit and then continue
       boolean interrupted = Thread.interrupted();
       try {
-        Thread.sleep(PartitionedRegionHelper.DEFAULT_WAIT_PER_RETRY_ITERATION);
+        Thread.sleep(sleepInterval);
       } catch (InterruptedException ignore) {
         interrupted = true;
       } finally {
@@ -52,6 +49,13 @@ public class CreateMissingBucketsTask extends RecoveryRunnable {
         }
       }
       count++;
+      if (count == 5) {
+        sleepInterval = 2 * PartitionedRegionHelper.DEFAULT_WAIT_PER_RETRY_ITERATION;
+      } else if (count == 10) {
+        sleepInterval = 5 * PartitionedRegionHelper.DEFAULT_WAIT_PER_RETRY_ITERATION;
+      } else if (count == 15) {
+        sleepInterval = 10 * PartitionedRegionHelper.DEFAULT_WAIT_PER_RETRY_ITERATION;
+      }
     }
 
     PartitionedRegion leaderRegion =
