@@ -122,7 +122,6 @@ import org.apache.geode.test.version.VersionManager;
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTestCase {
-  protected Logger logger = LogService.getLogger();
 
   @Parameterized.Parameters(name = "from_v{0}")
   public static Collection<String> data() {
@@ -425,6 +424,7 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
     }
   }
 
+  // ******** TEST HELPER METHODS ********/
   private void putAndVerify(String objectType, VM putter, String regionName, int start, int end,
       VM check1, VM check2, VM check3) throws Exception {
     if (objectType.equals("strings")) {

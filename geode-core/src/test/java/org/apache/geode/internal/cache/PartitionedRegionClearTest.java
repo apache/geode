@@ -374,8 +374,7 @@ public class PartitionedRegionClearTest {
     Set<BucketRegion> buckets = setupBucketRegions(partitionedRegionDataStore, bucketAdvisor);
     when(partitionedRegion.getDataStore()).thenReturn(partitionedRegionDataStore);
     when(distributionManager.isCurrentMember(internalDistributedMember)).thenReturn(true);
-    partitionedRegionClear.lockForListenerAndClientNotification
-        .setLocked(internalDistributedMember);
+    partitionedRegionClear.lockForListenerAndClientNotification.setLocked(internalDistributedMember);
 
     partitionedRegionClear.releaseClearLockLocal();
 
@@ -582,9 +581,7 @@ public class PartitionedRegionClearTest {
     when(partitionedRegion.hasListener()).thenReturn(false);
     when(partitionedRegion.hasAnyClientsInterested()).thenReturn(false);
     when(partitionedRegion.getTotalNumberOfBuckets()).thenReturn(1);
-    when(
-        partitionedRegion.allServerVersionsSupportPartitionRegionClear())
-            .thenReturn(true);
+    when(partitionedRegion.allServerVersionsSupportPartitionRegionClear()).thenReturn(true);
     when(partitionedRegion.getName()).thenReturn("prRegion");
     PartitionedRegionClear spyPartitionedRegionClear = spy(partitionedRegionClear);
     doNothing().when(spyPartitionedRegionClear).acquireDistributedClearLock(any());
