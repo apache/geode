@@ -50,6 +50,7 @@ import org.junit.Test;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
@@ -216,7 +217,7 @@ public class LocatorClusterManagementServiceTest {
     functionResults.add(new RealizationResult().setMemberName("member1"));
     functionResults.add(
         new RealizationResult().setMemberName("member2").setSuccess(false).setMessage("failed"));
-    doReturn(functionResults).when(service).executeAndGetFunctionResult(any(), any(), any(), any());
+    doReturn(functionResults).when(service).executeCacheRealizationFunction(any(), any(), any());
 
     doReturn(Collections.singleton(mock(DistributedMember.class))).when(memberValidator)
         .findServers();
@@ -232,7 +233,7 @@ public class LocatorClusterManagementServiceTest {
     List<RealizationResult> functionResults = new ArrayList<>();
     functionResults.add(new RealizationResult().setMemberName("member1"));
     functionResults.add(new RealizationResult().setMemberName("member2"));
-    doReturn(functionResults).when(service).executeAndGetFunctionResult(any(), any(), any(), any());
+    doReturn(functionResults).when(service).executeCacheRealizationFunction(any(), any(), any());
 
     doReturn(Collections.singleton(mock(DistributedMember.class))).when(memberValidator)
         .findServers();
@@ -337,7 +338,7 @@ public class LocatorClusterManagementServiceTest {
     functionResults.add(new RealizationResult().setMemberName("member1"));
     functionResults.add(
         new RealizationResult().setMemberName("member2").setSuccess(false).setMessage("failed"));
-    doReturn(functionResults).when(service).executeAndGetFunctionResult(any(), any(), any(), any());
+    doReturn(functionResults).when(service).executeCacheRealizationFunction(any(), any(), any());
 
     doReturn(new String[] {"cluster"}).when(memberValidator).findGroupsWithThisElement(any(),
         any());
@@ -365,7 +366,7 @@ public class LocatorClusterManagementServiceTest {
     List<RealizationResult> functionResults = new ArrayList<>();
     functionResults.add(new RealizationResult().setMemberName("member1"));
     functionResults.add(new RealizationResult().setMemberName("member2"));
-    doReturn(functionResults).when(service).executeAndGetFunctionResult(any(), any(), any(), any());
+    doReturn(functionResults).when(service).executeCacheRealizationFunction(any(), any(), any());
 
     doReturn(new String[] {"cluster"}).when(memberValidator).findGroupsWithThisElement(any(),
         any());
@@ -599,5 +600,20 @@ public class LocatorClusterManagementServiceTest {
     assertThat(result.isSuccessful()).isFalse();
     assertThat(result.getStatusMessage()).isEqualTo(
         "Successfully updated configuration for group1. Failed to update configuration for group2.");
+  }
+
+  @Test
+  public void cleanResultsShouldCleanOutExceptionsAndNull() throws Exception {
+    List functionResults = new ArrayList<>();
+    MemberInformation memberInfo = new MemberInformation();
+    memberInfo.setId("server-1");
+    functionResults.add(memberInfo);
+    functionResults.add(new FunctionInvocationTargetException("Not available"));
+    functionResults.add(null);
+
+    List<MemberInformation> results = service.cleanResults(functionResults);
+    assertThat(results).hasSize(1)
+        .extracting(MemberInformation::getId)
+        .containsExactly("server-1");
   }
 }
