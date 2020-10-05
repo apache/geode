@@ -16,9 +16,11 @@
 package org.apache.geode.redis.internal.executor.pubsub;
 
 import org.junit.ClassRule;
+import org.junit.Ignore;
 
 import org.apache.geode.NativeRedisTestRule;
 
+@Ignore
 public class PubSubNativeRedisAcceptanceTest extends AbstractPubSubIntegrationTest {
   @ClassRule
   public static NativeRedisTestRule redis = new NativeRedisTestRule();
