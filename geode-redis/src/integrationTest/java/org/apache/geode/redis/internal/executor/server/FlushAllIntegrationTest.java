@@ -16,45 +16,18 @@
 
 package org.apache.geode.redis.internal.executor.server;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Test;
-import redis.clients.jedis.Jedis;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
 
-public class FlushAllIntegrationTest {
-
-  public static Jedis jedis;
-  public static int REDIS_CLIENT_TIMEOUT = 10000000;
+public class FlushAllIntegrationTest extends AbstractFlushAllIntegrationTest {
 
   @ClassRule
   public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
-  @BeforeClass
-  public static void setUp() {
-    jedis = new Jedis("localhost", server.getPort(), REDIS_CLIENT_TIMEOUT);
+  @Override
+  public int getPort() {
+    return server.getPort();
   }
 
-  @AfterClass
-  public static void classLevelTearDown() {
-    jedis.close();
-  }
-
-  @Test
-  public void flushAllDeletesAllDataTypes() {
-    jedis.sadd("set1", "value1");
-    jedis.hset("hash1", "field1", "member1");
-    jedis.set("string1", "value1");
-
-    jedis.flushAll();
-
-    assertThat(jedis.keys("*")).isEmpty();
-    assertThat(jedis.get("string1")).isNull();
-    assertThat(jedis.smembers("set1")).isEmpty();
-    assertThat(jedis.hgetAll("hash1")).isEmpty();
-  }
 }

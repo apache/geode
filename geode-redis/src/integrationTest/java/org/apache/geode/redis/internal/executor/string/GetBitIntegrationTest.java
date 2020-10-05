@@ -14,73 +14,18 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Test;
-import redis.clients.jedis.Jedis;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
 
-public class GetBitIntegrationTest {
-
-  static Jedis jedis;
+public class GetBitIntegrationTest extends AbstractGetBitIntegrationTest {
 
   @ClassRule
   public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
-  @BeforeClass
-  public static void setUp() {
-    jedis = new Jedis("localhost", server.getPort(), 10000000);
+  @Override
+  public int getPort() {
+    return server.getPort();
   }
 
-  @After
-  public void flushAll() {
-    jedis.flushAll();
-  }
-
-  @AfterClass
-  public static void tearDown() {
-    jedis.close();
-  }
-
-  @Test
-  public void getbit_givenSetFails() {
-    jedis.sadd("key", "m1");
-    assertThatThrownBy(() -> jedis.getbit("key", 1)).hasMessageContaining("WRONGTYPE");
-  }
-
-  @Test
-  public void getbit_givenNonExistentKeyReturnsFalse() {
-    assertThat(jedis.getbit("does not exist", 1)).isFalse();
-    assertThat(jedis.exists("does not exist")).isFalse();
-  }
-
-  @Test
-  public void getbit_givenNoBitsReturnsFalse() {
-    byte[] key = {1, 2, 3};
-    byte[] bytes = {0};
-    jedis.set(key, bytes);
-    assertThat(jedis.getbit(key, 1)).isFalse();
-  }
-
-  @Test
-  public void getbit_givenOneBitReturnsTrue() {
-    byte[] key = {1, 2, 3};
-    byte[] bytes = {0, 1};
-    jedis.set(key, bytes);
-    assertThat(jedis.getbit(key, 8 + 7)).isTrue();
-  }
-
-  @Test
-  public void getbit_pastEndReturnsFalse() {
-    byte[] key = {1, 2, 3};
-    byte[] bytes = {0, 1};
-    jedis.set(key, bytes);
-    assertThat(jedis.getbit(key, 8 + 8 + 7)).isFalse();
-  }
 }

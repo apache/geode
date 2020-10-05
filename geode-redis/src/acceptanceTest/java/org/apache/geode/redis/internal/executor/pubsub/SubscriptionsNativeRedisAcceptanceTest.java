@@ -19,7 +19,13 @@ import org.junit.ClassRule;
 
 import org.apache.geode.NativeRedisTestRule;
 
-public class SubscriptionsNativeRedisAcceptanceTest extends SubscriptionsIntegrationTest {
+public class SubscriptionsNativeRedisAcceptanceTest extends AbstractSubscriptionsIntegrationTest {
   @ClassRule
   public static NativeRedisTestRule redis = new NativeRedisTestRule();
+
+  @Override
+  public int getPort() {
+    return redis.getPort();
+  }
+
 }

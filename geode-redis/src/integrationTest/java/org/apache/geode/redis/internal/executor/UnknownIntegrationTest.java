@@ -30,7 +30,7 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 public class UnknownIntegrationTest {
 
   public static Jedis jedis;
-  public static int REDIS_CLIENT_TIMEOUT =
+  public static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @ClassRule

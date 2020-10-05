@@ -14,50 +14,18 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Test;
-import redis.clients.jedis.Jedis;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
 
-public class SetEXIntegrationTest {
-
-  static Jedis jedis;
+public class SetEXIntegrationTest extends AbstractSetEXIntegrationTest {
 
   @ClassRule
   public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
-  @BeforeClass
-  public static void setUp() {
-    jedis = new Jedis("localhost", server.getPort(), 10000000);
+  @Override
+  public int getPort() {
+    return server.getPort();
   }
 
-  @After
-  public void flushAll() {
-    jedis.flushAll();
-  }
-
-  @AfterClass
-  public static void tearDown() {
-    jedis.close();
-  }
-
-  @Test
-  public void testSetEX() {
-    jedis.setex("key", 20, "value");
-
-    assertThat(jedis.ttl("key")).isGreaterThanOrEqualTo(15);
-  }
-
-  @Test
-  public void testSetEXWithIllegalSeconds() {
-    assertThatThrownBy(() -> jedis.setex("key", -1, "value"))
-        .hasMessage("ERR invalid expire time in setex");
-  }
 }

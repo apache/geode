@@ -28,11 +28,13 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public class ShutdownIntegrationTest {
 
   public Jedis jedis;
-  public static int REDIS_CLIENT_TIMEOUT = 10000;
+  public static final int REDIS_CLIENT_TIMEOUT =
+      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Rule
   public GeodeRedisServerRule server = new GeodeRedisServerRule()

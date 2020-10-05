@@ -14,173 +14,18 @@
  */
 package org.apache.geode.redis.internal.executor.set;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import redis.clients.jedis.Jedis;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
-import org.apache.geode.test.junit.categories.RedisTest;
 
-@Category({RedisTest.class})
-public class SPopIntegrationTest {
-  static Jedis jedis;
-  static Jedis jedis2;
+public class SPopIntegrationTest extends AbstractSPopIntegrationTest {
 
   @ClassRule
   public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
-  @BeforeClass
-  public static void setUp() {
-    jedis = new Jedis("localhost", server.getPort(), 10000000);
-    jedis2 = new Jedis("localhost", server.getPort(), 10000000);
+  @Override
+  public int getPort() {
+    return server.getPort();
   }
 
-  @AfterClass
-  public static void tearDown() {
-    jedis.close();
-    jedis2.close();
-  }
-
-  @After
-  public void cleanup() {
-    jedis.flushAll();
-  }
-
-  @Test
-  public void testSPop() {
-    int ENTRIES = 10;
-
-    List<String> masterSet = new ArrayList<>();
-    for (int i = 0; i < ENTRIES; i++) {
-      masterSet.add("master-" + i);
-    }
-
-    jedis.sadd("master", masterSet.toArray(new String[] {}));
-    String poppy = jedis.spop("master");
-
-    masterSet.remove(poppy);
-    assertThat(jedis.smembers("master").toArray()).containsExactlyInAnyOrder(masterSet.toArray());
-
-    assertThat(jedis.spop("spopnonexistent")).isNull();
-  }
-
-  @Test
-  public void testSPopAll() {
-    int ENTRIES = 10;
-
-    List<String> masterSet = new ArrayList<>();
-    for (int i = 0; i < ENTRIES; i++) {
-      masterSet.add("master-" + i);
-    }
-
-    jedis.sadd("master", masterSet.toArray(new String[] {}));
-    Set<String> popped = jedis.spop("master", ENTRIES);
-
-    assertThat(jedis.smembers("master").toArray()).isEmpty();
-    assertThat(popped.toArray()).containsExactlyInAnyOrder(masterSet.toArray());
-  }
-
-  @Test
-  public void testSPopAllPlusOne() {
-    int ENTRIES = 10;
-
-    List<String> masterSet = new ArrayList<>();
-    for (int i = 0; i < ENTRIES; i++) {
-      masterSet.add("master-" + i);
-    }
-
-    jedis.sadd("master", masterSet.toArray(new String[] {}));
-    Set<String> popped = jedis.spop("master", ENTRIES + 1);
-
-    assertThat(jedis.smembers("master").toArray()).isEmpty();
-    assertThat(popped.toArray()).containsExactlyInAnyOrder(masterSet.toArray());
-  }
-
-  @Test
-  public void testSPopAllMinusOne() {
-    int ENTRIES = 10;
-
-    List<String> masterSet = new ArrayList<>();
-    for (int i = 0; i < ENTRIES; i++) {
-      masterSet.add("master-" + i);
-    }
-
-    jedis.sadd("master", masterSet.toArray(new String[] {}));
-    Set<String> popped = jedis.spop("master", ENTRIES - 1);
-
-    assertThat(jedis.smembers("master").toArray()).hasSize(1);
-    assertThat(popped).hasSize(ENTRIES - 1);
-    assertThat(masterSet).containsAll(popped);
-  }
-
-  @Test
-  public void testManySPops() {
-    int ENTRIES = 100;
-
-    List<String> masterSet = new ArrayList<>();
-    for (int i = 0; i < ENTRIES; i++) {
-      masterSet.add("master-" + i);
-    }
-
-    jedis.sadd("master", masterSet.toArray(new String[] {}));
-
-    List<String> popped = new ArrayList<>();
-    for (int i = 0; i < ENTRIES; i++) {
-      popped.add(jedis.spop("master"));
-    }
-
-    assertThat(jedis.smembers("master")).isEmpty();
-    assertThat(popped.toArray()).containsExactlyInAnyOrder(masterSet.toArray());
-
-    assertThat(jedis.spop("master")).isNull();
-  }
-
-  @Test
-  public void testConcurrentSPops() throws InterruptedException {
-    int ENTRIES = 1000;
-
-    List<String> masterSet = new ArrayList<>();
-    for (int i = 0; i < ENTRIES; i++) {
-      masterSet.add("master-" + i);
-    }
-
-    jedis.sadd("master", masterSet.toArray(new String[] {}));
-
-    List<String> popped1 = new ArrayList<>();
-    Runnable runnable1 = () -> {
-      for (int i = 0; i < ENTRIES / 2; i++) {
-        popped1.add(jedis.spop("master"));
-      }
-    };
-
-    List<String> popped2 = new ArrayList<>();
-    Runnable runnable2 = () -> {
-      for (int i = 0; i < ENTRIES / 2; i++) {
-        popped2.add(jedis2.spop("master"));
-      }
-    };
-
-    Thread thread1 = new Thread(runnable1);
-    Thread thread2 = new Thread(runnable2);
-
-    thread1.start();
-    thread2.start();
-    thread1.join();
-    thread2.join();
-
-    assertThat(jedis.smembers("master")).isEmpty();
-
-    popped1.addAll(popped2);
-    assertThat(popped1.toArray()).containsExactlyInAnyOrder(masterSet.toArray());
-  }
 }

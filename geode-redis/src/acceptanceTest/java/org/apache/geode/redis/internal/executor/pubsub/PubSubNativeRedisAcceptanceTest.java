@@ -15,31 +15,15 @@
 
 package org.apache.geode.redis.internal.executor.pubsub;
 
-
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import redis.clients.jedis.Jedis;
 
 import org.apache.geode.NativeRedisTestRule;
 
-public class PubSubNativeRedisAcceptanceTest extends PubSubIntegrationTest {
+public class PubSubNativeRedisAcceptanceTest extends AbstractPubSubIntegrationTest {
   @ClassRule
   public static NativeRedisTestRule redis = new NativeRedisTestRule();
 
-  @BeforeClass
-  public static void setUp() {
-    subscriber = new Jedis("localhost", redis.getPort(), JEDIS_TIMEOUT);
-    publisher = new Jedis("localhost", redis.getPort(), JEDIS_TIMEOUT);
-  }
-
-  @AfterClass
-  public static void tearDown() {
-    subscriber.close();
-    publisher.close();
-  }
-
+  @Override
   public int getPort() {
     return redis.getPort();
   }

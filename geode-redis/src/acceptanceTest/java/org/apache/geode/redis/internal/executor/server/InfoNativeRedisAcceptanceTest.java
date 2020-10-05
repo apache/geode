@@ -15,24 +15,22 @@
 
 package org.apache.geode.redis.internal.executor.server;
 
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import redis.clients.jedis.Jedis;
 
 import org.apache.geode.NativeRedisTestRule;
 
-public class InfoNativeRedisAcceptanceTest extends InfoIntegrationTest {
+public class InfoNativeRedisAcceptanceTest extends AbstractInfoIntegrationTest {
 
   @ClassRule
   public static NativeRedisTestRule redis = new NativeRedisTestRule();
 
   @Override
-  protected int getTCPPort() {
-    return redis.getExposedPort();
+  public int getPort() {
+    return redis.getPort();
   }
 
-  @BeforeClass
-  public static void setUp() {
-    jedis = new Jedis("localhost", redis.getPort(), REDIS_CLIENT_TIMEOUT);
+  @Override
+  int getExposedPort() {
+    return redis.getExposedPort();
   }
 }

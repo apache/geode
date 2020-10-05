@@ -14,74 +14,18 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Test;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
-import org.apache.geode.redis.internal.RedisConstants;
 
-public class StrLenIntegrationTest {
-
-  static Jedis jedis;
+public class StrLenIntegrationTest extends AbstractStrLenIntegrationTest {
 
   @ClassRule
   public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
-  @BeforeClass
-  public static void setUp() {
-    jedis = new Jedis("localhost", server.getPort(), 10000000);
-  }
-
-  @After
-  public void flushAll() {
-    jedis.flushAll();
-  }
-
-  @AfterClass
-  public static void tearDown() {
-    jedis.close();
-  }
-
-  @Test
-  public void testStrlen_requestNonexistentKey_returnsZero() {
-    Long result = jedis.strlen("Nohbdy");
-    assertThat(result).isEqualTo(0);
-  }
-
-  @Test
-  public void testStrlen_requestKey_returnsLengthOfStringValue() {
-    String value = "byGoogle";
-
-    jedis.set("golang", value);
-
-    Long result = jedis.strlen("golang");
-    assertThat(result).isEqualTo(value.length());
-  }
-
-  @Test
-  public void testStrlen_requestWrongType_shouldReturnError() {
-    String key = "hashKey";
-    jedis.hset(key, "field", "this value doesn't matter");
-
-    assertThatThrownBy(() -> jedis.strlen(key))
-        .isInstanceOf(JedisDataException.class)
-        .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
-  }
-
-  @Test
-  public void testStrlen_withBinaryData() {
-    byte[] zero = new byte[] {0};
-    jedis.set(zero, zero);
-
-    assertThat(jedis.strlen(zero)).isEqualTo(1);
+  @Override
+  public int getPort() {
+    return server.getPort();
   }
 
 }

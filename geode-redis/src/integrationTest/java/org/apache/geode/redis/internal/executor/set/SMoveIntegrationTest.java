@@ -14,127 +14,18 @@
  */
 package org.apache.geode.redis.internal.executor.set;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import redis.clients.jedis.Jedis;
 
-import org.apache.geode.management.internal.cli.util.ThreePhraseGenerator;
 import org.apache.geode.redis.GeodeRedisServerRule;
-import org.apache.geode.test.junit.categories.RedisTest;
 
-@Category({RedisTest.class})
-public class SMoveIntegrationTest {
-  static Jedis jedis;
-  static Jedis jedis2;
-  private static ThreePhraseGenerator generator = new ThreePhraseGenerator();
+public class SMoveIntegrationTest extends AbstractSMoveIntegrationTest {
 
   @ClassRule
   public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
-  @BeforeClass
-  public static void setUp() {
-    jedis = new Jedis("localhost", server.getPort(), 10000000);
-    jedis2 = new Jedis("localhost", server.getPort(), 10000000);
+  @Override
+  public int getPort() {
+    return server.getPort();
   }
 
-  @AfterClass
-  public static void tearDown() {
-    jedis.close();
-    jedis2.close();
-  }
-
-  @After
-  public void cleanup() {
-    jedis.flushAll();
-  }
-
-  @Test
-  public void testSMove() {
-    String source = generator.generate('x');
-    String dest = generator.generate('x');
-    String test = generator.generate('x');
-    int elements = 10;
-    String[] strings = generateStrings(elements, 'x');
-    jedis.sadd(source, strings);
-
-    long i = 1;
-    for (String entry : strings) {
-      long results = jedis.smove(source, dest, entry);
-      assertThat(results).isEqualTo(1);
-      assertThat(jedis.sismember(dest, entry)).isTrue();
-
-      results = jedis.scard(source);
-      assertThat(results).isEqualTo(strings.length - i);
-      assertThat(jedis.scard(dest)).isEqualTo(i);
-      i++;
-    }
-
-    assertThat(jedis.smove(test, dest, generator.generate('x'))).isEqualTo(0);
-  }
-
-  @Test
-  public void testSMoveNegativeCases() {
-    String source = "source";
-    String dest = "dest";
-    jedis.sadd(source, "sourceField");
-    jedis.sadd(dest, "destField");
-    String nonexistentField = "nonexistentField";
-
-    assertThat(jedis.smove(source, dest, nonexistentField)).isEqualTo(0);
-    assertThat(jedis.sismember(dest, nonexistentField)).isFalse();
-    assertThat(jedis.smove(source, "nonexistentDest", nonexistentField)).isEqualTo(0);
-    assertThat(jedis.smove("nonExistentSource", dest, nonexistentField)).isEqualTo(0);
-  }
-
-  @Test
-  public void testConcurrentSMove() throws ExecutionException, InterruptedException {
-    String source = generator.generate('x');
-    String dest = generator.generate('y');
-    int elements = 1000;
-    String[] strings = generateStrings(elements, 'x');
-    jedis.sadd(source, strings);
-
-    ExecutorService pool = Executors.newFixedThreadPool(2);
-    Callable<Long> callable1 = () -> moveSetElements(source, dest, strings, jedis);
-    Callable<Long> callable2 = () -> moveSetElements(source, dest, strings, jedis2);
-    Future<Long> future1 = pool.submit(callable1);
-    Future<Long> future2 = pool.submit(callable2);
-
-    assertThat(future1.get() + future2.get()).isEqualTo(new Long(strings.length));
-    assertThat(jedis.smembers(dest)).containsExactlyInAnyOrder(strings);
-    assertThat(jedis.scard(source)).isEqualTo(0L);
-  }
-
-  private long moveSetElements(String source, String dest, String[] strings,
-      Jedis jedis) {
-    long results = 0;
-    for (String entry : strings) {
-      results += jedis.smove(source, dest, entry);
-      Thread.yield();
-    }
-    return results;
-  }
-
-  private String[] generateStrings(int elements, char uniqueElement) {
-    Set<String> strings = new HashSet<>();
-    for (int i = 0; i < elements; i++) {
-      String elem = generator.generate(uniqueElement);
-      strings.add(elem);
-    }
-    return strings.toArray(new String[strings.size()]);
-  }
 }

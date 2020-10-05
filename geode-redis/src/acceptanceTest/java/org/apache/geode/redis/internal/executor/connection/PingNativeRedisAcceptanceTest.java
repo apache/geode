@@ -16,19 +16,18 @@
 
 package org.apache.geode.redis.internal.executor.connection;
 
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import redis.clients.jedis.Jedis;
 
 import org.apache.geode.NativeRedisTestRule;
 
-public class PingNativeRedisAcceptanceTest extends PingIntegrationTest {
+public class PingNativeRedisAcceptanceTest extends AbstractPingIntegrationTest {
 
   @ClassRule
   public static NativeRedisTestRule redis = new NativeRedisTestRule();
 
-  @BeforeClass
-  public static void setUp() {
-    jedis = new Jedis("localhost", redis.getPort(), REDIS_CLIENT_TIMEOUT);
+  @Override
+  public int getPort() {
+    return redis.getPort();
   }
+
 }

@@ -16,45 +16,17 @@
 
 package org.apache.geode.redis.internal.executor.server;
 
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.List;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import redis.clients.jedis.Jedis;
+import org.junit.ClassRule;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
 
-public class TimeIntegrationTest {
+public class TimeIntegrationTest extends AbstractTimeIntegrationTest {
 
-  public Jedis jedis;
-  public static int REDIS_CLIENT_TIMEOUT = 10000;
+  @ClassRule
+  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
-  @Rule
-  public GeodeRedisServerRule server = new GeodeRedisServerRule()
-      .withProperty(LOG_LEVEL, "info");
-
-  @Before
-  public void setUp() {
-    jedis = new Jedis("localhost", server.getPort(), REDIS_CLIENT_TIMEOUT);
+  @Override
+  public int getPort() {
+    return server.getPort();
   }
-
-  @After
-  public void classLevelTearDown() {
-    jedis.close();
-  }
-
-  @Test
-  public void timeCommandRespondsWIthTwoValues() {
-    List<String> timestamp = jedis.time();
-
-    assertThat(timestamp).hasSize(2);
-    assertThat(Long.parseLong(timestamp.get(0))).isGreaterThan(0);
-    assertThat(Long.parseLong(timestamp.get(1))).isNotNegative();
-  }
-
 }

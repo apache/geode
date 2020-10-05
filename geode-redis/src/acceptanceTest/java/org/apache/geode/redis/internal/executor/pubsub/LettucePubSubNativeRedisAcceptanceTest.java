@@ -15,18 +15,18 @@
 package org.apache.geode.redis.internal.executor.pubsub;
 
 
-import io.lettuce.core.RedisClient;
-import org.junit.Before;
 import org.junit.ClassRule;
 
 import org.apache.geode.NativeRedisTestRule;
 
-public class LettucePubSubNativeRedisAcceptanceTest extends LettucePubSubIntegrationTest {
+public class LettucePubSubNativeRedisAcceptanceTest extends AbstractLettucePubSubIntegrationTest {
+
   @ClassRule
   public static NativeRedisTestRule redis = new NativeRedisTestRule();
 
-  @Before
-  public void before() {
-    client = RedisClient.create("redis://localhost:" + redis.getPort());
+  @Override
+  public int getPort() {
+    return redis.getPort();
   }
+
 }

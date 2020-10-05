@@ -15,18 +15,18 @@
 package org.apache.geode.redis.internal.executor.string;
 
 
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import redis.clients.jedis.Jedis;
 
 import org.apache.geode.NativeRedisTestRule;
 
-public class MSetNXNativeRedisAcceptanceTest extends MSetNXIntegrationTest {
+public class MSetNXNativeRedisAcceptanceTest extends AbstractMSetNXIntegrationTest {
+
   @ClassRule
   public static NativeRedisTestRule redis = new NativeRedisTestRule();
 
-  @BeforeClass
-  public static void setUp() {
-    jedis = new Jedis("localhost", redis.getPort(), 10000000);
+  @Override
+  public int getPort() {
+    return redis.getPort();
   }
+
 }

@@ -14,60 +14,18 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.HashSet;
-import java.util.Set;
-
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Test;
-import redis.clients.jedis.Jedis;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
 
-public class MSetNXIntegrationTest {
-
-  static Jedis jedis;
+public class MSetNXIntegrationTest extends AbstractMSetNXIntegrationTest {
 
   @ClassRule
   public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
-  @BeforeClass
-  public static void setUp() {
-    jedis = new Jedis("localhost", server.getPort(), 10000000);
+  @Override
+  public int getPort() {
+    return server.getPort();
   }
 
-  @After
-  public void flushAll() {
-    jedis.flushAll();
-  }
-
-  @AfterClass
-  public static void tearDown() {
-    jedis.close();
-  }
-
-  @Test
-  public void testMSetNX() {
-    Set<String> keysAndVals = new HashSet<String>();
-    for (int i = 0; i < 2 * 5; i++) {
-      keysAndVals.add(randString());
-    }
-    String[] keysAndValsArray = keysAndVals.toArray(new String[0]);
-    long response = jedis.msetnx(keysAndValsArray);
-
-    assertThat(response).isEqualTo(1);
-
-    long response2 = jedis.msetnx(keysAndValsArray[0], randString());
-
-    assertThat(response2).isEqualTo(0);
-    assertThat(keysAndValsArray[1]).isEqualTo(jedis.get(keysAndValsArray[0]));
-  }
-
-  private String randString() {
-    return Long.toHexString(Double.doubleToLongBits(Math.random()));
-  }
 }
