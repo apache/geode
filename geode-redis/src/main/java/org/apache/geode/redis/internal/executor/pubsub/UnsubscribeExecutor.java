@@ -32,6 +32,8 @@ public class UnsubscribeExecutor extends AbstractExecutor {
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
 
+    context.eventLoopReady();
+
     List<byte[]> channelNames = extractChannelNames(command);
     if (channelNames.isEmpty()) {
       channelNames = context.getPubSub().findSubscribedChannels(context.getClient());

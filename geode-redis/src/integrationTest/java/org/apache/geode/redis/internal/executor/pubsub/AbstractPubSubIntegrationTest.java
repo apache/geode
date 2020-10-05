@@ -487,6 +487,8 @@ public abstract class AbstractPubSubIntegrationTest implements RedisPortSupplier
 
       iterationCount++;
     }
+
+    publisher.close();
   }
 
   private List<String> subscribeAndPublish(int index, int iteration, Jedis localPublisher)
@@ -785,10 +787,9 @@ public abstract class AbstractPubSubIntegrationTest implements RedisPortSupplier
     return publishedMessages;
   }
 
-  int makeSubscribers(int index, int minimumIterations, AtomicBoolean running)
+  int makeSubscribers(int minimumIterations, AtomicBoolean running)
       throws InterruptedException, ExecutionException {
     ExecutorService executor = Executors.newFixedThreadPool(100);
-    // ExecutorService secondaryExecutor = Executors.newCachedThreadPool();
     Queue<Future<Void>> workQ = new ConcurrentLinkedQueue<>();
 
     Future<Integer> consumer = executor.submit(() -> {
@@ -865,9 +866,9 @@ public abstract class AbstractPubSubIntegrationTest implements RedisPortSupplier
     AtomicBoolean running = new AtomicBoolean(true);
 
     Future<Integer> makeSubscribersFuture1 =
-        executor.submit(() -> makeSubscribers(1, 10000, running));
+        executor.submit(() -> makeSubscribers(10000, running));
     Future<Integer> makeSubscribersFuture2 =
-        executor.submit(() -> makeSubscribers(2, 10000, running));
+        executor.submit(() -> makeSubscribers(10000, running));
 
     Future<Integer> publish1 = executor.submit(() -> doPublishing(1, 10000, running));
     Future<Integer> publish2 = executor.submit(() -> doPublishing(2, 10000, running));
