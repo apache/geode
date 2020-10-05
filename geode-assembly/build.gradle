@@ -194,6 +194,7 @@ dependencies {
   acceptanceTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
   integrationTestImplementation(project(':geode-core'))
+  integrationTestImplementation(project(':geode-membership'))
   integrationTestImplementation(project(':geode-gfsh'))
   integrationTestImplementation(project(':geode-log4j')) {
     exclude module: 'geode-core'

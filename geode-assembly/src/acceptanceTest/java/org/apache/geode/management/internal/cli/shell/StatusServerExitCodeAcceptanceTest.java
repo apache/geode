@@ -15,8 +15,6 @@
 package org.apache.geode.management.internal.cli.shell;
 
 import static java.util.Arrays.stream;
-import static org.apache.geode.internal.AvailablePort.SOCKET;
-import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
 import static org.apache.geode.management.internal.cli.shell.DirectoryTree.printDirectoryTree;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -29,6 +27,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.process.PidFile;
 import org.apache.geode.test.junit.categories.GfshTest;
@@ -58,7 +57,7 @@ public class StatusServerExitCodeAcceptanceTest {
   @BeforeClass
   public static void startCluster() throws IOException {
     rootPath = gfshRule.getTemporaryFolder().getRoot().toPath();
-    locatorPort = getRandomAvailablePort(SOCKET);
+    locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
 
     GfshExecution execution = GfshScript.of(
         "start locator --name=" + LOCATOR_NAME + " --port=" + locatorPort,

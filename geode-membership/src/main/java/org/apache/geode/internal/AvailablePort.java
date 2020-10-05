@@ -32,7 +32,7 @@ import java.util.Enumeration;
 import java.util.Random;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.membership.api.MembershipConfig;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.util.internal.GeodeGlossary;
 
@@ -118,7 +118,8 @@ public class AvailablePort {
         buffer[1] = (byte) 'i';
         buffer[2] = (byte) 'n';
         buffer[3] = (byte) 'g';
-        InetAddress mcid = addr == null ? DistributionConfig.DEFAULT_MCAST_ADDRESS : addr;
+        InetAddress mcid =
+            addr == null ? InetAddress.getByName(MembershipConfig.DEFAULT_MCAST_ADDRESS) : addr;
         SocketAddress mcaddr = new InetSocketAddress(mcid, port);
         socket.joinGroup(mcid);
         DatagramPacket packet = new DatagramPacket(buffer, 0, buffer.length, mcaddr);
@@ -349,7 +350,7 @@ public class AvailablePort {
       int port = getRandomWildcardBindPortNumber(useMembershipPortRange);
       if (isPortAvailable(port, protocol, addr)) {
         // don't return the products default multicast port
-        if (!(protocol == MULTICAST && port == DistributionConfig.DEFAULT_MCAST_PORT)) {
+        if (!(protocol == MULTICAST && port == MembershipConfig.DEFAULT_MCAST_PORT)) {
           return port;
         }
       }
@@ -430,8 +431,8 @@ public class AvailablePort {
       rangeBase = AVAILABLE_PORTS_LOWER_BOUND; // 20000/udp is securid
       rangeTop = AVAILABLE_PORTS_UPPER_BOUND; // 30000/tcp is spoolfax
     } else {
-      rangeBase = DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE[0];
-      rangeTop = DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE[1];
+      rangeBase = MembershipConfig.DEFAULT_MEMBERSHIP_PORT_RANGE[0];
+      rangeTop = MembershipConfig.DEFAULT_MEMBERSHIP_PORT_RANGE[1];
     }
 
     return rand.nextInt(rangeTop - rangeBase) + rangeBase;
@@ -506,10 +507,10 @@ public class AvailablePort {
     err.println(
         "This program either prints whether or not a port is available for a given protocol, or it prints out an available port for a given protocol.");
     err.println("");
-    ExitCode.FATAL.doSystemExit();
+    System.exit(1);
   }
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws UnknownHostException {
     String protocolString = null;
     String addrString = null;
     String portString = null;
@@ -547,12 +548,7 @@ public class AvailablePort {
 
     InetAddress addr = null;
     if (addrString != null) {
-      try {
-        addr = InetAddress.getByName(addrString);
-      } catch (Exception e) {
-        e.printStackTrace();
-        ExitCode.FATAL.doSystemExit();
-      }
+      addr = InetAddress.getByName(addrString);
     }
 
     if (portString != null) {

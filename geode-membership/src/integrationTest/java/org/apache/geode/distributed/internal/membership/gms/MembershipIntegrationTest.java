@@ -27,7 +27,10 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -49,6 +52,7 @@ import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreatorImpl;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketFactory;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.internal.DSFIDSerializerImpl;
@@ -270,6 +274,65 @@ public class MembershipIntegrationTest {
 
     stop(coordinatorMembership, lateJoiningMembership);
     stop(coordinatorLocator, lateJoiningLocator);
+  }
+
+  @Test
+  public void locatorsStopWaitingForLocatorWaitTimeIfAllLocatorsContacted()
+      throws IOException, MemberStartupException, InterruptedException, TimeoutException,
+      ExecutionException {
+
+    final Supplier<ExecutorService> executorServiceSupplier =
+        () -> LoggingExecutors.newCachedThreadPool("membership", false);
+
+    int[] locatorPorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+
+    int locatorWaitTime = (int) Duration.ofMinutes(5).getSeconds();
+    final MembershipConfig config =
+        createMembershipConfig(true, locatorWaitTime, locatorPorts[0], locatorPorts[1]);
+
+    CompletableFuture<Membership<MemberIdentifier>> createMembership0 =
+        launchLocator(executorServiceSupplier, locatorPorts[0], config);
+
+    // Assert that membership 0 is waiting for the other locator to start
+    Thread.sleep(5000);
+    assertThat(createMembership0.getNow(null)).isNull();
+
+    CompletableFuture<Membership<MemberIdentifier>> createMembership1 =
+        launchLocator(executorServiceSupplier, locatorPorts[1], config);
+
+    // Make sure the members are created in less than the locator-wait-time
+    Membership<MemberIdentifier> membership0 = createMembership0.get(2, TimeUnit.MINUTES);
+    Membership<MemberIdentifier> membership1 = createMembership1.get(2, TimeUnit.MINUTES);
+
+    // Make sure the members see each other in the view
+    assertThat(membership0.getView().getMembers()).hasSize(2);
+    assertThat(membership1.getView().getMembers()).hasSize(2);
+  }
+
+  private CompletableFuture<Membership<MemberIdentifier>> launchLocator(
+      Supplier<ExecutorService> executorServiceSupplier, int locatorPort, MembershipConfig config) {
+    return executorServiceRule.supplyAsync(() -> {
+      try {
+        Path locatorDirectory0 = temporaryFolder.newFolder().toPath();
+        MembershipLocator<MemberIdentifier> locator0 =
+            MembershipLocatorBuilder.newLocatorBuilder(
+                socketCreator,
+                dsfidSerializer,
+                locatorDirectory0,
+                executorServiceSupplier)
+                .setConfig(config)
+                .setPort(locatorPort)
+                .create();
+        locator0.start();
+
+        Membership<MemberIdentifier> membership = createMembership(config, locator0);
+        membership.start();
+        membership.startEventProcessing();
+        return membership;
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    });
   }
 
   private void start(final Membership<MemberIdentifier> membership)
