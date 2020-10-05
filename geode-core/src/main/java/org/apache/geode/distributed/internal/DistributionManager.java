@@ -88,6 +88,8 @@ public interface DistributionManager extends ReplySender {
    */
   Set<InternalDistributedMember> getDistributionManagerIds();
 
+  Set<InternalDistributedMember> getLocatorDistributionManagerIds();
+
   /**
    * Returns an unmodifiable set containing the identities of all of the known "normal" distribution
    * managers. This does not include locators or admin members.
