@@ -95,7 +95,7 @@ public class GeodeRedisServer {
     RedisCommandFunction.register();
     passiveExpirationManager =
         new PassiveExpirationManager(regionProvider.getDataRegion(), redisStats);
-    redisCommandExecutor = LoggingExecutors.newCachedThreadPool("Redis Command", true);
+    redisCommandExecutor = LoggingExecutors.newCachedThreadPool("GeodeRedisServer-Command-", true);
     nettyRedisServer = new NettyRedisServer(() -> cache.getInternalDistributedSystem().getConfig(),
         regionProvider, pubSub,
         this::allowUnsupportedCommands, this::shutdown, port, bindAddress, redisStats,

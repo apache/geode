@@ -32,6 +32,8 @@ public class PingExecutor extends AbstractExecutor {
     List<byte[]> commandElems = command.getProcessedCommand();
     RedisResponse redisResponse;
 
+    context.eventLoopReady();
+
     if (context.getPubSub().findSubscribedChannels(context.getClient()).isEmpty()) {
       byte[] result;
       if (commandElems.size() > 1) {

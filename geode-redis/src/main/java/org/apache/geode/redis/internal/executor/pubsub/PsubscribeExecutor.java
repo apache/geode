@@ -18,6 +18,7 @@ package org.apache.geode.redis.internal.executor.pubsub;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
@@ -31,6 +32,8 @@ public class PsubscribeExecutor extends AbstractExecutor {
   @Override
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
+
+    context.eventLoopReady();
 
     Collection<SubscribeResult> results = new ArrayList<>();
     for (int i = 1; i < command.getProcessedCommand().size(); i++) {
@@ -49,6 +52,7 @@ public class PsubscribeExecutor extends AbstractExecutor {
       items.add(item);
     }
 
+    CountDownLatch subscriberLatch = context.getOrCreateEventLoopLatch();
 
     Runnable callback = () -> {
       Consumer<Boolean> innerCallback = success -> {
@@ -61,6 +65,7 @@ public class PsubscribeExecutor extends AbstractExecutor {
             }
           }
         }
+        subscriberLatch.countDown();
       };
       context.changeChannelEventLoopGroup(context.getSubscriberGroup(), innerCallback);
     };
