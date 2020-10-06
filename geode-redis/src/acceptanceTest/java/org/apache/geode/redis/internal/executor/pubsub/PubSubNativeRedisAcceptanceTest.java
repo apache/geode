@@ -20,7 +20,6 @@ import org.junit.Ignore;
 
 import org.apache.geode.NativeRedisTestRule;
 
-@Ignore("GEODE-8577")
 public class PubSubNativeRedisAcceptanceTest extends AbstractPubSubIntegrationTest {
   @ClassRule
   public static NativeRedisTestRule redis = new NativeRedisTestRule();
