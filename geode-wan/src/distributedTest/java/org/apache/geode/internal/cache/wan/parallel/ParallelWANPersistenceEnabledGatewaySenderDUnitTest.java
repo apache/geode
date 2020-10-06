@@ -1707,9 +1707,8 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
     // create locator on remote site
     Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
-    // create receiver on remote site
+    // create cache in remote site
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(vm2, vm3);
 
     // create cache in local site
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
@@ -1750,14 +1749,6 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
 
     LogWriterUtils.getLogWriter().info("All senders are running.");
 
-    // pause the senders
-    vm4.invoke(pauseSenderRunnable());
-    vm5.invoke(pauseSenderRunnable());
-    vm6.invoke(pauseSenderRunnable());
-    vm7.invoke(pauseSenderRunnable());
-
-    LogWriterUtils.getLogWriter().info("All senders are paused.");
-
     // start puts in region on local site
     vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName(), 3000));
     LogWriterUtils.getLogWriter().info("Completed puts in the region");
@@ -1777,6 +1768,9 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
     vm7.invoke(() -> WANTestBase.stopSender("ln"));
 
     LogWriterUtils.getLogWriter().info("Stopped all the senders.");
+
+    // create receiver on remote site
+    createReceiverInVMs(vm2, vm3);
 
     vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName(), 0));
     vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName(), 0));
