@@ -349,9 +349,9 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
               && state.possibleCoordinator.equals(this.localAddress)) {
             // if we haven't contacted a member of a cluster maybe this node should
             // become the coordinator.
-            if (state.joinedMembersContacted <= 0 && (now >= locatorGiveUpTime &&
+            if (state.joinedMembersContacted <= 0 && ((now >= locatorGiveUpTime &&
                 tries >= minimumRetriesBeforeBecomingCoordinator) ||
-                state.locatorsContacted >= locators.size()) {
+                state.locatorsContacted >= locators.size())) {
               synchronized (viewInstallationLock) {
                 becomeCoordinator();
               }
