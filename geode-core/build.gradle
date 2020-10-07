@@ -403,6 +403,8 @@ dependencies {
         exclude module: 'geode-core'
     }
     performanceTestImplementation(project(':geode-log4j'))
+
+    jmhTestImplementation(project(':geode-junit'))
 }
 
 tasks.eclipse.dependsOn(generateGrammarSource)

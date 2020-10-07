@@ -29,6 +29,8 @@ jmh {
   warmupIterations = project.hasProperty('jmh.warmupIterations') ? project.property('jmh.warmupIterations') as Integer : null
   iterations = project.hasProperty('jmh.iterations') ? project.property('jmh.iterations') as Integer : null
   timeOnIteration = project.hasProperty('jmh.timeOnIteration') ? project.property('jmh.timeOnIteration') as Integer : null
+  fork = project.hasProperty('jmh.fork') ? project.property('jmh.fork') as Integer : null
+  jvm = project.hasProperty('jmh.jvm') ? project.property('jmh.jvm') as String : null
 }
 
 jmhJar {
@@ -36,3 +38,17 @@ jmhJar {
   exclude('META-INF/org/apache/logging/log4j/core/config/plugins/Log4j2Plugins.dat')
   exclude('*.jar')
 }
+
+apply plugin: 'nebula.facet'
+facets {
+  jmhTest {
+    parentSourceSet = 'jmh'
+    testTaskName = 'jmhTest'
+    includeInCheckLifecycle = true
+  }
+}
+
+configurations {
+  jmhTestRuntimeOnly.extendsFrom(jmhRuntimeOnly)
+}
+
