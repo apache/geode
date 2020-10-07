@@ -663,7 +663,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
       }
       if (functionResult instanceof Throwable) {
         // log the exception and continue
-        logger.info("Error executing CacheRealizationFunction.", (Throwable) functionResult);
+        logger.warn("Error executing CacheRealizationFunction.", (Throwable) functionResult);
         continue;
       }
       results.add((R) functionResult);
