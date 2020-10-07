@@ -446,7 +446,7 @@ public class DistributionImpl implements Distribution {
       return membership.requestMemberRemoval(member, reason);
     } catch (MemberDisconnectedException | MembershipClosedException e) {
       checkCancelled();
-      throw new DistributedSystemDisconnectedException("Distribution is closed");
+      throw new ForcedDisconnectException("MemberDisconnected - Distribution is closed");
     } catch (RuntimeException e) {
       checkCancelled();
       if (!membership.isConnected()) {
