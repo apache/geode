@@ -17,7 +17,7 @@
 # limitations under the License.
 #
 
-set -e -x
+set -e
 
 SOURCE="${BASH_SOURCE[0]}"
 while [[ -h "$SOURCE" ]]; do # resolve $SOURCE until the file is no longer a symlink
@@ -28,6 +28,8 @@ done
 SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 . ${SCRIPTDIR}/shared_utilities.sh
+
+set -x
 
 is_source_from_pr_testable "geode" "$(get_geode_pr_exclusion_dirs)" || exit 0
 
