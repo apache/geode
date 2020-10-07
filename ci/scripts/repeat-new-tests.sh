@@ -29,8 +29,6 @@ SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 . ${SCRIPTDIR}/shared_utilities.sh
 
-set -x
-
 is_source_from_pr_testable "geode" "$(get_geode_pr_exclusion_dirs)" || exit 0
 
 function changes_for_path() {

@@ -141,16 +141,18 @@ tasks.register('printTestClasspath') {
     Set result = new HashSet()
     subprojects.each { sub ->
       if (sub.hasProperty("sourceSets")) {
-        sub.configurations.each { c ->
-          if (c.isCanBeResolved()) {
-            c.each { f -> result.add(f) }
-          }
-        }
-
-        // For some reason the previous collection does not pick up acceptanceTest configurations
+        // Prefer sources at the start of the classpath
         sub.sourceSets.each { ss ->
           ss.each { x ->
             x.output.classesDirs.each { y -> result.add(y) }
+          }
+        }
+
+        // Note that, for some reason, this does not seem to pick up acceptanceTest code. However,
+        // the prior block will have done so.
+        sub.configurations.each { c ->
+          if (c.isCanBeResolved()) {
+            c.each { f -> result.add(f) }
           }
         }
       }

@@ -25,6 +25,9 @@ import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfo;
 import io.github.classgraph.ScanResult;
 
+/**
+ * This class is intended as a helper to the CI StressNewTest job.
+ */
 public class ClassScanner {
 
   private ScanResult scanResult;
