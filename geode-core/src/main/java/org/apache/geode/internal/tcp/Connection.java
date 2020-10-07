@@ -801,9 +801,13 @@ public class Connection implements Runnable {
 
   private void notifyHandshakeWaiter(boolean success) {
     if (getConduit().useSSL() && ioFilter != null) {
-      // clear out any remaining handshake bytes
-      ByteBuffer buffer = ioFilter.getUnwrappedBuffer(inputBuffer);
-      buffer.position(0).limit(0);
+      synchronized (ioFilter) {
+        if (!ioFilter.isClosed()) {
+          // clear out any remaining handshake bytes
+          ByteBuffer buffer = ioFilter.getUnwrappedBuffer(inputBuffer);
+          buffer.position(0).limit(0);
+        }
+      }
     }
     synchronized (handshakeSync) {
       if (success) {
@@ -2588,17 +2592,20 @@ public class Connection implements Runnable {
           }
           // fall through
         }
-        ByteBuffer wrappedBuffer = ioFilter.wrap(buffer);
-        while (wrappedBuffer.remaining() > 0) {
-          int amtWritten = 0;
-          long start = stats.startSocketWrite(true);
-          try {
-            amtWritten = channel.write(wrappedBuffer);
-          } finally {
-            stats.endSocketWrite(true, start, amtWritten, 0);
+        // synchronize on the ioFilter while using its network buffer
+        synchronized (ioFilter) {
+          ByteBuffer wrappedBuffer = ioFilter.wrap(buffer);
+          while (wrappedBuffer.remaining() > 0) {
+            int amtWritten = 0;
+            long start = stats.startSocketWrite(true);
+            try {
+              amtWritten = channel.write(wrappedBuffer);
+            } finally {
+              stats.endSocketWrite(true, start, amtWritten, 0);
+            }
           }
-        }
 
+        }
       }
     } else {
       writeAsync(channel, buffer, forceAsync, msg, stats);

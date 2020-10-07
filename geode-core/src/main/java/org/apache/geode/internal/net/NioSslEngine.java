@@ -52,6 +52,8 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 public class NioSslEngine implements NioFilter {
   private static final Logger logger = LogService.getLogger();
 
+  private static final ByteBuffer EMPTY_BUFFER = ByteBuffer.allocate(0);
+
   private final BufferPool bufferPool;
 
   private boolean closed;
@@ -66,7 +68,7 @@ public class NioSslEngine implements NioFilter {
   /**
    * peerAppData holds the last unwrapped data from a peer
    */
-  ByteBuffer peerAppData;
+  volatile ByteBuffer peerAppData;
 
   NioSslEngine(SSLEngine engine, BufferPool bufferPool) {
     SSLSession session = engine.getSession();
@@ -362,6 +364,10 @@ public class NioSslEngine implements NioFilter {
     // read-operations
   }
 
+  @Override
+  public synchronized boolean isClosed() {
+    return closed;
+  }
 
   @Override
   public synchronized void close(SocketChannel socketChannel) {
@@ -396,9 +402,17 @@ public class NioSslEngine implements NioFilter {
     } catch (IOException e) {
       throw new GemFireIOException("exception closing SSL session", e);
     } finally {
-      bufferPool.releaseBuffer(TRACKED_SENDER, myNetData);
-      bufferPool.releaseBuffer(TRACKED_RECEIVER, peerAppData);
+      logger.info("NioSSLEngine releasing two buffers myNetData={}({}), peerAppData={}({})",
+          Integer.toHexString(System.identityHashCode(myNetData)),
+          (myNetData.isDirect()? "direct":"heap"),
+          Integer.toHexString(System.identityHashCode(peerAppData)),
+          (myNetData.isDirect()? "direct":"heap"));
+      ByteBuffer netData = myNetData;
+      ByteBuffer appData = peerAppData;
       myNetData = null;
+      peerAppData = EMPTY_BUFFER;
+      bufferPool.releaseBuffer(TRACKED_SENDER, netData);
+      bufferPool.releaseBuffer(TRACKED_RECEIVER, appData);
       this.closed = true;
     }
   }

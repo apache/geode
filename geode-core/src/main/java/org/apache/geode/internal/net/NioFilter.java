@@ -75,6 +75,10 @@ public interface NioFilter {
     }
   }
 
+  default boolean isClosed() {
+    return false;
+  }
+
   /**
    * invoke this method when you are done using the NioFilter
    *
