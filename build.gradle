@@ -133,6 +133,32 @@ tasks.register('generate') {
   // `afterEvaluate.rootProject.generate.dependsOn(generateProto)`
 }
 
+tasks.register('printTestClasspath') {
+  group 'Build'
+  description "Print the classpath used in all tests for all subprojects"
+
+  doLast {
+    Set result = new HashSet()
+    subprojects.each { sub ->
+      if (sub.hasProperty("sourceSets")) {
+        sub.configurations.each { c ->
+          if (c.isCanBeResolved()) {
+            c.each { f -> result.add(f) }
+          }
+        }
+
+        // For some reason the previous collection does not pick up acceptanceTest configurations
+        sub.sourceSets.each { ss ->
+          ss.each { x ->
+            x.output.classesDirs.each { y -> result.add(y) }
+          }
+        }
+      }
+    }
+    println result.join(File.pathSeparator)
+  }
+}
+
 // Prompt the user for a publication passsword to sign archives or upload artifacts, if requested
 if (project.hasProperty('askpass')) {
   gradle.taskGraph.whenReady { taskGraph ->

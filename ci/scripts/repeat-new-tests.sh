@@ -46,11 +46,31 @@ function changes_for_path() {
   popd >> /dev/null
 }
 
-UNIT_TEST_CHANGES=$(changes_for_path '*/src/test/java') || exit $?
-INTEGRATION_TEST_CHANGES=$(changes_for_path '*/src/integrationTest/java') || exit $?
-DISTRIBUTED_TEST_CHANGES=$(changes_for_path '*/src/distributedTest/java') || exit $?
-ACCEPTANCE_TEST_CHANGES=$(changes_for_path '*/src/acceptanceTest/java') || exit $?
-UPGRADE_TEST_CHANGES=$(changes_for_path '*/src/upgradeTest/java') || exit $?
+function save_classpath() {
+  pushd geode >> /dev/null
+    ./gradlew --console=plain -q devBuild printTestClasspath 2>/dev/null >/tmp/classpath.txt
+  popd >> /dev/null
+}
+
+function expand_abstract_classes() {
+  pushd geode >> /dev/null
+    echo $(java -cp @/tmp/classpath.txt org.apache.geode.test.util.ClassScanner $@)
+  popd >> /dev/null
+}
+
+UNIT_TEST_CHANGES_TMP=$(changes_for_path '*/src/test/java') || exit $?
+INTEGRATION_TEST_CHANGES_TMP=$(changes_for_path '*/src/integrationTest/java') || exit $?
+DISTRIBUTED_TEST_CHANGES_TMP=$(changes_for_path '*/src/distributedTest/java') || exit $?
+ACCEPTANCE_TEST_CHANGES_TMP=$(changes_for_path '*/src/acceptanceTest/java') || exit $?
+UPGRADE_TEST_CHANGES_TMP=$(changes_for_path '*/src/upgradeTest/java') || exit $?
+
+save_classpath
+
+UNIT_TEST_CHANGES=$(expand_abstract_classes $UNIT_TEST_CHANGES_TMP) || exit $?
+INTEGRATION_TEST_CHANGES=$(expand_abstract_classes $INTEGRATION_TEST_CHANGES_TMP) || exit $?
+DISTRIBUTED_TEST_CHANGES=$(expand_abstract_classes $DISTRIBUTED_TEST_CHANGES_TMP) || exit $?
+ACCEPTANCE_TEST_CHANGES=$(expand_abstract_classes $ACCEPTANCE_TEST_CHANGES_TMP) || exit $?
+UPGRADE_TEST_CHANGES=$(expand_abstract_classes $UPGRADE_TEST_CHANGES_TMP) || exit $?
 
 CHANGED_FILES_ARRAY=( $UNIT_TEST_CHANGES $INTEGRATION_TEST_CHANGES $DISTRIBUTED_TEST_CHANGES $ACCEPTANCE_TEST_CHANGES $UPGRADE_TEST_CHANGES )
 NUM_CHANGED_FILES=${#CHANGED_FILES_ARRAY[@]}
