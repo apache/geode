@@ -577,16 +577,12 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
     Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(vm2, vm3);
-
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
     String firstDStore = (String) vm4.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
         false, 100, 10, false, true, null, null, true));
     String secondDStore = (String) vm5.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
         false, 100, 10, false, true, null, null, true));
-
-
 
     logger.info("The first ds is " + firstDStore);
     logger.info("The second ds is " + secondDStore);
@@ -597,8 +593,6 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
         () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
 
     startSenderInVMs("ln", vm4, vm5);
-    vm4.invoke(() -> WANTestBase.pauseSender("ln"));
-    vm5.invoke(() -> WANTestBase.pauseSender("ln"));
 
     vm4.invoke(() -> WANTestBase.createPersistentReplicatedRegion(getTestMethodName() + "_RR", "ln",
         isOffHeap()));
@@ -616,25 +610,20 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
     vm4.invoke(() -> WANTestBase.stopSender("ln"));
     vm5.invoke(() -> WANTestBase.stopSender("ln"));
 
-
     logger.info("Stopped all the senders. ");
 
-    AsyncInvocation inv1 = vm4.invokeAsync(() -> WANTestBase.startSenderwithCleanQueues("ln"));
-    logger.info("Started the sender in vm 4");
+    // Create receiver on remote site
+    createReceiverInVMs(vm2, vm3);
 
     vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 0));
     vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 0));
 
+    vm4.invoke(() -> WANTestBase.startSenderwithCleanQueues("ln"));
     vm5.invoke(() -> WANTestBase.startSenderwithCleanQueues("ln"));
-    logger.info("Started the sender in vm 5");
-    try {
-      inv1.await();
-    } catch (InterruptedException e) {
-      fail("Got interrupted exception while waiting for startSender to finish.");
-    }
 
     vm4.invoke(() -> waitForSenderRunningState("ln"));
     vm5.invoke(() -> waitForSenderRunningState("ln"));
+    logger.info("Started all senders.");
 
     vm4.invoke(() -> checkQueueSize("ln", 0));
     vm5.invoke(() -> checkQueueSize("ln", 0));
