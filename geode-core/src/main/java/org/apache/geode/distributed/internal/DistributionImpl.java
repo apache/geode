@@ -446,6 +446,8 @@ public class DistributionImpl implements Distribution {
       return membership.requestMemberRemoval(member, reason);
     } catch (MemberDisconnectedException | MembershipClosedException e) {
       checkCancelled();
+      logger.info("*** EB: DistributionImpl.requestMemberRemoval member: " + member.getName()
+          + "and now the StackTrace: \n: " + e.getStackTrace());
       throw new ForcedDisconnectException("MemberDisconnected - Distribution is closed");
     } catch (RuntimeException e) {
       checkCancelled();
