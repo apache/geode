@@ -755,12 +755,10 @@ public class GatewaySenderEventImpl
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     fromDataPre_GEODE_1_14_0_0(in, context);
-    if (version >= KnownVersion.GEODE_1_14_0.ordinal()) {
-      boolean hasTransaction = DataSerializer.readBoolean(in);
-      if (hasTransaction) {
-        this.isLastEventInTransaction = DataSerializer.readBoolean(in);
-        this.transactionId = context.getDeserializer().readObject(in);
-      }
+    boolean hasTransaction = DataSerializer.readBoolean(in);
+    if (hasTransaction) {
+      this.isLastEventInTransaction = DataSerializer.readBoolean(in);
+      this.transactionId = context.getDeserializer().readObject(in);
     }
   }
 
