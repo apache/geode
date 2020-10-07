@@ -17,7 +17,7 @@
 # limitations under the License.
 #
 
-set -e
+set -e -x
 
 SOURCE="${BASH_SOURCE[0]}"
 while [[ -h "$SOURCE" ]]; do # resolve $SOURCE until the file is no longer a symlink
@@ -47,15 +47,14 @@ function changes_for_path() {
 }
 
 function save_classpath() {
+  echo "Building and saving classpath"
   pushd geode >> /dev/null
     ./gradlew --console=plain -q devBuild printTestClasspath 2>/dev/null >/tmp/classpath.txt
   popd >> /dev/null
 }
 
 function expand_abstract_classes() {
-  pushd geode >> /dev/null
-    echo $(java -cp @/tmp/classpath.txt org.apache.geode.test.util.ClassScanner $@)
-  popd >> /dev/null
+  echo $(${JAVA_HOME}/bin/java -cp $(cat /tmp/classpath.txt) org.apache.geode.test.util.ClassScanner $@)
 }
 
 UNIT_TEST_CHANGES_TMP=$(changes_for_path '*/src/test/java') || exit $?
