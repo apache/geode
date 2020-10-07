@@ -309,8 +309,16 @@ public class DistributionImpl implements Distribution {
       membership.checkCancelled();
     } catch (MembershipClosedException e) {
       if (e.getCause() instanceof MemberDisconnectedException) {
+        String cause = new String(e.getCause().toString());
+        logger.info("*** EB: DistributionImpl.checkCancelled e.getCause(): " + cause
+            + " and now the StackTrace: \n: " + e.getStackTrace());
         ForcedDisconnectException fde = new ForcedDisconnectException(e.getCause().getMessage());
-        throw new DistributedSystemDisconnectedException(e.getMessage(), fde);
+
+        if (cause.contains("network partition")) {
+          throw fde;
+        } else {
+          throw new DistributedSystemDisconnectedException(e.getMessage(), fde);
+        }
       }
       throw new DistributedSystemDisconnectedException(e.getMessage());
     }
