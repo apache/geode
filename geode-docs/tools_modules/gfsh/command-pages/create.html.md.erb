@@ -642,7 +642,7 @@ create gateway-sender --id=value --remote-distributed-system-id=value
 </tr>
 <tr>
 <td><span class="keyword parmname">\-\-enforce-threads-connect-same-receiver</span></td>
-<td>This parameter applies only to serial gateway senders. If true, receiver member id will be checked by each dispatcher threads when the connection is established to ensure they are connected to the same receiver. Instead of starting all dispatcher threads in parallel, one thread is started in first place, and after that the rest will continue in parallel.</td>
+<td>This parameter applies only to serial gateway senders. If true, receiver member id is checked by all dispatcher threads when the connection is established to ensure they connect to the same receiver. Instead of starting all dispatcher threads in parallel, one thread is started first, and after that the rest are started in parallel.</td>
 <td>false</td>
 </tr>
 </tbody>
