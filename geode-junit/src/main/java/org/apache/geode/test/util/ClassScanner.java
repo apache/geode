@@ -82,11 +82,17 @@ public class ClassScanner {
   public static void main(String[] args) {
     ClassScanner scanner = new ClassScanner("org.apache.geode");
 
-    Set<String> result = Arrays.stream(args)
-        .flatMap(x -> scanner.whatExtends(x).stream())
-        .collect(Collectors.toSet());
+    Set<String> results = new HashSet<>();
+    for (String arg : args) {
+      List<String> extenders = scanner.whatExtends(arg);
+      if (!extenders.isEmpty()) {
+        results.addAll(extenders);
+      } else {
+        results.add(arg);
+      }
+    }
 
-    System.out.println(String.join(" ", result));
+    System.out.println(String.join(" ", results));
   }
 
 }
