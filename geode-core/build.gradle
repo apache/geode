@@ -283,8 +283,6 @@ dependencies {
     //Log4j is used everywhere
     implementation('org.apache.logging.log4j:log4j-api')
 
-    implementation('io.netty:netty-buffer:4.1.52.Final')
-
 
     implementation('io.swagger:swagger-annotations') {
         ext.optional = true
