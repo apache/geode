@@ -72,7 +72,7 @@ public class NioSslEngine implements NioFilter {
   /**
    * peerAppData holds the last unwrapped data from a peer
    */
-  volatile ByteBuffer peerAppData;
+  ByteBuffer peerAppData;
 
   NioSslEngine(SSLEngine engine, BufferPool bufferPool) {
     SSLSession session = engine.getSession();
