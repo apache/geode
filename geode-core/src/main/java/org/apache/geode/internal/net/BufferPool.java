@@ -331,7 +331,7 @@ public class BufferPool {
    * the non-sliced buffer for some reason, such as logging its hashcode.
    */
   @VisibleForTesting
-  public static ByteBuffer getPoolableBuffer(ByteBuffer buffer) {
+  public ByteBuffer getPoolableBuffer(ByteBuffer buffer) {
     if (!buffer.isDirect()) {
       return buffer;
     }
