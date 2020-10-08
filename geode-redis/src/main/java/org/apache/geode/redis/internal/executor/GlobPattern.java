@@ -137,7 +137,7 @@ public class GlobPattern {
       regex.append(']');
     }
 
-    return Pattern.compile(regex.toString());
+    return Pattern.compile(regex.toString(), Pattern.DOTALL | Pattern.MULTILINE);
   }
 
   @Override
