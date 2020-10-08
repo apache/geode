@@ -85,6 +85,16 @@ public abstract class AbstractKeysIntegrationTest implements RedisPortSupplier {
   }
 
   @Test
+  public void givenSplat_withCarriageReturnLineFeedAndTab_returnsExpectedMatches() {
+    jedis.set(" foo bar ", "123");
+    jedis.set(" foo\r\nbar\r\n ", "456");
+    jedis.set(" \r\n\t\\x07\\x13 ", "789");
+
+    assertThat(jedis.keys("*")).containsExactlyInAnyOrder(" \r\n\t\\x07\\x13 ", " foo\r\nbar\r\n ",
+        " foo bar ");
+  }
+
+  @Test
   public void givenMalformedGlobPattern_returnsEmptySet() {
     assertThat(jedis.keys("[][]")).isEmpty();
   }
