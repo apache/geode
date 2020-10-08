@@ -29,9 +29,12 @@ import static org.apache.geode.redis.internal.RedisCommandType.HSET;
 import static org.apache.geode.redis.internal.RedisCommandType.HSTRLEN;
 import static org.apache.geode.redis.internal.RedisCommandType.HVALS;
 
+import java.math.BigInteger;
 import java.util.Collection;
 import java.util.List;
 import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
@@ -102,7 +105,8 @@ public class RedisHashCommandsFunctionInvoker extends RedisCommandsFunctionInvok
   }
 
   @Override
-  public List<Object> hscan(ByteArrayWrapper key, Pattern matchPattern, int count, int cursor) {
+  public Pair<BigInteger, List<Object>> hscan(ByteArrayWrapper key, Pattern matchPattern, int count,
+      BigInteger cursor) {
     return invokeCommandFunction(key, HSCAN, matchPattern, count, cursor);
   }
 

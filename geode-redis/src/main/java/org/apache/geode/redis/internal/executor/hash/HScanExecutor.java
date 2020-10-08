@@ -14,13 +14,22 @@
  */
 package org.apache.geode.redis.internal.executor.hash;
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_ILLEGAL_GLOB;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_CURSOR;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
+import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_HASH;
 
+import java.math.BigInteger;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import org.apache.commons.lang3.tuple.Pair;
+
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.RedisDataTypeMismatchException;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.executor.key.AbstractScanExecutor;
 import org.apache.geode.redis.internal.netty.Coder;
@@ -37,75 +46,77 @@ public class HScanExecutor extends AbstractScanExecutor {
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
-    ByteArrayWrapper key = command.getKey();
-
-    byte[] cAr = commandElems.get(2);
-    String cursorString = Coder.bytesToString(cAr);
-
-    int cursor = 0;
-    Pattern matchPattern = null;
-    String globMatchPattern = null;
+    String cursorString = Coder.bytesToString(commandElems.get(2));
+    BigInteger cursor;
+    Pattern matchPattern;
+    String globPattern = null;
     int count = DEFAULT_COUNT;
+
     try {
-      cursor = Integer.parseInt(cursorString);
+      cursor = new BigInteger(cursorString).abs();
     } catch (NumberFormatException e) {
       return RedisResponse.error(ERROR_CURSOR);
     }
 
-    if (cursor < 0) {
+    if (cursor.compareTo(UNSIGNED_LONG_CAPACITY) > 0) {
       return RedisResponse.error(ERROR_CURSOR);
     }
 
-    if (commandElems.size() > 4) {
-      try {
-        byte[] bytes = commandElems.get(3);
-        String tmp = Coder.bytesToString(bytes);
-        if (tmp.equalsIgnoreCase("MATCH")) {
-          bytes = commandElems.get(4);
-          globMatchPattern = Coder.bytesToString(bytes);
-        } else if (tmp.equalsIgnoreCase("COUNT")) {
-          bytes = commandElems.get(4);
-          count = Coder.bytesToInt(bytes);
-        }
-      } catch (NumberFormatException e) {
-        return RedisResponse.error(ERROR_COUNT);
-      }
+    if (!cursor.equals(context.getHscanCursor())) {
+      cursor = new BigInteger("0");
     }
 
-    if (commandElems.size() > 6) {
-      try {
-        byte[] bytes = commandElems.get(5);
-        String tmp = Coder.bytesToString(bytes);
-        if (tmp.equalsIgnoreCase("MATCH")) {
-          bytes = commandElems.get(6);
-          globMatchPattern = Coder.bytesToString(bytes);
-        } else if (tmp.equalsIgnoreCase("COUNT")) {
-          bytes = commandElems.get(6);
-          count = Coder.bytesToInt(bytes);
-        }
-      } catch (NumberFormatException e) {
-        return RedisResponse.error(ERROR_COUNT);
-      }
+    ByteArrayWrapper key = command.getKey();
+    if (!getDataRegion(context).containsKey(key)) {
+      return RedisResponse.emptyScan();
     }
 
-    if (count < 0) {
-      return RedisResponse.error(ERROR_COUNT);
+    if (getDataRegion(context).get(key).getType() != REDIS_HASH) {
+      throw new RedisDataTypeMismatchException(ERROR_WRONG_TYPE);
+    }
+
+    command.getCommandType().checkDeferredParameters(command, context);
+
+    for (int i = 3; i < commandElems.size(); i = i + 2) {
+      byte[] commandElemBytes = commandElems.get(i);
+      String keyword = Coder.bytesToString(commandElemBytes);
+      if (keyword.equalsIgnoreCase("MATCH")) {
+        commandElemBytes = commandElems.get(i + 1);
+        globPattern = Coder.bytesToString(commandElemBytes);
+
+      } else if (keyword.equalsIgnoreCase("COUNT")) {
+        commandElemBytes = commandElems.get(i + 1);
+        try {
+          count = Coder.bytesToInt(commandElemBytes);
+        } catch (NumberFormatException e) {
+          return RedisResponse.error(ERROR_NOT_INTEGER);
+        }
+
+        if (count < 1) {
+          return RedisResponse.error(ERROR_SYNTAX);
+        }
+
+      } else {
+        return RedisResponse.error(ERROR_SYNTAX);
+      }
     }
 
     try {
-      matchPattern = convertGlobToRegex(globMatchPattern);
+      matchPattern = convertGlobToRegex(globPattern);
     } catch (PatternSyntaxException e) {
-      return RedisResponse.error(ERROR_ILLEGAL_GLOB);
+      LogService.getLogger().warn(
+          "Could not compile the pattern: '{}' due to the following exception: '{}'. HSCAN will return an empty list.",
+          globPattern, e.getMessage());
+      return RedisResponse.emptyScan();
     }
 
     RedisHashCommands redisHashCommands =
         new RedisHashCommandsFunctionInvoker(context.getRegionProvider().getDataRegion());
-    List<Object> returnList = redisHashCommands.hscan(key, matchPattern, count, cursor);
+    Pair<BigInteger, List<Object>> scanResult =
+        redisHashCommands.hscan(key, matchPattern, count, cursor);
 
-    if (returnList.isEmpty()) {
-      return RedisResponse.error(ERROR_CURSOR);
-    } else {
-      return RedisResponse.scan(returnList);
-    }
+    context.setHscanCursor(scanResult.getLeft());
+
+    return RedisResponse.scan(scanResult);
   }
 }

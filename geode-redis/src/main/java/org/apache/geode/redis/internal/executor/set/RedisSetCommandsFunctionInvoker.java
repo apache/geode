@@ -27,11 +27,14 @@ import static org.apache.geode.redis.internal.RedisCommandType.SREM;
 import static org.apache.geode.redis.internal.RedisCommandType.SSCAN;
 import static org.apache.geode.redis.internal.RedisCommandType.SUNIONSTORE;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
@@ -86,7 +89,8 @@ public class RedisSetCommandsFunctionInvoker extends RedisCommandsFunctionInvoke
   }
 
   @Override
-  public List<Object> sscan(ByteArrayWrapper key, Pattern matchPattern, int count, int cursor) {
+  public Pair<BigInteger, List<Object>> sscan(ByteArrayWrapper key, Pattern matchPattern, int count,
+      BigInteger cursor) {
     return invokeCommandFunction(key, SSCAN, matchPattern, count, cursor);
   }
 

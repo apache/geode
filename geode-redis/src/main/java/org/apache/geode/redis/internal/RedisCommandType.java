@@ -18,11 +18,13 @@ package org.apache.geode.redis.internal;
 import static org.apache.geode.redis.internal.RedisCommandSupportLevel.SUPPORTED;
 import static org.apache.geode.redis.internal.RedisCommandSupportLevel.UNIMPLEMENTED;
 import static org.apache.geode.redis.internal.RedisCommandSupportLevel.UNSUPPORTED;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 
 import org.apache.geode.redis.internal.ParameterRequirements.EvenParameterRequirements;
 import org.apache.geode.redis.internal.ParameterRequirements.ExactParameterRequirements;
 import org.apache.geode.redis.internal.ParameterRequirements.MaximumParameterRequirements;
 import org.apache.geode.redis.internal.ParameterRequirements.MinimumParameterRequirements;
+import org.apache.geode.redis.internal.ParameterRequirements.OddParameterRequirements;
 import org.apache.geode.redis.internal.ParameterRequirements.ParameterRequirements;
 import org.apache.geode.redis.internal.ParameterRequirements.SpopParameterRequirements;
 import org.apache.geode.redis.internal.ParameterRequirements.UnspecifiedParameterRequirements;
@@ -185,7 +187,7 @@ public enum RedisCommandType {
    *************** Keys ******************
    ***************************************/
 
-  SCAN(new ScanExecutor(), UNSUPPORTED),
+  SCAN(new ScanExecutor(), UNSUPPORTED, new EvenParameterRequirements(ERROR_SYNTAX).and(new MinimumParameterRequirements(2))),
 
   /***************************************
    ************** Strings ****************
@@ -224,7 +226,8 @@ public enum RedisCommandType {
   HKEYS(new HKeysExecutor(), UNSUPPORTED, new ExactParameterRequirements(2)),
   HLEN(new HLenExecutor(), UNSUPPORTED, new ExactParameterRequirements(2)),
   HMGET(new HMGetExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3)),
-  HSCAN(new HScanExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3)),
+  HSCAN(new HScanExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3),
+      new OddParameterRequirements(ERROR_SYNTAX)),
   HSETNX(new HSetNXExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
   HSTRLEN(new HStrLenExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
   HVALS(new HValsExecutor(), UNSUPPORTED, new ExactParameterRequirements(2)),
@@ -246,7 +249,8 @@ public enum RedisCommandType {
   SRANDMEMBER(new SRandMemberExecutor(), UNSUPPORTED, new MinimumParameterRequirements(2)),
   SUNION(new SUnionExecutor(), UNSUPPORTED, new MinimumParameterRequirements(2)),
   SUNIONSTORE(new SUnionStoreExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3)),
-  SSCAN(new SScanExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3)),
+  SSCAN(new SScanExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3),
+      new OddParameterRequirements(ERROR_SYNTAX)),
 
   /***************************************
    *************** Server ****************
@@ -255,10 +259,7 @@ public enum RedisCommandType {
   DBSIZE(new DBSizeExecutor(), UNSUPPORTED),
   FLUSHALL(new FlushAllExecutor(), UNSUPPORTED),
   FLUSHDB(new FlushAllExecutor(), UNSUPPORTED),
-  INFO(new InfoExecutor(),
-      UNSUPPORTED,
-      new MaximumParameterRequirements(2,
-          RedisConstants.ERROR_SYNTAX)),
+  INFO(new InfoExecutor(), UNSUPPORTED, new MaximumParameterRequirements(2, ERROR_SYNTAX)),
   SHUTDOWN(new ShutDownExecutor(), UNSUPPORTED),
   TIME(new TimeExecutor(), UNSUPPORTED),
 
@@ -379,6 +380,7 @@ public enum RedisCommandType {
 
   private final Executor executor;
   private final ParameterRequirements parameterRequirements;
+  private final ParameterRequirements deferredParameterRequirements;
   private final RedisCommandSupportLevel supportLevel;
 
   RedisCommandType(Executor executor, RedisCommandSupportLevel supportLevel) {
@@ -387,9 +389,16 @@ public enum RedisCommandType {
 
   RedisCommandType(Executor executor, RedisCommandSupportLevel supportLevel,
       ParameterRequirements parameterRequirements) {
+    this(executor, supportLevel, parameterRequirements, new UnspecifiedParameterRequirements());
+  }
+
+  RedisCommandType(Executor executor, RedisCommandSupportLevel supportLevel,
+      ParameterRequirements parameterRequirements,
+      ParameterRequirements deferredParameterRequirements) {
     this.executor = executor;
     this.supportLevel = supportLevel;
     this.parameterRequirements = parameterRequirements;
+    this.deferredParameterRequirements = deferredParameterRequirements;
   }
 
   public boolean isSupported() {
@@ -418,8 +427,14 @@ public enum RedisCommandType {
     }
   }
 
+  public void checkDeferredParameters(Command command,
+      ExecutionHandlerContext executionHandlerContext) {
+    deferredParameterRequirements.checkParameters(command, executionHandlerContext);
+  }
+
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext executionHandlerContext) {
+
     parameterRequirements.checkParameters(command, executionHandlerContext);
 
     return executor.executeCommand(command, executionHandlerContext);

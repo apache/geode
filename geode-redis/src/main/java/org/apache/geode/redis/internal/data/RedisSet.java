@@ -22,6 +22,7 @@ import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SET;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -31,13 +32,15 @@ import java.util.Random;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+
 import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
-import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisSet extends AbstractRedisData {
 
@@ -56,43 +59,46 @@ public class RedisSet extends AbstractRedisData {
   // for serialization
   public RedisSet() {}
 
-  List<Object> sscan(Pattern matchPattern, int count, int cursor) {
+  Pair<BigInteger, List<Object>> sscan(Pattern matchPattern, int count, BigInteger cursor) {
 
     List<Object> returnList = new ArrayList<>();
     int size = members.size();
-    int beforeCursor = 0;
+    BigInteger beforeCursor = new BigInteger("0");
     int numElements = 0;
     int i = -1;
     for (ByteArrayWrapper value : members) {
       i++;
-      if (beforeCursor < cursor) {
-        beforeCursor++;
-      } else if (numElements < count) {
-        if (matchPattern != null) {
-          String valueAsString = Coder.bytesToString(value.toBytes());
-          if (matchPattern.matcher(valueAsString).matches()) {
-            returnList.add(value);
-            numElements++;
-          }
-        } else {
+      if (beforeCursor.compareTo(cursor) < 0) {
+        beforeCursor = beforeCursor.add(new BigInteger("1"));
+        continue;
+      }
+
+      if (matchPattern != null) {
+        if (matchPattern.matcher(value.toString()).matches()) {
           returnList.add(value);
           numElements++;
         }
       } else {
+        returnList.add(value);
+        numElements++;
+      }
+
+      if (numElements == count) {
         break;
       }
     }
 
-    if (i == size - 1) {
-      returnList.add(0, String.valueOf(0));
+    Pair<BigInteger, List<Object>> scanResult;
+    if (i >= size - 1) {
+      scanResult = new ImmutablePair<>(new BigInteger("0"), returnList);
     } else {
-      returnList.add(0, String.valueOf(i));
+      scanResult = new ImmutablePair<>(new BigInteger(String.valueOf(i + 1)), returnList);
     }
-    return returnList;
+    return scanResult;
   }
 
-  Collection<ByteArrayWrapper> spop(
-      Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key, int popCount) {
+  Collection<ByteArrayWrapper> spop(Region<ByteArrayWrapper, RedisData> region,
+      ByteArrayWrapper key, int popCount) {
     int originalSize = scard();
     if (originalSize == 0) {
       return emptyList();
@@ -208,7 +214,6 @@ public class RedisSet extends AbstractRedisData {
     return members.removeAll(remsDeltaInfo.getRemoves());
   }
 
-
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
@@ -222,8 +227,7 @@ public class RedisSet extends AbstractRedisData {
    * @param key the name of the set to add to
    * @return the number of members actually added
    */
-  long sadd(ArrayList<ByteArrayWrapper> membersToAdd,
-      Region<ByteArrayWrapper, RedisData> region,
+  long sadd(ArrayList<ByteArrayWrapper> membersToAdd, Region<ByteArrayWrapper, RedisData> region,
       ByteArrayWrapper key) {
 
     membersToAdd.removeIf(memberToAdd -> !membersAdd(memberToAdd));
@@ -241,8 +245,7 @@ public class RedisSet extends AbstractRedisData {
    * @param key the name of the set to remove from
    * @return the number of members actually removed
    */
-  long srem(ArrayList<ByteArrayWrapper> membersToRemove,
-      Region<ByteArrayWrapper, RedisData> region,
+  long srem(ArrayList<ByteArrayWrapper> membersToRemove, Region<ByteArrayWrapper, RedisData> region,
       ByteArrayWrapper key) {
 
     membersToRemove.removeIf(memberToRemove -> !membersRemove(memberToRemove));
@@ -296,9 +299,6 @@ public class RedisSet extends AbstractRedisData {
 
   @Override
   public String toString() {
-    return "RedisSet{" +
-        super.toString() + ", " +
-        "members=" + members +
-        '}';
+    return "RedisSet{" + super.toString() + ", " + "members=" + members + '}';
   }
 }

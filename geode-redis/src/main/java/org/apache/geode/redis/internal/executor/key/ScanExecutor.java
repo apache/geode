@@ -15,15 +15,21 @@
  */
 package org.apache.geode.redis.internal.executor.key;
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_ILLEGAL_GLOB;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_CURSOR;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.apache.geode.redis.internal.RedisConstants.ArityDef;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Coder;
@@ -36,91 +42,89 @@ public class ScanExecutor extends AbstractScanExecutor {
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
-    if (commandElems.size() < 2) {
-      return RedisResponse.error(ArityDef.SCAN);
-    }
-
     String cursorString = command.getStringKey();
-    int cursor = 0;
-    Pattern matchPattern = null;
-    String globMatchString = null;
+    BigInteger cursor;
+    Pattern matchPattern;
+    String globPattern = null;
     int count = DEFAULT_COUNT;
+
     try {
-      cursor = Integer.parseInt(cursorString);
+      cursor = new BigInteger(cursorString).abs();
     } catch (NumberFormatException e) {
       return RedisResponse.error(ERROR_CURSOR);
     }
-    if (cursor < 0) {
+
+    if (cursor.compareTo(UNSIGNED_LONG_CAPACITY) > 0) {
       return RedisResponse.error(ERROR_CURSOR);
     }
 
-    if (commandElems.size() > 3) {
-      try {
-        byte[] bytes = commandElems.get(2);
-        String tmp = Coder.bytesToString(bytes);
-        if (tmp.equalsIgnoreCase("MATCH")) {
-          bytes = commandElems.get(3);
-          globMatchString = Coder.bytesToString(bytes);
-        } else if (tmp.equalsIgnoreCase("COUNT")) {
-          bytes = commandElems.get(3);
-          count = Coder.bytesToInt(bytes);
-        }
-      } catch (NumberFormatException e) {
-        return RedisResponse.error(ERROR_COUNT);
-      }
+    if (!cursor.equals(context.getScanCursor())) {
+      cursor = new BigInteger("0");
     }
 
-    if (commandElems.size() > 5) {
-      try {
-        byte[] bytes = commandElems.get(4);
-        String tmp = Coder.bytesToString(bytes);
-        if (tmp.equalsIgnoreCase("COUNT")) {
-          bytes = commandElems.get(5);
-          count = Coder.bytesToInt(bytes);
-        }
-      } catch (NumberFormatException e) {
-        return RedisResponse.error(ERROR_COUNT);
-      }
-    }
+    for (int i = 2; i < commandElems.size(); i = i + 2) {
+      byte[] commandElemBytes = commandElems.get(i);
+      String keyword = Coder.bytesToString(commandElemBytes);
+      if (keyword.equalsIgnoreCase("MATCH")) {
+        commandElemBytes = commandElems.get(i + 1);
+        globPattern = Coder.bytesToString(commandElemBytes);
 
-    if (count < 0) {
-      return RedisResponse.error(ERROR_COUNT);
+      } else if (keyword.equalsIgnoreCase("COUNT")) {
+        commandElemBytes = commandElems.get(i + 1);
+        try {
+          count = Coder.bytesToInt(commandElemBytes);
+        } catch (NumberFormatException e) {
+          return RedisResponse.error(ERROR_NOT_INTEGER);
+        }
+
+        if (count < 1) {
+          return RedisResponse.error(ERROR_SYNTAX);
+        }
+
+      } else {
+        return RedisResponse.error(ERROR_SYNTAX);
+      }
     }
 
     try {
-      matchPattern = convertGlobToRegex(globMatchString);
+      matchPattern = convertGlobToRegex(globPattern);
     } catch (PatternSyntaxException e) {
-      return RedisResponse.error(ERROR_ILLEGAL_GLOB);
+      LogService.getLogger().warn(
+          "Could not compile the pattern: '{}' due to the following exception: '{}'. SCAN will return an empty list.",
+          globPattern, e.getMessage());
+      return RedisResponse.emptyScan();
     }
 
-    List<String> returnList = getIteration(getDataRegion(context).keySet(), matchPattern, count,
-        cursor);
+    Pair<BigInteger, List<Object>> scanResult =
+        scan(getDataRegion(context).keySet(), matchPattern, count,
+            cursor);
+    context.setScanCursor(scanResult.getLeft());
 
-    return RedisResponse.scan(returnList);
+    return RedisResponse.scan(scanResult);
   }
 
-  private List<String> getIteration(Collection<ByteArrayWrapper> list, Pattern matchPattern,
-      int count, int cursor) {
-    List<String> returnList = new ArrayList<>();
+  private Pair<BigInteger, List<Object>> scan(Collection<ByteArrayWrapper> list,
+      Pattern matchPattern,
+      int count, BigInteger cursor) {
+    List<Object> returnList = new ArrayList<>();
     int size = list.size();
-    int beforeCursor = 0;
+    BigInteger beforeCursor = new BigInteger("0");
     int numElements = 0;
     int i = -1;
     for (ByteArrayWrapper key : list) {
       i++;
-      if (beforeCursor < cursor) {
-        beforeCursor++;
+      if (beforeCursor.compareTo(cursor) < 0) {
+        beforeCursor = beforeCursor.add(new BigInteger("1"));
         continue;
       }
 
-      String keyString = key.toString();
       if (matchPattern != null) {
-        if (matchPattern.matcher(keyString).matches()) {
-          returnList.add(keyString);
+        if (matchPattern.matcher(key.toString()).matches()) {
+          returnList.add(key);
           numElements++;
         }
       } else {
-        returnList.add(keyString);
+        returnList.add(key);
         numElements++;
       }
       if (numElements == count) {
@@ -128,12 +132,12 @@ public class ScanExecutor extends AbstractScanExecutor {
       }
     }
 
+    Pair<BigInteger, List<Object>> scanResult;
     if (i >= size - 1) {
-      returnList.add(0, String.valueOf(0));
+      scanResult = new ImmutablePair<>(new BigInteger("0"), returnList);
     } else {
-      returnList.add(0, String.valueOf(i + 1));
+      scanResult = new ImmutablePair<>(new BigInteger(String.valueOf(i + 1)), returnList);
     }
-    return returnList;
+    return scanResult;
   }
-
 }

@@ -31,9 +31,9 @@ public class RedisConstants {
       "The server had an internal error please try again";
   public static final String SERVER_ERROR_SHUTDOWN = "The server is shutting down";
   public static final String ERROR_UNKNOWN_COMMAND = "Unable to process unknown command";
+  public static final String ERROR_CURSOR = "invalid cursor";
   public static final String ERROR_UNSUPPORTED_COMMAND =
       " is not supported. To enable all unsupported commands use GFSH to execute: 'redis --enable-unsupported-commands'. Unsupported commands have not been fully tested.";
-  public static final String ERROR_ILLEGAL_GLOB = "Incorrect syntax for given glob regex";
   public static final String ERROR_OUT_OF_RANGE = "The number provided is out of range";
   public static final String ERROR_NO_PASS = "Client sent AUTH, but no password is set";
   public static final String ERROR_INVALID_PWD = "invalid password";
@@ -55,9 +55,6 @@ public class RedisConstants {
         "The wrong number of arguments or syntax was provided, the format for the ECHO command is \"ECHO message\"";
     public static final String PERSIST =
         "The wrong number of arguments or syntax was provided, the format for the PERSIST command is \"PERSIST key\"";
-    public static final String SCAN =
-        "The wrong number of arguments or syntax was provided, the format for the SCAN command is \"SCAN cursor [MATCH pattern] [COUNT count]\"";
-
     /*
      * String
      */

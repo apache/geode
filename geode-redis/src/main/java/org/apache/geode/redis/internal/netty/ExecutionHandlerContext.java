@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal.netty;
 
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -78,6 +79,9 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private final Runnable shutdownInvoker;
   private final RedisStats redisStats;
   private final EventLoopGroup subscriberGroup;
+  private BigInteger scanCursor;
+  private BigInteger sscanCursor;
+  private BigInteger hscanCursor;
   private final AtomicBoolean channelInactive = new AtomicBoolean();
   private final int MAX_QUEUED_COMMANDS =
       Integer.getInteger("geode.redis.commandQueueSize", 1000);
@@ -117,6 +121,9 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     this.authPassword = password;
     this.isAuthenticated = password == null;
     this.serverPort = serverPort;
+    this.scanCursor = new BigInteger("0");
+    this.sscanCursor = new BigInteger("0");
+    this.hscanCursor = new BigInteger("0");
     redisStats.addClient();
 
     backgroundExecutor.submit(this::processCommandQueue);
@@ -396,6 +403,30 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   public PubSub getPubSub() {
     return pubsub;
+  }
+
+  public BigInteger getScanCursor() {
+    return scanCursor;
+  }
+
+  public void setScanCursor(BigInteger scanCursor) {
+    this.scanCursor = scanCursor;
+  }
+
+  public BigInteger getSscanCursor() {
+    return sscanCursor;
+  }
+
+  public void setSscanCursor(BigInteger sscanCursor) {
+    this.sscanCursor = sscanCursor;
+  }
+
+  public BigInteger getHscanCursor() {
+    return hscanCursor;
+  }
+
+  public void setHscanCursor(BigInteger hscanCursor) {
+    this.hscanCursor = hscanCursor;
   }
 
   /**

@@ -16,12 +16,14 @@
 package org.apache.geode.redis.internal.netty;
 
 import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
 import java.text.DecimalFormat;
 import java.util.Collection;
 import java.util.List;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
+import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
@@ -207,8 +209,9 @@ public class Coder {
     }
   }
 
-  public static ByteBuf getScanResponse(ByteBufAllocator alloc, List<?> items) {
-    if (items == null || items.isEmpty()) {
+  public static ByteBuf getScanResponse(ByteBufAllocator alloc,
+      Pair<BigInteger, List<Object>> scanResult) {
+    if (scanResult == null) {
       return null;
     }
 
@@ -218,12 +221,12 @@ public class Coder {
     response.writeBytes(intToBytes(2));
     response.writeBytes(CRLFar);
     response.writeByte(BULK_STRING_ID);
-    byte[] cursor = stringToBytes((String) items.get(0));
+    byte[] cursor = stringToBytes(scanResult.getLeft().toString());
     response.writeBytes(intToBytes(cursor.length));
     response.writeBytes(CRLFar);
     response.writeBytes(cursor);
     response.writeBytes(CRLFar);
-    items = items.subList(1, items.size());
+    List<Object> items = scanResult.getRight();
     response.writeByte(ARRAY_ID);
     response.writeBytes(intToBytes(items.size()));
     response.writeBytes(CRLFar);

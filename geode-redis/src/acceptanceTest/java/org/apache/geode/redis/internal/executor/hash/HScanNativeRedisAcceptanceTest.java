@@ -11,29 +11,21 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
-package org.apache.geode.redis.internal.executor.key;
+package org.apache.geode.redis.internal.executor.hash;
 
-import java.math.BigInteger;
-import java.util.regex.Pattern;
+import org.junit.ClassRule;
 
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
-import org.apache.geode.redis.internal.executor.GlobPattern;
+import org.apache.geode.NativeRedisTestRule;
 
-public abstract class AbstractScanExecutor extends AbstractExecutor {
+public class HScanNativeRedisAcceptanceTest extends AbstractHScanIntegrationTest {
 
-  protected final BigInteger UNSIGNED_LONG_CAPACITY = new BigInteger("18446744073709551615");
-  protected final int DEFAULT_COUNT = 10;
+  @ClassRule
+  public static NativeRedisTestRule redis = new NativeRedisTestRule();
 
-  /**
-   * @param pattern A glob pattern.
-   * @return A regex pattern to recognize the given glob pattern.
-   */
-  protected Pattern convertGlobToRegex(String pattern) {
-    if (pattern == null) {
-      return null;
-    }
-    return GlobPattern.compile(pattern);
+  @Override
+  public int getPort() {
+    return redis.getPort();
   }
+
 }

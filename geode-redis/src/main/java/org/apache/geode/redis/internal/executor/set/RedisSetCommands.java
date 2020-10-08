@@ -15,11 +15,14 @@
 
 package org.apache.geode.redis.internal.executor.set;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 
@@ -39,7 +42,8 @@ public interface RedisSetCommands {
 
   Collection<ByteArrayWrapper> spop(ByteArrayWrapper key, int popCount);
 
-  List<Object> sscan(ByteArrayWrapper key, Pattern matchPattern, int count, int cursor);
+  Pair<BigInteger, List<Object>> sscan(ByteArrayWrapper key, Pattern matchPattern, int count,
+      BigInteger cursor);
 
   int sunionstore(ByteArrayWrapper destination, ArrayList<ByteArrayWrapper> setKeys);
 

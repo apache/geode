@@ -16,7 +16,9 @@
 
 package org.apache.geode.redis.internal.executor;
 
+import java.math.BigInteger;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
@@ -24,6 +26,8 @@ import java.util.function.Function;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.UnpooledByteBufAllocator;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.CoderException;
@@ -126,8 +130,12 @@ public class RedisResponse {
     return new RedisResponse((bba) -> Coder.getWrongTypeResponse(bba, error));
   }
 
-  public static RedisResponse scan(List<?> items) {
-    return new RedisResponse((bba) -> Coder.getScanResponse(bba, items));
+  public static RedisResponse scan(Pair<BigInteger, List<Object>> scanResult) {
+    return new RedisResponse((bba) -> Coder.getScanResponse(bba, scanResult));
+  }
+
+  public static RedisResponse emptyScan() {
+    return scan(new ImmutablePair<>(new BigInteger("0"), new ArrayList<>()));
   }
 
   /**

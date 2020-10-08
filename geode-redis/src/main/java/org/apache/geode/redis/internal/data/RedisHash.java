@@ -22,6 +22,7 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_OVERFLOW;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -30,6 +31,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Region;
@@ -55,9 +59,9 @@ public class RedisHash extends AbstractRedisData {
   }
 
   /**
-   * Since GII (getInitialImage) can come in and call toData while other threads
-   * are modifying this object, the striped executor will not protect toData.
-   * So any methods that modify "hash" needs to be thread safe with toData.
+   * Since GII (getInitialImage) can come in and call toData while other threads are modifying this
+   * object, the striped executor will not protect toData. So any methods that modify "hash" needs
+   * to be thread safe with toData.
    */
   @Override
   public synchronized void toData(DataOutput out) throws IOException {
@@ -78,13 +82,11 @@ public class RedisHash extends AbstractRedisData {
     return hash.remove(field);
   }
 
-
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
     hash = DataSerializer.readHashMap(in);
   }
-
 
   @Override
   protected void applyDelta(DeltaInfo deltaInfo) {
@@ -200,47 +202,49 @@ public class RedisHash extends AbstractRedisData {
     return new ArrayList<>(hash.keySet());
   }
 
-  public List<Object> hscan(Pattern matchPattern, int count, int cursor) {
+  public Pair<BigInteger, List<Object>> hscan(Pattern matchPattern, int count, BigInteger cursor) {
     List<Object> returnList = new ArrayList<Object>();
     int size = hash.size();
-    int beforeCursor = 0;
+    BigInteger beforeCursor = new BigInteger("0");
     int numElements = 0;
     int i = -1;
     for (Map.Entry<ByteArrayWrapper, ByteArrayWrapper> entry : hash.entrySet()) {
       ByteArrayWrapper key = entry.getKey();
       ByteArrayWrapper value = entry.getValue();
       i++;
-      if (beforeCursor < cursor) {
-        beforeCursor++;
+      if (beforeCursor.compareTo(cursor) < 0) {
+        beforeCursor = beforeCursor.add(new BigInteger("1"));
         continue;
-      } else if (numElements < count) {
-        if (matchPattern != null) {
-          if (matchPattern.matcher(key.toString()).matches()) {
-            returnList.add(key);
-            returnList.add(value);
-            numElements++;
-          }
-        } else {
+      }
+
+      if (matchPattern != null) {
+        if (matchPattern.matcher(key.toString()).matches()) {
           returnList.add(key);
           returnList.add(value);
           numElements++;
         }
       } else {
+        returnList.add(key);
+        returnList.add(value);
+        numElements++;
+      }
+
+      if (numElements == count) {
         break;
       }
     }
 
-    if (i == size - 1) {
-      returnList.add(0, String.valueOf(0));
+    Pair<BigInteger, List<Object>> scanResult;
+    if (i >= size - 1) {
+      scanResult = new ImmutablePair<>(new BigInteger("0"), returnList);
     } else {
-      returnList.add(0, String.valueOf(i));
+      scanResult = new ImmutablePair<>(new BigInteger(String.valueOf(i + 1)), returnList);
     }
-    return returnList;
+    return scanResult;
   }
 
   public long hincrby(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
-      ByteArrayWrapper field, long increment)
-      throws NumberFormatException, ArithmeticException {
+      ByteArrayWrapper field, long increment) throws NumberFormatException, ArithmeticException {
     ByteArrayWrapper oldValue = hash.get(field);
     if (oldValue == null) {
       ByteArrayWrapper newValue = new ByteArrayWrapper(Coder.longToBytes(increment));
@@ -274,10 +278,8 @@ public class RedisHash extends AbstractRedisData {
     return value;
   }
 
-  public double hincrbyfloat(Region<ByteArrayWrapper, RedisData> region,
-      ByteArrayWrapper key,
-      ByteArrayWrapper field, double increment)
-      throws NumberFormatException {
+  public double hincrbyfloat(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
+      ByteArrayWrapper field, double increment) throws NumberFormatException {
     ByteArrayWrapper oldValue = hash.get(field);
     if (oldValue == null) {
       ByteArrayWrapper newValue = new ByteArrayWrapper(Coder.doubleToBytes(increment));
@@ -343,9 +345,6 @@ public class RedisHash extends AbstractRedisData {
 
   @Override
   public String toString() {
-    return "RedisHash{" +
-        super.toString() + ", " +
-        "hash=" + hash +
-        '}';
+    return "RedisHash{" + super.toString() + ", " + "hash=" + hash + '}';
   }
 }

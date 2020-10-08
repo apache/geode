@@ -22,9 +22,7 @@ import static java.util.Collections.emptySet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
@@ -40,11 +38,6 @@ class NullRedisSet extends RedisSet {
   @Override
   public boolean isNull() {
     return true;
-  }
-
-  @Override
-  List<Object> sscan(Pattern matchPattern, int count, int cursor) {
-    return emptyList();
   }
 
   @Override
