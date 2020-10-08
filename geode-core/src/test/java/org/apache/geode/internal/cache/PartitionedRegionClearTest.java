@@ -374,7 +374,8 @@ public class PartitionedRegionClearTest {
     Set<BucketRegion> buckets = setupBucketRegions(partitionedRegionDataStore, bucketAdvisor);
     when(partitionedRegion.getDataStore()).thenReturn(partitionedRegionDataStore);
     when(distributionManager.isCurrentMember(internalDistributedMember)).thenReturn(true);
-    partitionedRegionClear.lockForListenerAndClientNotification.setLocked(internalDistributedMember);
+    partitionedRegionClear.lockForListenerAndClientNotification
+        .setLocked(internalDistributedMember);
 
     partitionedRegionClear.releaseClearLockLocal();
 

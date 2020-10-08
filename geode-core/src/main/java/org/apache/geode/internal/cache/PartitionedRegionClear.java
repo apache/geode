@@ -289,6 +289,10 @@ public class PartitionedRegionClear {
       return bucketsOperated;
     }
 
+    if (!partitionedRegion.allServerVersionsSupportPartitionRegionClear()) {
+      throw new PartitionedRegionVersionException();
+    }
+
     final Set<InternalDistributedMember> configRecipients =
         new HashSet<>(partitionedRegion.getRegionAdvisor()
             .adviseAllPRNodes());
@@ -362,10 +366,6 @@ public class PartitionedRegionClear {
       }
       try {
         Set<Integer> bucketsCleared = clearRegion(regionEvent);
-
-        if (!partitionedRegion.allServerVersionsSupportPartitionRegionClear()) {
-          throw new PartitionedRegionVersionException();
-        }
 
         if (partitionedRegion.getTotalNumberOfBuckets() != bucketsCleared.size()) {
           String message = "Unable to clear all the buckets from the partitioned region "
