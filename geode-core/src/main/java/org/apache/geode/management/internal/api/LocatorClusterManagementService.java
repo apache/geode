@@ -45,7 +45,6 @@ import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
@@ -205,11 +204,11 @@ public class LocatorClusterManagementService implements ClusterManagementService
 
     ClusterManagementRealizationResult result = new ClusterManagementRealizationResult();
 
-      // execute function on all targeted members
-      List<RealizationResult> functionResults = executeCacheRealizationFunction(
-          config, CacheElementOperation.CREATE,
-          targetedMembers);
-      functionResults.forEach(result::addMemberStatus);
+    // execute function on all targeted members
+    List<RealizationResult> functionResults = executeCacheRealizationFunction(
+        config, CacheElementOperation.CREATE,
+        targetedMembers);
+    functionResults.forEach(result::addMemberStatus);
 
     // if any false result is added to the member list
     if (result.getStatusCode() != StatusCode.OK) {
@@ -302,10 +301,10 @@ public class LocatorClusterManagementService implements ClusterManagementService
     // execute function on all members
     ClusterManagementRealizationResult result = new ClusterManagementRealizationResult();
 
-      List<RealizationResult> functionResults = executeCacheRealizationFunction(
-          config, CacheElementOperation.DELETE,
-          memberValidator.findServers(groupsWithThisElement));
-      functionResults.forEach(result::addMemberStatus);
+    List<RealizationResult> functionResults = executeCacheRealizationFunction(
+        config, CacheElementOperation.DELETE,
+        memberValidator.findServers(groupsWithThisElement));
+    functionResults.forEach(result::addMemberStatus);
 
     // if any false result is added to the member list
     if (result.getStatusCode() != StatusCode.OK) {
