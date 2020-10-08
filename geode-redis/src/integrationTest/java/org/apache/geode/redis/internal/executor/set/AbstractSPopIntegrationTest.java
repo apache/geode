@@ -24,6 +24,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
 
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
@@ -170,5 +171,47 @@ public abstract class AbstractSPopIntegrationTest implements RedisPortSupplier {
 
     popped1.addAll(popped2);
     assertThat(popped1.toArray()).containsExactlyInAnyOrder(masterSet.toArray());
+  }
+
+  @Test
+  public void testSPopWithOutCount_shouldReturnNil_givenEmptySet() {
+
+    Object result = jedis.sendCommand(Protocol.Command.SPOP, "noneSuch");
+
+    assertThat(result).isNull();
+  }
+
+  @Test
+  public void testSPopWithCount_shouldReturnEmptyList_givenEmptySet() {
+    Set<String> result = jedis.spop("noneSuch", 2);
+
+    assertThat(result).isEmpty();
+  }
+
+  @Test
+  public void testSPopWithCountOfOne_shouldReturnList() {
+    jedis.sadd("set", "one");
+
+    Object actual = jedis.sendCommand(Protocol.Command.SPOP, "set", "1");
+
+    assertThat(actual).isInstanceOf(List.class);
+  }
+
+  @Test
+  public void testSPopWithoutCount_shouldNotReturnList() {
+    jedis.sadd("set", "one");
+
+    Object actual = jedis.sendCommand(Protocol.Command.SPOP, "set");
+
+    assertThat(actual).isNotInstanceOf(List.class);
+  }
+
+  @Test
+  public void testSPopWithCountZero_shouldReturnEmptyList() {
+    jedis.sadd("set", "one");
+
+    Set<String> result = jedis.spop("set", 0);
+
+    assertThat(result).isEmpty();
   }
 }
