@@ -32,6 +32,7 @@ public class ManageIndexDefinitionFunctionTest {
   private FunctionContext<RegionConfig.Index> context;
 
   @Before
+  @SuppressWarnings({"unchecked"})
   public void before() {
     function = new ManageIndexDefinitionFunction();
     context = mock(FunctionContext.class);
