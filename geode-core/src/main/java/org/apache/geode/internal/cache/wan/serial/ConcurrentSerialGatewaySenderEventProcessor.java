@@ -92,7 +92,7 @@ public class ConcurrentSerialGatewaySenderEventProcessor
       SerialGatewaySenderEventProcessor processor =
           new SerialGatewaySenderEventProcessor(this.sender, id + "." + i, getThreadMonitorObj(),
               cleanQueues);
-      processor.setReceiversSharingIpAndPort(getReceiversSharingIpAndPort());
+      processor.setEnforceThreadsConnectSameReceiver(getEnforceThreadsConnectSameReceiver());
       processors.add(processor);
       if (logger.isDebugEnabled()) {
         logger.debug("Created the SerialGatewayEventProcessor_{}->{}", i, processors.get(i));
@@ -182,7 +182,7 @@ public class ConcurrentSerialGatewaySenderEventProcessor
   @Override
   public void run() {
     boolean isDebugEnabled = logger.isDebugEnabled();
-    if (getReceiversSharingIpAndPort()) {
+    if (getEnforceThreadsConnectSameReceiver()) {
       this.processors.get(0).start();
       waitForRunningStatus(this.processors.get(0));
       String receiverUniqueId = this.processors.get(0).getExpectedReceiverUniqueId();
@@ -194,7 +194,7 @@ public class ConcurrentSerialGatewaySenderEventProcessor
       }
     }
 
-    for (int i = getReceiversSharingIpAndPort() ? 1 : 0; i < this.processors.size(); i++) {
+    for (int i = getEnforceThreadsConnectSameReceiver() ? 1 : 0; i < this.processors.size(); i++) {
       if (isDebugEnabled) {
         logger.debug("Starting the serialProcessor {}", i);
       }

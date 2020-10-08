@@ -146,8 +146,8 @@ public class GatewaySenderEventRemoteDispatcherJUnitTest {
   }
 
   @Test
-  public void initializeConnectionOfSerialSenderWithReceiversNotSharingIpAndPort() {
-    when(senderMock.getReceiversSharingIpAndPort()).thenReturn(false);
+  public void initializeConnectionOfSerialSenderWithEnforceThreadsConnectSameReceiver() {
+    when(senderMock.getEnforceThreadsConnectSameReceiver()).thenReturn(false);
 
     when(connectionMock.getEndpoint()).thenReturn(endpointMock);
     when(endpointMock.getMemberId()).thenReturn(memberIdMock);
@@ -158,15 +158,15 @@ public class GatewaySenderEventRemoteDispatcherJUnitTest {
     dispatcherSpy.initializeConnection();
 
     verify(senderMock, times(1)).getLockForConcurrentDispatcher();
-    verify(senderMock, times(1)).getReceiversSharingIpAndPort();
+    verify(senderMock, times(1)).getEnforceThreadsConnectSameReceiver();
     verify(poolMock, times(1)).acquireConnection();
     verify(dispatcherSpy, times(0)).retryInitializeConnection(connectionMock);
   }
 
   @Test
-  public void initializeConnectionOfSerialSenderWithReceiversSharingIpAndPort_firstThread() {
+  public void initializeConnectionOfSerialSenderWithEnforceThreadsConnectSameReceiver_firstThread() {
 
-    when(senderMock.getReceiversSharingIpAndPort()).thenReturn(true);
+    when(senderMock.getEnforceThreadsConnectSameReceiver()).thenReturn(true);
 
     when(connectionMock.getEndpoint()).thenReturn(endpointMock);
     when(endpointMock.getMemberId()).thenReturn(memberIdMock);
@@ -178,16 +178,16 @@ public class GatewaySenderEventRemoteDispatcherJUnitTest {
     dispatcherSpy.initializeConnection();
 
     verify(senderMock, times(1)).getLockForConcurrentDispatcher();
-    verify(senderMock, times(1)).getReceiversSharingIpAndPort();
+    verify(senderMock, times(1)).getEnforceThreadsConnectSameReceiver();
     verify(dispatcherSpy, times(1)).retryInitializeConnection(connectionMock);
     verify(poolMock, times(1)).acquireConnection();
     verify(eventProcessorMock, times(1)).setExpectedReceiverUniqueId("receiverId");
   }
 
   @Test
-  public void initializeConnectionOfSerialSenderWithReceiversSharingIpAndPort_afterFirstThreadNoRetry() {
+  public void initializeConnectionOfSerialSenderWithEnforceThreadsConnectSameReceiver_afterFirstThreadNoRetry() {
 
-    when(senderMock.getReceiversSharingIpAndPort()).thenReturn(true);
+    when(senderMock.getEnforceThreadsConnectSameReceiver()).thenReturn(true);
 
     when(connectionMock.getEndpoint()).thenReturn(endpointMock);
     when(endpointMock.getMemberId()).thenReturn(memberIdMock);
@@ -199,16 +199,16 @@ public class GatewaySenderEventRemoteDispatcherJUnitTest {
     dispatcherSpy.initializeConnection();
 
     verify(senderMock, times(1)).getLockForConcurrentDispatcher();
-    verify(senderMock, times(1)).getReceiversSharingIpAndPort();
+    verify(senderMock, times(1)).getEnforceThreadsConnectSameReceiver();
     verify(dispatcherSpy, times(1)).retryInitializeConnection(connectionMock);
     verify(poolMock, times(1)).acquireConnection();
     verify(eventProcessorMock, times(0)).setExpectedReceiverUniqueId(any());
   }
 
   @Test
-  public void initializeConnectionOfSerialSenderWithReceiversSharingIpAndPort_afterFirstThreadWithRetry() {
+  public void initializeConnectionOfSerialSenderWithEnforceThreadsConnectSameReceiver_afterFirstThreadWithRetry() {
 
-    when(senderMock.getReceiversSharingIpAndPort()).thenReturn(true);
+    when(senderMock.getEnforceThreadsConnectSameReceiver()).thenReturn(true);
 
     when(connectionMock.getEndpoint()).thenReturn(endpointMock);
     when(endpointMock.getMemberId()).thenReturn(memberIdMock);
@@ -220,7 +220,7 @@ public class GatewaySenderEventRemoteDispatcherJUnitTest {
     dispatcherSpy.initializeConnection();
 
     verify(senderMock, times(1)).getLockForConcurrentDispatcher();
-    verify(senderMock, times(1)).getReceiversSharingIpAndPort();
+    verify(senderMock, times(1)).getEnforceThreadsConnectSameReceiver();
     verify(dispatcherSpy, times(1)).retryInitializeConnection(connectionMock);
     verify(poolMock, times(2)).acquireConnection();
     verify(eventProcessorMock, times(0)).setExpectedReceiverUniqueId(any());
@@ -228,9 +228,9 @@ public class GatewaySenderEventRemoteDispatcherJUnitTest {
   }
 
   @Test
-  public void initializeConnectionOfSerialSenderWithReceiversSharingIpAndPort_maxRetriesReached_noActiveServers() {
+  public void initializeConnectionOfSerialSenderWithEnforceThreadsConnectSameReceiver_maxRetriesReached_noActiveServers() {
 
-    when(senderMock.getReceiversSharingIpAndPort()).thenReturn(true);
+    when(senderMock.getEnforceThreadsConnectSameReceiver()).thenReturn(true);
 
     when(connectionMock.getEndpoint()).thenReturn(endpointMock);
     when(endpointMock.getMemberId()).thenReturn(memberIdMock);
@@ -247,16 +247,16 @@ public class GatewaySenderEventRemoteDispatcherJUnitTest {
     }).isInstanceOf(GatewaySenderException.class).hasMessageContaining(expectedExceptionMessage);
 
     verify(senderMock, times(1)).getLockForConcurrentDispatcher();
-    verify(senderMock, times(2)).getReceiversSharingIpAndPort();
+    verify(senderMock, times(2)).getEnforceThreadsConnectSameReceiver();
     verify(dispatcherSpy, times(1)).retryInitializeConnection(connectionMock);
     verify(poolMock, times(5)).acquireConnection();
     verify(eventProcessorMock, times(0)).setExpectedReceiverUniqueId(any());
   }
 
   @Test
-  public void initializeConnectionOfSerialSenderWithReceiversSharingIpAndPort_maxRetriesReached_serversAvailable() {
+  public void initializeConnectionOfSerialSenderWithEnforceThreadsConnectSameReceiver_maxRetriesReached_serversAvailable() {
 
-    when(senderMock.getReceiversSharingIpAndPort()).thenReturn(true);
+    when(senderMock.getEnforceThreadsConnectSameReceiver()).thenReturn(true);
 
     when(connectionMock.getEndpoint()).thenReturn(endpointMock);
     when(endpointMock.getMemberId()).thenReturn(memberIdMock);
@@ -277,7 +277,7 @@ public class GatewaySenderEventRemoteDispatcherJUnitTest {
     }).isInstanceOf(GatewaySenderException.class).hasMessageContaining(expectedExceptionMessage);
 
     verify(senderMock, times(1)).getLockForConcurrentDispatcher();
-    verify(senderMock, times(2)).getReceiversSharingIpAndPort();
+    verify(senderMock, times(2)).getEnforceThreadsConnectSameReceiver();
     verify(dispatcherSpy, times(1)).retryInitializeConnection(connectionMock);
     verify(poolMock, times(5)).acquireConnection();
     verify(eventProcessorMock, times(0)).setExpectedReceiverUniqueId(any());

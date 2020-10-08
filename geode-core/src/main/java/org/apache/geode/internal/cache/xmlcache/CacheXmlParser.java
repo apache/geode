@@ -708,13 +708,15 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
           .setGroupTransactionEvents(Boolean.parseBoolean(groupTransactionEvents));
     }
 
-    String receiversSharingIpAndPort = atts.getValue(RECEIVERS_SHARING_IP_AND_PORT);
-    if (receiversSharingIpAndPort == null) {
+    String enforceThreadsConnectSameReceiver = atts.getValue(ENFORCE_THREADS_CONNECT_SAME_RECEIVER);
+    if (enforceThreadsConnectSameReceiver == null) {
       gatewaySenderFactory
-          .setReceiversSharingIpAndPort(GatewaySender.DEFAULT_RECEIVERS_SHARING_IP_AND_PORT);
+          .setEnforceThreadsConnectSameReceiver(
+              GatewaySender.DEFAULT_ENFORCE_THREADS_CONNECT_SAME_RECEIVER);
     } else {
       gatewaySenderFactory
-          .setReceiversSharingIpAndPort(Boolean.parseBoolean(receiversSharingIpAndPort));
+          .setEnforceThreadsConnectSameReceiver(
+              Boolean.parseBoolean(enforceThreadsConnectSameReceiver));
     }
   }
 

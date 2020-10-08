@@ -275,7 +275,7 @@ public class CreateGatewaySenderCommandTest {
     assertThat(argsArgumentCaptor.getValue().getGatewayEventFilter()).isNotNull().isEmpty();
     assertThat(argsArgumentCaptor.getValue().getGatewayTransportFilter()).isNotNull().isEmpty();
     assertThat(argsArgumentCaptor.getValue().mustGroupTransactionEvents()).isNotNull();
-    assertThat(argsArgumentCaptor.getValue().getReceiversSharingIpAndPort()).isFalse();
+    assertThat(argsArgumentCaptor.getValue().getEnforceThreadsConnectSameReceiver()).isFalse();
   }
 
   @Test
@@ -349,58 +349,59 @@ public class CreateGatewaySenderCommandTest {
   }
 
   @Test
-  public void testReceiversSharingIpAndPortCannotBeUsedForParallelSenders() {
+  public void testEnforceThreadsConnectSameReceiverCannotBeUsedForParallelSenders() {
     gfsh.executeAndAssertThat(command,
-        "create gateway-sender --id=1 --remote-distributed-system-id=1 --parallel --receivers-sharing-ip-and-port")
+        "create gateway-sender --id=1 --remote-distributed-system-id=1 --parallel --enforce-threads-connect-same-receiver")
         .statusIsError()
-        .containsOutput("Option --" + CliStrings.CREATE_GATEWAYSENDER__RECEIVERS_SHARING_IP_AND_PORT
-            + " only applies to serial gateway senders.");
+        .containsOutput(
+            "Option --" + CliStrings.CREATE_GATEWAYSENDER__ENFORCE_THREADS_CONNECT_SAME_RECEIVER
+                + " only applies to serial gateway senders.");
   }
 
   @Test
-  public void testReceiversSharingIpAndPortIsTrueWhenUsedWithoutValue() {
+  public void testEnforceThreadsConnectSameReceiverIsTrueWhenUsedWithoutValue() {
     doReturn(mock(Set.class)).when(command).getMembers(any(), any());
     cliFunctionResult =
         new CliFunctionResult("member", CliFunctionResult.StatusState.OK, "cliFunctionResult");
     functionResults.add(cliFunctionResult);
     gfsh.executeAndAssertThat(command,
-        "create gateway-sender --id=1 --remote-distributed-system-id=1 --receivers-sharing-ip-and-port")
+        "create gateway-sender --id=1 --remote-distributed-system-id=1 --enforce-threads-connect-same-receiver")
         .statusIsSuccess();
     verify(command).executeAndGetFunctionResult(any(), argsArgumentCaptor.capture(), any());
 
-    assertThat(argsArgumentCaptor.getValue().getReceiversSharingIpAndPort()).isTrue();
+    assertThat(argsArgumentCaptor.getValue().getEnforceThreadsConnectSameReceiver()).isTrue();
   }
 
   @Test
-  public void testReceiversSharingIpAndPortIsFalseWhenSetToFalse() {
+  public void testEnforceThreadsConnectSameReceiverIsFalseWhenSetToFalse() {
     doReturn(mock(Set.class)).when(command).getMembers(any(), any());
     cliFunctionResult =
         new CliFunctionResult("member", CliFunctionResult.StatusState.OK, "cliFunctionResult");
     functionResults.add(cliFunctionResult);
     gfsh.executeAndAssertThat(command,
-        "create gateway-sender --id=1 --remote-distributed-system-id=1 --receivers-sharing-ip-and-port=false")
+        "create gateway-sender --id=1 --remote-distributed-system-id=1 --enforce-threads-connect-same-receiver=false")
         .statusIsSuccess();
     verify(command).executeAndGetFunctionResult(any(), argsArgumentCaptor.capture(), any());
 
-    assertThat(argsArgumentCaptor.getValue().getReceiversSharingIpAndPort()).isFalse();
+    assertThat(argsArgumentCaptor.getValue().getEnforceThreadsConnectSameReceiver()).isFalse();
   }
 
   @Test
-  public void testReceiversSharingIpAndPortIsTrueWhenSetToTrue() {
+  public void testEnforceThreadsConnectSameReceiverIsTrueWhenSetToTrue() {
     doReturn(mock(Set.class)).when(command).getMembers(any(), any());
     cliFunctionResult =
         new CliFunctionResult("member", CliFunctionResult.StatusState.OK, "cliFunctionResult");
     functionResults.add(cliFunctionResult);
     gfsh.executeAndAssertThat(command,
-        "create gateway-sender --id=1 --remote-distributed-system-id=1 --receivers-sharing-ip-and-port=true")
+        "create gateway-sender --id=1 --remote-distributed-system-id=1 --enforce-threads-connect-same-receiver=true")
         .statusIsSuccess();
     verify(command).executeAndGetFunctionResult(any(), argsArgumentCaptor.capture(), any());
 
-    assertThat(argsArgumentCaptor.getValue().getReceiversSharingIpAndPort()).isTrue();
+    assertThat(argsArgumentCaptor.getValue().getEnforceThreadsConnectSameReceiver()).isTrue();
   }
 
   @Test
-  public void testReceiversSharingIpAndPortIsFalseByDefault() {
+  public void testEnforceThreadsConnectSameReceiverIsFalseByDefault() {
     doReturn(mock(Set.class)).when(command).getMembers(any(), any());
     cliFunctionResult =
         new CliFunctionResult("member", CliFunctionResult.StatusState.OK, "cliFunctionResult");
@@ -410,6 +411,6 @@ public class CreateGatewaySenderCommandTest {
         .statusIsSuccess();
     verify(command).executeAndGetFunctionResult(any(), argsArgumentCaptor.capture(), any());
 
-    assertThat(argsArgumentCaptor.getValue().getReceiversSharingIpAndPort()).isFalse();
+    assertThat(argsArgumentCaptor.getValue().getEnforceThreadsConnectSameReceiver()).isFalse();
   }
 }

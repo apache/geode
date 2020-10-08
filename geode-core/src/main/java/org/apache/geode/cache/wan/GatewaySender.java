@@ -147,7 +147,7 @@ public interface GatewaySender {
 
   boolean DEFAULT_IS_FOR_INTERNAL_USE = false;
 
-  boolean DEFAULT_RECEIVERS_SHARING_IP_AND_PORT = false;
+  boolean DEFAULT_ENFORCE_THREADS_CONNECT_SAME_RECEIVER = false;
 
   /**
    * Retry a connection from sender to receiver after specified time interval (in milliseconds) in
@@ -453,10 +453,10 @@ public interface GatewaySender {
   void destroy();
 
   /**
-   * Returns receiversSharingIpAndPort boolean property for this GatewaySender.
+   * Returns enforceThreadsConnectSameReceiver boolean property for this GatewaySender.
    *
-   * @return receiversSharingIpAndPort boolean property for this GatewaySender
+   * @return enforceThreadsConnectSameReceiver boolean property for this GatewaySender
    *
    */
-  boolean getReceiversSharingIpAndPort();
+  boolean getEnforceThreadsConnectSameReceiver();
 }

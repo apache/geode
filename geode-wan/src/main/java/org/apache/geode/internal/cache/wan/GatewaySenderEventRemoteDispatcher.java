@@ -439,7 +439,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
               }
               con = this.sender.getProxy().acquireConnection();
             }
-            if (this.sender.getReceiversSharingIpAndPort()) {
+            if (this.sender.getEnforceThreadsConnectSameReceiver()) {
               con = retryInitializeConnection(con);
             }
             if (this.sender.isPrimary()) {
@@ -516,7 +516,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
                 "No available connection was found, but the following active servers exist: %s",
                 buffer.toString());
       }
-      if (this.sender.getReceiversSharingIpAndPort()) {
+      if (this.sender.getEnforceThreadsConnectSameReceiver()) {
         if (Pattern.compile("Cannot get connection to .* after .* attempts.")
             .matcher(e.getMessage()).find()) {
           ioMsg += " " + e.getMessage();
