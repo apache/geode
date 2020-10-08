@@ -801,9 +801,13 @@ public class Connection implements Runnable {
 
   private void notifyHandshakeWaiter(boolean success) {
     if (getConduit().useSSL() && ioFilter != null) {
-      // clear out any remaining handshake bytes
-      ByteBuffer buffer = ioFilter.getUnwrappedBuffer(inputBuffer);
-      buffer.position(0).limit(0);
+      synchronized (ioFilter.getSynchObject()) {
+        if (!ioFilter.isClosed()) {
+          // clear out any remaining handshake bytes
+          ByteBuffer buffer = ioFilter.getUnwrappedBuffer(inputBuffer);
+          buffer.position(0).limit(0);
+        }
+      }
     }
     synchronized (handshakeSync) {
       if (success) {
@@ -2436,115 +2440,117 @@ public class Connection implements Runnable {
         long queueTimeoutTarget = now + asyncQueueTimeout;
         channel.configureBlocking(false);
         try {
-          ByteBuffer wrappedBuffer = ioFilter.wrap(buffer);
-          int waitTime = 1;
-          do {
-            owner.getConduit().getCancelCriterion().checkCancelInProgress(null);
-            retries++;
-            int amtWritten;
-            if (FORCE_ASYNC_QUEUE) {
-              amtWritten = 0;
-            } else {
-              amtWritten = channel.write(wrappedBuffer);
-            }
-            if (amtWritten == 0) {
-              now = System.currentTimeMillis();
-              long timeoutTarget;
-              if (!forceAsync) {
-                if (now > distributionTimeoutTarget) {
-                  if (logger.isDebugEnabled()) {
-                    if (distributionTimeoutTarget == 0) {
-                      logger.debug(
-                          "Starting async pusher to handle async queue because distribution-timeout is 1 and the last socket write would have blocked.");
-                    } else {
-                      long blockedMs = now - distributionTimeoutTarget;
-                      blockedMs += asyncDistributionTimeout;
-                      logger.debug(
-                          "Blocked for {}ms which is longer than the max of {}ms so starting async pusher to handle async queue.",
-                          blockedMs, asyncDistributionTimeout);
+          synchronized (ioFilter.getSynchObject()) {
+            ByteBuffer wrappedBuffer = ioFilter.wrap(buffer);
+            int waitTime = 1;
+            do {
+              owner.getConduit().getCancelCriterion().checkCancelInProgress(null);
+              retries++;
+              int amtWritten;
+              if (FORCE_ASYNC_QUEUE) {
+                amtWritten = 0;
+              } else {
+                amtWritten = channel.write(wrappedBuffer);
+              }
+              if (amtWritten == 0) {
+                now = System.currentTimeMillis();
+                long timeoutTarget;
+                if (!forceAsync) {
+                  if (now > distributionTimeoutTarget) {
+                    if (logger.isDebugEnabled()) {
+                      if (distributionTimeoutTarget == 0) {
+                        logger.debug(
+                            "Starting async pusher to handle async queue because distribution-timeout is 1 and the last socket write would have blocked.");
+                      } else {
+                        long blockedMs = now - distributionTimeoutTarget;
+                        blockedMs += asyncDistributionTimeout;
+                        logger.debug(
+                            "Blocked for {}ms which is longer than the max of {}ms so starting async pusher to handle async queue.",
+                            blockedMs, asyncDistributionTimeout);
+                      }
+                    }
+                    stats.incAsyncDistributionTimeoutExceeded();
+                    if (totalAmtWritten > 0) {
+                      // we have written part of the msg to the socket buffer
+                      // and we are going to queue the remainder.
+                      // We set msg to null so that will not make
+                      // the partial msg a candidate for conflation.
+                      msg = null;
+                    }
+                    if (handleBlockedWrite(wrappedBuffer, msg)) {
+                      return;
                     }
                   }
-                  stats.incAsyncDistributionTimeoutExceeded();
-                  if (totalAmtWritten > 0) {
-                    // we have written part of the msg to the socket buffer
-                    // and we are going to queue the remainder.
-                    // We set msg to null so that will not make
-                    // the partial msg a candidate for conflation.
-                    msg = null;
+                  timeoutTarget = distributionTimeoutTarget;
+                } else {
+                  boolean disconnectNeeded = false;
+                  long curQueuedBytes = queuedBytes;
+                  if (curQueuedBytes > asyncMaxQueueSize) {
+                    logger.warn(
+                        "Queued bytes {} exceeds max of {}, asking slow receiver {} to disconnect.",
+                        curQueuedBytes, asyncMaxQueueSize, remoteAddr);
+                    stats.incAsyncQueueSizeExceeded(1);
+                    disconnectNeeded = true;
                   }
-                  if (handleBlockedWrite(wrappedBuffer, msg)) {
+                  if (now > queueTimeoutTarget) {
+                    // we have waited long enough the pusher has been idle too long!
+                    long blockedMs = now - queueTimeoutTarget;
+                    blockedMs += asyncQueueTimeout;
+                    logger.warn(
+                        "Blocked for {}ms which is longer than the max of {}ms, asking slow receiver {} to disconnect.",
+                        blockedMs,
+                        asyncQueueTimeout, remoteAddr);
+                    stats.incAsyncQueueTimeouts(1);
+                    disconnectNeeded = true;
+                  }
+                  if (disconnectNeeded) {
+                    disconnectSlowReceiver();
+                    synchronized (outgoingQueue) {
+                      asyncQueuingInProgress = false;
+                      outgoingQueue.notifyAll();
+                    }
                     return;
                   }
+                  timeoutTarget = queueTimeoutTarget;
                 }
-                timeoutTarget = distributionTimeoutTarget;
-              } else {
-                boolean disconnectNeeded = false;
-                long curQueuedBytes = queuedBytes;
-                if (curQueuedBytes > asyncMaxQueueSize) {
-                  logger.warn(
-                      "Queued bytes {} exceeds max of {}, asking slow receiver {} to disconnect.",
-                      curQueuedBytes, asyncMaxQueueSize, remoteAddr);
-                  stats.incAsyncQueueSizeExceeded(1);
-                  disconnectNeeded = true;
-                }
-                if (now > queueTimeoutTarget) {
-                  // we have waited long enough the pusher has been idle too long!
-                  long blockedMs = now - queueTimeoutTarget;
-                  blockedMs += asyncQueueTimeout;
-                  logger.warn(
-                      "Blocked for {}ms which is longer than the max of {}ms, asking slow receiver {} to disconnect.",
-                      blockedMs,
-                      asyncQueueTimeout, remoteAddr);
-                  stats.incAsyncQueueTimeouts(1);
-                  disconnectNeeded = true;
-                }
-                if (disconnectNeeded) {
-                  disconnectSlowReceiver();
-                  synchronized (outgoingQueue) {
-                    asyncQueuingInProgress = false;
-                    outgoingQueue.notifyAll();
+                {
+                  long msToWait = waitTime;
+                  long msRemaining = timeoutTarget - now;
+                  if (msRemaining > 0) {
+                    msRemaining /= 2;
                   }
-                  return;
-                }
-                timeoutTarget = queueTimeoutTarget;
-              }
-              {
-                long msToWait = waitTime;
-                long msRemaining = timeoutTarget - now;
-                if (msRemaining > 0) {
-                  msRemaining /= 2;
-                }
-                if (msRemaining < msToWait) {
-                  msToWait = msRemaining;
-                }
-                if (msToWait <= 0) {
-                  Thread.yield();
-                } else {
-                  boolean interrupted = Thread.interrupted();
-                  try {
-                    Thread.sleep(msToWait);
-                  } catch (InterruptedException ex) {
-                    interrupted = true;
-                    owner.getConduit().getCancelCriterion().checkCancelInProgress(ex);
-                  } finally {
-                    if (interrupted) {
-                      Thread.currentThread().interrupt();
+                  if (msRemaining < msToWait) {
+                    msToWait = msRemaining;
+                  }
+                  if (msToWait <= 0) {
+                    Thread.yield();
+                  } else {
+                    boolean interrupted = Thread.interrupted();
+                    try {
+                      Thread.sleep(msToWait);
+                    } catch (InterruptedException ex) {
+                      interrupted = true;
+                      owner.getConduit().getCancelCriterion().checkCancelInProgress(ex);
+                    } finally {
+                      if (interrupted) {
+                        Thread.currentThread().interrupt();
+                      }
                     }
                   }
                 }
+                if (waitTime < MAX_WAIT_TIME) {
+                  // double it since it is not yet the max
+                  waitTime <<= 1;
+                }
+              } // amtWritten == 0
+              else {
+                totalAmtWritten += amtWritten;
+                // reset queueTimeoutTarget since we made some progress
+                queueTimeoutTarget = System.currentTimeMillis() + asyncQueueTimeout;
+                waitTime = 1;
               }
-              if (waitTime < MAX_WAIT_TIME) {
-                // double it since it is not yet the max
-                waitTime <<= 1;
-              }
-            } // amtWritten == 0
-            else {
-              totalAmtWritten += amtWritten;
-              // reset queueTimeoutTarget since we made some progress
-              queueTimeoutTarget = System.currentTimeMillis() + asyncQueueTimeout;
-              waitTime = 1;
-            }
-          } while (wrappedBuffer.remaining() > 0);
+            } while (wrappedBuffer.remaining() > 0);
+          }
         } finally {
           channel.configureBlocking(true);
         }
@@ -2588,17 +2594,20 @@ public class Connection implements Runnable {
           }
           // fall through
         }
-        ByteBuffer wrappedBuffer = ioFilter.wrap(buffer);
-        while (wrappedBuffer.remaining() > 0) {
-          int amtWritten = 0;
-          long start = stats.startSocketWrite(true);
-          try {
-            amtWritten = channel.write(wrappedBuffer);
-          } finally {
-            stats.endSocketWrite(true, start, amtWritten, 0);
+        // synchronize on the ioFilter while using its network buffer
+        synchronized (ioFilter.getSynchObject()) {
+          ByteBuffer wrappedBuffer = ioFilter.wrap(buffer);
+          while (wrappedBuffer.remaining() > 0) {
+            int amtWritten = 0;
+            long start = stats.startSocketWrite(true);
+            try {
+              amtWritten = channel.write(wrappedBuffer);
+            } finally {
+              stats.endSocketWrite(true, start, amtWritten, 0);
+            }
           }
-        }
 
+        }
       }
     } else {
       writeAsync(channel, buffer, forceAsync, msg, stats);
@@ -2724,68 +2733,70 @@ public class Connection implements Runnable {
   private void processInputBuffer() throws ConnectionException, IOException {
     inputBuffer.flip();
 
-    ByteBuffer peerDataBuffer = ioFilter.unwrap(inputBuffer);
-    peerDataBuffer.flip();
+    synchronized (ioFilter.getSynchObject()) {
+      ByteBuffer peerDataBuffer = ioFilter.unwrap(inputBuffer);
+      peerDataBuffer.flip();
 
-    boolean done = false;
+      boolean done = false;
 
-    while (!done && connected) {
-      owner.getConduit().getCancelCriterion().checkCancelInProgress(null);
-      int remaining = peerDataBuffer.remaining();
-      if (lengthSet || remaining >= MSG_HEADER_BYTES) {
-        if (!lengthSet) {
-          if (readMessageHeader(peerDataBuffer)) {
-            break;
+      while (!done && connected) {
+        owner.getConduit().getCancelCriterion().checkCancelInProgress(null);
+        int remaining = peerDataBuffer.remaining();
+        if (lengthSet || remaining >= MSG_HEADER_BYTES) {
+          if (!lengthSet) {
+            if (readMessageHeader(peerDataBuffer)) {
+              break;
+            }
           }
-        }
-        if (remaining >= messageLength + MSG_HEADER_BYTES) {
-          lengthSet = false;
-          peerDataBuffer.position(peerDataBuffer.position() + MSG_HEADER_BYTES);
-          // don't trust the message deserialization to leave the position in
-          // the correct spot. Some of the serialization uses buffered
-          // streams that can leave the position at the wrong spot
-          int startPos = peerDataBuffer.position();
-          int oldLimit = peerDataBuffer.limit();
-          peerDataBuffer.limit(startPos + messageLength);
+          if (remaining >= messageLength + MSG_HEADER_BYTES) {
+            lengthSet = false;
+            peerDataBuffer.position(peerDataBuffer.position() + MSG_HEADER_BYTES);
+            // don't trust the message deserialization to leave the position in
+            // the correct spot. Some of the serialization uses buffered
+            // streams that can leave the position at the wrong spot
+            int startPos = peerDataBuffer.position();
+            int oldLimit = peerDataBuffer.limit();
+            peerDataBuffer.limit(startPos + messageLength);
 
-          if (handshakeRead) {
-            try {
-              readMessage(peerDataBuffer);
-            } catch (SerializationException e) {
-              logger.info("input buffer startPos {} oldLimit {}", startPos, oldLimit);
-              throw e;
+            if (handshakeRead) {
+              try {
+                readMessage(peerDataBuffer);
+              } catch (SerializationException e) {
+                logger.info("input buffer startPos {} oldLimit {}", startPos, oldLimit);
+                throw e;
+              }
+            } else {
+              ByteBufferInputStream bbis = new ByteBufferInputStream(peerDataBuffer);
+              DataInputStream dis = new DataInputStream(bbis);
+              if (!isReceiver) {
+                // we read the handshake and then stop processing since we don't want
+                // to process the input buffer anymore in a handshake thread
+                readHandshakeForSender(dis, peerDataBuffer);
+                return;
+              }
+              if (readHandshakeForReceiver(dis)) {
+                ioFilter.doneReading(peerDataBuffer);
+                return;
+              }
             }
+            if (!connected) {
+              continue;
+            }
+            accessed();
+            peerDataBuffer.limit(oldLimit);
+            peerDataBuffer.position(startPos + messageLength);
           } else {
-            ByteBufferInputStream bbis = new ByteBufferInputStream(peerDataBuffer);
-            DataInputStream dis = new DataInputStream(bbis);
-            if (!isReceiver) {
-              // we read the handshake and then stop processing since we don't want
-              // to process the input buffer anymore in a handshake thread
-              readHandshakeForSender(dis, peerDataBuffer);
-              return;
-            }
-            if (readHandshakeForReceiver(dis)) {
+            done = true;
+            if (getConduit().useSSL()) {
               ioFilter.doneReading(peerDataBuffer);
-              return;
+            } else {
+              compactOrResizeBuffer(messageLength);
             }
           }
-          if (!connected) {
-            continue;
-          }
-          accessed();
-          peerDataBuffer.limit(oldLimit);
-          peerDataBuffer.position(startPos + messageLength);
         } else {
+          ioFilter.doneReading(peerDataBuffer);
           done = true;
-          if (getConduit().useSSL()) {
-            ioFilter.doneReading(peerDataBuffer);
-          } else {
-            compactOrResizeBuffer(messageLength);
-          }
         }
-      } else {
-        ioFilter.doneReading(peerDataBuffer);
-        done = true;
       }
     }
   }
