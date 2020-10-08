@@ -35,7 +35,7 @@ public class BufferPool {
   private final DMStats stats;
   private static final Logger logger = LogService.getLogger();
 
-  private static Method parentOfSliceMethod;
+  private Method parentOfSliceMethod;
 
   /**
    * Buffers may be acquired from the Buffers pool
