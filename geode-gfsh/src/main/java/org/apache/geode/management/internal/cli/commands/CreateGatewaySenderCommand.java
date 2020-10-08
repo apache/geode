@@ -139,10 +139,10 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
       @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__GATEWAYTRANSPORTFILTER,
           help = CliStrings.CREATE_GATEWAYSENDER__GATEWAYTRANSPORTFILTER__HELP) String[] gatewayTransportFilter,
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__RECEIVERS_SHARING_IP_AND_PORT,
+      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__ENFORCE_THREADS_CONNECT_SAME_RECEIVER,
           specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false",
-          help = CliStrings.CREATE_GATEWAYSENDER__RECEIVERS_SHARING_IP_AND_PORT__HELP) Boolean receiversSharingIpAndPort) {
+          help = CliStrings.CREATE_GATEWAYSENDER__ENFORCE_THREADS_CONNECT_SAME_RECEIVER__HELP) Boolean enforceThreadsConnectSameReceiver) {
 
     CacheConfig.GatewaySender configuration =
         buildConfiguration(id, remoteDistributedSystemId, parallel, manualStart,
@@ -150,7 +150,7 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
             batchTimeInterval, enablePersistence, diskStoreName, diskSynchronous, maxQueueMemory,
             alertThreshold, dispatcherThreads, orderPolicy == null ? null : orderPolicy.name(),
             gatewayEventFilters, gatewayTransportFilter, groupTransactionEvents,
-            receiversSharingIpAndPort);
+            enforceThreadsConnectSameReceiver);
 
     GatewaySenderFunctionArgs gatewaySenderFunctionArgs =
         new GatewaySenderFunctionArgs(configuration);
@@ -235,7 +235,7 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
       String[] gatewayEventFilters,
       String[] gatewayTransportFilters,
       Boolean groupTransactionEvents,
-      Boolean receiverSharingIpAndPort) {
+      Boolean enforceThreadsConnectSameReceiver) {
     CacheConfig.GatewaySender sender = new CacheConfig.GatewaySender();
     sender.setId(id);
     sender.setRemoteDistributedSystemId(int2string(remoteDSId));
@@ -260,7 +260,7 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
     if (gatewayTransportFilters != null) {
       sender.getGatewayTransportFilters().addAll(stringsToDeclarableTypes(gatewayTransportFilters));
     }
-    sender.setReceiversSharingIpAndPort(receiverSharingIpAndPort);
+    sender.setEnforceThreadsConnectSameReceiver(enforceThreadsConnectSameReceiver);
     return sender;
   }
 
@@ -291,9 +291,10 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
       Boolean batchConflationEnabled =
           (Boolean) parseResult
               .getParamValue(CliStrings.CREATE_GATEWAYSENDER__ENABLEBATCHCONFLATION);
-      Boolean receiversSharingIpAndPort =
+      Boolean enforceThreadsConnectSameReceiver =
           (Boolean) parseResult
-              .getParamValue(CliStrings.CREATE_GATEWAYSENDER__RECEIVERS_SHARING_IP_AND_PORT);
+              .getParamValue(
+                  CliStrings.CREATE_GATEWAYSENDER__ENFORCE_THREADS_CONNECT_SAME_RECEIVER);
 
       if (dispatcherThreads != null && dispatcherThreads > 1 && orderPolicy == null) {
         return ResultModel.createError(
@@ -316,10 +317,10 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
             "Gateway Sender cannot be created with both --group-transaction-events and --enable-batch-conflation.");
       }
 
-      if (parallel && receiversSharingIpAndPort) {
+      if (parallel && enforceThreadsConnectSameReceiver) {
         return ResultModel
             .createError(
-                "Option --" + CliStrings.CREATE_GATEWAYSENDER__RECEIVERS_SHARING_IP_AND_PORT
+                "Option --" + CliStrings.CREATE_GATEWAYSENDER__ENFORCE_THREADS_CONNECT_SAME_RECEIVER
                     + " only applies to serial gateway senders.");
 
       }

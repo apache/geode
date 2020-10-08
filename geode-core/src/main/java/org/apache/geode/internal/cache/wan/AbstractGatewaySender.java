@@ -237,7 +237,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   private final StatisticsClock statisticsClock;
 
-  protected boolean receiversSharingIpAndPort;
+  protected boolean enforceThreadsConnectSameReceiver;
 
   protected AbstractGatewaySender() {
     statisticsClock = disabledClock();
@@ -277,7 +277,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     this.maxMemoryPerDispatcherQueue = this.queueMemory / this.dispatcherThreads;
     this.serialNumber = DistributionAdvisor.createSerialNumber();
     this.isMetaQueue = attrs.isMetaQueue();
-    this.receiversSharingIpAndPort = attrs.getReceiversSharingIpAndPort();
+    this.enforceThreadsConnectSameReceiver = attrs.getEnforceThreadsConnectSameReceiver();
     if (!(this.cache instanceof CacheCreation)) {
       this.myDSId = this.cache.getInternalDistributedSystem().getDistributionManager()
           .getDistributedSystemId();
@@ -503,8 +503,8 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   }
 
   @Override
-  public boolean getReceiversSharingIpAndPort() {
-    return this.receiversSharingIpAndPort;
+  public boolean getEnforceThreadsConnectSameReceiver() {
+    return this.enforceThreadsConnectSameReceiver;
   }
 
   @Override

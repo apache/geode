@@ -174,9 +174,10 @@ public class GatewaySenderCreateFunction implements InternalFunction<GatewaySend
       }
     }
 
-    Boolean receiversSharingIpAndPort = gatewaySenderCreateArgs.getReceiversSharingIpAndPort();
-    if (receiversSharingIpAndPort != null) {
-      gateway.setReceiversSharingIpAndPort(receiversSharingIpAndPort);
+    Boolean enforceThreadsConnectSameReceiver =
+        gatewaySenderCreateArgs.getEnforceThreadsConnectSameReceiver();
+    if (enforceThreadsConnectSameReceiver != null) {
+      gateway.setEnforceThreadsConnectSameReceiver(enforceThreadsConnectSameReceiver);
     }
 
     return gateway.create(gatewaySenderCreateArgs.getId(),

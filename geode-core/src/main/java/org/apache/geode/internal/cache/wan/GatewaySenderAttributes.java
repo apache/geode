@@ -85,7 +85,8 @@ public class GatewaySenderAttributes {
 
   public boolean forwardExpirationDestroy = GatewaySender.DEFAULT_FORWARD_EXPIRATION_DESTROY;
 
-  public boolean receiversSharingIpAndPort = GatewaySender.DEFAULT_RECEIVERS_SHARING_IP_AND_PORT;
+  public boolean enforceThreadsConnectSameReceiver =
+      GatewaySender.DEFAULT_ENFORCE_THREADS_CONNECT_SAME_RECEIVER;
 
   public int getSocketBufferSize() {
     return this.socketBufferSize;
@@ -207,7 +208,7 @@ public class GatewaySenderAttributes {
     return this.forwardExpirationDestroy;
   }
 
-  public boolean getReceiversSharingIpAndPort() {
-    return this.receiversSharingIpAndPort;
+  public boolean getEnforceThreadsConnectSameReceiver() {
+    return this.enforceThreadsConnectSameReceiver;
   }
 }

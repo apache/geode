@@ -199,8 +199,9 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
   }
 
   @Override
-  public GatewaySenderFactory setReceiversSharingIpAndPort(boolean receiversSharingIpAndPort) {
-    this.attrs.receiversSharingIpAndPort = receiversSharingIpAndPort;
+  public GatewaySenderFactory setEnforceThreadsConnectSameReceiver(
+      boolean enforceThreadsConnectSameReceiver) {
+    this.attrs.enforceThreadsConnectSameReceiver = enforceThreadsConnectSameReceiver;
     return this;
   }
 
@@ -399,6 +400,7 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
     }
     this.attrs.eventSubstitutionFilter = senderCreation.getGatewayEventSubstitutionFilter();
     this.attrs.groupTransactionEvents = senderCreation.mustGroupTransactionEvents();
-    this.attrs.receiversSharingIpAndPort = senderCreation.getReceiversSharingIpAndPort();
+    this.attrs.enforceThreadsConnectSameReceiver =
+        senderCreation.getEnforceThreadsConnectSameReceiver();
   }
 }

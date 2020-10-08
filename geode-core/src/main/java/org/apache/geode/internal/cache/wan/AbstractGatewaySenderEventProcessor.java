@@ -148,7 +148,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
 
   private String expectedReceiverUniqueId = "";
 
-  private boolean receiversSharingIpAndPort = false;
+  private boolean enforceThreadsConnectSameReceiver = false;
 
   public AbstractGatewaySenderEventProcessor(String string,
       GatewaySender sender, ThreadsMonitoring tMonitoring) {
@@ -166,12 +166,12 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
     return this.expectedReceiverUniqueId;
   }
 
-  public void setReceiversSharingIpAndPort(boolean value) {
-    this.receiversSharingIpAndPort = value;
+  public void setEnforceThreadsConnectSameReceiver(boolean value) {
+    this.enforceThreadsConnectSameReceiver = value;
   }
 
-  public boolean getReceiversSharingIpAndPort() {
-    return this.receiversSharingIpAndPort;
+  public boolean getEnforceThreadsConnectSameReceiver() {
+    return this.enforceThreadsConnectSameReceiver;
   }
 
   public Object getRunningStateLock() {

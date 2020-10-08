@@ -191,15 +191,15 @@ public interface GatewaySenderFactory {
   GatewaySenderFactory setGatewayEventSubstitutionFilter(GatewayEventSubstitutionFilter filter);
 
   /**
-   * Sets whether or not the receivers are sharing the same ip and port. If true, receiver member id
-   * will be checked by each dispatcher threads when the connection is stablished to ensure they
-   * are connected to the same receiver. Default is false.
+   * If true, receiver member id will be checked by each dispatcher threads when the connection is
+   * established to ensure they are connected to the same receiver. Default is false.
    *
-   * @param receiversSharingIpAndPort boolean if true indicates the receivers are sharing the same
-   *        ip and port
+   * @param enforceThreadsConnectSameReceiver boolean if true threads will verify if they are
+   *        connected to the same receiver
    *
    */
-  GatewaySenderFactory setReceiversSharingIpAndPort(boolean receiversSharingIpAndPort);
+  GatewaySenderFactory setEnforceThreadsConnectSameReceiver(
+      boolean enforceThreadsConnectSameReceiver);
 
   /**
    * Creates a <code>GatewaySender</code> to communicate with remote distributed system

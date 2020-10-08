@@ -1394,13 +1394,13 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       }
     }
 
-    // receivers-sharing-ip-and-port
+    // enforce-threads-connect-same-receiver
     if (version.compareTo(CacheXmlVersion.GEODE_1_0) >= 0) {
       if (generateDefaults()
           || sender
-              .getReceiversSharingIpAndPort() != GatewaySender.DEFAULT_RECEIVERS_SHARING_IP_AND_PORT) {
-        atts.addAttribute("", "", RECEIVERS_SHARING_IP_AND_PORT, "",
-            String.valueOf(sender.getReceiversSharingIpAndPort()));
+              .getEnforceThreadsConnectSameReceiver() != GatewaySender.DEFAULT_ENFORCE_THREADS_CONNECT_SAME_RECEIVER) {
+        atts.addAttribute("", "", ENFORCE_THREADS_CONNECT_SAME_RECEIVER, "",
+            String.valueOf(sender.getEnforceThreadsConnectSameReceiver()));
       }
     }
 
