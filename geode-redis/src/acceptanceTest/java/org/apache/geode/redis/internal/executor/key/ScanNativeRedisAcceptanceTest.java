@@ -13,15 +13,14 @@
  * the License.
  */
 
-package org.apache.geode.redis.internal.executor.pubsub;
+package org.apache.geode.redis.internal.executor.key;
 
 import org.junit.ClassRule;
-import org.junit.Ignore;
 
 import org.apache.geode.NativeRedisTestRule;
 
-@Ignore("GEODE-8577")
-public class PubSubNativeRedisAcceptanceTest extends AbstractPubSubIntegrationTest {
+public class ScanNativeRedisAcceptanceTest extends AbstractScanIntegrationTest {
+
   @ClassRule
   public static NativeRedisTestRule redis = new NativeRedisTestRule();
 

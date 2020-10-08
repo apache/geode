@@ -24,6 +24,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
+import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
@@ -32,8 +33,7 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class ScanExecutor extends AbstractScanExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     if (commandElems.size() < 2) {
@@ -93,36 +93,37 @@ public class ScanExecutor extends AbstractScanExecutor {
       return RedisResponse.error(ERROR_ILLEGAL_GLOB);
     }
 
-    @SuppressWarnings("unchecked")
-    List<String> returnList = (List<String>) getIteration(getDataRegion(context).keySet(),
-        matchPattern, count, cursor);
+    List<String> returnList = getIteration(getDataRegion(context).keySet(), matchPattern, count,
+        cursor);
 
     return RedisResponse.scan(returnList);
   }
 
-  @SuppressWarnings("unchecked")
-  private List<?> getIteration(Collection<?> list, Pattern matchPattern, int count, int cursor) {
-    List<String> returnList = new ArrayList<String>();
+  private List<String> getIteration(Collection<ByteArrayWrapper> list, Pattern matchPattern,
+      int count, int cursor) {
+    List<String> returnList = new ArrayList<>();
     int size = list.size();
     int beforeCursor = 0;
     int numElements = 0;
     int i = -1;
-    for (String key : (Collection<String>) list) {
+    for (ByteArrayWrapper key : list) {
       i++;
       if (beforeCursor < cursor) {
         beforeCursor++;
         continue;
-      } else if (numElements < count) {
-        if (matchPattern != null) {
-          if (matchPattern.matcher(key).matches()) {
-            returnList.add(key);
-            numElements++;
-          }
-        } else {
-          returnList.add(key);
+      }
+
+      String keyString = key.toString();
+      if (matchPattern != null) {
+        if (matchPattern.matcher(keyString).matches()) {
+          returnList.add(keyString);
           numElements++;
         }
       } else {
+        returnList.add(keyString);
+        numElements++;
+      }
+      if (numElements == count) {
         break;
       }
     }
@@ -130,7 +131,7 @@ public class ScanExecutor extends AbstractScanExecutor {
     if (i >= size - 1) {
       returnList.add(0, String.valueOf(0));
     } else {
-      returnList.add(0, String.valueOf(i));
+      returnList.add(0, String.valueOf(i + 1));
     }
     return returnList;
   }
