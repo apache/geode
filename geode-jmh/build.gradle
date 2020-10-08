@@ -17,12 +17,16 @@
 
 apply plugin: 'java-library'
 
+apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
+
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
+apply from: "${project.projectDir}/../gradle/warnings.gradle"
 
 dependencies {
-  implementation(platform(project(':boms:geode-all-bom')))
-  implementation('org.openjdk.jmh:jmh-core')
+  api(platform(project(':boms:geode-all-bom')))
+  api('org.openjdk.jmh:jmh-core')
 
   testImplementation('junit:junit')
   testImplementation('org.assertj:assertj-core')
+  testImplementation('org.mockito:mockito-core')
 }
