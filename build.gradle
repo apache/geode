@@ -138,25 +138,26 @@ tasks.register('printTestClasspath') {
   description "Print the classpath used in all tests for all subprojects"
 
   doLast {
-    Set result = new HashSet()
+    Set result = new LinkedHashSet()
+    // Prefer sources at the start of the classpath
     subprojects.each { sub ->
       if (sub.hasProperty("sourceSets")) {
-        // Prefer sources at the start of the classpath
         sub.sourceSets.each { ss ->
           ss.each { x ->
             x.output.classesDirs.each { y -> result.add(y) }
           }
         }
+      }
+    }
 
-        // Note that, for some reason, this does not seem to pick up acceptanceTest code. However,
-        // the prior block will have done so.
-        sub.configurations.each { c ->
-          if (c.isCanBeResolved()) {
-            c.each { f -> result.add(f) }
-          }
+    subprojects.each { sub ->
+      sub.configurations.each { c ->
+        if (c.name.toLowerCase().endsWith("runtimeclasspath")) {
+          c.each { f -> result.add(f) }
         }
       }
     }
+
     println result.join(File.pathSeparator)
   }
 }

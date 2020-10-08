@@ -49,7 +49,9 @@ function changes_for_path() {
 function save_classpath() {
   echo "Building and saving classpath"
   pushd geode >> /dev/null
-    ./gradlew --console=plain -q devBuild printTestClasspath 2>/dev/null >/tmp/classpath.txt
+    # Do this twice since devBuild still dumps a warning string to stdout.
+    ./gradlew --console=plain -q devBuild 2>/dev/null
+    ./gradlew --console=plain -q printTestClasspath 2>/dev/null >/tmp/classpath.txt
   popd >> /dev/null
 }
 
