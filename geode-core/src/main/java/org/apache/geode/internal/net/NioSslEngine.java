@@ -40,6 +40,7 @@ import javax.net.ssl.SSLSession;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireIOException;
+import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.internal.net.BufferPool.BufferType;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -51,6 +52,11 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  */
 public class NioSslEngine implements NioFilter {
   private static final Logger logger = LogService.getLogger();
+
+  // this variable requires the MakeImmutable annotation but the buffer is empty and
+  // not really modifiable
+  @MakeImmutable
+  private static final ByteBuffer EMPTY_BUFFER = ByteBuffer.allocate(0);
 
   private final BufferPool bufferPool;
 
@@ -362,6 +368,10 @@ public class NioSslEngine implements NioFilter {
     // read-operations
   }
 
+  @Override
+  public synchronized boolean isClosed() {
+    return closed;
+  }
 
   @Override
   public void close(SocketChannel socketChannel) {
@@ -396,8 +406,12 @@ public class NioSslEngine implements NioFilter {
     } catch (IOException e) {
       throw new GemFireIOException("exception closing SSL session", e);
     } finally {
-      bufferPool.releaseBuffer(TRACKED_SENDER, myNetData);
-      bufferPool.releaseBuffer(TRACKED_RECEIVER, peerAppData);
+      ByteBuffer netData = myNetData;
+      ByteBuffer appData = peerAppData;
+      myNetData = null;
+      peerAppData = EMPTY_BUFFER;
+      bufferPool.releaseBuffer(TRACKED_SENDER, netData);
+      bufferPool.releaseBuffer(TRACKED_RECEIVER, appData);
       this.closed = true;
     }
   }

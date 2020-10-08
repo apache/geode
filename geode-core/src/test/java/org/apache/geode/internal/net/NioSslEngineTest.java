@@ -128,23 +128,6 @@ public class NioSslEngineTest {
     when(mockChannel.socket()).thenReturn(mockSocket);
     when(mockSocket.isClosed()).thenReturn(false);
 
-    // // initial read of handshake status followed by read of handshake status after task execution
-    // when(mockEngine.getHandshakeStatus()).thenReturn(NEED_UNWRAP, NEED_WRAP);
-    //
-    // // interleaved wraps/unwraps/task-execution
-    // when(mockEngine.unwrap(any(ByteBuffer.class), any(ByteBuffer.class))).thenReturn(
-    // new SSLEngineResult(OK, NEED_WRAP, 100, 100),
-    // new SSLEngineResult(BUFFER_OVERFLOW, NEED_UNWRAP, 0, 0),
-    // new SSLEngineResult(OK, NEED_TASK, 100, 0));
-    //
-    // when(mockEngine.getDelegatedTask()).thenReturn(() -> {
-    // }, (Runnable) null);
-    //
-    // when(mockEngine.wrap(any(ByteBuffer.class), any(ByteBuffer.class))).thenReturn(
-    // new SSLEngineResult(OK, NEED_UNWRAP, 100, 100),
-    // new SSLEngineResult(BUFFER_OVERFLOW, NEED_WRAP, 0, 0),
-    // new SSLEngineResult(CLOSED, FINISHED, 100, 0));
-    //
     assertThatThrownBy(() -> spyNioSslEngine.handshake(mockChannel, 10000,
         ByteBuffer.allocate(netBufferSize / 2))).isExactlyInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("Provided buffer is too small");
@@ -207,6 +190,15 @@ public class NioSslEngineTest {
         new SSLEngineResult(CLOSED, FINISHED, 0, 100));
     nioSslEngine.close(mock(SocketChannel.class));
     nioSslEngine.checkClosed();
+  }
+
+  @Test
+  public void synchObjectIsSelf() {
+    // for thread-safety the synchronization object given to outside entities
+    // must be the the engine itself. This allows external manipulation or
+    // use of the engine's buffers to be protected in the same way as its synchronized
+    // methods
+    assertThat(nioSslEngine.getSynchObject()).isSameAs(nioSslEngine);
   }
 
   @Test

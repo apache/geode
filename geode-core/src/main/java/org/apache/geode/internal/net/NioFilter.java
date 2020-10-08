@@ -21,7 +21,13 @@ import java.nio.channels.SocketChannel;
 /**
  * Prior to transmitting a buffer or processing a received buffer
  * a NioFilter should be called to wrap (transmit) or unwrap (received)
- * the buffer in case SSL is being used.
+ * the buffer in case SSL is being used.<br>
+ * Implementations of this class may not be thread-safe in regard to
+ * the buffers their methods return. These may be internal state that,
+ * if used concurrently by multiple threads could cause corruption.
+ * Appropriate external synchronization must be used in order to provide
+ * thread-safety. Do this by invoking getSynchObject() and synchronizing on
+ * the returned object while using the buffer.
  */
 public interface NioFilter {
 
@@ -75,6 +81,10 @@ public interface NioFilter {
     }
   }
 
+  default boolean isClosed() {
+    return false;
+  }
+
   /**
    * invoke this method when you are done using the NioFilter
    *
@@ -84,9 +94,15 @@ public interface NioFilter {
   }
 
   /**
-   * returns the unwrapped byte buffer associated with the given wrapped buffer
+   * returns the unwrapped byte buffer associated with the given wrapped buffer.
    */
   ByteBuffer getUnwrappedBuffer(ByteBuffer wrappedBuffer);
 
-
+  /**
+   * returns an object to be used in synchronizing on the use of buffers returned by
+   * a NioFilter.
+   */
+  default Object getSynchObject() {
+    return this;
+  }
 }

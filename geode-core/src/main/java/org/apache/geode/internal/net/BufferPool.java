@@ -255,10 +255,15 @@ public class BufferPool {
    * "slice" of the buffer having the requested capacity and hand that out instead.
    * When we put the buffer back in the pool we need to find the original, non-sliced,
    * buffer. This is held in DirectBuffer in its "attachment" field, which is a public
-   * method, though DirectBuffer is package-private.
+   * method, though DirectBuffer is package-private. This method is visible for use
+   * in debugging and testing. For debugging, invoke this method if you need to see
+   * the non-sliced buffer for some reason, such as logging its hashcode.
    */
   @VisibleForTesting
   public ByteBuffer getPoolableBuffer(ByteBuffer buffer) {
+    if (!buffer.isDirect()) {
+      return buffer;
+    }
     ByteBuffer result = buffer;
     if (parentOfSliceMethod == null) {
       Class clazz = buffer.getClass();
