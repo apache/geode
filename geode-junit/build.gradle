@@ -25,6 +25,7 @@ dependencies {
 
   testImplementation(project(':geode-common'))
   compileOnly(project(':geode-core'))
+  compileOnly(project(':geode-membership'))
   compileOnly(project(':geode-logging'))
   compileOnly(project(':geode-serialization'))
   compileOnly(project(':geode-unsafe'))

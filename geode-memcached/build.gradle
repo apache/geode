@@ -31,6 +31,7 @@ dependencies {
   testImplementation('org.mockito:mockito-core')
   testImplementation(project(':geode-junit'))
 
+  integrationTestImplementation(project(':geode-membership'))
   integrationTestImplementation(project(':geode-core'))
   integrationTestImplementation('net.spy:spymemcached')
   integrationTestImplementation(project(':geode-junit'))
