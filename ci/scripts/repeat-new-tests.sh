@@ -89,6 +89,7 @@ NUM_EXPANDED_FILES=${#CHANGED_FILES_ARRAY[@]}
 
 X=$((NUM_EXPANDED_FILES - NUM_CHANGED_FILES))
 if [[ "${X}" -gt 0 ]]
+then
   echo "Including ${X} inferred test classes"
 fi
 
