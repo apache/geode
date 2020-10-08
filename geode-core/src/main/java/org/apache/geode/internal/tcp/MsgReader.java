@@ -54,28 +54,30 @@ public class MsgReader {
   }
 
   Header readHeader() throws IOException {
-    ByteBuffer unwrappedBuffer = readAtLeast(Connection.MSG_HEADER_BYTES);
+    synchronized (ioFilter.getSynchObject()) {
+      ByteBuffer unwrappedBuffer = readAtLeast(Connection.MSG_HEADER_BYTES);
 
-    Assert.assertTrue(unwrappedBuffer.remaining() >= Connection.MSG_HEADER_BYTES);
+      Assert.assertTrue(unwrappedBuffer.remaining() >= Connection.MSG_HEADER_BYTES);
 
-    try {
-      int nioMessageLength = unwrappedBuffer.getInt();
-      /* nioMessageVersion = */
-      Connection.calcHdrVersion(nioMessageLength);
-      nioMessageLength = Connection.calcMsgByteSize(nioMessageLength);
-      byte nioMessageType = unwrappedBuffer.get();
-      short nioMsgId = unwrappedBuffer.getShort();
+      try {
+        int nioMessageLength = unwrappedBuffer.getInt();
+        /* nioMessageVersion = */
+        Connection.calcHdrVersion(nioMessageLength);
+        nioMessageLength = Connection.calcMsgByteSize(nioMessageLength);
+        byte nioMessageType = unwrappedBuffer.get();
+        short nioMsgId = unwrappedBuffer.getShort();
 
-      boolean directAck = (nioMessageType & Connection.DIRECT_ACK_BIT) != 0;
-      if (directAck) {
-        nioMessageType &= ~Connection.DIRECT_ACK_BIT; // clear the ack bit
+        boolean directAck = (nioMessageType & Connection.DIRECT_ACK_BIT) != 0;
+        if (directAck) {
+          nioMessageType &= ~Connection.DIRECT_ACK_BIT; // clear the ack bit
+        }
+
+        header.setFields(nioMessageLength, nioMessageType, nioMsgId);
+
+        return header;
+      } catch (BufferUnderflowException e) {
+        throw e;
       }
-
-      header.setFields(nioMessageLength, nioMessageType, nioMsgId);
-
-      return header;
-    } catch (BufferUnderflowException e) {
-      throw e;
     }
 
   }
@@ -87,32 +89,36 @@ public class MsgReader {
    */
   DistributionMessage readMessage(Header header)
       throws IOException, ClassNotFoundException {
-    ByteBuffer nioInputBuffer = readAtLeast(header.messageLength);
-    Assert.assertTrue(nioInputBuffer.remaining() >= header.messageLength);
-    this.getStats().incMessagesBeingReceived(true, header.messageLength);
-    long startSer = this.getStats().startMsgDeserialization();
-    try {
-      byteBufferInputStream.setBuffer(nioInputBuffer);
-      ReplyProcessor21.initMessageRPId();
-      return (DistributionMessage) InternalDataSerializer.readDSFID(byteBufferInputStream);
-    } catch (RuntimeException e) {
-      throw e;
-    } catch (IOException e) {
-      throw e;
-    } finally {
-      this.getStats().endMsgDeserialization(startSer);
-      this.getStats().decMessagesBeingReceived(header.messageLength);
-      ioFilter.doneReadingDirectAck(nioInputBuffer);
+    synchronized (ioFilter.getSynchObject()) {
+      ByteBuffer nioInputBuffer = readAtLeast(header.messageLength);
+      Assert.assertTrue(nioInputBuffer.remaining() >= header.messageLength);
+      this.getStats().incMessagesBeingReceived(true, header.messageLength);
+      long startSer = this.getStats().startMsgDeserialization();
+      try {
+        byteBufferInputStream.setBuffer(nioInputBuffer);
+        ReplyProcessor21.initMessageRPId();
+        return (DistributionMessage) InternalDataSerializer.readDSFID(byteBufferInputStream);
+      } catch (RuntimeException e) {
+        throw e;
+      } catch (IOException e) {
+        throw e;
+      } finally {
+        this.getStats().endMsgDeserialization(startSer);
+        this.getStats().decMessagesBeingReceived(header.messageLength);
+        ioFilter.doneReadingDirectAck(nioInputBuffer);
+      }
     }
   }
 
   void readChunk(Header header, MsgDestreamer md)
       throws IOException {
-    ByteBuffer unwrappedBuffer = readAtLeast(header.messageLength);
-    this.getStats().incMessagesBeingReceived(md.size() == 0, header.messageLength);
-    md.addChunk(unwrappedBuffer, header.messageLength);
-    // show that the bytes have been consumed by adjusting the buffer's position
-    unwrappedBuffer.position(unwrappedBuffer.position() + header.messageLength);
+    synchronized (ioFilter.getSynchObject()) {
+      ByteBuffer unwrappedBuffer = readAtLeast(header.messageLength);
+      this.getStats().incMessagesBeingReceived(md.size() == 0, header.messageLength);
+      md.addChunk(unwrappedBuffer, header.messageLength);
+      // show that the bytes have been consumed by adjusting the buffer's position
+      unwrappedBuffer.position(unwrappedBuffer.position() + header.messageLength);
+    }
   }
 
 
