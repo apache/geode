@@ -17,15 +17,9 @@ package org.apache.geode.test.util;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import org.junit.Before;
 import org.junit.Test;
 
 public class WhatExtendsJUnitTest {
-
-  private ClassScanner scanner;
 
   public abstract static class A {
   }
@@ -36,27 +30,31 @@ public class WhatExtendsJUnitTest {
   public static class C extends B {
   }
 
-  @Before
-  public void setup() {
-    Set<String> packagesToScan = new HashSet<>();
-    packagesToScan.add("org.apache.geode.test.util");
-    scanner = new ClassScanner(packagesToScan);
-  }
-
   @Test
   public void nothingExtendsC() {
+    ClassScanner scanner = new ClassScanner("org.apache.geode");
     assertThat(scanner.whatExtends(C.class.getName())).isEmpty();
   }
 
   @Test
   public void classAisExtendedByBandC() {
+    ClassScanner scanner = new ClassScanner("org.apache.geode");
     assertThat(scanner.whatExtends(A.class.getName()))
         .containsExactlyInAnyOrder("WhatExtendsJUnitTest$B", "WhatExtendsJUnitTest$C");
   }
 
   @Test
   public void usingSimpleNames() {
+    ClassScanner scanner = new ClassScanner("org.apache.geode");
     assertThat(scanner.whatExtends(A.class.getSimpleName()))
         .containsExactlyInAnyOrder("WhatExtendsJUnitTest$B", "WhatExtendsJUnitTest$C");
+  }
+
+  @Test
+  public void usingJavaFile() {
+    ClassScanner scanner = new ClassScanner("org.apache.geode");
+    assertThat(
+        scanner.whatExtends("src/main/org/apache/geode/test/util/WhatExtendsJUnitTest$A.java"))
+            .containsExactlyInAnyOrder("WhatExtendsJUnitTest$B", "WhatExtendsJUnitTest$C");
   }
 }

@@ -65,6 +65,17 @@ DISTRIBUTED_TEST_CHANGES_TMP=$(changes_for_path '*/src/distributedTest/java') ||
 ACCEPTANCE_TEST_CHANGES_TMP=$(changes_for_path '*/src/acceptanceTest/java') || exit $?
 UPGRADE_TEST_CHANGES_TMP=$(changes_for_path '*/src/upgradeTest/java') || exit $?
 
+CHANGED_FILES_ARRAY=( $UNIT_TEST_CHANGES_TMP $INTEGRATION_TEST_CHANGES_TMP $DISTRIBUTED_TEST_CHANGES_TMP $ACCEPTANCE_TEST_CHANGES_TMP $UPGRADE_TEST_CHANGES_TMP )
+NUM_CHANGED_FILES=${#CHANGED_FILES_ARRAY[@]}
+
+echo "${NUM_CHANGED_FILES} changed tests"
+
+if [[  "${NUM_CHANGED_FILES}" -eq 0 ]]
+then
+  echo "No changed test files, nothing to test."
+  exit 0
+fi
+
 save_classpath
 
 UNIT_TEST_CHANGES=$(expand_abstract_classes $UNIT_TEST_CHANGES_TMP) || exit $?
@@ -75,14 +86,6 @@ UPGRADE_TEST_CHANGES=$(expand_abstract_classes $UPGRADE_TEST_CHANGES_TMP) || exi
 
 CHANGED_FILES_ARRAY=( $UNIT_TEST_CHANGES $INTEGRATION_TEST_CHANGES $DISTRIBUTED_TEST_CHANGES $ACCEPTANCE_TEST_CHANGES $UPGRADE_TEST_CHANGES )
 NUM_CHANGED_FILES=${#CHANGED_FILES_ARRAY[@]}
-
-echo "${NUM_CHANGED_FILES} changed tests"
-
-if [[  "${NUM_CHANGED_FILES}" -eq 0 ]]
-then
-  echo "No changed test files, nothing to test."
-  exit 0
-fi
 
 if [[ "${NUM_CHANGED_FILES}" -gt 25 ]]
 then

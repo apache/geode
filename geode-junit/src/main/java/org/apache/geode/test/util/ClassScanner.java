@@ -15,6 +15,7 @@
 
 package org.apache.geode.test.util;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -31,19 +32,21 @@ import io.github.classgraph.ScanResult;
 public class ClassScanner {
 
   private ScanResult scanResult;
+  private String packageToScan;
 
-  public ClassScanner(Set<String> packagesToScan) {
-    scanResult = new ClassGraph().whitelistPackages(packagesToScan.toArray(new String[] {}))
+  public ClassScanner(String packageToScan) {
+    this.packageToScan = packageToScan;
+    scanResult = new ClassGraph().whitelistPackages(packageToScan)
         .enableClassInfo()
         .enableAnnotationInfo().scan();
   }
 
-  public List<String> whatExtends(String className) {
+  public List<String> whatExtends(String classOrFile) {
     Set<String> classesToConsider = new HashSet<>();
-    classesToConsider.add(className);
+    classesToConsider.add(pathToClass(classOrFile));
 
-    if (!className.contains(".")) {
-      classesToConsider.addAll(fullyQualifyClass(className));
+    if (!classOrFile.contains(".")) {
+      classesToConsider.addAll(fullyQualifyClass(classOrFile));
     }
 
     return classesToConsider.stream()
@@ -57,11 +60,27 @@ public class ClassScanner {
         .collect(Collectors.toList());
   }
 
-  public static void main(String[] args) {
-    Set<String> packagesToScan = new HashSet<>();
-    packagesToScan.add("org.apache.geode");
+  /**
+   * Convert java file path into class name.
+   */
+  private String pathToClass(String javaFile) {
+    String sanitized = javaFile.replace(File.separator, ".");
 
-    ClassScanner scanner = new ClassScanner(packagesToScan);
+    int packageStart = sanitized.indexOf(packageToScan);
+    if (packageStart >= 0) {
+      sanitized = sanitized.substring(packageStart);
+    }
+
+    if (sanitized.endsWith(".java")) {
+      int javaIdx = sanitized.indexOf(".java");
+      sanitized = sanitized.substring(0, javaIdx);
+    }
+
+    return sanitized;
+  }
+
+  public static void main(String[] args) {
+    ClassScanner scanner = new ClassScanner("org.apache.geode");
 
     Set<String> result = Arrays.stream(args)
         .flatMap(x -> scanner.whatExtends(x).stream())
@@ -69,4 +88,5 @@ public class ClassScanner {
 
     System.out.println(String.join(" ", result));
   }
+
 }
