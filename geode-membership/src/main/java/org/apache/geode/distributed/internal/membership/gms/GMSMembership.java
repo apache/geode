@@ -1310,6 +1310,9 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
         // If ForcedDisconnectException occurred then report it as actual
         // problem.
         if ((cause instanceof MemberDisconnectedException)) {
+          logger.info(
+              "***** EB: throw MemberDisconnectedException -- GMSMembership.requestMemberRemoval(reason): "
+                  + reason);
           throw (MemberDisconnectedException) cause;
         } else {
           Throwable ne = problem;
@@ -2004,12 +2007,16 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
     @Override
     public void forceDisconnect(final String reason) {
       if (GMSMembership.this.shutdownInProgress || isJoining()) {
+        logger.info(
+            "***** EB: GMSMembership.forceDisconnect() --- quick return to avoid a known Race");
         return; // probably a race condition
       }
 
       setShutdown();
 
-      logger.info("***** EB: GMSMembership.forceDisconnect(reason): " + reason);
+      logger.info(
+          "***** EB: create MemberDisconnectedException --- GMSMembership.forceDisconnect(reason): "
+              + reason);
 
       final Exception shutdownCause = new MemberDisconnectedException(reason);
 

@@ -315,11 +315,14 @@ public class DistributionImpl implements Distribution {
         ForcedDisconnectException fde = new ForcedDisconnectException(e.getCause().getMessage());
 
         if (cause.contains("network partition")) {
+          logger.info("*** EB: DistributionImpl.checkCancelled throw FDE *****");
           throw fde;
         } else {
+          logger.info("*** EB: DistributionImpl.checkCancelled throw DSDE w/ FDE *****");
           throw new DistributedSystemDisconnectedException(e.getMessage(), fde);
         }
       }
+      logger.info("*** EB: DistributionImpl.checkCancelled  bottomw of Catch -- throw DSDE *****");
       throw new DistributedSystemDisconnectedException(e.getMessage());
     }
   }
@@ -363,14 +366,21 @@ public class DistributionImpl implements Distribution {
       }
     } catch (MembershipClosedException e) {
       checkCancelled();
+      logger.info("*** EB: DistributionImpl.directChannel e.getMessage: " + e.getMessage()
+          + " e.getCause: " + e.getCause());
       throw new DistributedSystemDisconnectedException(e.getMessage(), e.getCause());
     } catch (DistributedSystemDisconnectedException ex) {
       checkCancelled();
+      logger.info("*** EB: DistributionImpl.directChannel ex.getMessage: " + ex.getMessage()
+          + " ex.getCause: " + ex.getCause());
       throw ex;
     } catch (ConnectExceptions ex) {
       // Check if the connect exception is due to system shutting down.
       if (membership.shutdownInProgress()) {
         checkCancelled();
+        logger.info(
+            "*** EB: DistributionImpl.directChannel - if (membership.shutdownInProgress())   ex.getMessage: "
+                + ex.getMessage() + " ex.getCause: " + ex.getCause());
         throw new DistributedSystemDisconnectedException();
       }
 
@@ -460,6 +470,8 @@ public class DistributionImpl implements Distribution {
     } catch (RuntimeException e) {
       checkCancelled();
       if (!membership.isConnected()) {
+        logger.info("*** EB: DistributionImpl.requestMemberRemoval member: " + member.getName()
+            + "throw DSDE distribution closed");
         throw new DistributedSystemDisconnectedException("Distribution is closed", e);
       }
       throw e;
