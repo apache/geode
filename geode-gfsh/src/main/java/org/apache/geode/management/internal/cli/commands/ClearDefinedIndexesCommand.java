@@ -38,7 +38,9 @@ public class ClearDefinedIndexesCommand extends GfshCommand {
 
     // clear the definition on the other locators as well
     Set<DistributedMember> allOtherLocators = findAllOtherLocators();
-    executeAndGetFunctionResult(new ManageIndexDefinitionFunction(), null, allOtherLocators);
+    if (allOtherLocators.size() > 0) {
+      executeAndGetFunctionResult(new ManageIndexDefinitionFunction(), null, allOtherLocators);
+    }
 
     return ResultModel.createInfo(CliStrings.CLEAR_DEFINED_INDEX__SUCCESS__MSG);
   }

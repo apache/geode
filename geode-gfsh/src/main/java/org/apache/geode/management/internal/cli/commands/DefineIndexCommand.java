@@ -62,8 +62,10 @@ public class DefineIndexCommand extends GfshCommand {
 
     // send the indexDefinition to the other locators to keep in memory
     Set<DistributedMember> allOtherLocators = findAllOtherLocators();
-    executeAndGetFunctionResult(new ManageIndexDefinitionFunction(),
-        indexInfo, allOtherLocators);
+    if (allOtherLocators.size() > 0) {
+      executeAndGetFunctionResult(new ManageIndexDefinitionFunction(),
+          indexInfo, allOtherLocators);
+    }
 
     InfoResultModel infoResult = result.addInfo();
     infoResult.addLine(CliStrings.DEFINE_INDEX__SUCCESS__MSG);
