@@ -40,6 +40,7 @@ import javax.net.ssl.SSLSession;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireIOException;
+import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.internal.net.BufferPool.BufferType;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -52,6 +53,9 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 public class NioSslEngine implements NioFilter {
   private static final Logger logger = LogService.getLogger();
 
+  // this variable requires the MakeImmutable annotation but the buffer is empty and
+  // not really modifiable
+  @MakeImmutable
   private static final ByteBuffer EMPTY_BUFFER = ByteBuffer.allocate(0);
 
   private final BufferPool bufferPool;
