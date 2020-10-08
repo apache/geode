@@ -402,11 +402,6 @@ public class NioSslEngine implements NioFilter {
     } catch (IOException e) {
       throw new GemFireIOException("exception closing SSL session", e);
     } finally {
-      logger.info("NioSSLEngine releasing two buffers myNetData={}({}), peerAppData={}({})",
-          Integer.toHexString(System.identityHashCode(myNetData)),
-          (myNetData.isDirect() ? "direct" : "heap"),
-          Integer.toHexString(System.identityHashCode(peerAppData)),
-          (myNetData.isDirect() ? "direct" : "heap"));
       ByteBuffer netData = myNetData;
       ByteBuffer appData = peerAppData;
       myNetData = null;
