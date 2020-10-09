@@ -22,5 +22,6 @@ dependencies {
   implementation(platform(project(':boms:geode-all-bom')))
   implementation(project(':extensions:geode-modules'))
 
+  compileOnly(platform(project(':boms:geode-all-bom')))
   compileOnly('javax.servlet:javax.servlet-api')
 }
