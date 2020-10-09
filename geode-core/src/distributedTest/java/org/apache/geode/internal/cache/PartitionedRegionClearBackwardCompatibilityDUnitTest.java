@@ -18,7 +18,7 @@ import static org.apache.geode.cache.RegionShortcut.PARTITION;
 import static org.apache.geode.cache.RegionShortcut.PARTITION_PERSISTENT;
 import static org.apache.geode.cache.RegionShortcut.PARTITION_REDUNDANT;
 import static org.apache.geode.cache.RegionShortcut.PARTITION_REDUNDANT_PERSISTENT;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPortsForDUnitSite;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.internal.util.ArrayUtils.asList;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -164,7 +164,7 @@ public class PartitionedRegionClearBackwardCompatibilityDUnitTest implements Ser
 
   public void parametrizedSetUp(String oldVersion, String poolName) {
     final Host host = Host.getHost(0);
-    int[] ports = getRandomAvailableTCPPortsForDUnitSite(3);
+    int[] ports = getRandomAvailableTCPPorts(3);
 
     server1 = getVM(0);
     server2 = getVM(1);
