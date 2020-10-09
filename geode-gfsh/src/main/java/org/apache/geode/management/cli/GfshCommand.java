@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import org.apache.shiro.subject.Subject;
 import org.springframework.shell.core.CommandMarker;
@@ -169,6 +170,17 @@ public abstract class GfshCommand implements CommandMarker {
    */
   public Set<DistributedMember> findMembers(String[] groups, String[] members) {
     return ManagementUtils.findMembers(groups, members, cache);
+  }
+
+  public Set<DistributedMember> findAllOtherLocators() {
+    Set<DistributedMember> allLocators = findAllLocators();
+    String thisId = getCache().getDistributedSystem().getDistributedMember().getId();
+    return allLocators.stream().filter(m -> !(m.getId().equals(thisId)))
+        .collect(Collectors.toSet());
+  }
+
+  public Set<DistributedMember> findAllLocators() {
+    return ManagementUtils.getAllLocators(cache);
   }
 
   /**

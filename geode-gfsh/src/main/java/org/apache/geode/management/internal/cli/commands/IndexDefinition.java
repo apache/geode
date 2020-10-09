@@ -22,9 +22,9 @@ import java.util.Set;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.configuration.RegionConfig;
 
-class IndexDefinition {
+public class IndexDefinition {
   @Immutable
-  static final Set<RegionConfig.Index> indexDefinitions =
+  public static final Set<RegionConfig.Index> indexDefinitions =
       Collections.synchronizedSet(new HashSet<>());
 
   @SuppressWarnings("deprecation")
@@ -36,6 +36,5 @@ class IndexDefinition {
     index.setType(type.getName());
     index.setExpression(expression);
     indexDefinitions.add(index);
-
   }
 }
