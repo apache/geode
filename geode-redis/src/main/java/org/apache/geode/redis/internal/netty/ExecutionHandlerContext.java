@@ -406,6 +406,10 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     return pubsub;
   }
 
+  public RedisStats getRedisStats() {
+    return redisStats;
+  }
+
   public BigInteger getScanCursor() {
     return scanCursor;
   }

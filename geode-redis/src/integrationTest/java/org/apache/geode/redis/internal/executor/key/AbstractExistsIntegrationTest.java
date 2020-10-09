@@ -61,7 +61,8 @@ public abstract class AbstractExistsIntegrationTest implements RedisPortSupplier
 
   @Test
   public void shouldReturnZero_givenKeyDoesNotExist() {
-    assertThat(jedis.exists(toArray("doesNotExist"))).isEqualTo(0L);
+    assertThat(
+        jedis.exists(toArray("doesNotExist"))).isEqualTo(0L);
   }
 
   @Test

@@ -33,6 +33,7 @@ public class RedisStatsIntegrationTest {
   public static final String EXISTING_STRING_KEY = "Existing_String";
   public static final String EXISTING_SET_KEY_1 = "Existing_Set_1";
   public static final String EXISTING_SET_KEY_2 = "Existing_Set_2";
+  public static final String NONEXISTENT_KEY = "Nonexistent_Key";
   Jedis jedis;
   long initialKeyspaceHits;
   long initialKeyspaceMisses;
@@ -221,7 +222,7 @@ public class RedisStatsIntegrationTest {
 
   @Test
   public void keyspaceStats_strlenCommand_nonexistentKey() {
-    jedis.strlen("Nonexistent_Key");
+    jedis.strlen(NONEXISTENT_KEY);
 
     jedis.close();
     GeodeAwaitility.await().atMost(5, TimeUnit.SECONDS).untilAsserted(
@@ -383,4 +384,102 @@ public class RedisStatsIntegrationTest {
               .isEqualTo(initialKeyspaceMisses + 1);
         });
   }
+
+  @Test
+  public void keyspaceStats_ExistsCommand_existingKey() {
+    jedis.exists(EXISTING_STRING_KEY);
+    jedis.close();
+
+    GeodeAwaitility.await()
+        .atMost(5, TimeUnit.SECONDS)
+        .untilAsserted(
+            () -> {
+              assertThat(server.getServer().getStats().getKeyspaceHits())
+                  .isEqualTo(initialKeyspaceHits + 1);
+              assertThat(server.getServer().getStats().getKeyspaceMisses())
+                  .isEqualTo(initialKeyspaceMisses);
+            });
+  }
+
+  @Test
+  public void keyspaceStats_ExistsCommand_nonexistentKey() {
+    jedis.exists(NONEXISTENT_KEY);
+    jedis.close();
+
+    GeodeAwaitility.await()
+        .atMost(5, TimeUnit.SECONDS)
+        .untilAsserted(
+            () -> {
+              assertThat(server.getServer().getStats().getKeyspaceHits())
+                  .isEqualTo(initialKeyspaceHits);
+              assertThat(server.getServer().getStats().getKeyspaceMisses())
+                  .isEqualTo(initialKeyspaceMisses + 1);
+            });
+  }
+
+  @Test
+  public void keyspaceStats_TypeCommand_existingKey() {
+    jedis.type(EXISTING_STRING_KEY);
+    jedis.close();
+
+    GeodeAwaitility.await()
+        .atMost(5, TimeUnit.SECONDS)
+        .untilAsserted(
+            () -> {
+              assertThat(server.getServer().getStats().getKeyspaceHits())
+                  .isEqualTo(initialKeyspaceHits + 1);
+              assertThat(server.getServer().getStats().getKeyspaceMisses())
+                  .isEqualTo(initialKeyspaceMisses);
+            });
+  }
+
+  @Test
+  public void keyspaceStats_TypeCommand_nonexistentKey() {
+    jedis.type(NONEXISTENT_KEY);
+    jedis.close();
+
+    GeodeAwaitility.await()
+        .atMost(5, TimeUnit.SECONDS)
+        .untilAsserted(
+            () -> {
+              assertThat(server.getServer().getStats().getKeyspaceHits())
+                  .isEqualTo(initialKeyspaceHits);
+              assertThat(server.getServer().getStats().getKeyspaceMisses())
+                  .isEqualTo(initialKeyspaceMisses + 1);
+            });
+  }
+
+
+  @Test
+  public void keyspaceStats_PTTL_TTLCommand_existingKey() {
+    jedis.ttl(EXISTING_STRING_KEY);
+    jedis.close();
+
+    GeodeAwaitility.await()
+        .atMost(5, TimeUnit.SECONDS)
+        .untilAsserted(
+            () -> {
+              assertThat(server.getServer().getStats().getKeyspaceHits())
+                  .isEqualTo(initialKeyspaceHits + 1);
+              assertThat(server.getServer().getStats().getKeyspaceMisses())
+                  .isEqualTo(initialKeyspaceMisses);
+            });
+  }
+
+  @Test
+  public void keyspaceStats_PTTL_TTL_Command_nonexistentKey() {
+    jedis.ttl(NONEXISTENT_KEY);
+    jedis.close();
+
+    GeodeAwaitility.await()
+        .atMost(5, TimeUnit.SECONDS)
+        .untilAsserted(
+            () -> {
+              assertThat(server.getServer().getStats().getKeyspaceHits())
+                  .isEqualTo(initialKeyspaceHits);
+              assertThat(server.getServer().getStats().getKeyspaceMisses())
+                  .isEqualTo(initialKeyspaceMisses + 1);
+            });
+  }
+
 }
