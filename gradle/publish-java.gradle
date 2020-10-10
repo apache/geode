@@ -55,11 +55,12 @@ gradle.taskGraph.whenReady({ graph ->
       projectDependencies.clone().each { projectDependency ->
         def geodeProject = projectDependency - "-${version}.jar"
         if (projectDependencies.contains(geodeProject)) {
-          def parentProject = project(":$geodeProject" - "-$version")
-          if (parentProject != null) {
+          try {
+            def parentProject = project(":$geodeProject" - "-$version")
             def collect = parentProject.configurations.runtimeClasspath.collect { it.name }
             runtimeList.removeAll(collect)
             projectDependencies.removeAll(collect.collect {it-".jar"})
+          } catch (UnknownProjectException ignore) {
           }
         }
       }
