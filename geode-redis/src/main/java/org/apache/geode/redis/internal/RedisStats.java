@@ -16,8 +16,14 @@
 
 package org.apache.geode.redis.internal;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.geode.logging.internal.executors.LoggingExecutors.newSingleThreadScheduledExecutor;
+
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
@@ -137,14 +143,17 @@ public class RedisStats {
   private final Statistics stats;
 
   private final StatisticsClock clock;
+  private final long startTime;
 
   public RedisStats(StatisticsFactory factory, StatisticsClock clock) {
     this(factory, "redisStats", clock);
   }
 
   public RedisStats(StatisticsFactory factory, String textId, StatisticsClock clock) {
+    startTime = System.currentTimeMillis();
     stats = factory == null ? null : factory.createAtomicStatistics(type, textId);
     this.clock = clock;
+    perSecondExecutor = startPerSecondUpdater();
   }
 
   public static StatisticsType getStatisticsType() {
@@ -171,11 +180,72 @@ public class RedisStats {
   }
 
   public void addClient() {
+    connectionsReceived.incrementAndGet();
+    connectedClients.incrementAndGet();
     stats.incLong(clientId, 1);
   }
 
   public void removeClient() {
+    connectedClients.decrementAndGet();
     stats.incLong(clientId, -1);
+  }
+
+  private final AtomicLong commandsProcessed = new AtomicLong();
+  private final AtomicLong opsPerSecond = new AtomicLong();
+  private final AtomicLong networkBytesRead = new AtomicLong();
+  private volatile double networkKilobytesReadPerSecond;
+  private final AtomicLong connectionsReceived = new AtomicLong();
+  private final AtomicLong connectedClients = new AtomicLong();
+  private final AtomicLong expirations = new AtomicLong();
+
+  public void incCommandsProcessed() {
+    commandsProcessed.incrementAndGet();
+  }
+
+  public long getCommandsProcessed() {
+    return commandsProcessed.get();
+  }
+
+  public long getOpsPerSecond() {
+    return opsPerSecond.get();
+  }
+
+
+  public void incNetworkBytesRead(long bytesRead) {
+    networkBytesRead.addAndGet(bytesRead);
+  }
+
+  public long getNetworkBytesRead() {
+    return networkBytesRead.get();
+  }
+
+  public double getNetworkKilobytesReadPerSecond() {
+    return networkKilobytesReadPerSecond;
+  }
+
+
+  public long getConnectionsReceived() {
+    return connectionsReceived.get();
+  }
+
+  public long getConnectedClients() {
+    return connectedClients.get();
+  }
+
+  public long getExpirations() {
+    return expirations.get();
+  }
+
+  private long getUptimeInMilliseconds() {
+    return System.currentTimeMillis() - startTime;
+  }
+
+  public long getUptimeInSeconds() {
+    return TimeUnit.MILLISECONDS.toSeconds(getUptimeInMilliseconds());
+  }
+
+  public long getUptimeInDays() {
+    return TimeUnit.MILLISECONDS.toDays(getUptimeInMilliseconds());
   }
 
   @VisibleForTesting
@@ -206,6 +276,7 @@ public class RedisStats {
       stats.incLong(expirationTimeId, getTime() - start);
     }
     stats.incLong(expirationsId, 1);
+    expirations.incrementAndGet();
   }
 
   public void incPassiveExpirations(long count) {
@@ -216,5 +287,36 @@ public class RedisStats {
     if (stats != null) {
       stats.close();
     }
+    stopPerSecondUpdater();
+  }
+
+
+  private final ScheduledExecutorService perSecondExecutor;
+
+  private ScheduledExecutorService startPerSecondUpdater() {
+    ScheduledExecutorService perSecondExecutor =
+        newSingleThreadScheduledExecutor("GemFireRedis-PerSecondUpdater-");
+    int INTERVAL = 1;
+    perSecondExecutor.scheduleWithFixedDelay(() -> doPerSecondUpdates(), INTERVAL,
+        INTERVAL,
+        SECONDS);
+    return perSecondExecutor;
+  }
+
+  private void stopPerSecondUpdater() {
+    perSecondExecutor.shutdownNow();
+  }
+
+  private long previousCommandsProcessed;
+  private long previousNetworkBytesRead;
+
+  private void doPerSecondUpdates() {
+    long currentCommandsProcessed = commandsProcessed.get();
+    long currentNetworkBytesRead = networkBytesRead.get();
+    opsPerSecond.set(currentCommandsProcessed - previousCommandsProcessed);
+    long deltaNetworkBytesRead = currentNetworkBytesRead - previousNetworkBytesRead;
+    networkKilobytesReadPerSecond = deltaNetworkBytesRead / 1024.0;
+    previousCommandsProcessed = currentCommandsProcessed;
+    previousNetworkBytesRead = currentNetworkBytesRead;
   }
 }

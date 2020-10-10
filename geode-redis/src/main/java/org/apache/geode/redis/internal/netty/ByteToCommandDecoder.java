@@ -22,6 +22,8 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 
+import org.apache.geode.redis.internal.RedisStats;
+
 /**
  * This is the first part of the channel pipeline for Netty. Here incoming bytes are read and a
  * created {@link Command} is sent down the pipeline. It is unfortunate that this class is not
@@ -52,20 +54,27 @@ public class ByteToCommandDecoder extends ByteToMessageDecoder {
   private static final byte arrayID = 42; // '*';
   private static final int MAX_BULK_STRING_LENGTH = 512 * 1024 * 1024; // 512 MB
 
-  public ByteToCommandDecoder() {}
+  private final RedisStats redisStats;
+
+  public ByteToCommandDecoder(RedisStats redisStats) {
+    this.redisStats = redisStats;
+  }
 
   @Override
   protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
     Command c = null;
+    long bytesRead = 0;
     do {
-      in.markReaderIndex();
+      int startReadIndex = in.readerIndex();
       c = parse(in);
       if (c == null) {
-        in.resetReaderIndex();
-        return;
+        in.readerIndex(startReadIndex);
+        break;
       }
+      bytesRead += in.readerIndex() - startReadIndex;
       out.add(c);
     } while (in.isReadable()); // Try to take advantage of pipelining if it is being used
+    redisStats.incNetworkBytesRead(bytesRead);
   }
 
   private Command parse(ByteBuf buffer) throws RedisCommandParserException {
