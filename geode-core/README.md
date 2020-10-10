@@ -6,19 +6,27 @@
 The JMH plugin appears to have issues with the latest Gradle daemon so disable it when running JMH
 from Gradle. The following will run all JMH benchmarks.
 ```console
-./gradlew --no-daemon jmh
+./gradlew jmh
 ```
 
 #### Specific Benchmark
-Add the `-Pjmh.includes=<benchmark>` project property to run specific benchmark.
+Add the `-Pjmh.includes=<benchmark>` project property to run a specific benchmark.
 ```console
-./gradlew --no-daemon jmh -Pjmh.include=<benchmark>
+./gradlew jmh -Pjmh.include=<benchmark>
 ```
 
 #### With JMH Profiler
 Add the `-Pjmh.profilers=<profilers>` project property to run benchmarks with specific JMH profilers enabled.
 ```console
-./gradlew --no-daemon jmh -Pjmh.include=<benchmark> -Pjmh.profilers=<profilers>
+./gradlew jmh -Pjmh.include=<benchmark> -Pjmh.profilers=<profilers>
+```
+
+#### All JMH options
+Specify all options as `-Pjmh.<option>=<value>`. All options are defined by the
+[JMH Gradle Plugin](https://github.com/melix/jmh-gradle-plugin#configuration-options). Not all
+options have been passed through. You can add missing option in the jmh.gradle file.
+```console
+./gradlew jmh -Pjmh.include=<benchmark> -Pjmh.jvm=/path/to/java11/bin/java
 ```
 
 ### Running with JMH Uber Jar
