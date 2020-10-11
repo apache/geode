@@ -278,6 +278,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     for (Region userRegion : listOfRegions) {
       if (userRegion instanceof PartitionedRegion) {
         addShadowPartitionedRegionForUserPR((PartitionedRegion) userRegion);
+        if (index == 0 && getRegion(userRegion.getFullPath()) != null) {
+          this.stats.incQueueSize(getRegion(userRegion.getFullPath()).getLocalSize());
+        }
       } else {
         // Fix for Bug#51491. Once decided to support this configuration we have call
         // addShadowPartitionedRegionForUserRR
