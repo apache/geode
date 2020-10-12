@@ -36,8 +36,8 @@ import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.PartitionedRegionPartialClearException;
-import org.apache.geode.cache.PartitionedRegionVersionException;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.ServerVersionMismatchException;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionManager;
@@ -73,7 +73,6 @@ public class PartitionedRegionClearTest {
     when(regionAdvisor.getDistributionManager()).thenReturn(distributionManager);
     when(distributionManager.getDistributionManagerId()).thenReturn(internalDistributedMember);
     when(distributionManager.getId()).thenReturn(internalDistributedMember);
-    when(partitionedRegion.allServerVersionsSupportPartitionRegionClear()).thenReturn(true);
 
   }
 
@@ -434,47 +433,7 @@ public class PartitionedRegionClearTest {
     verify(distributionManager, times(1)).putOutgoing(any());
   }
 
-  @Test
-  public void sendPartitionedRegionClearMessage_SendsClearMessageToCurrentVersionPRNodes() {
-    RegionEventImpl regionEvent = mock(RegionEventImpl.class);
-    when(regionEvent.clone()).thenReturn(mock(RegionEventImpl.class));
-    Region<String, PartitionRegionConfig> prRoot = mock(Region.class);
-    when(partitionedRegion.getPRRoot()).thenReturn(prRoot);
-    InternalDistributedMember member = mock(InternalDistributedMember.class);
-    InternalDistributedMember oldMember = mock(InternalDistributedMember.class);
-    Set<InternalDistributedMember> prNodes = new HashSet<>();
-    prNodes.add(member);
-    prNodes.add(oldMember);
-    Node node = mock(Node.class);
-    Node oldNode = mock(Node.class);
-    when(node.getMemberId()).thenReturn(member);
-    when(oldNode.getMemberId()).thenReturn(oldMember);
-    Set<Node> configNodes = new HashSet<>();
-    configNodes.add(node);
-    configNodes.add(oldNode);
-    when(regionAdvisor.adviseAllPRNodes()).thenReturn(prNodes);
-    PartitionRegionConfig partitionRegionConfig = mock(PartitionRegionConfig.class);
-    when(partitionRegionConfig.getNodes()).thenReturn(configNodes);
-    when(prRoot.get(any())).thenReturn(partitionRegionConfig);
-    InternalDistributedSystem internalDistributedSystem = mock(InternalDistributedSystem.class);
-    when(internalDistributedSystem.getDistributionManager()).thenReturn(distributionManager);
-    when(partitionedRegion.getSystem()).thenReturn(internalDistributedSystem);
-    InternalCache internalCache = mock(InternalCache.class);
-    TXManagerImpl txManager = mock(TXManagerImpl.class);
-    when(txManager.isDistributed()).thenReturn(false);
-    when(internalCache.getTxManager()).thenReturn(txManager);
-    when(partitionedRegion.getCache()).thenReturn(internalCache);
-    when(oldMember.getVersion()).thenReturn(KnownVersion.GEODE_1_11_0);
-    when(member.getVersion()).thenReturn(KnownVersion.getCurrentVersion());
-    when(distributionManager.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
-    when(distributionManager.getStats()).thenReturn(mock(DMStats.class));
-    when(partitionedRegion.allServerVersionsSupportPartitionRegionClear()).thenReturn(false);
 
-    Throwable throwable =
-        catchThrowable(() -> partitionedRegionClear.sendPartitionedRegionClearMessage(regionEvent,
-            PartitionedRegionClearMessage.OperationType.OP_PR_CLEAR));
-    assertThat(throwable).isInstanceOf(PartitionedRegionVersionException.class);
-  }
 
   @Test
   public void doClearAcquiresAndReleasesDistributedClearLockAndCreatesAllPrimaryBuckets() {
@@ -582,7 +541,6 @@ public class PartitionedRegionClearTest {
     when(partitionedRegion.hasListener()).thenReturn(false);
     when(partitionedRegion.hasAnyClientsInterested()).thenReturn(false);
     when(partitionedRegion.getTotalNumberOfBuckets()).thenReturn(1);
-    when(partitionedRegion.allServerVersionsSupportPartitionRegionClear()).thenReturn(true);
     when(partitionedRegion.getName()).thenReturn("prRegion");
     PartitionedRegionClear spyPartitionedRegionClear = spy(partitionedRegionClear);
     doNothing().when(spyPartitionedRegionClear).acquireDistributedClearLock(any());
@@ -599,6 +557,70 @@ public class PartitionedRegionClearTest {
         .hasMessage(
             "Unable to clear all the buckets from the partitioned region prRegion, either data (buckets) moved or member departed.");
   }
+
+  @Test
+  public void doClearThrowsServerVersionMismatchException() {
+    boolean cacheWrite = false;
+    RegionEventImpl regionEvent = mock(RegionEventImpl.class);
+    when(partitionedRegion.hasListener()).thenReturn(false);
+    when(partitionedRegion.hasAnyClientsInterested()).thenReturn(false);
+    when(partitionedRegion.getTotalNumberOfBuckets()).thenReturn(2);
+    when(partitionedRegion.getName()).thenReturn("prRegion");
+    PartitionedRegionClear spyPartitionedRegionClear = spy(partitionedRegionClear);
+    doNothing().when(spyPartitionedRegionClear).acquireDistributedClearLock(any());
+    doNothing().when(spyPartitionedRegionClear).assignAllPrimaryBuckets();
+    doNothing().when(spyPartitionedRegionClear).obtainLockForClear(regionEvent);
+    doNothing().when(spyPartitionedRegionClear).releaseLockForClear(regionEvent);
+    doReturn(Collections.singleton("2")).when(spyPartitionedRegionClear).clearRegion(regionEvent);
+
+    when(regionEvent.clone()).thenReturn(mock(RegionEventImpl.class));
+    Region<String, PartitionRegionConfig> prRoot = mock(Region.class);
+    when(partitionedRegion.getPRRoot()).thenReturn(prRoot);
+    InternalDistributedMember member = mock(InternalDistributedMember.class);
+    InternalDistributedMember oldMember = mock(InternalDistributedMember.class);
+    Set<InternalDistributedMember> prNodes = new HashSet<>();
+    prNodes.add(member);
+    prNodes.add(oldMember);
+    Node node = mock(Node.class);
+    Node oldNode = mock(Node.class);
+    when(member.getName()).thenReturn("member");
+    when(oldMember.getName()).thenReturn("oldMember");
+    when(node.getMemberId()).thenReturn(member);
+    when(oldNode.getMemberId()).thenReturn(oldMember);
+    Set<Node> configNodes = new HashSet<>();
+    configNodes.add(node);
+    configNodes.add(oldNode);
+    when(partitionedRegion.getBucketPrimary(0)).thenReturn(member);
+    when(partitionedRegion.getBucketPrimary(1)).thenReturn(oldMember);
+
+    when(regionAdvisor.adviseAllPRNodes()).thenReturn(prNodes);
+    PartitionRegionConfig partitionRegionConfig = mock(PartitionRegionConfig.class);
+    when(partitionRegionConfig.getNodes()).thenReturn(configNodes);
+    when(prRoot.get(any())).thenReturn(partitionRegionConfig);
+    InternalDistributedSystem internalDistributedSystem = mock(InternalDistributedSystem.class);
+    when(internalDistributedSystem.getDistributionManager()).thenReturn(distributionManager);
+    when(partitionedRegion.getSystem()).thenReturn(internalDistributedSystem);
+    InternalCache internalCache = mock(InternalCache.class);
+    TXManagerImpl txManager = mock(TXManagerImpl.class);
+    when(txManager.isDistributed()).thenReturn(false);
+    when(internalCache.getTxManager()).thenReturn(txManager);
+    when(partitionedRegion.getCache()).thenReturn(internalCache);
+    when(oldMember.getVersion()).thenReturn(KnownVersion.GEODE_1_11_0);
+    when(member.getVersion()).thenReturn(KnownVersion.getCurrentVersion());
+    when(distributionManager.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
+    when(distributionManager.getStats()).thenReturn(mock(DMStats.class));
+
+
+    Throwable thrown =
+        catchThrowable(() -> spyPartitionedRegionClear.doClear(regionEvent, cacheWrite));
+
+    assertThat(thrown)
+        .isInstanceOf(ServerVersionMismatchException.class)
+        .hasMessage(
+            "A server's [oldMember] version was too old (< GEODE 1.14.0) for : Partitioned Region Clear");
+  }
+
+
 
   @Test
   public void handleClearFromDepartedMemberReleasesTheLockForRequesterDeparture() {

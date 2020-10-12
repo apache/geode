@@ -5328,21 +5328,6 @@ public class PartitionedRegion extends LocalRegion
     return this.totalNumberOfBuckets;
   }
 
-  /**
-   * This method returns a boolean to indicate if all server versions support Partition Region clear
-   */
-  public boolean allServerVersionsSupportPartitionRegionClear() {
-    for (int i = 0; i < getTotalNumberOfBuckets(); i++) {
-      InternalDistributedMember internalDistributedMember = this.getBucketPrimary(i);
-      if ((internalDistributedMember != null)
-          && (internalDistributedMember.getVersion().isOlderThan(KnownVersion.GEODE_1_14_0))) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-
 
   @Override
   public void basicDestroy(final EntryEventImpl event, final boolean cacheWrite,

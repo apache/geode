@@ -14,16 +14,20 @@
  */
 package org.apache.geode.cache;
 
+import java.util.List;
+
 /**
  * Indicates a failure to perform an operation on a Partitioned Region due to
  * server versions not meeting requirements.
  *
  * @since GemFire 5.1
  */
-public class PartitionedRegionVersionException extends CacheRuntimeException {
+public class ServerVersionMismatchException extends CacheRuntimeException {
   private static final long serialVersionUID = -3004093739855972548L;
 
-  public PartitionedRegionVersionException() {
-    super("A server's version was too old to a partition region clear");
+  public ServerVersionMismatchException(List<String> members, String featureName,
+                                        String version) {
+    super("A server's " + members + " version was too old (< " + version + ") for : " + featureName);
+
   }
 }

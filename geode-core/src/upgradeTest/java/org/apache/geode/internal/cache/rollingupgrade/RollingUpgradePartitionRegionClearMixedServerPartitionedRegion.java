@@ -36,10 +36,10 @@ import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
-import org.apache.geode.cache.PartitionedRegionVersionException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.ServerVersionMismatchException;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
@@ -152,7 +152,7 @@ public class RollingUpgradePartitionRegionClearMixedServerPartitionedRegion
         PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionName);
 
         Throwable thrown = catchThrowable(region::clear);
-        assertThat(thrown).isInstanceOf(PartitionedRegionVersionException.class);
+        assertThat(thrown).isInstanceOf(ServerVersionMismatchException.class);
 
       });
     } finally {
@@ -221,7 +221,6 @@ public class RollingUpgradePartitionRegionClearMixedServerPartitionedRegion
       // invoke Partition Region Clear from the client and verify the exception.
       client.invoke(() -> {
         clientcache = new ClientCacheFactory().addPoolServer(serverHostName, ports[1]).create();
-        logger.info("Client cache = " + clientcache);
         Region<Object, Object> clientRegion = clientcache.createClientRegionFactory(
             ClientRegionShortcut.PROXY).create(regionName);
 
@@ -229,7 +228,7 @@ public class RollingUpgradePartitionRegionClearMixedServerPartitionedRegion
 
         Throwable thrown = catchThrowable(clientRegion::clear);
         assertThat(thrown).isInstanceOf(ServerOperationException.class);
-        assertThat(thrown).hasCauseInstanceOf(PartitionedRegionVersionException.class);
+        assertThat(thrown).hasCauseInstanceOf(ServerVersionMismatchException.class);
       });
 
     } finally {
