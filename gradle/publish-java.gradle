@@ -34,18 +34,23 @@ gradle.taskGraph.whenReady({ graph ->
     jar.doFirst {
       def projectDependencies = []
       def runtimeList = []
+      def allProjectDeps = []
 
-      // Iterate over runtime classpath dependencies and separate project dependencies from library
-      // dependencies.
-      configurations.runtimeClasspath
-              .collect { it.name - ".jar" }
-              .each { dependency ->
-                if (dependency.startsWith("geode-")) {
-                  projectDependencies.add(dependency)
-                } else {
-                  runtimeList.add(dependency+".jar")
-                }
-              }
+      ['api', 'implementation', 'runtimeOnly'].each { conf ->
+        allProjectDeps.addAll(project.configurations.getByName(conf).getDependencies())
+      }
+
+//      // Iterate over runtime classpath dependencies and separate project dependencies from library
+//      // dependencies.
+      allProjectDeps.each { dependency ->
+        if ( dependency instanceof ProjectDependency )  {
+          projectDependencies.add(dependency)
+        } else {
+          project.configurations.runtimeClasspath.files(dependency).each { depJar ->
+            runtimeList.add(depJar.name)
+          }
+        }
+      }
 
       // Iterate over project (parent) dependencies and remove its runtime library dependencies from
       // the current project's runtime library dependencies.
@@ -53,21 +58,22 @@ gradle.taskGraph.whenReady({ graph ->
       // This returns a unique set of parent project and library dependencies that are not found
       // within it's parent's project dependencies.
       projectDependencies.clone().each { projectDependency ->
-        def geodeProject = projectDependency - "-${version}.jar"
+        def geodeProject = projectDependency.getDependencyProject()
         if (projectDependencies.contains(geodeProject)) {
           try {
-            def parentProject = project(":$geodeProject" - "-$version")
+            def parentProject = geodeProject
             def collect = parentProject.configurations.runtimeClasspath.collect { it.name }
             runtimeList.removeAll(collect)
-            projectDependencies.removeAll(collect.collect {it-".jar"})
+//            projectDependencies.removeAll(collect.collect {it-".jar"})
           } catch (UnknownProjectException ignore) {
+            throw ignore
           }
         }
       }
 
       manifest {
         attributes.put("Class-Path", runtimeList.join(' '))
-        attributes.put("Dependent-Modules", projectDependencies.join(' '))
+        attributes.put("Dependent-Modules", projectDependencies.collect({ "${it.name}-${it.version}" }).join(' '))
         attributes.put("Module-Name", project.name)
       }
     }
