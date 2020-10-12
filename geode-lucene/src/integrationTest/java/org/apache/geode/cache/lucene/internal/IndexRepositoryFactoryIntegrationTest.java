@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.lucene.internal;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
@@ -23,6 +24,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
 
 import org.junit.After;
 import org.junit.Before;
@@ -39,6 +41,7 @@ import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.lucene.LuceneQuery;
 import org.apache.geode.cache.lucene.LuceneQueryException;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 
 public class IndexRepositoryFactoryIntegrationTest {
@@ -67,10 +70,15 @@ public class IndexRepositoryFactoryIntegrationTest {
 
   @After
   public void tearDown() {
+    ExecutorService lonerDistributionThreads =
+        ((InternalCache) cache).getDistributionManager().getExecutors().getThreadPool();
     PartitionedRepositoryManager.indexRepositoryFactory = new IndexRepositoryFactory();
     if (cache != null) {
       cache.close();
     }
+    // Wait until the thread pool that uses the modified IndexRepositoryFactory behaviour has
+    // terminated before allowing further tests, to prevent mocking exceptions
+    await().until(lonerDistributionThreads::isTerminated);
   }
 
   @Test
