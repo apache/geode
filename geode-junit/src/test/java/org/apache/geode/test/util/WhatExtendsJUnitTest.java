@@ -17,9 +17,12 @@ package org.apache.geode.test.util;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
+import org.junit.Before;
 import org.junit.Test;
 
 public class WhatExtendsJUnitTest {
+
+  private StressNewTestHelper scanner;
 
   public abstract static class A {
   }
@@ -30,31 +33,51 @@ public class WhatExtendsJUnitTest {
   public static class C extends B {
   }
 
+  @Before
+  public void setup() {
+    scanner = new StressNewTestHelper("org.apache.geode");
+  }
+
   @Test
   public void nothingExtendsC() {
-    ClassScanner scanner = new ClassScanner("org.apache.geode");
-    assertThat(scanner.whatExtends(C.class.getName())).isEmpty();
+    scanner.add(getClassLocation(C.class));
+    assertThat(scanner.buildGradleCommand())
+        .isEqualTo("repeatUnitTest --tests WhatExtendsJUnitTest$C ");
   }
 
   @Test
   public void classAisExtendedByBandC() {
-    ClassScanner scanner = new ClassScanner("org.apache.geode");
-    assertThat(scanner.whatExtends(A.class.getName()))
-        .containsExactlyInAnyOrder("WhatExtendsJUnitTest$B", "WhatExtendsJUnitTest$C");
+    scanner.add(getClassLocation(A.class));
+    assertThat(scanner.buildGradleCommand())
+        .isEqualTo("repeatUnitTest --tests WhatExtendsJUnitTest$B,WhatExtendsJUnitTest$C ");
   }
 
   @Test
-  public void usingSimpleNames() {
-    ClassScanner scanner = new ClassScanner("org.apache.geode");
-    assertThat(scanner.whatExtends(A.class.getSimpleName()))
-        .containsExactlyInAnyOrder("WhatExtendsJUnitTest$B", "WhatExtendsJUnitTest$C");
+  public void usingJavaFileWithSameCategoryAsSubClasses() {
+    scanner.add(getClassLocation(A.class, "foo/src/test/java/"));
+    assertThat(scanner.buildGradleCommand())
+        .isEqualTo("repeatUnitTest --tests WhatExtendsJUnitTest$B,WhatExtendsJUnitTest$C ");
   }
 
   @Test
-  public void usingJavaFile() {
-    ClassScanner scanner = new ClassScanner("org.apache.geode");
-    assertThat(
-        scanner.whatExtends("src/main/org/apache/geode/test/util/WhatExtendsJUnitTest$A.java"))
-            .containsExactlyInAnyOrder("WhatExtendsJUnitTest$B", "WhatExtendsJUnitTest$C");
+  public void usingJavaFileWithDifferentCategoryAsSubClasses() {
+    scanner.add(getClassLocation(A.class, "foo/src/integrationTest/java/"));
+    scanner.add(getClassLocation(this.getClass(), "foo/src/integrationTest/java/"));
+    assertThat(scanner.buildGradleCommand())
+        .isEqualTo(
+            "repeatUnitTest --tests WhatExtendsJUnitTest$B,WhatExtendsJUnitTest$C repeatIntegrationTest --tests WhatExtendsJUnitTest ");
+  }
+
+  private String getClassLocation(Class<?> clazz) {
+    String codeSource = clazz.getProtectionDomain().getCodeSource().getLocation().getFile();
+    String classFile = clazz.getName().replace(".", "/");
+
+    return codeSource + classFile;
+  }
+
+  private String getClassLocation(Class<?> clazz, String fakePrefix) {
+    String classFile = clazz.getName().replace(".", "/");
+
+    return fakePrefix + classFile;
   }
 }
