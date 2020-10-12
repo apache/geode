@@ -292,10 +292,6 @@ public class PartitionedRegionClear {
       return bucketsOperated;
     }
 
-    if (!partitionedRegion.allServerVersionsSupportPartitionRegionClear()) {
-      throw new PartitionedRegionVersionException();
-    }
-
     final Set<InternalDistributedMember> configRecipients =
         new HashSet<>(partitionedRegion.getRegionAdvisor()
             .adviseAllPRNodes());

@@ -20,7 +20,7 @@ import java.util.List;
  * Indicates a failure to perform an operation on a Partitioned Region due to
  * server versions not meeting requirements.
  *
- * @since GemFire 5.1
+ * @since GEODE 1.14.0
  */
 public class ServerVersionMismatchException extends CacheRuntimeException {
   private static final long serialVersionUID = -3004093739855972548L;
