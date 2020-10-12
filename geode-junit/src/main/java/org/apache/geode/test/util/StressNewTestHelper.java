@@ -83,7 +83,13 @@ public class StressNewTestHelper {
     StringBuilder command = new StringBuilder();
 
     for (Map.Entry<String, List<String>> entry : sourceToTestMapping.entrySet()) {
-      command.append(sourceToGradleMapping.get(entry.getKey()));
+      String sourceSet = entry.getKey();
+      if (sourceToGradleMapping.get(sourceSet) == null) {
+        System.err.println("Skipping repeat test for " + sourceSet);
+        continue;
+      }
+
+      command.append(sourceToGradleMapping.get(sourceSet));
       command.append(" --tests ");
       command.append(String.join(",", entry.getValue()));
       command.append(" ");
