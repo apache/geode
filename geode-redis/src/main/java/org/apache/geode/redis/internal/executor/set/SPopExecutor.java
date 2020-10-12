@@ -27,23 +27,28 @@ public class SPopExecutor extends SetExecutor {
   @Override
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
+
     List<byte[]> commandElems = command.getProcessedCommand();
+    boolean isCountPassed = false;
     int popCount = 1;
+
     if (commandElems.size() == 3) {
+      isCountPassed = true;
       popCount = Integer.parseInt(new String(commandElems.get(2)));
     }
 
     ByteArrayWrapper key = command.getKey();
     RedisSetCommands redisSetCommands = createRedisSetCommands(context);
     Collection<ByteArrayWrapper> popped = redisSetCommands.spop(key, popCount);
-    if (popped.isEmpty()) {
+
+    if (popped.isEmpty() && !isCountPassed) {
       return RedisResponse.nil();
     }
 
-    if (popCount == 1) {
-      return RedisResponse.bulkString(popped.iterator().next());
-    } else {
-      return RedisResponse.array(popped);
+    if (!isCountPassed) {
+      return RedisResponse.string(popped.iterator().next().toString());
     }
+
+    return RedisResponse.array(popped);
   }
 }
