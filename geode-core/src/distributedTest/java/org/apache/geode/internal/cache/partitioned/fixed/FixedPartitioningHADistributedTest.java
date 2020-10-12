@@ -29,11 +29,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -47,6 +56,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
+import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedCloseableReference;
 import org.apache.geode.test.dunit.rules.DistributedMap;
@@ -54,6 +64,7 @@ import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.PartitioningTest;
 import org.apache.geode.test.junit.rules.RandomRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
+import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 @Category(PartitioningTest.class)
 @SuppressWarnings("serial")
@@ -66,29 +77,41 @@ public class FixedPartitioningHADistributedTest implements Serializable {
   private static final int REDUNDANT_COPIES = 2;
   private static final int TOTAL_NUM_BUCKETS = 8;
 
+  private static final int PARTITIONS = 4;
+  private static final int BUCKETS = 10;
+  private static final int COUNT = PARTITIONS * BUCKETS;
+
+  private static final Map<Integer, PartitionBucket> BUCKET_TO_PARTITION =
+      initialize(new HashMap<>());
+
   private static final FixedPartitionAttributes Q1_PRIMARY =
-      createFixedPartition("Quarter1", true, 1);
+      createFixedPartition("Partition-1", true, 10);
   private static final FixedPartitionAttributes Q2_PRIMARY =
-      createFixedPartition("Quarter2", true, 3);
+      createFixedPartition("Partition-2", true, 10);
   private static final FixedPartitionAttributes Q3_PRIMARY =
-      createFixedPartition("Quarter3", true, 1);
+      createFixedPartition("Partition-3", true, 10);
   private static final FixedPartitionAttributes Q4_PRIMARY =
-      createFixedPartition("Quarter4", true, 3);
+      createFixedPartition("Partition-4", true, 10);
 
   private static final FixedPartitionAttributes Q1_SECONDARY =
-      createFixedPartition("Quarter1", false, 1);
+      createFixedPartition("Partition-1", false, 10);
   private static final FixedPartitionAttributes Q2_SECONDARY =
-      createFixedPartition("Quarter2", false, 3);
+      createFixedPartition("Partition-2", false, 10);
   private static final FixedPartitionAttributes Q3_SECONDARY =
-      createFixedPartition("Quarter3", false, 1);
+      createFixedPartition("Partition-3", false, 10);
   private static final FixedPartitionAttributes Q4_SECONDARY =
-      createFixedPartition("Quarter4", false, 3);
+      createFixedPartition("Partition-4", false, 10);
+
+  private static final AtomicBoolean DO_PUTS = new AtomicBoolean();
+  private static final AtomicReference<CyclicBarrier> DO_BOUNCE = new AtomicReference<>();
 
   private VM accessor1VM;
   private VM server1VM;
   private VM server2VM;
   private VM server3VM;
   private VM server4VM;
+
+  private transient Timer timer;
 
   @Rule
   public DistributedRule distributedRule = new DistributedRule();
@@ -101,6 +124,8 @@ public class FixedPartitioningHADistributedTest implements Serializable {
   public RandomRule randomRule = new RandomRule();
   @Rule
   public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
+  @Rule
+  public SerializableTestName testName = new SerializableTestName();
 
   @Before
   public void setUp() {
@@ -120,42 +145,64 @@ public class FixedPartitioningHADistributedTest implements Serializable {
       vm.invoke(() -> startServer(vm, ServerType.DATASTORE));
     }
 
-    accessor1VM.invoke(() -> startServer(accessor1VM, ServerType.ACCESSOR));
+    startServer(accessor1VM, ServerType.ACCESSOR);
+    DO_BOUNCE.set(new CyclicBarrier(2));
+    DO_PUTS.set(true);
+  }
+
+  @After
+  public void tearDown() {
+    DO_PUTS.set(false);
+    timer.cancel();
   }
 
   @Test
-  public void recoversAfterBouncingOneDatastore() {
-    accessor1VM.invoke(() -> {
+  public void recoversAfterBouncingOneDatastore() throws Exception {
+    AsyncInvocation<Object> doPutsInAccessor1VM = accessor1VM.invokeAsync(() -> {
       Region<Object, Object> region = serverLauncher.get().getCache().getRegion(REGION_NAME);
-      for (int i = 0; i < 12 * 10; i++) {
-        int index = i % 12 + 1;
-        if (index < 1 || index > 12) {
-          throw new Error("index is " + index + " for i " + i);
-        }
-        Month month = Month.month(index);
-        region.put(month, "value" + i);
+      for (int i = 1; i <= COUNT; i++) {
+        region.put(partitionBucket(i), value(i));
       }
 
-      assertThat(region.size()).isEqualTo(12);
-      validateBucketsAreFullyRedundant();
+      DO_BOUNCE.get().await(getTimeout().toMinutes(), MINUTES);
+
+      while (DO_PUTS.get()) {
+        for (int i = 11; i <= 20; i++) {
+          region.put(partitionBucket(i), value(100 + i));
+          Thread.sleep(10);
+        }
+        Thread.sleep(100);
+      }
+
+      // validateBucketsAreFullyRedundant();
     });
 
-    VM haServerVM = randomRule.next(server1VM, server2VM, server3VM, server4VM);
-    haServerVM.bounceForcibly();
+    DO_BOUNCE.get().await(getTimeout().toMinutes(), MINUTES);
 
-    haServerVM.invoke(() -> {
-      startServer(haServerVM, ServerType.DATASTORE);
+    timer = schedule(() -> DO_PUTS.set(false), 3, MINUTES);
 
-      serverLauncher.get().getCache().getResourceManager()
-          .createRestoreRedundancyOperation()
-          .includeRegions(singleton(REGION_NAME))
-          .start()
-          .get(getTimeout().toMinutes(), MINUTES);
+    int j = 1;
+    while (DO_PUTS.get()) {
+      server2VM.bounceForcibly();
 
-      validateBucketsAreFullyRedundant();
-    });
+      server2VM.invoke(() -> {
+        startServer(server2VM, ServerType.DATASTORE);
 
-    accessor1VM.invoke(() -> validateBucketsAreFullyRedundant());
+        serverLauncher.get().getCache().getResourceManager()
+            .createRestoreRedundancyOperation()
+            .includeRegions(singleton(REGION_NAME))
+            .start()
+            .get(getTimeout().toMinutes(), MINUTES);
+
+        // validateBucketsAreFullyRedundant();
+      });
+    }
+
+    DO_PUTS.set(false);
+
+    doPutsInAccessor1VM.get();
+
+    // accessor1VM.invoke(() -> validateBucketsAreFullyRedundant());
   }
 
   private void startServer(VM vm, ServerType serverType) {
@@ -170,10 +217,10 @@ public class FixedPartitioningHADistributedTest implements Serializable {
 
     serverLauncher.get().start();
 
-    PartitionAttributesFactory<Month, Object> partitionAttributesFactory =
-        new PartitionAttributesFactory<Month, Object>()
+    PartitionAttributesFactory<PartitionBucket, Object> partitionAttributesFactory =
+        new PartitionAttributesFactory<PartitionBucket, Object>()
             .setLocalMaxMemory(serverType.localMaxMemory())
-            .setPartitionResolver(new QuarterFixedPartitionResolver())
+            .setPartitionResolver(new PartitionBucketResolver())
             .setRedundantCopies(REDUNDANT_COPIES)
             .setTotalNumBuckets(TOTAL_NUM_BUCKETS);
 
@@ -206,6 +253,33 @@ public class FixedPartitioningHADistributedTest implements Serializable {
     return folder;
   }
 
+  private Timer schedule(Runnable task, int time, TimeUnit timeUnit) {
+    Timer timer = new Timer(getClass().getSimpleName() + "." + testName.getMethodName());
+    timer
+        .schedule(new TimerTask() {
+          @Override
+          public void run() {
+            task.run();
+          }
+        }, timeUnit.toMillis(time));
+    return timer;
+  }
+
+  private static Map<Integer, PartitionBucket> initialize(Map<Integer, PartitionBucket> map) {
+    for (int i = 1; i <= COUNT; i++) {
+      map.put(i, new PartitionBucket(i));
+    }
+    return map;
+  }
+
+  private static PartitionBucket partitionBucket(int partitionBucket) {
+    return BUCKET_TO_PARTITION.get(partitionBucket);
+  }
+
+  private static String value(int i) {
+    return "value-" + i;
+  }
+
   private enum ServerType {
     ACCESSOR(MEMORY_ACCESSOR, id -> "accessor1"),
     DATASTORE(MEMORY_DATASTORE, id -> "datastore" + id);
@@ -227,111 +301,43 @@ public class FixedPartitioningHADistributedTest implements Serializable {
     }
   }
 
-  public static class Month implements Serializable {
+  public static class PartitionBucket implements Serializable {
 
-    private static final Month JAN = new Month(1);
-    private static final Month FEB = new Month(2);
-    private static final Month MAR = new Month(3);
-    private static final Month APR = new Month(4);
-    private static final Month MAY = new Month(5);
-    private static final Month JUN = new Month(6);
-    private static final Month JUL = new Month(7);
-    private static final Month AUG = new Month(8);
-    private static final Month SEP = new Month(9);
-    private static final Month OCT = new Month(10);
-    private static final Month NOV = new Month(11);
-    private static final Month DEC = new Month(12);
+    private final int partitionBucket;
+    private final String partitionName;
 
-    private static final Month[] months =
-        {JAN, FEB, MAR, APR, MAY, JUN, JUL, AUG, SEP, OCT, NOV, DEC};
-
-    public static Month month(int month) {
-      return months[month - 1];
+    private PartitionBucket(int partitionBucket) {
+      this.partitionBucket = partitionBucket;
+      int partition = (partitionBucket + BUCKETS - 1) / BUCKETS;
+      assertThat(partition > 0 && partition < PARTITIONS + 1);
+      partitionName = "Partition-" + partition;
     }
 
-    private final int month;
-    private final String quarter;
-
-    private Month(int month) {
-      this.month = month;
-      switch (month) {
-        case 1:
-        case 2:
-        case 3:
-          quarter = "Quarter1";
-          break;
-        case 4:
-        case 5:
-        case 6:
-          quarter = "Quarter2";
-          break;
-        case 7:
-        case 8:
-        case 9:
-          quarter = "Quarter3";
-          break;
-        case 10:
-        case 11:
-        case 12:
-          quarter = "Quarter4";
-          break;
-        default:
-          throw new IllegalArgumentException("Invalid month " + month);
-      }
-    }
-
-    String getQuarter() {
-      return quarter;
+    String getPartitionName() {
+      return partitionName;
     }
 
     @Override
     public String toString() {
-      switch (month) {
-        case 1:
-          return "January";
-        case 2:
-          return "February";
-        case 3:
-          return "March";
-        case 4:
-          return "April";
-        case 5:
-          return "May";
-        case 6:
-          return "June";
-        case 7:
-          return "July";
-        case 8:
-          return "August";
-        case 9:
-          return "September";
-        case 10:
-          return "October";
-        case 11:
-          return "November";
-        case 12:
-          return "December";
-        default:
-          return "No month like this";
-      }
+      return "Partition-" + partitionName + "-Bucket-" + partitionBucket;
     }
 
     @Override
     public boolean equals(Object obj) {
-      if (obj instanceof Month) {
-        return month == ((Month) obj).month;
+      if (obj instanceof PartitionBucket) {
+        return partitionBucket == ((PartitionBucket) obj).partitionBucket;
       }
       return false;
     }
 
     @Override
     public int hashCode() {
-      return month;
+      return partitionBucket;
     }
   }
 
-  public static class QuarterFixedPartitionResolver
-      implements FixedPartitionResolver<Month, Object>, Serializable {
+  public static class PartitionBucketResolver
+      implements FixedPartitionResolver<PartitionBucket, Object>, Serializable {
 
     @Override
     public String getName() {
@@ -339,13 +345,13 @@ public class FixedPartitioningHADistributedTest implements Serializable {
     }
 
     @Override
-    public String getPartitionName(EntryOperation<Month, Object> opDetails,
+    public String getPartitionName(EntryOperation<PartitionBucket, Object> opDetails,
         Set<String> targetPartitions) {
-      return opDetails.getKey().getQuarter();
+      return opDetails.getKey().getPartitionName();
     }
 
     @Override
-    public Month getRoutingObject(EntryOperation<Month, Object> opDetails) {
+    public PartitionBucket getRoutingObject(EntryOperation<PartitionBucket, Object> opDetails) {
       return opDetails.getKey();
     }
   }
