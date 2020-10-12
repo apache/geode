@@ -53,7 +53,7 @@ public class StressNewTestHelper {
     sourceToGradleMapping.put("integrationTest", "repeatIntegrationTest");
     sourceToGradleMapping.put("distributedTest", "repeatDistributedTest");
     sourceToGradleMapping.put("upgradeTest", "repeatUpgradeTest");
-    // Cannot currently by run repeated because of docker issues
+    // Cannot currently be run repeatedly because of docker issues
     // sourceToGradleMapping.put("acceptanceTest", "repeatAcceptanceTest");
   }
 

@@ -68,6 +68,12 @@ public class WhatExtendsJUnitTest {
             "repeatUnitTest --tests WhatExtendsJUnitTest$B,WhatExtendsJUnitTest$C repeatIntegrationTest --tests WhatExtendsJUnitTest ");
   }
 
+  @Test
+  public void ignoreAcceptanceTestSourcesForNow() {
+    scanner.add(getClassLocation(this.getClass(), "foo/src/acceptanceTest/java/"));
+    assertThat(scanner.buildGradleCommand()).isEmpty();
+  }
+
   private String getClassLocation(Class<?> clazz) {
     String codeSource = clazz.getProtectionDomain().getCodeSource().getLocation().getFile();
     String classFile = clazz.getName().replace(".", "/");
