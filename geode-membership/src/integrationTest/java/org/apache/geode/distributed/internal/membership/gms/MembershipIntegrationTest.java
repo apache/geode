@@ -305,8 +305,8 @@ public class MembershipIntegrationTest {
     Membership<MemberIdentifier> membership1 = createMembership1.get(2, TimeUnit.MINUTES);
 
     // Make sure the members see each other in the view
-    assertThat(membership0.getView().getMembers()).hasSize(2);
-    assertThat(membership1.getView().getMembers()).hasSize(2);
+    await().untilAsserted(() -> assertThat(membership0.getView().getMembers()).hasSize(2));
+    await().untilAsserted(() -> assertThat(membership1.getView().getMembers()).hasSize(2));
   }
 
   private CompletableFuture<Membership<MemberIdentifier>> launchLocator(
