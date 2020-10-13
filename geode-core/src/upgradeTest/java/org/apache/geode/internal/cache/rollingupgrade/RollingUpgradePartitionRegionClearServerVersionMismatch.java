@@ -14,7 +14,8 @@
  */
 package org.apache.geode.internal.cache.rollingupgrade;
 
-import static org.apache.geode.test.dunit.rules.ClusterStartupRule.*;
+import static org.apache.geode.test.dunit.rules.ClusterStartupRule.getCache;
+import static org.apache.geode.test.dunit.rules.ClusterStartupRule.getClientCache;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -84,8 +85,8 @@ public class RollingUpgradePartitionRegionClearServerVersionMismatch {
 
   @Before
   public void before() {
-    locator = cluster.startLocatorVM(0, l ->
-        l.withSystemProperty("gemfire.allow_old_members_to_join_for_testing", "true")
+    locator = cluster.startLocatorVM(0,
+        l -> l.withSystemProperty("gemfire.allow_old_members_to_join_for_testing", "true")
             .withProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false"));
     final int locatorPort = locator.getPort();
 
