@@ -276,7 +276,7 @@ public class LogConsumer {
       string
           .append("-----------------------------------------------------------------------")
           .append(lineSeparator())
-          .append("Found suspect string in ").append(filename).append(" at line ").append(linenum)
+          .append("Found suspect string in '").append(filename).append("' at line ").append(linenum)
           .append(lineSeparator()).append(lineSeparator())
           .append(line).append(lineSeparator());
       return string;
