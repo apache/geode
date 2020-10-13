@@ -26,8 +26,9 @@ public class ServerVersionMismatchException extends CacheRuntimeException {
   private static final long serialVersionUID = -3004093739855972548L;
 
   public ServerVersionMismatchException(List<String> members, String featureName,
-                                        String version) {
-    super("A server's " + members + " version was too old (< " + version + ") for : " + featureName);
+      String version) {
+    super(
+        "A server's " + members + " version was too old (< " + version + ") for : " + featureName);
 
   }
 }

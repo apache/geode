@@ -202,6 +202,7 @@ public class RollingUpgradePartitionRegionClearMixedServerPartitionedRegion
       // create the cache in all the server VMs.
       for (VM vm : Arrays.asList(oldServer2, currentServer)) {
         vm.invoke(() -> {
+          props.setProperty(DistributionConfig.NAME_NAME, "vm" + VM.getVMId());
           cache = createCache(props);
         });
       }
@@ -229,6 +230,9 @@ public class RollingUpgradePartitionRegionClearMixedServerPartitionedRegion
         Throwable thrown = catchThrowable(clientRegion::clear);
         assertThat(thrown).isInstanceOf(ServerOperationException.class);
         assertThat(thrown).hasCauseInstanceOf(ServerVersionMismatchException.class);
+        ServerVersionMismatchException serverVersionMismatchException =
+            (ServerVersionMismatchException) thrown.getCause();
+        assertThat(serverVersionMismatchException.getMessage()).contains("vm3");
       });
 
     } finally {
@@ -275,7 +279,6 @@ public class RollingUpgradePartitionRegionClearMixedServerPartitionedRegion
     CacheServer cacheServer = ((GemFireCacheImpl) cache).addCacheServer();
     cacheServer.setPort(port);
     cacheServer.start();
-    logger.info("MLH Started the cache server");
   }
 
   protected void assertRegionExists(GemFireCache cache, String regionName) {

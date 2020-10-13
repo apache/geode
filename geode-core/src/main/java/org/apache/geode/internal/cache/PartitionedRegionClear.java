@@ -342,17 +342,20 @@ public class PartitionedRegionClear {
    * This method returns a boolean to indicate if all server versions support Partition Region clear
    */
   public void allServerVersionsSupportPartitionRegionClear() {
-    logger.info("MLH Call Structure is {}", new Exception("MLH Stack trace"));
     List<String> memberNames = new ArrayList<>();
     for (int i = 0; i < partitionedRegion.getTotalNumberOfBuckets(); i++) {
       InternalDistributedMember internalDistributedMember = partitionedRegion.getBucketPrimary(i);
       if ((internalDistributedMember != null)
           && (internalDistributedMember.getVersion().isOlderThan(KnownVersion.GEODE_1_14_0))) {
-        memberNames.add(internalDistributedMember.getName());
+        if (!memberNames.contains(internalDistributedMember.getName())) {
+          memberNames.add(internalDistributedMember.getName());
+          logger.info("MLH adding " + internalDistributedMember.getName());
+        }
       }
     }
     if (!memberNames.isEmpty()) {
-      throw new ServerVersionMismatchException(memberNames, "Partitioned Region Clear",KnownVersion.GEODE_1_14_0.toString());
+      throw new ServerVersionMismatchException(memberNames, "Partitioned Region Clear",
+          KnownVersion.GEODE_1_14_0.toString());
     }
   }
 
