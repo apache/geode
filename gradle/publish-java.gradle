@@ -36,7 +36,8 @@ gradle.taskGraph.whenReady({ graph ->
       def runtimeList = []
       def allProjectDeps = []
 
-      ['api', 'implementation', 'runtimeOnly'].each { conf ->
+      def confList = ['api', 'implementation', 'runtimeOnly']
+      confList.each { conf ->
         allProjectDeps.addAll(project.configurations.getByName(conf).getDependencies())
       }
 
@@ -44,7 +45,12 @@ gradle.taskGraph.whenReady({ graph ->
 //      // dependencies.
       allProjectDeps.each { dependency ->
         if ( dependency instanceof ProjectDependency )  {
-          projectDependencies.add(dependency)
+          def platformAttribute = Attribute.of("org.gradle.category", org.gradle.api.attributes.Category.class)
+          def foundAttribute = dependency.attributes.getAttribute(platformAttribute)
+          if (! foundAttribute || 'platform'.equals(foundAttribute)) {
+            projectDependencies.add(dependency)
+          }
+
         } else {
           project.configurations.runtimeClasspath.files(dependency).each { depJar ->
             runtimeList.add(depJar.name)
@@ -57,17 +63,13 @@ gradle.taskGraph.whenReady({ graph ->
       // Also removes all parent project's runtime project dependencies from the current project.
       // This returns a unique set of parent project and library dependencies that are not found
       // within it's parent's project dependencies.
-      projectDependencies.clone().each { projectDependency ->
-        def geodeProject = projectDependency.getDependencyProject()
+      projectDependencies.clone().each { ProjectDependency projectDependency ->
+        Project geodeProject = projectDependency.getDependencyProject()
         if (projectDependencies.contains(geodeProject)) {
-          try {
             def parentProject = geodeProject
             def collect = parentProject.configurations.runtimeClasspath.collect { it.name }
             runtimeList.removeAll(collect)
 //            projectDependencies.removeAll(collect.collect {it-".jar"})
-          } catch (UnknownProjectException ignore) {
-            throw ignore
-          }
         }
       }
 
