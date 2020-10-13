@@ -203,7 +203,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
     this.updateCqCreateStats();
 
     // Initialize the state of CQ.
-    if (this.cqState.getState() != p_cqState) {
+    if (this.cqState.getState() != p_cqState || ccn == null) {
       setCqState(p_cqState);
     }
 
