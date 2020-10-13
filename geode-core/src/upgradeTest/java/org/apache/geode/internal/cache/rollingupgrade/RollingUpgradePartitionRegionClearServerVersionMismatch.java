@@ -105,7 +105,7 @@ public class RollingUpgradePartitionRegionClearServerVersionMismatch {
       Cache cache = getCache();
       assertThat(cache).isNotNull();
 
-      Region<Object, Object> region = cache.getRegion("regionA");
+      Region<String, String> region = cache.getRegion("regionA");
       region.put("A", "ValueA");
       region.put("B", "ValueB");
     });
@@ -129,9 +129,9 @@ public class RollingUpgradePartitionRegionClearServerVersionMismatch {
       ClientCache clientCache = getClientCache();
       assertThat(clientCache).isNotNull();
 
-      ClientRegionFactory<Object, Object> clientRegionFactory =
+      ClientRegionFactory<String, String> clientRegionFactory =
           clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY);
-      Region<Object, Object> region = clientRegionFactory.create("regionA");
+      Region<String, String> region = clientRegionFactory.create("regionA");
       assertThat(region).isNotNull();
 
       // Validate that we get a ServerVersionMismatchException wrapped in a ServerOperationException
@@ -160,12 +160,15 @@ public class RollingUpgradePartitionRegionClearServerVersionMismatch {
       Cache cache = getCache();
       assertThat(cache).isNotNull();
 
-      Region<Object, Object> region = cache.getRegion("regionA");
+      Region<String, String> region = cache.getRegion("regionA");
       assertThat(region).isNotNull();
 
       // Validate that the message is exactly as we expect it.
       assertThatThrownBy(region::clear).isInstanceOf(ServerVersionMismatchException.class)
           .hasMessage(expectedMessage);
+
+      assertThat(region.get("A")).isEqualTo("ValueA");
+      assertThat(region.get("B")).isEqualTo("ValueB");
     });
   }
 }
