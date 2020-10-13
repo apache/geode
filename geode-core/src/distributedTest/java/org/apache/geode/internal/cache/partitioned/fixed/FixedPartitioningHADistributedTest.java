@@ -16,12 +16,10 @@ package org.apache.geode.internal.cache.partitioned.fixed;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.singleton;
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.cache.FixedPartitionAttributes.createFixedPartition;
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
+import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
-import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.apache.geode.test.dunit.VM.getController;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.dunit.rules.DistributedRule.getDistributedSystemProperties;
@@ -33,16 +31,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -56,15 +47,12 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
-import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedCloseableReference;
 import org.apache.geode.test.dunit.rules.DistributedMap;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.PartitioningTest;
-import org.apache.geode.test.junit.rules.RandomRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
-import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 @Category(PartitioningTest.class)
 @SuppressWarnings("serial")
@@ -102,16 +90,11 @@ public class FixedPartitioningHADistributedTest implements Serializable {
   private static final FixedPartitionAttributes Q4_SECONDARY =
       createFixedPartition("Partition-4", false, 10);
 
-  private static final AtomicBoolean DO_PUTS = new AtomicBoolean();
-  private static final AtomicReference<CyclicBarrier> DO_BOUNCE = new AtomicReference<>();
-
   private VM accessor1VM;
   private VM server1VM;
   private VM server2VM;
   private VM server3VM;
   private VM server4VM;
-
-  private transient Timer timer;
 
   @Rule
   public DistributedRule distributedRule = new DistributedRule();
@@ -121,11 +104,7 @@ public class FixedPartitioningHADistributedTest implements Serializable {
   @Rule
   public DistributedMap<VM, List<FixedPartitionAttributes>> fpaMap = new DistributedMap<>();
   @Rule
-  public RandomRule randomRule = new RandomRule();
-  @Rule
   public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
-  @Rule
-  public SerializableTestName testName = new SerializableTestName();
 
   @Before
   public void setUp() {
@@ -146,69 +125,46 @@ public class FixedPartitioningHADistributedTest implements Serializable {
     }
 
     startServer(accessor1VM, ServerType.ACCESSOR);
-    DO_BOUNCE.set(new CyclicBarrier(2));
-    DO_PUTS.set(true);
-  }
-
-  @After
-  public void tearDown() {
-    DO_PUTS.set(false);
-    timer.cancel();
   }
 
   @Test
-  public void recoversAfterBouncingOneDatastore() throws Exception {
-    AsyncInvocation<Object> doPutsInAccessor1VM = accessor1VM.invokeAsync(() -> {
+  public void recoversAfterBouncingOneDatastore() {
+    accessor1VM.invokeAsync(() -> {
       Region<Object, Object> region = serverLauncher.get().getCache().getRegion(REGION_NAME);
       for (int i = 1; i <= COUNT; i++) {
         region.put(partitionBucket(i), value(i));
       }
 
-      DO_BOUNCE.get().await(getTimeout().toMinutes(), MINUTES);
-
-      while (DO_PUTS.get()) {
-        for (int i = 11; i <= 20; i++) {
-          region.put(partitionBucket(i), value(100 + i));
-          Thread.sleep(10);
-        }
-        Thread.sleep(100);
-      }
-
       // validateBucketsAreFullyRedundant();
     });
 
-    DO_BOUNCE.get().await(getTimeout().toMinutes(), MINUTES);
+    server2VM.bounceForcibly();
 
-    timer = schedule(() -> DO_PUTS.set(false), 3, MINUTES);
+    server2VM.invoke(() -> {
+      startServer(server2VM, ServerType.DATASTORE);
+      //
+      // serverLauncher.get().getCache().getResourceManager()
+      // .createRestoreRedundancyOperation()
+      // .includeRegions(singleton(REGION_NAME))
+      // .start()
+      // .get(getTimeout().toMinutes(), MINUTES);
+      //
+      // validateBucketsAreFullyRedundant();
+    });
 
-    int j = 1;
-    while (DO_PUTS.get()) {
-      server2VM.bounceForcibly();
+    accessor1VM.invokeAsync(() -> {
+      Region<Object, Object> region = serverLauncher.get().getCache().getRegion(REGION_NAME);
+      region.put(partitionBucket(20), value(100));
 
-      server2VM.invoke(() -> {
-        startServer(server2VM, ServerType.DATASTORE);
-
-        serverLauncher.get().getCache().getResourceManager()
-            .createRestoreRedundancyOperation()
-            .includeRegions(singleton(REGION_NAME))
-            .start()
-            .get(getTimeout().toMinutes(), MINUTES);
-
-        // validateBucketsAreFullyRedundant();
-      });
-    }
-
-    DO_PUTS.set(false);
-
-    doPutsInAccessor1VM.get();
-
-    // accessor1VM.invoke(() -> validateBucketsAreFullyRedundant());
+      validateBucketsAreFullyRedundant();
+    });
   }
 
   private void startServer(VM vm, ServerType serverType) {
     String name = serverType.name(vm.getId());
     serverLauncher.set(new ServerLauncher.Builder()
         .set(getDistributedSystemProperties())
+        .set(MEMBER_TIMEOUT, "2000")
         .set(SERIALIZABLE_OBJECT_FILTER, getClass().getName() + '*')
         .setDisableDefaultServer(true)
         .setMemberName(name)
@@ -251,18 +207,6 @@ public class FixedPartitioningHADistributedTest implements Serializable {
       assertThat(folder.mkdirs()).isTrue();
     }
     return folder;
-  }
-
-  private Timer schedule(Runnable task, int time, TimeUnit timeUnit) {
-    Timer timer = new Timer(getClass().getSimpleName() + "." + testName.getMethodName());
-    timer
-        .schedule(new TimerTask() {
-          @Override
-          public void run() {
-            task.run();
-          }
-        }, timeUnit.toMillis(time));
-    return timer;
   }
 
   private static Map<Integer, PartitionBucket> initialize(Map<Integer, PartitionBucket> map) {
