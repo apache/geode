@@ -37,6 +37,7 @@ import org.mockito.ArgumentCaptor;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.PartitionedRegionPartialClearException;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.ServerVersionMismatchException;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionManager;
@@ -44,6 +45,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
+import org.apache.geode.internal.serialization.KnownVersion;
 
 public class PartitionedRegionClearTest {
 
@@ -51,6 +53,8 @@ public class PartitionedRegionClearTest {
   private PartitionedRegionClear partitionedRegionClear;
   private DistributionManager distributionManager;
   private PartitionedRegion partitionedRegion;
+  private RegionAdvisor regionAdvisor;
+  private InternalDistributedMember internalDistributedMember;
 
   @Before
   public void setUp() {
@@ -62,6 +66,14 @@ public class PartitionedRegionClearTest {
     when(partitionedRegion.getName()).thenReturn("prRegion");
 
     partitionedRegionClear = new PartitionedRegionClear(partitionedRegion);
+    internalDistributedMember = mock(InternalDistributedMember.class);
+    when(internalDistributedMember.getVersion()).thenReturn(KnownVersion.CURRENT);
+    regionAdvisor = mock(RegionAdvisor.class);
+    when(partitionedRegion.getRegionAdvisor()).thenReturn(regionAdvisor);
+    when(regionAdvisor.getDistributionManager()).thenReturn(distributionManager);
+    when(distributionManager.getDistributionManagerId()).thenReturn(internalDistributedMember);
+    when(distributionManager.getId()).thenReturn(internalDistributedMember);
+
   }
 
   private Set<BucketRegion> setupBucketRegions(
@@ -85,7 +97,6 @@ public class PartitionedRegionClearTest {
 
   @Test
   public void isLockedForListenerAndClientNotificationReturnsTrueWhenLocked() {
-    InternalDistributedMember internalDistributedMember = mock(InternalDistributedMember.class);
     when(distributionManager.isCurrentMember(internalDistributedMember)).thenReturn(true);
     partitionedRegionClear.obtainClearLockLocal(internalDistributedMember);
 
@@ -94,7 +105,6 @@ public class PartitionedRegionClearTest {
 
   @Test
   public void isLockedForListenerAndClientNotificationReturnsFalseWhenMemberNotInTheSystemRequestsLock() {
-    InternalDistributedMember internalDistributedMember = mock(InternalDistributedMember.class);
     when(distributionManager.isCurrentMember(internalDistributedMember)).thenReturn(false);
 
     assertThat(partitionedRegionClear.isLockedForListenerAndClientNotification()).isFalse();
@@ -132,8 +142,6 @@ public class PartitionedRegionClearTest {
     doReturn(Collections.EMPTY_SET).when(spyPartitionedRegionClear)
         .attemptToSendPartitionedRegionClearMessage(regionEvent,
             PartitionedRegionClearMessage.OperationType.OP_LOCK_FOR_PR_CLEAR);
-    InternalDistributedMember internalDistributedMember = mock(InternalDistributedMember.class);
-    when(distributionManager.getId()).thenReturn(internalDistributedMember);
 
     spyPartitionedRegionClear.obtainLockForClear(regionEvent);
 
@@ -152,8 +160,6 @@ public class PartitionedRegionClearTest {
     doReturn(Collections.EMPTY_SET).when(spyPartitionedRegionClear)
         .attemptToSendPartitionedRegionClearMessage(regionEvent,
             PartitionedRegionClearMessage.OperationType.OP_UNLOCK_FOR_PR_CLEAR);
-    InternalDistributedMember internalDistributedMember = mock(InternalDistributedMember.class);
-    when(distributionManager.getId()).thenReturn(internalDistributedMember);
 
     spyPartitionedRegionClear.releaseLockForClear(regionEvent);
 
@@ -172,8 +178,6 @@ public class PartitionedRegionClearTest {
     doReturn(Collections.EMPTY_SET).when(spyPartitionedRegionClear)
         .attemptToSendPartitionedRegionClearMessage(regionEvent,
             PartitionedRegionClearMessage.OperationType.OP_PR_CLEAR);
-    InternalDistributedMember internalDistributedMember = mock(InternalDistributedMember.class);
-    when(distributionManager.getId()).thenReturn(internalDistributedMember);
 
     spyPartitionedRegionClear.clearRegion(regionEvent);
 
@@ -330,13 +334,12 @@ public class PartitionedRegionClearTest {
     PartitionedRegionDataStore partitionedRegionDataStore = mock(PartitionedRegionDataStore.class);
     Set<BucketRegion> buckets = setupBucketRegions(partitionedRegionDataStore, bucketAdvisor);
     when(partitionedRegion.getDataStore()).thenReturn(partitionedRegionDataStore);
-    InternalDistributedMember member = mock(InternalDistributedMember.class);
-    when(distributionManager.isCurrentMember(member)).thenReturn(true);
+    when(distributionManager.isCurrentMember(internalDistributedMember)).thenReturn(true);
 
-    partitionedRegionClear.obtainClearLockLocal(member);
+    partitionedRegionClear.obtainClearLockLocal(internalDistributedMember);
 
     assertThat(partitionedRegionClear.lockForListenerAndClientNotification.getLockRequester())
-        .isSameAs(member);
+        .isSameAs(internalDistributedMember);
     for (BucketRegion bucketRegion : buckets) {
       verify(bucketRegion, times(1)).lockLocallyForClear(partitionedRegion.getDistributionManager(),
           partitionedRegion.getMyId(), null);
@@ -350,10 +353,9 @@ public class PartitionedRegionClearTest {
     PartitionedRegionDataStore partitionedRegionDataStore = mock(PartitionedRegionDataStore.class);
     Set<BucketRegion> buckets = setupBucketRegions(partitionedRegionDataStore, bucketAdvisor);
     when(partitionedRegion.getDataStore()).thenReturn(partitionedRegionDataStore);
-    InternalDistributedMember member = mock(InternalDistributedMember.class);
-    when(distributionManager.isCurrentMember(member)).thenReturn(false);
+    when(distributionManager.isCurrentMember(internalDistributedMember)).thenReturn(false);
 
-    partitionedRegionClear.obtainClearLockLocal(member);
+    partitionedRegionClear.obtainClearLockLocal(internalDistributedMember);
 
     assertThat(partitionedRegionClear.lockForListenerAndClientNotification.getLockRequester())
         .isNull();
@@ -370,9 +372,9 @@ public class PartitionedRegionClearTest {
     PartitionedRegionDataStore partitionedRegionDataStore = mock(PartitionedRegionDataStore.class);
     Set<BucketRegion> buckets = setupBucketRegions(partitionedRegionDataStore, bucketAdvisor);
     when(partitionedRegion.getDataStore()).thenReturn(partitionedRegionDataStore);
-    InternalDistributedMember member = mock(InternalDistributedMember.class);
-    when(distributionManager.isCurrentMember(member)).thenReturn(true);
-    partitionedRegionClear.lockForListenerAndClientNotification.setLocked(member);
+    when(distributionManager.isCurrentMember(internalDistributedMember)).thenReturn(true);
+    partitionedRegionClear.lockForListenerAndClientNotification
+        .setLocked(internalDistributedMember);
 
     partitionedRegionClear.releaseClearLockLocal();
 
@@ -405,13 +407,11 @@ public class PartitionedRegionClearTest {
     Region<String, PartitionRegionConfig> prRoot = mock(Region.class);
     when(partitionedRegion.getPRRoot()).thenReturn(prRoot);
     InternalDistributedMember member = mock(InternalDistributedMember.class);
-    RegionAdvisor regionAdvisor = mock(RegionAdvisor.class);
     Set<InternalDistributedMember> prNodes = Collections.singleton(member);
     Node node = mock(Node.class);
     when(node.getMemberId()).thenReturn(member);
     Set<Node> configNodes = Collections.singleton(node);
     when(regionAdvisor.adviseAllPRNodes()).thenReturn(prNodes);
-    when(partitionedRegion.getRegionAdvisor()).thenReturn(regionAdvisor);
     PartitionRegionConfig partitionRegionConfig = mock(PartitionRegionConfig.class);
     when(partitionRegionConfig.getNodes()).thenReturn(configNodes);
     when(prRoot.get(any())).thenReturn(partitionRegionConfig);
@@ -423,7 +423,7 @@ public class PartitionedRegionClearTest {
     when(txManager.isDistributed()).thenReturn(false);
     when(internalCache.getTxManager()).thenReturn(txManager);
     when(partitionedRegion.getCache()).thenReturn(internalCache);
-
+    when(member.getVersion()).thenReturn(KnownVersion.getCurrentVersion());
     when(distributionManager.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
     when(distributionManager.getStats()).thenReturn(mock(DMStats.class));
 
@@ -432,6 +432,8 @@ public class PartitionedRegionClearTest {
 
     verify(distributionManager, times(1)).putOutgoing(any());
   }
+
+
 
   @Test
   public void doClearAcquiresAndReleasesDistributedClearLockAndCreatesAllPrimaryBuckets() {
@@ -458,7 +460,6 @@ public class PartitionedRegionClearTest {
     doReturn(Collections.EMPTY_SET).when(spyPartitionedRegionClear).clearRegion(regionEvent);
 
     spyPartitionedRegionClear.doClear(regionEvent, cacheWrite);
-
     verify(spyPartitionedRegionClear, times(1)).invokeCacheWriter(regionEvent);
   }
 
@@ -556,6 +557,70 @@ public class PartitionedRegionClearTest {
         .hasMessage(
             "Unable to clear all the buckets from the partitioned region prRegion, either data (buckets) moved or member departed.");
   }
+
+  @Test
+  public void doClearThrowsServerVersionMismatchException() {
+    boolean cacheWrite = false;
+    RegionEventImpl regionEvent = mock(RegionEventImpl.class);
+    when(partitionedRegion.hasListener()).thenReturn(false);
+    when(partitionedRegion.hasAnyClientsInterested()).thenReturn(false);
+    when(partitionedRegion.getTotalNumberOfBuckets()).thenReturn(2);
+    when(partitionedRegion.getName()).thenReturn("prRegion");
+    PartitionedRegionClear spyPartitionedRegionClear = spy(partitionedRegionClear);
+    doNothing().when(spyPartitionedRegionClear).acquireDistributedClearLock(any());
+    doNothing().when(spyPartitionedRegionClear).assignAllPrimaryBuckets();
+    doNothing().when(spyPartitionedRegionClear).obtainLockForClear(regionEvent);
+    doNothing().when(spyPartitionedRegionClear).releaseLockForClear(regionEvent);
+    doReturn(Collections.singleton("2")).when(spyPartitionedRegionClear).clearRegion(regionEvent);
+
+    when(regionEvent.clone()).thenReturn(mock(RegionEventImpl.class));
+    Region<String, PartitionRegionConfig> prRoot = mock(Region.class);
+    when(partitionedRegion.getPRRoot()).thenReturn(prRoot);
+    InternalDistributedMember member = mock(InternalDistributedMember.class);
+    InternalDistributedMember oldMember = mock(InternalDistributedMember.class);
+    Set<InternalDistributedMember> prNodes = new HashSet<>();
+    prNodes.add(member);
+    prNodes.add(oldMember);
+    Node node = mock(Node.class);
+    Node oldNode = mock(Node.class);
+    when(member.getName()).thenReturn("member");
+    when(oldMember.getName()).thenReturn("oldMember");
+    when(node.getMemberId()).thenReturn(member);
+    when(oldNode.getMemberId()).thenReturn(oldMember);
+    Set<Node> configNodes = new HashSet<>();
+    configNodes.add(node);
+    configNodes.add(oldNode);
+    when(partitionedRegion.getBucketPrimary(0)).thenReturn(member);
+    when(partitionedRegion.getBucketPrimary(1)).thenReturn(oldMember);
+
+    when(regionAdvisor.adviseAllPRNodes()).thenReturn(prNodes);
+    PartitionRegionConfig partitionRegionConfig = mock(PartitionRegionConfig.class);
+    when(partitionRegionConfig.getNodes()).thenReturn(configNodes);
+    when(prRoot.get(any())).thenReturn(partitionRegionConfig);
+    InternalDistributedSystem internalDistributedSystem = mock(InternalDistributedSystem.class);
+    when(internalDistributedSystem.getDistributionManager()).thenReturn(distributionManager);
+    when(partitionedRegion.getSystem()).thenReturn(internalDistributedSystem);
+    InternalCache internalCache = mock(InternalCache.class);
+    TXManagerImpl txManager = mock(TXManagerImpl.class);
+    when(txManager.isDistributed()).thenReturn(false);
+    when(internalCache.getTxManager()).thenReturn(txManager);
+    when(partitionedRegion.getCache()).thenReturn(internalCache);
+    when(oldMember.getVersion()).thenReturn(KnownVersion.GEODE_1_11_0);
+    when(member.getVersion()).thenReturn(KnownVersion.getCurrentVersion());
+    when(distributionManager.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
+    when(distributionManager.getStats()).thenReturn(mock(DMStats.class));
+
+
+    Throwable thrown =
+        catchThrowable(() -> spyPartitionedRegionClear.doClear(regionEvent, cacheWrite));
+
+    assertThat(thrown)
+        .isInstanceOf(ServerVersionMismatchException.class)
+        .hasMessage(
+            "A server's [oldMember] version was too old (< GEODE 1.14.0) for : Partitioned Region Clear");
+  }
+
+
 
   @Test
   public void handleClearFromDepartedMemberReleasesTheLockForRequesterDeparture() {
