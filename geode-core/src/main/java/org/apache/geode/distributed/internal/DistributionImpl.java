@@ -310,12 +310,12 @@ public class DistributionImpl implements Distribution {
     } catch (MembershipClosedException e) {
       if (e.getCause() instanceof MemberDisconnectedException) {
         String cause = new String(e.getCause().toString());
-        logger.info("*** EB: DistributionImpl.checkCancelled e.getCause(): " + cause
+        logger.info("*** 2 - EB: DistributionImpl.checkCancelled e.getCause(): " + cause
             + " and now the StackTrace: \n: " + e.getStackTrace());
         ForcedDisconnectException fde = new ForcedDisconnectException(e.getCause().getMessage());
 
         if (cause.contains("network partition")) {
-          logger.info("*** EB: DistributionImpl.checkCancelled throw FDE *****");
+          logger.info("*** 3 - EB: DistributionImpl.checkCancelled throw FDE *****");
           throw fde;
         } else {
           logger.info("*** EB: DistributionImpl.checkCancelled throw DSDE w/ FDE *****");
@@ -474,6 +474,7 @@ public class DistributionImpl implements Distribution {
             + "throw DSDE distribution closed");
         throw new DistributedSystemDisconnectedException("Distribution is closed", e);
       }
+      logger.info("*** 4? - EB: DistributionImpl.requestMemberRemoval - throw e: " + e.toString());
       throw e;
     }
   }

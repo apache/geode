@@ -1411,7 +1411,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   public void checkCancelled() throws MembershipClosedException {
     if (services.getCancelCriterion().isCancelInProgress()) {
       String justCause = new String(services.getShutdownCause().toString());
-      logger.info("*** EB: GMSMembership.checkCancelled services.getShutdownCause(): "
+      logger.info("*** 1 - EB: GMSMembership.checkCancelled services.getShutdownCause(): "
           + justCause + " \n stackTrace: \n" + services.getShutdownCause().getStackTrace());
       throw new MembershipClosedException("Distributed System is shutting down",
           services.getCancelCriterion().generateCancelledException(services.getShutdownCause()));
