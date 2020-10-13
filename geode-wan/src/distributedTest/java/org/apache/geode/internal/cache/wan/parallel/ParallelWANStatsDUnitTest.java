@@ -1054,6 +1054,49 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     verifyConflationIndexesSize(senderId, 0, vm1);
   }
 
+
+  @Test
+  public void testPartitionedRegionParallelPropagation_RestartSenders_NoRedundancy() {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+
+    createCacheInVMs(nyPort, vm2);
+    createReceiverInVMs(vm2);
+
+    createSenders(lnPort);
+
+    createReceiverPR(vm2, 0);
+
+    createSenderPRs(0);
+
+    startSenderInVMs("ln", vm4, vm5, vm6, vm7);
+
+    // pause the senders
+    vm4.invoke(() -> WANTestBase.pauseSender("ln"));
+    vm5.invoke(() -> WANTestBase.pauseSender("ln"));
+    vm6.invoke(() -> WANTestBase.pauseSender("ln"));
+    vm7.invoke(() -> WANTestBase.pauseSender("ln"));
+
+    vm4.invoke(() -> WANTestBase.doPuts(testName, NUM_PUTS));
+
+    vm4.invoke(() -> WANTestBase.stopSender("ln"));
+    vm5.invoke(() -> WANTestBase.stopSender("ln"));
+    vm6.invoke(() -> WANTestBase.stopSender("ln"));
+    vm7.invoke(() -> WANTestBase.stopSender("ln"));
+
+    startSenderInVMs("ln", vm4, vm5, vm6, vm7);
+
+    vm4.invoke(() -> WANTestBase.checkQueueSizeInStats("ln", 0));
+    vm5.invoke(() -> WANTestBase.checkQueueSizeInStats("ln", 0));
+    vm6.invoke(() -> WANTestBase.checkQueueSizeInStats("ln", 0));
+    vm7.invoke(() -> WANTestBase.checkQueueSizeInStats("ln", 0));
+
+    vm2.invoke(() -> WANTestBase.validateRegionSize(testName, NUM_PUTS));
+
+  }
+
+
+
   protected Map putKeyValues() {
     final Map keyValues = new HashMap();
     for (int i = 0; i < NUM_PUTS; i++) {

@@ -1203,6 +1203,15 @@ public class WANTestBase extends DistributedTestCase {
     return statistics.getSecondaryEventQueueSize();
   }
 
+  public static void checkQueueSizeInStats(String senderId, final int expectedQueueSize) {
+    AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender(senderId);
+    GatewaySenderStats statistics = sender.getStatistics();
+    await()
+        .untilAsserted(() -> assertEquals("Expected queue size: " + expectedQueueSize
+            + " but actual size: " + statistics.getEventQueueSize(), expectedQueueSize,
+            statistics.getEventQueueSize()));
+  }
+
   public static void checkConnectionStats(String senderId) {
     AbstractGatewaySender sender =
         (AbstractGatewaySender) CacheFactory.getAnyInstance().getGatewaySender(senderId);
