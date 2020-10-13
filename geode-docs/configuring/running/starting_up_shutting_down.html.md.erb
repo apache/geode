@@ -36,11 +36,11 @@ Start servers before you start their client applications. In each cluster, follo
 -   If your cluster uses both persistent replicated and non-persistent replicated regions, you should start up all the persistent replicated members in parallel before starting the non-persistent regions. This way, persistent members will not delay their startup for other persistent members with later data.
 -   For a system that includes persistent regions, see [Start Up and Shut Down with Disk Stores](../../managing/disk_storage/starting_system_with_disk_stores.html).
 -   If you are running producer processes and consumer or event listener processes, start the consumers first. This ensures the consumers and listeners do not miss any notifications or updates.
--   If you are starting up your locators and peer members all at once, you can use the `locator-wait-time` property (in seconds) upon process start up. This timeout allows peers to wait for the locators to finish starting up before attempting to join the cluster. If a process has been configured to wait for a locator to start, it will log an info-level message
+-   If you are starting up your locators and peer members all at once, you can use the `locator-wait-time` property (in seconds) upon process start up. This timeout allows peers to wait for the locators to finish starting up before attempting to join the cluster. 
 
-    > `GemFire startup was unable to contact a                             locator. Waiting for one to start. Configured locators are                             frodo[12345],pippin[12345]. `
-
-    The process will then sleep for a second and retry until it either connects or the number of seconds specified in `locator-wait-time` has elapsed. By default, `locator-wait-time` is set to zero meaning that a process that cannot connect to a locator upon startup will throw an exception.
+    If the process cannot initially reach a locator,
+    it will sleep for `join-retry-sleep` milliseconds
+    between retries until it either connects or the number of seconds specified in `locator-wait-time` has elapsed. By default, `locator-wait-time` is set to zero meaning that a process that cannot connect to a locator upon startup will throw an exception.
 
 **Note:**
 You can optionally override the default timeout period for shutting down individual processes. This override setting must be specified during member startup. See [Shutting Down the System](#starting_up_shutting_down__section_mnx_4cp_cv) for details.
