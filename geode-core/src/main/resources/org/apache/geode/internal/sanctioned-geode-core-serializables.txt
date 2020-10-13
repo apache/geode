@@ -92,6 +92,7 @@ org/apache/geode/cache/ResourceException,true,-5559328592343363268
 org/apache/geode/cache/ResumptionAction,true,6632254151314915610,ordinal:byte
 org/apache/geode/cache/RoleException,true,-7521056108445887394
 org/apache/geode/cache/Scope,true,5534399159504301602,ordinal:int
+org/apache/geode/cache/ServerVersionMismatchException,true,-3004093739855972548
 org/apache/geode/cache/StatisticsDisabledException,true,-2987721454129719551
 org/apache/geode/cache/SynchronizationCommitConflictException,true,2619806460255259492
 org/apache/geode/cache/TimeoutException,true,-6260761691185737442

@@ -14,8 +14,10 @@
  */
 package org.apache.geode.internal.cache;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -25,11 +27,13 @@ import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.OperationAbortedException;
 import org.apache.geode.cache.PartitionedRegionPartialClearException;
+import org.apache.geode.cache.ServerVersionMismatchException;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class PartitionedRegionClear {
@@ -289,7 +293,8 @@ public class PartitionedRegionClear {
     }
 
     final Set<InternalDistributedMember> configRecipients =
-        new HashSet<>(partitionedRegion.getRegionAdvisor().adviseAllPRNodes());
+        new HashSet<>(partitionedRegion.getRegionAdvisor()
+            .adviseAllPRNodes());
 
     try {
       final PartitionRegionConfig prConfig =
@@ -310,8 +315,7 @@ public class PartitionedRegionClear {
     try {
       PartitionedRegionClearMessage.PartitionedRegionClearResponse resp =
           new PartitionedRegionClearMessage.PartitionedRegionClearResponse(
-              partitionedRegion.getSystem(),
-              configRecipients);
+              partitionedRegion.getSystem(), configRecipients);
       PartitionedRegionClearMessage partitionedRegionClearMessage =
           new PartitionedRegionClearMessage(configRecipients, partitionedRegion, resp, op, event);
       partitionedRegionClearMessage.send();
@@ -334,9 +338,33 @@ public class PartitionedRegionClear {
     return bucketsOperated;
   }
 
+  /**
+   * This method returns a boolean to indicate if all server versions support Partition Region clear
+   */
+  public void allServerVersionsSupportPartitionRegionClear() {
+    List<String> memberNames = new ArrayList<>();
+    for (int i = 0; i < partitionedRegion.getTotalNumberOfBuckets(); i++) {
+      InternalDistributedMember internalDistributedMember = partitionedRegion.getBucketPrimary(i);
+      if ((internalDistributedMember != null)
+          && (internalDistributedMember.getVersion().isOlderThan(KnownVersion.GEODE_1_14_0))) {
+        if (!memberNames.contains(internalDistributedMember.getName())) {
+          memberNames.add(internalDistributedMember.getName());
+          logger.info("MLH adding " + internalDistributedMember.getName());
+        }
+      }
+    }
+    if (!memberNames.isEmpty()) {
+      throw new ServerVersionMismatchException(memberNames, "Partitioned Region Clear",
+          KnownVersion.GEODE_1_14_0.toString());
+    }
+  }
+
+
   void doClear(RegionEventImpl regionEvent, boolean cacheWrite) {
     String lockName = CLEAR_OPERATION + partitionedRegion.getName();
     long clearStartTime = 0;
+
+    allServerVersionsSupportPartitionRegionClear();
 
     try {
       // distributed lock to make sure only one clear op is in progress in the cluster.
