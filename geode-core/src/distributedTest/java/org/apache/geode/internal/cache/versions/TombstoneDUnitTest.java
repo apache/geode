@@ -15,12 +15,14 @@
 package org.apache.geode.internal.cache.versions;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.io.Serializable;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
 import org.apache.geode.cache.Region;
@@ -31,6 +33,8 @@ import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.cache.DestroyOperation;
 import org.apache.geode.internal.cache.DistributedTombstoneOperation;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.TombstoneService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
@@ -38,9 +42,10 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 
 
 public class TombstoneDUnitTest extends JUnit4CacheTestCase {
+  protected static final Logger logger = LogService.getLogger();
 
   @Test
-  public void testTombstoneGcMessagesBetweenPersistnentAndNonPersistentRegion() {
+  public void testTombstoneGcMessagesBetweenPersistentAndNonPersistentRegion() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
@@ -79,6 +84,34 @@ public class TombstoneDUnitTest extends JUnit4CacheTestCase {
       // After processing tombstone message from vm0. The tombstone count should be 0.
       waitForTombstoneCount(0);
       assertEquals(0, getGemfireCache().getCachePerfStats().getTombstoneCount());
+    });
+  }
+
+  @Test
+  public void TestGetOldestTombstoneTimeDelta() {
+    VM vm0 = VM.getVM(0);
+    VM vm1 = VM.getVM(1);
+    final String REGION_NAME = "TestRegion";
+
+    vm0.invoke(() -> {
+      createRegion(REGION_NAME, true);
+      Region<String, String> region = getCache().getRegion(REGION_NAME);
+      region.put("K1", "V1");
+      region.put("K2", "V2");
+    });
+
+    vm1.invoke(() -> createRegion(REGION_NAME, false));
+
+    vm0.invoke(() -> {
+      // Send tombstone gc message to vm1.
+      Region<String, String> region = getCache().getRegion(REGION_NAME);
+      region.destroy("K1");
+      TombstoneService.TombstoneSweeper tombstoneSweeper =
+          getCache().getTombstoneService().getSweeper((LocalRegion) region);
+      logger.info("Get oldest tombstone " + tombstoneSweeper.getOldestTombstoneTimeDelta()
+          + " milliseconds");
+      assertThat(tombstoneSweeper.getOldestTombstoneTimeDelta()).isLessThanOrEqualTo(0);
+      performGC();
     });
   }
 
