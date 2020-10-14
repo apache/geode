@@ -26,14 +26,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * DistributedCloseableReference is a JUnit Rule that provides automated tearDown for a static
+ * DistributedReference is a JUnit Rule that provides automated tearDown for a static
  * reference in every distributed test {@code VM}s including the main JUnit controller {@code VM}.
  * If the referenced value is an {@code AutoCloseable} or {@code Closeable} then it will be
  * auto-closed and set to null in every {@code VM} during tear down.
  *
  * <p>
  * If the referenced value is not an {@code AutoCloseable} or {@code Closeable}, the
- * {@code DistributedCloseableReference} will use reflection to invoke any method named
+ * {@code DistributedReference} will use reflection to invoke any method named
  * {@code close}, {@code disconnect}, or {@code stop} regardless of what interfaces are implemented
  * unless {@code autoClose} is set to false.
  *
@@ -47,7 +47,7 @@ import java.util.concurrent.atomic.AtomicReference;
  *
  * <pre>
  * {@literal @}Rule
- * public DistributedCloseableReference&lt;ServerLauncher&gt; server = new DistributedCloseableReference&lt;&gt;();
+ * public DistributedReference&lt;ServerLauncher&gt; server = new DistributedReference&lt;&gt;();
  *
  * {@literal @}Before
  * public void setUp() throws IOException {
@@ -82,7 +82,7 @@ import java.util.concurrent.atomic.AtomicReference;
  *
  * <pre>
  * {@literal @}Rule
- * public DistributedCloseableReference&lt;Cache&gt; cache = new DistributedCloseableReference&lt;&gt;();
+ * public DistributedReference&lt;Cache&gt; cache = new DistributedReference&lt;&gt;();
  *
  * {@literal @}Before
  * public void setUp() {
@@ -112,7 +112,7 @@ import java.util.concurrent.atomic.AtomicReference;
  *
  * <pre>
  * {@literal @}Rule
- * public DistributedCloseableReference&lt;DistributedSystem&gt; system = new DistributedCloseableReference&lt;&gt;();
+ * public DistributedReference&lt;DistributedSystem&gt; system = new DistributedReference&lt;&gt;();
  *
  * {@literal @}Before
  * public void setUp() {
@@ -141,33 +141,33 @@ import java.util.concurrent.atomic.AtomicReference;
  *
  * <pre>
  * {@literal @}Rule
- * public DistributedCloseableReference&lt;ServerLauncher&gt; serverLauncher =
- *     new DistributedCloseableReference&lt;&gt;().autoClose(false);
+ * public DistributedReference&lt;ServerLauncher&gt; serverLauncher =
+ *     new DistributedReference&lt;&gt;().autoClose(false);
  * </pre>
  *
  * <p>
- * The {@code DistributedCloseableReference} value will still be set to null during tear down even
+ * The {@code DistributedReference} value will still be set to null during tear down even
  * if auto-closing is disabled.
  */
 @SuppressWarnings({"serial", "unused", "WeakerAccess"})
-public class DistributedCloseableReference<V> extends AbstractDistributedRule {
+public class DistributedReference<V> extends AbstractDistributedRule {
 
   private static final AtomicReference<Object> REFERENCE = new AtomicReference<>();
 
   private final AtomicBoolean autoClose = new AtomicBoolean(true);
 
-  public DistributedCloseableReference() {
+  public DistributedReference() {
     this(DEFAULT_VM_COUNT);
   }
 
-  public DistributedCloseableReference(int vmCount) {
+  public DistributedReference(int vmCount) {
     super(vmCount);
   }
 
   /**
    * Set false to disable autoClose during tearDown. Default is true.
    */
-  public DistributedCloseableReference<V> autoClose(boolean value) {
+  public DistributedReference<V> autoClose(boolean value) {
     autoClose.set(value);
     return this;
   }
@@ -186,7 +186,7 @@ public class DistributedCloseableReference<V> extends AbstractDistributedRule {
    *
    * @param newValue the new value
    */
-  public DistributedCloseableReference<V> set(V newValue) {
+  public DistributedReference<V> set(V newValue) {
     REFERENCE.set(newValue);
     return this;
   }
