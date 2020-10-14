@@ -772,6 +772,9 @@ public class StateFlushOperation {
     @Override
     public void memberDeparted(DistributionManager distributionManager,
         final InternalDistributedMember id, final boolean crashed) {
+      if (id.equals(targetMember)) {
+        targetMemberHasLeft = true;
+      }
       super.memberDeparted(distributionManager, id, crashed);
     }
 
