@@ -16,10 +16,12 @@ package org.apache.geode.internal.cache.partitioned.fixed;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.geode.cache.FixedPartitionAttributes.createFixedPartition;
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
 import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getController;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.dunit.rules.DistributedRule.getDistributedSystemProperties;
@@ -27,13 +29,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -46,55 +48,56 @@ import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedCloseableReference;
+import org.apache.geode.test.dunit.rules.DistributedExecutorServiceRule;
 import org.apache.geode.test.dunit.rules.DistributedMap;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.PartitioningTest;
+import org.apache.geode.test.junit.rules.RandomRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 @Category(PartitioningTest.class)
 @SuppressWarnings("serial")
 public class FixedPartitioningHADistributedTest implements Serializable {
 
-  private static final String REGION_NAME = "prDS";
+  private static final String REGION_NAME = "theRegion";
 
-  private static final int MEMORY_ACCESSOR = 0;
-  private static final int MEMORY_DATASTORE = 10;
+  private static final int PARTITIONS = 5;
+  private static final int PARTITION_BUCKETS = 10;
+  private static final int COUNT = PARTITIONS * PARTITION_BUCKETS;
+
+  private static final int THREADS = 10;
+
+  private static final int LOCAL_MAX_MEMORY = 10;
   private static final int REDUNDANT_COPIES = 2;
-  private static final int TOTAL_NUM_BUCKETS = 8;
+  private static final int TOTAL_NUM_BUCKETS = COUNT;
 
-  private static final int PARTITIONS = 4;
-  private static final int BUCKETS = 10;
-  private static final int COUNT = PARTITIONS * BUCKETS;
+  private static final FixedPartitionAttributes[] PRIMARY = {
+      createFixedPartition("Partition-1", true, 10),
+      createFixedPartition("Partition-2", true, 10),
+      createFixedPartition("Partition-3", true, 10),
+      createFixedPartition("Partition-4", true, 10),
+      createFixedPartition("Partition-5", true, 10)};
+
+  private static final FixedPartitionAttributes[] SECONDARY = {
+      createFixedPartition("Partition-1", false, 10),
+      createFixedPartition("Partition-2", false, 10),
+      createFixedPartition("Partition-3", false, 10),
+      createFixedPartition("Partition-4", false, 10),
+      createFixedPartition("Partition-5", false, 10)};
 
   private static final Map<Integer, PartitionBucket> BUCKET_TO_PARTITION =
       initialize(new HashMap<>());
-
-  private static final FixedPartitionAttributes Q1_PRIMARY =
-      createFixedPartition("Partition-1", true, 10);
-  private static final FixedPartitionAttributes Q2_PRIMARY =
-      createFixedPartition("Partition-2", true, 10);
-  private static final FixedPartitionAttributes Q3_PRIMARY =
-      createFixedPartition("Partition-3", true, 10);
-  private static final FixedPartitionAttributes Q4_PRIMARY =
-      createFixedPartition("Partition-4", true, 10);
-
-  private static final FixedPartitionAttributes Q1_SECONDARY =
-      createFixedPartition("Partition-1", false, 10);
-  private static final FixedPartitionAttributes Q2_SECONDARY =
-      createFixedPartition("Partition-2", false, 10);
-  private static final FixedPartitionAttributes Q3_SECONDARY =
-      createFixedPartition("Partition-3", false, 10);
-  private static final FixedPartitionAttributes Q4_SECONDARY =
-      createFixedPartition("Partition-4", false, 10);
 
   private VM accessor1VM;
   private VM server1VM;
   private VM server2VM;
   private VM server3VM;
   private VM server4VM;
+  private VM server5VM;
 
   @Rule
   public DistributedRule distributedRule = new DistributedRule();
@@ -102,9 +105,16 @@ public class FixedPartitioningHADistributedTest implements Serializable {
   public DistributedCloseableReference<ServerLauncher> serverLauncher =
       new DistributedCloseableReference<>();
   @Rule
+  public DistributedCloseableReference<AtomicBoolean> doPuts =
+      new DistributedCloseableReference<>();
+  @Rule
   public DistributedMap<VM, List<FixedPartitionAttributes>> fpaMap = new DistributedMap<>();
   @Rule
   public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
+  @Rule
+  public RandomRule randomRule = new RandomRule();
+  @Rule
+  public DistributedExecutorServiceRule executorServiceRule = new DistributedExecutorServiceRule();
 
   @Before
   public void setUp() {
@@ -113,55 +123,97 @@ public class FixedPartitioningHADistributedTest implements Serializable {
     server2VM = getVM(1);
     server3VM = getVM(2);
     server4VM = getVM(3);
+    server5VM = getVM(4);
 
     fpaMap.put(accessor1VM, emptyList());
-    fpaMap.put(server1VM, asList(Q1_PRIMARY, Q2_SECONDARY, Q3_SECONDARY));
-    fpaMap.put(server2VM, asList(Q2_PRIMARY, Q3_SECONDARY, Q4_SECONDARY));
-    fpaMap.put(server3VM, asList(Q3_PRIMARY, Q4_SECONDARY, Q1_SECONDARY));
-    fpaMap.put(server4VM, asList(Q4_PRIMARY, Q1_SECONDARY, Q2_SECONDARY));
+    fpaMap.put(server1VM, asList(PRIMARY[0], SECONDARY[1]));
+    fpaMap.put(server2VM, asList(PRIMARY[1], SECONDARY[2]));
+    fpaMap.put(server3VM, asList(PRIMARY[2], SECONDARY[3]));
+    fpaMap.put(server4VM, asList(PRIMARY[3], SECONDARY[4]));
+    fpaMap.put(server5VM, asList(PRIMARY[4], SECONDARY[0]));
 
-    for (VM vm : asList(server1VM, server2VM, server3VM, server4VM)) {
-      vm.invoke(() -> startServer(vm, ServerType.DATASTORE));
+    for (VM vm : asList(server1VM, server2VM, server3VM, server4VM, server5VM)) {
+      vm.invoke(() -> startServer(vm, "datastore" + vm.getId(), LOCAL_MAX_MEMORY));
     }
 
-    startServer(accessor1VM, ServerType.ACCESSOR);
+    accessor1VM.invoke(() -> startServer(accessor1VM, "accessor1"));
+
+    for (VM vm : asList(accessor1VM, server1VM, server2VM, server3VM, server4VM, server5VM)) {
+      vm.invoke(() -> doPuts.set(new AtomicBoolean(true)));
+    }
+
   }
 
   @Test
-  public void recoversAfterBouncingOneDatastore() {
-    accessor1VM.invokeAsync(() -> {
+  public void recoversAfterBouncingOneDatastore() throws Exception {
+    accessor1VM.invoke(() -> {
       Region<Object, Object> region = serverLauncher.get().getCache().getRegion(REGION_NAME);
       for (int i = 1; i <= COUNT; i++) {
-        region.put(partitionBucket(i), value(i));
+        region.put(BUCKET_TO_PARTITION.get(i), "value-" + i);
       }
-
-      // validateBucketsAreFullyRedundant();
-    });
-
-    server2VM.bounceForcibly();
-
-    server2VM.invoke(() -> {
-      startServer(server2VM, ServerType.DATASTORE);
-      //
-      // serverLauncher.get().getCache().getResourceManager()
-      // .createRestoreRedundancyOperation()
-      // .includeRegions(singleton(REGION_NAME))
-      // .start()
-      // .get(getTimeout().toMinutes(), MINUTES);
-      //
-      // validateBucketsAreFullyRedundant();
-    });
-
-    accessor1VM.invokeAsync(() -> {
-      Region<Object, Object> region = serverLauncher.get().getCache().getRegion(REGION_NAME);
-      region.put(partitionBucket(20), value(100));
 
       validateBucketsAreFullyRedundant();
     });
+
+    for (VM vm : asList(server1VM, server2VM, server3VM, server4VM, server5VM)) {
+      vm.invoke(() -> dumpBucketMetadata(vm.getId(), "BEFORE"));
+    }
+
+    for (VM vm : asList(accessor1VM, server1VM, server2VM, server3VM, server4VM, server5VM)) {
+      vm.invoke(() -> {
+        Region<Object, Object> region = serverLauncher.get().getCache().getRegion(REGION_NAME);
+        for (int i = 0; i < THREADS; i++) {
+          executorServiceRule.submit(() -> {
+            while (doPuts.get().get()) {
+              int bucketId = randomRule.nextInt(1, COUNT);
+              region.put(BUCKET_TO_PARTITION.get(bucketId), "value-" + (100 + bucketId));
+            }
+          });
+        }
+      });
+    }
+
+    for (VM vm : serversToBounce()) {
+      vm
+          .bounceForcibly()
+          .invoke(() -> startServer(vm, "datastore" + vm.getId(), 10));
+    }
+
+    Thread.sleep(2000);
+
+    for (VM vm : asList(accessor1VM, server1VM, server2VM, server3VM, server4VM, server5VM)) {
+      vm.invoke(() -> doPuts.get().set(false));
+    }
+
+    for (VM vm : asList(accessor1VM, server1VM, server2VM, server3VM, server4VM, server5VM)) {
+      vm.invoke(() -> {
+        await().until(() -> executorServiceRule.getThreads().isEmpty());
+      });
+    }
+
+    for (VM vm : asList(server1VM, server2VM, server3VM, server4VM, server5VM)) {
+      vm.invoke(() -> dumpBucketMetadata(vm.getId(), "AFTER"));
+    }
+
+    server2VM.invoke(() -> {
+      Region<Object, Object> region = serverLauncher.get().getCache().getRegion(REGION_NAME);
+      PartitionedRegion partitionedRegion = (PartitionedRegion) region;
+
+      // RegionAdvisor regionAdvisor = partitionedRegion.getRegionAdvisor();
+      // assertThat(regionAdvisor.getBucketRedundancy(20)).isEqualTo(REDUNDANT_COPIES);
+
+      PartitionedRegionDataStore dataStore = partitionedRegion.getDataStore();
+      // assertThat(dataStore.getAllLocalBucketIds()).contains(20);
+      //
+      // assertThat(dataStore.getAllLocalPrimaryBucketIds()).contains(20);
+    });
   }
 
-  private void startServer(VM vm, ServerType serverType) {
-    String name = serverType.name(vm.getId());
+  private void startServer(VM vm, String name) {
+    startServer(vm, name, 0);
+  }
+
+  private void startServer(VM vm, String name, int localMaxMemory) {
     serverLauncher.set(new ServerLauncher.Builder()
         .set(getDistributedSystemProperties())
         .set(MEMBER_TIMEOUT, "2000")
@@ -169,19 +221,19 @@ public class FixedPartitioningHADistributedTest implements Serializable {
         .setDisableDefaultServer(true)
         .setMemberName(name)
         .setWorkingDirectory(folder(name).getAbsolutePath())
-        .build());
-
-    serverLauncher.get().start();
+        .build())
+        .get()
+        .start();
 
     PartitionAttributesFactory<PartitionBucket, Object> partitionAttributesFactory =
         new PartitionAttributesFactory<PartitionBucket, Object>()
-            .setLocalMaxMemory(serverType.localMaxMemory())
+            .setLocalMaxMemory(localMaxMemory)
             .setPartitionResolver(new PartitionBucketResolver())
             .setRedundantCopies(REDUNDANT_COPIES)
             .setTotalNumBuckets(TOTAL_NUM_BUCKETS);
 
     List<FixedPartitionAttributes> fpaList = fpaMap.get(vm);
-    if (CollectionUtils.isNotEmpty(fpaList)) {
+    if (isNotEmpty(fpaList)) {
       fpaList.forEach(fpa -> partitionAttributesFactory.addFixedPartitionAttributes(fpa));
     }
 
@@ -189,6 +241,26 @@ public class FixedPartitioningHADistributedTest implements Serializable {
         .createRegionFactory(PARTITION)
         .setPartitionAttributes(partitionAttributesFactory.create())
         .create(REGION_NAME);
+  }
+
+  private void dumpBucketMetadata(int vmId, String when) {
+    Region<Object, Object> region = serverLauncher.get().getCache().getRegion(REGION_NAME);
+    PartitionedRegion partitionedRegion = (PartitionedRegion) region;
+
+    PartitionedRegionDataStore dataStore = partitionedRegion.getDataStore();
+    System.out.println("KIRK:" + when + ": server" + vmId + " contains bucket ids " +
+        dataStore.getAllLocalBuckets());
+  }
+
+  private List<VM> serversToBounce() {
+    List<VM> serversToBounce = new ArrayList<>();
+    List<VM> servers = asList(server1VM, server2VM, server3VM, server4VM, server5VM);
+    for (int i = 0; i < 2; i++) {
+      VM vm = randomRule.next(servers);
+      serversToBounce.add(vm);
+      servers.remove(vm);
+    }
+    return serversToBounce;
   }
 
   private void validateBucketsAreFullyRedundant() {
@@ -216,35 +288,6 @@ public class FixedPartitioningHADistributedTest implements Serializable {
     return map;
   }
 
-  private static PartitionBucket partitionBucket(int partitionBucket) {
-    return BUCKET_TO_PARTITION.get(partitionBucket);
-  }
-
-  private static String value(int i) {
-    return "value-" + i;
-  }
-
-  private enum ServerType {
-    ACCESSOR(MEMORY_ACCESSOR, id -> "accessor1"),
-    DATASTORE(MEMORY_DATASTORE, id -> "datastore" + id);
-
-    private final int localMaxMemory;
-    private final Function<Integer, String> nameFunction;
-
-    ServerType(int localMaxMemory, Function<Integer, String> nameFunction) {
-      this.localMaxMemory = localMaxMemory;
-      this.nameFunction = nameFunction;
-    }
-
-    int localMaxMemory() {
-      return localMaxMemory;
-    }
-
-    String name(int id) {
-      return nameFunction.apply(id);
-    }
-  }
-
   public static class PartitionBucket implements Serializable {
 
     private final int partitionBucket;
@@ -252,7 +295,7 @@ public class FixedPartitioningHADistributedTest implements Serializable {
 
     private PartitionBucket(int partitionBucket) {
       this.partitionBucket = partitionBucket;
-      int partition = (partitionBucket + BUCKETS - 1) / BUCKETS;
+      int partition = (partitionBucket + PARTITION_BUCKETS - 1) / PARTITION_BUCKETS;
       assertThat(partition > 0 && partition < PARTITIONS + 1);
       partitionName = "Partition-" + partition;
     }

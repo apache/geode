@@ -17,13 +17,18 @@
 package org.apache.geode.test.dunit.rules;
 
 import static org.apache.geode.test.dunit.VM.DEFAULT_VM_COUNT;
+import static org.apache.geode.util.internal.CompletionUtils.close;
+import static org.apache.geode.util.internal.CompletionUtils.openLatch;
+import static org.apache.geode.util.internal.CompletionUtils.toFalse;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+
 
 /**
  * DistributedReference is a JUnit Rule that provides automated tearDown for a static
@@ -212,6 +217,12 @@ public class DistributedReference<V> extends AbstractDistributedRule {
     if (value instanceof AutoCloseable) {
       close((AutoCloseable) value);
 
+    } else if (value instanceof AtomicBoolean) {
+      toFalse((AtomicBoolean) value);
+
+    } else if (value instanceof CountDownLatch) {
+      openLatch((CountDownLatch) value);
+
     } else if (hasMethod(value.getClass(), "close")) {
       invokeMethod(value, "close");
 
@@ -220,14 +231,6 @@ public class DistributedReference<V> extends AbstractDistributedRule {
 
     } else if (hasMethod(value.getClass(), "stop")) {
       invokeMethod(value, "stop");
-    }
-  }
-
-  private static void close(AutoCloseable autoCloseable) {
-    try {
-      autoCloseable.close();
-    } catch (Exception e) {
-      throw new RuntimeException(e);
     }
   }
 
