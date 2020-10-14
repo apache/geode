@@ -50,7 +50,6 @@ gradle.taskGraph.whenReady({ graph ->
           if (! foundAttribute || 'platform'.equals(foundAttribute)) {
             projectDependencies.add(dependency)
           }
-
         } else {
           project.configurations.runtimeClasspath.files(dependency).each { depJar ->
             runtimeList.add(depJar.name)
@@ -65,12 +64,9 @@ gradle.taskGraph.whenReady({ graph ->
       // within it's parent's project dependencies.
       projectDependencies.clone().each { ProjectDependency projectDependency ->
         Project geodeProject = projectDependency.getDependencyProject()
-        if (projectDependencies.contains(geodeProject)) {
-            def parentProject = geodeProject
-            def collect = parentProject.configurations.runtimeClasspath.collect { it.name }
-            runtimeList.removeAll(collect)
-//            projectDependencies.removeAll(collect.collect {it-".jar"})
-        }
+        def collect = geodeProject.configurations.runtimeClasspath.collect { it.name }
+        runtimeList.removeAll(collect)
+//      projectDependencies.removeAll(collect.collect {it-".jar"})
       }
 
       manifest {
@@ -81,5 +77,3 @@ gradle.taskGraph.whenReady({ graph ->
     }
   }
 })
-
-
