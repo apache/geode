@@ -15,6 +15,7 @@
 package org.apache.geode.redis.internal.executor.set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -28,19 +29,23 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
 
 import org.apache.geode.management.internal.cli.util.ThreePhraseGenerator;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
 public abstract class AbstractSMoveIntegrationTest implements RedisPortSupplier {
   private Jedis jedis;
   private Jedis jedis2;
-  private static ThreePhraseGenerator generator = new ThreePhraseGenerator();
+  private static final ThreePhraseGenerator generator = new ThreePhraseGenerator();
+  private static final int REDIS_CLIENT_TIMEOUT =
+      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), 10000000);
-    jedis2 = new Jedis("localhost", getPort(), 10000000);
+    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
@@ -48,6 +53,31 @@ public abstract class AbstractSMoveIntegrationTest implements RedisPortSupplier 
     jedis.flushAll();
     jedis.close();
     jedis2.close();
+  }
+
+  @Test
+  public void givenSourceNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SMOVE))
+        .hasMessageContaining("ERR wrong number of arguments for 'smove' command");
+  }
+
+  @Test
+  public void givenDestinationNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SMOVE, "source"))
+        .hasMessageContaining("ERR wrong number of arguments for 'smove' command");
+  }
+
+  @Test
+  public void givenMemberNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SMOVE, "source", "destination"))
+        .hasMessageContaining("ERR wrong number of arguments for 'smove' command");
+  }
+
+  @Test
+  public void givenMoreThanFourArguments_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(
+        () -> jedis.sendCommand(Protocol.Command.SMOVE, "key", "destination", "member", "extraArg"))
+            .hasMessageContaining("ERR wrong number of arguments for 'smove' command");
   }
 
   @Test

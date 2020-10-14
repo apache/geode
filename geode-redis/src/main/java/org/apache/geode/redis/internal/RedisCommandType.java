@@ -181,7 +181,7 @@ public enum RedisCommandType {
    *************** Connection *************
    ***************************************/
 
-  ECHO(new EchoExecutor(), UNSUPPORTED),
+  ECHO(new EchoExecutor(), UNSUPPORTED, new ExactParameterRequirements(2)),
 
   /***************************************
    *************** Keys ******************
@@ -193,26 +193,28 @@ public enum RedisCommandType {
    ************** Strings ****************
    ***************************************/
 
-  BITCOUNT(new BitCountExecutor(), UNSUPPORTED),
-  BITOP(new BitOpExecutor(), UNSUPPORTED),
-  BITPOS(new BitPosExecutor(), UNSUPPORTED),
-  DECR(new DecrExecutor(), UNSUPPORTED),
-  DECRBY(new DecrByExecutor(), UNSUPPORTED),
-  GETBIT(new GetBitExecutor(), UNSUPPORTED),
-  GETRANGE(new GetRangeExecutor(), UNSUPPORTED),
-  GETSET(new GetSetExecutor(), UNSUPPORTED),
-  INCR(new IncrExecutor(), UNSUPPORTED),
-  INCRBY(new IncrByExecutor(), UNSUPPORTED),
-  INCRBYFLOAT(new IncrByFloatExecutor(), UNSUPPORTED),
-  MGET(new MGetExecutor(), UNSUPPORTED),
-  MSET(new MSetExecutor(), UNSUPPORTED),
-  MSETNX(new MSetNXExecutor(), UNSUPPORTED),
-  PSETEX(new PSetEXExecutor(), UNSUPPORTED),
-  SETEX(new SetEXExecutor(), UNSUPPORTED),
-  SETBIT(new SetBitExecutor(), UNSUPPORTED),
-  SETNX(new SetNXExecutor(), UNSUPPORTED),
-  SETRANGE(new SetRangeExecutor(), UNSUPPORTED),
-  STRLEN(new StrlenExecutor(), UNSUPPORTED),
+  BITCOUNT(new BitCountExecutor(), UNSUPPORTED, new MinimumParameterRequirements(2)),
+  BITOP(new BitOpExecutor(), UNSUPPORTED, new MinimumParameterRequirements(4)),
+  BITPOS(new BitPosExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3)),
+  DECR(new DecrExecutor(), UNSUPPORTED, new ExactParameterRequirements(2)),
+  DECRBY(new DecrByExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
+  GETBIT(new GetBitExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
+  GETRANGE(new GetRangeExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
+  GETSET(new GetSetExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
+  INCR(new IncrExecutor(), UNSUPPORTED, new ExactParameterRequirements(2)),
+  INCRBY(new IncrByExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
+  INCRBYFLOAT(new IncrByFloatExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
+  MGET(new MGetExecutor(), UNSUPPORTED, new MinimumParameterRequirements(2)),
+  MSET(new MSetExecutor(), UNSUPPORTED,
+      new MinimumParameterRequirements(3).and(new OddParameterRequirements())),
+  MSETNX(new MSetNXExecutor(), UNSUPPORTED,
+      new MinimumParameterRequirements(3).and(new OddParameterRequirements())),
+  PSETEX(new PSetEXExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
+  SETEX(new SetEXExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
+  SETBIT(new SetBitExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
+  SETNX(new SetNXExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
+  SETRANGE(new SetRangeExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
+  STRLEN(new StrlenExecutor(), UNSUPPORTED, new ExactParameterRequirements(2)),
 
   /***************************************
    **************** Hashes ***************
@@ -243,9 +245,8 @@ public enum RedisCommandType {
   SINTER(new SInterExecutor(), UNSUPPORTED, new MinimumParameterRequirements(2)),
   SINTERSTORE(new SInterStoreExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3)),
   SMOVE(new SMoveExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
-  SPOP(new SPopExecutor(), UNSUPPORTED,
-      new MinimumParameterRequirements(2).and(new MaximumParameterRequirements(3))
-          .and(new SpopParameterRequirements())),
+  SPOP(new SPopExecutor(), UNSUPPORTED, new MinimumParameterRequirements(2)
+      .and(new MaximumParameterRequirements(3, ERROR_SYNTAX)).and(new SpopParameterRequirements())),
   SRANDMEMBER(new SRandMemberExecutor(), UNSUPPORTED, new MinimumParameterRequirements(2)),
   SUNION(new SUnionExecutor(), UNSUPPORTED, new MinimumParameterRequirements(2)),
   SUNIONSTORE(new SUnionStoreExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3)),
@@ -256,12 +257,12 @@ public enum RedisCommandType {
    *************** Server ****************
    ***************************************/
 
-  DBSIZE(new DBSizeExecutor(), UNSUPPORTED),
-  FLUSHALL(new FlushAllExecutor(), UNSUPPORTED),
-  FLUSHDB(new FlushAllExecutor(), UNSUPPORTED),
+  DBSIZE(new DBSizeExecutor(), UNSUPPORTED, new ExactParameterRequirements(1)),
+  FLUSHALL(new FlushAllExecutor(), UNSUPPORTED, new MaximumParameterRequirements(2, ERROR_SYNTAX)),
+  FLUSHDB(new FlushAllExecutor(), UNSUPPORTED, new MaximumParameterRequirements(2, ERROR_SYNTAX)),
   INFO(new InfoExecutor(), UNSUPPORTED, new MaximumParameterRequirements(2, ERROR_SYNTAX)),
-  SHUTDOWN(new ShutDownExecutor(), UNSUPPORTED),
-  TIME(new TimeExecutor(), UNSUPPORTED),
+  SHUTDOWN(new ShutDownExecutor(), UNSUPPORTED, new MaximumParameterRequirements(2, ERROR_SYNTAX)),
+  TIME(new TimeExecutor(), UNSUPPORTED, new ExactParameterRequirements(1)),
 
   /////////// UNIMPLEMENTED /////////////////////
 

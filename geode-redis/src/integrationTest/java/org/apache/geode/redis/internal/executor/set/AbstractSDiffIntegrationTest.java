@@ -26,17 +26,21 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
 
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
 public abstract class AbstractSDiffIntegrationTest implements RedisPortSupplier {
   private Jedis jedis;
   private Jedis jedis2;
+  private static final int REDIS_CLIENT_TIMEOUT =
+      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), 10000000);
-    jedis2 = new Jedis("localhost", getPort(), 10000000);
+    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
@@ -44,6 +48,24 @@ public abstract class AbstractSDiffIntegrationTest implements RedisPortSupplier 
     jedis.flushAll();
     jedis.close();
     jedis2.close();
+  }
+
+  @Test
+  public void sdiff_givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SDIFF))
+        .hasMessageContaining("ERR wrong number of arguments for 'sdiff' command");
+  }
+
+  @Test
+  public void sdiffstore_givenDestinationNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SDIFFSTORE))
+        .hasMessageContaining("ERR wrong number of arguments for 'sdiffstore' command");
+  }
+
+  @Test
+  public void sdiffstore_givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SDIFFSTORE, "destination"))
+        .hasMessageContaining("ERR wrong number of arguments for 'sdiffstore' command");
   }
 
   @Test

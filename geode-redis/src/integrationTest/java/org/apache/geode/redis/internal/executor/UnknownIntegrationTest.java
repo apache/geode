@@ -15,19 +15,13 @@
 
 package org.apache.geode.redis.internal.executor;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Test;
 import redis.clients.jedis.Jedis;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
-public class UnknownIntegrationTest {
+public class UnknownIntegrationTest extends AbstractUnknownIntegrationTest {
 
   public static Jedis jedis;
   public static final int REDIS_CLIENT_TIMEOUT =
@@ -36,24 +30,9 @@ public class UnknownIntegrationTest {
   @ClassRule
   public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
-  @BeforeClass
-  public static void setUp() {
-    jedis = new Jedis("localhost", server.getPort(), REDIS_CLIENT_TIMEOUT);
+  @Override
+  public int getPort() {
+    return server.getPort();
   }
 
-  @After
-  public void flushAll() {
-    jedis.flushAll();
-  }
-
-  @AfterClass
-  public static void tearDown() {
-    jedis.close();
-  }
-
-  @Test
-  public void shouldReturnUnknownCommandError() {
-    assertThatThrownBy(() -> jedis.sendCommand(() -> "fhqwhgads".getBytes()))
-        .hasMessageContaining("Unable to process unknown command fhqwhgads");
-  }
 }

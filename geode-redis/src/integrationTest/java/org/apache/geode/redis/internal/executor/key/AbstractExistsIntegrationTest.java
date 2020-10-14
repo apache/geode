@@ -16,6 +16,7 @@
 package org.apache.geode.redis.internal.executor.key;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -23,6 +24,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -49,6 +51,12 @@ public abstract class AbstractExistsIntegrationTest implements RedisPortSupplier
     jedis.close();
     jedis2.close();
     jedis3.close();
+  }
+
+  @Test
+  public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.EXISTS))
+        .hasMessageContaining("ERR wrong number of arguments for 'exists' command");
   }
 
   @Test

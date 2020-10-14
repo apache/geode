@@ -16,11 +16,13 @@
 package org.apache.geode.redis.internal.executor.key;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
 
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
@@ -40,6 +42,18 @@ public abstract class AbstractKeysIntegrationTest implements RedisPortSupplier {
   public void tearDown() {
     jedis.flushAll();
     jedis.close();
+  }
+
+  @Test
+  public void givenPatternNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.KEYS))
+        .hasMessageContaining("ERR wrong number of arguments for 'keys' command");
+  }
+
+  @Test
+  public void givenMoreThanTwoArguments_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.KEYS, "*", "extraArg"))
+        .hasMessageContaining("ERR wrong number of arguments for 'keys' command");
   }
 
   @Test

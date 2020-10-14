@@ -15,6 +15,7 @@
 package org.apache.geode.redis.internal.executor.string;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Random;
 
@@ -22,24 +23,47 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
 
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
 public abstract class AbstractIncrByFloatIntegrationTest implements RedisPortSupplier {
 
   private Jedis jedis;
   private Random rand;
+  private static final int REDIS_CLIENT_TIMEOUT =
+      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
     rand = new Random();
-    jedis = new Jedis("localhost", getPort(), 10000000);
+    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
     jedis.flushAll();
     jedis.close();
+  }
+
+  @Test
+  public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.INCRBYFLOAT))
+        .hasMessageContaining("ERR wrong number of arguments for 'incrbyfloat' command");
+  }
+
+  @Test
+  public void givenIncrementNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.INCRBYFLOAT, "key"))
+        .hasMessageContaining("ERR wrong number of arguments for 'incrbyfloat' command");
+  }
+
+  @Test
+  public void givenMoreThanThreeArgumentsProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(
+        () -> jedis.sendCommand(Protocol.Command.INCRBYFLOAT, "key", "5", "extraArg"))
+            .hasMessageContaining("ERR wrong number of arguments for 'incrbyfloat' command");
   }
 
   @Test

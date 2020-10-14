@@ -14,29 +14,46 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.Protocol;
 
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
 public abstract class AbstractGetIntegrationTest implements RedisPortSupplier {
 
   private Jedis jedis;
+  private static final int REDIS_CLIENT_TIMEOUT =
+      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), 10000000);
+    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
     jedis.flushAll();
     jedis.close();
+  }
+
+  @Test
+  public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.GET))
+        .hasMessageContaining("ERR wrong number of arguments for 'get' command");
+  }
+
+  @Test
+  public void givenMoreThanTwoArguments_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.GET, "key", "extraArg"))
+        .hasMessageContaining("ERR wrong number of arguments for 'get' command");
   }
 
   @Test
@@ -69,14 +86,13 @@ public abstract class AbstractGetIntegrationTest implements RedisPortSupplier {
     assertThat(result).isEmpty();
   }
 
-  @Test(expected = JedisDataException.class)
+  @Test
   public void testGET_shouldThrowJedisDataExceptionError_givenValueIsNotAString() {
     String key = "key";
     String field = "field";
     String member = "member";
 
     jedis.sadd(key, field, member);
-
-    jedis.get(key);
+    assertThatThrownBy(() -> jedis.get(key)).hasMessageContaining(ERROR_WRONG_TYPE);
   }
 }

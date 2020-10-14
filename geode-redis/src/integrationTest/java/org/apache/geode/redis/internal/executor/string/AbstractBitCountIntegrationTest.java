@@ -22,6 +22,7 @@ import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.BitPosParams;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
 
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
@@ -38,6 +39,12 @@ public abstract class AbstractBitCountIntegrationTest implements RedisPortSuppli
   public void tearDown() {
     jedis.flushAll();
     jedis.close();
+  }
+
+  @Test
+  public void bitcount_givenLessThanTwoArguments_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.BITCOUNT))
+        .hasMessageContaining("ERR wrong number of arguments for 'bitcount' command");
   }
 
   @Test

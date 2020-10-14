@@ -15,25 +15,29 @@
 package org.apache.geode.redis.internal.executor.string;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
 public abstract class AbstractDecrIntegrationTest implements RedisPortSupplier {
 
   private Jedis jedis;
   private Jedis jedis2;
-  private static int ITERATION_COUNT = 4000;
+  private static final int REDIS_CLIENT_TIMEOUT =
+      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), 10000000);
-    jedis2 = new Jedis("localhost", getPort(), 10000000);
+    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
@@ -41,6 +45,18 @@ public abstract class AbstractDecrIntegrationTest implements RedisPortSupplier {
     jedis.flushAll();
     jedis.close();
     jedis2.close();
+  }
+
+  @Test
+  public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.DECR))
+        .hasMessageContaining("ERR wrong number of arguments for 'decr' command");
+  }
+
+  @Test
+  public void givenMoreThanTwoArguments_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.DECR, "key", "extraArg"))
+        .hasMessageContaining("ERR wrong number of arguments for 'decr' command");
   }
 
   @Test
@@ -67,8 +83,8 @@ public abstract class AbstractDecrIntegrationTest implements RedisPortSupplier {
   public void testDecr_shouldBeAtomic() {
     jedis.set("contestedKey", "0");
 
-    new ConcurrentLoopingThreads(
-        ITERATION_COUNT,
+    int ITERATION_COUNT = 4000;
+    new ConcurrentLoopingThreads(ITERATION_COUNT,
         (i) -> jedis.decr("contestedKey"),
         (i) -> jedis2.decr("contestedKey"))
             .run();

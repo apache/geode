@@ -15,9 +15,7 @@
  */
 package org.apache.geode.redis.internal.executor.key;
 
-import java.util.List;
 
-import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
@@ -27,14 +25,7 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class PersistExecutor extends AbstractExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
-    List<byte[]> commandElems = command.getProcessedCommand();
-
-    if (commandElems.size() != 2) {
-      return RedisResponse.error(ArityDef.PERSIST);
-    }
-
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     ByteArrayWrapper key = command.getKey();
 
     RedisKeyCommands redisKeyCommands = new RedisKeyCommandsFunctionInvoker(

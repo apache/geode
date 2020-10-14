@@ -19,15 +19,13 @@ import static org.apache.geode.redis.internal.executor.string.SetOptions.Exists.
 
 import java.util.List;
 
-import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
-import org.apache.geode.redis.internal.executor.Extendable;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class SetEXExecutor extends StringExecutor implements Extendable {
+public class SetEXExecutor extends StringExecutor {
 
   private static final String ERROR_SECONDS_NOT_A_NUMBER =
       "The expiration argument provided was not a number";
@@ -40,14 +38,9 @@ public class SetEXExecutor extends StringExecutor implements Extendable {
   private static final int VALUE_INDEX = 3;
 
   @Override
-  public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
+
     List<byte[]> commandElems = command.getProcessedCommand();
-
-    if (commandElems.size() < 4) {
-      return RedisResponse.error(getArgsError());
-    }
-
     RedisStringCommands stringCommands = getRedisStringCommands(context);
 
     ByteArrayWrapper key = command.getKey();
@@ -78,10 +71,4 @@ public class SetEXExecutor extends StringExecutor implements Extendable {
   protected boolean timeUnitMillis() {
     return false;
   }
-
-  @Override
-  public String getArgsError() {
-    return ArityDef.SETEX;
-  }
-
 }

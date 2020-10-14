@@ -14,9 +14,10 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
+
 import java.util.List;
 
-import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Coder;
@@ -25,18 +26,12 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class GetRangeExecutor extends StringExecutor {
 
-  private static final String ERROR_NOT_INT = "value is not an integer or out of range";
   private static final int startIndex = 2;
   private static final int stopIndex = 3;
 
   @Override
-  public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
-
-    if (commandElems.size() != 4) {
-      return RedisResponse.error(ArityDef.GETRANGE);
-    }
 
     long start;
     long end;
@@ -47,7 +42,7 @@ public class GetRangeExecutor extends StringExecutor {
       start = Coder.bytesToLong(startI);
       end = Coder.bytesToLong(stopI);
     } catch (NumberFormatException e) {
-      return RedisResponse.error(ERROR_NOT_INT);
+      return RedisResponse.error(ERROR_NOT_INTEGER);
     }
 
     RedisStringCommands stringCommands = getRedisStringCommands(context);

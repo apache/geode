@@ -17,7 +17,7 @@ package org.apache.geode.redis.internal.executor;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_UNKNOWN_COMMAND;
 
-import java.util.Collection;
+import java.util.List;
 
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
@@ -29,21 +29,24 @@ public class UnknownExecutor extends AbstractExecutor {
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
 
-    StringBuilder commandProcessedText = new StringBuilder();
+    StringBuilder commandArguments = new StringBuilder();
+    String commandText = null;
+    List<byte[]> commandElems = command.getProcessedCommand();
 
-    Collection<byte[]> processedCmds = command.getProcessedCommand();
+    if (commandElems != null && !commandElems.isEmpty()) {
+      commandText = Coder.bytesToString(commandElems.get(0));
 
-    if (processedCmds != null && !processedCmds.isEmpty()) {
-
-      for (byte[] bytes : processedCmds) {
-        if (bytes == null || bytes.length == 0) {
-          continue; // skip blanks
+      if (commandElems.size() > 1) {
+        for (int i = 1; i < commandElems.size(); i++) {
+          if (commandElems.get(i) == null || commandElems.get(i).length == 0) {
+            continue; // skip blanks
+          }
+          commandArguments.append(" `").append(Coder.bytesToString(commandElems.get(i)))
+              .append("`,");
         }
-
-        commandProcessedText.append(Coder.bytesToString(bytes)).append(" ");
       }
     }
 
-    return RedisResponse.error(ERROR_UNKNOWN_COMMAND + " " + commandProcessedText);
+    return RedisResponse.error(String.format(ERROR_UNKNOWN_COMMAND, commandText, commandArguments));
   }
 }

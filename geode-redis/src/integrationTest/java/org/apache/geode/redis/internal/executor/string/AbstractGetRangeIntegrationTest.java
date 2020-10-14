@@ -14,28 +14,73 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
 
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
 public abstract class AbstractGetRangeIntegrationTest implements RedisPortSupplier {
 
   private Jedis jedis;
+  private static final int REDIS_CLIENT_TIMEOUT =
+      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), 10000000);
+    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
     jedis.flushAll();
     jedis.close();
+  }
+
+  @Test
+  public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.GETRANGE))
+        .hasMessageContaining("ERR wrong number of arguments for 'getrange' command");
+  }
+
+  @Test
+  public void givenStartNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.GETRANGE, "key"))
+        .hasMessageContaining("ERR wrong number of arguments for 'getrange' command");
+  }
+
+  @Test
+  public void givenEndNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.GETRANGE, "key", "1"))
+        .hasMessageContaining("ERR wrong number of arguments for 'getrange' command");
+  }
+
+  @Test
+  public void givenMoreThanFourArgumentsProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(
+        () -> jedis.sendCommand(Protocol.Command.GETRANGE, "key", "1", "5", "extraArg"))
+            .hasMessageContaining("ERR wrong number of arguments for 'getrange' command");
+  }
+
+  @Test
+  public void givenStartIndexIsNotAnInteger_returnsNotIntegerError() {
+    assertThatThrownBy(
+        () -> jedis.sendCommand(Protocol.Command.GETRANGE, "key", "NaN", "5"))
+            .hasMessageContaining(ERROR_NOT_INTEGER);
+  }
+
+  @Test
+  public void givenEndIndexIsNotAnInteger_returnsNotIntegerError() {
+    assertThatThrownBy(
+        () -> jedis.sendCommand(Protocol.Command.GETRANGE, "key", "0", "NaN"))
+            .hasMessageContaining(ERROR_NOT_INTEGER);
   }
 
   @Test
