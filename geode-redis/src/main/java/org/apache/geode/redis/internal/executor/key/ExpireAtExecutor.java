@@ -20,16 +20,14 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 
 import java.util.List;
 
-import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
-import org.apache.geode.redis.internal.executor.Extendable;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class ExpireAtExecutor extends AbstractExecutor implements Extendable {
+public class ExpireAtExecutor extends AbstractExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command,
@@ -60,10 +58,4 @@ public class ExpireAtExecutor extends AbstractExecutor implements Extendable {
   protected boolean timeUnitMillis() {
     return false;
   }
-
-  @Override
-  public String getArgsError() {
-    return ArityDef.EXPIREAT;
-  }
-
 }

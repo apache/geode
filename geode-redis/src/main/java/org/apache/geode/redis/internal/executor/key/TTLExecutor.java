@@ -17,15 +17,13 @@ package org.apache.geode.redis.internal.executor.key;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
-import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
-import org.apache.geode.redis.internal.executor.Extendable;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class TTLExecutor extends AbstractExecutor implements Extendable {
+public class TTLExecutor extends AbstractExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command,
@@ -45,8 +43,4 @@ public class TTLExecutor extends AbstractExecutor implements Extendable {
     return false;
   }
 
-  @Override
-  public String getArgsError() {
-    return ArityDef.TTL;
-  }
 }
