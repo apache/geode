@@ -464,14 +464,18 @@ public class DistributionImpl implements Distribution {
       return membership.requestMemberRemoval(member, reason);
     } catch (MemberDisconnectedException | MembershipClosedException e) {
       checkCancelled();
-      logger.info("*** EB: DistributionImpl.requestMemberRemoval member: " + member.getName()
-          + "and now the StackTrace: \n: " + e.getStackTrace());
+      logger.info(
+          "*** EB: DistributionImpl.requestMemberRemoval - catch (MemberDisconnectedException | MembershipClosedException e) -member: "
+              + member.getName()
+              + "and now the StackTrace: \n: " + e.getStackTrace());
       throw new ForcedDisconnectException("MemberDisconnected - Distribution is closed");
     } catch (RuntimeException e) {
       checkCancelled();
       if (!membership.isConnected()) {
-        logger.info("*** EB: DistributionImpl.requestMemberRemoval member: " + member.getName()
-            + "throw DSDE distribution closed");
+        logger.info(
+            "*** EB: DistributionImpl.requestMemberRemoval - catch (RuntimeException e) - member: "
+                + member.getName()
+                + "throw DSDE distribution closed");
         throw new DistributedSystemDisconnectedException("Distribution is closed", e);
       }
       logger.info("*** 4? - EB: DistributionImpl.requestMemberRemoval - throw e: " + e.toString());
