@@ -33,13 +33,13 @@ import org.junit.Test;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.rules.DistributedCloseableReference;
+import org.apache.geode.test.dunit.rules.DistributedReference;
 
 @SuppressWarnings("serial")
-public class DistributedCloseableReferenceCacheExampleTest implements Serializable {
+public class DistributedReferenceCacheExampleTest implements Serializable {
 
   @Rule
-  public DistributedCloseableReference<Cache> cache = new DistributedCloseableReference<>();
+  public DistributedReference<Cache> cache = new DistributedReference<>();
 
   @Before
   public void setUp() {

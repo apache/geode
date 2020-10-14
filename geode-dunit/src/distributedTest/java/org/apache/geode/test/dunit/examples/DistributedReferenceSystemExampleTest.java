@@ -32,14 +32,13 @@ import org.junit.Test;
 
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.rules.DistributedCloseableReference;
+import org.apache.geode.test.dunit.rules.DistributedReference;
 
 @SuppressWarnings("serial")
-public class DistributedCloseableReferenceSystemExampleTest implements Serializable {
+public class DistributedReferenceSystemExampleTest implements Serializable {
 
   @Rule
-  public DistributedCloseableReference<DistributedSystem> system =
-      new DistributedCloseableReference<>();
+  public DistributedReference<DistributedSystem> system = new DistributedReference<>();
 
   @Before
   public void setUp() {

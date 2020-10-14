@@ -19,10 +19,9 @@ import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.test.dunit.VM.getController;
-import static org.apache.geode.test.dunit.VM.getHostName;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.dunit.VM.getVMId;
-import static org.apache.geode.test.dunit.rules.DistributedRule.getLocatorPort;
+import static org.apache.geode.test.dunit.rules.DistributedRule.getLocators;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
@@ -31,52 +30,39 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.distributed.LocatorLauncher;
+import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.rules.DistributedCloseableReference;
+import org.apache.geode.test.dunit.rules.DistributedReference;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 @SuppressWarnings("serial")
-public class DistributedCloseableReferenceLocatorLauncherExampleTest implements Serializable {
+public class DistributedReferenceServerLauncherExampleTest implements Serializable {
 
   @Rule
-  public DistributedCloseableReference<LocatorLauncher> locatorLauncher =
-      new DistributedCloseableReference<>();
+  public DistributedReference<ServerLauncher> serverLauncher = new DistributedReference<>();
 
   @Rule
   public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
 
   @Before
   public void setUp() {
-    String hostName = getHostName();
-    int[] randomPorts = AvailablePortHelper.getRandomAvailableTCPPorts(5);
+    String locators = getLocators();
 
-    StringBuilder locators = new StringBuilder()
-        .append(hostName).append('[').append(getLocatorPort()).append(']').append(',')
-        .append(hostName).append('[').append(randomPorts[0]).append(']').append(',')
-        .append(hostName).append('[').append(randomPorts[1]).append(']').append(',')
-        .append(hostName).append('[').append(randomPorts[2]).append(']').append(',')
-        .append(hostName).append('[').append(randomPorts[3]).append(']').append(',')
-        .append(hostName).append('[').append(randomPorts[4]).append(']');
-
-    int index = 0;
     for (VM vm : asList(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
-      int whichPort = index++;
       vm.invoke(() -> {
-        String name = "locator-" + getVMId();
-        LocatorLauncher locatorLauncher = new LocatorLauncher.Builder()
+        String name = "server-" + getVMId();
+        ServerLauncher serverLauncher = new ServerLauncher.Builder()
             .setWorkingDirectory(temporaryFolder.newFolder(name).getAbsolutePath())
             .setMemberName(name)
-            .setPort(randomPorts[whichPort])
-            .set(LOCATORS, locators.toString())
+            .setDisableDefaultServer(true)
+            .set(LOCATORS, locators)
             .set(HTTP_SERVICE_PORT, "0")
             .set(JMX_MANAGER_PORT, "0")
             .build();
-        locatorLauncher.start();
-        this.locatorLauncher.set(locatorLauncher);
+        serverLauncher.start();
+        this.serverLauncher.set(serverLauncher);
       });
     }
   }
@@ -85,9 +71,9 @@ public class DistributedCloseableReferenceLocatorLauncherExampleTest implements 
   public void eachVmHasItsOwnLocatorLauncher() {
     for (VM vm : asList(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
       vm.invoke(() -> {
-        assertThat(locatorLauncher.get()).isNotNull();
+        assertThat(serverLauncher.get()).isNotNull();
 
-        InternalCache cache = (InternalCache) locatorLauncher.get().getCache();
+        InternalCache cache = (InternalCache) serverLauncher.get().getCache();
         InternalDistributedSystem system = cache.getInternalDistributedSystem();
         assertThat(system.getAllOtherMembers()).hasSize(5);
       });

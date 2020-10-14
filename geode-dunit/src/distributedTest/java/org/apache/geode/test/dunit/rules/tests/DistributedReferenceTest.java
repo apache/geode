@@ -36,11 +36,11 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.rules.DistributedCloseableReference;
+import org.apache.geode.test.dunit.rules.DistributedReference;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 
 @SuppressWarnings({"serial", "CodeBlock2Expr"})
-public class DistributedCloseableReferenceTest {
+public class DistributedReferenceTest {
 
   @Rule
   public DistributedRule distributedRule = new DistributedRule();
@@ -217,8 +217,7 @@ public class DistributedCloseableReferenceTest {
     private static final AtomicReference<AutoCloseable> autoCloseable = new AtomicReference<>();
 
     @Rule
-    public DistributedCloseableReference<AutoCloseable> reference =
-        new DistributedCloseableReference<>();
+    public DistributedReference<AutoCloseable> reference = new DistributedReference<>();
 
     @Before
     public void setUp() {
@@ -237,8 +236,8 @@ public class DistributedCloseableReferenceTest {
     private static final AtomicReference<AutoCloseable> autoCloseable = new AtomicReference<>();
 
     @Rule
-    public DistributedCloseableReference<AutoCloseable> reference =
-        new DistributedCloseableReference<AutoCloseable>().autoClose(false);
+    public DistributedReference<AutoCloseable> reference = new DistributedReference<AutoCloseable>()
+        .autoClose(false);
 
     @Before
     public void setUp() {
@@ -257,8 +256,7 @@ public class DistributedCloseableReferenceTest {
     private static final AtomicReference<AutoCloseable> autoCloseable = new AtomicReference<>();
 
     @Rule
-    public DistributedCloseableReference<AutoCloseable> reference =
-        new DistributedCloseableReference<>();
+    public DistributedReference<AutoCloseable> reference = new DistributedReference<>();
 
     @Before
     public void setUp() {
@@ -282,8 +280,7 @@ public class DistributedCloseableReferenceTest {
     private static final AtomicReference<AutoCloseable> autoCloseable = new AtomicReference<>();
 
     @Rule
-    public DistributedCloseableReference<AutoCloseable> reference =
-        new DistributedCloseableReference<>();
+    public DistributedReference<AutoCloseable> reference = new DistributedReference<>();
 
     @Before
     public void setUp() {
@@ -311,8 +308,7 @@ public class DistributedCloseableReferenceTest {
     private static final AtomicReference<Closeable> closeable = new AtomicReference<>();
 
     @Rule
-    public DistributedCloseableReference<Closeable> reference =
-        new DistributedCloseableReference<>();
+    public DistributedReference<Closeable> reference = new DistributedReference<>();
 
     @Before
     public void setUp() {
@@ -331,8 +327,7 @@ public class DistributedCloseableReferenceTest {
     private static final AtomicReference<Closeable> closeable = new AtomicReference<>();
 
     @Rule
-    public DistributedCloseableReference<Closeable> reference =
-        new DistributedCloseableReference<>();
+    public DistributedReference<Closeable> reference = new DistributedReference<>();
 
     @Before
     public void setUp() {
@@ -356,8 +351,7 @@ public class DistributedCloseableReferenceTest {
     private static final AtomicReference<Closeable> closeable = new AtomicReference<>();
 
     @Rule
-    public DistributedCloseableReference<Closeable> reference =
-        new DistributedCloseableReference<>();
+    public DistributedReference<Closeable> reference = new DistributedReference<>();
 
     @Before
     public void setUp() {
@@ -385,8 +379,7 @@ public class DistributedCloseableReferenceTest {
     private static final AtomicReference<WithClose> withClose = new AtomicReference<>();
 
     @Rule
-    public DistributedCloseableReference<WithClose> reference =
-        new DistributedCloseableReference<>();
+    public DistributedReference<WithClose> reference = new DistributedReference<>();
 
     @Before
     public void setUp() {
@@ -405,8 +398,7 @@ public class DistributedCloseableReferenceTest {
     private static final AtomicReference<WithClose> withClose = new AtomicReference<>();
 
     @Rule
-    public DistributedCloseableReference<WithClose> reference =
-        new DistributedCloseableReference<>();
+    public DistributedReference<WithClose> reference = new DistributedReference<>();
 
     @Before
     public void setUp() {
@@ -430,8 +422,7 @@ public class DistributedCloseableReferenceTest {
     private static final AtomicReference<WithClose> withClose = new AtomicReference<>();
 
     @Rule
-    public DistributedCloseableReference<WithClose> reference =
-        new DistributedCloseableReference<>();
+    public DistributedReference<WithClose> reference = new DistributedReference<>();
 
     @Before
     public void setUp() {
@@ -459,8 +450,7 @@ public class DistributedCloseableReferenceTest {
     private static final AtomicReference<WithDisconnect> withDisconnect = new AtomicReference<>();
 
     @Rule
-    public DistributedCloseableReference<WithDisconnect> reference =
-        new DistributedCloseableReference<>();
+    public DistributedReference<WithDisconnect> reference = new DistributedReference<>();
 
     @Before
     public void setUp() {
@@ -479,8 +469,7 @@ public class DistributedCloseableReferenceTest {
     private static final AtomicReference<WithDisconnect> withDisconnect = new AtomicReference<>();
 
     @Rule
-    public DistributedCloseableReference<WithDisconnect> reference =
-        new DistributedCloseableReference<>();
+    public DistributedReference<WithDisconnect> reference = new DistributedReference<>();
 
     @Before
     public void setUp() {
@@ -504,8 +493,7 @@ public class DistributedCloseableReferenceTest {
     private static final AtomicReference<WithDisconnect> withDisconnect = new AtomicReference<>();
 
     @Rule
-    public DistributedCloseableReference<WithDisconnect> reference =
-        new DistributedCloseableReference<>();
+    public DistributedReference<WithDisconnect> reference = new DistributedReference<>();
 
     @Before
     public void setUp() {
@@ -533,8 +521,7 @@ public class DistributedCloseableReferenceTest {
     private static final AtomicReference<WithStop> withStop = new AtomicReference<>();
 
     @Rule
-    public DistributedCloseableReference<WithStop> reference =
-        new DistributedCloseableReference<>();
+    public DistributedReference<WithStop> reference = new DistributedReference<>();
 
     @Before
     public void setUp() {
@@ -553,8 +540,7 @@ public class DistributedCloseableReferenceTest {
     private static final AtomicReference<WithStop> withStop = new AtomicReference<>();
 
     @Rule
-    public DistributedCloseableReference<WithStop> reference =
-        new DistributedCloseableReference<>();
+    public DistributedReference<WithStop> reference = new DistributedReference<>();
 
     @Before
     public void setUp() {
@@ -578,8 +564,7 @@ public class DistributedCloseableReferenceTest {
     private static final AtomicReference<WithStop> withStop = new AtomicReference<>();
 
     @Rule
-    public DistributedCloseableReference<WithStop> reference =
-        new DistributedCloseableReference<>();
+    public DistributedReference<WithStop> reference = new DistributedReference<>();
 
     @Before
     public void setUp() {
