@@ -110,7 +110,10 @@ public class DeployCommand extends GfshCommand {
             jarNames.add(FilenameUtils.getName(jarFullPath));
           } catch (Exception ex) {
             if (fileInputStream != null) {
-              fileInputStream.close();
+              try {
+                fileInputStream.close();
+              } catch (IOException ignore) {
+              }
             }
             throw ex;
           }

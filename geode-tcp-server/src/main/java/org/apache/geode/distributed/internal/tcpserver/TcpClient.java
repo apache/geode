@@ -200,15 +200,15 @@ public class TcpClient {
       out.flush();
 
       if (replyExpected) {
-        DataInputStream in = null;
-        try {
-          in = new DataInputStream(sock.getInputStream());
+
+        try (DataInputStream dataInputStream = new DataInputStream(sock.getInputStream());
+            VersionedDataInputStream versionedDataInputStream =
+                new VersionedDataInputStream(dataInputStream, serverVersion)) {
           if (debugVersionMessage != null && logger.isDebugEnabled()) {
             logger.debug(debugVersionMessage);
           }
-          in = new VersionedDataInputStream(in, serverVersion);
           try {
-            Object response = objectDeserializer.readObject(in);
+            Object response = objectDeserializer.readObject(versionedDataInputStream);
             logger.debug("received response: {}", response);
             return response;
           } catch (EOFException ex) {
@@ -217,10 +217,6 @@ public class TcpClient {
                 + " did not respond. This is normal if the locator was shutdown. If it wasn't check its log for exceptions.");
             eof.initCause(ex);
             throw eof;
-          }
-        } finally {
-          if (in != null) {
-            in.close();
           }
         }
       } else {
