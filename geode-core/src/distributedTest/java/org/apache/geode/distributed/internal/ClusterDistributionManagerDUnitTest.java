@@ -33,6 +33,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
 import java.net.InetAddress;
+import java.util.HashSet;
 import java.util.Properties;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
@@ -66,12 +67,14 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.api.MemberDisconnectedException;
 import org.apache.geode.distributed.internal.membership.api.MembershipManagerHelper;
 import org.apache.geode.distributed.internal.membership.api.MembershipView;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
+import org.apache.geode.internal.cache.StateFlushOperation;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableRunnable;
@@ -238,6 +241,33 @@ public class ClusterDistributionManagerDUnitTest extends CacheTestCase {
     await().until(() -> listenerInvoked.get());
   }
 
+  @Test
+  public void shutdownMessageCausesTargetMemberToLeaveStateFlushReplyProcessor() {
+    vm1.invoke("join the cluster", () -> getSystem().getDistributedMember()); // lead member
+    system = getSystem(); // non-lead member
+    DistributedMember targetId = locatorvm.invoke(() -> {
+      return Locator.getLocator().getDistributedSystem().getDistributedMember();
+    });
+
+    StateFlushOperation.StateFlushReplyProcessor stateFlushReplyProcessor =
+        new StateFlushOperation.StateFlushReplyProcessor(getSystem().getDistributionManager(),
+            new HashSet(), targetId);
+    system.getDistributionManager().addMembershipListener(stateFlushReplyProcessor);
+    final InternalDistributedMember memberID = system.getDistributedMember();
+
+    locatorvm.invoke("send a shutdown message", () -> {
+      final DistributionManager distributionManager =
+          ((InternalDistributedSystem) Locator.getLocator().getDistributedSystem())
+              .getDistributionManager();
+      final ShutdownMessage shutdownMessage = new ShutdownMessage();
+      shutdownMessage.setRecipient(memberID);
+      shutdownMessage.setDistributionManagerId(distributionManager.getDistributionManagerId());
+      distributionManager.putOutgoing(shutdownMessage);
+    });
+
+    await().untilAsserted(
+        () -> assertThat(stateFlushReplyProcessor.getTargetMemberHasLeft()).isTrue());
+  }
 
   /**
    * Tests that a severe-level alert is generated if a member does not respond with an ack quickly
