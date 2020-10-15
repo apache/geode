@@ -60,7 +60,7 @@ public class NioSslEngine implements NioFilter {
 
   private final BufferPool bufferPool;
 
-  private boolean closed;
+  private volatile boolean closed;
 
   SSLEngine engine;
 
@@ -68,11 +68,13 @@ public class NioSslEngine implements NioFilter {
    * myNetData holds bytes wrapped by the SSLEngine
    */
   ByteBuffer myNetData;
+  final Object outputSyncObject = new Object();
 
   /**
    * peerAppData holds the last unwrapped data from a peer
    */
   ByteBuffer peerAppData;
+  final Object inputSyncObject = new Object();
 
   NioSslEngine(SSLEngine engine, BufferPool bufferPool) {
     SSLSession session = engine.getSession();
@@ -218,7 +220,7 @@ public class NioSslEngine implements NioFilter {
     return bufferPool.expandWriteBufferIfNeeded(type, existing, desiredCapacity);
   }
 
-  synchronized void checkClosed() throws IOException {
+  void checkClosed() throws IOException {
     if (closed) {
       throw new IOException("NioSslEngine has been closed");
     }
@@ -233,7 +235,7 @@ public class NioSslEngine implements NioFilter {
   }
 
   @Override
-  public synchronized ByteBuffer wrap(ByteBuffer appData) throws IOException {
+  public ByteBuffer wrap(ByteBuffer appData) throws IOException {
     checkClosed();
 
     myNetData.clear();
@@ -265,7 +267,7 @@ public class NioSslEngine implements NioFilter {
   }
 
   @Override
-  public synchronized ByteBuffer unwrap(ByteBuffer wrappedBuffer) throws IOException {
+  public ByteBuffer unwrap(ByteBuffer wrappedBuffer) throws IOException {
     checkClosed();
 
     // note that we do not clear peerAppData as it may hold a partial
@@ -348,6 +350,16 @@ public class NioSslEngine implements NioFilter {
     return peerAppData;
   }
 
+  @Override
+  public Object getInputSyncObject() {
+    return inputSyncObject;
+  }
+
+  @Override
+  public Object getOutputSyncObject() {
+    return outputSyncObject;
+  }
+
   /**
    * ensures that the unwrapped buffer associated with the given wrapped buffer has
    * sufficient capacity for the given amount of bytes. This may compact the
@@ -369,50 +381,52 @@ public class NioSslEngine implements NioFilter {
   }
 
   @Override
-  public synchronized boolean isClosed() {
+  public boolean isClosed() {
     return closed;
   }
 
   @Override
-  public synchronized void close(SocketChannel socketChannel) {
-    if (closed) {
-      return;
-    }
-    try {
-
-      if (!engine.isOutboundDone()) {
-        ByteBuffer empty = ByteBuffer.wrap(new byte[0]);
-        engine.closeOutbound();
-
-        // clear the buffer to receive a CLOSE message from the SSLEngine
-        myNetData.clear();
-
-        // Get close message
-        SSLEngineResult result = engine.wrap(empty, myNetData);
-
-        if (result.getStatus() != SSLEngineResult.Status.CLOSED) {
-          throw new SSLHandshakeException(
-              "Error closing SSL session.  Status=" + result.getStatus());
-        }
-
-        // Send close message to peer
-        myNetData.flip();
-        while (myNetData.hasRemaining()) {
-          socketChannel.write(myNetData);
-        }
+  public void close(SocketChannel socketChannel) {
+    synchronized (getOutputSyncObject()) {
+      if (closed) {
+        return;
       }
-    } catch (ClosedChannelException e) {
-      // we can't send a close message if the channel is closed
-    } catch (IOException e) {
-      throw new GemFireIOException("exception closing SSL session", e);
-    } finally {
-      ByteBuffer netData = myNetData;
-      ByteBuffer appData = peerAppData;
-      myNetData = null;
-      peerAppData = EMPTY_BUFFER;
-      bufferPool.releaseBuffer(TRACKED_SENDER, netData);
-      bufferPool.releaseBuffer(TRACKED_RECEIVER, appData);
-      this.closed = true;
+      closed = true;
+      try {
+
+        if (!engine.isOutboundDone()) {
+          ByteBuffer empty = ByteBuffer.wrap(new byte[0]);
+          engine.closeOutbound();
+
+          // clear the buffer to receive a CLOSE message from the SSLEngine
+          myNetData.clear();
+
+          // Get close message
+          SSLEngineResult result = engine.wrap(empty, myNetData);
+
+          if (result.getStatus() != SSLEngineResult.Status.CLOSED) {
+            throw new SSLHandshakeException(
+                "Error closing SSL session.  Status=" + result.getStatus());
+          }
+
+          // Send close message to peer
+          myNetData.flip();
+          while (myNetData.hasRemaining()) {
+            socketChannel.write(myNetData);
+          }
+        }
+      } catch (ClosedChannelException e) {
+        // we can't send a close message if the channel is closed
+      } catch (IOException e) {
+        throw new GemFireIOException("exception closing SSL session", e);
+      } finally {
+        ByteBuffer netData = myNetData;
+        ByteBuffer appData = peerAppData;
+        myNetData = null;
+        peerAppData = EMPTY_BUFFER;
+        bufferPool.releaseBuffer(TRACKED_SENDER, netData);
+        bufferPool.releaseBuffer(TRACKED_RECEIVER, appData);
+      }
     }
   }
 

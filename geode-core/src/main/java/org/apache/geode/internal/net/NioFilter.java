@@ -99,10 +99,18 @@ public interface NioFilter {
   ByteBuffer getUnwrappedBuffer(ByteBuffer wrappedBuffer);
 
   /**
-   * returns an object to be used in synchronizing on the use of buffers returned by
-   * a NioFilter.
+   * Synchronize on the object returned from this method before accessing the ByteBuffer
+   * returned by:
+   * {@link NioFilter#getUnwrappedBuffer(ByteBuffer)}
+   * {@link NioFilter#unwrap(ByteBuffer)}
+   * {@link NioFilter#readAtLeast(SocketChannel, int, ByteBuffer)}
    */
-  default Object getSynchObject() {
-    return this;
-  }
+  Object getInputSyncObject();
+
+  /**
+   * Synchronize on the object returned from this method before accessing the ByteBuffer
+   * returned by:
+   * {@link NioFilter#wrap(ByteBuffer)}
+   */
+  Object getOutputSyncObject();
 }

@@ -203,7 +203,7 @@ public class NioSslEngineTest {
     // must be the the engine itself. This allows external manipulation or
     // use of the engine's buffers to be protected in the same way as its synchronized
     // methods
-    assertThat(nioSslEngine.getSynchObject()).isSameAs(nioSslEngine);
+    assertThat(nioSslEngine.getInputSyncObject()).isSameAs(nioSslEngine);
   }
 
   @Test

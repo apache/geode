@@ -125,4 +125,19 @@ public class NioPlainEngine implements NioFilter {
     return wrappedBuffer;
   }
 
+  /*
+   * Since we have only one ByteBuffer we synchronize on the same object
+   * for reading and writing
+   */
+
+  @Override
+  public Object getInputSyncObject() {
+    return this;
+  }
+
+  @Override
+  public Object getOutputSyncObject() {
+    return this;
+  }
+
 }

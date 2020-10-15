@@ -801,7 +801,7 @@ public class Connection implements Runnable {
 
   private void notifyHandshakeWaiter(boolean success) {
     if (getConduit().useSSL() && ioFilter != null) {
-      synchronized (ioFilter.getSynchObject()) {
+      synchronized (ioFilter.getInputSyncObject()) {
         if (!ioFilter.isClosed()) {
           // clear out any remaining handshake bytes
           ByteBuffer buffer = ioFilter.getUnwrappedBuffer(inputBuffer);
@@ -2440,7 +2440,7 @@ public class Connection implements Runnable {
         long queueTimeoutTarget = now + asyncQueueTimeout;
         channel.configureBlocking(false);
         try {
-          synchronized (ioFilter.getSynchObject()) {
+          synchronized (ioFilter.getOutputSyncObject()) {
             ByteBuffer wrappedBuffer = ioFilter.wrap(buffer);
             int waitTime = 1;
             do {
@@ -2595,7 +2595,7 @@ public class Connection implements Runnable {
           // fall through
         }
         // synchronize on the ioFilter while using its network buffer
-        synchronized (ioFilter.getSynchObject()) {
+        synchronized (ioFilter.getOutputSyncObject()) {
           ByteBuffer wrappedBuffer = ioFilter.wrap(buffer);
           while (wrappedBuffer.remaining() > 0) {
             int amtWritten = 0;
@@ -2733,7 +2733,7 @@ public class Connection implements Runnable {
   private void processInputBuffer() throws ConnectionException, IOException {
     inputBuffer.flip();
 
-    synchronized (ioFilter.getSynchObject()) {
+    synchronized (ioFilter.getInputSyncObject()) {
       ByteBuffer peerDataBuffer = ioFilter.unwrap(inputBuffer);
       peerDataBuffer.flip();
 

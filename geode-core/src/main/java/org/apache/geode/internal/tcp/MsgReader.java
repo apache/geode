@@ -54,7 +54,7 @@ public class MsgReader {
   }
 
   Header readHeader() throws IOException {
-    synchronized (ioFilter.getSynchObject()) {
+    synchronized (ioFilter.getInputSyncObject()) {
       ByteBuffer unwrappedBuffer = readAtLeast(Connection.MSG_HEADER_BYTES);
 
       Assert.assertTrue(unwrappedBuffer.remaining() >= Connection.MSG_HEADER_BYTES);
@@ -89,7 +89,7 @@ public class MsgReader {
    */
   DistributionMessage readMessage(Header header)
       throws IOException, ClassNotFoundException {
-    synchronized (ioFilter.getSynchObject()) {
+    synchronized (ioFilter.getInputSyncObject()) {
       ByteBuffer nioInputBuffer = readAtLeast(header.messageLength);
       Assert.assertTrue(nioInputBuffer.remaining() >= header.messageLength);
       this.getStats().incMessagesBeingReceived(true, header.messageLength);
@@ -112,7 +112,7 @@ public class MsgReader {
 
   void readChunk(Header header, MsgDestreamer md)
       throws IOException {
-    synchronized (ioFilter.getSynchObject()) {
+    synchronized (ioFilter.getInputSyncObject()) {
       ByteBuffer unwrappedBuffer = readAtLeast(header.messageLength);
       this.getStats().incMessagesBeingReceived(md.size() == 0, header.messageLength);
       md.addChunk(unwrappedBuffer, header.messageLength);
