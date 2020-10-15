@@ -18,6 +18,7 @@ FROM buildpack-deps:focal-scm
 ENTRYPOINT []
 
 ARG CHROME_DRIVER_VERSION=2.35
+ARG DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /tmp/work
 RUN  apt-get update \
