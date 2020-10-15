@@ -438,7 +438,6 @@ public interface GatewaySender {
 
   int getMaxParallelismForReplicatedRegion();
 
-
   /**
    * Destroys the GatewaySender.
    * <p>
@@ -449,4 +448,45 @@ public interface GatewaySender {
    *
    */
   void destroy();
+
+  /**
+   * Set AlertThreshold for this GatewaySender.
+   *
+   * @since Geode 1.14
+   *
+   */
+  void setAlertThreshold(int alertThreshold);
+
+  /**
+   * Set BatchSize for this GatewaySender.
+   *
+   * @since Geode 1.14
+   *
+   */
+  void setBatchSize(int batchSize);
+
+  /**
+   * Set BatchTimeInterval for this GatewaySender.
+   *
+   * @since Geode 1.14
+   *
+   */
+  void setBatchTimeInterval(int batchTimeInterval);
+
+  /**
+   * Set GroupTransactionEvents for this GatewaySender.
+   *
+   * @since Geode 1.14
+   *
+   */
+  void setGroupTransactionEvents(boolean groupTransactionEvents);
+
+  /**
+   * Set GatewayEventFilters for this GatewaySender.
+   *
+   * @since Geode 1.14
+   *
+   */
+  void setGatewayEventFilters(List<GatewayEventFilter> filters);
+
 }
