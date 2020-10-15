@@ -82,6 +82,7 @@ public class StressNewTestHelper {
   public String buildGradleCommand() {
     StringBuilder command = new StringBuilder();
 
+    int testCount = 0;
     for (Map.Entry<String, List<String>> entry : sourceToTestMapping.entrySet()) {
       String sourceSet = entry.getKey();
       if (sourceToGradleMapping.get(sourceSet) == null) {
@@ -93,7 +94,12 @@ public class StressNewTestHelper {
       command.append(" --tests ");
       command.append(String.join(",", entry.getValue()));
       command.append(" ");
+      testCount += entry.getValue().size();
     }
+
+    // This exists so that scripts processing this output can extract the number of tests
+    // included here. Yes, it's pretty hacky...
+    command.append("-PtestCount=" + testCount);
 
     return command.toString();
   }

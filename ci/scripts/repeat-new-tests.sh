@@ -79,6 +79,18 @@ fi
 save_classpath
 
 TEST_TARGETS=$(create_gradle_test_targets ${CHANGED_FILES_ARRAY[@]})
+TEST_COUNT=$(echo ${TEST_TARGETS} | sed -e 's/.*testCount=\([0-9]*\).*/\1/g')
+
+if [[ "${NUM_CHANGED_FILES}" -ne "${TEST_COUNT}" ]]
+then
+  echo "Changed test files increased to ${TEST_COUNT} after including subclasses"
+fi
+
+if [[ "${TEST_COUNT}" -gt 35 ]]
+then
+  echo "${TEST_COUNT} is too many changed tests to stress test. Allowing this job to pass without stress testing."
+  exit 0
+fi
 
 export GRADLE_TASK="compileTestJava compileIntegrationTestJava compileDistributedTestJava $TEST_TARGETS"
 export GRADLE_TASK_OPTIONS="-Prepeat=50 -PfailOnNoMatchingTests=false"
