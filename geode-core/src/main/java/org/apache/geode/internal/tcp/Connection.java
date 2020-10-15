@@ -800,7 +800,15 @@ public class Connection implements Runnable {
   }
 
   private void notifyHandshakeWaiter(boolean success) {
-    if (getConduit().useSSL() && ioFilter != null) {
+    notifyHandshakeWaiter(success, false);
+  }
+
+  private void notifyHandshakeWaiter(boolean success, boolean closing) {
+    /*
+     * We want to avoid synchronization here when closing. It's ok because
+     * we won't ever use the ByteBuffer again, if we're closing.
+     */
+    if (!closing && getConduit().useSSL() && ioFilter != null) {
       synchronized (ioFilter.getSynchObject()) {
         if (!ioFilter.isClosed()) {
           // clear out any remaining handshake bytes
@@ -1347,7 +1355,7 @@ public class Connection implements Runnable {
       }
 
       // Make sure anyone waiting for a handshake stops waiting
-      notifyHandshakeWaiter(false);
+      notifyHandshakeWaiter(false, true);
       // wait a bit for the our reader thread to exit don't wait if we are the reader thread
       boolean isIBM = false;
       // if network partition detection is enabled or this is an admin vm
