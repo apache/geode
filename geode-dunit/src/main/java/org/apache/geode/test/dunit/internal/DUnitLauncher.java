@@ -395,23 +395,26 @@ public class DUnitLauncher {
           + "' - perhaps a rule that is cleaning up before suspect processing has already run.");
     }
 
-    boolean ok = true;
+    StringBuilder suspectStringCollector = new StringBuilder();
     for (File suspect : suspectFiles) {
-      ok &= checkSuspectFile(suspect);
+      checkSuspectFile(suspect, suspectStringCollector);
     }
 
-    if (!ok) {
-      Assert.fail("Suspicious messages or exceptions were generated during this run.\n"
-          + "Fix the problems or use IgnoredException.addIgnoredException to ignore.");
+    if (suspectStringCollector.length() != 0) {
+      System.err.println("Suspicious strings were written to the log during this run.\n"
+          + "Fix the strings or use IgnoredException.addIgnoredException to ignore.\n"
+          + suspectStringCollector);
+
+      Assert.fail("Suspicious strings were written to the log during this run.\n"
+          + "Fix the strings or use IgnoredException.addIgnoredException to ignore.\n"
+          + suspectStringCollector);
     }
   }
 
-  public static boolean checkSuspectFile(File suspectFile) {
+  private static void checkSuspectFile(File suspectFile, StringBuilder suspectStringCollector) {
     final List<Pattern> expectedStrings = ExpectedStrings.create("dunit");
     final LogConsumer logConsumer = new LogConsumer(true, expectedStrings,
         suspectFile.getName(), 5);
-
-    final StringBuilder suspectStringBuilder = new StringBuilder();
 
     BufferedReader buffReader;
     FileChannel fileChannel;
@@ -426,9 +429,9 @@ public class DUnitLauncher {
       String line;
       try {
         while ((line = buffReader.readLine()) != null) {
-          final StringBuilder builder = logConsumer.consume(line);
-          if (builder != null) {
-            suspectStringBuilder.append(builder);
+          final String suspectString = logConsumer.consume(line);
+          if (suspectString != null) {
+            suspectStringCollector.append(suspectString);
           }
         }
       } catch (IOException e) {
@@ -449,16 +452,6 @@ public class DUnitLauncher {
         System.err.println("Could not close the suspect string output file: " + e);
       }
     }
-
-    if (suspectStringBuilder.length() != 0) {
-      System.err.println("Suspicious strings were written to the log during this run.\n"
-          + "Fix the strings or use IgnoredException.addIgnoredException to ignore.\n"
-          + suspectStringBuilder);
-      return false;
-    }
-
-    return true;
   }
-
 
 }
