@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM buildpack-deps:bionic-scm
+FROM buildpack-deps:focal-scm
 ENTRYPOINT []
 
 ARG CHROME_DRIVER_VERSION=2.35
