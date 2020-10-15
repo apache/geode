@@ -70,13 +70,11 @@ public class AlterRuntimeCommandDistributedTest {
   @Test
   @Parameters({"true", "false"})
   public void testAlterRuntimeConfig(boolean connectOverHttp) throws Exception {
-    ignoreIllegalArgumentException("Could not set \"log-disk-space-limit\"");
-
     MemberVM server0 = startupRule.startServerVM(0, x -> x
         .withJMXManager()
-        .withHttpService()
-        .withProperty(LOG_LEVEL, "error"));
+        .withHttpService());
 
+    ignoreIllegalArgumentException("Could not set \"log-disk-space-limit\"");
     if (connectOverHttp) {
       gfsh.connectAndVerify(server0.getHttpPort(), GfshCommandRule.PortType.http);
     } else {
@@ -334,12 +332,10 @@ public class AlterRuntimeCommandDistributedTest {
   @Parameters({"true", "false"})
   public void alterLogFileSizeLimit_changesConfigOnAllServers(boolean connectOverHttp)
       throws Exception {
-    Properties props = new Properties();
-    props.setProperty(LOG_LEVEL, "error");
 
     MemberVM locator = startupRule.startLocatorVM(0, l -> l.withHttpService());
-    MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
-    MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
+    MemberVM server1 = startupRule.startServerVM(1, locator.getPort());
+    MemberVM server2 = startupRule.startServerVM(2, locator.getPort());
 
     if (connectOverHttp) {
       gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
@@ -378,15 +374,12 @@ public class AlterRuntimeCommandDistributedTest {
   @Parameters({"true", "false"})
   public void alterLogFileSizeLimitNegative_errorCanNotSet(boolean connectOverHttp)
       throws Exception {
-    ignoreIllegalArgumentException("Could not set \"log-file-size-limit\"");
-
-    Properties props = new Properties();
-    props.setProperty(LOG_LEVEL, "error");
 
     MemberVM locator = startupRule.startLocatorVM(0, l -> l.withHttpService());
-    MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
-    MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
+    MemberVM server1 = startupRule.startServerVM(1, locator.getPort());
+    MemberVM server2 = startupRule.startServerVM(2, locator.getPort());
 
+    ignoreIllegalArgumentException("Could not set \"log-file-size-limit\"");
     if (connectOverHttp) {
       gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
     } else {
@@ -407,17 +400,15 @@ public class AlterRuntimeCommandDistributedTest {
   @Parameters({"true", "false"})
   public void alterLogFileSizeLimitTooBig_errorCanNotSet(boolean connectOverHttp)
       throws Exception {
-    ignoreIllegalArgumentException("Could not set \"log-file-size-limit\"");
-
-    Properties props = new Properties();
-    props.setProperty(LOG_LEVEL, "error");
 
     MemberVM locator = startupRule.startLocatorVM(0, l -> l.withHttpService());
-    MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
+    MemberVM server1 = startupRule.startServerVM(1, locator.getPort());
 
+    Properties props = new Properties();
     props.setProperty(GROUPS, "G1");
     MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
 
+    ignoreIllegalArgumentException("Could not set \"log-file-size-limit\"");
     if (connectOverHttp) {
       gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
     } else {
@@ -740,14 +731,12 @@ public class AlterRuntimeCommandDistributedTest {
   @Test
   @Parameters({"true", "false"})
   public void alterStatisticSampleRateRangeIsEnforced(boolean connectOverHttp) throws Exception {
-    ignoreIllegalArgumentException("Could not set \"statistic-sample-rate\"");
-
-    Properties props = new Properties();
-    props.setProperty(LOG_LEVEL, "error");
 
     MemberVM locator = startupRule.startLocatorVM(0, l -> l.withHttpService());
-    MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
-    MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
+    MemberVM server1 = startupRule.startServerVM(1, locator.getPort());
+    MemberVM server2 = startupRule.startServerVM(2, locator.getPort());
+
+    ignoreIllegalArgumentException("Could not set \"statistic-sample-rate\"");
 
     if (connectOverHttp) {
       gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
@@ -926,15 +915,12 @@ public class AlterRuntimeCommandDistributedTest {
   @Test
   @Parameters({"true", "false"})
   public void alterArchiveDiskSpaceLimitRangeIsEnforced(boolean connectOverHttp) throws Exception {
-    ignoreIllegalArgumentException("Could not set \"archive-disk-space-limit");
-
-    Properties props = new Properties();
-    props.setProperty(LOG_LEVEL, "error");
 
     MemberVM locator = startupRule.startLocatorVM(0, l -> l.withHttpService());
-    MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
-    MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
+    MemberVM server1 = startupRule.startServerVM(1, locator.getPort());
+    MemberVM server2 = startupRule.startServerVM(2, locator.getPort());
 
+    ignoreIllegalArgumentException("Could not set \"archive-disk-space-limit");
     if (connectOverHttp) {
       gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
     } else {
@@ -1133,15 +1119,12 @@ public class AlterRuntimeCommandDistributedTest {
   @Test
   @Parameters({"true", "false"})
   public void alterArchiveFileSizeLimitRangeIsEnforced(boolean connectOverHttp) throws Exception {
-    ignoreIllegalArgumentException("Could not set \"archive-file-size-limit\"");
-
-    Properties props = new Properties();
-    props.setProperty(LOG_LEVEL, "error");
 
     MemberVM locator = startupRule.startLocatorVM(0, l -> l.withHttpService());
-    MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
-    MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
+    MemberVM server1 = startupRule.startServerVM(1, locator.getPort());
+    MemberVM server2 = startupRule.startServerVM(2, locator.getPort());
 
+    ignoreIllegalArgumentException("Could not set \"archive-file-size-limit\"");
     if (connectOverHttp) {
       gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
     } else {
@@ -1349,7 +1332,7 @@ public class AlterRuntimeCommandDistributedTest {
         DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
 
         assertThat(config.getLogLevel())
-            .isEqualTo(LogWriterLevel.ERROR.intLevel());
+            .isEqualTo(LogWriterLevel.CONFIG.intLevel());
         assertThat(config.getLogFileSizeLimit())
             .isEqualTo(0);
         assertThat(config.getArchiveDiskSpaceLimit())

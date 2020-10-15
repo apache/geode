@@ -263,10 +263,10 @@ public class ClusterDistributionManagerDUnitTest extends CacheTestCase {
     assertThat(getCache().isClosed()).isFalse();
     Region<String, String> region = regionFactory.create("testRegion");
 
+    addIgnoredException("elapsed while waiting for replies");
     vm1.invoke("Connect to distributed system", () -> {
       config.setProperty(NAME, "sleeper");
       getSystem(config);
-      addIgnoredException("elapsed while waiting for replies");
 
       RegionFactory<String, String> regionFactory2 = getCache().createRegionFactory();
       regionFactory2.setScope(Scope.DISTRIBUTED_ACK);
