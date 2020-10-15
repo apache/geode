@@ -15,8 +15,6 @@
  */
 package org.apache.geode.redis.internal.executor.key;
 
-import org.apache.geode.redis.internal.RedisConstants.ArityDef;
-
 public class PTTLExecutor extends TTLExecutor {
 
 
@@ -25,8 +23,4 @@ public class PTTLExecutor extends TTLExecutor {
     return true;
   }
 
-  @Override
-  public String getArgsError() {
-    return ArityDef.PTTL;
-  }
 }
