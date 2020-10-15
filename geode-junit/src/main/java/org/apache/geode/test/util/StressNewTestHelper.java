@@ -102,13 +102,16 @@ public class StressNewTestHelper {
     TestClassInfo testClassInfo = createTestClassInfo(javaFile);
     List<TestClassInfo> extenders = whatExtends(testClassInfo);
 
+    if (!scanResult.getClassInfo(testClassInfo.className).isAbstract()) {
+      extenders.add(testClassInfo);
+    }
+
     if (extenders.isEmpty()) {
       addTestToCategory(testClassInfo.category, testClassInfo.simpleClassName);
       return;
     }
 
     extenders.forEach(e -> addTestToCategory(e.category, e.simpleClassName));
-
   }
 
   private void addTestToCategory(String category, String testClass) {
@@ -122,7 +125,7 @@ public class StressNewTestHelper {
     ClassInfoList subClasses = scanResult.getSubclasses(testClass.className);
 
     for (ClassInfo classInfo : subClasses) {
-      String classFilename = classInfo.getClasspathElementURL().getFile().toString();
+      String classFilename = classInfo.getClasspathElementURL().getFile();
       results.add(
           new TestClassInfo(classFilename, getCategory(classFilename), classInfo.getName(),
               classInfo.getSimpleName()));
