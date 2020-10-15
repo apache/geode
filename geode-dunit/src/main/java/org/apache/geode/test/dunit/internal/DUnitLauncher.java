@@ -395,12 +395,18 @@ public class DUnitLauncher {
           + "' - perhaps a rule that is cleaning up before suspect processing has already run.");
     }
 
+    boolean ok = true;
     for (File suspect : suspectFiles) {
-      checkSuspectFile(suspect);
+      ok &= checkSuspectFile(suspect);
+    }
+
+    if (!ok) {
+      Assert.fail("Suspicious messages or exceptions were generated during this run.\n"
+          + "Fix the problems or use IgnoredException.addIgnoredException to ignore.");
     }
   }
 
-  public static void checkSuspectFile(File suspectFile) {
+  public static boolean checkSuspectFile(File suspectFile) {
     final List<Pattern> expectedStrings = ExpectedStrings.create("dunit");
     final LogConsumer logConsumer = new LogConsumer(true, expectedStrings,
         suspectFile.getName(), 5);
@@ -413,8 +419,7 @@ public class DUnitLauncher {
       fileChannel = new FileOutputStream(suspectFile, true).getChannel();
       buffReader = new BufferedReader(new FileReader(suspectFile));
     } catch (FileNotFoundException e) {
-      System.err.println("Could not find the suspect string output file: " + e);
-      return;
+      throw new RuntimeException(e);
     }
 
     try {
@@ -449,11 +454,10 @@ public class DUnitLauncher {
       System.err.println("Suspicious strings were written to the log during this run.\n"
           + "Fix the strings or use IgnoredException.addIgnoredException to ignore.\n"
           + suspectStringBuilder);
-
-      Assert.fail("Suspicious strings were written to the log during this run.\n"
-          + "Fix the strings or use IgnoredException.addIgnoredException to ignore.\n"
-          + suspectStringBuilder);
+      return false;
     }
+
+    return true;
   }
 
 
