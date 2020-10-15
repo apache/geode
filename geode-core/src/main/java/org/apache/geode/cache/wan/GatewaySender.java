@@ -15,6 +15,7 @@
 package org.apache.geode.cache.wan;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.util.internal.GeodeGlossary;
@@ -274,6 +275,12 @@ public interface GatewaySender {
    * Rebalances this GatewaySender.
    */
   void rebalance();
+
+  /**
+   * Update this GatewaySender.
+   */
+  void update(Map<String, String> runTimeGatewaySenderAttributes,
+      Map<String, List<String>> runTimeGatewaySenderFilters);
 
   /**
    * Returns whether or not this GatewaySender is running.
