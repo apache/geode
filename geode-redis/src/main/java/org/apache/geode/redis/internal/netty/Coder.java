@@ -210,10 +210,6 @@ public class Coder {
 
   public static ByteBuf getScanResponse(ByteBufAllocator alloc, BigInteger cursor,
       List<Object> scanResult) {
-    if (scanResult == null && cursor == null) {
-      return null;
-    }
-
     ByteBuf response = alloc.buffer();
 
     response.writeByte(ARRAY_ID);
