@@ -16,7 +16,9 @@ package org.apache.geode.redis.internal.executor.set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -213,5 +215,28 @@ public abstract class AbstractSPopIntegrationTest implements RedisPortSupplier {
     Set<String> result = jedis.spop("set", 0);
 
     assertThat(result).isEmpty();
+  }
+
+  @Test
+  public void testSPopWithoutArg_shouldReturnBulkString() throws Exception {
+    jedis.sadd("set", "one");
+
+    try (Socket redisSocket = new Socket("localhost", getPort())) {
+      byte[] rawBytes = new byte[] {
+          '*', '2', 0x0d, 0x0a,
+          '$', '4', 0x0d, 0x0a,
+          'S', 'P', 'O', 'P', 0x0d, 0x0a,
+          '$', '3', 0x0d, 0x0a,
+          's', 'e', 't', 0x0d, 0x0a,
+      };
+
+      redisSocket.getOutputStream().write(rawBytes);
+
+      byte[] inputBuffer = new byte[1024];
+      int n = redisSocket.getInputStream().read(inputBuffer);
+      String result = new String(Arrays.copyOfRange(inputBuffer, 0, n));
+
+      assertThat(result).isEqualTo("$3\r\none\r\n");
+    }
   }
 }
