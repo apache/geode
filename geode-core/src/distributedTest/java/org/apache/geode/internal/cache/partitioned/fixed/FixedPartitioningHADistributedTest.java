@@ -33,8 +33,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -47,13 +49,14 @@ import org.apache.geode.cache.FixedPartitionResolver;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.ServerLauncher;
+import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.rules.DistributedCloseableReference;
 import org.apache.geode.test.dunit.rules.DistributedExecutorServiceRule;
 import org.apache.geode.test.dunit.rules.DistributedMap;
+import org.apache.geode.test.dunit.rules.DistributedReference;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.PartitioningTest;
 import org.apache.geode.test.junit.rules.RandomRule;
@@ -92,6 +95,8 @@ public class FixedPartitioningHADistributedTest implements Serializable {
   private static final Map<Integer, PartitionBucket> BUCKET_TO_PARTITION =
       initialize(new HashMap<>());
 
+  private static final AtomicInteger DONE = new AtomicInteger();
+
   private VM accessor1VM;
   private VM server1VM;
   private VM server2VM;
@@ -102,19 +107,17 @@ public class FixedPartitioningHADistributedTest implements Serializable {
   @Rule
   public DistributedRule distributedRule = new DistributedRule();
   @Rule
-  public DistributedCloseableReference<ServerLauncher> serverLauncher =
-      new DistributedCloseableReference<>();
+  public DistributedReference<ServerLauncher> serverLauncher = new DistributedReference<>();
   @Rule
-  public DistributedCloseableReference<AtomicBoolean> doPuts =
-      new DistributedCloseableReference<>();
+  public DistributedReference<AtomicBoolean> doPuts = new DistributedReference<>();
   @Rule
   public DistributedMap<VM, List<FixedPartitionAttributes>> fpaMap = new DistributedMap<>();
+  @Rule
+  public DistributedExecutorServiceRule executorServiceRule = new DistributedExecutorServiceRule();
   @Rule
   public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
   @Rule
   public RandomRule randomRule = new RandomRule();
-  @Rule
-  public DistributedExecutorServiceRule executorServiceRule = new DistributedExecutorServiceRule();
 
   @Before
   public void setUp() {
@@ -164,9 +167,13 @@ public class FixedPartitioningHADistributedTest implements Serializable {
         Region<Object, Object> region = serverLauncher.get().getCache().getRegion(REGION_NAME);
         for (int i = 0; i < THREADS; i++) {
           executorServiceRule.submit(() -> {
-            while (doPuts.get().get()) {
-              int bucketId = randomRule.nextInt(1, COUNT);
-              region.put(BUCKET_TO_PARTITION.get(bucketId), "value-" + (100 + bucketId));
+            try {
+              while (doPuts.get().get()) {
+                int bucketId = randomRule.nextInt(1, COUNT);
+                region.put(BUCKET_TO_PARTITION.get(bucketId), "value-" + (100 + bucketId));
+              }
+            } finally {
+              DONE.incrementAndGet();
             }
           });
         }
@@ -174,20 +181,41 @@ public class FixedPartitioningHADistributedTest implements Serializable {
     }
 
     for (VM vm : serversToBounce()) {
+      System.out.println("KIRK: about to bounce " + vm.getId());
       vm
           .bounceForcibly()
-          .invoke(() -> startServer(vm, "datastore" + vm.getId(), 10));
-    }
+          .invoke(() -> {
+            doPuts.set(new AtomicBoolean(true));
 
-    Thread.sleep(2000);
+            startServer(vm, "datastore" + vm.getId(), 10);
 
-    for (VM vm : asList(accessor1VM, server1VM, server2VM, server3VM, server4VM, server5VM)) {
-      vm.invoke(() -> doPuts.get().set(false));
+            Region<Object, Object> region = serverLauncher.get().getCache().getRegion(REGION_NAME);
+            for (int i = 0; i < THREADS; i++) {
+              executorServiceRule.submit(() -> {
+                try {
+                  while (doPuts.get().get()) {
+                    int bucketId = randomRule.nextInt(1, COUNT);
+                    region.put(BUCKET_TO_PARTITION.get(bucketId), "value-" + (1000 + bucketId));
+                  }
+                } finally {
+                  DONE.incrementAndGet();
+                }
+              });
+            }
+          });
     }
 
     for (VM vm : asList(accessor1VM, server1VM, server2VM, server3VM, server4VM, server5VM)) {
       vm.invoke(() -> {
-        await().until(() -> executorServiceRule.getThreads().isEmpty());
+        doPuts.get().set(false);
+      });
+    }
+
+    for (VM vm : asList(accessor1VM, server1VM, server2VM, server3VM, server4VM, server5VM)) {
+      vm.invoke(() -> {
+        await().untilAsserted(() -> {
+          assertThat(DONE.get()).isEqualTo(THREADS);
+        });
       });
     }
 
@@ -195,18 +223,7 @@ public class FixedPartitioningHADistributedTest implements Serializable {
       vm.invoke(() -> dumpBucketMetadata(vm.getId(), "AFTER"));
     }
 
-    server2VM.invoke(() -> {
-      Region<Object, Object> region = serverLauncher.get().getCache().getRegion(REGION_NAME);
-      PartitionedRegion partitionedRegion = (PartitionedRegion) region;
-
-      // RegionAdvisor regionAdvisor = partitionedRegion.getRegionAdvisor();
-      // assertThat(regionAdvisor.getBucketRedundancy(20)).isEqualTo(REDUNDANT_COPIES);
-
-      PartitionedRegionDataStore dataStore = partitionedRegion.getDataStore();
-      // assertThat(dataStore.getAllLocalBucketIds()).contains(20);
-      //
-      // assertThat(dataStore.getAllLocalPrimaryBucketIds()).contains(20);
-    });
+    accessor1VM.invoke(() -> validateBucketsAreFullyRedundant());
   }
 
   private void startServer(VM vm, String name) {
@@ -248,17 +265,43 @@ public class FixedPartitioningHADistributedTest implements Serializable {
     PartitionedRegion partitionedRegion = (PartitionedRegion) region;
 
     PartitionedRegionDataStore dataStore = partitionedRegion.getDataStore();
-    System.out.println("KIRK:" + when + ": server" + vmId + " contains bucket ids " +
-        dataStore.getAllLocalBuckets());
+    Set<Entry<Integer, BucketRegion>> localBuckets = dataStore.getAllLocalBuckets();
+
+    StringBuilder sb = new StringBuilder();
+    sb
+        .append("KIRK:")
+        .append(when)
+        .append(": server")
+        .append(vmId)
+        .append(" contains ")
+        .append(localBuckets.size())
+        .append(" bucket ids: [");
+    boolean linefeed = false;
+    for (Entry<Integer, BucketRegion> localBucket : localBuckets) {
+      if (linefeed) {
+        sb.append(", ");
+      }
+      sb
+          .append(System.lineSeparator())
+          .append(localBucket.getKey())
+          .append("=")
+          .append(localBucket.getValue());
+      linefeed = true;
+    }
+    sb
+        .append(System.lineSeparator())
+        .append("]");
+    System.out.println(sb);
   }
 
   private List<VM> serversToBounce() {
     List<VM> serversToBounce = new ArrayList<>();
     List<VM> servers = asList(server1VM, server2VM, server3VM, server4VM, server5VM);
-    for (int i = 0; i < 2; i++) {
+    while (serversToBounce.size() < 2) {
       VM vm = randomRule.next(servers);
-      serversToBounce.add(vm);
-      servers.remove(vm);
+      if (!serversToBounce.contains(vm)) {
+        serversToBounce.add(vm);
+      }
     }
     return serversToBounce;
   }

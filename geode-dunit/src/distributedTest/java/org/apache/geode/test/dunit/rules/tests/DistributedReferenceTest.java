@@ -29,6 +29,7 @@ import static org.mockito.Mockito.verify;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Before;
@@ -582,6 +583,47 @@ public class DistributedReferenceTest {
         vm.invoke(() -> {
           assertThat(reference.get()).isSameAs(withStop);
           assertThat(reference.get().toString()).isEqualTo("WithStop in VM-" + vm.getId());
+        });
+      }
+    }
+  }
+
+  public static class TwoReferencesInEachVm implements Serializable {
+
+    private static final AtomicReference<AtomicBoolean> boolean1 = new AtomicReference<>();
+    private static final AtomicReference<AtomicBoolean> boolean2 = new AtomicReference<>();
+
+    @Rule
+    public DistributedReference<AtomicBoolean> boolean1Ref = new DistributedReference<>();
+    @Rule
+    public DistributedReference<AtomicBoolean> boolean2Ref = new DistributedReference<>();
+
+    @Before
+    public void setUp() {
+      for (VM vm : asList(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
+        vm.invoke(() -> {
+          boolean1.set(new AtomicBoolean(false));
+          boolean1Ref.set(boolean1.get());
+
+          boolean2.set(new AtomicBoolean(true));
+          boolean2Ref.set(boolean2.get());
+        });
+      }
+    }
+
+    @Test
+    public void hasTwoReferencesInEachVm() {
+      for (VM vm : asList(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
+        vm.invoke(() -> {
+          assertThat(boolean1Ref.get()).isFalse();
+          assertThat(boolean2Ref.get()).isTrue();
+
+          boolean1Ref.get().set(true);
+          boolean2Ref.get().set(false);
+
+          assertThat(boolean1Ref.get()).isTrue();
+          assertThat(boolean2Ref.get()).isFalse();
+
         });
       }
     }
