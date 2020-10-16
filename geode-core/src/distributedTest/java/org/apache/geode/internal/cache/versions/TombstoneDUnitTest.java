@@ -74,14 +74,15 @@ public class TombstoneDUnitTest implements Serializable {
     VM vm0 = VM.getVM(0);
     VM vm1 = VM.getVM(1);
 
-    vm0.invoke(() -> createCacheAndRegion(RegionShortcut.REPLICATE_PERSISTENT));
+    vm0.invoke(() -> {
+      createCacheAndRegion(RegionShortcut.REPLICATE_PERSISTENT);
+      region.put("K1", "V1");
+      region.put("K2", "V2");
+    });
 
     vm1.invoke(() -> createCacheAndRegion(RegionShortcut.REPLICATE));
 
     vm0.invoke(() -> {
-      region.put("K1", "V1");
-      region.put("K2", "V2");
-
       // Send tombstone gc message to vm1.
       region.destroy("K1");
       assertEquals(1, ((InternalCache) cache).getCachePerfStats().getTombstoneCount());
@@ -174,16 +175,14 @@ public class TombstoneDUnitTest implements Serializable {
     Properties props = DistributedRule.getDistributedSystemProperties();
     props.put("conserve-sockets", "false");
 
-    vm0.invoke(() -> createCacheAndRegion(RegionShortcut.REPLICATE_PERSISTENT, props));
-
-    vm1.invoke(() -> createCacheAndRegion(RegionShortcut.REPLICATE, props));
-
     vm0.invoke(() -> {
+      createCacheAndRegion(RegionShortcut.REPLICATE_PERSISTENT, props);
       region.put("K1", "V1");
       region.put("K2", "V2");
     });
 
     vm1.invoke(() -> {
+      createCacheAndRegion(RegionShortcut.REPLICATE, props);
       DistributionMessageObserver.setInstance(new RegionObserver());
     });
 
