@@ -23,7 +23,6 @@ import java.util.List;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
-import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
@@ -209,9 +208,9 @@ public class Coder {
     }
   }
 
-  public static ByteBuf getScanResponse(ByteBufAllocator alloc,
-      Pair<BigInteger, List<Object>> scanResult) {
-    if (scanResult == null) {
+  public static ByteBuf getScanResponse(ByteBufAllocator alloc, BigInteger cursor,
+      List<Object> scanResult) {
+    if (scanResult == null && cursor == null) {
       return null;
     }
 
@@ -221,17 +220,16 @@ public class Coder {
     response.writeBytes(intToBytes(2));
     response.writeBytes(CRLFar);
     response.writeByte(BULK_STRING_ID);
-    byte[] cursor = stringToBytes(scanResult.getLeft().toString());
-    response.writeBytes(intToBytes(cursor.length));
+    byte[] cursorBytes = stringToBytes(cursor.toString());
+    response.writeBytes(intToBytes(cursorBytes.length));
     response.writeBytes(CRLFar);
-    response.writeBytes(cursor);
+    response.writeBytes(cursorBytes);
     response.writeBytes(CRLFar);
-    List<Object> items = scanResult.getRight();
     response.writeByte(ARRAY_ID);
-    response.writeBytes(intToBytes(items.size()));
+    response.writeBytes(intToBytes(scanResult.size()));
     response.writeBytes(CRLFar);
 
-    for (Object nextObject : items) {
+    for (Object nextObject : scanResult) {
       if (nextObject instanceof String) {
         String next = (String) nextObject;
         response.writeByte(BULK_STRING_ID);

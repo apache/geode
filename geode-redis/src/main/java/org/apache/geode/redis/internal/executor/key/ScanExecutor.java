@@ -96,11 +96,10 @@ public class ScanExecutor extends AbstractScanExecutor {
     }
 
     Pair<BigInteger, List<Object>> scanResult =
-        scan(getDataRegion(context).keySet(), matchPattern, count,
-            cursor);
+        scan(getDataRegion(context).keySet(), matchPattern, count, cursor);
     context.setScanCursor(scanResult.getLeft());
 
-    return RedisResponse.scan(scanResult);
+    return RedisResponse.scan(scanResult.getLeft(), scanResult.getRight());
   }
 
   private Pair<BigInteger, List<Object>> scan(Collection<ByteArrayWrapper> list,

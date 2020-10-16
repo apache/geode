@@ -116,6 +116,6 @@ public class SScanExecutor extends AbstractScanExecutor {
 
     context.setSscanCursor(scanResult.getLeft());
 
-    return RedisResponse.scan(scanResult);
+    return RedisResponse.scan(scanResult.getLeft(), scanResult.getRight());
   }
 }

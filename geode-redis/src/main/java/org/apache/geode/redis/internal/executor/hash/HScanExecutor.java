@@ -117,6 +117,6 @@ public class HScanExecutor extends AbstractScanExecutor {
 
     context.setHscanCursor(scanResult.getLeft());
 
-    return RedisResponse.scan(scanResult);
+    return RedisResponse.scan(scanResult.getLeft(), scanResult.getRight());
   }
 }
