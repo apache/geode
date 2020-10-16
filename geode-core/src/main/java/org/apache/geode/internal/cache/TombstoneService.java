@@ -452,8 +452,12 @@ public class TombstoneService {
     protected void beforeSleepChecks() {}
 
     @Override
-    public long getOldestTombstoneTimeDelta() {
-      return tombstones.peek().getVersionTimeStamp() - cacheTime.cacheTimeMillis();
+    public long getOldestTombstoneTime() {
+      long result = 0;
+      if (tombstones.peek() != null) {
+        result = tombstones.peek().getVersionTimeStamp();
+      }
+      return result;
     }
   }
 
@@ -751,8 +755,12 @@ public class TombstoneService {
     }
 
     @Override
-    public long getOldestTombstoneTimeDelta() {
-      return tombstones.peek().getVersionTimeStamp() - cacheTime.cacheTimeMillis();
+    public long getOldestTombstoneTime() {
+      long result = 0;
+      if (tombstones.peek() != null) {
+        result = tombstones.peek().getVersionTimeStamp();
+      }
+      return result;
     }
 
     @Override
@@ -1109,7 +1117,7 @@ public class TombstoneService {
     abstract boolean testHook_forceExpiredTombstoneGC(int count, long timeout, TimeUnit unit)
         throws InterruptedException;
 
-    public abstract long getOldestTombstoneTimeDelta();
+    public abstract long getOldestTombstoneTime();
 
   } // class TombstoneSweeper
 }
