@@ -30,6 +30,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SocketChannel;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLEngineResult;
@@ -75,6 +76,8 @@ public class NioSslEngine implements NioFilter {
    */
   ByteBuffer peerAppData;
   final Object inputSyncObject = new Object();
+  private AtomicInteger inputUsageCount = new AtomicInteger(1);
+  private ByteBuffer orphanedPeerAppData;
 
   NioSslEngine(SSLEngine engine, BufferPool bufferPool) {
     SSLSession session = engine.getSession();
@@ -356,6 +359,19 @@ public class NioSslEngine implements NioFilter {
   }
 
   @Override
+  public int setInputInUse(final boolean isInUse) {
+    if (isInUse) {
+      return inputUsageCount.incrementAndGet();
+    } else {
+      final int usages = inputUsageCount.decrementAndGet();
+      if (usages == 0) {
+        bufferPool.releaseBuffer(TRACKED_RECEIVER, orphanedPeerAppData);
+      }
+      return usages;
+    }
+  }
+
+  @Override
   public Object getOutputSyncObject() {
     return outputSyncObject;
   }
@@ -421,11 +437,11 @@ public class NioSslEngine implements NioFilter {
         throw new GemFireIOException("exception closing SSL session", e);
       } finally {
         ByteBuffer netData = myNetData;
-        ByteBuffer appData = peerAppData;
-        myNetData = null;
+        orphanedPeerAppData = peerAppData;
         peerAppData = EMPTY_BUFFER;
+        myNetData = null;
         bufferPool.releaseBuffer(TRACKED_SENDER, netData);
-        bufferPool.releaseBuffer(TRACKED_RECEIVER, appData);
+        setInputInUse(false);
       }
     }
   }

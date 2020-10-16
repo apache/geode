@@ -802,10 +802,15 @@ public class Connection implements Runnable {
   private void notifyHandshakeWaiter(boolean success) {
     if (getConduit().useSSL() && ioFilter != null) {
       synchronized (ioFilter.getInputSyncObject()) {
-        if (!ioFilter.isClosed()) {
-          // clear out any remaining handshake bytes
-          ByteBuffer buffer = ioFilter.getUnwrappedBuffer(inputBuffer);
-          buffer.position(0).limit(0);
+        ioFilter.setInputInUse(true);
+        try {
+          if (!ioFilter.isClosed()) {
+            // clear out any remaining handshake bytes
+            ByteBuffer buffer = ioFilter.getUnwrappedBuffer(inputBuffer);
+            buffer.position(0).limit(0);
+          }
+        } finally {
+          ioFilter.setInputInUse(false);
         }
       }
     }
@@ -2734,69 +2739,74 @@ public class Connection implements Runnable {
     inputBuffer.flip();
 
     synchronized (ioFilter.getInputSyncObject()) {
-      ByteBuffer peerDataBuffer = ioFilter.unwrap(inputBuffer);
-      peerDataBuffer.flip();
+      ioFilter.setInputInUse(true);
+      try {
+        ByteBuffer peerDataBuffer = ioFilter.unwrap(inputBuffer);
+        peerDataBuffer.flip();
 
-      boolean done = false;
+        boolean done = false;
 
-      while (!done && connected) {
-        owner.getConduit().getCancelCriterion().checkCancelInProgress(null);
-        int remaining = peerDataBuffer.remaining();
-        if (lengthSet || remaining >= MSG_HEADER_BYTES) {
-          if (!lengthSet) {
-            if (readMessageHeader(peerDataBuffer)) {
-              break;
+        while (!done && connected) {
+          owner.getConduit().getCancelCriterion().checkCancelInProgress(null);
+          int remaining = peerDataBuffer.remaining();
+          if (lengthSet || remaining >= MSG_HEADER_BYTES) {
+            if (!lengthSet) {
+              if (readMessageHeader(peerDataBuffer)) {
+                break;
+              }
             }
-          }
-          if (remaining >= messageLength + MSG_HEADER_BYTES) {
-            lengthSet = false;
-            peerDataBuffer.position(peerDataBuffer.position() + MSG_HEADER_BYTES);
-            // don't trust the message deserialization to leave the position in
-            // the correct spot. Some of the serialization uses buffered
-            // streams that can leave the position at the wrong spot
-            int startPos = peerDataBuffer.position();
-            int oldLimit = peerDataBuffer.limit();
-            peerDataBuffer.limit(startPos + messageLength);
+            if (remaining >= messageLength + MSG_HEADER_BYTES) {
+              lengthSet = false;
+              peerDataBuffer.position(peerDataBuffer.position() + MSG_HEADER_BYTES);
+              // don't trust the message deserialization to leave the position in
+              // the correct spot. Some of the serialization uses buffered
+              // streams that can leave the position at the wrong spot
+              int startPos = peerDataBuffer.position();
+              int oldLimit = peerDataBuffer.limit();
+              peerDataBuffer.limit(startPos + messageLength);
 
-            if (handshakeRead) {
-              try {
-                readMessage(peerDataBuffer);
-              } catch (SerializationException e) {
-                logger.info("input buffer startPos {} oldLimit {}", startPos, oldLimit);
-                throw e;
+              if (handshakeRead) {
+                try {
+                  readMessage(peerDataBuffer);
+                } catch (SerializationException e) {
+                  logger.info("input buffer startPos {} oldLimit {}", startPos, oldLimit);
+                  throw e;
+                }
+              } else {
+                ByteBufferInputStream bbis = new ByteBufferInputStream(peerDataBuffer);
+                DataInputStream dis = new DataInputStream(bbis);
+                if (!isReceiver) {
+                  // we read the handshake and then stop processing since we don't want
+                  // to process the input buffer anymore in a handshake thread
+                  readHandshakeForSender(dis, peerDataBuffer);
+                  return;
+                }
+                if (readHandshakeForReceiver(dis)) {
+                  ioFilter.doneReading(peerDataBuffer);
+                  return;
+                }
               }
+              if (!connected) {
+                continue;
+              }
+              accessed();
+              peerDataBuffer.limit(oldLimit);
+              peerDataBuffer.position(startPos + messageLength);
             } else {
-              ByteBufferInputStream bbis = new ByteBufferInputStream(peerDataBuffer);
-              DataInputStream dis = new DataInputStream(bbis);
-              if (!isReceiver) {
-                // we read the handshake and then stop processing since we don't want
-                // to process the input buffer anymore in a handshake thread
-                readHandshakeForSender(dis, peerDataBuffer);
-                return;
-              }
-              if (readHandshakeForReceiver(dis)) {
+              done = true;
+              if (getConduit().useSSL()) {
                 ioFilter.doneReading(peerDataBuffer);
-                return;
+              } else {
+                compactOrResizeBuffer(messageLength);
               }
             }
-            if (!connected) {
-              continue;
-            }
-            accessed();
-            peerDataBuffer.limit(oldLimit);
-            peerDataBuffer.position(startPos + messageLength);
           } else {
+            ioFilter.doneReading(peerDataBuffer);
             done = true;
-            if (getConduit().useSSL()) {
-              ioFilter.doneReading(peerDataBuffer);
-            } else {
-              compactOrResizeBuffer(messageLength);
-            }
           }
-        } else {
-          ioFilter.doneReading(peerDataBuffer);
-          done = true;
         }
+      } finally {
+        ioFilter.setInputInUse(false);
       }
     }
   }

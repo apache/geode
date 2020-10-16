@@ -107,6 +107,8 @@ public interface NioFilter {
    */
   Object getInputSyncObject();
 
+  int setInputInUse(boolean isInUse);
+
   /**
    * Synchronize on the object returned from this method before accessing the ByteBuffer
    * returned by:

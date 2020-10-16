@@ -198,12 +198,9 @@ public class NioSslEngineTest {
   }
 
   @Test
-  public void synchObjectIsSelf() {
-    // for thread-safety the synchronization object given to outside entities
-    // must be the the engine itself. This allows external manipulation or
-    // use of the engine's buffers to be protected in the same way as its synchronized
-    // methods
-    assertThat(nioSslEngine.getInputSyncObject()).isSameAs(nioSslEngine);
+  public void inputSyncObjectIsNotSelf() {
+    // to avoid deadlocks, the input sync object must not be the engine object.
+    assertThat(nioSslEngine.getInputSyncObject()).isNotSameAs(nioSslEngine);
   }
 
   @Test

@@ -136,6 +136,11 @@ public class NioPlainEngine implements NioFilter {
   }
 
   @Override
+  public int setInputInUse(final boolean isInUse) {
+    return 1;
+  }
+
+  @Override
   public Object getOutputSyncObject() {
     return this;
   }
