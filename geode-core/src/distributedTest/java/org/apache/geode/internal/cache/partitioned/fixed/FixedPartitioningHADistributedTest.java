@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.partitioned.fixed;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.geode.cache.FixedPartitionAttributes.createFixedPartition;
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
@@ -142,9 +143,11 @@ public class FixedPartitioningHADistributedTest implements Serializable {
     accessor1VM.invoke(() -> startServer(accessor1VM, "accessor1"));
 
     for (VM vm : asList(accessor1VM, server1VM, server2VM, server3VM, server4VM, server5VM)) {
-      vm.invoke(() -> doPuts.set(new AtomicBoolean(true)));
+      vm.invoke(() -> {
+        doPuts.set(new AtomicBoolean(true));
+        DONE.set(0);
+      });
     }
-
   }
 
   @Test
@@ -213,9 +216,15 @@ public class FixedPartitioningHADistributedTest implements Serializable {
 
     for (VM vm : asList(accessor1VM, server1VM, server2VM, server3VM, server4VM, server5VM)) {
       vm.invoke(() -> {
-        await().untilAsserted(() -> {
+        // await().untilAsserted(() -> {
+        // assertThat(DONE.get())
+        // .as(vm + ": " + executorServiceRule.dumpThreads())
+        // .isEqualTo(THREADS);
+        // });
+        executorServiceRule.after();
+        await().atMost(2, MINUTES).untilAsserted(() -> {
           assertThat(DONE.get())
-              .as(executorServiceRule.dumpThreads())
+              .as("KIRK:DUMP:" + executorServiceRule.dumpThreads())
               .isEqualTo(THREADS);
         });
       });
