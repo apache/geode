@@ -80,4 +80,52 @@ public abstract class AbstractBitPosIntegrationTest implements RedisPortSupplier
     assertThat(jedis.bitpos("emptyKey", false, new BitPosParams(4, 7))).isEqualTo(-1);
     assertThat(jedis.bitpos("emptyKey", true, new BitPosParams(4, 7))).isEqualTo(-1);
   }
+
+  @Test
+  public void bitpos_givenBitInFirstByte() {
+    byte[] key = {1, 2, 3};
+    byte[] bytes = {1, 1, 1, 1, 1};
+    jedis.set(key, bytes);
+    assertThat(jedis.bitpos(key, true)).isEqualTo(7);
+  }
+
+  @Test
+  public void bitpos_givenOneInSecondByte() {
+    byte[] key = {1, 2, 3};
+    byte[] bytes = {0, 1, 1, 1, 1};
+    jedis.set(key, bytes);
+    assertThat(jedis.bitpos(key, true)).isEqualTo(7 + 8);
+  }
+
+  @Test
+  public void bitposFalse_givenBitInFirstByte() {
+    byte[] key = {1, 2, 3};
+    byte[] bytes = {-2, 1, 1, 1, 1};
+    jedis.set(key, bytes);
+    assertThat(jedis.bitpos(key, false)).isEqualTo(7);
+  }
+
+  @Test
+  public void bitposFalse_givenOneInSecondByte() {
+    byte[] key = {1, 2, 3};
+    byte[] bytes = {-1, -2, 1, 1, 1};
+    jedis.set(key, bytes);
+    assertThat(jedis.bitpos(key, false)).isEqualTo(7 + 8);
+  }
+
+  @Test
+  public void bitposWithStart_givenOneInLastByte() {
+    byte[] key = {1, 2, 3};
+    byte[] bytes = {1, 1, 1, 1};
+    jedis.set(key, bytes);
+    assertThat(jedis.bitpos(key, true, new BitPosParams(-1))).isEqualTo(7 + 3 * 8);
+  }
+
+  @Test
+  public void bitposWithStartAndEnd_givenNoBits() {
+    byte[] key = {1, 2, 3};
+    byte[] bytes = {1, 0, 0, 1};
+    jedis.set(key, bytes);
+    assertThat(jedis.bitpos(key, true, new BitPosParams(1, 2))).isEqualTo(-1);
+  }
 }
