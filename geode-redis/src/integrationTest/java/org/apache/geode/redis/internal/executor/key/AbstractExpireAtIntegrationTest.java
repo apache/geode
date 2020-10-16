@@ -15,12 +15,15 @@
 
 package org.apache.geode.redis.internal.executor.key;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
 
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
@@ -30,10 +33,10 @@ public abstract class AbstractExpireAtIntegrationTest implements RedisPortSuppli
   private Jedis jedis;
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
-  private static String key = "key";
-  private static String value = "value";
+  private static final String key = "key";
+  private static final String value = "value";
   private long unixTimeStampInTheFutureInSeconds;
-  private long unixTimeStampFromThePast = 0L;
+  private final long unixTimeStampFromThePast = 0L;
 
   @Before
   public void setUp() {
@@ -45,6 +48,30 @@ public abstract class AbstractExpireAtIntegrationTest implements RedisPortSuppli
   public void testLevelTearDown() {
     jedis.flushAll();
     jedis.close();
+  }
+
+  @Test
+  public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.EXPIREAT))
+        .hasMessageContaining("ERR wrong number of arguments for 'expireat' command");
+  }
+
+  @Test
+  public void givenTimestampNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.EXPIREAT, "key"))
+        .hasMessageContaining("ERR wrong number of arguments for 'expireat' command");
+  }
+
+  @Test
+  public void givenMoreThanThreeArgumentsProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.EXPIREAT, "key", "10", "extraArg"))
+        .hasMessageContaining("ERR wrong number of arguments for 'expireat' command");
+  }
+
+  @Test
+  public void givenInvalidTimestamp_returnsNotIntegerError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.EXPIREAT, "key", "notInteger"))
+        .hasMessageContaining(ERROR_NOT_INTEGER);
   }
 
   @Test
@@ -109,13 +136,4 @@ public abstract class AbstractExpireAtIntegrationTest implements RedisPortSuppli
         () -> jedis.get(key) == null);
   }
 
-  @Test
-  public void should_expireKeyAtTimeSpecifiedInMillis() {
-    long unixTimeStampInTheNearFuture = (System.currentTimeMillis()) + 5;
-    jedis.set(key, value);
-    jedis.pexpireAt(key, unixTimeStampInTheNearFuture);
-
-    GeodeAwaitility.await().until(
-        () -> jedis.get(key) == null);
-  }
 }

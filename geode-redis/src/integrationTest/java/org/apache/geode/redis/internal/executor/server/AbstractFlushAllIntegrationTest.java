@@ -16,19 +16,22 @@
 
 package org.apache.geode.redis.internal.executor.server;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
 
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
 public abstract class AbstractFlushAllIntegrationTest implements RedisPortSupplier {
 
-  private Jedis jedis;
+  protected Jedis jedis;
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
@@ -40,6 +43,12 @@ public abstract class AbstractFlushAllIntegrationTest implements RedisPortSuppli
   @After
   public void teardown() {
     jedis.close();
+  }
+
+  @Test
+  public void givenMoreThanTwoArguments_returnsSyntaxError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.FLUSHALL, "ASYNC", "extraArg"))
+        .hasMessageContaining(ERROR_SYNTAX);
   }
 
   @Test

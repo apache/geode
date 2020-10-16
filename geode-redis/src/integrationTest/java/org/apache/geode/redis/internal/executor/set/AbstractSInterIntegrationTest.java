@@ -25,21 +25,22 @@ import java.util.Set;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
 
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
-import org.apache.geode.test.junit.categories.RedisTest;
 
-@Category({RedisTest.class})
 public abstract class AbstractSInterIntegrationTest implements RedisPortSupplier {
   private Jedis jedis;
   private Jedis jedis2;
+  private static final int REDIS_CLIENT_TIMEOUT =
+      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), 10000000);
-    jedis2 = new Jedis("localhost", getPort(), 10000000);
+    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
@@ -47,6 +48,24 @@ public abstract class AbstractSInterIntegrationTest implements RedisPortSupplier
     jedis.flushAll();
     jedis.close();
     jedis2.close();
+  }
+
+  @Test
+  public void sinter_givenKeyProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SINTER))
+        .hasMessageContaining("ERR wrong number of arguments for 'sinter' command");
+  }
+
+  @Test
+  public void sinterstore_givenDestinationProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SINTERSTORE))
+        .hasMessageContaining("ERR wrong number of arguments for 'sinterstore' command");
+  }
+
+  @Test
+  public void sinterstore_givenKeyProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SINTERSTORE, "destination"))
+        .hasMessageContaining("ERR wrong number of arguments for 'sinterstore' command");
   }
 
   @Test

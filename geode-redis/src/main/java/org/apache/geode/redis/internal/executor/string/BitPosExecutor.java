@@ -16,7 +16,6 @@ package org.apache.geode.redis.internal.executor.string;
 
 import java.util.List;
 
-import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Coder;
@@ -33,10 +32,6 @@ public class BitPosExecutor extends StringExecutor {
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
-    if (commandElems.size() < 3) {
-      return RedisResponse.error(ArityDef.BITPOS);
-    }
-
     ByteArrayWrapper key = command.getKey();
 
     int bit;

@@ -15,6 +15,7 @@
 package org.apache.geode.redis.internal.executor.set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -22,27 +23,47 @@ import java.util.Set;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
 
 import org.apache.geode.management.internal.cli.util.ThreePhraseGenerator;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
-import org.apache.geode.test.junit.categories.RedisTest;
 
-@Category({RedisTest.class})
 public abstract class AbstractSIsMemberIntegrationTest implements RedisPortSupplier {
   private Jedis jedis;
-  private static ThreePhraseGenerator generator = new ThreePhraseGenerator();
+  private static final ThreePhraseGenerator generator = new ThreePhraseGenerator();
+  private static final int REDIS_CLIENT_TIMEOUT =
+      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), 10000000);
+    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
     jedis.flushAll();
     jedis.close();
+  }
+
+  @Test
+  public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SISMEMBER))
+        .hasMessageContaining("ERR wrong number of arguments for 'sismember' command");
+  }
+
+  @Test
+  public void givenMemberNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SISMEMBER, "key"))
+        .hasMessageContaining("ERR wrong number of arguments for 'sismember' command");
+  }
+
+  @Test
+  public void givenMoreThanThreeArguments_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(
+        () -> jedis.sendCommand(Protocol.Command.SISMEMBER, "key", "member", "extraArg"))
+            .hasMessageContaining("ERR wrong number of arguments for 'sismember' command");
   }
 
   @Test

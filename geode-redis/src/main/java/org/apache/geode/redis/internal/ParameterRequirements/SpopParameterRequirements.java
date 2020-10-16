@@ -15,6 +15,8 @@
 
 package org.apache.geode.redis.internal.ParameterRequirements;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
+
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
@@ -25,7 +27,7 @@ public class SpopParameterRequirements implements ParameterRequirements {
       try {
         Integer.parseInt(new String(command.getProcessedCommand().get(2)));
       } catch (NumberFormatException nex) {
-        throw new RedisParametersMismatchException("value is not an integer or out of range");
+        throw new RedisParametersMismatchException(ERROR_NOT_INTEGER);
       }
     }
   }

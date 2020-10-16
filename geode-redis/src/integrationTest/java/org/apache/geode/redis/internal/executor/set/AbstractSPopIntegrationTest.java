@@ -14,7 +14,10 @@
  */
 package org.apache.geode.redis.internal.executor.set;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.net.Socket;
 import java.util.ArrayList;
@@ -28,16 +31,19 @@ import org.junit.Test;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
 
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
 public abstract class AbstractSPopIntegrationTest implements RedisPortSupplier {
   private Jedis jedis;
   private Jedis jedis2;
+  private static final int REDIS_CLIENT_TIMEOUT =
+      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), 10000000);
-    jedis2 = new Jedis("localhost", getPort(), 10000000);
+    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
@@ -45,6 +51,24 @@ public abstract class AbstractSPopIntegrationTest implements RedisPortSupplier {
     jedis.flushAll();
     jedis.close();
     jedis2.close();
+  }
+
+  @Test
+  public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SPOP))
+        .hasMessageContaining("ERR wrong number of arguments for 'spop' command");
+  }
+
+  @Test
+  public void givenMoreThanThreeArguments_returnsSyntaxError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SPOP, "key", "NaN", "extraArg"))
+        .hasMessageContaining(ERROR_SYNTAX);
+  }
+
+  @Test
+  public void givenCountIsNotAnInteger_returnsNotIntegerError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SPOP, "key", "NaN"))
+        .hasMessageContaining(ERROR_NOT_INTEGER);
   }
 
   @Test

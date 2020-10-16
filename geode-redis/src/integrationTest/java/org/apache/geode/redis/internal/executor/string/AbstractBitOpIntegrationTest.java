@@ -14,6 +14,9 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
+import static org.apache.geode.redis.internal.executor.string.BitOpExecutor.ERROR_BITOP_NOT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -22,6 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.BitOP;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
 
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
@@ -41,15 +45,48 @@ public abstract class AbstractBitOpIntegrationTest implements RedisPortSupplier 
   }
 
   @Test
+  public void bitop_givenOperationNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.BITOP))
+        .hasMessageContaining("ERR wrong number of arguments for 'bitop' command");
+  }
+
+  @Test
+  public void bitop_givenDestinationKeyNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.BITOP, "AND"))
+        .hasMessageContaining("ERR wrong number of arguments for 'bitop' command");
+  }
+
+  @Test
+  public void bitop_givenSourceKeyNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.BITOP, "AND", "destKey"))
+        .hasMessageContaining("ERR wrong number of arguments for 'bitop' command");
+  }
+
+  @Test
+  public void bitop_givenInvalidOperationType_returnsSyntaxError() {
+    assertThatThrownBy(
+        () -> jedis.sendCommand(Protocol.Command.BITOP, "invalidOp", "destKey", "srcKey"))
+            .hasMessageContaining(ERROR_SYNTAX);
+  }
+
+  @Test
   public void bitop_givenSetFails() {
     jedis.sadd("foo", "m1");
     assertThatThrownBy(() -> jedis.bitop(BitOP.AND, "key", "foo"))
-        .hasMessageContaining("WRONGTYPE");
-    assertThatThrownBy(() -> jedis.bitop(BitOP.OR, "key", "foo")).hasMessageContaining("WRONGTYPE");
+        .hasMessageContaining(ERROR_WRONG_TYPE);
+    assertThatThrownBy(() -> jedis.bitop(BitOP.OR, "key", "foo"))
+        .hasMessageContaining(ERROR_WRONG_TYPE);
     assertThatThrownBy(() -> jedis.bitop(BitOP.XOR, "key", "foo"))
-        .hasMessageContaining("WRONGTYPE");
+        .hasMessageContaining(ERROR_WRONG_TYPE);
     assertThatThrownBy(() -> jedis.bitop(BitOP.NOT, "key", "foo"))
-        .hasMessageContaining("WRONGTYPE");
+        .hasMessageContaining(ERROR_WRONG_TYPE);
+  }
+
+  @Test
+  public void bitopNOT_givenMoreThanOneSourceKey_returnsError() {
+    assertThatThrownBy(
+        () -> jedis.sendCommand(Protocol.Command.BITOP, "NOT", "destKey", "srcKey", "srcKey2"))
+            .hasMessageContaining(ERROR_BITOP_NOT);
   }
 
   @Test

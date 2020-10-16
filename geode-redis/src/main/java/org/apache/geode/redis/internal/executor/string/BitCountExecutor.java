@@ -17,7 +17,6 @@ package org.apache.geode.redis.internal.executor.string;
 import java.util.List;
 
 import org.apache.geode.redis.internal.RedisConstants;
-import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Coder;
@@ -32,10 +31,6 @@ public class BitCountExecutor extends StringExecutor {
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
-
-    if (commandElems.size() != 2 && commandElems.size() != 4) {
-      return RedisResponse.error(ArityDef.BITCOUNT);
-    }
 
     ByteArrayWrapper key = command.getKey();
     RedisStringCommands stringCommands = getRedisStringCommands(context);

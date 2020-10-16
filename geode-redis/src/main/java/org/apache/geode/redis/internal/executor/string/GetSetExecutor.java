@@ -17,7 +17,6 @@ package org.apache.geode.redis.internal.executor.string;
 
 import java.util.List;
 
-import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
@@ -28,13 +27,8 @@ public class GetSetExecutor extends StringExecutor {
   private static final int VALUE_INDEX = 2;
 
   @Override
-  public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
-
-    if (commandElems.size() != 3) {
-      return RedisResponse.error(ArityDef.GETSET);
-    }
 
     ByteArrayWrapper key = command.getKey();
     byte[] newCharValue = commandElems.get(VALUE_INDEX);

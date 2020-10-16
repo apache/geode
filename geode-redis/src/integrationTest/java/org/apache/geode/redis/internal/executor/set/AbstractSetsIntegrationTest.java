@@ -30,21 +30,25 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.management.internal.cli.util.ThreePhraseGenerator;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
 public abstract class AbstractSetsIntegrationTest implements RedisPortSupplier {
 
   private Jedis jedis;
   private Jedis jedis2;
-  private static ThreePhraseGenerator generator = new ThreePhraseGenerator();
+  private static final ThreePhraseGenerator generator = new ThreePhraseGenerator();
+  private static final int REDIS_CLIENT_TIMEOUT =
+      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), 10000000);
-    jedis2 = new Jedis("localhost", getPort(), 10000000);
+    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
@@ -52,6 +56,30 @@ public abstract class AbstractSetsIntegrationTest implements RedisPortSupplier {
     jedis.flushAll();
     jedis.close();
     jedis2.close();
+  }
+
+  @Test
+  public void sadd_givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SADD))
+        .hasMessageContaining("ERR wrong number of arguments for 'sadd' command");
+  }
+
+  @Test
+  public void sadd_givenMemberNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SADD, "key"))
+        .hasMessageContaining("ERR wrong number of arguments for 'sadd' command");
+  }
+
+  @Test
+  public void scard_givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SCARD))
+        .hasMessageContaining("ERR wrong number of arguments for 'scard' command");
+  }
+
+  @Test
+  public void scard_givenMoreThanTwoArguments_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SCARD, "key", "extraArg"))
+        .hasMessageContaining("ERR wrong number of arguments for 'scard' command");
   }
 
   @Test
@@ -217,6 +245,18 @@ public abstract class AbstractSetsIntegrationTest implements RedisPortSupplier {
     List<String> results = jedis.srandmember("key", -3);
     assertThat(results).hasSize(3);
     assertThat(results).containsAnyOf("m1");
+  }
+
+  @Test
+  public void smembers_givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SMEMBERS))
+        .hasMessageContaining("ERR wrong number of arguments for 'smembers' command");
+  }
+
+  @Test
+  public void smembers_givenMoreThanTwoArguments_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SMEMBERS, "key", "extraArg"))
+        .hasMessageContaining("ERR wrong number of arguments for 'smembers' command");
   }
 
   @Test

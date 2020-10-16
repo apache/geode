@@ -15,6 +15,7 @@
 package org.apache.geode.redis.internal.executor.string;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -29,19 +30,23 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
 
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
 public abstract class AbstractMSetIntegrationTest implements RedisPortSupplier {
 
   private Jedis jedis;
   private Jedis jedis2;
-  private static int ITERATION_COUNT = 4000;
+  private static final int ITERATION_COUNT = 4000;
+  private static final int REDIS_CLIENT_TIMEOUT =
+      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), 10000000);
-    jedis2 = new Jedis("localhost", getPort(), 10000000);
+    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
@@ -49,6 +54,26 @@ public abstract class AbstractMSetIntegrationTest implements RedisPortSupplier {
     jedis.flushAll();
     jedis.close();
     jedis2.close();
+  }
+
+  @Test
+  public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.MSET))
+        .hasMessageContaining("ERR wrong number of arguments for 'mset' command");
+  }
+
+  @Test
+  public void givenValueNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.MSET, "key"))
+        .hasMessageContaining("ERR wrong number of arguments for 'mset' command");
+  }
+
+  @Test
+  public void givenEvenNumberOfArgumentsProvided_returnsWrongNumberOfArgumentsError() {
+    // Redis returns this message in this scenario: "ERR wrong number of arguments for MSET"
+    assertThatThrownBy(
+        () -> jedis.sendCommand(Protocol.Command.MSET, "key1", "value1", "key2", "value2", "key3"))
+            .hasMessageContaining("ERR wrong number of arguments");
   }
 
   @Test

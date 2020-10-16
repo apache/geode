@@ -15,27 +15,31 @@
 package org.apache.geode.redis.internal.executor.string;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.internal.RedisConstants;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
 public abstract class AbstractIncrIntegrationTest implements RedisPortSupplier {
 
   private Jedis jedis;
   private Jedis jedis2;
-  private static int ITERATION_COUNT = 4000;
+  private static final int REDIS_CLIENT_TIMEOUT =
+      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), 10000000);
-    jedis2 = new Jedis("localhost", getPort(), 10000000);
+    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
@@ -43,6 +47,18 @@ public abstract class AbstractIncrIntegrationTest implements RedisPortSupplier {
     jedis.flushAll();
     jedis.close();
     jedis2.close();
+  }
+
+  @Test
+  public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.INCR))
+        .hasMessageContaining("ERR wrong number of arguments for 'incr' command");
+  }
+
+  @Test
+  public void givenMoreThanTwoArgumentsProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.INCR, "key", "extraArg"))
+        .hasMessageContaining("ERR wrong number of arguments for 'incr' command");
   }
 
   @Test
@@ -97,8 +113,8 @@ public abstract class AbstractIncrIntegrationTest implements RedisPortSupplier {
   public void testIncr_shouldBeAtomic() {
     jedis.set("contestedKey", "0");
 
-    new ConcurrentLoopingThreads(
-        ITERATION_COUNT,
+    int ITERATION_COUNT = 4000;
+    new ConcurrentLoopingThreads(ITERATION_COUNT,
         (i) -> jedis.incr("contestedKey"),
         (i) -> jedis2.incr("contestedKey"))
             .run();

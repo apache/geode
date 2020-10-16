@@ -29,6 +29,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.redis.internal.RedisConstants;
@@ -39,12 +40,14 @@ public abstract class AbstractGetSetIntegrationTest implements RedisPortSupplier
 
   private Jedis jedis;
   private Jedis jedis2;
-  private static int ITERATION_COUNT = 4000;
+  private static final int ITERATION_COUNT = 4000;
+  private static final int REDIS_CLIENT_TIMEOUT =
+      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), 10000000);
-    jedis2 = new Jedis("localhost", getPort(), 10000000);
+    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
@@ -52,6 +55,24 @@ public abstract class AbstractGetSetIntegrationTest implements RedisPortSupplier
     jedis.flushAll();
     jedis.close();
     jedis2.close();
+  }
+
+  @Test
+  public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.GETSET))
+        .hasMessageContaining("ERR wrong number of arguments for 'getset' command");
+  }
+
+  @Test
+  public void givenValueNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.GETSET, "key"))
+        .hasMessageContaining("ERR wrong number of arguments for 'getset' command");
+  }
+
+  @Test
+  public void givenMoreThanThreeArgumentsProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.GETSET, "key", "value", "extraArg"))
+        .hasMessageContaining("ERR wrong number of arguments for 'getset' command");
   }
 
   @Test

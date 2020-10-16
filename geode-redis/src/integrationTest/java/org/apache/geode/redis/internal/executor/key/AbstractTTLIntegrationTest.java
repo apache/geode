@@ -45,6 +45,18 @@ public abstract class AbstractTTLIntegrationTest implements RedisPortSupplier {
   }
 
   @Test
+  public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.TTL))
+        .hasMessageContaining("ERR wrong number of arguments for 'ttl' command");
+  }
+
+  @Test
+  public void givenMoreThanTwoArguments_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.TTL, "key", "extraArg"))
+        .hasMessageContaining("ERR wrong number of arguments for 'ttl' command");
+  }
+
+  @Test
   public void shouldReturnNegativeTwo_givenKeyDoesNotExist() {
     assertThat(jedis.ttl("doesNotExist")).isEqualTo(-2);
   }
@@ -62,13 +74,5 @@ public abstract class AbstractTTLIntegrationTest implements RedisPortSupplier {
     jedis.expire("orange", 20);
 
     assertThat(jedis.ttl("orange")).isGreaterThan(15);
-  }
-
-  @Test
-  public void shouldThrowError_givenMultipleKeys() {
-    jedis.set("orange", "crush");
-
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.TTL, "orange", "blue"))
-        .hasMessageContaining("wrong number of arguments");
   }
 }
