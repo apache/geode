@@ -16,6 +16,7 @@
 package org.apache.geode.redis.internal.netty;
 
 import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
 import java.text.DecimalFormat;
 import java.util.Collection;
 import java.util.List;
@@ -207,28 +208,24 @@ public class Coder {
     }
   }
 
-  public static ByteBuf getScanResponse(ByteBufAllocator alloc, List<?> items) {
-    if (items == null || items.isEmpty()) {
-      return null;
-    }
-
+  public static ByteBuf getScanResponse(ByteBufAllocator alloc, BigInteger cursor,
+      List<Object> scanResult) {
     ByteBuf response = alloc.buffer();
 
     response.writeByte(ARRAY_ID);
     response.writeBytes(intToBytes(2));
     response.writeBytes(CRLFar);
     response.writeByte(BULK_STRING_ID);
-    byte[] cursor = stringToBytes((String) items.get(0));
-    response.writeBytes(intToBytes(cursor.length));
+    byte[] cursorBytes = stringToBytes(cursor.toString());
+    response.writeBytes(intToBytes(cursorBytes.length));
     response.writeBytes(CRLFar);
-    response.writeBytes(cursor);
+    response.writeBytes(cursorBytes);
     response.writeBytes(CRLFar);
-    items = items.subList(1, items.size());
     response.writeByte(ARRAY_ID);
-    response.writeBytes(intToBytes(items.size()));
+    response.writeBytes(intToBytes(scanResult.size()));
     response.writeBytes(CRLFar);
 
-    for (Object nextObject : items) {
+    for (Object nextObject : scanResult) {
       if (nextObject instanceof String) {
         String next = (String) nextObject;
         response.writeByte(BULK_STRING_ID);

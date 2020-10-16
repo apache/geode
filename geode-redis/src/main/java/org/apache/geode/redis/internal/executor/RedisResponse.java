@@ -16,7 +16,9 @@
 
 package org.apache.geode.redis.internal.executor;
 
+import java.math.BigInteger;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
@@ -126,8 +128,12 @@ public class RedisResponse {
     return new RedisResponse((bba) -> Coder.getWrongTypeResponse(bba, error));
   }
 
-  public static RedisResponse scan(List<?> items) {
-    return new RedisResponse((bba) -> Coder.getScanResponse(bba, items));
+  public static RedisResponse scan(BigInteger cursor, List<Object> scanResult) {
+    return new RedisResponse((bba) -> Coder.getScanResponse(bba, cursor, scanResult));
+  }
+
+  public static RedisResponse emptyScan() {
+    return scan(new BigInteger("0"), new ArrayList<>());
   }
 
   /**

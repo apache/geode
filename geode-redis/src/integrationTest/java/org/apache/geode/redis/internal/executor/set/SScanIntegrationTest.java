@@ -12,8 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
-package org.apache.geode.redis.internal.executor.key;
+package org.apache.geode.redis.internal.executor.set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -27,7 +26,7 @@ import redis.clients.jedis.ScanResult;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
 
-public class ScanIntegrationTest extends AbstractScanIntegrationTest {
+public class SScanIntegrationTest extends AbstractSScanIntegrationTest {
 
   @ClassRule
   public static GeodeRedisServerRule server = new GeodeRedisServerRule();
@@ -38,20 +37,20 @@ public class ScanIntegrationTest extends AbstractScanIntegrationTest {
   }
 
   @Test
-  public void givenDifferentCursorThanSpecifiedByPreviousScan_returnsAllKeys() {
-    List<String> keyList = new ArrayList<>();
+  public void givenDifferentCursorThanSpecifiedByPreviousSscan_returnsAllMembers() {
+    List<String> memberList = new ArrayList<>();
     for (int i = 0; i < 10; i++) {
-      jedis.set(String.valueOf(i), "a");
-      keyList.add(String.valueOf(i));
+      jedis.sadd("a", String.valueOf(i));
+      memberList.add(String.valueOf(i));
     }
 
     ScanParams scanParams = new ScanParams();
     scanParams.count(5);
-    ScanResult<String> result = jedis.scan("0", scanParams);
+    ScanResult<String> result = jedis.sscan("a", "0", scanParams);
     assertThat(result.isCompleteIteration()).isFalse();
 
-    result = jedis.scan("100");
+    result = jedis.sscan("a", "100");
 
-    assertThat(result.getResult()).containsExactlyInAnyOrder(keyList.toArray(new String[0]));
+    assertThat(result.getResult()).containsExactlyInAnyOrder(memberList.toArray(new String[0]));
   }
 }
