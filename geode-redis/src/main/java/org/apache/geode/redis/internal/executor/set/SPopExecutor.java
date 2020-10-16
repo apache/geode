@@ -46,7 +46,7 @@ public class SPopExecutor extends SetExecutor {
     }
 
     if (!isCountPassed) {
-      return RedisResponse.string(popped.iterator().next().toString());
+      return RedisResponse.bulkString(popped.iterator().next().toString());
     }
 
     return RedisResponse.array(popped);
