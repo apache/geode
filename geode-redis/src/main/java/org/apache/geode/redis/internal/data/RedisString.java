@@ -144,12 +144,12 @@ public class RedisString extends AbstractRedisData {
   private double parseValueAsDouble() {
     String valueString = value.toString();
     if (valueString.contains(" ")) {
-      throw new NumberFormatException("Value at this key cannot be incremented numerically");
+      throw new NumberFormatException(RedisConstants.ERROR_NOT_A_VALID_FLOAT);
     }
     try {
       return Coder.stringToDouble(valueString);
     } catch (NumberFormatException e) {
-      throw new NumberFormatException("Value at this key cannot be incremented numerically");
+      throw new NumberFormatException(RedisConstants.ERROR_NOT_A_VALID_FLOAT);
     }
 
   }

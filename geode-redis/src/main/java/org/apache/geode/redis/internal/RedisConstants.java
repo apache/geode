@@ -46,5 +46,7 @@ public class RedisConstants {
   public static final String ERROR_NO_SUCH_KEY = "no such key";
   public static final String ERROR_SYNTAX = "syntax error";
   public static final String ERROR_INVALID_EXPIRE_TIME = "invalid expire time in set";
+  public static final String ERROR_NOT_A_VALID_FLOAT = "value is not a valid float";
+
 
 }

@@ -17,10 +17,11 @@ package org.apache.geode.redis.internal.executor.string;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.util.Random;
+import java.math.BigDecimal;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
@@ -31,14 +32,12 @@ import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 public abstract class AbstractIncrByFloatIntegrationTest implements RedisPortSupplier {
 
   private Jedis jedis;
-  private Random rand;
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
-    rand = new Random();
-    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis = new Jedis("localhost", getPort(), 10000000);
   }
 
   @After
@@ -68,10 +67,10 @@ public abstract class AbstractIncrByFloatIntegrationTest implements RedisPortSup
 
   @Test
   public void testIncrByFloat() {
-    String key1 = randString();
-    String key2 = randString();
-    double incr1 = rand.nextInt(100);
-    double incr2 = rand.nextInt(100);
+    String key1 = "key1";
+    String key2 = "key2";
+    double incr1 = 23.5;
+    double incr2 = -14.78;
     double num1 = 100;
     double num2 = -100;
     jedis.set(key1, "" + num1);
@@ -79,11 +78,59 @@ public abstract class AbstractIncrByFloatIntegrationTest implements RedisPortSup
 
     jedis.incrByFloat(key1, incr1);
     jedis.incrByFloat(key2, incr2);
+
     assertThat(Double.valueOf(jedis.get(key1))).isEqualTo(num1 + incr1);
     assertThat(Double.valueOf(jedis.get(key2))).isEqualTo(num2 + incr2);
   }
 
-  private String randString() {
-    return Long.toHexString(Double.doubleToLongBits(Math.random()));
+  @Test
+  public void testIncrByFloat_whenUsingExponents() {
+    String key1 = "key1";
+    double num1 = 5e2;
+    jedis.set(key1, "5e2");
+
+    double incr1 = 2.0e4;
+    jedis.sendCommand(Protocol.Command.INCRBYFLOAT, key1, "2.0e4");
+    assertThat(Double.valueOf(jedis.get(key1))).isEqualTo(num1 + incr1);
+  }
+
+  @Test
+  public void testCorrectErrorIsReturned_whenKeyIsNotANumber() {
+    jedis.set("nan", "abc");
+
+    assertThatThrownBy(() -> jedis.incrByFloat("nan", 1))
+        .hasMessage("ERR value is not a valid float");
+  }
+
+  @Test
+  public void testCorrectErrorIsReturned_whenIncrByIsInvalid() {
+    double number1 = 1.4;
+    jedis.set("number", "" + number1);
+
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.INCRBYFLOAT, "number", " a b c"))
+        .hasMessage("ERR value is not a valid float");
+  }
+
+  @Test
+  public void testIncrBy_withInfinity() {
+    double number1 = 1.4;
+    jedis.set("number", "" + number1);
+
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.INCRBYFLOAT, "number", "+inf"))
+        .hasMessage("ERR increment would produce NaN or Infinity");
+  }
+
+  @Test
+  @Ignore("GEODE-8624: Improve INCRBYFLOAT accuracy for very large values")
+  public void testReallyBigNumbers() {
+    // max unsigned long long - 1
+    BigDecimal biggy = new BigDecimal("18446744073709551614");
+    jedis.set("number", biggy.toPlainString());
+
+    // Beyond this, native redis produces inconsistent results.
+    Object rawResult = jedis.sendCommand(Protocol.Command.INCRBYFLOAT, "number", "1");
+    BigDecimal result = new BigDecimal(new String((byte[]) rawResult));
+
+    assertThat(result.toPlainString()).isEqualTo(biggy.add(BigDecimal.ONE).toPlainString());
   }
 }

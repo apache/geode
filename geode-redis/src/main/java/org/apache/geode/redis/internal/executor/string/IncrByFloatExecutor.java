@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal.executor.string;
 
 import java.util.List;
 
+import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Coder;
@@ -24,9 +25,6 @@ import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class IncrByFloatExecutor extends StringExecutor {
-
-  private static final String ERROR_INCREMENT_NOT_USABLE =
-      "The increment on this key must be a valid floating point numeric";
 
   private static final int INCREMENT_INDEX = 2;
 
@@ -40,15 +38,14 @@ public class IncrByFloatExecutor extends StringExecutor {
     byte[] incrArray = commandElems.get(INCREMENT_INDEX);
     String doub = Coder.bytesToString(incrArray).toLowerCase();
     if (doub.contains("inf") || doub.contains("nan")) {
-      return RedisResponse.error("Increment would produce NaN or infinity");
+      return RedisResponse.error("increment would produce NaN or Infinity");
     }
 
     double increment;
-
     try {
-      increment = Coder.stringToDouble(doub);
+      increment = Coder.bytesToDouble(incrArray);
     } catch (NumberFormatException e) {
-      return RedisResponse.error(ERROR_INCREMENT_NOT_USABLE);
+      return RedisResponse.error(RedisConstants.ERROR_NOT_A_VALID_FLOAT);
     }
 
     double result = stringCommands.incrbyfloat(key, increment);
