@@ -214,7 +214,9 @@ public class FixedPartitioningHADistributedTest implements Serializable {
     for (VM vm : asList(accessor1VM, server1VM, server2VM, server3VM, server4VM, server5VM)) {
       vm.invoke(() -> {
         await().untilAsserted(() -> {
-          assertThat(DONE.get()).isEqualTo(THREADS);
+          assertThat(DONE.get())
+              .as(executorServiceRule.dumpThreads())
+              .isEqualTo(THREADS);
         });
       });
     }
