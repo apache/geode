@@ -2294,10 +2294,13 @@ public class ClusterDistributionManager implements DistributionManager {
     @Override
     public void membershipFailure(String reason, Throwable t) {
       exceptionInThreads = true;
-      rootCause = t;
-      if (rootCause != null && !(rootCause instanceof ForcedDisconnectException)) {
-        logger.info("cluster membership failed due to ", rootCause);
-        rootCause = new ForcedDisconnectException(rootCause.getMessage());
+      if (t != null) {
+        if (t instanceof ForcedDisconnectException) {
+          rootCause = t;
+        } else {
+          logger.info("cluster membership failed due to ", t);
+          rootCause = new ForcedDisconnectException(t.getMessage());
+        }
       }
       try {
         if (membershipTestHooks != null) {
