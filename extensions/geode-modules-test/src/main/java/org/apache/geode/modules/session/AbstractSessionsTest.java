@@ -54,7 +54,8 @@ public abstract class AbstractSessionsTest {
 
   // Set up the servers we need
   protected static void setupServer(final DeltaSessionManager manager) throws Exception {
-    FileUtils.copyDirectory(Paths.get("..", "resources", "integrationTest", "tomcat").toFile(),
+    FileUtils.copyDirectory(
+        Paths.get("..", "..", "resources", "integrationTest", "tomcat").toFile(),
         new File("./tomcat"));
     port = SocketUtils.findAvailableTcpPort();
     server = new EmbeddedTomcat(port, "JVM-1");
