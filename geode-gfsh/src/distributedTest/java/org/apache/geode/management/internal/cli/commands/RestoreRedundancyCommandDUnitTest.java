@@ -381,6 +381,28 @@ public class RestoreRedundancyCommandDUnitTest {
     });
   }
 
+  @Test
+  public void restoreRedundancyReturnsCorrectStatusWhenNotAllBucketsHaveBeenCreated() {
+    servers.forEach(s -> s.invoke(() -> {
+      createLowRedundancyRegion();
+      // Put a single entry into the region so that only one bucket gets created
+      Objects.requireNonNull(ClusterStartupRule.getCache())
+          .getRegion(LOW_REDUNDANCY_REGION_NAME)
+          .put("key", "value");
+    }));
+
+    int numberOfServers = servers.size();
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + LOW_REDUNDANCY_REGION_NAME,
+        numberOfServers);
+
+    String command = new CommandStringBuilder(RESTORE_REDUNDANCY).getCommandString();
+
+    CommandResultAssert commandResult = gfsh.executeAndAssertThat(command).statusIsSuccess();
+
+    verifyGfshOutput(commandResult, new ArrayList<>(), new ArrayList<>(),
+        Collections.singletonList(LOW_REDUNDANCY_REGION_NAME));
+  }
+
   // Helper methods
 
   private List<String> getAllRegionNames() {
