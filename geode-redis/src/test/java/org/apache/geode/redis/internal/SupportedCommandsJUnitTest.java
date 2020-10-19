@@ -59,6 +59,7 @@ public class SupportedCommandsJUnitTest {
       "TTL",
       "TYPE",
       "UNKNOWN",
+      "UNLINK",
       "UNSUBSCRIBE",
   };
 
@@ -190,7 +191,6 @@ public class SupportedCommandsJUnitTest {
       "SWAPDB",
       "SYNC",
       "TOUCH",
-      "UNLINK",
       "UNWATCH",
       "WAIT",
       "WATCH",
