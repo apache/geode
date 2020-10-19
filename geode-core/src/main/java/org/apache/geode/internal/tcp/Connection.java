@@ -878,27 +878,28 @@ public class Connection implements Runnable {
     waitForAddressCompletion();
 
     InternalDistributedMember myAddr = owner.getConduit().getMemberId();
-    final MsgOutputStream connectHandshake = new MsgOutputStream(CONNECT_HANDSHAKE_SIZE);
-    /*
-     * Note a byte of zero is always written because old products serialized a member id with always
-     * sends an ip address. My reading of the ip-address specs indicated that the first byte of a
-     * valid address would never be 0.
-     */
-    connectHandshake.writeByte(0);
-    connectHandshake.writeByte(HANDSHAKE_VERSION);
-    // NOTE: if you add or remove code in this section bump HANDSHAKE_VERSION
-    InternalDataSerializer.invokeToData(myAddr, connectHandshake);
-    connectHandshake.writeBoolean(sharedResource);
-    connectHandshake.writeBoolean(preserveOrder);
-    connectHandshake.writeLong(uniqueId);
-    // write the product version ordinal
-    VersioningIO.writeOrdinal(connectHandshake, KnownVersion.CURRENT.ordinal(), true);
-    connectHandshake.writeInt(dominoCount.get() + 1);
-    // this writes the sending member + thread name that is stored in senderName
-    // on the receiver to show the cause of reader thread creation
-    connectHandshake.setMessageHeader(NORMAL_MSG_TYPE, OperationExecutors.STANDARD_EXECUTOR,
-        MsgIdGenerator.NO_MSG_ID);
-    writeFully(getSocket().getChannel(), connectHandshake.getContentBuffer(), false, null);
+    try (final MsgOutputStream connectHandshake = new MsgOutputStream(CONNECT_HANDSHAKE_SIZE)) {
+      /*
+       * Note a byte of zero is always written because old products serialized a member id with
+       * always sends an ip address. My reading of the ip-address specs indicated that the first
+       * byte of a valid address would never be 0.
+       */
+      connectHandshake.writeByte(0);
+      connectHandshake.writeByte(HANDSHAKE_VERSION);
+      // NOTE: if you add or remove code in this section bump HANDSHAKE_VERSION
+      InternalDataSerializer.invokeToData(myAddr, connectHandshake);
+      connectHandshake.writeBoolean(sharedResource);
+      connectHandshake.writeBoolean(preserveOrder);
+      connectHandshake.writeLong(uniqueId);
+      // write the product version ordinal
+      VersioningIO.writeOrdinal(connectHandshake, KnownVersion.CURRENT.ordinal(), true);
+      connectHandshake.writeInt(dominoCount.get() + 1);
+      // this writes the sending member + thread name that is stored in senderName
+      // on the receiver to show the cause of reader thread creation
+      connectHandshake.setMessageHeader(NORMAL_MSG_TYPE, OperationExecutors.STANDARD_EXECUTOR,
+          MsgIdGenerator.NO_MSG_ID);
+      writeFully(getSocket().getChannel(), connectHandshake.getContentBuffer(), false, null);
+    }
   }
 
   /**
@@ -2766,17 +2767,18 @@ public class Connection implements Runnable {
                 throw e;
               }
             } else {
-              ByteBufferInputStream bbis = new ByteBufferInputStream(peerDataBuffer);
-              DataInputStream dis = new DataInputStream(bbis);
-              if (!isReceiver) {
-                // we read the handshake and then stop processing since we don't want
-                // to process the input buffer anymore in a handshake thread
-                readHandshakeForSender(dis, peerDataBuffer);
-                return;
-              }
-              if (readHandshakeForReceiver(dis)) {
-                ioFilter.doneReading(peerDataBuffer);
-                return;
+              try (ByteBufferInputStream bbis = new ByteBufferInputStream(peerDataBuffer);
+                  DataInputStream dis = new DataInputStream(bbis)) {
+                if (!isReceiver) {
+                  // we read the handshake and then stop processing since we don't want
+                  // to process the input buffer anymore in a handshake thread
+                  readHandshakeForSender(dis, peerDataBuffer);
+                  return;
+                }
+                if (readHandshakeForReceiver(dis)) {
+                  ioFilter.doneReading(peerDataBuffer);
+                  return;
+                }
               }
             }
             if (!connected) {
@@ -2932,10 +2934,9 @@ public class Connection implements Runnable {
   private void readMessage(ByteBuffer peerDataBuffer) {
     if (messageType == NORMAL_MSG_TYPE) {
       owner.getConduit().getStats().incMessagesBeingReceived(true, messageLength);
-      ByteBufferInputStream bbis =
+      try (ByteBufferInputStream bbis =
           remoteVersion == null ? new ByteBufferInputStream(peerDataBuffer)
-              : new VersionedByteBufferInputStream(peerDataBuffer, remoteVersion);
-      try {
+              : new VersionedByteBufferInputStream(peerDataBuffer, remoteVersion)) {
         ReplyProcessor21.initMessageRPId();
         // add serialization stats
         long startSer = owner.getConduit().getStats().startMsgDeserialization();

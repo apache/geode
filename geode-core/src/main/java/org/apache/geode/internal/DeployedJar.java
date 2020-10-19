@@ -115,23 +115,13 @@ public class DeployedJar {
    * @return True if the data has JAR content, false otherwise
    */
   public static boolean hasValidJarContent(File jarFile) {
-    JarInputStream jarInputStream = null;
     boolean valid = false;
 
-    try {
-      jarInputStream = new JarInputStream(new FileInputStream(jarFile));
+    try (FileInputStream fileInputStream = new FileInputStream(jarFile);
+        JarInputStream jarInputStream = new JarInputStream(fileInputStream)) {
       valid = jarInputStream.getNextJarEntry() != null;
     } catch (IOException ignore) {
       // Ignore this exception and just return false
-    } finally {
-      if (jarInputStream != null) {
-        try {
-          jarInputStream.close();
-        } catch (IOException e) {
-          // Ignore
-        }
-      }
-
     }
 
     return valid;
@@ -205,6 +195,10 @@ public class DeployedJar {
         } catch (IOException ioex) {
           logger.error("Exception attempting to close JAR input stream", ioex);
         }
+      }
+      try {
+        bufferedInputStream.close();
+      } catch (IOException ignore) {
       }
     }
   }

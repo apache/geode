@@ -1944,6 +1944,7 @@ public class Oplog implements CompactableOplog, Flushable {
         if (fis != null) {
           fis.close();
         }
+        hdos.close();
       }
       if (!foundDiskStoreRecord && recordCount > 0) {
         throw new DiskAccessException(

@@ -362,12 +362,14 @@ public class LogFileParser {
     }
 
     String logFileName = args[0];
-    BufferedReader br = new BufferedReader(new FileReader(logFileName));
-    LogFileParser parser = new LogFileParser(logFileName, br, false, false);
-    PrintWriter pw = new PrintWriter(System.out);
-    while (parser.hasMoreEntries()) {
-      LogEntry entry = parser.getNextEntry();
-      entry.writeTo(pw);
+    try (FileReader fileReader = new FileReader(logFileName);
+        BufferedReader br = new BufferedReader(fileReader)) {
+      LogFileParser parser = new LogFileParser(logFileName, br, false, false);
+      PrintWriter pw = new PrintWriter(System.out);
+      while (parser.hasMoreEntries()) {
+        LogEntry entry = parser.getNextEntry();
+        entry.writeTo(pw);
+      }
     }
   }
 

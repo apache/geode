@@ -339,11 +339,10 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
 
     @Override
     public void run() {
-      try {
+      try (DataInputStream in = new DataInputStream(socket.getInputStream())) {
         socket.setTcpNoDelay(true);
-        DataInputStream in = new DataInputStream(socket.getInputStream());
         OutputStream out = socket.getOutputStream();
-        @SuppressWarnings("UnusedAssignment")
+        @SuppressWarnings("UnusedVariable")
         short version = in.readShort();
         int vmViewId = in.readInt();
         long uuidLSBs = in.readLong();

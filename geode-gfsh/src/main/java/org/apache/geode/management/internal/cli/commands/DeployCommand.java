@@ -101,26 +101,39 @@ public class DeployCommand extends GfshCommand {
     for (DistributedMember member : targetMembers) {
       List<RemoteInputStream> remoteStreams = new ArrayList<>();
       List<String> jarNames = new ArrayList<>();
-      for (String jarFullPath : jarFullPaths) {
-        remoteStreams
-            .add(exporter.export(new SimpleRemoteInputStream(new FileInputStream(jarFullPath))));
-        jarNames.add(FilenameUtils.getName(jarFullPath));
-      }
+      try {
+        for (String jarFullPath : jarFullPaths) {
+          FileInputStream fileInputStream = null;
+          try {
+            fileInputStream = new FileInputStream(jarFullPath);
+            remoteStreams.add(exporter.export(new SimpleRemoteInputStream(fileInputStream)));
+            jarNames.add(FilenameUtils.getName(jarFullPath));
+          } catch (Exception ex) {
+            if (fileInputStream != null) {
+              try {
+                fileInputStream.close();
+              } catch (IOException ignore) {
+              }
+            }
+            throw ex;
+          }
+        }
 
-      // this deploys the jars to all the matching servers
-      ResultCollector<?, ?> resultCollector =
-          executeFunction(this.deployFunction, new Object[] {jarNames, remoteStreams}, member);
+        // this deploys the jars to all the matching servers
+        ResultCollector<?, ?> resultCollector =
+            executeFunction(this.deployFunction, new Object[] {jarNames, remoteStreams}, member);
 
-      @SuppressWarnings("unchecked")
-      final List<List<Object>> resultCollectorResult =
-          (List<List<Object>>) resultCollector.getResult();
-      results.add(resultCollectorResult.get(0));
-
-      for (RemoteInputStream ris : remoteStreams) {
-        try {
-          ris.close(true);
-        } catch (IOException ex) {
-          // Ignored. the stream may have already been closed.
+        @SuppressWarnings("unchecked")
+        final List<List<Object>> resultCollectorResult =
+            (List<List<Object>>) resultCollector.getResult();
+        results.add(resultCollectorResult.get(0));
+      } finally {
+        for (RemoteInputStream ris : remoteStreams) {
+          try {
+            ris.close(true);
+          } catch (IOException ex) {
+            // Ignored. the stream may have already been closed.
+          }
         }
       }
     }

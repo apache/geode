@@ -185,7 +185,7 @@ public class ClientProxyMembershipID
     }
     {
       systemMemberId = sys.getDistributedMember();
-      try {
+      try (HeapDataOutputStream hdos = new HeapDataOutputStream(256, KnownVersion.CURRENT)) {
         if (systemMemberId != null) {
           // update the durable id of the member identifier before serializing in case
           // a pool name has been established
@@ -194,7 +194,6 @@ public class ClientProxyMembershipID
             ((InternalDistributedMember) systemMemberId).setDurableId(attributes.getId());
           }
         }
-        HeapDataOutputStream hdos = new HeapDataOutputStream(256, KnownVersion.CURRENT);
         DataSerializer.writeObject(systemMemberId, hdos);
         client_side_identity = hdos.toByteArray();
       } catch (IOException ioe) {
@@ -408,9 +407,8 @@ public class ClientProxyMembershipID
 
   public DistributedMember getDistributedMember() {
     if (memberId == null) {
-      ByteArrayDataInput dataInput = new ByteArrayDataInput(identity);
-      try {
-        memberId = (DistributedMember) DataSerializer.readObject(dataInput);
+      try (ByteArrayDataInput dataInput = new ByteArrayDataInput(identity)) {
+        memberId = DataSerializer.readObject(dataInput);
       } catch (Exception e) {
         logger.error("Unable to deserialize membership id", e);
       }
@@ -493,13 +491,14 @@ public class ClientProxyMembershipID
     // new Exception("stack trace")
     // ));
     // }
-    HeapDataOutputStream hdos = new HeapDataOutputStream(256, KnownVersion.CURRENT);
-    try {
-      DataSerializer.writeObject(idm, hdos);
-    } catch (IOException e) {
-      throw new InternalGemFireException("Unable to serialize member: " + this.memberId, e);
+    try (HeapDataOutputStream hdos = new HeapDataOutputStream(256, KnownVersion.CURRENT)) {
+      try {
+        DataSerializer.writeObject(idm, hdos);
+      } catch (IOException e) {
+        throw new InternalGemFireException("Unable to serialize member: " + this.memberId, e);
+      }
+      this.identity = hdos.toByteArray();
     }
-    this.identity = hdos.toByteArray();
     if (this.memberId != null && this.memberId == systemMemberId) {
       systemMemberId = idm;
       // client_side_identity = this.identity;

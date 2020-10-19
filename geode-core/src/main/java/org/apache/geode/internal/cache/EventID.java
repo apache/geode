@@ -316,10 +316,8 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
       // read if the stream's version is 1.0.0-incubating
       disVersion = KnownVersion.GFE_90;
     }
-    ByteArrayDataInput dis =
-        new ByteArrayDataInput(membershipID, disVersion);
     InternalDistributedMember result = null;
-    try {
+    try (ByteArrayDataInput dis = new ByteArrayDataInput(membershipID, disVersion)) {
       result = InternalDistributedMember.readEssentialData(dis);
     } catch (IOException e) {
       // nothing can be done about this
@@ -509,9 +507,8 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
 
   public String expensiveToString() {
     Object mbr;
-    try {
-      mbr = InternalDistributedMember
-          .readEssentialData(new ByteArrayDataInput(membershipID));
+    try (ByteArrayDataInput in = new ByteArrayDataInput(membershipID)) {
+      mbr = InternalDistributedMember.readEssentialData(in);
     } catch (Exception e) {
       mbr = membershipID; // punt and use the bytes
     }
@@ -572,8 +569,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
     if (EventID.system != sys) {
       // DS already exists... make sure it's for current DS connection
       EventID.systemMemberId = sys.getDistributedMember();
-      try {
-        HeapDataOutputStream hdos = new HeapDataOutputStream(256, KnownVersion.CURRENT);
+      try (HeapDataOutputStream hdos = new HeapDataOutputStream(256, KnownVersion.CURRENT)) {
         ((InternalDistributedMember) EventID.systemMemberId).writeEssentialData(hdos);
         client_side_event_identity = hdos.toByteArray();
       } catch (IOException ioe) {

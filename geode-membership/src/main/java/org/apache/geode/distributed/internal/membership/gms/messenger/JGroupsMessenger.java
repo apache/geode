@@ -879,32 +879,27 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
     setMessageFlags(gfmsg, msg);
     try {
       long start = services.getStatistics().startMsgSerialization();
-      final KnownVersion version =
-          Versioning.getKnownVersionOrDefault(
-              Versioning.getVersion(versionOrdinal),
-              KnownVersion.CURRENT);
-      BufferDataOutputStream out_stream =
-          new BufferDataOutputStream(version);
-      VersioningIO.writeOrdinal(out_stream,
-          KnownVersion.getCurrentVersion().ordinal(), true);
-      if (encrypt != null) {
-        out_stream.writeBoolean(true);
-        writeEncryptedMessage(gfmsg, dst, versionOrdinal, out_stream);
-      } else {
-        out_stream.writeBoolean(false);
-        serializeMessage(gfmsg, out_stream);
-      }
+      final KnownVersion version = Versioning
+          .getKnownVersionOrDefault(Versioning.getVersion(versionOrdinal), KnownVersion.CURRENT);
+      try (BufferDataOutputStream out_stream = new BufferDataOutputStream(version)) {
+        VersioningIO.writeOrdinal(out_stream, KnownVersion.getCurrentVersion().ordinal(), true);
+        if (encrypt != null) {
+          out_stream.writeBoolean(true);
+          writeEncryptedMessage(gfmsg, dst, versionOrdinal, out_stream);
+        } else {
+          out_stream.writeBoolean(false);
+          serializeMessage(gfmsg, out_stream);
+        }
 
-      msg.setBuffer(out_stream.toByteArray());
+        msg.setBuffer(out_stream.toByteArray());
+      }
       services.getStatistics().endMsgSerialization(start);
     } catch (IOException ex) {
       logger.warn("Error serializing message", ex);
       throw ex;
     } catch (Exception ex) {
       logger.warn("Error serializing message", ex);
-      IOException ioe =
-          new IOException("Error serializing message", ex.getCause());
-      throw ioe;
+      throw new IOException("Error serializing message", ex.getCause());
     }
     return msg;
   }
@@ -942,13 +937,12 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
         StaticSerialization.writeByteArray(pk, out);
       }
 
-      final KnownVersion version =
-          Versioning.getKnownVersionOrDefault(
-              Versioning.getVersion(versionOrdinal),
-              KnownVersion.CURRENT);
-      BufferDataOutputStream out_stream =
-          new BufferDataOutputStream(version);
-      byte[] messageBytes = serializeMessage(gfmsg, out_stream);
+      final KnownVersion version = Versioning
+          .getKnownVersionOrDefault(Versioning.getVersion(versionOrdinal), KnownVersion.CURRENT);
+      byte[] messageBytes;
+      try (BufferDataOutputStream out_stream = new BufferDataOutputStream(version)) {
+        messageBytes = serializeMessage(gfmsg, out_stream);
+      }
 
       if (pkMbr != null) {
         // using members private key
@@ -1186,13 +1180,15 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
           // get the multicast message digest and pass it with the join response
           Digest digest = (Digest) this.myChannel.getProtocolStack().getTopProtocol()
               .down(Event.GET_DIGEST_EVT);
-          BufferDataOutputStream hdos = new BufferDataOutputStream(500, KnownVersion.CURRENT);
-          try {
-            digest.writeTo(hdos);
-          } catch (Exception e) {
-            logger.fatal("Unable to serialize JGroups messaging digest", e);
+          try (BufferDataOutputStream bufferDataOutputStream =
+              new BufferDataOutputStream(500, KnownVersion.CURRENT)) {
+            try {
+              digest.writeTo(bufferDataOutputStream);
+            } catch (Exception e) {
+              logger.fatal("Unable to serialize JGroups messaging digest", e);
+            }
+            jrsp.setMessengerData(bufferDataOutputStream.toByteArray());
           }
-          jrsp.setMessengerData(hdos.toByteArray());
         }
         break;
       default:

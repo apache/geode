@@ -1727,17 +1727,18 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           extractDelta = true;
         }
         if (extractDelta && ((Delta) value).hasDelta()) {
-          HeapDataOutputStream hdos = new HeapDataOutputStream(KnownVersion.CURRENT);
-          long start = DistributionStats.getStatTime();
-          try {
-            ((Delta) value).toDelta(hdos);
-          } catch (RuntimeException re) {
-            throw re;
-          } catch (Exception e) {
-            throw new DeltaSerializationException("Caught exception while sending delta", e);
+          try (HeapDataOutputStream hdos = new HeapDataOutputStream(KnownVersion.CURRENT)) {
+            long start = DistributionStats.getStatTime();
+            try {
+              ((Delta) value).toDelta(hdos);
+            } catch (RuntimeException re) {
+              throw re;
+            } catch (Exception e) {
+              throw new DeltaSerializationException("Caught exception while sending delta", e);
+            }
+            event.setDeltaBytes(hdos.toByteArray());
+            getCachePerfStats().endDeltaPrepared(start);
           }
-          event.setDeltaBytes(hdos.toByteArray());
-          getCachePerfStats().endDeltaPrepared(start);
         }
       }
     } catch (RuntimeException re) {

@@ -334,21 +334,22 @@ public class SocketCreator extends TcpSocketCreatorImpl {
 
     KeyStore ts = KeyStore.getInstance(trustStoreType);
     String trustStorePath = sslConfig.getTruststore();
-    FileInputStream fis = new FileInputStream(trustStorePath);
-    String passwordString = sslConfig.getTruststorePassword();
     char[] password = null;
-    if (passwordString != null) {
-      if (passwordString.trim().equals("")) {
-        if (!StringUtils.isEmpty(passwordString)) {
-          String toDecrypt = "encrypted(" + passwordString + ")";
-          passwordString = PasswordUtil.decrypt(toDecrypt);
+    try (FileInputStream fis = new FileInputStream(trustStorePath)) {
+      String passwordString = sslConfig.getTruststorePassword();
+      if (passwordString != null) {
+        if (passwordString.trim().equals("")) {
+          if (!StringUtils.isEmpty(passwordString)) {
+            String toDecrypt = "encrypted(" + passwordString + ")";
+            passwordString = PasswordUtil.decrypt(toDecrypt);
+            password = passwordString.toCharArray();
+          }
+        } else {
           password = passwordString.toCharArray();
         }
-      } else {
-        password = passwordString.toCharArray();
       }
+      ts.load(fis, password);
     }
-    ts.load(fis, password);
 
     // default algorithm can be changed by setting property "ssl.TrustManagerFactory.algorithm" in
     // security properties
@@ -383,22 +384,23 @@ public class SocketCreator extends TcpSocketCreatorImpl {
     }
 
 
-    FileInputStream fileInputStream = new FileInputStream(keyStoreFilePath);
-    String passwordString = sslConfig.getKeystorePassword();
     char[] password = null;
-    if (passwordString != null) {
-      if (passwordString.trim().equals("")) {
-        String encryptedPass = System.getenv("javax.net.ssl.keyStorePassword");
-        if (!StringUtils.isEmpty(encryptedPass)) {
-          String toDecrypt = "encrypted(" + encryptedPass + ")";
-          passwordString = PasswordUtil.decrypt(toDecrypt);
+    try (FileInputStream fileInputStream = new FileInputStream(keyStoreFilePath)) {
+      String passwordString = sslConfig.getKeystorePassword();
+      if (passwordString != null) {
+        if (passwordString.trim().equals("")) {
+          String encryptedPass = System.getenv("javax.net.ssl.keyStorePassword");
+          if (!StringUtils.isEmpty(encryptedPass)) {
+            String toDecrypt = "encrypted(" + encryptedPass + ")";
+            passwordString = PasswordUtil.decrypt(toDecrypt);
+            password = passwordString.toCharArray();
+          }
+        } else {
           password = passwordString.toCharArray();
         }
-      } else {
-        password = passwordString.toCharArray();
       }
+      keyStore.load(fileInputStream, password);
     }
-    keyStore.load(fileInputStream, password);
     // default algorithm can be changed by setting property "ssl.KeyManagerFactory.algorithm" in
     // security properties
     KeyManagerFactory keyManagerFactory =

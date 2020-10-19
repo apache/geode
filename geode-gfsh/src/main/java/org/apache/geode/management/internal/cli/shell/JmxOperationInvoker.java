@@ -250,13 +250,11 @@ public class JmxOperationInvoker implements OperationInvoker {
         stagedFilePaths = new ArrayList<>();
         for (File file : commandRequest.getFileList()) {
           FileUploader.RemoteFile remote = fileUploadMBeanProxy.uploadFile(file.getName());
-          FileInputStream source = new FileInputStream(file);
-
-          OutputStream target = RemoteOutputStreamClient.wrap(remote.getOutputStream());
-          IOUtils.copyLarge(source, target);
-          target.close();
-
-          stagedFilePaths.add(remote.getFilename());
+          try (FileInputStream source = new FileInputStream(file);
+              OutputStream target = RemoteOutputStreamClient.wrap(remote.getOutputStream())) {
+            IOUtils.copyLarge(source, target);
+            stagedFilePaths.add(remote.getFilename());
+          }
         }
       }
     } catch (IOException e) {
