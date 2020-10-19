@@ -41,7 +41,8 @@ public class RedisConstants {
   public static final String ERROR_NOT_AUTH = "NOAUTH Authentication required.";
   public static final String ERROR_WRONG_TYPE =
       "Operation against a key holding the wrong kind of value";
-  public static final String ERROR_NOT_INTEGER = "value is not an integer or out of range";
+  public static final String ERROR_NOT_INTEGER = "value is not an integer or is out of range";
+  public static final String ERROR_NOT_LONG = "value is not a long or is out of range";
   public static final String ERROR_OVERFLOW = "increment or decrement would overflow";
   public static final String ERROR_NAN_OR_INFINITY = "increment would produce NaN or Infinity";
   public static final String ERROR_NO_SUCH_KEY = "no such key";
