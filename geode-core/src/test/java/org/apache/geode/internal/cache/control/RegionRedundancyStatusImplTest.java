@@ -56,9 +56,26 @@ public class RegionRedundancyStatusImplTest {
   @Parameters(method = "getActualRedundancyAndExpectedStatusAndMessage")
   @TestCaseName("[{index}] {method} (Desired redundancy:" + desiredRedundancy
       + "; Actual redundancy:{0}; Expected status:{1})")
-  public void constructorPopulatesValuesCorrectly(int actualRedundancy,
+  public void constructorPopulatesValuesCorrectlyWhenAllBucketsExist(int actualRedundancy,
       RegionRedundancyStatus.RedundancyStatus expectedStatus) {
     when(mockRegion.getRegionAdvisor().getBucketRedundancy(anyInt())).thenReturn(actualRedundancy);
+
+    RegionRedundancyStatus result = new SerializableRegionRedundancyStatusImpl(mockRegion);
+
+    assertThat(result.getConfiguredRedundancy(), is(desiredRedundancy));
+    assertThat(result.getActualRedundancy(), is(actualRedundancy));
+    assertThat(result.getStatus(), is(expectedStatus));
+    assertThat(result.toString(), containsString(expectedStatus.name()));
+  }
+
+  @Test
+  @Parameters(method = "getActualRedundancyAndExpectedStatusAndMessage")
+  @TestCaseName("[{index}] {method} (Desired redundancy:" + desiredRedundancy
+      + "; Actual redundancy:{0}; Expected status:{1})")
+  public void constructorPopulatesValuesCorrectlyWhenNotAllBucketsExist(int actualRedundancy,
+      RegionRedundancyStatus.RedundancyStatus expectedStatus) {
+    when(mockRegion.getRegionAdvisor().getBucketRedundancy(anyInt())).thenReturn(-1)
+        .thenReturn(actualRedundancy);
 
     RegionRedundancyStatus result = new SerializableRegionRedundancyStatusImpl(mockRegion);
 
