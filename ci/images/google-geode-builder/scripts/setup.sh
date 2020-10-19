@@ -50,7 +50,6 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     net-tools \
     python3 \
     python3-pip \
-    python2.7 \
     rsync \
     tcl \
     tmux \
