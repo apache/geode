@@ -185,8 +185,8 @@ start server \
 | SUBSCRIBE          	| INCRBYFLOAT                                        	| CLIENT LIST                   	|
 | TTL                	| MGET                                               	| CLIENT PAUSE                  	|
 | TYPE               	| MSET                                               	| CLIENT REPLY                  	|
-| UNSUBSCRIBE        	| MSETNX                                             	| CLIENT SETNAME                	|
-|                    	| PSETEX                                             	| CLIENT TRACKING               	|
+| UNLINK [1]        	| MSETNX                                             	| CLIENT SETNAME                	|
+| UNSUBSCRIBE        	| PSETEX                                             	| CLIENT TRACKING               	|
 |                    	| SCAN                                               	| CLIENT UNBLOCK                	|
 |                    	| SCARD                                              	| CLUSTER ADDSLOTS              	|
 |                    	| SDIFF                                              	| CLUSTER BUMPEPOCH             	|
@@ -297,8 +297,7 @@ start server \
 |                    	|                                                    	| SWAPDB                        	|
 |                    	|                                                    	| SYNC                          	|
 |                    	|                                                    	| TOUCH                         	|
-|                    	|                                                    	| UNLINK                        	|
-|                    	|                                                    	| UNWATCH                       	|
+|                    	|                                                    	| UNWATCH                        	|
 |                    	|                                                    	| WAIT                          	|
 |                    	|                                                    	| WATCH                         	|
 |                    	|                                                    	| XACK                          	|
@@ -336,3 +335,8 @@ start server \
 |                    	|                                                    	| ZSCAN                         	|
 |                    	|                                                    	| ZSCORE                        	|
 |                    	|                                                    	| ZUNIONSTORE                   	|
+|                    	|                                                    	|              	|
+
+**NOTES:**
+
+[1] - UNLINK is implemented as a synonym to DEL and does not unlink asynchronously.
