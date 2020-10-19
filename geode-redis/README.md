@@ -185,8 +185,8 @@ start server \
 | SUBSCRIBE          	| INCRBYFLOAT                                        	| CLIENT LIST                   	|
 | TTL                	| MGET                                               	| CLIENT PAUSE                  	|
 | TYPE               	| MSET                                               	| CLIENT REPLY                  	|
-| UNLINK [1]        	| MSETNX                                             	| CLIENT SETNAME                	|
-| UNSUBSCRIBE        	| PSETEX                                             	| CLIENT TRACKING               	|
+| UNSUBSCRIBE       	| MSETNX                                             	| CLIENT SETNAME                	|
+|                    	| PSETEX                                             	| CLIENT TRACKING               	|
 |                    	| SCAN                                               	| CLIENT UNBLOCK                	|
 |                    	| SCARD                                              	| CLUSTER ADDSLOTS              	|
 |                    	| SDIFF                                              	| CLUSTER BUMPEPOCH             	|
@@ -207,7 +207,7 @@ start server \
 |                    	| SUNION                                             	| CLUSTER RESET                 	|
 |                    	| SUNIONSTORE                                        	| CLUSTER SAVECONFIG            	|
 |                    	| TIME                                               	| CLUSTER SET-CONFIG-EPOCH      	|
-|                    	|                                                    	| CLUSTER SETSLOT               	|
+|                    	| UNLINK [1]                                         	| CLUSTER SETSLOT               	|
 |                    	|                                                    	| CLUSTER SLAVES                	|
 |                    	|                                                    	| CLUSTER SLOTS                 	|
 |                    	|                                                    	| COMMAND                       	|
