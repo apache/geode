@@ -291,6 +291,12 @@ public class GatewaySenderMBeanBridge {
         .longValue();
   }
 
+  public long getTotalQueueSizeBytesInUse() {
+    return overflowMonitor.getStatistic(StatsKey.GATEWAYSENDER_BYTES_IN_MEMORY)
+        .longValue();
+  }
+
+
   private Number getStatistic(String statName) {
     if (monitor != null) {
       return monitor.getStatistic(statName);
