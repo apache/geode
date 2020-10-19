@@ -31,13 +31,16 @@ import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
 public abstract class AbstractIncrByFloatIntegrationTest implements RedisPortSupplier {
 
+  private static final int JEDIS_TIMEOUT =
+      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
+
   private Jedis jedis;
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), 10000000);
+    jedis = new Jedis("localhost", getPort(), JEDIS_TIMEOUT);
   }
 
   @After
@@ -112,7 +115,7 @@ public abstract class AbstractIncrByFloatIntegrationTest implements RedisPortSup
   }
 
   @Test
-  public void testIncrBy_withInfinity() {
+  public void testIncrByFloat_withInfinity() {
     double number1 = 1.4;
     jedis.set("number", "" + number1);
 
@@ -121,8 +124,18 @@ public abstract class AbstractIncrByFloatIntegrationTest implements RedisPortSup
   }
 
   @Test
+  public void testIncrByFloat_whenIncrWillOverflowProducesCorrectError() {
+    BigDecimal longDouble = new BigDecimal("1.1E+4932");
+    jedis.set("number", longDouble.toPlainString());
+
+    assertThatThrownBy(
+        () -> jedis.sendCommand(Protocol.Command.INCRBYFLOAT, "number", longDouble.toString()))
+            .hasMessage("ERR increment would produce NaN or Infinity");
+  }
+
+  @Test
   @Ignore("GEODE-8624: Improve INCRBYFLOAT accuracy for very large values")
-  public void testReallyBigNumbers() {
+  public void testIncrByFloat_withReallyBigNumbers() {
     // max unsigned long long - 1
     BigDecimal biggy = new BigDecimal("18446744073709551614");
     jedis.set("number", biggy.toPlainString());

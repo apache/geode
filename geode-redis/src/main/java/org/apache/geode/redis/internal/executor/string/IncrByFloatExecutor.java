@@ -38,7 +38,7 @@ public class IncrByFloatExecutor extends StringExecutor {
     byte[] incrArray = commandElems.get(INCREMENT_INDEX);
     String doub = Coder.bytesToString(incrArray).toLowerCase();
     if (doub.contains("inf") || doub.contains("nan")) {
-      return RedisResponse.error("increment would produce NaN or Infinity");
+      return RedisResponse.error(RedisConstants.ERROR_NAN_OR_INFINITY);
     }
 
     double increment;
