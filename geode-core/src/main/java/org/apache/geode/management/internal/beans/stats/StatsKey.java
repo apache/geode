@@ -309,6 +309,8 @@ public class StatsKey {
   public static final String GATEWAYSENDER_ENTRIES_OVERFLOWED_TO_DISK = "entriesOnlyOnDisk";
   public static final String GATEWAYSENDER_BYTES_OVERFLOWED_TO_DISK = "bytesOnlyOnDisk";
 
+  public static final String GATEWAYSENDER_BYTES_IN_MEMORY = "byteCount";
+
   /** AsyncEventQueue Stats **/
   public static final String ASYNCEVENTQUEUE_EVENTS_QUEUE_SIZE = "eventQueueSize";
 

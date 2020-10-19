@@ -177,6 +177,11 @@ public interface GatewaySenderMXBean {
   int getTotalBatchesRedistributed();
 
   /**
+   * Returns the total number of bytes in heap occupied by the event queue.
+   */
+  long getTotalQueueSizeBytesInUse();
+
+  /**
    * Starts this GatewaySender. Once the GatewaySender is running its configuration cannot be
    * changed.
    *
