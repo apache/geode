@@ -142,6 +142,7 @@ public enum RedisCommandType {
   RENAME(new RenameExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
   TTL(new TTLExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
   TYPE(new TypeExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
+  UNLINK(new DelExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
 
   /************* Strings *****************/
 
@@ -338,7 +339,6 @@ public enum RedisCommandType {
   SWAPDB(null, UNIMPLEMENTED),
   SYNC(null, UNIMPLEMENTED),
   TOUCH(null, UNIMPLEMENTED),
-  UNLINK(null, UNIMPLEMENTED),
   UNWATCH(null, UNIMPLEMENTED),
   WAIT(null, UNIMPLEMENTED),
   WATCH(null, UNIMPLEMENTED),
