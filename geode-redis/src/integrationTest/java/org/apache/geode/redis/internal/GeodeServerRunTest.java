@@ -17,13 +17,10 @@ package org.apache.geode.redis.internal;
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.GeodeRedisServerRule;
-import org.apache.geode.test.junit.categories.RedisTest;
 
-@Category({RedisTest.class})
 public class GeodeServerRunTest {
   @ClassRule
   public static GeodeRedisServerRule server = new GeodeRedisServerRule();

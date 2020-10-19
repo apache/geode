@@ -57,6 +57,11 @@ class PatternSubscription extends AbstractSubscription {
 
   @Override
   public byte[] getChannelName() {
+    return null;
+  }
+
+  @Override
+  public byte[] getPatternName() {
     return pattern.globPattern().getBytes();
   }
 }

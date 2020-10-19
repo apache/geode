@@ -53,10 +53,14 @@ public interface Subscription {
   List<Object> createResponse(byte[] channel, byte[] message);
 
   /**
-   * Return the subscription name. In the case of a pattern the string representation of the
-   * pattern is returned.
+   * Return the channel name. In the case of a pattern null is returned.
    */
   byte[] getChannelName();
+
+  /**
+   * Return the pattern name. In the case of a channel null is returned.
+   */
+  byte[] getPatternName();
 
   /**
    * Called once this subscriber is ready to have publishMessage called

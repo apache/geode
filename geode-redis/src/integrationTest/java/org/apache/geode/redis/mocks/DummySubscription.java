@@ -54,6 +54,11 @@ public class DummySubscription implements Subscription {
   }
 
   @Override
+  public byte[] getPatternName() {
+    return null;
+  }
+
+  @Override
   public void readyToPublish() {}
 
   @Override

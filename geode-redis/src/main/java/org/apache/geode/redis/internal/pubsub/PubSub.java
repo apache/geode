@@ -88,4 +88,12 @@ public interface PubSub {
    */
   List<byte[]> findSubscribedChannels(Client client);
 
+  /**
+   * Return a list of pattern names that a client has subscribed to
+   *
+   * @param client the Client which is to be queried
+   * @return the list of patterns
+   */
+  List<byte[]> findSubscribedPatterns(Client client);
+
 }

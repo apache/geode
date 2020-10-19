@@ -60,4 +60,9 @@ class ChannelSubscription extends AbstractSubscription {
   public byte[] getChannelName() {
     return channel;
   }
+
+  @Override
+  public byte[] getPatternName() {
+    return null;
+  }
 }
