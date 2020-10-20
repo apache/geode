@@ -36,7 +36,7 @@ import org.gradle.process.internal.worker.WorkerProcessBuilder;
  */
 public class RunInSubdirectoryTestFramework implements TestFramework {
   private static final String GEMFIRE_PROPERTIES = "gemfire.properties";
-  private static final AtomicLong WORKER_ID = new AtomicLong();
+  private final AtomicLong workerId = new AtomicLong();
   private final TestFramework delegate;
 
   public RunInSubdirectoryTestFramework(TestFramework delegate) {
@@ -71,7 +71,7 @@ public class RunInSubdirectoryTestFramework implements TestFramework {
       Path taskWorkingDir = javaCommand.getWorkingDir().toPath();
       Path taskPropertiesFile = taskWorkingDir.resolve(GEMFIRE_PROPERTIES);
 
-      String workerWorkingDirName = String.format("test-worker-%06d", WORKER_ID.incrementAndGet());
+      String workerWorkingDirName = String.format("test-worker-%06d", workerId.incrementAndGet());
       Path workerWorkingDir = taskWorkingDir.resolve(workerWorkingDirName);
       Path workerPropertiesFileFile = workerWorkingDir.resolve(taskPropertiesFile.getFileName());
 
