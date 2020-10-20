@@ -35,8 +35,6 @@ public abstract class AbstractIncrByFloatIntegrationTest implements RedisPortSup
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   private Jedis jedis;
-  private static final int REDIS_CLIENT_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
@@ -106,6 +104,14 @@ public abstract class AbstractIncrByFloatIntegrationTest implements RedisPortSup
   }
 
   @Test
+  public void testCorrectErrorIsReturned_whenKeyIsAnIncorrectType() {
+    jedis.sadd("set", "abc");
+
+    assertThatThrownBy(() -> jedis.incrByFloat("set", 1))
+        .hasMessage("WRONGTYPE Operation against a key holding the wrong kind of value");
+  }
+
+  @Test
   public void testCorrectErrorIsReturned_whenIncrByIsInvalid() {
     double number1 = 1.4;
     jedis.set("number", "" + number1);
@@ -115,12 +121,32 @@ public abstract class AbstractIncrByFloatIntegrationTest implements RedisPortSup
   }
 
   @Test
-  public void testIncrByFloat_withInfinity() {
-    double number1 = 1.4;
-    jedis.set("number", "" + number1);
+  public void testIncrByFloat_withInfinityAndVariants() {
+    jedis.set("number", "1.4");
 
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.INCRBYFLOAT, "number", "+inf"))
         .hasMessage("ERR increment would produce NaN or Infinity");
+
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.INCRBYFLOAT, "number", "-inf"))
+        .hasMessage("ERR increment would produce NaN or Infinity");
+
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.INCRBYFLOAT, "number", "inf"))
+        .hasMessage("ERR increment would produce NaN or Infinity");
+
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.INCRBYFLOAT, "number", "+infinity"))
+        .hasMessage("ERR increment would produce NaN or Infinity");
+
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.INCRBYFLOAT, "number", "-infinity"))
+        .hasMessage("ERR increment would produce NaN or Infinity");
+
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.INCRBYFLOAT, "number", "infinity"))
+        .hasMessage("ERR increment would produce NaN or Infinity");
+
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.INCRBYFLOAT, "number", "nan"))
+        .hasMessage("ERR value is not a valid float");
+
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.INCRBYFLOAT, "number", "infant"))
+        .hasMessage("ERR value is not a valid float");
   }
 
   @Test

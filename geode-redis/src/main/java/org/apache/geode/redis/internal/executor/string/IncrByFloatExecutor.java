@@ -14,8 +14,8 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
-
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
@@ -28,16 +28,18 @@ public class IncrByFloatExecutor extends StringExecutor {
 
   private static final int INCREMENT_INDEX = 2;
 
+  private static final Pattern invalidArgs =
+      Pattern.compile("[+-]?(inf|infinity)", Pattern.CASE_INSENSITIVE);
+
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
-
     List<byte[]> commandElems = command.getProcessedCommand();
     ByteArrayWrapper key = command.getKey();
     RedisStringCommands stringCommands = getRedisStringCommands(context);
 
     byte[] incrArray = commandElems.get(INCREMENT_INDEX);
     String doub = Coder.bytesToString(incrArray).toLowerCase();
-    if (doub.contains("inf") || doub.contains("nan")) {
+    if (invalidArgs.matcher(doub).matches()) {
       return RedisResponse.error(RedisConstants.ERROR_NAN_OR_INFINITY);
     }
 
