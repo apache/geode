@@ -97,8 +97,8 @@ public class AlterGatewaySenderCommand extends SingleGfshCommand {
 
     if (groupTransactionEvents != null && groupTransactionEvents
         && !oldConfiguration.mustGroupTransactionEvents()) {
-      if (!oldConfiguration.isParallel() && oldConfiguration.getDispatcherThreads() != null
-          && Integer.parseInt(oldConfiguration.getDispatcherThreads()) > 1) {
+      if (!oldConfiguration.isParallel() && (oldConfiguration.getDispatcherThreads() == null
+          || Integer.parseInt(oldConfiguration.getDispatcherThreads()) > 1)) {
         return ResultModel.createError(
             "Alter Gateway Sender cannot be performed for --group-transaction-events attribute if serial sender and dispatcher-threads is greater than 1.");
       }

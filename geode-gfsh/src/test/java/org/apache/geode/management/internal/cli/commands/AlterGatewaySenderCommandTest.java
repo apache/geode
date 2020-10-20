@@ -35,6 +35,7 @@ import org.mockito.ArgumentCaptor;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.config.JAXBService;
 import org.apache.geode.management.internal.cli.functions.GatewaySenderFunctionArgs;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
@@ -57,6 +58,8 @@ public class AlterGatewaySenderCommandTest {
   @Before
   public void before() {
     command = spy(AlterGatewaySenderCommand.class);
+    InternalCache cache = mock(InternalCache.class);
+    doReturn(cache).when(command).getCache();
     service =
         spy(new InternalConfigurationPersistenceService(JAXBService.create(CacheConfig.class)));
 
@@ -69,8 +72,20 @@ public class AlterGatewaySenderCommandTest {
     CacheConfig config = new CacheConfig();
     CacheConfig.GatewaySender gw1 = new CacheConfig.GatewaySender();
     gw1.setId("sender1");
+    gw1.setParallel(true);
+    gw1.setGroupTransactionEvents(false);
+    gw1.setEnableBatchConflation(true);
+
+    CacheConfig.GatewaySender gw2 = new CacheConfig.GatewaySender();
+    gw2.setId("sender2");
+    gw2.setParallel(false);
+    gw2.setDispatcherThreads("5");
+    gw2.setGroupTransactionEvents(false);
+    gw2.setEnableBatchConflation(false);
 
     config.getGatewaySenders().add(gw1);
+    config.getGatewaySenders().add(gw2);
+
     doReturn(config).when(service).getCacheConfig("group1");
     doReturn(new CacheConfig()).when(service).getCacheConfig("group2");
 
@@ -94,7 +109,7 @@ public class AlterGatewaySenderCommandTest {
 
   @Test
   public void unknownOption() {
-    gfsh.executeAndAssertThat(command, "alter gateway-sender --id=sender1 --sss").statusIsError()
+    gfsh.executeAndAssertThat(command, "alter gateway-sender --id=sender1 --status").statusIsError()
         .containsOutput("Invalid command");
   }
 
@@ -102,6 +117,20 @@ public class AlterGatewaySenderCommandTest {
   public void emptyConfiguration() {
     gfsh.executeAndAssertThat(command, "alter gateway-sender --id=test --batch-size=100")
         .statusIsError().containsOutput("Can not find an gateway sender");
-
   }
+
+  @Test
+  public void changeGroupTransaction1() {
+    gfsh.executeAndAssertThat(command,
+        "alter gateway-sender --id=sender1 --group-transaction-events").statusIsError()
+        .containsOutput("Alter Gateway Sender cannot be performed");
+  }
+
+  @Test
+  public void changeGroupTransaction2() {
+    gfsh.executeAndAssertThat(command,
+        "alter gateway-sender --id=sender2 --group-transaction-events").statusIsError()
+        .containsOutput("Alter Gateway Sender cannot be performed");
+  }
+
 }
