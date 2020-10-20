@@ -34,14 +34,17 @@ public interface NioFilter {
   /**
    * wrap bytes for transmission to another process
    */
-  ByteBuffer wrap(ByteBuffer buffer) throws IOException;
+  ByteBufferSharing wrap(ByteBuffer buffer) throws IOException;
 
   /**
    * unwrap bytes received from another process. The unwrapped
    * buffer should be flipped before reading. When done reading invoke
    * doneReading() to reset for future read ops
+   *
+   * Be sure to call close() on the returned {@link ByteBufferSharing}. The best
+   * way to do that is to call this method in a try-with-resources statement.
    */
-  ByteBuffer unwrap(ByteBuffer wrappedBuffer) throws IOException;
+  ByteBufferSharing unwrap(ByteBuffer wrappedBuffer) throws IOException;
 
   /**
    * ensure that the wrapped buffer has enough room to read the given amount of data.
@@ -58,8 +61,11 @@ public interface NioFilter {
    * <br>
    * wrappedBuffer = filter.ensureWrappedCapacity(amount, wrappedBuffer, etc.);<br>
    * unwrappedBuffer = filter.readAtLeast(channel, amount, wrappedBuffer, etc.)
+   *
+   * Be sure to call close() on the returned {@link ByteBufferSharing}. The best
+   * way to do that is to call this method in a try-with-resources statement.
    */
-  ByteBuffer readAtLeast(SocketChannel channel, int amount, ByteBuffer wrappedBuffer)
+  ByteBufferSharing readAtLeast(SocketChannel channel, int amount, ByteBuffer wrappedBuffer)
       throws IOException;
 
   /**
@@ -95,14 +101,9 @@ public interface NioFilter {
 
   /**
    * returns the unwrapped byte buffer associated with the given wrapped buffer.
+   *
+   * Be sure to call close() on the returned {@link ByteBufferSharing}. The best
+   * way to do that is to call this method in a try-with-resources statement.
    */
-  ByteBuffer getUnwrappedBuffer(ByteBuffer wrappedBuffer);
-
-  /**
-   * returns an object to be used in synchronizing on the use of buffers returned by
-   * a NioFilter.
-   */
-  default Object getSynchObject() {
-    return this;
-  }
+  ByteBufferSharing getUnwrappedBuffer(ByteBuffer wrappedBuffer);
 }
