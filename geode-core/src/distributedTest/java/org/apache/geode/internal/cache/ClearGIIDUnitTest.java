@@ -297,15 +297,12 @@ public class ClearGIIDUnitTest implements Serializable {
     createIndex(serverVMs[0]);
 
     // set tesk hook
-    serverVMs[1].invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        PauseDuringGIICallback myAfterReceivedImageReply =
-            // using bucket name for region name to ensure callback is triggered
-            new PauseDuringGIICallback(
-                InitialImageOperation.GIITestHookType.AfterReceivedRequestImage, "_B__testPR_9");
-        InitialImageOperation.setGIITestHook(myAfterReceivedImageReply);
-      }
+    serverVMs[1].invoke(() -> {
+      PauseDuringGIICallback myAfterReceivedImageReply =
+          // using bucket name for region name to ensure callback is triggered
+          new PauseDuringGIICallback(
+              InitialImageOperation.GIITestHookType.AfterReceivedRequestImage, "_B__testPR_9");
+      InitialImageOperation.setGIITestHook(myAfterReceivedImageReply);
     });
 
     cluster.stop(2);
