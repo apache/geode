@@ -168,8 +168,7 @@ configure([acceptanceTest, distributedTest, integrationTest, uiTest, upgradeTest
     // subdirectory.
     def subdirFramework = new RunInSubdirectoryTestFramework(testFramework)
     // This call works for now, but the Test class declares useTestFramework() as protected, so
-    // this could become troublesome in a future version of Gradle/Groovy,
-    // because . But for now it works.
+    // this could become troublesome in a future version of Gradle/Groovy.
     useTestFramework subdirFramework
   }
 }

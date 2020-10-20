@@ -16,7 +16,6 @@
 package org.apache.geode.gradle;
 
 import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -60,7 +59,7 @@ public class RunInSubdirectoryTestFramework implements TestFramework {
   }
 
   /**
-   * Return an action that configures the test worker builder to run the test worker in a 
+   * Return an action that configures the test worker builder to run the test worker in a unique 
    * subdirectory of the task's working directory.
    */
   @Override
@@ -78,7 +77,7 @@ public class RunInSubdirectoryTestFramework implements TestFramework {
 
       try {
         Files.createDirectories(workerWorkingDir);
-        Files.copy(taskPropertiesFile, workerPropertiesFileFile, REPLACE_EXISTING, COPY_ATTRIBUTES);
+        Files.copy(taskPropertiesFile, workerPropertiesFileFile, COPY_ATTRIBUTES);
       } catch (IOException e) {
         throw new UncheckedIOException(e);
       }
