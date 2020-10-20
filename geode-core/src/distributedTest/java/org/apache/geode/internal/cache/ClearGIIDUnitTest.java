@@ -118,6 +118,8 @@ public class ClearGIIDUnitTest implements Serializable {
     for (int i = 0; i < numberOfMembers; i++) {
       serverVMs[i] = cluster.startServerVM(i + 1, locatorPort);
     }
+
+    createAndPopulateRegion();
   }
 
   private void invokeClear(MemberVM datastore) {
@@ -172,7 +174,8 @@ public class ClearGIIDUnitTest implements Serializable {
   }
 
   private void verifyRegionSize(int expectedNum) {
-    assertThat(getCache().getRegion(REGION_NAME).size()).isEqualTo(expectedNum);
+    Region region = getCache().getRegion(REGION_NAME);
+    assertThat(region.size()).isEqualTo(expectedNum);
   }
 
   @Test
