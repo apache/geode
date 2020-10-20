@@ -40,6 +40,11 @@ class PatternSubscription extends AbstractSubscription {
   }
 
   @Override
+  public Type getType() {
+    return Type.PATTERN;
+  }
+
+  @Override
   public List<Object> createResponse(byte[] channel, byte[] message) {
     return Arrays.asList("pmessage", pattern.globPattern(), channel, message);
   }
@@ -56,12 +61,7 @@ class PatternSubscription extends AbstractSubscription {
   }
 
   @Override
-  public byte[] getChannelName() {
-    return null;
-  }
-
-  @Override
-  public byte[] getPatternName() {
+  public byte[] getSubscriptionName() {
     return pattern.globPattern().getBytes();
   }
 }

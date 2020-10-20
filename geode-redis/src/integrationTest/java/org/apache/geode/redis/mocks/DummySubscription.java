@@ -25,6 +25,11 @@ import org.apache.geode.redis.internal.pubsub.Subscription;
 public class DummySubscription implements Subscription {
 
   @Override
+  public Type getType() {
+    return Type.CHANNEL;
+  }
+
+  @Override
   public boolean isEqualTo(Object channelOrPattern, Client client) {
     return false;
   }
@@ -49,12 +54,7 @@ public class DummySubscription implements Subscription {
   }
 
   @Override
-  public byte[] getChannelName() {
-    return null;
-  }
-
-  @Override
-  public byte[] getPatternName() {
+  public byte[] getSubscriptionName() {
     return null;
   }
 

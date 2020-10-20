@@ -18,7 +18,6 @@ package org.apache.geode.redis.internal.pubsub;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -140,18 +139,17 @@ public class PubSubImpl implements PubSub {
   }
 
   @Override
-  public List<byte[]> findSubscribedChannels(Client client) {
+  public List<byte[]> findSubscriptionsNames(Client client) {
     return subscriptions.findSubscriptions(client).stream()
-        .map(Subscription::getChannelName)
-        .filter(Objects::nonNull)
+        .map(Subscription::getSubscriptionName)
         .collect(Collectors.toList());
   }
 
   @Override
-  public List<byte[]> findSubscribedPatterns(Client client) {
+  public List<byte[]> findSubscriptionsNames(Client client, Subscription.Type type) {
     return subscriptions.findSubscriptions(client).stream()
-        .map(Subscription::getPatternName)
-        .filter(Objects::nonNull)
+        .filter(s -> s.getType().equals(type))
+        .map(Subscription::getSubscriptionName)
         .collect(Collectors.toList());
   }
 

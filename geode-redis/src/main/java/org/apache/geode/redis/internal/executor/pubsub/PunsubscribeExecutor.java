@@ -30,6 +30,7 @@ import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.pubsub.Subscription;
 
 public class PunsubscribeExecutor extends AbstractExecutor {
   private static final Logger logger = LogService.getLogger();
@@ -42,7 +43,8 @@ public class PunsubscribeExecutor extends AbstractExecutor {
 
     List<byte[]> patternNames = extractPatternNames(command);
     if (patternNames.isEmpty()) {
-      patternNames = context.getPubSub().findSubscribedPatterns(context.getClient());
+      patternNames = context.getPubSub().findSubscriptionsNames(context.getClient(),
+          Subscription.Type.PATTERN);
     }
 
     Collection<Collection<?>> response = punsubscribe(context, patternNames);

@@ -25,6 +25,7 @@ import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.pubsub.Subscription;
 
 public class UnsubscribeExecutor extends AbstractExecutor {
 
@@ -36,7 +37,8 @@ public class UnsubscribeExecutor extends AbstractExecutor {
 
     List<byte[]> channelNames = extractChannelNames(command);
     if (channelNames.isEmpty()) {
-      channelNames = context.getPubSub().findSubscribedChannels(context.getClient());
+      channelNames = context.getPubSub().findSubscriptionsNames(context.getClient(),
+          Subscription.Type.CHANNEL);
     }
 
     Collection<Collection<?>> response = unsubscribe(context, channelNames);

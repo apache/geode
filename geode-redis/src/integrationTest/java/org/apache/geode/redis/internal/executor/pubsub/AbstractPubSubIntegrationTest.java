@@ -395,35 +395,6 @@ public abstract class AbstractPubSubIntegrationTest implements RedisPortSupplier
   }
 
   @Test
-  public void testUnsubscribingImplicitlyFromAllChannels() {
-    MockSubscriber mockSubscriber = new MockSubscriber();
-
-    Runnable runnable = () -> subscriber.subscribe(mockSubscriber, "salutations", "yuletide");
-
-    Thread subscriberThread = new Thread(runnable);
-    subscriberThread.start();
-
-    waitFor(() -> mockSubscriber.getSubscribedChannels() == 2);
-
-    mockSubscriber.unsubscribe();
-    waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
-    waitFor(() -> !subscriberThread.isAlive());
-
-    List<String> unsubscribedChannels = mockSubscriber.unsubscribeInfos.stream()
-        .map(x -> x.channel)
-        .collect(Collectors.toList());
-    assertThat(unsubscribedChannels).containsExactlyInAnyOrder("salutations", "yuletide");
-
-    List<Integer> channelCounts = mockSubscriber.unsubscribeInfos.stream()
-        .map(x -> x.count)
-        .collect(Collectors.toList());
-    assertThat(channelCounts).containsExactlyInAnyOrder(1, 0);
-
-    Long result = publisher.publish("salutations", "greetings");
-    assertThat(result).isEqualTo(0);
-  }
-
-  @Test
   public void testPsubscribingAndPunsubscribingFromMultipleChannels() {
     MockSubscriber mockSubscriber = new MockSubscriber();
 
@@ -519,7 +490,6 @@ public abstract class AbstractPubSubIntegrationTest implements RedisPortSupplier
 
     return mockSubscriber.getReceivedEvents();
   }
-
 
   @Test
   public void testTwoSubscribersOneChannel() {

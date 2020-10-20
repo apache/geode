@@ -25,6 +25,13 @@ import org.apache.geode.redis.internal.netty.Client;
  * Interface that represents the relationship between a channel or pattern and client.
  */
 public interface Subscription {
+  enum Type {
+    CHANNEL,
+    PATTERN;
+  }
+
+  Type getType();
+
   /**
    * Equality of a subscription is represented by a combination of client and one of channel or
    * pattern
@@ -53,14 +60,9 @@ public interface Subscription {
   List<Object> createResponse(byte[] channel, byte[] message);
 
   /**
-   * Return the channel name. In the case of a pattern null is returned.
+   * Return the channel or pattern name.
    */
-  byte[] getChannelName();
-
-  /**
-   * Return the pattern name. In the case of a channel null is returned.
-   */
-  byte[] getPatternName();
+  byte[] getSubscriptionName();
 
   /**
    * Called once this subscriber is ready to have publishMessage called

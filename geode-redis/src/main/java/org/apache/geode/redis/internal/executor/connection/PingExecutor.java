@@ -34,8 +34,7 @@ public class PingExecutor extends AbstractExecutor {
 
     context.eventLoopReady();
 
-    if (context.getPubSub().findSubscribedChannels(context.getClient()).isEmpty()
-        && context.getPubSub().findSubscribedPatterns(context.getClient()).isEmpty()) {
+    if (context.getPubSub().findSubscriptionsNames(context.getClient()).isEmpty()) {
       byte[] result;
       if (commandElems.size() > 1) {
         result = commandElems.get(1);
