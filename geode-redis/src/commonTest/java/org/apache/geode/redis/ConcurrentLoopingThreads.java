@@ -19,12 +19,18 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class ConcurrentLoopingThreads {
   private final int iterationCount;
   private final Consumer<Integer>[] functions;
+  private ExecutorService executorService = Executors.newCachedThreadPool();
+  private List<Future<?>> loopingFutures;
 
   @SafeVarargs
   public ConcurrentLoopingThreads(int iterationCount,
@@ -33,22 +39,41 @@ public class ConcurrentLoopingThreads {
     this.functions = functions;
   }
 
-  public void run() {
+  /**
+   * Start the operations asynchronously. Use {@link #await()} to wait for completion.
+   */
+  public ConcurrentLoopingThreads start() {
     CyclicBarrier latch = new CyclicBarrier(functions.length);
-    List<LoopingThread> loopingThreadStream = Arrays
+
+    loopingFutures = Arrays
         .stream(functions)
-        .map((r) -> new LoopingThread(r, iterationCount, latch))
-        .peek(Thread::start)
+        .map(r -> new LoopingThread(r, iterationCount, latch))
+        .map(t -> executorService.submit(t))
         .collect(Collectors.toList());
 
-    loopingThreadStream.forEach(loopingThread -> {
+    return this;
+  }
+
+  /**
+   * Wait for all operations to complete. Will propagate the first exception thrown by any of the
+   * operations.
+   */
+  public void await() {
+    loopingFutures.forEach(loopingThread -> {
       try {
-        loopingThread.join();
-      } catch (InterruptedException e) {
+        loopingThread.get();
+      } catch (InterruptedException | ExecutionException e) {
         throw new RuntimeException(e);
       }
     });
+  }
 
+  /**
+   * Start operations and only return once all are complete.
+   */
+  public void run() {
+    start();
+    await();
   }
 
   private static class LoopingRunnable implements Runnable {
