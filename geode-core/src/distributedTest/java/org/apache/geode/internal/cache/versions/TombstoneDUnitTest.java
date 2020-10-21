@@ -107,7 +107,7 @@ public class TombstoneDUnitTest implements Serializable {
   }
 
   @Test
-  public void TestGetOldestTombstoneTimeReplicate() {
+  public void testGetOldestTombstoneTimeReplicate() {
     VM server1 = VM.getVM(0);
     VM server2 = VM.getVM(1);
 
@@ -134,7 +134,7 @@ public class TombstoneDUnitTest implements Serializable {
   }
 
   @Test
-  public void TestGetOldestTombstoneTimeNonReplicate() {
+  public void testGetOldestTombstoneTimeNonReplicate() {
     VM client = VM.getVM(0);
     VM server = VM.getVM(1);
 
@@ -168,12 +168,82 @@ public class TombstoneDUnitTest implements Serializable {
     });
   }
 
+  /**
+   * The purpose of this test is for a replicate region scenario to get the oldest tombstone
+   * and validate that it matches the tombstone of the entry we removed.
+   */
+  @Test
+  public void testGetOldestTombstoneReplicate() {
+    VM server1 = VM.getVM(0);
+    VM server2 = VM.getVM(1);
+
+    server1.invoke(() -> {
+      createCacheAndRegion(RegionShortcut.REPLICATE_PERSISTENT);
+      region.put("K1", "V1");
+      region.put("K2", "V2");
+    });
+
+    server2.invoke(() -> createCacheAndRegion(RegionShortcut.REPLICATE));
+
+    server1.invoke(() -> {
+      // Send tombstone gc message to vm1.
+      region.destroy("K1");
+
+      TombstoneService.TombstoneSweeper tombstoneSweeper =
+          ((InternalCache) cache).getTombstoneService().getSweeper((LocalRegion) region);
+
+      assertThat(tombstoneSweeper.getOldestTombstone()).contains("K1");
+      performGC(1);
+      assertThat(tombstoneSweeper.getOldestTombstone()).isNull();
+    });
+  }
+
+
+  /**
+   * The purpose of this test is for a non-replicate region scenario to get the oldest tombstone
+   * and validate that it matches the tombstone of the entry we removed. This is done through a
+   * client
+   * as a client is required to have this non-replicate tombstone.
+   */
+  @Test
+  public void testGetOldestTombstoneNonReplicate() {
+    VM client = VM.getVM(0);
+    VM server = VM.getVM(1);
+
+    // Fire up the server and put in some data that is deletable
+    server.invoke(() -> {
+      createCacheAndRegion(RegionShortcut.REPLICATE);
+      cache.addCacheServer().start();
+      for (int i = 0; i < 1000; i++) {
+        region.put("K" + i, "V" + i);
+      }
+    });
+
+    String locatorHost = NetworkUtils.getServerHostName();
+    int locatorPort = DistributedRule.getLocatorPort();
+    // Use the client to remove and entry, thus creating a tombstone
+    client.invoke(() -> {
+      createClientCacheAndRegion(locatorHost, locatorPort);
+      region.remove("K3");
+    });
+
+    // Validate that a tombstone was created and that it has a timestamp that is valid,
+    // Then GC and validate there is no oldest tombstone.
+    server.invoke(() -> {
+      TombstoneService.TombstoneSweeper tombstoneSweeper =
+          ((InternalCache) cache).getTombstoneService().getSweeper((LocalRegion) region);
+      assertThat(tombstoneSweeper.getOldestTombstone()).contains("K3");
+      performGC(1);
+      assertThat(tombstoneSweeper.getOldestTombstone()).isNull();
+    });
+  }
+
   @Test
   public void testTombstonesWithLowerVersionThanTheRecordedVersionGetsGCed() throws Exception {
     VM vm0 = VM.getVM(0);
     VM vm1 = VM.getVM(1);
     Properties props = DistributedRule.getDistributedSystemProperties();
-    props.put("conserve-sockets", "false");
+    props.setProperty("conserve-sockets", "false");
 
     vm0.invoke(() -> {
       createCacheAndRegion(RegionShortcut.REPLICATE_PERSISTENT, props);

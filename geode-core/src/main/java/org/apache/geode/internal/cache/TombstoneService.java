@@ -459,6 +459,15 @@ public class TombstoneService {
       }
       return result;
     }
+
+    @Override
+    public String getOldestTombstone() {
+      String result = null;
+      if (tombstones.peek() != null) {
+        result = tombstones.peek().toString();
+      }
+      return result;
+    }
   }
 
   protected static class ReplicateTombstoneSweeper extends TombstoneSweeper {
@@ -759,6 +768,15 @@ public class TombstoneService {
       long result = 0;
       if (tombstones.peek() != null) {
         result = tombstones.peek().getVersionTimeStamp();
+      }
+      return result;
+    }
+
+    @Override
+    public String getOldestTombstone() {
+      String result = null;
+      if (tombstones.peek() != null) {
+        result = tombstones.peek().toString();
       }
       return result;
     }
@@ -1118,6 +1136,8 @@ public class TombstoneService {
         throws InterruptedException;
 
     public abstract long getOldestTombstoneTime();
+
+    public abstract String getOldestTombstone();
 
   } // class TombstoneSweeper
 }
