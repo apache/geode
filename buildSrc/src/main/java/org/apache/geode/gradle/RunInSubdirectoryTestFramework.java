@@ -59,7 +59,7 @@ public class RunInSubdirectoryTestFramework implements TestFramework {
   }
 
   /**
-   * Return an action that configures the test worker builder to run the test worker in a unique 
+   * Return an action that configures the test worker builder to run the test worker in a unique
    * subdirectory of the task's working directory.
    */
   @Override
@@ -69,20 +69,34 @@ public class RunInSubdirectoryTestFramework implements TestFramework {
       JavaExecHandleBuilder javaCommand = workerProcessBuilder.getJavaCommand();
 
       Path taskWorkingDir = javaCommand.getWorkingDir().toPath();
-      Path taskPropertiesFile = taskWorkingDir.resolve(GEMFIRE_PROPERTIES);
-
       String workerWorkingDirName = String.format("test-worker-%06d", workerId.incrementAndGet());
       Path workerWorkingDir = taskWorkingDir.resolve(workerWorkingDirName);
-      Path workerPropertiesFileFile = workerWorkingDir.resolve(taskPropertiesFile.getFileName());
 
-      try {
-        Files.createDirectories(workerWorkingDir);
-        Files.copy(taskPropertiesFile, workerPropertiesFileFile, COPY_ATTRIBUTES);
-      } catch (IOException e) {
-        throw new UncheckedIOException(e);
-      }
+      createWorkingDir(workerWorkingDir);
+      copyGemFirePropertiesFile(taskWorkingDir, workerWorkingDir);
 
       javaCommand.setWorkingDir(workerWorkingDir);
     };
+  }
+
+  private void copyGemFirePropertiesFile(Path taskWorkingDir, Path workerWorkingDir) {
+    Path taskPropertiesFile = taskWorkingDir.resolve(GEMFIRE_PROPERTIES);
+    if (!Files.exists(taskPropertiesFile)) {
+      return;
+    }
+    Path workerPropertiesFileFile = workerWorkingDir.resolve(taskPropertiesFile.getFileName());
+    try {
+      Files.copy(taskPropertiesFile, workerPropertiesFileFile, COPY_ATTRIBUTES);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+  }
+
+  private void createWorkingDir(Path workerWorkingDir) {
+    try {
+      Files.createDirectories(workerWorkingDir);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
   }
 }
