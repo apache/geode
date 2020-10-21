@@ -15,8 +15,11 @@
 
 package org.apache.geode.redis.internal.executor.key;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Before;
@@ -73,6 +76,16 @@ public abstract class AbstractTTLIntegrationTest implements RedisPortSupplier {
     jedis.set("orange", "crush");
     jedis.expire("orange", 20);
 
-    assertThat(jedis.ttl("orange")).isGreaterThan(15);
+    assertThat(jedis.ttl("orange")).isEqualTo(20);
   }
+
+  @Test
+  public void shouldSeeTTLdecreasing() {
+    jedis.set("orange", "crush");
+    jedis.expire("orange", 20);
+
+    await("TTL should decrease").atMost(2, TimeUnit.SECONDS)
+        .until(() -> jedis.ttl("orange") < 20);
+  }
+
 }
