@@ -227,6 +227,8 @@ public class LauncherMemberMXBeanIntegrationTest extends LauncherIntegrationTest
         if (cdsValue.equals(osMetricValue)) {
           break;
         }
+        System.gc();
+        System.runFinalization();
       }
       return Pair.of(cdsValue, osMetricValue);
     } catch (Exception ex) {
