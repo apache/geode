@@ -122,12 +122,12 @@ public class RollingUpgradePartitionRegionClearServerVersionMismatch {
   }
 
   /**
-   * testClient_ServerOperationException - validates that when a client invokes a partitioned region
-   * clear on a cluster where one server is running an unsupported version for this feature we
-   * return a ServerOperationException
+   * testClient_UnsupportedOperationExceptionCurrentServerVersion - validates that when a client
+   * invokes a partitioned region clear on a cluster where one server is running an
+   * unsupported version for this feature we return a UnsupportedOperationException
    */
   @Test
-  public void testClient_ServerOperationExceptionCurrentServerVersion() throws Exception {
+  public void testClient_UnsupportedOperationExceptionCurrentServerVersion() throws Exception {
     IgnoredException.addIgnoredException(ServerOperationException.class);
 
     // Get a client VM
@@ -144,7 +144,7 @@ public class RollingUpgradePartitionRegionClearServerVersionMismatch {
       Region<String, String> region = clientRegionFactory.create("regionA");
       assertThat(region).isNotNull();
 
-      // Validate that we get a ServerVersionMismatchException wrapped in a ServerOperationException
+      // Validate that we get a UnsupportedOperationException wrapped in a ServerOperationException
       Throwable thrown = catchThrowable(region::clear);
       assertThat(thrown).isNotNull();
       assertThat(thrown).isInstanceOf(ServerOperationException.class);
@@ -155,7 +155,7 @@ public class RollingUpgradePartitionRegionClearServerVersionMismatch {
   }
 
   @Test
-  public void testClient_ServerOperationExceptionOldServerVersion() throws Exception {
+  public void testClient_UnsupportedOperationExceptionOldServerVersion() throws Exception {
     IgnoredException.addIgnoredException(ServerOperationException.class);
 
     // Get a client VM
@@ -171,7 +171,7 @@ public class RollingUpgradePartitionRegionClearServerVersionMismatch {
       Region<String, String> region = clientRegionFactory.create("regionA");
       assertThat(region).isNotNull();
 
-      // Validate that we get a ServerVersionMismatchException wrapped in a ServerOperationException
+      // Validate that we get a UnsupportedOperationException wrapped in a ServerOperationException
       Throwable thrown = catchThrowable(region::clear);
       assertThat(thrown).isNotNull();
       assertThat(thrown).isInstanceOf(ServerOperationException.class);
@@ -185,12 +185,12 @@ public class RollingUpgradePartitionRegionClearServerVersionMismatch {
 
 
   /**
-   * testServer_ServerOperationException - validates that when a partitioned region clear is invoked
+   * testServer_UnsupportedOperationException - validates that when a partitioned region clear is invoked
    * on a cluster where one server is running an unsupported version for this feature we return a
-   * ServerOperationException
+   * UnsupportedOperationException
    */
   @Test
-  public void testServer_ServerOperationException() {
+  public void testServer_UnsupportedOperationException() {
     IgnoredException.addIgnoredException(UnsupportedOperationException.class);
 
     serverNew.invoke(() -> {
