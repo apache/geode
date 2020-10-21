@@ -25,8 +25,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.SystemFailure;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * This class allows sockets to be closed without blocking. In some cases we have seen a call of
@@ -41,6 +44,7 @@ import org.apache.geode.logging.internal.executors.LoggingExecutors;
  * This max threads can be configured using the "p2p.ASYNC_CLOSE_POOL_MAX_THREADS" system property.
  */
 public class SocketCloser {
+  private static final Logger logger = LogService.getLogger();
 
   /**
    * Number of seconds to wait before timing out an unused async close thread. Default is 120 (2
@@ -241,22 +245,29 @@ public class SocketCloser {
     // 36041 - segv in jrockit in pthread signaling code. This
     // seems to alleviate the problem.
     try {
+      logger.info("BGB: inlineClose() entered sock: " + sock);
       sock.shutdownInput();
       sock.shutdownOutput();
+      logger.info("BGB: inlineClose() socket I/O shut down: " + sock);
     } catch (Exception e) {
     }
     try {
       sock.close();
+      logger.info("BGB: inlineClose() socket closed: " + sock);
     } catch (IOException ignore) {
+      logger.info("BGB: inlineClose() got IOException: " + ignore);
     } catch (VirtualMachineError err) {
       SystemFailure.initiateFailure(err);
       // If this ever returns, rethrow the error. We're poisoned
       // now, so don't let this thread continue.
+      logger.info("BGB: inlineClose() re-throwing VME: " + err);
       throw err;
     } catch (java.security.ProviderException pe) {
       // some ssl implementations have trouble with termination and throw
       // this exception. See bug #40783
+      logger.info("BGB: inlineClose() got PE: " + pe);
     } catch (Error e) {
+      logger.info("BGB: inlineClose() got Error: " + e);
       // Whenever you catch Error or Throwable, you must also
       // catch VirtualMachineError (see above). However, there is
       // _still_ a possibility that you are dealing with a cascading

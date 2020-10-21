@@ -21,6 +21,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.logging.internal.log4j.api.LogService;
+
 /**
  * An {@link AutoCloseable} meant to be acquired in a try-with-resources statement. The resource (a
  * {@link ByteBuffer}) is available (for reading and modification) in the scope of the
@@ -28,6 +32,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * returns the {@link ByteBuffer} to the pool.
  */
 class ByteBufferSharingImpl implements ByteBufferSharing {
+  private static final Logger logger = LogService.getLogger();
 
   static class LockAttemptTimedOut extends Exception {
   }
@@ -58,12 +63,15 @@ class ByteBufferSharingImpl implements ByteBufferSharing {
    * the AutoCloseable protocol to invoke close() on the object at the end of the block.
    */
   ByteBufferSharing alias() {
+    logger.info("BGB: new alias() about to lock: " + lock);
     lock.lock();
-    referencing.addReference();
+    final int refcount = referencing.addReference();
+    logger.info("BGB: new alias() locked, refcount: " + refcount + " lock: " + lock);
     return this;
   }
 
   ByteBufferSharing alias(final long time, final TimeUnit unit) throws LockAttemptTimedOut {
+    logger.info("BGB: new alias() about to lock: " + lock);
     try {
       if (!lock.tryLock(time, unit)) {
         throw new LockAttemptTimedOut();
@@ -72,7 +80,8 @@ class ByteBufferSharingImpl implements ByteBufferSharing {
       Thread.currentThread().interrupt();
       throw new LockAttemptTimedOut();
     }
-    referencing.addReference();
+    final int refcount = referencing.addReference();
+    logger.info("BGB: new alias() locked, refcount: " + refcount + " lock: " + lock);
     return this;
   }
 
@@ -91,12 +100,16 @@ class ByteBufferSharingImpl implements ByteBufferSharing {
   public void close() {
     final int usages = referencing.dropReference();
     if (usages > 0) {
+      logger.info("BGB: in sharing close() unlocking, refcount: " + usages + " lock: " + lock);
       /*
        * We don't unlock when the very last usage goes away. The resource owner holds the first
        * usage and there is no lock associated with that one. Subsequent usages have a lock and
        * so require a corresponding unlock.
        */
       lock.unlock();
+      logger.info("BGB: in sharing close() unlocked, refcount: " + usages + " lock: " + lock);
+    } else {
+      logger.info("BGB: in sharing close() didn't unlock, refcount: " + usages + " lock: " + lock);
     }
   }
 
