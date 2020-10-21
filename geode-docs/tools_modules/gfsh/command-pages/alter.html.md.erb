@@ -31,6 +31,10 @@ Modify an existing <%=vars.product_name%> resource.
 
     Modifies or removes a region from an offline disk-store.
 
+-   **[alter gateway-sender](#topic_alter_gateway_sender)**
+
+    Modifies attributes of an gateway-sender.
+
 -   **[alter query-service](#topic_alter_query_service)**
 
     Alter configuration details of the query configuration service.
@@ -181,6 +185,85 @@ The three required options, `--name`, `--region`, and `--disk-dirs`, identify th
 ``` pre
 alter disk-store --name=DiskStore1 --region=region1 --disk-dirs=/Disks/DiskStore1 --off-heap
 alter disk-store --name=DiskStore1 --region=region1 --disk-dirs=/Disks/DiskStore1 --remove
+```
+
+## <a id="topic_alter_gateway_sender" class="no-quick-link"></a>alter gateway-sender
+
+Alter attributes of a specified gateway sender on one or more members of a cluster.
+
+**Availability:** Online. You must be connected in <span class="keyword parmname">gfsh</span> to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+alter gateway-sender --id=value [--members=value(,value)*] [--groups=value(,value)*]
+    [--alert-threshold=value] [--batch-size=value] [--batch-time-interval=value]
+    [--gateway-event-filter=value(,value)*] [--gateway-transport-filter=value(,value)*]
+    [--group-transaction-events(=value)?]
+```
+
+The required option, `--id`, identifies the gateway sender to be altered.
+
+**Parameters, alter gateway-sender**
+<table>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="keyword parmname">\-\-id</span></td>
+<td><em>Required.</em> ID of the gateway sender to be changed</td>
+</tr>
+<tr>
+<td><span class="keyword parmname">\-\-members</span></td>
+<td>Name or ID of the member(s) whose configuration is to be altered at runtime. If you do not specify this parameter, the configuration properties are modified for all cluster members using the cluster configuration service.</td>
+</tr>
+<tr>
+<td><span class="keyword parmname">\-\-groups</span></td>
+<td>Name of the group(s) whose members's runtime configuration is to be altered. If you do not specify this parameter, the configuration properties are modified for all cluster members using the cluster configuration service.</td>
+</tr>
+<tr>
+<td><span class="keyword parmname">\-\-alert-threshold</span></td>
+<td>Maximum number of milliseconds that a region event can remain in the gateway sender queue before <%=vars.product_name%> logs an alert.</td>
+</tr>
+<tr>
+<td><span class="keyword parmname">\-\-batch-size</span></td>
+<td>Maximum number of messages that a batch can contain.</td>
+</tr>
+<tr>
+<td><span class="keyword parmname">\-\-batch-time-interval</span></td>
+<td>Maximum number of milliseconds that can elapse between sending batches.</td>
+</tr>
+<tr>
+<td><span class="keyword parmname">\-\-gateway-event-filter</span></td>
+<td>A list of fully-qualified class names of GatewayEventFilters (separated by commas) to be associated with the GatewaySender. This serves as a callback for users to filter out events before dispatching to a remote cluster. For example:
+<pre class="pre codeblock"><code>gateway-event-filter=com.user.filters.MyFilter1,com.user.filters.MyFilters2</code></pre></td>
+</tr>
+<tr>
+<td><span class="keyword parmname">\-\-gateway-transport-filter</span></td>
+<td>The fully-qualified class name of the GatewayTransportFilter to be added to the GatewaySender.</td>
+</tr>
+<tr>
+<td><span class="keyword parmname">\-\-group-transaction-events</span></td>
+<td>Boolean value to ensure that all the events of a transaction are sent in the same batch, i.e., they are never spread across different batches.
+<p>Only allowed to be set on gateway senders with the <code class="ph codeph">parallel</code> attribute set to false and <code class="ph codeph">dispatcher-threads</code> attribute equal to 1, or on gateway senders with the <code class="ph codeph">parallel</code> attribute set to true. Also, the  <code class="ph codeph">enable-batch-conflation</code> attribute of the gateway sender must be set to false.</p>
+<p><b>Note:</b> In order to work for a transaction, the regions to which the transaction events belong must be replicated by the same set of senders with this flag enabled.</p></td>
+</td>
+</tr>
+</tbody>
+</table>
+
+**Example Commands:**
+
+``` pre
+alter gateway-sender --id=sender1 --alert-threshold=100 --batch-size=200 --group-transaction-events
 ```
 
 ## <a id="topic_alter_query_service" class="no-quick-link"></a>alter query-service
