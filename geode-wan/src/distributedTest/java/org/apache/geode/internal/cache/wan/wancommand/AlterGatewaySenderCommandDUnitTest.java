@@ -30,6 +30,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -91,7 +92,7 @@ public class AlterGatewaySenderCommandDUnitTest {
         .containsExactly("GatewaySender \"sender1\" created on \"happyserver1\"");
 
     gfsh.executeAndAssertThat("list gateways").statusIsSuccess()
-        .containsOutput("Running, not Connected");
+        .containsOutput("sender1");
 
     // verify that server1's event queue has the default value
     server1.invoke(() -> {
@@ -114,7 +115,7 @@ public class AlterGatewaySenderCommandDUnitTest {
         .containsExactly("GatewaySender \"sender1\" created on \"happyserver1\"");
 
     gfsh.executeAndAssertThat("list gateways").statusIsSuccess()
-        .containsOutput("Running, not Connected");
+        .containsOutput("sender1");
 
     gfsh.executeAndAssertThat(
         "alter gateway-sender --id=sender1 --batch-size=200 --alert-threshold=100")
@@ -132,7 +133,7 @@ public class AlterGatewaySenderCommandDUnitTest {
   }
 
   @Test
-  public void testCreateSerialGatewaySenderAndAlterBatchSizeRestart() throws Exception {
+  public void testCreateSerialGatewaySenderAndAlterBatchSizeCheckConfig() throws Exception {
     gfsh.executeAndAssertThat(CREATE).statusIsSuccess()
         .doesNotContainOutput("Did not complete waiting")
         .hasTableSection()
@@ -140,7 +141,7 @@ public class AlterGatewaySenderCommandDUnitTest {
         .containsExactly("GatewaySender \"sender1\" created on \"happyserver1\"");
 
     gfsh.executeAndAssertThat("list gateways").statusIsSuccess()
-        .containsOutput("Running, not Connected");
+        .containsOutput("sender1");
 
     gfsh.executeAndAssertThat(
         "alter gateway-sender --id=sender1 --batch-size=200 --alert-threshold=100")
@@ -156,29 +157,15 @@ public class AlterGatewaySenderCommandDUnitTest {
       assertThat(sender.getAlertThreshold()).isEqualTo(100);
     });
 
-    // restart locator and server without clearing the file system
-    server1.stop(false);
-    locatorSite1.stop(false);
-
-    Properties props = new Properties();
-    props.setProperty(NAME, "happylocator");
-    props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + 1);
-    locatorSite1 = clusterStartupRule.startLocatorVM(0, props);
-
-    props.setProperty(NAME, "happyserver1");
-    server1 = clusterStartupRule.startServerVM(1, props, locatorSite1.getPort());
-
-    gfsh.connectAndVerify(locatorSite1);
-
-    // verify that server1's event queue has the default value
-    server1.invoke(() -> {
-      InternalCache cache = ClusterStartupRule.getCache();
-      GatewaySender sender = cache.getGatewaySender("sender1");
-      assertThat(sender.getBatchSize()).isEqualTo(200);
-      assertThat(sender.getBatchTimeInterval())
-          .isEqualTo(GatewaySender.DEFAULT_BATCH_TIME_INTERVAL);
-      assertThat(sender.getAlertThreshold()).isEqualTo(100);
+    locatorSite1.invoke(() -> {
+      InternalLocator locator = ClusterStartupRule.getLocator();
+      assertThat(locator).isNotNull();
+      String xml = locator.getConfigurationPersistenceService().getConfiguration("cluster")
+          .getCacheXmlContent();
+      assertThat(xml).contains("batch-size=\"200\"");
+      assertThat(xml).contains("alert-threshold=\"100\"");
     });
+
   }
 
   @Test
@@ -190,11 +177,10 @@ public class AlterGatewaySenderCommandDUnitTest {
         .containsExactly("GatewaySender \"sender1\" created on \"happyserver1\"");
 
     gfsh.executeAndAssertThat("list gateways").statusIsSuccess()
-        .containsOutput("Running, not Connected");
+        .containsOutput("sender1");
 
     gfsh.executeAndAssertThat("alter gateway-sender --id=sender1 --group-transaction-events=true")
         .statusIsError()
         .containsOutput("Alter Gateway Sender cannot be performed for --group-transaction-events");
-
   }
 }
