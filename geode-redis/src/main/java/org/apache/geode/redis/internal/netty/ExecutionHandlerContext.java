@@ -298,7 +298,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
         return;
       }
 
-      if (!getPubSub().findSubscribedChannels(getClient()).isEmpty()) {
+      if (!getPubSub().findSubscriptionNames(getClient()).isEmpty()) {
         if (!command.getCommandType().isAllowedWhileSubscribed()) {
           writeToChannel(RedisResponse
               .error("only (P)SUBSCRIBE / (P)UNSUBSCRIBE / PING / QUIT allowed in this context"));

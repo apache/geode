@@ -30,6 +30,7 @@ import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.pubsub.Subscription;
 
 public class PunsubscribeExecutor extends AbstractExecutor {
   private static final Logger logger = LogService.getLogger();
@@ -40,17 +41,18 @@ public class PunsubscribeExecutor extends AbstractExecutor {
 
     context.eventLoopReady();
 
-    List<byte[]> channelNames = extractChannelNames(command);
-    if (channelNames.isEmpty()) {
-      channelNames = context.getPubSub().findSubscribedChannels(context.getClient());
+    List<byte[]> patternNames = extractPatternNames(command);
+    if (patternNames.isEmpty()) {
+      patternNames = context.getPubSub().findSubscriptionNames(context.getClient(),
+          Subscription.Type.PATTERN);
     }
 
-    Collection<Collection<?>> response = punsubscribe(context, channelNames);
+    Collection<Collection<?>> response = punsubscribe(context, patternNames);
 
     return RedisResponse.flattenedArray(response);
   }
 
-  private List<byte[]> extractChannelNames(Command command) {
+  private List<byte[]> extractPatternNames(Command command) {
     return command.getProcessedCommandWrappers().stream()
         .skip(1)
         .map(ByteArrayWrapper::toBytes)
@@ -58,26 +60,26 @@ public class PunsubscribeExecutor extends AbstractExecutor {
   }
 
   private Collection<Collection<?>> punsubscribe(ExecutionHandlerContext context,
-      List<byte[]> channelNames) {
+      List<byte[]> patternNames) {
     Collection<Collection<?>> response = new ArrayList<>();
 
-    if (channelNames.isEmpty()) {
+    if (patternNames.isEmpty()) {
       response.add(createItem(null, 0));
     } else {
-      for (byte[] channel : channelNames) {
+      for (byte[] pattern : patternNames) {
         long subscriptionCount =
-            context.getPubSub().punsubscribe(new GlobPattern(new String(channel)),
+            context.getPubSub().punsubscribe(new GlobPattern(new String(pattern)),
                 context.getClient());
-        response.add(createItem(channel, subscriptionCount));
+        response.add(createItem(pattern, subscriptionCount));
       }
     }
     return response;
   }
 
-  private ArrayList<Object> createItem(byte[] channel, long subscriptionCount) {
+  private ArrayList<Object> createItem(byte[] pattern, long subscriptionCount) {
     ArrayList<Object> oneItem = new ArrayList<>();
     oneItem.add("punsubscribe");
-    oneItem.add(channel);
+    oneItem.add(pattern);
     oneItem.add(subscriptionCount);
     return oneItem;
   }

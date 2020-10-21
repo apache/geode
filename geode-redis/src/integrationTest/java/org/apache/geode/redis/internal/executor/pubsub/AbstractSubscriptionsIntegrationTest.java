@@ -19,6 +19,11 @@ package org.apache.geode.redis.internal.executor.pubsub;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.junit.After;
+import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
@@ -31,12 +36,25 @@ import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 public abstract class AbstractSubscriptionsIntegrationTest implements RedisPortSupplier {
 
+  public static final int REDIS_CLIENT_TIMEOUT =
+      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
+  private Jedis client;
+
   @ClassRule
   public static ExecutorServiceRule executor = new ExecutorServiceRule();
 
+  @Before
+  public void setUp() {
+    client = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+  }
+
+  @After
+  public void tearDown() {
+    client.close();
+  }
+
   @Test
   public void pingWhileSubscribed() {
-    Jedis client = new Jedis("localhost", getPort());
     MockSubscriber mockSubscriber = new MockSubscriber();
 
     executor.submit(() -> client.subscribe(mockSubscriber, "same"));
@@ -46,12 +64,10 @@ public abstract class AbstractSubscriptionsIntegrationTest implements RedisPortS
         .untilAsserted(() -> assertThat(mockSubscriber.getReceivedPings().size()).isEqualTo(1));
     assertThat(mockSubscriber.getReceivedPings().get(0)).isEqualTo("");
     mockSubscriber.unsubscribe();
-    client.close();
   }
 
   @Test
   public void pingWithArgumentWhileSubscribed() {
-    Jedis client = new Jedis("localhost", getPort());
     MockSubscriber mockSubscriber = new MockSubscriber();
 
     executor.submit(() -> client.subscribe(mockSubscriber, "same"));
@@ -65,12 +81,19 @@ public abstract class AbstractSubscriptionsIntegrationTest implements RedisPortS
         .untilAsserted(() -> assertThat(mockSubscriber.getReceivedPings().size()).isEqualTo(2));
     assertThat(mockSubscriber.getReceivedPings().get(0)).isEqualTo("potato");
     mockSubscriber.unsubscribe();
-    client.close();
+  }
+
+  @Test
+  public void unallowedCommandsWhileSubscribed() {
+    client.sendCommand(Protocol.Command.SUBSCRIBE, "hello");
+
+    assertThatThrownBy(() -> client.set("not", "supported")).hasMessageContaining(
+        "ERR only (P)SUBSCRIBE / (P)UNSUBSCRIBE / PING / QUIT allowed in this context");
+    client.sendCommand(Protocol.Command.UNSUBSCRIBE);
   }
 
   @Test
   public void multiSubscribe() {
-    Jedis client = new Jedis("localhost", getPort());
     MockSubscriber mockSubscriber = new MockSubscriber();
 
     executor.submit(() -> client.subscribe(mockSubscriber, "same"));
@@ -88,18 +111,91 @@ public abstract class AbstractSubscriptionsIntegrationTest implements RedisPortS
         .untilAsserted(() -> assertThat(mockSubscriber.getReceivedPMessages()).hasSize(1));
     assertThat(mockSubscriber.getReceivedEvents()).containsExactly("message", "pmessage");
     mockSubscriber.unsubscribe();
-    client.close();
   }
 
   @Test
-  public void unallowedCommandsWhileSubscribed() {
-    Jedis client = new Jedis("localhost", getPort());
+  public void unsubscribingImplicitlyFromAllChannels_doesNotUnsubscribeFromPatterns() {
+    Jedis publisher = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    MockSubscriber mockSubscriber = new MockSubscriber();
 
-    client.sendCommand(Protocol.Command.SUBSCRIBE, "hello");
+    executor.submit(() -> client.subscribe(mockSubscriber, "salutations", "yuletide"));
+    GeodeAwaitility.await()
+        .untilAsserted(() -> assertThat(mockSubscriber.getSubscribedChannels()).isEqualTo(2));
+    mockSubscriber.psubscribe("p*", "g*");
+    GeodeAwaitility.await()
+        .untilAsserted(() -> assertThat(mockSubscriber.getSubscribedChannels()).isEqualTo(4));
 
-    assertThatThrownBy(() -> client.set("not", "supported")).hasMessageContaining(
-        "ERR only (P)SUBSCRIBE / (P)UNSUBSCRIBE / PING / QUIT allowed in this context");
-    client.sendCommand(Protocol.Command.UNSUBSCRIBE);
-    client.close();
+    mockSubscriber.unsubscribe();
+    GeodeAwaitility.await()
+        .untilAsserted(() -> assertThat(mockSubscriber.getSubscribedChannels()).isEqualTo(2));
+
+    List<String> unsubscribedChannels = mockSubscriber.unsubscribeInfos.stream()
+        .map(x -> x.channel)
+        .collect(Collectors.toList());
+    assertThat(unsubscribedChannels).containsExactlyInAnyOrder("salutations", "yuletide");
+    List<Integer> channelCounts = mockSubscriber.unsubscribeInfos.stream()
+        .map(x -> x.count)
+        .collect(Collectors.toList());
+    assertThat(channelCounts).containsExactlyInAnyOrder(3, 2);
+
+    Long result = publisher.publish("salutations", "greetings");
+    assertThat(result).isEqualTo(0);
+    result = publisher.publish("potato", "potato");
+    assertThat(result).isEqualTo(1);
+    result = publisher.publish("gnochi", "fresh");
+    assertThat(result).isEqualTo(1);
+
+    GeodeAwaitility.await()
+        .untilAsserted(() -> assertThat(mockSubscriber.getReceivedPMessages()).hasSize(2));
+    assertThat(mockSubscriber.getReceivedPMessages()).containsExactlyInAnyOrder("potato", "fresh");
+    assertThat(mockSubscriber.getReceivedMessages()).isEmpty();
+
+    mockSubscriber.punsubscribe();
+    publisher.close();
   }
+
+
+  @Test
+  public void punsubscribingImplicitlyFromAllPatterns_doesNotUnsubscribeFromChannels() {
+    Jedis publisher = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    MockSubscriber mockSubscriber = new MockSubscriber();
+
+    executor.submit(() -> client.psubscribe(mockSubscriber, "p*", "g*"));
+    GeodeAwaitility.await()
+        .untilAsserted(() -> assertThat(mockSubscriber.getSubscribedChannels()).isEqualTo(2));
+    mockSubscriber.subscribe("salutations", "yuletide");
+    GeodeAwaitility.await()
+        .untilAsserted(() -> assertThat(mockSubscriber.getSubscribedChannels()).isEqualTo(4));
+
+    mockSubscriber.punsubscribe();
+    GeodeAwaitility.await()
+        .untilAsserted(() -> assertThat(mockSubscriber.getSubscribedChannels()).isEqualTo(2));
+
+    List<String> punsubscribedChannels = mockSubscriber.punsubscribeInfos.stream()
+        .map(x -> x.channel)
+        .collect(Collectors.toList());
+    assertThat(punsubscribedChannels).containsExactlyInAnyOrder("p*", "g*");
+
+    List<Integer> channelCounts = mockSubscriber.punsubscribeInfos.stream()
+        .map(x -> x.count)
+        .collect(Collectors.toList());
+    assertThat(channelCounts).containsExactlyInAnyOrder(3, 2);
+
+    Long result = publisher.publish("potato", "potato");
+    assertThat(result).isEqualTo(0);
+    result = publisher.publish("salutations", "greetings");
+    assertThat(result).isEqualTo(1);
+    result = publisher.publish("yuletide", "tidings");
+    assertThat(result).isEqualTo(1);
+
+    GeodeAwaitility.await()
+        .untilAsserted(() -> assertThat(mockSubscriber.getReceivedMessages()).hasSize(2));
+    assertThat(mockSubscriber.getReceivedMessages()).containsExactlyInAnyOrder("greetings",
+        "tidings");
+    assertThat(mockSubscriber.getReceivedPMessages()).isEmpty();
+
+    mockSubscriber.unsubscribe();
+    publisher.close();
+  }
+
 }
