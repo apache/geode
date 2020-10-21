@@ -38,12 +38,12 @@ public class RestrictedInputValuesParameterRequirements implements ParameterRequ
       String parameterString = parameter.toString();
       if (isNotAllowed(parameterString) &&
           !parameterString.equalsIgnoreCase(commandType)) {
-        throw new RedisParametersMismatchException("");
+        throw new RedisParametersMismatchException("blah");
       }
     });
   }
 
   private boolean isNotAllowed(String parameterString) {
-    return (allowedValues.contains(parameterString));
+    return !(allowedValues.contains(parameterString));
   }
 }

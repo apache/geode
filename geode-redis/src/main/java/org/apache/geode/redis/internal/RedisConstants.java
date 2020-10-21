@@ -15,9 +15,6 @@
 package org.apache.geode.redis.internal;
 
 
-import java.util.Arrays;
-import java.util.List;
-
 public class RedisConstants {
 
   /*
@@ -50,13 +47,5 @@ public class RedisConstants {
   public static final String ERROR_NO_SUCH_KEY = "no such key";
   public static final String ERROR_SYNTAX = "syntax error";
   public static final String ERROR_INVALID_EXPIRE_TIME = "invalid expire time in set";
-
-  public static final List<String> ALLOWED_INFO_COMMANDS = Arrays.asList(
-      "SERVER",
-      "CLUSTER",
-      "PERSISTENCE",
-      "DEFAULT",
-      "ALL");
-
-
+  public static final String ERROR_NOT_A_VALID_FLOAT = "value is not a valid float";
 }
