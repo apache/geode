@@ -86,7 +86,7 @@ public interface PubSub {
    * @param client the Client which is to be queried
    * @return the list of channels or patterns
    */
-  List<byte[]> findSubscriptionsNames(Client client, Subscription.Type type);
+  List<byte[]> findSubscriptionNames(Client client, Subscription.Type type);
 
   /**
    * Return a list of channel names and patterns that a client has subscribed to
@@ -94,6 +94,6 @@ public interface PubSub {
    * @param client the Client which is to be queried
    * @return the list of channels and patterns
    */
-  List<byte[]> findSubscriptionsNames(Client client);;
+  List<byte[]> findSubscriptionNames(Client client);;
 
 }

@@ -37,7 +37,7 @@ public class UnsubscribeExecutor extends AbstractExecutor {
 
     List<byte[]> channelNames = extractChannelNames(command);
     if (channelNames.isEmpty()) {
-      channelNames = context.getPubSub().findSubscriptionsNames(context.getClient(),
+      channelNames = context.getPubSub().findSubscriptionNames(context.getClient(),
           Subscription.Type.CHANNEL);
     }
 

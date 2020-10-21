@@ -43,7 +43,7 @@ public class PunsubscribeExecutor extends AbstractExecutor {
 
     List<byte[]> patternNames = extractPatternNames(command);
     if (patternNames.isEmpty()) {
-      patternNames = context.getPubSub().findSubscriptionsNames(context.getClient(),
+      patternNames = context.getPubSub().findSubscriptionNames(context.getClient(),
           Subscription.Type.PATTERN);
     }
 
