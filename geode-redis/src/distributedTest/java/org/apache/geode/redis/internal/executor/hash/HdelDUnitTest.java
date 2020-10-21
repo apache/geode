@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.RedisClient;
+import io.lettuce.core.RedisException;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
 import io.lettuce.core.resource.ClientResources;
@@ -144,8 +145,8 @@ public class HdelDUnitTest {
     lettuce.hset(key, setUpData);
 
     ConcurrentLoopingThreads loopingThreads = new ConcurrentLoopingThreads(HASH_SIZE,
-        i -> lettuce.hdel(key, "field" + i, "value" + i),
-        i -> lettuce.hdel(key, "field" + i, "value" + i))
+        i -> retryableCommand(() -> lettuce.hdel(key, "field" + i, "value" + i)),
+        i -> retryableCommand(() -> lettuce.hdel(key, "field" + i, "value" + i)))
             .start();
 
     cluster.crashVM(2);
@@ -155,6 +156,21 @@ public class HdelDUnitTest {
     assertThat(lettuce.hgetall(key).size())
         .as("Not all keys were deleted")
         .isEqualTo(0);
+  }
+
+  private void retryableCommand(Runnable command) {
+    while (true) {
+      try {
+        command.run();
+        return;
+      } catch (RedisException rex) {
+        if (rex.getMessage().contains("Connection reset by peer")) {
+          // ignore it and retry
+        } else {
+          throw rex;
+        }
+      }
+    }
   }
 
   private Map<String, String> makeHashMap(int hashSize, String baseFieldName,
