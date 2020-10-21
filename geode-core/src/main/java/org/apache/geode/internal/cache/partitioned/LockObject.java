@@ -19,10 +19,14 @@ public class LockObject {
   public long lockedTimeStamp;
   private boolean removed;
   private boolean waiting = false;
+  private final String owningThread;
 
   public LockObject(Object key, long lockedTimeStamp) {
     this.key = key;
     this.lockedTimeStamp = lockedTimeStamp;
+
+    // TODO: BGB remove
+    owningThread = Thread.currentThread().getName();
   }
 
   public void waiting() {
@@ -46,6 +50,6 @@ public class LockObject {
   @Override
   public String toString() {
     return "LockObject [key=" + key + ", lockedTimeStamp=" + lockedTimeStamp + ", removed="
-        + removed + ", waiting=" + waiting + "]";
+        + removed + ", waiting=" + waiting + ", owning thread: \"" + owningThread + "\"]";
   }
 }
