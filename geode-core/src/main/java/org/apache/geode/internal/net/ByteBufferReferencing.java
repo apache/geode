@@ -16,8 +16,8 @@
 package org.apache.geode.internal.net;
 
 
-import static org.apache.geode.internal.net.BufferPool.BufferType.TRACKED_RECEIVER;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -65,7 +65,7 @@ class ByteBufferReferencing {
    * The destructor. Called by the resource owner to undo the work of the constructor.
    */
   void close() {
-    if (!isClosed.getAndSet(true)) {
+    if (isClosed.compareAndSet(false, true)) {
       dropReference();
     }
   }
@@ -78,14 +78,9 @@ class ByteBufferReferencing {
     return usages;
   }
 
-  ByteBuffer getBuffer() {
+  ByteBuffer getBuffer() throws IOException {
     if (isClosed.get()) {
-      // we return different values when closed because that's they way it worked before this PR
-      if (bufferType == TRACKED_RECEIVER) {
-        return EMPTY_BUFFER;
-      } else { // TRACKED_SENDER
-        return null;
-      }
+      throw new IOException("NioSslEngine has been closed");
     } else {
       return buffer;
     }

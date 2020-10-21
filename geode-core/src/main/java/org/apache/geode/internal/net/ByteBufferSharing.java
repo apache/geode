@@ -15,6 +15,7 @@
 
 package org.apache.geode.internal.net;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**
@@ -29,7 +30,7 @@ public interface ByteBufferSharing extends AutoCloseable {
    *
    * @return the buffer: manipulable only within the scope of the try-with-resources
    */
-  ByteBuffer getBuffer();
+  ByteBuffer getBuffer() throws IOException;
 
   /**
    * Override {@link AutoCloseable#close()} without throws clause since we don't need one.

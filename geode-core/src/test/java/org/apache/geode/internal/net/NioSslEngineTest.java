@@ -89,7 +89,7 @@ public class NioSslEngineTest {
   }
 
   @Test
-  public void engineUsesDirectBuffers() {
+  public void engineUsesDirectBuffers() throws IOException {
     assertThat(nioSslEngine.getOutputReferencing().getBuffer().isDirect()).isTrue();
   }
 
@@ -186,20 +186,6 @@ public class NioSslEngineTest {
         .hasMessageContaining("SSL Handshake terminated with status");
   }
 
-
-  @Test
-  public void checkClosed() throws Exception {
-    nioSslEngine.checkClosed();
-  }
-
-  @Test(expected = IOException.class)
-  public void checkClosedThrows() throws Exception {
-    when(mockEngine.wrap(any(ByteBuffer.class), any(ByteBuffer.class))).thenReturn(
-        new SSLEngineResult(CLOSED, FINISHED, 0, 100));
-    nioSslEngine.close(mock(SocketChannel.class));
-    nioSslEngine.checkClosed();
-  }
-
   @Test
   public void wrap() throws Exception {
     // make the application data too big to fit into the engine's encryption buffer
@@ -228,7 +214,7 @@ public class NioSslEngineTest {
   }
 
   @Test
-  public void wrapFails() {
+  public void wrapFails() throws IOException {
     // make the application data too big to fit into the engine's encryption buffer
     ByteBuffer appData =
         ByteBuffer.allocate(nioSslEngine.getOutputReferencing().getBuffer().capacity() + 100);
@@ -305,7 +291,7 @@ public class NioSslEngineTest {
   }
 
   @Test
-  public void unwrapWithDecryptionError() {
+  public void unwrapWithDecryptionError() throws IOException {
     // make the application data too big to fit into the engine's encryption buffer
     ByteBuffer wrappedData =
         ByteBuffer.allocate(nioSslEngine.getInputReferencing().getBuffer().capacity());
@@ -337,7 +323,11 @@ public class NioSslEngineTest {
     when(mockEngine.wrap(any(ByteBuffer.class), any(ByteBuffer.class))).thenReturn(
         new SSLEngineResult(CLOSED, FINISHED, 0, 0));
     nioSslEngine.close(mockChannel);
-    assertThatThrownBy(() -> nioSslEngine.checkClosed()).isInstanceOf(IOException.class)
+    assertThatThrownBy(() -> nioSslEngine.getOutputReferencing().getBuffer())
+        .isInstanceOf(IOException.class)
+        .hasMessageContaining("NioSslEngine has been closed");
+    assertThatThrownBy(() -> nioSslEngine.getInputReferencing().getBuffer())
+        .isInstanceOf(IOException.class)
         .hasMessageContaining("NioSslEngine has been closed");
     nioSslEngine.close(mockChannel);
   }

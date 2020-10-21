@@ -42,6 +42,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.net.BufferPool.BufferType;
+import org.apache.geode.internal.net.ByteBufferSharingImpl.LockAttemptTimedOut;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 
@@ -54,7 +55,7 @@ public class NioSslEngine implements NioFilter {
 
   private final BufferPool bufferPool;
 
-  private volatile boolean closed;
+  private boolean closed;
 
   SSLEngine engine;
 
@@ -74,6 +75,7 @@ public class NioSslEngine implements NioFilter {
     SSLSession session = engine.getSession();
     int appBufferSize = session.getApplicationBufferSize();
     int packetBufferSize = engine.getSession().getPacketBufferSize();
+    closed = false;
     this.engine = engine;
     this.bufferPool = bufferPool;
     outputReferencing =
@@ -220,12 +222,6 @@ public class NioSslEngine implements NioFilter {
     return true;
   }
 
-  void checkClosed() throws IOException {
-    if (closed) {
-      throw new IOException("NioSslEngine has been closed");
-    }
-  }
-
   void handleBlockingTasks() {
     Runnable task;
     while ((task = engine.getDelegatedTask()) != null) {
@@ -236,11 +232,9 @@ public class NioSslEngine implements NioFilter {
 
   @Override
   public ByteBufferSharing wrap(ByteBuffer appData) throws IOException {
-    try (final ByteBufferSharingImpl outputSharing = shareOutputBuffer()) {
+    try (final ByteBufferSharing outputSharing = shareOutputBuffer()) {
 
       ByteBuffer myNetData = outputSharing.getBuffer();
-
-      checkClosed();
 
       myNetData.clear();
 
@@ -273,11 +267,9 @@ public class NioSslEngine implements NioFilter {
 
   @Override
   public ByteBufferSharing unwrap(ByteBuffer wrappedBuffer) throws IOException {
-    try (final ByteBufferSharingImpl inputSharing = shareInputBuffer()) {
+    try (final ByteBufferSharing inputSharing = shareInputBuffer()) {
 
       ByteBuffer peerAppData = inputSharing.getBuffer();
-
-      checkClosed();
 
       // note that we do not clear peerAppData as it may hold a partial
       // message. TcpConduit, for instance, uses message chunking to
@@ -328,7 +320,7 @@ public class NioSslEngine implements NioFilter {
   @Override
   public ByteBufferSharing readAtLeast(SocketChannel channel, int bytes,
       ByteBuffer wrappedBuffer) throws IOException {
-    try (final ByteBufferSharingImpl inputSharing = shareInputBuffer()) {
+    try (final ByteBufferSharing inputSharing = shareInputBuffer()) {
 
       ByteBuffer peerAppData = inputSharing.getBuffer();
 
@@ -378,51 +370,47 @@ public class NioSslEngine implements NioFilter {
   }
 
   @Override
-  public boolean isClosed() {
-    return closed;
-  }
-
-  @Override
-  public void close(SocketChannel socketChannel) {
-    try (final ByteBufferSharingImpl outputSharing = shareOutputBuffer()) {
-
+  public synchronized void close(SocketChannel socketChannel) {
+    if (closed) {
+      return;
+    }
+    closed = true;
+    inputReferencing.close();
+    try (final ByteBufferSharing outputSharing = shareOutputBuffer(1, TimeUnit.MINUTES)) {
       final ByteBuffer myNetData = outputSharing.getBuffer();
 
-      if (closed) {
-        return;
-      }
-      closed = true;
-      try {
+      if (!engine.isOutboundDone()) {
+        ByteBuffer empty = ByteBuffer.wrap(new byte[0]);
+        engine.closeOutbound();
 
-        if (!engine.isOutboundDone()) {
-          ByteBuffer empty = ByteBuffer.wrap(new byte[0]);
-          engine.closeOutbound();
+        // clear the buffer to receive a CLOSE message from the SSLEngine
+        myNetData.clear();
 
-          // clear the buffer to receive a CLOSE message from the SSLEngine
-          myNetData.clear();
+        // Get close message
+        SSLEngineResult result = engine.wrap(empty, myNetData);
 
-          // Get close message
-          SSLEngineResult result = engine.wrap(empty, myNetData);
-
-          if (result.getStatus() != SSLEngineResult.Status.CLOSED) {
-            throw new SSLHandshakeException(
-                "Error closing SSL session.  Status=" + result.getStatus());
-          }
-
-          // Send close message to peer
-          myNetData.flip();
-          while (myNetData.hasRemaining()) {
-            socketChannel.write(myNetData);
-          }
+        if (result.getStatus() != SSLEngineResult.Status.CLOSED) {
+          throw new SSLHandshakeException(
+              "Error closing SSL session.  Status=" + result.getStatus());
         }
-      } catch (ClosedChannelException e) {
-        // we can't send a close message if the channel is closed
-      } catch (IOException e) {
-        throw new GemFireIOException("exception closing SSL session", e);
-      } finally {
-        outputReferencing.close();
-        inputReferencing.close();
+
+        // Send close message to peer
+        myNetData.flip();
+        while (myNetData.hasRemaining()) {
+          socketChannel.write(myNetData);
+        }
       }
+    } catch (ClosedChannelException e) {
+      // we can't send a close message if the channel is closed
+    } catch (IOException e) {
+      throw new GemFireIOException("exception closing SSL session", e);
+    } catch (final LockAttemptTimedOut _unused) {
+      logger.info(String.format("Couldn't get output lock in time, eliding TLS close message"));
+      if (!engine.isOutboundDone()) {
+        engine.closeOutbound();
+      }
+    } finally {
+      outputReferencing.close();
     }
   }
 
@@ -431,11 +419,16 @@ public class NioSslEngine implements NioFilter {
         targetBuffer.capacity() * 2);
   }
 
-  private ByteBufferSharingImpl shareOutputBuffer() {
+  private ByteBufferSharing shareOutputBuffer() {
     return outputSharing.alias();
   }
 
-  private ByteBufferSharingImpl shareInputBuffer() {
+  private ByteBufferSharing shareOutputBuffer(final long time, final TimeUnit unit)
+      throws LockAttemptTimedOut {
+    return outputSharing.alias(time, unit);
+  }
+
+  private ByteBufferSharing shareInputBuffer() {
     return inputSharing.alias();
   }
 

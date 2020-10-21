@@ -861,9 +861,11 @@ public class Connection implements Runnable {
   private void notifyHandshakeWaiter(boolean success) {
     if (getConduit().useSSL() && ioFilter != null) {
       try (final ByteBufferSharing sharedBuffer = ioFilter.getUnwrappedBuffer(inputBuffer)) {
-        if (!ioFilter.isClosed()) {
-          // clear out any remaining handshake bytes
+        // clear out any remaining handshake bytes
+        try {
           sharedBuffer.getBuffer().position(0).limit(0);
+        } catch (IOException e) {
+          // means the NioFilter was already closed
         }
       }
     }

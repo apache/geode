@@ -15,7 +15,9 @@
 
 package org.apache.geode.internal.net;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -26,6 +28,9 @@ import java.util.concurrent.locks.ReentrantLock;
  * returns the {@link ByteBuffer} to the pool.
  */
 class ByteBufferSharingImpl implements ByteBufferSharing {
+
+  static class LockAttemptTimedOut extends Exception {
+  }
 
   private final Lock lock;
   private final ByteBufferReferencing referencing;
@@ -58,6 +63,19 @@ class ByteBufferSharingImpl implements ByteBufferSharing {
     return this;
   }
 
+  ByteBufferSharingImpl alias(final long time, final TimeUnit unit) throws LockAttemptTimedOut {
+    try {
+      if (!lock.tryLock(time, unit)) {
+        throw new LockAttemptTimedOut();
+      }
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new LockAttemptTimedOut();
+    }
+    referencing.addReference();
+    return this;
+  }
+
   private ByteBufferSharingImpl(final Lock lock,
       final ByteBufferReferencing referencing) {
     this.lock = lock;
@@ -65,7 +83,7 @@ class ByteBufferSharingImpl implements ByteBufferSharing {
   }
 
   @Override
-  public ByteBuffer getBuffer() {
+  public ByteBuffer getBuffer() throws IOException {
     return referencing.getBuffer();
   }
 
