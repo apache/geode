@@ -57,10 +57,6 @@ class ByteBufferReferencing {
     isClosed = new AtomicBoolean(false);
   }
 
-  int addReference() {
-    return counter.incrementAndGet();
-  }
-
   /**
    * The destructor. Called by the resource owner to undo the work of the constructor.
    */
@@ -68,6 +64,10 @@ class ByteBufferReferencing {
     if (isClosed.compareAndSet(false, true)) {
       dropReference();
     }
+  }
+
+  int addReference() {
+    return counter.incrementAndGet();
   }
 
   int dropReference() {

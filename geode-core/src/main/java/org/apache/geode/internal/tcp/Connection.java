@@ -239,9 +239,9 @@ public class Connection implements Runnable {
   private final Map conflatedKeys = new HashMap();
 
   /**
-   * NOTE: LinkedBlockingQueue has a bug in which removes from the queue cause future offer to
-   * increase the size without adding anything to the queue. So I've changed from this backport
-   * class to a java.util.LinkedList
+   * NOTE: LinkedBlockingQueue has a bug in which removes from the queue
+   * cause future offer to increase the size without adding anything to the queue.
+   * So I've changed from this backport class to a java.util.LinkedList
    */
   private final LinkedList outgoingQueue = new LinkedList();
 
@@ -250,14 +250,10 @@ public class Connection implements Runnable {
    */
   private long queuedBytes;
 
-  /**
-   * used for async writes
-   */
+  /** used for async writes */
   private Thread pusherThread;
 
-  /**
-   * Set to true once the handshake has been read
-   */
+  /** Set to true once the handshake has been read */
   private volatile boolean handshakeRead;
   private volatile boolean handshakeCancelled;
 
@@ -266,26 +262,18 @@ public class Connection implements Runnable {
 
   private final Object handshakeSync = new Object();
 
-  /**
-   * message reader thread
-   */
+  /** message reader thread */
   private volatile Thread readerThread;
 
-  /**
-   * whether the reader thread is, or should be, running
-   */
+  /** whether the reader thread is, or should be, running */
   volatile boolean stopped = true;
 
-  /**
-   * set to true once a close begins
-   */
+  /** set to true once a close begins */
   private final AtomicBoolean closing = new AtomicBoolean(false);
 
   private volatile boolean readerShuttingDown;
 
-  /**
-   * whether the socket is connected
-   */
+  /** whether the socket is connected */
   volatile boolean connected;
 
   /**
@@ -308,14 +296,10 @@ public class Connection implements Runnable {
    */
   private long transmissionStartTime;
 
-  /**
-   * ack wait timeout - if socketInUse, use this to trigger SUSPECT processing
-   */
+  /** ack wait timeout - if socketInUse, use this to trigger SUSPECT processing */
   private long ackWaitTimeout;
 
-  /**
-   * ack severe alert timeout - if socketInUse, use this to send alert
-   */
+  /** ack severe alert timeout - if socketInUse, use this to send alert */
   private long ackSATimeout;
 
   /**
@@ -324,50 +308,34 @@ public class Connection implements Runnable {
    */
   private List ackConnectionGroup;
 
-  /**
-   * name of thread that we're currently performing an operation in (may be null)
-   */
+  /** name of thread that we're currently performing an operation in (may be null) */
   private String ackThreadName;
 
-  /**
-   * the buffer used for message receipt
-   */
+  /** the buffer used for message receipt */
   private ByteBuffer inputBuffer;
 
-  /**
-   * Lock used to protect the input buffer
-   */
+  /** Lock used to protect the input buffer */
   public final Object inputBufferLock = new Object();
 
-  /**
-   * the length of the next message to be dispatched
-   */
+  /** the length of the next message to be dispatched */
   private int messageLength;
 
-  /**
-   * the type of message being received
-   */
+  /** the type of message being received */
   private byte messageType;
 
   /**
-   * when messages are chunked by a MsgStreamer we track the destreamers on the receiving side using
-   * a message identifier
+   * when messages are chunked by a MsgStreamer we track the destreamers on
+   * the receiving side using a message identifier
    */
   private short messageId;
 
-  /**
-   * whether the length of the next message has been established
-   */
+  /** whether the length of the next message has been established */
   private boolean lengthSet;
 
-  /**
-   * used to lock access to destreamer data
-   */
+  /** used to lock access to destreamer data */
   private final Object destreamerLock = new Object();
 
-  /**
-   * caches a msg destreamer that is currently not being used
-   */
+  /** caches a msg destreamer that is currently not being used */
   private MsgDestreamer idleMsgDestreamer;
 
   /**
@@ -379,24 +347,16 @@ public class Connection implements Runnable {
 
   private boolean asyncMode;
 
-  /**
-   * is this connection used for serial message delivery?
-   */
+  /** is this connection used for serial message delivery? */
   boolean preserveOrder;
 
-  /**
-   * number of messages sent on this connection
-   */
+  /** number of messages sent on this connection */
   private long messagesSent;
 
-  /**
-   * number of messages received on this connection
-   */
+  /** number of messages received on this connection */
   private long messagesReceived;
 
-  /**
-   * unique ID of this connection (remote if isReceiver==true)
-   */
+  /** unique ID of this connection (remote if isReceiver==true) */
   private volatile long uniqueId;
 
   private int sendBufferSize = -1;
@@ -404,7 +364,6 @@ public class Connection implements Runnable {
 
   @MakeNotStatic
   private static final ByteBuffer okHandshakeBuf;
-
   static {
     int msglen = 1; // one byte for reply code
     byte[] bytes = new byte[MSG_HEADER_BYTES + msglen];
@@ -449,9 +408,7 @@ public class Connection implements Runnable {
 
   private static final int CONNECT_HANDSHAKE_SIZE = 4096;
 
-  /**
-   * time between connection attempts
-   */
+  /** time between connection attempts */
   private static final int RECONNECT_WAIT_TIME =
       Integer.getInteger(GEMFIRE_PREFIX + "RECONNECT_WAIT_TIME", 2000);
 
@@ -499,40 +456,26 @@ public class Connection implements Runnable {
   private byte connectionState = STATE_IDLE;
 
   /* ~~~~~~~~~~~~~ connection states ~~~~~~~~~~~~~~~ */
-  /**
-   * the connection is idle, but may be in use
-   */
+  /** the connection is idle, but may be in use */
   private static final byte STATE_IDLE = 0;
-  /**
-   * the connection is in use and is transmitting data
-   */
+  /** the connection is in use and is transmitting data */
   private static final byte STATE_SENDING = 1;
-  /**
-   * the connection is in use and is done transmitting
-   */
+  /** the connection is in use and is done transmitting */
   private static final byte STATE_POST_SENDING = 2;
-  /**
-   * the connection is in use and is reading a direct-ack
-   */
+  /** the connection is in use and is reading a direct-ack */
   private static final byte STATE_READING_ACK = 3;
-  /**
-   * the connection is in use and has finished reading a direct-ack
-   */
+  /** the connection is in use and has finished reading a direct-ack */
   private static final byte STATE_RECEIVED_ACK = 4;
-  /**
-   * the connection is in use and is reading a message
-   */
+  /** the connection is in use and is reading a message */
   private static final byte STATE_READING = 5;
   /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-  /**
-   * set to true if we exceeded the ack-wait-threshold waiting for a response
-   */
+  /** set to true if we exceeded the ack-wait-threshold waiting for a response */
   private volatile boolean ackTimedOut;
 
   /**
-   * a Reader thread for an shared Connection will remain around in order to ensure that the socket
-   * is properly closed.
+   * a Reader thread for an shared Connection will remain around in order to
+   * ensure that the socket is properly closed.
    */
   private volatile boolean hasResidualReaderThread;
 
@@ -574,9 +517,8 @@ public class Connection implements Runnable {
     if (AlertingAction.isThreadAlerting()) {
       return config.getMemberTimeout();
     }
-    if (IS_P2P_CONNECT_TIMEOUT_INITIALIZED) {
+    if (IS_P2P_CONNECT_TIMEOUT_INITIALIZED)
       return P2P_CONNECT_TIMEOUT;
-    }
     String connectTimeoutStr = System.getProperty("p2p.connectTimeout");
     if (connectTimeoutStr != null) {
       P2P_CONNECT_TIMEOUT = Integer.parseInt(connectTimeoutStr);
@@ -982,11 +924,9 @@ public class Connection implements Runnable {
    */
   static Connection createSender(final Membership<InternalDistributedMember> mgr,
       final ConnectionTable t,
-      final boolean preserveOrder,
-      final InternalDistributedMember remoteAddr,
+      final boolean preserveOrder, final InternalDistributedMember remoteAddr,
       final boolean sharedResource,
-      final long startTime, final long ackTimeout,
-      final long ackSATimeout)
+      final long startTime, final long ackTimeout, final long ackSATimeout)
       throws IOException, DistributedSystemDisconnectedException {
     boolean success = false;
     Connection conn = null;
@@ -1084,7 +1024,7 @@ public class Connection implements Runnable {
             t.fileDescriptorsExhausted();
           } else if (!connectionErrorLogged) {
             connectionErrorLogged = true; // otherwise change to use 100ms intervals causes a lot of
-            // these
+                                          // these
             logger.info("Connection: shared={} ordered={} failed to connect to peer {} because: {}",
                 sharedResource, preserveOrder, remoteAddr,
                 ioe.getCause() != null ? ioe.getCause() : ioe);
@@ -1186,8 +1126,7 @@ public class Connection implements Runnable {
    * must accept us We will almost always send messages; small acks are received.
    */
   private Connection(ConnectionTable t, boolean preserveOrder, InternalDistributedMember remoteID,
-      boolean sharedResource)
-      throws IOException, DistributedSystemDisconnectedException {
+      boolean sharedResource) throws IOException, DistributedSystemDisconnectedException {
     // initialize a socket upfront. So that the
     if (t == null) {
       throw new IllegalArgumentException("ConnectionTable is null.");
@@ -1380,9 +1319,8 @@ public class Connection implements Runnable {
                 } catch (InterruptedException ie) {
                   interrupted = true;
                 } finally {
-                  if (interrupted) {
+                  if (interrupted)
                     Thread.currentThread().interrupt();
-                  }
                 }
               }
             }
@@ -1946,8 +1884,8 @@ public class Connection implements Runnable {
   }
 
   /**
-   * If {@code use} is true then "claim" the connection for our use. If {@code use} is false then
-   * "release" the connection.
+   * If {@code use} is true then "claim" the connection for our use. If {@code use} is
+   * false then "release" the connection.
    */
   public void setInUse(boolean use, long startTime, long ackWaitThreshold, long ackSAThreshold,
       List connectionGroup) {
@@ -3175,10 +3113,10 @@ public class Connection implements Runnable {
   }
 
   /**
-   * For exceptions that we absolutely must see in the log files, use this method to log the problem
-   * first at "info" level and then at "fatal" level. We do this in case the "fatal" level log entry
-   * generates an alert that gets blocked in transmitting the data to an alert listener like the JMX
-   * Manager
+   * For exceptions that we absolutely must see in the log files, use this method
+   * to log the problem first at "info" level and then at "fatal" level. We do this
+   * in case the "fatal" level log entry generates an alert that gets blocked in
+   * transmitting the data to an alert listener like the JMX Manager
    */
   private void logAtInfoAndFatal(String failureMsg, Throwable failureEx) {
     // log at info level first in case fatal-level alert notification becomes blocked
@@ -3365,8 +3303,9 @@ public class Connection implements Runnable {
   }
 
   /**
-   * A shared sender connection will leave a reader thread around to ensure that the socket is
-   * properly closed at this end. When that is the case isResidualReaderThread will return true.
+   * A shared sender connection will leave a reader thread around to ensure that the
+   * socket is properly closed at this end. When that is the case isResidualReaderThread
+   * will return true.
    */
   public boolean hasResidualReaderThread() {
     return hasResidualReaderThread;

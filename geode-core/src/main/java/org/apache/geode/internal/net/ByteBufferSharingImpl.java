@@ -57,13 +57,13 @@ class ByteBufferSharingImpl implements ByteBufferSharing {
    * That caller binds that reference to a variable in a try-with-resources statement and relies on
    * the AutoCloseable protocol to invoke close() on the object at the end of the block.
    */
-  ByteBufferSharingImpl alias() {
+  ByteBufferSharing alias() {
     lock.lock();
     referencing.addReference();
     return this;
   }
 
-  ByteBufferSharingImpl alias(final long time, final TimeUnit unit) throws LockAttemptTimedOut {
+  ByteBufferSharing alias(final long time, final TimeUnit unit) throws LockAttemptTimedOut {
     try {
       if (!lock.tryLock(time, unit)) {
         throw new LockAttemptTimedOut();
