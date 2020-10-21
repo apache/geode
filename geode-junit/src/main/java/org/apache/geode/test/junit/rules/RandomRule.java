@@ -40,15 +40,24 @@ public class RandomRule extends Random implements GsRandom, SerializableTestRule
   }
 
   public RandomRule(long seed) {
+    this(null, seed);
+  }
+
+  public RandomRule(Random random) {
+    this(random, 0);
+  }
+
+  private RandomRule(Random random, long seed) {
+    this.random.set(random);
     this.seed = seed;
   }
 
   @Override
-  public Statement apply(final Statement base, final Description description) {
+  public Statement apply(Statement base, Description description) {
     return statement(base);
   }
 
-  private Statement statement(final Statement base) {
+  private Statement statement(Statement base) {
     return new SerializableStatement() {
       @Override
       public void evaluate() throws Throwable {
@@ -63,7 +72,7 @@ public class RandomRule extends Random implements GsRandom, SerializableTestRule
   }
 
   private void before() {
-    random.set(newRandom());
+    random.compareAndSet(null, newRandom());
   }
 
   /**
@@ -235,11 +244,11 @@ public class RandomRule extends Random implements GsRandom, SerializableTestRule
   }
 
   /**
-   * Returns the next pseudorandom, uniformly distributed element from the specified iterable as
+   * Returns the next pseudorandom, uniformly distributed element from the specified values as
    * indexed by this random number generator's sequence.
    *
    * @param values the range of values (inclusive) for the pseudorandom.
-   * @return the next pseudorandom, uniformly distributed element from the specified var args as
+   * @return the next pseudorandom, uniformly distributed element from the specified values as
    *         indexed by this random number generator's sequence.
    * @throws NullPointerException if values is null.
    * @throws IllegalArgumentException if values is empty.
@@ -264,8 +273,7 @@ public class RandomRule extends Random implements GsRandom, SerializableTestRule
   }
 
   private <T> List<T> requireNonNulls(List<T> list) {
-    list.stream()
-        .forEach(t -> requireNonNull(t));
+    list.forEach(t -> requireNonNull(t));
     return list;
   }
 }

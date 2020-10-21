@@ -37,9 +37,9 @@ public class RandomRuleTest {
 
   @Test
   public void nullNullIterableThrowsNullPointerException() {
-    Iterable<String> iterable = null;
+    Iterable<String> input = null;
 
-    Throwable thrown = catchThrowable(() -> randomRule.next(iterable));
+    Throwable thrown = catchThrowable(() -> randomRule.next(input));
 
     assertThat(thrown).isInstanceOf(NullPointerException.class);
   }
@@ -88,10 +88,21 @@ public class RandomRuleTest {
 
   @Test
   public void nullVarArgThrowsNullPointerException() {
-    String string = null;
+    String input = null;
 
-    Throwable thrown = catchThrowable(() -> randomRule.next(string));
+    Throwable thrown = catchThrowable(() -> randomRule.next(input));
 
     assertThat(thrown).isInstanceOf(NullPointerException.class);
+  }
+
+  @Test
+  public void zeroVarArgsThrowsIllegalArgumentException() {
+    String[] input = new String[0];
+
+    Throwable thrown = catchThrowable(() -> randomRule.next(input));
+
+    assertThat(thrown)
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("At least one element is required");
   }
 }
