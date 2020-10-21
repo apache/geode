@@ -84,9 +84,9 @@ public class RunInSubdirectoryTestFramework implements TestFramework {
     if (!Files.exists(taskPropertiesFile)) {
       return;
     }
-    Path workerPropertiesFileFile = workerWorkingDir.resolve(taskPropertiesFile.getFileName());
+    Path workerPropertiesFile = workerWorkingDir.resolve(taskPropertiesFile.getFileName());
     try {
-      Files.copy(taskPropertiesFile, workerPropertiesFileFile, COPY_ATTRIBUTES);
+      Files.copy(taskPropertiesFile, workerPropertiesFile, COPY_ATTRIBUTES);
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
