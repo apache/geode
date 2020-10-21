@@ -38,11 +38,11 @@ public class UnknownExecutor extends AbstractExecutor {
 
       if (commandElems.size() > 1) {
         for (int i = 1; i < commandElems.size(); i++) {
-          if (commandElems.get(i) == null || commandElems.get(i).length == 0) {
-            continue; // skip blanks
+          if (commandElems.get(i) == null) {
+            continue;
           }
-          commandArguments.append(" `").append(Coder.bytesToString(commandElems.get(i)))
-              .append("`,");
+          commandArguments.append("`").append(Coder.bytesToString(commandElems.get(i)))
+              .append("`, ");
         }
       }
     }

@@ -45,13 +45,20 @@ public abstract class AbstractUnknownIntegrationTest implements RedisPortSupplie
   @Test
   public void givenUnknownCommand_returnsUnknownCommandError() {
     assertThatThrownBy(() -> jedis.sendCommand("fhqwhgads"::getBytes))
-        .hasMessageContaining("ERR unknown command `fhqwhgads`, with args beginning with:");
+        .hasMessage("ERR unknown command `fhqwhgads`, with args beginning with: ");
   }
 
   @Test
   public void givenUnknownCommand_withArguments_returnsUnknownCommandErrorWithArgumentsListed() {
     assertThatThrownBy(() -> jedis.sendCommand("fhqwhgads"::getBytes, "EVERYBODY", "TO THE LIMIT"))
-        .hasMessageContaining(
-            "ERR unknown command `fhqwhgads`, with args beginning with: `EVERYBODY`, `TO THE LIMIT`,");
+        .hasMessage(
+            "ERR unknown command `fhqwhgads`, with args beginning with: `EVERYBODY`, `TO THE LIMIT`, ");
+  }
+
+  @Test
+  public void givenUnknownCommand_withEmptyStringArgument_returnsUnknownCommandErrorWithArgumentsListed() {
+    assertThatThrownBy(() -> jedis.sendCommand("fhqwhgads"::getBytes, "EVERYBODY", ""))
+        .hasMessage(
+            "ERR unknown command `fhqwhgads`, with args beginning with: `EVERYBODY`, ``, ");
   }
 }
