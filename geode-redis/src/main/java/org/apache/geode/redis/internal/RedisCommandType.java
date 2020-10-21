@@ -142,7 +142,6 @@ public enum RedisCommandType {
   RENAME(new RenameExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
   TTL(new TTLExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
   TYPE(new TypeExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
-  UNLINK(new DelExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
 
   /************* Strings *****************/
 
@@ -189,6 +188,7 @@ public enum RedisCommandType {
    ***************************************/
 
   SCAN(new ScanExecutor(), UNSUPPORTED, new EvenParameterRequirements(ERROR_SYNTAX).and(new MinimumParameterRequirements(2))),
+  UNLINK(new DelExecutor(), UNSUPPORTED, new MinimumParameterRequirements(2)),
 
   /***************************************
    ************** Strings ****************

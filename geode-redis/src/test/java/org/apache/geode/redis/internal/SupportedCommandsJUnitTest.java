@@ -59,7 +59,6 @@ public class SupportedCommandsJUnitTest {
       "TTL",
       "TYPE",
       "UNKNOWN",
-      "UNLINK",
       "UNSUBSCRIBE",
   };
 
@@ -116,6 +115,7 @@ public class SupportedCommandsJUnitTest {
       "SUNION",
       "SUNIONSTORE",
       "TIME",
+      "UNLINK",
   };
 
   private final String[] unImplementedCommands = new String[] {
