@@ -98,19 +98,10 @@ class ByteBufferSharingImpl implements ByteBufferSharing {
 
   @Override
   public void close() {
-    final int usages = referencing.dropReference();
-    if (usages > 0) {
-      logger.info("BGB: in sharing close() unlocking, refcount: " + usages + " lock: " + lock);
-      /*
-       * We don't unlock when the very last usage goes away. The resource owner holds the first
-       * usage and there is no lock associated with that one. Subsequent usages have a lock and
-       * so require a corresponding unlock.
-       */
-      lock.unlock();
-      logger.info("BGB: in sharing close() unlocked, refcount: " + usages + " lock: " + lock);
-    } else {
-      logger.info("BGB: in sharing close() didn't unlock, refcount: " + usages + " lock: " + lock);
-    }
+    logger.info("BGB: in sharing close() unlocking: " + lock);
+    referencing.dropReference();
+    lock.unlock();
+    logger.info("BGB: in sharing close() unlocked: " + lock);
   }
 
 }
