@@ -94,12 +94,9 @@ public class RedisString extends AbstractRedisData {
       double increment)
       throws NumberFormatException, ArithmeticException {
     double doubleValue = parseValueAsDouble();
-    if (doubleValue >= 0 && increment > (Double.MAX_VALUE - doubleValue)) {
-      throw new ArithmeticException(RedisConstants.ERROR_OVERFLOW);
-    }
     doubleValue += increment;
     if (Double.isNaN(doubleValue) || Double.isInfinite(doubleValue)) {
-      throw new ArithmeticException(RedisConstants.ERROR_OVERFLOW);
+      throw new ArithmeticException(RedisConstants.ERROR_NAN_OR_INFINITY);
     }
     valueSetBytes(Coder.doubleToBytes(doubleValue));
     // numeric strings are short so no need to use delta
@@ -144,12 +141,12 @@ public class RedisString extends AbstractRedisData {
   private double parseValueAsDouble() {
     String valueString = value.toString();
     if (valueString.contains(" ")) {
-      throw new NumberFormatException("Value at this key cannot be incremented numerically");
+      throw new NumberFormatException(RedisConstants.ERROR_NOT_A_VALID_FLOAT);
     }
     try {
       return Coder.stringToDouble(valueString);
     } catch (NumberFormatException e) {
-      throw new NumberFormatException("Value at this key cannot be incremented numerically");
+      throw new NumberFormatException(RedisConstants.ERROR_NOT_A_VALID_FLOAT);
     }
 
   }
