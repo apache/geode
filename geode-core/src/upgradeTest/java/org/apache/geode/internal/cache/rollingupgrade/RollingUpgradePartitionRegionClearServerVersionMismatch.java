@@ -185,9 +185,9 @@ public class RollingUpgradePartitionRegionClearServerVersionMismatch {
 
 
   /**
-   * testServer_UnsupportedOperationException - validates that when a partitioned region clear is invoked
-   * on a cluster where one server is running an unsupported version for this feature we return a
-   * UnsupportedOperationException
+   * testServer_UnsupportedOperationException - validates that when a partitioned region clear is
+   * invoked on a cluster where one server is running an unsupported version for this feature we
+   * return a UnsupportedOperationException
    */
   @Test
   public void testServer_UnsupportedOperationException() {
