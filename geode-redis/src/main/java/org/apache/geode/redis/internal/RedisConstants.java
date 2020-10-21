@@ -32,7 +32,7 @@ public class RedisConstants {
   public static final String SERVER_ERROR_SHUTDOWN = "The server is shutting down";
   public static final String ERROR_CURSOR = "invalid cursor";
   public static final String ERROR_UNKNOWN_COMMAND =
-      "unknown command `%s`, with args beginning with:%s";
+      "unknown command `%s`, with args beginning with: %s";
   public static final String ERROR_UNSUPPORTED_COMMAND =
       " is not supported. To enable all unsupported commands use GFSH to execute: 'redis --enable-unsupported-commands'. Unsupported commands have not been fully tested.";
   public static final String ERROR_OUT_OF_RANGE = "The number provided is out of range";
