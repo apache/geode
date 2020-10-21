@@ -106,7 +106,7 @@ public class HdelDUnitTest {
   }
 
   @Test
-  public void testConcurrentHDelReturnExceptedNumberOfDeletions() {
+  public void testConcurrentHDel_returnsExpectedNumberOfDeletions() {
     AtomicLong client1Deletes = new AtomicLong();
     AtomicLong client2Deletes = new AtomicLong();
 
@@ -129,10 +129,13 @@ public class HdelDUnitTest {
             .run();
 
     assertThat(client1Deletes.get() + client2Deletes.get()).isEqualTo(HASH_SIZE);
+    assertThat(lettuce.hgetall(key).size())
+        .as("Not all keys were deleted")
+        .isEqualTo(0);
   }
 
   @Test
-  public void testConcurrentDel_whenServerCrashesAndRestarts() {
+  public void testConcurrentHdel_whenServerCrashesAndRestarts() {
     String key = "HSET";
 
     Map<String, String> setUpData =
