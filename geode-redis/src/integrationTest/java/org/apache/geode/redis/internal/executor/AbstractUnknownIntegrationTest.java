@@ -58,7 +58,12 @@ public abstract class AbstractUnknownIntegrationTest implements RedisPortSupplie
   @Test
   public void givenUnknownCommand_withEmptyStringArgument_returnsUnknownCommandErrorWithArgumentsListed() {
     assertThatThrownBy(() -> jedis.sendCommand("fhqwhgads"::getBytes, "EVERYBODY", ""))
-        .hasMessage(
-            "ERR unknown command `fhqwhgads`, with args beginning with: `EVERYBODY`, ``, ");
+        .hasMessage("ERR unknown command `fhqwhgads`, with args beginning with: `EVERYBODY`, ``, ");
+  }
+
+  @Test // HELLO is not a recognized command until Redis 6.0.0
+  public void givenHelloCommand_returnsUnknownCommandErrorWithArgumentsListed() {
+    assertThatThrownBy(() -> jedis.sendCommand("HELLO"::getBytes))
+        .hasMessage("ERR unknown command `HELLO`, with args beginning with: ");
   }
 }

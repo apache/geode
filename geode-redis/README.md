@@ -120,7 +120,7 @@ As this command will shut down the entire Geode instance/cluster, you will be pr
 As a lot of data in memory will be lost, including possibly events in queues, do you really want to shutdown the entire distributed system? (Y/n)
 ```
 
-To confirm that everything shutdown correctly, if you try and execute a Redis command in the redis-cli you should see the following message:
+To confirm that everything shutdown correctly, if you execute a Redis command in the redis-cli you should see the following message:
 
 ```commandline
 Could not connect to Redis at 127.0.0.1:6379: Connection refused 
@@ -231,7 +231,6 @@ start server \
 |                    	|                                                    	| GEOPOS                        	|
 |                    	|                                                    	| GEORADIUS                     	|
 |                    	|                                                    	| GEORADIUSBYMEMBER             	|
-|                    	|                                                    	| HELLO                         	|
 |                    	|                                                    	| HSTRLEN                       	|
 |                    	|                                                    	| INFO                          	|
 |                    	|                                                    	| LASTSAVE                      	|
