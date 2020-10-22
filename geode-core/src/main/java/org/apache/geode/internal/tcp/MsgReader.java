@@ -92,6 +92,7 @@ public class MsgReader {
       throws IOException, ClassNotFoundException {
     try (final ByteBufferSharing sharedBuffer = readAtLeast(header.messageLength)) {
       ByteBuffer nioInputBuffer = sharedBuffer.getBuffer();
+      final int startingPosition = nioInputBuffer.position();
       Assert.assertTrue(nioInputBuffer.remaining() >= header.messageLength);
       this.getStats().incMessagesBeingReceived(true, header.messageLength);
       long startSer = this.getStats().startMsgDeserialization();
@@ -106,7 +107,7 @@ public class MsgReader {
       } finally {
         this.getStats().endMsgDeserialization(startSer);
         this.getStats().decMessagesBeingReceived(header.messageLength);
-        ioFilter.doneReadingDirectAck(nioInputBuffer);
+        nioInputBuffer.position(startingPosition + header.messageLength);
       }
     }
   }
