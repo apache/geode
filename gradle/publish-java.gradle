@@ -41,13 +41,15 @@ gradle.taskGraph.whenReady({ graph ->
         allProjectDeps.addAll(project.configurations.getByName(conf).getDependencies())
       }
 
-//      // Iterate over runtime classpath dependencies and separate project dependencies from library
-//      // dependencies.
+      // Iterate over runtime classpath dependencies and separate project dependencies from library
+      // dependencies.
       allProjectDeps.each { dependency ->
         if ( dependency instanceof ProjectDependency )  {
           def platformAttribute = Attribute.of("org.gradle.category", org.gradle.api.attributes.Category.class)
           def foundAttribute = dependency.attributes.getAttribute(platformAttribute)
-          if (! foundAttribute || 'platform'.equals(foundAttribute)) {
+          if ( foundAttribute == null) {
+            projectDependencies.add(dependency)
+          } else if ('platform'.equals(foundAttribute)) {
             projectDependencies.add(dependency)
           }
         } else {
