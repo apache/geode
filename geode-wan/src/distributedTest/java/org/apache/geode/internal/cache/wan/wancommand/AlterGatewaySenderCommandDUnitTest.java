@@ -66,10 +66,13 @@ public class AlterGatewaySenderCommandDUnitTest {
     props.setProperty(NAME, "happyserver1");
     server1 = clusterStartupRule.startServerVM(1, props, locatorSite1.getPort());
 
+    props.setProperty(NAME, "happyserver2");
+    server1 = clusterStartupRule.startServerVM(2, props, locatorSite1.getPort());
+
     props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + 2);
     props.setProperty(NAME, "happyremotelocator");
     props.setProperty(REMOTE_LOCATORS, "localhost[" + locatorSite1.getPort() + "]");
-    clusterStartupRule.startLocatorVM(2, props);
+    clusterStartupRule.startLocatorVM(3, props);
   }
 
   @Before
@@ -89,7 +92,8 @@ public class AlterGatewaySenderCommandDUnitTest {
         .doesNotContainOutput("Did not complete waiting")
         .hasTableSection()
         .hasColumn("Message")
-        .containsExactly("GatewaySender \"sender1\" created on \"happyserver1\"");
+        .containsExactly("GatewaySender \"sender1\" created on \"happyserver1\"",
+            "GatewaySender \"sender1\" created on \"happyserver2\"");
 
     gfsh.executeAndAssertThat("list gateways").statusIsSuccess()
         .containsOutput("sender1");
@@ -112,7 +116,8 @@ public class AlterGatewaySenderCommandDUnitTest {
         .doesNotContainOutput("Did not complete waiting")
         .hasTableSection()
         .hasColumn("Message")
-        .containsExactly("GatewaySender \"sender1\" created on \"happyserver1\"");
+        .containsExactly("GatewaySender \"sender1\" created on \"happyserver1\"",
+            "GatewaySender \"sender1\" created on \"happyserver2\"");
 
     gfsh.executeAndAssertThat("list gateways").statusIsSuccess()
         .containsOutput("sender1");
@@ -138,7 +143,8 @@ public class AlterGatewaySenderCommandDUnitTest {
         .doesNotContainOutput("Did not complete waiting")
         .hasTableSection()
         .hasColumn("Message")
-        .containsExactly("GatewaySender \"sender1\" created on \"happyserver1\"");
+        .containsExactly("GatewaySender \"sender1\" created on \"happyserver1\"",
+            "GatewaySender \"sender1\" created on \"happyserver2\"");
 
     gfsh.executeAndAssertThat("list gateways").statusIsSuccess()
         .containsOutput("sender1");
@@ -174,7 +180,8 @@ public class AlterGatewaySenderCommandDUnitTest {
         .doesNotContainOutput("Did not complete waiting")
         .hasTableSection()
         .hasColumn("Message")
-        .containsExactly("GatewaySender \"sender1\" created on \"happyserver1\"");
+        .containsExactly("GatewaySender \"sender1\" created on \"happyserver1\"",
+            "GatewaySender \"sender1\" created on \"happyserver2\"");
 
     gfsh.executeAndAssertThat("list gateways").statusIsSuccess()
         .containsOutput("sender1");
@@ -183,4 +190,42 @@ public class AlterGatewaySenderCommandDUnitTest {
         .statusIsError()
         .containsOutput("Alter Gateway Sender cannot be performed for --group-transaction-events");
   }
+
+
+  @Test
+  public void testCreateSerialGatewaySenderAndAlterBatchSizeServerDown() throws Exception {
+    gfsh.executeAndAssertThat(CREATE).statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting")
+        .hasTableSection()
+        .hasColumn("Message")
+        .containsExactly("GatewaySender \"sender1\" created on \"happyserver1\"",
+            "GatewaySender \"sender1\" created on \"happyserver2\"");
+
+    gfsh.executeAndAssertThat("list gateways").statusIsSuccess()
+        .containsOutput("sender1");
+
+    server1.stop(false);
+
+    gfsh.executeAndAssertThat(
+        "alter gateway-sender --id=sender1 --batch-size=200 --alert-threshold=100")
+        .statusIsSuccess();
+
+    Properties props = new Properties();
+    props.setProperty(NAME, "happyserver1");
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + 1);
+    server1 = clusterStartupRule.startServerVM(1, props, locatorSite1.getPort());
+
+    // verify that server1's event queue has the default value
+    server1.invoke(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
+      GatewaySender sender = cache.getGatewaySender("sender1");
+      assertThat(sender.getBatchSize()).isEqualTo(200);
+      assertThat(sender.getBatchTimeInterval())
+          .isEqualTo(GatewaySender.DEFAULT_BATCH_TIME_INTERVAL);
+      assertThat(sender.getAlertThreshold()).isEqualTo(100);
+    });
+
+  }
+
+
 }
