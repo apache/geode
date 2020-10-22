@@ -35,6 +35,7 @@ dependencies {
 
 
   // test
+  testImplementation(project(':geode-common-services'))
   testImplementation(project(':extensions:geode-modules-test'))
   testImplementation('junit:junit')
   testImplementation('org.assertj:assertj-core')
@@ -43,11 +44,13 @@ dependencies {
 
 
   // integrationTest
+  integrationTestImplementation(project(':geode-common-services'))
   integrationTestImplementation(project(':extensions:geode-modules-test'))
   integrationTestImplementation(project(':geode-dunit'))
 
 
   // distributedTest
+  distributedTestImplementation(project(':geode-common-services'))
   distributedTestImplementation(project(':extensions:geode-modules-test'))
   distributedTestImplementation(project(':geode-dunit'))
   distributedTestImplementation(project(':geode-logging'))

@@ -40,6 +40,8 @@ dependencies {
     integrationTestImplementation(project(':geode-junit'))
 
     distributedTestImplementation(project(':geode-gfsh'))
+    distributedTestImplementation(project(':geode-common-services'))
+    distributedTestImplementation(project(':geode-core'))
     distributedTestImplementation(project(':geode-dunit'))
     distributedTestImplementation(project(':geode-membership'))
     distributedTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))

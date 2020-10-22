@@ -29,6 +29,7 @@ import java.nio.file.Paths
 // This list is used in a loop to defined the /lib copySpec
 def dependentProjectNames = [
   ':geode-common',
+  ':geode-common-services',
   ':geode-connectors',
   ':geode-core',
   ':geode-cq',
@@ -164,6 +165,7 @@ task downloadWebServers(type:Copy) {
 
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
+  compileOnly(project(':geode-logging'))
   gfshDependencies(platform(project(':boms:geode-all-bom')))
 
   dependentProjectNames.each {
@@ -182,6 +184,7 @@ dependencies {
   javadocOnly project(':extensions:geode-modules-tomcat8')
   javadocOnly project(':geode-experimental-driver')
 
+  implementation(project(':geode-common-services'))
   testImplementation(project(':geode-core'))
   testImplementation(project(':geode-gfsh'))
   testImplementation(project(':geode-junit')) {
@@ -329,6 +332,7 @@ tasks.register('defaultDistributionConfig', JavaExec) {
   outputs.file file("$buildDir/gemfire.properties")
   main 'org.apache.geode.distributed.internal.DefaultPropertiesGenerator'
   classpath project(':geode-core').sourceSets.main.runtimeClasspath
+  classpath project(':geode-logging').sourceSets.main.runtimeClasspath
   workingDir buildDir
 
   doFirst {
@@ -339,10 +343,13 @@ tasks.register('defaultDistributionConfig', JavaExec) {
 tasks.register('defaultCacheConfig', JavaExec) {
   inputs.files {
     project(':geode-core').sourceSets.main.runtimeClasspath
+    project(':geode-common-services').sourceSets.main.runtimeClasspath
   }
   outputs.file file("$buildDir/cache.xml")
   main 'org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator'
   classpath project(':geode-core').sourceSets.main.runtimeClasspath
+  classpath project(':geode-logging').sourceSets.main.runtimeClasspath
+  classpath project(':geode-common-services').sourceSets.main.runtimeClasspath
   workingDir buildDir
 
   doFirst {

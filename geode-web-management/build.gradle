@@ -125,6 +125,7 @@ dependencies {
 
   integrationTestImplementation(sourceSets.commonTest.output)
 
+  integrationTestImplementation(project(':geode-common-services'))
   integrationTestImplementation(project(':geode-core'))
   integrationTestImplementation('org.springframework:spring-test')
   integrationTestImplementation('org.springframework:spring-webmvc')
@@ -147,6 +148,7 @@ dependencies {
   distributedTestImplementation('org.springframework.security:spring-security-test')
 
   distributedTestImplementation(project(':geode-core'))
+  distributedTestImplementation(project(':geode-common-services'))
   distributedTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }

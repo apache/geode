@@ -30,6 +30,7 @@ dependencies {
   compileOnly(platform(project(':boms:geode-all-bom')))
   providedCompile(platform(project(':boms:geode-all-bom')))
 
+  compileOnly(project(':geode-common-services'))
   implementation('org.springframework.security:spring-security-core')
   implementation('javax.servlet:javax.servlet-api')
   implementation('mx4j:mx4j') {
@@ -97,6 +98,7 @@ dependencies {
   providedCompile('commons-logging:commons-logging')
 
 
+  testImplementation(project(':geode-common-services'))
   testImplementation(project(':geode-core'))
   testImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
@@ -110,6 +112,7 @@ dependencies {
   testImplementation('org.powermock:powermock-api-mockito2')
 
 
+  integrationTestImplementation(project(':geode-common-services'))
   integrationTestImplementation(project(':geode-core'))
   integrationTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'

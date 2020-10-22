@@ -50,35 +50,43 @@ task downloadJdbcJars(type:Copy) {
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
 
-  implementation(project(':geode-logging'))
-  implementation(project(':geode-serialization'))
-  implementation(project(':geode-core'))
-  implementation(project(':geode-gfsh'))
-  implementation('org.apache.httpcomponents:httpcore')
-  implementation('com.fasterxml.jackson.core:jackson-databind')
+    implementation(project(':geode-logging'))
+    implementation(project(':geode-serialization'))
+    implementation(project(':geode-core'))
+    implementation(project(':geode-gfsh'))
+    implementation(project(':geode-common-services'))
+    implementation('org.apache.httpcomponents:httpcore')
+    implementation('com.fasterxml.jackson.core:jackson-databind')
 
-  testImplementation(project(':geode-membership'))
-  testImplementation(project(':geode-junit')) {
-    exclude module: 'geode-core'
-  }
-  integrationTestImplementation(project(':geode-dunit')) {
-    exclude module: 'geode-core'
-  }
-  integrationTestImplementation(project(':geode-junit')) {
-    exclude module: 'geode-core'
-  }
-  distributedTestImplementation(project(':geode-junit')) {
-    exclude module: 'geode-core'
-  }
-  distributedTestImplementation(project(':geode-dunit')){
-    exclude module: 'geode-core'
-  }
-  acceptanceTestImplementation(project(':geode-dunit')) {
-    exclude module: 'geode-core'
-  }
-  acceptanceTestImplementation(project(':geode-junit')) {
-    exclude module: 'geode-core'
-  }
+    testImplementation(project(':geode-common-services'))
+    testImplementation(project(':geode-membership'))
+    testImplementation(project(':geode-junit')) {
+        exclude module: 'geode-core'
+    }
+
+    integrationTestImplementation(project(':geode-dunit')) {
+        exclude module: 'geode-core'
+    }
+
+    integrationTestImplementation(project(':geode-junit')) {
+        exclude module: 'geode-core'
+    }
+    integrationTestImplementation(project(':geode-common-services'))
+
+    distributedTestImplementation(project(':geode-common-services'))
+    distributedTestImplementation(project(':geode-junit')) {
+        exclude module: 'geode-core'
+    }
+
+    distributedTestImplementation(project(':geode-dunit')) {
+        exclude module: 'geode-core'
+    }
+    acceptanceTestImplementation(project(':geode-dunit')) {
+        exclude module: 'geode-core'
+    }
+    acceptanceTestImplementation(project(':geode-junit')) {
+        exclude module: 'geode-core'
+    }
 
   implementation('com.zaxxer:HikariCP')
   implementation('org.apache.commons:commons-lang3')
@@ -111,16 +119,17 @@ dependencies {
   distributedTestImplementation('pl.pragmatists:JUnitParams')
   distributedTestRuntimeOnly('org.apache.derby:derby')
 
-  acceptanceTestImplementation('com.github.stefanbirkner:system-rules') {
-    exclude module: 'junit-dep'
-  }
-  acceptanceTestImplementation('junit:junit')
-  acceptanceTestImplementation('org.assertj:assertj-core')
-  acceptanceTestImplementation('org.awaitility:awaitility')
-  acceptanceTestImplementation('org.mockito:mockito-core')
-  acceptanceTestImplementation('com.palantir.docker.compose:docker-compose-rule-core')
-  acceptanceTestImplementation('pl.pragmatists:JUnitParams')
-  acceptanceTestImplementation('com.palantir.docker.compose:docker-compose-rule-junit4')
+    acceptanceTestImplementation('com.github.stefanbirkner:system-rules') {
+        exclude module: 'junit-dep'
+    }
+    acceptanceTestImplementation(project(':geode-common-services'))
+    acceptanceTestImplementation('junit:junit')
+    acceptanceTestImplementation('org.assertj:assertj-core')
+    acceptanceTestImplementation('org.awaitility:awaitility')
+    acceptanceTestImplementation('org.mockito:mockito-core')
+    acceptanceTestImplementation('com.palantir.docker.compose:docker-compose-rule-core')
+    acceptanceTestImplementation('pl.pragmatists:JUnitParams')
+    acceptanceTestImplementation('com.palantir.docker.compose:docker-compose-rule-junit4')
 
   acceptanceTestRuntimeOnly('mysql:mysql-connector-java')
   acceptanceTestRuntimeOnly('org.apache.derby:derby')

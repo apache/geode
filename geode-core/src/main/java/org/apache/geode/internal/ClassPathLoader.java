@@ -215,7 +215,7 @@ public class ClassPathLoader {
   /**
    * See {@link Proxy#getProxyClass(ClassLoader, Class...)}
    */
-  Class<?> getProxyClass(final Class<?>... classObjs) {
+  public Class<?> getProxyClass(final Class<?>... classObjs) {
     IllegalArgumentException ex = null;
 
     for (ClassLoader classLoader : getClassLoaders()) {

@@ -38,6 +38,7 @@ dependencies {
 
 
   // test
+  testImplementation(project(':geode-common-services'))
   testImplementation('org.apache.bcel:bcel')
   testImplementation('junit:junit')
   testImplementation('org.assertj:assertj-core')
@@ -46,12 +47,14 @@ dependencies {
 
 
   // integrationTest
+  integrationTestImplementation(project(':geode-common-services'))
   integrationTestImplementation(project(':extensions:geode-modules-test'))
   integrationTestImplementation(project(':geode-dunit'))
   integrationTestImplementation('pl.pragmatists:JUnitParams')
 
 
   // distributedTest
+  distributedTestImplementation(project(':geode-common-services'))
   distributedTestImplementation(project(':geode-dunit'))
 }
 

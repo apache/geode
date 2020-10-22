@@ -29,6 +29,13 @@ dependencies {
   implementation('org.apache.logging.log4j:log4j-api')
 
 
+  compileOnly(project(':geode-common-services'))
+  testImplementation(project(':geode-common-services'))
+  integrationTestImplementation(project(':geode-common-services'))
+  acceptanceTestImplementation(project(':geode-common-services'))
+  distributedTestImplementation(project(':geode-common-services'))
+  upgradeTestImplementation(project(':geode-common-services'))
+
   testImplementation(project(':geode-junit'))
 
 
