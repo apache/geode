@@ -20,6 +20,11 @@ import org.junit.ClassRule;
 import org.apache.geode.redis.GeodeRedisServerRule;
 
 public class PubSubIntegrationTest extends AbstractPubSubIntegrationTest {
+
+  static {
+    System.setProperty("io.netty.eventLoopThreads", "10");
+  }
+
   @ClassRule
   public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
