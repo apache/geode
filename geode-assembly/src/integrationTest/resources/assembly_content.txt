@@ -245,7 +245,6 @@ javadoc/org/apache/geode/cache/RoleEvent.html
 javadoc/org/apache/geode/cache/RoleException.html
 javadoc/org/apache/geode/cache/Scope.html
 javadoc/org/apache/geode/cache/SerializedCacheValue.html
-javadoc/org/apache/geode/cache/ServerVersionMismatchException.html
 javadoc/org/apache/geode/cache/StatisticsDisabledException.html
 javadoc/org/apache/geode/cache/SubscriptionAttributes.html
 javadoc/org/apache/geode/cache/SynchronizationCommitConflictException.html
