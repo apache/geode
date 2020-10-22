@@ -37,7 +37,6 @@ import org.mockito.ArgumentCaptor;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.PartitionedRegionPartialClearException;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.ServerVersionMismatchException;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionManager;
@@ -559,7 +558,7 @@ public class PartitionedRegionClearTest {
   }
 
   @Test
-  public void doClearThrowsServerVersionMismatchException() {
+  public void doClearThrowsUnsupportedOperationException() {
     boolean cacheWrite = false;
     RegionEventImpl regionEvent = mock(RegionEventImpl.class);
     when(partitionedRegion.hasListener()).thenReturn(false);
@@ -615,7 +614,7 @@ public class PartitionedRegionClearTest {
         catchThrowable(() -> spyPartitionedRegionClear.doClear(regionEvent, cacheWrite));
 
     assertThat(thrown)
-        .isInstanceOf(ServerVersionMismatchException.class)
+        .isInstanceOf(UnsupportedOperationException.class)
         .hasMessage(
             "A server's [oldMember] version was too old (< GEODE 1.14.0) for : Partitioned Region Clear");
   }

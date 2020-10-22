@@ -27,7 +27,6 @@ import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.OperationAbortedException;
 import org.apache.geode.cache.PartitionedRegionPartialClearException;
-import org.apache.geode.cache.ServerVersionMismatchException;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
@@ -349,13 +348,14 @@ public class PartitionedRegionClear {
           && (internalDistributedMember.getVersion().isOlderThan(KnownVersion.GEODE_1_14_0))) {
         if (!memberNames.contains(internalDistributedMember.getName())) {
           memberNames.add(internalDistributedMember.getName());
-          logger.info("MLH adding " + internalDistributedMember.getName());
         }
       }
     }
     if (!memberNames.isEmpty()) {
-      throw new ServerVersionMismatchException(memberNames, "Partitioned Region Clear",
-          KnownVersion.GEODE_1_14_0.toString());
+      throw new UnsupportedOperationException(
+          "A server's " + memberNames + " version was too old (< "
+              + KnownVersion.GEODE_1_14_0 + ") for : Partitioned Region Clear");
+
     }
   }
 

@@ -1307,7 +1307,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * @throws PartitionedRegionPartialClearException when data is partially cleared on partitioned
    *         region. It is caller responsibility to handle the partial data clear either by retrying
    *         the clear operation or continue working with the partially cleared partitioned region.
-   * @throws ServerVersionMismatchException when data was not cleared because one or more
+   * @throws UnsupportedOperationException when data was not cleared because one or more
    *         of the member servers' version was too old to understand the clear message.
    */
   @Override
