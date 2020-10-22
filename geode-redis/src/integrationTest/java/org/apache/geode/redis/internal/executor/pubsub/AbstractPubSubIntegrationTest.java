@@ -51,7 +51,6 @@ import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 public abstract class AbstractPubSubIntegrationTest implements RedisPortSupplier {
-  /* Trigger a stress test run */
   private Jedis publisher;
   private Jedis subscriber;
 
