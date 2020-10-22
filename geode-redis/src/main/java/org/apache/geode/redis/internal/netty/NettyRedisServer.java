@@ -98,12 +98,16 @@ public class NettyRedisServer {
     this.shutdownInvoker = shutdownInvoker;
     this.redisStats = redisStats;
     this.backgroundExecutor = backgroundExecutor;
+
     if (port < RANDOM_PORT_INDICATOR) {
-      throw new IllegalArgumentException("Redis port cannot be less than 0");
+      throw new IllegalArgumentException(
+          "Redis port cannot be less than " + RANDOM_PORT_INDICATOR);
     }
+
     selectorGroup = createEventLoopGroup("Selector", true, 1);
     workerGroup = createEventLoopGroup("Worker", true, 0);
     subscriberGroup = createEventLoopGroup("Subscriber", true, 0);
+
     try {
       this.bindAddress = getBindAddress(requestedAddress);
       serverChannel = createChannel(port);
@@ -116,15 +120,16 @@ public class NettyRedisServer {
   }
 
   private Channel createChannel(int port) {
-    ServerBootstrap serverBootstrap = new ServerBootstrap();
-
-    serverBootstrap.group(selectorGroup, workerGroup).channel(NioServerSocketChannel.class)
-        .childHandler(createChannelInitializer())
-        .option(ChannelOption.SO_REUSEADDR, true)
-        .option(ChannelOption.SO_RCVBUF, getBufferSize())
-        .childOption(ChannelOption.SO_KEEPALIVE, true)
-        .childOption(ChannelOption.CONNECT_TIMEOUT_MILLIS, CONNECT_TIMEOUT_MILLIS)
-        .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
+    ServerBootstrap serverBootstrap =
+        new ServerBootstrap()
+            .group(selectorGroup, workerGroup)
+            .channel(NioServerSocketChannel.class)
+            .childHandler(createChannelInitializer())
+            .option(ChannelOption.SO_REUSEADDR, true)
+            .option(ChannelOption.SO_RCVBUF, getBufferSize())
+            .childOption(ChannelOption.SO_KEEPALIVE, true)
+            .childOption(ChannelOption.CONNECT_TIMEOUT_MILLIS, CONNECT_TIMEOUT_MILLIS)
+            .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
 
     return createBoundChannel(serverBootstrap, port);
   }
