@@ -15,15 +15,13 @@
  * limitations under the License.
  */
 
-plugins {
-    id 'me.champeau.gradle.jmh' version '0.4.8'
-}
-
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 
 apply plugin: 'antlr'
+
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 apply from: "${project.projectDir}/../gradle/pmd.gradle"
+apply from: "${project.projectDir}/../gradle/jmh.gradle"
 
 sourceSets {
     jca {
@@ -403,29 +401,7 @@ dependencies {
         exclude module: 'geode-core'
     }
     performanceTestImplementation(project(':geode-log4j'))
-}
 
-jmh {
-    duplicateClassesStrategy = 'warn'
-    include = project.hasProperty('jmh.include') ? project.getProperties().get('jmh.include') : '.*'
-    profilers = project.hasProperty('jmh.profilers') ? project.getProperties().get('jmh.profilers').tokenize() : []
-    threads = project.hasProperty('jmh.threads') ? project.getProperties().get('jmh.threads') : null
-}
-
-jmhJar {
-    inputs.files(project.sourceSets.main.output, project.sourceSets.test.output)
-    from {
-        [configurations.jmh, configurations.jmhRuntime, configurations.runtimeClasspath].collect {
-            it.asFileTree.collect {
-                it
-            }
-        }.flatten().unique().collect {
-            it.isDirectory() ? it : zipTree(it)
-        }
-    }
-    exclude(['META-INF/*.SF'])
-    exclude('META-INF/org/apache/logging/log4j/core/config/plugins/Log4j2Plugins.dat')
-    exclude('*.jar')
 }
 
 tasks.eclipse.dependsOn(generateGrammarSource)
