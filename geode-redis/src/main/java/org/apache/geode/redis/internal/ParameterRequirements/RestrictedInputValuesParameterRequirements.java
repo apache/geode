@@ -16,24 +16,30 @@
 package org.apache.geode.redis.internal.ParameterRequirements;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class RestrictedInputValuesParameterRequirements implements ParameterRequirements {
 
- private final List<String> allowedValues;
+ private final List<String> ALLOWED_VALUES;
  private final String ERROR_MESSAGE;
 
   public RestrictedInputValuesParameterRequirements(List<String> allowedValues,
                                                     String errorMessage) {
-    this.allowedValues = allowedValues;
+    ALLOWED_VALUES =
+        allowedValues.stream()
+            .map(String::toUpperCase)
+        .collect(Collectors.toList());
+
     ERROR_MESSAGE = errorMessage;
   }
 
   @Override
   public void checkParameters(Command command,
       ExecutionHandlerContext executionHandlerContext) {
+
     List<byte[]> parameters = command.getProcessedCommand();
     String commandType = command.getCommandType().name();
 
@@ -47,6 +53,6 @@ public class RestrictedInputValuesParameterRequirements implements ParameterRequ
   }
 
   private boolean isNotAllowed(String parameterString) {
-    return !(allowedValues.contains(parameterString));
+    return !(ALLOWED_VALUES.contains(parameterString.toUpperCase()));
   }
 }

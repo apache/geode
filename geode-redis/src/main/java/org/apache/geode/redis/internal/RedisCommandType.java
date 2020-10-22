@@ -20,12 +20,15 @@ import static org.apache.geode.redis.internal.RedisCommandSupportLevel.UNIMPLEME
 import static org.apache.geode.redis.internal.RedisCommandSupportLevel.UNSUPPORTED;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 
+import java.util.Arrays;
+
 import org.apache.geode.redis.internal.ParameterRequirements.EvenParameterRequirements;
 import org.apache.geode.redis.internal.ParameterRequirements.ExactParameterRequirements;
 import org.apache.geode.redis.internal.ParameterRequirements.MaximumParameterRequirements;
 import org.apache.geode.redis.internal.ParameterRequirements.MinimumParameterRequirements;
 import org.apache.geode.redis.internal.ParameterRequirements.OddParameterRequirements;
 import org.apache.geode.redis.internal.ParameterRequirements.ParameterRequirements;
+import org.apache.geode.redis.internal.ParameterRequirements.RestrictedInputValuesParameterRequirements;
 import org.apache.geode.redis.internal.ParameterRequirements.SpopParameterRequirements;
 import org.apache.geode.redis.internal.ParameterRequirements.UnspecifiedParameterRequirements;
 import org.apache.geode.redis.internal.executor.Executor;
