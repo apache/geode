@@ -42,21 +42,23 @@ public class WhatExtendsJUnitTest {
   public void nothingExtendsC() {
     scanner.add(getClassLocation(C.class));
     assertThat(scanner.buildGradleCommand())
-        .isEqualTo("repeatUnitTest --tests WhatExtendsJUnitTest$C ");
+        .isEqualTo("repeatUnitTest --tests WhatExtendsJUnitTest$C -PtestCount=1");
   }
 
   @Test
   public void classAisExtendedByBandC() {
     scanner.add(getClassLocation(A.class));
     assertThat(scanner.buildGradleCommand())
-        .isEqualTo("repeatUnitTest --tests WhatExtendsJUnitTest$B,WhatExtendsJUnitTest$C ");
+        .isEqualTo(
+            "repeatUnitTest --tests WhatExtendsJUnitTest$B,WhatExtendsJUnitTest$C -PtestCount=2");
   }
 
   @Test
   public void usingJavaFileWithSameCategoryAsSubClasses() {
     scanner.add(getClassLocation(A.class, "foo/src/test/java/"));
     assertThat(scanner.buildGradleCommand())
-        .isEqualTo("repeatUnitTest --tests WhatExtendsJUnitTest$B,WhatExtendsJUnitTest$C ");
+        .isEqualTo(
+            "repeatUnitTest --tests WhatExtendsJUnitTest$B,WhatExtendsJUnitTest$C -PtestCount=2");
   }
 
   @Test
@@ -65,13 +67,13 @@ public class WhatExtendsJUnitTest {
     scanner.add(getClassLocation(this.getClass(), "foo/src/integrationTest/java/"));
     assertThat(scanner.buildGradleCommand())
         .isEqualTo(
-            "repeatUnitTest --tests WhatExtendsJUnitTest$B,WhatExtendsJUnitTest$C repeatIntegrationTest --tests WhatExtendsJUnitTest ");
+            "repeatUnitTest --tests WhatExtendsJUnitTest$B,WhatExtendsJUnitTest$C repeatIntegrationTest --tests WhatExtendsJUnitTest -PtestCount=3");
   }
 
   @Test
   public void ignoreAcceptanceTestSourcesForNow() {
     scanner.add(getClassLocation(this.getClass(), "foo/src/acceptanceTest/java/"));
-    assertThat(scanner.buildGradleCommand()).isEmpty();
+    assertThat(scanner.buildGradleCommand()).isEqualTo("-PtestCount=0");
   }
 
   private String getClassLocation(Class<?> clazz) {
