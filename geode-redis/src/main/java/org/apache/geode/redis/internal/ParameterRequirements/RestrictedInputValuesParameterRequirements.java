@@ -23,9 +23,12 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class RestrictedInputValuesParameterRequirements implements ParameterRequirements {
 
  private final List<String> allowedValues;
+ private final String ERROR_MESSAGE;
 
-  public RestrictedInputValuesParameterRequirements(List<String> allowedValues) {
+  public RestrictedInputValuesParameterRequirements(List<String> allowedValues,
+                                                    String errorMessage) {
     this.allowedValues = allowedValues;
+    ERROR_MESSAGE = errorMessage;
   }
 
   @Override
@@ -38,7 +41,7 @@ public class RestrictedInputValuesParameterRequirements implements ParameterRequ
       String parameterString = new String(parameter);
       if (isNotAllowed(parameterString) &&
           !parameterString.equalsIgnoreCase(commandType)) {
-        throw new RedisParametersMismatchException("");
+        throw new RedisParametersMismatchException(ERROR_MESSAGE);
       }
     });
   }
