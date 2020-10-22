@@ -19,8 +19,8 @@ import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.StreamSupport.stream;
 
+import java.security.SecureRandom;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.runner.Description;
@@ -30,24 +30,24 @@ import org.apache.geode.test.junit.rules.serializable.SerializableStatement;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestRule;
 
 @SuppressWarnings({"serial", "unused", "WeakerAccess", "NumericCastThatLosesPrecision"})
-public class RandomRule extends Random implements GsRandom, SerializableTestRule {
+public class RandomRule extends SecureRandom implements GsRandom, SerializableTestRule {
 
-  private final AtomicReference<Random> random = new AtomicReference<>();
-  private final long seed;
+  private final AtomicReference<SecureRandom> random = new AtomicReference<>();
+  private final byte[] seed;
 
   public RandomRule() {
-    this(0);
+    this(null, null);
   }
 
-  public RandomRule(long seed) {
+  public RandomRule(byte[] seed) {
     this(null, seed);
   }
 
-  public RandomRule(Random random) {
-    this(random, 0);
+  public RandomRule(SecureRandom random) {
+    this(random, null);
   }
 
-  private RandomRule(Random random, long seed) {
+  private RandomRule(SecureRandom random, byte[] seed) {
     this.random.set(random);
     this.seed = seed;
   }
@@ -258,11 +258,11 @@ public class RandomRule extends Random implements GsRandom, SerializableTestRule
     return requireNonEmpty(list).get(nextInt(0, list.size() - 1));
   }
 
-  private Random newRandom() {
-    if (seed == 0) {
-      return new Random();
+  private SecureRandom newRandom() {
+    if (seed == null) {
+      return new SecureRandom();
     }
-    return new Random(seed);
+    return new SecureRandom(seed);
   }
 
   private <T> List<T> requireNonEmpty(List<T> list) {
