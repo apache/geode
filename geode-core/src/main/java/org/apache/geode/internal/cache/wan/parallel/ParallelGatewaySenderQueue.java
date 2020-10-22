@@ -1393,7 +1393,11 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     return (incompleteTransactions.size() == 0);
   }
 
-  private long getTimeToSleep(long timeToWait) {
+  @VisibleForTesting
+  public static long getTimeToSleep(long timeToWait) {
+    if (timeToWait < 0) {
+      return 0;
+    }
     // Get the minimum of 50 and 5% of the time to wait (which by default is 1000 ms)
     long timeToSleep = Math.min(50L, ((long) (timeToWait * 0.05)));
 
