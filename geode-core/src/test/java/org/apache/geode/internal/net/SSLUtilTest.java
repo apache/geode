@@ -21,7 +21,9 @@ import static org.mockito.Mockito.when;
 
 import java.security.NoSuchAlgorithmException;
 
+import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 
 import org.junit.Test;
 
@@ -81,4 +83,18 @@ public class SSLUtilTest {
     assertThat(sslContextInstance.getProtocol().equalsIgnoreCase("TLSv1.1")).isTrue();
   }
 
+  @Test
+  public void getDefaultKeyManagerFactory() throws NoSuchAlgorithmException {
+    final KeyManagerFactory keyManagerFactory = SSLUtil.getDefaultKeyManagerFactory();
+    assertThat(keyManagerFactory).isNotNull();
+    assertThat(keyManagerFactory.getAlgorithm()).isEqualTo(KeyManagerFactory.getDefaultAlgorithm());
+  }
+
+  @Test
+  public void getDefaultTrustManagerFactory() throws NoSuchAlgorithmException {
+    final TrustManagerFactory trustManagerFactory = SSLUtil.getDefaultTrustManagerFactory();
+    assertThat(trustManagerFactory).isNotNull();
+    assertThat(trustManagerFactory.getAlgorithm())
+        .isEqualTo(TrustManagerFactory.getDefaultAlgorithm());
+  }
 }
