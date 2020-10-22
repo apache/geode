@@ -362,12 +362,13 @@ public class NioSslEngine implements NioFilter {
     return shareInputBuffer();
   }
 
-  @Override
-  public void doneReadingDirectAck(ByteBuffer unwrappedBuffer) {
-    // nothing needs to be done - the next direct-ack message will be
-    // read into the same buffer and compaction will be done during
-    // read-operations
-  }
+  // BGB: uncomment this!
+//  @Override
+//  public void doneReadingDirectAck(ByteBuffer unwrappedBuffer) {
+//    // nothing needs to be done - the next direct-ack message will be
+//    // read into the same buffer and compaction will be done during
+//    // read-operations
+//  }
 
   @Override
   public synchronized void close(SocketChannel socketChannel) {
