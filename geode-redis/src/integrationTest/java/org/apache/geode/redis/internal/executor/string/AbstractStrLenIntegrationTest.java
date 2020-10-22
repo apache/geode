@@ -84,11 +84,37 @@ public abstract class AbstractStrLenIntegrationTest implements RedisPortSupplier
   }
 
   @Test
+  public void testStrlen_withEmptyByte() {
+    byte[] key = new byte[] {0};
+    jedis.set(key, new byte[] {});
+
+    assertThat(jedis.strlen(key)).isEqualTo(0);
+  }
+
+  @Test
   public void testStrlen_withBinaryData() {
     byte[] zero = new byte[] {0};
     jedis.set(zero, zero);
 
     assertThat(jedis.strlen(zero)).isEqualTo(1);
+  }
+
+  @Test
+  public void testStrlen_withIntData() {
+    byte[] key = new byte[]{0};
+    byte[] value = new byte[]{1, 0, 0};
+    jedis.set(key, value);
+
+    assertThat(jedis.strlen(key)).isEqualTo(value.length);
+  }
+
+  @Test
+  public void testStrlen_withFloatData() {
+    byte[] key = new byte[] {0};
+    byte[] value = new byte[] {'0', '.', '9'};
+    jedis.set(key, value);
+
+    assertThat(jedis.strlen(key)).isEqualTo(value.length);
   }
 
 }

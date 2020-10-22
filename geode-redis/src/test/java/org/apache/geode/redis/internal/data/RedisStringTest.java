@@ -19,13 +19,11 @@ package org.apache.geode.redis.internal.data;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mockito.stubbing.OngoingStubbing;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Region;
@@ -256,6 +254,18 @@ public class RedisStringTest {
     RedisString string = new RedisString(byteArrayWrapper);
     string.decrby(region, byteArrayWrapper, 2);
     assertThat(string.get().toString()).isEqualTo("8");
+  }
+
+  @Test
+  public void strlenReturnsStringLength() {
+    RedisString string = new RedisString(new ByteArrayWrapper(new byte[] {1, 2, 3, 4}));
+    assertThat(string.strlen()).isEqualTo(4);
+  }
+
+  @Test
+  public void strlenReturnsLengthOfEmptyString() {
+    RedisString string = new RedisString(new ByteArrayWrapper(new byte[] {}));
+    assertThat(string.strlen()).isEqualTo(0);
   }
 
   @Test
