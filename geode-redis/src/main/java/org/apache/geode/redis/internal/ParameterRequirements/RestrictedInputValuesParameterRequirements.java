@@ -35,10 +35,10 @@ public class RestrictedInputValuesParameterRequirements implements ParameterRequ
     String commandType = command.getCommandType().name();
 
     parameters.forEach(parameter -> {
-      String parameterString = parameter.toString();
+      String parameterString = new String(parameter);
       if (isNotAllowed(parameterString) &&
           !parameterString.equalsIgnoreCase(commandType)) {
-        throw new RedisParametersMismatchException("blah");
+        throw new RedisParametersMismatchException("");
       }
     });
   }
