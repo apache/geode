@@ -143,7 +143,6 @@ public class SupportedCommandsJUnitTest {
       "GEODIST",
       "GEORADIUS",
       "GEORADIUSBYMEMBER",
-      "HELLO",
       "LATENCY",
       "LASTSAVE",
       "LINDEX",
