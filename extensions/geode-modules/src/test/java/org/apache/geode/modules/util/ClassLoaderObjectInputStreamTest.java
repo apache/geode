@@ -37,6 +37,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+
 
 public class ClassLoaderObjectInputStreamTest {
   private String classToLoad;
@@ -68,7 +70,8 @@ public class ClassLoaderObjectInputStreamTest {
     oos.close();
 
     ObjectInputStream ois = new ClassLoaderObjectInputStream(
-        new ByteArrayInputStream(baos.toByteArray()), getClass().getClassLoader());
+        new ByteArrayInputStream(baos.toByteArray()), ClassLoaderServiceInstance.getInstance()
+            .asClassLoader());
 
     assertThatThrownBy(ois::readObject).isExactlyInstanceOf(ClassNotFoundException.class);
   }
@@ -83,7 +86,8 @@ public class ClassLoaderObjectInputStreamTest {
     oos.close();
 
     ObjectInputStream ois = new ClassLoaderObjectInputStream(
-        new ByteArrayInputStream(baos.toByteArray()), getClass().getClassLoader());
+        new ByteArrayInputStream(baos.toByteArray()), ClassLoaderServiceInstance.getInstance()
+            .asClassLoader());
 
     Object objectFromTCCL = ois.readObject();
 

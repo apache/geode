@@ -19,6 +19,9 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectStreamClass;
 
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
+
 /**
  * This class is used when session attributes need to be reconstructed with a new classloader.
  */
@@ -37,7 +40,13 @@ public class ClassLoaderObjectInputStream extends ObjectInputStream {
     try {
       theClass = Class.forName(desc.getName(), false, loader);
     } catch (ClassNotFoundException cnfe) {
-      theClass = Thread.currentThread().getContextClassLoader().loadClass(desc.getName());
+      ServiceResult<Class<?>> serviceResult =
+          ClassLoaderServiceInstance.getInstance().forName(desc.getName());
+      if (serviceResult.isSuccessful()) {
+        theClass = serviceResult.getMessage();
+      } else {
+        throw cnfe;
+      }
     }
     return theClass;
   }

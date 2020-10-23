@@ -66,6 +66,7 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.JSONFormatterException;
@@ -754,11 +755,11 @@ public abstract class AbstractBaseController implements InitializingBean {
         } else {
           Assert.state(
               ClassUtils.isPresent(typeValue,
-                  Thread.currentThread().getContextClassLoader()),
+                  ClassLoaderServiceInstance.getInstance().asClassLoader()),
               String.format("Class (%1$s) could not be found!", typeValue));
 
           return (T) objectMapper.convertValue(rawDataBinding, ClassUtils.resolveClassName(
-              typeValue, Thread.currentThread().getContextClassLoader()));
+              typeValue, ClassLoaderServiceInstance.getInstance().asClassLoader()));
         }
       }
     }

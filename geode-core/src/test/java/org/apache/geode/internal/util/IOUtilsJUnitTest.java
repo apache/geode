@@ -37,6 +37,8 @@ import org.junit.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+
 
 /**
  * Test class for testing the contract and functionality of the IOUtils class.
@@ -159,7 +161,8 @@ public class IOUtilsJUnitTest {
     assertThat(piBytes.length != 0).isTrue();
 
     final Object piObj =
-        IOUtils.deserializeObject(piBytes, IOUtilsJUnitTest.class.getClassLoader());
+        IOUtils.deserializeObject(piBytes,
+            ClassLoaderServiceInstance.getInstance().asClassLoader());
     assertThat(piObj).isInstanceOf(BigDecimal.class);
     assertThat(piObj).isEqualTo(pi);
   }

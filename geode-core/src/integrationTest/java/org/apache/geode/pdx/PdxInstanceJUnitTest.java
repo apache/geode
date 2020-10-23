@@ -40,6 +40,7 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.pdx.internal.EnumInfo.PdxInstanceEnumInfo;
 import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
@@ -314,7 +315,7 @@ public class PdxInstanceJUnitTest extends JUnit4CacheTestCase {
   private PdxSerializable getSeparateClassLoadedPdx(boolean field1First)
       throws ClassNotFoundException, NoSuchMethodException, InstantiationException,
       IllegalAccessException, InvocationTargetException {
-    ClassLoader parent = Thread.currentThread().getContextClassLoader();
+    ClassLoader parent = ClassLoaderServiceInstance.getInstance().asClassLoader();
     ClassLoader loader1 = new NonDelegatingLoader(parent);
     Class<?> clazz1 =
         loader1.loadClass(getClass().getPackage().getName() + ".SeparateClassloaderPdx");

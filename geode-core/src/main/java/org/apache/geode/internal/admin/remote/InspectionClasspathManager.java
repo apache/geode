@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 
 public class InspectionClasspathManager {
   @MakeNotStatic
@@ -44,7 +45,7 @@ public class InspectionClasspathManager {
   public void jumpToModifiedClassLoader(String modifiedClasspath) {
     if (modifiedClasspath != null && modifiedClasspath.length() > 0) {
       // TODO Kirk and Darrel believe this is dead code that is never used
-      ClassLoader current = Thread.currentThread().getContextClassLoader();
+      ClassLoader current = ClassLoaderServiceInstance.getInstance().asClassLoader();
       oldClassLoader.set(current);
       synchronized (pathsToLoaders) {
         ClassLoader newClassLoader = (ClassLoader) pathsToLoaders.get(modifiedClasspath);

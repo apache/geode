@@ -26,9 +26,9 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.examples.SimpleSecurityManager;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.test.compiler.JarBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -111,7 +111,7 @@ public class RestFunctionExecuteDUnitTest {
   // find ImplementsFunction.java in the geode-core resource
   private static File loadClassToFile() {
     String resourcePath =
-        createTempFileFromResource(Function.class.getClassLoader(),
+        createTempFileFromResource(ClassLoaderServiceInstance.getInstance().asClassLoader(),
             "org/apache/geode/management/internal/deployment/ImplementsFunction.java")
                 .getAbsolutePath();
     assertThat(resourcePath).isNotNull();

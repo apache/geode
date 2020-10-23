@@ -18,6 +18,7 @@ import java.lang.reflect.Proxy;
 
 import javax.management.ObjectName;
 
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.management.internal.web.shell.HttpOperationInvoker;
 
 /**
@@ -35,7 +36,7 @@ public class HttpMBeanProxyFactory {
   public static <T> T createMBeanProxy(final HttpOperationInvoker connection,
       final ObjectName objectName, final Class<T> mbeanInterface) {
     return mbeanInterface
-        .cast(Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
+        .cast(Proxy.newProxyInstance(ClassLoaderServiceInstance.getInstance().asClassLoader(),
             new Class<?>[] {mbeanInterface}, new HttpInvocationHandler(connection, objectName)));
   }
 

@@ -66,6 +66,7 @@ import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.internal.serialization.internal.DSFIDSerializerImpl;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
@@ -161,7 +162,7 @@ public class GMSMembershipJUnitTest {
     messageListener = mock(MessageListener.class);
     directChannelCallback = mock(LifecycleListener.class);
     manager = new GMSMembership(listener, messageListener, directChannelCallback);
-    manager.getGMSManager().init(services);
+    manager.getGMSManager().init(services, ClassLoaderServiceInstance.getInstance());
     when(services.getManager()).thenReturn(manager.getGMSManager());
 
     DSFIDSerializer serializer = new DSFIDSerializerImpl();

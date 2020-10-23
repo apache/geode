@@ -13,12 +13,16 @@
  * the License.
  */
 
+import java.net.URL;
+
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.services.result.ServiceResult;
 
 public class ClusterConfigServerRestartWithJarDeployFunction implements Function {
 
@@ -48,12 +52,10 @@ public class ClusterConfigServerRestartWithJarDeployFunction implements Function
   }
 
   private String jarForClass(Class<?> clazz) {
-    ClassLoader loader = clazz.getClassLoader();
-    String className = clazz.getName();
-    String from = loader.getResource(className.replace('.', '/') +
-        ".class").toString();
-
-    return from;
+    String name = clazz.getName().replace('.', '/') + ".class";
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResource(clazz, name);
+    return serviceResult.getMessage().toString();
   }
 
   @Override

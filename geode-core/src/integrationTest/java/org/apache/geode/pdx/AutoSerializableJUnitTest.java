@@ -56,6 +56,7 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.PdxSerializerObject;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.pdx.internal.AutoSerializableManager;
 import org.apache.geode.pdx.internal.PdxField;
 import org.apache.geode.pdx.internal.PdxInstanceImpl;
@@ -1296,7 +1297,8 @@ public class AutoSerializableJUnitTest {
   public void testMultipleClassLoaders() throws Exception {
     setupSerializer(stdSerializableClasses);
     ChildFirstClassLoader cfcl =
-        new ChildFirstClassLoader(javaClassPathToUrl(), this.getClass().getClassLoader());
+        new ChildFirstClassLoader(javaClassPathToUrl(),
+            ClassLoaderServiceInstance.getInstance().asClassLoader());
     cfcl.addIncludedClass("org\\.apache.*");
     // Need to exclude DomainObject as that is what the newly created objects
     // get cast to.

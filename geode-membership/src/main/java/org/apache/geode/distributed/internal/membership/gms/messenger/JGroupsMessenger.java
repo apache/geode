@@ -97,6 +97,8 @@ import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.internal.serialization.VersioningIO;
 import org.apache.geode.logging.internal.OSProcess;
+import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 
@@ -136,6 +138,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
   ID localAddress;
   JGAddress jgAddress;
   private Services<ID> services;
+  private ClassLoaderService classLoaderService;
 
   public JGroupsMessenger() {}
 
@@ -199,8 +202,10 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
   @Override
   @edu.umd.cs.findbugs.annotations.SuppressWarnings(
       value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
-  public void init(Services<ID> s) throws MembershipConfigurationException {
+  public void init(Services<ID> s, ClassLoaderService classLoaderService)
+      throws MembershipConfigurationException {
     this.services = s;
+    this.classLoaderService = classLoaderService;
 
     MembershipConfig config = services.getConfig();
 
@@ -215,17 +220,12 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
     } else {
       r = DEFAULT_JGROUPS_TCP_CONFIG;
     }
-    ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-    if (contextClassLoader != null) {
-      is = contextClassLoader.getResourceAsStream(r);
-    }
-    if (is == null) {
-      is = getClass().getResourceAsStream(r);
-    }
-    if (is == null) {
-      is = ClassLoader.getSystemResourceAsStream(r);
-    }
-    if (is == null) {
+
+    ServiceResult<InputStream> serviceResult =
+        classLoaderService.getResourceAsStream(getClass(), r);
+    if (serviceResult.isSuccessful()) {
+      is = serviceResult.getMessage();
+    } else {
       throw new MembershipConfigurationException(
           String.format("Cannot find %s", r));
     }

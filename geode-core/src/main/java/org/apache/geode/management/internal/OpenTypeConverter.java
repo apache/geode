@@ -52,7 +52,6 @@ import java.util.TreeSet;
 import java.util.WeakHashMap;
 
 import javax.management.JMX;
-import javax.management.ObjectName;
 import javax.management.openmbean.ArrayType;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.CompositeDataInvocationHandler;
@@ -63,7 +62,9 @@ import javax.management.openmbean.TabularType;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.management.ManagementException;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * It takes care of converting a Java type to an open types
@@ -209,10 +210,12 @@ public abstract class OpenTypeConverter {
     for (int i = 0; i < simpleTypes.length; i++) {
       final OpenType t = simpleTypes[i];
       Class c;
-      try {
-        c = Class.forName(t.getClassName(), false, ObjectName.class.getClassLoader());
-      } catch (ClassNotFoundException e) {
-        throw new Error(e);
+      ServiceResult<Class<?>> serviceResult =
+          ClassLoaderServiceInstance.getInstance().forName(t.getClassName());
+      if (serviceResult.isSuccessful()) {
+        c = serviceResult.getMessage();
+      } else {
+        throw new Error(serviceResult.getErrorMessage());
       }
       final OpenTypeConverter conv = new IdentityConverter(c, t, c);
       putPreDefinedConverter(c, conv);
@@ -859,7 +862,8 @@ public abstract class OpenTypeConverter {
     @Override
     Object fromCompositeData(CompositeData cd, String[] itemNames, OpenTypeConverter[] converters) {
       final Class targetClass = getTargetClass();
-      return Proxy.newProxyInstance(targetClass.getClassLoader(), new Class[] {targetClass},
+      return Proxy.newProxyInstance(ClassLoaderServiceInstance.getInstance().asClassLoader(),
+          new Class[] {targetClass},
           new CompositeDataInvocationHandler(cd));
     }
   }

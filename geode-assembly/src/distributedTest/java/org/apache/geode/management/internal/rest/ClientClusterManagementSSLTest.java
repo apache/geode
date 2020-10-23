@@ -26,6 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
+import java.net.URL;
 import java.util.Properties;
 
 import javax.net.ssl.HostnameVerifier;
@@ -40,6 +41,7 @@ import org.springframework.web.client.ResourceAccessException;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
@@ -48,6 +50,7 @@ import org.apache.geode.management.builder.GeodeClusterManagementServiceBuilder;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.configuration.RegionType;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -62,8 +65,10 @@ public class ClientClusterManagementSSLTest {
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-    File keyFile = new File(ClientClusterManagementSSLTest.class.getClassLoader()
-        .getResource("ssl/trusted.keystore").getFile());
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResource(ClientClusterManagementSSLTest.class,
+            "ssl/trusted.keystore");
+    File keyFile = new File(serviceResult.getMessage().getFile());
     Properties sslProps = new Properties();
     sslProps.setProperty(SSL_KEYSTORE, keyFile.getCanonicalPath());
     sslProps.setProperty(SSL_TRUSTSTORE, keyFile.getCanonicalPath());

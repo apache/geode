@@ -40,6 +40,9 @@ import javax.tools.ToolProvider;
 
 import org.apache.commons.io.IOUtils;
 
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
+
 /**
  * Test framework utility class to programmatically create classes, JARs and ClassLoaders that
  * include the classes.
@@ -171,7 +174,12 @@ public class ClassBuilder implements Serializable {
       for (Class type : types) {
         String className = type.getName();
         String classAsPath = className.replace('.', '/') + ".class";
-        InputStream stream = type.getClassLoader().getResourceAsStream(classAsPath);
+        InputStream stream = null;
+        ServiceResult<InputStream> serviceResult =
+            ClassLoaderServiceInstance.getInstance().getResourceAsStream(type, classAsPath);
+        if (serviceResult.isSuccessful()) {
+          stream = serviceResult.getMessage();
+        }
         byte[] bytes = IOUtils.toByteArray(stream);
 
         JarEntry entry = new JarEntry(classAsPath);

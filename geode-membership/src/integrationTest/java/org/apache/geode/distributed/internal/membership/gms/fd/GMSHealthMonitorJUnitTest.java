@@ -82,6 +82,7 @@ import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreatorImpl;
 import org.apache.geode.internal.serialization.BufferDataOutputStream;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.internal.DSFIDSerializerImpl;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
@@ -144,7 +145,7 @@ public class GMSHealthMonitorJUnitTest {
     when(joinLeave.getMemberID()).thenReturn(mockMembers.get(myAddressIndex));
     when(messenger.getMemberID()).thenReturn(mockMembers.get(myAddressIndex));
     gmsHealthMonitor = new GMSHealthMonitorTest();
-    gmsHealthMonitor.init(services);
+    gmsHealthMonitor.init(services, ClassLoaderServiceInstance.getInstance());
     gmsHealthMonitor.start();
   }
 

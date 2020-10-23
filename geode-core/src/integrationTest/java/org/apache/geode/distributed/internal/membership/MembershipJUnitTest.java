@@ -78,6 +78,7 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 
 @Category({MembershipJUnitTest.class})
 public class MembershipJUnitTest {
@@ -302,7 +303,7 @@ public class MembershipJUnitTest {
             .setMembershipListener(listener)
             .setConfig(new ServiceConfig(transport, config))
             .setLifecycleListener(lifeCycleListener)
-            .create();
+            .create(ClassLoaderServiceInstance.getInstance());
     m1.start();
     m1.startEventProcessing();
     return Pair.of(m1, messageListener);

@@ -45,6 +45,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.internal.serialization.VersioningIO;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class DiskInitFileParser {
@@ -616,7 +617,8 @@ public class DiskInitFileParser {
   private static DiskInitFileInterpreter createPrintingInterpreter(
       DiskInitFileInterpreter wrapped) {
     DiskInitFileInterpreter interpreter = (DiskInitFileInterpreter) Proxy.newProxyInstance(
-        DiskInitFileInterpreter.class.getClassLoader(), new Class[] {DiskInitFileInterpreter.class},
+        ClassLoaderServiceInstance.getInstance().asClassLoader(),
+        new Class[] {DiskInitFileInterpreter.class},
         new PrintingInterpreter(wrapped));
     return interpreter;
   }

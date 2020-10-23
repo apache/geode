@@ -33,6 +33,7 @@ dependencies {
     exclude module: "jackson-annotations"
   }
 
+  compileOnly(project(':geode-common-services'))
   compileOnly(project(':geode-core'))
   compileOnly(project(':geode-logging'))
   compileOnly(project(':geode-membership'))

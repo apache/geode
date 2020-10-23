@@ -26,7 +26,9 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -92,7 +94,15 @@ public class AgentUtil {
         "tools/Extensions/" + versionedWarFileName,
         "lib/" + versionedWarFileName,
         unversionedWarFileName})
-        .map(possibleFile -> this.getClass().getClassLoader().getResource(possibleFile))
+        .map(possibleFile -> {
+          ServiceResult<URL> serviceResult =
+              ClassLoaderServiceInstance.getInstance().getResource(getClass(), possibleFile);
+          if (serviceResult.isSuccessful()) {
+            return serviceResult.getMessage();
+          } else {
+            return null;
+          }
+        })
         .filter(Objects::nonNull).findFirst().orElse(null);
 
     URI uri = null;

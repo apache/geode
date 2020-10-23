@@ -49,6 +49,9 @@ public class DataBrowserResultLoader {
     StringBuilder sampleQueryResultResponseStrBuilder = null;
 
     try {
+      // Class loading in pulse does not make use of the {@link ClassLoaderService} introduced in
+      // GEODE-8466 because pulse is separate from the rest of the system (does not depend on core,
+      // and core does not depend on it).
       ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
       if (queryString.equals(QUERY_TYPE_ONE)) {

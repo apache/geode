@@ -59,6 +59,9 @@ dependencies {
   
   api('org.skyscreamer:jsonassert')
 
+  testImplementation(project(':geode-core'))
+  testImplementation(project(':geode-common-services'))
+
   testImplementation('pl.pragmatists:JUnitParams')
 
   testRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))

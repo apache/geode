@@ -24,12 +24,12 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_TYPE;
-import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.net.URL;
 import java.util.Properties;
 
 import org.junit.Before;
@@ -39,7 +39,9 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.security.SecurableCommunicationChannels;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.CleanupDUnitVMsRule;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -62,8 +64,11 @@ public class ConnectCommandWithSSLTest {
      * -ext san=ip:127.0.0.1 -storetype jks
      */
 
-    jks = new File(createTempFileFromResource(ConnectCommandWithSSLTest.class.getClassLoader(),
-        "ssl/trusted.keystore").getAbsolutePath());
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResource(ConnectCommandWithSSLTest.class,
+            "ssl/trusted.keystore");
+
+    jks = new File(serviceResult.getMessage().getFile());
   }
 
   private static final Properties sslProperties = new Properties() {

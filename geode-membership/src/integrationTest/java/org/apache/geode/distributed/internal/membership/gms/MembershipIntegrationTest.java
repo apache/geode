@@ -56,6 +56,7 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.internal.DSFIDSerializerImpl;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
@@ -301,7 +302,7 @@ public class MembershipIntegrationTest {
         socketCreator, locatorClient, dsfidSerializer, memberIdFactory)
         .setMembershipLocator(embeddedLocator)
         .setConfig(config)
-        .create();
+        .create(ClassLoaderServiceInstance.getInstance());
   }
 
   private MembershipConfig createMembershipConfig(

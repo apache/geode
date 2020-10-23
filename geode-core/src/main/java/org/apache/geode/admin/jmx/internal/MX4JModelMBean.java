@@ -57,6 +57,8 @@ import mx4j.persist.MBeanPersister;
 import mx4j.persist.PersisterMBean;
 import mx4j.util.Utils;
 
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+
 
 /**
  * @author <a href="mailto:biorn_steedom@users.sourceforge.net">Simone Bordet</a>
@@ -704,7 +706,8 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
       // Find parameters classes
       Class[] parameters = null;
       try {
-        parameters = Utils.loadClasses(Thread.currentThread().getContextClassLoader(), params);
+        parameters =
+            Utils.loadClasses(ClassLoaderServiceInstance.getInstance().asClassLoader(), params);
       } catch (ClassNotFoundException x) {
         logger.error("Cannot find operation's parameter classes", x);
         throw new ReflectionException(x);
@@ -1193,7 +1196,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
 
   private Class loadClassWithContextClassLoader(String name) {
     try {
-      return Utils.loadClass(Thread.currentThread().getContextClassLoader(), name);
+      return Utils.loadClass(ClassLoaderServiceInstance.getInstance().asClassLoader(), name);
     } catch (ClassNotFoundException x) {
       Logger logger = getLogger();
       if (logger.isEnabledFor(Logger.TRACE))

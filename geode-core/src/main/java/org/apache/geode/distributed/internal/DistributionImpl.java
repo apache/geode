@@ -71,6 +71,7 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.internal.tcp.ConnectExceptions;
 import org.apache.geode.internal.tcp.ConnectionException;
 import org.apache.geode.internal.util.Breadcrumbs;
@@ -149,7 +150,7 @@ public class DistributionImpl implements Distribution {
           .setMembershipListener(listener)
           .setConfig(new ServiceConfig(transport, system.getConfig()))
           .setLifecycleListener(new LifecycleListenerImpl(this))
-          .create();
+          .create(ClassLoaderServiceInstance.getInstance());
     } catch (MembershipConfigurationException e) {
       throw new GemFireConfigException(e.getMessage(), e.getCause());
     } catch (GemFireSecurityException e) {

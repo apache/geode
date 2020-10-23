@@ -24,6 +24,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Component;
 
+
 @Component
 public class ClassPathPropertiesFileLoader implements PropertiesFileLoader {
   private static final Logger logger = LogManager.getLogger();
@@ -31,6 +32,9 @@ public class ClassPathPropertiesFileLoader implements PropertiesFileLoader {
   @Override
   public Properties loadProperties(String propertyFile, ResourceBundle resourceBundle) {
     final Properties properties = new Properties();
+    // Class loading in pulse does not make use of the {@link ClassLoaderService} introduced in
+    // GEODE-8466 because pulse is separate from the rest of the system (does not depend on core,
+    // and core does not depend on it).
     try (final InputStream stream =
         Thread.currentThread().getContextClassLoader().getResourceAsStream(propertyFile)) {
       logger.info(propertyFile + " " + resourceBundle.getString("LOG_MSG_FILE_FOUND"));

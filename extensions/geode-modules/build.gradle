@@ -33,6 +33,7 @@ dependencies {
   api(project(':geode-core'))
 
   compileOnly(platform(project(':boms:geode-all-bom')))
+  compileOnly(project(':geode-common-services'))
   compileOnly('javax.servlet:javax.servlet-api')
   compileOnly('org.apache.tomcat:catalina-ha:' + DependencyConstraints.get('tomcat6.version'))
 

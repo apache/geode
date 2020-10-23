@@ -33,6 +33,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.internal.util.AbortableTaskService.AbortableTask;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
@@ -107,7 +108,8 @@ public class AbortableTaskServiceJUnitTest {
   public void testAbortBeforeExecute() throws Exception {
     // delay underlying call to execute(Runnable) until after abortAll() is invoked
     Executor executor =
-        (Executor) Proxy.newProxyInstance(getClass().getClassLoader(), new Class[] {Executor.class},
+        (Executor) Proxy.newProxyInstance(ClassLoaderServiceInstance.getInstance().asClassLoader(),
+            new Class[] {Executor.class},
             new DelayedExecutorHandler(Executors.newSingleThreadExecutor(), "execute"));
     this.tasks = new AbortableTaskService(executor);
 

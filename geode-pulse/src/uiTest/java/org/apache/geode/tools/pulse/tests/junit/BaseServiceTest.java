@@ -45,6 +45,8 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 
 
 /**
@@ -91,8 +93,13 @@ public abstract class BaseServiceTest {
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-    InputStream stream =
-        BaseServiceTest.class.getClassLoader().getResourceAsStream("pulse.properties");
+    InputStream stream = null;
+    ServiceResult<InputStream> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResourceAsStream(BaseServiceTest.class,
+            "pulse.properties");
+    if (serviceResult.isSuccessful()) {
+      stream = serviceResult.getMessage();
+    }
 
     try {
       propsForJUnit.load(stream);

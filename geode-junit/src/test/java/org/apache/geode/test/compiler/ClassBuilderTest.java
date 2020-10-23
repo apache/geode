@@ -26,6 +26,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+
 public class ClassBuilderTest {
   @Rule
   public TemporaryFolder tmpFolder = new TemporaryFolder();
@@ -34,9 +36,9 @@ public class ClassBuilderTest {
   public void writeJarFromClasses() throws IOException, ClassNotFoundException {
     File jar = tmpFolder.newFile("test.jar");
     URL[] url = new URL[] {jar.toURI().toURL()};
-    ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
 
-    URLClassLoader classLoader = new URLClassLoader(url, systemClassLoader) {
+    URLClassLoader classLoader = new URLClassLoader(url, ClassLoaderServiceInstance.getInstance()
+        .asClassLoader()) {
       @Override
       public Class<?> loadClass(String name) throws ClassNotFoundException {
         try {

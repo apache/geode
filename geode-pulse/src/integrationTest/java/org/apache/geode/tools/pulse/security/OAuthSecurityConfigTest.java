@@ -42,6 +42,9 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
+
 @RunWith(SpringRunner.class)
 @WebAppConfiguration
 @ContextConfiguration("classpath*:WEB-INF/pulse-servlet.xml")
@@ -71,8 +74,11 @@ public class OAuthSecurityConfigTest {
         .apply(springSecurity())
         .build();
 
-    try (InputStream propertiesStream = getClass().getClassLoader()
-        .getResourceAsStream("pulse.properties")) {
+    try {
+      ServiceResult<InputStream> serviceResult =
+          ClassLoaderServiceInstance
+              .getInstance().getResourceAsStream(getClass(), "pulse.properties");
+      InputStream propertiesStream = serviceResult.getMessage();
       pulseProperties.load(propertiesStream);
     } catch (IOException cause) {
       throw new RuntimeException("Unable to load pulse.properties for test");

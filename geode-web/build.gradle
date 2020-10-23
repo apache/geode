@@ -45,6 +45,8 @@ dependencies {
   providedCompile('javax.servlet:javax.servlet-api')
   providedCompile('org.apache.logging.log4j:log4j-api')
 
+  compileOnly(project(':geode-common-services'))
+
   implementation('org.springframework:spring-webmvc')
   implementation('org.apache.commons:commons-lang3')
 

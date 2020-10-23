@@ -45,6 +45,7 @@ import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.internal.offheap.MemoryBlock.State;
 import org.apache.geode.internal.serialization.DSCODE;
 import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 
 public class OffHeapStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
 
@@ -59,13 +60,14 @@ public class OffHeapStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
     } catch (AssertionError e) {
       assertionsEnabled = true;
     }
-    ClassLoader.getSystemClassLoader().setDefaultAssertionStatus(true);
+    ClassLoaderServiceInstance.getInstance().asClassLoader().setDefaultAssertionStatus(true);
     System.out.println("assertionsEnabled = " + assertionsEnabled);
   }
 
   @AfterClass
   public static void tearDownOnce() {
-    ClassLoader.getSystemClassLoader().setDefaultAssertionStatus(assertionsEnabled);
+    ClassLoaderServiceInstance.getInstance().asClassLoader()
+        .setDefaultAssertionStatus(assertionsEnabled);
   }
 
   @Before

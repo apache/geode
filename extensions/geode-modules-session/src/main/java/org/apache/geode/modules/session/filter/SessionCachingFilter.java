@@ -42,6 +42,7 @@ import javax.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.modules.session.internal.filter.GemfireHttpSession;
 import org.apache.geode.modules.session.internal.filter.GemfireSessionManager;
 import org.apache.geode.modules.session.internal.filter.SessionManager;
@@ -456,7 +457,7 @@ public class SessionCachingFilter implements Filter {
 
       try {
         manager = (SessionManager) Class.forName(managerClassStr).newInstance();
-        manager.start(config, this.getClass().getClassLoader());
+        manager.start(config, ClassLoaderServiceInstance.getInstance().asClassLoader());
       } catch (Exception ex) {
         LOG.error("Exception creating Session Manager", ex);
       }

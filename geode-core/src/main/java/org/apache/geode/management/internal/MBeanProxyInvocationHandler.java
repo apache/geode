@@ -43,6 +43,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -78,7 +79,7 @@ public class MBeanProxyInvocationHandler implements InvocationHandler {
       interfaces = new Class[] {interfaceClass, ProxyInterface.class};
     }
 
-    Object proxy = Proxy.newProxyInstance(MBeanProxyInvocationHandler.class.getClassLoader(),
+    Object proxy = Proxy.newProxyInstance(ClassLoaderServiceInstance.getInstance().asClassLoader(),
         interfaces, invocationHandler);
 
     return interfaceClass.cast(proxy);

@@ -27,6 +27,8 @@ import java.util.jar.JarOutputStream;
 import org.apache.commons.io.IOUtils;
 import org.junit.rules.ExternalResource;
 
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.junit.rules.accessible.AccessibleTemporaryFolder;
 
 public class ServiceJarRule extends ExternalResource {
@@ -61,7 +63,14 @@ public class ServiceJarRule extends ExternalResource {
 
     String className = providerClass.getName();
     String classAsPath = className.replace('.', '/') + ".class";
-    InputStream stream = providerClass.getClassLoader().getResourceAsStream(classAsPath);
+    InputStream stream = null;
+
+    ServiceResult<InputStream> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResourceAsStream(providerClass, classAsPath);
+    if (serviceResult.isSuccessful()) {
+      stream = serviceResult.getMessage();
+    }
+
     byte[] bytes = IOUtils.toByteArray(stream);
     try (FileOutputStream out = new FileOutputStream(jar)) {
       JarOutputStream jarOutputStream = new JarOutputStream(out);

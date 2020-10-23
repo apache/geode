@@ -30,6 +30,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.junit.categories.PulseTest;
 import org.apache.geode.test.junit.rules.GeodeHttpClientRule;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
@@ -46,9 +48,10 @@ public class PulseSecurityConfigCustomProfileTest {
   public static void setUpCustomXml() throws IOException {
     // copy the pulse-authentication-custom.xml to the locator's working dir and start the locator
     xmlFile = new File(locator.getWorkingDir(), "pulse-authentication-custom.xml");
-    URL xmlUrl = PulseSecurityConfigCustomProfileTest.class.getClassLoader()
-        .getResource("pulse-authentication-custom.xml");
-    FileUtils.copyURLToFile(xmlUrl, xmlFile);
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResource(
+            PulseSecurityConfigCustomProfileTest.class, "pulse-authentication-custom.xml");
+    FileUtils.copyURLToFile(serviceResult.getMessage(), xmlFile);
     locator.startLocator();
   }
 

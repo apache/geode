@@ -23,6 +23,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTOR
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import java.net.URL;
 import java.util.Properties;
 
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
@@ -33,8 +34,10 @@ import org.junit.Test;
 
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.management.api.ConnectionConfig;
 import org.apache.geode.management.internal.api.GeodeConnectionConfig;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -48,8 +51,11 @@ public class GeodeConnectionConfigTest {
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-    File keyFile = new File(ClientClusterManagementSSLTest.class.getClassLoader()
-        .getResource("ssl/trusted.keystore").getFile());
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance
+            .getInstance()
+            .getResource(ClientClusterManagementSSLTest.class, "ssl/trusted.keystore");
+    File keyFile = new File(serviceResult.getMessage().getFile());
     Properties sslProps = new Properties();
     sslProps.setProperty(SSL_KEYSTORE, keyFile.getCanonicalPath());
     sslProps.setProperty(SSL_TRUSTSTORE, keyFile.getCanonicalPath());

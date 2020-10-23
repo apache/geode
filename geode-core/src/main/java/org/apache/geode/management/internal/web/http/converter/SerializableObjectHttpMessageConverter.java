@@ -26,6 +26,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.util.StreamUtils;
 
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.internal.util.IOUtils;
 
 /**
@@ -65,7 +66,8 @@ public class SerializableObjectHttpMessageConverter
     try {
       ClassLoader classLoader = type.getClassLoader();
       return type.cast(IOUtils.deserializeObject(IOUtils.toByteArray(inputMessage.getBody()),
-          classLoader != null ? classLoader : getClass().getClassLoader()));
+          classLoader != null ? classLoader : ClassLoaderServiceInstance.getInstance()
+              .asClassLoader()));
     } catch (ClassNotFoundException e) {
       throw new HttpMessageNotReadableException(
           String.format("Unable to convert the HTTP message body into an Object of type (%1$s)",

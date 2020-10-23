@@ -26,6 +26,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
 import java.io.Serializable;
+import java.net.URL;
 import java.util.Properties;
 
 import org.junit.Before;
@@ -34,11 +35,13 @@ import org.junit.Test;
 import org.springframework.web.client.ResourceAccessException;
 
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.builder.GeodeClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.configuration.RegionType;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 
@@ -47,8 +50,7 @@ public class ClusterManagementServiceOnServerTest implements Serializable {
   @Rule
   public ClusterStartupRule cluster = new ClusterStartupRule();
 
-  private File keyFile = new File(ClusterManagementServiceOnServerTest.class.getClassLoader()
-      .getResource("ssl/trusted.keystore").getFile());
+  private File keyFile;
 
   private MemberVM locator, server;
   private Properties sslProps;
@@ -56,6 +58,9 @@ public class ClusterManagementServiceOnServerTest implements Serializable {
 
   @Before
   public void before() throws Exception {
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResource(getClass(), "ssl/trusted.keystore");
+    keyFile = new File(serviceResult.getMessage().getFile());
     sslProps = new Properties();
     sslProps.setProperty(SSL_KEYSTORE, keyFile.getCanonicalPath());
     sslProps.setProperty(SSL_TRUSTSTORE, keyFile.getCanonicalPath());
