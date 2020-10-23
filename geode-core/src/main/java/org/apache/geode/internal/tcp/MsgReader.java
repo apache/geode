@@ -55,7 +55,10 @@ public class MsgReader {
 
   Header readHeader() throws IOException {
     synchronized (ioFilter.getSynchObject()) {
+      logger.info("***EB: MsgReader.readHeader - before readAtleast");
+
       ByteBuffer unwrappedBuffer = readAtLeast(Connection.MSG_HEADER_BYTES);
+      logger.info("***EB: MsgReader.readHeader - after readAtleast - " + unwrappedBuffer);
 
       Assert.assertTrue(unwrappedBuffer.remaining() >= Connection.MSG_HEADER_BYTES);
 
@@ -90,7 +93,11 @@ public class MsgReader {
   DistributionMessage readMessage(Header header)
       throws IOException, ClassNotFoundException {
     synchronized (ioFilter.getSynchObject()) {
+      logger.info("***EB: MsgReader.readMessage - before readAtleast");
+
       ByteBuffer nioInputBuffer = readAtLeast(header.messageLength);
+      logger.info("***EB: MsgReader.readMessage - after readAtleast - " + nioInputBuffer);
+
       Assert.assertTrue(nioInputBuffer.remaining() >= header.messageLength);
       this.getStats().incMessagesBeingReceived(true, header.messageLength);
       long startSer = this.getStats().startMsgDeserialization();

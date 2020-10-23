@@ -803,6 +803,8 @@ public class Connection implements Runnable {
     if (getConduit().useSSL() && ioFilter != null) {
       synchronized (ioFilter.getSynchObject()) {
         if (!ioFilter.isClosed()) {
+          logger.info(
+              "***EB: Connection.notifyHandshakeWater is going to reset the Unwrapped Buffer ****");
           // clear out any remaining handshake bytes
           ByteBuffer buffer = ioFilter.getUnwrappedBuffer(inputBuffer);
           buffer.position(0).limit(0);

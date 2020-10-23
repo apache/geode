@@ -317,6 +317,8 @@ public class NioSslEngine implements NioFilter {
   @Override
   public ByteBuffer readAtLeast(SocketChannel channel, int bytes,
       ByteBuffer wrappedBuffer) throws IOException {
+    logger.info("***EB: NioSslEngine.readAtLeast - top of method - " + peerAppData + wrappedBuffer);
+
     if (peerAppData.capacity() > bytes) {
       // we already have a buffer that's big enough
       if (peerAppData.capacity() - peerAppData.position() < bytes) {
@@ -324,6 +326,8 @@ public class NioSslEngine implements NioFilter {
         peerAppData.flip();
       }
     }
+    logger.info(
+        "***EB: NioSslEngine.readAtLeast - before while loop - " + peerAppData + wrappedBuffer);
 
     while (peerAppData.remaining() < bytes) {
       wrappedBuffer.limit(wrappedBuffer.capacity());
@@ -339,6 +343,8 @@ public class NioSslEngine implements NioFilter {
         // done writing to the decoded buffer - prep it for reading again
         peerAppData.flip();
       }
+      logger.info("***EB: NioSslEngine.readAtLeast - bottom of while loop - " + peerAppData
+          + wrappedBuffer);
     }
     return peerAppData;
   }
