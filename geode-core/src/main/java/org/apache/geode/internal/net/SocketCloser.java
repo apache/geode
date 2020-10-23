@@ -245,29 +245,22 @@ public class SocketCloser {
     // 36041 - segv in jrockit in pthread signaling code. This
     // seems to alleviate the problem.
     try {
-      logger.info("BGB: inlineClose() entered sock: " + sock);
       sock.shutdownInput();
       sock.shutdownOutput();
-      logger.info("BGB: inlineClose() socket I/O shut down: " + sock);
     } catch (Exception e) {
     }
     try {
       sock.close();
-      logger.info("BGB: inlineClose() socket closed: " + sock);
     } catch (IOException ignore) {
-      logger.info("BGB: inlineClose() got IOException: " + ignore);
     } catch (VirtualMachineError err) {
       SystemFailure.initiateFailure(err);
       // If this ever returns, rethrow the error. We're poisoned
       // now, so don't let this thread continue.
-      logger.info("BGB: inlineClose() re-throwing VME: " + err);
       throw err;
     } catch (java.security.ProviderException pe) {
       // some ssl implementations have trouble with termination and throw
       // this exception. See bug #40783
-      logger.info("BGB: inlineClose() got PE: " + pe);
     } catch (Error e) {
-      logger.info("BGB: inlineClose() got Error: " + e);
       // Whenever you catch Error or Throwable, you must also
       // catch VirtualMachineError (see above). However, there is
       // _still_ a possibility that you are dealing with a cascading

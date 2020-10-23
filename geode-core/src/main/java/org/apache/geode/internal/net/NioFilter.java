@@ -33,6 +33,9 @@ public interface NioFilter {
 
   /**
    * wrap bytes for transmission to another process
+   *
+   * Be sure to call close() on the returned {@link ByteBufferSharing}. The best
+   * way to do that is to call this method in a try-with-resources statement.
    */
   ByteBufferSharing wrap(ByteBuffer buffer) throws IOException;
 
@@ -102,6 +105,4 @@ public interface NioFilter {
    * way to do that is to call this method in a try-with-resources statement.
    */
   ByteBufferSharing getUnwrappedBuffer(ByteBuffer wrappedBuffer);
-
-  ByteBufferSharing shareInputBuffer();
 }

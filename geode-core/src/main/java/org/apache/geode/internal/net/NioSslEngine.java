@@ -428,7 +428,6 @@ public class NioSslEngine implements NioFilter {
     return outputSharing.alias(time, unit);
   }
 
-  @Override
   public ByteBufferSharing shareInputBuffer() {
     return inputSharing.alias();
   }

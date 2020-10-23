@@ -63,15 +63,12 @@ class ByteBufferSharingImpl implements ByteBufferSharing {
    * the AutoCloseable protocol to invoke close() on the object at the end of the block.
    */
   ByteBufferSharing alias() {
-    logger.info("BGB: new alias() about to lock: " + lock);
     lock.lock();
-    final int refcount = referencing.addReference();
-    logger.info("BGB: new alias() locked, refcount: " + refcount + " lock: " + lock);
+    referencing.addReference();
     return this;
   }
 
   ByteBufferSharing alias(final long time, final TimeUnit unit) throws LockAttemptTimedOut {
-    logger.info("BGB: new alias() about to lock: " + lock);
     try {
       if (!lock.tryLock(time, unit)) {
         throw new LockAttemptTimedOut();
@@ -81,7 +78,6 @@ class ByteBufferSharingImpl implements ByteBufferSharing {
       throw new LockAttemptTimedOut();
     }
     final int refcount = referencing.addReference();
-    logger.info("BGB: new alias() locked, refcount: " + refcount + " lock: " + lock);
     return this;
   }
 
@@ -98,10 +94,8 @@ class ByteBufferSharingImpl implements ByteBufferSharing {
 
   @Override
   public void close() {
-    logger.info("BGB: in sharing close() unlocking: " + lock);
     referencing.dropReference();
     lock.unlock();
-    logger.info("BGB: in sharing close() unlocked: " + lock);
   }
 
 }

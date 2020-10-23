@@ -486,8 +486,6 @@ public class BucketRegion extends DistributedRegion implements Bucket {
             while (!foundLock.isRemoved()) {
               partitionedRegion.checkReadiness();
               foundLock.wait(1000);
-              if (!foundLock.isRemoved())
-                logger.info("BGB: waitUntilLock() slept but didn't get lock: " + foundLock);
               // primary could be changed by prRebalancing while waiting here
               checkForPrimary();
             }

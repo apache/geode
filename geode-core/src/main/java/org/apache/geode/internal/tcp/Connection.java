@@ -2657,7 +2657,7 @@ public class Connection implements Runnable {
       int len;
 
       // we have to lock here to protect between reading header and message body
-      try (final ByteBufferSharing _unused = ioFilter.shareInputBuffer()) {
+      try (final ByteBufferSharing _unused = ioFilter.getUnwrappedBuffer(null)) {
         Header header = msgReader.readHeader();
 
         if (header.getMessageType() == NORMAL_MSG_TYPE) {
