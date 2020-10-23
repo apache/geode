@@ -800,16 +800,22 @@ public class Connection implements Runnable {
   }
 
   private void notifyHandshakeWaiter(boolean success) {
-    if (getConduit().useSSL() && ioFilter != null) {
-      synchronized (ioFilter.getSynchObject()) {
-        if (!ioFilter.isClosed()) {
-          // clear out any remaining handshake bytes
-          ByteBuffer buffer = ioFilter.getUnwrappedBuffer(inputBuffer);
-          buffer.position(0).limit(0);
+    synchronized (handshakeSync) {
+      /*
+       * Return early to avoid modifying ioFilter's buffer more than once.
+       */
+      if (handshakeRead || handshakeCancelled) {
+        return;
+      }
+      if (getConduit().useSSL() && ioFilter != null) {
+        synchronized (ioFilter.getSynchObject()) {
+          if (!ioFilter.isClosed()) {
+            // clear out any remaining handshake bytes
+            ByteBuffer buffer = ioFilter.getUnwrappedBuffer(inputBuffer);
+            buffer.position(0).limit(0);
+          }
         }
       }
-    }
-    synchronized (handshakeSync) {
       if (success) {
         handshakeRead = true;
       } else {
@@ -2649,25 +2655,27 @@ public class Connection implements Runnable {
     final KnownVersion version = getRemoteVersion();
     try {
       msgReader = new MsgReader(this, ioFilter, version);
-
-      Header header = msgReader.readHeader();
-
       ReplyMessage msg;
       int len;
-      if (header.getMessageType() == NORMAL_MSG_TYPE) {
-        msg = (ReplyMessage) msgReader.readMessage(header);
-        len = header.getMessageLength();
-      } else {
-        MsgDestreamer destreamer = obtainMsgDestreamer(header.getMessageId(), version);
-        while (header.getMessageType() == CHUNKED_MSG_TYPE) {
+
+      synchronized (ioFilter.getSynchObject()) {
+        Header header = msgReader.readHeader();
+
+        if (header.getMessageType() == NORMAL_MSG_TYPE) {
+          msg = (ReplyMessage) msgReader.readMessage(header);
+          len = header.getMessageLength();
+        } else {
+          MsgDestreamer destreamer = obtainMsgDestreamer(header.getMessageId(), version);
+          while (header.getMessageType() == CHUNKED_MSG_TYPE) {
+            msgReader.readChunk(header, destreamer);
+            header = msgReader.readHeader();
+          }
           msgReader.readChunk(header, destreamer);
-          header = msgReader.readHeader();
+          msg = (ReplyMessage) destreamer.getMessage();
+          releaseMsgDestreamer(header.getMessageId(), destreamer);
+          len = destreamer.size();
         }
-        msgReader.readChunk(header, destreamer);
-        msg = (ReplyMessage) destreamer.getMessage();
-        releaseMsgDestreamer(header.getMessageId(), destreamer);
-        len = destreamer.size();
-      }
+      } // sync
       // I'd really just like to call dispatchMessage here. However,
       // that call goes through a bunch of checks that knock about
       // 10% of the performance. Since this direct-ack stuff is all
