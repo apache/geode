@@ -1982,7 +1982,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
   private NioSslEngine createNIOSSLEngine(SocketChannel channel) throws IOException {
     InetSocketAddress address = (InetSocketAddress) channel.getRemoteAddress();
     SSLEngine engine =
-        socketCreator.createSSLEngine(address.getHostString(), address.getPort());
+        socketCreator.createSSLEngine(address.getHostString(), address.getPort(), false);
 
     int packetBufferSize = engine.getSession().getPacketBufferSize();
     ByteBuffer inbuffer = bufferPool.acquireNonDirectReceiveBuffer(packetBufferSize);
