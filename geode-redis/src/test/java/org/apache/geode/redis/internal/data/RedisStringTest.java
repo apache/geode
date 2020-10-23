@@ -56,7 +56,8 @@ public class RedisStringTest {
     string.set(new ByteArrayWrapper(new byte[] {0, 1, 2}));
     ByteArrayWrapper returnedByteArrayWrapper = string.get();
     assertThat(returnedByteArrayWrapper).isNotNull();
-    assertThat(returnedByteArrayWrapper.value).isEqualTo(new ByteArrayWrapper(new byte[] {0, 1, 2}).value);
+    assertThat(returnedByteArrayWrapper.value)
+        .isEqualTo(new ByteArrayWrapper(new byte[] {0, 1, 2}).value);
   }
 
   @Test
@@ -64,7 +65,8 @@ public class RedisStringTest {
     RedisString string = new RedisString(new ByteArrayWrapper(new byte[] {0, 1}));
     ByteArrayWrapper returnedByteArrayWrapper = string.get();
     assertThat(returnedByteArrayWrapper).isNotNull();
-    assertThat(returnedByteArrayWrapper.value).isEqualTo(new ByteArrayWrapper(new byte[] {0, 1}).value);
+    assertThat(returnedByteArrayWrapper.value)
+        .isEqualTo(new ByteArrayWrapper(new byte[] {0, 1}).value);
   }
 
   @Test
@@ -119,7 +121,8 @@ public class RedisStringTest {
     Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
     ByteArrayWrapper byteArrayWrapper = new ByteArrayWrapper(new byte[] {'1', '0', ' ', '1'});
     RedisString string = new RedisString(byteArrayWrapper);
-    assertThatThrownBy(() -> string.incr(region, byteArrayWrapper)).isInstanceOf(NumberFormatException.class);
+    assertThatThrownBy(() -> string.incr(region, byteArrayWrapper))
+        .isInstanceOf(NumberFormatException.class);
   }
 
   @Test
@@ -129,10 +132,11 @@ public class RedisStringTest {
     Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
     ByteArrayWrapper byteArrayWrapper = new ByteArrayWrapper(
         // max value for signed long
-        new byte[] {'9','2','2','3','3','7','2','0','3','6','8','5','4','7','7','5','8','0','7'}
-        );
+        new byte[] {'9', '2', '2', '3', '3', '7', '2', '0', '3', '6', '8', '5', '4', '7', '7', '5',
+            '8', '0', '7'});
     RedisString string = new RedisString(byteArrayWrapper);
-    assertThatThrownBy(() -> string.incr(region, byteArrayWrapper)).isInstanceOf(ArithmeticException.class);
+    assertThatThrownBy(() -> string.incr(region, byteArrayWrapper))
+        .isInstanceOf(ArithmeticException.class);
   }
 
   @Test
@@ -140,7 +144,7 @@ public class RedisStringTest {
     // allows unchecked cast of mock to Region<ByteArrayWrapper, RedisData>
     @SuppressWarnings("unchecked")
     Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
-    ByteArrayWrapper byteArrayWrapper = new ByteArrayWrapper(new byte[]{'1', '0'});
+    ByteArrayWrapper byteArrayWrapper = new ByteArrayWrapper(new byte[] {'1', '0'});
     RedisString string = new RedisString(byteArrayWrapper);
     string.incr(region, byteArrayWrapper);
     assertThat(string.get().toString()).isEqualTo("11");
@@ -153,7 +157,8 @@ public class RedisStringTest {
     Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
     ByteArrayWrapper byteArrayWrapper = new ByteArrayWrapper(new byte[] {'1', '0', ' ', '1'});
     RedisString string = new RedisString(byteArrayWrapper);
-    assertThatThrownBy(() -> string.incrby(region, byteArrayWrapper, 2L)).isInstanceOf(NumberFormatException.class);
+    assertThatThrownBy(() -> string.incrby(region, byteArrayWrapper, 2L))
+        .isInstanceOf(NumberFormatException.class);
   }
 
   @Test
@@ -163,10 +168,11 @@ public class RedisStringTest {
     Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
     ByteArrayWrapper byteArrayWrapper = new ByteArrayWrapper(
         // max value for signed long
-        new byte[] {'9','2','2','3','3','7','2','0','3','6','8','5','4','7','7','5','8','0','7'}
-    );
+        new byte[] {'9', '2', '2', '3', '3', '7', '2', '0', '3', '6', '8', '5', '4', '7', '7', '5',
+            '8', '0', '7'});
     RedisString string = new RedisString(byteArrayWrapper);
-    assertThatThrownBy(() -> string.incrby(region, byteArrayWrapper, 2L)).isInstanceOf(ArithmeticException.class);
+    assertThatThrownBy(() -> string.incrby(region, byteArrayWrapper, 2L))
+        .isInstanceOf(ArithmeticException.class);
   }
 
   @Test
@@ -174,7 +180,7 @@ public class RedisStringTest {
     // allows unchecked cast of mock to Region<ByteArrayWrapper, RedisData>
     @SuppressWarnings("unchecked")
     Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
-    ByteArrayWrapper byteArrayWrapper = new ByteArrayWrapper(new byte[]{'1', '0'});
+    ByteArrayWrapper byteArrayWrapper = new ByteArrayWrapper(new byte[] {'1', '0'});
     RedisString string = new RedisString(byteArrayWrapper);
     string.incrby(region, byteArrayWrapper, 2L);
     assertThat(string.get().toString()).isEqualTo("12");
@@ -187,7 +193,8 @@ public class RedisStringTest {
     Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
     ByteArrayWrapper byteArrayWrapper = new ByteArrayWrapper(new byte[] {'1', '0', ' ', '1'});
     RedisString string = new RedisString(byteArrayWrapper);
-    assertThatThrownBy(() -> string.incrbyfloat(region, byteArrayWrapper, 1.1)).isInstanceOf(NumberFormatException.class);
+    assertThatThrownBy(() -> string.incrbyfloat(region, byteArrayWrapper, 1.1))
+        .isInstanceOf(NumberFormatException.class);
   }
 
   @Test
@@ -197,10 +204,11 @@ public class RedisStringTest {
     Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
     ByteArrayWrapper byteArrayWrapper = new ByteArrayWrapper(
         // max value for signed double
-        new byte[] {'1','.','7','9','7','6','9','3','1','3','4','8','6','2','3','1','5','7','e','+','3','0','8'}
-    );
+        new byte[] {'1', '.', '7', '9', '7', '6', '9', '3', '1', '3', '4', '8', '6', '2', '3', '1',
+            '5', '7', 'e', '+', '3', '0', '8'});
     RedisString string = new RedisString(byteArrayWrapper);
-    assertThatThrownBy(() -> string.incrbyfloat(region, byteArrayWrapper, 1.2)).isInstanceOf(ArithmeticException.class);
+    assertThatThrownBy(() -> string.incrbyfloat(region, byteArrayWrapper, 1.2))
+        .isInstanceOf(ArithmeticException.class);
   }
 
   @Test
@@ -208,7 +216,7 @@ public class RedisStringTest {
     // allows unchecked cast of mock to Region<ByteArrayWrapper, RedisData>
     @SuppressWarnings("unchecked")
     Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
-    ByteArrayWrapper byteArrayWrapper = new ByteArrayWrapper(new byte[]{'1', '0'});
+    ByteArrayWrapper byteArrayWrapper = new ByteArrayWrapper(new byte[] {'1', '0'});
     RedisString string = new RedisString(byteArrayWrapper);
     string.incrbyfloat(region, byteArrayWrapper, 2.20);
     assertThat(string.get().toString()).isEqualTo("12.2");
@@ -219,9 +227,10 @@ public class RedisStringTest {
     // allows unchecked cast of mock to Region<ByteArrayWrapper, RedisData>
     @SuppressWarnings("unchecked")
     Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
-    ByteArrayWrapper byteArrayWrapper = new ByteArrayWrapper(new byte[]{0});
+    ByteArrayWrapper byteArrayWrapper = new ByteArrayWrapper(new byte[] {0});
     RedisString string = new RedisString(byteArrayWrapper);
-    assertThatThrownBy(() -> string.decr(region, byteArrayWrapper)).isInstanceOf(NumberFormatException.class);
+    assertThatThrownBy(() -> string.decr(region, byteArrayWrapper))
+        .isInstanceOf(NumberFormatException.class);
   }
 
   @Test
@@ -229,7 +238,7 @@ public class RedisStringTest {
     // allows unchecked cast of mock to Region<ByteArrayWrapper, RedisData>
     @SuppressWarnings("unchecked")
     Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
-    ByteArrayWrapper byteArrayWrapper = new ByteArrayWrapper(new byte[]{'1', '0'});
+    ByteArrayWrapper byteArrayWrapper = new ByteArrayWrapper(new byte[] {'1', '0'});
     RedisString string = new RedisString(byteArrayWrapper);
     string.decr(region, byteArrayWrapper);
     assertThat(string.get().toString()).isEqualTo("9");
@@ -240,9 +249,10 @@ public class RedisStringTest {
     // allows unchecked cast of mock to Region<ByteArrayWrapper, RedisData>
     @SuppressWarnings("unchecked")
     Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
-    ByteArrayWrapper byteArrayWrapper = new ByteArrayWrapper(new byte[]{1});
+    ByteArrayWrapper byteArrayWrapper = new ByteArrayWrapper(new byte[] {1});
     RedisString string = new RedisString(byteArrayWrapper);
-    assertThatThrownBy(() -> string.decrby(region, byteArrayWrapper, 2)).isInstanceOf(NumberFormatException.class);
+    assertThatThrownBy(() -> string.decrby(region, byteArrayWrapper, 2))
+        .isInstanceOf(NumberFormatException.class);
   }
 
   @Test
@@ -250,7 +260,7 @@ public class RedisStringTest {
     // allows unchecked cast of mock to Region<ByteArrayWrapper, RedisData>
     @SuppressWarnings("unchecked")
     Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
-    ByteArrayWrapper byteArrayWrapper = new ByteArrayWrapper(new byte[]{'1', '0'});
+    ByteArrayWrapper byteArrayWrapper = new ByteArrayWrapper(new byte[] {'1', '0'});
     RedisString string = new RedisString(byteArrayWrapper);
     string.decrby(region, byteArrayWrapper, 2);
     assertThat(string.get().toString()).isEqualTo("8");

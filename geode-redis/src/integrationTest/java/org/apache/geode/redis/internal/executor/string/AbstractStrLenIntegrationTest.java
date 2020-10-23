@@ -101,8 +101,8 @@ public abstract class AbstractStrLenIntegrationTest implements RedisPortSupplier
 
   @Test
   public void testStrlen_withIntData() {
-    byte[] key = new byte[]{0};
-    byte[] value = new byte[]{1, 0, 0};
+    byte[] key = new byte[] {0};
+    byte[] value = new byte[] {1, 0, 0};
     jedis.set(key, value);
 
     assertThat(jedis.strlen(key)).isEqualTo(value.length);
