@@ -800,16 +800,19 @@ public class Connection implements Runnable {
   }
 
   private void notifyHandshakeWaiter(boolean success) {
-    if (getConduit().useSSL() && ioFilter != null) {
-      synchronized (ioFilter.getSynchObject()) {
-        if (!ioFilter.isClosed()) {
-          // clear out any remaining handshake bytes
-          ByteBuffer buffer = ioFilter.getUnwrappedBuffer(inputBuffer);
-          buffer.position(0).limit(0);
+    synchronized (handshakeSync) {
+      if (handshakeCancelled || handshakeRead) {
+        return;
+      }
+      if (getConduit().useSSL() && ioFilter != null) {
+        synchronized (ioFilter.getSynchObject()) {
+          if (!ioFilter.isClosed()) {
+            // clear out any remaining handshake bytes
+            ByteBuffer buffer = ioFilter.getUnwrappedBuffer(inputBuffer);
+            buffer.position(0).limit(0);
+          }
         }
       }
-    }
-    synchronized (handshakeSync) {
       if (success) {
         handshakeRead = true;
       } else {
