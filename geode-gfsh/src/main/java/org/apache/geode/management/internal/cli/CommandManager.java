@@ -167,9 +167,6 @@ public class CommandManager {
         logWrapper.warning("Could not load plugin command: " + t.getMessage());
       }
     }));
-    serviceLoadResult.ifFailure(errorMessage -> logWrapper
-        .severe(String.format("Could not load plugin commands in the latest classLoader. %s",
-            errorMessage)));
   }
 
   private void loadCommands() {
