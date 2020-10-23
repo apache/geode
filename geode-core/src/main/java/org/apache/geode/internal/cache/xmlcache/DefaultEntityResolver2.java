@@ -21,7 +21,9 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.EntityResolver2;
 
-import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * Default behavior for EntityResolver2 implementations.
@@ -31,6 +33,12 @@ import org.apache.geode.internal.ClassPathLoader;
  * @since GemFire 8.1
  */
 public abstract class DefaultEntityResolver2 implements EntityResolver2 {
+
+  protected ClassLoaderService classLoaderService;
+
+  public DefaultEntityResolver2() {
+    this.classLoaderService = ClassLoaderServiceInstance.getInstance();
+  }
 
   @Override
   public InputSource resolveEntity(final String publicId, final String systemId)
@@ -59,16 +67,16 @@ public abstract class DefaultEntityResolver2 implements EntityResolver2 {
    */
   protected InputSource getClassPathInputSource(final String publicId, final String systemId,
       final String path) {
-    final InputStream stream = ClassPathLoader.getLatest().getResourceAsStream(getClass(), path);
-    if (null == stream) {
-      return null;
+    ServiceResult<InputStream> serviceResult =
+        classLoaderService.getResourceAsStream(path);
+    if (serviceResult.isSuccessful()) {
+      final InputStream stream = serviceResult.getMessage();
+      final InputSource inputSource = new InputSource(stream);
+      inputSource.setPublicId(publicId);
+      inputSource.setSystemId(systemId);
+
+      return inputSource;
     }
-
-    final InputSource inputSource = new InputSource(stream);
-    inputSource.setPublicId(publicId);
-    inputSource.setSystemId(systemId);
-
-    return inputSource;
+    return null;
   }
-
 }

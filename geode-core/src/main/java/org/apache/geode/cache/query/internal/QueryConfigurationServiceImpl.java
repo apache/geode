@@ -33,11 +33,12 @@ import org.apache.geode.cache.query.security.MethodInvocationAuthorizer;
 import org.apache.geode.cache.query.security.RegExMethodAuthorizer;
 import org.apache.geode.cache.query.security.RestrictedMethodAuthorizer;
 import org.apache.geode.cache.query.security.UnrestrictedMethodAuthorizer;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
+import org.apache.geode.services.result.ServiceResult;
 
 public class QueryConfigurationServiceImpl implements QueryConfigurationService {
   private static final Logger logger = LogService.getLogger();
@@ -161,19 +162,25 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
       } else if (className.equals(RegExMethodAuthorizer.class.getName())) {
         this.authorizer = new RegExMethodAuthorizer(cache, parameters);
       } else {
-        Class<?> userClass = ClassPathLoader.getLatest().forName(className);
-        if (!Arrays.asList(userClass.getInterfaces()).contains(MethodInvocationAuthorizer.class)) {
-          throw new QueryConfigurationServiceException(
-              String.format(INTERFACE_NOT_IMPLEMENTED_MESSAGE, userClass.getName(),
-                  MethodInvocationAuthorizer.class.getName()));
+        ServiceResult<Class<?>> serviceResult =
+            ClassLoaderServiceInstance.getInstance().forName(className);
+        if (serviceResult.isSuccessful()) {
+          Class<?> userClass = serviceResult.getMessage();
+          if (!Arrays.asList(userClass.getInterfaces())
+              .contains(MethodInvocationAuthorizer.class)) {
+            throw new QueryConfigurationServiceException(
+                String.format(INTERFACE_NOT_IMPLEMENTED_MESSAGE, userClass.getName(),
+                    MethodInvocationAuthorizer.class.getName()));
+          }
+
+          MethodInvocationAuthorizer tmpAuthorizer =
+              (MethodInvocationAuthorizer) userClass.newInstance();
+          tmpAuthorizer.initialize(cache, parameters);
+          this.authorizer = tmpAuthorizer;
+        } else {
+          throw new ClassNotFoundException(serviceResult.getErrorMessage());
         }
-
-        MethodInvocationAuthorizer tmpAuthorizer =
-            (MethodInvocationAuthorizer) userClass.newInstance();
-        tmpAuthorizer.initialize(cache, parameters);
-        this.authorizer = tmpAuthorizer;
       }
-
       invalidateContinuousQueryCache(cqService);
     } catch (Exception e) {
       throw new QueryConfigurationServiceException(UPDATE_ERROR_MESSAGE, e);

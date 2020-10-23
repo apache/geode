@@ -24,7 +24,7 @@ import org.junit.rules.ExternalResource;
 import org.springframework.shell.core.Completion;
 import org.springframework.shell.core.Converter;
 
-import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliAroundInterceptor;
@@ -34,6 +34,7 @@ import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.remote.CommandExecutor;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.junit.assertions.CommandResultAssert;
 
 public class GfshParserRule extends ExternalResource {
@@ -71,8 +72,14 @@ public class GfshParserRule extends ExternalResource {
       String interceptorClass = cliMetaData.interceptor();
       if (!CliMetaData.ANNOTATION_NULL_VALUE.equals(interceptorClass)) {
         try {
-          interceptor = (CliAroundInterceptor) ClassPathLoader.getLatest().forName(interceptorClass)
-              .newInstance();
+          ServiceResult<Class<?>> serviceResult =
+              ClassLoaderServiceInstance.getInstance().forName(interceptorClass);
+          if (serviceResult.isSuccessful()) {
+            interceptor = (CliAroundInterceptor) serviceResult.getMessage().newInstance();
+          } else {
+            throw new ClassNotFoundException(String.format("No class found for name: %s because %s",
+                interceptorClass, serviceResult.getErrorMessage()));
+          }
         } catch (Exception e) {
           throw new RuntimeException(e);
         }

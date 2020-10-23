@@ -27,6 +27,8 @@ import java.util.Properties;
 import java.util.TreeMap;
 
 import org.apache.geode.internal.inet.LocalHostUtil;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 
 public class VersionDescription {
   public static final String RESOURCE_NAME = "GemFireVersion.properties";
@@ -86,27 +88,24 @@ public class VersionDescription {
   private final Optional<String> error;
 
   public VersionDescription(String name) {
-    InputStream is = ClassPathLoader.getLatest().getResourceAsStream(getClass(), name);
-    if (is == null) {
-      error = Optional
-          .of(String.format("<Could not find resource org/apache/geode/internal/%s>",
-              name));
+    ServiceResult<InputStream> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResourceAsStream(getClass(), name);
+    if (serviceResult.isSuccessful()) {
+      description = new Properties();
+      try {
+        description.load(serviceResult.getMessage());
+      } catch (Exception ex) {
+        error = Optional.of(String.format(
+            "<Could not read properties from resource org/apache/geode/internal/%s because: %s>",
+            name, ex));
+        return;
+      }
+      error = validate(description);
+    } else {
+      error = Optional.of(String.format("<Could not find resource org/apache/geode/internal/%s>",
+          name));
       description = null;
-      return;
     }
-
-    description = new Properties();
-    try {
-      description.load(is);
-    } catch (Exception ex) {
-      error = Optional
-          .of(String.format(
-              "<Could not read properties from resource org/apache/geode/internal/%s because: %s>",
-              name, ex));
-      return;
-    }
-
-    error = validate(description);
   }
 
   public String getProperty(String key) {

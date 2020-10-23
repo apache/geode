@@ -24,7 +24,8 @@ import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXParseException;
 
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * The abstract superclass of classes that convert XML into a
@@ -127,12 +128,12 @@ abstract class ManagedEntityConfigXml implements EntityResolver, ErrorHandler {
 
     InputSource result;
     {
-      InputStream stream = ClassPathLoader.getLatest().getResourceAsStream(getClass(), location);
-      if (stream != null) {
-        result = new InputSource(stream);
+      ServiceResult<InputStream> serviceResult =
+          ClassLoaderServiceInstance.getInstance().getResourceAsStream(getClass(), location);
+      if (serviceResult.isSuccessful()) {
+        result = new InputSource(serviceResult.getMessage());
       } else {
-        throw new SAXNotRecognizedException(
-            String.format("DTD not found: %s", location));
+        throw new SAXNotRecognizedException(String.format("DTD not found: %s", location));
       }
     }
 

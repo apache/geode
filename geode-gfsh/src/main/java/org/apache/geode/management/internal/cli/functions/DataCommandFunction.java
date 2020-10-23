@@ -46,12 +46,12 @@ import org.apache.geode.cache.query.internal.IndexTrackingQueryObserver;
 import org.apache.geode.cache.query.internal.QueryObserver;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.cli.domain.DataCommandRequest;
 import org.apache.geode.management.internal.cli.domain.DataCommandResult;
@@ -60,6 +60,7 @@ import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.management.internal.util.JsonUtil;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
 /**
@@ -577,22 +578,30 @@ public class DataCommandFunction implements InternalFunction<DataCommandRequest>
     if (StringUtils.isEmpty(klassString)) {
       return string;
     }
-    Class klass = ClassPathLoader.getLatest().forName(klassString);
+    ServiceResult<Class<?>> serviceResult =
+        ClassLoaderServiceInstance.getInstance().forName(klassString);
+    if (serviceResult.isSuccessful()) {
 
-    if (klass.equals(String.class)) {
-      return string;
+      Class klass = serviceResult.getMessage();
+
+      if (klass.equals(String.class)) {
+        return string;
+      }
+
+      Object resultObject;
+      try {
+        ObjectMapper mapper = GeodeJsonMapper.getMapper();
+        resultObject = mapper.readValue(string, klass);
+      } catch (IOException e) {
+        throw new IllegalArgumentException(
+            "Failed to convert input key to " + klassString + " Msg : " + e.getMessage());
+      }
+
+      return resultObject;
+    } else {
+      throw new ClassNotFoundException(String.format("No class found for name: %s because %s",
+          klassString, serviceResult.getErrorMessage()));
     }
-
-    Object resultObject;
-    try {
-      ObjectMapper mapper = GeodeJsonMapper.getMapper();
-      resultObject = mapper.readValue(string, klass);
-    } catch (IOException e) {
-      throw new IllegalArgumentException(
-          "Failed to convert input key to " + klassString + " Msg : " + e.getMessage());
-    }
-
-    return resultObject;
   }
 
   private Object[] getClassAndJson(Object obj) {

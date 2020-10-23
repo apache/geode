@@ -46,15 +46,16 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.exceptions.UserErrorException;
 import org.apache.geode.management.internal.i18n.CliStrings;
+import org.apache.geode.services.result.ServiceResult;
 
 public class ManagementUtils {
   @Immutable
@@ -128,9 +129,15 @@ public class ManagementUtils {
     Class<K> loadedClass = null;
     try {
       // Set Constraints
-      ClassPathLoader classPathLoader = ClassPathLoader.getLatest();
       if (classToLoadName != null && !classToLoadName.isEmpty()) {
-        loadedClass = (Class<K>) classPathLoader.forName(classToLoadName);
+        ServiceResult<Class<?>> serviceResult =
+            ClassLoaderServiceInstance.getInstance().forName(classToLoadName);
+        if (serviceResult.isSuccessful()) {
+          loadedClass = (Class<K>) serviceResult.getMessage();
+        } else {
+          throw new ClassNotFoundException(String.format("No class found for name: %s because %s",
+              classToLoadName, serviceResult.getErrorMessage()));
+        }
       }
     } catch (ClassNotFoundException | NoClassDefFoundError e) {
       throw new RuntimeException(

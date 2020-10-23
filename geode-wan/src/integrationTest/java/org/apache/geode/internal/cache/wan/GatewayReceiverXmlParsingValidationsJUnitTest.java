@@ -25,8 +25,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.ServiceLoader;
+import java.util.List;
 
 import org.junit.After;
 import org.junit.Rule;
@@ -44,6 +43,8 @@ import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.spi.WANFactory;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.junit.categories.WanTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
@@ -86,9 +87,10 @@ public class GatewayReceiverXmlParsingValidationsJUnitTest {
     assertThat(cache.getGatewayReceivers()).isNotEmpty();
     GatewayReceiver receiver = cache.getGatewayReceivers().iterator().next();
 
-    ServiceLoader<WANFactory> loader = ServiceLoader.load(WANFactory.class);
-    Iterator<WANFactory> itr = loader.iterator();
-    assertThat(itr.hasNext()).isTrue();
+    ServiceResult<List<WANFactory>> serviceResult =
+        ClassLoaderServiceInstance.getInstance().loadService(WANFactory.class);
+    assertThat(serviceResult.isSuccessful()).isTrue();
+    assertThat(serviceResult.getMessage().isEmpty()).isFalse();
 
     assertEquals(1501, receiver.getEndPort());
     assertEquals(1500, receiver.getStartPort());

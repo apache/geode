@@ -16,7 +16,6 @@ package org.apache.geode.logging.internal;
 
 import static org.apache.geode.internal.lang.SystemPropertyHelper.GEODE_PREFIX;
 
-import java.util.Collection;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -24,10 +23,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.internal.util.CollectingServiceLoader;
 import org.apache.geode.internal.util.ListCollectingServiceLoader;
 import org.apache.geode.logging.internal.spi.LoggingProvider;
+import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * Loads a {@link LoggingProvider} using this order of preference:
@@ -41,6 +42,11 @@ import org.apache.geode.logging.internal.spi.LoggingProvider;
 public class LoggingProviderLoader {
 
   private static final Logger logger = LogManager.getLogger();
+  private final ClassLoaderService classLoaderService;
+
+  public LoggingProviderLoader() {
+    this.classLoaderService = ClassLoaderServiceInstance.getInstance();
+  }
 
   /**
    * System property that may be used to override which {@code LoggingProvider} to use.
@@ -78,10 +84,9 @@ public class LoggingProviderLoader {
   }
 
   private Iterable<LoggingProvider> loadServiceProviders() {
-    CollectingServiceLoader<LoggingProvider> serviceLoader = new ListCollectingServiceLoader<>();
-    Collection<LoggingProvider> loggingProviders =
-        serviceLoader.loadServices(LoggingProvider.class);
-    return loggingProviders;
+    CollectingServiceLoader<LoggingProvider> serviceLoader =
+        new ListCollectingServiceLoader<>();
+    return serviceLoader.loadServices(LoggingProvider.class);
   }
 
   private LoggingProvider checkSystemProperty() {
@@ -91,9 +96,13 @@ public class LoggingProviderLoader {
     }
 
     try {
-      Class<? extends LoggingProvider> agentClass =
-          ClassPathLoader.getLatest().forName(agentClassName).asSubclass(LoggingProvider.class);
-      return agentClass.newInstance();
+      ServiceResult<Class<?>> serviceResult = classLoaderService.forName(agentClassName);
+      if (serviceResult.isSuccessful()) {
+        return serviceResult.getMessage().asSubclass(LoggingProvider.class).newInstance();
+      } else {
+        throw new ClassNotFoundException(String.format("No class found for name: %s because %s",
+            agentClassName, serviceResult.getErrorMessage()));
+      }
     } catch (ClassNotFoundException | ClassCastException | InstantiationException
         | IllegalAccessException e) {
       logger.warn("Unable to create LoggingProvider of type {}", agentClassName, e);

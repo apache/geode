@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.internal;
+package org.apache.geode.internal.deployment.jar;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -29,6 +29,8 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.internal.lang.SystemUtils;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.compiler.JarBuilder;
 
 
@@ -175,13 +177,16 @@ public class JarDeployerIntegrationTest {
     if (!SystemUtils.isWindows()) {
       assertThat(deployedDir.list()).containsExactly("abc.v1.jar");
     }
-    assertThatThrownBy(() -> ClassPathLoader.getLatest().forName("jddunit.function.Def"))
-        .isInstanceOf(ClassNotFoundException.class);
+    assertThat(
+        ClassLoaderServiceInstance.getInstance().forName("jddunit.function.Def").isFailure())
+            .isTrue();
   }
 
   private String getVersion(String classname) throws Exception {
-    Class<?> def = ClassPathLoader.getLatest().forName(classname);
-    assertThat(def).isNotNull();
+    ServiceResult<Class<?>> serviceResult =
+        ClassLoaderServiceInstance.getInstance().forName(classname);
+    assertThat(serviceResult.isSuccessful()).isTrue();
+    Class<?> def = (Class<?>) serviceResult.getMessage();
     return (String) def.getMethod("getId").invoke(def.newInstance());
   }
 

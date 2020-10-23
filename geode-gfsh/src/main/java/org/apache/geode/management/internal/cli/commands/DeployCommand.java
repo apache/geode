@@ -37,7 +37,7 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
-import org.apache.geode.internal.DeployedJar;
+import org.apache.geode.internal.deployment.jar.DeployJarFileUtils;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
@@ -175,7 +175,7 @@ public class DeployCommand extends GfshCommand {
   private void verifyJarContent(List<String> jarNames) {
     for (String jarName : jarNames) {
       File jar = new File(jarName);
-      if (!DeployedJar.hasValidJarContent(jar)) {
+      if (!DeployJarFileUtils.hasValidJarContent(jar)) {
         throw new IllegalArgumentException(
             "File does not contain valid JAR content: " + jar.getName());
       }

@@ -42,8 +42,9 @@ import org.junit.Test;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.deployment.jar.ClassPathLoader;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Deployment;
@@ -237,7 +238,8 @@ public class DeploymentManagementRedployDUnitTest {
       throws ClassNotFoundException {
     assertThat(ClassPathLoader.getLatest().getJarDeployer()
         .getDeployedJar(FilenameUtils.getBaseName(jarName))).isNotNull();
-    assertThat(ClassPathLoader.getLatest().forName(className)).isNotNull();
+    assertThat(ClassLoaderServiceInstance.getInstance().forName(className).getMessage())
+        .isNotNull();
   }
 
   private static class LoopingFunctionExecutor implements Serializable {

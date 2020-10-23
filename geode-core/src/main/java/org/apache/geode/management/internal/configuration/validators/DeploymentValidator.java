@@ -17,7 +17,7 @@ package org.apache.geode.management.internal.configuration.validators;
 
 import java.io.File;
 
-import org.apache.geode.internal.DeployedJar;
+import org.apache.geode.internal.deployment.jar.DeployJarFileUtils;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.internal.CacheElementOperation;
 
@@ -38,7 +38,7 @@ public class DeploymentValidator implements ConfigurationValidator<Deployment> {
   private void validateCreate(Deployment config) {
     // verify jar content
     File file = config.getFile();
-    if (!DeployedJar.hasValidJarContent(file)) {
+    if (!DeployJarFileUtils.hasValidJarContent(file)) {
       throw new IllegalArgumentException(
           "File does not contain valid JAR content: " + config.getFileName());
     }

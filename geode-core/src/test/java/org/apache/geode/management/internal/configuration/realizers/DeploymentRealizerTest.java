@@ -34,7 +34,7 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.internal.DeployedJar;
+import org.apache.geode.internal.deployment.jar.DeployedJar;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.runtime.DeploymentInfo;

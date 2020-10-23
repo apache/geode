@@ -39,10 +39,11 @@ import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.metrics.internal.InternalDistributedSystemMetricsService;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -630,7 +631,13 @@ public abstract class DistributedSystem implements StatisticsFactory {
       }
     }
 
-    return ClassPathLoader.getLatest().getResource(DistributedSystem.class, fileName);
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResource(DistributedSystem.class, fileName);
+    if (serviceResult.isSuccessful()) {
+      return serviceResult.getMessage();
+    } else {
+      return null;
+    }
   }
 
   /**

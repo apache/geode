@@ -16,7 +16,7 @@ package org.apache.geode.internal.cache.xmlcache;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ServiceLoader;
+import java.util.List;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.ErrorHandler;
@@ -28,7 +28,8 @@ import org.xml.sax.ext.EntityResolver2;
 
 import org.apache.geode.cache.CacheXmlException;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * The abstract superclass of classes that convert XML into a {@link org.apache.geode.cache.Cache}
@@ -837,15 +838,14 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
                                                                  // assume the latest
       return resolveEntityByEntityResolvers(name, publicId, baseURI, systemId);
     }
-    InputSource result;
-    InputStream stream = ClassPathLoader.getLatest().getResourceAsStream(getClass(), location);
-    if (stream != null) {
-      result = new InputSource(stream);
+    ServiceResult<InputStream> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResourceAsStream(getClass(), location);
+    if (serviceResult.isSuccessful()) {
+      return new InputSource(serviceResult.getMessage());
     } else {
       throw new SAXNotRecognizedException(
           String.format("DTD not found: %s", location));
     }
-    return result;
   }
 
   /*
@@ -878,13 +878,15 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
    */
   private InputSource resolveEntityByEntityResolvers(String name, String publicId, String baseURI,
       String systemId) throws SAXException, IOException {
-    final ServiceLoader<EntityResolver2> entityResolvers =
-        ServiceLoader.load(EntityResolver2.class, ClassPathLoader.getLatest().asClassLoader());
-    for (final EntityResolver2 entityResolver : entityResolvers) {
-      final InputSource inputSource =
-          entityResolver.resolveEntity(name, publicId, baseURI, systemId);
-      if (null != inputSource) {
-        return inputSource;
+    ServiceResult<List<EntityResolver2>> serviceResult =
+        ClassLoaderServiceInstance.getInstance().loadService(EntityResolver2.class);
+    if (serviceResult.isSuccessful()) {
+      for (EntityResolver2 entityResolver2 : serviceResult.getMessage()) {
+        final InputSource inputSource =
+            entityResolver2.resolveEntity(name, publicId, baseURI, systemId);
+        if (null != inputSource) {
+          return inputSource;
+        }
       }
     }
     return null;

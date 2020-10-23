@@ -33,8 +33,9 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.ExitCode;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * A tool that reads the XML description of MBeans used with the Jakarta Commons Modeler and
@@ -142,18 +143,13 @@ public class GenerateMBeanHTML extends DefaultHandler {
     // Figure out the location for the publicId.
     String location = DTD_LOCATION;
 
-    InputSource result;
-    {
-      InputStream stream = ClassPathLoader.getLatest().getResourceAsStream(getClass(), location);
-      if (stream != null) {
-        result = new InputSource(stream);
-      } else {
-        throw new SAXNotRecognizedException(
-            String.format("DTD not found: %s", location));
-      }
+    ServiceResult<InputStream> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResourceAsStream(getClass(), location);
+    if (serviceResult.isSuccessful()) {
+      return new InputSource(serviceResult.getMessage());
+    } else {
+      throw new SAXNotRecognizedException(String.format("DTD not found: %s", location));
     }
-
-    return result;
   }
 
   /**

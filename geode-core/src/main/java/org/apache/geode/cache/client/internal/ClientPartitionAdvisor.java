@@ -32,10 +32,11 @@ import org.apache.geode.cache.FixedPartitionAttributes;
 import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.BucketServerLocation66;
 import org.apache.geode.internal.cache.FixedPartitionAttributesImpl;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * Stores the information such as partition attributes and meta data details
@@ -49,7 +50,7 @@ public class ClientPartitionAdvisor {
   private static final Logger logger = LogService.getLogger();
 
   private final ConcurrentMap<Integer, List<BucketServerLocation66>> bucketServerLocationsMap =
-      new ConcurrentHashMap<Integer, List<BucketServerLocation66>>();
+      new ConcurrentHashMap<>();
 
   private final int totalNumBuckets;
 
@@ -71,22 +72,9 @@ public class ClientPartitionAdvisor {
 
     this.totalNumBuckets = totalNumBuckets;
     this.colocatedWith = colocatedWith;
-    try {
-      if (partitionResolverName != null) {
-        this.partitionResolver = (PartitionResolver) ClassPathLoader.getLatest()
-            .forName(partitionResolverName).newInstance();
-      }
-    } catch (Exception e) {
-      if (logger.isErrorEnabled()) {
-        logger.error(e.getMessage(), e);
-      }
-
-      throw new InternalGemFireException(
-          String.format("Cannot create an instance of PartitionResolver : %s",
-              partitionResolverName));
-    }
+    createPartitionResolverForName(partitionResolverName);
     if (fpaSet != null) {
-      fixedPAMap = new ConcurrentHashMap<String, List<Integer>>();
+      fixedPAMap = new ConcurrentHashMap<>();
       int totalFPABuckets = 0;
       for (FixedPartitionAttributes fpa : fpaSet) {
         List attrList = new ArrayList();
@@ -99,6 +87,27 @@ public class ClientPartitionAdvisor {
         this.fpaAttrsCompletes = true;
       }
     }
+  }
+
+  private void createPartitionResolverForName(String partitionResolverName) {
+    ServiceResult<Class<?>> serviceResult = ClassLoaderServiceInstance.getInstance()
+        .forName(partitionResolverName);
+
+    serviceResult.ifSuccessful(classes -> {
+      try {
+        this.partitionResolver =
+            (PartitionResolver) classes.newInstance();
+      } catch (IllegalAccessException | InstantiationException e) {
+        logger.error(e);
+        logPartitionResolverError(partitionResolverName);
+      }
+    }).ifFailure(errorMessage -> logPartitionResolverError(partitionResolverName));
+  }
+
+  private void logPartitionResolverError(String partitionResolverName) {
+    throw new InternalGemFireException(
+        String.format("Cannot create an instance of PartitionResolver : %s",
+            partitionResolverName));
   }
 
   public ServerLocation adviseServerLocation(int bucketId) {

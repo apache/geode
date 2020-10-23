@@ -22,8 +22,9 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.internal.size.ObjectTraverser.Visitor;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 
@@ -43,10 +44,16 @@ public class ObjectGraphSizer {
   };
 
   static {
-    Class sizeOfClass;
     try {
-      sizeOfClass = ClassPathLoader.getLatest().forName(SIZE_OF_CLASS_NAME);
-      SIZE_OF_UTIL = new CachingSingleObjectSizer((SingleObjectSizer) sizeOfClass.newInstance());
+      ServiceResult<Class<?>> serviceResult =
+          ClassLoaderServiceInstance.getInstance().forName(SIZE_OF_CLASS_NAME);
+      if (serviceResult.isSuccessful()) {
+        SIZE_OF_UTIL = new CachingSingleObjectSizer((SingleObjectSizer) serviceResult.getMessage()
+            .newInstance());
+      } else {
+        throw new ClassNotFoundException(String.format("No class found for name: %s because %s",
+            SIZE_OF_CLASS_NAME, serviceResult.getErrorMessage()));
+      }
     } catch (Exception e) {
       throw new ExceptionInInitializerError(e);
     }

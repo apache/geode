@@ -18,12 +18,10 @@ import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.internal.services.registry.ServiceRegistryInstance;
 import org.apache.geode.services.result.ServiceResult;
 
 @Experimental
@@ -44,7 +42,7 @@ public interface ClassLoaderService {
    *         used {@link ServiceResult#getErrorMessage()} to get the error message of the
    *         failure.
    */
-  <T> ServiceResult<Set<T>> loadService(Class<T> service);
+  <T> ServiceResult<List<T>> loadService(Class<T> service);
 
   /**
    * Returns the Class for the provided name for all loaded module.
@@ -87,15 +85,6 @@ public interface ClassLoaderService {
   void setLogger(Logger logger);
 
   void setWorkingDirectory(File deployWorkingDir);
-
-  static ClassLoaderService getClassLoaderService() {
-    ServiceResult<ClassLoaderService> result =
-        ServiceRegistryInstance.getService(ClassLoaderService.class);
-    if (result.isFailure()) {
-      throw new RuntimeException("No ClassLoaderService registered in ServiceRegistry");
-    }
-    return result.getMessage();
-  }
 
   ClassLoader asClassLoader();
 }

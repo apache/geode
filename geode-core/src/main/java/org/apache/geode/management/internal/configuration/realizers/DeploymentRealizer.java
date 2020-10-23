@@ -23,10 +23,11 @@ import java.util.Map;
 import org.apache.commons.lang3.NotImplementedException;
 
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.DeployedJar;
-import org.apache.geode.internal.JarDeployer;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.deployment.jar.ClassPathLoader;
+import org.apache.geode.internal.deployment.jar.DeployJarFileUtils;
+import org.apache.geode.internal.deployment.jar.DeployedJar;
+import org.apache.geode.internal.deployment.jar.JarDeployer;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.runtime.DeploymentInfo;
@@ -52,7 +53,7 @@ public class DeploymentRealizer
   public DeploymentInfo get(Deployment config, InternalCache cache) {
     Map<String, DeployedJar> deployedJars = getDeployedJars();
     DeploymentInfo info = new DeploymentInfo();
-    String artifactId = JarDeployer.getArtifactId(config.getFileName());
+    String artifactId = DeployJarFileUtils.getArtifactId(config.getFileName());
     DeployedJar deployedJar = deployedJars.get(artifactId);
     if (deployedJar != null) {
       File file = deployedJar.getFile();

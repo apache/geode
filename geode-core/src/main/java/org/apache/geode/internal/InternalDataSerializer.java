@@ -120,6 +120,7 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.SerializationVersions;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.VersionedDataStream;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteHashMap;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.NonPortableClassException;
@@ -137,6 +138,7 @@ import org.apache.geode.pdx.internal.PdxReaderImpl;
 import org.apache.geode.pdx.internal.PdxType;
 import org.apache.geode.pdx.internal.PdxWriterImpl;
 import org.apache.geode.pdx.internal.TypeRegistry;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -3109,23 +3111,33 @@ public abstract class InternalDataSerializer extends DataSerializer {
   @SuppressWarnings("unchecked")
   public static <T> Class<T> getCachedClass(String p_className) throws ClassNotFoundException {
     String className = processIncomingClassName(p_className);
-    if (LOAD_CLASS_EACH_TIME) {
-      return (Class<T>) ClassPathLoader.getLatest().forName(className);
-    } else {
-      Class<?> result = getExistingCachedClass(className);
-      if (result == null) {
-        // Do the forName call outside the sync to fix bug 46172
-        result = ClassPathLoader.getLatest().forName(className);
-        synchronized (cacheAccessLock) {
-          Class<?> cachedClass = getExistingCachedClass(className);
-          if (cachedClass == null) {
-            classCache.put(className, new WeakReference<>(result));
-          } else {
-            result = cachedClass;
-          }
+    Class<?> result = null;
+    if (!LOAD_CLASS_EACH_TIME) {
+      result = getExistingCachedClass(className);
+    }
+
+    if (result == null) {
+      ServiceResult<Class<?>> serviceResult =
+          ClassLoaderServiceInstance.getInstance().forName(className);
+      if (serviceResult.isSuccessful()) {
+        result = serviceResult.getMessage();
+      } else {
+        throw new ClassNotFoundException(String.format("No class found for name: %s because %s",
+            className, serviceResult.getErrorMessage()));
+      }
+      cacheClass(className, result);
+    }
+    return (Class<T>) result;
+  }
+
+  private static void cacheClass(String className, Class<?> clazz) {
+    if (!LOAD_CLASS_EACH_TIME) {
+      synchronized (cacheAccessLock) {
+        Class<?> cachedClass = getExistingCachedClass(className);
+        if (cachedClass == null) {
+          classCache.put(className, new WeakReference<>(clazz));
         }
       }
-      return (Class<T>) result;
     }
   }
 
@@ -3571,7 +3583,13 @@ public abstract class InternalDataSerializer extends DataSerializer {
         if (hasNonPublicInterface) {
           return Proxy.getProxyClass(nonPublicLoader, classObjs);
         } else {
-          return ClassPathLoader.getLatest().getProxyClass(classObjs);
+          ServiceResult<Class<?>> serviceResult =
+              ClassLoaderServiceInstance.getInstance().getProxyClass(classObjs);
+          if (serviceResult.isSuccessful()) {
+            return serviceResult.getMessage();
+          } else {
+            throw new ClassNotFoundException(serviceResult.getErrorMessage());
+          }
         }
       } catch (IllegalArgumentException e) {
         throw new ClassNotFoundException(null, e);

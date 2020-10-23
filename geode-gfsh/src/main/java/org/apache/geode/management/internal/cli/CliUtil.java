@@ -33,8 +33,8 @@ import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.Result;
@@ -69,12 +69,7 @@ public class CliUtil {
   }
 
   private static boolean canLoadClass(String className) {
-    try {
-      ClassPathLoader.getLatest().forName(className);
-    } catch (ClassNotFoundException e) {
-      return false;
-    }
-    return true;
+    return ClassLoaderServiceInstance.getInstance().forName(className).isSuccessful();
   }
 
   public static String getMemberNameOrId(DistributedMember distributedMember) {

@@ -17,19 +17,19 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.ServiceLoader;
+import java.util.List;
 import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.shell.core.CommandMarker;
 
-import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.CommandManager;
 import org.apache.geode.management.internal.cli.commands.VersionCommand;
 import org.apache.geode.management.internal.util.ClasspathScanLoadHelper;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * CommandManagerTest - Includes tests to check the CommandManager functions
@@ -52,21 +52,20 @@ public class ConnectionsCommandManagerTest {
     packagesToScan.add(GfshCommand.class.getPackage().getName());
     packagesToScan.add(VersionCommand.class.getPackage().getName());
 
-    ClasspathScanLoadHelper scanner = new ClasspathScanLoadHelper(packagesToScan);
-    ServiceLoader<CommandMarker> loader =
-        ServiceLoader.load(CommandMarker.class, ClassPathLoader.getLatest().asClassLoader());
-    loader.reload();
-    Iterator<CommandMarker> iterator = loader.iterator();
-
     Set<Class<?>> foundClasses;
 
+    ClasspathScanLoadHelper scanner = new ClasspathScanLoadHelper(packagesToScan);
     // geode's commands
     foundClasses = scanner.scanPackagesForClassesImplementing(CommandMarker.class,
         GfshCommand.class.getPackage().getName(),
         VersionCommand.class.getPackage().getName());
 
-    while (iterator.hasNext()) {
-      foundClasses.add(iterator.next().getClass());
+    ServiceResult<List<CommandMarker>> serviceLoadResult =
+        ClassLoaderServiceInstance.getInstance().loadService(CommandMarker.class);
+
+    if (serviceLoadResult.isSuccessful()) {
+      serviceLoadResult.getMessage()
+          .forEach(CommandMarker -> foundClasses.add(CommandMarker.getClass()));
     }
 
     Set<Class<?>> expectedClasses = new HashSet<>();

@@ -41,17 +41,25 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TemporaryFolder;
+import org.junit.runner.RunWith;
+import org.mockito.BDDMockito;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.DeployedJar;
-import org.apache.geode.internal.JarDeployer;
 import org.apache.geode.internal.cache.DirectoryHolder;
 import org.apache.geode.internal.cache.DiskInitFile;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.Oplog;
+import org.apache.geode.internal.deployment.jar.ClassPathLoader;
+import org.apache.geode.internal.deployment.jar.DeployedJar;
+import org.apache.geode.internal.deployment.jar.JarDeployer;
 
+@RunWith(PowerMockRunner.class)
+@PrepareForTest(ClassPathLoader.class)
 public class BackupFileCopierIntegrationTest {
   private static final String CONFIG_DIRECTORY = "config";
   private static final String USER_FILES = "user";
@@ -132,12 +140,15 @@ public class BackupFileCopierIntegrationTest {
   @Test
   public void copiesDeployedJarsToCorrectLocation() throws IOException {
     File myJarFile = tempFolder.newFile("myJar.jar");
-    JarDeployer deployer = mock(JarDeployer.class);
+    JarDeployer deployer = spy(ClassPathLoader.getLatest().getJarDeployer());
     DeployedJar deployedJar = mock(DeployedJar.class);
     when(deployedJar.getFileCanonicalPath()).thenReturn(myJarFile.getCanonicalPath());
     when(deployer.findDeployedJars()).thenReturn(Collections.singletonList(deployedJar));
-    fileCopier = spy(fileCopier);
-    doReturn(deployer).when(fileCopier).getJarDeployer();
+
+    ClassPathLoader classPathLoader = mock(ClassPathLoader.class);
+    when(classPathLoader.getJarDeployer()).thenReturn(deployer);
+    PowerMockito.mockStatic(ClassPathLoader.class);
+    BDDMockito.given(ClassPathLoader.getLatest()).willReturn(classPathLoader);
 
     fileCopier.copyDeployedJars();
 

@@ -67,7 +67,6 @@ import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.locks.DLockService;
-import org.apache.geode.internal.JarDeployer;
 import org.apache.geode.internal.cache.ClusterConfigurationLoader;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionFactory;
@@ -76,6 +75,7 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.config.JAXBService;
+import org.apache.geode.internal.deployment.jar.DeployJarFileUtils;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.internal.configuration.callbacks.ConfigurationChangeListener;
@@ -328,12 +328,12 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
   }
 
   private static void removeOtherVersionsOf(Path groupDir, String jarFileName) {
-    String artifactId = JarDeployer.getArtifactId(jarFileName);
+    String artifactId = DeployJarFileUtils.getArtifactId(jarFileName);
     for (File file : groupDir.toFile().listFiles()) {
       if (file.getName().equals(jarFileName)) {
         continue;
       }
-      if (JarDeployer.getArtifactId(file.getName()).equals(artifactId)) {
+      if (DeployJarFileUtils.getArtifactId(file.getName()).equals(artifactId)) {
         FileUtils.deleteQuietly(file);
       }
     }

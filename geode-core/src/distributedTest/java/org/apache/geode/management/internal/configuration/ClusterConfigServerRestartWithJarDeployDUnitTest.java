@@ -33,8 +33,9 @@ import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.compiler.JarBuilder;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -106,17 +107,20 @@ public class ClusterConfigServerRestartWithJarDeployDUnitTest {
                   .getOtherNormalDistributionManagerIds();
           InternalDistributedMember otherMember = others.stream().findFirst().get();
 
-          Class<?> studentClass = ClassPathLoader.getLatest()
+          ServiceResult<Class<?>> serviceResult = ClassLoaderServiceInstance.getInstance()
               .forName("ClusterConfigServerRestartWithJarDeployFunction$Student");
+          if (serviceResult.isSuccessful()) {
+            Class<?> studentClass = serviceResult.getMessage();
 
-          Object student = studentClass.getConstructor().newInstance();
+            Object student = studentClass.getConstructor().newInstance();
 
-          ResultCollector collector = FunctionService.onMember(otherMember)
-              .setArguments(student)
-              .execute("student-function");
+            ResultCollector collector = FunctionService.onMember(otherMember)
+                .setArguments(student)
+                .execute("student-function");
 
-          List<Object> results = (List<Object>) collector.getResult();
-          break;
+            List<Object> results = (List<Object>) collector.getResult();
+            break;
+          }
         } catch (FunctionException fex) {
           if (fex.getCause() instanceof FunctionInvocationTargetException) {
             LogService.getLogger().info("Sleeping for 500ms after recoverable exception {}",

@@ -14,8 +14,7 @@
  */
 package org.apache.geode.internal.cache.wan;
 
-import java.util.Iterator;
-import java.util.ServiceLoader;
+import java.util.List;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.client.internal.locator.wan.LocatorMembershipListener;
@@ -24,19 +23,21 @@ import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.distributed.internal.WanLocatorDiscoverer;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.spi.WANFactory;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 
 public class WANServiceProvider {
   @Immutable
   private static final WANFactory factory;
 
   static {
-    ServiceLoader<WANFactory> loader = ServiceLoader.load(WANFactory.class);
-    Iterator<WANFactory> itr = loader.iterator();
-    if (!itr.hasNext()) {
-      factory = null;
-    } else {
-      factory = itr.next();
+    ServiceResult<List<WANFactory>> serviceResult =
+        ClassLoaderServiceInstance.getInstance().loadService(WANFactory.class);
+    if (serviceResult.isSuccessful()) {
+      factory = serviceResult.getMessage().get(0);
       factory.initialize();
+    } else {
+      factory = null;
     }
   }
 

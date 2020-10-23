@@ -82,7 +82,6 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.CancellationException;
@@ -206,7 +205,6 @@ import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.i18n.LogWriterI18n;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 import org.apache.geode.internal.cache.backup.BackupService;
@@ -242,6 +240,7 @@ import org.apache.geode.internal.cache.xmlcache.CacheXmlParser;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlPropertyResolver;
 import org.apache.geode.internal.cache.xmlcache.PropertyResolver;
 import org.apache.geode.internal.config.ClusterConfigurationNotAvailableException;
+import org.apache.geode.internal.deployment.jar.ClassPathLoader;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.internal.jta.TransactionManagerImpl;
@@ -254,6 +253,7 @@ import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.internal.sequencelog.SequenceLoggerImpl;
 import org.apache.geode.internal.serialization.DSCODE;
 import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.internal.shared.StringPrintWriter;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.statistics.StatisticsClockFactory;
@@ -278,6 +278,8 @@ import org.apache.geode.pdx.internal.InternalPdxInstance;
 import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
 import org.apache.geode.pdx.internal.PdxInstanceImpl;
 import org.apache.geode.pdx.internal.TypeRegistry;
+import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * GemFire's implementation of a distributed {@link Cache}.
@@ -619,6 +621,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private final CountDownLatch isClosedLatch = new CountDownLatch(1);
 
+  private final ClassLoaderService classLoaderService;
+
   /**
    * Set of all gateway senders. It may be fetched safely (for enumeration), but updates must by
    * synchronized via {@link #allGatewaySendersLock}
@@ -956,6 +960,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     this.functionServiceRegisterFunction = functionServiceRegisterFunction;
     this.systemTimerFactory = systemTimerFactory;
     this.replyProcessor21Factory = replyProcessor21Factory;
+    this.classLoaderService = ClassLoaderServiceInstance.getInstance();
 
     // Synchronized to prevent a new cache from being created before an old one finishes closing
     synchronized (GemFireCacheImpl.class) {
@@ -1409,8 +1414,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       initializeRegionShortcuts(this);
     }
 
-    // set ClassPathLoader and then deploy cluster config jars
-    ClassPathLoader.setLatestToDefault(system.getConfig().getDeployWorkingDir());
+    // set working directory and then deploy cluster config jars
+    classLoaderService.setWorkingDirectory(system.getConfig().getDeployWorkingDir());
 
     try {
       ccLoader.deployJarsReceivedFromClusterConfiguration(configurationResponse);
@@ -1499,16 +1504,22 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * Initialize any services provided as extensions to the cache using service loader.
    */
   private void initializeServices() {
-    ServiceLoader<CacheService> loader = ServiceLoader.load(CacheService.class);
-    for (CacheService service : loader) {
-      try {
-        if (service.init(this)) {
-          services.put(service.getInterface(), service);
-          logger.info("Initialized cache service {}", service.getClass().getName());
+    ServiceResult<List<CacheService>> loadedServices =
+        classLoaderService.loadService(CacheService.class);
+    if (loadedServices.isSuccessful()) {
+      for (CacheService service : loadedServices.getMessage()) {
+        try {
+          if (service.init(this)) {
+            this.services.put(service.getInterface(), service);
+            logger.info("Initialized cache service {}", service.getClass().getName());
+          }
+        } catch (Exception ex) {
+          logger.warn("Cache service " + service.getClass().getName() + " failed to initialize",
+              ex);
         }
-      } catch (Exception ex) {
-        logger.warn("Cache service " + service.getClass().getName() + " failed to initialize", ex);
       }
+    } else {
+      logger.warn(loadedServices.getErrorMessage());
     }
   }
 
@@ -1555,7 +1566,13 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       if (resource.length() > 1 && resource.startsWith("/")) {
         resource = resource.substring(1);
       }
-      url = ClassPathLoader.getLatest().getResource(getClass(), resource);
+      ServiceResult<URL> serviceResult =
+          classLoaderService.getResource(getClass(), resource);
+      if (serviceResult.isSuccessful()) {
+        url = serviceResult.getMessage();
+      } else {
+        url = null;
+      }
     } else {
       try {
         url = xmlFile.toURL();

@@ -16,15 +16,17 @@ package org.apache.geode.internal.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ServiceConfigurationError;
-import java.util.ServiceLoader;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * Implements {@link CollectingServiceLoader} by returning a {@link List} of all currently loadable
@@ -71,16 +73,19 @@ public class ListCollectingServiceLoader<S> implements CollectingServiceLoader<S
 
   private static class DefaultServiceLoader<S> implements ServiceLoaderWrapper<S> {
 
-    private ServiceLoader<S> actualServiceLoader;
+    private ServiceResult<List<S>> serviceResult;
 
     @Override
     public void load(Class<S> service) {
-      actualServiceLoader = ServiceLoader.load(service);
+      serviceResult = ClassLoaderServiceInstance.getInstance().loadService(service);
     }
 
     @Override
     public Iterator<S> iterator() throws ServiceConfigurationError {
-      return actualServiceLoader.iterator();
+      if (serviceResult.isSuccessful()) {
+        return serviceResult.getMessage().iterator();
+      }
+      return Collections.emptyIterator();
     }
   }
 }

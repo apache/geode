@@ -43,8 +43,9 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.admin.RuntimeAdminException;
 import org.apache.geode.annotations.internal.MakeNotStatic;
-import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * Common support for MBeans and {@link ManagedResource}s. Static loading of this class creates the
@@ -168,16 +169,19 @@ public class MBeanUtil {
 
         String mbeansResource = getOSPath("/org/apache/geode/admin/jmx/mbeans-descriptors.xml");
 
-        URL url = ClassPathLoader.getLatest().getResource(MBeanUtil.class, mbeansResource);
-        raiseOnFailure(url != null, String.format("Failed to find %s",
-            new Object[] {mbeansResource}));
+        URL url = null;
+        ServiceResult<URL> serviceResult =
+            ClassLoaderServiceInstance.getInstance().getResource(MBeanUtil.class, mbeansResource);
+        if (serviceResult.isSuccessful()) {
+          url = serviceResult.getMessage();
+        }
+        raiseOnFailure(url != null, String.format("Failed to find %s", mbeansResource));
         registry.loadMetadata(url);
 
         // simple test to make sure the xml was actually loaded and is valid...
         String[] test = registry.findManagedBeans();
         raiseOnFailure(test != null && test.length > 0,
-            String.format("Failed to load metadata from %s",
-                new Object[] {mbeansResource}));
+            String.format("Failed to load metadata from %s", mbeansResource));
       } catch (Exception e) {
         logStackTrace(Level.WARN, e);
         throw new RuntimeAdminException(

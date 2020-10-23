@@ -22,48 +22,55 @@ import java.util.Properties;
 import javax.sql.DataSource;
 
 import org.apache.geode.datasource.PooledDataSourceFactory;
-import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 
 public class CacheJTAPooledDataSourceFactory implements PooledDataSourceFactory {
   @Override
   public DataSource createDataSource(Properties poolProperties, Properties dataSourceProperties) {
-    try {
-      Class<?> cl =
-          ClassPathLoader.getLatest().forName("org.apache.derby.jdbc.EmbeddedDataSource");
-      DataSource dataSource = (DataSource) cl.newInstance();
-      String url = poolProperties.getProperty("connection-url");
-      int startIdx = url.lastIndexOf(':');
-      int endIdx = url.indexOf(';');
-      if (endIdx == -1) {
-        endIdx = url.length();
+    ServiceResult<Class<?>> serviceResult =
+        ClassLoaderServiceInstance.getInstance()
+            .forName("org.apache.derby.jdbc.EmbeddedDataSource");
+    if (serviceResult.isSuccessful()) {
+      try {
+        Class<?> cl = serviceResult.getMessage();
+        DataSource dataSource = (DataSource) cl.newInstance();
+        String url = poolProperties.getProperty("connection-url");
+        int startIdx = url.lastIndexOf(':');
+        int endIdx = url.indexOf(';');
+        if (endIdx == -1) {
+          endIdx = url.length();
+        }
+        String dbName = url.substring(startIdx + 1, endIdx);
+        Method setName = cl.getMethod("setDatabaseName", String.class);
+        Object[] arg = new Object[1];
+        arg[0] = dbName;
+        setName.invoke(dataSource, arg);
+        if (url.contains("create=true")) {
+          Method setCreateDatabase = cl.getMethod("setCreateDatabase", String.class);
+          arg[0] = "create";
+          setCreateDatabase.invoke(dataSource, arg);
+        }
+        String username = poolProperties.getProperty("user-name");
+        if (username != null) {
+          Method setUser = cl.getMethod("setUser", String.class);
+          arg[0] = username;
+          setUser.invoke(dataSource, arg);
+        }
+        String password = poolProperties.getProperty("password");
+        if (password != null) {
+          Method setPassword = cl.getMethod("setPassword", String.class);
+          arg[0] = password;
+          setPassword.invoke(dataSource, arg);
+        }
+        return dataSource;
+      } catch (Exception e) {
+        System.out.println("Failed to create dataSource " + e);
+        e.printStackTrace();
+        throw new RuntimeException(e);
       }
-      String dbName = url.substring(startIdx + 1, endIdx);
-      Method setName = cl.getMethod("setDatabaseName", String.class);
-      Object[] arg = new Object[1];
-      arg[0] = dbName;
-      setName.invoke(dataSource, arg);
-      if (url.contains("create=true")) {
-        Method setCreateDatabase = cl.getMethod("setCreateDatabase", String.class);
-        arg[0] = "create";
-        setCreateDatabase.invoke(dataSource, arg);
-      }
-      String username = poolProperties.getProperty("user-name");
-      if (username != null) {
-        Method setUser = cl.getMethod("setUser", String.class);
-        arg[0] = username;
-        setUser.invoke(dataSource, arg);
-      }
-      String password = poolProperties.getProperty("password");
-      if (password != null) {
-        Method setPassword = cl.getMethod("setPassword", String.class);
-        arg[0] = password;
-        setPassword.invoke(dataSource, arg);
-      }
-      return dataSource;
-    } catch (Exception e) {
-      System.out.println("Failed to create dataSource " + e);
-      e.printStackTrace();
-      throw new RuntimeException(e);
+    } else {
+      throw new RuntimeException(serviceResult.getErrorMessage());
     }
   }
 }

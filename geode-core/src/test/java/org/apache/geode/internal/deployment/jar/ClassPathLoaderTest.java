@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal;
+package org.apache.geode.internal.deployment.jar;
 
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -220,10 +220,10 @@ public class ClassPathLoaderTest {
   public void testGeneratingClassLoader() throws Exception {
     System.out.println("\nStarting ClassPathLoaderTest#testGeneratingClassLoader");
 
-    ClassLoader gcl = new GeneratingClassLoader();
+    ClassLoader generatingClassLoader = new GeneratingClassLoader();
     String classToLoad = "com.nowhere.TestGeneratingClassLoader";
 
-    Class<?> clazz = gcl.loadClass(classToLoad);
+    Class<?> clazz = generatingClassLoader.loadClass(classToLoad);
     assertThat(clazz).isNotNull();
     assertThat(clazz.getName()).isEqualTo(classToLoad);
 
@@ -234,7 +234,7 @@ public class ClassPathLoaderTest {
       Class.forName(classToLoad);
     }).isInstanceOf(ClassNotFoundException.class);
 
-    Class<?> clazzForName = Class.forName(classToLoad, true, gcl);
+    Class<?> clazzForName = Class.forName(classToLoad, true, generatingClassLoader);
     assertThat(clazzForName).isNotNull();
     assertThat(clazzForName).isEqualTo(clazz);
 
@@ -251,11 +251,11 @@ public class ClassPathLoaderTest {
   public void testForNameWithObjectArray() throws Exception {
     System.out.println("\nStarting ClassPathLoaderTest#testForNameWithObjectArray");
 
-    ClassPathLoader dcl = ClassPathLoader.createWithDefaults(false);
+    ClassPathLoader defaultClassLoader = ClassPathLoader.createWithDefaults(false);
 
     String classToLoad = "[Ljava.lang.String;";
     Class<?> clazz = null;
-    clazz = dcl.forName(classToLoad);
+    clazz = defaultClassLoader.forName(classToLoad);
     assertThat(clazz.getName()).isEqualTo(classToLoad);
   }
 
@@ -267,11 +267,11 @@ public class ClassPathLoaderTest {
   public void testForNameWithTCCL() throws Exception {
     System.out.println("\nStarting ClassPathLoaderTest#testForNameWithTCCL");
 
-    final ClassPathLoader dcl = ClassPathLoader.createWithDefaults(false);
+    final ClassPathLoader defaultClassLoader = ClassPathLoader.createWithDefaults(false);
     final String classToLoad = "com.nowhere.TestForNameWithTCCL";
 
     assertThatThrownBy(() -> {
-      dcl.forName(classToLoad);
+      defaultClassLoader.forName(classToLoad);
 
     }).isInstanceOf(ClassNotFoundException.class);
 
@@ -279,7 +279,7 @@ public class ClassPathLoaderTest {
     try {
       // ensure that TCCL is only CL that can find this class
       Thread.currentThread().setContextClassLoader(new GeneratingClassLoader());
-      Class<?> clazz = dcl.forName(classToLoad);
+      Class<?> clazz = defaultClassLoader.forName(classToLoad);
       assertThat(clazz).isNotNull();
       Object instance = clazz.newInstance();
       assertThat(instance).isNotNull();
@@ -289,7 +289,7 @@ public class ClassPathLoaderTest {
     }
 
     assertThatThrownBy(() -> {
-      dcl.forName(classToLoad);
+      defaultClassLoader.forName(classToLoad);
     }).isInstanceOf(ClassNotFoundException.class);
   }
 
@@ -376,7 +376,7 @@ public class ClassPathLoaderTest {
   public void testBrokenTCCLThrowsErrors() throws Exception {
     System.out.println("\nStarting ClassPathLoaderTest#testBrokenTCCLThrowsErrors");
 
-    ClassPathLoader dcl = ClassPathLoader.createWithDefaults(false);
+    ClassPathLoader defaultClassLoader = ClassPathLoader.createWithDefaults(false);
 
     ClassLoader cl = Thread.currentThread().getContextClassLoader();
     try {
@@ -385,16 +385,16 @@ public class ClassPathLoaderTest {
 
       String classToLoad = "java.lang.String";
       assertThatThrownBy(() -> {
-        dcl.forName(classToLoad);
+        defaultClassLoader.forName(classToLoad);
       }).isInstanceOf(BrokenError.class);
 
       String resourceToGet = "java/lang/String.class";
       assertThatThrownBy(() -> {
-        dcl.getResource(resourceToGet);
+        defaultClassLoader.getResource(resourceToGet);
       }).isInstanceOf(BrokenError.class);
 
       assertThatThrownBy(() -> {
-        dcl.getResourceAsStream(resourceToGet);
+        defaultClassLoader.getResourceAsStream(resourceToGet);
       }).isInstanceOf(BrokenError.class);
     } finally {
       Thread.currentThread().setContextClassLoader(cl);
@@ -410,7 +410,7 @@ public class ClassPathLoaderTest {
     System.out.println("\nStarting ClassPathLoaderTest#testEverythingWithDefaultLoader");
 
     // create DCL such that parent cannot find anything
-    ClassPathLoader dcl = ClassPathLoader.createWithDefaults(true);
+    ClassPathLoader defaultClassLoader = ClassPathLoader.createWithDefaults(true);
 
     ClassLoader cl = Thread.currentThread().getContextClassLoader();
     try {
@@ -418,13 +418,13 @@ public class ClassPathLoaderTest {
       Thread.currentThread().setContextClassLoader(new BrokenClassLoader());
 
       String classToLoad = "java.lang.String";
-      Class<?> clazz = dcl.forName(classToLoad);
+      Class<?> clazz = defaultClassLoader.forName(classToLoad);
       assertThat(clazz).isNotNull();
 
       String resourceToGet = "java/lang/String.class";
-      URL url = dcl.getResource(resourceToGet);
+      URL url = defaultClassLoader.getResource(resourceToGet);
       assertThat(url).isNotNull();
-      InputStream is = dcl.getResourceAsStream(resourceToGet);
+      InputStream is = defaultClassLoader.getResourceAsStream(resourceToGet);
       assertThat(is).isNotNull();
     } finally {
       Thread.currentThread().setContextClassLoader(cl);
@@ -439,12 +439,12 @@ public class ClassPathLoaderTest {
   public void testExcludeTCCL() throws Exception {
     System.out.println("\nStarting ClassPathLoaderTest#testExcludeTCCL");
 
-    ClassPathLoader dcl = ClassPathLoader.createWithDefaults(true);
+    ClassPathLoader defaultClassLoader = ClassPathLoader.createWithDefaults(true);
 
     String classToLoad = "com.nowhere.TestExcludeTCCL";
 
     assertThatThrownBy(() -> {
-      dcl.forName(classToLoad);
+      defaultClassLoader.forName(classToLoad);
 
     }).isInstanceOf(ClassNotFoundException.class);
 
@@ -454,7 +454,7 @@ public class ClassPathLoaderTest {
       Thread.currentThread().setContextClassLoader(new GeneratingClassLoader());
 
       assertThatThrownBy(() -> {
-        dcl.forName(classToLoad);
+        defaultClassLoader.forName(classToLoad);
       }).isInstanceOf(ClassNotFoundException.class);
     } finally {
       Thread.currentThread().setContextClassLoader(cl);
@@ -469,16 +469,16 @@ public class ClassPathLoaderTest {
   public void testGetResourceExcludeTCCL() throws Exception {
     System.out.println("\nStarting ClassPathLoaderTest#testGetResourceExcludeTCCL");
 
-    ClassPathLoader dcl = ClassPathLoader.createWithDefaults(true);
+    ClassPathLoader defaultClassLoader = ClassPathLoader.createWithDefaults(true);
 
     String resourceToGet = "com/nowhere/testGetResourceExcludeTCCL.rsc";
-    assertThat(dcl.getResource(resourceToGet)).isNull();
+    assertThat(defaultClassLoader.getResource(resourceToGet)).isNull();
 
     ClassLoader cl = Thread.currentThread().getContextClassLoader();
     try {
       // ensure that TCCL is only CL that can find this resource
       Thread.currentThread().setContextClassLoader(new GeneratingClassLoader());
-      assertThat(dcl.getResource(resourceToGet)).isNull();
+      assertThat(defaultClassLoader.getResource(resourceToGet)).isNull();
     } finally {
       Thread.currentThread().setContextClassLoader(cl);
     }
@@ -492,16 +492,16 @@ public class ClassPathLoaderTest {
   public void testGetResourceAsStreamExcludeTCCL() throws Exception {
     System.out.println("\nStarting ClassPathLoaderTest#testGetResourceAsStreamExcludeTCCL");
 
-    ClassPathLoader dcl = ClassPathLoader.createWithDefaults(true);
+    ClassPathLoader defaultClassLoader = ClassPathLoader.createWithDefaults(true);
 
     String resourceToGet = "com/nowhere/testGetResourceAsStreamExcludeTCCL.rsc";
-    assertThat(dcl.getResourceAsStream(resourceToGet)).isNull();
+    assertThat(defaultClassLoader.getResourceAsStream(resourceToGet)).isNull();
 
     ClassLoader cl = Thread.currentThread().getContextClassLoader();
     try {
       // ensure that TCCL is only CL that can find this resource
       Thread.currentThread().setContextClassLoader(new GeneratingClassLoader());
-      assertThat(dcl.getResourceAsStream(resourceToGet)).isNull();
+      assertThat(defaultClassLoader.getResourceAsStream(resourceToGet)).isNull();
     } finally {
       Thread.currentThread().setContextClassLoader(cl);
     }

@@ -15,8 +15,9 @@
 package org.apache.geode.internal.cache.partitioned.colocation;
 
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 
 @FunctionalInterface
 public interface ColocationLoggerFactory {
@@ -28,7 +29,12 @@ public interface ColocationLoggerFactory {
     try {
       String className = System.getProperty(COLOCATION_LOGGER_FACTORY_PROPERTY,
           SingleThreadColocationLoggerFactory.class.getName());
-      return (ColocationLoggerFactory) ClassPathLoader.getLatest().forName(className).newInstance();
+      ServiceResult<Class<?>> serviceResult = ClassLoaderServiceInstance.getInstance()
+          .forName(className);
+      if (serviceResult.isSuccessful()) {
+        return (ColocationLoggerFactory) serviceResult.getMessage().newInstance();
+      }
+      return new SingleThreadColocationLoggerFactory();
     } catch (Exception e) {
       return new SingleThreadColocationLoggerFactory();
     }

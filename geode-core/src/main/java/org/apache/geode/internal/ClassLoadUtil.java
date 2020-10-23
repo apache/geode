@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 
 public class ClassLoadUtil {
 
@@ -47,7 +49,11 @@ public class ClassLoadUtil {
   public static Class classFromName(String className) throws ClassNotFoundException {
     Class result = checkForPrimType(className);
     if (result == null) {
-      result = ClassPathLoader.getLatest().forName(className);
+      ServiceResult<Class<?>> serviceResult =
+          ClassLoaderServiceInstance.getInstance().forName(className);
+      if (serviceResult.isSuccessful()) {
+        result = serviceResult.getMessage();
+      }
     }
     return result;
   }
@@ -67,8 +73,14 @@ public class ClassLoadUtil {
       throw new NoSuchMethodException(className + " cannot be one of the primitive types");
     }
     String methodName = fullyQualifiedMethodName.substring(classIndex + 1);
-    Class<?> result = ClassPathLoader.getLatest().forName(className);
-    return result.getMethod(methodName);
+    ServiceResult<Class<?>> serviceResult =
+        ClassLoaderServiceInstance.getInstance().forName(className);
+    if (serviceResult.isSuccessful()) {
+      Class<?> result = serviceResult.getMessage();
+      return result.getMethod(methodName);
+    } else {
+      throw new ClassNotFoundException(className);
+    }
   }
 
   /**

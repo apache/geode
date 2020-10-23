@@ -39,15 +39,16 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * @since GemFire 7.0
@@ -107,9 +108,14 @@ public class UserFunctionExecution implements InternalFunction<Object[]> {
   ResultCollector<Object, List<Object>> parseResultCollector(String resultCollectorName)
       throws ClassNotFoundException, IllegalAccessException, InstantiationException {
     if (resultCollectorName != null && resultCollectorName.length() > 0) {
-      return (ResultCollector<Object, List<Object>>) ClassPathLoader.getLatest()
-          .forName(resultCollectorName)
-          .newInstance();
+      ServiceResult<Class<?>> serviceResult =
+          ClassLoaderServiceInstance.getInstance().forName(resultCollectorName);
+      if (serviceResult.isSuccessful()) {
+        return (ResultCollector<Object, List<Object>>) serviceResult.getMessage().newInstance();
+      } else {
+        throw new ClassNotFoundException(String.format("No class found for name: %s because %s",
+            resultCollectorName, serviceResult.getErrorMessage()));
+      }
     } else {
       return null;
     }

@@ -14,7 +14,7 @@
  *
  */
 
-package org.apache.geode.internal;
+package org.apache.geode.internal.deployment.jar;
 
 import static java.nio.file.Files.readAllBytes;
 import static java.util.stream.Collectors.toList;
@@ -147,121 +147,121 @@ public class JarDeployerFileTest {
   public void toArtifactId() {
     // Semantic versions
     String fileName = "abc.1.v1.jar";
-    assertThat(JarDeployer.toArtifactId(fileName))
+    assertThat(DeployJarFileUtils.getArtifactIdForSequencedJar(fileName))
         .as("For filename %s", fileName)
         .isEqualTo("abc");
     fileName = "abc.1.1.v1.jar";
-    assertThat(JarDeployer.toArtifactId(fileName))
+    assertThat(DeployJarFileUtils.getArtifactIdForSequencedJar(fileName))
         .as("For filename %s", fileName)
         .isEqualTo("abc");
     fileName = "abc.1.1.1.v2.jar";
-    assertThat(JarDeployer.toArtifactId(fileName))
+    assertThat(DeployJarFileUtils.getArtifactIdForSequencedJar(fileName))
         .as("For filename %s", fileName)
         .isEqualTo("abc");
     fileName = "abc.1.1.1.1.1.1.1.1.1.1.1.v1.jar";
-    assertThat(JarDeployer.toArtifactId(fileName))
+    assertThat(DeployJarFileUtils.getArtifactIdForSequencedJar(fileName))
         .as("For filename %s", fileName)
         .isEqualTo("abc");
     fileName = "abc.1.SNAPSHOT.v2.jar";
-    assertThat(JarDeployer.toArtifactId(fileName))
+    assertThat(DeployJarFileUtils.getArtifactIdForSequencedJar(fileName))
         .as("For filename %s", fileName)
         .isEqualTo("abc");
     fileName = "abc.1.1.SNAPSHOT.v2.jar";
-    assertThat(JarDeployer.toArtifactId(fileName))
+    assertThat(DeployJarFileUtils.getArtifactIdForSequencedJar(fileName))
         .as("For filename %s", fileName)
         .isEqualTo("abc");
     fileName = "abc.1.1.1.SNAPSHOT.v2.jar";
-    assertThat(JarDeployer.toArtifactId(fileName))
+    assertThat(DeployJarFileUtils.getArtifactIdForSequencedJar(fileName))
         .as("For filename %s", fileName)
         .isEqualTo("abc");
 
     fileName = "abc1.1.1.1.v2.jar";
-    assertThat(JarDeployer.toArtifactId(fileName))
+    assertThat(DeployJarFileUtils.getArtifactIdForSequencedJar(fileName))
         .as("For filename %s", fileName)
         .isEqualTo("abc1");
 
     fileName = "abc-1.v2.jar";
-    assertThat(JarDeployer.toArtifactId(fileName))
+    assertThat(DeployJarFileUtils.getArtifactIdForSequencedJar(fileName))
         .as("For filename %s", fileName)
         .isEqualTo("abc");
     fileName = "abc-1.1.v2.jar";
-    assertThat(JarDeployer.toArtifactId(fileName))
+    assertThat(DeployJarFileUtils.getArtifactIdForSequencedJar(fileName))
         .as("For filename %s", fileName)
         .isEqualTo("abc");
     fileName = "abc-1.1.1.v2.jar";
-    assertThat(JarDeployer.toArtifactId(fileName))
+    assertThat(DeployJarFileUtils.getArtifactIdForSequencedJar(fileName))
         .as("For filename %s", fileName)
         .isEqualTo("abc");
     fileName = "abc-1.SNAPSHOT.v2.jar";
-    assertThat(JarDeployer.toArtifactId(fileName))
+    assertThat(DeployJarFileUtils.getArtifactIdForSequencedJar(fileName))
         .as("For filename %s", fileName)
         .isEqualTo("abc");
     fileName = "abc-1.1.SNAPSHOT.v2.jar";
-    assertThat(JarDeployer.toArtifactId(fileName))
+    assertThat(DeployJarFileUtils.getArtifactIdForSequencedJar(fileName))
         .as("For filename %s", fileName)
         .isEqualTo("abc");
     fileName = "abc-1.1.1.SNAPSHOT.v2.jar";
-    assertThat(JarDeployer.toArtifactId(fileName))
+    assertThat(DeployJarFileUtils.getArtifactIdForSequencedJar(fileName))
         .as("For filename %s", fileName)
         .isEqualTo("abc");
 
     fileName = "ab.c-1.1.1.v2.jar";
-    assertThat(JarDeployer.toArtifactId(fileName))
+    assertThat(DeployJarFileUtils.getArtifactIdForSequencedJar(fileName))
         .as("For filename %s", fileName)
         .isEqualTo("ab.c");
 
     fileName = "ab-c-1.1.1.v2.jar";
-    assertThat(JarDeployer.toArtifactId(fileName))
+    assertThat(DeployJarFileUtils.getArtifactIdForSequencedJar(fileName))
         .as("For filename %s", fileName)
         .isEqualTo("ab-c");
 
     fileName = "abc-1.0.RELEASE.2019.v2.jar";
-    assertThat(JarDeployer.toArtifactId(fileName))
+    assertThat(DeployJarFileUtils.getArtifactIdForSequencedJar(fileName))
         .as("For filename %s", fileName)
         .isEqualTo("abc");
 
     // Sequenced version scheme
     fileName = "abc.v92.jar";
-    assertThat(JarDeployer.toArtifactId(fileName))
+    assertThat(DeployJarFileUtils.getArtifactIdForSequencedJar(fileName))
         .as("For filename %s", fileName)
         .isEqualTo("abc");
     fileName = "ab.c.v92.jar";
-    assertThat(JarDeployer.toArtifactId(fileName))
+    assertThat(DeployJarFileUtils.getArtifactIdForSequencedJar(fileName))
         .as("For filename %s", fileName)
         .isEqualTo("ab.c");
     fileName = "abc.v1.v1.jar";
-    assertThat(JarDeployer.toArtifactId(fileName))
+    assertThat(DeployJarFileUtils.getArtifactIdForSequencedJar(fileName))
         .as("For filename %s", fileName)
         .isEqualTo("abc.v1");
     fileName = "ab-c.v92.jar";
-    assertThat(JarDeployer.toArtifactId(fileName))
+    assertThat(DeployJarFileUtils.getArtifactIdForSequencedJar(fileName))
         .as("For filename %s", fileName)
         .isEqualTo("ab-c");
 
     // Names where we do not recognize a version
     fileName = "abc-1.0.jar";
-    assertThat(JarDeployer.toArtifactId(fileName))
+    assertThat(DeployJarFileUtils.getArtifactIdForSequencedJar(fileName))
         .as("For filename %s", fileName)
         .isNull();
     fileName = "abc.jar";
-    assertThat(JarDeployer.toArtifactId(fileName))
+    assertThat(DeployJarFileUtils.getArtifactIdForSequencedJar(fileName))
         .as("For filename %s", fileName)
         .isNull();
     fileName = "abc.v92c.jar";
-    assertThat(JarDeployer.toArtifactId(fileName))
+    assertThat(DeployJarFileUtils.getArtifactIdForSequencedJar(fileName))
         .as("For filename %s", fileName)
         .isNull();
   }
 
   @Test
   public void getArtifactId() throws Exception {
-    assertThat(JarDeployer.getArtifactId("abc.jar")).isEqualTo("abc");
-    assertThat(JarDeployer.getArtifactId("abc-1.jar")).isEqualTo("abc");
-    assertThat(JarDeployer.getArtifactId("ab.c.1.jar")).isEqualTo("ab.c");
-    assertThat(JarDeployer.getArtifactId("abc.v1.jar")).isEqualTo("abc.v1");
-    assertThat(JarDeployer.getArtifactId("abc-1.0.snapshot.jar")).isEqualTo("abc");
-    assertThat(JarDeployer.getArtifactId("abc-1.0.v1.jar")).isEqualTo("abc");
-    assertThat(JarDeployer.getArtifactId("spark-network-common_2.11-2.3.1.jar"))
+    assertThat(DeployJarFileUtils.getArtifactId("abc.jar")).isEqualTo("abc");
+    assertThat(DeployJarFileUtils.getArtifactId("abc-1.jar")).isEqualTo("abc");
+    assertThat(DeployJarFileUtils.getArtifactId("ab.c.1.jar")).isEqualTo("ab.c");
+    assertThat(DeployJarFileUtils.getArtifactId("abc.v1.jar")).isEqualTo("abc.v1");
+    assertThat(DeployJarFileUtils.getArtifactId("abc-1.0.snapshot.jar")).isEqualTo("abc");
+    assertThat(DeployJarFileUtils.getArtifactId("abc-1.0.v1.jar")).isEqualTo("abc");
+    assertThat(DeployJarFileUtils.getArtifactId("spark-network-common_2.11-2.3.1.jar"))
         .isEqualTo("spark-network-common_2");
   }
 
@@ -365,26 +365,26 @@ public class JarDeployerFileTest {
   @Test
   public void testVersionNumberMatcher() {
     String fileName = stagingFolder.toPath().resolve("MyJar.v1.jar").toAbsolutePath().toString();
-    int version = JarDeployer.extractVersionFromFilename(fileName);
+    int version = DeployJarFileUtils.extractVersionFromFilename(fileName);
     assertThat(version).isEqualTo(1);
   }
 
   @Test
   public void isSequenceVersion() throws Exception {
-    assertThat(JarDeployer.isDeployedFile("abc.v1.jar")).isTrue();
-    assertThat(JarDeployer.isDeployedFile("abc.v2.jar")).isTrue();
-    assertThat(JarDeployer.isDeployedFile("abc.jar")).isFalse();
-    assertThat(JarDeployer.isDeployedFile("abc-1.0.jar")).isFalse();
-    assertThat(JarDeployer.isDeployedFile("abc-1.0.v1.jar")).isTrue();
+    assertThat(DeployJarFileUtils.isDeployedFile("abc.v1.jar")).isTrue();
+    assertThat(DeployJarFileUtils.isDeployedFile("abc.v2.jar")).isTrue();
+    assertThat(DeployJarFileUtils.isDeployedFile("abc.jar")).isFalse();
+    assertThat(DeployJarFileUtils.isDeployedFile("abc-1.0.jar")).isFalse();
+    assertThat(DeployJarFileUtils.isDeployedFile("abc-1.0.v1.jar")).isTrue();
   }
 
   @Test
   public void isSemanticVersion() throws Exception {
-    assertThat(JarDeployer.isSemanticVersion("abc.v1.jar")).isFalse();
-    assertThat(JarDeployer.isSemanticVersion("abc.v2.jar")).isFalse();
-    assertThat(JarDeployer.isSemanticVersion("abc.jar")).isFalse();
-    assertThat(JarDeployer.isSemanticVersion("abc-1.0.jar")).isTrue();
-    assertThat(JarDeployer.isSemanticVersion("abc-1.0.v1.jar")).isTrue();
+    assertThat(DeployJarFileUtils.isSemanticVersion("abc.v1.jar")).isFalse();
+    assertThat(DeployJarFileUtils.isSemanticVersion("abc.v2.jar")).isFalse();
+    assertThat(DeployJarFileUtils.isSemanticVersion("abc.jar")).isFalse();
+    assertThat(DeployJarFileUtils.isSemanticVersion("abc-1.0.jar")).isTrue();
+    assertThat(DeployJarFileUtils.isSemanticVersion("abc-1.0.v1.jar")).isTrue();
   }
 
   @Test

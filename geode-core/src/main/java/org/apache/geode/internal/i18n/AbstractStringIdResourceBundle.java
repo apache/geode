@@ -25,8 +25,8 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.i18n.StringId;
-import org.apache.geode.internal.ClassPathLoader;
-
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * Baseclass for all {@link StringId} based ResourceBundles
@@ -49,9 +49,13 @@ public class AbstractStringIdResourceBundle {
     sb.append("_").append(l.getLanguage()).append(".txt");
     String resource = sb.toString();
 
-    InputStream is = null;
+    data = null;
     try {
-      is = ClassPathLoader.getLatest().getResourceAsStream(getClass(), resource);
+      ServiceResult<InputStream> serviceResult =
+          ClassLoaderServiceInstance.getInstance().getResourceAsStream(getClass(), resource);
+      if (serviceResult.isSuccessful()) {
+        data = readDataFile(serviceResult.getMessage());
+      }
     } catch (SecurityException se) {
       // We do not have a logger yet
       System.err.println(
@@ -59,13 +63,6 @@ public class AbstractStringIdResourceBundle {
               + se.toString());
       se.printStackTrace();
       System.err.flush();
-    }
-    if (is == null) {
-      // No matching data file for the requested langauge,
-      // defaulting to English
-      data = null;
-    } else {
-      data = readDataFile(is);
     }
   }
 

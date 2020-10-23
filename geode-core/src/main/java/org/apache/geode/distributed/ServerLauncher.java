@@ -34,13 +34,13 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.ServiceLoader;
 import java.util.TreeMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeoutException;
@@ -94,6 +94,7 @@ import org.apache.geode.internal.process.ProcessControllerParameters;
 import org.apache.geode.internal.process.ProcessLauncherContext;
 import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.internal.process.UnableToControlProcessException;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.lang.AttachAPINotFoundException;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -103,6 +104,7 @@ import org.apache.geode.management.internal.util.JsonUtil;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -893,9 +895,17 @@ public class ServerLauncher extends AbstractLauncher<String> {
   }
 
   private Iterable<ServerLauncherCacheProvider> getServerLauncherCacheProviders() {
-    return serverLauncherCacheProvider != null
-        ? Collections.singleton(serverLauncherCacheProvider)
-        : ServiceLoader.load(ServerLauncherCacheProvider.class);
+    if (serverLauncherCacheProvider != null) {
+      return Collections.singleton(serverLauncherCacheProvider);
+    } else {
+      ServiceResult<List<ServerLauncherCacheProvider>> serviceResult =
+          ClassLoaderServiceInstance.getInstance().loadService(ServerLauncherCacheProvider.class);
+      if (serviceResult.isSuccessful()) {
+        return serviceResult.getMessage();
+      } else {
+        return new ArrayList<>();
+      }
+    }
   }
 
   /**

@@ -16,7 +16,6 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
 import java.io.Serializable;
@@ -26,7 +25,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.deployment.jar.ClassPathLoader;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -318,13 +318,14 @@ public class DeployWithGroupsDUnitTest implements Serializable {
 
   private void assertThatCanLoad(String jarName, String className) throws ClassNotFoundException {
     assertThat(ClassPathLoader.getLatest().getJarDeployer().getDeployedJar(jarName)).isNotNull();
-    assertThat(ClassPathLoader.getLatest().forName(className)).isNotNull();
+    assertThat(ClassLoaderServiceInstance.getInstance().forName(className).getMessage())
+        .isNotNull();
   }
 
   private void assertThatCannotLoad(String jarName, String className) {
     assertThat(ClassPathLoader.getLatest().getJarDeployer().getDeployedJar(jarName)).isNull();
-    assertThatThrownBy(() -> ClassPathLoader.getLatest().forName(className))
-        .isExactlyInstanceOf(ClassNotFoundException.class);
+    assertThat(ClassLoaderServiceInstance.getInstance().forName(className).isSuccessful())
+        .isFalse();
   }
 
   @Test

@@ -27,8 +27,9 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -164,19 +165,19 @@ public class OffHeapStorage implements OffHeapMemoryStats {
   private static void validateVmCompatibility() {
     try {
       // Do we have the Unsafe class? Throw ClassNotFoundException if not.
-      Class<?> klass = ClassPathLoader.getLatest().forName("sun.misc.Unsafe");
-
-      // Okay, we have the class. Do we have the copyMemory method (not all JVMs support it)? Throw
-      // NoSuchMethodException if not.
-      @SuppressWarnings("unused")
-      Method copyMemory = klass.getMethod("copyMemory", Object.class, long.class, Object.class,
-          long.class, long.class);
-    } catch (ClassNotFoundException e) {
-      throw new CacheException(
-          String.format(
-              "Your Java virtual machine is incompatible with off-heap memory.  Please refer to %s documentation for suggested JVMs.",
-              "product"),
-          e) {};
+      ServiceResult<Class<?>> serviceResult =
+          ClassLoaderServiceInstance.getInstance().forName("sun.misc.Unsafe");
+      if (serviceResult.isSuccessful()) {
+        // Okay, we have the class. Do we have the copyMemory method (not all JVMs support it)?
+        // Throw
+        // NoSuchMethodException if not.
+        @SuppressWarnings("unused")
+        Method copyMemory = serviceResult.getMessage().getMethod("copyMemory", Object.class,
+            long.class, Object.class, long.class, long.class);
+      } else {
+        throw new CacheException(
+            "Your Java virtual machine is incompatible with off-heap memory.  Please refer to product documentation for suggested JVMs.") {};
+      }
     } catch (NoSuchMethodException e) {
       throw new CacheException(
           String.format(

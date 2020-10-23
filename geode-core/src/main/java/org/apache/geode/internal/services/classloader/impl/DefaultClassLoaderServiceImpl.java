@@ -19,16 +19,16 @@ package org.apache.geode.internal.services.classloader.impl;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.ServiceLoader;
-import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.deployment.jar.ClassPathLoader;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.services.classloader.ClassLoaderService;
 import org.apache.geode.services.result.ServiceResult;
@@ -66,12 +66,12 @@ public class DefaultClassLoaderServiceImpl implements ClassLoaderService {
    * {@inheritDoc}
    */
   @Override
-  public <T> ServiceResult<Set<T>> loadService(Class<T> service) {
+  public <T> ServiceResult<List<T>> loadService(Class<T> service) {
     logger.debug("loadService: " + service);
     if (service == null) {
       return Failure.of("service cannot be null");
     }
-    Set<T> result = new HashSet<>();
+    List<T> result = new ArrayList<>();
     Iterator<T> iterator = ServiceLoader.load(service).iterator();
     while (iterator.hasNext()) {
       try {
@@ -79,6 +79,9 @@ public class DefaultClassLoaderServiceImpl implements ClassLoaderService {
       } catch (Error e) {
         logger.error(e);
       }
+    }
+    if (result.isEmpty()) {
+      return Failure.of("No implementations of service: " + service + " found");
     }
     return Success.of(result);
   }

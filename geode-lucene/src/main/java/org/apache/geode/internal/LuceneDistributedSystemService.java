@@ -20,6 +20,8 @@ import java.util.Collection;
 
 import org.apache.geode.distributed.internal.DistributedSystemService;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 
 public class LuceneDistributedSystemService implements DistributedSystemService {
   @Override
@@ -34,8 +36,13 @@ public class LuceneDistributedSystemService implements DistributedSystemService 
 
   @Override
   public Collection<String> getSerializationAcceptlist() throws IOException {
-    URL sanctionedSerializables = ClassPathLoader.getLatest().getResource(getClass(),
-        "sanctioned-geode-lucene-serializables.txt");
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResource(getClass(),
+            "sanctioned-geode-lucene-serializables.txt");
+    URL sanctionedSerializables = null;
+    if (serviceResult.isSuccessful()) {
+      sanctionedSerializables = serviceResult.getMessage();
+    }
     return InternalDataSerializer.loadClassNames(sanctionedSerializables);
   }
 }

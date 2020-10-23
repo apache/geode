@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.internal;
+package org.apache.geode.internal.deployment.jar;
 
 import java.io.IOException;
 import java.net.URL;
@@ -105,7 +105,7 @@ public class DeployJarChildFirstClassLoader extends ChildFirstClassLoader {
     }
   }
 
-  boolean thisIsOld() {
+  public boolean thisIsOld() {
     return artifactIdsToClassLoader.get(artifactId) != this;
   }
 

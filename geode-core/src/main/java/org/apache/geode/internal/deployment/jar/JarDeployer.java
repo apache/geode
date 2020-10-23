@@ -12,17 +12,19 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal;
+package org.apache.geode.internal.deployment.jar;
 
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,6 +36,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
@@ -41,8 +44,13 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.pdx.internal.TypeRegistry;
 
 public class JarDeployer implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -50,18 +58,11 @@ public class JarDeployer implements Serializable {
   // The pound version scheme predates the sequenced version scheme
   private static final Pattern POUND_VERSION_SCHEME =
       Pattern.compile("^vf\\.gf#(?<artifact>.*)\\.jar#(?<version>\\d+)$");
-  // Every deployed file will use this scheme to signify the sequence it's been deployed
-  static final Pattern DEPLOYED_FILE_PATTERN =
-      Pattern.compile("(?<baseName>..*)\\.v(?<version>\\d++).jar$");
-  // we can recognize jar files with below pattern. If two jar files have the same artifact, then
-  // the latter will replace the former deployed jar
-  private static final Pattern USER_VERSION_PATTERN =
-      Pattern.compile("(?<artifact>.*?)[-.]\\d+.*\\.jar$");
 
-  @MakeNotStatic
-  private static final Lock lock = new ReentrantLock();
+  private final Lock lock = new ReentrantLock();
 
   private final Map<String, DeployedJar> deployedJars = new ConcurrentHashMap<>();
+  private final Map<DeployedJar, List<String>> registeredFunctions = new ConcurrentHashMap<>();
   private final File deployDirectory;
 
   public JarDeployer() {
@@ -83,7 +84,7 @@ public class JarDeployer implements Serializable {
       throws IOException {
     lock.lock();
     String stagedJarName = stagedJar.getName();
-    String artifactId = getArtifactId(stagedJarName);
+    String artifactId = DeployJarFileUtils.getArtifactId(stagedJarName);
     try {
       boolean shouldDeployNewVersion = shouldDeployNewVersion(artifactId, stagedJar);
       if (!shouldDeployNewVersion) {
@@ -107,7 +108,7 @@ public class JarDeployer implements Serializable {
    * @return The list of DeployedJars
    */
   public List<DeployedJar> findDeployedJars() {
-    return getDeployedJars().values().stream().collect(toList());
+    return new ArrayList<>(getDeployedJars().values());
   }
 
 
@@ -132,7 +133,7 @@ public class JarDeployer implements Serializable {
 
 
   protected File getNextVersionedJarFile(String unversionedJarName) {
-    int maxVersion = getMaxVersion(getArtifactId(unversionedJarName));
+    int maxVersion = getMaxVersion(DeployJarFileUtils.getArtifactId(unversionedJarName));
 
     String nextVersionJarName =
         FilenameUtils.getBaseName(unversionedJarName) + ".v" + (maxVersion + 1) + ".jar";
@@ -143,76 +144,10 @@ public class JarDeployer implements Serializable {
   }
 
   protected int getMaxVersion(String artifactId) {
-    return Arrays.stream(deployDirectory.list()).filter(x -> artifactId.equals(toArtifactId(x)))
-        .map(JarDeployer::extractVersionFromFilename)
+    return Arrays.stream(deployDirectory.list()).filter(
+        x -> artifactId.equals(DeployJarFileUtils.getArtifactIdForSequencedJar(x)))
+        .map(DeployJarFileUtils::extractVersionFromFilename)
         .reduce(Integer::max).orElse(0);
-  }
-
-  /**
-   * Find the version number that's embedded in the name of this file
-   *
-   * @param filename Filename to get the version number from
-   * @return The version number embedded in the filename
-   */
-  public static int extractVersionFromFilename(final String filename) {
-    final Matcher matcher = DEPLOYED_FILE_PATTERN.matcher(filename);
-    if (matcher.find()) {
-      return Integer.parseInt(matcher.group(2));
-    } else {
-      return 0;
-    }
-  }
-
-  public static boolean isDeployedFile(String filename) {
-    return DEPLOYED_FILE_PATTERN.matcher(filename).find();
-  }
-
-  public static boolean isSemanticVersion(String filename) {
-    return USER_VERSION_PATTERN.matcher(filename).find();
-  }
-
-  /**
-   * get the artifact id from the existing files on the server. This will skip files that
-   * do not have sequence id appended to them.
-   *
-   * @param sequencedJarFileName the file names that exists on the server, it should always ends
-   *        with a sequence number
-   * @return the artifact id. if a file with no sequence number is passed in, this will return null
-   */
-  static String toArtifactId(String sequencedJarFileName) {
-    String baseName = getDeployedFileBaseName(sequencedJarFileName);
-    if (baseName == null) {
-      return null;
-    }
-
-    return getArtifactId(baseName + ".jar");
-  }
-
-  /**
-   * get the artifact id from the files deployed by the user. This will recognize files with
-   * SEMANTIC_VERSION_PATTERN, it will strip off the version part from the filename. For all other
-   * file names, it will just return the basename.
-   *
-   * @param deployedJarFileName the filename that's deployed by the user. could be in the form of
-   *        abc.jar or abc-1.0.0.jar, both should return abc
-   * @return the artifact id of the string
-   */
-  public static String getArtifactId(String deployedJarFileName) {
-    Matcher semanticVersionMatcher = USER_VERSION_PATTERN.matcher(deployedJarFileName);
-    if (semanticVersionMatcher.matches()) {
-      return semanticVersionMatcher.group("artifact");
-    } else {
-      return FilenameUtils.getBaseName(deployedJarFileName);
-    }
-  }
-
-  public static String getDeployedFileBaseName(String sequencedJarFileName) {
-    Matcher semanticVersionMatcher = DEPLOYED_FILE_PATTERN.matcher(sequencedJarFileName);
-    if (semanticVersionMatcher.matches()) {
-      return semanticVersionMatcher.group("baseName");
-    } else {
-      return null;
-    }
   }
 
   /**
@@ -293,11 +228,11 @@ public class JarDeployer implements Serializable {
 
       // clean up the old versions and find the latest version of each jar
       for (File file : deployDirectory.listFiles()) {
-        String artifactId = toArtifactId(file.getName());
+        String artifactId = DeployJarFileUtils.getArtifactIdForSequencedJar(file.getName());
         if (artifactId == null) {
           continue;
         }
-        int version = extractVersionFromFilename(file.getName());
+        int version = DeployJarFileUtils.extractVersionFromFilename(file.getName());
         if (version < artifactToMaxVersion.get(artifactId)) {
           FileUtils.deleteQuietly(file);
         } else {
@@ -316,11 +251,11 @@ public class JarDeployer implements Serializable {
   Map<String, Integer> findArtifactsAndMaxVersion() {
     Map<String, Integer> artifactToMaxVersion = new HashMap<>();
     for (String fileName : deployDirectory.list()) {
-      String artifactId = toArtifactId(fileName);
+      String artifactId = DeployJarFileUtils.getArtifactIdForSequencedJar(fileName);
       if (artifactId == null) {
         continue;
       }
-      int version = extractVersionFromFilename(fileName);
+      int version = DeployJarFileUtils.extractVersionFromFilename(fileName);
       Integer maxVersion = artifactToMaxVersion.get(artifactId);
       if (maxVersion == null || maxVersion < version) {
         artifactToMaxVersion.put(artifactId, version);
@@ -350,10 +285,12 @@ public class JarDeployer implements Serializable {
         DeployedJar newjar = entry.getKey();
         DeployedJar oldJar = entry.getValue();
 
-        newjar.registerFunctions();
+        registeredFunctions.put(newjar,
+            DeployJarFunctionUtils.registerFunctions(newjar).stream().map(
+                Function::getId).collect(Collectors.toList()));
 
         if (oldJar != null) {
-          oldJar.cleanUp(newjar);
+          unregisterFunctionsFromOldJarNotInNewJar(oldJar, newjar);
         }
       }
 
@@ -377,12 +314,12 @@ public class JarDeployer implements Serializable {
    *         already deployed.
    * @throws IOException When there's an error saving the JAR file to disk
    */
-  public List<DeployedJar> deploy(final Set<File> stagedJarFiles)
+  public List<DeployedJar> deploy(final Collection<File> stagedJarFiles)
       throws IOException, ClassNotFoundException {
     List<DeployedJar> deployedJars = new ArrayList<>(stagedJarFiles.size());
 
     for (File jar : stagedJarFiles) {
-      if (!DeployedJar.hasValidJarContent(jar)) {
+      if (!DeployJarFileUtils.hasValidJarContent(jar)) {
         throw new IllegalArgumentException(
             "File does not contain valid JAR content: " + jar.getName());
       }
@@ -424,7 +361,7 @@ public class JarDeployer implements Serializable {
    */
   @VisibleForTesting
   public DeployedJar getDeployedJar(String jarName) {
-    return this.deployedJars.get(getArtifactId(jarName));
+    return this.deployedJars.get(DeployJarFileUtils.getArtifactId(jarName));
   }
 
   @VisibleForTesting
@@ -432,7 +369,7 @@ public class JarDeployer implements Serializable {
       throws IOException, ClassNotFoundException {
     lock.lock();
 
-    Set<File> jarFiles = new HashSet();
+    Set<File> jarFiles = new HashSet<>();
     jarFiles.add(stagedJarFile);
 
     try {
@@ -459,7 +396,7 @@ public class JarDeployer implements Serializable {
    * @throws IOException If there's a problem deleting the file
    */
   public String undeploy(final String jarName) throws IOException {
-    String artifactId = getArtifactId(jarName);
+    String artifactId = DeployJarFileUtils.getArtifactId(jarName);
     lock.lock();
 
     try {
@@ -476,7 +413,7 @@ public class JarDeployer implements Serializable {
       deployedJars.remove(artifactId);
       ClassPathLoader.getLatest().unloadClassloaderForArtifact(artifactId);
 
-      deployedJar.cleanUp(null);
+      unregisterFunctionsForJar(deployedJar);
 
       deleteAllVersionsOfJar(jarName);
       return deployedJar.getFileCanonicalPath();
@@ -491,16 +428,67 @@ public class JarDeployer implements Serializable {
    */
   public void deleteAllVersionsOfJar(String jarName) {
     lock.lock();
-    String artifactId = getArtifactId(jarName);
+    String artifactId = DeployJarFileUtils.getArtifactId(jarName);
     try {
       for (File file : this.deployDirectory.listFiles()) {
-        if (artifactId.equals(toArtifactId(file.getName()))) {
+        if (artifactId.equals(DeployJarFileUtils.getArtifactIdForSequencedJar(file.getName()))) {
           logger.info("Deleting: {}", file.getAbsolutePath());
           FileUtils.deleteQuietly(file);
         }
       }
     } finally {
       lock.unlock();
+    }
+  }
+
+  private void unregisterFunctionsFromOldJarNotInNewJar(DeployedJar oldJar, DeployedJar newJar) {
+    List<String> oldFunctions = this.registeredFunctions.get(oldJar);
+    List<String> newFunctions = this.registeredFunctions.get(newJar);
+
+    oldFunctions.removeAll(newFunctions);
+
+    oldFunctions.forEach(FunctionService::unregisterFunction);
+
+    this.registeredFunctions.put(oldJar, oldFunctions);
+  }
+
+  /**
+   * Backs up all deployed jars to the provided destination.
+   *
+   * @param destinationPath The location to backup jars to.
+   * @return A map of Paths to backed up file paths and their source files.
+   * @throws IOException If the jar cannot be copied
+   */
+  public Map<Path, File> backup(Path destinationPath) throws IOException {
+    Map<Path, File> backedUpJars = new HashMap<>();
+    try {
+      suspendAll();
+
+      List<DeployedJar> jarList = findDeployedJars();
+      for (DeployedJar jar : jarList) {
+        File source = new File(jar.getFileCanonicalPath());
+        String sourceFileName = source.getName();
+        Path destination = destinationPath.resolve(sourceFileName);
+        Files.copy(source.toPath(), destination, StandardCopyOption.COPY_ATTRIBUTES);
+        backedUpJars.put(destination, source);
+      }
+    } finally {
+      resumeAll();
+    }
+    return backedUpJars;
+  }
+
+  private void unregisterFunctionsForJar(DeployedJar deployedJar) {
+    List<String> functionsForJar = this.registeredFunctions.get(deployedJar);
+    functionsForJar.forEach(FunctionService::unregisterFunction);
+    functionsForJar.clear();
+    try {
+      TypeRegistry typeRegistry = ((InternalCache) CacheFactory.getAnyInstance()).getPdxRegistry();
+      if (typeRegistry != null) {
+        typeRegistry.flushCache();
+      }
+    } catch (CacheClosedException ignored) {
+      // That's okay, it just means there was nothing to flush to begin with
     }
   }
 
@@ -511,5 +499,22 @@ public class JarDeployer implements Serializable {
     sb.append("deployDirectory=").append(deployDirectory);
     sb.append('}');
     return sb.toString();
+  }
+
+  public List<DeployedJar> removeOldVersionsAndDeploy(Set<File> stagedJarFiles)
+      throws IOException, ClassNotFoundException {
+    lock.lock();
+    try {
+      for (File stagedJarFile : stagedJarFiles) {
+        logger.info("Removing old versions of {} in cluster configuration.",
+            stagedJarFile.getName());
+        deleteAllVersionsOfJar(stagedJarFile.getName());
+      }
+
+      return deploy(stagedJarFiles);
+
+    } finally {
+      lock.unlock();
+    }
   }
 }

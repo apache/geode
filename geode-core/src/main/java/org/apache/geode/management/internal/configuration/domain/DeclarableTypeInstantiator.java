@@ -22,22 +22,29 @@ import org.apache.geode.cache.configuration.ClassNameType;
 import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.configuration.ObjectType;
 import org.apache.geode.cache.configuration.ParameterType;
-import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.management.configuration.ClassName;
+import org.apache.geode.services.result.ServiceResult;
+import org.apache.geode.util.internal.UncheckedUtils;
 
 public abstract class DeclarableTypeInstantiator {
 
   public static <T extends Declarable> T newInstance(DeclarableType declarableType, Cache cache) {
     try {
-      Class<T> loadedClass =
-          (Class<T>) ClassPathLoader.getLatest().forName(declarableType.getClassName());
-      T declarable = loadedClass.newInstance();
-      Properties initProperties = new Properties();
-      for (ParameterType parameter : declarableType.getParameters()) {
-        initProperties.put(parameter.getName(), newInstance(parameter, cache));
+      ServiceResult<Class<?>> serviceResult =
+          ClassLoaderServiceInstance.getInstance().forName(declarableType.getClassName());
+      if (serviceResult.isSuccessful()) {
+        T declarable = (UncheckedUtils.uncheckedCast(serviceResult.getMessage().newInstance()));
+        Properties initProperties = new Properties();
+        for (ParameterType parameter : declarableType.getParameters()) {
+          initProperties.put(parameter.getName(), newInstance(parameter, cache));
+        }
+        declarable.initialize(cache, initProperties);
+        return declarable;
+      } else {
+        throw new ClassNotFoundException(String.format("No class found for name: %s because %s",
+            declarableType.getClassName(), serviceResult.getErrorMessage()));
       }
-      declarable.initialize(cache, initProperties);
-      return declarable;
     } catch (Exception e) {
       throw new RuntimeException(
           "Error instantiating class: <" + declarableType.getClassName() + ">", e);
@@ -59,14 +66,20 @@ public abstract class DeclarableTypeInstantiator {
 
   public static <V> V newInstance(ClassName type, Cache cache) {
     try {
-      Class<V> loadedClass = (Class<V>) ClassPathLoader.getLatest().forName(type.getClassName());
-      V object = loadedClass.newInstance();
-      if (object instanceof Declarable) {
-        Declarable declarable = (Declarable) object;
-        declarable.initialize(cache, type.getInitProperties());
-        declarable.init(type.getInitProperties()); // for backwards compatibility
+      ServiceResult<Class<?>> serviceResult =
+          ClassLoaderServiceInstance.getInstance().forName(type.getClassName());
+      if (serviceResult.isSuccessful()) {
+        V object = UncheckedUtils.uncheckedCast(serviceResult.getMessage().newInstance());
+        if (object instanceof Declarable) {
+          Declarable declarable = (Declarable) object;
+          declarable.initialize(cache, type.getInitProperties());
+          declarable.init(type.getInitProperties()); // for backwards compatibility
+        }
+        return object;
+      } else {
+        throw new ClassNotFoundException(String.format("No class found for name: %s because %s",
+            type.getClassName(), serviceResult.getErrorMessage()));
       }
-      return object;
     } catch (Exception e) {
       throw new RuntimeException("Error instantiating class: <" + type.getClassName() + ">", e);
     }
@@ -74,9 +87,14 @@ public abstract class DeclarableTypeInstantiator {
 
   public static <V> V newInstance(ClassNameType className) {
     try {
-      Class<V> loadedClass =
-          (Class<V>) ClassPathLoader.getLatest().forName(className.getClassName());
-      return loadedClass.newInstance();
+      ServiceResult<Class<?>> serviceResult =
+          ClassLoaderServiceInstance.getInstance().forName(className.getClassName());
+      if (serviceResult.isSuccessful()) {
+        return UncheckedUtils.uncheckedCast(serviceResult.getMessage().newInstance());
+      } else {
+        throw new ClassNotFoundException(String.format("No class found for name: %s because %s",
+            className.getClassName(), serviceResult.getErrorMessage()));
+      }
     } catch (Exception e) {
       throw new RuntimeException("Error instantiating class: <" + className.getClassName() + ">",
           e);

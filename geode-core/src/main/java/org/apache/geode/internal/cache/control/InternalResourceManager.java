@@ -47,7 +47,6 @@ import org.apache.geode.cache.control.RestoreRedundancyOperation;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.control.ResourceAdvisor.ResourceManagerProfile;
@@ -55,9 +54,11 @@ import org.apache.geode.internal.cache.partitioned.LoadProbe;
 import org.apache.geode.internal.cache.partitioned.SizedBasedLoadProbe;
 import org.apache.geode.internal.logging.CoreLoggingExecutors;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.runtime.RestoreRedundancyResults;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -135,8 +136,13 @@ public class InternalResourceManager implements ResourceManager {
 
     // Initialize the load probe
     try {
-      Class loadProbeClass = ClassPathLoader.getLatest().forName(PR_LOAD_PROBE_CLASS);
-      this.loadProbe = (LoadProbe) loadProbeClass.newInstance();
+      ServiceResult<Class<?>> serviceResult =
+          ClassLoaderServiceInstance.getInstance().forName(PR_LOAD_PROBE_CLASS);
+      if (serviceResult.isSuccessful()) {
+        this.loadProbe = (LoadProbe) serviceResult.getMessage().newInstance();
+      } else {
+        throw new ClassNotFoundException(serviceResult.getErrorMessage());
+      }
     } catch (Exception e) {
       throw new InternalGemFireError("Unable to instantiate " + PR_LOAD_PROBE_CLASS, e);
     }

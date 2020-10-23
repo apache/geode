@@ -44,9 +44,10 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.datasource.PooledDataSourceFactory;
-import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.internal.util.PasswordUtil;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.result.ServiceResult;
 
 public class DataSourceFactory {
 
@@ -99,6 +100,8 @@ public class DataSourceFactory {
     Object cf = null;
     ManagedConnectionFactory mcf = null;
     ConfiguredDataSourceProperties configs = createDataSourceProperties(configMap);
+    String message =
+        "DataSourceFactory::getManagedDataSource: Exception in creating managed connection factory. Exception string, %s";
     if (configs.getMCFClass() == null) {
       logger.error(
           "DataSourceFactory::getManagedDataSource:Managed Connection factory class is not available");
@@ -106,17 +109,19 @@ public class DataSourceFactory {
           "DataSourceFactory::getManagedDataSource:Managed Connection factory class is not available");
     } else {
       try {
-        Class cl = ClassPathLoader.getLatest().forName(configs.getMCFClass());
-        mcf = (ManagedConnectionFactory) cl.newInstance();
-        invokeAllMethods(cl, mcf, props);
+        ServiceResult<Class<?>> serviceResult =
+            ClassLoaderServiceInstance.getInstance().forName(configs.getMCFClass());
+        if (serviceResult.isSuccessful()) {
+          Class cl = serviceResult.getMessage();
+          mcf = (ManagedConnectionFactory) cl.newInstance();
+          invokeAllMethods(cl, mcf, props);
+        } else {
+          throw new ClassNotFoundException(serviceResult.getErrorMessage());
+        }
       } catch (Exception ex) {
-        logger.error(String.format(
-            "DataSourceFactory::getManagedDataSource: Exception in creating managed connection factory. Exception string, %s",
-            ex));
-        throw new DataSourceCreateException(
-            String.format(
-                "DataSourceFactory::getManagedDataSource: Exception in creating managed connection factory. Exception string, %s",
-                ex));
+        String errorMessage = String.format(message, ex);
+        logger.error(errorMessage);
+        throw new DataSourceCreateException(errorMessage);
       }
     }
     // Initialize the managed connection factory class
@@ -131,13 +136,9 @@ public class DataSourceFactory {
     try {
       cf = mcf.createConnectionFactory((ConnectionManager) cm);
     } catch (Exception ex) {
-      logger.error(
-          "DataSourceFactory::getManagedDataSource: Exception in creating managed connection factory. Exception string, %s",
-          ex.toString());
+      logger.error(message, ex.toString());
       throw new DataSourceCreateException(
-          String.format(
-              "DataSourceFactory::getManagedDataSource: Exception in creating managed connection factory. Exception string, %s",
-              ex));
+          String.format(message, ex));
     }
     return new ClientConnectionFactoryWrapper(cf, cm);
   }
@@ -155,14 +156,20 @@ public class DataSourceFactory {
     try {
       Properties poolProperties = createPoolProperties(configMap, props);
       Properties dataSourceProperties = createDataSourceProperties(props);
-      Class<?> cl = ClassPathLoader.getLatest().forName(connpoolClassName);
-      PooledDataSourceFactory factory = (PooledDataSourceFactory) cl.newInstance();
-      return factory.createDataSource(poolProperties, dataSourceProperties);
+      ServiceResult<Class<?>> serviceResult =
+          ClassLoaderServiceInstance.getInstance().forName(connpoolClassName);
+      if (serviceResult.isSuccessful()) {
+        PooledDataSourceFactory factory =
+            (PooledDataSourceFactory) serviceResult.getMessage().newInstance();
+        return factory.createDataSource(poolProperties, dataSourceProperties);
+      } else {
+        throw new ClassNotFoundException(connpoolClassName);
+      }
     } catch (Exception ex) {
       String exception =
           String.format(
               "DataSourceFactory::getPooledDataSource:Exception creating ConnectionPoolDataSource.Exception string=%s",
-              new Object[] {ex});
+              ex);
       logger.error(String.format(
           "DataSourceFactory::getPooledDataSource:Exception creating ConnectionPoolDataSource.Exception string=%s",
           ex),
@@ -240,10 +247,10 @@ public class DataSourceFactory {
     ConfiguredDataSourceProperties configs = createDataSourceProperties(configMap);
     String xaClassName = configs.getXADSClass();
     if (xaClassName == null) {
-      logger.error(
-          "DataSourceFactory::getTranxDataSource:XADataSource class name for the ResourceManager is not available");
-      throw new DataSourceCreateException(
-          "DataSourceFactory::getTranxDataSource:XADataSource class name for the ResourceManager is not available");
+      String errorMessage =
+          "DataSourceFactory::getTranxDataSource:XADataSource class name for the ResourceManager is not available";
+      logger.error(errorMessage);
+      throw new DataSourceCreateException(errorMessage);
     }
     if (TEST_CONNECTION_HOST != null) {
       props.add(new ConfigProperty("serverName", TEST_CONNECTION_HOST, "java.lang.String"));
@@ -252,20 +259,24 @@ public class DataSourceFactory {
       props.add(new ConfigProperty("portNumber", TEST_CONNECTION_PORT, "int"));
     }
     try {
-      Class cl = ClassPathLoader.getLatest().forName(xaClassName);
-      Object Obj = cl.newInstance();
-      invokeAllMethods(cl, Obj, props);
-      return new GemFireTransactionDataSource((XADataSource) Obj, configs);
+      ServiceResult<Class<?>> serviceResult =
+          ClassLoaderServiceInstance.getInstance().forName(xaClassName);
+      if (serviceResult.isSuccessful()) {
+        Class cl = serviceResult.getMessage();
+        Object Obj = cl.newInstance();
+        invokeAllMethods(cl, Obj, props);
+        return new GemFireTransactionDataSource((XADataSource) Obj, configs);
+      } else {
+        throw new ClassNotFoundException(String.format("No class found for name: %s because %s",
+            xaClassName, serviceResult.getErrorMessage()));
+      }
+
     } catch (Exception ex) {
-      String exception =
-          String.format(
-              "DataSourceFactory::getTranxDataSource:Exception in creating GemFireTransactionDataSource. Exception string=%s",
-              new Object[] {ex});
-      logger.error(String.format(
+      String errorMessage = String.format(
           "DataSourceFactory::getTranxDataSource:Exception in creating GemFireTransactionDataSource. Exception string=%s",
-          ex),
           ex);
-      throw new DataSourceCreateException(exception, ex);
+      logger.error(errorMessage, ex);
+      throw new DataSourceCreateException(errorMessage, ex);
     }
   }
 
@@ -394,8 +405,15 @@ public class DataSourceFactory {
           cl = int.class;
           realClass = java.lang.Integer.class;
         } else {
-          cl = ClassPathLoader.getLatest().forName(type);
-          realClass = cl;
+          ServiceResult<Class<?>> serviceResult =
+              ClassLoaderServiceInstance.getInstance().forName(type);
+          if (serviceResult.isSuccessful()) {
+            cl = serviceResult.getMessage();
+            realClass = cl;
+          } else {
+            throw new ClassNotFoundException(String.format("No class found for name: %s because %s",
+                type, serviceResult.getErrorMessage()));
+          }
         }
         Constructor cr = realClass.getConstructor(new Class[] {java.lang.String.class});
         Object ob = cr.newInstance(new Object[] {value});

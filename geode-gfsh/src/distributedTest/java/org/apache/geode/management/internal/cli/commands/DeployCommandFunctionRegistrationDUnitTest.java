@@ -28,8 +28,9 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.compiler.JarBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -111,7 +112,9 @@ public class DeployCommandFunctionRegistrationDUnitTest {
     assertThat(result.get(0)).isEqualTo(version);
   }
 
-  private static void assertThatCanLoad(String className) throws ClassNotFoundException {
-    assertThat(ClassPathLoader.getLatest().forName(className)).isNotNull();
+  private static void assertThatCanLoad(String className) {
+    ServiceResult<Class<?>> serviceResult =
+        ClassLoaderServiceInstance.getInstance().forName(className);
+    assertThat(serviceResult.getMessage()).isNotNull();
   }
 }

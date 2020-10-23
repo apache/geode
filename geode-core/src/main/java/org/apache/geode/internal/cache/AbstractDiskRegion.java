@@ -29,7 +29,6 @@ import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.compression.Compressor;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.CopyOnWriteHashSet;
 import org.apache.geode.internal.cache.DiskInitFile.DiskRegionFlag;
 import org.apache.geode.internal.cache.entries.OffHeapRegionEntry;
@@ -42,8 +41,10 @@ import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.internal.util.concurrent.ConcurrentMapWithReusableEntries;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * Code shared by both DiskRegion and RecoveredDiskRegion.
@@ -303,21 +304,17 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
       compressor = null;
     } else {
       try {
-        @SuppressWarnings("unchecked")
-        Class<Compressor> compressorClass =
-            (Class<Compressor>) ClassPathLoader.getLatest().forName(compressorClassName);
-        this.compressor = compressorClass.newInstance();
-      } catch (ClassNotFoundException e) {
-        throw new IllegalArgumentException(
-            String.format("Unknown Compressor %s found in disk initialization file.",
-                compressorClassName),
-            e);
-      } catch (InstantiationException e) {
-        throw new IllegalArgumentException(
-            String.format("Unknown Compressor %s found in disk initialization file.",
-                compressorClassName),
-            e);
-      } catch (IllegalAccessException e) {
+        ServiceResult<Class<?>> result =
+            ClassLoaderServiceInstance.getInstance().forName(compressorClassName);
+        if (result.isSuccessful()) {
+          this.compressor = (Compressor) result.getMessage().newInstance();
+        } else {
+          throw new IllegalArgumentException(
+              String.format("Unknown Compressor %s found in disk initialization file. \n%s",
+                  compressorClassName,
+                  result.getErrorMessage()));
+        }
+      } catch (InstantiationException | IllegalAccessException e) {
         throw new IllegalArgumentException(
             String.format("Unknown Compressor %s found in disk initialization file.",
                 compressorClassName),

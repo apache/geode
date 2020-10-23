@@ -15,7 +15,6 @@
 package org.apache.geode.management.internal.configuration.domain;
 
 import static java.util.Arrays.asList;
-import static org.apache.geode.internal.JarDeployer.getArtifactId;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -38,6 +37,7 @@ import org.xml.sax.SAXException;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.deployment.jar.DeployJarFileUtils;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.Versioning;
@@ -136,8 +136,9 @@ public class Configuration implements DataSerializable {
   }
 
   public void putDeployment(Deployment deployment) {
-    String artifactId = getArtifactId(deployment.getFileName());
-    deployments.values().removeIf(d -> getArtifactId(d.getFileName()).equals(artifactId));
+    String artifactId = DeployJarFileUtils.getArtifactId(deployment.getFileName());
+    deployments.values()
+        .removeIf(d -> DeployJarFileUtils.getArtifactId(d.getFileName()).equals(artifactId));
     deployments.put(deployment.getId(), deployment);
   }
 

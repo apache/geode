@@ -25,8 +25,8 @@ import org.springframework.shell.core.Shell;
 import org.springframework.shell.event.ParseResult;
 import org.springframework.util.Assert;
 
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.CliAroundInterceptor;
@@ -37,6 +37,7 @@ import org.apache.geode.management.internal.cli.remote.CommandExecutor;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.security.NotAuthorizedException;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * Defines the {@link ExecutionStrategy} for commands that are executed in GemFire Shell (gfsh).
@@ -162,8 +163,14 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
     // 1. Pre Remote Execution
     if (!CliMetaData.ANNOTATION_NULL_VALUE.equals(interceptorClass)) {
       try {
-        interceptor = (CliAroundInterceptor) ClassPathLoader.getLatest().forName(interceptorClass)
-            .newInstance();
+        ServiceResult<Class<?>> serviceResult =
+            ClassLoaderServiceInstance.getInstance().forName(interceptorClass);
+        if (serviceResult.isSuccessful()) {
+          interceptor = (CliAroundInterceptor) serviceResult.getMessage().newInstance();
+        } else {
+          throw new ClassNotFoundException(String.format("No class found for name: %s because %s",
+              interceptorClass, serviceResult.getErrorMessage()));
+        }
       } catch (InstantiationException | ClassNotFoundException | IllegalAccessException e) {
         shell.logWarning("Configuration error", e);
       }

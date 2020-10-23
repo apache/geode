@@ -21,10 +21,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.ServiceLoader;
 import java.util.Set;
 
 import org.springframework.shell.converters.EnumConverter;
@@ -37,14 +35,16 @@ import org.springframework.shell.core.annotation.CliCommand;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.management.cli.Disabled;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.commands.VersionCommand;
 import org.apache.geode.management.internal.cli.help.Helper;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.util.ClasspathScanLoadHelper;
+import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -152,25 +152,24 @@ public class CommandManager {
   }
 
   /**
-   * Loads commands via {@link ServiceLoader} from {@link ClassPathLoader}.
+   * Loads commands via {@link ClassLoaderService}.
    *
    * @since GemFire 8.1
    */
   private void loadPluginCommands() {
-    ServiceLoader<CommandMarker> loader =
-        ServiceLoader.load(CommandMarker.class, ClassPathLoader.getLatest().asClassLoader());
-    Iterator<CommandMarker> iterator = loader.iterator();
-    try {
-      while (iterator.hasNext()) {
-        try {
-          add(iterator.next());
-        } catch (Throwable t) {
-          logWrapper.warning("Could not load plugin command: " + t.getMessage());
-        }
+    ServiceResult<List<CommandMarker>> serviceLoadResult =
+        ClassLoaderServiceInstance.getInstance().loadService(CommandMarker.class);
+
+    serviceLoadResult.ifSuccessful(commandMarkers -> commandMarkers.forEach(commandMarker -> {
+      try {
+        add(commandMarker);
+      } catch (Throwable t) {
+        logWrapper.warning("Could not load plugin command: " + t.getMessage());
       }
-    } catch (Throwable th) {
-      logWrapper.severe("Could not load plugin commands in the latest classLoader.", th);
-    }
+    }));
+    serviceLoadResult.ifFailure(errorMessage -> logWrapper
+        .severe(String.format("Could not load plugin commands in the latest classLoader. %s",
+            errorMessage)));
   }
 
   private void loadCommands() {

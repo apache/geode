@@ -18,8 +18,8 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.admin.AdminDistributedSystem;
 import org.apache.geode.admin.ManagedEntity;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -48,12 +48,9 @@ public class ManagedEntityControllerFactory {
   }
 
   public static boolean isEnabledManagedEntityController() {
-    try {
-      ClassPathLoader.getLatest().forName(ENABLED_MANAGED_ENTITY_CONTROLLER_CLASS_NAME);
-      return true;
-    } catch (ClassNotFoundException e) {
-      return false;
-    }
+    return ClassLoaderServiceInstance.getInstance()
+        .forName(ENABLED_MANAGED_ENTITY_CONTROLLER_CLASS_NAME)
+        .isSuccessful();
   }
 
   private static ManagedEntityController createEnabledManagedEntityController(

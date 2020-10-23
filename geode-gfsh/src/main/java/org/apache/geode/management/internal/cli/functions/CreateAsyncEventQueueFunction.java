@@ -35,13 +35,14 @@ import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayEventSubstitutionFilter;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.functions.CliFunctionResult.StatusState;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * Function used by the 'create async-event-queue' gfsh command to create an asynchronous event
@@ -151,7 +152,15 @@ public class CreateAsyncEventQueueFunction extends CliFunction<CacheConfig.Async
       return null;
     }
 
-    return ClassPathLoader.getLatest().forName(className).newInstance();
+    ServiceResult<Class<?>> serviceResult =
+        ClassLoaderServiceInstance.getInstance().forName(className);
+
+    if (serviceResult.isSuccessful()) {
+      return serviceResult.getMessage().newInstance();
+    } else {
+      throw new ClassNotFoundException(String.format("No class found for name: %s because %s",
+          className, serviceResult.getErrorMessage()));
+    }
   }
 
   @Override

@@ -16,13 +16,14 @@ package org.apache.geode.cache.query.internal.cq;
 
 import java.io.DataInput;
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.ServiceLoader;
+import java.util.List;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.query.internal.cq.spi.CqServiceFactory;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 public class CqServiceProvider {
@@ -44,13 +45,13 @@ public class CqServiceProvider {
   public static final boolean VMOTION_DURING_CQ_REGISTRATION_FLAG = false;
 
   static {
-    ServiceLoader<CqServiceFactory> loader = ServiceLoader.load(CqServiceFactory.class);
-    Iterator<CqServiceFactory> itr = loader.iterator();
-    if (!itr.hasNext()) {
-      factory = null;
-    } else {
-      factory = itr.next();
+    ServiceResult<List<CqServiceFactory>> serviceResult =
+        ClassLoaderServiceInstance.getInstance().loadService(CqServiceFactory.class);
+    if (serviceResult.isSuccessful()) {
+      factory = serviceResult.getMessage().stream().iterator().next();
       factory.initialize();
+    } else {
+      factory = null;
     }
   }
 
