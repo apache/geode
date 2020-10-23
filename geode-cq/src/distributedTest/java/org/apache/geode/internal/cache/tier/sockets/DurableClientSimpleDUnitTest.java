@@ -34,6 +34,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.net.URL;
+
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -51,6 +53,8 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.ha.HARegionQueueStats;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
@@ -742,17 +746,25 @@ public class DurableClientSimpleDUnitTest extends DurableClientTestBase {
     regionName = "testReadyForEventsNotCalledImplicitlyWithCacheXML_region";
     // Start a server
     server1Port =
-        this.server1VM.invoke(() -> CacheServerTestUtil.createCacheServerFromXmlN(
-            DurableClientTestBase.class.getResource("durablecq-server-cache.xml")));
+        this.server1VM.invoke(() -> {
+          ServiceResult<URL> serviceResult =
+              ClassLoaderServiceInstance.getInstance().getResource(getClass(),
+                  "durablecq-server-cache.xml");
+          return CacheServerTestUtil.createCacheServerFromXmlN(serviceResult.getMessage());
+        });
 
     // Start a durable client that is not kept alive on the server when it
     // stops normally
     final String durableClientId = getName() + "_client";
 
     // create client cache from xml
-    this.durableClientVM.invoke(() -> CacheServerTestUtil.createCacheClientFromXmlN(
-        DurableClientTestBase.class.getResource("durablecq-client-cache.xml"), "client",
-        durableClientId, DistributionConfig.DEFAULT_DURABLE_CLIENT_TIMEOUT, Boolean.TRUE));
+    this.durableClientVM.invoke(() -> {
+      ServiceResult<URL> serviceResult =
+          ClassLoaderServiceInstance.getInstance().getResource(getClass(),
+              "durablecq-client-cache.xml");
+      CacheServerTestUtil.createCacheClientFromXmlN(serviceResult.getMessage(), "client",
+          durableClientId, DistributionConfig.DEFAULT_DURABLE_CLIENT_TIMEOUT, Boolean.TRUE);
+    });
 
     // verify that readyForEvents has not yet been called on all the client's pools
     this.durableClientVM.invoke(new CacheSerializableRunnable("check readyForEvents not called") {
@@ -812,9 +824,13 @@ public class DurableClientSimpleDUnitTest extends DurableClientTestBase {
     this.publisherClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
 
     // Re-start the durable client
-    this.durableClientVM.invoke(() -> CacheServerTestUtil.createCacheClientFromXmlN(
-        DurableClientTestBase.class.getResource("durablecq-client-cache.xml"), "client",
-        durableClientId, DistributionConfig.DEFAULT_DURABLE_CLIENT_TIMEOUT, Boolean.TRUE));
+    this.durableClientVM.invoke(() -> {
+      ServiceResult<URL> serviceResult =
+          ClassLoaderServiceInstance.getInstance().getResource(getClass(),
+              "durablecq-client-cache.xml");
+      CacheServerTestUtil.createCacheClientFromXmlN(serviceResult.getMessage(), "client",
+          durableClientId, DistributionConfig.DEFAULT_DURABLE_CLIENT_TIMEOUT, Boolean.TRUE);
+    });
 
     // Durable client registers durable cq on server'
     registerInterest(durableClientVM, regionName, true, InterestResultPolicy.KEYS_VALUES);

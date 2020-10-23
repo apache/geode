@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -39,6 +40,8 @@ import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * Test cases for {@link CacheXmlParser}.
@@ -176,14 +179,15 @@ public class CacheXmlParserJUnitTest {
    */
   @Test
   public void testDTDFallbackWithNonEnglishLocal() {
-    CacheXmlParser.parse(this.getClass().getResourceAsStream(
-        "CacheXmlParserJUnitTest.testDTDFallbackWithNonEnglishLocal.cache.xml"));
+    ServiceResult<InputStream> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResourceAsStream(getClass(),
+            "CacheXmlParserJUnitTest.testDTDFallbackWithNonEnglishLocal.cache.xml");
+    CacheXmlParser.parse(serviceResult.getMessage());
 
     final Locale previousLocale = Locale.getDefault();
     try {
       Locale.setDefault(Locale.JAPAN);
-      CacheXmlParser.parse(this.getClass().getResourceAsStream(
-          "CacheXmlParserJUnitTest.testDTDFallbackWithNonEnglishLocal.cache.xml"));
+      CacheXmlParser.parse(serviceResult.getMessage());
     } finally {
       Locale.setDefault(previousLocale);
     }

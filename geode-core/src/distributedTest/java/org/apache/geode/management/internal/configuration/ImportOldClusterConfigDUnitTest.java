@@ -18,6 +18,7 @@ package org.apache.geode.management.internal.configuration;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import java.net.URL;
 import java.nio.file.Path;
 
 import org.apache.commons.io.FileUtils;
@@ -28,7 +29,9 @@ import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.management.internal.configuration.utils.ZipUtils;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -53,8 +56,9 @@ public class ImportOldClusterConfigDUnitTest {
     File ccDir = tempFolder.newFolder("cluster_config");
     File clusterDir = new File(ccDir, "cluster");
     clusterDir.mkdir();
-
-    FileUtils.copyURLToFile(this.getClass().getResource("cluster8.xml"),
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResource(getClass(), "cluster8.xml");
+    FileUtils.copyURLToFile(serviceResult.getMessage(),
         new File(clusterDir, "cluster.xml"));
     zipFile = new File(tempFolder.getRoot(), "cc.zip").toPath();
 

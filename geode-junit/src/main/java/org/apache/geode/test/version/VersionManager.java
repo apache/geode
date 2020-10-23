@@ -32,6 +32,8 @@ import org.apache.commons.lang3.JavaVersion;
 import org.apache.commons.lang3.SystemUtils;
 
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * VersionManager loads the class-paths for all of the releases of Geode configured for
@@ -210,13 +212,14 @@ public class VersionManager {
   private Properties readPropertiesFile(String fileName) {
     // this file is created by the gradle task :geode-old-versions:createGeodeClasspathsFile
     Properties props = new Properties();
-    URL url = VersionManager.class.getResource("/" + fileName);
-    if (url == null) {
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResource(getClass(), "/" + fileName);
+    if (serviceResult.isFailure()) {
       loadFailure = "VersionManager: unable to locate " + fileName + " in class-path";
       return props;
     }
 
-    try (InputStream in = url.openStream()) {
+    try (InputStream in = serviceResult.getMessage().openStream()) {
       props.load(in);
     } catch (IOException e) {
       loadFailure = "VersionManager: unable to read resource " + fileName;

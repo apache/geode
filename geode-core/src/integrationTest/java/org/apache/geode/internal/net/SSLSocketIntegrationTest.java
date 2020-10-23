@@ -80,7 +80,9 @@ import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.internal.ByteBufferOutputStream;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.internal.tcp.ByteBufferInputStream;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.dunit.IgnoredException;
 
 /**
@@ -481,11 +483,12 @@ public class SSLSocketIntegrationTest {
   }
 
   public File copyKeystoreResourceToFile(final String name) throws IOException {
-    URL resource = getClass().getResource(name);
-    assertThat(resource).isNotNull();
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResource(getClass(), name);
+    assertThat(serviceResult.isSuccessful()).isTrue();
 
     File file = this.temporaryFolder.newFile(name.replaceFirst(".*/", ""));
-    FileUtils.copyURLToFile(resource, file);
+    FileUtils.copyURLToFile(serviceResult.getMessage(), file);
     return file;
   }
 

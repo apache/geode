@@ -26,7 +26,9 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.fail;
 
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import javax.xml.XMLConstants;
@@ -40,8 +42,10 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils.XPathContext;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * Unit tests for {@link XmlUtils}. See Also {@link XmlUtilsAddNewNodeJUnitTest} for tests related
@@ -114,8 +118,11 @@ public class XmlUtilsJUnitTest {
 
   @Test
   public void testQuerySingleElement() throws Exception {
-    final Document doc = XmlUtils.createDocumentFromReader(new InputStreamReader(
-        getClass().getResourceAsStream("XmlUtilsJUnitTest.testQuerySingleElement.xml")));
+    ServiceResult<InputStream> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResourceAsStream(getClass(),
+            "XmlUtilsJUnitTest.testQuerySingleElement.xml");
+    final Document doc =
+        XmlUtils.createDocumentFromReader(new InputStreamReader(serviceResult.getMessage()));
     final Element root = doc.getDocumentElement();
     final String cacheNamespace = "http://geode.apache.org/schema/cache";
     final XPathContext cacheXPathContext = new XPathContext("cache", cacheNamespace);
@@ -210,8 +217,11 @@ public class XmlUtilsJUnitTest {
 
   @Test
   public void testCreateAndUpgradeDocumentFromXml() throws Exception {
+    ServiceResult<InputStream> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResourceAsStream(getClass(),
+            "SharedConfigurationJUnitTest.xml");
     Document doc = XmlUtils.createAndUpgradeDocumentFromXml(IOUtils.toString(
-        this.getClass().getResourceAsStream("SharedConfigurationJUnitTest.xml"), "UTF-8"));
+        serviceResult.getMessage(), StandardCharsets.UTF_8));
 
     String schemaLocation = XmlUtils.getAttribute(doc.getDocumentElement(),
         W3C_XML_SCHEMA_INSTANCE_ATTRIBUTE_SCHEMA_LOCATION, W3C_XML_SCHEMA_INSTANCE_NS_URI);

@@ -25,6 +25,7 @@ import static org.apache.geode.internal.lang.SystemUtils.CURRENT_DIRECTORY;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.BindException;
 import java.net.InetAddress;
 import java.net.URISyntaxException;
@@ -51,9 +52,11 @@ import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.process.PidUnavailableException;
 import org.apache.geode.internal.process.ProcessUtils;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.internal.util.ArgumentRedactor;
 import org.apache.geode.internal.util.SunAPINotFoundException;
 import org.apache.geode.logging.internal.OSProcess;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -185,8 +188,11 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
 
   private static void loadGemFirePropertiesFromClassPath(Properties properties) {
     try {
-      properties
-          .load(AbstractLauncher.class.getResourceAsStream(DistributedSystem.getPropertiesFile()));
+      ServiceResult<InputStream> serviceResult = ClassLoaderServiceInstance.getInstance()
+          .getResourceAsStream(AbstractLauncher.class, DistributedSystem.getPropertiesFile());
+      if (serviceResult.isSuccessful()) {
+        properties.load(serviceResult.getMessage());
+      }
     } catch (IOException | NullPointerException handled) {
       // leave the properties empty
     }

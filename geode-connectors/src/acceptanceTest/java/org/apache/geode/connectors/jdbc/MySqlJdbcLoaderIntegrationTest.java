@@ -27,12 +27,20 @@ import org.junit.ClassRule;
 import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.test.junit.rules.DatabaseConnectionRule;
 import org.apache.geode.connectors.jdbc.test.junit.rules.MySqlConnectionRule;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.pdx.FieldType;
+import org.apache.geode.services.result.ServiceResult;
 
 public class MySqlJdbcLoaderIntegrationTest extends JdbcLoaderIntegrationTest {
 
-  private static final URL COMPOSE_RESOURCE_PATH =
-      MySqlJdbcLoaderIntegrationTest.class.getResource("mysql.yml");
+  private static final URL COMPOSE_RESOURCE_PATH;
+
+  static {
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResource(MySqlJdbcLoaderIntegrationTest.class,
+            "mysql.yml");
+    COMPOSE_RESOURCE_PATH = serviceResult.getMessage();
+  }
 
   @ClassRule
   public static DatabaseConnectionRule dbRule = new MySqlConnectionRule.Builder()

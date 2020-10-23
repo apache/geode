@@ -23,11 +23,19 @@ import org.junit.ClassRule;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.connectors.jdbc.test.junit.rules.DatabaseConnectionRule;
 import org.apache.geode.connectors.jdbc.test.junit.rules.MySqlConnectionRule;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 
 public class MySqlTableMetaDataManagerIntegrationTest extends TableMetaDataManagerIntegrationTest {
 
-  private static final URL COMPOSE_RESOURCE_PATH =
-      MySqlTableMetaDataManagerIntegrationTest.class.getResource("mysql.yml");
+  private static final URL COMPOSE_RESOURCE_PATH;
+
+  static {
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance()
+            .getResource(MySqlTableMetaDataManagerIntegrationTest.class, "mysql.yml");
+    COMPOSE_RESOURCE_PATH = serviceResult.getMessage();
+  }
 
   @ClassRule
   public static DatabaseConnectionRule dbRule = new MySqlConnectionRule.Builder()

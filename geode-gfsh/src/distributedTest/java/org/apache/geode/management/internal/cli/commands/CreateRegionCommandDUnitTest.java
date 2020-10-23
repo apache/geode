@@ -53,6 +53,8 @@ import org.apache.geode.distributed.internal.InternalConfigurationPersistenceSer
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionEntryContext;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.compiler.JarBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -825,9 +827,9 @@ public class CreateRegionCommandDUnitTest {
   @Test
   @SuppressWarnings("deprecation")
   public void createRegionCommandCreateCorrectClusterConfigXml() {
-    URL xmlResource =
-        CreateRegionCommandDUnitTest.class.getResource("CreateRegionCommandDUnitTest.xml");
-
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResource(getClass(),
+            "CreateRegionCommandDUnitTest.xml");
     RegionShortcut[] shortcuts = RegionShortcut.values();
     for (RegionShortcut shortcut : shortcuts) {
       gfsh.executeAndAssertThat(
@@ -838,7 +840,8 @@ public class CreateRegionCommandDUnitTest {
       InternalConfigurationPersistenceService persistenceService =
           ClusterStartupRule.getLocator().getConfigurationPersistenceService();
       CacheConfig expected = persistenceService.getJaxbService()
-          .unMarshall(FileUtils.readFileToString(new File(xmlResource.getFile()), "UTF-8"));
+          .unMarshall(
+              FileUtils.readFileToString(new File(serviceResult.getMessage().getFile()), "UTF-8"));
 
       CacheConfig actual = persistenceService.getCacheConfig("cluster");
 

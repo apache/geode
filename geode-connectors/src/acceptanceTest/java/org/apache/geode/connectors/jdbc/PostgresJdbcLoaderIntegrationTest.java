@@ -31,13 +31,21 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.test.junit.rules.DatabaseConnectionRule;
 import org.apache.geode.connectors.jdbc.test.junit.rules.PostgresConnectionRule;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.pdx.FieldType;
 import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.services.result.ServiceResult;
 
 public class PostgresJdbcLoaderIntegrationTest extends JdbcLoaderIntegrationTest {
 
-  private static final URL COMPOSE_RESOURCE_PATH =
-      PostgresJdbcLoaderIntegrationTest.class.getResource("postgres.yml");
+  private static final URL COMPOSE_RESOURCE_PATH;
+
+  static {
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance()
+            .getResource(PostgresJdbcLoaderIntegrationTest.class, "postgres.yml");
+    COMPOSE_RESOURCE_PATH = serviceResult.getMessage();
+  }
 
   @ClassRule
   public static DatabaseConnectionRule dbRule = new PostgresConnectionRule.Builder()

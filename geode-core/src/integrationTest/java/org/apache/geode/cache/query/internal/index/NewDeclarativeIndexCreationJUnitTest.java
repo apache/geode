@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
+import java.net.URL;
 import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
@@ -39,6 +40,8 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 
 /**
@@ -58,7 +61,9 @@ public class NewDeclarativeIndexCreationJUnitTest {
   @Before
   public void setUp() throws Exception {
     this.cacheXmlFile = this.temporaryFolder.newFile(CACHE_XML_FILE_NAME);
-    FileUtils.copyURLToFile(getClass().getResource(CACHE_XML_FILE_NAME), this.cacheXmlFile);
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResource(getClass(), CACHE_XML_FILE_NAME);
+    FileUtils.copyURLToFile(serviceResult.getMessage(), this.cacheXmlFile);
     assertThat(this.cacheXmlFile).exists(); // precondition
 
     Properties props = new Properties();
@@ -148,8 +153,10 @@ public class NewDeclarativeIndexCreationJUnitTest {
     }
 
     this.cacheXmlFile = this.temporaryFolder.newFile("cachequeryindexwitherror.xml");
-    FileUtils.copyURLToFile(getClass().getResource("cachequeryindexwitherror.xml"),
-        this.cacheXmlFile);
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResource(getClass(),
+            "cachequeryindexwitherror.xml");
+    FileUtils.copyURLToFile(serviceResult.getMessage(), this.cacheXmlFile);
     assertThat(this.cacheXmlFile).exists(); // precondition
 
     Properties props = new Properties();

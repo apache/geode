@@ -21,6 +21,8 @@ import java.net.URL;
 import org.apache.geode.cache.ssl.CertStores;
 import org.apache.geode.cache.ssl.CertificateBuilder;
 import org.apache.geode.cache.ssl.CertificateMaterial;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * This program generates the trust and key stores used by SNI acceptance tests.
@@ -41,7 +43,14 @@ public class GenerateSNIKeyAndTrustStores {
         .generate();
 
     final String resourceFilename = "geode-config/gemfire.properties";
-    final URL resource = SingleServerSNIAcceptanceTest.class.getResource(resourceFilename);
+    final URL resource;
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResource(getClass(), resourceFilename);
+    if (serviceResult.isSuccessful()) {
+      resource = serviceResult.getMessage();
+    } else {
+      resource = null;
+    }
     String path = resource.getPath();
     path = path.substring(0, path.length() - "gemfire.properties".length());
 

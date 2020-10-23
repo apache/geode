@@ -29,12 +29,20 @@ import org.junit.Test;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.connectors.jdbc.test.junit.rules.DatabaseConnectionRule;
 import org.apache.geode.connectors.jdbc.test.junit.rules.PostgresConnectionRule;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 
 public class PostgresTableMetaDataManagerIntegrationTest
     extends TableMetaDataManagerIntegrationTest {
 
-  private static final URL COMPOSE_RESOURCE_PATH =
-      PostgresTableMetaDataManagerIntegrationTest.class.getResource("postgres.yml");
+  private static final URL COMPOSE_RESOURCE_PATH;
+
+  static {
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance()
+            .getResource(PostgresTableMetaDataManagerIntegrationTest.class, "postgres.yml");
+    COMPOSE_RESOURCE_PATH = serviceResult.getMessage();
+  }
 
   @ClassRule
   public static DatabaseConnectionRule dbRule = new PostgresConnectionRule.Builder()

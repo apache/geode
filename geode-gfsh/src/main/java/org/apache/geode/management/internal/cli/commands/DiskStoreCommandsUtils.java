@@ -26,10 +26,12 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.logging.internal.Configuration;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.internal.util.ManagementUtils;
+import org.apache.geode.services.result.ServiceResult;
 
 class DiskStoreCommandsUtils {
   private static final Logger logger = LogService.getLogger();
@@ -39,8 +41,12 @@ class DiskStoreCommandsUtils {
   static void configureLogging(final List<String> commandList) {
     String configFilePropertyValue = System.getProperty(LOG4J_CONFIGURATION_FILE_PROPERTY);
     if (StringUtils.isBlank(configFilePropertyValue)) {
-      URL configUrl = LogService.class.getResource(Configuration.CLI_CONFIG);
-      configFilePropertyValue = configUrl.toString();
+      ServiceResult<URL> serviceResult =
+          ClassLoaderServiceInstance.getInstance().getResource(DiskStoreCommandsUtils.class,
+              Configuration.CLI_CONFIG);
+      if (serviceResult.isSuccessful()) {
+        configFilePropertyValue = serviceResult.getMessage().toString();
+      }
     }
     commandList.add("-D" + LOG4J_CONFIGURATION_FILE_PROPERTY + "=" + configFilePropertyValue);
   }

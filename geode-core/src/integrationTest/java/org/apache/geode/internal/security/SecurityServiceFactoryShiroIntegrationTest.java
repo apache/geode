@@ -17,6 +17,7 @@ package org.apache.geode.internal.security;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_SHIRO_INIT;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.net.URL;
 import java.util.Properties;
 
 import org.junit.After;
@@ -24,6 +25,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
 @Category({SecurityTest.class})
@@ -38,7 +41,9 @@ public class SecurityServiceFactoryShiroIntegrationTest {
 
   @Before
   public void before() throws Exception {
-    assertThat(getClass().getResource(SHIRO_INI_FILE)).isNotNull();
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResource(getClass(), SHIRO_INI_FILE);
+    assertThat(serviceResult.isSuccessful()).isTrue();
     this.shiroIniInClasspath = getResourcePackage(getClass()) + SHIRO_INI_FILE;
   }
 

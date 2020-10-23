@@ -57,12 +57,24 @@ import org.apache.geode.cache.query.CqListener;
 import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.RegionNotFoundException;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.junit.rules.IgnoreOnWindowsRule;
 
 public class ClientSNICQAcceptanceTest {
 
-  private static final URL DOCKER_COMPOSE_PATH =
-      ClientSNICQAcceptanceTest.class.getResource("docker-compose.yml");
+  private static final URL DOCKER_COMPOSE_PATH;
+
+  static {
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResource(ClientSNICQAcceptanceTest.class,
+            "docker-compose.yml");
+    if (serviceResult.isSuccessful()) {
+      DOCKER_COMPOSE_PATH = serviceResult.getMessage();
+    } else {
+      DOCKER_COMPOSE_PATH = null;
+    }
+  }
 
   // Docker compose does not work on windows in CI. Ignore this test on windows
   // Using a RuleChain to make sure we ignore the test before the rule comes into play

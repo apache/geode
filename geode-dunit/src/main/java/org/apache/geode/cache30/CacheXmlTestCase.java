@@ -37,6 +37,8 @@ import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.cache.xmlcache.ClientCacheCreation;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
@@ -133,9 +135,10 @@ public class CacheXmlTestCase extends JUnit4CacheTestCase {
   }
 
   protected File copyResourceToDirectory(File directory, String fileName) throws IOException {
-    URL url = getClass().getResource(fileName);
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResource(getClass(), fileName);
     File file = new File(directory, fileName);
-    FileUtils.copyURLToFile(url, file);
+    FileUtils.copyURLToFile(serviceResult.getMessage(), file);
     return file;
   }
 

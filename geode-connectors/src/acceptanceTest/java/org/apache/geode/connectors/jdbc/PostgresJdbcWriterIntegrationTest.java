@@ -26,11 +26,19 @@ import org.junit.Test;
 
 import org.apache.geode.connectors.jdbc.test.junit.rules.DatabaseConnectionRule;
 import org.apache.geode.connectors.jdbc.test.junit.rules.PostgresConnectionRule;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 
 public class PostgresJdbcWriterIntegrationTest extends JdbcWriterIntegrationTest {
 
-  private static final URL COMPOSE_RESOURCE_PATH =
-      PostgresJdbcWriterIntegrationTest.class.getResource("postgres.yml");
+  private static final URL COMPOSE_RESOURCE_PATH;
+
+  static {
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance()
+            .getResource(PostgresJdbcWriterIntegrationTest.class, "postgres.yml");
+    COMPOSE_RESOURCE_PATH = serviceResult.getMessage();
+  }
 
   @ClassRule
   public static DatabaseConnectionRule dbRule = new PostgresConnectionRule.Builder()

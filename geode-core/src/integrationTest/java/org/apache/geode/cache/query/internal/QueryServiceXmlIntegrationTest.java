@@ -39,7 +39,9 @@ import org.apache.geode.cache.query.security.RegExMethodAuthorizer;
 import org.apache.geode.cache.query.security.RestrictedMethodAuthorizer;
 import org.apache.geode.cache.query.security.UnrestrictedMethodAuthorizer;
 import org.apache.geode.examples.SimpleSecurityManager;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.management.internal.cli.util.TestMethodAuthorizer;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
@@ -150,9 +152,10 @@ public class QueryServiceXmlIntegrationTest {
   }
 
   private String getFilePath(String fileName) throws IOException {
-    URL url = getClass().getResource(fileName);
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResource(getClass(), fileName);
     File cacheXmlFile = this.temporaryFolder.newFile(fileName);
-    FileUtils.copyURLToFile(url, cacheXmlFile);
+    FileUtils.copyURLToFile(serviceResult.getMessage(), cacheXmlFile);
 
     return cacheXmlFile.getAbsolutePath();
   }

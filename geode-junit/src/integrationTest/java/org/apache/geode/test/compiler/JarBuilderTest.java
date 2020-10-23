@@ -33,6 +33,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
+
 
 public class JarBuilderTest {
   @Rule
@@ -118,10 +121,11 @@ public class JarBuilderTest {
   }
 
   private File loadTestResource(String fileName) throws URISyntaxException {
-    URL resourceFileURL = this.getClass().getResource(fileName);
-    assertThat(resourceFileURL).isNotNull();
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResource(getClass(), fileName);
+    assertThat(serviceResult.isSuccessful()).isTrue();
 
-    URI resourceUri = resourceFileURL.toURI();
+    URI resourceUri = serviceResult.getMessage().toURI();
     return new File(resourceUri);
   }
 }

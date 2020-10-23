@@ -47,8 +47,10 @@ import org.apache.geode.cache.operations.OperationContext;
 import org.apache.geode.cache.operations.OperationContext.OperationCode;
 import org.apache.geode.cache.operations.QueryOperationContext;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.security.AccessControl;
 import org.apache.geode.security.NotAuthorizedException;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * An implementation of the {@link AccessControl} interface that allows authorization using the
@@ -606,10 +608,11 @@ public class XmlAuthorization implements AccessControl {
         final Matcher matcher = authzPattern.matcher(systemId);
         if (matcher.find()) {
           final String dtdName = matcher.group(0);
-          final InputStream stream = XmlAuthorization.class.getResourceAsStream(dtdName);
-          return new InputSource(stream);
+          ServiceResult<InputStream> serviceResult =
+              ClassLoaderServiceInstance.getInstance().getResourceAsStream(XmlAuthorization.class,
+                  dtdName);
+          return new InputSource(serviceResult.getMessage());
         }
-
       } catch (Exception e) {
         // do nothing, use the default resolver
       }

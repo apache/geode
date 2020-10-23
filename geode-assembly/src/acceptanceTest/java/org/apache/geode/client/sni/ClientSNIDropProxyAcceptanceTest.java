@@ -45,11 +45,23 @@ import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.NoAvailableLocatorsException;
 import org.apache.geode.cache.client.proxy.ProxySocketFactories;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 
 public class ClientSNIDropProxyAcceptanceTest {
 
-  private static final URL DOCKER_COMPOSE_PATH =
-      ClientSNIDropProxyAcceptanceTest.class.getResource("docker-compose.yml");
+  private static final URL DOCKER_COMPOSE_PATH;
+
+  static {
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResource(ClientSNIDropProxyAcceptanceTest.class,
+            "docker-compose.yml");
+    if (serviceResult.isSuccessful()) {
+      DOCKER_COMPOSE_PATH = serviceResult.getMessage();
+    } else {
+      DOCKER_COMPOSE_PATH = null;
+    }
+  }
 
   // Docker compose does not work on windows in CI. Ignore this test on windows
   // Using a RuleChain to make sure we ignore the test before the rule comes into play

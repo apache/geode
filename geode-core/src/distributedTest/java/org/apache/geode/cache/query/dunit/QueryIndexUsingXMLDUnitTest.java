@@ -53,6 +53,8 @@ import org.apache.geode.cache.query.internal.index.PartitionedIndex;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
@@ -112,11 +114,13 @@ public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
   public void before() throws Exception {
     addIgnoredException("Failed to create index");
 
-    URL url = getClass().getResource(CACHE_XML_FILE_NAME);
-    assertThat(url).isNotNull(); // precondition
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResource(getClass(), CACHE_XML_FILE_NAME);
+
+    assertThat(serviceResult.isSuccessful()).isTrue(); // precondition
 
     this.cacheXmlFile = this.temporaryFolder.newFile(CACHE_XML_FILE_NAME);
-    FileUtils.copyURLToFile(url, this.cacheXmlFile);
+    FileUtils.copyURLToFile(serviceResult.getMessage(), this.cacheXmlFile);
     assertThat(this.cacheXmlFile).exists(); // precondition
   }
 

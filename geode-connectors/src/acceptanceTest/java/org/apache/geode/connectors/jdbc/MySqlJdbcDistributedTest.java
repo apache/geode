@@ -26,6 +26,8 @@ import org.junit.ClassRule;
 
 import org.apache.geode.connectors.jdbc.test.junit.rules.MySqlConnectionRule;
 import org.apache.geode.connectors.jdbc.test.junit.rules.SqlDatabaseConnectionRule;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.dunit.rules.MemberVM;
 
 /**
@@ -33,8 +35,14 @@ import org.apache.geode.test.dunit.rules.MemberVM;
  */
 public class MySqlJdbcDistributedTest extends JdbcDistributedTest {
 
-  private static final URL COMPOSE_RESOURCE_PATH =
-      MySqlJdbcDistributedTest.class.getResource("mysql.yml");
+  private static final URL COMPOSE_RESOURCE_PATH;
+
+  static {
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResource(MySqlJdbcDistributedTest.class,
+            "mysql.yml");
+    COMPOSE_RESOURCE_PATH = serviceResult.getMessage();
+  }
 
   @ClassRule
   public static transient SqlDatabaseConnectionRule dbRule = createConnectionRule();

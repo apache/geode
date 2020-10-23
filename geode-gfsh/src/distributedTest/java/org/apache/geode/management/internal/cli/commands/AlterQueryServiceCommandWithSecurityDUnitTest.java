@@ -53,7 +53,9 @@ import org.apache.geode.cache.query.security.RegExMethodAuthorizer;
 import org.apache.geode.cache.query.security.RestrictedMethodAuthorizer;
 import org.apache.geode.cache.query.security.UnrestrictedMethodAuthorizer;
 import org.apache.geode.examples.SimpleSecurityManager;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.management.internal.cli.util.TestMethodAuthorizer;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -138,9 +140,10 @@ public class AlterQueryServiceCommandWithSecurityDUnitTest {
   }
 
   private String getTestMethodAuthorizerFilePath() throws IOException {
-    URL url = getClass().getResource(TEST_AUTHORIZER_TXT);
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResource(getClass(), TEST_AUTHORIZER_TXT);
     File textFile = this.tempFolder.newFile(TEST_AUTHORIZER_TXT);
-    FileUtils.copyURLToFile(url, textFile);
+    FileUtils.copyURLToFile(serviceResult.getMessage(), textFile);
 
     return textFile.getAbsolutePath();
   }

@@ -18,6 +18,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -34,8 +35,10 @@ import org.xml.sax.helpers.XMLReaderFactory;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlParser;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlVersion;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils.XPathContext;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * Test cases for {@link CacheElement}.
@@ -97,8 +100,11 @@ public class CacheElementJUnitTest {
    */
   @Test
   public void testBuildElementMap() throws Exception {
+    ServiceResult<InputStream> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResourceAsStream(getClass(),
+            "CacheElementJUnitTest.xml");
     final Document doc = XmlUtils.createDocumentFromReader(
-        new InputStreamReader(this.getClass().getResourceAsStream("CacheElementJUnitTest.xml")));
+        new InputStreamReader(serviceResult.getMessage()));
 
     final LinkedHashMap<String, CacheElement> elementMap = CacheElement.buildElementMap(doc);
 

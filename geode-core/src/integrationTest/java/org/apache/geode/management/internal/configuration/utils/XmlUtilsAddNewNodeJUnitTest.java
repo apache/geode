@@ -18,6 +18,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,8 +40,10 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.extension.Extension;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils.XPathContext;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * Unit tests for {@link XmlUtils#addNewNode(Document, XmlEntity)} and
@@ -73,8 +76,10 @@ public class XmlUtilsAddNewNodeJUnitTest {
 
   @Before
   public void before() throws SAXException, ParserConfigurationException, IOException {
-    config = XmlUtils.createDocumentFromReader(new InputStreamReader(
-        this.getClass().getResourceAsStream("XmlUtilsAddNewNodeJUnitTest.xml")));
+    ServiceResult<InputStream> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResourceAsStream(getClass(),
+            "XmlUtilsAddNewNodeJUnitTest.xml");
+    config = XmlUtils.createDocumentFromReader(new InputStreamReader(serviceResult.getMessage()));
   }
 
   @AfterClass
@@ -293,9 +298,11 @@ public class XmlUtilsAddNewNodeJUnitTest {
     assertEquals("1", XmlUtils.getAttribute(element, "value"));
     assertEquals(TEST_NAMESPACE, element.getNamespaceURI());
 
+    ServiceResult<InputStream> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResourceAsStream(getClass(),
+            "XmlUtilsAddNewNodeJUnitTest.testAddNewNodeReplaceUnnamedExtension.xml");
     final org.w3c.dom.Document changes =
-        XmlUtils.createDocumentFromReader(new InputStreamReader(this.getClass().getResourceAsStream(
-            "XmlUtilsAddNewNodeJUnitTest.testAddNewNodeReplaceUnnamedExtension.xml")));
+        XmlUtils.createDocumentFromReader(new InputStreamReader(serviceResult.getMessage()));
     nodes = XmlUtils.query(changes, xPath, xPathContext);
     assertEquals(1, nodes.getLength());
     element = (Element) nodes.item(0);

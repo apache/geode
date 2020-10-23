@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InvalidClassException;
 import java.io.Serializable;
+import java.net.URL;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -42,6 +43,8 @@ import org.apache.geode.codeAnalysis.decode.CompiledClass;
 import org.apache.geode.codeAnalysis.decode.CompiledMethod;
 import org.apache.geode.internal.serialization.BufferDataOutputStream;
 import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.junit.categories.SerializationTest;
 import org.apache.geode.test.junit.rules.ClassAnalysisRule;
 
@@ -324,7 +327,9 @@ public abstract class AnalyzeDataSerializablesJUnitTestBase {
    * Use this method to get a resource stored in the test's resource directory
    */
   protected File getResourceAsFile(String resourceName) {
-    return new File(getClass().getResource(resourceName).getFile());
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResource(getClass(), resourceName);
+    return new File(serviceResult.getMessage().getFile());
   }
 
   /**

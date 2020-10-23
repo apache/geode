@@ -62,6 +62,8 @@ import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
@@ -175,11 +177,12 @@ public class SSLSocketParameterExtensionIntegrationTest {
   }
 
   public File copyKeystoreResourceToFile(final String name) throws IOException {
-    URL resource = getClass().getResource(name);
-    assertThat(resource).isNotNull();
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResource(getClass(), name);
+    assertThat(serviceResult.isSuccessful()).isTrue();
 
     File file = this.temporaryFolder.newFile(name.replaceFirst(".*/", ""));
-    FileUtils.copyURLToFile(resource, file);
+    FileUtils.copyURLToFile(serviceResult.getMessage(), file);
     return file;
   }
 

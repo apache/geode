@@ -81,8 +81,10 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.internal.HttpService;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.management.internal.RestAgent;
 import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -183,8 +185,10 @@ public class RestAccessControllerTest {
   }
 
   private static void loadResource(String name) throws Exception {
-    URL orderCasJson = RestAccessControllerTest.class.getResource(name);
-    jsonResources.put(name, new String(Files.readAllBytes(Paths.get(orderCasJson.toURI()))));
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResource(RestAccessControllerTest.class, name);
+    jsonResources.put(name,
+        new String(Files.readAllBytes(Paths.get(serviceResult.getMessage().toURI()))));
   }
 
   @Before

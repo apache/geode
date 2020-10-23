@@ -35,8 +35,10 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
 import org.apache.geode.internal.SystemAdmin.StatSpec;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.internal.statistics.StatArchiveReader.ResourceInst;
 import org.apache.geode.internal.statistics.StatArchiveReader.StatValue;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.junit.categories.StatisticsTest;
 
 /**
@@ -64,9 +66,10 @@ public class StatArchiveWithConsecutiveResourceInstIntegrationTest {
 
   @Before
   public void setUp() throws Exception {
-    URL url = getClass().getResource(ARCHIVE_FILE_NAME);
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResource(getClass(), ARCHIVE_FILE_NAME);
     this.archiveFile = this.temporaryFolder.newFile(ARCHIVE_FILE_NAME);
-    FileUtils.copyURLToFile(url, archiveFile);
+    FileUtils.copyURLToFile(serviceResult.getMessage(), archiveFile);
 
     this.statSpec = new StatSpec(STATS_SPEC_STRING);
 

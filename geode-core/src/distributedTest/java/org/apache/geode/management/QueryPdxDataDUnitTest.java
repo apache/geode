@@ -32,8 +32,10 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
 import org.apache.geode.pdx.internal.AutoSerializableManager;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -99,10 +101,13 @@ public class QueryPdxDataDUnitTest {
   }
 
   private static Class<?> buildClass(String className, String javaResourceName) throws Exception {
-    URL resourceFileURL = QueryPdxDataDUnitTest.class.getResource(javaResourceName);
-    assertThat(resourceFileURL).isNotNull();
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResource(QueryPdxDataDUnitTest.class,
+            javaResourceName);
 
-    URI resourceUri = resourceFileURL.toURI();
+    assertThat(serviceResult.isSuccessful()).isTrue();
+
+    URI resourceUri = serviceResult.getMessage().toURI();
     String javaCode = new String(Files.readAllBytes(new File(resourceUri).toPath()));
 
     return CompilerUtils.CACHED_COMPILER.loadFromJava(className, javaCode);

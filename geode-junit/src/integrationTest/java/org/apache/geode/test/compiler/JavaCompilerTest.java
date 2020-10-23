@@ -28,6 +28,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
+
 public class JavaCompilerTest {
 
   @Rule
@@ -62,10 +65,11 @@ public class JavaCompilerTest {
   }
 
   private File getFileFromTestResources(String fileName) throws URISyntaxException {
-    URL resourceFileURL = getClass().getResource(fileName);
-    assertThat(resourceFileURL).isNotNull();
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResource(getClass(), fileName);
+    assertThat(serviceResult.isSuccessful()).isTrue();
 
-    URI resourceUri = resourceFileURL.toURI();
+    URI resourceUri = serviceResult.getMessage().toURI();
     File file = new File(resourceUri);
 
     assertThat(file).exists();

@@ -60,6 +60,8 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 
 public class BackupIntegrationTest {
 
@@ -88,8 +90,12 @@ public class BackupIntegrationTest {
     props.setProperty(LOCATORS, "");
     incrementalDir = temporaryFolder.newFolder("incremental");
     try {
-      URL url = BackupIntegrationTest.class.getResource("BackupIntegrationTest.cache.xml");
-      cacheXmlFile = new File(url.toURI().getPath());
+      ServiceResult<URL> serviceResult =
+          ClassLoaderServiceInstance.getInstance().getResource(BackupIntegrationTest.class,
+              "BackupIntegrationTest.cache.xml");
+      if (serviceResult.isSuccessful()) {
+        cacheXmlFile = new File(serviceResult.getMessage().toURI().getPath());
+      }
     } catch (URISyntaxException e) {
       throw new ExceptionInInitializerError(e);
     }

@@ -48,7 +48,7 @@ public class CqServiceProvider {
     ServiceResult<List<CqServiceFactory>> serviceResult =
         ClassLoaderServiceInstance.getInstance().loadService(CqServiceFactory.class);
     if (serviceResult.isSuccessful()) {
-      factory = serviceResult.getMessage().stream().iterator().next();
+      factory = serviceResult.getMessage().get(0);
       factory.initialize();
     } else {
       factory = null;

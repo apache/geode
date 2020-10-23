@@ -18,6 +18,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -25,6 +26,8 @@ import java.util.Properties;
 import org.junit.After;
 import org.junit.Before;
 
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.process.ProcessWrapper;
 import org.apache.geode.util.internal.GeodeGlossary;
 
@@ -40,8 +43,14 @@ public abstract class GoldenTestCase {
   protected static final boolean DEBUG = Boolean.getBoolean(DEBUG_PROPERTY);
 
   private static final String LOG4J_CONFIGURATION_FILE_PROPERTY = "log4j.configurationFile";
-  private static final String LOG4J_CONFIG_URL_STRING =
-      GoldenTestCase.class.getResource("log4j2-test.xml").toString();
+  private static final String LOG4J_CONFIG_URL_STRING;
+
+  static {
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResource(GoldenTestCase.class,
+            "log4j2-test.xml");
+    LOG4J_CONFIG_URL_STRING = serviceResult.getMessage().toString();
+  }
   private static final String[] JVM_ARGS = new String[] {
       "-D" + LOG4J_CONFIGURATION_FILE_PROPERTY + "=" + LOG4J_CONFIG_URL_STRING};
 

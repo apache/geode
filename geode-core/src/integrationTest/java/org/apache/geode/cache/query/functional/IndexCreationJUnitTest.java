@@ -34,6 +34,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -81,6 +82,8 @@ import org.apache.geode.cache.query.types.StructType;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 
 @Category({OQLIndexTest.class})
@@ -814,8 +817,10 @@ public class IndexCreationJUnitTest {
       Properties props = new Properties();
       props.setProperty(NAME, "test");
       props.setProperty(MCAST_PORT, "0");
-      props.setProperty(CACHE_XML_FILE,
-          getClass().getResource("index-creation-with-eviction.xml").toURI().getPath());
+      ServiceResult<URL> serviceResult =
+          ClassLoaderServiceInstance.getInstance().getResource(getClass(),
+              "index-creation-with-eviction.xml");
+      props.setProperty(CACHE_XML_FILE, serviceResult.getMessage().toURI().getPath());
       DistributedSystem ds = DistributedSystem.connect(props);
 
       // Create the cache which causes the cache-xml-file to be parsed
@@ -845,8 +850,10 @@ public class IndexCreationJUnitTest {
       props.setProperty(MCAST_PORT, "0");
       // Using a different cache.xml that changes some region properties
       // That will force the disk code to copy the region entries.
-      props.setProperty(CACHE_XML_FILE,
-          getClass().getResource("index-creation-without-eviction.xml").toURI().getPath());
+      ServiceResult<URL> serviceResult =
+          ClassLoaderServiceInstance.getInstance().getResource(getClass(),
+              "index-creation-without-eviction.xml");
+      props.setProperty(CACHE_XML_FILE, serviceResult.getMessage().toURI().getPath());
       DistributedSystem ds = DistributedSystem.connect(props);
       Cache cache = CacheFactory.create(ds);
       QueryService qs = cache.getQueryService();
@@ -873,8 +880,10 @@ public class IndexCreationJUnitTest {
     Properties props = new Properties();
     props.setProperty(NAME, "test");
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(CACHE_XML_FILE,
-        getClass().getResource("index-creation-without-eviction.xml").toURI().getPath());
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResource(getClass(),
+            "index-creation-without-eviction.xml");
+    props.setProperty(CACHE_XML_FILE, serviceResult.getMessage().toURI().getPath());
     DistributedSystem ds = DistributedSystem.connect(props);
     Cache cache = CacheFactory.create(ds);
     Region localRegion = cache.getRegion("localRegion");
@@ -902,8 +911,10 @@ public class IndexCreationJUnitTest {
     Properties props = new Properties();
     props.setProperty(NAME, "test");
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(CACHE_XML_FILE,
-        getClass().getResource("index-creation-without-eviction.xml").toURI().getPath());
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResource(getClass(),
+            "index-creation-without-eviction.xml");
+    props.setProperty(CACHE_XML_FILE, serviceResult.getMessage().toURI().getPath());
     DistributedSystem ds = DistributedSystem.connect(props);
     Cache cache = CacheFactory.create(ds);
     Region localDiskRegion = cache.getRegion("localDiskRegion");
@@ -936,8 +947,10 @@ public class IndexCreationJUnitTest {
       props.setProperty(MCAST_PORT, "0");
       props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
       props.setProperty(ENABLE_TIME_STATISTICS, "true");
-      props.setProperty(CACHE_XML_FILE,
-          getClass().getResource("index-recovery-overflow.xml").toURI().getPath());
+      ServiceResult<URL> serviceResult =
+          ClassLoaderServiceInstance.getInstance().getResource(getClass(),
+              "index-recovery-overflow.xml");
+      props.setProperty(CACHE_XML_FILE, serviceResult.getMessage().toURI().getPath());
       DistributedSystem ds = DistributedSystem.connect(props);
 
       // Create the cache which causes the cache-xml-file to be parsed
@@ -975,8 +988,10 @@ public class IndexCreationJUnitTest {
       props.setProperty(MCAST_PORT, "0");
       props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
       props.setProperty(ENABLE_TIME_STATISTICS, "true");
-      props.setProperty(CACHE_XML_FILE,
-          getClass().getResource("index-recovery-overflow.xml").toURI().getPath());
+      ServiceResult<URL> serviceResult =
+          ClassLoaderServiceInstance.getInstance().getResource(getClass(),
+              "index-recovery-overflow.xml");
+      props.setProperty(CACHE_XML_FILE, serviceResult.getMessage().toURI().getPath());
       DistributedSystem ds = DistributedSystem.connect(props);
       Cache cache = CacheFactory.create(ds);
       QueryService qs = cache.getQueryService();

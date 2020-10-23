@@ -41,6 +41,8 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.proxy.ProxySocketFactories;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * These tests run against a 2-server, 1-locator Geode cluster. The servers and locator run inside
@@ -59,8 +61,18 @@ import org.apache.geode.cache.client.proxy.ProxySocketFactories;
  */
 public class DualServerSNIAcceptanceTest {
 
-  private static final URL DOCKER_COMPOSE_PATH =
-      SingleServerSNIAcceptanceTest.class.getResource("docker-compose.yml");
+  private static final URL DOCKER_COMPOSE_PATH;
+
+  static {
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResource(DualServerSNIAcceptanceTest.class,
+            "docker-compose.yml");
+    if (serviceResult.isSuccessful()) {
+      DOCKER_COMPOSE_PATH = serviceResult.getMessage();
+    } else {
+      DOCKER_COMPOSE_PATH = null;
+    }
+  }
 
   // Docker compose does not work on windows in CI. Ignore this test on windows
   // Using a RuleChain to make sure we ignore the test before the rule comes into play

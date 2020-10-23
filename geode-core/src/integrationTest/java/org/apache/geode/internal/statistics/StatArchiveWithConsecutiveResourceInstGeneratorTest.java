@@ -24,6 +24,8 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.junit.categories.StatisticsTest;
 
 /**
@@ -41,10 +43,11 @@ public class StatArchiveWithConsecutiveResourceInstGeneratorTest
 
   @Before
   public void setUpGeneratorTest() throws Exception {
-    URL url = getClass().getResource(ARCHIVE_FILE_NAME);
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResource(getClass(), ARCHIVE_FILE_NAME);
     File testFolder = this.temporaryFolder.newFolder(getClass().getSimpleName());
     this.expectedStatArchiveFile = new File(testFolder, ARCHIVE_FILE_NAME);
-    FileUtils.copyURLToFile(url, this.expectedStatArchiveFile);
+    FileUtils.copyURLToFile(serviceResult.getMessage(), this.expectedStatArchiveFile);
   }
 
   @Override

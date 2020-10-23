@@ -36,9 +36,11 @@ import org.apache.geode.cache.configuration.RegionAttributesDataPolicy;
 import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.internal.config.JAXBService;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.management.configuration.ClassName;
 import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.configuration.RegionType;
+import org.apache.geode.services.result.ServiceResult;
 
 public class RegionConverterTest {
   private RegionConverter converter;
@@ -126,11 +128,13 @@ public class RegionConverterTest {
 
   @Test
   public void checkDefaultRegionAttributesForShortcuts() throws Exception {
-    URL xmlResource = RegionConverterTest.class.getResource("RegionConverterTest.xml");
-    assertThat(xmlResource).isNotNull();
-    CacheConfig master =
-        new JAXBService(CacheConfig.class)
-            .unMarshall(FileUtils.readFileToString(new File(xmlResource.getFile()), "UTF-8"));
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResource(RegionConverterTest.class,
+            "RegionConverterTest.xml");
+    assertThat(serviceResult.isSuccessful()).isTrue();
+    CacheConfig master = new JAXBService(CacheConfig.class)
+        .unMarshall(
+            FileUtils.readFileToString(new File(serviceResult.getMessage().getFile()), "UTF-8"));
     RegionShortcut[] shortcuts = RegionShortcut.values();
     for (RegionShortcut shortcut : shortcuts) {
       RegionConfig config = new RegionConfig();

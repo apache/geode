@@ -20,6 +20,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.net.URL;
 import java.nio.charset.Charset;
 
 import org.apache.commons.io.FileUtils;
@@ -29,6 +30,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.junit.categories.SessionTest;
 
 @Category(SessionTest.class)
@@ -44,7 +47,9 @@ public class InstallerJUnitTest {
 
   private void testTransformation(final String name) throws Exception {
     File webXmlFile = temporaryFolder.newFile();
-    FileUtils.copyFile(new File(getClass().getResource(name).getFile()), webXmlFile);
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResource(getClass(), name);
+    FileUtils.copyFile(new File(serviceResult.getMessage().getFile()), webXmlFile);
     final String[] args = {"-t", "peer-to-peer", "-w", webXmlFile.getAbsolutePath()};
 
     ByteArrayOutputStream output = new ByteArrayOutputStream();
@@ -52,8 +57,10 @@ public class InstallerJUnitTest {
       new Installer(args).processWebXml(input, output);
     }
 
+    ServiceResult<URL> expectedServiceResult =
+        ClassLoaderServiceInstance.getInstance().getResource(getClass(), name + ".expected");
     String expected =
-        IOUtils.toString(getClass().getResource(name + ".expected"), Charset.defaultCharset())
+        IOUtils.toString(expectedServiceResult.getMessage(), Charset.defaultCharset())
             .replaceAll(IOUtils.LINE_SEPARATOR_WINDOWS, "")
             .replaceAll(IOUtils.LINE_SEPARATOR_UNIX, "");
     String actual = output.toString().replaceAll(IOUtils.LINE_SEPARATOR_WINDOWS, "")

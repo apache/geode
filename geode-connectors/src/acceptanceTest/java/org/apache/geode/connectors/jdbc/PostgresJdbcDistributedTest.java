@@ -25,14 +25,22 @@ import org.junit.ClassRule;
 
 import org.apache.geode.connectors.jdbc.test.junit.rules.PostgresConnectionRule;
 import org.apache.geode.connectors.jdbc.test.junit.rules.SqlDatabaseConnectionRule;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * End-to-end dunits for jdbc connector
  */
 public class PostgresJdbcDistributedTest extends JdbcDistributedTest {
 
-  private static final URL COMPOSE_RESOURCE_PATH =
-      PostgresJdbcDistributedTest.class.getResource("postgres.yml");
+  private static final URL COMPOSE_RESOURCE_PATH;
+
+  static {
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResource(PostgresJdbcDistributedTest.class,
+            "postgres.yml");
+    COMPOSE_RESOURCE_PATH = serviceResult.getMessage();
+  }
 
   @ClassRule
   public static transient SqlDatabaseConnectionRule dbRule = createConnectionRule();

@@ -28,6 +28,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.junit.categories.StatisticsTest;
 
 /**
@@ -55,11 +57,12 @@ public class StatArchiveWithMissingResourceTypeRegressionTest {
 
   @Before
   public void setUp() throws Exception {
-    URL url = getClass().getResource(ARCHIVE_FILE_NAME);
-    assertThat(url).isNotNull(); // precondition
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResource(getClass(), ARCHIVE_FILE_NAME);
+    assertThat(serviceResult.isSuccessful()).isTrue(); // precondition
 
     archiveFile = temporaryFolder.newFile(ARCHIVE_FILE_NAME);
-    FileUtils.copyURLToFile(url, archiveFile);
+    FileUtils.copyURLToFile(serviceResult.getMessage(), archiveFile);
     assertThat(archiveFile).exists(); // precondition
   }
 
