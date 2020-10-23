@@ -804,7 +804,8 @@ public class Connection implements Runnable {
       synchronized (ioFilter.getSynchObject()) {
         if (!ioFilter.isClosed()) {
           logger.info(
-              "***EB: Connection.notifyHandshakeWater is going to reset the Unwrapped Buffer ****");
+              "***EB: Connection.notifyHandshakeWater is going to reset the Unwrapped Buffer ****",
+              new Exception("GGG aka DEBUG ;)"));
           // clear out any remaining handshake bytes
           ByteBuffer buffer = ioFilter.getUnwrappedBuffer(inputBuffer);
           buffer.position(0).limit(0);
