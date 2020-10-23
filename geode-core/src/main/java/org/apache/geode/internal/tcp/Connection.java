@@ -801,19 +801,23 @@ public class Connection implements Runnable {
   }
 
   private void notifyHandshakeWaiter(boolean success) {
-    if (getConduit().useSSL() && ioFilter != null) {
-      try (final ByteBufferSharing sharedBuffer = ioFilter.getUnwrappedBuffer(inputBuffer)) {
-        // clear out any remaining handshake bytes
-        try {
-          logger.info("BGB: modifying shared input buffer! for connection: " + this,
-              new Exception());
-          sharedBuffer.getBuffer().position(0).limit(0);
-        } catch (IOException e) {
-          // means the NioFilter was already closed
+    synchronized (handshakeSync) {
+      /*
+       * Return early to avoid modifying ioFilter's buffer more than once.
+       */
+      if (handshakeRead || handshakeCancelled) {
+        return;
+      }
+      if (getConduit().useSSL() && ioFilter != null) {
+        try (final ByteBufferSharing sharedBuffer = ioFilter.getUnwrappedBuffer(inputBuffer)) {
+          // clear out any remaining handshake bytes
+          try {
+            sharedBuffer.getBuffer().position(0).limit(0);
+          } catch (IOException e) {
+            // means the NioFilter was already closed
+          }
         }
       }
-    }
-    synchronized (handshakeSync) {
       if (success) {
         handshakeRead = true;
       } else {
