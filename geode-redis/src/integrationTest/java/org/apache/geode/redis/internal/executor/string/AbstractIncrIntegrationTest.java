@@ -104,7 +104,7 @@ public abstract class AbstractIncrIntegrationTest implements RedisPortSupplier {
     try {
       jedis.incr(key);
     } catch (JedisDataException e) {
-      assertThat(e.getMessage()).contains(RedisConstants.ERROR_NOT_INTEGER);
+      assertThat(e.getMessage()).contains("out of range");
     }
     assertThat(jedis.get(key)).isEqualTo(nonIntegerValue);
   }
