@@ -25,6 +25,7 @@ public class ClassLoaderServiceInstance {
   @Immutable
   private static ClassLoaderService classLoaderService;
 
+  @Immutable
   private static Class<? extends ClassLoaderService> serviceClass =
       DefaultClassLoaderServiceImpl.class;
 
