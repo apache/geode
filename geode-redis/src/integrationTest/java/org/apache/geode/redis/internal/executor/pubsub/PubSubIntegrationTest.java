@@ -16,17 +16,19 @@
 package org.apache.geode.redis.internal.executor.pubsub;
 
 import org.junit.ClassRule;
+import org.junit.contrib.java.lang.system.ProvideSystemProperty;
+import org.junit.rules.RuleChain;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
 
 public class PubSubIntegrationTest extends AbstractPubSubIntegrationTest {
 
-  static {
-    System.setProperty("io.netty.eventLoopThreads", "10");
-  }
+  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
   @ClassRule
-  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
+  public static RuleChain chain = RuleChain.outerRule(
+      new ProvideSystemProperty("io.netty.eventLoopThreads", "10"))
+      .around(server);
 
   @Override
   public int getPort() {
