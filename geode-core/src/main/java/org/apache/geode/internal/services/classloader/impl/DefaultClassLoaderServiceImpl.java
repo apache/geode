@@ -72,7 +72,8 @@ public class DefaultClassLoaderServiceImpl implements ClassLoaderService {
       return Failure.of("service cannot be null");
     }
     List<T> result = new ArrayList<>();
-    Iterator<T> iterator = ServiceLoader.load(service,ClassPathLoader.getLatestAsClassLoader()).iterator();
+    Iterator<T> iterator =
+        ServiceLoader.load(service, ClassPathLoader.getLatestAsClassLoader()).iterator();
     while (iterator.hasNext()) {
       try {
         result.add(iterator.next());
