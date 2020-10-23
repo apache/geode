@@ -17,13 +17,21 @@
 package org.apache.geode.test.dunit.rules;
 
 import static org.apache.geode.test.dunit.VM.DEFAULT_VM_COUNT;
+import static org.apache.geode.util.internal.CompletionUtils.close;
+import static org.apache.geode.util.internal.CompletionUtils.openLatch;
+import static org.apache.geode.util.internal.CompletionUtils.toFalse;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+
+import org.apache.geode.test.dunit.VM;
 
 /**
  * DistributedReference is a JUnit Rule that provides automated tearDown for a static
@@ -152,9 +160,10 @@ import java.util.concurrent.atomic.AtomicReference;
 @SuppressWarnings({"serial", "unused", "WeakerAccess"})
 public class DistributedReference<V> extends AbstractDistributedRule {
 
-  private static final AtomicReference<Object> REFERENCE = new AtomicReference<>();
+  private static final AtomicReference<Map<Integer, Object>> REFERENCE = new AtomicReference<>();
 
   private final AtomicBoolean autoClose = new AtomicBoolean(true);
+  private final int identity;
 
   public DistributedReference() {
     this(DEFAULT_VM_COUNT);
@@ -162,6 +171,7 @@ public class DistributedReference<V> extends AbstractDistributedRule {
 
   public DistributedReference(int vmCount) {
     super(vmCount);
+    identity = hashCode();
   }
 
   /**
@@ -178,7 +188,7 @@ public class DistributedReference<V> extends AbstractDistributedRule {
    * @return the current value
    */
   public V get() {
-    return uncheckedCast(REFERENCE.get());
+    return uncheckedCast(REFERENCE.get().get(identity));
   }
 
   /**
@@ -187,47 +197,76 @@ public class DistributedReference<V> extends AbstractDistributedRule {
    * @param newValue the new value
    */
   public DistributedReference<V> set(V newValue) {
-    REFERENCE.set(newValue);
+    REFERENCE.get().put(identity, newValue);
     return this;
   }
 
   @Override
+  protected void before() {
+    invoker().invokeInEveryVMAndController(() -> invokeBefore());
+  }
+
+  @Override
   protected void after() {
-    invoker().invokeInEveryVMAndController(this::invokeAfter);
+    invoker().invokeInEveryVMAndController(() -> invokeAfter());
+  }
+
+  protected void afterCreateVM(VM vm) {
+    vm.invoke(() -> invokeBefore());
+  }
+
+  protected void beforeBounceVM(VM vm) {
+    // override if needed
+  }
+
+  protected void afterBounceVM(VM vm) {
+    vm.invoke(() -> invokeBefore());
+  }
+
+  private void invokeBefore() {
+    REFERENCE.compareAndSet(null, new HashMap<>());
+    REFERENCE.get().putIfAbsent(identity, null);
   }
 
   private void invokeAfter() {
-    V value = get();
-    if (value == null) {
+    Map<Integer, Object> references = REFERENCE.getAndSet(null);
+    if (references == null) {
       return;
     }
-    REFERENCE.set(null);
+
+    for (Object object : references.values()) {
+      invokeAfter(object);
+    }
+  }
+
+  private void invokeAfter(Object object) {
+    if (object == null) {
+      return;
+    }
 
     if (autoClose.get()) {
-      autoClose(value);
+      autoClose(object);
     }
   }
 
-  private void autoClose(V value) {
-    if (value instanceof AutoCloseable) {
-      close((AutoCloseable) value);
+  private void autoClose(Object object) {
+    if (object instanceof AutoCloseable) {
+      close((AutoCloseable) object);
 
-    } else if (hasMethod(value.getClass(), "close")) {
-      invokeMethod(value, "close");
+    } else if (object instanceof AtomicBoolean) {
+      toFalse((AtomicBoolean) object);
 
-    } else if (hasMethod(value.getClass(), "disconnect")) {
-      invokeMethod(value, "disconnect");
+    } else if (object instanceof CountDownLatch) {
+      openLatch((CountDownLatch) object);
 
-    } else if (hasMethod(value.getClass(), "stop")) {
-      invokeMethod(value, "stop");
-    }
-  }
+    } else if (hasMethod(object.getClass(), "close")) {
+      invokeMethod(object, "close");
 
-  private static void close(AutoCloseable autoCloseable) {
-    try {
-      autoCloseable.close();
-    } catch (Exception e) {
-      throw new RuntimeException(e);
+    } else if (hasMethod(object.getClass(), "disconnect")) {
+      invokeMethod(object, "disconnect");
+
+    } else if (hasMethod(object.getClass(), "stop")) {
+      invokeMethod(object, "stop");
     }
   }
 

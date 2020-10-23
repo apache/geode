@@ -533,8 +533,9 @@ public class VM implements Serializable {
    *
    * @throws RMIException if an exception occurs while bouncing this {@code VM}
    */
-  public void bounce() {
+  public VM bounce() {
     bounce(version, false);
+    return this;
   }
 
   /**
@@ -550,12 +551,14 @@ public class VM implements Serializable {
    *
    * @throws RMIException if an exception occurs while bouncing this {@code VM}
    */
-  public void bounceForcibly() {
+  public VM bounceForcibly() {
     bounce(version, true);
+    return this;
   }
 
-  public void bounce(final String targetVersion) {
+  public VM bounce(final String targetVersion) {
     bounce(targetVersion, false);
+    return this;
   }
 
   private synchronized void bounce(final String targetVersion, boolean force) {
