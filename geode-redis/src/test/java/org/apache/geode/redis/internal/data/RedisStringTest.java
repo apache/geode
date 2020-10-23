@@ -198,20 +198,6 @@ public class RedisStringTest {
   }
 
   @Test
-  public void incrbyfloatErrorsWhenValueOverflows() {
-    // allows unchecked cast of mock to Region<ByteArrayWrapper, RedisData>
-    @SuppressWarnings("unchecked")
-    Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
-    ByteArrayWrapper byteArrayWrapper = new ByteArrayWrapper(
-        // max value for signed double
-        new byte[] {'1', '.', '7', '9', '7', '6', '9', '3', '1', '3', '4', '8', '6', '2', '3', '1',
-            '5', '7', 'e', '+', '3', '0', '8'});
-    RedisString string = new RedisString(byteArrayWrapper);
-    assertThatThrownBy(() -> string.incrbyfloat(region, byteArrayWrapper, 1.2))
-        .isInstanceOf(ArithmeticException.class);
-  }
-
-  @Test
   public void incrbyfloatIncrementsValueByGivenFloat() {
     // allows unchecked cast of mock to Region<ByteArrayWrapper, RedisData>
     @SuppressWarnings("unchecked")
