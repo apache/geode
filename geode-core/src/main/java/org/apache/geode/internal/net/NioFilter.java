@@ -102,4 +102,6 @@ public interface NioFilter {
    * way to do that is to call this method in a try-with-resources statement.
    */
   ByteBufferSharing getUnwrappedBuffer(ByteBuffer wrappedBuffer);
+
+  ByteBufferSharing shareInputBuffer();
 }

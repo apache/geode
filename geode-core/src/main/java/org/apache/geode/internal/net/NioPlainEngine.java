@@ -125,6 +125,11 @@ public class NioPlainEngine implements NioFilter {
     return shareBuffer(wrappedBuffer);
   }
 
+  @Override
+  public ByteBufferSharing shareInputBuffer() {
+    return shareBuffer(null); // calling getBuffer() on result will return null natch'
+  }
+
   private ByteBufferSharingNoOp shareBuffer(final ByteBuffer wrappedBuffer) {
     return new ByteBufferSharingNoOp(wrappedBuffer);
   }
