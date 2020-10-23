@@ -805,6 +805,8 @@ public class Connection implements Runnable {
       try (final ByteBufferSharing sharedBuffer = ioFilter.getUnwrappedBuffer(inputBuffer)) {
         // clear out any remaining handshake bytes
         try {
+          logger.info("BGB: modifying shared input buffer! for connection: " + this,
+              new Exception());
           sharedBuffer.getBuffer().position(0).limit(0);
         } catch (IOException e) {
           // means the NioFilter was already closed
@@ -2656,25 +2658,27 @@ public class Connection implements Runnable {
       ReplyMessage msg;
       int len;
 
-      // we have to lock here to protect between reading header and message body
-      try (final ByteBufferSharing _unused = ioFilter.getUnwrappedBuffer(null)) {
-        Header header = msgReader.readHeader();
+      // // we have to lock here to protect between reading header and message body
+      // try (final ByteBufferSharing _unused = ioFilter.getUnwrappedBuffer(null)) {
+      Header header = msgReader.readHeader();
 
-        if (header.getMessageType() == NORMAL_MSG_TYPE) {
-          msg = (ReplyMessage) msgReader.readMessage(header);
-          len = header.getMessageLength();
-        } else {
-          MsgDestreamer destreamer = obtainMsgDestreamer(header.getMessageId(), version);
-          while (header.getMessageType() == CHUNKED_MSG_TYPE) {
-            msgReader.readChunk(header, destreamer);
-            header = msgReader.readHeader();
-          }
+      // !!!we can get preempted here!!!
+
+      if (header.getMessageType() == NORMAL_MSG_TYPE) {
+        msg = (ReplyMessage) msgReader.readMessage(header, this);
+        len = header.getMessageLength();
+      } else {
+        MsgDestreamer destreamer = obtainMsgDestreamer(header.getMessageId(), version);
+        while (header.getMessageType() == CHUNKED_MSG_TYPE) {
           msgReader.readChunk(header, destreamer);
-          msg = (ReplyMessage) destreamer.getMessage();
-          releaseMsgDestreamer(header.getMessageId(), destreamer);
-          len = destreamer.size();
+          header = msgReader.readHeader();
         }
+        msgReader.readChunk(header, destreamer);
+        msg = (ReplyMessage) destreamer.getMessage();
+        releaseMsgDestreamer(header.getMessageId(), destreamer);
+        len = destreamer.size();
       }
+      // }
       // I'd really just like to call dispatchMessage here. However,
       // that call goes through a bunch of checks that knock about
       // 10% of the performance. Since this direct-ack stuff is all

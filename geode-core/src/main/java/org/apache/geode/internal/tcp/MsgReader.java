@@ -34,7 +34,6 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 /**
  * This class is currently used for reading direct ack responses It should probably be used for all
  * of the reading done in Connection.
- *
  */
 public class MsgReader {
   private static final Logger logger = LogService.getLogger();
@@ -44,7 +43,6 @@ public class MsgReader {
   private final NioFilter ioFilter;
   private ByteBuffer peerNetData;
   private final ByteBufferInputStream byteBufferInputStream;
-
 
 
   MsgReader(Connection conn, NioFilter nioFilter, KnownVersion version) {
@@ -73,7 +71,7 @@ public class MsgReader {
           nioMessageType &= ~Connection.DIRECT_ACK_BIT; // clear the ack bit
         }
 
-        header.setFields(nioMessageLength, nioMessageType, nioMsgId);
+        header.setFields(nioMessageLength, nioMessageType, nioMsgId, unwrappedBuffer.position());
 
         return header;
       } catch (BufferUnderflowException e) {
@@ -88,11 +86,16 @@ public class MsgReader {
    *
    * @return the message, or null if we only received a chunk of the message
    */
-  DistributionMessage readMessage(Header header)
+  DistributionMessage readMessage(Header header,
+      final Connection connection)
       throws IOException, ClassNotFoundException {
     try (final ByteBufferSharing sharedBuffer = readAtLeast(header.messageLength)) {
       ByteBuffer nioInputBuffer = sharedBuffer.getBuffer();
       Assert.assertTrue(nioInputBuffer.remaining() >= header.messageLength);
+      Assert.assertTrue(
+          header.getUnwrappedBufferPositionAfterReadingHeader() == nioInputBuffer.position(),
+          "nioInputBuffer position has changed between the end of readHeader() and the beginning of readMessage() for connection: "
+              + connection);
       this.getStats().incMessagesBeingReceived(true, header.messageLength);
       long startSer = this.getStats().startMsgDeserialization();
       try {
@@ -123,7 +126,6 @@ public class MsgReader {
   }
 
 
-
   private ByteBufferSharing readAtLeast(int bytes) throws IOException {
     peerNetData = ioFilter.ensureWrappedCapacity(bytes, peerNetData,
         BufferPool.BufferType.TRACKED_RECEIVER);
@@ -137,7 +139,6 @@ public class MsgReader {
   }
 
 
-
   private DMStats getStats() {
     return conn.getConduit().getStats();
   }
@@ -148,10 +149,18 @@ public class MsgReader {
     private byte messageType;
     private short messageId;
 
-    public void setFields(int nioMessageLength, byte nioMessageType, short nioMsgId) {
+    public int getUnwrappedBufferPositionAfterReadingHeader() {
+      return unwrappedBufferPositionAfterReadingHeader;
+    }
+
+    private int unwrappedBufferPositionAfterReadingHeader;
+
+    public void setFields(int nioMessageLength, byte nioMessageType, short nioMsgId,
+        final int unwrappedBufferPositionAfterReadingHeader) {
       messageLength = nioMessageLength;
       messageType = nioMessageType;
       messageId = nioMsgId;
+      this.unwrappedBufferPositionAfterReadingHeader = unwrappedBufferPositionAfterReadingHeader;
     }
 
     int getMessageLength() {
