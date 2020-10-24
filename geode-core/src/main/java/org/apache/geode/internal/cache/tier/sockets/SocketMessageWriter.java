@@ -103,9 +103,12 @@ public class SocketMessageWriter {
       bbos.flush();
       ByteBuffer buffer = bbos.getContentBuffer();
       ByteBuffer wrappedBuffer = engine.wrap(buffer);
-      while (wrappedBuffer.remaining() > 0) {
-        socket.getChannel().write(wrappedBuffer);
+      if (socket != null) {
+        while (wrappedBuffer.remaining() > 0) {
+          socket.getChannel().write(wrappedBuffer);
+        }
       }
+      bbos.close();
     }
   }
 

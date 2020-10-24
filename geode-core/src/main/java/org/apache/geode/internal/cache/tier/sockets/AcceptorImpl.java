@@ -1592,13 +1592,17 @@ public class AcceptorImpl implements Acceptor, Runnable {
     if (engine == null) {
       out.write(hdos.toByteArray());
       out.flush();
+      hdos.close();
     } else {
       bbos.flush();
       ByteBuffer buffer = bbos.getContentBuffer();
       ByteBuffer wrappedBuffer = engine.wrap(buffer);
-      while (wrappedBuffer.remaining() > 0) {
-        socket.getChannel().write(wrappedBuffer);
+      if (socket != null) {
+        while (wrappedBuffer.remaining() > 0) {
+          socket.getChannel().write(wrappedBuffer);
+        }
       }
+      bbos.close();
     }
   }
 

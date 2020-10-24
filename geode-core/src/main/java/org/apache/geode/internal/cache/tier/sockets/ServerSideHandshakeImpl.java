@@ -76,10 +76,11 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
     this.connection = connection;
 
     int soTimeout = -1;
+    InputStream inputStream = null;
+
     try {
       soTimeout = sock.getSoTimeout();
       sock.setSoTimeout(timeout);
-      InputStream inputStream;
 
       if (connection.getSSLEngine() == null) {
         inputStream = sock.getInputStream();
@@ -127,6 +128,9 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
       if (connection.getSSLEngine() != null) {
         ByteBuffer sslbuff = connection.getSSLEngine().getUnwrappedBuffer(null);
         connection.getSSLEngine().doneReading(sslbuff);
+        if (inputStream != null) {
+          inputStream.close();
+        }
       }
       if (soTimeout != -1) {
         try {
@@ -221,11 +225,12 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
     // Flush
     dos.flush();
 
-    if (connection.getSSLEngine() != null) {
+    if (bbos != null) {
       bbos.flush();
       ByteBuffer buffer = bbos.getContentBuffer();
       ByteBuffer wrappedBuffer = connection.getSSLEngine().wrap(buffer);
       connection.getSocket().getChannel().write(wrappedBuffer);
+      bbos.close();
     }
 
   }

@@ -70,12 +70,14 @@ class ServerSideHandshakeFactory {
       ServerConnection connection)
       throws IOException, VersionException {
     int soTimeout = -1;
+    NioSslEngine sslengine = null;
+    InputStream is = null;
+
     try {
       soTimeout = socket.getSoTimeout();
       socket.setSoTimeout(timeout);
 
-      NioSslEngine sslengine = connection.getSSLEngine();
-      InputStream is;
+      sslengine = connection.getSSLEngine();
       if (sslengine == null) {
         is = socket.getInputStream();
       } else {
@@ -115,6 +117,9 @@ class ServerSideHandshakeFactory {
         throw new UnsupportedVersionException(message + sInfo);
       }
     } finally {
+      if (sslengine != null && is != null) {
+        is.close();
+      }
       if (soTimeout != -1) {
         try {
           socket.setSoTimeout(soTimeout);

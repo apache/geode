@@ -851,7 +851,7 @@ public class Message {
 
     final int headerLength = getHeaderLength();
 
-    if (this.sslEngine != null) {
+    if (this.sslEngine != null && this.socketChannel != null) {
       int bytesRead = this.socketChannel.read(cb);
       if (bytesRead == -1) {
         throw new EOFException(
