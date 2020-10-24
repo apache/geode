@@ -25,8 +25,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.SystemFailure;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * This class allows sockets to be closed without blocking. In some cases we have seen a call of
@@ -41,6 +44,7 @@ import org.apache.geode.logging.internal.executors.LoggingExecutors;
  * This max threads can be configured using the "p2p.ASYNC_CLOSE_POOL_MAX_THREADS" system property.
  */
 public class SocketCloser {
+  private static final Logger logger = LogService.getLogger();
 
   /**
    * Number of seconds to wait before timing out an unused async close thread. Default is 120 (2

@@ -26,6 +26,7 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.net.BufferPool;
+import org.apache.geode.internal.net.ByteBufferSharing;
 import org.apache.geode.internal.net.NioFilter;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -54,8 +55,8 @@ public class MsgReader {
   }
 
   Header readHeader() throws IOException {
-    synchronized (ioFilter.getSynchObject()) {
-      ByteBuffer unwrappedBuffer = readAtLeast(Connection.MSG_HEADER_BYTES);
+    try (final ByteBufferSharing sharedBuffer = readAtLeast(Connection.MSG_HEADER_BYTES)) {
+      ByteBuffer unwrappedBuffer = sharedBuffer.getBuffer();
 
       Assert.assertTrue(unwrappedBuffer.remaining() >= Connection.MSG_HEADER_BYTES);
 
@@ -89,8 +90,8 @@ public class MsgReader {
    */
   DistributionMessage readMessage(Header header)
       throws IOException, ClassNotFoundException {
-    synchronized (ioFilter.getSynchObject()) {
-      ByteBuffer nioInputBuffer = readAtLeast(header.messageLength);
+    try (final ByteBufferSharing sharedBuffer = readAtLeast(header.messageLength)) {
+      ByteBuffer nioInputBuffer = sharedBuffer.getBuffer();
       Assert.assertTrue(nioInputBuffer.remaining() >= header.messageLength);
       this.getStats().incMessagesBeingReceived(true, header.messageLength);
       long startSer = this.getStats().startMsgDeserialization();
@@ -112,8 +113,8 @@ public class MsgReader {
 
   void readChunk(Header header, MsgDestreamer md)
       throws IOException {
-    synchronized (ioFilter.getSynchObject()) {
-      ByteBuffer unwrappedBuffer = readAtLeast(header.messageLength);
+    try (final ByteBufferSharing sharedBuffer = readAtLeast(header.messageLength)) {
+      ByteBuffer unwrappedBuffer = sharedBuffer.getBuffer();
       this.getStats().incMessagesBeingReceived(md.size() == 0, header.messageLength);
       md.addChunk(unwrappedBuffer, header.messageLength);
       // show that the bytes have been consumed by adjusting the buffer's position
@@ -123,7 +124,7 @@ public class MsgReader {
 
 
 
-  private ByteBuffer readAtLeast(int bytes) throws IOException {
+  private ByteBufferSharing readAtLeast(int bytes) throws IOException {
     peerNetData = ioFilter.ensureWrappedCapacity(bytes, peerNetData,
         BufferPool.BufferType.TRACKED_RECEIVER);
     return ioFilter.readAtLeast(conn.getSocket().getChannel(), bytes, peerNetData);
