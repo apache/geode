@@ -14,11 +14,13 @@
  */
 package org.apache.geode.test.dunit.rules.tests;
 
+import static java.util.Arrays.asList;
 import static org.apache.geode.test.dunit.VM.getAllVMs;
 import static org.apache.geode.test.dunit.VM.getController;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.dunit.VM.getVMId;
 import static org.apache.geode.test.dunit.VM.toArray;
+import static org.apache.geode.test.junit.runners.TestRunner.runTestWithValidation;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
@@ -27,7 +29,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -35,7 +39,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedMap;
 
 @SuppressWarnings("serial")
-public class DistributedMapDistributedTest implements Serializable {
+public class DistributedMapTest implements Serializable {
 
   @Rule
   public DistributedMap<Object, Object> distributedMap = new DistributedMap<>();
@@ -489,6 +493,164 @@ public class DistributedMapDistributedTest implements Serializable {
             .as("value in " + getVMId())
             .isEqualTo("value1");
       });
+    }
+  }
+
+  @Test
+  public void accessesDistributedMapInEachVm() {
+    runTestWithValidation(HasDistributedMap.class);
+  }
+
+  @Test
+  public void tearsDownDistributedMapInEachVm() {
+    runTestWithValidation(HasDistributedMap.class);
+
+    getController().invoke(() -> {
+      assertThat(HasDistributedMap.map.get()).isEmpty();
+    });
+  }
+
+  @Test
+  public void accessesTwoDistributedMapsInEachVm() {
+    runTestWithValidation(HasTwoDistributedMaps.class);
+  }
+
+  @Test
+  public void tearsDownTwoDistributedMapsInEachVm() {
+    runTestWithValidation(HasTwoDistributedMaps.class);
+
+    getController().invoke(() -> {
+      assertThat(HasTwoDistributedMaps.map1.get()).isEmpty();
+      assertThat(HasTwoDistributedMaps.map2.get()).isEmpty();
+    });
+  }
+
+  @Test
+  public void accessesManyDistributedMapsInEachVm() {
+    runTestWithValidation(HasManyDistributedMaps.class);
+  }
+
+  @Test
+  public void tearsDownManyDistributedMapsInEachVm() {
+    runTestWithValidation(HasManyDistributedMaps.class);
+
+    getController().invoke(() -> {
+      assertThat(HasManyDistributedMaps.map1.get()).isEmpty();
+      assertThat(HasManyDistributedMaps.map2.get()).isEmpty();
+      assertThat(HasManyDistributedMaps.map3.get()).isEmpty();
+    });
+  }
+
+  public static class HasDistributedMap implements Serializable {
+
+    private static final AtomicReference<Map<Object, Object>> map = new AtomicReference<>();
+
+    @Rule
+    public DistributedMap<Object, Object> distributedMap = new DistributedMap<>();
+
+    @Before
+    public void setUp() {
+      getController().invoke(() -> {
+        map.set(distributedMap.map());
+        distributedMap.put("key1", "value1");
+      });
+    }
+
+    @Test
+    public void distributedMapIsAccessibleInEveryVm() {
+      for (VM vm : asList(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
+        vm.invoke(() -> {
+          assertThat(distributedMap.map()).isSameAs(map.get());
+          assertThat(distributedMap.get("key1")).isEqualTo("value1");
+        });
+      }
+    }
+  }
+
+  public static class HasTwoDistributedMaps implements Serializable {
+
+    private static final AtomicReference<Map<Object, Object>> map1 = new AtomicReference<>();
+    private static final AtomicReference<Map<Object, Object>> map2 = new AtomicReference<>();
+
+    @Rule
+    public DistributedMap<Object, Object> distributedMap1 = new DistributedMap<>();
+    @Rule
+    public DistributedMap<Object, Object> distributedMap2 = new DistributedMap<>();
+
+    @Before
+    public void setUp() {
+      getController().invoke(() -> {
+        map1.set(distributedMap1.map());
+        distributedMap1.put("key1", "value1");
+
+        map2.set(distributedMap2.map());
+        distributedMap2.put("key2", "value2");
+      });
+    }
+
+    @Test
+    public void twoDistributedMapsAreAccessibleInEveryVm() {
+      for (VM vm : asList(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
+        vm.invoke(() -> {
+          assertThat(distributedMap1.map()).isSameAs(map1.get());
+          assertThat(distributedMap1.get("key1")).isEqualTo("value1");
+          assertThat(distributedMap1.get("key2")).isNull();
+
+          assertThat(distributedMap2.map()).isSameAs(map2.get());
+          assertThat(distributedMap2.get("key1")).isNull();
+          assertThat(distributedMap2.get("key2")).isEqualTo("value2");
+        });
+      }
+    }
+  }
+
+  public static class HasManyDistributedMaps implements Serializable {
+
+    private static final AtomicReference<Map<Object, Object>> map1 = new AtomicReference<>();
+    private static final AtomicReference<Map<Object, Object>> map2 = new AtomicReference<>();
+    private static final AtomicReference<Map<Object, Object>> map3 = new AtomicReference<>();
+
+    @Rule
+    public DistributedMap<Object, Object> distributedMap1 = new DistributedMap<>();
+    @Rule
+    public DistributedMap<Object, Object> distributedMap2 = new DistributedMap<>();
+    @Rule
+    public DistributedMap<Object, Object> distributedMap3 = new DistributedMap<>();
+
+    @Before
+    public void setUp() {
+      getController().invoke(() -> {
+        map1.set(distributedMap1.map());
+        distributedMap1.put("key1", "value1");
+
+        map2.set(distributedMap2.map());
+        distributedMap2.put("key2", "value2");
+
+        map3.set(distributedMap3.map());
+        distributedMap3.put("key3", "value3");
+      });
+    }
+
+    @Test
+    public void manyDistributedMapsAreAccessibleInEveryVm() {
+      for (VM vm : asList(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
+        vm.invoke(() -> {
+          assertThat(distributedMap1.map()).isSameAs(map1.get());
+          assertThat(distributedMap1.get("key1")).isEqualTo("value1");
+          assertThat(distributedMap1.get("key2")).isNull();
+          assertThat(distributedMap1.get("key3")).isNull();
+
+          assertThat(distributedMap2.map()).isSameAs(map2.get());
+          assertThat(distributedMap2.get("key1")).isNull();
+          assertThat(distributedMap2.get("key2")).isEqualTo("value2");
+          assertThat(distributedMap2.get("key3")).isNull();
+
+          assertThat(distributedMap3.map()).isSameAs(map3.get());
+          assertThat(distributedMap3.get("key1")).isNull();
+          assertThat(distributedMap3.get("key2")).isNull();
+          assertThat(distributedMap3.get("key3")).isEqualTo("value3");
+        });
+      }
     }
   }
 }
