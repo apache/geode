@@ -1016,9 +1016,9 @@ lib/gfsh-dependencies.jar
 lib/httpclient-4.5.12.jar
 lib/httpcore-4.4.13.jar
 lib/istack-commons-runtime-3.0.11.jar
-lib/jackson-annotations-2.10.2.jar
-lib/jackson-core-2.10.2.jar
-lib/jackson-databind-2.10.2.jar
+lib/jackson-annotations-2.10.1.jar
+lib/jackson-core-2.10.1.jar
+lib/jackson-databind-2.10.1.jar
 lib/javax.activation-1.2.0.jar
 lib/javax.activation-api-1.2.0.jar
 lib/javax.mail-api-1.6.2.jar
@@ -1050,7 +1050,7 @@ lib/lucene-analyzers-phonetic-7.1.0.jar
 lib/lucene-core-7.1.0.jar
 lib/lucene-queries-7.1.0.jar
 lib/lucene-queryparser-7.1.0.jar
-lib/micrometer-core-1.2.1.jar
+lib/micrometer-core-1.4.1.jar
 lib/mx4j-3.0.2.jar
 lib/mx4j-remote-3.0.2.jar
 lib/mx4j-tools-3.0.1.jar
