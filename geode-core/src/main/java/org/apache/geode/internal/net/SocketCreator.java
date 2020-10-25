@@ -845,7 +845,12 @@ public class SocketCreator extends TcpSocketCreatorImpl {
         // ignore - we'll see what happens with endpoint validation using a numeric address...
       }
     }
-    serverNames.add(new SNIHostName(hostName));
+    try {
+      serverNames.add(new SNIHostName(hostName));
+    } catch (Exception ex) {
+      logger.warn("SSL SNIHostName exception {}", ex);
+      return false;
+    }
     modifiedParams.setServerNames(serverNames);
     return true;
   }
