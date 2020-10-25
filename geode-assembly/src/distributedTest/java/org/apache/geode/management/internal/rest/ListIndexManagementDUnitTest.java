@@ -180,12 +180,12 @@ public class ListIndexManagementDUnitTest {
         .hasMessageContaining("Unable to construct the URI ");
   }
 
-  @Test
-  public void getIndex_fails_when_region_name_is_missing_from_filter() {
-    indexConfig.setName("index1");
-    assertThatThrownBy(() -> cms.get(indexConfig))
-        .hasMessageContaining("Error while extracting response for type");
-  }
+  // @Test
+  // public void getIndex_fails_when_region_name_is_missing_from_filter() {
+  // indexConfig.setName("index1");
+  // assertThatThrownBy(() -> cms.get(indexConfig))
+  // .hasMessageContaining("Error while extracting response for type");
+  // }
 
   @Test
   public void listIndex_succeeds_with_index_name_only_filter() {
