@@ -80,12 +80,16 @@ public class WhatExtendsJUnitTest {
     String codeSource = clazz.getProtectionDomain().getCodeSource().getLocation().getFile();
     String classFile = clazz.getName().replace(".", "/");
 
-    return codeSource + classFile;
+    String classLocation = codeSource + classFile;
+    System.out.printf("DHE: Class location for %s: %s%n", clazz, classLocation);
+    return classLocation;
   }
 
   private String getClassLocation(Class<?> clazz, String fakePrefix) {
     String classFile = clazz.getName().replace(".", "/");
 
-    return fakePrefix + classFile;
+    String classLocation = fakePrefix + classFile;
+    System.out.printf("DHE: Class location for %s: %s%n", clazz, classLocation);
+    return classLocation;
   }
 }

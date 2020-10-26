@@ -77,6 +77,8 @@ public class StressNewTestHelper {
     scanResult = new ClassGraph().whitelistPackages(packageToScan)
         .enableClassInfo()
         .enableAnnotationInfo().scan();
+    System.out.println("DHE: ScanResult");
+    System.out.println(scanResult.toJSON(4));
   }
 
   public String buildGradleCommand() {
@@ -108,7 +110,12 @@ public class StressNewTestHelper {
     TestClassInfo testClassInfo = createTestClassInfo(javaFile);
     List<TestClassInfo> extenders = whatExtends(testClassInfo);
 
-    if (!scanResult.getClassInfo(testClassInfo.className).isAbstract()) {
+    String className = testClassInfo.className;
+    ClassInfo classInfo = scanResult.getClassInfo(className);
+    System.out
+        .printf("DHE: StressNewTestHelper.add(%s): className %s classInfo %s%n", javaFile,
+            className, classInfo);
+    if (!classInfo.isAbstract()) {
       extenders.add(testClassInfo);
     }
 
