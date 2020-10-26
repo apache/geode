@@ -115,6 +115,7 @@ public class SupportedCommandsJUnitTest {
       "SUNION",
       "SUNIONSTORE",
       "TIME",
+      "UNLINK",
   };
 
   private final String[] unImplementedCommands = new String[] {
@@ -189,7 +190,6 @@ public class SupportedCommandsJUnitTest {
       "SWAPDB",
       "SYNC",
       "TOUCH",
-      "UNLINK",
       "UNWATCH",
       "WAIT",
       "WATCH",

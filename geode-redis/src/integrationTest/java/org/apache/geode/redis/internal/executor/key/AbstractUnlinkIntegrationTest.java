@@ -30,7 +30,7 @@ import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
-public abstract class AbstractDelIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractUnlinkIntegrationTest implements RedisPortSupplier {
 
   private Jedis jedis;
   private Jedis jedis2;
@@ -52,28 +52,28 @@ public abstract class AbstractDelIntegrationTest implements RedisPortSupplier {
 
   @Test
   public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.DEL))
-        .hasMessageContaining("ERR wrong number of arguments for 'del' command");
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.UNLINK))
+        .hasMessageContaining("ERR wrong number of arguments for 'unlink' command");
   }
 
   @Test
-  public void testDel_deletingOneKey_removesKeyAndReturnsOne() {
+  public void testUnlink_unlinkingOneKey_removesKeyAndReturnsOne() {
     String key1 = "firstKey";
     jedis.set(key1, "value1");
 
-    Long deletedCount = jedis.del(key1);
+    Long unlinkedCount = jedis.unlink(key1);
 
-    assertThat(deletedCount).isEqualTo(1L);
+    assertThat(unlinkedCount).isEqualTo(1L);
     assertThat(jedis.get(key1)).isNull();
   }
 
   @Test
-  public void testDel_deletingNonexistentKey_returnsZero() {
-    assertThat(jedis.del("ceci nest pas un clavier")).isEqualTo(0L);
+  public void testUnlink_unlinkingNonexistentKey_returnsZero() {
+    assertThat(jedis.unlink("ceci nest pas un clavier")).isEqualTo(0L);
   }
 
   @Test
-  public void testDel_deletingMultipleKeys_returnsCountOfOnlyDeletedKeys() {
+  public void testUnlink_unlinkingMultipleKeys_returnsCountOfOnlyUnlinkedKeys() {
     String key1 = "firstKey";
     String key2 = "secondKey";
     String key3 = "thirdKey";
@@ -81,28 +81,28 @@ public abstract class AbstractDelIntegrationTest implements RedisPortSupplier {
     jedis.set(key1, "value1");
     jedis.set(key2, "value2");
 
-    assertThat(jedis.del(key1, key2, key3)).isEqualTo(2L);
+    assertThat(jedis.unlink(key1, key2, key3)).isEqualTo(2L);
     assertThat(jedis.get(key1)).isNull();
     assertThat(jedis.get(key2)).isNull();
   }
 
   @Test
-  public void testConcurrentDel_differentClients() {
-    String keyBaseName = "DELBASE";
+  public void testConcurrentUnlink_differentClients() {
+    String keyBaseName = "UNLINKBASE";
 
     int ITERATION_COUNT = 4000;
     new ConcurrentLoopingThreads(ITERATION_COUNT,
         (i) -> jedis.set(keyBaseName + i, "value" + i))
             .run();
 
-    AtomicLong deletedCount = new AtomicLong();
+    AtomicLong unlinkedCount = new AtomicLong();
     new ConcurrentLoopingThreads(ITERATION_COUNT,
-        (i) -> deletedCount.addAndGet(jedis.del(keyBaseName + i)),
-        (i) -> deletedCount.addAndGet(jedis2.del(keyBaseName + i)))
+        (i) -> unlinkedCount.addAndGet(jedis.unlink(keyBaseName + i)),
+        (i) -> unlinkedCount.addAndGet(jedis2.unlink(keyBaseName + i)))
             .run();
 
 
-    assertThat(deletedCount.get()).isEqualTo(ITERATION_COUNT);
+    assertThat(unlinkedCount.get()).isEqualTo(ITERATION_COUNT);
 
     for (int i = 0; i < ITERATION_COUNT; i++) {
       assertThat(jedis.get(keyBaseName + i)).isNull();
@@ -110,11 +110,11 @@ public abstract class AbstractDelIntegrationTest implements RedisPortSupplier {
   }
 
   @Test
-  public void testDel_withBinaryKey() {
+  public void testUnlink_withBinaryKey() {
     byte[] key = new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 
     jedis.set(key, "foo".getBytes());
-    jedis.del(key);
+    jedis.unlink(key);
 
     assertThat(jedis.get(key)).isNull();
   }

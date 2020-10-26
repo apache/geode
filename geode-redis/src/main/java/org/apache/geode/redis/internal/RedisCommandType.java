@@ -188,6 +188,7 @@ public enum RedisCommandType {
    ***************************************/
 
   SCAN(new ScanExecutor(), UNSUPPORTED, new EvenParameterRequirements(ERROR_SYNTAX).and(new MinimumParameterRequirements(2))),
+  UNLINK(new DelExecutor(), UNSUPPORTED, new MinimumParameterRequirements(2)),
 
   /***************************************
    ************** Strings ****************
@@ -337,7 +338,6 @@ public enum RedisCommandType {
   SWAPDB(null, UNIMPLEMENTED),
   SYNC(null, UNIMPLEMENTED),
   TOUCH(null, UNIMPLEMENTED),
-  UNLINK(null, UNIMPLEMENTED),
   UNWATCH(null, UNIMPLEMENTED),
   WAIT(null, UNIMPLEMENTED),
   WATCH(null, UNIMPLEMENTED),
