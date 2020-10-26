@@ -79,8 +79,8 @@ public class StressNewTestHelper {
         .enableAnnotationInfo().scan();
     System.out.println("DHE: test class map");
     scanResult.getAllClassesAsMap().entrySet().stream()
-        .sorted()
         .map(e -> String.format("    %s: %s", e.getKey(), e.getValue()))
+        .sorted()
         .forEach(System.out::println);
   }
 
