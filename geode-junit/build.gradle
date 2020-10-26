@@ -37,7 +37,7 @@ dependencies {
   api('org.assertj:assertj-core')
   api('org.mockito:mockito-core')
 
-
+  api('io.github.classgraph:classgraph')
   api('com.fasterxml.jackson.core:jackson-annotations')
   api('com.fasterxml.jackson.core:jackson-databind')
   api('com.github.stefanbirkner:system-rules') {
