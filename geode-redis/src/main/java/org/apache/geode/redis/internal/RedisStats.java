@@ -197,6 +197,8 @@ public class RedisStats {
   private final AtomicLong connectionsReceived = new AtomicLong();
   private final AtomicLong connectedClients = new AtomicLong();
   private final AtomicLong expirations = new AtomicLong();
+  private final AtomicLong keyspaceHits = new AtomicLong();
+  private final AtomicLong keyspaceMisses = new AtomicLong();
 
   public void incCommandsProcessed() {
     commandsProcessed.incrementAndGet();
@@ -246,6 +248,22 @@ public class RedisStats {
 
   public long getUptimeInDays() {
     return TimeUnit.MILLISECONDS.toDays(getUptimeInMilliseconds());
+  }
+
+  public void incKeyspaceHits() {
+    keyspaceHits.incrementAndGet();
+  }
+
+  public long getKeyspaceHits() {
+    return keyspaceHits.get();
+  }
+
+  public void incKeyspaceMisses() {
+    keyspaceMisses.incrementAndGet();
+  }
+
+  public long getKeyspaceMisses() {
+    return keyspaceMisses.get();
   }
 
   @VisibleForTesting

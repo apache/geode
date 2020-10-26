@@ -55,23 +55,14 @@ public class InfoExecutor extends AbstractExecutor {
       case "server":
         result = getServerSection(context);
         break;
-      case "clients":
-        result = getClientsSection(context);
-        break;
-      case "memory":
-        result = getMemorySection(context);
-        break;
-      case "stats":
-        result = getStatsSection(context);
-        break;
-      case "keyspace":
-        result = getKeyspaceSection(context);
-        break;
       case "cluster":
         result = getClusterSection();
         break;
       case "persistence":
         result = getPersistenceSection();
+        break;
+      case "replication":
+        result = getReplicationSection();
         break;
       case "default":
       case "all":
@@ -102,7 +93,8 @@ public class InfoExecutor extends AbstractExecutor {
     final RedisStats redisStats = context.getRedisStats();
     final String CLIENTS_STRING =
         "# Clients\r\n" +
-            "connected_clients:" + redisStats.getConnectedClients() + "\r\n";
+            "connected_clients:" + redisStats.getConnectedClients() + "\r\n" +
+            "blocked_clients:0\r\n";
     return CLIENTS_STRING;
   }
 
@@ -111,7 +103,8 @@ public class InfoExecutor extends AbstractExecutor {
     long usedMemory = pr.getDataStore().currentAllocatedMemory();
     final String MEMORY_STRING =
         "# Memory\r\n" +
-            "used_memory:" + usedMemory + "\r\n";
+            "used_memory:" + usedMemory + "\r\n" +
+            "mem_fragmentation_ratio:0\r\n";
     return MEMORY_STRING;
   }
 
@@ -127,6 +120,9 @@ public class InfoExecutor extends AbstractExecutor {
             "total_net_input_bytes:" + redisStats.getNetworkBytesRead() + "\r\n" +
             "instantaneous_input_kbps:" + instantaneous_input_kbps + "\r\n" +
             "total_connections_received:" + redisStats.getConnectionsReceived() + "\r\n" +
+            "keyspace_hits:" + redisStats.getKeyspaceHits() + "\r\n" +
+            "keyspace_misses:" + redisStats.getKeyspaceMisses() + "\r\n" +
+            "evicted_keys:0\r\n" +
             "rejected_connections:0\r\n";
     return STATS_STRING;
   }
@@ -136,16 +132,26 @@ public class InfoExecutor extends AbstractExecutor {
     final String KEYSPACE_STRING =
         "# Keyspace\r\n" +
             "db0:keys=" + context.getRegionProvider().getDataRegion().size() +
-            ",expires=" + redisStats.getExpirations() + ",avg_ttl=0\r\n";
+            ",expires=" + redisStats.getExpirations() +
+            ",avg_ttl=0\r\n";
     return KEYSPACE_STRING;
   }
 
   private String getPersistenceSection() {
-    return "# Persistence\r\nloading:0\r\n";
+    final String PERSISTENCE_STRING =
+        "# Persistence\r\n" +
+            "loading:0\r\n" +
+            "rdb_changes_since_last_save:0\r\n" +
+            "rdb_last_save_time:0\r\n";
+    return PERSISTENCE_STRING;
   }
 
   private String getClusterSection() {
     return "# Cluster\r\ncluster_enabled:0\r\n";
+  }
+
+  private String getReplicationSection() {
+    return "# Replication\r\nrole:master\r\nconnected_slaves:0\r\n";
   }
 
   private String getAllSections(ExecutionHandlerContext context) {
@@ -156,6 +162,7 @@ public class InfoExecutor extends AbstractExecutor {
         getPersistenceSection() + SECTION_SEPARATOR +
         getStatsSection(context) + SECTION_SEPARATOR +
         getKeyspaceSection(context) + SECTION_SEPARATOR +
+        getReplicationSection() + SECTION_SEPARATOR +
         getClusterSection();
   }
 }
