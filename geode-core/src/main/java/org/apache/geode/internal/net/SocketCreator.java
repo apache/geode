@@ -631,7 +631,14 @@ public class SocketCreator extends TcpSocketCreatorImpl {
     }
 
     String hostName = addr.getHostName();
-    serverNames.add(new SNIHostName(hostName));
+    try {
+      serverNames.add(new SNIHostName(hostName));
+    } catch (Exception ex) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("SSL SNIHostName exception.", ex);
+      }
+      return false;
+    }
     modifiedParams.setServerNames(serverNames);
     return true;
   }
