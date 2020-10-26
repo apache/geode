@@ -98,10 +98,10 @@ tests:
   RAM: '16'
   name: unit
 - ARTIFACT_SLUG: acceptancetestfiles
-  CALL_STACK_TIMEOUT: '4500'
+  CALL_STACK_TIMEOUT: '6300'
   CPUS: '8'
   DUNIT_PARALLEL_FORKS: '0'
-  EXECUTE_TEST_TIMEOUT: 1h30m
+  EXECUTE_TEST_TIMEOUT: 2h
   GRADLE_TASK: acceptanceTest
   MAX_IN_FLIGHT: 2
   PARALLEL_DUNIT: 'false'
