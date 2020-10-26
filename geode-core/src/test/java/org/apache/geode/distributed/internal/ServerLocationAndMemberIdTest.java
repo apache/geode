@@ -17,6 +17,8 @@ package org.apache.geode.distributed.internal;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
+import java.util.HashMap;
+
 import org.junit.Test;
 
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -65,5 +67,50 @@ public class ServerLocationAndMemberIdTest {
         new ServerLocationAndMemberId(serverLocation2, uniqueId2);
 
     assertNotEquals(serverLocationAndMemberId1, serverLocationAndMemberId2);
+  }
+
+  @Test
+  public void givenTwoObjectsWithSameHostAndPortAndSameDistributedMemberId_whenCompared_thenAreEqual() {
+
+    final ServerLocation serverLocation1 = new ServerLocation("localhost", 1);
+    InternalDistributedMember idmWithView1 = new InternalDistributedMember("localhost", 1);
+    idmWithView1.setVmViewId(1);
+    InternalDistributedMember idmWithView2 = new InternalDistributedMember("localhost", 1);
+    idmWithView2.setVmViewId(1);
+
+    ServerLocationAndMemberId serverLocationAndMemberId1 =
+        new ServerLocationAndMemberId(serverLocation1, idmWithView1.getUniqueId());
+    ServerLocationAndMemberId serverLocationAndMemberId2 =
+        new ServerLocationAndMemberId(serverLocation1, idmWithView2.getUniqueId());
+
+    assertEquals(serverLocationAndMemberId1, serverLocationAndMemberId2);
+  }
+
+  @Test
+  public void givenTwoObjectsWithSameHostAndPortAndSameDistributedMemberId_CannotBeAddedTwiceToHashMap() {
+
+    final ServerLocation serverLocation1 = new ServerLocation("localhost", 1);
+    InternalDistributedMember idmWithView1 = new InternalDistributedMember("localhost", 1);
+    idmWithView1.setVmViewId(1);
+    InternalDistributedMember idmWithView2 = new InternalDistributedMember("localhost", 1);
+    idmWithView2.setVmViewId(1);
+
+    ServerLocationAndMemberId serverLocationAndMemberId1 =
+        new ServerLocationAndMemberId(serverLocation1, idmWithView1.getUniqueId());
+    ServerLocationAndMemberId serverLocationAndMemberId2 =
+        new ServerLocationAndMemberId(serverLocation1, idmWithView2.getUniqueId());
+
+    HashMap map = new HashMap<ServerLocationAndMemberId, Integer>();
+    map.put(serverLocationAndMemberId1, new Integer(1));
+    Integer i = (Integer) map.get(serverLocationAndMemberId2);
+    assertNotEquals(null, i);
+    assertEquals(new Integer(1), i);
+
+    map.put(serverLocationAndMemberId2, new Integer(2));
+    i = (Integer) map.get(serverLocationAndMemberId1);
+    assertNotEquals(null, i);
+    assertEquals(new Integer(2), i);
+
+    assertEquals(serverLocationAndMemberId1, serverLocationAndMemberId2);
   }
 }

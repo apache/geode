@@ -47,6 +47,7 @@ import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.distributed.internal.ServerLocationAndMemberId;
 import org.apache.geode.internal.cache.ClientServerObserverAdapter;
 import org.apache.geode.internal.cache.ClientServerObserverHolder;
 import org.apache.geode.test.dunit.AsyncInvocation;
@@ -817,9 +818,11 @@ public class DurableClientCQDUnitTest extends DurableClientTestBase {
     ServerLocation primaryServerLocation = pool.getPrimary();
 
     // Verify the primary server was used and no other server was used
-    Map<ServerLocation, ConnectionStats> statistics = pool.getEndpointManager().getAllStats();
-    for (Map.Entry<ServerLocation, ConnectionStats> entry : statistics.entrySet()) {
-      int expectedGetDurableCqInvocations = entry.getKey().equals(primaryServerLocation) ? 1 : 0;
+    Map<ServerLocationAndMemberId, ConnectionStats> statistics =
+        pool.getEndpointManager().getAllStats();
+    for (Map.Entry<ServerLocationAndMemberId, ConnectionStats> entry : statistics.entrySet()) {
+      int expectedGetDurableCqInvocations =
+          entry.getKey().getServerLocation().equals(primaryServerLocation) ? 1 : 0;
       assertEquals(expectedGetDurableCqInvocations, entry.getValue().getGetDurableCqs());
     }
   }

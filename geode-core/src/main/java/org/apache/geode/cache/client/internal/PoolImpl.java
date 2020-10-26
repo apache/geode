@@ -56,6 +56,7 @@ import org.apache.geode.distributed.PoolCancelledException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.distributed.internal.ServerLocationAndMemberId;
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.internal.admin.ClientStatsManager;
 import org.apache.geode.internal.cache.EventID;
@@ -889,7 +890,7 @@ public class PoolImpl implements InternalPool {
   }
 
   @Override
-  public Map<ServerLocation, Endpoint> getEndpointMap() {
+  public Map<ServerLocationAndMemberId, Endpoint> getEndpointMap() {
     return endpointManager.getEndpointMap();
   }
 
@@ -1169,8 +1170,8 @@ public class PoolImpl implements InternalPool {
   /**
    * Returns a list of ServerLocation instances; one for each server we are currently connected to.
    */
-  public List<ServerLocation> getCurrentServers() {
-    Map<ServerLocation, Endpoint> endpointMap = endpointManager.getEndpointMap();
+  public List<ServerLocationAndMemberId> getCurrentServers() {
+    Map<ServerLocationAndMemberId, Endpoint> endpointMap = endpointManager.getEndpointMap();
     return new ArrayList<>(endpointMap.keySet());
   }
 
@@ -1179,10 +1180,10 @@ public class PoolImpl implements InternalPool {
    * connected to.
    */
   public List<String> getCurrentServerNames() {
-    List<ServerLocation> servers = getCurrentServers();
+    List<ServerLocationAndMemberId> servers = getCurrentServers();
     ArrayList<String> result = new ArrayList<>(servers.size());
-    for (ServerLocation sl : servers) {
-      String name = sl.getHostName() + sl.getPort();
+    for (ServerLocationAndMemberId sl : servers) {
+      String name = sl.getServerLocation().getHostName() + sl.getServerLocation().getPort();
       result.add(name);
     }
     return result;
@@ -1218,7 +1219,7 @@ public class PoolImpl implements InternalPool {
       // do nothing.
     }
 
-    Map<ServerLocation, Endpoint> endpoints = endpointManager.getEndpointMap();
+    Map<ServerLocationAndMemberId, Endpoint> endpoints = endpointManager.getEndpointMap();
     for (Endpoint endpoint : endpoints.values()) {
       logger.debug("PoolImpl Simulating crash of endpoint {}", endpoint);
       endpointManager.serverCrashed(endpoint);
