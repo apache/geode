@@ -29,6 +29,8 @@ import static org.mockito.Mockito.verify;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Before;
@@ -210,6 +212,69 @@ public class DistributedReferenceTest {
         verify(SetWithDisconnectInEachVm.withDisconnect.get()).disconnect();
       });
     }
+  }
+
+  @Test
+  public void accessesAtomicBooleanInEachVm() {
+    runTestWithValidation(SetAtomicBooleanInLocalVm.class);
+  }
+
+  @Test
+  public void setsAtomicBooleanToFalseInEachVm() {
+    runTestWithValidation(SetAtomicBooleanInLocalVm.class);
+
+    for (VM vm : asList(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
+      vm.invoke(() -> {
+        assertThat(SetAtomicBooleanInLocalVm.atomicBoolean.get()).isFalse();
+      });
+    }
+  }
+
+  @Test
+  public void accessesCountDownLatchInEachVm() {
+    runTestWithValidation(SetCountDownLatchInLocalVm.class);
+  }
+
+  @Test
+  public void opensCountDownLatchInEachVm() {
+    runTestWithValidation(SetCountDownLatchInLocalVm.class);
+
+    for (VM vm : asList(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
+      vm.invoke(() -> {
+        assertThat(SetCountDownLatchInLocalVm.latch.get().getCount()).isZero();
+      });
+    }
+  }
+
+  @Test
+  public void accessesTwoReferencesInEachVm() {
+    runTestWithValidation(SetTwoCloseablesInEachVm.class);
+  }
+
+  @Test
+  public void closesTwoReferencesInEachVm() {
+    runTestWithValidation(SetTwoCloseablesInEachVm.class);
+
+    getController().invoke(() -> {
+      verify(SetTwoCloseablesInEachVm.withClose1.get()).close();
+      verify(SetTwoCloseablesInEachVm.withClose2.get()).close();
+    });
+  }
+
+  @Test
+  public void accessesManyReferencesInEachVm() {
+    runTestWithValidation(SetManyReferencesInEachVm.class);
+  }
+
+  @Test
+  public void closesManyReferencesInEachVm() {
+    runTestWithValidation(SetManyReferencesInEachVm.class);
+
+    getController().invoke(() -> {
+      verify(SetManyReferencesInEachVm.withClose.get()).close();
+      verify(SetManyReferencesInEachVm.withDisconnect.get()).disconnect();
+      verify(SetManyReferencesInEachVm.withStop.get()).stop();
+    });
   }
 
   public static class SetAutoCloseableInLocalVm implements Serializable {
@@ -587,6 +652,145 @@ public class DistributedReferenceTest {
     }
   }
 
+  public static class SetAtomicBooleanInLocalVm implements Serializable {
+
+    private static final AtomicReference<AtomicBoolean> atomicBoolean = new AtomicReference<>();
+
+    @Rule
+    public DistributedReference<AtomicBoolean> reference = new DistributedReference<>();
+
+    @Before
+    public void setUp() {
+      for (VM vm : asList(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
+        vm.invoke(() -> {
+          atomicBoolean.set(new AtomicBoolean(true));
+          reference.set(atomicBoolean.get());
+        });
+      }
+    }
+
+    @Test
+    public void hasAtomicBooleanInEachVm() {
+      for (VM vm : asList(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
+        vm.invoke(() -> {
+          assertThat(reference.get())
+              .isSameAs(atomicBoolean.get())
+              .isTrue();
+        });
+      }
+    }
+  }
+
+  public static class SetCountDownLatchInLocalVm implements Serializable {
+
+    private static final AtomicReference<CountDownLatch> latch = new AtomicReference<>();
+
+    @Rule
+    public DistributedReference<CountDownLatch> reference = new DistributedReference<>();
+
+    @Before
+    public void setUp() {
+      for (VM vm : asList(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
+        vm.invoke(() -> {
+          latch.set(new CountDownLatch(2));
+          reference.set(latch.get());
+        });
+      }
+    }
+
+    @Test
+    public void hasReferenceInLocalVm() {
+      for (VM vm : asList(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
+        vm.invoke(() -> {
+          assertThat(reference.get()).isSameAs(latch.get());
+          assertThat(latch.get().getCount()).isEqualTo(2);
+        });
+      }
+    }
+  }
+
+  public static class SetTwoCloseablesInEachVm implements Serializable {
+
+    private static final AtomicReference<WithClose> withClose1 = new AtomicReference<>();
+    private static final AtomicReference<WithClose> withClose2 = new AtomicReference<>();
+
+    @Rule
+    public DistributedReference<WithClose> reference1 = new DistributedReference<>();
+    @Rule
+    public DistributedReference<WithClose> reference2 = new DistributedReference<>();
+
+    @Before
+    public void setUp() {
+      for (VM vm : asList(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
+        vm.invoke(() -> {
+          withClose1.set(spy(new WithClose("WithClose1 in VM-" + vm.getId())));
+          reference1.set(withClose1.get());
+
+          withClose2.set(spy(new WithClose("WithClose2 in VM-" + vm.getId())));
+          reference2.set(withClose2.get());
+        });
+      }
+    }
+
+    @Test
+    public void hasTwoWithCloseInEachVm() {
+      for (VM vm : asList(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
+        vm.invoke(() -> {
+          assertThat(reference1.get()).isSameAs(withClose1.get());
+          assertThat(reference2.get()).isSameAs(withClose2.get());
+
+          assertThat(reference1.get().toString()).isEqualTo("WithClose1 in VM-" + vm.getId());
+          assertThat(reference2.get().toString()).isEqualTo("WithClose2 in VM-" + vm.getId());
+        });
+      }
+    }
+  }
+
+  public static class SetManyReferencesInEachVm implements Serializable {
+
+    private static final AtomicReference<WithClose> withClose = new AtomicReference<>();
+    private static final AtomicReference<WithDisconnect> withDisconnect = new AtomicReference<>();
+    private static final AtomicReference<WithStop> withStop = new AtomicReference<>();
+
+    @Rule
+    public DistributedReference<WithClose> refWithClose = new DistributedReference<>();
+    @Rule
+    public DistributedReference<WithDisconnect> refWithDisconnect = new DistributedReference<>();
+    @Rule
+    public DistributedReference<WithStop> refWithStop = new DistributedReference<>();
+
+    @Before
+    public void setUp() {
+      for (VM vm : asList(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
+        vm.invoke(() -> {
+          withClose.set(spy(new WithClose("WithClose in VM-" + vm.getId())));
+          withDisconnect.set(spy(new WithDisconnect("WithDisconnect in VM-" + vm.getId())));
+          withStop.set(spy(new WithStop("WithStop in VM-" + vm.getId())));
+
+          refWithClose.set(withClose.get());
+          refWithDisconnect.set(withDisconnect.get());
+          refWithStop.set(withStop.get());
+        });
+      }
+    }
+
+    @Test
+    public void hasManyReferencesInEachVm() {
+      for (VM vm : asList(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
+        vm.invoke(() -> {
+          assertThat(refWithClose.get()).isSameAs(withClose.get());
+          assertThat(refWithDisconnect.get()).isSameAs(withDisconnect.get());
+          assertThat(refWithStop.get()).isSameAs(withStop.get());
+
+          assertThat(refWithClose.get().toString()).isEqualTo("WithClose in VM-" + vm.getId());
+          assertThat(refWithDisconnect.get().toString())
+              .isEqualTo("WithDisconnect in VM-" + vm.getId());
+          assertThat(refWithStop.get().toString()).isEqualTo("WithStop in VM-" + vm.getId());
+        });
+      }
+    }
+  }
+
   @SuppressWarnings("WeakerAccess")
   public static class WithClose {
 
@@ -633,7 +837,7 @@ public class DistributedReferenceTest {
     }
   }
 
-  @SuppressWarnings("unused")
+  @SuppressWarnings({"unused", "WeakerAccess"})
   public static class WithStop {
 
     private final String value;
