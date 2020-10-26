@@ -77,6 +77,11 @@ public class StressNewTestHelper {
     scanResult = new ClassGraph().whitelistPackages(packageToScan)
         .enableClassInfo()
         .enableAnnotationInfo().scan();
+    System.out.println("DHE: test class map");
+    scanResult.getAllClassesAsMap().entrySet().stream()
+        .sorted()
+        .map(e -> String.format("    %s: %s", e.getKey(), e.getValue()))
+        .forEach(System.out::println);
   }
 
   public String buildGradleCommand() {
