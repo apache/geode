@@ -77,8 +77,6 @@ public class StressNewTestHelper {
     scanResult = new ClassGraph().whitelistPackages(packageToScan)
         .enableClassInfo()
         .enableAnnotationInfo().scan();
-    System.out.println("DHE: ScanResult");
-    System.out.println(scanResult.toJSON(4));
   }
 
   public String buildGradleCommand() {
