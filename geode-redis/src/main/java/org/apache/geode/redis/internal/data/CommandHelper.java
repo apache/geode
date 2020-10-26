@@ -84,7 +84,13 @@ public class CommandHelper {
   }
 
   RedisSet getRedisSet(ByteArrayWrapper key) {
-    return checkSetType(getRedisData(key, NULL_REDIS_SET));
+    RedisData redisData = getRedisData(key, NULL_REDIS_SET);
+    if (redisData == NULL_REDIS_SET) {
+      redisStats.incKeyspaceMisses();
+    } else {
+      redisStats.incKeyspaceHits();
+    }
+    return checkSetType(redisData);
   }
 
   private RedisSet checkSetType(RedisData redisData) {

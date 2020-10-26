@@ -29,6 +29,10 @@ import org.apache.geode.redis.GeodeRedisServerRule;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public class RedisStatsIntegrationTest {
+  public static final String EXISTING_HASH_KEY = "Existing_Hash";
+  public static final String EXISTING_STRING_KEY = "Existing_String";
+  public static final String EXISTING_SET_KEY_1 = "Existing_Set_1";
+  public static final String EXISTING_SET_KEY_2 = "Existing_Set_2";
   Jedis jedis;
   long initialKeyspaceHits;
   long initialKeyspaceMisses;
@@ -40,9 +44,10 @@ public class RedisStatsIntegrationTest {
   public void setup() {
     jedis = new Jedis("localhost", server.getPort(), 10000000);
     jedis.flushAll();
-    jedis.set("Existing_Key", "A_Value");
-    jedis.hset("Existing_Hash", "Field1", "Value1");
-    jedis.sadd("Existing_Set", "m1", "m2", "m3");
+    jedis.set(EXISTING_STRING_KEY, "A_Value");
+    jedis.hset(EXISTING_HASH_KEY, "Field1", "Value1");
+    jedis.sadd(EXISTING_SET_KEY_1, "m1", "m2", "m3");
+    jedis.sadd(EXISTING_SET_KEY_2, "m4", "m5", "m6");
     initialKeyspaceHits = server.getServer().getStats().getKeyspaceHits();
     initialKeyspaceMisses = server.getServer().getStats().getKeyspaceMisses();
   }
@@ -62,7 +67,7 @@ public class RedisStatsIntegrationTest {
 
   @Test
   public void keyspaceHitsStat_shouldIncrement_whenKeyAccessed() {
-    jedis.get("Existing_Key");
+    jedis.get(EXISTING_STRING_KEY);
 
     jedis.close();
     GeodeAwaitility.await().atMost(5, TimeUnit.SECONDS).untilAsserted(
@@ -91,7 +96,7 @@ public class RedisStatsIntegrationTest {
   // TODO: Set doesn't work like native Redis!
   @Test
   public void keyspaceStats_setCommand_existingKey() {
-    jedis.set("Existing_Key", "New_Value");
+    jedis.set(EXISTING_STRING_KEY, "New_Value");
 
     jedis.close();
     GeodeAwaitility.await().atMost(5, TimeUnit.SECONDS).untilAsserted(
@@ -120,7 +125,7 @@ public class RedisStatsIntegrationTest {
 
   @Test
   public void keyspaceStats_getBitCommand_existingKey() {
-    jedis.getbit("Existing_Key", 0);
+    jedis.getbit(EXISTING_STRING_KEY, 0);
 
     jedis.close();
     GeodeAwaitility.await().atMost(5, TimeUnit.SECONDS).untilAsserted(
@@ -148,7 +153,7 @@ public class RedisStatsIntegrationTest {
 
   @Test
   public void keyspaceStats_getRangeCommand_existingKey() {
-    jedis.getrange("Existing_Key", 0, 1);
+    jedis.getrange(EXISTING_STRING_KEY, 0, 1);
     jedis.close();
     GeodeAwaitility.await().atMost(5, TimeUnit.SECONDS).untilAsserted(
         () -> {
@@ -174,7 +179,7 @@ public class RedisStatsIntegrationTest {
 
   @Test
   public void keyspaceStats_getSetCommand_existingKey() {
-    jedis.getSet("Existing_Key", "New_Value");
+    jedis.getSet(EXISTING_STRING_KEY, "New_Value");
 
     jedis.close();
     GeodeAwaitility.await().atMost(5, TimeUnit.SECONDS).untilAsserted(
@@ -202,7 +207,7 @@ public class RedisStatsIntegrationTest {
 
   @Test
   public void keyspaceStats_strlenCommand_existingKey() {
-    jedis.strlen("Existing_Key");
+    jedis.strlen(EXISTING_STRING_KEY);
 
     jedis.close();
     GeodeAwaitility.await().atMost(5, TimeUnit.SECONDS).untilAsserted(
@@ -230,7 +235,7 @@ public class RedisStatsIntegrationTest {
 
   @Test
   public void keyspaceStats_mgetCommand() {
-    jedis.mget("Existing_Key", "Nonexistent_Key");
+    jedis.mget(EXISTING_STRING_KEY, "Nonexistent_Key");
     jedis.close();
     GeodeAwaitility.await().atMost(5, TimeUnit.SECONDS).untilAsserted(
         () -> {
@@ -243,7 +248,7 @@ public class RedisStatsIntegrationTest {
 
   @Test
   public void keyspaceStats_bitopCommand() {
-    jedis.bitop(BitOP.AND, "Existing_Key", "Existing_Key", "Nonexistent_Key");
+    jedis.bitop(BitOP.AND, EXISTING_STRING_KEY, EXISTING_STRING_KEY, "Nonexistent_Key");
 
     jedis.close();
     GeodeAwaitility.await().atMost(5, TimeUnit.SECONDS).untilAsserted(
@@ -257,7 +262,7 @@ public class RedisStatsIntegrationTest {
 
   @Test
   public void keyspaceStats_bitcountCommand_existingKey() {
-    jedis.bitcount("Existing_Key");
+    jedis.bitcount(EXISTING_STRING_KEY);
 
     jedis.close();
     GeodeAwaitility.await().atMost(5, TimeUnit.SECONDS).untilAsserted(
@@ -285,7 +290,7 @@ public class RedisStatsIntegrationTest {
 
   @Test
   public void keyspaceStats_bitposCommand_existingKey() {
-    jedis.bitpos("Existing_Key", true);
+    jedis.bitpos(EXISTING_STRING_KEY, true);
     jedis.close();
     GeodeAwaitility.await().atMost(5, TimeUnit.SECONDS).untilAsserted(
         () -> {
@@ -311,7 +316,7 @@ public class RedisStatsIntegrationTest {
 
   @Test
   public void keyspaceStats_hgetCommand_existingKey() {
-    jedis.hget("Existing_Hash", "Field1");
+    jedis.hget(EXISTING_HASH_KEY, "Field1");
 
     jedis.close();
     GeodeAwaitility.await().atMost(5, TimeUnit.SECONDS).untilAsserted(
@@ -338,9 +343,8 @@ public class RedisStatsIntegrationTest {
   }
 
   @Test
-  @Ignore("Not ready for prime time")
   public void keyspaceStats_smembersCommand_existingKey() {
-    jedis.smembers("Existing_Set");
+    jedis.smembers(EXISTING_SET_KEY_1);
 
     jedis.close();
     GeodeAwaitility.await().atMost(5, TimeUnit.SECONDS).untilAsserted(
@@ -353,7 +357,6 @@ public class RedisStatsIntegrationTest {
   }
 
   @Test
-  @Ignore("Not ready for prime time")
   public void keyspaceStats_smembersCommand_nonexistentKey() {
     jedis.smembers("Nonexistent_Set");
 
@@ -362,6 +365,20 @@ public class RedisStatsIntegrationTest {
         () -> {
           assertThat(server.getServer().getStats().getKeyspaceHits())
               .isEqualTo(initialKeyspaceHits);
+          assertThat(server.getServer().getStats().getKeyspaceMisses())
+              .isEqualTo(initialKeyspaceMisses + 1);
+        });
+  }
+
+  @Test
+  public void keyspaceStats_sunionstoreCommand_existingKey() {
+    jedis.sunionstore("New_Set", EXISTING_SET_KEY_1, EXISTING_SET_KEY_2, "Nonexistent_Set");
+
+    jedis.close();
+    GeodeAwaitility.await().atMost(5, TimeUnit.SECONDS).untilAsserted(
+        () -> {
+          assertThat(server.getServer().getStats().getKeyspaceHits())
+              .isEqualTo(initialKeyspaceHits + 2);
           assertThat(server.getServer().getStats().getKeyspaceMisses())
               .isEqualTo(initialKeyspaceMisses + 1);
         });
