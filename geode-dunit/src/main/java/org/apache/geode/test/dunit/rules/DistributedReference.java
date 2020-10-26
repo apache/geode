@@ -18,8 +18,6 @@ package org.apache.geode.test.dunit.rules;
 
 import static org.apache.geode.test.dunit.VM.DEFAULT_VM_COUNT;
 import static org.apache.geode.util.internal.CompletionUtils.close;
-import static org.apache.geode.util.internal.CompletionUtils.openLatch;
-import static org.apache.geode.util.internal.CompletionUtils.toFalse;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 
 import java.lang.reflect.InvocationTargetException;
@@ -157,7 +155,8 @@ import org.apache.geode.test.dunit.VM;
  * The {@code DistributedReference} value will still be set to null during tear down even
  * if auto-closing is disabled.
  */
-@SuppressWarnings({"serial", "unused", "WeakerAccess"})
+@SuppressWarnings({"serial", "unused", "WeakerAccess",
+    "OverloadedMethodsWithSameNumberOfParameters"})
 public class DistributedReference<V> extends AbstractDistributedRule {
 
   private static final AtomicReference<Map<Integer, Object>> REFERENCE = new AtomicReference<>();
@@ -211,14 +210,18 @@ public class DistributedReference<V> extends AbstractDistributedRule {
     invoker().invokeInEveryVMAndController(() -> invokeAfter());
   }
 
+  @Override
   protected void afterCreateVM(VM vm) {
     vm.invoke(() -> invokeBefore());
   }
 
+  @Override
+  @SuppressWarnings("RedundantMethodOverride")
   protected void beforeBounceVM(VM vm) {
     // override if needed
   }
 
+  @Override
   protected void afterBounceVM(VM vm) {
     vm.invoke(() -> invokeBefore());
   }
@@ -254,10 +257,10 @@ public class DistributedReference<V> extends AbstractDistributedRule {
       close((AutoCloseable) object);
 
     } else if (object instanceof AtomicBoolean) {
-      toFalse((AtomicBoolean) object);
+      close((AtomicBoolean) object);
 
     } else if (object instanceof CountDownLatch) {
-      openLatch((CountDownLatch) object);
+      close((CountDownLatch) object);
 
     } else if (hasMethod(object.getClass(), "close")) {
       invokeMethod(object, "close");

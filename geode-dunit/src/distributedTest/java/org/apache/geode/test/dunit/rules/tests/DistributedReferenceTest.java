@@ -837,7 +837,7 @@ public class DistributedReferenceTest {
     }
   }
 
-  @SuppressWarnings("unused")
+  @SuppressWarnings({"unused", "WeakerAccess"})
   public static class WithStop {
 
     private final String value;
