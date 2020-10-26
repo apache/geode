@@ -98,7 +98,14 @@ public class CommandHelper {
   }
 
   RedisHash getRedisHash(ByteArrayWrapper key) {
-    return checkHashType(getRedisData(key, NULL_REDIS_HASH));
+    RedisData redisData = getRedisData(key, NULL_REDIS_HASH);
+    if (redisData == NULL_REDIS_HASH) {
+      redisStats.incKeyspaceMisses();
+    } else {
+      redisStats.incKeyspaceHits();
+    }
+
+    return checkHashType(redisData);
   }
 
   private RedisHash checkHashType(RedisData redisData) {
