@@ -62,9 +62,6 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
   short PR_CLEAR_REPLY_MESSAGE = -164;
   short PR_CLEAR_MESSAGE = -163;
 
-  short PR_CLEAR_REPLY_MESSAGE = -164;
-  short PR_CLEAR_MESSAGE = -163;
-
   short DISTRIBUTED_PING_MESSAGE = -162;
 
   short REGION_REDUNDANCY_STATUS = -161;
