@@ -582,6 +582,9 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
         // this is expected if it is a connection-timeout or other failure
         // to connect
       } catch (IllegalStateException e) {
+        // This is expected if ConnectTimeoutTask is scheduled on a timer that was already
+        // cancelled.
+        // Once a timer has been terminated, no more tasks may be scheduled on it.
         if (!isStopping) {
           logger.trace("Unexpected exception", e);
         }
