@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -112,5 +113,36 @@ public class ConnectionTest {
     AlertingAction.execute(() -> {
       assertThat(connection.getP2PConnectTimeout(distributionConfig)).isEqualTo(100);
     });
+  }
+
+  @Test
+  public void notifyHandshakeWaiterShouldPositionByteBufferOnlyOnce() throws Exception {
+    ConnectionTable connectionTable = mock(ConnectionTable.class);
+    Distribution distribution = mock(Distribution.class);
+    DistributionManager distributionManager = mock(DistributionManager.class);
+    DMStats dmStats = mock(DMStats.class);
+    CancelCriterion stopper = mock(CancelCriterion.class);
+    SocketCloser socketCloser = mock(SocketCloser.class);
+    TCPConduit tcpConduit = mock(TCPConduit.class);
+
+    when(connectionTable.getBufferPool()).thenReturn(new BufferPool(dmStats));
+    when(connectionTable.getConduit()).thenReturn(tcpConduit);
+    when(connectionTable.getDM()).thenReturn(distributionManager);
+    when(connectionTable.getSocketCloser()).thenReturn(socketCloser);
+    when(distributionManager.getDistribution()).thenReturn(distribution);
+    when(stopper.cancelInProgress()).thenReturn(null);
+    when(tcpConduit.getCancelCriterion()).thenReturn(stopper);
+    when(tcpConduit.getDM()).thenReturn(distributionManager);
+    when(tcpConduit.getSocketId()).thenReturn(new InetSocketAddress(getLocalHost(), 10337));
+    when(tcpConduit.getStats()).thenReturn(dmStats);
+
+    SocketChannel channel = SocketChannel.open();
+
+    Connection connection = new Connection(connectionTable, channel.socket());
+    connection = spy(connection);
+    connection.setSharedUnorderedForTest();
+    connection.run();
+
+    verify(connection, times(1)).getConduit();
   }
 }
