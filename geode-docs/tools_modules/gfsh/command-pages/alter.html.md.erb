@@ -33,7 +33,7 @@ Modify an existing <%=vars.product_name%> resource.
 
 -   **[alter gateway-sender](#topic_alter_gateway_sender)**
 
-    Modifies attributes of an gateway-sender.
+    Modifies attributes of a gateway-sender.
 
 -   **[alter query-service](#topic_alter_query_service)**
 
@@ -227,11 +227,11 @@ The required option, `--id`, identifies the gateway sender to be altered.
 </tr>
 <tr>
 <td><span class="keyword parmname">\-\-groups</span></td>
-<td>Name of the group(s) whose members's runtime configuration is to be altered. If you do not specify this parameter, the configuration properties are modified for all cluster members using the cluster configuration service.</td>
+<td>Name of the group(s) whose members' runtime configurations are to be altered. If you do not specify this parameter, the configuration properties are modified for all cluster members using the cluster configuration service.</td>
 </tr>
 <tr>
 <td><span class="keyword parmname">\-\-alert-threshold</span></td>
-<td>Maximum number of milliseconds that a region event can remain in the gateway sender queue before <%=vars.product_name%> logs an alert.</td>
+<td>Maximum time, in milliseconds, that a region event can remain in the gateway sender queue before <%=vars.product_name%> logs an alert.</td>
 </tr>
 <tr>
 <td><span class="keyword parmname">\-\-batch-size</span></td>
@@ -239,7 +239,7 @@ The required option, `--id`, identifies the gateway sender to be altered.
 </tr>
 <tr>
 <td><span class="keyword parmname">\-\-batch-time-interval</span></td>
-<td>Maximum number of milliseconds that can elapse between sending batches.</td>
+<td>Maximum time, in milliseconds, that can elapse between sending batches.</td>
 </tr>
 <tr>
 <td><span class="keyword parmname">\-\-gateway-event-filter</span></td>

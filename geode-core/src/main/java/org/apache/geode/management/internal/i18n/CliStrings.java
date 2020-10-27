@@ -329,33 +329,35 @@ public class CliStrings {
   public static final String ALTER_GATEWAYSENDER__HELP =
       "Alter some options for the Gateway Sender on a member or members.";
   public static final String ALTER_GATEWAYSENDER__ID = "id";
-  public static final String ALTER_GATEWAYSENDER__ID__HELP = "ID of the Gateway Sender.";
+  public static final String ALTER_GATEWAYSENDER__ID__HELP = "ID of the gateway sender.";
 
   public static final String ALTER_GATEWAYSENDER__GROUP__HELP =
-      "Group(s) of members on which to alter option of the Gateway Sender.";
+      "Group(s) of members on which to alter the gateway sender option.";
   public static final String ALTER_GATEWAYSENDER__MEMBER__HELP =
-      "Name/Id of the member on which to alter option of the Gateway Sender.";
+      "Name/Id of the member on which to alter the gateway sender option.";
 
   public static final String ALTER_GATEWAYSENDER__ALERTTHRESHOLD = "alert-threshold";
   public static final String ALTER_GATEWAYSENDER__ALERTTHRESHOLD__HELP =
-      "The alert threshold for entries in a GatewaySender's queue.";
+      "The alert threshold for entries in a gateway sender's queue.";
 
   public static final String ALTER_GATEWAYSENDER__BATCHSIZE = "batch-size";
   public static final String ALTER_GATEWAYSENDER__BATCHSIZE__HELP =
-      "The batch size for the GatewaySender.";
+      "The batch size for the gateway sender.";
 
   public static final String ALTER_GATEWAYSENDER__BATCHTIMEINTERVAL = "batch-time-interval";
   public static final String ALTER_GATEWAYSENDER__BATCHTIMEINTERVAL__HELP =
-      "The batch time interval for the GatewaySender.";
+      "The batch time interval for the gateway sender.";
 
   public static final String ALTER_GATEWAYSENDER__GATEWAYEVENTFILTER = "gateway-event-filter";
   public static final String ALTER_GATEWAYSENDER__GATEWAYEVENTFILTER__HELP =
-      "The list of fully qualified class names of GatewayEventFilters (separated by comma) to be associated with the GatewaySender. This serves as a callback for users to filter out events before dispatching to remote distributed system. e.g gateway-event-filter=com.user.filters.MyFilter1,com.user.filters.MyFilters2";
+      "The list of fully qualified class names of GatewayEventFilters (separated by commas) to be associated with the GatewaySender.\n"
+          + "This serves as a callback for users to filter out events before dispatching to the remote distributed system.\n"
+          + "E.g gateway-event-filter=com.user.filters.MyFilter1,com.user.filters.MyFilters2";
 
   public static final String ALTER_GATEWAYSENDER__GATEWAYTRANSPORTFILTER =
       "gateway-transport-filter";
   public static final String ALTER_GATEWAYSENDER__GATEWAYTRANSPORTFILTER__HELP =
-      "The fully qualified class name of GatewayTransportFilter to be added to the GatewaySender.";
+      "The fully qualified class name of a GatewayTransportFilter to be added to the GatewaySender.";
 
   public static final String ALTER_GATEWAYSENDER__GROUPTRANSACTIONEVENTS =
       "group-transaction-events";

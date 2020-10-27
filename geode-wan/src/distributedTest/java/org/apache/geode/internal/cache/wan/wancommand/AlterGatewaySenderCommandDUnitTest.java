@@ -191,7 +191,7 @@ public class AlterGatewaySenderCommandDUnitTest {
 
     gfsh.executeAndAssertThat("alter gateway-sender --id=sender1 --group-transaction-events=true")
         .statusIsError()
-        .containsOutput("Alter Gateway Sender cannot be performed for --group-transaction-events");
+        .containsOutput("alter-gateway-sender cannot be performed for --group-transaction-events");
   }
 
 

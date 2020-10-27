@@ -116,21 +116,21 @@ public class AlterGatewaySenderCommandTest {
   @Test
   public void emptyConfiguration() {
     gfsh.executeAndAssertThat(command, "alter gateway-sender --id=test --batch-size=100")
-        .statusIsError().containsOutput("Can not find an gateway sender");
+        .statusIsError().containsOutput("Cannot find a gateway sender");
   }
 
   @Test
   public void changeGroupTransaction1() {
     gfsh.executeAndAssertThat(command,
         "alter gateway-sender --id=sender1 --group-transaction-events").statusIsError()
-        .containsOutput("Alter Gateway Sender cannot be performed");
+        .containsOutput("alter-gateway-sender cannot be performed");
   }
 
   @Test
   public void changeGroupTransaction2() {
     gfsh.executeAndAssertThat(command,
         "alter gateway-sender --id=sender2 --group-transaction-events").statusIsError()
-        .containsOutput("Alter Gateway Sender cannot be performed");
+        .containsOutput("alter-gateway-sender cannot be performed");
   }
 
 }

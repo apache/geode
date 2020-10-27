@@ -69,7 +69,7 @@ public class AlterGatewaySenderFunction implements InternalFunction<GatewaySende
     String gwId = gatewaySenderCreateArgs.getId();
     GatewaySender gateway = cache.getGatewaySender(gwId);
     if (gateway == null) {
-      String message = String.format("Can not find existing gateway sender with id '%s'.", gwId);
+      String message = String.format("Cannot find existing gateway sender with id '%s'.", gwId);
       throw new EntityNotFoundException(message);
     }
 

@@ -91,7 +91,7 @@ public class AlterGatewaySenderCommand extends SingleGfshCommand {
     CacheConfig.GatewaySender oldConfiguration = findGW(id);
 
     if (oldConfiguration == null) {
-      String message = String.format("Can not find an gateway sender with id '%s'.", id);
+      String message = String.format("Cannot find a gateway sender with id '%s'.", id);
       throw new EntityNotFoundException(message);
     }
 
@@ -100,12 +100,12 @@ public class AlterGatewaySenderCommand extends SingleGfshCommand {
       if (!oldConfiguration.isParallel() && (oldConfiguration.getDispatcherThreads() == null
           || Integer.parseInt(oldConfiguration.getDispatcherThreads()) > 1)) {
         return ResultModel.createError(
-            "Alter Gateway Sender cannot be performed for --group-transaction-events attribute if serial sender and dispatcher-threads is greater than 1.");
+            "alter-gateway-sender cannot be performed for --group-transaction-events attribute if serial sender and dispatcher-threads is greater than 1.");
       }
 
       if (oldConfiguration.isEnableBatchConflation()) {
         return ResultModel.createError(
-            "Alter Gateway Sender cannot be performed for --group-transaction-events attribute if batch-conflation is enabled.");
+            "alter-gateway-sender cannot be performed for --group-transaction-events attribute if batch-conflation is enabled.");
       }
     }
 
