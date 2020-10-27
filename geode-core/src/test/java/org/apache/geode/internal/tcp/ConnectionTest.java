@@ -19,10 +19,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -112,5 +114,57 @@ public class ConnectionTest {
     AlertingAction.execute(() -> {
       assertThat(connection.getP2PConnectTimeout(distributionConfig)).isEqualTo(100);
     });
+  }
+
+  private Connection createSpiedConnection() throws IOException {
+    ConnectionTable connectionTable = mock(ConnectionTable.class);
+    Distribution distribution = mock(Distribution.class);
+    DistributionManager distributionManager = mock(DistributionManager.class);
+    DMStats dmStats = mock(DMStats.class);
+    CancelCriterion stopper = mock(CancelCriterion.class);
+    SocketCloser socketCloser = mock(SocketCloser.class);
+    TCPConduit tcpConduit = mock(TCPConduit.class);
+
+    when(connectionTable.getBufferPool()).thenReturn(new BufferPool(dmStats));
+    when(connectionTable.getConduit()).thenReturn(tcpConduit);
+    when(connectionTable.getDM()).thenReturn(distributionManager);
+    when(connectionTable.getSocketCloser()).thenReturn(socketCloser);
+    when(distributionManager.getDistribution()).thenReturn(distribution);
+    when(stopper.cancelInProgress()).thenReturn(null);
+    when(tcpConduit.getCancelCriterion()).thenReturn(stopper);
+    when(tcpConduit.getDM()).thenReturn(distributionManager);
+    when(tcpConduit.getSocketId()).thenReturn(new InetSocketAddress(getLocalHost(), 10337));
+    when(tcpConduit.getStats()).thenReturn(dmStats);
+
+    SocketChannel channel = SocketChannel.open();
+
+    Connection connection = new Connection(connectionTable, channel.socket());
+    connection = spy(connection);
+    return connection;
+  }
+
+  @Test
+  public void firstCallToNotifyHandshakeWaiterWillClearSSLInputBuffer() throws Exception {
+    Connection connection = createSpiedConnection();
+    connection.notifyHandshakeWaiter(true);
+    verify(connection, times(1)).clearSSLInputBuffer();
+  }
+
+  @Test
+  public void secondCallWithTrueToNotifyHandshakeWaiterShouldNotClearSSLInputBuffer()
+      throws Exception {
+    Connection connection = createSpiedConnection();
+    connection.notifyHandshakeWaiter(true);
+    connection.notifyHandshakeWaiter(true);
+    verify(connection, times(1)).clearSSLInputBuffer();
+  }
+
+  @Test
+  public void secondCallWithFalseToNotifyHandshakeWaiterShouldNotClearSSLInputBuffer()
+      throws Exception {
+    Connection connection = createSpiedConnection();
+    connection.notifyHandshakeWaiter(true);
+    connection.notifyHandshakeWaiter(false);
+    verify(connection, times(1)).clearSSLInputBuffer();
   }
 }
