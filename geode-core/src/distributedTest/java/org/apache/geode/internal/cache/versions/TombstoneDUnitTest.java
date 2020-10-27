@@ -14,6 +14,10 @@
  */
 package org.apache.geode.internal.cache.versions;
 
+import static org.apache.geode.cache.RegionShortcut.REPLICATE;
+import static org.apache.geode.cache.RegionShortcut.REPLICATE_PERSISTENT;
+import static org.apache.geode.internal.cache.InitialImageOperation.GIITestHookType.DuringApplyDelta;
+import static org.apache.geode.internal.cache.InitialImageOperation.resetAllGIITestHooks;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -39,6 +43,7 @@ import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.cache.DestroyOperation;
 import org.apache.geode.internal.cache.DistributedTombstoneOperation;
+import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.TombstoneService;
@@ -61,6 +66,10 @@ public class TombstoneDUnitTest implements Serializable {
   public void close() {
     for (VM vm : Arrays.asList(VM.getVM(0), VM.getVM(1))) {
       vm.invoke(() -> {
+        resetAllGIITestHooks();
+        if (region != null && !region.isDestroyed()) {
+          region.destroyRegion();
+        }
         region = null;
         if (cache != null) {
           cache.close();
@@ -75,12 +84,12 @@ public class TombstoneDUnitTest implements Serializable {
     VM vm1 = VM.getVM(1);
 
     vm0.invoke(() -> {
-      createCacheAndRegion(RegionShortcut.REPLICATE_PERSISTENT);
+      createCacheAndRegion(REPLICATE_PERSISTENT);
       region.put("K1", "V1");
       region.put("K2", "V2");
     });
 
-    vm1.invoke(() -> createCacheAndRegion(RegionShortcut.REPLICATE));
+    vm1.invoke(() -> createCacheAndRegion(REPLICATE));
 
     vm0.invoke(() -> {
       // Send tombstone gc message to vm1.
@@ -112,12 +121,12 @@ public class TombstoneDUnitTest implements Serializable {
     VM server2 = VM.getVM(1);
 
     server1.invoke(() -> {
-      createCacheAndRegion(RegionShortcut.REPLICATE_PERSISTENT);
+      createCacheAndRegion(REPLICATE_PERSISTENT);
       region.put("K1", "V1");
       region.put("K2", "V2");
     });
 
-    server2.invoke(() -> createCacheAndRegion(RegionShortcut.REPLICATE));
+    server2.invoke(() -> createCacheAndRegion(REPLICATE));
 
     server1.invoke(() -> {
       // Send tombstone gc message to vm1.
@@ -140,7 +149,7 @@ public class TombstoneDUnitTest implements Serializable {
 
     // Fire up the server and put in some data that is deletable
     server.invoke(() -> {
-      createCacheAndRegion(RegionShortcut.REPLICATE);
+      createCacheAndRegion(REPLICATE);
       cache.addCacheServer().start();
       for (int i = 0; i < 1000; i++) {
         region.put("K" + i, "V" + i);
@@ -178,12 +187,12 @@ public class TombstoneDUnitTest implements Serializable {
     VM server2 = VM.getVM(1);
 
     server1.invoke(() -> {
-      createCacheAndRegion(RegionShortcut.REPLICATE_PERSISTENT);
+      createCacheAndRegion(REPLICATE_PERSISTENT);
       region.put("K1", "V1");
       region.put("K2", "V2");
     });
 
-    server2.invoke(() -> createCacheAndRegion(RegionShortcut.REPLICATE));
+    server2.invoke(() -> createCacheAndRegion(REPLICATE));
 
     server1.invoke(() -> {
       // Send tombstone gc message to vm1.
@@ -212,7 +221,7 @@ public class TombstoneDUnitTest implements Serializable {
 
     // Fire up the server and put in some data that is deletable
     server.invoke(() -> {
-      createCacheAndRegion(RegionShortcut.REPLICATE);
+      createCacheAndRegion(REPLICATE);
       cache.addCacheServer().start();
       for (int i = 0; i < 1000; i++) {
         region.put("K" + i, "V" + i);
@@ -239,20 +248,21 @@ public class TombstoneDUnitTest implements Serializable {
   }
 
   @Test
-  public void testTombstonesWithLowerVersionThanTheRecordedVersionGetsGCed() throws Exception {
+  public void testTombstonesWithLowerVersionThanTheRecordedVersionGetsGCedAfterDestroy()
+      throws Exception {
     VM vm0 = VM.getVM(0);
     VM vm1 = VM.getVM(1);
     Properties props = DistributedRule.getDistributedSystemProperties();
     props.setProperty("conserve-sockets", "false");
 
     vm0.invoke(() -> {
-      createCacheAndRegion(RegionShortcut.REPLICATE_PERSISTENT, props);
+      createCacheAndRegion(REPLICATE_PERSISTENT, props);
       region.put("K1", "V1");
       region.put("K2", "V2");
     });
 
     vm1.invoke(() -> {
-      createCacheAndRegion(RegionShortcut.REPLICATE, props);
+      createCacheAndRegion(REPLICATE, props);
       DistributionMessageObserver.setInstance(new RegionObserver());
     });
 
@@ -282,6 +292,86 @@ public class TombstoneDUnitTest implements Serializable {
     });
   }
 
+  @Test
+  public void tombstoneGCDuringGIICorrectlySchedulesTombstonesForCollection() {
+    VM vm0 = VM.getVM(0);
+    VM vm1 = VM.getVM(1);
+    Properties props = DistributedRule.getDistributedSystemProperties();
+    props.setProperty("conserve-sockets", "false");
+
+    vm0.invoke(() -> {
+      createCacheAndRegion(REPLICATE_PERSISTENT, props);
+      region.put("K1", "V1");
+      region.put("K2", "V2");
+    });
+
+    vm1.invoke(() -> {
+      createCacheAndRegion(REPLICATE_PERSISTENT, props);
+      // Ensure that there are local tombstones to be recovered in the member that will request GII
+      region.destroy("K1");
+      region.destroy("K2");
+      cache.close();
+      region = null;
+    });
+
+    vm0.invoke(() -> {
+      // Ensure that there are newer tombstones that will be sent via GII
+      region.put("K1", "V3");
+      region.destroy("K1");
+      region.put("K2", "V4");
+      region.destroy("K2");
+      // Trigger a tombstone GC after receiving the GII request message
+      InitialImageOperation.setGIITestHook(new InitialImageOperation.GIITestHook(
+          InitialImageOperation.GIITestHookType.AfterReceivedRequestImage, REGION_NAME) {
+        private static final long serialVersionUID = -3790198435185240444L;
+
+        @Override
+        public void reset() {}
+
+        @Override
+        public void run() {
+          try {
+            performGC(((LocalRegion) region).getTombstoneCount());
+          } catch (Exception ignore) {
+          }
+        }
+      });
+    });
+
+    vm1.invoke(() -> {
+      cache = new CacheFactory(props).create();
+
+      InitialImageOperation.setGIITestHook(
+          new InitialImageOperation.GIITestHook(DuringApplyDelta, REGION_NAME) {
+            private static final long serialVersionUID = 637083883125364247L;
+            private int entryNumber = 0;
+
+            @Override
+            public void reset() {}
+
+            @Override
+            public void run() {
+              if (entryNumber == 0) {
+                await().alias("Waiting for scheduled tombstone count to be zero")
+                    .until(() -> ((InternalCache) cache).getTombstoneService()
+                        .getScheduledTombstoneCount() == 0);
+              }
+              // Confirm that tombstones are correctly scheduled for collection after processing
+              // each new entry received during GII
+              assertThat(((InternalCache) cache).getTombstoneService().getScheduledTombstoneCount())
+                  .as("Scheduled tombstone count did not match expected value")
+                  .isEqualTo(entryNumber++);
+            }
+          });
+
+      region = cache.<String, String>createRegionFactory(REPLICATE_PERSISTENT).create(REGION_NAME);
+
+      // Confirm that we are able to collect all tombstones once the region is initialized
+      performGC(((LocalRegion) region).getTombstoneCount());
+      assertEquals(0, ((LocalRegion) region).getTombstoneCount());
+    });
+  }
+
   // Client Cache
   private void createClientCacheAndRegion(String locatorHost, int locatorPort) {
     ClientCache clientcache =
@@ -300,9 +390,7 @@ public class TombstoneDUnitTest implements Serializable {
     createCacheAndRegion(regionShortCut, DistributedRule.getDistributedSystemProperties());
   }
 
-
   private static class RegionObserver extends DistributionMessageObserver implements Serializable {
-
     private static final long serialVersionUID = 6272522949825923089L;
     VersionTag<?> versionTag;
     CountDownLatch tombstoneGcLatch = new CountDownLatch(1);
