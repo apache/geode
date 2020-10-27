@@ -209,7 +209,7 @@ public class RedisStringTest {
   }
 
   @Test
-  public void decrErrorsWhenOverflows() {
+  public void decrThrowsNumberFormatExceptionWhenNotALong() {
     // allows unchecked cast of mock to Region<ByteArrayWrapper, RedisData>
     @SuppressWarnings("unchecked")
     Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
@@ -217,6 +217,20 @@ public class RedisStringTest {
     RedisString string = new RedisString(byteArrayWrapper);
     assertThatThrownBy(() -> string.decr(region, byteArrayWrapper))
         .isInstanceOf(NumberFormatException.class);
+  }
+
+  @Test
+  public void decrThrowsArithmeticExceptionWhenDecrementingMin() {
+    // allows unchecked cast of mock to Region<ByteArrayWrapper, RedisData>
+    @SuppressWarnings("unchecked")
+    Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
+    ByteArrayWrapper byteArrayWrapper = new ByteArrayWrapper(
+        new byte[] {'-', '9', '2', '2', '3', '3', '7', '2', '0', '3', '6', '8', '5', '4', '7', '7',
+            '5',
+            '8', '0', '8'});
+    RedisString string = new RedisString(byteArrayWrapper);
+    assertThatThrownBy(() -> string.decr(region, byteArrayWrapper))
+        .isInstanceOf(ArithmeticException.class);
   }
 
   @Test
@@ -231,7 +245,7 @@ public class RedisStringTest {
   }
 
   @Test
-  public void decrbyErrorsWhenOverflows() {
+  public void decrbyThrowsNumberFormatExceptionWhenNotALong() {
     // allows unchecked cast of mock to Region<ByteArrayWrapper, RedisData>
     @SuppressWarnings("unchecked")
     Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
@@ -239,6 +253,20 @@ public class RedisStringTest {
     RedisString string = new RedisString(byteArrayWrapper);
     assertThatThrownBy(() -> string.decrby(region, byteArrayWrapper, 2))
         .isInstanceOf(NumberFormatException.class);
+  }
+
+  @Test
+  public void decrbyThrowsArithmeticExceptionWhenDecrementingMin() {
+    // allows unchecked cast of mock to Region<ByteArrayWrapper, RedisData>
+    @SuppressWarnings("unchecked")
+    Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
+    ByteArrayWrapper byteArrayWrapper = new ByteArrayWrapper(
+        new byte[] {'-', '9', '2', '2', '3', '3', '7', '2', '0', '3', '6', '8', '5', '4', '7', '7',
+            '5',
+            '8', '0', '7'});
+    RedisString string = new RedisString(byteArrayWrapper);
+    assertThatThrownBy(() -> string.decrby(region, byteArrayWrapper, 2))
+        .isInstanceOf(ArithmeticException.class);
   }
 
   @Test

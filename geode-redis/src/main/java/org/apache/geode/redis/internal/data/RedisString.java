@@ -132,7 +132,7 @@ public class RedisString extends AbstractRedisData {
     try {
       return Long.parseLong(value.toString());
     } catch (NumberFormatException ex) {
-      throw new NumberFormatException(RedisConstants.ERROR_NOT_LONG);
+      throw new NumberFormatException(RedisConstants.ERROR_NOT_INTEGER);
     }
   }
 

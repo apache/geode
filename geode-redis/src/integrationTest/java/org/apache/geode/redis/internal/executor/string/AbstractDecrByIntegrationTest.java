@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -92,6 +93,14 @@ public abstract class AbstractDecrByIntegrationTest implements RedisPortSupplier
       ex = e;
     }
     assertThat(ex).isNotNull();
+  }
+
+  @Test
+  public void decrbyMoreThanMaxLongThrowsArithmeticException() {
+    jedis.set("somekey", "1");
+    assertThatThrownBy(
+        () -> jedis.sendCommand(Protocol.Command.DECRBY, "somekey", "9223372036854775809"))
+            .hasMessageContaining(ERROR_NOT_INTEGER);
   }
 
   private String randString() {
