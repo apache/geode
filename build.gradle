@@ -50,7 +50,6 @@ allprojects {
   }
 
   repositories {
-    mavenLocal()
     mavenCentral()
   }
 
