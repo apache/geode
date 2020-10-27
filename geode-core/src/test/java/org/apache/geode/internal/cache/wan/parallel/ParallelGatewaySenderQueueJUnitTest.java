@@ -457,18 +457,23 @@ public class ParallelGatewaySenderQueueJUnitTest {
   }
 
   @Test
-  public void testGetTimeToSleepNegativeInputReturnsZero() {
-    assertEquals(0L, ParallelGatewaySenderQueue.getTimeToSleep(-3));
+  public void testCalculateTimeToSleepNegativeInputReturnsZero() {
+    assertEquals(0L, ParallelGatewaySenderQueue.calculateTimeToSleep(-3));
   }
 
   @Test
-  public void testGetTimeToSleepInputGreaterThanOneThousand() {
-    assertEquals(50L, ParallelGatewaySenderQueue.getTimeToSleep(1002));
+  public void testCalculateTimeToSleepZeroInputReturnsZero() {
+    assertEquals(0L, ParallelGatewaySenderQueue.calculateTimeToSleep(0));
   }
 
   @Test
-  public void testGetTimeToSleepInputSmallerThanOneThousand() {
-    assertEquals(2L, ParallelGatewaySenderQueue.getTimeToSleep(40));
+  public void testCalculateTimeToSleepInputGreaterThanOneThousand() {
+    assertEquals(50L, ParallelGatewaySenderQueue.calculateTimeToSleep(1002));
+  }
+
+  @Test
+  public void testCalculateTimeToSleepInputSmallerThanOneThousand() {
+    assertEquals(2L, ParallelGatewaySenderQueue.calculateTimeToSleep(40));
   }
 
   private GatewaySenderEventImpl createGatewaySenderEventImpl(int transactionId,

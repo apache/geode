@@ -1307,7 +1307,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         // Sleep a bit before trying again.
         long currentTime = System.currentTimeMillis();
         try {
-          Thread.sleep(getTimeToSleep(end - currentTime));
+          Thread.sleep(calculateTimeToSleep(end - currentTime));
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt();
           break;
@@ -1394,8 +1394,8 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
   }
 
   @VisibleForTesting
-  public static long getTimeToSleep(long timeToWait) {
-    if (timeToWait < 0) {
+  static long calculateTimeToSleep(long timeToWait) {
+    if (timeToWait <= 0) {
       return 0;
     }
     // Get the minimum of 50 and 5% of the time to wait (which by default is 1000 ms)
