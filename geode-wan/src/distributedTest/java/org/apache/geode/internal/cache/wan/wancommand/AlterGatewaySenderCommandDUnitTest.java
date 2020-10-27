@@ -29,6 +29,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.wan.GatewayEventFilter;
+import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
@@ -53,6 +55,7 @@ public class AlterGatewaySenderCommandDUnitTest {
 
   private static MemberVM locatorSite1;
   private static MemberVM server1;
+  private static MemberVM server2;
   private final IgnoredException exln = IgnoredException
       .addIgnoredException("could not get remote locator information for remote site");
 
@@ -67,7 +70,7 @@ public class AlterGatewaySenderCommandDUnitTest {
     server1 = clusterStartupRule.startServerVM(1, props, locatorSite1.getPort());
 
     props.setProperty(NAME, "happyserver2");
-    server1 = clusterStartupRule.startServerVM(2, props, locatorSite1.getPort());
+    server2 = clusterStartupRule.startServerVM(2, props, locatorSite1.getPort());
 
     props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + 2);
     props.setProperty(NAME, "happyremotelocator");
@@ -227,5 +230,57 @@ public class AlterGatewaySenderCommandDUnitTest {
 
   }
 
+  @Test
+  public void testCreateSerialGatewaySenderAndAlterEventFiters() throws Exception {
+    gfsh.executeAndAssertThat(CREATE).statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting")
+        .hasTableSection()
+        .hasColumn("Message")
+        .containsExactly("GatewaySender \"sender1\" created on \"happyserver1\"",
+            "GatewaySender \"sender1\" created on \"happyserver2\"");
 
+    gfsh.executeAndAssertThat("list gateways").statusIsSuccess()
+        .containsOutput("sender1");
+
+    gfsh.executeAndAssertThat(
+        "alter gateway-sender --id=sender1 --batch-size=200 --alert-threshold=100 --gateway-event-filter="
+            + MyGatewayEventFilter.class.getName())
+        .statusIsSuccess();
+
+    // verify that server1's event queue has the default value
+    server1.invoke(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
+      GatewaySender sender = cache.getGatewaySender("sender1");
+      assertThat(sender.getBatchSize()).isEqualTo(200);
+      assertThat(sender.getBatchTimeInterval())
+          .isEqualTo(GatewaySender.DEFAULT_BATCH_TIME_INTERVAL);
+      assertThat(sender.getAlertThreshold()).isEqualTo(100);
+      assertThat(sender.getGatewayEventFilters().get(0).beforeEnqueue(null)).isTrue();
+    });
+    server2.invoke(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
+      GatewaySender sender = cache.getGatewaySender("sender1");
+      assertThat(sender.getBatchSize()).isEqualTo(200);
+      assertThat(sender.getBatchTimeInterval())
+          .isEqualTo(GatewaySender.DEFAULT_BATCH_TIME_INTERVAL);
+      assertThat(sender.getAlertThreshold()).isEqualTo(100);
+      assertThat(sender.getGatewayEventFilters().get(0).beforeEnqueue(null)).isTrue();
+    });
+  }
+
+  public static class MyGatewayEventFilter implements GatewayEventFilter {
+    @Override
+    public void afterAcknowledgement(GatewayQueueEvent event) {}
+
+    @Override
+    public boolean beforeEnqueue(GatewayQueueEvent event) {
+      return true;
+    }
+
+    @Override
+    public boolean beforeTransmit(GatewayQueueEvent event) {
+      return true;
+    }
+
+  }
 }

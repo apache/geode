@@ -37,6 +37,7 @@ import org.apache.geode.InternalGemFireError;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MutableForTesting;
+import org.apache.geode.cache.CacheCallback;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
@@ -79,7 +80,6 @@ import org.apache.geode.internal.offheap.Releasable;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
-import org.apache.geode.internal.security.CallbackInstantiator;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -686,7 +686,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   @Override
   public void update(Map<String, String> runTimeGatewaySenderAttributes,
-      Map<String, List<String>> runTimeGatewaySenderFilters) {
+      Map<String, List<CacheCallback>> runTimeGatewaySenderFilters) {
     logger.info(
         "AbstractGatewaySender update");
     try {
@@ -750,27 +750,25 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     }
   }
 
-  private void updateGWSenderFilters(Map<String, List<String>> runTimeGatewaySenderFilters) {
+  private void updateGWSenderFilters(Map<String, List<CacheCallback>> runTimeGatewaySenderFilters) {
 
-    for (Map.Entry<String, List<String>> entry : runTimeGatewaySenderFilters.entrySet()) {
+    for (Map.Entry<String, List<CacheCallback>> entry : runTimeGatewaySenderFilters.entrySet()) {
       String attributeName = entry.getKey();
-      List<String> attributeValue = entry.getValue();
+      List<CacheCallback> attributeValue = entry.getValue();
 
       switch (attributeName) {
         case CliStrings.ALTER_GATEWAYSENDER__GATEWAYEVENTFILTER:
           List<GatewayEventFilter> tempEventList = new ArrayList<>();
-          for (String filter : attributeValue) {
-            tempEventList.add(CallbackInstantiator.getObjectOfTypeFromClassName(filter,
-                GatewayEventFilter.class));
+          for (CacheCallback filter : attributeValue) {
+            tempEventList.add((GatewayEventFilter) filter);
           }
           this.eventFilters = Collections.unmodifiableList(tempEventList);
           break;
 
         case CliStrings.ALTER_GATEWAYSENDER__GATEWAYTRANSPORTFILTER:
           List<GatewayTransportFilter> tempTransList = new ArrayList<>();
-          for (String filter : attributeValue) {
-            tempTransList.add(CallbackInstantiator.getObjectOfTypeFromClassName(filter,
-                GatewayTransportFilter.class));
+          for (CacheCallback filter : attributeValue) {
+            tempTransList.add((GatewayTransportFilter) filter);
           }
           this.transFilters = Collections.unmodifiableList(tempTransList);
           break;

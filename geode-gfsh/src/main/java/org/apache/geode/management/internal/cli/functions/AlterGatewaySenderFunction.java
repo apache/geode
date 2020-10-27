@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,10 +22,14 @@ import java.util.Map;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheCallback;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
+import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.internal.cache.execute.InternalFunction;
+import org.apache.geode.internal.security.CallbackInstantiator;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
@@ -69,7 +74,7 @@ public class AlterGatewaySenderFunction implements InternalFunction<GatewaySende
     }
 
     Map<String, String> runTimeGatewaySenderAttributes = new HashMap<>();
-    Map<String, List<String>> runTimeGatewaySenderFilters = new HashMap<>();
+    Map<String, List<CacheCallback>> runTimeGatewaySenderFilters = new HashMap<>();
 
 
     Integer alertThreshold = gatewaySenderCreateArgs.getAlertThreshold();
@@ -102,16 +107,26 @@ public class AlterGatewaySenderFunction implements InternalFunction<GatewaySende
 
     List<String> gatewayEventFilters = gatewaySenderCreateArgs.getGatewayEventFilter();
     if (gatewayEventFilters != null) {
+      List<CacheCallback> tempEventList = new ArrayList<>();
+      for (String filter : gatewayEventFilters) {
+        tempEventList.add(CallbackInstantiator.getObjectOfTypeFromClassName(filter,
+            GatewayEventFilter.class));
+      }
       runTimeGatewaySenderFilters.put(
           CliStrings.ALTER_GATEWAYSENDER__GATEWAYEVENTFILTER,
-          gatewayEventFilters);
+          tempEventList);
     }
 
     List<String> gatewayTransportFilters = gatewaySenderCreateArgs.getGatewayTransportFilter();
     if (gatewayTransportFilters != null) {
+      List<CacheCallback> tempTransList = new ArrayList<>();
+      for (String filter : gatewayTransportFilters) {
+        tempTransList.add(CallbackInstantiator.getObjectOfTypeFromClassName(filter,
+            GatewayTransportFilter.class));
+      }
       runTimeGatewaySenderFilters.put(
           CliStrings.ALTER_GATEWAYSENDER__GATEWAYTRANSPORTFILTER,
-          gatewayTransportFilters);
+          tempTransList);
     }
 
     gateway.update(runTimeGatewaySenderAttributes, runTimeGatewaySenderFilters);
