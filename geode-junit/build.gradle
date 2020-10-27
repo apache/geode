@@ -29,6 +29,7 @@ dependencies {
   compileOnly(project(':geode-unsafe'))
   compileOnly(project(':geode-gfsh'))
 
+  api('io.github.classgraph:classgraph')
   compile('com.fasterxml.jackson.core:jackson-annotations')
   compile('com.fasterxml.jackson.core:jackson-databind')
   compile('com.github.stefanbirkner:system-rules') {
