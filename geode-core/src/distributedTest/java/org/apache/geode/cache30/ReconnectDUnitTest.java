@@ -134,8 +134,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
 
   @Override
   public final void postSetUp() throws Exception {
-    IgnoredException.addIgnoredException(
-        "DistributedSystemDisconnectedException|ForcedDisconnectException|Possible loss of quorum");
+    IgnoredException.addIgnoredException("ForcedDisconnectException||Possible loss of quorum");
     locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final int locPort = locatorPort;
     Host.getHost(0).getVM(locatorVMNumber).invoke(new SerializableRunnable("start locator") {
