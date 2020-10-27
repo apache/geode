@@ -799,7 +799,21 @@ public class Connection implements Runnable {
     }
   }
 
-  private void notifyHandshakeWaiter(boolean success) {
+  @VisibleForTesting
+  void clearSSLInputBuffer() {
+    if (getConduit().useSSL() && ioFilter != null) {
+      synchronized (ioFilter.getSynchObject()) {
+        if (!ioFilter.isClosed()) {
+          // clear out any remaining handshake bytes
+          ByteBuffer buffer = ioFilter.getUnwrappedBuffer(inputBuffer);
+          buffer.position(0).limit(0);
+        }
+      }
+    }
+  }
+
+  @VisibleForTesting
+  void notifyHandshakeWaiter(boolean success) {
     synchronized (handshakeSync) {
       /*
        * Return early to avoid modifying ioFilter's buffer more than once.
@@ -807,15 +821,7 @@ public class Connection implements Runnable {
       if (handshakeRead || handshakeCancelled) {
         return;
       }
-      if (getConduit().useSSL() && ioFilter != null) {
-        synchronized (ioFilter.getSynchObject()) {
-          if (!ioFilter.isClosed()) {
-            // clear out any remaining handshake bytes
-            ByteBuffer buffer = ioFilter.getUnwrappedBuffer(inputBuffer);
-            buffer.position(0).limit(0);
-          }
-        }
-      }
+      clearSSLInputBuffer();
       if (success) {
         handshakeRead = true;
       } else {

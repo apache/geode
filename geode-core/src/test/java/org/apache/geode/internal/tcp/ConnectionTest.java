@@ -24,6 +24,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -115,8 +116,7 @@ public class ConnectionTest {
     });
   }
 
-  @Test
-  public void notifyHandshakeWaiterShouldPositionByteBufferOnlyOnce() throws Exception {
+  private Connection createSpiedConnection() throws IOException {
     ConnectionTable connectionTable = mock(ConnectionTable.class);
     Distribution distribution = mock(Distribution.class);
     DistributionManager distributionManager = mock(DistributionManager.class);
@@ -140,9 +140,31 @@ public class ConnectionTest {
 
     Connection connection = new Connection(connectionTable, channel.socket());
     connection = spy(connection);
-    connection.setSharedUnorderedForTest();
-    connection.run();
+    return connection;
+  }
 
-    verify(connection, times(1)).getConduit();
+  @Test
+  public void firstCallToNotifyHandshakeWaiterWillClearSSLInputBuffer() throws Exception {
+    Connection connection = createSpiedConnection();
+    connection.notifyHandshakeWaiter(true);
+    verify(connection, times(1)).clearSSLInputBuffer();
+  }
+
+  @Test
+  public void secondCallWithTrueToNotifyHandshakeWaiterShouldNotClearSSLInputBuffer()
+      throws Exception {
+    Connection connection = createSpiedConnection();
+    connection.notifyHandshakeWaiter(true);
+    connection.notifyHandshakeWaiter(true);
+    verify(connection, times(1)).clearSSLInputBuffer();
+  }
+
+  @Test
+  public void secondCallWithFalseToNotifyHandshakeWaiterShouldNotClearSSLInputBuffer()
+      throws Exception {
+    Connection connection = createSpiedConnection();
+    connection.notifyHandshakeWaiter(true);
+    connection.notifyHandshakeWaiter(false);
+    verify(connection, times(1)).clearSSLInputBuffer();
   }
 }
