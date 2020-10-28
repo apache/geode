@@ -371,7 +371,7 @@ jobs:
             --team-name=((concourse-team)) \
             --username=((concourse-username)) \
             --password=((concourse-password))
-          latest_job=$(./fly -t cc builds --job="${BUILD_PIPELINE_NAME}/${job}" --json | jq -r 'max_by(.name | tonumber)')
+          latest_job=$(./fly -t cc builds --job="${BUILD_PIPELINE_NAME}/${job}" --json | jq -r '[.[] | select(.status!="aborted")] | max_by(.name | tonumber)')
           count=$(echo "${latest_job}" | jq -r .name)
           if [ $((${count}%{{metadata.mass_test_run_iterations}})) -ne 0 ]; then
             echo "Only generating report every [{{metadata.mass_test_run_iterations}}] jobs. Exiting."
