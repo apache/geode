@@ -16,8 +16,6 @@
 
 package org.apache.geode.redis.internal.data;
 
-
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -46,6 +44,14 @@ public class RedisString extends AbstractRedisData {
   // for serialization
   public RedisString() {}
 
+  public ByteArrayWrapper get() {
+    return new ByteArrayWrapper(value.toBytes());
+  }
+
+  public void set(ByteArrayWrapper value) {
+    valueSet(value);
+  }
+
   public int append(ByteArrayWrapper appendValue,
       Region<ByteArrayWrapper, RedisData> region,
       ByteArrayWrapper key) {
@@ -53,14 +59,6 @@ public class RedisString extends AbstractRedisData {
     appendSequence++;
     storeChanges(region, key, new AppendDeltaInfo(appendValue.toBytes(), appendSequence));
     return value.length();
-  }
-
-  public ByteArrayWrapper get() {
-    return new ByteArrayWrapper(value.toBytes());
-  }
-
-  public void set(ByteArrayWrapper value) {
-    valueSet(value);
   }
 
   public long incr(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key)

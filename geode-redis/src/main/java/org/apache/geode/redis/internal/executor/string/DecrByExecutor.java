@@ -15,6 +15,8 @@
 package org.apache.geode.redis.internal.executor.string;
 
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
+
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
@@ -24,9 +26,6 @@ import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class DecrByExecutor extends StringExecutor {
-
-  private static final String ERROR_DECREMENT_NOT_USABLE =
-      "The decrementation on this key must be numeric";
 
   private static final int DECREMENT_INDEX = 2;
 
@@ -42,7 +41,7 @@ public class DecrByExecutor extends StringExecutor {
     try {
       decrement = Long.parseLong(decrString);
     } catch (NumberFormatException e) {
-      return RedisResponse.error(ERROR_DECREMENT_NOT_USABLE);
+      return RedisResponse.error(ERROR_NOT_INTEGER);
     }
 
     long value = getRedisStringCommands(context).decrby(key, decrement);
