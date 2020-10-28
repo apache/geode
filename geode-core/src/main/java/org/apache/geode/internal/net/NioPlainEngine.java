@@ -38,14 +38,14 @@ public class NioPlainEngine implements NioFilter {
   }
 
   @Override
-  public ByteBuffer wrap(ByteBuffer buffer) {
-    return buffer;
+  public ByteBufferSharing wrap(ByteBuffer buffer) {
+    return shareBuffer(buffer);
   }
 
   @Override
-  public ByteBuffer unwrap(ByteBuffer wrappedBuffer) {
+  public ByteBufferSharing unwrap(ByteBuffer wrappedBuffer) {
     wrappedBuffer.position(wrappedBuffer.limit());
-    return wrappedBuffer;
+    return shareBuffer(wrappedBuffer);
   }
 
   @Override
@@ -82,7 +82,7 @@ public class NioPlainEngine implements NioFilter {
   }
 
   @Override
-  public ByteBuffer readAtLeast(SocketChannel channel, int bytes, ByteBuffer wrappedBuffer)
+  public ByteBufferSharing readAtLeast(SocketChannel channel, int bytes, ByteBuffer wrappedBuffer)
       throws IOException {
     ByteBuffer buffer = wrappedBuffer;
 
@@ -108,7 +108,7 @@ public class NioPlainEngine implements NioFilter {
     buffer.position(lastProcessedPosition);
     lastProcessedPosition += bytes;
 
-    return buffer;
+    return shareBuffer(buffer);
   }
 
   public void doneReading(ByteBuffer unwrappedBuffer) {
@@ -121,8 +121,12 @@ public class NioPlainEngine implements NioFilter {
   }
 
   @Override
-  public ByteBuffer getUnwrappedBuffer(ByteBuffer wrappedBuffer) {
-    return wrappedBuffer;
+  public ByteBufferSharing getUnwrappedBuffer() {
+    return shareBuffer(null);
+  }
+
+  private ByteBufferSharingNoOp shareBuffer(final ByteBuffer wrappedBuffer) {
+    return new ByteBufferSharingNoOp(wrappedBuffer);
   }
 
 }
