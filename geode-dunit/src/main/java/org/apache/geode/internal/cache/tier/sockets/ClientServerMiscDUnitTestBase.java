@@ -19,6 +19,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
@@ -84,7 +85,6 @@ import org.apache.geode.logging.internal.OSProcess;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
@@ -739,7 +739,7 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
   @Test
   public void testSystemCanBeCycledWithAnInitializedPool() {
     // work around GEODE-477
-    IgnoredException.addIgnoredException("Connection reset");
+    addIgnoredException("Connection reset");
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
@@ -788,7 +788,7 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
 
   @Test(expected = GemFireConfigException.class)
   public void clientIsPreventedFromConnectingToLocatorAsServer() {
-    IgnoredException.addIgnoredException("Improperly configured client detected");
+    addIgnoredException("Improperly configured client detected", VM.getLocator());
     ClientCacheFactory clientCacheFactory = new ClientCacheFactory();
     clientCacheFactory.addPoolServer("localhost", DistributedTestUtils.getDUnitLocatorPort());
     clientCacheFactory.setPoolSubscriptionEnabled(true);

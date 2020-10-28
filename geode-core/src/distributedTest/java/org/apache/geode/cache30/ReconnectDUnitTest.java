@@ -134,6 +134,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
 
   @Override
   public final void postSetUp() throws Exception {
+    IgnoredException.addIgnoredException("ForcedDisconnectException||Possible loss of quorum");
     locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final int locPort = locatorPort;
     Host.getHost(0).getVM(locatorVMNumber).invoke(new SerializableRunnable("start locator") {
@@ -148,8 +149,6 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
           system = (InternalDistributedSystem) locator.getDistributedSystem();
           cache = ((InternalLocator) locator).getCache();
           ReconnectDUnitTest.savedSystem = locator.getDistributedSystem();
-          IgnoredException.addIgnoredException(
-              "org.apache.geode.ForcedDisconnectException||Possible loss of quorum");
           // MembershipManagerHelper.getMembershipManager(InternalDistributedSystem.getConnectedInstance()).setDebugJGroups(true);
         } catch (IOException e) {
           Assert.fail("unable to start locator", e);
