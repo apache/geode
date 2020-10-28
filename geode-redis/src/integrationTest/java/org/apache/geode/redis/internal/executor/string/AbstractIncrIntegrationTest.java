@@ -14,6 +14,8 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_OVERFLOW;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -22,10 +24,8 @@ import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
-import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
@@ -87,11 +87,7 @@ public abstract class AbstractIncrIntegrationTest implements RedisPortSupplier {
     String max64BitIntegerValue = "9223372036854775807";
     jedis.set(key, max64BitIntegerValue);
 
-    try {
-      jedis.incr(key);
-    } catch (JedisDataException e) {
-      assertThat(e.getMessage()).contains(RedisConstants.ERROR_OVERFLOW);
-    }
+    assertThatThrownBy(() -> jedis.incr(key)).hasMessageContaining(ERROR_OVERFLOW);
     assertThat(jedis.get(key)).isEqualTo(max64BitIntegerValue);
   }
 
@@ -99,13 +95,9 @@ public abstract class AbstractIncrIntegrationTest implements RedisPortSupplier {
   public void testIncr_whenWrongType_shouldReturnError() {
     String key = "key";
     String nonIntegerValue = "I am not a number! I am a free man!";
-    assertThat(jedis.set(key, nonIntegerValue)).isEqualTo("OK");
 
-    try {
-      jedis.incr(key);
-    } catch (JedisDataException e) {
-      assertThat(e.getMessage()).contains("out of range");
-    }
+    assertThat(jedis.set(key, nonIntegerValue)).isEqualTo("OK");
+    assertThatThrownBy(() -> jedis.incr(key)).hasMessageContaining(ERROR_NOT_INTEGER);
     assertThat(jedis.get(key)).isEqualTo(nonIntegerValue);
   }
 
