@@ -90,9 +90,10 @@ public class PartitionRegionClearMessageQueueDUnitTest {
     // do PR clear on a server that has no client proxy, hence no HARegionQueue
     Boolean cleared = false;
     for (int i = 0; i < servers.size(); i++) {
-      if (!cleared) {
-        cleared = servers.get(i).invoke(
-            PartitionRegionClearMessageQueueDUnitTest::clearRegionOnNoClientProxyMember);
+      cleared = servers.get(i).invoke(
+          PartitionRegionClearMessageQueueDUnitTest::clearRegionOnNoClientProxyMember);
+      if (cleared) {
+        break;
       }
     }
 
@@ -135,9 +136,10 @@ public class PartitionRegionClearMessageQueueDUnitTest {
 
     Boolean cleared = false;
     for (int i = 0; i < servers.size(); i++) {
-      if (!cleared) {
-        cleared = servers.get(i).invoke(
-            PartitionRegionClearMessageQueueDUnitTest::clearRegionOnNoClientProxyMember);
+      cleared = servers.get(i).invoke(
+          PartitionRegionClearMessageQueueDUnitTest::clearRegionOnNoClientProxyMember);
+      if (cleared) {
+        break;
       }
     }
 
