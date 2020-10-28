@@ -14,6 +14,7 @@
  */
 package org.apache.geode.test.dunit.rules;
 
+import static java.lang.System.identityHashCode;
 import static org.apache.geode.test.dunit.VM.DEFAULT_VM_COUNT;
 import static org.apache.geode.test.dunit.VM.getController;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
@@ -54,9 +55,12 @@ import org.apache.geode.test.dunit.VM;
 @SuppressWarnings("serial,unused")
 public class DistributedMap<K, V> extends AbstractDistributedRule implements Map<K, V> {
 
-  private static final AtomicReference<Map<?, ?>> MAP = new AtomicReference<>();
+  private static final AtomicReference<Map<Integer, Map<?, ?>>> MAPS =
+      new AtomicReference<>(new HashMap<>());
+
   private final AtomicReference<VM> controller = new AtomicReference<>();
   private final Map<K, V> initialEntries = new HashMap<>();
+  private final int identity;
 
   public static Builder builder() {
     return new Builder();
@@ -77,14 +81,24 @@ public class DistributedMap<K, V> extends AbstractDistributedRule implements Map
   private DistributedMap(int vmCount, Map<K, V> initialEntries) {
     super(vmCount);
     this.initialEntries.putAll(initialEntries);
+    identity = identityHashCode(this);
   }
 
   @Override
   protected void before() {
-    MAP.set(new HashMap<K, V>());
+    controller.set(getController());
+
+    MAPS.get().put(identity, new HashMap<K, V>());
     map().clear();
     map().putAll(initialEntries);
-    controller.set(getController());
+  }
+
+  @Override
+  protected void after() {
+    for (Map<?, ?> map : MAPS.get().values()) {
+      map.clear();
+    }
+    MAPS.get().clear();
   }
 
   @Override
@@ -148,8 +162,8 @@ public class DistributedMap<K, V> extends AbstractDistributedRule implements Map
   }
 
   @Override
-  public boolean equals(Object o) {
-    return controller().invoke(() -> map().equals(o));
+  public boolean equals(Object obj) {
+    return controller().invoke(() -> map().equals(obj));
   }
 
   @Override
@@ -162,8 +176,8 @@ public class DistributedMap<K, V> extends AbstractDistributedRule implements Map
     return controller().invoke(() -> map().toString());
   }
 
-  private Map<K, V> map() {
-    return uncheckedCast(MAP.get());
+  public Map<K, V> map() {
+    return uncheckedCast(MAPS.get().get(identity));
   }
 
   private VM controller() {
