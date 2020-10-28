@@ -157,7 +157,12 @@ public interface ConfigurationProperties {
    * <U>Default</U>: ""
    * </p>
    * <U>Since</U>: GemFire 8.1
+   *
+   * @deprecated Since Geode1.14. use import-cluster-configuration and export-cluster-configuration
+   *             to upload/download cluster configuration to/from the cluster.
    */
+
+  @Deprecated
   String CLUSTER_CONFIGURATION_DIR = "cluster-configuration-dir";
 
   /**
