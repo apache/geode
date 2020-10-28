@@ -672,7 +672,7 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
 
   @Override
   public void start() throws MemberStartupException {
-    scheduler = LoggingExecutors.newScheduledThreadPool("Geode Failure Detection Scheduler", 1);
+    scheduler = LoggingExecutors.newScheduledThreadPool(1, "Geode Failure Detection Scheduler");
     checkExecutor = LoggingExecutors.newCachedThreadPool("Geode Failure Detection thread ", true);
     Monitor m = this.new Monitor(memberTimeout);
     monitorInterval = memberTimeout / LOGICAL_INTERVAL;

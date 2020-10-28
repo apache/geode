@@ -284,7 +284,7 @@ public class QueueManagerImpl implements QueueManager {
       // We don't want primary recovery (and therefore user threads) to wait for
       // things like pinging connections for health checks.
       final String name = "queueTimer-" + this.pool.getName();
-      this.recoveryThread = LoggingExecutors.newScheduledThreadPool(name, 1, false);
+      this.recoveryThread = LoggingExecutors.newScheduledThreadPool(1, name, false);
 
       getState().start(background, getPool().getSubscriptionAckInterval());
 

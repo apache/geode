@@ -116,7 +116,7 @@ public class DiskStoreMonitor {
     if (disableMonitor) {
       exec = null;
     } else {
-      exec = LoggingExecutors.newScheduledThreadPool("DiskStoreMonitor", 1);
+      exec = LoggingExecutors.newScheduledThreadPool(1, "DiskStoreMonitor");
       // always monitor the log dir, even if there are no disk stores
       exec.scheduleWithFixedDelay(() -> {
         try {

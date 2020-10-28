@@ -337,7 +337,7 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
       return;
     }
 
-    this.pollerExecutor = LoggingExecutors.newScheduledThreadPool("GemfireHeapPoller", 1);
+    this.pollerExecutor = LoggingExecutors.newScheduledThreadPool(1, "GemfireHeapPoller");
     this.pollerExecutor.scheduleAtFixedRate(new HeapPoller(), POLLER_INTERVAL, POLLER_INTERVAL,
         TimeUnit.MILLISECONDS);
 
