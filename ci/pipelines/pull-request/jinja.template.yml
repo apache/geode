@@ -140,6 +140,8 @@ jobs:
             - name: geode-ci
             - name: attempts-log
               path: old
+            - name: {{ test.PLATFORM}}-builder-image-family
+              path: builder-image
             outputs:
             - name: instance-data
             - name: attempts-log
@@ -300,6 +302,8 @@ jobs:
             - name: geode-ci
             - name: attempts-log
               path: old
+            - name: {{ test.PLATFORM}}-builder-image-family
+              path: builder-image
             outputs:
             - name: instance-data
             - name: attempts-log
