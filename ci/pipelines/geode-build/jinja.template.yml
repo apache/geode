@@ -278,7 +278,7 @@ jobs:
           GEODE_BRANCH: {{repository.branch}}
           GEODE_FORK: {{repository.fork}}
           JAVA_BUILD_VERSION: {{ java_build_version.version }}
-          IMAGE_FAMILY_NAME: ((pipeline-prefix))linux-geode-builder
+          IMAGE_FAMILY_NAME: ((pipeline-prefix)){{ build_test.PLATFORM }}-geode-builder
         run:
           path: geode-ci/ci/scripts/create_instance.sh
         inputs:
@@ -287,6 +287,8 @@ jobs:
         - name: concourse-metadata-resource
         - name: geode
         - name: geode-ci
+        - name: {{ build_test.PLATFORM }}-builder-image-family
+          path: builder-image
         outputs:
         - name: attempts-log
           path: new
@@ -563,6 +565,8 @@ jobs:
       - name: geode
       - name: attempts-log
         path: old
+      - name: linux-builder-image-family
+        path: builder-image
       outputs:
       - name: instance-data
       - name: attempts-log
@@ -650,6 +654,8 @@ jobs:
           - name: geode
           - name: attempts-log
             path: old
+          - name: {{ test.PLATFORM}}-builder-image-family
+            path: builder-image
           outputs:
           - name: instance-data-{{java_test_version.name}}
             path: instance-data
