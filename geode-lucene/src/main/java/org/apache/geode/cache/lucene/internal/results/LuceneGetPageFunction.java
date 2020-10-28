@@ -28,11 +28,15 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.internal.cache.EntrySnapshot;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PrimaryBucketException;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.management.internal.security.ResourcePermissions;
+import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.security.ResourcePermission;
 
 /**
@@ -51,9 +55,10 @@ public class LuceneGetPageFunction implements InternalFunction<Object> {
       RegionFunctionContext ctx = (RegionFunctionContext) context;
       Region region = PartitionRegionHelper.getLocalDataForContext(ctx);
       Set<?> keys = ctx.getFilter();
+      SecurityService securityService = ((InternalCache) ctx.getCache()).getSecurityService();
       List<PageEntry> results = new PageResults(keys.size());
       for (Object key : keys) {
-        PageEntry entry = getEntry(region, key);
+        PageEntry entry = getEntry(region, key, securityService);
         if (entry != null) {
           results.add(entry);
         }
@@ -65,15 +70,25 @@ public class LuceneGetPageFunction implements InternalFunction<Object> {
     }
   }
 
-  protected PageEntry getEntry(final Region region, final Object key) {
+  protected PageEntry getEntry(final Region region, final Object key,
+      SecurityService securityService) {
     final EntrySnapshot entry = (EntrySnapshot) region.getEntry(key);
     if (entry == null) {
       return null;
     }
 
-    final Object value = entry.getRegionEntry().getValue(null);
+    Object value = entry.getRegionEntry().getValue(null);
     if (value == null || Token.isInvalidOrRemoved(value)) {
       return null;
+    } else if (securityService.needPostProcess()) {
+      value = entry.getValue();
+      if (value instanceof PdxInstance) {
+        value = securityService.postProcess(region.getFullPath(), key,
+            ((PdxInstance) value).getObject(), false);
+
+      } else {
+        value = securityService.postProcess(region.getFullPath(), key, value, false);
+      }
     }
 
     return new PageEntry(key, value);
