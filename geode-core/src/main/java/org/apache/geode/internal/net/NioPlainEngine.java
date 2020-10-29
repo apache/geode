@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
+import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.internal.Assert;
 
 /**
@@ -27,6 +28,12 @@ import org.apache.geode.internal.Assert;
  * secure communications.
  */
 public class NioPlainEngine implements NioFilter {
+
+  // this variable requires the MakeImmutable annotation but the buffer is empty and
+  // not really modifiable
+  @MakeImmutable
+  private static final ByteBuffer EMPTY_BUFFER = ByteBuffer.allocate(0);
+
   private final BufferPool bufferPool;
 
   int lastReadPosition;
@@ -122,7 +129,7 @@ public class NioPlainEngine implements NioFilter {
 
   @Override
   public ByteBufferSharing getUnwrappedBuffer() {
-    return shareBuffer(null);
+    return shareBuffer(EMPTY_BUFFER);
   }
 
   private ByteBufferSharingNoOp shareBuffer(final ByteBuffer wrappedBuffer) {
