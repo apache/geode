@@ -2439,7 +2439,7 @@ public class CliStrings {
   public static final String START_LOCATOR__CLUSTER__CONFIG__DIR = "cluster-config-dir";
   public static final String START_LOCATOR__CLUSTER__CONFIG__DIR__HELP =
       "Deprecated: Since Geode 1.14, use import/export cluster-configuration command instead. " +
-          "Directory used by the cluster configuration service to store the cluster configuration on the filesystem";
+          "This option has no effect since 1.12.";
   public static final String START_LOCATOR__HTTP_SERVICE_PORT = "http-service-port";
   public static final String START_LOCATOR__HTTP_SERVICE_PORT__HELP =
       "Port on which HTTP Service will listen on";

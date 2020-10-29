@@ -153,6 +153,8 @@ public interface ConfigurationProperties {
    * <U>Description</U>: This property specifies the directory in which the cluster configuration
    * related disk-store and artifacts are stored This property is only applicable to dedicated
    * locators which have "enable-cluster-configuration" set to true.
+   *
+   * Since 1.12, the product does not use this property anymore.
    * </p>
    * <U>Default</U>: ""
    * </p>
