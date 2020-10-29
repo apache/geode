@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.tier;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -534,7 +536,8 @@ public class InternalClientMembership {
     // protected by calling method synchronized on systems
     if (executor == null) {
       executor =
-          LoggingExecutors.newFixedThreadPoolWithTimeout("ClientMembership Event Invoker", 1, 15);
+          LoggingExecutors.newFixedThreadPoolWithTimeout(1, 15, SECONDS,
+              "ClientMembership Event Invoker");
     }
   }
 

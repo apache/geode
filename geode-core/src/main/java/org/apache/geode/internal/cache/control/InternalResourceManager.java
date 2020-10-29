@@ -130,7 +130,7 @@ public class InternalResourceManager implements ResourceManager {
     // Create a new executor that other classes may use for handling resource
     // related tasks
     this.scheduledExecutor = LoggingExecutors
-        .newScheduledThreadPool("ResourceManagerRecoveryThread ", MAX_RESOURCE_MANAGER_EXE_THREADS);
+        .newScheduledThreadPool(MAX_RESOURCE_MANAGER_EXE_THREADS, "ResourceManagerRecoveryThread ");
 
     // Initialize the load probe
     try {
@@ -143,10 +143,10 @@ public class InternalResourceManager implements ResourceManager {
     // Create a new executor the resource manager and the monitors it creates
     // can use to handle dispatching of notifications.
     this.notifyExecutor =
-        CoreLoggingExecutors.newSerialThreadPoolWithFeedStatistics("Notification Handler",
+        CoreLoggingExecutors.newSerialThreadPoolWithFeedStatistics(0,
+            this.stats.getResourceEventQueueStatHelper(), "Notification Handler",
             thread -> thread.setPriority(Thread.MAX_PRIORITY), null,
-            this.stats.getResourceEventPoolStatHelper(), getThreadMonitorObj(),
-            0, this.stats.getResourceEventQueueStatHelper());
+            this.stats.getResourceEventPoolStatHelper(), getThreadMonitorObj());
 
     // Create the monitors
     Map<ResourceType, ResourceMonitor> tempMonitors = new HashMap<ResourceType, ResourceMonitor>();

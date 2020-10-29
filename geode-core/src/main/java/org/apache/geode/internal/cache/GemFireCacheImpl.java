@@ -24,6 +24,7 @@ import static java.util.Collections.unmodifiableMap;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.Executors.newScheduledThreadPool;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
 import static org.apache.geode.distributed.ConfigurationPersistenceService.CLUSTER_CONFIG;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
@@ -1015,13 +1016,13 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       persistentMemberManager = persistentMemberManagerFactory.get();
 
       if (useAsyncEventListeners) {
-        eventThreadPool = newThreadPoolWithFixedFeed("Message Event Thread",
+        eventThreadPool = newThreadPoolWithFixedFeed(EVENT_THREAD_LIMIT, 1000, MILLISECONDS,
+            EVENT_QUEUE_LIMIT, "Message Event Thread",
             command -> {
               threadWantsSharedResources();
               command.run();
-            }, EVENT_THREAD_LIMIT, cachePerfStats.getEventPoolHelper(), 1000,
-            getThreadMonitorObj(),
-            EVENT_QUEUE_LIMIT);
+            },
+            cachePerfStats.getEventPoolHelper(), getThreadMonitorObj());
       } else {
         eventThreadPool = null;
       }
@@ -1792,8 +1793,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   private ExecutorService getShutdownAllExecutorService(int size) {
-    return newFixedThreadPool("ShutdownAll-", true,
-        shutdownAllPoolSize == -1 ? size : shutdownAllPoolSize);
+    int poolSize = shutdownAllPoolSize == -1 ? size : shutdownAllPoolSize;
+    return newFixedThreadPool(poolSize, "ShutdownAll-", true);
   }
 
   private void shutDownOnePRGracefully(PartitionedRegion partitionedRegion) {

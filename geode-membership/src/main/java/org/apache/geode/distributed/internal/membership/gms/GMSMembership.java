@@ -818,7 +818,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   /** starts periodic task to perform cleanup chores such as expire surprise members */
   private void startCleanupTimer() {
     this.cleanupTimer =
-        LoggingExecutors.newScheduledThreadPool("GMSMembership.cleanupTimer", 1, false);
+        LoggingExecutors.newScheduledThreadPool(1, "GMSMembership.cleanupTimer", false);
 
     this.cleanupTimer.scheduleAtFixedRate(this::cleanUpSurpriseMembers, surpriseMemberTimeout,
         surpriseMemberTimeout / 3, TimeUnit.MILLISECONDS);

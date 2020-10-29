@@ -843,7 +843,7 @@ public class PartitionedRegion extends LocalRegion
     if (this.getEvictionAttributes() != null
         && this.getEvictionAttributes().getAlgorithm().isLRUHeap()) {
       this.sortedBuckets = new ArrayList<BucketRegion>();
-      this.bucketSorter = LoggingExecutors.newScheduledThreadPool("BucketSorterThread", 1);
+      this.bucketSorter = LoggingExecutors.newScheduledThreadPool(1, "BucketSorterThread");
     }
     // If eviction is on, Create an instance of PartitionedRegionLRUStatistics
     if ((this.getEvictionAttributes() != null

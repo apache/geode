@@ -14,6 +14,7 @@
  */
 package org.apache.geode.distributed.internal;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
 import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
@@ -541,10 +542,9 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
           new RemoteTransportConfig(distributionConfig, MemberIdentifier.LOCATOR_DM_TYPE),
           distributionConfig);
       Supplier<ExecutorService> executor = () -> CoreLoggingExecutors
-          .newThreadPoolWithSynchronousFeed("locator request thread ",
-              MAX_POOL_SIZE, new DelayedPoolStatHelper(),
-              POOL_IDLE_TIMEOUT,
-              new ThreadPoolExecutor.CallerRunsPolicy());
+          .newThreadPoolWithSynchronousFeed(MAX_POOL_SIZE, POOL_IDLE_TIMEOUT, MILLISECONDS,
+              "locator request thread ", new ThreadPoolExecutor.CallerRunsPolicy(),
+              new DelayedPoolStatHelper());
       final TcpSocketCreator socketCreator = SocketCreatorFactory
           .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR);
       membershipLocator =
@@ -1135,7 +1135,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
         }
 
         try {
-          system.waitUntilReconnected(waitTime, TimeUnit.MILLISECONDS);
+          system.waitUntilReconnected(waitTime, MILLISECONDS);
         } catch (CancelException e) {
           continue; // DistributedSystem failed to restart - loop until it gives up
         }

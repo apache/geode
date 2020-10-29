@@ -334,7 +334,7 @@ public class PRQueryProcessor {
     static synchronized void initializeExecutorService() {
       if (execService == null || execService.isShutdown() || execService.isTerminated()) {
         int numThreads = (TEST_NUM_THREADS > 1 ? TEST_NUM_THREADS : NUM_THREADS);
-        execService = LoggingExecutors.newFixedThreadPool("PRQueryProcessor", true, numThreads);
+        execService = LoggingExecutors.newFixedThreadPool(numThreads, "PRQueryProcessor", true);
       }
     }
   }

@@ -298,8 +298,8 @@ public class ConcurrentSerialGatewaySenderEventProcessor
     }
 
     ExecutorService stopperService = LoggingExecutors.newFixedThreadPool(
-        "ConcurrentSerialGatewaySenderEventProcessor Stopper Thread",
-        true, processors.size());
+        processors.size(), "ConcurrentSerialGatewaySenderEventProcessor Stopper Thread",
+        true);
     try {
       List<Future<Boolean>> futures = stopperService.invokeAll(stopperCallables);
       for (Future<Boolean> f : futures) {

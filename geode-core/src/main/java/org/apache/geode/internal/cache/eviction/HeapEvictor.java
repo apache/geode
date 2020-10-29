@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.eviction;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
 
 import java.util.ArrayList;
@@ -115,8 +116,8 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
 
     if (!DISABLE_HEAP_EVICTOR_THREAD_POOL) {
       QueueStatHelper poolStats = this.cache.getCachePerfStats().getEvictionQueueStatHelper();
-      this.evictorThreadPool = CoreLoggingExecutors.newFixedThreadPoolWithTimeout(threadName,
-          MAX_EVICTOR_THREADS, 15, poolStats);
+      this.evictorThreadPool = CoreLoggingExecutors.newFixedThreadPoolWithTimeout(
+          MAX_EVICTOR_THREADS, 15, SECONDS, poolStats, threadName);
     } else {
       // disabled
       this.evictorThreadPool = null;

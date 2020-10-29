@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.client.internal;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.net.InetSocketAddress;
@@ -26,7 +27,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -336,8 +336,8 @@ public class PoolImpl implements InternalPool {
     }
 
     final String timerName = "poolTimer-" + getName() + "-";
-    backgroundProcessor = CoreLoggingExecutors.newScheduledThreadPool(timerName,
-        BACKGROUND_TASK_POOL_SIZE, BACKGROUND_TASK_POOL_KEEP_ALIVE, threadMonitoring);
+    backgroundProcessor = CoreLoggingExecutors.newScheduledThreadPool(BACKGROUND_TASK_POOL_SIZE,
+        BACKGROUND_TASK_POOL_KEEP_ALIVE, MILLISECONDS, timerName, threadMonitoring);
     source.start(this);
     connectionFactory.start(backgroundProcessor);
     endpointManager.addListener(new InstantiatorRecoveryListener(backgroundProcessor, this));
@@ -361,7 +361,7 @@ public class PoolImpl implements InternalPool {
 
     if (statisticInterval > 0 && distributedSystem.getConfig().getStatisticSamplingEnabled()) {
       backgroundProcessor.scheduleWithFixedDelay(new PublishClientStatsTask(), statisticInterval,
-          statisticInterval, TimeUnit.MILLISECONDS);
+          statisticInterval, MILLISECONDS);
     }
     // LOG: changed from config to info
     logger.info("Pool {} started with multiuser-authentication={}",
@@ -601,7 +601,7 @@ public class PoolImpl implements InternalPool {
       try {
         if (backgroundProcessor != null) {
           backgroundProcessor.shutdown();
-          if (!backgroundProcessor.awaitTermination(SHUTDOWN_TIMEOUT, TimeUnit.MILLISECONDS)) {
+          if (!backgroundProcessor.awaitTermination(SHUTDOWN_TIMEOUT, MILLISECONDS)) {
             logger.warn("Timeout waiting for background tasks to complete.");
           }
         }

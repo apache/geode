@@ -507,10 +507,10 @@ public class DiskStoreImpl implements DiskStore {
       this.oplogCompactor = null;
     }
 
-    this.diskStoreTaskPool = LoggingExecutors.newFixedThreadPoolWithFeedSize("Idle OplogCompactor",
-        MAX_CONCURRENT_COMPACTIONS, Integer.MAX_VALUE);
+    this.diskStoreTaskPool = LoggingExecutors.newFixedThreadPoolWithFeedSize(
+        MAX_CONCURRENT_COMPACTIONS, Integer.MAX_VALUE, "Idle OplogCompactor");
     this.delayedWritePool =
-        LoggingExecutors.newFixedThreadPoolWithFeedSize("Oplog Delete Task", 1, MAX_PENDING_TASKS);
+        LoggingExecutors.newFixedThreadPoolWithFeedSize(1, MAX_PENDING_TASKS, "Oplog Delete Task");
   }
 
   // //////////////////// Instance Methods //////////////////////

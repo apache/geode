@@ -53,9 +53,8 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
     // default to inline expiry to fix bug 37115
     int nThreads = Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "EXPIRY_THREADS", 0);
     if (nThreads > 0) {
-      executor = CoreLoggingExecutors.newThreadPoolWithSynchronousFeed("Expiry ",
-          (Runnable command) -> doExpiryThread(command),
-          nThreads);
+      executor = CoreLoggingExecutors.newThreadPoolWithSynchronousFeed(nThreads, "Expiry ",
+          (Runnable command) -> doExpiryThread(command));
     } else {
       executor = null;
     }

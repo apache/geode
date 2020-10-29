@@ -48,7 +48,7 @@ public class ClusterAlertMessaging implements AlertMessaging {
     this(system,
         system.getDistributionManager(),
         new AlertListenerMessageFactory(),
-        newFixedThreadPool("AlertingMessaging Processor", true, 1),
+        newFixedThreadPool(1, "AlertingMessaging Processor", true),
         LOGGER::warn);
   }
 

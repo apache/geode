@@ -493,7 +493,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
     this.backgroundProcessor = backgroundProcessor;
     String name = "poolLoadConditioningMonitor-" + getPoolName();
     loadConditioningProcessor =
-        LoggingExecutors.newScheduledThreadPool(name, 1, false);
+        LoggingExecutors.newScheduledThreadPool(1, name, false);
 
     endpointManager.addListener(endpointListener);
 

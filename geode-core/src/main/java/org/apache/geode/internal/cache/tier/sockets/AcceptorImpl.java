@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR_PP;
 import static org.apache.geode.internal.cache.tier.CommunicationMode.ClientToServerForQueue;
 import static org.apache.geode.internal.cache.tier.sockets.Handshake.REPLY_REFUSED;
@@ -52,7 +54,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
@@ -658,8 +659,9 @@ public class AcceptorImpl implements Acceptor, Runnable {
         "Handshaker " + serverSock.getInetAddress() + ":" + localPort + " Thread ";
     try {
       logger.warn("Handshaker max Pool size: " + HANDSHAKE_POOL_SIZE);
-      return CoreLoggingExecutors.newThreadPoolWithSynchronousFeedThatHandlesRejection(threadName,
-          thread -> getStats().incAcceptThreadsCreated(), null, 1, HANDSHAKE_POOL_SIZE, 60);
+      return CoreLoggingExecutors.newThreadPoolWithSynchronousFeedThatHandlesRejection(1,
+          HANDSHAKE_POOL_SIZE, 60, SECONDS, threadName,
+          thread -> getStats().incAcceptThreadsCreated(), null);
     } catch (IllegalArgumentException poolInitException) {
       stats.close();
       serverSock.close();
@@ -670,6 +672,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
 
   private ExecutorService initializeClientQueueInitializerThreadPool() {
     return CoreLoggingExecutors.newThreadPoolWithSynchronousFeed(
+        CLIENT_QUEUE_INITIALIZATION_POOL_SIZE, 60000, MILLISECONDS,
         "Client Queue Initialization Thread ",
         command -> {
           try {
@@ -677,8 +680,8 @@ public class AcceptorImpl implements Acceptor, Runnable {
           } catch (CancelException e) {
             logger.debug("Client Queue Initialization was canceled.", e);
           }
-        }, CLIENT_QUEUE_INITIALIZATION_POOL_SIZE, getStats().getCnxPoolHelper(), 60000,
-        getThreadMonitorObj());
+        },
+        getStats().getCnxPoolHelper(), getThreadMonitorObj());
   }
 
   private ExecutorService initializeServerConnectionThreadPool() throws IOException {
@@ -695,13 +698,12 @@ public class AcceptorImpl implements Acceptor, Runnable {
     try {
       String threadName = "ServerConnection on port " + localPort + " Thread ";
       if (isSelector()) {
-        return CoreLoggingExecutors.newThreadPoolWithUnlimitedFeed(threadName, threadInitializer,
-            commandWrapper, maxThreads,
-            getStats().getCnxPoolHelper(), Integer.MAX_VALUE, getThreadMonitorObj());
+        return CoreLoggingExecutors.newThreadPoolWithUnlimitedFeed(maxThreads, Integer.MAX_VALUE,
+            MILLISECONDS, threadName, threadInitializer, commandWrapper,
+            getStats().getCnxPoolHelper(), getThreadMonitorObj());
       }
-      return CoreLoggingExecutors.newThreadPoolWithSynchronousFeed(threadName, threadInitializer,
-          commandWrapper,
-          MINIMUM_MAX_CONNECTIONS, maxConnections, 0L);
+      return CoreLoggingExecutors.newThreadPoolWithSynchronousFeed(MINIMUM_MAX_CONNECTIONS,
+          maxConnections, 0L, SECONDS, threadName, threadInitializer, commandWrapper);
     } catch (IllegalArgumentException poolInitException) {
       stats.close();
       serverSock.close();
@@ -1685,7 +1687,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
   private void shutdownPools() {
     pool.shutdown();
     try {
-      if (!pool.awaitTermination(PoolImpl.SHUTDOWN_TIMEOUT, TimeUnit.MILLISECONDS)) {
+      if (!pool.awaitTermination(PoolImpl.SHUTDOWN_TIMEOUT, MILLISECONDS)) {
         logger.warn("Timeout waiting for background tasks to complete.");
         pool.shutdownNow();
       }

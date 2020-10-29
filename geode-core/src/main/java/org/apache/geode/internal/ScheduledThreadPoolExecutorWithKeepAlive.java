@@ -14,6 +14,9 @@
  */
 package org.apache.geode.internal;
 
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Delayed;
@@ -28,6 +31,7 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
@@ -36,33 +40,32 @@ import org.apache.geode.internal.monitoring.ThreadsMonitoring;
  * the normal ScheduledThreadPoolExecutor, there is no way to configure it such that it only add
  * threads as needed.
  *
+ * <p>
  * This executor is not very useful if you only want to have 1 thread. Use the
  * ScheduledThreadPoolExecutor in that case. This class with throw an exception if you try to
  * configure it with one thread.
- *
- *
  */
-@SuppressWarnings("synthetic-access")
-public class ScheduledThreadPoolExecutorWithKeepAlive extends ThreadPoolExecutor
+public class ScheduledThreadPoolExecutorWithKeepAlive
+    extends ThreadPoolExecutor
     implements ScheduledExecutorService {
 
   private final ScheduledThreadPoolExecutor timer;
-  private final ThreadsMonitoring threadMonitoring;
+  private final ThreadsMonitoring threadsMonitoring;
 
-  public ScheduledThreadPoolExecutorWithKeepAlive(int corePoolSize, long keepAlive,
-      TimeUnit timeUnit, ThreadFactory threadFactory, ThreadsMonitoring tMonitoring) {
-    super(0, corePoolSize - 1, keepAlive, timeUnit, new SynchronousQueue(), threadFactory,
+  public ScheduledThreadPoolExecutorWithKeepAlive(int poolSize, long keepAliveTime, TimeUnit unit,
+      ThreadFactory threadFactory, ThreadsMonitoring threadsMonitoring) {
+    super(0, poolSize - 1, keepAliveTime, unit, new SynchronousQueue<>(), threadFactory,
         new BlockCallerPolicy());
-    timer = new ScheduledThreadPoolExecutor(1, threadFactory) {
 
+    timer = new ScheduledThreadPoolExecutor(1, threadFactory) {
       @Override
       protected void terminated() {
         super.terminated();
         ScheduledThreadPoolExecutorWithKeepAlive.super.shutdown();
       }
-
     };
-    this.threadMonitoring = tMonitoring;
+
+    this.threadsMonitoring = threadsMonitoring;
   }
 
   @Override
@@ -72,57 +75,59 @@ public class ScheduledThreadPoolExecutorWithKeepAlive extends ThreadPoolExecutor
 
   @Override
   protected void beforeExecute(Thread t, Runnable r) {
-    if (this.threadMonitoring != null) {
-      threadMonitoring.startMonitor(ThreadsMonitoring.Mode.ScheduledThreadExecutor);
+    if (threadsMonitoring != null) {
+      threadsMonitoring.startMonitor(ThreadsMonitoring.Mode.ScheduledThreadExecutor);
     }
   }
 
   @Override
   protected void afterExecute(Runnable r, Throwable ex) {
-    if (this.threadMonitoring != null) {
-      threadMonitoring.endMonitor();
+    if (threadsMonitoring != null) {
+      threadsMonitoring.endMonitor();
     }
   }
 
   @Override
-  public Future submit(Callable task) {
-    return schedule(task, 0, TimeUnit.NANOSECONDS);
+  public <T> Future<T> submit(Callable<T> task) {
+    return schedule(task, 0, NANOSECONDS);
   }
 
   @Override
-  public Future submit(Runnable task, Object result) {
-    return schedule(task, 0, TimeUnit.NANOSECONDS, result);
+  public <T> Future<T> submit(Runnable task, T result) {
+    return schedule(task, 0, NANOSECONDS, result);
   }
 
   @Override
-  public Future submit(Runnable task) {
-    return schedule(task, 0, TimeUnit.NANOSECONDS);
+  public Future<?> submit(Runnable task) {
+    return schedule(task, 0, NANOSECONDS);
   }
 
   @Override
-  public ScheduledFuture schedule(Callable callable, long delay, TimeUnit unit) {
-    DelegatingScheduledFuture future = new DelegatingScheduledFuture(callable);
-    ScheduledFuture timerFuture = timer.schedule(new HandOffTask(future), delay, unit);
+  public <V> ScheduledFuture<V> schedule(Callable<V> callable, long delay, TimeUnit unit) {
+    DelegatingScheduledFuture<V> future = new DelegatingScheduledFuture<>(callable);
+    ScheduledFuture<V> timerFuture =
+        uncheckedCast(timer.schedule(new HandOffTask(future), delay, unit));
     future.setDelegate(timerFuture);
     return future;
   }
 
   @Override
-  public ScheduledFuture schedule(Runnable command, long delay, TimeUnit unit) {
+  public ScheduledFuture<?> schedule(Runnable command, long delay, TimeUnit unit) {
     return schedule(command, delay, unit, null);
   }
 
-  private ScheduledFuture schedule(Runnable command, long delay, TimeUnit unit, Object result) {
-    DelegatingScheduledFuture future = new DelegatingScheduledFuture(command, result);
-    ScheduledFuture timerFuture = timer.schedule(new HandOffTask(future), delay, unit);
+  private <V> ScheduledFuture<V> schedule(Runnable command, long delay, TimeUnit unit, V result) {
+    DelegatingScheduledFuture<V> future = new DelegatingScheduledFuture<>(command, result);
+    ScheduledFuture<V> timerFuture =
+        uncheckedCast(timer.schedule(new HandOffTask(future), delay, unit));
     future.setDelegate(timerFuture);
     return future;
   }
 
   @Override
-  public ScheduledFuture scheduleAtFixedRate(Runnable command, long initialDelay, long period,
+  public ScheduledFuture<?> scheduleAtFixedRate(Runnable command, long initialDelay, long period,
       TimeUnit unit) {
-    DelegatingScheduledFuture future = new DelegatingScheduledFuture(command, null, true);
+    DelegatingScheduledFuture future = new DelegatingScheduledFuture<>(command, null, true);
     ScheduledFuture timerFuture =
         timer.scheduleAtFixedRate(new HandOffTask(future), initialDelay, period, unit);
     future.setDelegate(timerFuture);
@@ -130,9 +135,9 @@ public class ScheduledThreadPoolExecutorWithKeepAlive extends ThreadPoolExecutor
   }
 
   @Override
-  public ScheduledFuture scheduleWithFixedDelay(Runnable command, long initialDelay, long delay,
+  public ScheduledFuture<?> scheduleWithFixedDelay(Runnable command, long initialDelay, long delay,
       TimeUnit unit) {
-    DelegatingScheduledFuture future = new DelegatingScheduledFuture(command, null, true);
+    DelegatingScheduledFuture future = new DelegatingScheduledFuture<>(command, null, true);
     ScheduledFuture timerFuture =
         timer.scheduleWithFixedDelay(new HandOffTask(future), initialDelay, delay, unit);
     future.setDelegate(timerFuture);
@@ -157,8 +162,8 @@ public class ScheduledThreadPoolExecutorWithKeepAlive extends ThreadPoolExecutor
    * @see ScheduledThreadPoolExecutor#shutdownNow()
    */
   @Override
-  public List shutdownNow() {
-    List tasks = timer.shutdownNow();
+  public List<Runnable> shutdownNow() {
+    List<Runnable> tasks = timer.shutdownNow();
     super.shutdownNow();
     return tasks;
   }
@@ -174,7 +179,7 @@ public class ScheduledThreadPoolExecutorWithKeepAlive extends ThreadPoolExecutor
     if (remaining < 0) {
       return false;
     }
-    return super.awaitTermination(remaining, TimeUnit.NANOSECONDS);
+    return super.awaitTermination(remaining, NANOSECONDS);
   }
 
   @Override
@@ -207,25 +212,23 @@ public class ScheduledThreadPoolExecutorWithKeepAlive extends ThreadPoolExecutor
     return super.isTerminated() && timer.isTerminated();
   }
 
-  // method that is in ScheduledThreadPoolExecutor that we should expose here
   public void setContinueExistingPeriodicTasksAfterShutdownPolicy(boolean b) {
     timer.setContinueExistingPeriodicTasksAfterShutdownPolicy(b);
   }
 
-  // method that is in ScheduledThreadPoolExecutor that we should expose here
   public void setExecuteExistingDelayedTasksAfterShutdownPolicy(boolean b) {
-    timer.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
+    timer.setExecuteExistingDelayedTasksAfterShutdownPolicy(b);
   }
 
   /**
    * A Runnable which we put in the timer which simply hands off the contain task for execution in
    * the thread pool when the timer fires.
-   *
    */
   private class HandOffTask implements Runnable {
+
     private final Runnable task;
 
-    public HandOffTask(Runnable task) {
+    private HandOffTask(Runnable task) {
       this.task = task;
     }
 
@@ -244,28 +247,28 @@ public class ScheduledThreadPoolExecutorWithKeepAlive extends ThreadPoolExecutor
    * The future returned by the schedule* methods on this class. This future will not return a value
    * until the task has actually executed in the thread pool, but it allows us to cancel associated
    * timer task.
-   *
    */
-  private static class DelegatingScheduledFuture<V> extends FutureTask<V>
+  private static class DelegatingScheduledFuture<V>
+      extends FutureTask<V>
       implements ScheduledFuture<V> {
 
-    private ScheduledFuture<V> delegate;
+    private final AtomicReference<ScheduledFuture<V>> delegate = new AtomicReference<>();
     private final boolean periodic;
 
-    public DelegatingScheduledFuture(Runnable runnable, V result) {
+    private DelegatingScheduledFuture(Runnable runnable, V result) {
       this(runnable, result, false);
     }
 
-    public DelegatingScheduledFuture(Callable<V> callable) {
+    private DelegatingScheduledFuture(Callable<V> callable) {
       this(callable, false);
     }
 
-    public DelegatingScheduledFuture(Runnable runnable, V result, boolean periodic) {
+    private DelegatingScheduledFuture(Runnable runnable, V result, boolean periodic) {
       super(runnable, result);
       this.periodic = periodic;
     }
 
-    public DelegatingScheduledFuture(Callable<V> callable, boolean periodic) {
+    private DelegatingScheduledFuture(Callable<V> callable, boolean periodic) {
       super(callable);
       this.periodic = periodic;
     }
@@ -273,40 +276,40 @@ public class ScheduledThreadPoolExecutorWithKeepAlive extends ThreadPoolExecutor
     @Override
     public void run() {
       if (periodic) {
-        super.runAndReset();
+        runAndReset();
       } else {
         super.run();
       }
     }
 
     public void setDelegate(ScheduledFuture<V> future) {
-      this.delegate = future;
+      delegate.set(future);
     }
 
     @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
-      delegate.cancel(true);
+      delegate.get().cancel(true);
       return super.cancel(mayInterruptIfRunning);
     }
 
     @Override
     public long getDelay(TimeUnit unit) {
-      return delegate.getDelay(unit);
+      return delegate.get().getDelay(unit);
     }
 
     @Override
     public int compareTo(Delayed o) {
-      return delegate.compareTo(o);
+      return delegate.get().compareTo(o);
     }
 
     @Override
     public boolean equals(Object o) {
-      return delegate.equals(o);
+      return delegate.get().equals(o);
     }
 
     @Override
     public int hashCode() {
-      return delegate.hashCode();
+      return delegate.get().hashCode();
     }
   }
 
@@ -315,19 +318,17 @@ public class ScheduledThreadPoolExecutorWithKeepAlive extends ThreadPoolExecutor
    * for the task.
    */
   protected static class BlockCallerPolicy implements RejectedExecutionHandler {
+
     @Override
     public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
       if (executor.isShutdown()) {
         throw new RejectedExecutionException("executor has been shutdown");
-      } else {
-        try {
-          executor.getQueue().put(r);
-        } catch (InterruptedException ie) {
-          Thread.currentThread().interrupt();
-          RejectedExecutionException e = new RejectedExecutionException("interrupted");
-          e.initCause(ie);
-          throw e;
-        }
+      }
+      try {
+        executor.getQueue().put(r);
+      } catch (InterruptedException ie) {
+        Thread.currentThread().interrupt();
+        throw new RejectedExecutionException("interrupted", ie);
       }
     }
   }

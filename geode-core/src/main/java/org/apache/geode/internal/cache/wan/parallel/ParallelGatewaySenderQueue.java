@@ -661,7 +661,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
   private void initializeConflationThreadPool() {
     int poolSize = Runtime.getRuntime().availableProcessors();
     conflationExecutor =
-        LoggingExecutors.newFixedThreadPool("WAN Queue Conflation Thread", true, poolSize);
+        LoggingExecutors.newFixedThreadPool(poolSize, "WAN Queue Conflation Thread", true);
   }
 
   /**

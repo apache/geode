@@ -14,8 +14,8 @@
  */
 package org.apache.geode.internal.logging;
 
+import static java.lang.Integer.getInteger;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.GEMFIRE_PREFIX;
 
 import java.util.concurrent.ArrayBlockingQueue;
@@ -28,6 +28,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.distributed.internal.FunctionExecutionPooledExecutor;
 import org.apache.geode.distributed.internal.OverflowQueueWithDMStats;
@@ -48,143 +49,135 @@ import org.apache.geode.logging.internal.executors.LoggingThreadFactory.ThreadIn
  */
 public class CoreLoggingExecutors {
 
-  public static ExecutorService newSerialThreadPool(String threadName,
+  private static final String IDLE_THREAD_TIMEOUT_MILLIS_PROPERTY = "IDLE_THREAD_TIMEOUT";
+  private static final int DEFAULT_IDLE_THREAD_TIMEOUT_MILLIS = 30000 * 60;
+
+  public static ExecutorService newFixedThreadPoolWithTimeout(int poolSize, long keepAliveTime,
+      TimeUnit unit, QueueStatHelper queueStatHelper, String threadName) {
+    BlockingQueue<Runnable> workQueue = createWorkQueueWithStatistics(0, queueStatHelper);
+    return LoggingExecutors.newFixedThreadPool(poolSize, keepAliveTime, unit, workQueue, threadName,
+        true);
+  }
+
+  public static ExecutorService newFunctionThreadPoolWithFeedStatistics(int poolSize,
+      int workQueueSize, QueueStatHelper queueStatHelper, String threadName,
       ThreadInitializer threadInitializer, CommandWrapper commandWrapper,
-      PoolStatHelper stats, ThreadsMonitoring threadsMonitoring, BlockingQueue<Runnable> feed) {
+      PoolStatHelper poolStatsHelper, ThreadsMonitoring threadsMonitoring) {
+    BlockingQueue<Runnable> workQueue =
+        createWorkQueueWithStatistics(workQueueSize, queueStatHelper);
     ThreadFactory threadFactory =
         new LoggingThreadFactory(threadName, threadInitializer, commandWrapper);
-    return new SerialQueuedExecutorWithDMStats(feed, stats, threadFactory, threadsMonitoring);
-  }
-
-  public static ExecutorService newSerialThreadPoolWithFeedStatistics(String threadName,
-      ThreadInitializer threadInitializer, CommandWrapper commandWrapper,
-      PoolStatHelper poolStats,
-      ThreadsMonitoring threadsMonitoring, int feedSize, QueueStatHelper feedStats) {
-    BlockingQueue<Runnable> feed = createFeedWithStatistics(feedSize, feedStats);
-    return newSerialThreadPool(threadName, threadInitializer, commandWrapper, poolStats,
-        threadsMonitoring, feed);
-  }
-
-  public static ExecutorService newSerialThreadPoolWithUnlimitedFeed(String threadName,
-      ThreadInitializer threadInitializer,
-      CommandWrapper commandWrapper, PoolStatHelper stats, ThreadsMonitoring threadsMonitoring) {
-    LinkedBlockingQueue<Runnable> feed = new LinkedBlockingQueue<>();
-    return newSerialThreadPool(threadName, threadInitializer, commandWrapper, stats,
-        threadsMonitoring, feed);
-  }
-
-  public static ExecutorService newThreadPoolWithUnlimitedFeed(String threadName,
-      ThreadInitializer threadInitializer,
-      CommandWrapper commandWrapper, int poolSize,
-      PoolStatHelper poolStats, int msTimeout, ThreadsMonitoring threadsMonitoring) {
-    LinkedBlockingQueue<Runnable> feed = new LinkedBlockingQueue<>();
-    ThreadFactory threadFactory =
-        new LoggingThreadFactory(threadName, threadInitializer, commandWrapper);
-    return new PooledExecutorWithDMStats(feed, poolSize, poolStats, threadFactory, msTimeout,
+    return new FunctionExecutionPooledExecutor(poolSize, workQueue, threadFactory, poolStatsHelper,
         threadsMonitoring);
   }
 
-  public static ExecutorService newThreadPoolWithFixedFeed(String threadName,
-      CommandWrapper commandWrapper,
-      int poolSize, PoolStatHelper poolStats, int msTimeout, ThreadsMonitoring threadsMonitoring,
-      int feedSize) {
-    ArrayBlockingQueue<Runnable> feed = new ArrayBlockingQueue<>(feedSize);
-    ThreadFactory threadFactory = new LoggingThreadFactory(threadName, commandWrapper);
-    return new PooledExecutorWithDMStats(feed, poolSize, poolStats, threadFactory, msTimeout,
-        threadsMonitoring);
-  }
-
-  public static ExecutorService newFunctionThreadPoolWithFeedStatistics(String threadName,
-      ThreadInitializer threadInitializer, CommandWrapper commandWrapper,
-      int poolSize, PoolStatHelper poolStats,
-      ThreadsMonitoring threadsMonitoring, int feedSize, QueueStatHelper feedStats) {
-    BlockingQueue<Runnable> feed = createFeedWithStatistics(feedSize, feedStats);
+  public static ExecutorService newSerialThreadPool(BlockingQueue<Runnable> workQueue,
+      String threadName, ThreadInitializer threadInitializer, CommandWrapper commandWrapper,
+      PoolStatHelper poolStatsHelper, ThreadsMonitoring threadsMonitoring) {
     ThreadFactory threadFactory =
         new LoggingThreadFactory(threadName, threadInitializer, commandWrapper);
-    return new FunctionExecutionPooledExecutor(feed, poolSize, poolStats, threadFactory, true,
+    return new SerialQueuedExecutorWithDMStats(workQueue, threadFactory, poolStatsHelper,
         threadsMonitoring);
   }
 
-  private static BlockingQueue<Runnable> createFeedWithStatistics(int feedSize,
-      QueueStatHelper feedStats) {
-    BlockingQueue<Runnable> feed;
-    if (feedSize == 0) {
-      feed = new OverflowQueueWithDMStats<>(feedStats);
-    } else {
-      feed = new OverflowQueueWithDMStats<>(feedSize, feedStats);
-    }
-    return feed;
-  }
-
-  public static ExecutorService newThreadPoolWithFeedStatistics(String threadName,
-      ThreadInitializer threadInitializer, CommandWrapper commandWrapper,
-      int poolSize, PoolStatHelper poolStats,
-      ThreadsMonitoring threadsMonitoring, int feedSize, QueueStatHelper feedStats) {
-    BlockingQueue<Runnable> feed = createFeedWithStatistics(feedSize, feedStats);
-    return newThreadPool(threadName, threadInitializer, commandWrapper, poolSize, poolStats,
-        threadsMonitoring, feed);
-  }
-
-  public static ExecutorService newThreadPool(String threadName,
-      ThreadInitializer threadInitializer, CommandWrapper commandWrapper,
-      int poolSize, PoolStatHelper poolStats,
-      ThreadsMonitoring threadsMonitoring, BlockingQueue<Runnable> feed) {
-    ThreadFactory threadFactory =
-        new LoggingThreadFactory(threadName, threadInitializer, commandWrapper);
-    return new PooledExecutorWithDMStats(feed, poolSize, poolStats, threadFactory,
-        threadsMonitoring, GEMFIRE_PREFIX);
-  }
-
-  public static ExecutorService newThreadPoolWithSynchronousFeed(String threadName,
-      CommandWrapper commandWrapper,
-      int poolSize) {
-    ThreadFactory threadFactory = new LoggingThreadFactory(threadName, commandWrapper);
-    SynchronousQueue<Runnable> feed = new SynchronousQueue<>();
-    return new PooledExecutorWithDMStats(feed, poolSize, threadFactory, null,
-        GEMFIRE_PREFIX);
-  }
-
-  public static ExecutorService newThreadPoolWithSynchronousFeed(String threadName,
-      CommandWrapper commandWrapper,
-      int poolSize, PoolStatHelper poolStats, int msTimeout, ThreadsMonitoring threadsMonitoring) {
-    ThreadFactory threadFactory = new LoggingThreadFactory(threadName, commandWrapper);
-    SynchronousQueue<Runnable> feed = new SynchronousQueue<>();
-    return new PooledExecutorWithDMStats(feed, poolSize, poolStats, threadFactory, msTimeout,
+  public static ExecutorService newSerialThreadPoolWithFeedStatistics(int workQueueSize,
+      QueueStatHelper queueStatHelper, String threadName, ThreadInitializer threadInitializer,
+      CommandWrapper commandWrapper, PoolStatHelper poolStatsHelper,
+      ThreadsMonitoring threadsMonitoring) {
+    BlockingQueue<Runnable> workQueue =
+        createWorkQueueWithStatistics(workQueueSize, queueStatHelper);
+    return newSerialThreadPool(workQueue, threadName, threadInitializer, commandWrapper,
+        poolStatsHelper,
         threadsMonitoring);
   }
 
-  public static ExecutorService newThreadPoolWithSynchronousFeed(String threadName, int poolSize,
-      PoolStatHelper stats, int msTimeout, RejectedExecutionHandler rejectionHandler) {
-    final SynchronousQueue<Runnable> feed = new SynchronousQueue<>();
+  public static ScheduledExecutorService newScheduledThreadPool(int poolSize, long keepAliveTime,
+      TimeUnit unit, String threadName, ThreadsMonitoring threadsMonitoring) {
     ThreadFactory threadFactory = new LoggingThreadFactory(threadName);
-    return new PooledExecutorWithDMStats(feed, poolSize, stats, threadFactory, msTimeout,
-        rejectionHandler, null);
+    ScheduledThreadPoolExecutorWithKeepAlive result =
+        new ScheduledThreadPoolExecutorWithKeepAlive(poolSize, keepAliveTime, unit, threadFactory,
+            threadsMonitoring);
+    result.setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
+    result.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
+    return result;
   }
 
-  public static ExecutorService newThreadPoolWithSynchronousFeed(String threadName,
-      ThreadInitializer threadInitializer, CommandWrapper commandWrapper,
-      int corePoolSize, int maximumPoolSize, long keepAliveSeconds) {
-    final BlockingQueue<Runnable> blockingQueue = new SynchronousQueue<>();
+  public static ExecutorService newThreadPool(int poolSize, BlockingQueue<Runnable> workQueue,
+      String threadName, ThreadInitializer threadInitializer, CommandWrapper commandWrapper,
+      PoolStatHelper poolStatsHelper, ThreadsMonitoring threadsMonitoring) {
     ThreadFactory threadFactory =
         new LoggingThreadFactory(threadName, threadInitializer, commandWrapper);
-    return new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveSeconds, SECONDS,
-        blockingQueue,
+    return new PooledExecutorWithDMStats(poolSize, getIdleThreadTimeoutMillis(), MILLISECONDS,
+        workQueue, threadFactory, poolStatsHelper, threadsMonitoring);
+  }
+
+  public static ExecutorService newThreadPoolWithFixedFeed(int poolSize, long keepAliveTime,
+      TimeUnit unit, int workQueueSize, String threadName, CommandWrapper commandWrapper,
+      PoolStatHelper poolStatsHelper, ThreadsMonitoring threadsMonitoring) {
+    ArrayBlockingQueue<Runnable> workQueue = new ArrayBlockingQueue<>(workQueueSize);
+    ThreadFactory threadFactory = new LoggingThreadFactory(threadName, commandWrapper);
+    return new PooledExecutorWithDMStats(poolSize, keepAliveTime, unit, workQueue, threadFactory,
+        poolStatsHelper, threadsMonitoring);
+  }
+
+  public static ExecutorService newThreadPoolWithFeedStatistics(int poolSize, int workQueueSize,
+      QueueStatHelper queueStatHelper, String threadName, ThreadInitializer threadInitializer,
+      CommandWrapper commandWrapper, PoolStatHelper poolStatsHelper,
+      ThreadsMonitoring threadsMonitoring) {
+    BlockingQueue<Runnable> workQueue =
+        createWorkQueueWithStatistics(workQueueSize, queueStatHelper);
+    return newThreadPool(poolSize, workQueue, threadName, threadInitializer, commandWrapper,
+        poolStatsHelper, threadsMonitoring);
+  }
+
+  public static ExecutorService newThreadPoolWithSynchronousFeed(int poolSize, String threadName,
+      CommandWrapper commandWrapper) {
+    ThreadFactory threadFactory = new LoggingThreadFactory(threadName, commandWrapper);
+    SynchronousQueue<Runnable> workQueue = new SynchronousQueue<>();
+    return new PooledExecutorWithDMStats(poolSize, getIdleThreadTimeoutMillis(), MILLISECONDS,
+        workQueue, threadFactory, null, null);
+  }
+
+  public static ExecutorService newThreadPoolWithSynchronousFeed(int poolSize, long keepAliveTime,
+      TimeUnit unit, String threadName, CommandWrapper commandWrapper,
+      PoolStatHelper poolStatsHelper, ThreadsMonitoring threadsMonitoring) {
+    ThreadFactory threadFactory = new LoggingThreadFactory(threadName, commandWrapper);
+    SynchronousQueue<Runnable> workQueue = new SynchronousQueue<>();
+    return new PooledExecutorWithDMStats(poolSize, keepAliveTime, unit, workQueue, threadFactory,
+        poolStatsHelper, threadsMonitoring);
+  }
+
+  public static ExecutorService newThreadPoolWithSynchronousFeed(int poolSize, long keepAliveTime,
+      TimeUnit unit, String threadName, RejectedExecutionHandler rejectionHandler,
+      PoolStatHelper poolStatsHelper) {
+    SynchronousQueue<Runnable> workQueue = new SynchronousQueue<>();
+    ThreadFactory threadFactory = new LoggingThreadFactory(threadName);
+    return new PooledExecutorWithDMStats(poolSize, keepAliveTime, unit, workQueue, threadFactory,
+        rejectionHandler, poolStatsHelper, null);
+  }
+
+  public static ExecutorService newThreadPoolWithSynchronousFeed(int corePoolSize,
+      int maximumPoolSize, long keepAliveTime, TimeUnit unit, String threadName,
+      ThreadInitializer threadInitializer, CommandWrapper commandWrapper) {
+    BlockingQueue<Runnable> blockingQueue = new SynchronousQueue<>();
+    ThreadFactory threadFactory =
+        new LoggingThreadFactory(threadName, threadInitializer, commandWrapper);
+    return new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, unit, blockingQueue,
         threadFactory);
   }
 
-  public static ExecutorService newThreadPoolWithSynchronousFeed(String threadName,
-      int corePoolSize, int maximumPoolSize, long keepAliveSeconds) {
-    return newThreadPoolWithSynchronousFeed(threadName, null, null, corePoolSize, maximumPoolSize,
-        keepAliveSeconds);
+  /** Used for P2P Reader Threads in ConnectionTable */
+  public static ExecutorService newThreadPoolWithSynchronousFeed(int corePoolSize,
+      int maximumPoolSize, long keepAliveTime, TimeUnit unit, String threadName) {
+    return newThreadPoolWithSynchronousFeed(corePoolSize, maximumPoolSize, keepAliveTime, unit,
+        threadName, null, null);
   }
 
   public static ExecutorService newThreadPoolWithSynchronousFeedThatHandlesRejection(
-      String threadName,
-      ThreadInitializer threadInitializer, CommandWrapper commandWrapper,
-      int corePoolSize, int maximumPoolSize,
-      long keepAliveSeconds) {
-    final BlockingQueue<Runnable> blockingQueue = new SynchronousQueue<>();
-    final RejectedExecutionHandler rejectedExecutionHandler = (r, pool) -> {
+      int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, String threadName,
+      ThreadInitializer threadInitializer, CommandWrapper commandWrapper) {
+    BlockingQueue<Runnable> blockingQueue = new SynchronousQueue<>();
+    RejectedExecutionHandler rejectedExecutionHandler = (r, executor) -> {
       try {
         blockingQueue.put(r);
       } catch (InterruptedException ex) {
@@ -194,30 +187,39 @@ public class CoreLoggingExecutors {
     };
     ThreadFactory threadFactory =
         new LoggingThreadFactory(threadName, threadInitializer, commandWrapper);
-    return new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveSeconds, SECONDS,
-        blockingQueue,
-        threadFactory, rejectedExecutionHandler);
+    return new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, unit,
+        blockingQueue, threadFactory, rejectedExecutionHandler);
   }
 
-  public static ExecutorService newFixedThreadPoolWithTimeout(String threadName,
-      int poolSize, int keepAliveSeconds, QueueStatHelper feedStats) {
-    BlockingQueue<Runnable> feed = createFeedWithStatistics(0, feedStats);
-    return LoggingExecutors.newFixedThreadPool(threadName, true, poolSize, keepAliveSeconds, feed);
-  }
-
-  public static ScheduledExecutorService newScheduledThreadPool(String threadName, int poolSize,
-      int keepAliveMillis, ThreadsMonitoring threadsMonitoring) {
-    ScheduledThreadPoolExecutorWithKeepAlive result =
-        new ScheduledThreadPoolExecutorWithKeepAlive(poolSize,
-            keepAliveMillis, MILLISECONDS, new LoggingThreadFactory(threadName),
-            threadsMonitoring);
-    result.setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
-    result.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
-    return result;
+  public static ExecutorService newThreadPoolWithUnlimitedFeed(int poolSize, long keepAliveTime,
+      TimeUnit unit, String threadName, ThreadInitializer threadInitializer,
+      CommandWrapper commandWrapper, PoolStatHelper poolStatsHelper,
+      ThreadsMonitoring threadsMonitoring) {
+    LinkedBlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<>();
+    ThreadFactory threadFactory =
+        new LoggingThreadFactory(threadName, threadInitializer, commandWrapper);
+    return new PooledExecutorWithDMStats(poolSize, keepAliveTime, unit, workQueue, threadFactory,
+        poolStatsHelper, threadsMonitoring);
   }
 
   private CoreLoggingExecutors() {
     // no instances allowed
+  }
+
+  private static BlockingQueue<Runnable> createWorkQueueWithStatistics(int workQueueSize,
+      QueueStatHelper queueStatHelper) {
+    BlockingQueue<Runnable> workQueue;
+    if (workQueueSize == 0) {
+      workQueue = new OverflowQueueWithDMStats<>(queueStatHelper);
+    } else {
+      workQueue = new OverflowQueueWithDMStats<>(workQueueSize, queueStatHelper);
+    }
+    return workQueue;
+  }
+
+  private static int getIdleThreadTimeoutMillis() {
+    return getInteger(GEMFIRE_PREFIX + IDLE_THREAD_TIMEOUT_MILLIS_PROPERTY,
+        DEFAULT_IDLE_THREAD_TIMEOUT_MILLIS);
   }
 
 }
