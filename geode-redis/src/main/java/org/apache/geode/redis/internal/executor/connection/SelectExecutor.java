@@ -27,12 +27,8 @@ public class SelectExecutor extends AbstractExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     String dbIndexString = command.getStringKey();
-    try {
-      long dbIndex = Long.parseLong(dbIndexString);
-      if (dbIndex != 0) {
-        return RedisResponse.error(ERROR_SELECT);
-      }
-    } catch (NumberFormatException e) {
+
+    if (!dbIndexString.equals("0")) {
       return RedisResponse.error(ERROR_SELECT);
     }
 

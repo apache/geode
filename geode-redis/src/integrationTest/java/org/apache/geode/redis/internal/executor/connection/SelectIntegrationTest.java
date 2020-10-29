@@ -37,19 +37,7 @@ public class SelectIntegrationTest extends AbstractSelectIntegrationTest {
 
   // our SELECT implementation diverges from Redis and only supports DB 0
   @Test
-  public void givenIndexArgumentIsNotALong_returnsSelectError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SELECT, "notALong"))
-        .hasMessageContaining(ERROR_SELECT);
-  }
-
-  @Test
-  public void givenIndexArgumentWouldOverflow_returnsSelectError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SELECT, "9223372036854775808"))
-        .hasMessageContaining(ERROR_SELECT);
-  }
-
-  @Test
-  public void givenAnyValidIndexOtherThanZero_returnsSelectError() {
+  public void givenAnyDBIndexOtherThanZero_returnsSelectError() {
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SELECT, "9223372036854775807"))
         .hasMessageContaining(ERROR_SELECT);
   }
