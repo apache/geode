@@ -783,6 +783,7 @@ public class DefaultQuery implements Query {
       } else {
         queryObserver = qo;
       }
+      this.cache.getLogger().info("Starting query: " + this.queryString);
     }
     return queryObserver;
   }
