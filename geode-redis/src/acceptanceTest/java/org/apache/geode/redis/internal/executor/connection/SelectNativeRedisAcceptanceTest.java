@@ -16,12 +16,11 @@
 
 package org.apache.geode.redis.internal.executor.connection;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.rules.TestRule;
 import org.testcontainers.containers.GenericContainer;
-import redis.clients.jedis.Jedis;
 
 import org.apache.geode.test.junit.rules.IgnoreOnWindowsRule;
 
@@ -32,10 +31,10 @@ public class SelectNativeRedisAcceptanceTest extends AbstractSelectIntegrationTe
   @ClassRule
   public static TestRule ignoreOnWindowsRule = new IgnoreOnWindowsRule();
 
-  private GenericContainer<?> redisContainer;
+  private static GenericContainer<?> redisContainer;
 
-  @Before
-  public void setUp() {
+  @BeforeClass
+  public static void classSetUp() {
     // starting redis in cluster mode
     redisContainer =
         new GenericContainer<>("grokzen/redis-cluster:5.0.9")
@@ -43,12 +42,10 @@ public class SelectNativeRedisAcceptanceTest extends AbstractSelectIntegrationTe
             .withEnv("IP", "0.0.0.0");
 
     redisContainer.start();
-    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
   }
 
-  @After
-  public void tearDown() {
-    jedis.close();
+  @AfterClass
+  public static void classTearDown() {
     redisContainer.stop();
   }
 

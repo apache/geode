@@ -32,9 +32,9 @@ import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
 public abstract class AbstractSelectIntegrationTest implements RedisPortSupplier {
 
-  protected static final int REDIS_CLIENT_TIMEOUT =
+  private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
-  protected static Jedis jedis;
+  private static Jedis jedis;
 
   @Before
   public void setUp() {
