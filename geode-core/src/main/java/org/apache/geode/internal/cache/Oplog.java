@@ -5790,7 +5790,7 @@ public class Oplog implements CompactableOplog, Flushable {
         return true;
       }
     } else {
-      return true;
+      // return true;
     }
     return false;
   }
