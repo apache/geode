@@ -74,7 +74,7 @@ public class LocatorLoadSnapshot {
   private boolean rebalancing;
 
   private final ScheduledExecutorService estimateTimeoutProcessor =
-      LoggingExecutors.newScheduledThreadPool("loadEstimateTimeoutProcessor", 1, false);
+      LoggingExecutors.newScheduledThreadPool(1, "loadEstimateTimeoutProcessor", false);
 
   public LocatorLoadSnapshot() {
     connectionLoadMap.put(null, new HashMap<>());

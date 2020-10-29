@@ -587,8 +587,8 @@ public class SystemManagementService extends BaseManagementService {
       federatingManager = federatingManagerFactory.create(repo, system, this, cache,
           statisticsFactory, statisticsClock, new MBeanProxyFactory(jmxAdapter, this),
           new MemberMessenger(jmxAdapter, system),
-          () -> LoggingExecutors.newFixedThreadPool("FederatingManager", true,
-              Runtime.getRuntime().availableProcessors()));
+          () -> LoggingExecutors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(),
+              "FederatingManager", true));
       cache.getJmxManagerAdvisor().broadcastChange();
       return true;
     }

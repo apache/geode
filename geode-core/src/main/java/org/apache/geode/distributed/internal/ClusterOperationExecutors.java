@@ -212,24 +212,25 @@ public class ClusterOperationExecutors implements OperationExecutors {
                 stats.getSerialQueueHelper());
         poolQueue = serialQueue;
       }
-      serialThread = CoreLoggingExecutors.newSerialThreadPool("Serial Message Processor",
+      serialThread = CoreLoggingExecutors.newSerialThreadPool(poolQueue, "Serial Message Processor",
           thread -> stats.incSerialThreadStarts(),
           this::doSerialThread, stats.getSerialProcessorHelper(),
-          threadMonitor, poolQueue);
+          threadMonitor);
 
     }
 
     threadPool =
-        CoreLoggingExecutors.newThreadPoolWithFeedStatistics("Pooled Message Processor ",
+        CoreLoggingExecutors.newThreadPoolWithFeedStatistics(MAX_THREADS,
+            INCOMING_QUEUE_LIMIT, stats.getOverflowQueueHelper(), "Pooled Message Processor ",
             thread -> stats.incProcessingThreadStarts(), this::doProcessingThread,
-            MAX_THREADS, stats.getNormalPoolHelper(), threadMonitor,
-            INCOMING_QUEUE_LIMIT, stats.getOverflowQueueHelper());
+            stats.getNormalPoolHelper(),
+            threadMonitor);
 
     highPriorityPool = CoreLoggingExecutors.newThreadPoolWithFeedStatistics(
-        "Pooled High Priority Message Processor ",
-        thread -> stats.incHighPriorityThreadStarts(), this::doHighPriorityThread,
-        MAX_THREADS, stats.getHighPriorityPoolHelper(), threadMonitor,
-        INCOMING_QUEUE_LIMIT, stats.getHighPriorityQueueHelper());
+        MAX_THREADS, INCOMING_QUEUE_LIMIT, stats.getHighPriorityQueueHelper(),
+        "Pooled High Priority Message Processor ", thread -> stats.incHighPriorityThreadStarts(),
+        this::doHighPriorityThread, stats.getHighPriorityPoolHelper(),
+        threadMonitor);
 
     {
       BlockingQueue<Runnable> poolQueue;
@@ -239,47 +240,50 @@ public class ClusterOperationExecutors implements OperationExecutors {
       } else {
         poolQueue = new OverflowQueueWithDMStats<>(stats.getWaitingQueueHelper());
       }
-      waitingPool = CoreLoggingExecutors.newThreadPool("Pooled Waiting Message Processor ",
+      waitingPool = CoreLoggingExecutors.newThreadPool(MAX_WAITING_THREADS, poolQueue,
+          "Pooled Waiting Message Processor ",
           thread -> stats.incWaitingThreadStarts(), this::doWaitingThread,
-          MAX_WAITING_THREADS, stats.getWaitingPoolHelper(), threadMonitor, poolQueue);
+          stats.getWaitingPoolHelper(), threadMonitor);
     }
 
     // should this pool using the waiting pool stats?
     prMetaDataCleanupThreadPool =
         CoreLoggingExecutors.newThreadPoolWithFeedStatistics(
-            "PrMetaData cleanup Message Processor ",
-            thread -> stats.incWaitingThreadStarts(), this::doWaitingThread,
-            MAX_PR_META_DATA_CLEANUP_THREADS, stats.getWaitingPoolHelper(), threadMonitor,
-            0, stats.getWaitingQueueHelper());
+            MAX_PR_META_DATA_CLEANUP_THREADS, 0, stats.getWaitingQueueHelper(),
+            "PrMetaData cleanup Message Processor ", thread -> stats.incWaitingThreadStarts(),
+            this::doWaitingThread, stats.getWaitingPoolHelper(),
+            threadMonitor);
 
     if (MAX_PR_THREADS > 1) {
       partitionedRegionPool =
           CoreLoggingExecutors.newThreadPoolWithFeedStatistics(
+              MAX_PR_THREADS, INCOMING_QUEUE_LIMIT, stats.getPartitionedRegionQueueHelper(),
               "PartitionedRegion Message Processor",
               thread -> stats.incPartitionedRegionThreadStarts(), this::doPartitionRegionThread,
-              MAX_PR_THREADS, stats.getPartitionedRegionPoolHelper(), threadMonitor,
-              INCOMING_QUEUE_LIMIT, stats.getPartitionedRegionQueueHelper());
+              stats.getPartitionedRegionPoolHelper(),
+              threadMonitor);
     } else {
       partitionedRegionThread = CoreLoggingExecutors.newSerialThreadPoolWithFeedStatistics(
+          INCOMING_QUEUE_LIMIT, stats.getPartitionedRegionQueueHelper(),
           "PartitionedRegion Message Processor",
           thread -> stats.incPartitionedRegionThreadStarts(), this::doPartitionRegionThread,
-          stats.getPartitionedRegionPoolHelper(), threadMonitor,
-          INCOMING_QUEUE_LIMIT, stats.getPartitionedRegionQueueHelper());
+          stats.getPartitionedRegionPoolHelper(), threadMonitor);
     }
     if (MAX_FE_THREADS > 1) {
       functionExecutionPool =
           CoreLoggingExecutors.newFunctionThreadPoolWithFeedStatistics(
+              MAX_FE_THREADS, INCOMING_QUEUE_LIMIT, stats.getFunctionExecutionQueueHelper(),
               FUNCTION_EXECUTION_PROCESSOR_THREAD_PREFIX,
               thread -> stats.incFunctionExecutionThreadStarts(), this::doFunctionExecutionThread,
-              MAX_FE_THREADS, stats.getFunctionExecutionPoolHelper(), threadMonitor,
-              INCOMING_QUEUE_LIMIT, stats.getFunctionExecutionQueueHelper());
+              stats.getFunctionExecutionPoolHelper(),
+              threadMonitor);
     } else {
       functionExecutionThread =
           CoreLoggingExecutors.newSerialThreadPoolWithFeedStatistics(
+              INCOMING_QUEUE_LIMIT, stats.getFunctionExecutionQueueHelper(),
               FUNCTION_EXECUTION_PROCESSOR_THREAD_PREFIX,
               thread -> stats.incFunctionExecutionThreadStarts(), this::doFunctionExecutionThread,
-              stats.getFunctionExecutionPoolHelper(), threadMonitor,
-              INCOMING_QUEUE_LIMIT, stats.getFunctionExecutionQueueHelper());
+              stats.getFunctionExecutionPoolHelper(), threadMonitor);
     }
   }
 
@@ -802,9 +806,10 @@ public class ClusterOperationExecutors implements OperationExecutors {
 
       serialQueuedMap.put(id, poolQueue);
 
-      return CoreLoggingExecutors.newSerialThreadPool("Pooled Serial Message Processor" + id + "-",
+      return CoreLoggingExecutors.newSerialThreadPool(poolQueue,
+          "Pooled Serial Message Processor" + id + "-",
           thread -> stats.incSerialPooledThreadStarts(), this::doSerialPooledThread,
-          stats.getSerialPooledProcessorHelper(), threadMonitoring, poolQueue);
+          stats.getSerialPooledProcessorHelper(), threadMonitoring);
     }
 
     private void doSerialPooledThread(Runnable command) {
