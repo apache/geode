@@ -277,4 +277,35 @@ public class LocalRegionTest {
 
     assertThat(region.isGenerateLocalFilterRoutingNeeded(event)).isFalse();
   }
+
+  @Test
+  public void isNeedInTokenModeReturnsFalseIfConcurrencyChecksEnabled() {
+    LocalRegion region =
+        spy(new LocalRegion("region", regionAttributes, null, cache, internalRegionArguments,
+            internalDataView, regionMapConstructor, serverRegionProxyConstructor, entryEventFactory,
+            poolFinder, regionPerfStatsFactory, disabledClock()));
+    doReturn(true).when(region).getConcurrencyChecksEnabled();
+
+    assertThat(region.isNeedInTokenMode(true, true)).isFalse();
+  }
+
+  @Test
+  public void isNeedInTokenModeReturnsFalseIfBothNeedTokensForGIIAndNeedRIDestroyTokenAreFalse() {
+    LocalRegion region =
+        spy(new LocalRegion("region", regionAttributes, null, cache, internalRegionArguments,
+            internalDataView, regionMapConstructor, serverRegionProxyConstructor, entryEventFactory,
+            poolFinder, regionPerfStatsFactory, disabledClock()));
+
+    assertThat(region.isNeedInTokenMode(false, false)).isFalse();
+  }
+
+  @Test
+  public void isNeedInTokenModeReturnsTrueIfConcurrencyChecksNotEnabledAndNeedDestroyToken() {
+    LocalRegion region =
+        spy(new LocalRegion("region", regionAttributes, null, cache, internalRegionArguments,
+            internalDataView, regionMapConstructor, serverRegionProxyConstructor, entryEventFactory,
+            poolFinder, regionPerfStatsFactory, disabledClock()));
+
+    assertThat(region.isNeedInTokenMode(true, false)).isTrue();
+  }
 }
