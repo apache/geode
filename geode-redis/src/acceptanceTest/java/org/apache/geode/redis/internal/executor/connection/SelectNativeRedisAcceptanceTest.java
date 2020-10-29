@@ -16,42 +16,18 @@
 
 package org.apache.geode.redis.internal.executor.connection;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.rules.TestRule;
-import org.testcontainers.containers.GenericContainer;
 
-import org.apache.geode.test.junit.rules.IgnoreOnWindowsRule;
+import org.apache.geode.NativeRedisTestRule;
 
 public class SelectNativeRedisAcceptanceTest extends AbstractSelectIntegrationTest {
 
-  // Docker compose does not work on windows in CI. Ignore this test on windows
-  // Using a RuleChain to make sure we ignore the test before the rule comes into play
   @ClassRule
-  public static TestRule ignoreOnWindowsRule = new IgnoreOnWindowsRule();
-
-  private static GenericContainer<?> redisContainer;
-
-  @BeforeClass
-  public static void classSetUp() {
-    // starting redis in cluster mode
-    redisContainer =
-        new GenericContainer<>("grokzen/redis-cluster:5.0.9")
-            .withExposedPorts(7000)
-            .withEnv("IP", "0.0.0.0");
-
-    redisContainer.start();
-  }
-
-  @AfterClass
-  public static void classTearDown() {
-    redisContainer.stop();
-  }
+  public static NativeRedisTestRule redis = new NativeRedisTestRule();
 
   @Override
   public int getPort() {
-    return redisContainer.getFirstMappedPort();
+    return redis.getPort();
   }
 
 }

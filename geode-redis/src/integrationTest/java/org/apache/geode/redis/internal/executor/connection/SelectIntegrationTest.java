@@ -16,7 +16,12 @@
 
 package org.apache.geode.redis.internal.executor.connection;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_SELECT;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import org.junit.ClassRule;
+import org.junit.Test;
+import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
 
@@ -30,4 +35,22 @@ public class SelectIntegrationTest extends AbstractSelectIntegrationTest {
     return server.getPort();
   }
 
+  // our SELECT implementation diverges from Redis and only supports DB 0
+  @Test
+  public void givenIndexArgumentIsNotALong_returnsSelectError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SELECT, "notALong"))
+        .hasMessageContaining(ERROR_SELECT);
+  }
+
+  @Test
+  public void givenIndexArgumentWouldOverflow_returnsSelectError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SELECT, "9223372036854775808"))
+        .hasMessageContaining(ERROR_SELECT);
+  }
+
+  @Test
+  public void givenAnyValidIndexOtherThanZero_returnsSelectError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SELECT, "9223372036854775807"))
+        .hasMessageContaining(ERROR_SELECT);
+  }
 }

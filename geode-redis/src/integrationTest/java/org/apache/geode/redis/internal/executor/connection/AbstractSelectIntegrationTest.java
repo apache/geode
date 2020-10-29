@@ -16,8 +16,6 @@
 
 package org.apache.geode.redis.internal.executor.connection;
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_DB_INDEX;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_SELECT_CLUSTER_MODE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -34,7 +32,7 @@ public abstract class AbstractSelectIntegrationTest implements RedisPortSupplier
 
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
-  private static Jedis jedis;
+  protected static Jedis jedis;
 
   @Before
   public void setUp() {
@@ -59,25 +57,7 @@ public abstract class AbstractSelectIntegrationTest implements RedisPortSupplier
   }
 
   @Test
-  public void givenIndexArgumentIsNotALong_returnsInvalidDBIndexError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SELECT, "notALong"))
-        .hasMessageContaining(ERROR_INVALID_DB_INDEX);
-  }
-
-  @Test
-  public void givenIndexArgumentWouldOverflow_returnsInvalidDBIndexError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SELECT, "9223372036854775808"))
-        .hasMessageContaining(ERROR_INVALID_DB_INDEX);
-  }
-
-  @Test
   public void givenIndexOfZero_returnsOk() {
     assertThat(jedis.select(0)).isEqualTo("OK");
-  }
-
-  @Test
-  public void givenAnyValidIndexOtherThanZero_returnsClusterModeError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SELECT, "9223372036854775807"))
-        .hasMessageContaining(ERROR_SELECT_CLUSTER_MODE);
   }
 }

@@ -15,8 +15,7 @@
  */
 package org.apache.geode.redis.internal.executor.connection;
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_DB_INDEX;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_SELECT_CLUSTER_MODE;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_SELECT;
 
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
@@ -31,10 +30,10 @@ public class SelectExecutor extends AbstractExecutor {
     try {
       long dbIndex = Long.parseLong(dbIndexString);
       if (dbIndex != 0) {
-        return RedisResponse.error(ERROR_SELECT_CLUSTER_MODE);
+        return RedisResponse.error(ERROR_SELECT);
       }
     } catch (NumberFormatException e) {
-      return RedisResponse.error(ERROR_INVALID_DB_INDEX);
+      return RedisResponse.error(ERROR_SELECT);
     }
 
     return RedisResponse.ok();
