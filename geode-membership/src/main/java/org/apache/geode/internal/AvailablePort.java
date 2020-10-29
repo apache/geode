@@ -44,8 +44,10 @@ public class AvailablePort {
 
   /** Is the port available for a Socket (TCP) connection? */
   public static final int SOCKET = 0;
-  public static final int AVAILABLE_PORTS_LOWER_BOUND = 20001;// 20000/udp is securid
-  public static final int AVAILABLE_PORTS_UPPER_BOUND = 29999;// 30000/tcp is spoolfax
+  public static final int AVAILABLE_PORTS_LOWER_BOUND = 20100;// 20000/udp is securid
+  public static final int AVAILABLE_PORTS_UPPER_BOUND = 20199;// 30000/tcp is spoolfax
+//  public static final int AVAILABLE_PORTS_LOWER_BOUND = 20001;// 20000/udp is securid
+//  public static final int AVAILABLE_PORTS_UPPER_BOUND = 29999;// 30000/tcp is spoolfax
   /** Is the port available for a JGroups (UDP) multicast connection */
   public static final int MULTICAST = 1;
 
