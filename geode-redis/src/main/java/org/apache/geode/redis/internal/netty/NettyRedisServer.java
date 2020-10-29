@@ -169,8 +169,7 @@ public class NettyRedisServer {
         }
         ChannelPipeline pipeline = socketChannel.pipeline();
         addSSLIfEnabled(socketChannel, pipeline);
-        pipeline.addLast(ByteToCommandDecoder.class.getSimpleName(),
-            new ByteToCommandDecoder(redisStats));
+        pipeline.addLast(ByteToCommandDecoder.class.getSimpleName(), new ByteToCommandDecoder());
         pipeline.addLast(new WriteTimeoutHandler(10));
         pipeline.addLast(ExecutionHandlerContext.class.getSimpleName(),
             new ExecutionHandlerContext(socketChannel, regionProvider, pubsub,
