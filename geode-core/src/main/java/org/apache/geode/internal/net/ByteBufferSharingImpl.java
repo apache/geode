@@ -118,8 +118,14 @@ class ByteBufferSharingImpl implements ByteBufferSharing {
 
   @Override
   public void close() {
-    dropReference();
+    /*
+     * We are counting on our ReentrantLock throwing an exception if the current thread
+     * does not hold the lock. In that case dropReference() will not be called. This
+     * prevents ill-behaved clients (clients that call close() too many times) from
+     * corrupting our reference count.
+     */
     lock.unlock();
+    dropReference();
   }
 
   private int addReference() {
