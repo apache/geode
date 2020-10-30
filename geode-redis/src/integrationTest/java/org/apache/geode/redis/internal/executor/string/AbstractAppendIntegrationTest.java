@@ -16,6 +16,9 @@ package org.apache.geode.redis.internal.executor.string;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -99,6 +102,22 @@ public abstract class AbstractAppendIntegrationTest implements RedisPortSupplier
     byte[] result = jedis.get(blob);
 
     assertThat(result).isEqualTo(doubleBlob);
+  }
+
+  @Test
+  public void testAppend_withUTF16KeyAndValue() throws IOException {
+    String test_utf16_string = "最𐐷𤭢";
+    byte[] testBytes = test_utf16_string.getBytes(StandardCharsets.UTF_16);
+
+    ByteArrayOutputStream output = new ByteArrayOutputStream();
+    output.write(testBytes);
+    output.write(testBytes);
+    byte[] appendedBytes = output.toByteArray();
+
+    jedis.set(testBytes, testBytes);
+    jedis.append(testBytes, testBytes);
+    byte[] result = jedis.get(testBytes);
+    assertThat(result).isEqualTo(appendedBytes);
   }
 
   private String randString() {

@@ -18,6 +18,9 @@ package org.apache.geode.redis.internal.executor.key;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -91,11 +94,21 @@ public abstract class AbstractKeysIntegrationTest implements RedisPortSupplier {
   }
 
   @Test
-  public void givenBinaryValue_withExactMatch_preservesBinaryData() {
+  public void givenBinaryValue_withExactMatch_preservesBinaryData()
+      throws UnsupportedEncodingException {
+    String chinese_utf16 = "子";
+    byte[] utf16encodedBytes = chinese_utf16.getBytes("UTF-16");
     byte[] stringKey =
         new byte[] {(byte) 0xac, (byte) 0xed, 0, 4, 0, 5, 's', 't', 'r', 'i', 'n', 'g', '1'};
-    jedis.set(stringKey, stringKey);
-    assertThat(jedis.keys(stringKey)).containsExactlyInAnyOrder(stringKey);
+    byte[] allByteArray = new byte[utf16encodedBytes.length + stringKey.length];
+
+    ByteBuffer buff = ByteBuffer.wrap(allByteArray);
+    buff.put(utf16encodedBytes);
+    buff.put(stringKey);
+    byte[] combined = buff.array();
+
+    jedis.set(combined, combined);
+    assertThat(jedis.keys("*".getBytes())).containsExactlyInAnyOrder(combined);
   }
 
   @Test
