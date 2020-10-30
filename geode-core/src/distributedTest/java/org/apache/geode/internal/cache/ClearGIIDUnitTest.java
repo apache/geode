@@ -15,7 +15,6 @@
 package org.apache.geode.internal.cache;
 
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
-import static org.apache.geode.cache.RegionShortcut.REPLICATE;
 import static org.apache.geode.internal.cache.InitialImageOperation.getGIITestHookForCheckingPurpose;
 import static org.apache.geode.test.dunit.rules.ClusterStartupRule.getCache;
 import static org.apache.geode.test.dunit.rules.ClusterStartupRule.getClientCache;
@@ -56,6 +55,7 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -87,7 +87,7 @@ public class ClearGIIDUnitTest implements Serializable {
   public static Collection<Object[]> getRegionShortcuts() {
     List<Object[]> params = new ArrayList<>();
     params.add(new Object[] {PARTITION});
-    params.add(new Object[] {REPLICATE});
+    // params.add(new Object[] {REPLICATE});
     return params;
   }
 
@@ -178,6 +178,36 @@ public class ClearGIIDUnitTest implements Serializable {
     assertThat(region.size()).isEqualTo(expectedNum);
   }
 
+  public void waitForCallbackStarted(final VM vm,
+      final InitialImageOperation.GIITestHookType callbacktype) {
+    SerializableRunnable waitForCallbackStarted = new SerializableRunnable() {
+      @Override
+      public void run() {
+
+        final InitialImageOperation.GIITestHook callback =
+            getGIITestHookForCheckingPurpose(callbacktype);
+        WaitCriterion ev = new WaitCriterion() {
+
+          @Override
+          public boolean done() {
+            return (callback != null && callback.isRunning);
+          }
+
+          @Override
+          public String description() {
+            return null;
+          }
+        };
+
+        GeodeAwaitility.await().untilAsserted(ev);
+        if (callback == null || !callback.isRunning) {
+          fail("GII tesk hook is not started yet");
+        }
+      }
+    };
+    vm.invoke(waitForCallbackStarted);
+  }
+
   @Test
   public void GIICompletesSuccessfullyWhenRunningDuringClear() {
     startServers(NUM_SERVERS);
@@ -188,7 +218,7 @@ public class ClearGIIDUnitTest implements Serializable {
       PauseDuringGIICallback myAfterReceivedImageReply =
           // using bucket name for region name to ensure callback is triggered
           new PauseDuringGIICallback(
-              InitialImageOperation.GIITestHookType.AfterReceivedRequestImage, "_B__testPR_9");
+              InitialImageOperation.GIITestHookType.AfterReceivedImageReply, "_B__testPR_9");
       InitialImageOperation.setGIITestHook(myAfterReceivedImageReply);
     });
 
@@ -197,13 +227,26 @@ public class ClearGIIDUnitTest implements Serializable {
     createDelta(50);
 
     restartServerOnVM(2);
+    // let serverVMs[1] to wait at clear message
+    serverVMs[1].invoke(() -> {
+      DistributionMessageObserver.setInstance(new PauseDuringClearDistributionMessageObserver());
+    });
 
     AsyncInvocation async = createRegionAsync(serverVMs[1]);
-    invokeClear(serverVMs[0]);
+    invokeClearAsync(serverVMs[0]);
+    waitForCallbackStarted(serverVMs[1],
+        InitialImageOperation.GIITestHookType.AfterReceivedImageReply);
 
     serverVMs[1].invoke(() -> InitialImageOperation.resetGIITestHook(
-        InitialImageOperation.GIITestHookType.AfterReceivedRequestImage,
+        InitialImageOperation.GIITestHookType.AfterReceivedImageReply,
         true));
+    serverVMs[1].invoke(() -> {
+      PauseDuringClearDistributionMessageObserver observer =
+          (PauseDuringClearDistributionMessageObserver) DistributionMessageObserver.getInstance();
+      DistributionMessageObserver.setInstance(null);
+      observer.latch.countDown();
+    });
+
     try {
       async.getResult(30000);
     } catch (InterruptedException ex) {
@@ -335,7 +378,7 @@ public class ClearGIIDUnitTest implements Serializable {
     startServers(NUM_SERVERS);
     int deltaSize = 50;
 
-    serverVMs[0].invoke(() -> {
+    serverVMs[1].invoke(() -> {
       DistributionMessageObserver.setInstance(new PauseDuringClearDistributionMessageObserver());
     });
 
@@ -352,7 +395,7 @@ public class ClearGIIDUnitTest implements Serializable {
 
     createRegion(serverVMs[1]);
 
-    serverVMs[0].invoke(() -> {
+    serverVMs[1].invoke(() -> {
       PauseDuringClearDistributionMessageObserver observer =
           (PauseDuringClearDistributionMessageObserver) DistributionMessageObserver.getInstance();
       DistributionMessageObserver.setInstance(null);
@@ -461,7 +504,7 @@ public class ClearGIIDUnitTest implements Serializable {
     });
   }
 
-  private class PauseDuringGIICallback extends InitialImageOperation.GIITestHook {
+  private static class PauseDuringGIICallback extends InitialImageOperation.GIITestHook {
     private Object lockObject = new Object();
 
     public PauseDuringGIICallback(InitialImageOperation.GIITestHookType type, String region_name) {
@@ -487,20 +530,18 @@ public class ClearGIIDUnitTest implements Serializable {
     }
   } // Mycallback
 
-  private static class PauseDuringClearDistributionMessageObserver
+  private class PauseDuringClearDistributionMessageObserver
       extends DistributionMessageObserver {
     private CountDownLatch latch = new CountDownLatch(1);
 
     @Override
-    public void beforeSendMessage(ClusterDistributionManager dm,
-        DistributionMessage message) {
+    public void beforeProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
       if (message instanceof PartitionedRegionClearMessage) {
+        PartitionedRegionClearMessage prcm = (PartitionedRegionClearMessage) message;
         try {
           latch.await();
         } catch (InterruptedException ex) {
-
         }
-
       }
     }
   }
