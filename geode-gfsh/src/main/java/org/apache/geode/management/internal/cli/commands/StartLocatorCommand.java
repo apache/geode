@@ -197,8 +197,6 @@ public class StartLocatorCommand extends OfflineGfshCommand {
         ConfigurationProperties.LOAD_CLUSTER_CONFIGURATION_FROM_DIR,
         loadSharedConfigurationFromDirectory);
     StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
-        ConfigurationProperties.CLUSTER_CONFIGURATION_DIR, clusterConfigDir);
-    StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
         ConfigurationProperties.HTTP_SERVICE_PORT, httpServicePort);
     StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
         ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS, httpServiceBindAddress);

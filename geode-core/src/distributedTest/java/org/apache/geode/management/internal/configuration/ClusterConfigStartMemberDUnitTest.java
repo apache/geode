@@ -15,7 +15,6 @@
  */
 package org.apache.geode.management.internal.configuration;
 
-import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_CONFIGURATION_DIR;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOAD_CLUSTER_CONFIGURATION_FROM_DIR;
@@ -93,7 +92,6 @@ public class ClusterConfigStartMemberDUnitTest extends ClusterConfigTestBase {
     Properties properties = new Properties();
     properties.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
     properties.setProperty(LOAD_CLUSTER_CONFIGURATION_FROM_DIR, "true");
-    properties.setProperty(CLUSTER_CONFIGURATION_DIR, locatorDir.getCanonicalPath());
 
     MemberVM locator = lsRule.startLocatorVM(0, properties);
 
