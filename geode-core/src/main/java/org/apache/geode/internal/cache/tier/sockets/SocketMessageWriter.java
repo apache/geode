@@ -31,6 +31,7 @@ import org.apache.geode.Instantiator;
 import org.apache.geode.internal.ByteBufferOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
+import org.apache.geode.internal.net.ByteBufferSharing;
 import org.apache.geode.internal.net.NioSslEngine;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.util.internal.GeodeGlossary;
@@ -102,10 +103,13 @@ public class SocketMessageWriter {
     if (engine != null) {
       bbos.flush();
       ByteBuffer buffer = bbos.getContentBuffer();
-      ByteBuffer wrappedBuffer = engine.wrap(buffer);
-      if (socket != null) {
-        while (wrappedBuffer.remaining() > 0) {
-          socket.getChannel().write(wrappedBuffer);
+
+      try (final ByteBufferSharing outputSharing = engine.wrap(buffer)) {
+        final ByteBuffer wrappedBuffer = outputSharing.getBuffer();
+        if (socket != null) {
+          while (wrappedBuffer.remaining() > 0) {
+            socket.getChannel().write(wrappedBuffer);
+          }
         }
       }
       bbos.close();

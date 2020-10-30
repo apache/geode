@@ -36,6 +36,7 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.net.BufferPool;
+import org.apache.geode.internal.net.ByteBufferSharing;
 import org.apache.geode.internal.net.NioSslEngine;
 import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.offheap.annotations.Unretained;
@@ -667,10 +668,12 @@ public class Message {
           this.socketChannel.write(cb);
         } while (cb.remaining() > 0);
       } else {
-        ByteBuffer wrappedBuffer = this.sslEngine.wrap(cb);
-        do {
-          this.socketChannel.write(wrappedBuffer);
-        } while (wrappedBuffer.remaining() > 0);
+        try (final ByteBufferSharing outputSharing = this.sslEngine.wrap(cb)) {
+          final ByteBuffer wrappedBuffer = outputSharing.getBuffer();
+          do {
+            this.socketChannel.write(wrappedBuffer);
+          } while (wrappedBuffer.remaining() > 0);
+        }
       }
     } else {
       this.outputStream.write(cb.array(), 0, cb.position());
@@ -707,13 +710,15 @@ public class Message {
     byte bits;
 
     if (sslEngine != null) {
-      ByteBuffer unwrap = sslEngine.unwrap(cb);
-      unwrap.flip();
-      type = unwrap.getInt();
-      len = unwrap.getInt();
-      numParts = unwrap.getInt();
-      txid = unwrap.getInt();
-      bits = unwrap.get();
+      try (final ByteBufferSharing outputSharing = sslEngine.unwrap(cb)) {
+        final ByteBuffer unwrap = outputSharing.getBuffer();
+        unwrap.flip();
+        type = unwrap.getInt();
+        len = unwrap.getInt();
+        numParts = unwrap.getInt();
+        txid = unwrap.getInt();
+        bits = unwrap.get();
+      }
     } else {
       type = cb.getInt();
       len = cb.getInt();
@@ -833,8 +838,10 @@ public class Message {
       this.serverConnection.updateProcessingMessage();
     }
     if (this.sslEngine != null) {
-      ByteBuffer sslbuff = this.sslEngine.getUnwrappedBuffer(null);
-      this.sslEngine.doneReading(sslbuff);
+      try (final ByteBufferSharing sharedBuffer = this.sslEngine.getUnwrappedBuffer()) {
+        ByteBuffer sslbuff = sharedBuffer.getBuffer();
+        this.sslEngine.doneReading(sslbuff);
+      }
     }
   }
 
@@ -940,8 +947,10 @@ public class Message {
 
     ByteBuffer unwrapbuffer = null;
     if (this.sslEngine != null) {
-      unwrapbuffer = this.sslEngine.getUnwrappedBuffer(null);
-      cbremaining = unwrapbuffer.remaining();
+      try (final ByteBufferSharing sharedBuffer = this.sslEngine.getUnwrappedBuffer()) {
+        unwrapbuffer = sharedBuffer.getBuffer();
+        cbremaining = unwrapbuffer.remaining();
+      }
     }
 
     ByteBuffer commonBuffer;
@@ -954,8 +963,10 @@ public class Message {
       if (this.sslEngine == null) {
         commonBuffer = cb;
       } else {
-        unwrapbuffer = this.sslEngine.getUnwrappedBuffer(null);
-        commonBuffer = unwrapbuffer;
+        try (final ByteBufferSharing sharedBuffer = this.sslEngine.getUnwrappedBuffer()) {
+          unwrapbuffer = sharedBuffer.getBuffer();
+          commonBuffer = unwrapbuffer;
+        }
       }
 
       Part part;
@@ -1029,7 +1040,10 @@ public class Message {
           if (remaining > 0) {
             this.sslEngine.ensureWrappedCapacity(remaining, cb,
                 BufferPool.BufferType.TRACKED_RECEIVER);
-            commonBuffer = this.sslEngine.readAtLeast(this.socketChannel, remaining, cb);
+            try (final ByteBufferSharing sharedBuffer =
+                this.sslEngine.readAtLeast(this.socketChannel, remaining, cb)) {
+              commonBuffer = sharedBuffer.getBuffer();
+            }
           }
         }
       }
@@ -1066,8 +1080,10 @@ public class Message {
         commBuffer.limit(commBuffer.capacity());
       }
     } else {
-      if (this.sslEngine.getUnwrappedBuffer(null).remaining() >= PART_HEADER_SIZE) {
-        return 0;
+      try (final ByteBufferSharing sharedBuffer = this.sslEngine.getUnwrappedBuffer()) {
+        if (sharedBuffer.getBuffer().remaining() >= PART_HEADER_SIZE) {
+          return 0;
+        }
       }
     }
 
@@ -1081,8 +1097,11 @@ public class Message {
       if (this.sslEngine != null) {
         this.sslEngine.ensureWrappedCapacity(bytesRemaining, commBuffer,
             BufferPool.BufferType.TRACKED_RECEIVER);
-        int unwrapread =
-            this.sslEngine.readAtLeast(this.socketChannel, bytesRemaining, commBuffer).remaining();
+        int unwrapread = 0;
+        try (final ByteBufferSharing sharedBuffer =
+            this.sslEngine.readAtLeast(this.socketChannel, bytesRemaining, commBuffer)) {
+          unwrapread = sharedBuffer.getBuffer().remaining();
+        }
         return unwrapread;
       }
       int remaining = commBuffer.remaining();

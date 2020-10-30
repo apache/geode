@@ -35,6 +35,7 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.Encryptor;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
+import org.apache.geode.internal.net.ByteBufferSharing;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
@@ -85,8 +86,11 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
       if (connection.getSSLEngine() == null) {
         inputStream = sock.getInputStream();
       } else {
-        ByteBuffer unwrapbuff = connection.getSSLEngine().getUnwrappedBuffer(null);
-        inputStream = new ByteBufferInputStream(unwrapbuff);
+        try (
+            final ByteBufferSharing sharedBuffer = connection.getSSLEngine().getUnwrappedBuffer()) {
+          ByteBuffer unwrapbuff = sharedBuffer.getBuffer();
+          inputStream = new ByteBufferInputStream(unwrapbuff);
+        }
       }
 
       int valRead = inputStream.read();
@@ -126,8 +130,11 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
       }
     } finally {
       if (connection.getSSLEngine() != null) {
-        ByteBuffer sslbuff = connection.getSSLEngine().getUnwrappedBuffer(null);
-        connection.getSSLEngine().doneReading(sslbuff);
+        try (
+            final ByteBufferSharing sharedBuffer = connection.getSSLEngine().getUnwrappedBuffer()) {
+          ByteBuffer sslbuff = sharedBuffer.getBuffer();
+          connection.getSSLEngine().doneReading(sslbuff);
+        }
         if (inputStream != null) {
           inputStream.close();
         }
@@ -228,8 +235,10 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
     if (bbos != null) {
       bbos.flush();
       ByteBuffer buffer = bbos.getContentBuffer();
-      ByteBuffer wrappedBuffer = connection.getSSLEngine().wrap(buffer);
-      connection.getSocket().getChannel().write(wrappedBuffer);
+      try (final ByteBufferSharing outputSharing = connection.getSSLEngine().wrap(buffer)) {
+        final ByteBuffer wrappedBuffer = outputSharing.getBuffer();
+        connection.getSocket().getChannel().write(wrappedBuffer);
+      }
       bbos.close();
     }
 

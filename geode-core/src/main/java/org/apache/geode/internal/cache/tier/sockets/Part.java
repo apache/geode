@@ -26,6 +26,7 @@ import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.net.ByteBufferSharing;
 import org.apache.geode.internal.net.NioSslEngine;
 import org.apache.geode.internal.offheap.AddressableMemoryManager;
 import org.apache.geode.internal.offheap.StoredObject;
@@ -471,9 +472,11 @@ public class Part {
               sc.write(buf);
             }
           } else {
-            ByteBuffer wrappedBuffer = engine.wrap(buf);
-            while (wrappedBuffer.remaining() > 0) {
-              sc.write(wrappedBuffer);
+            try (final ByteBufferSharing outputSharing = engine.wrap(buf)) {
+              final ByteBuffer wrappedBuffer = outputSharing.getBuffer();
+              while (wrappedBuffer.remaining() > 0) {
+                sc.write(wrappedBuffer);
+              }
             }
           }
 
@@ -490,9 +493,11 @@ public class Part {
               sc.write(bb);
             }
           } else {
-            ByteBuffer wrappedBuffer = engine.wrap(bb);
-            while (wrappedBuffer.remaining() > 0) {
-              sc.write(wrappedBuffer);
+            try (final ByteBufferSharing outputSharing = engine.wrap(bb)) {
+              final ByteBuffer wrappedBuffer = outputSharing.getBuffer();
+              while (wrappedBuffer.remaining() > 0) {
+                sc.write(wrappedBuffer);
+              }
             }
           }
         } else {
@@ -516,9 +521,11 @@ public class Part {
                 sc.write(buf);
               }
             } else {
-              ByteBuffer wrappedBuffer = engine.wrap(buf);
-              while (wrappedBuffer.remaining() > 0) {
-                sc.write(wrappedBuffer);
+              try (final ByteBufferSharing outputSharing = engine.wrap(buf)) {
+                final ByteBuffer wrappedBuffer = outputSharing.getBuffer();
+                while (wrappedBuffer.remaining() > 0) {
+                  sc.write(wrappedBuffer);
+                }
               }
             }
             buf.clear();

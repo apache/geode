@@ -31,6 +31,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
+import org.apache.geode.internal.net.ByteBufferSharing;
 import org.apache.geode.internal.net.NioSslEngine;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.serialization.KnownVersion;
@@ -81,8 +82,10 @@ class ServerSideHandshakeFactory {
       if (sslengine == null) {
         is = socket.getInputStream();
       } else {
-        ByteBuffer unwrapbuff = sslengine.getUnwrappedBuffer(null);
-        is = new ByteBufferInputStream(unwrapbuff);
+        try (final ByteBufferSharing sharedBuffer = sslengine.getUnwrappedBuffer()) {
+          ByteBuffer unwrapbuff = sharedBuffer.getBuffer();
+          is = new ByteBufferInputStream(unwrapbuff);
+        }
       }
 
       short clientVersionOrdinal = VersioningIO.readOrdinalFromInputStream(is);
