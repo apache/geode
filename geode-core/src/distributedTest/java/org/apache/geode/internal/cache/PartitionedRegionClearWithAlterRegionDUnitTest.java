@@ -14,12 +14,14 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.Serializable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.IntStream;
 
 import org.junit.Rule;
@@ -39,8 +41,13 @@ import org.apache.geode.cache.PartitionedRegionPartialClearException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.api.MembershipManagerHelper;
 import org.apache.geode.test.dunit.AsyncInvocation;
+import org.apache.geode.test.dunit.DUnitBlackboard;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedRule;
@@ -63,9 +70,13 @@ public class PartitionedRegionClearWithAlterRegionDUnitTest implements Serializa
 
   private VM server3;
 
+  private static volatile DUnitBlackboard blackboard;
+
   private static final String REGION_NAME = "testRegion";
 
   private static final int NUM_ENTRIES = 1000000;
+
+  private static final String GATE_NAME = "ALLOW_ALTER_REGION";
 
   private void initialize() {
     server1 = VM.getVM(0);
@@ -100,12 +111,13 @@ public class PartitionedRegionClearWithAlterRegionDUnitTest implements Serializa
     initialize();
 
     AsyncInvocation asyncInvocation1 = server1.invokeAsync(() -> {
-      cacheRule.getCache().getRegion(REGION_NAME).clear();
-      assertThat(cacheRule.getCache().getRegion(REGION_NAME).size()).isEqualTo(0);
+      DistributionMessageObserver.setInstance(getDistributionMessageObserver());
+      alterRegionSetCacheLoader();
     });
 
     AsyncInvocation asyncInvocation2 = server2.invokeAsync(() -> {
-      alterRegionSetCacheLoader();
+      cacheRule.getCache().getRegion(REGION_NAME).clear();
+      assertThat(cacheRule.getCache().getRegion(REGION_NAME).size()).isEqualTo(0);
     });
 
     asyncInvocation1.await();
@@ -119,12 +131,13 @@ public class PartitionedRegionClearWithAlterRegionDUnitTest implements Serializa
     initialize();
 
     AsyncInvocation asyncInvocation1 = server1.invokeAsync(() -> {
-      cacheRule.getCache().getRegion(REGION_NAME).clear();
-      assertThat(cacheRule.getCache().getRegion(REGION_NAME).size()).isEqualTo(0);
+      DistributionMessageObserver.setInstance(getDistributionMessageObserver());
+      alterRegionSetCacheWriter();
     });
 
     AsyncInvocation asyncInvocation2 = server2.invokeAsync(() -> {
-      alterRegionSetCacheWriter();
+      cacheRule.getCache().getRegion(REGION_NAME).clear();
+      assertThat(cacheRule.getCache().getRegion(REGION_NAME).size()).isEqualTo(0);
     });
 
     asyncInvocation1.await();
@@ -136,12 +149,13 @@ public class PartitionedRegionClearWithAlterRegionDUnitTest implements Serializa
     initialize();
 
     AsyncInvocation asyncInvocation1 = server1.invokeAsync(() -> {
-      cacheRule.getCache().getRegion(REGION_NAME).clear();
-      assertThat(cacheRule.getCache().getRegion(REGION_NAME).size()).isEqualTo(0);
+      DistributionMessageObserver.setInstance(getDistributionMessageObserver());
+      alterRegionSetCacheListener();
     });
 
     AsyncInvocation asyncInvocation2 = server2.invokeAsync(() -> {
-      alterRegionSetCacheListener();
+      cacheRule.getCache().getRegion(REGION_NAME).clear();
+      assertThat(cacheRule.getCache().getRegion(REGION_NAME).size()).isEqualTo(0);
     });
 
     asyncInvocation1.await();
@@ -153,8 +167,10 @@ public class PartitionedRegionClearWithAlterRegionDUnitTest implements Serializa
     initialize();
 
     AsyncInvocation asyncInvocation1 = server1.invokeAsync(() -> {
+      DistributionMessageObserver.setInstance(getDistributionMessageObserver());
       Region region = cacheRule.getCache().getRegion(REGION_NAME);
       AttributesMutator attributesMutator = region.getAttributesMutator();
+      getBlackboard().waitForGate(GATE_NAME);
       attributesMutator.getEvictionAttributesMutator().setMaximum(1);
       assertThat(region.getAttributes().getEvictionAttributes().getMaximum()).isEqualTo(1);
     });
@@ -173,9 +189,11 @@ public class PartitionedRegionClearWithAlterRegionDUnitTest implements Serializa
     initialize();
 
     AsyncInvocation asyncInvocation1 = server1.invokeAsync(() -> {
+      DistributionMessageObserver.setInstance(getDistributionMessageObserver());
       Region region = cacheRule.getCache().getRegion(REGION_NAME);
       AttributesMutator attributesMutator = region.getAttributesMutator();
       ExpirationAttributes expirationAttributes = new ExpirationAttributes();
+      getBlackboard().waitForGate(GATE_NAME);
       attributesMutator.setRegionTimeToLive(expirationAttributes);
       assertThat(region.getAttributes().getRegionTimeToLive()).isEqualTo(expirationAttributes);
     });
@@ -194,9 +212,11 @@ public class PartitionedRegionClearWithAlterRegionDUnitTest implements Serializa
     initialize();
 
     AsyncInvocation asyncInvocation1 = server1.invokeAsync(() -> {
+      DistributionMessageObserver.setInstance(getDistributionMessageObserver());
       Region region = cacheRule.getCache().getRegion(REGION_NAME);
       AttributesMutator attributesMutator = region.getAttributesMutator();
       ExpirationAttributes expirationAttributes = new ExpirationAttributes();
+      getBlackboard().waitForGate(GATE_NAME);
       attributesMutator.setEntryTimeToLive(expirationAttributes);
       assertThat(region.getAttributes().getEntryTimeToLive()).isEqualTo(expirationAttributes);
     });
@@ -215,9 +235,11 @@ public class PartitionedRegionClearWithAlterRegionDUnitTest implements Serializa
     initialize();
 
     AsyncInvocation asyncInvocation1 = server1.invokeAsync(() -> {
+      DistributionMessageObserver.setInstance(getDistributionMessageObserver());
       Region region = cacheRule.getCache().getRegion(REGION_NAME);
       AttributesMutator attributesMutator = region.getAttributesMutator();
       ExpirationAttributes expirationAttributes = new ExpirationAttributes();
+      getBlackboard().waitForGate(GATE_NAME);
       attributesMutator.setRegionIdleTimeout(expirationAttributes);
       assertThat(region.getAttributes().getRegionIdleTimeout()).isEqualTo(expirationAttributes);
     });
@@ -236,10 +258,12 @@ public class PartitionedRegionClearWithAlterRegionDUnitTest implements Serializa
     initialize();
 
     AsyncInvocation asyncInvocation1 = server1.invokeAsync(() -> {
+      DistributionMessageObserver.setInstance(getDistributionMessageObserver());
       Region region = cacheRule.getCache().getRegion(REGION_NAME);
       AttributesMutator attributesMutator = region.getAttributesMutator();
       ExpirationAttributes expirationAttributes =
           new ExpirationAttributes(1, ExpirationAction.DESTROY);
+      getBlackboard().waitForGate(GATE_NAME);
       attributesMutator.setEntryIdleTimeout(expirationAttributes);
       assertThat(region.getAttributes().getEntryIdleTimeout()).isEqualTo(expirationAttributes);
     });
@@ -270,7 +294,7 @@ public class PartitionedRegionClearWithAlterRegionDUnitTest implements Serializa
     server2.invoke(() -> {
       DistributionMessageObserver
           .setInstance(
-              new PartitionedRegionClearWithConcurrentOperationsDUnitTest.MemberKiller(false));
+              new MemberKiller(false));
     });
 
     AsyncInvocation asyncInvocation1 = server1.invokeAsync(() -> {
@@ -279,6 +303,7 @@ public class PartitionedRegionClearWithAlterRegionDUnitTest implements Serializa
     });
 
     AsyncInvocation asyncInvocation2 = server3.invokeAsync(() -> {
+      DistributionMessageObserver.setInstance(getDistributionMessageObserver());
       alterRegionSetCacheWriter();
     });
 
@@ -287,7 +312,7 @@ public class PartitionedRegionClearWithAlterRegionDUnitTest implements Serializa
   }
 
   @Test
-  public void testSingleServer() throws ExecutionException, InterruptedException {
+  public void testSingleServer() throws InterruptedException, ExecutionException {
     cacheRule.createCache();
     cacheRule.getCache().createRegionFactory(RegionShortcut.PARTITION).setStatisticsEnabled(true)
         .create(REGION_NAME);
@@ -295,14 +320,16 @@ public class PartitionedRegionClearWithAlterRegionDUnitTest implements Serializa
     Region region = cacheRule.getCache().getRegion(REGION_NAME);
     assertThat(region.size()).isEqualTo(NUM_ENTRIES);
 
-
     Future future1 = executorServiceRule.runAsync(() -> {
       cacheRule.getCache().getRegion(REGION_NAME).clear();
       assertThat(cacheRule.getCache().getRegion(REGION_NAME).size()).isEqualTo(0);
     });
 
     Future future2 = executorServiceRule.runAsync(() -> {
-      alterRegionSetCacheLoader();
+      AttributesMutator attributesMutator = region.getAttributesMutator();
+      TestCacheLoader testCacheLoader = new TestCacheLoader();
+      attributesMutator.setCacheLoader(testCacheLoader);
+      assertThat(region.getAttributes().getCacheLoader()).isEqualTo(testCacheLoader);
     });
 
     future1.get();
@@ -314,26 +341,29 @@ public class PartitionedRegionClearWithAlterRegionDUnitTest implements Serializa
     IntStream.range(0, NUM_ENTRIES).forEach(i -> region.put(i, i));
   }
 
-  private void alterRegionSetCacheLoader() {
+  private void alterRegionSetCacheLoader() throws TimeoutException, InterruptedException {
     Region region = cacheRule.getCache().getRegion(REGION_NAME);
     AttributesMutator attributesMutator = region.getAttributesMutator();
     TestCacheLoader testCacheLoader = new TestCacheLoader();
+    getBlackboard().waitForGate(GATE_NAME);
     attributesMutator.setCacheLoader(testCacheLoader);
     assertThat(region.getAttributes().getCacheLoader()).isEqualTo(testCacheLoader);
   }
 
-  private void alterRegionSetCacheWriter() {
+  private void alterRegionSetCacheWriter() throws TimeoutException, InterruptedException {
     Region region = cacheRule.getCache().getRegion(REGION_NAME);
     AttributesMutator attributesMutator = region.getAttributesMutator();
     TestCacheWriter testCacheWriter = new TestCacheWriter();
+    getBlackboard().waitForGate(GATE_NAME);
     attributesMutator.setCacheWriter(testCacheWriter);
     assertThat(region.getAttributes().getCacheWriter()).isEqualTo(testCacheWriter);
   }
 
-  private void alterRegionSetCacheListener() {
+  private void alterRegionSetCacheListener() throws TimeoutException, InterruptedException {
     Region region = cacheRule.getCache().getRegion(REGION_NAME);
     AttributesMutator attributesMutator = region.getAttributesMutator();
     TestCacheListener testCacheListener = new TestCacheListener();
+    getBlackboard().waitForGate(GATE_NAME);
     attributesMutator.addCacheListener(testCacheListener);
     assertThat(region.getAttributes().getCacheListeners()).contains(testCacheListener);
   }
@@ -419,6 +449,85 @@ public class PartitionedRegionClearWithAlterRegionDUnitTest implements Serializa
     @Override
     public void afterRegionLive(RegionEvent event) {
 
+    }
+  }
+
+  private static DUnitBlackboard getBlackboard() {
+    if (blackboard == null) {
+      blackboard = new DUnitBlackboard();
+    }
+    return blackboard;
+  }
+
+  private DistributionMessageObserver getDistributionMessageObserver() {
+    return new DistributionMessageObserver() {
+      @Override
+      public void afterProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
+        super.afterProcessMessage(dm, message);
+        if (message instanceof PartitionedRegionClearMessage) {
+          DistributionMessageObserver.setInstance(null);
+          getBlackboard().signalGate(GATE_NAME);
+        }
+      }
+    };
+  }
+
+  /**
+   * Shutdowns a coordinator member while the clear operation is in progress.
+   */
+  public static class MemberKiller extends DistributionMessageObserver {
+    private final boolean coordinator;
+
+    public MemberKiller(boolean coordinator) {
+      this.coordinator = coordinator;
+    }
+
+    /**
+     * Shutdowns the VM whenever the message is an instance of
+     * {@link PartitionedRegionClearMessage}.
+     */
+    private void shutdownMember(DistributionMessage message) {
+      if (message instanceof PartitionedRegionClearMessage) {
+        if (((PartitionedRegionClearMessage) message)
+            .getOp() == PartitionedRegionClearMessage.OperationType.OP_PR_CLEAR) {
+          DistributionMessageObserver.setInstance(null);
+          InternalDistributedSystem.getConnectedInstance().stopReconnectingNoDisconnect();
+          MembershipManagerHelper
+              .crashDistributedSystem(InternalDistributedSystem.getConnectedInstance());
+          await().untilAsserted(
+              () -> assertThat(InternalDistributedSystem.getConnectedInstance()).isNull());
+        }
+      }
+    }
+
+    /**
+     * Invoked only on clear coordinator VM.
+     *
+     * @param dm the distribution manager that received the message
+     * @param message The message itself
+     */
+    @Override
+    public void beforeSendMessage(ClusterDistributionManager dm, DistributionMessage message) {
+      if (coordinator) {
+        shutdownMember(message);
+      } else {
+        super.beforeSendMessage(dm, message);
+      }
+    }
+
+    /**
+     * Invoked only on non clear coordinator VM.
+     *
+     * @param dm the distribution manager that received the message
+     * @param message The message itself
+     */
+    @Override
+    public void beforeProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
+      if (!coordinator) {
+        shutdownMember(message);
+      } else {
+        super.beforeProcessMessage(dm, message);
+      }
     }
   }
 }
