@@ -312,6 +312,11 @@ public class WANTestBase extends DistributedTestCase {
     }
   }
 
+  public static Integer createLocatorWithDSIdAndRemoteLoc(int dsId, int remoteLocPort) {
+    return createFirstRemoteLocator(dsId, remoteLocPort);
+  }
+
+
   public static Integer createFirstLocatorWithDSId(int dsId) {
     stopOldLocator();
     WANTestBase test = new WANTestBase();

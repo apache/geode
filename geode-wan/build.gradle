@@ -19,6 +19,15 @@ apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
+apply plugin: 'com.palantir.docker'
+
+repositories {
+  maven {
+    // docker-compose-rule is published on bintray
+    url 'https://dl.bintray.com/palantir/releases'
+  }
+}
+
 
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
@@ -55,7 +64,10 @@ dependencies {
   distributedTestImplementation('org.apache.commons:commons-lang3')
   distributedTestImplementation('commons-io:commons-io')
   distributedTestImplementation('org.assertj:assertj-core')
+  distributedTestImplementation('com.palantir.docker.compose:docker-compose-rule-core')
   distributedTestImplementation('pl.pragmatists:JUnitParams')
+  distributedTestImplementation('com.palantir.docker.compose:docker-compose-rule-junit4')
+
 
 
   upgradeTestImplementation(project(':geode-gfsh'))
