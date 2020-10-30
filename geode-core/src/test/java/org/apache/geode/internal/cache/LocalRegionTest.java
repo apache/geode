@@ -279,33 +279,43 @@ public class LocalRegionTest {
   }
 
   @Test
-  public void isNeedInTokenModeReturnsFalseIfConcurrencyChecksEnabled() {
+  public void isInTokenModeNeededReturnsFalseIfConcurrencyChecksEnabled() {
     LocalRegion region =
         spy(new LocalRegion("region", regionAttributes, null, cache, internalRegionArguments,
             internalDataView, regionMapConstructor, serverRegionProxyConstructor, entryEventFactory,
             poolFinder, regionPerfStatsFactory, disabledClock()));
     doReturn(true).when(region).getConcurrencyChecksEnabled();
 
-    assertThat(region.isNeedInTokenMode(true, true)).isFalse();
+    assertThat(region.isInTokenModeNeeded(true, true)).isFalse();
   }
 
   @Test
-  public void isNeedInTokenModeReturnsFalseIfBothNeedTokensForGIIAndNeedRIDestroyTokenAreFalse() {
+  public void isInTokenModeNeededReturnsFalseIfBothNeedTokensForGIIAndNeedRIDestroyTokenAreFalse() {
     LocalRegion region =
         spy(new LocalRegion("region", regionAttributes, null, cache, internalRegionArguments,
             internalDataView, regionMapConstructor, serverRegionProxyConstructor, entryEventFactory,
             poolFinder, regionPerfStatsFactory, disabledClock()));
 
-    assertThat(region.isNeedInTokenMode(false, false)).isFalse();
+    assertThat(region.isInTokenModeNeeded(false, false)).isFalse();
   }
 
   @Test
-  public void isNeedInTokenModeReturnsTrueIfConcurrencyChecksNotEnabledAndNeedDestroyToken() {
+  public void isInTokenModeNeededReturnsTrueIfConcurrencyChecksNotEnabledAndNeedTokensForGII() {
     LocalRegion region =
         spy(new LocalRegion("region", regionAttributes, null, cache, internalRegionArguments,
             internalDataView, regionMapConstructor, serverRegionProxyConstructor, entryEventFactory,
             poolFinder, regionPerfStatsFactory, disabledClock()));
 
-    assertThat(region.isNeedInTokenMode(true, false)).isTrue();
+    assertThat(region.isInTokenModeNeeded(true, false)).isTrue();
+  }
+
+  @Test
+  public void isInTokenModeNeededReturnsTrueIfConcurrencyChecksNotEnabledAndNeedRIDestroyToken() {
+    LocalRegion region =
+        spy(new LocalRegion("region", regionAttributes, null, cache, internalRegionArguments,
+            internalDataView, regionMapConstructor, serverRegionProxyConstructor, entryEventFactory,
+            poolFinder, regionPerfStatsFactory, disabledClock()));
+
+    assertThat(region.isInTokenModeNeeded(false, true)).isTrue();
   }
 }

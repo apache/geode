@@ -6836,7 +6836,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     final boolean needRIDestroyToken = inRI && riCnt > 0;
 
     try {
-      final boolean inTokenMode = isNeedInTokenMode(needTokensForGII, needRIDestroyToken);
+      final boolean inTokenMode = isInTokenModeNeeded(needTokensForGII, needRIDestroyToken);
       entries.txApplyDestroy(key, rmtOrigin, event, inTokenMode, needRIDestroyToken, op,
           eventId, aCallbackArgument, pendingCallbacks, filterRoutingInfo, bridgeContext,
           isOriginRemote, txEntryState, versionTag, tailKey);
@@ -6847,7 +6847,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
   }
 
-  boolean isNeedInTokenMode(boolean needTokensForGII, boolean needRIDestroyToken) {
+  boolean isInTokenModeNeeded(boolean needTokensForGII, boolean needRIDestroyToken) {
     return (needTokensForGII || needRIDestroyToken) && !getConcurrencyChecksEnabled();
   }
 
