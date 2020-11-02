@@ -242,6 +242,8 @@ jobs:
           - name: geode
           - name: attempts-log
             path: old
+          - name: {{ test.PLATFORM }}-builder-image-family
+            path: builder-image
           outputs:
           - name: instance-data-{{java_test_version.name}}
             path: instance-data
