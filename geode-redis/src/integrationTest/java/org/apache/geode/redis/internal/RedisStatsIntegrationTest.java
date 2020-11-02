@@ -400,30 +400,33 @@ public class RedisStatsIntegrationTest {
 
   @Test
   public void opsPerSecond_ShouldUpdate_givenOperationsOccurring() {
-    assertThat(redisStats.getOpsPerSecond()).isEqualTo(0);
 
     AtomicInteger numberOfCommandsExecuted = new AtomicInteger();
-
     int NUMBER_SECONDS_TO_RUN = 5;
 
-    GeodeAwaitility.await().during(
-        Duration.ofSeconds(NUMBER_SECONDS_TO_RUN)).until(() -> {
+    GeodeAwaitility
+        .await()
+        .during(Duration.ofSeconds(NUMBER_SECONDS_TO_RUN))
+        .until(() -> {
           jedis.set("key", "value");
           numberOfCommandsExecuted.getAndIncrement();
           return true;
         });
 
-    double expectedNumberOfCommandsPerSecond =
-        numberOfCommandsExecuted.get() / NUMBER_SECONDS_TO_RUN;
+    double expectedCommandsPerSecond =
+        (numberOfCommandsExecuted.get() / NUMBER_SECONDS_TO_RUN);
 
-    assertThat(redisStats.getOpsPerSecond())
-        .isCloseTo((long) expectedNumberOfCommandsPerSecond, Offset.offset(1L));
+    assertThat(
+        redisStats.getOpsPerSecond())
+            .isCloseTo((long) expectedCommandsPerSecond, Offset.offset(1L));
 
-    GeodeAwaitility.await().during(NUMBER_SECONDS_TO_RUN, TimeUnit.SECONDS).until(() -> true);
+    GeodeAwaitility
+        .await()
+        .during(NUMBER_SECONDS_TO_RUN, TimeUnit.SECONDS)
+        .until(() -> true);
 
-    assertThat(redisStats.getOpsPerSecond())
-        .isCloseTo((long) expectedNumberOfCommandsPerSecond / 2, Offset.offset(1L));
-
+    assertThat(
+        redisStats.getOpsPerSecond())
+            .isCloseTo((long) expectedCommandsPerSecond / 2, Offset.offset(1L));
   }
-
 }
