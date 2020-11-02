@@ -39,6 +39,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -50,6 +51,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
@@ -2827,13 +2829,18 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
     }
 
     ExecutorService pool = Executors.newCachedThreadPool();
-    Future<?>[] futures = new Future<?>[totalNumberOfBuckets];
+    Collection<Callable<Object>> tasks = new ArrayList<>();
+    Callable<Object> task = () -> {
+      doPutOpInTx(s);
+      return null;
+    };
     for (int i = 0; i < totalNumberOfBuckets; i++) {
-      futures[i] = pool.submit(() -> doPutOpInTx(s));
+      tasks.add(task);
     }
 
-    for (int i = 0; i < totalNumberOfBuckets; i++) {
-      futures[i].get();
+    List<Future<Object>> futures = pool.invokeAll(tasks);
+    for (Future future : futures) {
+      future.get();
     }
   }
 
@@ -2843,13 +2850,18 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
     }
 
     ExecutorService pool = Executors.newCachedThreadPool();
-    Future<?>[] futures = new Future<?>[totalNumberOfBuckets];
+    Collection<Callable<Object>> tasks = new ArrayList<>();
+    Callable<Object> task = () -> {
+      doDestroyOpInTx();
+      return null;
+    };
     for (int i = 0; i < totalNumberOfBuckets; i++) {
-      futures[i] = pool.submit(this::doDestroyOpInTx);
+      tasks.add(task);
     }
 
-    for (int i = 0; i < totalNumberOfBuckets; i++) {
-      futures[i].get();
+    List<Future<Object>> futures = pool.invokeAll(tasks);
+    for (Future future : futures) {
+      future.get();
     }
   }
 
