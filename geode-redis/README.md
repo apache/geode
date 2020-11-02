@@ -191,24 +191,24 @@ start server \
 |                    	| SCARD                                              	| CLUSTER ADDSLOTS              	|
 |                    	| SDIFF                                              	| CLUSTER BUMPEPOCH             	|
 |                    	| SDIFFSTORE                                         	| CLUSTER COUNT-FAILURE-REPORTS 	|
-|                    	| SETBIT                                             	| CLUSTER COUNTKEYSINSLOT       	|
-|                    	| SETEX                                              	| CLUSTER DELSLOTS              	|
-|                    	| SETNX                                              	| CLUSTER FAILOVER              	|
-|                    	| SETRANGE                                           	| CLUSTER FLUSHSLOTS            	|
-|                    	| SHUTDOWN                                           	| CLUSTER FORGET                	|
-|                    	| SINTER                                             	| CLUSTER GETKEYSINSLOT         	|
-|                    	| SINTERSTORE                                        	| CLUSTER INFO                  	|
-|                    	| SISMEMBER                                          	| CLUSTER KEYSLOT               	|
-|                    	| SMOVE                                              	| CLUSTER MEET                  	|
-|                    	| SPOP                                               	| CLUSTER MYID                  	|
-|                    	| SRANDMEMBER                                        	| CLUSTER NODES                 	|
-|                    	| SSCAN                                              	| CLUSTER REPLICAS              	|
-|                    	| STRLEN                                             	| CLUSTER REPLICATE             	|
-|                    	| SUNION                                             	| CLUSTER RESET                 	|
-|                    	| SUNIONSTORE                                        	| CLUSTER SAVECONFIG            	|
-|                    	| TIME                                               	| CLUSTER SET-CONFIG-EPOCH      	|
-|                    	| UNLINK [1]                                         	| CLUSTER SETSLOT               	|
-|                    	|                                                    	| CLUSTER SLAVES                	|
+|                    	| SELECT                                             	| CLUSTER COUNTKEYSINSLOT       	|
+|                    	| SETBIT                                             	| CLUSTER DELSLOTS      	        |
+|                    	| SETEX                                              	| CLUSTER FAILOVER              	|
+|                    	| SETNX                                              	| CLUSTER FLUSHSLOTS               	|
+|                    	| SETRANGE                                           	| CLUSTER FORGET                   	|
+|                    	| SHUTDOWN                                           	| CLUSTER GETKEYSINSLOT            	|
+|                    	| SINTER                                             	| CLUSTER INFO                  	|
+|                    	| SINTERSTORE                                        	| CLUSTER KEYSLOT                 	|
+|                    	| SISMEMBER                                          	| CLUSTER MEET                     	|
+|                    	| SMOVE                                              	| CLUSTER MYID                   	|
+|                    	| SPOP                                               	| CLUSTER NODES                 	|
+|                    	| SRANDMEMBER                                        	| CLUSTER REPLICAS                 	|
+|                    	| SSCAN                                              	| CLUSTER REPLICATE              	|
+|                    	| STRLEN                                             	| CLUSTER RESET                  	|
+|                    	| SUNION                                             	| CLUSTER SAVECONFIG                |
+|                    	| SUNIONSTORE                                        	| CLUSTER SET-CONFIG-EPOCH          |
+|                    	| TIME                                               	| CLUSTER SETSLOT                 	|
+|                    	| UNLINK [1]                                         	| CLUSTER SLAVES                  	|
 |                    	|                                                    	| CLUSTER SLOTS                 	|
 |                    	|                                                    	| COMMAND                       	|
 |                    	|                                                    	| COMMAND COUNT                 	|
@@ -288,7 +288,6 @@ start server \
 |                    	|                                                    	| SCRIPT FLUSH                  	|
 |                    	|                                                    	| SCRIPT KILL                   	|
 |                    	|                                                    	| SCRIPT LOAD                   	|
-|                    	|                                                    	| SELECT                        	|
 |                    	|                                                    	| SLAVEOF                       	|
 |                    	|                                                    	| SLOWLOG                       	|
 |                    	|                                                    	| SORT                          	|
@@ -334,7 +333,7 @@ start server \
 |                    	|                                                    	| ZSCAN                         	|
 |                    	|                                                    	| ZSCORE                        	|
 |                    	|                                                    	| ZUNIONSTORE                   	|
-|                    	|                                                    	|              	|
+|                    	|                                                    	|              	                    |
 
 **NOTES:**
 

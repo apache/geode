@@ -30,6 +30,7 @@ public class RedisConstants {
   public static final String SERVER_ERROR_MESSAGE =
       "The server had an internal error please try again";
   public static final String SERVER_ERROR_SHUTDOWN = "The server is shutting down";
+  public static final String ERROR_SELECT = "Only DB 0 supported";
   public static final String ERROR_CURSOR = "invalid cursor";
   public static final String ERROR_UNKNOWN_COMMAND =
       "unknown command `%s`, with args beginning with: %s";
