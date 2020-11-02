@@ -17,6 +17,8 @@ package org.apache.geode.redis.internal.executor.string;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.nio.charset.StandardCharsets;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -97,6 +99,15 @@ public abstract class AbstractStrLenIntegrationTest implements RedisPortSupplier
     jedis.set(zero, zero);
 
     assertThat(jedis.strlen(zero)).isEqualTo(1);
+  }
+
+  @Test
+  public void testStrlen_withUTF16BinaryData() {
+    String test_utf16_string = "最𐐷𤭢";
+    byte[] testBytes = test_utf16_string.getBytes(StandardCharsets.UTF_16);
+    jedis.set(testBytes, testBytes);
+
+    assertThat(jedis.strlen(testBytes)).isEqualTo(12);
   }
 
   @Test

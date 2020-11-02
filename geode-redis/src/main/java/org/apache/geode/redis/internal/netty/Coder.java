@@ -15,7 +15,6 @@
  */
 package org.apache.geode.redis.internal.netty;
 
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.text.DecimalFormat;
 import java.util.Collection;
@@ -329,11 +328,7 @@ public class Coder {
     if (bytes == null) {
       return null;
     }
-    try {
-      return new String(bytes, CHARSET);
-    } catch (UnsupportedEncodingException e) {
-      throw new RuntimeException(e);
-    }
+    return new String(bytes);
   }
 
   public static String doubleToString(double d) {
@@ -355,11 +350,7 @@ public class Coder {
     if (string == null) {
       return null;
     }
-    try {
-      return string.getBytes(CHARSET);
-    } catch (UnsupportedEncodingException e) {
-      throw new RuntimeException(e);
-    }
+    return string.getBytes();
   }
 
   /*

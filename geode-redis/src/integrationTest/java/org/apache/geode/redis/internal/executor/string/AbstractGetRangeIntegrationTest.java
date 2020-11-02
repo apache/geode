@@ -18,6 +18,8 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.nio.charset.StandardCharsets;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -143,6 +145,75 @@ public abstract class AbstractGetRangeIntegrationTest implements RedisPortSuppli
 
     String fromAfterStartToEndByNegativeOffset = jedis.getrange(key, 2, -1);
     assertThat(fromAfterStartToEndByNegativeOffset).isEqualTo("c123babyyouknowme");
+  }
+
+  @Test
+  public void testGetRange_whenValidSubrangeSpecified_binaryData_returnsAppropriateSubstring() {
+    byte[] keyWith13Chars =
+        new byte[] {(byte) 0xac, (byte) 0xed, 0, 4, 0, 5, 's', 't', 'r', 'i', 'n', 'g', '1'};
+
+    jedis.set(keyWith13Chars, keyWith13Chars);
+
+    byte[] fromStartToBeforeEnd = jedis.getrange(keyWith13Chars, 0, 10);
+    assertThat(fromStartToBeforeEnd)
+        .isEqualTo(new byte[] {(byte) 0xac, (byte) 0xed, 0, 4, 0, 5, 's', 't', 'r', 'i', 'n'});
+
+    byte[] fromStartByNegativeOffsetToBeforeEnd = jedis.getrange(keyWith13Chars, -19, 10);
+    assertThat(fromStartByNegativeOffsetToBeforeEnd)
+        .isEqualTo(new byte[] {(byte) 0xac, (byte) 0xed, 0, 4, 0, 5, 's', 't', 'r', 'i', 'n'});
+
+    byte[] fromStartToBeforeEndByNegativeOffset = jedis.getrange(keyWith13Chars, 0, -3);
+    assertThat(fromStartToBeforeEndByNegativeOffset)
+        .isEqualTo(new byte[] {(byte) 0xac, (byte) 0xed, 0, 4, 0, 5, 's', 't', 'r', 'i', 'n'});
+
+    byte[] fromAfterStartToBeforeEnd = jedis.getrange(keyWith13Chars, 2, 10);
+    assertThat(fromAfterStartToBeforeEnd)
+        .isEqualTo(new byte[] {0, 4, 0, 5, 's', 't', 'r', 'i', 'n'});
+
+    byte[] fromAfterStartByNegativeOffsetToBeforeEndByNegativeOffset =
+        jedis.getrange(keyWith13Chars, -10, -2);
+    assertThat(fromAfterStartByNegativeOffsetToBeforeEndByNegativeOffset)
+        .isEqualTo(new byte[] {4, 0, 5, 's', 't', 'r', 'i', 'n', 'g'});
+
+    byte[] fromAfterStartToEnd = jedis.getrange(keyWith13Chars, 2, 13);
+    assertThat(fromAfterStartToEnd)
+        .isEqualTo(new byte[] {0, 4, 0, 5, 's', 't', 'r', 'i', 'n', 'g', '1'});
+
+    byte[] fromAfterStartToEndByNegativeOffset = jedis.getrange(keyWith13Chars, 2, -1);
+    assertThat(fromAfterStartToEndByNegativeOffset)
+        .isEqualTo(new byte[] {0, 4, 0, 5, 's', 't', 'r', 'i', 'n', 'g', '1'});
+  }
+
+  @Test
+  public void testGetRange_whenValidSubrangeSpecified_utf16Data_returnsAppropriateSubstring() {
+    String utf16string = "最𐐷𤭢";
+    byte[] key = utf16string.getBytes(StandardCharsets.UTF_16);
+
+    jedis.set(key, key);
+
+    byte[] fromStartToBeforeEnd = jedis.getrange(key, 0, 4);
+    assertThat(fromStartToBeforeEnd).isEqualTo(new byte[] {-2, -1, 103, 0, -40});
+
+    byte[] fromStartByNegativeOffsetToBeforeEnd = jedis.getrange(key, -19, 4);
+    assertThat(fromStartByNegativeOffsetToBeforeEnd).isEqualTo(new byte[] {-2, -1, 103, 0, -40});
+
+    byte[] fromStartToBeforeEndByNegativeOffset = jedis.getrange(key, 0, -2);
+    assertThat(fromStartToBeforeEndByNegativeOffset)
+        .isEqualTo(new byte[] {-2, -1, 103, 0, -40, 1, -36, 55, -40, 82, -33});
+
+    byte[] fromAfterStartToBeforeEnd = jedis.getrange(key, 2, 4);
+    assertThat(fromAfterStartToBeforeEnd).isEqualTo(new byte[] {103, 0, -40});
+
+    byte[] fromAfterStartByNegativeOffsetToBeforeEndByNegativeOffset = jedis.getrange(key, -10, -2);
+    assertThat(fromAfterStartByNegativeOffsetToBeforeEndByNegativeOffset)
+        .isEqualTo(new byte[] {103, 0, -40, 1, -36, 55, -40, 82, -33});
+
+    byte[] fromAfterStartToEnd = jedis.getrange(key, 2, 10);
+    assertThat(fromAfterStartToEnd).isEqualTo(new byte[] {103, 0, -40, 1, -36, 55, -40, 82, -33});
+
+    byte[] fromAfterStartToEndByNegativeOffset = jedis.getrange(key, 2, -1);
+    assertThat(fromAfterStartToEndByNegativeOffset)
+        .isEqualTo(new byte[] {103, 0, -40, 1, -36, 55, -40, 82, -33, 98});
   }
 
   @Test
