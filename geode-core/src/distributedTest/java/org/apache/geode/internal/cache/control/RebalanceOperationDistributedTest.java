@@ -39,7 +39,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -52,8 +51,12 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -2782,7 +2785,7 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
   private String regionName = "region";
   private int numOfEntry = 2500;
   private int totalNumberOfBuckets = 31;
-  private final ArrayList<Integer> list = new ArrayList<>();
+  private final ConcurrentLinkedQueue<Integer> queue = new ConcurrentLinkedQueue<>();
 
   @Test
   public void correctVersionGeneratedForConcurrentOperationsInTxWithRebalance() throws Exception {
@@ -2820,68 +2823,58 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
 
   private void doConcurrentPutInTx(String s) throws Exception {
     for (int i = 0; i < totalNumberOfBuckets; i++) {
-      synchronized (list) {
-        list.add(i);
-      }
+      queue.add(i);
     }
 
-    Thread[] threads = new Thread[totalNumberOfBuckets];
+    ExecutorService pool = Executors.newCachedThreadPool();
+    Future<?>[] futures = new Future<?>[totalNumberOfBuckets];
     for (int i = 0; i < totalNumberOfBuckets; i++) {
-      threads[i] = new Thread(() -> doPutOpInTx(s));
-    }
-
-    for (int i = 0; i < totalNumberOfBuckets; i++) {
-      threads[i].start();
+      futures[i] = pool.submit(() -> doPutOpInTx(s));
     }
 
     for (int i = 0; i < totalNumberOfBuckets; i++) {
-      threads[i].join();
+      futures[i].get();
     }
   }
 
   private void doConcurrentDestroyInTx() throws Exception {
     for (int i = 0; i < totalNumberOfBuckets; i++) {
-      synchronized (list) {
-        list.add(i);
-      }
+      queue.add(i);
     }
 
-    Thread[] threads = new Thread[totalNumberOfBuckets];
+    ExecutorService pool = Executors.newCachedThreadPool();
+    Future<?>[] futures = new Future<?>[totalNumberOfBuckets];
     for (int i = 0; i < totalNumberOfBuckets; i++) {
-      threads[i] = new Thread(this::doDestroyOpInTx);
-    }
-
-    for (int i = 0; i < totalNumberOfBuckets; i++) {
-      threads[i].start();
+      futures[i] = pool.submit(this::doDestroyOpInTx);
     }
 
     for (int i = 0; i < totalNumberOfBuckets; i++) {
-      threads[i].join();
+      futures[i].get();
     }
   }
 
   private void doPutOpInTx(String s) {
     int bucket;
-    synchronized (list) {
-      bucket = list.remove(0);
-    }
-    Region<Number, String> region = getCache().getRegion(regionName);
-    for (int i = 0; i < numOfEntry; i++) {
-      if (i % totalNumberOfBuckets == bucket) {
-        doTXPut(region, i, s);
+    if (!queue.isEmpty()) {
+      bucket = queue.poll();
+      Region<Number, String> region = getCache().getRegion(regionName);
+      for (int i = 0; i < numOfEntry; i++) {
+        if (i % totalNumberOfBuckets == bucket) {
+          doTXPut(region, i, s);
+        }
       }
     }
   }
 
   private void doDestroyOpInTx() {
     int bucket;
-    synchronized (list) {
-      bucket = list.remove(0);
-    }
-    Region<Number, String> region = getCache().getRegion(regionName);
-    for (int i = 0; i < numOfEntry; i++) {
-      if (i % totalNumberOfBuckets == bucket) {
-        doTxDestroy(region, i);
+    if (!queue.isEmpty()) {
+      bucket = queue.poll();
+      Region<Number, String> region = getCache().getRegion(regionName);
+      for (int i = 0; i < numOfEntry; i++) {
+        if (i % totalNumberOfBuckets == bucket) {
+          doTxDestroy(region, i);
+        }
       }
     }
   }

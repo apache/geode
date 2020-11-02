@@ -6848,7 +6848,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   boolean isInTokenModeNeeded(boolean needTokensForGII, boolean needRIDestroyToken) {
-    return (needTokensForGII || needRIDestroyToken) && !getConcurrencyChecksEnabled();
+    return !getConcurrencyChecksEnabled() && (needTokensForGII || needRIDestroyToken);
   }
 
   /**
