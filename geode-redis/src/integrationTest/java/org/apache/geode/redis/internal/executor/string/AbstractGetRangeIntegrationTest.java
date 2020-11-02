@@ -155,26 +155,33 @@ public abstract class AbstractGetRangeIntegrationTest implements RedisPortSuppli
     jedis.set(keyWith13Chars, keyWith13Chars);
 
     byte[] fromStartToBeforeEnd = jedis.getrange(keyWith13Chars, 0, 10);
-    assertThat(fromStartToBeforeEnd).isEqualTo(new byte[] {(byte) 0xac, (byte) 0xed, 0, 4, 0, 5, 's', 't', 'r', 'i', 'n'});
+    assertThat(fromStartToBeforeEnd)
+        .isEqualTo(new byte[] {(byte) 0xac, (byte) 0xed, 0, 4, 0, 5, 's', 't', 'r', 'i', 'n'});
 
     byte[] fromStartByNegativeOffsetToBeforeEnd = jedis.getrange(keyWith13Chars, -19, 10);
-    assertThat(fromStartByNegativeOffsetToBeforeEnd).isEqualTo(new byte[] {(byte) 0xac, (byte) 0xed, 0, 4, 0, 5, 's', 't', 'r', 'i', 'n'});
+    assertThat(fromStartByNegativeOffsetToBeforeEnd)
+        .isEqualTo(new byte[] {(byte) 0xac, (byte) 0xed, 0, 4, 0, 5, 's', 't', 'r', 'i', 'n'});
 
     byte[] fromStartToBeforeEndByNegativeOffset = jedis.getrange(keyWith13Chars, 0, -3);
-    assertThat(fromStartToBeforeEndByNegativeOffset).isEqualTo(new byte[] {(byte) 0xac, (byte) 0xed, 0, 4, 0, 5, 's', 't', 'r', 'i', 'n'});
+    assertThat(fromStartToBeforeEndByNegativeOffset)
+        .isEqualTo(new byte[] {(byte) 0xac, (byte) 0xed, 0, 4, 0, 5, 's', 't', 'r', 'i', 'n'});
 
     byte[] fromAfterStartToBeforeEnd = jedis.getrange(keyWith13Chars, 2, 10);
-    assertThat(fromAfterStartToBeforeEnd).isEqualTo(new byte[] {0, 4, 0, 5, 's', 't', 'r', 'i', 'n'});
+    assertThat(fromAfterStartToBeforeEnd)
+        .isEqualTo(new byte[] {0, 4, 0, 5, 's', 't', 'r', 'i', 'n'});
 
-    byte[] fromAfterStartByNegativeOffsetToBeforeEndByNegativeOffset = jedis.getrange(keyWith13Chars, -10, -2);
+    byte[] fromAfterStartByNegativeOffsetToBeforeEndByNegativeOffset =
+        jedis.getrange(keyWith13Chars, -10, -2);
     assertThat(fromAfterStartByNegativeOffsetToBeforeEndByNegativeOffset)
         .isEqualTo(new byte[] {4, 0, 5, 's', 't', 'r', 'i', 'n', 'g'});
 
     byte[] fromAfterStartToEnd = jedis.getrange(keyWith13Chars, 2, 13);
-    assertThat(fromAfterStartToEnd).isEqualTo(new byte[] {0, 4, 0, 5, 's', 't', 'r', 'i', 'n', 'g', '1'});
+    assertThat(fromAfterStartToEnd)
+        .isEqualTo(new byte[] {0, 4, 0, 5, 's', 't', 'r', 'i', 'n', 'g', '1'});
 
     byte[] fromAfterStartToEndByNegativeOffset = jedis.getrange(keyWith13Chars, 2, -1);
-    assertThat(fromAfterStartToEndByNegativeOffset).isEqualTo(new byte[] {0, 4, 0, 5, 's', 't', 'r', 'i', 'n', 'g', '1'});
+    assertThat(fromAfterStartToEndByNegativeOffset)
+        .isEqualTo(new byte[] {0, 4, 0, 5, 's', 't', 'r', 'i', 'n', 'g', '1'});
   }
 
   @Test
@@ -191,7 +198,8 @@ public abstract class AbstractGetRangeIntegrationTest implements RedisPortSuppli
     assertThat(fromStartByNegativeOffsetToBeforeEnd).isEqualTo(new byte[] {-2, -1, 103, 0, -40});
 
     byte[] fromStartToBeforeEndByNegativeOffset = jedis.getrange(key, 0, -2);
-    assertThat(fromStartToBeforeEndByNegativeOffset).isEqualTo(new byte[] {-2, -1, 103, 0, -40, 1, -36, 55, -40, 82, -33});
+    assertThat(fromStartToBeforeEndByNegativeOffset)
+        .isEqualTo(new byte[] {-2, -1, 103, 0, -40, 1, -36, 55, -40, 82, -33});
 
     byte[] fromAfterStartToBeforeEnd = jedis.getrange(key, 2, 4);
     assertThat(fromAfterStartToBeforeEnd).isEqualTo(new byte[] {103, 0, -40});
@@ -204,7 +212,8 @@ public abstract class AbstractGetRangeIntegrationTest implements RedisPortSuppli
     assertThat(fromAfterStartToEnd).isEqualTo(new byte[] {103, 0, -40, 1, -36, 55, -40, 82, -33});
 
     byte[] fromAfterStartToEndByNegativeOffset = jedis.getrange(key, 2, -1);
-    assertThat(fromAfterStartToEndByNegativeOffset).isEqualTo(new byte[] {103, 0, -40, 1, -36, 55, -40, 82, -33, 98});
+    assertThat(fromAfterStartToEndByNegativeOffset)
+        .isEqualTo(new byte[] {103, 0, -40, 1, -36, 55, -40, 82, -33, 98});
   }
 
   @Test
