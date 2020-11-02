@@ -107,10 +107,12 @@ public class PartitionedRegionClearWithAlterRegionDUnitTest implements Serializa
   }
 
   @Test
-  public void testClearRegionWhileAddingCacheLoader() throws InterruptedException {
+  public void testClearRegionWhileAddingCacheLoaderBeforeProcessMessage()
+      throws InterruptedException {
     initialize();
 
-    server1.invoke(() -> DistributionMessageObserver.setInstance(getDistributionMessageObserver()));
+    server1.invoke(() -> DistributionMessageObserver.setInstance(
+        getDistributionMessageObserverBeforeProcessMessage()));
 
     AsyncInvocation asyncInvocation1 = server1.invokeAsync(() -> {
       alterRegionSetCacheLoader();
@@ -125,13 +127,34 @@ public class PartitionedRegionClearWithAlterRegionDUnitTest implements Serializa
     asyncInvocation2.await();
   }
 
-
-
   @Test
-  public void testClearRegionWhileAddingCacheWriter() throws InterruptedException {
+  public void testClearRegionWhileAddingCacheLoaderAfterProcessMessage()
+      throws InterruptedException {
     initialize();
 
-    server1.invoke(() -> DistributionMessageObserver.setInstance(getDistributionMessageObserver()));
+    server1.invoke(() -> DistributionMessageObserver.setInstance(
+        getDistributionMessageObserverAfterProcessMessage()));
+
+    AsyncInvocation asyncInvocation1 = server1.invokeAsync(() -> {
+      alterRegionSetCacheLoader();
+    });
+
+    AsyncInvocation asyncInvocation2 = server2.invokeAsync(() -> {
+      cacheRule.getCache().getRegion(REGION_NAME).clear();
+      assertThat(cacheRule.getCache().getRegion(REGION_NAME).size()).isEqualTo(0);
+    });
+
+    asyncInvocation1.await();
+    asyncInvocation2.await();
+  }
+
+  @Test
+  public void testClearRegionWhileAddingCacheWriterBeforeProcessMessage()
+      throws InterruptedException {
+    initialize();
+
+    server1.invoke(() -> DistributionMessageObserver.setInstance(
+        getDistributionMessageObserverBeforeProcessMessage()));
 
     AsyncInvocation asyncInvocation1 = server1.invokeAsync(() -> {
       alterRegionSetCacheWriter();
@@ -147,10 +170,33 @@ public class PartitionedRegionClearWithAlterRegionDUnitTest implements Serializa
   }
 
   @Test
-  public void testClearRegionWhileAddingCacheListener() throws InterruptedException {
+  public void testClearRegionWhileAddingCacheWriterAfterProcessMessage()
+      throws InterruptedException {
     initialize();
 
-    server1.invoke(() -> DistributionMessageObserver.setInstance(getDistributionMessageObserver()));
+    server1.invoke(() -> DistributionMessageObserver.setInstance(
+        getDistributionMessageObserverAfterProcessMessage()));
+
+    AsyncInvocation asyncInvocation1 = server1.invokeAsync(() -> {
+      alterRegionSetCacheWriter();
+    });
+
+    AsyncInvocation asyncInvocation2 = server2.invokeAsync(() -> {
+      cacheRule.getCache().getRegion(REGION_NAME).clear();
+      assertThat(cacheRule.getCache().getRegion(REGION_NAME).size()).isEqualTo(0);
+    });
+
+    asyncInvocation1.await();
+    asyncInvocation2.await();
+  }
+
+  @Test
+  public void testClearRegionWhileAddingCacheListenerBeforeProcessMessage()
+      throws InterruptedException {
+    initialize();
+
+    server1.invoke(() -> DistributionMessageObserver.setInstance(
+        getDistributionMessageObserverBeforeProcessMessage()));
 
     AsyncInvocation asyncInvocation1 = server1.invokeAsync(() -> {
       alterRegionSetCacheListener();
@@ -166,10 +212,33 @@ public class PartitionedRegionClearWithAlterRegionDUnitTest implements Serializa
   }
 
   @Test
-  public void testClearRegionWhileChangingEviction() throws InterruptedException {
+  public void testClearRegionWhileAddingCacheListenerAfterProcessMessage()
+      throws InterruptedException {
     initialize();
 
-    server1.invoke(() -> DistributionMessageObserver.setInstance(getDistributionMessageObserver()));
+    server1.invoke(() -> DistributionMessageObserver.setInstance(
+        getDistributionMessageObserverAfterProcessMessage()));
+
+    AsyncInvocation asyncInvocation1 = server1.invokeAsync(() -> {
+      alterRegionSetCacheListener();
+    });
+
+    AsyncInvocation asyncInvocation2 = server2.invokeAsync(() -> {
+      cacheRule.getCache().getRegion(REGION_NAME).clear();
+      assertThat(cacheRule.getCache().getRegion(REGION_NAME).size()).isEqualTo(0);
+    });
+
+    asyncInvocation1.await();
+    asyncInvocation2.await();
+  }
+
+  @Test
+  public void testClearRegionWhileChangingEvictionBeforeProcessMessage()
+      throws InterruptedException {
+    initialize();
+
+    server1.invoke(() -> DistributionMessageObserver.setInstance(
+        getDistributionMessageObserverBeforeProcessMessage()));
 
     AsyncInvocation asyncInvocation1 = server1.invokeAsync(() -> {
       Region region = cacheRule.getCache().getRegion(REGION_NAME);
@@ -189,10 +258,37 @@ public class PartitionedRegionClearWithAlterRegionDUnitTest implements Serializa
   }
 
   @Test
-  public void testClearRegionWhileChangingRegionTTLExpiration() throws InterruptedException {
+  public void testClearRegionWhileChangingEvictionAfterProcessMessage()
+      throws InterruptedException {
     initialize();
 
-    server1.invoke(() -> DistributionMessageObserver.setInstance(getDistributionMessageObserver()));
+    server1.invoke(() -> DistributionMessageObserver.setInstance(
+        getDistributionMessageObserverAfterProcessMessage()));
+
+    AsyncInvocation asyncInvocation1 = server1.invokeAsync(() -> {
+      Region region = cacheRule.getCache().getRegion(REGION_NAME);
+      AttributesMutator attributesMutator = region.getAttributesMutator();
+      getBlackboard().waitForGate(GATE_NAME);
+      attributesMutator.getEvictionAttributesMutator().setMaximum(1);
+      assertThat(region.getAttributes().getEvictionAttributes().getMaximum()).isEqualTo(1);
+    });
+
+    AsyncInvocation asyncInvocation2 = server2.invokeAsync(() -> {
+      cacheRule.getCache().getRegion(REGION_NAME).clear();
+      assertThat(cacheRule.getCache().getRegion(REGION_NAME).size()).isEqualTo(0);
+    });
+
+    asyncInvocation1.await();
+    asyncInvocation2.await();
+  }
+
+  @Test
+  public void testClearRegionWhileChangingRegionTTLExpirationBeforeProcessMessage()
+      throws InterruptedException {
+    initialize();
+
+    server1.invoke(() -> DistributionMessageObserver.setInstance(
+        getDistributionMessageObserverBeforeProcessMessage()));
 
     AsyncInvocation asyncInvocation1 = server1.invokeAsync(() -> {
       Region region = cacheRule.getCache().getRegion(REGION_NAME);
@@ -213,10 +309,65 @@ public class PartitionedRegionClearWithAlterRegionDUnitTest implements Serializa
   }
 
   @Test
-  public void testClearRegionWhileChangingEntryTTLExpiration() throws InterruptedException {
+  public void testClearRegionWhileChangingRegionTTLExpirationAfterProcessMessage()
+      throws InterruptedException {
     initialize();
 
-    server1.invoke(() -> DistributionMessageObserver.setInstance(getDistributionMessageObserver()));
+    server1.invoke(() -> DistributionMessageObserver.setInstance(
+        getDistributionMessageObserverAfterProcessMessage()));
+
+    AsyncInvocation asyncInvocation1 = server1.invokeAsync(() -> {
+      Region region = cacheRule.getCache().getRegion(REGION_NAME);
+      AttributesMutator attributesMutator = region.getAttributesMutator();
+      ExpirationAttributes expirationAttributes = new ExpirationAttributes();
+      getBlackboard().waitForGate(GATE_NAME);
+      attributesMutator.setRegionTimeToLive(expirationAttributes);
+      assertThat(region.getAttributes().getRegionTimeToLive()).isEqualTo(expirationAttributes);
+    });
+
+    AsyncInvocation asyncInvocation2 = server2.invokeAsync(() -> {
+      cacheRule.getCache().getRegion(REGION_NAME).clear();
+      assertThat(cacheRule.getCache().getRegion(REGION_NAME).size()).isEqualTo(0);
+    });
+
+    asyncInvocation1.await();
+    asyncInvocation2.await();
+  }
+
+  @Test
+  public void testClearRegionWhileChangingEntryTTLExpirationBeforeProcessMessage()
+      throws InterruptedException {
+    initialize();
+
+    server1.invoke(() -> DistributionMessageObserver.setInstance(
+        getDistributionMessageObserverBeforeProcessMessage()));
+
+    AsyncInvocation asyncInvocation1 = server1.invokeAsync(() -> {
+      Region region = cacheRule.getCache().getRegion(REGION_NAME);
+      AttributesMutator attributesMutator = region.getAttributesMutator();
+      ExpirationAttributes expirationAttributes = new ExpirationAttributes();
+      getBlackboard().waitForGate(GATE_NAME);
+      attributesMutator.setEntryTimeToLive(expirationAttributes);
+      assertThat(region.getAttributes().getEntryTimeToLive()).isEqualTo(expirationAttributes);
+    });
+
+    AsyncInvocation asyncInvocation2 = server2.invokeAsync(() -> {
+      cacheRule.getCache().getRegion(REGION_NAME).clear();
+      assertThat(cacheRule.getCache().getRegion(REGION_NAME).size()).isEqualTo(0);
+    });
+
+    asyncInvocation1.await();
+    asyncInvocation2.await();
+  }
+
+
+  @Test
+  public void testClearRegionWhileChangingEntryTTLExpirationAfterProcessMessage()
+      throws InterruptedException {
+    initialize();
+
+    server1.invoke(() -> DistributionMessageObserver.setInstance(
+        getDistributionMessageObserverAfterProcessMessage()));
 
     AsyncInvocation asyncInvocation1 = server1.invokeAsync(() -> {
       Region region = cacheRule.getCache().getRegion(REGION_NAME);
@@ -237,10 +388,12 @@ public class PartitionedRegionClearWithAlterRegionDUnitTest implements Serializa
   }
 
   @Test
-  public void testClearRegionWhileChangingRegionIdleExpiration() throws InterruptedException {
+  public void testClearRegionWhileChangingRegionIdleExpirationBeforeProcessMessage()
+      throws InterruptedException {
     initialize();
 
-    server1.invoke(() -> DistributionMessageObserver.setInstance(getDistributionMessageObserver()));
+    server1.invoke(() -> DistributionMessageObserver.setInstance(
+        getDistributionMessageObserverBeforeProcessMessage()));
 
     AsyncInvocation asyncInvocation1 = server1.invokeAsync(() -> {
       Region region = cacheRule.getCache().getRegion(REGION_NAME);
@@ -261,10 +414,65 @@ public class PartitionedRegionClearWithAlterRegionDUnitTest implements Serializa
   }
 
   @Test
-  public void testClearRegionWhileChangingEntryIdleExpiration() throws InterruptedException {
+  public void testClearRegionWhileChangingRegionIdleExpirationAfterProcessMessage()
+      throws InterruptedException {
     initialize();
 
-    server1.invoke(() -> DistributionMessageObserver.setInstance(getDistributionMessageObserver()));
+    server1.invoke(() -> DistributionMessageObserver.setInstance(
+        getDistributionMessageObserverAfterProcessMessage()));
+
+    AsyncInvocation asyncInvocation1 = server1.invokeAsync(() -> {
+      Region region = cacheRule.getCache().getRegion(REGION_NAME);
+      AttributesMutator attributesMutator = region.getAttributesMutator();
+      ExpirationAttributes expirationAttributes = new ExpirationAttributes();
+      getBlackboard().waitForGate(GATE_NAME);
+      attributesMutator.setRegionIdleTimeout(expirationAttributes);
+      assertThat(region.getAttributes().getRegionIdleTimeout()).isEqualTo(expirationAttributes);
+    });
+
+    AsyncInvocation asyncInvocation2 = server2.invokeAsync(() -> {
+      cacheRule.getCache().getRegion(REGION_NAME).clear();
+      assertThat(cacheRule.getCache().getRegion(REGION_NAME).size()).isEqualTo(0);
+    });
+
+    asyncInvocation1.await();
+    asyncInvocation2.await();
+  }
+
+  @Test
+  public void testClearRegionWhileChangingEntryIdleExpirationBeforeProcessMessage()
+      throws InterruptedException {
+    initialize();
+
+    server1.invoke(() -> DistributionMessageObserver.setInstance(
+        getDistributionMessageObserverBeforeProcessMessage()));
+
+    AsyncInvocation asyncInvocation1 = server1.invokeAsync(() -> {
+      Region region = cacheRule.getCache().getRegion(REGION_NAME);
+      AttributesMutator attributesMutator = region.getAttributesMutator();
+      ExpirationAttributes expirationAttributes =
+          new ExpirationAttributes(1, ExpirationAction.DESTROY);
+      getBlackboard().waitForGate(GATE_NAME);
+      attributesMutator.setEntryIdleTimeout(expirationAttributes);
+      assertThat(region.getAttributes().getEntryIdleTimeout()).isEqualTo(expirationAttributes);
+    });
+
+    AsyncInvocation asyncInvocation2 = server2.invokeAsync(() -> {
+      cacheRule.getCache().getRegion(REGION_NAME).clear();
+      assertThat(cacheRule.getCache().getRegion(REGION_NAME).size()).isEqualTo(0);
+    });
+
+    asyncInvocation1.await();
+    asyncInvocation2.await();
+  }
+
+  @Test // See GEODE-8680
+  public void testClearRegionWhileChangingEntryIdleExpirationAfterProcessMessage()
+      throws InterruptedException {
+    initialize();
+
+    server1.invoke(() -> DistributionMessageObserver.setInstance(
+        getDistributionMessageObserverAfterProcessMessage()));
 
     AsyncInvocation asyncInvocation1 = server1.invokeAsync(() -> {
       Region region = cacheRule.getCache().getRegion(REGION_NAME);
@@ -286,7 +494,7 @@ public class PartitionedRegionClearWithAlterRegionDUnitTest implements Serializa
   }
 
   @Test
-  public void testMemberLeave() throws InterruptedException {
+  public void testMemberLeaveBeforeProcessMessage() throws InterruptedException {
     initialize();
 
     server3 = VM.getVM(2);
@@ -305,7 +513,44 @@ public class PartitionedRegionClearWithAlterRegionDUnitTest implements Serializa
               new MemberKiller(false));
     });
 
-    server3.invoke(() -> DistributionMessageObserver.setInstance(getDistributionMessageObserver()));
+    server3.invoke(() -> DistributionMessageObserver.setInstance(
+        getDistributionMessageObserverBeforeProcessMessage()));
+
+    AsyncInvocation asyncInvocation1 = server1.invokeAsync(() -> {
+      assertThatThrownBy(() -> cacheRule.getCache().getRegion(REGION_NAME).clear())
+          .isInstanceOf(PartitionedRegionPartialClearException.class);
+    });
+
+    AsyncInvocation asyncInvocation2 = server3.invokeAsync(() -> {
+      alterRegionSetCacheWriter();
+    });
+
+    asyncInvocation1.await();
+    asyncInvocation2.await();
+  }
+
+  @Test
+  public void testMemberLeaveAfterProcessMessage() throws InterruptedException {
+    initialize();
+
+    server3 = VM.getVM(2);
+
+    server3.invoke(() -> {
+      cacheRule.createCache();
+      cacheRule.getCache().createRegionFactory(RegionShortcut.PARTITION).setStatisticsEnabled(true)
+          .create(REGION_NAME);
+      Region region = cacheRule.getCache().getRegion(REGION_NAME);
+      assertThat(region.size()).isEqualTo(NUM_ENTRIES);
+    });
+
+    server2.invoke(() -> {
+      DistributionMessageObserver
+          .setInstance(
+              new MemberKiller(false));
+    });
+
+    server3.invoke(() -> DistributionMessageObserver.setInstance(
+        getDistributionMessageObserverAfterProcessMessage()));
 
     AsyncInvocation asyncInvocation1 = server1.invokeAsync(() -> {
       assertThatThrownBy(() -> cacheRule.getCache().getRegion(REGION_NAME).clear())
@@ -468,7 +713,20 @@ public class PartitionedRegionClearWithAlterRegionDUnitTest implements Serializa
     return blackboard;
   }
 
-  private DistributionMessageObserver getDistributionMessageObserver() {
+  private DistributionMessageObserver getDistributionMessageObserverBeforeProcessMessage() {
+    return new DistributionMessageObserver() {
+      @Override
+      public void beforeProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
+        super.beforeProcessMessage(dm, message);
+        if (message instanceof PartitionedRegionClearMessage) {
+          DistributionMessageObserver.setInstance(null);
+          getBlackboard().signalGate(GATE_NAME);
+        }
+      }
+    };
+  }
+
+  private DistributionMessageObserver getDistributionMessageObserverAfterProcessMessage() {
     return new DistributionMessageObserver() {
       @Override
       public void afterProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
