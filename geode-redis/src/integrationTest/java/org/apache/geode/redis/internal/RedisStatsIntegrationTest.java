@@ -78,27 +78,6 @@ public class RedisStatsIntegrationTest {
     assertThat(redisStats.getClients()).isEqualTo(0);
   }
 
-  @Test
-  public void commandsProcessed_shouldIncrement_givenSuccessfulCommand() {
-    long initialCommandsProcessed = redisStats.getCommandsProcessed();
-    jedis.ttl("key");
-
-    assertThat(redisStats.getCommandsProcessed())
-        .isEqualTo(initialCommandsProcessed + 1);
-  }
-
-
-  @Test
-  public void networkBytesRead_shouldIncrementBySizeOfCommandSent() {
-    long initialNetworkBytesRead = redisStats.getNetworkBytesRead();
-    String respCommandString = "*3\r\n$3\r\nset\r\n$3\r\nkey\r\n$5\r\nvalue\r\n";
-
-    jedis.set("key", "value");
-
-    assertThat(redisStats.getNetworkBytesRead())
-        .isEqualTo(initialNetworkBytesRead + respCommandString.length());
-  }
-
 
   @Test
   public void keyspaceHitsStat_shouldIncrement_whenKeyAccessed() {
@@ -399,6 +378,15 @@ public class RedisStatsIntegrationTest {
   }
 
   @Test
+  public void commandsProcessed_shouldIncrement_givenSuccessfulCommand() {
+    long initialCommandsProcessed = redisStats.getCommandsProcessed();
+    jedis.ttl("key");
+
+    assertThat(redisStats.getCommandsProcessed())
+        .isEqualTo(initialCommandsProcessed + 1);
+  }
+
+  @Test
   public void opsPerSecond_ShouldUpdate_givenOperationsOccurring() {
 
     AtomicInteger numberOfCommandsExecuted = new AtomicInteger();
@@ -428,5 +416,42 @@ public class RedisStatsIntegrationTest {
     assertThat(
         redisStats.getOpsPerSecond())
             .isCloseTo((long) expectedCommandsPerSecond / 2, Offset.offset(1L));
+  }
+
+  @Test
+  public void networkBytesRead_shouldIncrementBySizeOfCommandSent() {
+    long initialNetworkBytesRead = redisStats.getNetworkBytesRead();
+    String respCommandString = "*3\r\n$3\r\nset\r\n$3\r\nkey\r\n$5\r\nvalue\r\n";
+
+    jedis.set("key", "value");
+
+    assertThat(redisStats.getNetworkBytesRead())
+        .isEqualTo(initialNetworkBytesRead + respCommandString.length());
+  }
+
+  @Test
+  public void instantaneousInputKbps_should_ReportNumberOfKiloBytesSent() {
+    double REASONABLE_SOUNDING_OFFSET_PICKED_FOR_NO_REAL_REASON = .3;
+    int NUMBER_SECONDS_TO_RUN = 5;
+    String RESP_COMMAND_STRING = "*3\r\n$3\r\nset\r\n$3\r\nkey\r\n$5\r\nvalue\r\n";
+    int BYTES_SENT_PER_COMMAND = RESP_COMMAND_STRING.length();
+    AtomicInteger totalBytesSent = new AtomicInteger();
+
+    GeodeAwaitility
+        .await()
+        .during(Duration.ofSeconds(NUMBER_SECONDS_TO_RUN))
+        .until(() -> {
+          jedis.set("key", "value");
+          totalBytesSent.addAndGet(BYTES_SENT_PER_COMMAND);
+          return true;
+        });
+
+    double expectedBytesPerSecond = totalBytesSent.get() / NUMBER_SECONDS_TO_RUN;
+    double expectedKiloBytesPerSecond = expectedBytesPerSecond / 1000;
+    double actualKiloBytesPerSecond = redisStats.getNetworkKilobytesReadPerSecond();
+
+    assertThat(actualKiloBytesPerSecond)
+        .isCloseTo(expectedKiloBytesPerSecond,
+            Offset.offset(REASONABLE_SOUNDING_OFFSET_PICKED_FOR_NO_REAL_REASON));
   }
 }

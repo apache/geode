@@ -113,6 +113,7 @@ public class InfoExecutor extends AbstractExecutor {
     String instantaneous_input_kbps =
         new DecimalFormat("0.00")
             .format(redisStats.getNetworkKilobytesReadPerSecond());
+
     final String STATS_STRING =
         "# Stats\r\n" +
             "total_commands_processed:" + redisStats.getCommandsProcessed() + "\r\n" +
