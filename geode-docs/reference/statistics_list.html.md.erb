@@ -553,19 +553,14 @@ These statistics are in a client and they describe one of the client’s connect
 
 ## <a id="section_66C0E7748501480B85209D57D24256D5" class="no-quick-link"></a>Continuous Querying (CqQueryStats)
 
-These statistics are for continuous querying information.
-
-**Note:**
-The subscription redundancy changes CQS_ACTIVE, CQS_STOPPED and CQS_CLOSED count on partitioned region
-
-The statistics are:
+These statistics are for continuous querying information. The statistics are:
 
 | Statistic                        | Description                                                                                                            |
 |----------------------------------|------------------------------------------------------------------------------------------------------------------------|
 | `CQS_CREATED`                    | Number of CQ operations created.                                                                                       |
-| `CQS_ACTIVE`                     | Number of CQ operations actively executing.                                                                            |
-| `CQS_STOPPED`                    | Number of CQ operations stopped.                                                                                       |
-| `CQS_CLOSED`                     | Number of CQ operations closed.                                                                                        |
+| `CQS_ACTIVE`                     | Number of CQ operations actively executing. The quantity reported for partitioned regions may be larger than that of replicated regions, as each redundant copy contributes the the count. |
+| `CQS_STOPPED`                    | Number of CQ operations stopped. The quantity reported for partitioned regions may be larger than that of replicated regions, as each redundant copy contributes the the count. |
+| `CQS_CLOSED`                     | Number of CQ operations closed. The quantity reported for partitioned regions may be larger than that of replicated regions, as each redundant copy contributes the the count. |
 | `CQS_ON_CLIENT`                  | Number of CQ operations on the client.                                                                                 |
 | `CLIENTS_WITH_CQS`               | Number of Clients with CQ operations.                                                                                  |
 | `CQ_QUERY_EXECUTION_TIME`        | Time taken, in nanoseconds, for CQ query execution.                                                                    |
