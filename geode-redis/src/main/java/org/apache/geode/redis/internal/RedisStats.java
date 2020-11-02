@@ -51,6 +51,20 @@ public class RedisStats {
   private static final int passiveExpirationsId;
   private static final int expirationsId;
   private static final int expirationTimeId;
+  private final AtomicLong commandsProcessed = new AtomicLong();
+  private final AtomicLong opsPerSecond = new AtomicLong();
+  private final AtomicLong networkBytesRead = new AtomicLong();
+  private final AtomicLong connectionsReceived = new AtomicLong();
+  private final AtomicLong connectedClients = new AtomicLong();
+  private final AtomicLong expirations = new AtomicLong();
+  private final AtomicLong keyspaceHits = new AtomicLong();
+  private final AtomicLong keyspaceMisses = new AtomicLong();
+  private volatile double networkKilobytesReadPerSecond;
+  private long previousCommandsProcessed;
+  private long previousNetworkBytesRead;
+  private final StatisticsClock clock;
+  private final long startTime;
+  private final Statistics stats;
 
   static {
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
@@ -87,6 +101,29 @@ public class RedisStats {
     expirationsId = type.nameToId("expirations");
     expirationTimeId = type.nameToId("expirationTime");
   }
+
+  public RedisStats(StatisticsFactory factory, StatisticsClock clock) {
+    this(factory, "redisStats", clock);
+  }
+
+  public RedisStats(StatisticsFactory factory, String textId, StatisticsClock clock) {
+    startTime = clock.getTime();
+    stats = factory == null ? null : factory.createAtomicStatistics(type, textId);
+    this.clock = clock;
+    perSecondExecutor = startPerSecondUpdater();
+  }
+
+  public void clearAllStats() {
+    commandsProcessed.set(0);
+    opsPerSecond.set(0);
+    networkBytesRead.set(0);
+    connectionsReceived.set(0);
+    connectedClients.set(0);
+    expirations.set(0);
+    keyspaceHits.set(0);
+    keyspaceMisses.set(0);
+  }
+
 
   private static void fillListWithCompletedCommandDescriptors(StatisticsTypeFactory f,
       ArrayList<StatisticDescriptor> descriptorList) {
@@ -140,20 +177,8 @@ public class RedisStats {
     }
   }
 
-  private final Statistics stats;
-
-  private final StatisticsClock clock;
-  private final long startTime;
-
-  public RedisStats(StatisticsFactory factory, StatisticsClock clock) {
-    this(factory, "redisStats", clock);
-  }
-
-  public RedisStats(StatisticsFactory factory, String textId, StatisticsClock clock) {
-    startTime = System.currentTimeMillis();
-    stats = factory == null ? null : factory.createAtomicStatistics(type, textId);
-    this.clock = clock;
-    perSecondExecutor = startPerSecondUpdater();
+  private long getSecondsAlive() {
+    return (getTime() - startTime) / 1_000_000_000;
   }
 
   public static StatisticsType getStatisticsType() {
@@ -190,16 +215,6 @@ public class RedisStats {
     stats.incLong(clientId, -1);
   }
 
-  private final AtomicLong commandsProcessed = new AtomicLong();
-  private final AtomicLong opsPerSecond = new AtomicLong();
-  private final AtomicLong networkBytesRead = new AtomicLong();
-  private volatile double networkKilobytesReadPerSecond;
-  private final AtomicLong connectionsReceived = new AtomicLong();
-  private final AtomicLong connectedClients = new AtomicLong();
-  private final AtomicLong expirations = new AtomicLong();
-  private final AtomicLong keyspaceHits = new AtomicLong();
-  private final AtomicLong keyspaceMisses = new AtomicLong();
-
   public void incCommandsProcessed() {
     commandsProcessed.incrementAndGet();
   }
@@ -209,9 +224,14 @@ public class RedisStats {
   }
 
   public long getOpsPerSecond() {
-    return opsPerSecond.get();
-  }
+    long secondsAlive = getSecondsAlive();
 
+    if (secondsAlive == 0) {
+      return commandsProcessed.get();
+    }
+
+    return commandsProcessed.get() / secondsAlive;
+  }
 
   public void incNetworkBytesRead(long bytesRead) {
     networkBytesRead.addAndGet(bytesRead);
@@ -224,7 +244,6 @@ public class RedisStats {
   public double getNetworkKilobytesReadPerSecond() {
     return networkKilobytesReadPerSecond;
   }
-
 
   public long getConnectionsReceived() {
     return connectionsReceived.get();
@@ -308,13 +327,14 @@ public class RedisStats {
     stopPerSecondUpdater();
   }
 
-
   private final ScheduledExecutorService perSecondExecutor;
 
   private ScheduledExecutorService startPerSecondUpdater() {
+    int INTERVAL = 1;
+
     ScheduledExecutorService perSecondExecutor =
         newSingleThreadScheduledExecutor("GemFireRedis-PerSecondUpdater-");
-    int INTERVAL = 1;
+
     perSecondExecutor.scheduleWithFixedDelay(() -> doPerSecondUpdates(), INTERVAL,
         INTERVAL,
         SECONDS);
@@ -325,16 +345,12 @@ public class RedisStats {
     perSecondExecutor.shutdownNow();
   }
 
-  private long previousCommandsProcessed;
-  private long previousNetworkBytesRead;
 
   private void doPerSecondUpdates() {
-    long currentCommandsProcessed = commandsProcessed.get();
     long currentNetworkBytesRead = networkBytesRead.get();
-    opsPerSecond.set(currentCommandsProcessed - previousCommandsProcessed);
     long deltaNetworkBytesRead = currentNetworkBytesRead - previousNetworkBytesRead;
+
     networkKilobytesReadPerSecond = deltaNetworkBytesRead / 1024.0;
-    previousCommandsProcessed = currentCommandsProcessed;
     previousNetworkBytesRead = currentNetworkBytesRead;
   }
 }
