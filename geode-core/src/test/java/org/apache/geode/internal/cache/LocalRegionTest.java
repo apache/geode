@@ -277,4 +277,45 @@ public class LocalRegionTest {
 
     assertThat(region.isGenerateLocalFilterRoutingNeeded(event)).isFalse();
   }
+
+  @Test
+  public void isInTokenModeNeededReturnsFalseIfConcurrencyChecksEnabled() {
+    LocalRegion region =
+        spy(new LocalRegion("region", regionAttributes, null, cache, internalRegionArguments,
+            internalDataView, regionMapConstructor, serverRegionProxyConstructor, entryEventFactory,
+            poolFinder, regionPerfStatsFactory, disabledClock()));
+    doReturn(true).when(region).getConcurrencyChecksEnabled();
+
+    assertThat(region.isInTokenModeNeeded(true, true)).isFalse();
+  }
+
+  @Test
+  public void isInTokenModeNeededReturnsFalseIfBothNeedTokensForGIIAndNeedRIDestroyTokenAreFalse() {
+    LocalRegion region =
+        spy(new LocalRegion("region", regionAttributes, null, cache, internalRegionArguments,
+            internalDataView, regionMapConstructor, serverRegionProxyConstructor, entryEventFactory,
+            poolFinder, regionPerfStatsFactory, disabledClock()));
+
+    assertThat(region.isInTokenModeNeeded(false, false)).isFalse();
+  }
+
+  @Test
+  public void isInTokenModeNeededReturnsTrueIfConcurrencyChecksNotEnabledAndNeedTokensForGII() {
+    LocalRegion region =
+        spy(new LocalRegion("region", regionAttributes, null, cache, internalRegionArguments,
+            internalDataView, regionMapConstructor, serverRegionProxyConstructor, entryEventFactory,
+            poolFinder, regionPerfStatsFactory, disabledClock()));
+
+    assertThat(region.isInTokenModeNeeded(true, false)).isTrue();
+  }
+
+  @Test
+  public void isInTokenModeNeededReturnsTrueIfConcurrencyChecksNotEnabledAndNeedRIDestroyToken() {
+    LocalRegion region =
+        spy(new LocalRegion("region", regionAttributes, null, cache, internalRegionArguments,
+            internalDataView, regionMapConstructor, serverRegionProxyConstructor, entryEventFactory,
+            poolFinder, regionPerfStatsFactory, disabledClock()));
+
+    assertThat(region.isInTokenModeNeeded(false, true)).isTrue();
+  }
 }
