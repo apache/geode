@@ -312,11 +312,6 @@ public class WANTestBase extends DistributedTestCase {
     }
   }
 
-  public static Integer createLocatorWithDSIdAndRemoteLoc(int dsId, int remoteLocPort) {
-    return createFirstRemoteLocator(dsId, remoteLocPort);
-  }
-
-
   public static Integer createFirstLocatorWithDSId(int dsId) {
     stopOldLocator();
     WANTestBase test = new WANTestBase();
@@ -1268,24 +1263,6 @@ public class WANTestBase extends DistributedTestCase {
     PoolStats poolStats = sender.getProxy().getStats();
 
     return poolStats.getDisConnects();
-  }
-
-  protected static int getTotalBucketQueueSize(PartitionedRegion prQ, boolean isPrimary) {
-    int size = 0;
-    if (prQ != null) {
-      Set<Map.Entry<Integer, BucketRegion>> allBuckets = prQ.getDataStore().getAllLocalBuckets();
-      List<Integer> thisProcessorBuckets = new ArrayList<Integer>();
-
-      for (Map.Entry<Integer, BucketRegion> bucketEntry : allBuckets) {
-        BucketRegion bucket = bucketEntry.getValue();
-        int bId = bucket.getId();
-        if ((isPrimary && bucket.getBucketAdvisor().isPrimary())
-            || (!isPrimary && !bucket.getBucketAdvisor().isPrimary())) {
-          size += bucket.size();
-        }
-      }
-    }
-    return size;
   }
 
   public static List<Integer> getSenderStatsForDroppedEvents(String senderId) {
