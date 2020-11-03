@@ -24,6 +24,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.IntStream;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -440,6 +441,7 @@ public class PartitionedRegionClearWithAlterRegionDUnitTest implements Serializa
   }
 
   @Test
+  @Ignore // See GEODE-8680
   public void testClearRegionWhileChangingEntryIdleExpirationBeforeProcessMessage()
       throws InterruptedException {
     initialize();
@@ -466,7 +468,8 @@ public class PartitionedRegionClearWithAlterRegionDUnitTest implements Serializa
     asyncInvocation2.await();
   }
 
-  @Test // See GEODE-8680
+  @Test
+  @Ignore // See GEODE-8680
   public void testClearRegionWhileChangingEntryIdleExpirationAfterProcessMessage()
       throws InterruptedException {
     initialize();
