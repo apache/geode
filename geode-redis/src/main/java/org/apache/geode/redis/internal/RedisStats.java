@@ -60,7 +60,6 @@ public class RedisStats {
   private final AtomicLong keyspaceHits = new AtomicLong();
   private final AtomicLong keyspaceMisses = new AtomicLong();
   private volatile double networkKilobytesReadPerSecond;
-  private long previousCommandsProcessed;
   private long previousNetworkBytesRead;
   private final StatisticsClock clock;
   private final long startTime;
@@ -122,6 +121,7 @@ public class RedisStats {
     expirations.set(0);
     keyspaceHits.set(0);
     keyspaceMisses.set(0);
+    stats.setLong(clientId, 0);
   }
 
 
@@ -215,6 +215,20 @@ public class RedisStats {
     stats.incLong(clientId, -1);
   }
 
+  public long getConnectionsReceived() {
+    return connectionsReceived.get();
+  }
+
+  public long getConnectedClients() {
+    return connectedClients.get();
+  }
+
+  @VisibleForTesting
+  long getClients() {
+    return stats.getLong(clientId);
+  }
+
+
   public void incCommandsProcessed() {
     commandsProcessed.incrementAndGet();
   }
@@ -245,13 +259,6 @@ public class RedisStats {
     return networkKilobytesReadPerSecond;
   }
 
-  public long getConnectionsReceived() {
-    return connectionsReceived.get();
-  }
-
-  public long getConnectedClients() {
-    return connectedClients.get();
-  }
 
   public long getExpirations() {
     return expirations.get();
@@ -283,11 +290,6 @@ public class RedisStats {
 
   public long getKeyspaceMisses() {
     return keyspaceMisses.get();
-  }
-
-  @VisibleForTesting
-  long getClients() {
-    return stats.getLong(clientId);
   }
 
   public long startPassiveExpirationCheck() {
@@ -345,7 +347,7 @@ public class RedisStats {
     perSecondExecutor.shutdownNow();
   }
 
-
+//@todo refactor me?
   private void doPerSecondUpdates() {
     long currentNetworkBytesRead = networkBytesRead.get();
     long deltaNetworkBytesRead = currentNetworkBytesRead - previousNetworkBytesRead;

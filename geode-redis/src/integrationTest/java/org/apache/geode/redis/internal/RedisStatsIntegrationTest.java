@@ -64,19 +64,6 @@ public class RedisStatsIntegrationTest {
     jedis.close();
   }
 
-  @Test
-  public void clientsStat_withConnectAndClose_isCorrect() {
-
-    jedis.ping();
-
-    assertThat(redisStats.getClients()).isEqualTo(1);
-
-    jedis.close();
-    GeodeAwaitility.await().until(() -> !jedis.isConnected());
-
-    assertThat(redisStats.getClients()).isEqualTo(0);
-  }
-
 
   @Test
   public void keyspaceHitsStat_shouldIncrement_whenKeyAccessed() {
@@ -404,7 +391,7 @@ public class RedisStatsIntegrationTest {
         (numberOfCommandsExecuted.get() / NUMBER_SECONDS_TO_RUN);
 
     assertThat(redisStats.getOpsPerSecond())
-            .isCloseTo((long) expectedCommandsPerSecond, Offset.offset(1L));
+        .isCloseTo((long) expectedCommandsPerSecond, Offset.offset(1L));
 
     GeodeAwaitility
         .await()
@@ -412,7 +399,7 @@ public class RedisStatsIntegrationTest {
         .until(() -> true);
 
     assertThat(redisStats.getOpsPerSecond())
-            .isCloseTo((long) expectedCommandsPerSecond / 2, Offset.offset(1L));
+        .isCloseTo((long) expectedCommandsPerSecond / 2, Offset.offset(1L));
   }
 
   @Test
@@ -428,7 +415,7 @@ public class RedisStatsIntegrationTest {
 
   @Test
   public void instantaneousInputKbps_should_ReportNumberOfKiloBytesSent() {
-    double REASONABLE_SOUNDING_OFFSET_PICKED_FOR_NO_REAL_REASON = .3;
+    double REASONABLE_SOUNDING_OFFSET = .3;
     int NUMBER_SECONDS_TO_RUN = 5;
     String RESP_COMMAND_STRING = "*3\r\n$3\r\nset\r\n$3\r\nkey\r\n$5\r\nvalue\r\n";
     int BYTES_SENT_PER_COMMAND = RESP_COMMAND_STRING.length();
@@ -449,6 +436,32 @@ public class RedisStatsIntegrationTest {
 
     assertThat(actualKiloBytesPerSecond)
         .isCloseTo(expectedKiloBytesPerSecond,
-            Offset.offset(REASONABLE_SOUNDING_OFFSET_PICKED_FOR_NO_REAL_REASON));
+            Offset.offset(REASONABLE_SOUNDING_OFFSET));
+  }
+
+  @Test
+  public void clientsStat_withConnectAndClose_isCorrect() {
+
+    jedis = new Jedis("localhost", server.getPort(), TIMEOUT);
+    jedis.ping();
+
+    assertThat(redisStats.getClients()).isEqualTo(1);
+
+    jedis.close();
+    GeodeAwaitility.await().atMost(Duration.ofSeconds(2))
+        .untilAsserted(() ->  assertThat(redisStats.getClients()).isEqualTo(0));
+  }
+
+  @Test
+  public void connectionsReceivedStat_shouldIncrement_WhenNewConnectionOccurs() {
+
+    jedis = new Jedis("localhost", server.getPort(), TIMEOUT);
+    jedis.ping();
+
+    assertThat(redisStats.getConnectionsReceived()).isEqualTo(1);
+
+    jedis.close();
+
+    assertThat(redisStats.getConnectionsReceived()).isEqualTo(1);
   }
 }
