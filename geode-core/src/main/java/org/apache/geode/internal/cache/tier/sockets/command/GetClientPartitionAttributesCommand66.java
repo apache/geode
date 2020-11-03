@@ -68,7 +68,7 @@ public class GetClientPartitionAttributesCommand66 extends BaseCommand {
     Region region = serverConnection.getCache().getRegion(regionFullPath);
     if (region == null) {
       logger.warn(
-          "Region was not found during GetClientPartitionAttributes request for region path : %s",
+          "Region was not found during GetClientPartitionAttributes request for region path : {}",
           regionFullPath);
       errMessage =
           "Region was not found during GetClientPartitionAttributes request for region path : "

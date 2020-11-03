@@ -19,6 +19,7 @@ import static org.apache.geode.test.dunit.rules.ClusterStartupRule.getCache;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -86,7 +87,8 @@ public class CQMetricsDUnitTest {
       Cache cache = getCache();
       ManagementService service = ManagementService.getManagementService(cache);
       DistributedSystemMXBean dsmbean = service.getDistributedSystemMXBean();
-      await().untilAsserted(() -> assertThat(dsmbean.getActiveCQCount()).isEqualTo(2));
+      await().atMost(30, TimeUnit.SECONDS)
+          .untilAsserted(() -> assertThat(dsmbean.getActiveCQCount()).isEqualTo(2));
     });
 
     // stop cq
@@ -96,7 +98,8 @@ public class CQMetricsDUnitTest {
       Cache cache = getCache();
       ManagementService service = ManagementService.getManagementService(cache);
       DistributedSystemMXBean dsmbean = service.getDistributedSystemMXBean();
-      await().untilAsserted(() -> assertThat(dsmbean.getActiveCQCount()).isEqualTo(0));
+      await().atMost(30, TimeUnit.SECONDS)
+          .untilAsserted(() -> assertThat(dsmbean.getActiveCQCount()).isEqualTo(0));
     });
 
     checkActiveCqCount(server1, 0);
@@ -115,7 +118,8 @@ public class CQMetricsDUnitTest {
       Cache cache = getCache();
       ManagementService service = ManagementService.getManagementService(cache);
       DistributedSystemMXBean dsmbean = service.getDistributedSystemMXBean();
-      await().untilAsserted(() -> assertThat(dsmbean.getActiveCQCount()).isEqualTo(2));
+      await().atMost(30, TimeUnit.SECONDS)
+          .untilAsserted(() -> assertThat(dsmbean.getActiveCQCount()).isEqualTo(2));
     });
 
     // close cq
@@ -125,7 +129,8 @@ public class CQMetricsDUnitTest {
       Cache cache = getCache();
       ManagementService service = ManagementService.getManagementService(cache);
       DistributedSystemMXBean dsmbean = service.getDistributedSystemMXBean();
-      await().untilAsserted(() -> assertThat(dsmbean.getActiveCQCount()).isEqualTo(0));
+      await().atMost(30, TimeUnit.SECONDS)
+          .untilAsserted(() -> assertThat(dsmbean.getActiveCQCount()).isEqualTo(0));
     });
   }
 
@@ -163,6 +168,7 @@ public class CQMetricsDUnitTest {
       QueryService queryService = getCache().getQueryService();
       CqServiceStatistics cqServiceStats = queryService.getCqStatistics();
       await()
+          .atMost(30, TimeUnit.SECONDS)
           .untilAsserted(() -> assertThat(cqServiceStats.numCqsActive()).isEqualTo(expectedResult));
     });
   }
