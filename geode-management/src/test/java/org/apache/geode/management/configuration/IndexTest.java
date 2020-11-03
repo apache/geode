@@ -72,7 +72,7 @@ public class IndexTest {
     assertThat(index.getLinks().getList()).as("only name defined - list")
         .isEqualTo("/indexes");
 
-    index.setRegionPath(SEPARATOR + "regionPath");
+    index.setRegionPath("/regionPath");
     assertThat(index.getLinks().getSelf()).as("region and name defined - self")
         .isEqualTo("/regions/regionPath/indexes/testSelf");
     assertThat(index.getLinks().getList()).as("region and name defined - list")
