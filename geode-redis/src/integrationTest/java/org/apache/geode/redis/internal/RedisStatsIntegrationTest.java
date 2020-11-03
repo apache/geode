@@ -389,11 +389,11 @@ public class RedisStatsIntegrationTest {
         });
 
     long startTimeInNanos = server.getStartTime();
-    long currentTimeinNanos = server.getCurrentTime();
+    long currentTimeInNanos = server.getCurrentTime();
 
     long numberOfSecondAlive =
         TimeUnit.NANOSECONDS.toMillis(
-            currentTimeinNanos - startTimeInNanos);
+            currentTimeInNanos - startTimeInNanos);
 
     System.out.println("numberOfSecondAlive: " + numberOfSecondAlive);
 
@@ -453,17 +453,20 @@ public class RedisStatsIntegrationTest {
             Offset.offset(REASONABLE_SOUNDING_OFFSET));
   }
 
+
+  // ######################### Clients Section #################################
+
   @Test
   public void clientsStat_withConnectAndClose_isCorrect() {
 
     jedis = new Jedis("localhost", server.getPort(), TIMEOUT);
     jedis.ping();
 
-    assertThat(redisStats.getClients()).isEqualTo(1);
+    assertThat(redisStats.getConnectedClients()).isEqualTo(1);
 
     jedis.close();
     GeodeAwaitility.await().atMost(Duration.ofSeconds(2))
-        .untilAsserted(() -> assertThat(redisStats.getClients()).isEqualTo(0));
+        .untilAsserted(() -> assertThat(redisStats.getConnectedClients()).isEqualTo(0));
   }
 
   @Test
@@ -479,7 +482,7 @@ public class RedisStatsIntegrationTest {
     assertThat(redisStats.getConnectionsReceived()).isEqualTo(1);
   }
 
-  // ########################Server Section ################
+  // ######################## Server Section ################
 
   @Test
   public void uptimeInSeconds_ShouldReturnCorrectValue() {

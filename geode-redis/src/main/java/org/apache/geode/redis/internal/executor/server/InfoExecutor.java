@@ -130,11 +130,10 @@ public class InfoExecutor extends AbstractExecutor {
   }
 
   private String getKeyspaceSection(ExecutionHandlerContext context) {
-    final RedisStats redisStats = context.getRedisStats();
     final String KEYSPACE_STRING =
         "# Keyspace\r\n" +
             "db0:keys=" + context.getRegionProvider().getDataRegion().size() +
-            ",expires=" + redisStats.getExpirations() +
+            ",expires=0" +
             ",avg_ttl=0\r\n";
     return KEYSPACE_STRING;
   }

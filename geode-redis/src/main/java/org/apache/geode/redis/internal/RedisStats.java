@@ -32,7 +32,6 @@ import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
@@ -56,7 +55,6 @@ public class RedisStats {
   private final AtomicLong opsPerSecond = new AtomicLong();
   private final AtomicLong networkBytesRead = new AtomicLong();
   private final AtomicLong connectionsReceived = new AtomicLong();
-  private final AtomicLong connectedClients = new AtomicLong();
   private final AtomicLong expirations = new AtomicLong();
   private final AtomicLong keyspaceHits = new AtomicLong();
   private final AtomicLong keyspaceMisses = new AtomicLong();
@@ -121,7 +119,6 @@ public class RedisStats {
     opsPerSecond.set(0);
     networkBytesRead.set(0);
     connectionsReceived.set(0);
-    connectedClients.set(0);
     expirations.set(0);
     keyspaceHits.set(0);
     keyspaceMisses.set(0);
@@ -145,14 +142,19 @@ public class RedisStats {
 
   private static void fillListWithTimeCommandDescriptors(StatisticsTypeFactory f,
       ArrayList<StatisticDescriptor> descriptorList) {
+
     for (RedisCommandType command : RedisCommandType.values()) {
       if (command.isUnimplemented()) {
         continue;
       }
+
       String name = command.name().toLowerCase();
       String statName = name + "Time";
-      String statDescription = "Total amount of time, in nanoseconds, spent executing redis '"
-          + name + "' operations on this server.";
+      String statDescription =
+          "Total amount of time, in nanoseconds, spent executing redis '"
+              + name +
+              "' operations on this server.";
+
       String units = "nanoseconds";
       descriptorList.add(f.createLongCounter(statName, statDescription, units));
     }
@@ -185,14 +187,6 @@ public class RedisStats {
     return TimeUnit.NANOSECONDS.toSeconds(timeAliveInNanos);
   }
 
-  public static StatisticsType getStatisticsType() {
-    return type;
-  }
-
-  public Statistics getStats() {
-    return stats;
-  }
-
   private long getCurrentTime() {
     return clock.getTime();
   }
@@ -210,12 +204,10 @@ public class RedisStats {
 
   public void addClient() {
     connectionsReceived.incrementAndGet();
-    connectedClients.incrementAndGet();
     stats.incLong(clientId, 1);
   }
 
   public void removeClient() {
-    connectedClients.decrementAndGet();
     stats.incLong(clientId, -1);
   }
 
@@ -224,11 +216,6 @@ public class RedisStats {
   }
 
   public long getConnectedClients() {
-    return connectedClients.get();
-  }
-
-  @VisibleForTesting
-  long getClients() {
     return stats.getLong(clientId);
   }
 
@@ -337,9 +324,12 @@ public class RedisStats {
     ScheduledExecutorService perSecondExecutor =
         newSingleThreadScheduledExecutor("GemFireRedis-PerSecondUpdater-");
 
-    perSecondExecutor.scheduleWithFixedDelay(() -> doPerSecondUpdates(), INTERVAL,
+    perSecondExecutor.scheduleWithFixedDelay(
+        () -> doPerSecondUpdates(),
+        INTERVAL,
         INTERVAL,
         SECONDS);
+
     return perSecondExecutor;
   }
 
