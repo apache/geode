@@ -75,8 +75,29 @@ public class InfoExecutor extends AbstractExecutor {
     return result;
   }
 
+  private String getStatsSection(ExecutionHandlerContext context) {
+    final RedisStats redisStats = context.getRedisStats();
+    String instantaneous_input_kbps =
+        new DecimalFormat("0.00")
+            .format(redisStats.getNetworkKilobytesReadPerSecond());
+
+    final String STATS_STRING =
+        "# Stats\r\n" +
+            "total_commands_processed:" + redisStats.getCommandsProcessed() + "\r\n" +
+            "instantaneous_ops_per_sec:" + redisStats.getOpsPerSecond() + "\r\n" +
+            "total_net_input_bytes:" + redisStats.getNetworkBytesRead() + "\r\n" +
+            "instantaneous_input_kbps:" + instantaneous_input_kbps + "\r\n" +
+            "total_connections_received:" + redisStats.getConnectionsReceived() + "\r\n" +
+            "keyspace_hits:" + redisStats.getKeyspaceHits() + "\r\n" +
+            "keyspace_misses:" + redisStats.getKeyspaceMisses() + "\r\n" +
+            "evicted_keys:0\r\n" +
+            "rejected_connections:0\r\n";
+    return STATS_STRING;
+  }
+
   private String getServerSection(ExecutionHandlerContext context) {
     final String CURRENT_REDIS_VERSION = "5.0.6";
+    //@todo test in info command integration test?
     final int TCP_PORT = context.getServerPort();
     final RedisStats redisStats = context.getRedisStats();
     final String SERVER_STRING =
@@ -106,26 +127,6 @@ public class InfoExecutor extends AbstractExecutor {
             "used_memory:" + usedMemory + "\r\n" +
             "mem_fragmentation_ratio:0\r\n";
     return MEMORY_STRING;
-  }
-
-  private String getStatsSection(ExecutionHandlerContext context) {
-    final RedisStats redisStats = context.getRedisStats();
-    String instantaneous_input_kbps =
-        new DecimalFormat("0.00")
-            .format(redisStats.getNetworkKilobytesReadPerSecond());
-
-    final String STATS_STRING =
-        "# Stats\r\n" +
-            "total_commands_processed:" + redisStats.getCommandsProcessed() + "\r\n" +
-            "instantaneous_ops_per_sec:" + redisStats.getOpsPerSecond() + "\r\n" +
-            "total_net_input_bytes:" + redisStats.getNetworkBytesRead() + "\r\n" +
-            "instantaneous_input_kbps:" + instantaneous_input_kbps + "\r\n" +
-            "total_connections_received:" + redisStats.getConnectionsReceived() + "\r\n" +
-            "keyspace_hits:" + redisStats.getKeyspaceHits() + "\r\n" +
-            "keyspace_misses:" + redisStats.getKeyspaceMisses() + "\r\n" +
-            "evicted_keys:0\r\n" +
-            "rejected_connections:0\r\n";
-    return STATS_STRING;
   }
 
   private String getKeyspaceSection(ExecutionHandlerContext context) {

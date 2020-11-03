@@ -62,9 +62,10 @@ public class RedisStats {
   private volatile double networkKilobytesReadPerSecond;
   private long previousNetworkBytesRead;
   private final StatisticsClock clock;
-  private final long startTime;
-  private final Statistics stats;
 
+  private final long START_TIME_IN_NANOS;
+
+  private final Statistics stats;
   static {
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
     ArrayList<StatisticDescriptor> descriptorList = new ArrayList<>();
@@ -106,7 +107,7 @@ public class RedisStats {
   }
 
   public RedisStats(StatisticsFactory factory, String textId, StatisticsClock clock) {
-    startTime = clock.getTime();
+    START_TIME_IN_NANOS = clock.getTime();
     stats = factory == null ? null : factory.createAtomicStatistics(type, textId);
     this.clock = clock;
     perSecondExecutor = startPerSecondUpdater();
@@ -124,6 +125,10 @@ public class RedisStats {
     stats.setLong(clientId, 0);
   }
 
+
+  public long getStartTimeInNanos() {
+    return START_TIME_IN_NANOS;
+  }
 
   private static void fillListWithCompletedCommandDescriptors(StatisticsTypeFactory f,
       ArrayList<StatisticDescriptor> descriptorList) {
@@ -178,7 +183,7 @@ public class RedisStats {
   }
 
   private long getSecondsAlive() {
-    return (getTime() - startTime) / 1_000_000_000;
+    return (getTime() - START_TIME_IN_NANOS) / 1_000_000_000;
   }
 
   public static StatisticsType getStatisticsType() {
@@ -265,11 +270,13 @@ public class RedisStats {
   }
 
   private long getUptimeInMilliseconds() {
-    return System.currentTimeMillis() - startTime;
+    long uptimeInNanos = getTime() - START_TIME_IN_NANOS;
+    return  TimeUnit.NANOSECONDS.toMillis(uptimeInNanos);
   }
 
   public long getUptimeInSeconds() {
-    return TimeUnit.MILLISECONDS.toSeconds(getUptimeInMilliseconds());
+    return TimeUnit.MILLISECONDS
+        .toSeconds(getUptimeInMilliseconds());
   }
 
   public long getUptimeInDays() {

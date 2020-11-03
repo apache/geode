@@ -64,6 +64,7 @@ public class RedisStatsIntegrationTest {
     jedis.close();
   }
 
+  //#############Stats Section###################################
 
   @Test
   public void keyspaceHitsStat_shouldIncrement_whenKeyAccessed() {
@@ -449,7 +450,7 @@ public class RedisStatsIntegrationTest {
 
     jedis.close();
     GeodeAwaitility.await().atMost(Duration.ofSeconds(2))
-        .untilAsserted(() ->  assertThat(redisStats.getClients()).isEqualTo(0));
+        .untilAsserted(() -> assertThat(redisStats.getClients()).isEqualTo(0));
   }
 
   @Test
@@ -463,5 +464,19 @@ public class RedisStatsIntegrationTest {
     jedis.close();
 
     assertThat(redisStats.getConnectionsReceived()).isEqualTo(1);
+  }
+
+  //########################Server Section ################
+
+
+  @Test
+  public void uptimeInSeconds_ShouldReturnCorrectValue() {
+    long startTimeInNanos = server.getStartTime();
+
+    long expectedNanos = startTimeInNanos - startTimeInNanos;
+    long expectedSeconds = TimeUnit.NANOSECONDS.toSeconds(expectedNanos);
+
+    assertThat(redisStats.getUptimeInSeconds())
+        .isCloseTo(expectedSeconds, Offset.offset(1l));
   }
 }

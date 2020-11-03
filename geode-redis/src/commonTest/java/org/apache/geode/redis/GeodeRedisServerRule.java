@@ -24,6 +24,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PASSWOR
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.statistics.EnabledStatisticsClock;
+import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.test.junit.rules.serializable.SerializableExternalResource;
 
@@ -31,13 +33,17 @@ public class GeodeRedisServerRule extends SerializableExternalResource {
   private GemFireCache cache;
   private GeodeRedisServer server;
   private CacheFactory cacheFactory;
+  private final long START_TIME;
+  private StatisticsClock statisticsClock;
+
 
   public GeodeRedisServerRule() {
     cacheFactory = new CacheFactory();
-
     cacheFactory.set(LOG_LEVEL, "warn");
     cacheFactory.set(MCAST_PORT, "0");
     cacheFactory.set(LOCATORS, "");
+    statisticsClock = new EnabledStatisticsClock();
+    START_TIME = statisticsClock.getTime();
   }
 
   @Override
@@ -45,6 +51,14 @@ public class GeodeRedisServerRule extends SerializableExternalResource {
     cache = cacheFactory.create();
     server = new GeodeRedisServer("localhost", 0, (InternalCache) cache);
     server.setAllowUnsupportedCommands(true);
+  }
+
+  public long getStartTime() {
+    return START_TIME;
+  }
+
+  public long getCurrentTime(){
+   return this.statisticsClock.getTime();
   }
 
   public GeodeRedisServerRule withProperty(String property, String value) {
