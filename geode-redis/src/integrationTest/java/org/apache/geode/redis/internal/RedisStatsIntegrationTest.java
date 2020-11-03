@@ -24,7 +24,6 @@ import org.assertj.core.data.Offset;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import redis.clients.jedis.BitOP;
 import redis.clients.jedis.Jedis;
@@ -404,8 +403,7 @@ public class RedisStatsIntegrationTest {
     double expectedCommandsPerSecond =
         (numberOfCommandsExecuted.get() / NUMBER_SECONDS_TO_RUN);
 
-    assertThat(
-        redisStats.getOpsPerSecond())
+    assertThat(redisStats.getOpsPerSecond())
             .isCloseTo((long) expectedCommandsPerSecond, Offset.offset(1L));
 
     GeodeAwaitility
@@ -413,8 +411,7 @@ public class RedisStatsIntegrationTest {
         .during(NUMBER_SECONDS_TO_RUN, TimeUnit.SECONDS)
         .until(() -> true);
 
-    assertThat(
-        redisStats.getOpsPerSecond())
+    assertThat(redisStats.getOpsPerSecond())
             .isCloseTo((long) expectedCommandsPerSecond / 2, Offset.offset(1L));
   }
 

@@ -434,10 +434,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     this.hscanCursor = hscanCursor;
   }
 
-  public RedisStats getRedisStats() {
-    return redisStats;
-  }
-
   /**
    * This method and {@link #eventLoopReady()} are relevant for pubsub related commands which need
    * to return responses on a different EventLoopGroup. We need to ensure that the EventLoopGroup
