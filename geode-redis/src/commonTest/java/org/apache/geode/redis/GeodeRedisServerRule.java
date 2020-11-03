@@ -57,8 +57,8 @@ public class GeodeRedisServerRule extends SerializableExternalResource {
     return START_TIME;
   }
 
-  public long getCurrentTime(){
-   return this.statisticsClock.getTime();
+  public long getCurrentTime() {
+    return this.statisticsClock.getTime();
   }
 
   public GeodeRedisServerRule withProperty(String property, String value) {

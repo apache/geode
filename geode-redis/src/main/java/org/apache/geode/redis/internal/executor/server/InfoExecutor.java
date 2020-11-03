@@ -97,7 +97,7 @@ public class InfoExecutor extends AbstractExecutor {
 
   private String getServerSection(ExecutionHandlerContext context) {
     final String CURRENT_REDIS_VERSION = "5.0.6";
-    //@todo test in info command integration test?
+    // @todo test in info command integration test?
     final int TCP_PORT = context.getServerPort();
     final RedisStats redisStats = context.getRedisStats();
     final String SERVER_STRING =

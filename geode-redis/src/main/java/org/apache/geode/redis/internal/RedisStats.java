@@ -17,6 +17,7 @@
 package org.apache.geode.redis.internal;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.getTime;
 import static org.apache.geode.logging.internal.executors.LoggingExecutors.newSingleThreadScheduledExecutor;
 
 import java.util.ArrayList;
@@ -59,6 +60,7 @@ public class RedisStats {
   private final AtomicLong expirations = new AtomicLong();
   private final AtomicLong keyspaceHits = new AtomicLong();
   private final AtomicLong keyspaceMisses = new AtomicLong();
+  private final ScheduledExecutorService perSecondExecutor;
   private volatile double networkKilobytesReadPerSecond;
   private long previousNetworkBytesRead;
   private final StatisticsClock clock;
@@ -66,6 +68,7 @@ public class RedisStats {
   private final long START_TIME_IN_NANOS;
 
   private final Statistics stats;
+
   static {
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
     ArrayList<StatisticDescriptor> descriptorList = new ArrayList<>();
@@ -125,11 +128,6 @@ public class RedisStats {
     stats.setLong(clientId, 0);
   }
 
-
-  public long getStartTimeInNanos() {
-    return START_TIME_IN_NANOS;
-  }
-
   private static void fillListWithCompletedCommandDescriptors(StatisticsTypeFactory f,
       ArrayList<StatisticDescriptor> descriptorList) {
     for (RedisCommandType command : RedisCommandType.values()) {
@@ -183,7 +181,8 @@ public class RedisStats {
   }
 
   private long getSecondsAlive() {
-    return (getTime() - START_TIME_IN_NANOS) / 1_000_000_000;
+    long timeAliveInNanos = getCurrentTime() - START_TIME_IN_NANOS;
+    return TimeUnit.NANOSECONDS.toSeconds(timeAliveInNanos);
   }
 
   public static StatisticsType getStatisticsType() {
@@ -194,7 +193,7 @@ public class RedisStats {
     return stats;
   }
 
-  public long getTime() {
+  private long getCurrentTime() {
     return clock.getTime();
   }
 
@@ -204,7 +203,7 @@ public class RedisStats {
 
   public void endCommand(RedisCommandType command, long start) {
     if (clock.isEnabled()) {
-      stats.incLong(timeCommandStatIds.get(command), getTime() - start);
+      stats.incLong(timeCommandStatIds.get(command), getCurrentTime() - start);
     }
     stats.incLong(completedCommandStatIds.get(command), 1);
   }
@@ -233,7 +232,6 @@ public class RedisStats {
     return stats.getLong(clientId);
   }
 
-
   public void incCommandsProcessed() {
     commandsProcessed.incrementAndGet();
   }
@@ -248,7 +246,6 @@ public class RedisStats {
     if (secondsAlive == 0) {
       return commandsProcessed.get();
     }
-
     return commandsProcessed.get() / secondsAlive;
   }
 
@@ -264,19 +261,17 @@ public class RedisStats {
     return networkKilobytesReadPerSecond;
   }
 
-
   public long getExpirations() {
     return expirations.get();
   }
 
   private long getUptimeInMilliseconds() {
-    long uptimeInNanos = getTime() - START_TIME_IN_NANOS;
-    return  TimeUnit.NANOSECONDS.toMillis(uptimeInNanos);
+    long uptimeInNanos = getCurrentTime() - START_TIME_IN_NANOS;
+    return TimeUnit.NANOSECONDS.toMillis(uptimeInNanos);
   }
 
   public long getUptimeInSeconds() {
-    return TimeUnit.MILLISECONDS
-        .toSeconds(getUptimeInMilliseconds());
+    return TimeUnit.MILLISECONDS.toSeconds(getUptimeInMilliseconds());
   }
 
   public long getUptimeInDays() {
@@ -300,7 +295,7 @@ public class RedisStats {
   }
 
   public long startPassiveExpirationCheck() {
-    return getTime();
+    return getCurrentTime();
   }
 
   public void endPassiveExpirationCheck(long start, long expireCount) {
@@ -308,18 +303,18 @@ public class RedisStats {
       incPassiveExpirations(expireCount);
     }
     if (clock.isEnabled()) {
-      stats.incLong(passiveExpirationCheckTimeId, getTime() - start);
+      stats.incLong(passiveExpirationCheckTimeId, getCurrentTime() - start);
     }
     stats.incLong(passiveExpirationChecksId, 1);
   }
 
   public long startExpiration() {
-    return getTime();
+    return getCurrentTime();
   }
 
   public void endExpiration(long start) {
     if (clock.isEnabled()) {
-      stats.incLong(expirationTimeId, getTime() - start);
+      stats.incLong(expirationTimeId, getCurrentTime() - start);
     }
     stats.incLong(expirationsId, 1);
     expirations.incrementAndGet();
@@ -335,8 +330,6 @@ public class RedisStats {
     }
     stopPerSecondUpdater();
   }
-
-  private final ScheduledExecutorService perSecondExecutor;
 
   private ScheduledExecutorService startPerSecondUpdater() {
     int INTERVAL = 1;
@@ -354,7 +347,7 @@ public class RedisStats {
     perSecondExecutor.shutdownNow();
   }
 
-//@todo refactor me?
+  // @todo refactor me?
   private void doPerSecondUpdates() {
     long currentNetworkBytesRead = networkBytesRead.get();
     long deltaNetworkBytesRead = currentNetworkBytesRead - previousNetworkBytesRead;
