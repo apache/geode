@@ -79,7 +79,8 @@ public class InfoExecutor extends AbstractExecutor {
     final RedisStats redisStats = context.getRedisStats();
     String instantaneous_input_kbps =
         new DecimalFormat("0.00")
-            .format(redisStats.getNetworkKilobytesReadPerSecond());
+            .format(redisStats
+                .getNetworkKiloBytesReadDuringLastSecond());
 
     final String STATS_STRING =
         "# Stats\r\n" +
@@ -92,6 +93,7 @@ public class InfoExecutor extends AbstractExecutor {
             "keyspace_misses:" + redisStats.getKeyspaceMisses() + "\r\n" +
             "evicted_keys:0\r\n" +
             "rejected_connections:0\r\n";
+
     return STATS_STRING;
   }
 

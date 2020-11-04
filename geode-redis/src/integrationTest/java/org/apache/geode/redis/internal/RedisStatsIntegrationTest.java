@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.assertj.core.data.Offset;
 import org.junit.After;
@@ -416,12 +417,14 @@ public class RedisStatsIntegrationTest {
   }
 
   @Test
-  public void instantaneousInputKbps_should_ReportNumberOfKiloBytesSent() {
-    double REASONABLE_SOUNDING_OFFSET = .3;
-    int NUMBER_SECONDS_TO_RUN = 5;
+  public void NetworkKiloBytesReadDuringLastSecond_shouldReturnCorrectData() {
+
+    double REASONABLE_SOUNDING_OFFSET = .1;
+    int NUMBER_SECONDS_TO_RUN = 2;
     String RESP_COMMAND_STRING = "*3\r\n$3\r\nset\r\n$3\r\nkey\r\n$5\r\nvalue\r\n";
     int BYTES_SENT_PER_COMMAND = RESP_COMMAND_STRING.length();
     AtomicInteger totalBytesSent = new AtomicInteger();
+    AtomicReference<Double> actual_kbs = new AtomicReference<>((double) 0);
 
     GeodeAwaitility
         .await()
@@ -429,16 +432,16 @@ public class RedisStatsIntegrationTest {
         .until(() -> {
           jedis.set("key", "value");
           totalBytesSent.addAndGet(BYTES_SENT_PER_COMMAND);
+          actual_kbs.set(redisStats.getOverallNetworkKilobytesReadPerSecond());
           return true;
         });
 
-    double expectedBytesPerSecond = totalBytesSent.get() / NUMBER_SECONDS_TO_RUN;
-    double expectedKiloBytesPerSecond = expectedBytesPerSecond / 1000;
-    double actualKiloBytesPerSecond = redisStats.getNetworkKilobytesReadPerSecond();
+    double expectedBytesReceived = totalBytesSent.get() / NUMBER_SECONDS_TO_RUN;
+    double expected_kbs = expectedBytesReceived / 1000;
 
-    assertThat(actualKiloBytesPerSecond)
-        .isCloseTo(expectedKiloBytesPerSecond,
-            Offset.offset(REASONABLE_SOUNDING_OFFSET));
+    assertThat(actual_kbs.get()).isCloseTo(expected_kbs, Offset.offset(REASONABLE_SOUNDING_OFFSET));
+
+
   }
 
 

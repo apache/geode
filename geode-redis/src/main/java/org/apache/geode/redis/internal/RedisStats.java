@@ -16,10 +16,13 @@
 
 package org.apache.geode.redis.internal;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.internal.statistics.StatisticsClockFactory.getTime;
+import static org.apache.geode.logging.internal.executors.LoggingExecutors.newSingleThreadScheduledExecutor;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -55,6 +58,9 @@ public class RedisStats {
   private final AtomicLong expirations = new AtomicLong();
   private final AtomicLong keyspaceHits = new AtomicLong();
   private final AtomicLong keyspaceMisses = new AtomicLong();
+  private final ScheduledExecutorService perSecondExecutor;
+  private volatile double networkKiloBytesReadDuringLastSecond;
+  private long previousNetworkBytesRead;
   private final StatisticsClock clock;
   private final Statistics stats;
   private final long START_TIME_IN_NANOS;
@@ -103,6 +109,7 @@ public class RedisStats {
     START_TIME_IN_NANOS = clock.getTime();
     stats = factory == null ? null : factory.createAtomicStatistics(type, textId);
     this.clock = clock;
+    perSecondExecutor = startPerSecondUpdater();
   }
 
   public void clearAllStats() {
@@ -173,6 +180,10 @@ public class RedisStats {
     }
   }
 
+  public double getNetworkKiloBytesReadDuringLastSecond() {
+    return networkKiloBytesReadDuringLastSecond;
+  }
+
   private long getSecondsAlive() {
     long timeAliveInNanos = getCurrentTime() - START_TIME_IN_NANOS;
     return TimeUnit.NANOSECONDS.toSeconds(timeAliveInNanos);
@@ -233,13 +244,6 @@ public class RedisStats {
 
   public long getTotalNetworkBytesRead() {
     return totalNetworkBytesRead.get();
-  }
-
-  public double getNetworkKilobytesReadPerSecond() {
-    double bytesReadPerSecond =
-        getTotalNetworkBytesRead()/getUptimeInSeconds();
-
-    return bytesReadPerSecond/1000;
   }
 
   private long getUptimeInMilliseconds() {
@@ -305,5 +309,34 @@ public class RedisStats {
     if (stats != null) {
       stats.close();
     }
+    stopPerSecondUpdater();
+  }
+
+  private ScheduledExecutorService startPerSecondUpdater() {
+    int INTERVAL = 1;
+
+    ScheduledExecutorService perSecondExecutor =
+        newSingleThreadScheduledExecutor("GemFireRedis-PerSecondUpdater-");
+
+    perSecondExecutor.scheduleWithFixedDelay(
+        () -> doPerSecondUpdates(),
+        INTERVAL,
+        INTERVAL,
+        SECONDS);
+
+    return perSecondExecutor;
+  }
+
+  private void stopPerSecondUpdater() {
+    perSecondExecutor.shutdownNow();
+  }
+
+  private void doPerSecondUpdates() {
+
+    long totalNetworkBytesRead = getTotalNetworkBytesRead();
+    long deltaNetworkBytesRead = totalNetworkBytesRead - previousNetworkBytesRead;
+    networkKiloBytesReadDuringLastSecond = deltaNetworkBytesRead / 1024.0;
+
+    previousNetworkBytesRead = getTotalNetworkBytesRead();
   }
 }
