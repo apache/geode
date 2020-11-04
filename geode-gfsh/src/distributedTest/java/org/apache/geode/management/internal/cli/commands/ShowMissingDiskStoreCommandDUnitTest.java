@@ -175,7 +175,7 @@ public class ShowMissingDiskStoreCommandDUnitTest {
     CommandStringBuilder createRegion = new CommandStringBuilder(CliStrings.CREATE_REGION)
         .addOption(CliStrings.CREATE_REGION__REGION, testRegionName)
         .addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT,
-            RegionShortcut.PARTITION_REDUNDANT_PERSISTENT.toString());
+            RegionShortcut.PARTITION_REDUNDANT.toString());
     await().untilAsserted(() -> gfshConnector.executeAndAssertThat(createRegion.getCommandString())
         .statusIsSuccess());
 
