@@ -49,6 +49,8 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
@@ -183,7 +185,10 @@ public class TcpServerProductVersionDUnitTest implements Serializable {
 
     return () -> {
 
-      final Class<?> requestClass = Class.forName(requestClassName);
+      ServiceResult<Class<?>> requestServiceResult =
+          ClassLoaderServiceInstance.getInstance().forName(requestClassName);
+      assertThat(requestServiceResult.isSuccessful());
+      final Class<?> requestClass = requestServiceResult.getMessage();
       final Object requestMessage = requestClass.newInstance();
 
       final TcpClient tcpClient;
@@ -209,7 +214,12 @@ public class TcpServerProductVersionDUnitTest implements Serializable {
                 requestMessage, 1000);
       }
 
-      final Class<?> responseClass = Class.forName(responseClassName);
+      ServiceResult<Class<?>> responseServiceResult =
+          ClassLoaderServiceInstance.getInstance().forName(responseClassName);
+
+      assertThat(responseServiceResult.isSuccessful());
+
+      final Class<?> responseClass = responseServiceResult.getMessage();
 
       assertThat(response).isInstanceOf(responseClass);
     };

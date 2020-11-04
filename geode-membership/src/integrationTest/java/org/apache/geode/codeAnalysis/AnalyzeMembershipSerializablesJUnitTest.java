@@ -24,6 +24,7 @@ import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.internal.serialization.BufferDataOutputStream;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.DSFIDSerializerFactory;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 
@@ -36,7 +37,8 @@ import org.apache.geode.test.junit.categories.MembershipTest;
 @Category({MembershipTest.class})
 public class AnalyzeMembershipSerializablesJUnitTest extends AnalyzeDataSerializablesJUnitTestBase {
 
-  private final DSFIDSerializer dsfidSerializer = new DSFIDSerializerFactory().create();
+  private final DSFIDSerializer dsfidSerializer = new DSFIDSerializerFactory().create(
+      ClassLoaderServiceInstance.getInstance());
 
   @Override
   protected String getModuleName() {

@@ -67,7 +67,7 @@ public class CollectionConverter extends OpenTypeConverter {
       Comparator comparator = ((SortedSet) valueCollection).comparator();
       if (comparator != null) {
         final String msg = "Cannot convert SortedSet with non-null comparator: " + comparator;
-        throw openDataException(msg, new IllegalArgumentException(msg));
+        throw openDataException(msg);
       }
     }
     final Object[] openArray =

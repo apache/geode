@@ -42,6 +42,8 @@ import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
@@ -139,7 +141,9 @@ public class OldClientSupportDUnitTest extends JUnit4CacheTestCase {
     OldClientSupportService oldClientSupport = OldClientSupportProvider.getService(myCache);
 
     System.out.println("checking " + geodeClassName);
-    Class geodeClass = Class.forName(geodeClassName);
+    ServiceResult<Class<?>> serviceResult =
+        ClassLoaderServiceInstance.getInstance().forName(geodeClassName);
+    Class<?> geodeClass = serviceResult.getMessage();
     Object geodeObject = instantiate(geodeClass);
     if (geodeObject instanceof Throwable) {
       Throwable geodeThrowable = (Throwable) instantiate(geodeClass);

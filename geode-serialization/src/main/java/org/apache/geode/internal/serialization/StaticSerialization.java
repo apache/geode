@@ -23,6 +23,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * StaticSerialization provides a collection of serialization/deserialization methods that
@@ -402,12 +404,18 @@ public class StaticSerialization {
     }
   }
 
-  public static Class<?> readClass(DataInput in) throws IOException, ClassNotFoundException {
+  public static Class<?> readClass(ClassLoaderService classLoaderService, DataInput in)
+      throws IOException, ClassNotFoundException {
     byte typeCode = in.readByte();
     if (typeCode == DSCODE.CLASS.toByte()) {
       String className = readString(in);
       className = processIncomingClassName(className);
-      return Class.forName(className);
+      ServiceResult<Class<?>> serviceResult = classLoaderService.forName(className);
+      if (serviceResult.isSuccessful()) {
+        return serviceResult.getMessage();
+      } else {
+        throw new ClassNotFoundException("Could not find class or name: " + className);
+      }
     } else {
       return StaticSerialization.decodePrimitiveClass(typeCode);
     }

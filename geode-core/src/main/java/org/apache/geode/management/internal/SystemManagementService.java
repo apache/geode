@@ -47,6 +47,7 @@ import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -67,6 +68,7 @@ import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.RegionMXBean;
 import org.apache.geode.management.membership.MembershipEvent;
 import org.apache.geode.management.membership.MembershipListener;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * This is the concrete implementation of ManagementService which is the gateway to various JMX
@@ -718,14 +720,19 @@ public class SystemManagementService extends BaseManagementService {
       String federatingManagerFactoryName =
           System.getProperty(FEDERATING_MANAGER_FACTORY_PROPERTY,
               FederatingManagerFactoryImpl.class.getName());
-      Class<? extends FederatingManagerFactory> federatingManagerFactoryClass =
-          Class.forName(federatingManagerFactoryName)
-              .asSubclass(FederatingManagerFactory.class);
-      Constructor<? extends FederatingManagerFactory> constructor =
-          federatingManagerFactoryClass.getConstructor();
-      return constructor.newInstance();
-    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
-        | NoSuchMethodException | InvocationTargetException e) {
+      ServiceResult<Class<?>> serviceResult =
+          ClassLoaderServiceInstance.getInstance().forName(federatingManagerFactoryName);
+      if (serviceResult.isSuccessful()) {
+        Class<? extends FederatingManagerFactory> federatingManagerFactoryClass =
+            serviceResult.getMessage().asSubclass(FederatingManagerFactory.class);
+        Constructor<? extends FederatingManagerFactory> constructor =
+            federatingManagerFactoryClass.getConstructor();
+        return constructor.newInstance();
+      } else {
+        return new FederatingManagerFactoryImpl();
+      }
+    } catch (InstantiationException | IllegalAccessException | NoSuchMethodException
+        | InvocationTargetException e) {
       return new FederatingManagerFactoryImpl();
     }
   }

@@ -41,6 +41,7 @@ import org.apache.geode.internal.serialization.ObjectSerializer;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.SerializationVersions;
 import org.apache.geode.internal.serialization.StaticSerialization;
+import org.apache.geode.services.classloader.ClassLoaderService;
 
 public class DSFIDSerializerImpl implements DSFIDSerializer {
 
@@ -52,14 +53,17 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
 
   private final ObjectSerializer objectSerializer;
   private final ObjectDeserializer objectDeserializer;
+  private final ClassLoaderService classLoaderService;
 
-  public DSFIDSerializerImpl() {
+  public DSFIDSerializerImpl(ClassLoaderService classLoaderService) {
+    this.classLoaderService = classLoaderService;
     objectSerializer = createDefaultObjectSerializer();
     objectDeserializer = createDefaultObjectDeserializer();
   }
 
   public DSFIDSerializerImpl(ObjectSerializer objectSerializer,
-      ObjectDeserializer objectDeserializer) {
+      ObjectDeserializer objectDeserializer, ClassLoaderService classLoaderService) {
+    this.classLoaderService = classLoaderService;
     this.objectSerializer =
         objectSerializer == null ? createDefaultObjectSerializer() : objectSerializer;
     this.objectDeserializer =
@@ -385,7 +389,7 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
 
   private Object readDataSerializable(final DataInput in)
       throws IOException, ClassNotFoundException {
-    Class<?> c = StaticSerialization.readClass(in);
+    Class<?> c = StaticSerialization.readClass(classLoaderService, in);
     try {
       Constructor<?> init = c.getConstructor();
       init.setAccessible(true);

@@ -46,7 +46,10 @@ public abstract class ClassUtils {
    * @throws NullPointerException if either className or RuntimeException is null.
    * @see java.lang.Class#forName(String)
    */
-  public static Class forName(final String className, final RuntimeException e) {
+  public static Class<?> forName(final String className, final RuntimeException e) {
+    if (className == null || e == null) {
+      throw new NullPointerException();
+    }
     ServiceResult<Class<?>> serviceResult =
         ClassLoaderServiceInstance.getInstance().forName(className);
     if (serviceResult.isSuccessful()) {

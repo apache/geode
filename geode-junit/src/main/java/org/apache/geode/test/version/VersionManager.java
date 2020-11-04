@@ -33,6 +33,7 @@ import org.apache.commons.lang3.SystemUtils;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.classloader.ClassLoaderService;
 import org.apache.geode.services.result.ServiceResult;
 
 /**
@@ -249,19 +250,25 @@ public class VersionManager {
      * we also had an interface in the same package, called "Version" so we want to
      * avoid finding that interface when we really want the "enum" class.
      */
-    try {
-      return Class.forName("org.apache.geode.internal.serialization.KnownVersion");
-    } catch (ClassNotFoundException e) {
-      try {
-        return Class.forName("org.apache.geode.internal.Version");
-      } catch (ClassNotFoundException e2) {
-        try {
-          return Class.forName("org.apache.geode.internal.serialization.Version");
-        } catch (ClassNotFoundException e3) {
+    ClassLoaderService classLoaderService = ClassLoaderServiceInstance.getInstance();
+    ServiceResult<Class<?>> serviceResult =
+        classLoaderService.forName("org.apache.geode.internal.serialization.KnownVersion");
+    if (serviceResult.isSuccessful()) {
+      return serviceResult.getMessage();
+    } else {
+      serviceResult = classLoaderService.forName("org.apache.geode.internal.Version");
+      if (serviceResult.isSuccessful()) {
+        return serviceResult.getMessage();
+      } else {
+        serviceResult =
+            classLoaderService.forName("org.apache.geode.internal.serialization.Version");
+        if (serviceResult.isSuccessful()) {
+          return serviceResult.getMessage();
+        } else {
           System.out.println("classpath is " + System.getProperty("java.class.path"));
           throw new IllegalStateException(
-              "Unable to locate Version or KnownVersion in order to establish the product's serialization version",
-              e3);
+              "Unable to locate Version or KnownVersion in order to establish the product's serialization version: "
+                  + serviceResult.getErrorMessage());
         }
       }
     }

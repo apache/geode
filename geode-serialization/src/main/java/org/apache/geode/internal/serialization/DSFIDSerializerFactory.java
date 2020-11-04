@@ -15,6 +15,7 @@
 package org.apache.geode.internal.serialization;
 
 import org.apache.geode.internal.serialization.internal.DSFIDSerializerImpl;
+import org.apache.geode.services.classloader.ClassLoaderService;
 
 /**
  * DSFIDSerializerFactory can be used to create a serialization service.
@@ -55,12 +56,14 @@ public class DSFIDSerializerFactory {
     return this;
   }
 
-  /** Create a DSFIDSerializer */
-  public DSFIDSerializer create() {
+  /**
+   * Create a DSFIDSerializer
+   */
+  public DSFIDSerializer create(ClassLoaderService classLoaderService) {
     if (serializer == null && deserializer == null) {
-      return new DSFIDSerializerImpl();
+      return new DSFIDSerializerImpl(classLoaderService);
     } else {
-      return new DSFIDSerializerImpl(serializer, deserializer);
+      return new DSFIDSerializerImpl(serializer, deserializer, classLoaderService);
     }
   }
 

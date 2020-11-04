@@ -308,7 +308,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
           throws IOException, ClassNotFoundException {
         InternalDataSerializer.invokeFromData(ds, in);
       }
-    }).create();
+    }).create(ClassLoaderServiceInstance.getInstance());
     initializeWellKnownSerializers();
     dsfidFactory = new DSFIDFactory(dsfidSerializer);
   }

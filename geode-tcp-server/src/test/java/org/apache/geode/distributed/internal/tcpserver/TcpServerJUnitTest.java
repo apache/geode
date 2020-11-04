@@ -45,6 +45,7 @@ import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.DSFIDSerializerFactory;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
@@ -59,7 +60,8 @@ public class TcpServerJUnitTest {
   private void startTcpServerWithHandler(TcpHandler handler) throws IOException {
     localhost = InetAddress.getLocalHost();
 
-    DSFIDSerializer serializer = new DSFIDSerializerFactory().create();
+    DSFIDSerializer serializer = new DSFIDSerializerFactory().create(
+        ClassLoaderServiceInstance.getInstance());
     server = new TcpServer(port, localhost, handler,
         "server thread",
         (x, y, z) -> false, // protobuf hook - not needed here
@@ -112,7 +114,8 @@ public class TcpServerJUnitTest {
   }
 
   private TcpClient createTcpClient() {
-    DSFIDSerializer serializer = new DSFIDSerializerFactory().create();
+    DSFIDSerializer serializer = new DSFIDSerializerFactory().create(
+        ClassLoaderServiceInstance.getInstance());
     TcpSocketCreator socketCreator = new TcpSocketCreatorImpl();
     return new TcpClient(socketCreator,
         serializer.getObjectSerializer(),

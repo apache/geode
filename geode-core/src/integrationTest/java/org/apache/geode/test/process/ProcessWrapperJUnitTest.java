@@ -19,7 +19,9 @@ import static org.junit.Assert.assertTrue;
 import org.junit.After;
 import org.junit.Test;
 
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.classloader.ClassLoaderService;
 
 
 /**
@@ -65,8 +67,17 @@ public class ProcessWrapperJUnitTest {
   }
 
   public static void main(String... args) throws Exception {
-    Class.forName(org.apache.logging.log4j.LogManager.class.getName());
-    Class.forName(LogService.class.getName());
+    String logService = LogService.class.getName();
+    String logManager = org.apache.logging.log4j.LogManager.class.getName();
+    ClassLoaderService classLoaderService = ClassLoaderServiceInstance.getInstance();
+
+    if (classLoaderService.forName(logService).isFailure()) {
+      throw new ClassNotFoundException("Could not ind class for name: " + logService);
+    }
+    if (classLoaderService.forName(logManager).isFailure()) {
+      throw new ClassNotFoundException("Could not ind class for name: " + logManager);
+    }
+
     System.out.println(OUTPUT_OF_MAIN);
   }
 }

@@ -35,8 +35,10 @@ import org.apache.geode.cache.partition.PartitionMemberInfo;
 import org.apache.geode.cache.partition.PartitionRebalanceInfo;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.modules.gatewaydelta.GatewayDeltaForwarderCacheListener;
 import org.apache.geode.modules.session.catalina.callback.SessionExpirationCacheListener;
+import org.apache.geode.services.result.ServiceResult;
 
 public class RegionHelper {
   public static final String NAME = "gemfire_modules";
@@ -142,9 +144,15 @@ public class RegionHelper {
     // Add the cacheWriter if necessary
     if (configuration.getCacheWriterName() != null) {
       try {
-        CacheWriter writer =
-            (CacheWriter) Class.forName(configuration.getCacheWriterName()).newInstance();
-        requestedAttributes.setCacheWriter(writer);
+        ServiceResult<Class<?>> serviceResult =
+            ClassLoaderServiceInstance.getInstance().forName(configuration.getCacheWriterName());
+        if (serviceResult.isSuccessful()) {
+          CacheWriter writer = (CacheWriter) serviceResult.getMessage().newInstance();
+          requestedAttributes.setCacheWriter(writer);
+        } else {
+          throw new ClassNotFoundException("Could not find class for name: "
+              + configuration.getCacheWriterName());
+        }
       } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
         throw new RuntimeException("Could not set a cacheWriter for the region", e);
       }

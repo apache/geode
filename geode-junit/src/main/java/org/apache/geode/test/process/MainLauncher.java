@@ -44,7 +44,7 @@ public class MainLauncher {
         ClassLoaderServiceInstance.getInstance().forName(innerMain);
 
     if (serviceResult.isSuccessful()) {
-      Class<?> clazz = Class.forName(innerMain);
+      Class<?> clazz = serviceResult.getMessage();
       Method mainMethod = clazz.getMethod("main", String[].class);
       mainMethod.invoke(null, new Object[] {innerArgs});
     } else {

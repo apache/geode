@@ -98,7 +98,7 @@ public class ClassLoaderObjectInputStreamTest {
 
   private Object createInstanceOfTCCLClass()
       throws ClassNotFoundException, IllegalAccessException, InstantiationException {
-    Class<?> clazz = Class.forName(this.classToLoad, false, this.newTCCL);
+    Class<?> clazz = this.newTCCL.loadClass(this.classToLoad);
     return clazz.newInstance();
   }
 

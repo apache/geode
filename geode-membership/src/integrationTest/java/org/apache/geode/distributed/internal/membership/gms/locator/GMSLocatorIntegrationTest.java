@@ -43,6 +43,7 @@ import org.apache.geode.distributed.internal.tcpserver.TcpSocketFactory;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.internal.DSFIDSerializerImpl;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 
 public class GMSLocatorIntegrationTest {
 
@@ -62,7 +63,7 @@ public class GMSLocatorIntegrationTest {
     tcpServer = mock(TcpServer.class);
     view = new GMSMembershipView();
     services = mock(Services.class);
-    DSFIDSerializer serializer = new DSFIDSerializerImpl();
+    DSFIDSerializer serializer = new DSFIDSerializerImpl(ClassLoaderServiceInstance.getInstance());
     Services.registerSerializables(serializer);
     when(services.getSerializer()).thenReturn(serializer);
     KnownVersion current = KnownVersion.CURRENT; // force Version static initialization to set

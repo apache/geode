@@ -48,6 +48,7 @@ import org.apache.geode.modules.session.internal.filter.GemfireSessionManager;
 import org.apache.geode.modules.session.internal.filter.SessionManager;
 import org.apache.geode.modules.session.internal.filter.attributes.DeltaQueuedSessionAttributes;
 import org.apache.geode.modules.session.internal.filter.attributes.DeltaSessionAttributes;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -456,8 +457,15 @@ public class SessionCachingFilter implements Filter {
       }
 
       try {
-        manager = (SessionManager) Class.forName(managerClassStr).newInstance();
-        manager.start(config, ClassLoaderServiceInstance.getInstance().asClassLoader());
+        ServiceResult<Class<?>> serviceResult =
+            ClassLoaderServiceInstance.getInstance().forName(managerClassStr);
+        if (serviceResult.isSuccessful()) {
+          manager = (SessionManager) serviceResult.getMessage().newInstance();
+          manager.start(config, ClassLoaderServiceInstance.getInstance().asClassLoader());
+        } else {
+          LOG.error(
+              "Cold not find Session Manager class because: " + serviceResult.getErrorMessage());
+        }
       } catch (Exception ex) {
         LOG.error("Exception creating Session Manager", ex);
       }

@@ -63,7 +63,6 @@ import javax.management.openmbean.TabularType;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
-import org.apache.geode.management.ManagementException;
 import org.apache.geode.services.result.ServiceResult;
 
 /**
@@ -263,7 +262,7 @@ public abstract class OpenTypeConverter {
     try {
       conv = makeConverter(objType);
     } catch (OpenDataException e) {
-      throw openDataException("Cannot convert type: " + objType, e);
+      throw openDataException("Cannot convert type: " + objType);
     } finally {
       inProgress.remove(objType);
     }
@@ -288,8 +287,7 @@ public abstract class OpenTypeConverter {
         Type componentType = objClass.getComponentType();
         return makeArrayOrCollectionConverter(objClass, componentType);
       } else if (JMX.isMXBeanInterface(objClass)) {
-        throw openDataException("Cannot obtain array class",
-            new ManagementException(" MXBean as an Return Type is not supported"));
+        throw openDataException("Cannot obtain array class");
       } else {
         return makeCompositeConverter(objClass);
       }
@@ -309,18 +307,20 @@ public abstract class OpenTypeConverter {
     final OpenTypeConverter elementConverter = toConverter(elementType);
     final OpenType elementOpenType = elementConverter.getOpenType();
     final ArrayType openType = new ArrayType(1, elementOpenType);
-    final Class elementOpenClass = elementConverter.getOpenClass();
+    final Class<?> elementOpenClass = elementConverter.getOpenClass();
 
-    final Class openArrayClass;
+    final Class<?> openArrayClass;
     final String openArrayClassName;
     if (elementOpenClass.isArray())
       openArrayClassName = "[" + elementOpenClass.getName();
     else
       openArrayClassName = "[L" + elementOpenClass.getName() + ";";
-    try {
-      openArrayClass = Class.forName(openArrayClassName);
-    } catch (ClassNotFoundException e) {
-      throw openDataException("Cannot obtain array class", e);
+    ServiceResult<Class<?>> serviceResult =
+        ClassLoaderServiceInstance.getInstance().forName(openArrayClassName);
+    if (serviceResult.isSuccessful()) {
+      openArrayClass = serviceResult.getMessage();
+    } else {
+      throw openDataException("Cannot obtain array class");
     }
 
     if (collectionType instanceof ParameterizedType) {
@@ -876,12 +876,12 @@ public abstract class OpenTypeConverter {
     return invalidObjectException(cause.getMessage(), cause);
   }
 
-  static OpenDataException openDataException(String msg, Throwable cause) {
+  static OpenDataException openDataException(String msg) {
     return new OpenDataException(msg);
   }
 
   static OpenDataException openDataException(Throwable cause) {
-    return openDataException(cause.getMessage(), cause);
+    return openDataException(cause.getMessage());
   }
 
   static void mustBeComparable(Class collection, Type element) throws OpenDataException {

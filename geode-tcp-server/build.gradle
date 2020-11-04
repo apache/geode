@@ -28,6 +28,9 @@ dependencies {
 
     //Commons validator is used to validate inet addresses
     implementation('commons-validator:commons-validator')
+
+    testImplementation(project(':geode-common-services'))
+    testImplementation(project(':geode-core'))
     testImplementation(project(':geode-junit')) {
         exclude module: 'geode-core'
     }

@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.classloader.ClassLoaderService;
 
 /**
  * Utility operations for processes such as identifying the process id (pid).
@@ -151,26 +153,24 @@ public class ProcessUtils {
 
   private static InternalProcessUtils initializeInternalProcessUtils() {
     // 1) prefer Attach because it filters out non-JVM processes
-    try {
-      Class.forName("com.sun.tools.attach.VirtualMachine");
-      Class.forName("com.sun.tools.attach.VirtualMachineDescriptor");
+    ClassLoaderService classLoaderService = ClassLoaderServiceInstance.getInstance();
+    if (classLoaderService.forName("com.sun.tools.attach.VirtualMachine").isSuccessful()
+        && classLoaderService.forName("com.sun.tools.attach.VirtualMachineDescriptor")
+            .isSuccessful()) {
       return new AttachProcessUtils();
-    } catch (ClassNotFoundException | LinkageError ignored) {
-      // fall through
     }
 
     // 2) try NativeCalls but make sure it doesn't throw UnsupportedOperationException
-    try {
-      // consider getting rid of Class.forName usage if NativeCalls always safely loads
-      Class.forName("org.apache.geode.internal.shared.NativeCalls");
+    if (classLoaderService.forName("org.apache.geode.internal.shared.NativeCalls").isSuccessful()) {
       NativeProcessUtils nativeProcessUtils = new NativeProcessUtils();
-      boolean result = nativeProcessUtils.isProcessAlive(identifyPid());
-      if (result) {
-        return nativeProcessUtils;
+      try {
+        boolean result = nativeProcessUtils.isProcessAlive(identifyPid());
+        if (result) {
+          return nativeProcessUtils;
+        }
+      } catch (PidUnavailableException e) {
+        // fallthrough
       }
-    } catch (ClassNotFoundException | LinkageError | PidUnavailableException
-        | UnsupportedOperationException ignored) {
-      // fall through
     }
 
     // 3) consider logging warning and then proceed with no-op

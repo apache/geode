@@ -185,7 +185,7 @@ public class JGroupsMessengerJUnitTest {
     when(services.getHealthMonitor()).thenReturn(healthMonitor);
     when(services.getManager()).thenReturn(manager);
     when(services.getJoinLeave()).thenReturn(joinLeave);
-    DSFIDSerializer serializer = new DSFIDSerializerImpl();
+    DSFIDSerializer serializer = new DSFIDSerializerImpl(ClassLoaderServiceInstance.getInstance());
     Services.registerSerializables(serializer);
     when(services.getSerializer()).thenReturn(serializer);
     KnownVersion current = KnownVersion.CURRENT; // force Version static initialization to set

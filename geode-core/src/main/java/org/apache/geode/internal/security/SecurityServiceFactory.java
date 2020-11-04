@@ -24,8 +24,10 @@ import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.security.shiro.SecurityManagerProvider;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.SecurityManager;
+import org.apache.geode.services.result.ServiceResult;
 
 public class SecurityServiceFactory {
 
@@ -89,11 +91,16 @@ public class SecurityServiceFactory {
   private static boolean isShiroInUse() {
     // Don't import Shiro otherwise clients must include on classpath
     try {
-      return null != Class.forName("org.apache.shiro.SecurityUtils").getMethod("getSecurityManager")
-          .invoke(null);
+      ServiceResult<Class<?>> serviceResult =
+          ClassLoaderServiceInstance.getInstance().forName("org.apache.shiro.SecurityUtils");
+      if (serviceResult.isSuccessful()) {
+        return null != serviceResult.getMessage().getMethod("getSecurityManager")
+            .invoke(null);
+      } else {
+        return false;
+      }
     } catch (Exception e) {
       return false;
     }
   }
-
 }

@@ -35,6 +35,8 @@ import java.util.concurrent.Executors;
 
 import org.junit.Test;
 
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.util.JSR166TestCase;
 
 public class StringMapLoopsJUnitTest extends JSR166TestCase { // TODO: reformat
@@ -56,11 +58,13 @@ public class StringMapLoopsJUnitTest extends JSR166TestCase { // TODO: reformat
 
   public static void main(String[] args) throws Exception {
 
-    Class mapClass = null;
+    Class<?> mapClass;
     if (args.length > 0) {
-      try {
-        mapClass = Class.forName(args[0]);
-      } catch (ClassNotFoundException e) {
+      ServiceResult<Class<?>> serviceResult =
+          ClassLoaderServiceInstance.getInstance().forName(args[0]);
+      if (serviceResult.isSuccessful()) {
+        mapClass = serviceResult.getMessage();
+      } else {
         throw new RuntimeException("Class " + args[0] + " not found.");
       }
     } else

@@ -32,6 +32,7 @@ import org.apache.geode.distributed.internal.membership.gms.MemberIdentifierImpl
 import org.apache.geode.distributed.internal.membership.gms.MembershipBuilderImpl;
 import org.apache.geode.distributed.internal.membership.gms.MembershipLocatorBuilderImpl;
 import org.apache.geode.internal.inet.LocalHostUtil;
+import org.apache.geode.services.classloader.ClassLoaderService;
 
 @RunWith(ArchUnitRunner.class)
 @AnalyzeClasses(packages = "org.apache.geode.distributed.internal.membership.api",
@@ -56,6 +57,6 @@ public class MembershipAPIArchUnitTest {
               .or(type(MembershipLocatorBuilderImpl.class))
               .or(type(MemberDataBuilderImpl.class))
               .or(type(MemberIdentifierImpl.class))
-
+              .or(type(ClassLoaderService.class))
               .or(type(LocalHostUtil.class)));
 }

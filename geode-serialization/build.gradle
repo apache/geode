@@ -23,6 +23,8 @@ apply from: "${project.projectDir}/../gradle/warnings.gradle"
 dependencies {
   implementation(platform(project(':boms:geode-all-bom')))
 
+  compileOnly(project(':geode-common-services'))
+
   //Geode-common has annotations and other pieces used by geode-serialization
   implementation(project(':geode-common'))
 

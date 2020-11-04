@@ -39,6 +39,7 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
 @Category({SecurityTest.class})
@@ -48,7 +49,7 @@ public class GMSMemberDataJUnitTest {
 
   @Before
   public void setup() {
-    dsfidSerializer = new DSFIDSerializerFactory().create();
+    dsfidSerializer = new DSFIDSerializerFactory().create(ClassLoaderServiceInstance.getInstance());
     Services.registerSerializables(dsfidSerializer);
   }
 

@@ -66,6 +66,8 @@ dependencies {
     exclude module: 'hamcrest'
   }
 
+  testImplementation(project(':geode-common-services'))
+
   distributedTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
 }
 

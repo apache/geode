@@ -28,6 +28,9 @@ import com.google.common.io.Resources;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
+
 /**
  * {@code ResourceUtils} is a utility class for tests that use resources and copy them to
  * directories such as {@code TemporaryFolder}.
@@ -44,10 +47,12 @@ public class ResourceUtils {
    * @throws ClassNotFoundException wrapped in RuntimeException if the class cannot be located
    */
   public static Class<?> getCallerClass(final int depth) {
-    try {
-      return Class.forName(getCallerClassName(depth + 1));
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
+    ServiceResult<Class<?>> serviceResult =
+        ClassLoaderServiceInstance.getInstance().forName(getCallerClassName(depth + 1));
+    if (serviceResult.isSuccessful()) {
+      return serviceResult.getMessage();
+    } else {
+      throw new RuntimeException(serviceResult.getErrorMessage());
     }
   }
 

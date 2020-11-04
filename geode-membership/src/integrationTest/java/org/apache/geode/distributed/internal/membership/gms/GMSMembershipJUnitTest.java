@@ -165,7 +165,7 @@ public class GMSMembershipJUnitTest {
     manager.getGMSManager().init(services, ClassLoaderServiceInstance.getInstance());
     when(services.getManager()).thenReturn(manager.getGMSManager());
 
-    DSFIDSerializer serializer = new DSFIDSerializerImpl();
+    DSFIDSerializer serializer = new DSFIDSerializerImpl(ClassLoaderServiceInstance.getInstance());
     when(services.getSerializer()).thenReturn(serializer);
     Services.registerSerializables(serializer);
   }

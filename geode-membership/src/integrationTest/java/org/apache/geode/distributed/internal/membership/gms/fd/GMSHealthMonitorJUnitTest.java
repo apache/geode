@@ -107,7 +107,7 @@ public class GMSHealthMonitorJUnitTest {
   public void initMocks() throws MemberStartupException {
     // ensure that Geode's serialization and version are initialized
     KnownVersion currentVersion = KnownVersion.CURRENT;
-    dsfidSerializer = new DSFIDSerializerImpl();
+    dsfidSerializer = new DSFIDSerializerImpl(ClassLoaderServiceInstance.getInstance());
     Services.registerSerializables(dsfidSerializer);
 
     // System.setProperty("gemfire.bind-address", "localhost");

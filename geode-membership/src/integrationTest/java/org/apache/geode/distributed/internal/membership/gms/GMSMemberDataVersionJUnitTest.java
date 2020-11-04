@@ -36,6 +36,7 @@ import org.apache.geode.internal.serialization.DSFIDSerializerFactory;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 
 /**
  * MemberData has to be able to hold an unknown version ordinal since, during a rolling upgrade,
@@ -69,7 +70,8 @@ public class GMSMemberDataVersionJUnitTest {
 
     final ByteArrayOutputStream baos = new ByteArrayOutputStream();
     final DataOutput dataOutput = new DataOutputStream(baos);
-    final DSFIDSerializer dsfidSerializer = new DSFIDSerializerFactory().create();
+    final DSFIDSerializer dsfidSerializer = new DSFIDSerializerFactory().create(
+        ClassLoaderServiceInstance.getInstance());
     final SerializationContext serializationContext =
         dsfidSerializer.createSerializationContext(dataOutput);
     member.writeEssentialData(dataOutput, serializationContext);

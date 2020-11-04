@@ -25,6 +25,8 @@ import java.lang.reflect.Method;
 import java.util.ServiceConfigurationError;
 import java.util.concurrent.TimeoutException;
 
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -75,13 +77,18 @@ public class ProcessControllerFactory {
     }
     boolean found = false;
     try {
-      final Class<?> virtualMachineClass = Class.forName("com.sun.tools.attach.spi.AttachProvider");
-      if (virtualMachineClass != null) {
-        Method providersMethod = virtualMachineClass.getMethod("providers");
-        providersMethod.invoke(virtualMachineClass);
-        found = true;
+      ServiceResult<Class<?>> serviceResult =
+          ClassLoaderServiceInstance.getInstance()
+              .forName("com.sun.tools.attach.spi.AttachProvider");
+      if (serviceResult.isSuccessful()) {
+        final Class<?> virtualMachineClass = serviceResult.getMessage();
+        if (virtualMachineClass != null) {
+          Method providersMethod = virtualMachineClass.getMethod("providers");
+          providersMethod.invoke(virtualMachineClass);
+          found = true;
+        }
       }
-    } catch (ClassNotFoundException | IllegalAccessException | InvocationTargetException
+    } catch (IllegalAccessException | InvocationTargetException
         | NoSuchMethodException | ServiceConfigurationError ignore) {
     }
     return found;

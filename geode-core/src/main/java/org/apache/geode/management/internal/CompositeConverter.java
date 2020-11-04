@@ -69,7 +69,7 @@ public class CompositeConverter extends OpenTypeConverter {
         Object got = getters[i].invoke(value, (Object[]) null);
         values[i] = getterConverters[i].toOpenValue(got);
       } catch (Exception e) {
-        throw openDataException("Error calling getter for " + itemNames[i] + ": " + e, e);
+        throw openDataException("Error calling getter for " + itemNames[i] + ": " + e);
       }
     }
     return new CompositeDataSupport(ct, itemNames, values);

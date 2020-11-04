@@ -78,7 +78,7 @@ public class GMSLocatorRecoveryIntegrationTest {
   @Before
   public void setUp() throws Exception {
 
-    serializer = new DSFIDSerializerImpl();
+    serializer = new DSFIDSerializerImpl(ClassLoaderServiceInstance.getInstance());
     Services.registerSerializables(serializer);
     KnownVersion current = KnownVersion.CURRENT; // force version initialization
 
