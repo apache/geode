@@ -289,7 +289,7 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
       // System.setProperty("javax.net.debug", "all");
       Properties props = getDistributedSystemProperties();
       // locator must restart with the same port so that it reconnects to the server
-      await().atMost(getTimeout().getSeconds(), TimeUnit.SECONDS)
+      await().atMost(getTimeout().getValueInMS(), TimeUnit.MILLISECONDS)
           .until(() -> Locator.startLocatorAndDS(locatorPort, new File(""), props) != null);
       assertThat(Locator.getLocator().getDistributedSystem().getAllOtherMembers().size())
           .isGreaterThan(0);
