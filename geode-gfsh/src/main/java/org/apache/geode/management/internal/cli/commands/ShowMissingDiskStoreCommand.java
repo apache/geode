@@ -95,13 +95,9 @@ public class ShowMissingDiskStoreCommand extends GfshCommand {
       final List<ColocatedRegionDetails> missingColocatedRegions) {
     ResultModel result = new ResultModel();
 
-    boolean hasMissingDiskStores = missingDiskStores.length != 0;
-    boolean hasMissingColocatedRegions =
-        missingColocatedRegions != null && !missingColocatedRegions.isEmpty();
-
     TabularResultModel missingDiskStoreSection = result.addTable(MISSING_DISK_STORES_SECTION);
 
-    if (hasMissingDiskStores) {
+    if (missingDiskStores.length != 0) {
       missingDiskStoreSection.setHeader("Missing Disk Stores");
 
       for (PersistentMemberDetails persistentMemberDetails : missingDiskStores) {
