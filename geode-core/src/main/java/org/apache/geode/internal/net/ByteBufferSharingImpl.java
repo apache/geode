@@ -37,9 +37,9 @@ class ByteBufferSharingImpl implements ByteBufferSharing {
   }
 
   private final Lock lock;
-  private final AtomicBoolean isClosed;
+  private final AtomicBoolean isDestructed;
   // mutable because in general our ByteBuffer may need to be resized (grown or compacted)
-  private ByteBuffer buffer;
+  private volatile ByteBuffer buffer;
   private final BufferType bufferType;
   private final AtomicInteger counter;
   private final BufferPool bufferPool;
@@ -60,14 +60,14 @@ class ByteBufferSharingImpl implements ByteBufferSharing {
     this.bufferPool = bufferPool;
     lock = new ReentrantLock();
     counter = new AtomicInteger(1);
-    isClosed = new AtomicBoolean(false);
+    isDestructed = new AtomicBoolean(false);
   }
 
   /**
    * The destructor. Called by the resource owner to undo the work of the constructor.
    */
   void destruct() {
-    if (isClosed.compareAndSet(false, true)) {
+    if (isDestructed.compareAndSet(false, true)) {
       dropReference();
     }
   }
@@ -80,16 +80,17 @@ class ByteBufferSharingImpl implements ByteBufferSharing {
    * That caller binds that reference to a variable in a try-with-resources statement and relies on
    * the AutoCloseable protocol to invoke {@link #close()} on the object at the end of the block.
    */
-  ByteBufferSharing open() {
+  ByteBufferSharing open() throws IOException {
     lock.lock();
-    addReference();
+    addReferenceAfterLock();
     return this;
   }
 
   /**
    * This variant throws {@link OpenAttemptTimedOut} if it can't acquire the lock in time.
    */
-  ByteBufferSharing open(final long time, final TimeUnit unit) throws OpenAttemptTimedOut {
+  ByteBufferSharing open(final long time, final TimeUnit unit)
+      throws OpenAttemptTimedOut, IOException {
     try {
       if (!lock.tryLock(time, unit)) {
         throw new OpenAttemptTimedOut();
@@ -98,17 +99,16 @@ class ByteBufferSharingImpl implements ByteBufferSharing {
       Thread.currentThread().interrupt();
       throw new OpenAttemptTimedOut();
     }
-    addReference();
+    addReferenceAfterLock();
     return this;
   }
 
   @Override
   public ByteBuffer getBuffer() throws IOException {
-    if (isClosed.get()) {
-      throw new IOException("NioSslEngine has been closed");
-    } else {
-      return buffer;
+    if (isDestructed.get()) {
+      throwClosed();
     }
+    return buffer;
   }
 
   @Override
@@ -128,8 +128,15 @@ class ByteBufferSharingImpl implements ByteBufferSharing {
     dropReference();
   }
 
-  private int addReference() {
-    return counter.incrementAndGet();
+  private int addReference() throws IOException {
+    int usages;
+    do {
+      usages = counter.get();
+      if (usages == 0 || isDestructed.get()) {
+        throwClosed();
+      }
+    } while (!counter.compareAndSet(usages, usages + 1));
+    return usages + 1;
   }
 
   private int dropReference() {
@@ -143,6 +150,19 @@ class ByteBufferSharingImpl implements ByteBufferSharing {
   @VisibleForTesting
   public void setBufferForTestingOnly(final ByteBuffer newBufferForTesting) {
     buffer = newBufferForTesting;
+  }
+
+  private void addReferenceAfterLock() throws IOException {
+    try {
+      addReference();
+    } catch (final IOException e) {
+      lock.unlock();
+      throw e;
+    }
+  }
+
+  private void throwClosed() throws IOException {
+    throw new IOException("NioSslEngine has been closed");
   }
 
 }

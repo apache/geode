@@ -100,6 +100,6 @@ public interface NioFilter {
    * Be sure to call close() on the returned {@link ByteBufferSharing}. The best way to do that is
    * to call this method in a try-with-resources statement.
    */
-  ByteBufferSharing getUnwrappedBuffer();
+  ByteBufferSharing getUnwrappedBuffer() throws IOException;
 
 }
