@@ -18,6 +18,8 @@ import java.io.File;
 import java.rmi.RemoteException;
 import java.util.Properties;
 
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.dunit.internal.BounceResult;
 
 /**
@@ -38,8 +40,16 @@ public abstract class DUnitEnv {
         // for tests that are still being migrated to the open-source
         // distributed unit test framework we need to look for this
         // old closed-source dunit environment
-        Class clazz = Class.forName("dunit.hydra.HydraDUnitEnv");
-        instance = (DUnitEnv) clazz.newInstance();
+        String className = "dunit.hydra.HydraDUnitEnv";
+        ServiceResult<Class<?>> serviceResult =
+            ClassLoaderServiceInstance.getInstance().forName(className);
+        if (serviceResult.isSuccessful()) {
+          Class<?> clazz = serviceResult.getMessage();
+          instance = (DUnitEnv) clazz.newInstance();
+        } else {
+          throw new ClassNotFoundException("Could not find class for name: " + className
+              + " because " + serviceResult.getErrorMessage());
+        }
       } catch (Exception e) {
         throw new Error("Distributed unit test environment is not initialized");
       }

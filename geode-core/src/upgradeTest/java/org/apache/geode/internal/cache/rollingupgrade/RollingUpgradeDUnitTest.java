@@ -57,6 +57,8 @@ import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLe
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -276,8 +278,9 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
   private void putDataSerializableAndVerify(VM putter, String regionName, int start, int end,
       VM... vms) throws Exception {
     for (int i = start; i < end; i++) {
-      Class aClass = Thread.currentThread().getContextClassLoader()
-          .loadClass("org.apache.geode.cache.ExpirationAttributes");
+      ServiceResult<Class<?>> serviceResult = ClassLoaderServiceInstance.getInstance()
+          .forName("org.apache.geode.cache.ExpirationAttributes");
+      Class<?> aClass = serviceResult.getMessage();
       Constructor constructor = aClass.getConstructor(int.class);
       Object testDataSerializable = constructor.newInstance(i);
       putter.invoke(invokePut(regionName, "" + i, testDataSerializable));
@@ -576,8 +579,9 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
     // systemProperties.put(DistributionConfig.LOG_FILE_NAME,
     // "rollingUpgradeCacheVM" + VM.getCurrentVMNum() + ".log");
 
-    Class distConfigClass = Thread.currentThread().getContextClassLoader()
-        .loadClass("org.apache.geode.distributed.internal.DistributionConfigImpl");
+    ServiceResult<Class<?>> serviceResult = ClassLoaderServiceInstance.getInstance()
+        .forName("org.apache.geode.distributed.internal.DistributionConfigImpl");
+    Class<?> distConfigClass = serviceResult.getMessage();
     boolean disableConfig = true;
     try {
       distConfigClass.getDeclaredField("useSharedConfiguration");
@@ -636,8 +640,9 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
 
   private static void createRegion(Cache cache, String regionName, String shortcutName)
       throws Exception {
-    Class aClass = Thread.currentThread().getContextClassLoader()
-        .loadClass("org.apache.geode.cache.RegionShortcut");
+    ServiceResult<Class<?>> serviceResult =
+        ClassLoaderServiceInstance.getInstance().forName("org.apache.geode.cache.RegionShortcut");
+    Class<?> aClass = serviceResult.getMessage();
     Object[] enumConstants = aClass.getEnumConstants();
     RegionShortcut shortcut = null;
     int length = enumConstants.length;

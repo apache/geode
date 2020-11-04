@@ -352,7 +352,7 @@ public abstract class IOUtils {
     @Override
     protected Class<?> resolveClass(final ObjectStreamClass descriptor)
         throws IOException, ClassNotFoundException {
-      return Class.forName(descriptor.getName(), false, getClassLoader());
+      return getClassLoader().loadClass(descriptor.getName());
     }
   }
 

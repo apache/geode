@@ -36,6 +36,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.geode.internal.ExitCode;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * A class used for detecting deadlocks. The static method
@@ -334,10 +336,11 @@ public class DeadlockDetector {
       if (className.startsWith("com.gemstone.gemfire")) {
         className = "org.apache.geode" + className.substring("com.gemstone.gemfire".length());
       }
-      try {
-        Class clazz = Class.forName(className);
-        return clazz;
-      } catch (ClassNotFoundException ex) {
+      ServiceResult<Class<?>> serviceResult =
+          ClassLoaderServiceInstance.getInstance().forName(className);
+      if (serviceResult.isSuccessful()) {
+        return serviceResult.getMessage();
+      } else {
         return super.resolveClass(desc);
       }
     }

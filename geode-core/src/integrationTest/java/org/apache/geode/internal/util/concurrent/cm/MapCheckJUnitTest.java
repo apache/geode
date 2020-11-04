@@ -39,6 +39,8 @@ import java.util.Set;
 
 import org.junit.Test;
 
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.util.JSR166TestCase;
 
 public class MapCheckJUnitTest extends JSR166TestCase { // TODO: reformat
@@ -62,14 +64,16 @@ public class MapCheckJUnitTest extends JSR166TestCase { // TODO: reformat
   }
 
   public static void main(String[] args) throws Exception {
-    Class mapClass = MAP_CLASS;
+    Class<?> mapClass = MAP_CLASS;
     int numTests = 50;
     int size = 50000;
 
     if (args.length > 0) {
-      try {
-        mapClass = Class.forName(args[0]);
-      } catch (ClassNotFoundException e) {
+      ServiceResult<Class<?>> serviceResult =
+          ClassLoaderServiceInstance.getInstance().forName(args[0]);
+      if (serviceResult.isSuccessful()) {
+        mapClass = serviceResult.getMessage();
+      } else {
         throw new RuntimeException("Class " + args[0] + " not found.");
       }
     }

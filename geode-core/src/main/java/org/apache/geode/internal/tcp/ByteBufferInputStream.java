@@ -30,6 +30,8 @@ import java.nio.ByteOrder;
 import org.apache.geode.internal.ByteBufferWriter;
 import org.apache.geode.internal.offheap.AddressableMemoryManager;
 import org.apache.geode.internal.offheap.StoredObject;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * <p>
@@ -556,12 +558,18 @@ public class ByteBufferInputStream extends InputStream
      */
     private static boolean determineUnaligned() {
       try {
-        Class c = Class.forName("java.nio.Bits");
-        Method m = c.getDeclaredMethod("unaligned");
-        m.setAccessible(true);
-        return (boolean) m.invoke(null);
-      } catch (ClassNotFoundException | NoSuchMethodException | SecurityException
-          | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+        ServiceResult<Class<?>> serviceResult =
+            ClassLoaderServiceInstance.getInstance().forName("java.nio.Bits");
+        if (serviceResult.isSuccessful()) {
+          Class<?> clazz = serviceResult.getMessage();
+          Method method = clazz.getDeclaredMethod("unaligned");
+          method.setAccessible(true);
+          return (boolean) method.invoke(null);
+        } else {
+          return false;
+        }
+      } catch (NoSuchMethodException | SecurityException | IllegalAccessException
+          | IllegalArgumentException | InvocationTargetException e) {
         return false;
         // throw new IllegalStateException("Could not invoke java.nio.Bits.unaligned()", e);
       }

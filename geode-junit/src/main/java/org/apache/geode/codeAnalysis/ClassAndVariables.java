@@ -20,7 +20,8 @@ import java.util.Map;
 
 import org.apache.geode.codeAnalysis.decode.CompiledClass;
 import org.apache.geode.codeAnalysis.decode.CompiledField;
-
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 
 
 public class ClassAndVariables implements Comparable {
@@ -34,11 +35,17 @@ public class ClassAndVariables implements Comparable {
 
     String name = dclass.fullyQualifiedName().replace('/', '.');
     try {
-      Class realClass = Class.forName(name);
-      Field field = realClass.getDeclaredField("serialVersionUID");
-      field.setAccessible(true);
-      serialVersionUID = field.getLong(null);
-      hasSerialVersionUID = true;
+      ServiceResult<Class<?>> serviceResult =
+          ClassLoaderServiceInstance.getInstance().forName(name);
+      if (serviceResult.isSuccessful()) {
+        Class<?> realClass = serviceResult.getMessage();
+        Field field = realClass.getDeclaredField("serialVersionUID");
+        field.setAccessible(true);
+        serialVersionUID = field.getLong(null);
+        hasSerialVersionUID = true;
+      } else {
+        System.out.println("Unable to load" + name + ":" + serviceResult.getErrorMessage());
+      }
     } catch (NoSuchFieldException e) {
       // No serialVersionUID defined
 

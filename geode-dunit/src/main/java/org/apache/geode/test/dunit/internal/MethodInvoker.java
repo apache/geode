@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.geode.SystemFailure;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * A class specialized for invoking methods via reflection.
@@ -40,41 +42,46 @@ class MethodInvoker {
   static MethodInvokerResult execute(String target, String methodName, Object[] parameters) {
     try {
       // get the class
-      Class targetClass = Class.forName(target);
+      ServiceResult<Class<?>> serviceResult =
+          ClassLoaderServiceInstance.getInstance().forName(target);
+      if (serviceResult.isSuccessful()) {
+        Class<?> targetClass = serviceResult.getMessage();
+        // invoke the method
+        try {
+          Class<?>[] paramTypes;
+          if (parameters == null) {
+            paramTypes = new Class[0];
 
-      // invoke the method
-      try {
-        Class[] paramTypes;
-        if (parameters == null) {
-          paramTypes = new Class[0];
+          } else {
+            paramTypes = new Class[parameters.length];
+            for (int i = 0; i < parameters.length; i++) {
+              if (parameters[i] == null) {
+                paramTypes[i] = null;
 
-        } else {
-          paramTypes = new Class[parameters.length];
-          for (int i = 0; i < parameters.length; i++) {
-            if (parameters[i] == null) {
-              paramTypes[i] = null;
-
-            } else {
-              paramTypes[i] = parameters[i].getClass();
+              } else {
+                paramTypes[i] = parameters[i].getClass();
+              }
             }
           }
+
+          Method method = getMethod(targetClass, methodName, paramTypes);
+          method.setAccessible(true);
+          Object result = method.invoke(targetClass, parameters);
+          return new MethodInvokerResult(result);
+
+        } catch (InvocationTargetException e) {
+          Throwable targetException = e.getTargetException();
+          if (targetException == null) {
+            return new MethodInvokerResult(null);
+
+          } else {
+            return new MethodInvokerResult(targetException);
+          }
         }
-
-        Method method = getMethod(targetClass, methodName, paramTypes);
-        method.setAccessible(true);
-        Object result = method.invoke(targetClass, parameters);
-        return new MethodInvokerResult(result);
-
-      } catch (InvocationTargetException e) {
-        Throwable targetException = e.getTargetException();
-        if (targetException == null) {
-          return new MethodInvokerResult(null);
-
-        } else {
-          return new MethodInvokerResult(targetException);
-        }
+      } else {
+        throw new ClassNotFoundException("Could not find class for name: " + target
+            + " because " + serviceResult.getErrorMessage());
       }
-
     } catch (VirtualMachineError e) {
       SystemFailure.initiateFailure(e);
       throw e;

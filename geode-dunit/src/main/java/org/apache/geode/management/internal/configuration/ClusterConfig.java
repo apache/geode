@@ -44,6 +44,7 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.deployment.jar.ClassPathLoader;
 import org.apache.geode.internal.deployment.jar.DeployedJar;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -163,8 +164,9 @@ public class ClusterConfig implements Serializable {
       for (String jar : this.getJarNames()) {
         DeployedJar deployedJar = ClassPathLoader.getLatest().getJarDeployer().getDeployedJar(jar);
         assertThat(deployedJar).isNotNull();
-        assertThat(Class.forName(nameOfClassContainedInJar(jar), true,
-            new URLClassLoader(new URL[] {deployedJar.getFileURL()}))).isNotNull();
+        assertThat(new URLClassLoader(new URL[] {deployedJar.getFileURL()},
+            ClassLoaderServiceInstance.getInstance().asClassLoader())
+                .loadClass(nameOfClassContainedInJar(jar))).isNotNull();
       }
 
       // If we have extra jars on disk left over from undeploy, make sure they aren't used

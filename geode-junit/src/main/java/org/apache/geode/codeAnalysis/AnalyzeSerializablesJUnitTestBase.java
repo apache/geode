@@ -126,10 +126,12 @@ public abstract class AnalyzeSerializablesJUnitTestBase extends
       String className = details.className.replaceAll("/", ".");
       System.out.println("testing class " + details.className);
 
-      Class sanctionedClass = null;
-      try {
-        sanctionedClass = Class.forName(className);
-      } catch (ClassNotFoundException cnf) {
+      Class<?> sanctionedClass = null;
+      ServiceResult<Class<?>> serviceResult =
+          ClassLoaderServiceInstance.getInstance().forName(className);
+      if (serviceResult.isSuccessful()) {
+        sanctionedClass = serviceResult.getMessage();
+      } else {
         fail(className + " cannot be found.  It may need to be removed from "
             + expectedSerializablesFileName);
       }
@@ -339,7 +341,9 @@ public abstract class AnalyzeSerializablesJUnitTestBase extends
       return false;
     }
     try {
-      Class realClass = Class.forName(name);
+      ServiceResult<Class<?>> serviceResult =
+          ClassLoaderServiceInstance.getInstance().forName(name);
+      Class<?> realClass = serviceResult.getMessage();
       return Serializable.class.isAssignableFrom(realClass)
           && !DataSerializable.class.isAssignableFrom(realClass)
           && !DataSerializableFixedID.class.isAssignableFrom(realClass);

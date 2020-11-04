@@ -20,6 +20,8 @@ import java.io.RandomAccessFile;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * Encapsulates native C/C++ calls via JNA. To obtain an instance of implementation for a platform,
@@ -46,8 +48,16 @@ public abstract class NativeCalls {
       // try to load JNA implementation first
       // we do it via reflection since some clients
       // may not have it
-      final Class<?> c = Class.forName("org.apache.geode.internal.shared.NativeCallsJNAImpl");
-      inst = (NativeCalls) c.getMethod("getInstance").invoke(null);
+      String className = "org.apache.geode.internal.shared.NativeCallsJNAImpl";
+      ServiceResult<Class<?>> serviceResult =
+          ClassLoaderServiceInstance.getInstance().forName(className);
+      if (serviceResult.isSuccessful()) {
+        final Class<?> clazz = serviceResult.getMessage();
+        inst = (NativeCalls) clazz.getMethod("getInstance").invoke(null);
+      } else {
+        throw new ClassNotFoundException("Could not find class for name: " + className
+            + " because " + serviceResult.getErrorMessage());
+      }
     } catch (VirtualMachineError e) {
       SystemFailure.initiateFailure(e);
       throw e;

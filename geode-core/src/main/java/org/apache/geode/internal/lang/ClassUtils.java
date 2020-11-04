@@ -16,6 +16,8 @@
 package org.apache.geode.internal.lang;
 
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * The ClassUtils class is an abstract utility class for working with and invoking methods on Class
@@ -45,11 +47,11 @@ public abstract class ClassUtils {
    * @see java.lang.Class#forName(String)
    */
   public static Class forName(final String className, final RuntimeException e) {
-    try {
-      return Class.forName(className);
-    } catch (ClassNotFoundException ignore) {
-      throw e;
-    } catch (NoClassDefFoundError ignore) {
+    ServiceResult<Class<?>> serviceResult =
+        ClassLoaderServiceInstance.getInstance().forName(className);
+    if (serviceResult.isSuccessful()) {
+      return serviceResult.getMessage();
+    } else {
       throw e;
     }
   }

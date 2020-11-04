@@ -55,6 +55,8 @@ import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.ClientServerObserverAdapter;
 import org.apache.geode.internal.cache.ClientServerObserverHolder;
 import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
@@ -68,6 +70,47 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category({ClientServerTest.class})
 public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase {
+
+  private static final String TEST_OBJECT_1 =
+      "org.apache.geode.internal.cache.tier.sockets.TestObject1";
+  private static final String TEST_OBJECT_2 =
+      "org.apache.geode.internal.cache.tier.sockets.TestObject2";
+  private static final String TEST_OBJECT_3 =
+      "org.apache.geode.internal.cache.tier.sockets.TestObject3";
+  private static final String TEST_OBJECT_4 =
+      "org.apache.geode.internal.cache.tier.sockets.TestObject4";
+  private static final String TEST_OBJECT_5 =
+      "org.apache.geode.internal.cache.tier.sockets.TestObject5";
+  private static final String TEST_OBJECT_6 =
+      "org.apache.geode.internal.cache.tier.sockets.TestObject6";
+  private static final String TEST_OBJECT_7 =
+      "org.apache.geode.internal.cache.tier.sockets.TestObject7";
+  private static final String TEST_OBJECT_8 =
+      "org.apache.geode.internal.cache.tier.sockets.TestObject8";
+  private static final String TEST_OBJECT_9 =
+      "org.apache.geode.internal.cache.tier.sockets.TestObject9";
+  private static final String TEST_OBJECT_10 =
+      "org.apache.geode.internal.cache.tier.sockets.TestObject10";
+  private static final String TEST_OBJECT_11 =
+      "org.apache.geode.internal.cache.tier.sockets.TestObject11";
+  private static final String TEST_OBJECT_12 =
+      "org.apache.geode.internal.cache.tier.sockets.TestObject12";
+  private static final String TEST_OBJECT_13 =
+      "org.apache.geode.internal.cache.tier.sockets.TestObject13";
+  private static final String TEST_OBJECT_14 =
+      "org.apache.geode.internal.cache.tier.sockets.TestObject14";
+  private static final String TEST_OBJECT_15 =
+      "org.apache.geode.internal.cache.tier.sockets.TestObject15";
+  private static final String TEST_OBJECT_16 =
+      "org.apache.geode.internal.cache.tier.sockets.TestObject16";
+  private static final String TEST_OBJECT_17 =
+      "org.apache.geode.internal.cache.tier.sockets.TestObject17";
+  private static final String TEST_OBJECT_18 =
+      "org.apache.geode.internal.cache.tier.sockets.TestObject18";
+  private static final String TEST_OBJECT_19 =
+      "org.apache.geode.internal.cache.tier.sockets.TestObject19";
+  private static final String TEST_OBJECT_20 =
+      "org.apache.geode.internal.cache.tier.sockets.TestObject20";
 
   private static Cache cache = null;
 
@@ -195,204 +238,20 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
     GeodeAwaitility.await().untilAsserted(wc);
   }
 
-  public static void registerTestObject1() throws Exception {
-
+  public static void registerTestObject(String className) {
     try {
-      Class cls = Class.forName("org.apache.geode.internal.cache.tier.sockets.TestObject1");
-      ConfigurableObject obj = (ConfigurableObject) cls.newInstance();
-      obj.init(0);
+      ServiceResult<Class<?>> serviceResult =
+          ClassLoaderServiceInstance.getInstance().forName(className);
+      if (serviceResult.isSuccessful()) {
+        Class<?> cls = serviceResult.getMessage();
+        ConfigurableObject obj = (ConfigurableObject) cls.newInstance();
+        obj.init(0);
+      } else {
+        throw new ClassNotFoundException("Could not find class for name: " + className
+            + " because " + serviceResult.getErrorMessage());
+      }
     } catch (Exception e) {
-      Assert.fail("Test failed due to exception in TestObject1", e);
-    }
-  }
-
-  public static void registerTestObject2() throws Exception {
-    try {
-      Class cls = Class.forName("org.apache.geode.internal.cache.tier.sockets.TestObject2");
-      ConfigurableObject obj = (ConfigurableObject) cls.newInstance();
-      obj.init(0);
-    } catch (Exception e) {
-      Assert.fail("Test failed due to exception in TestObject2", e);
-    }
-  }
-
-  public static void registerTestObject3() throws Exception {
-    try {
-      Class cls = Class.forName("org.apache.geode.internal.cache.tier.sockets.TestObject3");
-      ConfigurableObject obj = (ConfigurableObject) cls.newInstance();
-      obj.init(0);
-    } catch (Exception e) {
-      Assert.fail("Test failed due to exception in TestObject3", e);
-    }
-  }
-
-  public static void registerTestObject4() throws Exception {
-    try {
-      Class cls = Class.forName("org.apache.geode.internal.cache.tier.sockets.TestObject4");
-      ConfigurableObject obj = (ConfigurableObject) cls.newInstance();
-      obj.init(0);
-    } catch (Exception e) {
-      Assert.fail("Test failed due to exception in TestObject4", e);
-    }
-  }
-
-  public static void registerTestObject5() throws Exception {
-    try {
-      Class cls = Class.forName("org.apache.geode.internal.cache.tier.sockets.TestObject5");
-      ConfigurableObject obj = (ConfigurableObject) cls.newInstance();
-      obj.init(0);
-    } catch (Exception e) {
-      Assert.fail("Test failed due to exception in TestObject5", e);
-    }
-  }
-
-  public static void registerTestObject6() throws Exception {
-    try {
-      Class cls = Class.forName("org.apache.geode.internal.cache.tier.sockets.TestObject6");
-      ConfigurableObject obj = (ConfigurableObject) cls.newInstance();
-      obj.init(0);
-    } catch (Exception e) {
-      Assert.fail("Test failed due to exception in TestObject6", e);
-    }
-  }
-
-  public static void registerTestObject7() throws Exception {
-    try {
-      Class cls = Class.forName("org.apache.geode.internal.cache.tier.sockets.TestObject7");
-      ConfigurableObject obj = (ConfigurableObject) cls.newInstance();
-      obj.init(0);
-    } catch (Exception e) {
-      Assert.fail("Test failed due to exception in TestObject7", e);
-    }
-  }
-
-  public static void registerTestObject8() throws Exception {
-    try {
-      Class cls = Class.forName("org.apache.geode.internal.cache.tier.sockets.TestObject8");
-      ConfigurableObject obj = (ConfigurableObject) cls.newInstance();
-      obj.init(0);
-    } catch (Exception e) {
-      Assert.fail("Test failed due to exception in TestObject8", e);
-    }
-  }
-
-  public static void registerTestObject9() throws Exception {
-    try {
-      Class cls = Class.forName("org.apache.geode.internal.cache.tier.sockets.TestObject9");
-      ConfigurableObject obj = (ConfigurableObject) cls.newInstance();
-      obj.init(0);
-    } catch (Exception e) {
-      Assert.fail("Test failed due to exception in TestObject9", e);
-    }
-  }
-
-  public static void registerTestObject10() throws Exception {
-    try {
-      Class cls = Class.forName("org.apache.geode.internal.cache.tier.sockets.TestObject10");
-      ConfigurableObject obj = (ConfigurableObject) cls.newInstance();
-      obj.init(0);
-    } catch (Exception e) {
-      Assert.fail("Test failed due to exception in TestObject10", e);
-    }
-  }
-
-  public static void registerTestObject11() throws Exception {
-    try {
-      Class cls = Class.forName("org.apache.geode.internal.cache.tier.sockets.TestObject11");
-      ConfigurableObject obj = (ConfigurableObject) cls.newInstance();
-      obj.init(0);
-    } catch (Exception e) {
-      Assert.fail("Test failed due to exception in TestObject11", e);
-    }
-  }
-
-  public static void registerTestObject12() throws Exception {
-    try {
-      Class cls = Class.forName("org.apache.geode.internal.cache.tier.sockets.TestObject12");
-      ConfigurableObject obj = (ConfigurableObject) cls.newInstance();
-      obj.init(0);
-    } catch (Exception e) {
-      Assert.fail("Test failed due to exception in TestObject11", e);
-    }
-  }
-
-  public static void registerTestObject13() throws Exception {
-    try {
-      Class cls = Class.forName("org.apache.geode.internal.cache.tier.sockets.TestObject13");
-      ConfigurableObject obj = (ConfigurableObject) cls.newInstance();
-      obj.init(0);
-    } catch (Exception e) {
-      Assert.fail("Test failed due to exception in TestObject13", e);
-    }
-  }
-
-  public static void registerTestObject14() throws Exception {
-    try {
-      Class cls = Class.forName("org.apache.geode.internal.cache.tier.sockets.TestObject14");
-      ConfigurableObject obj = (ConfigurableObject) cls.newInstance();
-      obj.init(0);
-    } catch (Exception e) {
-      Assert.fail("Test failed due to exception in TestObject14", e);
-    }
-  }
-
-  public static void registerTestObject15() throws Exception {
-    try {
-      Class cls = Class.forName("org.apache.geode.internal.cache.tier.sockets.TestObject15");
-      ConfigurableObject obj = (ConfigurableObject) cls.newInstance();
-      obj.init(0);
-    } catch (Exception e) {
-      Assert.fail("Test failed due to exception in TestObject15", e);
-    }
-  }
-
-  public static void registerTestObject16() throws Exception {
-    try {
-      Class cls = Class.forName("org.apache.geode.internal.cache.tier.sockets.TestObject16");
-      ConfigurableObject obj = (ConfigurableObject) cls.newInstance();
-      obj.init(0);
-    } catch (Exception e) {
-      Assert.fail("Test failed due to exception in TestObject16", e);
-    }
-  }
-
-  public static void registerTestObject17() throws Exception {
-    try {
-      Class cls = Class.forName("org.apache.geode.internal.cache.tier.sockets.TestObject17");
-      ConfigurableObject obj = (ConfigurableObject) cls.newInstance();
-      obj.init(0);
-    } catch (Exception e) {
-      Assert.fail("Test failed due to exception in TestObject17", e);
-    }
-  }
-
-  public static void registerTestObject18() throws Exception {
-    try {
-      Class cls = Class.forName("org.apache.geode.internal.cache.tier.sockets.TestObject18");
-      ConfigurableObject obj = (ConfigurableObject) cls.newInstance();
-      obj.init(0);
-    } catch (Exception e) {
-      Assert.fail("Test failed due to exception in TestObject18", e);
-    }
-  }
-
-  public static void registerTestObject19() throws Exception {
-    try {
-      Class cls = Class.forName("org.apache.geode.internal.cache.tier.sockets.TestObject19");
-      ConfigurableObject obj = (ConfigurableObject) cls.newInstance();
-      obj.init(0);
-    } catch (Exception e) {
-      Assert.fail("Test failed due to exception in TestObject19", e);
-    }
-  }
-
-  public static void registerTestObject20() throws Exception {
-    try {
-      Class cls = Class.forName("org.apache.geode.internal.cache.tier.sockets.TestObject20");
-      ConfigurableObject obj = (ConfigurableObject) cls.newInstance();
-      obj.init(0);
-    } catch (Exception e) {
-      Assert.fail("Test failed due to exception in TestObject20", e);
+      Assert.fail("Test failed due to exception in " + className, e);
     }
   }
 
@@ -431,8 +290,8 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
 
     Wait.pause(3000);
 
-    server1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject1());
-    server1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject2());
+    server1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject(TEST_OBJECT_1));
+    server1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject(TEST_OBJECT_2));
 
     server1.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators(new Integer(2)));
 
@@ -513,7 +372,7 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
     Wait.pause(2000);
 
 
-    client1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject3());
+    client1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject(TEST_OBJECT_3));
     Wait.pause(4000);
 
     client1.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators(new Integer(1)));
@@ -547,13 +406,13 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
     // wait for client2 to come online
     Wait.pause(2000);
 
-    client1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject4());
+    client1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject(TEST_OBJECT_4));
     Wait.pause(4000);
 
     server1.invoke(() -> InstantiatorPropagationDUnitTest.stopServer());
 
-    server1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject5());
-    server1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject6());
+    server1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject(TEST_OBJECT_5));
+    server1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject(TEST_OBJECT_6));
 
     server2.invoke(() -> InstantiatorPropagationDUnitTest
         .verifyInstantiators(new Integer(instanceCountWithAllPuts)));
@@ -591,10 +450,10 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
     // wait for client2 to come online
     Wait.pause(2000);
 
-    client1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject10());
+    client1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject(TEST_OBJECT_10));
     Wait.pause(4000);
 
-    server1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject11());
+    server1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject(TEST_OBJECT_11));
     Wait.pause(4000);
 
     server2.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators(new Integer(2)));
@@ -624,7 +483,7 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
 
     unregisterInstantiatorsInAllVMs();
 
-    client1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject7());
+    client1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject(TEST_OBJECT_7));
     client1.invoke(() -> InstantiatorPropagationDUnitTest
         .verifyInstantiators(new Integer(instanceCountWithOnePut)));
 
@@ -640,7 +499,7 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
     server1.invoke(() -> InstantiatorPropagationDUnitTest.stopServer());
 
     try {
-      client1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject8());
+      client1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject(TEST_OBJECT_8));
     } catch (Exception expected) {// we are putting in a client whose server is
       // dead
     }
@@ -680,7 +539,7 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
     // wait for client2 to come online
     Wait.pause(2000);
 
-    client1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject12());
+    client1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject(TEST_OBJECT_12));
     Wait.pause(4000);
 
     client1.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators(new Integer(1)));
@@ -728,7 +587,7 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
     setClientServerObserver1();
     client2.invoke(() -> InstantiatorPropagationDUnitTest.setClientServerObserver2());
 
-    registerTestObject19();
+    registerTestObject(TEST_OBJECT_19);
 
     Wait.pause(10000);
 
@@ -761,7 +620,7 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
       server2.invoke(() -> InstantiatorPropagationDUnitTest.assertTestObject20NotLoaded());
       client2.invoke(() -> InstantiatorPropagationDUnitTest.assertTestObject20NotLoaded());
 
-      registerTestObject20();
+      registerTestObject(TEST_OBJECT_20);
       Wait.pause(5000);
       assertTestObject20Loaded();
       server1.invoke(() -> InstantiatorPropagationDUnitTest.assertTestObject20Loaded());

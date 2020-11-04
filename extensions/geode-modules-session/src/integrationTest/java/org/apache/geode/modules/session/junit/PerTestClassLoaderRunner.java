@@ -36,6 +36,8 @@ import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+
 public class PerTestClassLoaderRunner extends NamedRunner {
   // Some data related to the class from the custom class loader.
   private TestClass testClassFromClassLoader;
@@ -90,7 +92,7 @@ public class PerTestClassLoaderRunner extends NamedRunner {
     }
 
     ClassLoader classLoader = new ChildFirstClassLoader(urls.toArray(new URL[] {}),
-        Thread.currentThread().getContextClassLoader());
+        ClassLoaderServiceInstance.getInstance().asClassLoader());
 
     Thread.currentThread().setContextClassLoader(classLoader);
 

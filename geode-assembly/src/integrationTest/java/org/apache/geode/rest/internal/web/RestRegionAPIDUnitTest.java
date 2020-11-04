@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -42,7 +43,9 @@ import org.springframework.http.MediaType;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.rest.internal.web.controllers.Customer;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.junit.rules.GeodeDevRestClient;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
@@ -364,8 +367,9 @@ public class RestRegionAPIDUnitTest {
   }
 
   private static void initJsonDocuments() throws URISyntaxException, IOException {
-    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-    URI uri = classLoader.getResource("sampleJson.json").toURI();
+    ServiceResult<URL> serviceResult =
+        ClassLoaderServiceInstance.getInstance().getResource("sampleJson.json");
+    URI uri = serviceResult.getMessage().toURI();
 
     String rawJson = IOUtils.toString(uri, Charset.defaultCharset());
 

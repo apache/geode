@@ -58,7 +58,9 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.logging.internal.spi.LoggingProvider;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.dunit.DUnitEnv;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
@@ -135,10 +137,16 @@ public class DUnitLauncher {
     try {
       // TODO - this is hacky way to test for a hydra environment - see
       // if there is registered test configuration object.
-      Class<?> clazz = Class.forName("hydra.TestConfig");
-      Method getInstance = clazz.getMethod("getInstance");
-      getInstance.invoke(null);
-      return true;
+      ServiceResult<Class<?>> serviceResult =
+          ClassLoaderServiceInstance.getInstance().forName("hydra.TestConfig");
+      if (serviceResult.isSuccessful()) {
+        Class<?> clazz = serviceResult.getMessage();
+        Method getInstance = clazz.getMethod("getInstance");
+        getInstance.invoke(null);
+        return true;
+      } else {
+        return false;
+      }
     } catch (Exception e) {
       return false;
     }

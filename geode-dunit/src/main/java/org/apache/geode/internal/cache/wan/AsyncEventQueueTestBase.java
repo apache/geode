@@ -99,7 +99,9 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserver;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.internal.size.Sizeable;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
@@ -370,9 +372,9 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
   private static Class getClass(String simpleClassName) throws Exception {
     String packagePrefix = "org.apache.geode.internal.cache.wan.";
     String className = packagePrefix + simpleClassName;
-    Class clazz = null;
-    clazz = Class.forName(className);
-    return clazz;
+    ServiceResult<Class<?>> serviceResult =
+        ClassLoaderServiceInstance.getInstance().forName(className);
+    return serviceResult.getMessage();
   }
 
   public static void createAsyncEventQueueWithCustomListener(String asyncChannelId,

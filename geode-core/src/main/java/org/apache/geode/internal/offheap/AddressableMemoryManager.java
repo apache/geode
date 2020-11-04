@@ -22,6 +22,8 @@ import java.nio.ByteBuffer;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.JvmSizeUtils;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.unsafe.internal.sun.misc.Unsafe;
 
 /**
@@ -201,33 +203,35 @@ public class AddressableMemoryManager {
     if (dbbAddressFailed) {
       return 0L;
     }
-    Method m = dbbAddressMethod;
-    if (m == null) {
-      Class c = dbbClass;
-      if (c == null) {
-        try {
-          c = Class.forName("java.nio.DirectByteBuffer");
-        } catch (ClassNotFoundException e) {
+    Method method = dbbAddressMethod;
+    if (method == null) {
+      Class clazz = dbbClass;
+      if (clazz == null) {
+        ServiceResult<Class<?>> serviceResult =
+            ClassLoaderServiceInstance.getInstance().forName("java.nio.DirectByteBuffer");
+        if (serviceResult.isSuccessful()) {
+          clazz = serviceResult.getMessage();
+        } else {
           // throw new IllegalStateException("Could not find java.nio.DirectByteBuffer", e);
           dbbCreateFailed = true;
           dbbAddressFailed = true;
           return 0L;
         }
-        dbbClass = c;
+        dbbClass = clazz;
       }
       try {
-        m = c.getDeclaredMethod("address");
+        method = clazz.getDeclaredMethod("address");
       } catch (NoSuchMethodException | SecurityException e) {
         // throw new IllegalStateException("Could not get method DirectByteBuffer.address()", e);
         dbbClass = null;
         dbbAddressFailed = true;
         return 0L;
       }
-      m.setAccessible(true);
-      dbbAddressMethod = m;
+      method.setAccessible(true);
+      dbbAddressMethod = method;
     }
     try {
-      return (Long) m.invoke(bb);
+      return (Long) method.invoke(bb);
     } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
       // throw new IllegalStateException("Could not create an invoke DirectByteBuffer.address()",
       // e);
@@ -251,20 +255,22 @@ public class AddressableMemoryManager {
     }
     Constructor ctor = dbbCtor;
     if (ctor == null) {
-      Class c = dbbClass;
-      if (c == null) {
-        try {
-          c = Class.forName("java.nio.DirectByteBuffer");
-        } catch (ClassNotFoundException e) {
+      Class clazz = dbbClass;
+      if (clazz == null) {
+        ServiceResult<Class<?>> serviceResult =
+            ClassLoaderServiceInstance.getInstance().forName("java.nio.DirectByteBuffer");
+        if (serviceResult.isSuccessful()) {
+          clazz = serviceResult.getMessage();
+        } else {
           // throw new IllegalStateException("Could not find java.nio.DirectByteBuffer", e);
           dbbCreateFailed = true;
           dbbAddressFailed = true;
           return null;
         }
-        dbbClass = c;
+        dbbClass = clazz;
       }
       try {
-        ctor = c.getDeclaredConstructor(long.class, int.class);
+        ctor = clazz.getDeclaredConstructor(long.class, int.class);
       } catch (NoSuchMethodException | SecurityException e) {
         // throw new IllegalStateException("Could not get constructor DirectByteBuffer(long, int)",
         // e);

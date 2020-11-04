@@ -175,7 +175,10 @@ public abstract class AnalyzeDataSerializablesJUnitTestBase {
       String className = filePath.replaceAll("/", ".");
       System.out.println("testing class " + className);
 
-      Class excludedClass = Class.forName(className);
+      ServiceResult<Class<?>> serviceResult =
+          ClassLoaderServiceInstance.getInstance().forName(className);
+      assertThat(serviceResult.isSuccessful()).isTrue();
+      Class<?> excludedClass = serviceResult.getMessage();
       assertTrue(
           excludedClass.getName()
               + " is not Serializable and should be removed from excludedClasses.txt",

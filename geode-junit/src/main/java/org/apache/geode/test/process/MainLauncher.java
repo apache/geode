@@ -18,6 +18,9 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
+
 /**
  * Provides a main which delegates to another main for testing after waiting for one input. The
  * purpose is to prevent race condition in which a process may send output before the reader has
@@ -27,8 +30,6 @@ import java.lang.reflect.Method;
 public class MainLauncher {
   public static void main(String... args) throws Exception {
     assert args.length > 0;
-    String innerMain = args[0];
-    Class<?> clazz = Class.forName(innerMain);
 
     // System.out.println(MainLauncher.class.getSimpleName() + " waiting to start...");
     BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
@@ -36,10 +37,18 @@ public class MainLauncher {
 
     // System.out.println(MainLauncher.class.getSimpleName() + " delegating...");
     Object[] innerArgs = new String[args.length - 1];
-    for (int i = 0; i < innerArgs.length; i++) {
-      innerArgs[i] = args[i + 1];
+    System.arraycopy(args, 1, innerArgs, 0, innerArgs.length);
+
+    String innerMain = args[0];
+    ServiceResult<Class<?>> serviceResult =
+        ClassLoaderServiceInstance.getInstance().forName(innerMain);
+
+    if (serviceResult.isSuccessful()) {
+      Class<?> clazz = Class.forName(innerMain);
+      Method mainMethod = clazz.getMethod("main", String[].class);
+      mainMethod.invoke(null, new Object[] {innerArgs});
+    } else {
+      throw new RuntimeException("Class " + innerMain + " not found.");
     }
-    Method mainMethod = clazz.getMethod("main", String[].class);
-    mainMethod.invoke(null, new Object[] {innerArgs});
   }
 }

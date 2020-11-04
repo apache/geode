@@ -51,6 +51,7 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.modules.session.filter.SessionCachingFilter;
 import org.apache.geode.modules.session.junit.PerTestClassLoaderRunner;
 import org.apache.geode.test.junit.categories.SessionTest;
@@ -1043,7 +1044,7 @@ public class SessionReplicationIntegrationJUnitTest {
       dispatcher.forward(request, response);
     };
 
-    tester.getContext().setClassLoader(Thread.currentThread().getContextClassLoader());
+    tester.getContext().setClassLoader(ClassLoaderServiceInstance.getInstance().asClassLoader());
     tester.setAttribute("callback_1", c_1);
 
     tester.start();

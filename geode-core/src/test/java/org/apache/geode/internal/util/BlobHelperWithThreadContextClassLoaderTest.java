@@ -37,9 +37,13 @@ import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.InstructionList;
 import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.Type;
-import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
+import org.apache.geode.services.result.ServiceResult;
+import org.apache.geode.test.junit.rules.RestoreTCCLRule;
 
 
 /**
@@ -49,6 +53,9 @@ import org.junit.Test;
  */
 public class BlobHelperWithThreadContextClassLoaderTest {
 
+  @Rule
+  public RestoreTCCLRule restoreTCCLRule = new RestoreTCCLRule();
+
   private static final String CLASS_NAME_SERIALIZABLE_IMPL =
       "org.apache.geode.internal.util.SerializableImpl";
   private static final String CLASS_NAME_SERIALIZABLE_IMPL_WITH_VALUE =
@@ -57,23 +64,17 @@ public class BlobHelperWithThreadContextClassLoaderTest {
   private static final String SET_VALUE = "setValue";
   private static final String GET_VALUE = "getValue";
 
-  private ClassLoader oldCCL;
-
   @Before
   public void setUp() throws MalformedURLException {
-    this.oldCCL = Thread.currentThread().getContextClassLoader();
-    Thread.currentThread().setContextClassLoader(new GeneratingClassLoader(this.oldCCL));
-  }
-
-  @After
-  public void tearDown() {
-    Thread.currentThread().setContextClassLoader(this.oldCCL);
+    Thread.currentThread().setContextClassLoader(new GeneratingClassLoader(
+        ClassLoaderServiceInstance.getInstance().asClassLoader()));
   }
 
   @Test
   public void tcclLoadsSerializableImpl() throws Exception {
-    Class loadedClass = Class.forName(CLASS_NAME_SERIALIZABLE_IMPL, true,
-        Thread.currentThread().getContextClassLoader());
+    ServiceResult<Class<?>> serviceResult =
+        ClassLoaderServiceInstance.getInstance().forName(CLASS_NAME_SERIALIZABLE_IMPL);
+    Class<?> loadedClass = serviceResult.getMessage();
     assertThat(loadedClass).isNotNull();
     assertThat(loadedClass.getName()).isEqualTo(CLASS_NAME_SERIALIZABLE_IMPL);
 
@@ -85,8 +86,9 @@ public class BlobHelperWithThreadContextClassLoaderTest {
 
   @Test
   public void tcclLoadsSerializableImplWithValue() throws Exception {
-    Class loadedClass = Class.forName(CLASS_NAME_SERIALIZABLE_IMPL_WITH_VALUE, true,
-        Thread.currentThread().getContextClassLoader());
+    ServiceResult<Class<?>> serviceResult =
+        ClassLoaderServiceInstance.getInstance().forName(CLASS_NAME_SERIALIZABLE_IMPL_WITH_VALUE);
+    Class<?> loadedClass = serviceResult.getMessage();
     assertThat(loadedClass).isNotNull();
     assertThat(loadedClass.getName()).isEqualTo(CLASS_NAME_SERIALIZABLE_IMPL_WITH_VALUE);
 
@@ -109,8 +111,9 @@ public class BlobHelperWithThreadContextClassLoaderTest {
    */
   @Test
   public void handlesClassFromOtherClassLoader() throws Exception {
-    Class loadedClass = Class.forName(CLASS_NAME_SERIALIZABLE_IMPL, true,
-        Thread.currentThread().getContextClassLoader());
+    ServiceResult<Class<?>> serviceResult =
+        ClassLoaderServiceInstance.getInstance().forName(CLASS_NAME_SERIALIZABLE_IMPL);
+    Class<?> loadedClass = serviceResult.getMessage();
 
     Object instance = loadedClass.newInstance();
     byte[] bytes = BlobHelper.serializeToBlob(instance);
@@ -121,7 +124,7 @@ public class BlobHelperWithThreadContextClassLoaderTest {
     assertThat(object.getClass().getName()).isEqualTo(CLASS_NAME_SERIALIZABLE_IMPL);
     assertThat(Serializable.class.isInstance(object));
 
-    Class deserializedClass = object.getClass();
+    Class<?> deserializedClass = object.getClass();
     assertThat(deserializedClass.getInterfaces()).contains(Serializable.class);
   }
 
@@ -130,10 +133,11 @@ public class BlobHelperWithThreadContextClassLoaderTest {
    */
   @Test
   public void handlesObjectWithStateFromOtherClassLoader() throws Exception {
-    Class loadedClass = Class.forName(CLASS_NAME_SERIALIZABLE_IMPL_WITH_VALUE, true,
-        Thread.currentThread().getContextClassLoader());
+    ServiceResult<Class<?>> serviceResult =
+        ClassLoaderServiceInstance.getInstance().forName(CLASS_NAME_SERIALIZABLE_IMPL_WITH_VALUE);
+    Class<?> loadedClass = serviceResult.getMessage();
 
-    Constructor ctor = loadedClass.getConstructor(new Class[] {Object.class});
+    Constructor ctor = loadedClass.getConstructor(Object.class);
     Valuable instance = (Valuable) ctor.newInstance(new Object[] {123});
     assertThat(instance.getValue()).isEqualTo(123);
 

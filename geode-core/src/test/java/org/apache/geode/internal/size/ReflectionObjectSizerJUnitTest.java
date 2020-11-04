@@ -21,6 +21,7 @@ import static org.mockito.Mockito.mock;
 import org.junit.Test;
 
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class ReflectionObjectSizerJUnitTest {
@@ -33,7 +34,7 @@ public class ReflectionObjectSizerJUnitTest {
 
   @Test
   public void skipsSizingClassLoader() {
-    checkSizeDoesNotChange(Thread.currentThread().getContextClassLoader());
+    checkSizeDoesNotChange(ClassLoaderServiceInstance.getInstance().asClassLoader());
   }
 
   @Test

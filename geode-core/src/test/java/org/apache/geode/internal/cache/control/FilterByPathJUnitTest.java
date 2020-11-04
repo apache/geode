@@ -26,6 +26,7 @@ import java.util.HashSet;
 import org.junit.Test;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 
 public class FilterByPathJUnitTest {
 
@@ -75,7 +76,7 @@ public class FilterByPathJUnitTest {
 
   private Region<?, ?> createRegion(String name) {
     RegionHandler handler = new RegionHandler(name);
-    final ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+    final ClassLoader contextClassLoader = ClassLoaderServiceInstance.getInstance().asClassLoader();
     return (Region<?, ?>) Proxy.newProxyInstance(contextClassLoader, new Class[] {Region.class},
         handler);
   }

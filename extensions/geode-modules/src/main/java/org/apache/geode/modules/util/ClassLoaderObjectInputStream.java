@@ -38,7 +38,7 @@ public class ClassLoaderObjectInputStream extends ObjectInputStream {
   public Class<?> resolveClass(ObjectStreamClass desc) throws ClassNotFoundException {
     Class<?> theClass;
     try {
-      theClass = Class.forName(desc.getName(), false, loader);
+      theClass = loader.loadClass(desc.getName());
     } catch (ClassNotFoundException cnfe) {
       ServiceResult<Class<?>> serviceResult =
           ClassLoaderServiceInstance.getInstance().forName(desc.getName());

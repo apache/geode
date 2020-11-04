@@ -205,7 +205,7 @@ public class ClassPathLoader {
           }
           return clazz;
         }
-      } catch (SecurityException | ClassNotFoundException e) {
+      } catch (SecurityException | ClassNotFoundException | ClassCircularityError e) {
         // try next classLoader
       }
     }
