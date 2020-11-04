@@ -361,7 +361,7 @@ public class NioSslEngine implements NioFilter {
   }
 
   @Override
-  public ByteBufferSharing getUnwrappedBuffer() {
+  public ByteBufferSharing getUnwrappedBuffer() throws IOException {
     return shareInputBuffer();
   }
 
@@ -423,16 +423,16 @@ public class NioSslEngine implements NioFilter {
   }
 
   @VisibleForTesting
-  public ByteBufferSharing shareOutputBuffer() {
+  public ByteBufferSharing shareOutputBuffer() throws IOException {
     return outputSharing.open();
   }
 
   private ByteBufferSharing shareOutputBuffer(final long time, final TimeUnit unit)
-      throws OpenAttemptTimedOut {
+      throws OpenAttemptTimedOut, IOException {
     return outputSharing.open(time, unit);
   }
 
-  public ByteBufferSharing shareInputBuffer() {
+  public ByteBufferSharing shareInputBuffer() throws IOException {
     return inputSharing.open();
   }
 }

@@ -22,6 +22,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.CountDownLatch;
 
@@ -29,6 +30,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class ByteBufferSharingImplTest {
+
+  @FunctionalInterface
+  private static interface Foo {
+    void run() throws IOException;
+  }
 
   private ByteBufferSharingImpl sharing;
   private BufferPool poolMock;
@@ -88,7 +94,7 @@ public class ByteBufferSharingImplTest {
   }
 
   @Test
-  public void extraCloseDoesNotPrematurelyReturnBufferToPool() {
+  public void extraCloseDoesNotPrematurelyReturnBufferToPool() throws IOException {
     final ByteBufferSharing sharing2 = sharing.open();
     sharing2.close();
     assertThatThrownBy(() -> sharing2.close()).isInstanceOf(IllegalMonitorStateException.class);
@@ -98,7 +104,7 @@ public class ByteBufferSharingImplTest {
   }
 
   @Test
-  public void extraCloseDoesNotDecrementRefCount() {
+  public void extraCloseDoesNotDecrementRefCount() throws IOException {
     final ByteBufferSharing sharing2 = sharing.open();
     sharing2.close();
     assertThatThrownBy(() -> sharing2.close()).isInstanceOf(IllegalMonitorStateException.class);
@@ -107,7 +113,7 @@ public class ByteBufferSharingImplTest {
     verify(poolMock, times(0)).releaseBuffer(any(), any());
   }
 
-  private void resourceOwnerIsLastReferenceHolder(final String name, final Runnable client)
+  private void resourceOwnerIsLastReferenceHolder(final String name, final Foo client)
       throws InterruptedException {
     /*
      * Thread.currentThread() is thread is playing the role of the (ByteBuffer) resource owner
@@ -116,7 +122,7 @@ public class ByteBufferSharingImplTest {
     /*
      * clientThread thread is playing the role of the client (of the resource owner)
      */
-    final Thread clientThread = new Thread(client, name);
+    final Thread clientThread = new Thread(asRunnable(client), name);
     clientThread.start();
     clientThread.join();
 
@@ -127,7 +133,7 @@ public class ByteBufferSharingImplTest {
     verify(poolMock, times(1)).releaseBuffer(any(), any());
   }
 
-  private void clientIsLastReferenceHolder(final String name, final Runnable client)
+  private void clientIsLastReferenceHolder(final String name, final Foo client)
       throws InterruptedException {
     /*
      * Thread.currentThread() is thread is playing the role of the (ByteBuffer) resource owner
@@ -136,7 +142,7 @@ public class ByteBufferSharingImplTest {
     /*
      * clientThread thread is playing the role of the client (of the resource owner)
      */
-    final Thread clientThread = new Thread(client, name);
+    final Thread clientThread = new Thread(asRunnable(client), name);
     clientThread.start();
 
     clientHasOpenedResource.await();
@@ -158,6 +164,16 @@ public class ByteBufferSharingImplTest {
     } catch (InterruptedException e) {
       fail("test client thread interrupted: " + e);
     }
+  }
+
+  private Runnable asRunnable(final Foo client) {
+    return () -> {
+      try {
+        client.run();
+      } catch (IOException e) {
+        fail("client thread threw: ", e);
+      }
+    };
   }
 
 }
