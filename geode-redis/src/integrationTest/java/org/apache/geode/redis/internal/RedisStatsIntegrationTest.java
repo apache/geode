@@ -46,7 +46,7 @@ public class RedisStatsIntegrationTest {
   public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
   @Before
-  public void setup() {
+  public void before() {
     jedis = new Jedis("localhost", server.getPort(), TIMEOUT);
 
     jedis.set(EXISTING_STRING_KEY, "A_Value");
@@ -388,32 +388,20 @@ public class RedisStatsIntegrationTest {
           return true;
         });
 
-    long startTimeInNanos = server.getStartTime();
-    long currentTimeInNanos = server.getCurrentTime();
-
-    long numberOfSecondAlive =
-        TimeUnit.NANOSECONDS.toMillis(
-            currentTimeInNanos - startTimeInNanos);
-
-    System.out.println("numberOfSecondAlive: " + numberOfSecondAlive);
-
-    System.out.println("numberOfCommands: " + numberOfCommandsExecuted.get());
-
-    long expectedCommandsPerSecond =
-        (numberOfCommandsExecuted.get() / numberOfSecondAlive);
-
-    System.out.println("expectedCommandsPerSecond" + expectedCommandsPerSecond);
+    long expected =
+        (numberOfCommandsExecuted.get() / redisStats.getUptimeInSeconds());
 
     assertThat(redisStats.getOpsPerSecond())
-        .isCloseTo((long) expectedCommandsPerSecond, Offset.offset(1L));
+        .isCloseTo((long) expected, Offset.offset(1L));
 
+    // ensure that ratio drops if time passes w/o additional operations
     GeodeAwaitility
         .await()
         .during(NUMBER_SECONDS_TO_RUN, TimeUnit.SECONDS)
         .until(() -> true);
 
-    // assertThat(redisStats.getOpsPerSecond())
-    // .isCloseTo((long) expectedCommandsPerSecond / 2, Offset.offset(1L));
+    assertThat(redisStats.getOpsPerSecond())
+        .isCloseTo(expected / 2, Offset.offset(2L));
   }
 
   @Test

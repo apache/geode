@@ -62,10 +62,8 @@ public class RedisStats {
   private volatile double networkKilobytesReadPerSecond;
   private long previousNetworkBytesRead;
   private final StatisticsClock clock;
-
-  private final long START_TIME_IN_NANOS;
-
   private final Statistics stats;
+  private final long START_TIME_IN_NANOS;
 
   static {
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
@@ -246,10 +244,6 @@ public class RedisStats {
 
   public double getNetworkKilobytesReadPerSecond() {
     return networkKilobytesReadPerSecond;
-  }
-
-  public long getExpirations() {
-    return expirations.get();
   }
 
   private long getUptimeInMilliseconds() {
