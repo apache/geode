@@ -180,7 +180,7 @@ public class RedisStats {
     }
   }
 
-  public double getNetworkKiloBytesReadDuringLastSecond() {
+  public double getNetworkKiloBytesReadOverLastSecond() {
     return networkKiloBytesReadDuringLastSecond;
   }
 

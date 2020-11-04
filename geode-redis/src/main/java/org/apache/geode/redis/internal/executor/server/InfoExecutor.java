@@ -80,7 +80,7 @@ public class InfoExecutor extends AbstractExecutor {
     String instantaneous_input_kbps =
         new DecimalFormat("0.00")
             .format(redisStats
-                .getNetworkKiloBytesReadDuringLastSecond());
+                .getNetworkKiloBytesReadOverLastSecond());
 
     final String STATS_STRING =
         "# Stats\r\n" +

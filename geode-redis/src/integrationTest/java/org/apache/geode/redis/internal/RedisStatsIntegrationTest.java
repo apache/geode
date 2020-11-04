@@ -417,9 +417,9 @@ public class RedisStatsIntegrationTest {
   }
 
   @Test
-  public void NetworkKiloBytesReadDuringLastSecond_shouldReturnCorrectData() {
+  public void NetworkKiloBytesReadOverLastSecond_shouldReturnCorrectData() {
 
-    double REASONABLE_SOUNDING_OFFSET = .1;
+    double REASONABLE_SOUNDING_OFFSET = .8;
     int NUMBER_SECONDS_TO_RUN = 2;
     String RESP_COMMAND_STRING = "*3\r\n$3\r\nset\r\n$3\r\nkey\r\n$5\r\nvalue\r\n";
     int BYTES_SENT_PER_COMMAND = RESP_COMMAND_STRING.length();
@@ -432,14 +432,17 @@ public class RedisStatsIntegrationTest {
         .until(() -> {
           jedis.set("key", "value");
           totalBytesSent.addAndGet(BYTES_SENT_PER_COMMAND);
-          actual_kbs.set(redisStats.getOverallNetworkKilobytesReadPerSecond());
+          actual_kbs.set(redisStats.getNetworkKiloBytesReadOverLastSecond());
           return true;
         });
 
     double expectedBytesReceived = totalBytesSent.get() / NUMBER_SECONDS_TO_RUN;
     double expected_kbs = expectedBytesReceived / 1000;
 
-    assertThat(actual_kbs.get()).isCloseTo(expected_kbs, Offset.offset(REASONABLE_SOUNDING_OFFSET));
+    System.out.println("expected_kbs: " +expected_kbs);
+    System.out.println("actual: " + actual_kbs.get());
+    assertThat(actual_kbs.get()).isCloseTo(expected_kbs,
+        Offset.offset(REASONABLE_SOUNDING_OFFSET));
 
 
   }
