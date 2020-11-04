@@ -167,32 +167,20 @@ public class ShowMissingDiskStoreCommandDUnitTest {
 
     MemberVM locator1 = lsRule.startLocatorVM(1, locator.getPort());
 
-    MemberVM server1 = lsRule.startServerVM(2, locator.getPort(), locator1.getPort());
-    @SuppressWarnings("unused")
-    MemberVM server2 = lsRule.startServerVM(3, locator.getPort(), locator1.getPort());
+    lsRule.startServerVM(2, locator.getPort(), locator1.getPort());
+    lsRule.startServerVM(3, locator.getPort(), locator1.getPort());
 
     final String testRegionName = "regionA";
-    CommandStringBuilder csb;
-    csb = new CommandStringBuilder(CliStrings.CREATE_DISK_STORE)
-        .addOption(CliStrings.CREATE_DISK_STORE__NAME, "diskStore")
-        .addOption(CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE, "diskStoreDir");
-    gfshConnector.executeAndAssertThat(csb.getCommandString()).statusIsSuccess();
 
     CommandStringBuilder createRegion = new CommandStringBuilder(CliStrings.CREATE_REGION)
         .addOption(CliStrings.CREATE_REGION__REGION, testRegionName)
-        .addOption(CliStrings.CREATE_REGION__DISKSTORE, "diskStore")
         .addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT,
             RegionShortcut.PARTITION_REDUNDANT_PERSISTENT.toString());
     await().untilAsserted(() -> gfshConnector.executeAndAssertThat(createRegion.getCommandString())
         .statusIsSuccess());
 
-
+    // stop locator1 before locator0
     lsRule.stop(1, false);
-
-    // Add data to the region
-    addData(server1, testRegionName);
-
-    rebalance();
 
     lsRule.stop(2, false);
 
@@ -201,6 +189,7 @@ public class ShowMissingDiskStoreCommandDUnitTest {
     lsRule.stop(3, false);
     final int locatorPort = locator1.getPort();
 
+    // start stale locator
     locator1.invokeAsync("restart locator in vm1", () -> {
       LocatorStarterRule locatorStarter = new LocatorStarterRule();
       locatorStarter.withName("locator-1");
@@ -211,6 +200,7 @@ public class ShowMissingDiskStoreCommandDUnitTest {
 
     await().untilAsserted(() -> gfshConnector.connectAndVerify(locator1));
 
+    // execute show missing-disk-stores
     await().untilAsserted(() -> {
       CommandStringBuilder csb1 = new CommandStringBuilder(CliStrings.SHOW_MISSING_DISK_STORE);
       @SuppressWarnings("deprecation")
@@ -220,8 +210,6 @@ public class ShowMissingDiskStoreCommandDUnitTest {
       List<String> missingDiskStoreIds = tableSection.getValuesInColumn("Disk Store ID");
       assertThat(missingDiskStoreIds).isNotNull();
     });
-
-
   }
 
 

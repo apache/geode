@@ -54,10 +54,8 @@ public class ShowMissingDiskStoreCommand extends GfshCommand {
         DiskStoreCommandsUtils.getNormalMembers((InternalCache) getCache());
 
     List<ColocatedRegionDetails> missingRegions = null;
-    boolean cacheMemberExist = false;
 
     if (!dataMembers.isEmpty()) {
-      cacheMemberExist = true;
       missingRegions = getMissingColocatedRegionList(dataMembers);
     }
 
@@ -65,7 +63,7 @@ public class ShowMissingDiskStoreCommand extends GfshCommand {
         ManagementService.getManagementService(getCache()).getDistributedSystemMXBean();
     PersistentMemberDetails[] missingDiskStores = dsMXBean.listMissingDiskStores();
 
-    return toMissingDiskStoresTabularResult(missingDiskStores, missingRegions, cacheMemberExist);
+    return toMissingDiskStoresTabularResult(missingDiskStores, missingRegions);
   }
 
   private List<ColocatedRegionDetails> getMissingColocatedRegionList(
@@ -94,11 +92,12 @@ public class ShowMissingDiskStoreCommand extends GfshCommand {
 
   private ResultModel toMissingDiskStoresTabularResult(
       PersistentMemberDetails[] missingDiskStores,
-      final List<ColocatedRegionDetails> missingColocatedRegions, boolean cacheMemberExist) {
+      final List<ColocatedRegionDetails> missingColocatedRegions) {
     ResultModel result = new ResultModel();
 
     boolean hasMissingDiskStores = missingDiskStores.length != 0;
-    boolean hasMissingColocatedRegions = cacheMemberExist && !missingColocatedRegions.isEmpty();
+    boolean hasMissingColocatedRegions =
+        missingColocatedRegions != null && !missingColocatedRegions.isEmpty();
 
     TabularResultModel missingDiskStoreSection = result.addTable(MISSING_DISK_STORES_SECTION);
 
@@ -116,9 +115,9 @@ public class ShowMissingDiskStoreCommand extends GfshCommand {
     }
 
     TabularResultModel missingRegionsSection = result.addTable(MISSING_COLOCATED_REGIONS_SECTION);
-    if (!cacheMemberExist) {
+    if (missingColocatedRegions == null) {
       missingRegionsSection.setHeader("No caching members found.");
-    } else if (hasMissingColocatedRegions) {
+    } else if (!missingColocatedRegions.isEmpty()) {
       missingRegionsSection.setHeader("Missing Colocated Regions");
 
       for (ColocatedRegionDetails colocatedRegionDetails : missingColocatedRegions) {
