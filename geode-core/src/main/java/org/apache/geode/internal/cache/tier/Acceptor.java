@@ -105,4 +105,6 @@ public interface Acceptor extends CommBufferPool {
   void unregisterServerConnection(ServerConnection serverConnection);
 
   void decClientServerConnectionCount();
+
+  int getMaximumTimeBetweenPings();
 }
