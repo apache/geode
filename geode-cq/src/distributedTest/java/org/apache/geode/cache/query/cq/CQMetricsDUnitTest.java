@@ -45,8 +45,8 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 public class CQMetricsDUnitTest {
 
-  private CqAttributes cqa;
-  private QueryService qs;
+  private CqAttributes cqAttributes;
+  private QueryService queryService;
   private TestCqListener testListener;
   private MemberVM locator, server1, server2;
 
@@ -66,12 +66,12 @@ public class CQMetricsDUnitTest {
     Region region =
         clientCache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create("region");
 
-    qs = clientCache.getQueryService();
-    CqAttributesFactory cqaf = new CqAttributesFactory();
+    queryService = clientCache.getQueryService();
+    CqAttributesFactory cqAttributesFactory = new CqAttributesFactory();
     testListener = new TestCqListener();
-    cqaf.addCqListener(testListener);
+    cqAttributesFactory.addCqListener(testListener);
 
-    cqa = cqaf.create();
+    cqAttributes = cqAttributesFactory.create();
     gfsh.connectAndVerify(locator);
   }
 
@@ -79,7 +79,7 @@ public class CQMetricsDUnitTest {
   public void testStopCq() throws Exception {
     gfsh.executeAndAssertThat("create region --name=region --type=PARTITION")
         .statusIsSuccess();
-    qs.newCq("Select * from /region r where r.ID = 1", cqa).execute();
+    queryService.newCq("Select * from /region r where r.ID = 1", cqAttributes).execute();
 
     server1.invoke(() -> populateRegion(0, 100));
 
@@ -92,7 +92,7 @@ public class CQMetricsDUnitTest {
     });
 
     // stop cq
-    qs.stopCqs();
+    queryService.stopCqs();
 
     locator.invoke(() -> {
       Cache cache = getCache();
@@ -110,7 +110,7 @@ public class CQMetricsDUnitTest {
   public void testCloseCq() throws Exception {
     gfsh.executeAndAssertThat("create region --name=region --type=PARTITION")
         .statusIsSuccess();
-    qs.newCq("Select * from /region r where r.ID = 1", cqa).execute();
+    queryService.newCq("Select * from /region r where r.ID = 1", cqAttributes).execute();
 
     server1.invoke(() -> populateRegion(0, 100));
 
@@ -123,7 +123,7 @@ public class CQMetricsDUnitTest {
     });
 
     // close cq
-    qs.closeCqs();
+    queryService.closeCqs();
 
     locator.invoke(() -> {
       Cache cache = getCache();
