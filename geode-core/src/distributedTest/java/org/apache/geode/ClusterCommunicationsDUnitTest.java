@@ -29,6 +29,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_REQUIRE_A
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.distributed.internal.OperationExecutors.SERIAL_EXECUTOR;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.SERIAL_ACKED_MESSAGE;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
@@ -51,6 +52,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import org.jetbrains.annotations.NotNull;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -64,7 +66,10 @@ import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DMStats;
@@ -72,7 +77,6 @@ import org.apache.geode.distributed.internal.DirectReplyProcessor;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MessageWithReply;
-import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.SerialAckedMessage;
@@ -82,6 +86,8 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.DirectReplyMessage;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.test.dunit.AsyncInvocation;
+import org.apache.geode.test.dunit.DUnitBlackboard;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
@@ -111,6 +117,7 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
   private final String regionName = "clusterTestRegion";
 
   private final boolean disableTcp;
+  private boolean useDAck;
   private boolean conserveSockets;
   private boolean useSSL;
 
@@ -134,12 +141,75 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
     useSSL = runConfiguration.useSSL;
     conserveSockets = runConfiguration.conserveSockets;
     disableTcp = runConfiguration.disableTcp;
+    useDAck = true;
   }
 
   @Before
   public void setUp() throws Exception {
     addIgnoredException("Socket Closed");
     addIgnoredException("Remote host closed connection during handshake");
+  }
+
+  @Test
+  public void applicationUseOfDLockWithNoAckCacheOps() throws Exception {
+    useDAck = false; // use no-ack scope
+    DUnitBlackboard dUnitBlackboard = new DUnitBlackboard();
+    int locatorPort = createLocator(getVM(0));
+    for (int i = 1; i <= NUM_SERVERS; i++) {
+      createCacheAndRegion(getVM(i), locatorPort);
+    }
+    performCreate(getVM(1));
+    getVM(1).invoke("initialize dlock service", () -> {
+      DistributedLockService distLockService =
+          DistributedLockService.create("testLockService", cache.getDistributedSystem());
+      distLockService.lock("myLock", 50000, 50000);
+    });
+    AsyncInvocation async = waitForTheLockAsync(dUnitBlackboard, true);
+    for (int i = 0; i < 5; i++) {
+      getVM(1).invoke("update cache and release lock in vm1", () -> {
+        DistributedLockService distLockService =
+            DistributedLockService.getServiceNamed("testLockService");
+        try {
+          DistributedSystem.setThreadsSocketPolicy(false);
+          cache.getRegion(regionName).put("myKey", "myValue");
+        } finally {
+          distLockService.unlock("myLock");
+          DistributedSystem.releaseThreadsSockets();
+        }
+      });
+      async.get(30, TimeUnit.SECONDS);
+      getVM(2).invoke("release the lock in vm2 to try again", () -> {
+        DistributedLockService distLockService =
+            DistributedLockService.getServiceNamed("testLockService");
+        distLockService.unlock("myLock");
+      });
+      getVM(1).invoke("grab the lock in vm1", () -> {
+        DistributedLockService distLockService =
+            DistributedLockService.getServiceNamed("testLockService");
+        distLockService.lock("myLock", 50000, 50000);
+      });
+      async = waitForTheLockAsync(dUnitBlackboard, false);
+    }
+  }
+
+  @NotNull
+  private AsyncInvocation waitForTheLockAsync(DUnitBlackboard dUnitBlackboard, boolean initialWait)
+      throws Exception {
+    dUnitBlackboard.clearGate("waitingForLock");
+    AsyncInvocation async = getVM(2).invokeAsync("wait for the lock", () -> {
+      DistributedLockService distLockService = initialWait
+          ? DistributedLockService.create("testLockService", cache.getDistributedSystem())
+          : DistributedLockService.getServiceNamed("testLockService");
+      final DUnitBlackboard myBlackboard = new DUnitBlackboard();
+      myBlackboard.signalGate("waitingForLock");
+      distLockService.lock("myLock", 50000, 50000);
+    });
+    dUnitBlackboard.waitForGate("waitingForLock", 30, TimeUnit.SECONDS);
+    Thread.sleep(2000);
+    if (async.isDone()) {
+      throw new Exception("async thread did not wait for the lock");
+    }
+    return async;
   }
 
   @Test
@@ -241,7 +311,9 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
   private void createCacheAndRegion(VM memberVM, int locatorPort) {
     memberVM.invoke("start cache and create region", () -> {
       cache = createCache(locatorPort);
-      cache.createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
+      cache.createRegionFactory(RegionShortcut.REPLICATE)
+          .setScope(useDAck ? Scope.DISTRIBUTED_ACK : Scope.DISTRIBUTED_NO_ACK)
+          .create(regionName);
     });
   }
 
@@ -397,15 +469,14 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
     }
 
     @Override
-    public void toData(DataOutput out,
-        SerializationContext context) throws IOException {
+    public void toData(DataOutput out, SerializationContext context) throws IOException {
       super.toData(out, context);
       out.writeInt(processorId);
     }
 
     @Override
-    public void fromData(DataInput in,
-        DeserializationContext context) throws IOException, ClassNotFoundException {
+    public void fromData(DataInput in, DeserializationContext context)
+        throws IOException, ClassNotFoundException {
       super.fromData(in, context);
       processorId = in.readInt();
     }
@@ -430,7 +501,7 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
 
     @Override
     public int getProcessorType() {
-      return OperationExecutors.SERIAL_EXECUTOR;
+      return SERIAL_EXECUTOR;
     }
 
     @Override
