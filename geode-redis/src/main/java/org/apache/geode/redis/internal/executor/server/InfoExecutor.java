@@ -85,7 +85,7 @@ public class InfoExecutor extends AbstractExecutor {
         "# Stats\r\n" +
             "total_commands_processed:" + redisStats.getCommandsProcessed() + "\r\n" +
             "instantaneous_ops_per_sec:" + redisStats.getOpsPerSecond() + "\r\n" +
-            "total_net_input_bytes:" + redisStats.getNetworkBytesRead() + "\r\n" +
+            "total_net_input_bytes:" + redisStats.getTotalNetworkBytesRead() + "\r\n" +
             "instantaneous_input_kbps:" + instantaneous_input_kbps + "\r\n" +
             "total_connections_received:" + redisStats.getConnectionsReceived() + "\r\n" +
             "keyspace_hits:" + redisStats.getKeyspaceHits() + "\r\n" +

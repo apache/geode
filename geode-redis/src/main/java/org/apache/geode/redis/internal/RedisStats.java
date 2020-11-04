@@ -16,13 +16,10 @@
 
 package org.apache.geode.redis.internal;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.internal.statistics.StatisticsClockFactory.getTime;
-import static org.apache.geode.logging.internal.executors.LoggingExecutors.newSingleThreadScheduledExecutor;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -53,14 +50,11 @@ public class RedisStats {
   private static final int expirationTimeId;
   private final AtomicLong commandsProcessed = new AtomicLong();
   private final AtomicLong opsPerSecond = new AtomicLong();
-  private final AtomicLong networkBytesRead = new AtomicLong();
+  private final AtomicLong totalNetworkBytesRead = new AtomicLong();
   private final AtomicLong connectionsReceived = new AtomicLong();
   private final AtomicLong expirations = new AtomicLong();
   private final AtomicLong keyspaceHits = new AtomicLong();
   private final AtomicLong keyspaceMisses = new AtomicLong();
-  private final ScheduledExecutorService perSecondExecutor;
-  private volatile double networkKilobytesReadPerSecond;
-  private long previousNetworkBytesRead;
   private final StatisticsClock clock;
   private final Statistics stats;
   private final long START_TIME_IN_NANOS;
@@ -109,13 +103,12 @@ public class RedisStats {
     START_TIME_IN_NANOS = clock.getTime();
     stats = factory == null ? null : factory.createAtomicStatistics(type, textId);
     this.clock = clock;
-    perSecondExecutor = startPerSecondUpdater();
   }
 
   public void clearAllStats() {
     commandsProcessed.set(0);
     opsPerSecond.set(0);
-    networkBytesRead.set(0);
+    totalNetworkBytesRead.set(0);
     connectionsReceived.set(0);
     expirations.set(0);
     keyspaceHits.set(0);
@@ -235,15 +228,18 @@ public class RedisStats {
   }
 
   public void incNetworkBytesRead(long bytesRead) {
-    networkBytesRead.addAndGet(bytesRead);
+    totalNetworkBytesRead.addAndGet(bytesRead);
   }
 
-  public long getNetworkBytesRead() {
-    return networkBytesRead.get();
+  public long getTotalNetworkBytesRead() {
+    return totalNetworkBytesRead.get();
   }
 
   public double getNetworkKilobytesReadPerSecond() {
-    return networkKilobytesReadPerSecond;
+    double bytesReadPerSecond =
+        getTotalNetworkBytesRead()/getUptimeInSeconds();
+
+    return bytesReadPerSecond/1000;
   }
 
   private long getUptimeInMilliseconds() {
@@ -309,34 +305,5 @@ public class RedisStats {
     if (stats != null) {
       stats.close();
     }
-    stopPerSecondUpdater();
-  }
-
-  private ScheduledExecutorService startPerSecondUpdater() {
-    int INTERVAL = 1;
-
-    ScheduledExecutorService perSecondExecutor =
-        newSingleThreadScheduledExecutor("GemFireRedis-PerSecondUpdater-");
-
-    perSecondExecutor.scheduleWithFixedDelay(
-        () -> doPerSecondUpdates(),
-        INTERVAL,
-        INTERVAL,
-        SECONDS);
-
-    return perSecondExecutor;
-  }
-
-  private void stopPerSecondUpdater() {
-    perSecondExecutor.shutdownNow();
-  }
-
-  // @todo refactor me?
-  private void doPerSecondUpdates() {
-    long currentNetworkBytesRead = networkBytesRead.get();
-    long deltaNetworkBytesRead = currentNetworkBytesRead - previousNetworkBytesRead;
-
-    networkKilobytesReadPerSecond = deltaNetworkBytesRead / 1024.0;
-    previousNetworkBytesRead = currentNetworkBytesRead;
   }
 }

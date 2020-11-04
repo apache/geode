@@ -406,12 +406,12 @@ public class RedisStatsIntegrationTest {
 
   @Test
   public void networkBytesRead_shouldIncrementBySizeOfCommandSent() {
-    long initialNetworkBytesRead = redisStats.getNetworkBytesRead();
+    long initialNetworkBytesRead = redisStats.getTotalNetworkBytesRead();
     String respCommandString = "*3\r\n$3\r\nset\r\n$3\r\nkey\r\n$5\r\nvalue\r\n";
 
     jedis.set("key", "value");
 
-    assertThat(redisStats.getNetworkBytesRead())
+    assertThat(redisStats.getTotalNetworkBytesRead())
         .isEqualTo(initialNetworkBytesRead + respCommandString.length());
   }
 
