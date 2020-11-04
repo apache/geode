@@ -184,8 +184,7 @@ public class ListIndexManagementDUnitTest {
   public void getIndex_fails_when_region_name_is_missing_from_filter() {
     indexConfig.setName("index1");
     assertThatThrownBy(() -> cms.get(indexConfig))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("Unable to construct the URI with the current configuration");
+        .hasMessageContaining("Error while extracting response for type");
   }
 
   @Test

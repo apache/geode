@@ -64,20 +64,22 @@ public class IndexTest {
 
   @Test
   public void getEndPoint() {
-    assertThat(index.getLinks().getList()).isEqualTo("/indexes");
+    assertSoftly(softly -> {
+      assertThat(index.getLinks().getList()).isEqualTo("/indexes");
 
-    index.setName("testSelf");
-    assertThat(index.getLinks().getSelf()).as("only name defined - self")
-        .isNull();
-    assertThat(index.getLinks().getList()).as("only name defined - list")
-        .isEqualTo("/indexes");
+      index.setName("testSelf");
+      softly.assertThat(index.getLinks().getSelf()).as("only name defined - self")
+          .isEqualTo("/indexes/testSelf");
+      softly.assertThat(index.getLinks().getList()).as("only name defined - list")
+          .isEqualTo("/indexes");
 
-    index.setRegionPath("/regionPath");
-    assertThat(index.getLinks().getSelf()).as("region and name defined - self")
-        .isEqualTo("/regions/regionPath/indexes/testSelf");
-    assertThat(index.getLinks().getList()).as("region and name defined - list")
-        .isEqualTo("/regions/regionPath/indexes");
+      index.setRegionPath("/regionPath");
+      softly.assertThat(index.getLinks().getSelf()).as("region and name defined - self")
+          .isEqualTo("/regions/regionPath/indexes/testSelf");
+      softly.assertThat(index.getLinks().getList()).as("region and name defined - list")
+          .isEqualTo("/regions/regionPath/indexes");
 
+    });
   }
 
   @Test
