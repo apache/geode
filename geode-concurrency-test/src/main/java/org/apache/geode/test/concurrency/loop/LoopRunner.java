@@ -51,11 +51,11 @@ public class LoopRunner implements Runner {
         } catch (InvocationTargetException ex) {
           Throwable exceptionToReturn = ex.getCause();
           if (exceptionToReturn == null) {
-            exceptionToReturn = ex;
+            exceptionToReturn = wrapException(i, ex);
           }
-          return Collections.singletonList(ex.getCause());
+          return Collections.singletonList(wrapException(i,ex.getCause()));
         } catch (Exception e) {
-          return Collections.singletonList(e);
+          return Collections.singletonList(wrapException(i,e));
         }
       }
     } finally {
@@ -63,6 +63,10 @@ public class LoopRunner implements Runner {
     }
 
     return Collections.emptyList();
+  }
+
+  private RuntimeException wrapException(int i, Throwable ex) {
+    return new RuntimeException("Failed on iteration " + i, ex);
   }
 
   private int getCount(Method child) {
