@@ -43,11 +43,13 @@ public class ByteBufferConcurrencyTest {
   private BufferPool poolMock;
 
   @Test
-  public void concurrentDestructAndOpenCloseShouldReturnToPoolOnce(ParallelExecutor executor) throws Exception {
+  public void concurrentDestructAndOpenCloseShouldReturnToPoolOnce(ParallelExecutor executor)
+      throws Exception {
     poolMock = mock(BufferPool.class);
     ByteBuffer someBuffer = ByteBuffer.allocate(1);
-    ByteBufferSharingImpl sharing = new ByteBufferSharingImpl(someBuffer, BufferPool.BufferType.TRACKED_SENDER,
-        poolMock);
+    ByteBufferSharingImpl sharing =
+        new ByteBufferSharingImpl(someBuffer, BufferPool.BufferType.TRACKED_SENDER,
+            poolMock);
     executor.inParallel(() -> {
       sharing.destruct();
     });
@@ -56,16 +58,18 @@ public class ByteBufferConcurrencyTest {
         try (ByteBufferSharing localSharing = sharing.open()) {
           localSharing.getBuffer();
         }
-      } catch(IOException e) {
-        //It's ok to get an IOException if the sharing was destroyed before this runs
+      } catch (IOException e) {
+        // It's ok to get an IOException if the sharing was destroyed before this runs
       }
     });
     executor.execute();
 
     verify(poolMock, times(1)).releaseBuffer(any(), any());
   }
+
   @Test
-  public void concurrentDestructAndOpenShouldNotAllowUseOfReturnedBuffer(ParallelExecutor executor) throws Exception {
+  public void concurrentDestructAndOpenShouldNotAllowUseOfReturnedBuffer(ParallelExecutor executor)
+      throws Exception {
     poolMock = mock(BufferPool.class);
     AtomicBoolean returned = new AtomicBoolean(false);
     doAnswer(arguments -> {
@@ -74,8 +78,9 @@ public class ByteBufferConcurrencyTest {
     }).when(poolMock).releaseBuffer(any(), any());
 
     ByteBuffer someBuffer = ByteBuffer.allocate(1);
-    ByteBufferSharingImpl sharing = new ByteBufferSharingImpl(someBuffer, BufferPool.BufferType.TRACKED_SENDER,
-        poolMock);
+    ByteBufferSharingImpl sharing =
+        new ByteBufferSharingImpl(someBuffer, BufferPool.BufferType.TRACKED_SENDER,
+            poolMock);
 
     executor.inParallel(() -> {
       sharing.destruct();
@@ -86,11 +91,11 @@ public class ByteBufferConcurrencyTest {
         try (ByteBufferSharing localSharing = sharing.open()) {
           ByteBuffer buffer = localSharing.getBuffer();
 
-          //The above buffer should not have been returned to the pool at this point!
+          // The above buffer should not have been returned to the pool at this point!
           assertFalse(returned.get());
         }
-      } catch(IOException e) {
-        //It's ok to get an IOException if the sharing was destroyed before this runs
+      } catch (IOException e) {
+        // It's ok to get an IOException if the sharing was destroyed before this runs
       }
     });
     executor.execute();
@@ -98,13 +103,15 @@ public class ByteBufferConcurrencyTest {
     verify(poolMock, times(1)).releaseBuffer(any(), any());
   }
 
-  //Exclusive access test
+  // Exclusive access test
   @Test
-  public void concurrentAccessToSharingShouldBeExclusive(ParallelExecutor executor) throws Exception {
+  public void concurrentAccessToSharingShouldBeExclusive(ParallelExecutor executor)
+      throws Exception {
     poolMock = mock(BufferPool.class);
     ByteBuffer someBuffer = ByteBuffer.allocate(1);
-    ByteBufferSharingImpl sharing = new ByteBufferSharingImpl(someBuffer, BufferPool.BufferType.TRACKED_SENDER,
-        poolMock);
+    ByteBufferSharingImpl sharing =
+        new ByteBufferSharingImpl(someBuffer, BufferPool.BufferType.TRACKED_SENDER,
+            poolMock);
 
     final AtomicBoolean inUse = new AtomicBoolean(false);
     final RunnableWithException useBufferAndCheckAccess = () -> {
@@ -123,11 +130,13 @@ public class ByteBufferConcurrencyTest {
   }
 
   @Test
-  public void concurrentAccessToSharingShouldBeExclusiveWithExtraCloses(ParallelExecutor executor) throws Exception {
+  public void concurrentAccessToSharingShouldBeExclusiveWithExtraCloses(ParallelExecutor executor)
+      throws Exception {
     poolMock = mock(BufferPool.class);
     ByteBuffer someBuffer = ByteBuffer.allocate(1);
-    ByteBufferSharingImpl sharing = new ByteBufferSharingImpl(someBuffer, BufferPool.BufferType.TRACKED_SENDER,
-        poolMock);
+    ByteBufferSharingImpl sharing =
+        new ByteBufferSharingImpl(someBuffer, BufferPool.BufferType.TRACKED_SENDER,
+            poolMock);
 
     final AtomicBoolean inUse = new AtomicBoolean(false);
     final RunnableWithException useBufferAndCheckAccess = () -> {
@@ -152,5 +161,5 @@ public class ByteBufferConcurrencyTest {
   }
 
 
-  //Extra closes with concurrent access?
+  // Extra closes with concurrent access?
 }

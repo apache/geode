@@ -334,7 +334,7 @@ public class NioSslEngineTest {
 
   @Test
   public void unwrapWithClosedEngineButDataInDecryptedBuffer() throws IOException {
-    try(final ByteBufferSharing inputSharing = nioSslEngine.getUnwrappedBuffer()) {
+    try (final ByteBufferSharing inputSharing = nioSslEngine.getUnwrappedBuffer()) {
       // make the application data too big to fit into the engine's encryption buffer
       ByteBuffer wrappedData =
           ByteBuffer.allocate(inputSharing.getBuffer().capacity());
@@ -351,7 +351,7 @@ public class NioSslEngineTest {
       testEngine.addReturnResult(new SSLEngineResult(CLOSED, FINISHED, 0, 0));
       spyNioSslEngine.engine = testEngine;
 
-      try(final ByteBufferSharing inputSharing2 = spyNioSslEngine.unwrap(wrappedData)) {
+      try (final ByteBufferSharing inputSharing2 = spyNioSslEngine.unwrap(wrappedData)) {
         assertThat(inputSharing2.getBuffer().position()).isEqualTo(arbitraryAmountOfRealData);
       }
     }
