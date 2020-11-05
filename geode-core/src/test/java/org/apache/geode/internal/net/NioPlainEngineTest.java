@@ -50,8 +50,7 @@ public class NioPlainEngineTest {
   public void unwrap() {
     ByteBuffer buffer = ByteBuffer.allocate(100);
     buffer.position(0).limit(buffer.capacity());
-    try (final ByteBufferSharing unused = nioEngine.unwrap(buffer)) {
-    }
+    nioEngine.unwrap(buffer);
     assertThat(buffer.position()).isEqualTo(buffer.limit());
   }
 
@@ -117,29 +116,23 @@ public class NioPlainEngineTest {
 
     nioEngine.lastReadPosition = 10;
 
-    try (final ByteBufferSharing sharedBuffer =
-        nioEngine.readAtLeast(mockChannel, amountToRead, wrappedBuffer)) {
-      ByteBuffer data = sharedBuffer.getBuffer();
-      verify(mockChannel, times(3)).read(isA(ByteBuffer.class));
-      assertThat(data.position()).isEqualTo(0);
-      assertThat(data.limit()).isEqualTo(amountToRead);
-      assertThat(nioEngine.lastReadPosition).isEqualTo(individualRead * 3 + preexistingBytes);
-      assertThat(nioEngine.lastProcessedPosition).isEqualTo(amountToRead);
-    }
+    ByteBuffer data = nioEngine.readAtLeast(mockChannel, amountToRead, wrappedBuffer);
+    verify(mockChannel, times(3)).read(isA(ByteBuffer.class));
+    assertThat(data.position()).isEqualTo(0);
+    assertThat(data.limit()).isEqualTo(amountToRead);
+    assertThat(nioEngine.lastReadPosition).isEqualTo(individualRead * 3 + preexistingBytes);
+    assertThat(nioEngine.lastProcessedPosition).isEqualTo(amountToRead);
 
-    try (final ByteBufferSharing sharedBuffer =
-        nioEngine.readAtLeast(mockChannel, amountToRead, wrappedBuffer)) {
-      final ByteBuffer data = sharedBuffer.getBuffer();
-      verify(mockChannel, times(5)).read(any(ByteBuffer.class));
-      // at end of last readAtLeast data
-      assertThat(data.position()).isEqualTo(amountToRead);
-      // we read amountToRead bytes
-      assertThat(data.limit()).isEqualTo(amountToRead * 2);
-      // we did 2 more reads from the network
-      assertThat(nioEngine.lastReadPosition).isEqualTo(individualRead * 5 + preexistingBytes);
-      // the next read will start at the end of consumed data
-      assertThat(nioEngine.lastProcessedPosition).isEqualTo(amountToRead * 2);
-    }
+    data = nioEngine.readAtLeast(mockChannel, amountToRead, wrappedBuffer);
+    verify(mockChannel, times(5)).read(any(ByteBuffer.class));
+    // at end of last readAtLeast data
+    assertThat(data.position()).isEqualTo(amountToRead);
+    // we read amountToRead bytes
+    assertThat(data.limit()).isEqualTo(amountToRead * 2);
+    // we did 2 more reads from the network
+    assertThat(nioEngine.lastReadPosition).isEqualTo(individualRead * 5 + preexistingBytes);
+    // the next read will start at the end of consumed data
+    assertThat(nioEngine.lastProcessedPosition).isEqualTo(amountToRead * 2);
 
   }
 
@@ -154,9 +147,7 @@ public class NioPlainEngineTest {
 
     nioEngine.lastReadPosition = 10;
 
-    try (final ByteBufferSharing unused =
-        nioEngine.readAtLeast(mockChannel, amountToRead, wrappedBuffer)) {
-    }
+    nioEngine.readAtLeast(mockChannel, amountToRead, wrappedBuffer);
   }
 
 }
