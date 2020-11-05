@@ -60,6 +60,9 @@ public class RedisStats {
   private final AtomicLong keyspaceMisses = new AtomicLong();
   private final ScheduledExecutorService perSecondExecutor;
   private volatile double networkKiloBytesReadDuringLastSecond;
+  private volatile long opsPerformedLastTick;
+
+  private double opsPerformedOverLastSecond;
   private long previousNetworkBytesRead;
   private final StatisticsClock clock;
   private final Statistics stats;
@@ -106,9 +109,9 @@ public class RedisStats {
   }
 
   public RedisStats(StatisticsFactory factory, String textId, StatisticsClock clock) {
-    START_TIME_IN_NANOS = clock.getTime();
     stats = factory == null ? null : factory.createAtomicStatistics(type, textId);
     this.clock = clock;
+    this.START_TIME_IN_NANOS = this.clock.getTime();
     perSecondExecutor = startPerSecondUpdater();
   }
 
@@ -184,12 +187,11 @@ public class RedisStats {
     return networkKiloBytesReadDuringLastSecond;
   }
 
-  private long getSecondsAlive() {
-    long timeAliveInNanos = getCurrentTime() - START_TIME_IN_NANOS;
-    return TimeUnit.NANOSECONDS.toSeconds(timeAliveInNanos);
+  public double getOpsPerformedOverLastSecond() {
+    return opsPerformedOverLastSecond;
   }
 
-  private long getCurrentTime() {
+  private long getCurrentTimeNanos() {
     return clock.getTime();
   }
 
@@ -199,7 +201,7 @@ public class RedisStats {
 
   public void endCommand(RedisCommandType command, long start) {
     if (clock.isEnabled()) {
-      stats.incLong(timeCommandStatIds.get(command), getCurrentTime() - start);
+      stats.incLong(timeCommandStatIds.get(command), getCurrentTimeNanos() - start);
     }
     stats.incLong(completedCommandStatIds.get(command), 1);
   }
@@ -229,15 +231,6 @@ public class RedisStats {
     return commandsProcessed.get();
   }
 
-  public long getOpsPerSecond() {
-    long secondsAlive = getSecondsAlive();
-
-    if (secondsAlive == 0) {
-      return commandsProcessed.get();
-    }
-    return commandsProcessed.get() / secondsAlive;
-  }
-
   public void incNetworkBytesRead(long bytesRead) {
     totalNetworkBytesRead.addAndGet(bytesRead);
   }
@@ -247,7 +240,7 @@ public class RedisStats {
   }
 
   private long getUptimeInMilliseconds() {
-    long uptimeInNanos = getCurrentTime() - START_TIME_IN_NANOS;
+    long uptimeInNanos = getCurrentTimeNanos() - START_TIME_IN_NANOS;
     return TimeUnit.NANOSECONDS.toMillis(uptimeInNanos);
   }
 
@@ -276,7 +269,7 @@ public class RedisStats {
   }
 
   public long startPassiveExpirationCheck() {
-    return getCurrentTime();
+    return getCurrentTimeNanos();
   }
 
   public void endPassiveExpirationCheck(long start, long expireCount) {
@@ -284,18 +277,18 @@ public class RedisStats {
       incPassiveExpirations(expireCount);
     }
     if (clock.isEnabled()) {
-      stats.incLong(passiveExpirationCheckTimeId, getCurrentTime() - start);
+      stats.incLong(passiveExpirationCheckTimeId, getCurrentTimeNanos() - start);
     }
     stats.incLong(passiveExpirationChecksId, 1);
   }
 
   public long startExpiration() {
-    return getCurrentTime();
+    return getCurrentTimeNanos();
   }
 
   public void endExpiration(long start) {
     if (clock.isEnabled()) {
-      stats.incLong(expirationTimeId, getCurrentTime() - start);
+      stats.incLong(expirationTimeId, getCurrentTimeNanos() - start);
     }
     stats.incLong(expirationsId, 1);
     expirations.incrementAndGet();
@@ -332,11 +325,21 @@ public class RedisStats {
   }
 
   private void doPerSecondUpdates() {
+    updateNetworkKilobytesReadLastSecond();
+    updateOpsPerformedOverLastSecond();
+  }
 
+  private void updateNetworkKilobytesReadLastSecond() {
     long totalNetworkBytesRead = getTotalNetworkBytesRead();
     long deltaNetworkBytesRead = totalNetworkBytesRead - previousNetworkBytesRead;
-    networkKiloBytesReadDuringLastSecond = deltaNetworkBytesRead / 1024.0;
-
+    networkKiloBytesReadDuringLastSecond = deltaNetworkBytesRead / 1000;
     previousNetworkBytesRead = getTotalNetworkBytesRead();
+  }
+
+  private void updateOpsPerformedOverLastSecond() {
+    long totalOpsPerformed = getCommandsProcessed();
+    long opsPerformedThisTick = totalOpsPerformed - opsPerformedLastTick;
+    opsPerformedOverLastSecond = opsPerformedThisTick;
+    opsPerformedLastTick = getCommandsProcessed();
   }
 }

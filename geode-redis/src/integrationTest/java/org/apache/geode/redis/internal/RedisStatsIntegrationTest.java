@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.google.common.util.concurrent.AtomicDouble;
 import org.assertj.core.data.Offset;
 import org.junit.After;
 import org.junit.Before;
@@ -375,34 +376,35 @@ public class RedisStatsIntegrationTest {
   }
 
   @Test
-  public void opsPerSecond_ShouldUpdate_givenOperationsOccurring() {
+  public void opsPerformedOverLastSecond_ShouldUpdate_givenOperationsOccurring() {
 
+    int NUMBER_SECONDS_TO_RUN = 3;
     AtomicInteger numberOfCommandsExecuted = new AtomicInteger();
-    int NUMBER_SECONDS_TO_RUN = 5;
-
+    AtomicDouble actual_commandsProcessed = new AtomicDouble();
     GeodeAwaitility
         .await()
         .during(Duration.ofSeconds(NUMBER_SECONDS_TO_RUN))
         .until(() -> {
           jedis.set("key", "value");
           numberOfCommandsExecuted.getAndIncrement();
+          actual_commandsProcessed.set(redisStats.getOpsPerformedOverLastSecond());
           return true;
         });
 
     long expected =
-        (numberOfCommandsExecuted.get() / redisStats.getUptimeInSeconds());
+        (numberOfCommandsExecuted.get() / NUMBER_SECONDS_TO_RUN);
 
-    assertThat(redisStats.getOpsPerSecond())
-        .isCloseTo((long) expected, Offset.offset(1L));
+    assertThat(actual_commandsProcessed.get())
+        .isCloseTo(expected, Offset.offset(1d));
 
-    // ensure that ratio drops if time passes w/o additional operations
+    // if time passes w/o operations
     GeodeAwaitility
         .await()
         .during(NUMBER_SECONDS_TO_RUN, TimeUnit.SECONDS)
         .until(() -> true);
 
-    assertThat(redisStats.getOpsPerSecond())
-        .isCloseTo(expected / 2, Offset.offset(2L));
+    assertThat(redisStats.getOpsPerformedOverLastSecond())
+        .isEqualTo(0);
   }
 
   @Test
@@ -439,11 +441,17 @@ public class RedisStatsIntegrationTest {
     double expectedBytesReceived = totalBytesSent.get() / NUMBER_SECONDS_TO_RUN;
     double expected_kbs = expectedBytesReceived / 1000;
 
-    System.out.println("expected_kbs: " +expected_kbs);
-    System.out.println("actual: " + actual_kbs.get());
     assertThat(actual_kbs.get()).isCloseTo(expected_kbs,
         Offset.offset(REASONABLE_SOUNDING_OFFSET));
 
+    // if time passes w/o operations
+    GeodeAwaitility
+        .await()
+        .during(NUMBER_SECONDS_TO_RUN, TimeUnit.SECONDS)
+        .until(() -> true);
+
+    assertThat(redisStats.getNetworkKiloBytesReadOverLastSecond())
+        .isEqualTo(0);
 
   }
 
@@ -480,23 +488,27 @@ public class RedisStatsIntegrationTest {
 
   @Test
   public void uptimeInSeconds_ShouldReturnCorrectValue() {
-    long startTimeInNanos = server.getStartTime();
+    long serverUptimeAtStartOfTestInNanos = server.getCurrentTime();
+    long statsUpTimeAtStartOfTest = redisStats.getUptimeInSeconds();
 
-    long expectedNanos = startTimeInNanos - startTimeInNanos;
+    GeodeAwaitility.await().during(Duration.ofSeconds(3)).until(() -> true);
+
+    long expectedNanos = server.getCurrentTime() - serverUptimeAtStartOfTestInNanos;
     long expectedSeconds = TimeUnit.NANOSECONDS.toSeconds(expectedNanos);
 
-    assertThat(redisStats.getUptimeInSeconds())
+    assertThat(redisStats.getUptimeInSeconds() - statsUpTimeAtStartOfTest)
         .isCloseTo(expectedSeconds, Offset.offset(1l));
   }
 
   @Test
   public void upTimeInDays_shouldReturnCorrectValue() {
     long startTimeInNanos = server.getStartTime();
+    long currentTimeInNanos = server.getCurrentTime();
 
-    long expectedNanos = startTimeInNanos - startTimeInNanos;
+    long expectedNanos = currentTimeInNanos - startTimeInNanos;
     long expectedDays = TimeUnit.NANOSECONDS.toDays(expectedNanos);
 
-    assertThat(redisStats.getUptimeInSeconds())
+    assertThat(redisStats.getUptimeInDays())
         .isEqualTo(expectedDays);
   }
 }
