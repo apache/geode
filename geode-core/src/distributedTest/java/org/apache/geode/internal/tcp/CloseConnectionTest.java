@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.tcp;
 
+import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCKETS;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Disconnect.disconnectAllFromDS;
 import static org.apache.geode.test.dunit.VM.getController;
@@ -40,6 +41,7 @@ import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 
 public class CloseConnectionTest implements Serializable {
+  private static final long serialVersionUID = 3692493564204797623L;
   private VM vm0;
   private VM vm1;
 
@@ -47,7 +49,7 @@ public class CloseConnectionTest implements Serializable {
   public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
-  public CacheRule cacheRule = new CacheRule();
+  public CacheRule cacheRule = new CacheRule.Builder().addConfig(CONSERVE_SOCKETS, "true").build();
 
   @Before
   public void setUp() {

@@ -129,9 +129,9 @@ Valid values are in the range 0...2147483647</td>
 </tr>
 <tr>
 <td>conserve-sockets</td>
-<td>Specifies whether sockets are shared by the system member’s threads. If true, threads share, and a minimum number of sockets are used to connect to the cluster. If false, every application thread has its own sockets for distribution purposes. You can override this setting for individual threads inside your application. Where possible, it is better to set conserve-sockets to true and enable the use of specific extra sockets in the application code if needed. WAN deployments increase the messaging demands on a <%=vars.product_name%> system. To avoid hangs related to WAN messaging, always set <code class="ph codeph">conserve-sockets=false</code> for <%=vars.product_name%> members that participate in a WAN deployment.</td>
+<td>Specifies whether sockets are shared by the system member’s threads. If true, threads share, and a minimum number of sockets are used to connect to the cluster. If false, every application thread has its own sockets for distribution purposes. You can override this setting for individual threads inside your application. WAN deployments increase the messaging demands on a <%=vars.product_name%> system. To avoid hangs related to WAN messaging, always use the default setting of <code class="ph codeph">conserve-sockets=false</code> for <%=vars.product_name%> members that participate in a WAN deployment.</td>
 <td>S, L</td>
-<td>true</td>
+<td>false</td>
 </tr>
 <tr>
 <td>delta-propagation</td>

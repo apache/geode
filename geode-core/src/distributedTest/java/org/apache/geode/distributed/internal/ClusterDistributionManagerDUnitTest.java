@@ -17,6 +17,7 @@ package org.apache.geode.distributed.internal;
 import static org.apache.geode.distributed.ConfigurationProperties.ACK_SEVERE_ALERT_THRESHOLD;
 import static org.apache.geode.distributed.ConfigurationProperties.ACK_WAIT_THRESHOLD;
 import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCKETS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY;
@@ -285,6 +286,7 @@ public class ClusterDistributionManagerDUnitTest extends CacheTestCase {
     config.setProperty(ACK_WAIT_THRESHOLD, "3");
     config.setProperty(ACK_SEVERE_ALERT_THRESHOLD, "3");
     config.setProperty(NAME, "putter");
+    config.setProperty(CONSERVE_SOCKETS, "true");
     getCache(config);
 
     RegionFactory<String, String> regionFactory = getCache().createRegionFactory();
@@ -337,6 +339,7 @@ public class ClusterDistributionManagerDUnitTest extends CacheTestCase {
     config.setProperty(ACK_WAIT_THRESHOLD, "5");
     config.setProperty(ACK_SEVERE_ALERT_THRESHOLD, "5");
     config.setProperty(NAME, "putter");
+    config.setProperty(CONSERVE_SOCKETS, "true");
 
     getCache(config);
     RegionFactory<String, String> regionFactory = getCache().createRegionFactory();
