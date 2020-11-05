@@ -179,13 +179,19 @@ public class CacheXmlParserJUnitTest {
    */
   @Test
   public void testDTDFallbackWithNonEnglishLocal() {
+    String cacheXmlPath =
+        "CacheXmlParserJUnitTest.testDTDFallbackWithNonEnglishLocal.cache.xml";
+
     ServiceResult<InputStream> serviceResult =
-        ClassLoaderServiceInstance.getInstance().getResourceAsStream(getClass(),
-            "CacheXmlParserJUnitTest.testDTDFallbackWithNonEnglishLocal.cache.xml");
+        ClassLoaderServiceInstance.getInstance().getResourceAsStream(getClass(), cacheXmlPath);
+    assertThat(serviceResult.isSuccessful());
     CacheXmlParser.parse(serviceResult.getMessage());
 
     final Locale previousLocale = Locale.getDefault();
     try {
+      serviceResult =
+          ClassLoaderServiceInstance.getInstance().getResourceAsStream(getClass(), cacheXmlPath);
+      assertThat(serviceResult.isSuccessful());
       Locale.setDefault(Locale.JAPAN);
       CacheXmlParser.parse(serviceResult.getMessage());
     } finally {

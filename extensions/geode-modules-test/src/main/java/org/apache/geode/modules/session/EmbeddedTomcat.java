@@ -33,7 +33,6 @@ import org.apache.catalina.valves.ValveBase;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 
-import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.modules.session.catalina.JvmRouteBinderValve;
 
 public class EmbeddedTomcat {
@@ -53,8 +52,7 @@ public class EmbeddedTomcat {
     container.setRealm(new MemoryRealm());
 
     // create webapp loader
-    WebappLoader loader =
-        new WebappLoader(ClassLoaderServiceInstance.getInstance().asClassLoader());
+    WebappLoader loader = new WebappLoader();
     // The classes directory for the web application being run.
     loader.addRepository(new File("target/classes").toURI().toURL().toString());
 
