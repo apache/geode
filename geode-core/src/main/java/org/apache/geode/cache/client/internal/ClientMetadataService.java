@@ -14,7 +14,7 @@
  */
 package org.apache.geode.cache.client.internal;
 
-import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+import static org.apache.geode.internal.cache.util.UncheckedUtils.cast;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -230,7 +230,7 @@ public class ClientMetadataService {
 
     for (Map.Entry entry : serverToBuckets.entrySet()) {
       ServerLocation server = (ServerLocation) entry.getKey();
-      Set<Integer> buckets = uncheckedCast(entry.getValue());
+      Set<Integer> buckets = cast(entry.getValue());
       for (Integer bucket : buckets) {
         // use LinkedHashSet to maintain the order of keys
         // the keys will be iterated several times
