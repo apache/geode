@@ -14,7 +14,7 @@
  */
 package org.apache.geode.alerting.internal;
 
-import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+import static org.apache.geode.internal.cache.util.UncheckedUtils.cast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -141,7 +141,7 @@ public class ClusterAlertMessagingTest {
   public void sendAlertLogsWarning_ifAlertingIOExceptionIsCaught() {
     ExecutorService executor = currentThreadExecutorService();
     ClusterDistributionManager distributionManager = mock(ClusterDistributionManager.class);
-    Consumer<AlertingIOException> alertingIOExceptionLogger = uncheckedCast(mock(Consumer.class));
+    Consumer<AlertingIOException> alertingIOExceptionLogger = cast(mock(Consumer.class));
     ClusterAlertMessaging clusterAlertMessaging =
         spyClusterAlertMessaging(distributionManager, executor, alertingIOExceptionLogger);
     doThrow(new AlertingIOException(new IOException("Cannot form connection to alert listener")))
@@ -162,7 +162,7 @@ public class ClusterAlertMessagingTest {
   public void sendAlertLogsWarningOnce_ifAlertingIOExceptionIsCaught() {
     ExecutorService executor = currentThreadExecutorService();
     ClusterDistributionManager distributionManager = mock(ClusterDistributionManager.class);
-    Consumer<AlertingIOException> alertingIOExceptionLogger = uncheckedCast(mock(Consumer.class));
+    Consumer<AlertingIOException> alertingIOExceptionLogger = cast(mock(Consumer.class));
     ClusterAlertMessaging clusterAlertMessaging =
         spyClusterAlertMessaging(distributionManager, executor, alertingIOExceptionLogger);
     doThrow(new AlertingIOException(new IOException("Cannot form connection to alert listener")))

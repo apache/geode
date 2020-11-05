@@ -22,13 +22,13 @@ import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
+import static org.apache.geode.internal.cache.execute.DistributedRegionFunctionExecutionDUnitTest.UncheckedUtils.cast;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.VM.getController;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.dunit.VM.toArray;
 import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
-import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
@@ -59,6 +59,7 @@ import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.InternalClientCache;
+import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionException;
@@ -69,7 +70,6 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.execute.util.TypedFunctionService;
 import org.apache.geode.security.templates.DummyAuthenticator;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
 import org.apache.geode.test.dunit.AsyncInvocation;
@@ -257,7 +257,7 @@ public class DistributedRegionFunctionExecutionDUnitTest implements Serializable
     empty.invoke(() -> populateRegion(200));
 
     AsyncInvocation executeFunctionInReplicate1 = replicate1.invokeAsync(() -> {
-      ResultCollector<String, List<String>> resultCollector = TypedFunctionService
+      ResultCollector<String, List<String>> resultCollector = FunctionServiceCast
           .<Void, String, List<String>>onRegion(getRegion())
           .withFilter(filter)
           .execute(LongRunningFunction.class.getSimpleName(), getTimeout().toMillis(),
@@ -302,7 +302,7 @@ public class DistributedRegionFunctionExecutionDUnitTest implements Serializable
 
     replicate1.invoke(() -> {
       Throwable thrown = catchThrowable(() -> {
-        TypedFunctionService
+        FunctionServiceCast
             .<Void, String, List<String>>onRegion(getRegion())
             .withFilter(filter)
             .execute(LongRunningFunction.class.getSimpleName(), 1000, MILLISECONDS);
@@ -950,7 +950,7 @@ public class DistributedRegionFunctionExecutionDUnitTest implements Serializable
     }
 
     client.invoke(() -> {
-      ResultCollector<Boolean, List<Boolean>> resultCollector = TypedFunctionService
+      ResultCollector<Boolean, List<Boolean>> resultCollector = FunctionServiceCast
           .<Boolean, Boolean, List<Boolean>>onRegion(getRegion())
           .setArguments(true)
           .execute(inlineFunction("Success", true));
@@ -1158,13 +1158,13 @@ public class DistributedRegionFunctionExecutionDUnitTest implements Serializable
   }
 
   private void executeNoResultFunction() {
-    TypedFunctionService
+    FunctionServiceCast
         .onRegion(getRegion())
         .execute(new NoResultFunction());
   }
 
   private List<Boolean> executeDistributedRegionFunction() {
-    return TypedFunctionService
+    return FunctionServiceCast
         .<Boolean, Boolean, List<Boolean>>onRegion(getRegion())
         .withFilter(filter)
         .setArguments(false)
@@ -1173,7 +1173,7 @@ public class DistributedRegionFunctionExecutionDUnitTest implements Serializable
   }
 
   private void executeThrowsRuntimeExceptionFunction() {
-    TypedFunctionService
+    FunctionServiceCast
         .<Void, Void, Void>onRegion(getRegion())
         .withFilter(filter)
         .execute(new ThrowsRuntimeExceptionFunction());
@@ -1187,7 +1187,7 @@ public class DistributedRegionFunctionExecutionDUnitTest implements Serializable
       filter.add("execKey-" + 100 + i);
     }
 
-    ResultCollector<Object, List<Object>> resultCollector = TypedFunctionService
+    ResultCollector<Object, List<Object>> resultCollector = FunctionServiceCast
         .<Boolean, Object, List<Object>>onRegion(getRegion())
         .withFilter(filter)
         .setArguments(true)
@@ -1200,7 +1200,7 @@ public class DistributedRegionFunctionExecutionDUnitTest implements Serializable
         .as("First element of " + resultCollector.getResult())
         .isInstanceOf(CustomRuntimeException.class);
 
-    resultCollector = TypedFunctionService
+    resultCollector = FunctionServiceCast
         .<Set<String>, Object, List<Object>>onRegion(getRegion())
         .withFilter(filter)
         .setArguments(filter)
@@ -1220,7 +1220,7 @@ public class DistributedRegionFunctionExecutionDUnitTest implements Serializable
 
   private void executeNoLastResultFunction() {
     Throwable thrown = catchThrowable(() -> {
-      TypedFunctionService
+      FunctionServiceCast
           .onRegion(getRegion())
           .withFilter(filter)
           .execute(new NoLastResultFunction())
@@ -1234,7 +1234,7 @@ public class DistributedRegionFunctionExecutionDUnitTest implements Serializable
   private void executeUnregisteredFunction() {
     FunctionService.unregisterFunction(new DistributedRegionFunction().getId());
 
-    TypedFunctionService
+    FunctionServiceCast
         .<Void, Boolean, List<Boolean>>onRegion(getRegion())
         .withFilter(filter)
         .execute(new DistributedRegionFunction())
@@ -1242,7 +1242,7 @@ public class DistributedRegionFunctionExecutionDUnitTest implements Serializable
   }
 
   private void executeFunctionFunctionInvocationTargetException() {
-    ResultCollector<Integer, List<Integer>> resultCollector = TypedFunctionService
+    ResultCollector<Integer, List<Integer>> resultCollector = FunctionServiceCast
         .<Boolean, Integer, List<Integer>>onRegion(getRegion())
         .setArguments(true)
         .execute(ThrowsFunctionInvocationTargetExceptionFunction.class.getSimpleName());
@@ -1253,7 +1253,7 @@ public class DistributedRegionFunctionExecutionDUnitTest implements Serializable
 
   private void executeFunctionFunctionInvocationTargetExceptionWithoutHA() {
     Throwable thrown = catchThrowable(() -> {
-      TypedFunctionService
+      FunctionServiceCast
           .<Boolean, Integer, List<Integer>>onRegion(getRegion())
           .setArguments(true)
           .execute(ThrowsFunctionInvocationTargetExceptionFunction.class.getSimpleName())
@@ -1268,7 +1268,7 @@ public class DistributedRegionFunctionExecutionDUnitTest implements Serializable
   }
 
   private void executeFunctionFunctionInvocationTargetException_ClientServer() {
-    ResultCollector<Integer, List<Integer>> resultCollector = TypedFunctionService
+    ResultCollector<Integer, List<Integer>> resultCollector = FunctionServiceCast
         .<Boolean, Integer, List<Integer>>onRegion(getRegion())
         .setArguments(true)
         .execute(ThrowsFunctionInvocationTargetExceptionFunction.class.getSimpleName());
@@ -1279,7 +1279,7 @@ public class DistributedRegionFunctionExecutionDUnitTest implements Serializable
 
   private void executeFunctionFunctionInvocationTargetException_ClientServer_WithoutHA() {
     Throwable thrown = catchThrowable(() -> {
-      TypedFunctionService
+      FunctionServiceCast
           .<Boolean, Integer, List<Integer>>onRegion(getRegion())
           .setArguments(true)
           .execute(ThrowsFunctionInvocationTargetExceptionFunction.class.getSimpleName())
@@ -1294,7 +1294,7 @@ public class DistributedRegionFunctionExecutionDUnitTest implements Serializable
   }
 
   private static <K, V> Region<K, V> getRegion() {
-    return uncheckedCast(REGION.get());
+    return cast(REGION.get());
   }
 
   private static void setRegion(Region<?, ?> region) {
@@ -1327,8 +1327,7 @@ public class DistributedRegionFunctionExecutionDUnitTest implements Serializable
     @Override
     public void execute(FunctionContext<Object> context) {
       if (context.getArguments() instanceof Set) {
-        Set<Integer> arguments =
-            uncheckedCast(context.getArguments());
+        Set<Integer> arguments = cast(context.getArguments());
         for (int i = 0; i < arguments.size(); i++) {
           context.getResultSender().sendResult(i);
         }
@@ -1556,6 +1555,28 @@ public class DistributedRegionFunctionExecutionDUnitTest implements Serializable
         return 1;
       }
       return -1;
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  static class FunctionServiceCast {
+
+    /**
+     * Provide unchecked cast of FunctionService.onRegion.
+     */
+    static <IN, OUT, AGG> Execution<IN, OUT, AGG> onRegion(Region<?, ?> region) {
+      return FunctionService.onRegion(region);
+    }
+  }
+
+  @SuppressWarnings({"unchecked", "unused"})
+  static class UncheckedUtils {
+
+    /**
+     * Provide unchecked cast of specified Object.
+     */
+    static <T> T cast(Object object) {
+      return (T) object;
     }
   }
 }

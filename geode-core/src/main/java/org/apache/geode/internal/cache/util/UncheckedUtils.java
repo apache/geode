@@ -12,26 +12,18 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.execute.util;
+package org.apache.geode.internal.cache.util;
 
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Execution;
-import org.apache.geode.cache.execute.FunctionService;
 
-/**
- * Utilities for casting and working around raw types in the {@link FunctionService} API.
- */
 @SuppressWarnings({"unchecked", "unused"})
-public class TypedFunctionService {
+public class UncheckedUtils {
 
-  protected TypedFunctionService() {
-    // do not instantiate
+  public static <T> T cast(Object object) {
+    return (T) object;
   }
 
-  /**
-   * Adds parameterized type support to {@link FunctionService#onRegion(Region)}.
-   */
-  public static <IN, OUT, AGG> Execution<IN, OUT, AGG> onRegion(Region<?, ?> region) {
-    return FunctionService.onRegion(region);
+  public static <IN, OUT, AGG> Execution<IN, OUT, AGG> cast(Execution execution) {
+    return execution;
   }
 }

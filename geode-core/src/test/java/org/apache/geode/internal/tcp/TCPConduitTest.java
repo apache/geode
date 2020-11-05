@@ -16,7 +16,7 @@
  */
 package org.apache.geode.internal.tcp;
 
-import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+import static org.apache.geode.internal.cache.util.UncheckedUtils.cast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.anyBoolean;
@@ -62,7 +62,7 @@ public class TCPConduitTest {
 
   @Before
   public void setUp() throws Exception {
-    membership = uncheckedCast(mock(Membership.class));
+    membership = cast(mock(Membership.class));
     directChannel = mock(DirectChannel.class);
     connectionTable = mock(ConnectionTable.class);
     socketCreator = new SocketCreator(new SSLConfig.Builder().build());
