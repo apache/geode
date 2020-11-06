@@ -25,11 +25,14 @@ import com.google.common.util.concurrent.AtomicDouble;
 import org.assertj.core.data.Offset;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import redis.clients.jedis.BitOP;
 import redis.clients.jedis.Jedis;
 
+import org.apache.geode.internal.statistics.EnabledStatisticsClock;
+import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.redis.GeodeRedisServerRule;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
@@ -43,9 +46,19 @@ public class RedisStatsIntegrationTest {
   public static final String NONEXISTENT_KEY = "Nonexistent_Key";
   private Jedis jedis;
   private RedisStats redisStats;
+  private static long START_TIME;
+  private static StatisticsClock statisticsClock;
+
+
 
   @ClassRule
   public static GeodeRedisServerRule server = new GeodeRedisServerRule();
+
+  @BeforeClass
+  public static void beforeClass(){
+    statisticsClock = new EnabledStatisticsClock();
+    START_TIME = statisticsClock.getTime();
+  }
 
   @Before
   public void before() {
@@ -488,12 +501,12 @@ public class RedisStatsIntegrationTest {
 
   @Test
   public void uptimeInSeconds_ShouldReturnCorrectValue() {
-    long serverUptimeAtStartOfTestInNanos = server.getCurrentTime();
+    long serverUptimeAtStartOfTestInNanos = getCurrentTime();
     long statsUpTimeAtStartOfTest = redisStats.getUptimeInSeconds();
 
     GeodeAwaitility.await().during(Duration.ofSeconds(3)).until(() -> true);
 
-    long expectedNanos = server.getCurrentTime() - serverUptimeAtStartOfTestInNanos;
+    long expectedNanos = getCurrentTime() - serverUptimeAtStartOfTestInNanos;
     long expectedSeconds = TimeUnit.NANOSECONDS.toSeconds(expectedNanos);
 
     assertThat(redisStats.getUptimeInSeconds() - statsUpTimeAtStartOfTest)
@@ -502,13 +515,22 @@ public class RedisStatsIntegrationTest {
 
   @Test
   public void upTimeInDays_shouldReturnCorrectValue() {
-    long startTimeInNanos = server.getStartTime();
-    long currentTimeInNanos = server.getCurrentTime();
+    long startTimeInNanos = getStartTime();
+    long currentTimeInNanos = getCurrentTime();
 
     long expectedNanos = currentTimeInNanos - startTimeInNanos;
     long expectedDays = TimeUnit.NANOSECONDS.toDays(expectedNanos);
 
     assertThat(redisStats.getUptimeInDays())
         .isEqualTo(expectedDays);
+  }
+
+
+  public long getStartTime() {
+    return START_TIME;
+  }
+
+  public long getCurrentTime() {
+    return this.statisticsClock.getTime();
   }
 }
