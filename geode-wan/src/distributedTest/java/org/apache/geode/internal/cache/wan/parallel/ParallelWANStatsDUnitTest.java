@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.wan.parallel;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -28,6 +29,10 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.internal.cache.execute.data.CustId;
 import org.apache.geode.internal.cache.execute.data.Customer;
 import org.apache.geode.internal.cache.execute.data.Order;
@@ -1095,7 +1100,54 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
 
   }
 
+  @Test
+  public void testMaximumTimeBetweenPingsInGatewayReceiverIsHonored() {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
+    vm2.invoke(() -> createServer(nyPort));
+
+    // Set a maximum time between pings lower than the time between pings sent at the sender (5000)
+    // so that the receiver will not receive the ping on time and will close the connection.
+    int maximumTimeBetweenPingsInGatewayReceiver = 4000;
+    createReceiverInVMs(maximumTimeBetweenPingsInGatewayReceiver, vm2);
+    createReceiverPR(vm2, 0);
+
+    int maximumTimeBetweenPingsInServer = 60000;
+    vm4.invoke(() -> createServer(lnPort, maximumTimeBetweenPingsInServer));
+    vm4.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
+    createSenderPRInVM(0, vm4);
+    String senderId = "ln";
+    startSenderInVMs(senderId, vm4);
+
+    // Send some puts to start the connections from the sender to the receiver
+    vm4.invoke(() -> WANTestBase.doPuts(testName, 2));
+
+    // Create client to check if connections are later closed.
+    ClientCache clientCache = new ClientCacheFactory()
+        .addPoolLocator("localhost", lnPort)
+        .setPoolLoadConditioningInterval(-1)
+        .setPoolIdleTimeout(-1)
+        .setPoolPingInterval(5000)
+        .create();
+    Region clientRegion =
+        clientCache.<String, String>createClientRegionFactory(ClientRegionShortcut.PROXY)
+            .create(testName);
+    for (long i = 0; i < 2; i++) {
+      clientRegion.put(i, "Value_" + i);
+    }
+
+    // Wait more than maximum-time-between-pings in the gateway receiver so that connections are
+    // closed.
+    try {
+      Thread.sleep(maximumTimeBetweenPingsInGatewayReceiver + 2000);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+
+    assertNotEquals(0, (int) vm4.invoke(() -> getGatewaySenderPoolDisconnects(senderId)));
+    assertEquals(0, ((PoolImpl) clientCache.getDefaultPool()).getStats().getDisConnects());
+  }
 
   protected Map putKeyValues() {
     final Map keyValues = new HashMap();
