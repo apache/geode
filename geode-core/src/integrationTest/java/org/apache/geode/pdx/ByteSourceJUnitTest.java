@@ -40,6 +40,7 @@ import org.apache.geode.test.junit.categories.SerializationTest;
 
 @Category({SerializationTest.class})
 public class ByteSourceJUnitTest {
+  private static final String message = "TEST, DO NOT MERGE";
 
   /**
    * Override as needed in subclass.
