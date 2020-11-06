@@ -28,6 +28,7 @@ import org.gradle.api.internal.tasks.testing.TestFramework;
 import org.gradle.api.internal.tasks.testing.TestResultProcessor;
 import org.gradle.api.internal.tasks.testing.WorkerTestClassProcessorFactory;
 import org.gradle.api.internal.tasks.testing.detection.DefaultTestClassScanner;
+import org.gradle.api.internal.tasks.testing.detection.DefaultTestExecuter;
 import org.gradle.api.internal.tasks.testing.detection.TestFrameworkDetector;
 import org.gradle.api.internal.tasks.testing.filter.DefaultTestFilter;
 import org.gradle.api.internal.tasks.testing.processors.MaxNParallelTestClassProcessor;
@@ -35,7 +36,6 @@ import org.gradle.api.internal.tasks.testing.processors.PatternMatchTestClassPro
 import org.gradle.api.internal.tasks.testing.processors.RestartEveryNTestClassProcessor;
 import org.gradle.api.internal.tasks.testing.processors.RunPreviousFailedFirstTestClassProcessor;
 import org.gradle.api.internal.tasks.testing.processors.TestMainAction;
-import org.gradle.api.internal.tasks.testing.worker.ForkingTestClassProcessor;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
 import org.gradle.internal.Factory;
@@ -46,12 +46,13 @@ import org.gradle.internal.work.WorkerLeaseRegistry;
 import org.gradle.process.internal.worker.WorkerProcessFactory;
 
 /**
- * Test executor that is used to replace gradles DefaultTestExecutor and does
- * not include a {@link RunPreviousFailedFirstTestClassProcessor} in the processor
- * chain.  This is used by the RepeatTest task.
+ * A copy of Gradle's {@link DefaultTestExecuter}, modified to omit the
+ * {@link RunPreviousFailedFirstTestClassProcessor} from the processor chain. That processor removes
+ * repetitions from the collection of candidate test classes, which defeats the purpose of
+ * {@link RepeatTest}.
  */
-class OverriddenTestExecutor implements TestExecuter<JvmTestExecutionSpec> {
-  private static final Logger LOGGER = Logging.getLogger(OverriddenTestExecutor.class);
+class RepeatTestExecuter implements TestExecuter<JvmTestExecutionSpec> {
+  private static final Logger LOGGER = Logging.getLogger(RepeatTestExecuter.class);
 
   private final WorkerProcessFactory workerFactory;
   private final ActorFactory actorFactory;
@@ -64,9 +65,10 @@ class OverriddenTestExecutor implements TestExecuter<JvmTestExecutionSpec> {
   private final DefaultTestFilter testFilter;
   private TestClassProcessor processor;
 
-  public OverriddenTestExecutor(WorkerProcessFactory workerFactory, ActorFactory actorFactory, ModuleRegistry moduleRegistry,
-                                WorkerLeaseRegistry workerLeaseRegistry, BuildOperationExecutor buildOperationExecutor, int maxWorkerCount,
-                                Clock clock, DocumentationRegistry documentationRegistry, DefaultTestFilter testFilter) {
+  public RepeatTestExecuter(WorkerProcessFactory workerFactory, ActorFactory actorFactory,
+      ModuleRegistry moduleRegistry, WorkerLeaseRegistry workerLeaseRegistry,
+      BuildOperationExecutor buildOperationExecutor, int maxWorkerCount, Clock clock,
+      DocumentationRegistry documentationRegistry, DefaultTestFilter testFilter) {
     this.workerFactory = workerFactory;
     this.actorFactory = actorFactory;
     this.moduleRegistry = moduleRegistry;
@@ -79,27 +81,36 @@ class OverriddenTestExecutor implements TestExecuter<JvmTestExecutionSpec> {
   }
 
   @Override
-  public void execute(final JvmTestExecutionSpec testExecutionSpec, TestResultProcessor testResultProcessor) {
+  public void execute(final JvmTestExecutionSpec testExecutionSpec,
+      TestResultProcessor testResultProcessor) {
+    System.out.printf("DHE: %s executing tests %s%n", getClass().getSimpleName(), testExecutionSpec.getPath());
     final TestFramework testFramework = testExecutionSpec.getTestFramework();
     final WorkerTestClassProcessorFactory testInstanceFactory = testFramework.getProcessorFactory();
-    final WorkerLeaseRegistry.WorkerLease currentWorkerLease = workerLeaseRegistry.getCurrentWorkerLease();
+    final WorkerLeaseRegistry.WorkerLease currentWorkerLease =
+        workerLeaseRegistry.getCurrentWorkerLease();
     final Set<File> classpath = ImmutableSet.copyOf(testExecutionSpec.getClasspath());
     final Factory<TestClassProcessor> forkingProcessorFactory = new Factory<TestClassProcessor>() {
       @Override
       public TestClassProcessor create() {
-        return new ForkingTestClassProcessor(currentWorkerLease, workerFactory, testInstanceFactory, testExecutionSpec.getJavaForkOptions(),
-            classpath, testFramework.getWorkerConfigurationAction(), moduleRegistry, documentationRegistry);
+        return new IsolatingForkingTestClassProcessor(currentWorkerLease, workerFactory,
+            testInstanceFactory, testExecutionSpec.getJavaForkOptions(),
+            classpath, testFramework.getWorkerConfigurationAction(), moduleRegistry,
+            documentationRegistry, maxWorkerCount);
       }
     };
-    final Factory<TestClassProcessor> reforkingProcessorFactory = new Factory<TestClassProcessor>() {
-      @Override
-      public TestClassProcessor create() {
-        return new RestartEveryNTestClassProcessor(forkingProcessorFactory, testExecutionSpec.getForkEvery());
-      }
-    };
+    final Factory<TestClassProcessor>
+        reforkingProcessorFactory =
+        new Factory<TestClassProcessor>() {
+          @Override
+          public TestClassProcessor create() {
+            return new RestartEveryNTestClassProcessor(forkingProcessorFactory,
+                testExecutionSpec.getForkEvery());
+          }
+        };
     processor =
         new PatternMatchTestClassProcessor(testFilter,
-                new MaxNParallelTestClassProcessor(getMaxParallelForks(testExecutionSpec), reforkingProcessorFactory, actorFactory));
+            new MaxNParallelTestClassProcessor(getMaxParallelForks(testExecutionSpec),
+                reforkingProcessorFactory, actorFactory));
 
     final FileTree testClassFiles = testExecutionSpec.getCandidateClassFiles();
 
@@ -115,7 +126,9 @@ class OverriddenTestExecutor implements TestExecuter<JvmTestExecutionSpec> {
 
     final Object testTaskOperationId = buildOperationExecutor.getCurrentOperation().getParentId();
 
-    new TestMainAction(detector, processor, testResultProcessor, clock, testTaskOperationId, testExecutionSpec.getPath(), "Gradle Test Run " + testExecutionSpec.getIdentityPath()).run();
+    new TestMainAction(detector, processor, testResultProcessor, clock, testTaskOperationId,
+        testExecutionSpec.getPath(), "Gradle Test Run " + testExecutionSpec.getIdentityPath())
+        .run();
   }
 
   @Override
@@ -128,7 +141,8 @@ class OverriddenTestExecutor implements TestExecuter<JvmTestExecutionSpec> {
   private int getMaxParallelForks(JvmTestExecutionSpec testExecutionSpec) {
     int maxParallelForks = testExecutionSpec.getMaxParallelForks();
     if (maxParallelForks > maxWorkerCount) {
-      LOGGER.info("{}.maxParallelForks ({}) is larger than max-workers ({}), forcing it to {}", testExecutionSpec.getPath(), maxParallelForks, maxWorkerCount, maxWorkerCount);
+      LOGGER.info("{}.maxParallelForks ({}) is larger than max-workers ({}), forcing it to {}",
+          testExecutionSpec.getPath(), maxParallelForks, maxWorkerCount, maxWorkerCount);
       maxParallelForks = maxWorkerCount;
     }
     return maxParallelForks;

@@ -41,12 +41,21 @@ import org.apache.geode.util.internal.GeodeGlossary;
  * selected available port.
  */
 public class AvailablePort {
+  private static final int DEFAULT_PORT_RANGE_LOWER_BOUND = 20001;// 20000/udp is securid
+  private static final int DEFAULT_PORT_RANGE_UPPER_BOUND = 29999;// 30000/tcp is spoolfax
 
-  /** Is the port available for a Socket (TCP) connection? */
+  /**
+   * Is the port available for a Socket (TCP) connection?
+   */
   public static final int SOCKET = 0;
-  public static final int AVAILABLE_PORTS_LOWER_BOUND = 20001;// 20000/udp is securid
-  public static final int AVAILABLE_PORTS_UPPER_BOUND = 29999;// 30000/tcp is spoolfax
-  /** Is the port available for a JGroups (UDP) multicast connection */
+  public static final int AVAILABLE_PORTS_LOWER_BOUND =
+      Integer.getInteger("AvailablePort.lowerBound", DEFAULT_PORT_RANGE_LOWER_BOUND);
+  public static final int AVAILABLE_PORTS_UPPER_BOUND =
+      Integer.getInteger("AvailablePort.upperBound", DEFAULT_PORT_RANGE_UPPER_BOUND);
+
+  /**
+   * Is the port available for a JGroups (UDP) multicast connection
+   */
   public static final int MULTICAST = 1;
 
   /////////////////////// Static Methods ///////////////////////
@@ -78,7 +87,6 @@ public class AvailablePort {
    *
    * @param port The port to check
    * @param protocol The protocol to check (either {@link #SOCKET} or {@link #MULTICAST}).
-   *
    * @throws IllegalArgumentException <code>protocol</code> is unknown
    */
   public static boolean isPortAvailable(final int port, int protocol) {
@@ -92,7 +100,6 @@ public class AvailablePort {
    * @param port The port to check
    * @param protocol The protocol to check (either {@link #SOCKET} or {@link #MULTICAST}).
    * @param addr the bind address (or mcast address) to use
-   *
    * @throws IllegalArgumentException <code>protocol</code> is unknown
    */
   public static boolean isPortAvailable(final int port, int protocol, InetAddress addr) {
@@ -103,9 +110,7 @@ public class AvailablePort {
       } else {
         return testOneInterface(addr, port);
       }
-    }
-
-    else if (protocol == MULTICAST) {
+    } else if (protocol == MULTICAST) {
       MulticastSocket socket = null;
       try {
         socket = new MulticastSocket();
@@ -154,9 +159,7 @@ public class AvailablePort {
           }
         }
       }
-    }
-
-    else {
+    } else {
       throw new IllegalArgumentException(String.format("Unknown protocol: %s",
           Integer.valueOf(protocol)));
     }
@@ -224,12 +227,13 @@ public class AvailablePort {
     } catch (Exception ex) {
       return null;
     } finally {
-      if (server != null)
+      if (server != null) {
         try {
           server.close();
         } catch (Exception ex) {
 
         }
+      }
     }
   }
 
@@ -289,7 +293,6 @@ public class AvailablePort {
    * Returns a randomly selected available port in the range 5001 to 32767.
    *
    * @param protocol The protocol to check (either {@link #SOCKET} or {@link #MULTICAST}).
-   *
    * @throws IllegalArgumentException <code>protocol</code> is unknown
    */
   public static int getRandomAvailablePort(int protocol) {
@@ -304,7 +307,6 @@ public class AvailablePort {
    * Returns a randomly selected available port in the provided range.
    *
    * @param protocol The protocol to check (either {@link #SOCKET} or {@link #MULTICAST}).
-   *
    * @throws IllegalArgumentException <code>protocol</code> is unknown
    */
   public static int getAvailablePortInRange(int rangeBase, int rangeTop, int protocol) {
@@ -315,7 +317,6 @@ public class AvailablePort {
    * Returns a randomly selected available port in the range 5001 to 32767 that satisfies a modulus
    *
    * @param protocol The protocol to check (either {@link #SOCKET} or {@link #MULTICAST}).
-   *
    * @throws IllegalArgumentException <code>protocol</code> is unknown
    */
   public static int getRandomAvailablePortWithMod(int protocol, int mod) {
@@ -328,7 +329,6 @@ public class AvailablePort {
    *
    * @param protocol The protocol to check (either {@link #SOCKET} or {@link #MULTICAST}).
    * @param addr the bind-address or mcast address to use
-   *
    * @throws IllegalArgumentException <code>protocol</code> is unknown
    */
   public static int getRandomAvailablePort(int protocol, InetAddress addr) {
@@ -341,7 +341,6 @@ public class AvailablePort {
    * @param protocol The protocol to check (either {@link #SOCKET} or {@link #MULTICAST}).
    * @param addr the bind-address or mcast address to use
    * @param useMembershipPortRange use true if the port will be used for membership
-   *
    * @throws IllegalArgumentException <code>protocol</code> is unknown
    */
   public static int getRandomAvailablePort(int protocol, InetAddress addr,
@@ -377,7 +376,6 @@ public class AvailablePort {
    *
    * @param protocol The protocol to check (either {@link #SOCKET} or {@link #MULTICAST}).
    * @param addr the bind-address or mcast address to use
-   *
    * @throws IllegalArgumentException <code>protocol</code> is unknown
    */
   public static int getAvailablePortInRange(int protocol, InetAddress addr, int rangeBase,
@@ -396,7 +394,6 @@ public class AvailablePort {
    *
    * @param protocol The protocol to check (either {@link #SOCKET} or {@link #MULTICAST}).
    * @param addr the bind-address or mcast address to use
-   *
    * @throws IllegalArgumentException <code>protocol</code> is unknown
    */
   public static int getRandomAvailablePortWithMod(int protocol, InetAddress addr, int mod) {
@@ -414,10 +411,11 @@ public class AvailablePort {
 
   static {
     boolean fast = Boolean.getBoolean("AvailablePort.fastRandom");
-    if (fast)
+    if (fast) {
       rand = new Random();
-    else
+    } else {
       rand = new java.security.SecureRandom();
+    }
   }
 
   private static int getRandomWildcardBindPortNumber() {
@@ -449,7 +447,7 @@ public class AvailablePort {
     int numberOfRetrys = numberOfPorts * 5;
     for (int i = 0; i < numberOfRetrys; i++) {
       int port = rand.nextInt(numberOfPorts + 1) + rangeBase;// add 1 to numberOfPorts so that
-                                                             // rangeTop also gets included
+      // rangeTop also gets included
       if (isPortAvailable(port, protocol, getAddress(protocol))) {
         return port;
       }
@@ -460,7 +458,6 @@ public class AvailablePort {
   /**
    * This class will keep an allocated port allocated until it is used. This makes the window
    * smaller that can cause bug 46690
-   *
    */
   public static class Keeper implements Serializable {
     private final transient ServerSocket ss;
@@ -505,7 +502,8 @@ public class AvailablePort {
     err.println("usage: java AvailablePort socket|jgroups [\"addr\" network-address] [port]");
     err.println("");
     err.println(
-        "This program either prints whether or not a port is available for a given protocol, or it prints out an available port for a given protocol.");
+        "This program either prints whether or not a port is available for a given protocol, or "
+            + "it prints out an available port for a given protocol.");
     err.println("");
     System.exit(1);
   }

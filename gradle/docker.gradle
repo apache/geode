@@ -16,20 +16,12 @@
  */
 
 /*
- * Configuration for running (dunit) tests in parallel in Docker containers.
- * The container used must hava JAVA_HOME set in it's environment and must
- * have 'java' defined on the path. For example, the relevant Dockerfile
- * content could be:
- *
- *   ENV JAVA_HOME=/opt/jdk1.8.0_u101
- *   ENV PATH=$PATH:$JAVA_HOME/bin
- *
- * In addition, the container must have docker installed.
+ * Configuration for running (dunit) tests in parallel.
  *
  * The plugin can be activated with the Gradle property 'parallelDunit'.
  * Additional properties that can be set are:
  *
- *  dunitParallelForks - The number of parallel containers that will be
+ *  dunitParallelForks - The number of DUnit tests that can run concurrently.
  */
 
 
@@ -37,7 +29,6 @@ project.ext.dockerConfig = {
   maxParallelForks = dunitParallelForks.toInteger()
   forkEvery = 1
 }
-
 
 if (project.hasProperty('parallelDunit')) {
   uiTest.configure(project.ext.dockerConfig)
