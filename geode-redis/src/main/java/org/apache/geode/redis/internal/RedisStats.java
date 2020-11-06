@@ -124,10 +124,10 @@ public class RedisStats {
     keyspaceMisses.set(0);
     stats.setLong(clientId, 0);
     stats.setLong(passiveExpirationChecksId, 0);
-    stats.setLong(passiveExpirationCheckTimeId,0);
-    stats.setLong(passiveExpirationsId,0);
-    stats.setLong(expirationsId,0);
-    stats.setLong(expirationTimeId,0);
+    stats.setLong(passiveExpirationCheckTimeId, 0);
+    stats.setLong(passiveExpirationsId, 0);
+    stats.setLong(expirationsId, 0);
+    stats.setLong(expirationTimeId, 0);
   }
 
   private static void fillListWithCompletedCommandDescriptors(StatisticsTypeFactory f,

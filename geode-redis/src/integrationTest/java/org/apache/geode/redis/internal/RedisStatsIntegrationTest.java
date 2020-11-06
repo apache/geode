@@ -55,7 +55,7 @@ public class RedisStatsIntegrationTest {
   public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
   @BeforeClass
-  public static void beforeClass(){
+  public static void beforeClass() {
     statisticsClock = new EnabledStatisticsClock();
     START_TIME = statisticsClock.getTime();
   }
