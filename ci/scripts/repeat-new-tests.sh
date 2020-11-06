@@ -50,7 +50,7 @@ function save_classpath() {
   echo "Building and saving classpath"
   pushd geode >> /dev/null
     # Do this twice since devBuild still dumps a warning string to stdout.
-    ./gradlew --console=plain -q compileTestJava devBuild 2>/dev/null
+    ./gradlew --console=plain -q compileTestJava compileIntegrationTestJava compileDistributedTestJava devBuild 2>/dev/null
     ./gradlew --console=plain -q printTestClasspath 2>/dev/null >/tmp/classpath.txt
   popd >> /dev/null
 }
