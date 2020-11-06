@@ -28,6 +28,8 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class InfoExecutor extends AbstractExecutor {
 
+  private DecimalFormat decimalFormat = new DecimalFormat("0.00");
+
   @Override
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
@@ -78,8 +80,7 @@ public class InfoExecutor extends AbstractExecutor {
   private String getStatsSection(ExecutionHandlerContext context) {
     final RedisStats redisStats = context.getRedisStats();
     String instantaneous_input_kbps =
-        new DecimalFormat("0.00")
-            .format(redisStats
+        decimalFormat.format(redisStats
                 .getNetworkKiloBytesReadOverLastSecond());
 
     final String STATS_STRING =

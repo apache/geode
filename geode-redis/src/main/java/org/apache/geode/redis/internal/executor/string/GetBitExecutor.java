@@ -40,8 +40,7 @@ public class GetBitExecutor extends StringExecutor {
       return RedisResponse.error(ERROR_NOT_INT);
     }
 
-    int result = getRedisStringCommands(context)
-        .getbit(key, offset);
+    int result = getRedisStringCommands(context).getbit(key, offset);
 
     return RedisResponse.integer(result);
   }
