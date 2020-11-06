@@ -109,6 +109,8 @@ public class StressNewTestHelper {
   public void add(String javaFile) {
     TestClassInfo testClassInfo = createTestClassInfo(javaFile);
     List<TestClassInfo> extenders = whatExtends(testClassInfo);
+    System.out.println("scanResult=" + scanResult + " testClassInfo.className="
+        + testClassInfo.className + " info=" + scanResult.getClassInfo(testClassInfo.className));
 
     if (!scanResult.getClassInfo(testClassInfo.className).isAbstract()) {
       extenders.add(testClassInfo);
@@ -144,6 +146,7 @@ public class StressNewTestHelper {
   private TestClassInfo createTestClassInfo(String javaFile) {
     String category = getCategory(javaFile);
     String sanitized = javaFile.replace("/", ".");
+    System.out.println("category=" + category + " sanitized=" + sanitized);
 
     int packageStart = sanitized.indexOf(packageToScan);
     if (packageStart >= 0) {
@@ -187,7 +190,8 @@ public class StressNewTestHelper {
       try {
         helper.add(arg);
       } catch (Exception e) {
-        System.err.println("ERROR: Unable to process " + arg + " : " + e.getMessage());
+        System.err.println("ERROR: Unable to process " + arg + " : " + e);
+        e.printStackTrace();
       }
     }
 
