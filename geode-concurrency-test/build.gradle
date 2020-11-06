@@ -27,7 +27,7 @@ dependencies {
   integrationTestImplementation('org.assertj:assertj-core')
 }
 
-integrationTest {
-  // Some tests have inner tests that should be ignored
+configure([integrationTest, repeatIntegrationTest]) {
+  // Don't run the tests in inner classes.
   exclude "**/*\$*.class"
 }

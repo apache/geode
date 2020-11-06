@@ -1,7 +1,7 @@
 import org.apache.geode.gradle.TestPropertiesWriter
 import org.apache.geode.gradle.RepeatTest
+import org.apache.geode.gradle.Parallel
 import org.apache.geode.gradle.plugins.DependencyConstraints
-import org.apache.geode.gradle.RunInSubdirectoryTestFramework
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -79,16 +79,6 @@ dependencies {
   }
 }
 
-configure([integrationTest, distributedTest, performanceTest, acceptanceTest, uiTest,
-           upgradeTest]) {
-  forkEvery 1
-
-  doFirst {
-    TestPropertiesWriter.writeTestProperties(buildDir, name)
-  }
-  outputs.upToDateWhen { false }
-}
-
 configure([integrationTest, distributedTest, performanceTest]) {
   useJUnit {
     if (project.hasProperty("testCategory")) {
@@ -133,27 +123,27 @@ task repeatUnitTest(type: RepeatTest) {
   // default classpath works for this one.
 }
 
-configure([integrationTest, distributedTest, performanceTest, acceptanceTest, uiTest, upgradeTest]) {
+configure([acceptanceTest, distributedTest, integrationTest, uiTest, upgradeTest,
+           repeatAcceptanceTest, repeatDistributedTest, repeatIntegrationTest, repeatUnitTest, repeatUpgradeTest]) {
+  useJUnit {}
+  forkEvery 1
+  outputs.upToDateWhen { false }
   if (project.hasProperty('excludeTest')) {
     exclude project.getProperty('excludeTest').split(',')
   }
-}
 
-configure([acceptanceTest, distributedTest, integrationTest, uiTest, upgradeTest, repeatAcceptanceTest, repeatDistributedTest, repeatIntegrationTest, repeatUnitTest, repeatUpgradeTest]) {
+  if (project.hasProperty('parallelDunit')) {
+    maxParallelForks = dunitParallelForks.toInteger()
+  }
+
   doFirst {
-    // Wrap the task's test framework in a wrapper that runs each test worker JVM in a unique
-    // subdirectory.
-    def subdirFramework = new RunInSubdirectoryTestFramework(testFramework)
-    // This call works for now, but the Test class declares useTestFramework() as protected, so
-    // this could become troublesome in a future version of Gradle/Groovy.
-    useTestFramework subdirFramework
+    testExecuter = Parallel.executerFor(it)
+    TestPropertiesWriter.writeTestProperties(buildDir, name)
   }
 }
 
-configure([repeatDistributedTest, repeatIntegrationTest, repeatUpgradeTest, repeatUnitTest, repeatAcceptanceTest]) {
+configure([repeatAcceptanceTest, repeatDistributedTest, repeatIntegrationTest, repeatUnitTest, repeatUpgradeTest]) {
   times = Integer.parseInt(repeat)
-  useJUnit {}
-  outputs.upToDateWhen { false }
   failFast true
 
   if (project.hasProperty("failOnNoMatchingTests")) {
@@ -236,16 +226,6 @@ gradle.taskGraph.whenReady({ graph ->
   }
 })
 
-acceptanceTest {
-  // Acceptance tests may reach out and run a gfsh command from the assembled gfsh.
-  // If the test JVM version is specified, we must have the correct JAVA_HOME set for gfsh to use.
-  // See also environment configuration for parallel testing in docker.gradle
-  if (project.hasProperty('testJVM') && !testJVM.trim().isEmpty()) {
-    environment "JAVA_HOME", "${project.testJVM}"
-  }
-}
-
-
 // Make precheckin task run all validation tests for checking in code.
 task precheckin(dependsOn: [build, acceptanceTest, integrationTest, distributedTest, upgradeTest]) {
   description 'Run this task before checking in code to validate changes. It runs tests beyond unitTest'
@@ -269,4 +249,17 @@ project.tasks.named('assemble').configure {
       project.tasks.named('compileUpgradeTestJava'),
     ]
   )
+}
+
+if (project.hasProperty('testJVM') && !testJVM.trim().isEmpty()) {
+  // These tests may run gfsh commands from the assembled gfsh.
+  // Set JAVA_HOME so that gfsh uses the test's designated JVM.
+  acceptanceTest.environment "JAVA_HOME", "${project.testJVM}"
+  repeatAcceptanceTest.environment "JAVA_HOME", "${project.testJVM}"
+
+  distributedTest.environment "JAVA_HOME", "${project.testJVM}"
+  repeatDistributedTest.environment "JAVA_HOME", "${project.testJVM}"
+
+  upgradeTest.environment "JAVA_HOME", "${project.testJVM}"
+  repeatUpgradeTest.environment "JAVA_HOME", "${project.testJVM}"
 }
