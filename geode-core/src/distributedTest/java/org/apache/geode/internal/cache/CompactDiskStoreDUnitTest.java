@@ -155,7 +155,7 @@ public class CompactDiskStoreDUnitTest implements Serializable {
 
     server.invoke(() -> startServer(serverName, serverDir, serverPort, locators, false));
 
-    server.invoke(() -> verifyDiskStore());
+    server.invoke(() -> verifyDiskStoreOplogs());
 
     AssertRegionSizeAndDiskStore();
 
@@ -214,10 +214,13 @@ public class CompactDiskStoreDUnitTest implements Serializable {
     SERVER.get().stop();
   }
 
-  private static void verifyDiskStore() {
+  private static void verifyDiskStoreOplogs() {
     ((InternalCache) SERVER.get().getCache()).listDiskStores().forEach(diskStore -> {
       Oplog[] oplogs = ((DiskStoreImpl) diskStore).getPersistentOplogs().getAllOplogs();
-      assertThat(oplogs.length).isEqualTo(1);
+      // There should be two Oplogs in the array.
+      // One is the offline compacted Oplog.
+      // The other is the new Oplog created during server restart.
+      assertThat(oplogs.length).isEqualTo(2);
     });
   }
 
