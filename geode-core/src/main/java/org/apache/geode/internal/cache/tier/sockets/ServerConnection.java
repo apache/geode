@@ -634,7 +634,7 @@ public abstract class ServerConnection implements Runnable {
         chmRegistered = true;
       }
       if (registerClient) {
-        chm.registerClient(proxyId);
+        chm.registerClient(proxyId, acceptor.getMaximumTimeBetweenPings());
       }
       serverConnectionCollection = chm.addConnection(proxyId, this);
       acceptor.getConnectionListener().connectionOpened(registerClient, communicationMode);

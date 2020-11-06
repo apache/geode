@@ -122,6 +122,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
   private final CacheServerStats stats;
   private final int maxConnections;
   private final int maxThreads;
+  private final int maximumTimeBetweenPings;
 
   private final ExecutorService pool;
   /**
@@ -636,6 +637,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
     this.socketBufferSize = socketBufferSize;
 
     // Create the singleton ClientHealthMonitor
+    this.maximumTimeBetweenPings = maximumTimeBetweenPings;
     healthMonitor = clientHealthMonitorProvider.get(internalCache, maximumTimeBetweenPings,
         clientNotifier.getStats());
 
@@ -1863,6 +1865,11 @@ public class AcceptorImpl implements Acceptor, Runnable {
     }
 
     releaseCommBuffer(Message.setTLCommBuffer(null));
+  }
+
+  @Override
+  public int getMaximumTimeBetweenPings() {
+    return maximumTimeBetweenPings;
   }
 
   private static class ClientQueueInitializerTask implements Runnable {
