@@ -147,8 +147,7 @@ public class NioSslEngineTest {
     ByteBuffer byteBuffer = ByteBuffer.allocate(netBufferSize);
 
     assertThatThrownBy(() -> spyNioSslEngine.handshake(mockChannel, 10000, byteBuffer))
-        .isInstanceOf(
-            SocketException.class)
+        .isInstanceOf(SocketException.class)
         .hasMessageContaining("handshake terminated");
   }
 
