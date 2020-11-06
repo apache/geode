@@ -61,7 +61,6 @@ public class RedisStats {
   private final ScheduledExecutorService perSecondExecutor;
   private volatile double networkKiloBytesReadDuringLastSecond;
   private volatile long opsPerformedLastTick;
-
   private double opsPerformedOverLastSecond;
   private long previousNetworkBytesRead;
   private final StatisticsClock clock;
@@ -124,6 +123,11 @@ public class RedisStats {
     keyspaceHits.set(0);
     keyspaceMisses.set(0);
     stats.setLong(clientId, 0);
+    stats.setLong(passiveExpirationChecksId, 0);
+    stats.setLong(passiveExpirationCheckTimeId,0);
+    stats.setLong(passiveExpirationsId,0);
+    stats.setLong(expirationsId,0);
+    stats.setLong(expirationTimeId,0);
   }
 
   private static void fillListWithCompletedCommandDescriptors(StatisticsTypeFactory f,
