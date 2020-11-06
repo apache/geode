@@ -49,6 +49,7 @@ import org.apache.geode.pdx.WritablePdxInstance;
 
 public abstract class JdbcWriterIntegrationTest {
 
+  static final String message = "this is a test, DO NOT MERGE";
   static final String DB_NAME = "test";
   protected static final String SCHEMA_NAME = "mySchema";
   protected static final String REGION_TABLE_NAME = "employees";
