@@ -51,10 +51,9 @@ public class GeodeConnectionConfigTest {
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-    ServiceResult<URL> serviceResult =
-        ClassLoaderServiceInstance
-            .getInstance()
-            .getResource(ClientClusterManagementSSLTest.class, "ssl/trusted.keystore");
+    ServiceResult<URL> serviceResult = ClassLoaderServiceInstance
+        .getInstance()
+        .getResource(ClientClusterManagementSSLTest.class, "ssl/trusted.keystore");
     File keyFile = new File(serviceResult.getMessage().getFile());
     Properties sslProps = new Properties();
     sslProps.setProperty(SSL_KEYSTORE, keyFile.getCanonicalPath());

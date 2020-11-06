@@ -3122,8 +3122,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
       if (serviceResult.isSuccessful()) {
         result = serviceResult.getMessage();
       } else {
-        throw new ClassNotFoundException(String.format("No class found for name: %s because %s",
-            className, serviceResult.getErrorMessage()));
+        throw new ClassNotFoundException(className);
       }
       cacheClass(className, result);
     }

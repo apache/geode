@@ -131,7 +131,7 @@ public class DefaultClassLoaderServiceImpl implements ClassLoaderService {
     }
 
     if (inputStream == null) {
-      logger.warn("Failure! getResourceAsStream");
+      logger.debug("Failure! getResourceAsStream");
     }
     return inputStream == null
         ? Failure.of(String.format("No resource for path: %s could be found", resourceFilePath))
@@ -147,7 +147,7 @@ public class DefaultClassLoaderServiceImpl implements ClassLoaderService {
     InputStream inputStream =
         ClassPathLoader.getLatest().getResourceAsStream(clazz, resourceFilePath);
     if (inputStream == null) {
-      logger.warn("Failure! getResourceAsStream");
+      logger.debug("Failure! getResourceAsStream");
     }
     return inputStream == null
         ? Failure.of(String.format("No resource for path: %s could be found", resourceFilePath))
@@ -162,7 +162,7 @@ public class DefaultClassLoaderServiceImpl implements ClassLoaderService {
     }
     URL resource = ClassPathLoader.getLatest().getResource(resourceFilePath);
     if (resource == null) {
-      logger.warn("Failure! getResource");
+      logger.debug("Failure! getResource");
     }
     return resource == null
         ? Failure.of("Resource not found for resourcePath: " + resourceFilePath)
@@ -177,7 +177,7 @@ public class DefaultClassLoaderServiceImpl implements ClassLoaderService {
     }
     URL resource = ClassPathLoader.getLatest().getResource(clazz, resourceFilePath);
     if (resource == null) {
-      logger.warn("Failure! getResource");
+      logger.debug("Failure! getResource");
     }
     return resource == null
         ? Failure.of("Resource not found for resourcePath: " + resourceFilePath)

@@ -90,18 +90,19 @@ public class ClientPartitionAdvisor {
   }
 
   private void createPartitionResolverForName(String partitionResolverName) {
-    ServiceResult<Class<?>> serviceResult = ClassLoaderServiceInstance.getInstance()
-        .forName(partitionResolverName);
+    if (partitionResolverName != null) {
+      ServiceResult<Class<?>> serviceResult = ClassLoaderServiceInstance.getInstance()
+          .forName(partitionResolverName);
 
-    serviceResult.ifSuccessful(classes -> {
-      try {
-        this.partitionResolver =
-            (PartitionResolver) classes.newInstance();
-      } catch (IllegalAccessException | InstantiationException e) {
-        logger.error(e);
-        logPartitionResolverError(partitionResolverName);
-      }
-    }).ifFailure(errorMessage -> logPartitionResolverError(partitionResolverName));
+      serviceResult.ifSuccessful(classes -> {
+        try {
+          this.partitionResolver = (PartitionResolver) classes.newInstance();
+        } catch (IllegalAccessException | InstantiationException e) {
+          logger.error(e);
+          logPartitionResolverError(partitionResolverName);
+        }
+      }).ifFailure(errorMessage -> logPartitionResolverError(partitionResolverName));
+    }
   }
 
   private void logPartitionResolverError(String partitionResolverName) {
