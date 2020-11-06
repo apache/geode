@@ -78,6 +78,7 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.SystemTimer.SystemTimerTask;
 import org.apache.geode.internal.net.BufferPool;
+import org.apache.geode.internal.net.ByteBufferSharing;
 import org.apache.geode.internal.net.NioFilter;
 import org.apache.geode.internal.net.NioPlainEngine;
 import org.apache.geode.internal.net.SocketCreator;
@@ -800,12 +801,11 @@ public class Connection implements Runnable {
   @VisibleForTesting
   void clearSSLInputBuffer() {
     if (getConduit().useSSL() && ioFilter != null) {
-      synchronized (ioFilter.getSynchObject()) {
-        if (!ioFilter.isClosed()) {
-          // clear out any remaining handshake bytes
-          ByteBuffer buffer = ioFilter.getUnwrappedBuffer(inputBuffer);
-          buffer.position(0).limit(0);
-        }
+      try (final ByteBufferSharing sharedBuffer = ioFilter.getUnwrappedBuffer()) {
+        // clear out any remaining handshake bytes
+        sharedBuffer.getBuffer().position(0).limit(0);
+      } catch (IOException e) {
+        // means the NioFilter was already closed
       }
     }
   }
@@ -2434,8 +2434,9 @@ public class Connection implements Runnable {
         long queueTimeoutTarget = now + asyncQueueTimeout;
         channel.configureBlocking(false);
         try {
-          synchronized (ioFilter.getSynchObject()) {
-            ByteBuffer wrappedBuffer = ioFilter.wrap(buffer);
+          try (final ByteBufferSharing outputSharing = ioFilter.wrap(buffer)) {
+            final ByteBuffer wrappedBuffer = outputSharing.getBuffer();
+
             int waitTime = 1;
             do {
               owner.getConduit().getCancelCriterion().checkCancelInProgress(null);
@@ -2588,9 +2589,9 @@ public class Connection implements Runnable {
           }
           // fall through
         }
-        // synchronize on the ioFilter while using its network buffer
-        synchronized (ioFilter.getSynchObject()) {
-          ByteBuffer wrappedBuffer = ioFilter.wrap(buffer);
+        try (final ByteBufferSharing outputSharing = ioFilter.wrap(buffer)) {
+          final ByteBuffer wrappedBuffer = outputSharing.getBuffer();
+
           while (wrappedBuffer.remaining() > 0) {
             int amtWritten = 0;
             long start = stats.startSocketWrite(true);
@@ -2642,10 +2643,12 @@ public class Connection implements Runnable {
     final Version version = getRemoteVersion();
     try {
       msgReader = new MsgReader(this, ioFilter, version);
+
       ReplyMessage msg;
       int len;
 
-      synchronized (ioFilter.getSynchObject()) {
+      // (we have to lock here to protect between reading header and message body)
+      try (final ByteBufferSharing _unused = ioFilter.getUnwrappedBuffer()) {
         Header header = msgReader.readHeader();
 
         if (header.getMessageType() == NORMAL_MSG_TYPE) {
@@ -2662,7 +2665,7 @@ public class Connection implements Runnable {
           releaseMsgDestreamer(header.getMessageId(), destreamer);
           len = destreamer.size();
         }
-      } // sync
+      }
       // I'd really just like to call dispatchMessage here. However,
       // that call goes through a bunch of checks that knock about
       // 10% of the performance. Since this direct-ack stuff is all
@@ -2729,8 +2732,9 @@ public class Connection implements Runnable {
   private void processInputBuffer() throws ConnectionException, IOException {
     inputBuffer.flip();
 
-    synchronized (ioFilter.getSynchObject()) {
-      ByteBuffer peerDataBuffer = ioFilter.unwrap(inputBuffer);
+    try (final ByteBufferSharing sharedBuffer = ioFilter.unwrap(inputBuffer)) {
+      final ByteBuffer peerDataBuffer = sharedBuffer.getBuffer();
+
       peerDataBuffer.flip();
 
       boolean done = false;

@@ -244,11 +244,13 @@ public class SSLSocketIntegrationTest {
     ByteBuffer buffer = bbos.getContentBuffer();
     System.out.println(
         "client buffer position is " + buffer.position() + " and limit is " + buffer.limit());
-    ByteBuffer wrappedBuffer = engine.wrap(buffer);
-    System.out.println("client wrapped buffer position is " + wrappedBuffer.position()
-        + " and limit is " + wrappedBuffer.limit());
-    int bytesWritten = clientChannel.write(wrappedBuffer);
-    System.out.println("client bytes written is " + bytesWritten);
+    try (final ByteBufferSharing outputSharing = engine.wrap(buffer)) {
+      ByteBuffer wrappedBuffer = outputSharing.getBuffer();
+      System.out.println("client wrapped buffer position is " + wrappedBuffer.position()
+          + " and limit is " + wrappedBuffer.limit());
+      int bytesWritten = clientChannel.write(wrappedBuffer);
+      System.out.println("client bytes written is " + bytesWritten);
+    }
   }
 
   private Thread startServerNIO(final ServerSocket serverSocket, int timeoutMillis)
@@ -279,7 +281,9 @@ public class SSLSocketIntegrationTest {
           final NioSslEngine nioSslEngine = engine;
           engine.close(socket.getChannel());
           assertThatThrownBy(() -> {
-            nioSslEngine.unwrap(ByteBuffer.wrap(new byte[0]));
+            try (final ByteBufferSharing unused =
+                nioSslEngine.unwrap(ByteBuffer.wrap(new byte[0]))) {
+            }
           })
               .isInstanceOf(IOException.class);
         }
@@ -293,24 +297,35 @@ public class SSLSocketIntegrationTest {
   private void readMessageFromNIOSSLClient(Socket socket, ByteBuffer buffer, NioSslEngine engine)
       throws IOException {
 
-    ByteBuffer unwrapped = engine.getUnwrappedBuffer(buffer);
-    // if we already have unencrypted data skip unwrapping
-    if (unwrapped.position() == 0) {
-      int bytesRead;
-      // if we already have encrypted data skip reading from the socket
-      if (buffer.position() == 0) {
-        bytesRead = socket.getChannel().read(buffer);
-        buffer.flip();
+    try (final ByteBufferSharing sharedBuffer = engine.getUnwrappedBuffer()) {
+      final ByteBuffer unwrapped = sharedBuffer.getBuffer();
+      // if we already have unencrypted data skip unwrapping
+      if (unwrapped.position() == 0) {
+        int bytesRead;
+        // if we already have encrypted data skip reading from the socket
+        if (buffer.position() == 0) {
+          bytesRead = socket.getChannel().read(buffer);
+          buffer.flip();
+        } else {
+          bytesRead = buffer.remaining();
+        }
+        System.out.println("server bytes read is " + bytesRead + ": buffer position is "
+            + buffer.position() + " and limit is " + buffer.limit());
+        try (final ByteBufferSharing sharedBuffer2 = engine.unwrap(buffer)) {
+          final ByteBuffer unwrapped2 = sharedBuffer2.getBuffer();
+
+          unwrapped2.flip();
+          System.out.println("server unwrapped buffer position is " + unwrapped2.position()
+              + " and limit is " + unwrapped2.limit());
+          finishReadMessageFromNIOSSLClient(unwrapped2);
+        }
       } else {
-        bytesRead = buffer.remaining();
+        finishReadMessageFromNIOSSLClient(unwrapped);
       }
-      System.out.println("server bytes read is " + bytesRead + ": buffer position is "
-          + buffer.position() + " and limit is " + buffer.limit());
-      unwrapped = engine.unwrap(buffer);
-      unwrapped.flip();
-      System.out.println("server unwrapped buffer position is " + unwrapped.position()
-          + " and limit is " + unwrapped.limit());
     }
+  }
+
+  private void finishReadMessageFromNIOSSLClient(final ByteBuffer unwrapped) throws IOException {
     ByteBufferInputStream bbis = new ByteBufferInputStream(unwrapped);
     DataInputStream dis = new DataInputStream(bbis);
     String welcome = dis.readUTF();
