@@ -37,6 +37,12 @@ import org.apache.geode.internal.AvailablePort.Keeper;
  * allocate ports in a round-robin fashion.
  */
 public class AvailablePortHelper {
+  public static final int MEMBERSHIP_PORTS_LOWER_BOUND =
+      Integer.getInteger("AvailablePortHelper.membershipPortLowerBound",
+          DEFAULT_MEMBERSHIP_PORT_RANGE[0]);
+  public static final int MEMBERSHIP_PORTS_UPPER_BOUND =
+      Integer.getInteger("AvailablePortHelper.membershipPortUpperBound",
+          DEFAULT_MEMBERSHIP_PORT_RANGE[1]);
   private final AtomicInteger nextMembershipPort;
   private final AtomicInteger nextAvailablePort;
 
@@ -46,7 +52,7 @@ public class AvailablePortHelper {
   AvailablePortHelper() {
     Random rand = rand();
     nextMembershipPort =
-        randomInRange(rand, DEFAULT_MEMBERSHIP_PORT_RANGE[0], DEFAULT_MEMBERSHIP_PORT_RANGE[1]);
+        randomInRange(rand, MEMBERSHIP_PORTS_LOWER_BOUND, MEMBERSHIP_PORTS_UPPER_BOUND);
     nextAvailablePort =
         randomInRange(rand, AVAILABLE_PORTS_LOWER_BOUND, AVAILABLE_PORTS_UPPER_BOUND);
   }
@@ -82,9 +88,9 @@ public class AvailablePortHelper {
     AtomicInteger targetRange =
         useMembershipPortRange ? singleton.nextMembershipPort : singleton.nextAvailablePort;
     int targetLowerBound =
-        useMembershipPortRange ? DEFAULT_MEMBERSHIP_PORT_RANGE[0] : AVAILABLE_PORTS_LOWER_BOUND;
+        useMembershipPortRange ? MEMBERSHIP_PORTS_LOWER_BOUND : AVAILABLE_PORTS_LOWER_BOUND;
     int targetUpperBound =
-        useMembershipPortRange ? DEFAULT_MEMBERSHIP_PORT_RANGE[1] : AVAILABLE_PORTS_UPPER_BOUND;
+        useMembershipPortRange ? MEMBERSHIP_PORTS_UPPER_BOUND : AVAILABLE_PORTS_UPPER_BOUND;
 
     int[] ports = new int[count];
     boolean needMorePorts = true;
@@ -139,12 +145,12 @@ public class AvailablePortHelper {
     // range, JVM 1 starts halfway through, JVM 2 starts 1/4 of the way through, then further
     // ranges are 3/4, 1/8, 3/8, 5/8, 7/8, 1/16, etc.
 
-    singleton.nextMembershipPort.set(DEFAULT_MEMBERSHIP_PORT_RANGE[0]);
+    singleton.nextMembershipPort.set(MEMBERSHIP_PORTS_LOWER_BOUND);
     singleton.nextAvailablePort.set(AVAILABLE_PORTS_LOWER_BOUND);
     if (jvmIndex == 0) {
       return;
     }
-    int membershipRange = DEFAULT_MEMBERSHIP_PORT_RANGE[1] - DEFAULT_MEMBERSHIP_PORT_RANGE[0];
+    int membershipRange = MEMBERSHIP_PORTS_UPPER_BOUND - MEMBERSHIP_PORTS_LOWER_BOUND;
     int availableRange = AVAILABLE_PORTS_UPPER_BOUND - AVAILABLE_PORTS_LOWER_BOUND;
     int numChunks = Integer.highestOneBit(jvmIndex) << 1;
     int chunkNumber = 2 * (jvmIndex - Integer.highestOneBit(jvmIndex)) + 1;
