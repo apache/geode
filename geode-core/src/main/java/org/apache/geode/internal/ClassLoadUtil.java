@@ -46,13 +46,15 @@ public class ClassLoadUtil {
   /**
    * Resolve the class from the given name. Supports primitive types, too.
    */
-  public static Class classFromName(String className) throws ClassNotFoundException {
-    Class result = checkForPrimType(className);
+  public static Class<?> classFromName(String className) throws ClassNotFoundException {
+    Class<?> result = checkForPrimType(className);
     if (result == null) {
       ServiceResult<Class<?>> serviceResult =
           ClassLoaderServiceInstance.getInstance().forName(className);
       if (serviceResult.isSuccessful()) {
         result = serviceResult.getMessage();
+      } else {
+        throw new ClassNotFoundException(className);
       }
     }
     return result;

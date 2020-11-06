@@ -873,7 +873,7 @@ public class DurableClientCQDUnitTest extends DurableClientTestBase {
       this.durableClientVM.invoke(() -> {
         ServiceResult<URL> serviceResult =
             ClassLoaderServiceInstance.getInstance().getResource(getClass(),
-                "durablecq-server-cache.xml");
+                "durablecq-client-cache.xml");
         CacheServerTestUtil.createCacheClientFromXml(serviceResult.getMessage(), "client",
             durableClientId, VERY_LONG_DURABLE_TIMEOUT_SECONDS, Boolean.FALSE);
       });
@@ -926,7 +926,7 @@ public class DurableClientCQDUnitTest extends DurableClientTestBase {
       this.durableClientVM.invoke(() -> {
         ServiceResult<URL> serviceResult =
             ClassLoaderServiceInstance.getInstance().getResource(getClass(),
-                "durablecq-server-cache.xml");
+                "durablecq-client-cache.xml");
         CacheServerTestUtil.createCacheClientFromXml(serviceResult.getMessage(), "client",
             durableClientId, VERY_LONG_DURABLE_TIMEOUT_SECONDS, Boolean.FALSE);
       });

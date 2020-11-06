@@ -90,8 +90,6 @@ import org.apache.geode.internal.cache.Oplog;
 import org.apache.geode.internal.cache.Oplog.OPLOG_TYPE;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
-import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
-import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
@@ -478,9 +476,8 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
   void putDataSerializableAndVerify(VM putter, String regionName, int start, int end,
       VM... vms) throws Exception {
     for (int i = start; i < end; i++) {
-      ServiceResult<Class<?>> serviceResult = ClassLoaderServiceInstance.getInstance()
-          .forName("org.apache.geode.cache.ExpirationAttributes");
-      Class<?> aClass = serviceResult.getMessage();
+      Class aClass = Thread.currentThread().getContextClassLoader()
+          .loadClass("org.apache.geode.cache.ExpirationAttributes");
       Constructor constructor = aClass.getConstructor(int.class);
       Object testDataSerializable = constructor.newInstance(i);
       putter.invoke(invokePut(regionName, "" + i, testDataSerializable));
@@ -1267,10 +1264,7 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
     public void execute(FunctionContext context) {
       String dsClassName = (String) context.getArguments();
       try {
-        ServiceResult<Class<?>> serviceResult =
-            ClassLoaderServiceInstance.getInstance().forName(dsClassName);
-
-        Class<?> aClass = serviceResult.getMessage();
+        Class aClass = Thread.currentThread().getContextClassLoader().loadClass(dsClassName);
         Constructor constructor = aClass.getConstructor();
         context.getResultSender().lastResult(constructor.newInstance());
       } catch (Exception e) {

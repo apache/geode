@@ -830,6 +830,8 @@ public class CreateRegionCommandDUnitTest {
     ServiceResult<URL> serviceResult =
         ClassLoaderServiceInstance.getInstance().getResource(getClass(),
             "CreateRegionCommandDUnitTest.xml");
+    assertThat(serviceResult.isSuccessful());
+    URL xmlResource = serviceResult.getMessage();
     RegionShortcut[] shortcuts = RegionShortcut.values();
     for (RegionShortcut shortcut : shortcuts) {
       gfsh.executeAndAssertThat(
@@ -840,8 +842,7 @@ public class CreateRegionCommandDUnitTest {
       InternalConfigurationPersistenceService persistenceService =
           ClusterStartupRule.getLocator().getConfigurationPersistenceService();
       CacheConfig expected = persistenceService.getJaxbService()
-          .unMarshall(
-              FileUtils.readFileToString(new File(serviceResult.getMessage().getFile()), "UTF-8"));
+          .unMarshall(FileUtils.readFileToString(new File(xmlResource.getFile()), "UTF-8"));
 
       CacheConfig actual = persistenceService.getCacheConfig("cluster");
 
