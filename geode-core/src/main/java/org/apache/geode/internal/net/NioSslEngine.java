@@ -274,7 +274,8 @@ public class NioSslEngine implements NioFilter {
     // during the previous unwrap
 
     peerAppData.limit(peerAppData.capacity());
-    while (wrappedBuffer.hasRemaining()) {
+    boolean stopDecryption = false;
+    while (wrappedBuffer.hasRemaining() && !stopDecryption) {
       SSLEngineResult unwrapResult = engine.unwrap(wrappedBuffer, peerAppData);
       switch (unwrapResult.getStatus()) {
         case BUFFER_OVERFLOW:
@@ -293,8 +294,13 @@ public class NioSslEngine implements NioFilter {
           return peerAppData;
         case OK:
           break;
-        default:
-          throw new SSLException("Error decrypting data: " + unwrapResult);
+        default:// if there is data in the decrypted buffer return it. Otherwise signal that we're
+          // having trouble
+          if (peerAppData.position() <= 0) {
+            throw new SSLException("Error decrypting data: " + unwrapResult);
+          }
+          stopDecryption = true;
+          break;
       }
     }
     wrappedBuffer.clear();
