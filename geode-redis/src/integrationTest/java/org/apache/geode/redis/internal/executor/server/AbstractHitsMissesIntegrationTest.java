@@ -99,6 +99,26 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
     runCommandAndAssertHitsAndMisses("string", k -> jedis.strlen(k));
   }
 
+  @Test
+  public void testDel() {
+    runCommandAndAssertNoStatUpdates("string", k -> jedis.del(k));
+  }
+
+  @Test
+  public void testSet() {
+    runCommandAndAssertNoStatUpdates("string", (k, v) -> jedis.set(k, v));
+  }
+
+  @Test
+  public void testAppend() {
+    runCommandAndAssertNoStatUpdates("string", (k, v) -> jedis.append(k, v));
+  }
+
+  @Test
+  public void testSetWrongType() {
+    runCommandAndAssertNoStatUpdates("set", (k, v) -> jedis.set(k, v));
+  }
+
   // ------------ Bit related commands -----------
 
   @Test
@@ -139,6 +159,20 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
   // ------------ Set related commands -----------
   // FYI - In Redis 5.x SPOP produces inconsistent results depending on whether a count was given
   // or not. In Redis 6.x SPOP does not update any stats.
+  @Test
+  public void testSpop() {
+    runCommandAndAssertNoStatUpdates("set", k -> jedis.spop(k));
+  }
+
+  @Test
+  public void testSadd() {
+    runCommandAndAssertNoStatUpdates("set", (k, v) -> jedis.sadd(k, v));
+  }
+
+  @Test
+  public void testSrem() {
+    runCommandAndAssertNoStatUpdates("set", (k, v) -> jedis.srem(k, v));
+  }
 
   @Test
   public void testSmembers() {
@@ -172,7 +206,7 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
 
   @Test
   public void testSdiffstore() {
-    runDiffStoreCommandAndAssertHitsAndMisses("set", (k, v, s) -> jedis.sdiffstore(k, v, s));
+    runDiffStoreCommandAndAssertNoStatUpdates("set", (k, v, s) -> jedis.sdiffstore(k, v, s));
   }
 
   @Test
@@ -182,7 +216,7 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
 
   @Test
   public void testSinterstore() {
-    runDiffStoreCommandAndAssertHitsAndMisses("set", (k, v, s) -> jedis.sinterstore(k, v, s));
+    runDiffStoreCommandAndAssertNoStatUpdates("set", (k, v, s) -> jedis.sinterstore(k, v, s));
   }
 
   @Test
@@ -192,10 +226,20 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
 
   @Test
   public void testSunionstore() {
-    runDiffStoreCommandAndAssertHitsAndMisses("set", (k, v, s) -> jedis.sunionstore(k, v, s));
+    runDiffStoreCommandAndAssertNoStatUpdates("set", (k, v, s) -> jedis.sunionstore(k, v, s));
   }
 
   // ------------ Hash related commands -----------
+
+  @Test
+  public void testHdel() {
+    runCommandAndAssertNoStatUpdates("hash", (k, v) -> jedis.hdel(k, v));
+  }
+
+  @Test
+  public void testHset() {
+    runCommandAndAssertNoStatUpdates("hash", (k, v, s) -> jedis.hset(k, v, s));
+  }
 
   @Test
   public void testHget() {
@@ -288,7 +332,7 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
   /**
    * When storing diff-ish results, hits and misses are never updated
    */
-  private void runDiffStoreCommandAndAssertHitsAndMisses(String key,
+  private void runDiffStoreCommandAndAssertNoStatUpdates(String key,
       TriConsumer<String, String, String> command) {
     command.accept("destination", key, key);
     Map<String, String> info = getInfo();
@@ -298,6 +342,31 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
 
     command.accept("destination", key, "missed");
     info = getInfo();
+
+    assertThat(info.get(HITS)).isEqualTo("0");
+    assertThat(info.get(MISSES)).isEqualTo("0");
+  }
+
+  private void runCommandAndAssertNoStatUpdates(String key, Consumer<String> command) {
+    command.accept(key);
+    Map<String, String> info = getInfo();
+
+    assertThat(info.get(HITS)).isEqualTo("0");
+    assertThat(info.get(MISSES)).isEqualTo("0");
+  }
+
+  private void runCommandAndAssertNoStatUpdates(String key, BiConsumer<String, String> command) {
+    command.accept(key, "42");
+    Map<String, String> info = getInfo();
+
+    assertThat(info.get(HITS)).isEqualTo("0");
+    assertThat(info.get(MISSES)).isEqualTo("0");
+  }
+
+  private void runCommandAndAssertNoStatUpdates(String key,
+      TriConsumer<String, String, String> command) {
+    command.accept(key, key, "42");
+    Map<String, String> info = getInfo();
 
     assertThat(info.get(HITS)).isEqualTo("0");
     assertThat(info.get(MISSES)).isEqualTo("0");
