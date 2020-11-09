@@ -82,7 +82,7 @@ public class FederatingManager extends Manager {
    * unbounded in practical situation as number of members will be a finite set at any given point
    * of time
    */
-  private ExecutorService executorService;
+  private volatile ExecutorService executorService;
 
   @VisibleForTesting
   FederatingManager(ManagementResourceRepo repo, InternalDistributedSystem system,
@@ -225,7 +225,7 @@ public class FederatingManager extends Manager {
     }
   }
 
-  private synchronized void executeTask(Runnable task) {
+  private void executeTask(Runnable task) {
     try {
       executorService.execute(task);
     } catch (RejectedExecutionException ignored) {
