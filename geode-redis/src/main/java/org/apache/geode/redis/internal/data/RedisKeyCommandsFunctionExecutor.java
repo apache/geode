@@ -33,12 +33,29 @@ public class RedisKeyCommandsFunctionExecutor extends RedisDataCommandsFunctionE
 
   @Override
   public boolean exists(ByteArrayWrapper key) {
-    return stripedExecute(key, () -> getRedisData(key).exists());
+    boolean keyExists = stripedExecute(key, () -> getRedisData(key).exists());
+
+    if (keyExists) {
+      helper.getRedisStats().incKeyspaceHits();
+    } else {
+      helper.getRedisStats().incKeyspaceMisses();
+    }
+
+    return keyExists;
   }
 
   @Override
   public long pttl(ByteArrayWrapper key) {
-    return stripedExecute(key, () -> getRedisData(key).pttl(getRegion(), key));
+
+    long result = stripedExecute(key, () -> getRedisData(key).pttl(getRegion(), key));
+
+    if (result == -2) {
+      helper.getRedisStats().incKeyspaceMisses();
+    } else {
+      helper.getRedisStats().incKeyspaceHits();
+    }
+
+    return result;
   }
 
   @Override
@@ -54,7 +71,15 @@ public class RedisKeyCommandsFunctionExecutor extends RedisDataCommandsFunctionE
 
   @Override
   public String type(ByteArrayWrapper key) {
-    return stripedExecute(key, () -> getRedisData(key).type());
+    String type = stripedExecute(key, () -> getRedisData(key).type());
+
+    if (type.equalsIgnoreCase("none")) {
+      helper.getRedisStats().incKeyspaceMisses();
+    } else {
+      helper.getRedisStats().incKeyspaceHits();
+    }
+
+    return type;
   }
 
   @Override

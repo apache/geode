@@ -12,24 +12,25 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.redis.internal.executor.string;
+
+package org.apache.geode.redis.internal.executor.server;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class GetExecutor extends StringExecutor {
+// TODO: only exists for Redis monitoring software, maybe make functional someday?
+public class SlowlogExecutor extends AbstractExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
-
-    ByteArrayWrapper key = command.getKey();
-    RedisStringCommands redisStringCommands = getRedisStringCommands(context);
-    ByteArrayWrapper result = redisStringCommands.get(key);
-
-    return respondBulkStrings(result);
+    List<ByteArrayWrapper> values = new ArrayList<ByteArrayWrapper>();
+    return RedisResponse.array(values);
   }
-
 }

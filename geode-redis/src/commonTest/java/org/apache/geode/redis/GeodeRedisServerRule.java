@@ -32,9 +32,9 @@ public class GeodeRedisServerRule extends SerializableExternalResource {
   private GeodeRedisServer server;
   private CacheFactory cacheFactory;
 
+
   public GeodeRedisServerRule() {
     cacheFactory = new CacheFactory();
-
     cacheFactory.set(LOG_LEVEL, "warn");
     cacheFactory.set(MCAST_PORT, "0");
     cacheFactory.set(LOCATORS, "");
@@ -46,6 +46,8 @@ public class GeodeRedisServerRule extends SerializableExternalResource {
     server = new GeodeRedisServer("localhost", 0, (InternalCache) cache);
     server.setAllowUnsupportedCommands(true);
   }
+
+
 
   public GeodeRedisServerRule withProperty(String property, String value) {
     cacheFactory.set(property, value);

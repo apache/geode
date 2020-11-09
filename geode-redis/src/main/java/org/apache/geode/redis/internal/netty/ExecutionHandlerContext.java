@@ -145,6 +145,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       }
       try {
         executeCommand(command);
+        redisStats.incCommandsProcessed();
       } catch (Throwable ex) {
         exceptionCaught(command.getChannelHandlerContext(), ex);
       }
@@ -403,6 +404,10 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   public PubSub getPubSub() {
     return pubsub;
+  }
+
+  public RedisStats getRedisStats() {
+    return redisStats;
   }
 
   public BigInteger getScanCursor() {
