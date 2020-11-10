@@ -62,18 +62,18 @@ public class CacheComponentManagementService implements ComponentManagementServi
    */
   @Override
   public ServiceResult<Boolean> init(ModuleService moduleService, Object[] args) {
-    ServiceResult<Boolean> validationResult = validateInputParameters(moduleService, logger);
-    if (validationResult.isSuccessful()) {
-      reconfigureLog4jToUseGeodeLoggingFormat();
-      this.logger = LogManager.getLogger();
-      CacheFactory cacheFactory = new CacheFactory((Properties) args[0]);
-      cacheFactory.setModuleService(moduleService);
-      cache = cacheFactory.create();
-      // TODO Udo: This needs to be revisited. This information is either passed in, in a custom
-      // format, or stored on the CacheConfig on the InternalDistributedSystem
-      return createCacheServer(args);
+    if (moduleService == null) {
+      return Failure.of("The ModuleService on the ComponentManagementService must not be null");
     }
-    return validationResult;
+
+    reconfigureLog4jToUseGeodeLoggingFormat();
+    this.logger = LogManager.getLogger();
+    CacheFactory cacheFactory = new CacheFactory((Properties) args[0]);
+    cacheFactory.setModuleService(moduleService);
+    cache = cacheFactory.create();
+    // TODO Udo: This needs to be revisited. This information is either passed in, in a custom
+    // format, or stored on the CacheConfig on the InternalDistributedSystem
+    return createCacheServer(args);
   }
 
   private void reconfigureLog4jToUseGeodeLoggingFormat() {
@@ -114,17 +114,6 @@ public class CacheComponentManagementService implements ComponentManagementServi
     } catch (IOException e) {
       logger.error(e);
       return Failure.of(e);
-    }
-    return SUCCESS_TRUE;
-  }
-
-  private ServiceResult<Boolean> validateInputParameters(ModuleService moduleService,
-      Logger logger) {
-    if (moduleService == null) {
-      return Failure.of("The ModuleService on the ComponentManagementService must not be null");
-    }
-    if (logger == null) {
-      return Failure.of("The Logger on the ComponentManagementService must not be null");
     }
     return SUCCESS_TRUE;
   }

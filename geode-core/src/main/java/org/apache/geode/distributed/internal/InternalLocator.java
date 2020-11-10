@@ -299,10 +299,9 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
           new RemoteTransportConfig(distributionConfig, MemberIdentifier.LOCATOR_DM_TYPE),
           distributionConfig);
       Supplier<ExecutorService> executor = () -> CoreLoggingExecutors
-          .newThreadPoolWithSynchronousFeed("locator request thread ",
-              MAX_POOL_SIZE, new DelayedPoolStatHelper(),
-              POOL_IDLE_TIMEOUT,
-              new ThreadPoolExecutor.CallerRunsPolicy());
+          .newThreadPoolWithSynchronousFeed(MAX_POOL_SIZE, POOL_IDLE_TIMEOUT, MILLISECONDS,
+              "locator request thread ", new ThreadPoolExecutor.CallerRunsPolicy(),
+              new DelayedPoolStatHelper());
       final TcpSocketCreator socketCreator = SocketCreatorFactory
           .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR);
       membershipLocator =
@@ -314,8 +313,8 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
               .setConfig(config)
               .setPort(port)
               .setBindAddress(bindAddress)
-              .setProtocolChecker(new ProtocolCheckerImpl(this,
-                  new ClientProtocolServiceLoader(moduleService)))
+              .setProtocolChecker(
+                  new ProtocolCheckerImpl(this, new ClientProtocolServiceLoader(moduleService)))
               .setFallbackHandler(handler)
               .setLocatorsAreCoordinators(shouldLocatorsBeCoordinators())
               .setLocatorStats(locatorStats)

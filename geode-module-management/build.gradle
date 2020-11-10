@@ -14,7 +14,7 @@
  */
 
 plugins {
-    id 'me.champeau.gradle.jmh' version '0.4.8'
+    id 'me.champeau.gradle.jmh'
 }
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
