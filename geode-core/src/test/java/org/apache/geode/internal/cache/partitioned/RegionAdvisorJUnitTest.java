@@ -17,7 +17,11 @@ package org.apache.geode.internal.cache.partitioned;
 import static org.apache.geode.distributed.internal.DistributionAdvisor.ILLEGAL_SERIAL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
@@ -49,24 +53,29 @@ public class RegionAdvisorJUnitTest {
     PartitionAttributes partitionAttributes = mock(PartitionAttributes.class);
     when(partitionedRegion.getAttributes()).thenReturn(regionAttributes);
     when(regionAttributes.getPartitionAttributes()).thenReturn(partitionAttributes);
-    when(partitionAttributes.getTotalNumBuckets()).thenReturn(3);
+    when(partitionAttributes.getTotalNumBuckets()).thenReturn(serials.length);
 
     assertThat(regionAdvisor.getBucketSerials()).containsExactly(serials);
   }
 
   @Test
   public void processProfilesQueuedDuringInitialization_shouldNotThrowIndexOutOfBoundsException() {
-    RegionAdvisor.QueuedBucketProfile qbp =
+    RegionAdvisor.QueuedBucketProfile queuedBucketProfile =
         new RegionAdvisor.QueuedBucketProfile(mock(InternalDistributedMember.class), serials, true);
     DistributionManager distributionManager = mock(DistributionManager.class);
     when(regionAdvisor.getDistributionManager()).thenReturn(distributionManager);
     when(distributionManager.isCurrentMember(any())).thenReturn(true);
-    regionAdvisor.preInitQueue.add(qbp);
+    regionAdvisor.preInitQueue.add(queuedBucketProfile);
 
-    ProxyBucketRegion pbr = mock(ProxyBucketRegion.class);
-    when(pbr.getBucketAdvisor()).thenReturn(mock(BucketAdvisor.class));
-    regionAdvisor.buckets = new ProxyBucketRegion[] {pbr, pbr, pbr};
+    ProxyBucketRegion proxyBucketRegion = mock(ProxyBucketRegion.class);
+    BucketAdvisor bucketAdvisor = mock(BucketAdvisor.class);
+    when(proxyBucketRegion.getBucketAdvisor()).thenReturn(bucketAdvisor);
+    regionAdvisor.buckets =
+        new ProxyBucketRegion[] {proxyBucketRegion, proxyBucketRegion, proxyBucketRegion};
 
     regionAdvisor.processProfilesQueuedDuringInitialization();
+
+    verify(bucketAdvisor, times(0)).removeIdWithSerial(any(InternalDistributedMember.class),
+        anyInt(), anyBoolean());
   }
 }
