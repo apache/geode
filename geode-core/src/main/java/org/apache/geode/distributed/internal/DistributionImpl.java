@@ -181,9 +181,9 @@ public class DistributionImpl implements Distribution {
       throw new GemFireSecurityException(e.getMessage(),
           e);
     } catch (MembershipConfigurationException e) {
-      throw new GemFireConfigException(e.getMessage());
+      throw new GemFireConfigException(e.getMessage(), e.getCause());
     } catch (MemberStartupException e) {
-      throw new SystemConnectException(e.getMessage());
+      throw new SystemConnectException(e.getMessage(), e.getCause());
     } catch (RuntimeException e) {
       logger.error("Unexpected problem starting up membership services", e);
       throw new SystemConnectException("Problem starting up membership services: " + e.getMessage()

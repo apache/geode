@@ -41,11 +41,15 @@ import org.jgroups.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.GemFireConfigException;
+import org.apache.geode.SystemConnectException;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.direct.DirectChannel;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.api.MemberStartupException;
 import org.apache.geode.distributed.internal.membership.api.Membership;
 import org.apache.geode.distributed.internal.membership.api.MembershipClosedException;
+import org.apache.geode.distributed.internal.membership.api.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
 import org.apache.geode.internal.admin.remote.AlertListenerMessage;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
@@ -80,7 +84,6 @@ public class DistributionTest {
     membership = mock(Membership.class);
     distribution = new DistributionImpl(clusterDistributionManager,
         remoteTransportConfig, internalDistributedSystem, membership);
-
 
     Random r = new Random();
     mockMembers = new InternalDistributedMember[5];
@@ -203,5 +206,31 @@ public class DistributionTest {
     m.setRecipient(mockMembers[0]);
     distribution.send(emptyList, m);
     verify(membership, never()).send(any(), any());
+  }
+
+  @Test
+  public void testExceptionNestedOnStartConfigError() throws Exception {
+    Throwable cause = new RuntimeException("Exception cause");
+    Throwable exception = new MembershipConfigurationException("Test exception", cause);
+    doThrow(exception).when(membership).start();
+    try {
+      distribution.start();
+      fail("expected start to throw an exception");
+    } catch (GemFireConfigException e) {
+      assertEquals(e.getCause(), cause);
+    }
+  }
+
+  @Test
+  public void testExceptionNestedOnStartStartupError() throws Exception {
+    Throwable cause = new RuntimeException("Exception cause");
+    Throwable exception = new MemberStartupException("Test exception", cause);
+    doThrow(exception).when(membership).start();
+    try {
+      distribution.start();
+      fail("expected start to throw an exception");
+    } catch (SystemConnectException e) {
+      assertEquals(e.getCause(), cause);
+    }
   }
 }
