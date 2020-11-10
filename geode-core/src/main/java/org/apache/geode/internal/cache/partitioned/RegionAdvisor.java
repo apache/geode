@@ -97,12 +97,14 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
   private volatile int numDataStores = 0;
   protected volatile ProxyBucketRegion[] buckets;
 
-  private Queue<QueuedBucketProfile> preInitQueue;
+  @VisibleForTesting
+  protected Queue<QueuedBucketProfile> preInitQueue;
   private final Object preInitQueueMonitor = new Object();
 
   private ConcurrentHashMap<Integer, Set<ServerBucketProfile>> clientBucketProfilesMap;
 
-  private RegionAdvisor(PartitionedRegion region) {
+  @VisibleForTesting
+  protected RegionAdvisor(PartitionedRegion region) {
     super(region);
     synchronized (preInitQueueMonitor) {
       preInitQueue = new ConcurrentLinkedQueue<>();
