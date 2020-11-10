@@ -94,15 +94,6 @@ public class FederatingManager extends Manager {
    */
   private final AtomicReference<ExecutorService> executorService = new AtomicReference<>();
 
-  @VisibleForTesting
-  FederatingManager(ManagementResourceRepo repo, InternalDistributedSystem system,
-      SystemManagementService service, InternalCache cache, StatisticsFactory statisticsFactory,
-      StatisticsClock statisticsClock, MBeanProxyFactory proxyFactory, MemberMessenger messenger,
-      ExecutorService executorService) {
-    this(repo, system, service, cache, statisticsFactory, statisticsClock, proxyFactory, messenger,
-        () -> executorService);
-  }
-
   FederatingManager(ManagementResourceRepo repo, InternalDistributedSystem system,
       SystemManagementService service, InternalCache cache, StatisticsFactory statisticsFactory,
       StatisticsClock statisticsClock, MBeanProxyFactory proxyFactory, MemberMessenger messenger,
@@ -111,7 +102,17 @@ public class FederatingManager extends Manager {
         system.getCancelCriterion(), executorServiceSupplier);
   }
 
-  private FederatingManager(ManagementResourceRepo repo, InternalDistributedSystem system,
+  @VisibleForTesting
+  FederatingManager(ManagementResourceRepo repo, InternalDistributedSystem system,
+      SystemManagementService service, InternalCache cache, StatisticsFactory statisticsFactory,
+      StatisticsClock statisticsClock, MBeanProxyFactory proxyFactory, MemberMessenger messenger,
+      CancelCriterion cancelCriterion, ExecutorService executorService) {
+    this(repo, system, service, cache, statisticsFactory, statisticsClock, proxyFactory, messenger,
+        cancelCriterion, () -> executorService);
+  }
+
+  @VisibleForTesting
+  FederatingManager(ManagementResourceRepo repo, InternalDistributedSystem system,
       SystemManagementService service, InternalCache cache, StatisticsFactory statisticsFactory,
       StatisticsClock statisticsClock, MBeanProxyFactory proxyFactory, MemberMessenger messenger,
       CancelCriterion cancelCriterion, Supplier<ExecutorService> executorServiceSupplier) {
@@ -421,7 +422,7 @@ public class FederatingManager extends Manager {
   }
 
   @VisibleForTesting
-  synchronized Exception getAndResetLatestException() {
+  Exception getAndResetLatestException() {
     return latestException.getAndSet(null);
   }
 
@@ -572,6 +573,11 @@ public class FederatingManager extends Manager {
       // Send manager info to the added member
       messenger.sendManagerInfo(member);
     }
+  }
+
+  @VisibleForTesting
+  List<RemoveMemberTask> pendingTasks() {
+    return pendingTasks;
   }
 
   /**

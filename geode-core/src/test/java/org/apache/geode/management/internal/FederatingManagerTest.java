@@ -14,24 +14,37 @@
  */
 package org.apache.geode.management.internal;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.when;
 
 import java.net.InetAddress;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.function.Supplier;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.ErrorCollector;
 import org.mockito.ArgumentCaptor;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
+import org.apache.geode.CancelCriterion;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.alerting.internal.spi.AlertLevel;
 import org.apache.geode.cache.CacheClosedException;
@@ -47,26 +60,34 @@ import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.test.junit.categories.JMXTest;
+import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 @Category(JMXTest.class)
 public class FederatingManagerTest {
 
   private InternalCache cache;
   private InternalCacheForClientAccess cacheForClientAccess;
+  private CancelCriterion cancelCriterion;
   private ExecutorService executorService;
   private MBeanJMXAdapter jmxAdapter;
-  private MBeanProxyFactory proxyFactory;
   private MemberMessenger messenger;
+  private MBeanProxyFactory proxyFactory;
   private ManagementResourceRepo repo;
   private SystemManagementService service;
   private StatisticsFactory statisticsFactory;
   private StatisticsClock statisticsClock;
   private InternalDistributedSystem system;
 
+  @Rule
+  public ErrorCollector errorCollector = new ErrorCollector();
+  @Rule
+  public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
+
   @Before
   public void setUp() throws Exception {
     cache = mock(InternalCache.class);
     cacheForClientAccess = mock(InternalCacheForClientAccess.class);
+    cancelCriterion = mock(CancelCriterion.class);
     executorService = mock(ExecutorService.class);
     jmxAdapter = mock(MBeanJMXAdapter.class);
     messenger = mock(MemberMessenger.class);
@@ -93,8 +114,9 @@ public class FederatingManagerTest {
 
   @Test
   public void addMemberArtifactsCreatesMonitoringRegion() throws Exception {
-    FederatingManager federatingManager = new FederatingManager(repo, system, service, cache,
-        statisticsFactory, statisticsClock, proxyFactory, messenger, executorService);
+    FederatingManager federatingManager =
+        new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
+            proxyFactory, messenger, cancelCriterion, executorService);
     federatingManager.startManager();
 
     federatingManager.addMemberArtifacts(member(1, 20));
@@ -105,8 +127,9 @@ public class FederatingManagerTest {
 
   @Test
   public void addMemberArtifactsCreatesMonitoringRegionWithHasOwnStats() throws Exception {
-    FederatingManager federatingManager = new FederatingManager(repo, system, service, cache,
-        statisticsFactory, statisticsClock, proxyFactory, messenger, executorService);
+    FederatingManager federatingManager =
+        new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
+            proxyFactory, messenger, cancelCriterion, executorService);
     federatingManager.startManager();
 
     federatingManager.addMemberArtifacts(member(2, 40));
@@ -122,8 +145,9 @@ public class FederatingManagerTest {
 
   @Test
   public void addMemberArtifactsCreatesNotificationRegion() throws Exception {
-    FederatingManager federatingManager = new FederatingManager(repo, system, service, cache,
-        statisticsFactory, statisticsClock, proxyFactory, messenger, executorService);
+    FederatingManager federatingManager =
+        new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
+            proxyFactory, messenger, cancelCriterion, executorService);
     federatingManager.startManager();
 
     federatingManager.addMemberArtifacts(member(3, 60));
@@ -134,8 +158,9 @@ public class FederatingManagerTest {
 
   @Test
   public void addMemberArtifactsCreatesNotificationRegionWithHasOwnStats() throws Exception {
-    FederatingManager federatingManager = new FederatingManager(repo, system, service, cache,
-        statisticsFactory, statisticsClock, proxyFactory, messenger, executorService);
+    FederatingManager federatingManager =
+        new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
+            proxyFactory, messenger, cancelCriterion, executorService);
     federatingManager.startManager();
 
     federatingManager.addMemberArtifacts(member(4, 80));
@@ -160,8 +185,9 @@ public class FederatingManagerTest {
         .thenReturn(mock(Region.class));
     when(system.getDistributedMember())
         .thenReturn(member);
-    FederatingManager federatingManager = new FederatingManager(repo, system, service, cache,
-        statisticsFactory, statisticsClock, proxyFactory, messenger, executorService);
+    FederatingManager federatingManager =
+        new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
+            proxyFactory, messenger, cancelCriterion, executorService);
 
     federatingManager.removeMemberArtifacts(member, false);
 
@@ -179,8 +205,9 @@ public class FederatingManagerTest {
         .thenReturn(notificationRegion);
     when(system.getDistributedMember())
         .thenReturn(member);
-    FederatingManager federatingManager = new FederatingManager(repo, system, service, cache,
-        statisticsFactory, statisticsClock, proxyFactory, messenger, executorService);
+    FederatingManager federatingManager =
+        new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
+            proxyFactory, messenger, cancelCriterion, executorService);
 
     federatingManager.removeMemberArtifacts(member, false);
 
@@ -200,8 +227,9 @@ public class FederatingManagerTest {
         .thenReturn(mock(Region.class));
     when(system.getDistributedMember())
         .thenReturn(member);
-    FederatingManager federatingManager = new FederatingManager(repo, system, service, cache,
-        statisticsFactory, statisticsClock, proxyFactory, messenger, executorService);
+    FederatingManager federatingManager =
+        new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
+            proxyFactory, messenger, cancelCriterion, executorService);
 
     federatingManager.removeMemberArtifacts(member, false);
 
@@ -221,8 +249,9 @@ public class FederatingManagerTest {
         .thenReturn(notificationRegion);
     when(system.getDistributedMember())
         .thenReturn(member);
-    FederatingManager federatingManager = new FederatingManager(repo, system, service, cache,
-        statisticsFactory, statisticsClock, proxyFactory, messenger, executorService);
+    FederatingManager federatingManager =
+        new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
+            proxyFactory, messenger, cancelCriterion, executorService);
 
     federatingManager.removeMemberArtifacts(member, false);
 
@@ -243,8 +272,9 @@ public class FederatingManagerTest {
         .thenReturn(mock(Region.class));
     when(system.getDistributedMember())
         .thenReturn(member);
-    FederatingManager federatingManager = new FederatingManager(repo, system, service, cache,
-        statisticsFactory, statisticsClock, proxyFactory, messenger, executorService);
+    FederatingManager federatingManager =
+        new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
+            proxyFactory, messenger, cancelCriterion, executorService);
 
     federatingManager.removeMemberArtifacts(member, false);
 
@@ -265,8 +295,9 @@ public class FederatingManagerTest {
         .thenReturn(mock(Region.class));
     when(system.getDistributedMember())
         .thenReturn(member);
-    FederatingManager federatingManager = new FederatingManager(repo, system, service, cache,
-        statisticsFactory, statisticsClock, proxyFactory, messenger, executorService);
+    FederatingManager federatingManager =
+        new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
+            proxyFactory, messenger, cancelCriterion, executorService);
 
     federatingManager.removeMemberArtifacts(member, false);
 
@@ -286,8 +317,9 @@ public class FederatingManagerTest {
         .thenReturn(notificationRegion);
     when(system.getDistributedMember())
         .thenReturn(member);
-    FederatingManager federatingManager = new FederatingManager(repo, system, service, cache,
-        statisticsFactory, statisticsClock, proxyFactory, messenger, executorService);
+    FederatingManager federatingManager =
+        new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
+            proxyFactory, messenger, cancelCriterion, executorService);
 
     federatingManager.removeMemberArtifacts(member, false);
 
@@ -307,8 +339,9 @@ public class FederatingManagerTest {
         .thenReturn(mock(Region.class));
     when(system.getDistributedMember())
         .thenReturn(member);
-    FederatingManager federatingManager = new FederatingManager(repo, system, service, cache,
-        statisticsFactory, statisticsClock, proxyFactory, messenger, executorService);
+    FederatingManager federatingManager =
+        new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
+            proxyFactory, messenger, cancelCriterion, executorService);
 
     federatingManager.removeMemberArtifacts(member, false);
 
@@ -329,8 +362,9 @@ public class FederatingManagerTest {
         .thenReturn(mock(Region.class));
     when(system.getDistributedMember())
         .thenReturn(member);
-    FederatingManager federatingManager = new FederatingManager(repo, system, service, cache,
-        statisticsFactory, statisticsClock, proxyFactory, messenger, executorService);
+    FederatingManager federatingManager =
+        new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
+            proxyFactory, messenger, cancelCriterion, executorService);
 
     federatingManager.removeMemberArtifacts(member, false);
 
@@ -350,8 +384,9 @@ public class FederatingManagerTest {
         .thenReturn(notificationRegion);
     when(system.getDistributedMember())
         .thenReturn(member);
-    FederatingManager federatingManager = new FederatingManager(repo, system, service, cache,
-        statisticsFactory, statisticsClock, proxyFactory, messenger, executorService);
+    FederatingManager federatingManager =
+        new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
+            proxyFactory, messenger, cancelCriterion, executorService);
 
     federatingManager.removeMemberArtifacts(member, false);
 
@@ -371,8 +406,9 @@ public class FederatingManagerTest {
         .thenReturn(mock(Region.class));
     when(system.getDistributedMember())
         .thenReturn(member);
-    FederatingManager federatingManager = new FederatingManager(repo, system, service, cache,
-        statisticsFactory, statisticsClock, proxyFactory, messenger, executorService);
+    FederatingManager federatingManager =
+        new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
+            proxyFactory, messenger, cancelCriterion, executorService);
 
     federatingManager.removeMemberArtifacts(member, false);
 
@@ -389,8 +425,9 @@ public class FederatingManagerTest {
         .thenReturn(null);
     when(system.getDistributedMember())
         .thenReturn(member);
-    FederatingManager federatingManager = new FederatingManager(repo, system, service, cache,
-        statisticsFactory, statisticsClock, proxyFactory, messenger, executorService);
+    FederatingManager federatingManager =
+        new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
+            proxyFactory, messenger, cancelCriterion, executorService);
 
     Throwable thrown = catchThrowable(() -> federatingManager.removeMemberArtifacts(member, false));
 
@@ -407,8 +444,9 @@ public class FederatingManagerTest {
         .thenReturn(mock(Region.class));
     when(system.getDistributedMember())
         .thenReturn(member);
-    FederatingManager federatingManager = new FederatingManager(repo, system, service, cache,
-        statisticsFactory, statisticsClock, proxyFactory, messenger, executorService);
+    FederatingManager federatingManager =
+        new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
+            proxyFactory, messenger, cancelCriterion, executorService);
 
     Throwable thrown = catchThrowable(() -> federatingManager.removeMemberArtifacts(member, false));
 
@@ -418,15 +456,84 @@ public class FederatingManagerTest {
 
   @Test
   public void startManagerGetsNewExecutorServiceFromSupplier() {
-    @SuppressWarnings("unchecked")
     Supplier<ExecutorService> executorServiceSupplier = mock(Supplier.class);
     when(executorServiceSupplier.get()).thenReturn(mock(ExecutorService.class));
-    FederatingManager federatingManager = new FederatingManager(repo, system, service, cache,
-        statisticsFactory, statisticsClock, proxyFactory, messenger, executorServiceSupplier);
+    FederatingManager federatingManager =
+        new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
+            proxyFactory, messenger, cancelCriterion, executorServiceSupplier);
 
     federatingManager.startManager();
 
     verify(executorServiceSupplier).get();
+  }
+
+  @Test
+  public void removeMemberWaitsForStartManager() throws Exception {
+    CountDownLatch latch = new CountDownLatch(1);
+    CyclicBarrier barrier = new CyclicBarrier(2);
+    ExecutorService executorService = mock(ExecutorService.class);
+    Future future = mock(Future.class);
+
+    when(executorService.invokeAll(any())).thenAnswer(new Answer<Object>() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        awaitCyclicBarrier(barrier);
+        awaitCountDownLatch(latch);
+        return future;
+      }
+    });
+
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        awaitCyclicBarrier(barrier);
+        return null;
+      }
+    }).when(executorService).execute(any());
+
+    FederatingManager federatingManager =
+        spy(new FederatingManager(repo, system, service, cache, statisticsFactory,
+            statisticsClock, proxyFactory, messenger, cancelCriterion, executorService));
+
+    Future<Void> thread1 = executorServiceRule.submit(() -> {
+      federatingManager.startManager();
+    });
+
+    Future<Void> thread2 = executorServiceRule.submit(() -> {
+      federatingManager.removeMember(member(), true);
+    });
+
+    // awaitCyclicBarrier(barrier1);
+    //
+    // startManagerFuture.get(getTimeout().getValueInMS(), MILLISECONDS);
+
+    // Throwable thrown = catchThrowable(() -> {
+    thread2.get(1, SECONDS);
+    // });
+
+    // assertThat(thrown).isInstanceOf(TimeoutException.class);
+
+    // latch.countDown();
+
+    // awaitCyclicBarrier(barrier2);
+  }
+
+  private void awaitCyclicBarrier(CyclicBarrier barrier) {
+    try {
+      barrier.await(getTimeout().getValueInMS(), MILLISECONDS);
+    } catch (Exception e) {
+      errorCollector.addError(e);
+      throw new RuntimeException(e);
+    }
+  }
+
+  private void awaitCountDownLatch(CountDownLatch latch) {
+    try {
+      latch.await(getTimeout().getValueInMS(), MILLISECONDS);
+    } catch (Exception e) {
+      errorCollector.addError(e);
+      throw new RuntimeException(e);
+    }
   }
 
   private InternalDistributedMember member() {

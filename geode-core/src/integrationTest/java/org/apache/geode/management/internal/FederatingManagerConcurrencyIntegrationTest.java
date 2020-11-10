@@ -19,6 +19,7 @@ import static org.apache.geode.internal.net.SocketCreator.getLocalHost;
 import static org.apache.geode.management.internal.SystemManagementService.FEDERATING_MANAGER_FACTORY_PROPERTY;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -64,7 +65,6 @@ public class FederatingManagerConcurrencyIntegrationTest {
         (SystemManagementService) ManagementService.getExistingManagementService(cache);
     managementService.createManager();
     federatingManager = managementService.getFederatingManager();
-    federatingManager.startManager();
   }
 
   @After
@@ -73,9 +73,9 @@ public class FederatingManagerConcurrencyIntegrationTest {
   }
 
   @Test
-  public void testFederatingManagerConcurrency() throws UnknownHostException {
+  public void getAndResetLatestExceptionIsNullIfAddedMembersDoNotThrow() throws Exception {
+    federatingManager.startManager();
     InternalDistributedMember member = member();
-
     for (int i = 1; i <= 100; i++) {
       federatingManager.addMember(member);
     }
@@ -83,6 +83,27 @@ public class FederatingManagerConcurrencyIntegrationTest {
     await().until(() -> !cache.getAllRegions().isEmpty());
 
     assertThat(federatingManager.getAndResetLatestException()).isNull();
+  }
+
+  @Test
+  public void removeMemberBeforeStartManagerAddsTaskToPendingTasks() throws Exception {
+    federatingManager.removeMember(member(), true);
+
+    assertThat(federatingManager.pendingTasks()).isNotEmpty();
+  }
+
+  @Test
+  public void pendingTasksIsEmptyByDefault() {
+    assertThat(federatingManager.pendingTasks()).isEmpty();
+  }
+
+  @Test
+  public void addMemberBeforeStartManagerThrowsNPE() {
+    Throwable thrown = catchThrowable(() -> {
+      federatingManager.addMember(member());
+    });
+
+    assertThat(thrown).isInstanceOf(NullPointerException.class);
   }
 
   private InternalDistributedMember member() throws UnknownHostException {
