@@ -19,10 +19,10 @@
 
 cd ..
 
-# We are currently using a personal fork for this repo because our code does not implement all
+# We are currently using a fork for this repo because our code does not implement all
 # Redis commands.  Once all commands needed to run relevant test files are implemented, we hope to
 # use Redis's repo instead.
-git clone --config transfer.fsckObjects=false https://github.com/prettyClouds/redis.git
+git clone --config transfer.fsckObjects=false https://github.com/gemfire/redis.git
 cd redis
 git checkout tests-geode-redis
 
