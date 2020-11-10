@@ -82,8 +82,7 @@ public abstract class CargoTestBase {
   public void setup() throws Exception {
     dumpDockerInfo();
     announceTest("START");
-    int locatorPortSuggestion = AvailablePortHelper.getRandomAvailableTCPPort();
-    locatorVM = clusterStartupRule.startLocatorVM(0, locatorPortSuggestion);
+    locatorVM = clusterStartupRule.startLocatorVM(0);
 
     client = new Client();
     manager = new ContainerManager();
