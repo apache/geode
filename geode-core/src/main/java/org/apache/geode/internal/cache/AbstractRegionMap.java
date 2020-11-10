@@ -848,20 +848,8 @@ public abstract class AbstractRegionMap extends BaseRegionMap
                     if (!oldIsDestroyedOrRemoved) {
                       owner.updateSizeOnRemove(key, oldSize);
                     }
-                    if (owner.getServerProxy() == null
-                        && owner.getVersionVector().isTombstoneTooOld(
-                            entryVersion.getMemberID(), entryVersion.getRegionVersion())) {
-                      // the received tombstone has already been reaped, so don't retain it
-                      if (owner.getIndexManager() != null) {
-                        owner.getIndexManager().updateIndexes(oldRe, IndexManager.REMOVE_ENTRY,
-                            IndexProtocol.REMOVE_DUE_TO_GII_TOMBSTONE_CLEANUP);
-                      }
-                      removeTombstone(oldRe, entryVersion, false, false);
-                      return false;
-                    } else {
-                      owner.scheduleTombstone(oldRe, entryVersion);
-                      lruEntryDestroy(oldRe);
-                    }
+                    owner.scheduleTombstone(oldRe, entryVersion);
+                    lruEntryDestroy(oldRe);
                   } else {
                     int newSize = owner.calculateRegionEntryValueSize(oldRe);
                     if (!oldIsTombstone) {

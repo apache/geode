@@ -14,7 +14,11 @@
  */
 package org.apache.geode.internal.cache.versions;
 
+import static org.apache.geode.cache.RegionShortcut.REPLICATE_PERSISTENT;
+import static org.apache.geode.internal.cache.InitialImageOperation.GIITestHookType.AfterReceivedRequestImage;
+import static org.apache.geode.internal.cache.InitialImageOperation.GIITestHookType.DuringApplyDelta;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.io.Serializable;
@@ -30,6 +34,7 @@ import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.cache.DestroyOperation;
 import org.apache.geode.internal.cache.DistributedTombstoneOperation;
+import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
@@ -133,9 +138,98 @@ public class TombstoneDUnitTest extends JUnit4CacheTestCase {
     });
   }
 
-  private class RegionObserver extends DistributionMessageObserver implements Serializable {
+  @Test
+  public void tombstoneGCDuringGIICorrectlySchedulesTombstonesForCollection() {
+    VM vm0 = VM.getVM(0);
+    VM vm1 = VM.getVM(1);
 
-    VersionTag versionTag = null;
+    createCache(vm0);
+    createCache(vm1);
+
+    vm0.invoke(() -> {
+      createRegion("TestRegion", true);
+      Region<String, String> region = getCache().getRegion("TestRegion");
+      region.put("K1", "V1");
+      region.put("K2", "V2");
+    });
+
+    vm1.invoke(() -> {
+      createRegion("TestRegion", true);
+      Region<String, String> region = getCache().getRegion("TestRegion");
+      // Ensure that there are local tombstones to be recovered in the member that will request GII
+      region.destroy("K1");
+      region.destroy("K2");
+      closeCache();
+    });
+
+    vm0.invoke(() -> {
+      Region<String, String> region = getCache().getRegion("TestRegion");
+      // Ensure that there are newer tombstones that will be sent via GII
+      region.put("K1", "V3");
+      region.destroy("K1");
+      region.put("K2", "V4");
+      region.destroy("K2");
+      // Trigger a tombstone GC after receiving the GII request message
+      InitialImageOperation.setGIITestHook(
+          new InitialImageOperation.GIITestHook(AfterReceivedRequestImage, "TestRegion") {
+            private static final long serialVersionUID = -3790198435185240444L;
+
+            @Override
+            public void reset() {}
+
+            @Override
+            public void run() {
+              try {
+                performGC(((LocalRegion) region).getTombstoneCount());
+              } catch (Exception ignore) {
+              }
+            }
+          });
+    });
+
+    createCache(vm1);
+
+    vm1.invoke(() -> {
+      InitialImageOperation.setGIITestHook(
+          new InitialImageOperation.GIITestHook(DuringApplyDelta, "TestRegion") {
+            private static final long serialVersionUID = 637083883125364247L;
+            private int entryNumber = 0;
+
+            @Override
+            public void reset() {
+              entryNumber = 0;
+            }
+
+            @Override
+            public void run() {
+              if (entryNumber == 0) {
+                await().alias("Waiting for scheduled tombstone count to be zero")
+                    .until(
+                        () -> getCache().getTombstoneService().getScheduledTombstoneCount() == 0);
+              }
+              // Confirm that tombstones are correctly scheduled for collection after processing
+              // each new entry received during GII
+              assertThat(getCache().getTombstoneService().getScheduledTombstoneCount())
+                  .as("Scheduled tombstone count did not match expected value")
+                  .isEqualTo(entryNumber++);
+            }
+          });
+
+      Region<?, ?> region =
+          getCache().<String, String>createRegionFactory(REPLICATE_PERSISTENT).create("TestRegion");
+
+      // Confirm that we are able to collect all tombstones once the region is initialized
+      performGC(((LocalRegion) region).getTombstoneCount());
+      assertEquals(0, ((LocalRegion) region).getTombstoneCount());
+      InitialImageOperation.resetAllGIITestHooks();
+    });
+
+    vm0.invoke(InitialImageOperation::resetAllGIITestHooks);
+  }
+
+  private static class RegionObserver extends DistributionMessageObserver implements Serializable {
+    private static final long serialVersionUID = 6272522949825923089L;
+    VersionTag<?> versionTag;
     CountDownLatch tombstoneGcLatch = new CountDownLatch(1);
 
     @Override
