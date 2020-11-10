@@ -15,6 +15,7 @@
 package org.apache.geode.distributed.internal;
 
 import static org.apache.geode.distributed.internal.DistributionImpl.EMPTY_MEMBER_ARRAY;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -213,12 +214,10 @@ public class DistributionTest {
     Throwable cause = new RuntimeException("Exception cause");
     Throwable exception = new MembershipConfigurationException("Test exception", cause);
     doThrow(exception).when(membership).start();
-    try {
-      distribution.start();
-      fail("expected start to throw an exception");
-    } catch (GemFireConfigException e) {
-      assertEquals(e.getCause(), cause);
-    }
+
+    assertThatThrownBy(() -> distribution.start())
+        .isInstanceOf(GemFireConfigException.class)
+        .hasCauseInstanceOf(cause.getClass());
   }
 
   @Test
@@ -226,11 +225,9 @@ public class DistributionTest {
     Throwable cause = new RuntimeException("Exception cause");
     Throwable exception = new MemberStartupException("Test exception", cause);
     doThrow(exception).when(membership).start();
-    try {
-      distribution.start();
-      fail("expected start to throw an exception");
-    } catch (SystemConnectException e) {
-      assertEquals(e.getCause(), cause);
-    }
+
+    assertThatThrownBy(() -> distribution.start())
+        .isInstanceOf(SystemConnectException.class)
+        .hasCauseInstanceOf(cause.getClass());
   }
 }
