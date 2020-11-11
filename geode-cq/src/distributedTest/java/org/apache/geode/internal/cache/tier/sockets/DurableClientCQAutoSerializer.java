@@ -18,12 +18,11 @@ import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.Serializable;
-import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 
 import com.google.common.collect.ImmutableMap;
 import org.junit.Before;
@@ -119,14 +118,53 @@ public class DurableClientCQAutoSerializer implements Serializable {
     });
   }
 
-  private void startTrafficClient(String... patterns) throws Exception {
+  @Test
+  public void correctClassPathsAutoSerializer()
+      throws Exception {
+
+    String query1 = "SELECT * FROM " + SEPARATOR + REPLICATE_REGION_NAME;
+    String query2 = "SELECT * FROM " + SEPARATOR + PARTITION_REGION_NAME;
+
+    startDurableClient(TEST_OBJECT1_CLASS_PATH, TEST_OBJECT2_CLASS_PATH);
+    createDurableCQs(query1, query2);
+    verifyThatOnlyOneServerHostDurableSubscription();
+
+    // Start another client and provision data with traffic that should trigger CQs
+    startDataProvisionClient(TEST_OBJECT1_CLASS_PATH, TEST_OBJECT2_CLASS_PATH);
+    provisionRegionsWithData();
+
+    // Check that all events are received and successfully deserialized in cq listener
+    checkCqEvents(LIST_TEST_OBJECT1.size(), LIST_TEST_OBJECT2.size());
+    verifyThatOnlyOneServerHostDurableSubscription();
+  }
+
+  @Test
+  public void faultyClassPathAutoSerializer()
+      throws Exception {
+    String query1 = "SELECT * FROM " + SEPARATOR + REPLICATE_REGION_NAME;
+    String query2 = "SELECT * FROM " + SEPARATOR + PARTITION_REGION_NAME;
+    startDurableClient(TEST_FAULTY_CLASS_PATH, TEST_OBJECT2_CLASS_PATH);
+    createDurableCQs(query1, query2);
+    verifyThatOnlyOneServerHostDurableSubscription();
+
+    // Start another client and provision data with traffic that should trigger CQs
+    startDataProvisionClient(TEST_OBJECT1_CLASS_PATH, TEST_OBJECT2_CLASS_PATH);
+    provisionRegionsWithData();
+
+    // Check that only events for which ReflectionBasedAutoSerializer is correctly set are received
+    // and successfully deserialized in cq listener
+    checkCqEvents(0, LIST_TEST_OBJECT2.size());
+    verifyThatOnlyOneServerHostDurableSubscription();
+  }
+
+  private void startDataProvisionClient(String... patterns) throws Exception {
     int locatorPort = locator.getPort();
     client2 = cluster.startClientVM(4, ccf -> ccf
         .withLocatorConnection(locatorPort).withCacheSetup(c -> c
             .setPdxSerializer(new ReflectionBasedAutoSerializer(patterns))));
   }
 
-  private void startDurableClientCq(String... patterns)
+  private void startDurableClient(String... patterns)
       throws Exception {
     int locatorPort = locator.getPort();
     client = cluster.startClientVM(3, ccf -> ccf
@@ -152,42 +190,14 @@ public class DurableClientCQAutoSerializer implements Serializable {
     });
   }
 
-  private static void verifyDurableClientOnServer(MemberVM server, boolean isExpected) {
-    server.invoke(() -> {
-      CacheServerImpl cacheServer =
-          (CacheServerImpl) ClusterStartupRule.getCache().getCacheServers().iterator().next();
-      assertNotNull(cacheServer);
-
-      // Get the CacheClientNotifier
-      CacheClientNotifier notifier = cacheServer.getAcceptor().getCacheClientNotifier();
-
-      // Get the CacheClientProxy or not (if proxy set is empty)
-      CacheClientProxy proxy = null;
-      Iterator i = notifier.getClientProxies().iterator();
-      if (i.hasNext()) {
-        proxy = (CacheClientProxy) i.next();
-      }
-
-      if (isExpected) {
-        assertNotNull(proxy);
-        assertThat(proxy.getDurableId().equals(DURABLE_CLIENT_ID));
-      } else {
-        if (proxy != null) {
-          assertNotEquals(proxy.getDurableId(), DURABLE_CLIENT_ID);
-        }
-      }
-    });
-  }
-
   boolean isPrimaryServer(int primaryPort, MemberVM member) {
     return primaryPort == member.getPort();
   }
 
-  private void verifyOnlyPrimaryServerHostDurableSubscription() {
+  private void verifyThatOnlyOneServerHostDurableSubscription() {
     int primPort = getPrimaryServerPort(client);
-
-    verifyDurableClientOnServer(server, isPrimaryServer(primPort, server));
-    verifyDurableClientOnServer(server2, isPrimaryServer(primPort, server2));
+    verifyDurableClientPresence(server, isPrimaryServer(primPort, server));
+    verifyDurableClientPresence(server2, isPrimaryServer(primPort, server2));
   }
 
   private void checkCqEvents(int expectedTestAutoSerializerObject1,
@@ -208,6 +218,46 @@ public class DurableClientCQAutoSerializer implements Serializable {
             LIST_TEST_OBJECT2);
       }
     });
+  }
+
+  private void verifyDurableClientPresence(MemberVM serverVM, boolean isExpected) {
+    serverVM.invoke(() -> {
+      await()
+          .until(() -> isExpected == (getNumberOfClientProxies() == 1));
+
+      if (isExpected) {
+        // Get the CacheClientProxy or not (if proxy set is empty)
+        CacheClientProxy proxy = getClientProxy();
+        assertThat(proxy).isNotNull();
+        // Verify that it is durable and its properties are correct
+        assertThat(proxy.isDurable()).isTrue();
+        assertThat(DURABLE_CLIENT_ID).isEqualTo(proxy.getDurableId());
+      }
+    });
+  }
+
+  private static CacheClientProxy getClientProxy() {
+    // Get the CacheClientProxy or not (if proxy set is empty)
+    CacheClientProxy proxy = null;
+    java.util.Iterator<CacheClientProxy> i = getCacheClientNotifier().getClientProxies().iterator();
+    if (i.hasNext()) {
+      proxy = i.next();
+    }
+    return proxy;
+  }
+
+  private static CacheClientNotifier getCacheClientNotifier() {
+    // Get the CacheClientNotifier
+    CacheServerImpl cacheServer = (CacheServerImpl) Objects
+        .requireNonNull(ClusterStartupRule.getCache()).getCacheServers().iterator().next();
+    assertNotNull(cacheServer);
+
+    // Get the CacheClientNotifier
+    return cacheServer.getAcceptor().getCacheClientNotifier();
+  }
+
+  private static int getNumberOfClientProxies() {
+    return getCacheClientNotifier().getClientProxies().size();
   }
 
   private void provisionRegionsWithData() {
@@ -235,36 +285,5 @@ public class DurableClientCQAutoSerializer implements Serializable {
       PoolImpl pool = (PoolImpl) cache.getDefaultPool();
       return pool.getPrimaryPort();
     });
-  }
-
-  @Test
-  public void correctClassPathsAutoSerialize()
-      throws Exception {
-
-    String query1 = "SELECT * FROM " + SEPARATOR + REPLICATE_REGION_NAME;
-    String query2 = "SELECT * FROM " + SEPARATOR + PARTITION_REGION_NAME;
-    startDurableClientCq(TEST_OBJECT1_CLASS_PATH, TEST_OBJECT2_CLASS_PATH);
-    createDurableCQs(query1, query2);
-
-    startTrafficClient(TEST_OBJECT1_CLASS_PATH, TEST_OBJECT2_CLASS_PATH);
-    provisionRegionsWithData();
-
-    checkCqEvents(LIST_TEST_OBJECT1.size(), LIST_TEST_OBJECT2.size());
-    verifyOnlyPrimaryServerHostDurableSubscription();
-  }
-
-  @Test
-  public void faultyClassPathAutoSerializer()
-      throws Exception {
-    String query1 = "SELECT * FROM " + SEPARATOR + REPLICATE_REGION_NAME;
-    String query2 = "SELECT * FROM " + SEPARATOR + PARTITION_REGION_NAME;
-    startDurableClientCq(TEST_FAULTY_CLASS_PATH, TEST_OBJECT2_CLASS_PATH);
-    createDurableCQs(query1, query2);
-
-    startTrafficClient(TEST_OBJECT1_CLASS_PATH, TEST_OBJECT2_CLASS_PATH);
-    provisionRegionsWithData();
-
-    checkCqEvents(0, LIST_TEST_OBJECT2.size());
-    verifyOnlyPrimaryServerHostDurableSubscription();
   }
 }
