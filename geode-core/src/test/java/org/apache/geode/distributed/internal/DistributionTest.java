@@ -211,23 +211,21 @@ public class DistributionTest {
 
   @Test
   public void testExceptionNestedOnStartConfigError() throws Exception {
-    Throwable cause = new RuntimeException("Exception cause");
-    Throwable exception = new MembershipConfigurationException("Test exception", cause);
+    Throwable exception = new MembershipConfigurationException("Test exception");
     doThrow(exception).when(membership).start();
 
     assertThatThrownBy(() -> distribution.start())
         .isInstanceOf(GemFireConfigException.class)
-        .hasCauseInstanceOf(cause.getClass());
+        .hasCause(exception);
   }
 
   @Test
   public void testExceptionNestedOnStartStartupError() throws Exception {
-    Throwable cause = new RuntimeException("Exception cause");
-    Throwable exception = new MemberStartupException("Test exception", cause);
+    Throwable exception = new MemberStartupException("Test exception");
     doThrow(exception).when(membership).start();
 
     assertThatThrownBy(() -> distribution.start())
         .isInstanceOf(SystemConnectException.class)
-        .hasCauseInstanceOf(cause.getClass());
+        .hasCause(exception);
   }
 }
