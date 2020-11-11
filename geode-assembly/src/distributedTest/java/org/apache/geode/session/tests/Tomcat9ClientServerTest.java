@@ -23,6 +23,7 @@ public class Tomcat9ClientServerTest extends TomcatClientServerTest {
 
   @Override
   public ContainerInstall getInstall(IntSupplier portSupplier) throws Exception {
-    return new TomcatInstall(getClass().getSimpleName(), TOMCAT9, CLIENT_SERVER, portSupplier);
+    return new TomcatInstall(getClass().getSimpleName(), TOMCAT9, CLIENT_SERVER, portSupplier,
+        TomcatInstall.CommitValve.DEFAULT);
   }
 }
