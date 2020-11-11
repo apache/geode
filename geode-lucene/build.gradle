@@ -50,6 +50,7 @@ dependencies {
   distributedTestImplementation(project(":geode-common-services"))
 
   testImplementation(project(':geode-junit'))
+  testImplementation(project(':geode-process-utils'))
   testImplementation(project(':geode-lucene:geode-lucene-test'))
   testImplementation('org.apache.lucene:lucene-test-framework')
   testImplementation('com.pholser:junit-quickcheck-generators')

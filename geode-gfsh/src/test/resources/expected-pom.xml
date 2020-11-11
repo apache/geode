@@ -93,11 +93,6 @@
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
-      <artifactId>geode-launcher</artifactId>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.geode</groupId>
       <artifactId>geode-logging</artifactId>
       <scope>runtime</scope>
     </dependency>

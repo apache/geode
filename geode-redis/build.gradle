@@ -48,6 +48,7 @@ dependencies {
   distributedTestImplementation(project(':geode-common-services'))
 
   testImplementation(project(':geode-junit'))
+  testImplementation(project(':geode-process-utils'))
   testImplementation('org.mockito:mockito-core')
 
   commonTestImplementation(project(':geode-junit'))

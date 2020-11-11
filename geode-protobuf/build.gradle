@@ -37,6 +37,7 @@ dependencies {
   distributedTestImplementation(project(':geode-common-services'))
 
   testImplementation(project(':geode-core'))
+  testImplementation(project(':geode-process-utils'))
   testImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }

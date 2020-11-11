@@ -63,6 +63,7 @@ dependencies {
   distributedTestImplementation(project(':geode-common-services'))
 
   testImplementation(project(':geode-membership'))
+  testImplementation(project(':geode-process-utils'))
   testImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }

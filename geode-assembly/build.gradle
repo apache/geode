@@ -190,7 +190,9 @@ dependencies {
   javadocOnly project(':geode-experimental-driver')
 
   testImplementation(project(':geode-common-services'))
+  testImplementation(project(':geode-module-launcher'))
   testImplementation(project(':geode-core'))
+  testImplementation(project(':geode-process-utils'))
   testImplementation(project(':geode-gfsh'))
   testImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'

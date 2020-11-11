@@ -18,7 +18,7 @@
   -->
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.apache.geode</groupId>
-  <artifactId>geode-launcher</artifactId>
+  <artifactId>geode-module-launcher</artifactId>
   <version>${version}</version>
   <name>Apache Geode</name>
   <description>Apache Geode provides a database-like consistency model, reliable transaction processing and a shared-nothing architecture to maintain very low latency performance with high concurrency processing</description>
@@ -74,6 +74,21 @@
     <dependency>
       <groupId>net.sf.jopt-simple</groupId>
       <artifactId>jopt-simple</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.geode</groupId>
+      <artifactId>geode-process-utils</artifactId>
       <scope>runtime</scope>
     </dependency>
   </dependencies>

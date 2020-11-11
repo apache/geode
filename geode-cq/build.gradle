@@ -36,6 +36,7 @@ dependencies {
   upgradeTestImplementation(project(':geode-common-services'))
 
   testImplementation(project(':geode-junit'))
+  testImplementation(project(':geode-process-utils'))
 
   integrationTestImplementation(project(':geode-dunit'))
   integrationTestImplementation(project(':geode-junit'))

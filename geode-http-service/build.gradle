@@ -42,6 +42,7 @@ dependencies {
   distributedTestImplementation(project(':geode-common-services'))
 
   testImplementation(project(':geode-core'))
+  testImplementation(project(':geode-process-utils'))
   testImplementation(project(':geode-common'))
   testImplementation(project(':geode-junit'))
 }

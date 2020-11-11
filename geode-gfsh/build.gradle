@@ -39,9 +39,8 @@ dependencies {
     implementation('com.fasterxml.jackson.core:jackson-databind')
 
     testImplementation(project(':geode-common-services'))
-    acceptanceTestImplementation(project(':geode-common-services'))
-
-
+    testImplementation(project(':geode-process-utils'))
+    
 //    //Find bugs is used in multiple places in the code to suppress findbugs warnings
     testImplementation('com.github.stephenc.findbugs:findbugs-annotations')
     testImplementation('org.springframework:spring-test')
@@ -69,6 +68,8 @@ dependencies {
     upgradeTestImplementation('junit:junit')
     upgradeTestImplementation('xml-apis:xml-apis:2.0.2')
     upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
+
+    acceptanceTestImplementation(project(':geode-common-services'))
 
     implementation('net.sf.jopt-simple:jopt-simple')
 
