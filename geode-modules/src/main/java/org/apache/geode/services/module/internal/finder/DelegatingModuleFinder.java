@@ -62,21 +62,6 @@ public class DelegatingModuleFinder implements ModuleFinder {
       logger.debug("ModuleFinder for module named: " + moduleName + " already added");
     } else {
       finders = finders.add(new Tuple2<>(moduleName, finder));
-      logger.debug("Added finder for module name: " + moduleName);
-    }
-  }
-
-  /**
-   * Adds a {@link ModuleFinder} to be used for finding modules.
-   *
-   * @param moduleName Name of the module associated with the {@link ModuleFinder}.
-   * @param finder a {@link ModuleFinder} used to find the {@link ModuleSpec} for a specific module.
-   */
-  public void addModuleFinder(String moduleName, ModuleFinder finder) {
-    if (moduleFinderAlreadyAdded(moduleName)) {
-      logger.debug("ModuleFinder for module named: " + moduleName + " already added");
-    } else {
-      finders = finders.add(new Tuple2<>(moduleName, finder));
       logger.debug("Added finder " + finder);
     }
   }

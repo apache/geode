@@ -72,11 +72,6 @@ public class GeodeJarModuleFinderTest {
     logger = LogManager.getLogger();
   }
 
-  @Before
-  public void setUp() throws Exception {
-    logger = LogManager.getLogger();
-  }
-
   @Test
   public void findModuleSimpleJar() throws IOException, ModuleLoadException {
     ModuleDescriptor moduleDescriptor =

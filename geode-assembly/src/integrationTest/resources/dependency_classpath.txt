@@ -10,6 +10,7 @@ geode-lucene-0.0.0.jar
 geode-memcached-0.0.0.jar
 geode-modules-0.0.0.jar
 geode-old-client-support-0.0.0.jar
+geode-process-utils-0.0.0.jar
 geode-protobuf-0.0.0.jar
 geode-protobuf-messages-0.0.0.jar
 geode-rebalancer-0.0.0.jar
@@ -19,6 +20,7 @@ geode-tcp-server-0.0.0.jar
 geode-wan-0.0.0.jar
 geode-module-management-0.0.0.jar
 geode-module-bootstrapping-0.0.0.jar
+geode-module-launcher-0.0.0.jar
 geode-management-0.0.0.jar
 jackson-databind-2.11.3.jar
 commons-lang3-3.11.jar

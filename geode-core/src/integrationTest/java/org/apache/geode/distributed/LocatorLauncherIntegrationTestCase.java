@@ -14,7 +14,6 @@
  */
 package org.apache.geode.distributed;
 
-import static org.apache.geode.distributed.AbstractLauncher.Status.STOPPED;
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.internal.InternalConfigurationPersistenceService.CLUSTER_CONFIG_DISK_DIR_PREFIX;
