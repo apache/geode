@@ -39,7 +39,6 @@ dependencies {
     testImplementation(project(':geode-common-services'))
     acceptanceTestImplementation(project(':geode-common-services'))
 
-
 //    //Find bugs is used in multiple places in the code to suppress findbugs warnings
     testImplementation('com.github.stephenc.findbugs:findbugs-annotations')
     testImplementation('org.springframework:spring-test')

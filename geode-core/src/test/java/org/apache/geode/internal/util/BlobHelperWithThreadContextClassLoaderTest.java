@@ -45,7 +45,6 @@ import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceIns
 import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.junit.rules.RestoreTCCLRule;
 
-
 /**
  * Unit tests for {@link BlobHelper} with Thread Context ClassLoader.
  *

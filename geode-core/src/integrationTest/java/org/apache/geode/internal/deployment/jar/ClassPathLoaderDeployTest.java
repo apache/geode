@@ -36,7 +36,9 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-/** Integration tests for {@link org.apache.geode.internal.deployment.jar.ClassPathLoader}. */
+/**
+ * Integration tests for {@link org.apache.geode.internal.deployment.jar.ClassPathLoader}.
+ */
 public class ClassPathLoaderDeployTest {
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();

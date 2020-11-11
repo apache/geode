@@ -36,7 +36,6 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 import org.apache.geode.services.result.ServiceResult;
 
-
 public class JarBuilderTest {
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();

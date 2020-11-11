@@ -38,7 +38,6 @@ import org.apache.bcel.Constants;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.generic.ClassGen;
 import org.apache.commons.io.IOUtils;
-import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -54,7 +53,9 @@ import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.compiler.JarBuilder;
 import org.apache.geode.test.junit.rules.RestoreTCCLRule;
 
-/** Integration tests for {@link org.apache.geode.internal.deployment.jar.ClassPathLoader}. */
+/**
+ * Integration tests for {@link org.apache.geode.internal.deployment.jar.ClassPathLoader}.
+ */
 public class ClassPathLoaderIntegrationTest {
 
   private static final int TEMP_FILE_BYTES_COUNT = 256;
@@ -223,8 +224,7 @@ public class ClassPathLoaderIntegrationTest {
   }
 
   /**
-   * Verifies that <tt>getResource</tt> works with TCCL from {@link
-   * org.apache.geode.internal.deployment.jar.ClassPathLoader}.
+   * Verifies that <tt>getResource</tt> works with TCCL from {@link ClassPathLoader}.
    */
   @Test
   public void testGetResourceWithTCCL() throws Exception {
@@ -261,8 +261,7 @@ public class ClassPathLoaderIntegrationTest {
   }
 
   /**
-   * Verifies that <tt>getResources</tt> works with TCCL from {@link
-   * org.apache.geode.internal.deployment.jar.ClassPathLoader}.
+   * Verifies that <tt>getResources</tt> works with TCCL from {@link ClassPathLoader}.
    */
   @Test
   public void testGetResourcesWithTCCL() throws Exception {
@@ -302,8 +301,7 @@ public class ClassPathLoaderIntegrationTest {
   }
 
   /**
-   * Verifies that <tt>getResourceAsStream</tt> works with TCCL from {@link
-   * org.apache.geode.internal.deployment.jar.ClassPathLoader}.
+   * Verifies that <tt>getResourceAsStream</tt> works with TCCL from {@link ClassPathLoader}.
    */
   @Test
   public void testGetResourceAsStreamWithTCCL() throws Exception {
@@ -365,7 +363,7 @@ public class ClassPathLoaderIntegrationTest {
 
     // Check to see if the function without parameters executes correctly
     Function function = FunctionService.getFunction("JarClassLoaderJUnitFunctionNoXml");
-    Assertions.assertThat(function).isNotNull();
+    assertThat(function).isNotNull();
     TestResultSender resultSender = new TestResultSender();
     function.execute(new FunctionContextImpl(null, function.getId(), null, resultSender));
     assertThat((String) resultSender.getResults()).isEqualTo("NOPARMSv1");
@@ -428,7 +426,7 @@ public class ClassPathLoaderIntegrationTest {
         jarFunction);
 
     Function function = FunctionService.getFunction("JarClassLoaderJUnitFunction");
-    Assertions.assertThat(function).isNotNull();
+    assertThat(function).isNotNull();
     TestResultSender resultSender = new TestResultSender();
     FunctionContext functionContext =
         new FunctionContextImpl(null, function.getId(), null, resultSender);

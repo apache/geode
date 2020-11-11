@@ -39,7 +39,6 @@ import org.junit.rules.TestName;
 
 import org.apache.geode.internal.services.classloader.impl.ClassLoaderServiceInstance;
 
-
 public class ClassLoaderObjectInputStreamTest {
   private String classToLoad;
   private ClassLoader newTCCL;

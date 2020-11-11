@@ -277,8 +277,8 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
       VM... vms) throws Exception {
     for (int i = start; i < end; i++) {
       // Class loading in upgrade tests does not make use of the {@link ClassLoaderService}
-      // introduced in
-      // GEODE-8466 because {@link ClassLoaderService} does not exist in older versions.
+      // introduced in GEODE-8466 because {@link ClassLoaderService} does not exist in older
+      // versions.
       Class aClass = Thread.currentThread().getContextClassLoader()
           .loadClass("org.apache.geode.cache.ExpirationAttributes");
       Constructor constructor = aClass.getConstructor(int.class);
@@ -579,8 +579,7 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
     // systemProperties.put(DistributionConfig.LOG_FILE_NAME,
     // "rollingUpgradeCacheVM" + VM.getCurrentVMNum() + ".log");
     // Class loading in upgrade tests does not make use of the {@link ClassLoaderService} introduced
-    // in
-    // GEODE-8466 because {@link ClassLoaderService} does not exist in older versions.
+    // in GEODE-8466 because {@link ClassLoaderService} does not exist in older versions.
     Class distConfigClass = Thread.currentThread().getContextClassLoader()
         .loadClass("org.apache.geode.distributed.internal.DistributionConfigImpl");
     boolean disableConfig = true;
@@ -642,8 +641,7 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
   private static void createRegion(Cache cache, String regionName, String shortcutName)
       throws Exception {
     // Class loading in upgrade tests does not make use of the {@link ClassLoaderService} introduced
-    // in
-    // GEODE-8466 because {@link ClassLoaderService} does not exist in older versions.
+    // in GEODE-8466 because {@link ClassLoaderService} does not exist in older versions.
     Class aClass = Thread.currentThread().getContextClassLoader()
         .loadClass("org.apache.geode.cache.RegionShortcut");
     Object[] enumConstants = aClass.getEnumConstants();

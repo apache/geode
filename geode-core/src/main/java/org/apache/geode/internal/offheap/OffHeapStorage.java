@@ -169,8 +169,7 @@ public class OffHeapStorage implements OffHeapMemoryStats {
           ClassLoaderServiceInstance.getInstance().forName("sun.misc.Unsafe");
       if (serviceResult.isSuccessful()) {
         // Okay, we have the class. Do we have the copyMemory method (not all JVMs support it)?
-        // Throw
-        // NoSuchMethodException if not.
+        // Throw NoSuchMethodException if not.
         @SuppressWarnings("unused")
         Method copyMemory = serviceResult.getMessage().getMethod("copyMemory", Object.class,
             long.class, Object.class, long.class, long.class);

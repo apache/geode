@@ -237,8 +237,8 @@ public abstract class LuceneSearchWithRollingUpgradeTestBase extends JUnit4Distr
       throws Exception {
     for (int i = start; i < end; i++) {
       // Class loading in upgrade tests does not make use of the {@link ClassLoaderService}
-      // introduced in
-      // GEODE-8466 because {@link ClassLoaderService} does not exist in older versions.
+      // introduced in GEODE-8466 because {@link ClassLoaderService} does not exist in older
+      // versions.
       Class aClass = Thread.currentThread().getContextClassLoader()
           .loadClass("org.apache.geode.cache.query.data.Portfolio");
       Constructor portfolioConstructor = aClass.getConstructor(int.class);
@@ -269,8 +269,7 @@ public abstract class LuceneSearchWithRollingUpgradeTestBase extends JUnit4Distr
   void verifyLuceneQueryResults(String regionName, int expectedRegionSize)
       throws Exception {
     // Class loading in upgrade tests does not make use of the {@link ClassLoaderService} introduced
-    // in
-    // GEODE-8466 because {@link ClassLoaderService} does not exist in older versions.
+    // in GEODE-8466 because {@link ClassLoaderService} does not exist in older versions.
     Class luceneServiceProvider = Thread.currentThread().getContextClassLoader()
         .loadClass("org.apache.geode.cache.lucene.LuceneServiceProvider");
     Method getLuceneService = luceneServiceProvider.getMethod("get", GemFireCache.class);
@@ -605,8 +604,7 @@ public abstract class LuceneSearchWithRollingUpgradeTestBase extends JUnit4Distr
 
   protected static Object createCache(Properties systemProperties) throws Exception {
     // Class loading in upgrade tests does not make use of the {@link ClassLoaderService} introduced
-    // in
-    // GEODE-8466 because {@link ClassLoaderService} does not exist in older versions.
+    // in GEODE-8466 because {@link ClassLoaderService} does not exist in older versions.
     Class distConfigClass = Thread.currentThread().getContextClassLoader()
         .loadClass("org.apache.geode.distributed.internal.DistributionConfigImpl");
     boolean disableConfig = true;
@@ -620,8 +618,7 @@ public abstract class LuceneSearchWithRollingUpgradeTestBase extends JUnit4Distr
     }
 
     // Class loading in upgrade tests does not make use of the {@link ClassLoaderService} introduced
-    // in
-    // GEODE-8466 because {@link ClassLoaderService} does not exist in older versions.
+    // in GEODE-8466 because {@link ClassLoaderService} does not exist in older versions.
     Class cacheFactoryClass = Thread.currentThread().getContextClassLoader()
         .loadClass("org.apache.geode.cache.CacheFactory");
     Constructor constructor = cacheFactoryClass.getConstructor(Properties.class);
@@ -648,8 +645,7 @@ public abstract class LuceneSearchWithRollingUpgradeTestBase extends JUnit4Distr
   protected static void createRegion(Object cache, String regionName, String shortcutName)
       throws Exception {
     // Class loading in upgrade tests does not make use of the {@link ClassLoaderService} introduced
-    // in
-    // GEODE-8466 because {@link ClassLoaderService} does not exist in older versions.
+    // in GEODE-8466 because {@link ClassLoaderService} does not exist in older versions.
     Class aClass = Thread.currentThread().getContextClassLoader()
         .loadClass("org.apache.geode.cache.RegionShortcut");
     Object[] enumConstants = aClass.getEnumConstants();
@@ -674,8 +670,7 @@ public abstract class LuceneSearchWithRollingUpgradeTestBase extends JUnit4Distr
   static void createLuceneIndex(Object cache, String regionName, String indexName)
       throws Exception {
     // Class loading in upgrade tests does not make use of the {@link ClassLoaderService} introduced
-    // in
-    // GEODE-8466 because {@link ClassLoaderService} does not exist in older versions.
+    // in GEODE-8466 because {@link ClassLoaderService} does not exist in older versions.
     Class luceneServiceProvider = Thread.currentThread().getContextClassLoader()
         .loadClass("org.apache.geode.cache.lucene.LuceneServiceProvider");
     Method getLuceneService = luceneServiceProvider.getMethod("get", GemFireCache.class);
@@ -693,8 +688,7 @@ public abstract class LuceneSearchWithRollingUpgradeTestBase extends JUnit4Distr
   static void createLuceneIndexOnExistingRegion(Object cache, String regionName,
       String indexName) throws Exception {
     // Class loading in upgrade tests does not make use of the {@link ClassLoaderService} introduced
-    // in
-    // GEODE-8466 because {@link ClassLoaderService} does not exist in older versions.
+    // in GEODE-8466 because {@link ClassLoaderService} does not exist in older versions.
     Class luceneServiceProvider = Thread.currentThread().getContextClassLoader()
         .loadClass("org.apache.geode.cache.lucene.LuceneServiceProvider");
     Method getLuceneService = luceneServiceProvider.getMethod("get", GemFireCache.class);
@@ -713,8 +707,7 @@ public abstract class LuceneSearchWithRollingUpgradeTestBase extends JUnit4Distr
       File diskStore) throws Exception {
     Object store = cache.getClass().getMethod("findDiskStore", String.class).invoke(cache, "store");
     // Class loading in upgrade tests does not make use of the {@link ClassLoaderService} introduced
-    // in
-    // GEODE-8466 because {@link ClassLoaderService} does not exist in older versions.
+    // in GEODE-8466 because {@link ClassLoaderService} does not exist in older versions.
     Class dataPolicyObject = Thread.currentThread().getContextClassLoader()
         .loadClass("org.apache.geode.cache.DataPolicy");
     Object dataPolicy = dataPolicyObject.getField("PERSISTENT_PARTITION").get(null);
@@ -733,8 +726,7 @@ public abstract class LuceneSearchWithRollingUpgradeTestBase extends JUnit4Distr
 
   protected static void assertVersion(Object cache, short ordinal) throws Exception {
     // Class loading in upgrade tests does not make use of the {@link ClassLoaderService} introduced
-    // in
-    // GEODE-8466 because {@link ClassLoaderService} does not exist in older versions.
+    // in GEODE-8466 because {@link ClassLoaderService} does not exist in older versions.
     Class idmClass = Thread.currentThread().getContextClassLoader()
         .loadClass("org.apache.geode.distributed.internal.membership.InternalDistributedMember");
     Method getDSMethod = cache.getClass().getMethod("getDistributedSystem");
@@ -862,8 +854,7 @@ public abstract class LuceneSearchWithRollingUpgradeTestBase extends JUnit4Distr
 
     File logFile = new File(testName + "-locator" + port + ".log");
     // Class loading in upgrade tests does not make use of the {@link ClassLoaderService} introduced
-    // in
-    // GEODE-8466 because {@link ClassLoaderService} does not exist in older versions.
+    // in GEODE-8466 because {@link ClassLoaderService} does not exist in older versions.
     Class locatorClass = Thread.currentThread().getContextClassLoader()
         .loadClass("org.apache.geode.distributed.Locator");
     Method startLocatorAndDSMethod =
@@ -890,8 +881,7 @@ public abstract class LuceneSearchWithRollingUpgradeTestBase extends JUnit4Distr
 
   protected static void stopLocator() throws Exception {
     // Class loading in upgrade tests does not make use of the {@link ClassLoaderService} introduced
-    // in
-    // GEODE-8466 because {@link ClassLoaderService} does not exist in older versions.
+    // in GEODE-8466 because {@link ClassLoaderService} does not exist in older versions.
     Class internalLocatorClass = Thread.currentThread().getContextClassLoader()
         .loadClass("org.apache.geode.distributed.internal.InternalLocator");
     Method locatorMethod = internalLocatorClass.getMethod("getLocator");
