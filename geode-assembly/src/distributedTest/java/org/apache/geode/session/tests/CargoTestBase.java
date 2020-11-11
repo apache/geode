@@ -21,6 +21,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
 import java.util.function.IntSupplier;
 
 import org.junit.After;
@@ -77,8 +78,7 @@ public abstract class CargoTestBase {
   public void setup() throws Exception {
     dumpDockerInfo();
     announceTest("START");
-
-    locatorVM = clusterStartupRule.startLocatorVM(0, 0);
+    locatorVM = clusterStartupRule.startLocatorVM(0);
 
     client = new Client();
     manager = new ContainerManager();
@@ -252,7 +252,12 @@ public abstract class CargoTestBase {
     client.setMaxInactive(1);
     Thread.sleep(5000);
 
-    verifySessionIsRemoved(key);
+    await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
+      verifySessionIsRemoved(key);
+      Thread.sleep(1000);
+    });
+
+    checkLogs();
   }
 
   /**
@@ -282,7 +287,7 @@ public abstract class CargoTestBase {
     for (int i = 0; i < manager.numContainers(); i++) {
       client.setPort(Integer.parseInt(manager.getContainerPort(i)));
       if (install.getConnectionType() == ContainerInstall.ConnectionType.CACHING_CLIENT_SERVER) {
-        GeodeAwaitility.await().until(() -> Integer.toString(expected)
+        await().atMost(30, TimeUnit.SECONDS).until(() -> Integer.toString(expected)
             .equals(client.executionFunction(GetMaxInactiveInterval.class).getResponse()));
       } else {
         assertEquals(Integer.toString(expected),

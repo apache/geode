@@ -65,17 +65,16 @@ public class TomcatContainer extends ServerContainer {
     setConfigFile(contextXMLFile.getAbsolutePath(), DEFAULT_TOMCAT_XML_REPLACEMENT_DIR,
         DEFAULT_TOMCAT_CONTEXT_XML_REPLACEMENT_NAME);
 
-    if (install.getConnectionType() == ContainerInstall.ConnectionType.CLIENT_SERVER) {
-      // using proxy region, override the default client/server setting to set to false
+    if (install.getConnectionType() == ContainerInstall.ConnectionType.CLIENT_SERVER ||
+        install.getConnectionType() == ContainerInstall.ConnectionType.CACHING_CLIENT_SERVER) {
       setCacheProperty("enableLocalCache",
           String.valueOf(install.getConnectionType().enableLocalCache()));
-    } else {
-      // using default, either setting it explicitly or leave it off should have the same effect
-      if (System.currentTimeMillis() % 2 == 0) {
-        setCacheProperty("enableLocalCache",
-            String.valueOf(install.getConnectionType().enableLocalCache()));
-      }
     }
+
+    if (install.getCommitValve() != TomcatInstall.CommitValve.DEFAULT) {
+      setCacheProperty("enableCommitValve", install.getCommitValve().getValue());
+    }
+
     setCacheProperty("className", install.getContextSessionManagerClass());
 
     // Deploy war file to container configuration
