@@ -16,10 +16,14 @@
  */
 package org.apache.geode.internal.services.classloader.impl;
 
+
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.services.classloader.ClassLoaderService;
 
+/**
+ * Use this class to get an instance of {@link ClassLoaderService} to load classes and resources.
+ */
 public class ClassLoaderServiceInstance {
 
   @Immutable
@@ -29,6 +33,11 @@ public class ClassLoaderServiceInstance {
   private static Class<? extends ClassLoaderService> serviceClass =
       DefaultClassLoaderServiceImpl.class;
 
+  /**
+   * Used to get an instance of serviceClass, which is instantiated on the first call.
+   *
+   * @return an instance of an implementation of {@link ClassLoaderService}.
+   */
   public static synchronized ClassLoaderService getInstance() {
     if (classLoaderService == null) {
       classLoaderService = createClassLoaderService();
@@ -45,6 +54,15 @@ public class ClassLoaderServiceInstance {
     }
   }
 
+  /**
+   * Allows you to override the implementation type created, stored, and returned by
+   * {@link ClassLoaderServiceInstance#getInstance()}
+   *
+   * @param clazz the tye of {@link ClassLoaderService} to use.
+   * @throws GemFireConfigException if called after {@link ClassLoaderServiceInstance#getInstance()}
+   *         because the stored {@link ClassLoaderService} will have already been created as a
+   *         different type.
+   */
   public static synchronized void overrideServiceClass(Class<? extends ClassLoaderService> clazz) {
     if (classLoaderService == null) {
       serviceClass = clazz;
