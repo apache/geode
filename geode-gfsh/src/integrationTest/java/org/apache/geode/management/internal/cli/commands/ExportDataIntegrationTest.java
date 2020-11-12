@@ -85,7 +85,7 @@ public class ExportDataIntegrationTest {
   public void setup() throws Exception {
     gfsh.connectAndVerify(server.getEmbeddedLocatorPort(), GfshCommandRule.PortType.locator);
     region = server.getCache().getRegion(TEST_REGION_NAME);
-    loadRegion(new StringWrapper("value"));
+    loadRegion("value");
     Path basePath = tempDir.getRoot().toPath();
     snapshotFile = basePath.resolve(SNAPSHOT_FILE);
     snapshotDir = basePath.resolve(SNAPSHOT_DIR);
@@ -93,6 +93,7 @@ public class ExportDataIntegrationTest {
 
   @Test
   public void testExport() {
+    loadRegion(new StringWrapper("value"));
     String exportCommand = buildBaseExportCommand()
         .addOption(CliStrings.EXPORT_DATA__FILE, snapshotFile.toString()).getCommandString();
     gfsh.executeAndAssertThat(exportCommand).statusIsSuccess();

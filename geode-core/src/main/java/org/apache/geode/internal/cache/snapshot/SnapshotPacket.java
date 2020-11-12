@@ -79,6 +79,7 @@ public class SnapshotPacket implements DataSerializableFixedID {
       } else if (entry instanceof EntrySnapshot) {
         EntrySnapshot entrySnapshot = (EntrySnapshot) entry;
         Object entryValue = entrySnapshot.getValuePreferringCachedDeserializable();
+        value = convertToBytes(entryValue);
       } else {
         value = convertToBytes(entry.getValue());
       }
