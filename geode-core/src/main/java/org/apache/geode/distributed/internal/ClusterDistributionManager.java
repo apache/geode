@@ -2362,7 +2362,7 @@ public class ClusterDistributionManager implements DistributionManager {
                                                               // so
           // don't issue a warning
           message.setRecipient(dm.getDistributionManagerId());
-          message.setReason(reason); // added for #37950
+          message.setReason(reason);
           dm.handleIncomingDMsg(message);
         }
         dm.handleManagerDeparture(theId, crashed, reason);
