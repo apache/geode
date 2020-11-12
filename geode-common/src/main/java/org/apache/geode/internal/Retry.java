@@ -14,12 +14,15 @@
  */
 package org.apache.geode.internal;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+
+import org.apache.geode.annotations.VisibleForTesting;
 
 /**
  * Utility class for retrying operations.
@@ -28,12 +31,19 @@ public class Retry {
 
   interface Clock {
     long nanoTime();
+
+    void sleep(long sleepTime, TimeUnit sleepTimeUnit) throws InterruptedException;
   }
 
   private static class SteadyClock implements Clock {
     @Override
     public long nanoTime() {
       return System.nanoTime();
+    }
+
+    @Override
+    public void sleep(long sleepTime, TimeUnit sleepTimeUnit) throws InterruptedException {
+      Thread.sleep(MILLISECONDS.convert(sleepTime, sleepTimeUnit));
     }
   }
 
@@ -42,21 +52,29 @@ public class Retry {
   /**
    * Try the supplier function until the predicate is true or timeout occurs.
    *
+   * @param timeout to retry for
+   * @param interval time between each try
+   * @param timeUnit to retry for
    * @param supplier to execute until predicate is true or times out
    * @param predicate to test for retry
-   * @param timeout to retry for
-   * @param timeUnit to retry for
    * @param <T> type of return value
    * @return value from supplier after it passes predicate or times out.
    */
-  public static <T> T tryFor(final Supplier<T> supplier, final Predicate<T> predicate,
-      final long timeout, final TimeUnit timeUnit) throws TimeoutException {
-    return tryFor(supplier, predicate, timeout, timeUnit, steadyClock);
+  public static <T> T tryFor(long timeout,
+      long interval,
+      TimeUnit timeUnit,
+      Supplier<T> supplier,
+      Predicate<T> predicate) throws TimeoutException, InterruptedException {
+    return tryFor(timeout, interval, timeUnit, supplier, predicate, steadyClock);
   }
 
-  static <T> T tryFor(final Supplier<T> supplier, final Predicate<T> predicate,
-      final long timeout, final TimeUnit timeUnit, final Clock clock)
-      throws TimeoutException {
+  @VisibleForTesting
+  static <T> T tryFor(long timeout,
+      long interval,
+      TimeUnit timeUnit,
+      Supplier<T> supplier,
+      Predicate<T> predicate,
+      Clock clock) throws TimeoutException, InterruptedException {
     long until = clock.nanoTime() + NANOSECONDS.convert(timeout, timeUnit);
 
     T value;
@@ -64,10 +82,11 @@ public class Retry {
       value = supplier.get();
       if (predicate.test(value)) {
         return value;
+      } else {
+        clock.sleep(interval, timeUnit);
       }
     } while (clock.nanoTime() < until);
 
     throw new TimeoutException();
   }
-
 }

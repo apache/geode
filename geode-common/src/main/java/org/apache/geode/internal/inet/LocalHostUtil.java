@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.inet;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.internal.Retry.tryFor;
 
 import java.net.Inet4Address;
@@ -71,68 +71,70 @@ public class LocalHostUtil {
    *
    * @return local host if resolved otherwise null.
    */
-  private static InetAddress resolveLocalHost() {
+  private static InetAddress tryToResolveLocalHost() {
     try {
-      return tryFor(() -> {
-        InetAddress inetAddress = null;
-        try {
-          inetAddress = InetAddress.getByAddress(InetAddress.getLocalHost().getAddress());
-          if (inetAddress.isLoopbackAddress()) {
-            InetAddress ipv4Fallback = null;
-            InetAddress ipv6Fallback = null;
-            // try to find a non-loopback address
-            Set<InetAddress> myInterfaces = getMyAddresses();
-            boolean preferIPv6 = useIPv6Addresses;
-            String lhName = null;
-            for (InetAddress addr : myInterfaces) {
-              if (addr.isLoopbackAddress() || addr.isAnyLocalAddress() || lhName != null) {
-                break;
-              }
-              boolean ipv6 = addr instanceof Inet6Address;
-              boolean ipv4 = addr instanceof Inet4Address;
-              if ((preferIPv6 && ipv6) || (!preferIPv6 && ipv4)) {
-                String addrName = reverseDNS(addr);
-                if (inetAddress.isLoopbackAddress()) {
-                  inetAddress = addr;
-                  lhName = addrName;
-                } else if (addrName != null) {
-                  inetAddress = addr;
-                  lhName = addrName;
-                }
-              } else {
-                if (preferIPv6 && ipv4 && ipv4Fallback == null) {
-                  ipv4Fallback = addr;
-                } else if (!preferIPv6 && ipv6 && ipv6Fallback == null) {
-                  ipv6Fallback = addr;
-                }
-              }
-            }
-            // vanilla Ubuntu installations will have a usable IPv6 address when
-            // running as a guest OS on an IPv6-enabled machine. We also look for
-            // the alternative IPv4 configuration.
-            if (inetAddress.isLoopbackAddress()) {
-              if (ipv4Fallback != null) {
-                inetAddress = ipv4Fallback;
-                useIPv6Addresses = false;
-              } else if (ipv6Fallback != null) {
-                inetAddress = ipv6Fallback;
-                useIPv6Addresses = true;
-              }
-            }
-          }
-        } catch (UnknownHostException ignored) {
-        }
-        return inetAddress;
-      }, Objects::nonNull, 1, MINUTES);
-    } catch (TimeoutException ignored) {
+      return tryFor(60, 1, SECONDS, LocalHostUtil::resolveLocalHost, Objects::nonNull);
+    } catch (TimeoutException | InterruptedException ignored) {
     }
     return null;
+  }
+
+  private static InetAddress resolveLocalHost() {
+    InetAddress inetAddress = null;
+    try {
+      inetAddress = InetAddress.getByAddress(InetAddress.getLocalHost().getAddress());
+      if (inetAddress.isLoopbackAddress()) {
+        InetAddress ipv4Fallback = null;
+        InetAddress ipv6Fallback = null;
+        // try to find a non-loopback address
+        Set<InetAddress> myInterfaces = getMyAddresses();
+        boolean preferIPv6 = useIPv6Addresses;
+        String lhName = null;
+        for (InetAddress addr : myInterfaces) {
+          if (addr.isLoopbackAddress() || addr.isAnyLocalAddress() || lhName != null) {
+            break;
+          }
+          boolean ipv6 = addr instanceof Inet6Address;
+          boolean ipv4 = addr instanceof Inet4Address;
+          if ((preferIPv6 && ipv6) || (!preferIPv6 && ipv4)) {
+            String addrName = reverseDNS(addr);
+            if (inetAddress.isLoopbackAddress()) {
+              inetAddress = addr;
+              lhName = addrName;
+            } else if (addrName != null) {
+              inetAddress = addr;
+              lhName = addrName;
+            }
+          } else {
+            if (preferIPv6 && ipv4 && ipv4Fallback == null) {
+              ipv4Fallback = addr;
+            } else if (!preferIPv6 && ipv6 && ipv6Fallback == null) {
+              ipv6Fallback = addr;
+            }
+          }
+        }
+        // vanilla Ubuntu installations will have a usable IPv6 address when
+        // running as a guest OS on an IPv6-enabled machine. We also look for
+        // the alternative IPv4 configuration.
+        if (inetAddress.isLoopbackAddress()) {
+          if (ipv4Fallback != null) {
+            inetAddress = ipv4Fallback;
+            useIPv6Addresses = false;
+          } else if (ipv6Fallback != null) {
+            inetAddress = ipv6Fallback;
+            useIPv6Addresses = true;
+          }
+        }
+      }
+    } catch (UnknownHostException ignored) {
+    }
+    return inetAddress;
   }
 
   /**
    * Cache local host to avoid lookup costs.
    */
-  private static final InetAddress localHost = resolveLocalHost();
+  private static final InetAddress localHost = tryToResolveLocalHost();
 
   /**
    * returns a set of the non-loopback InetAddresses for this machine
