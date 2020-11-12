@@ -20,6 +20,9 @@ import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.IntStream;
@@ -30,6 +33,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
@@ -53,15 +58,34 @@ public class ExportDataIntegrationTest {
   @Rule
   public TemporaryFolder tempDir = new TemporaryFolder();
 
-  private Region<String, String> region;
+  private Region<String, Object> region;
   private Path snapshotFile;
   private Path snapshotDir;
+
+  public static class StringWrapper implements DataSerializable {
+
+    private String value;
+
+    public StringWrapper(String v) {
+      value = v;
+    }
+
+    @Override
+    public void toData(DataOutput out) throws IOException {
+      DataSerializer.writeString(value, out);
+    }
+
+    @Override
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+      throw new ClassNotFoundException("Should never be deserialized");
+    }
+  }
 
   @Before
   public void setup() throws Exception {
     gfsh.connectAndVerify(server.getEmbeddedLocatorPort(), GfshCommandRule.PortType.locator);
     region = server.getCache().getRegion(TEST_REGION_NAME);
-    loadRegion("value");
+    loadRegion(new StringWrapper("value"));
     Path basePath = tempDir.getRoot().toPath();
     snapshotFile = basePath.resolve(SNAPSHOT_FILE);
     snapshotDir = basePath.resolve(SNAPSHOT_DIR);
@@ -158,7 +182,7 @@ public class ExportDataIntegrationTest {
     assertFalse(Files.exists(snapshotDir));
   }
 
-  private void loadRegion(String value) {
+  private void loadRegion(Object value) {
     IntStream.range(0, DATA_POINTS).forEach(i -> region.put("key" + i, value));
   }
 
