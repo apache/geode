@@ -23,6 +23,6 @@ public class Tomcat9CachingClientServerTest extends TomcatClientServerTest {
   @Override
   public ContainerInstall getInstall(IntSupplier portSupplier) throws Exception {
     return new TomcatInstall(getClass().getSimpleName(), TOMCAT9, CACHING_CLIENT_SERVER,
-        portSupplier, TomcatInstall.CommitValve.DEFAULT);
+        portSupplier);
   }
 }

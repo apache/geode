@@ -120,24 +120,24 @@ public abstract class TomcatSessionBackwardsCompatibilityTestBase {
         new TomcatInstall("Tomcat7079AndOldModules", TomcatInstall.TomcatVersion.TOMCAT7,
             ContainerInstall.ConnectionType.CLIENT_SERVER,
             oldModules.getAbsolutePath(), oldBuild.getAbsolutePath() + "/lib",
-            portSupplier::getAvailablePort, TomcatInstall.CommitValve.DEFAULT);
+            portSupplier::getAvailablePort);
 
     tomcat7079AndCurrentModules =
         new TomcatInstall("Tomcat7079AndCurrentModules", TomcatInstall.TomcatVersion.TOMCAT7,
             ContainerInstall.ConnectionType.CLIENT_SERVER,
-            portSupplier::getAvailablePort, TomcatInstall.CommitValve.DEFAULT);
+            portSupplier::getAvailablePort);
 
     tomcat8AndOldModules =
         new TomcatInstall("Tomcat8AndOldModules", TomcatInstall.TomcatVersion.TOMCAT8,
             ContainerInstall.ConnectionType.CLIENT_SERVER,
             oldModules.getAbsolutePath(),
             oldBuild.getAbsolutePath() + "/lib",
-            portSupplier::getAvailablePort, TomcatInstall.CommitValve.DEFAULT);
+            portSupplier::getAvailablePort);
 
     tomcat8AndCurrentModules =
         new TomcatInstall("Tomcat8AndCurrentModules", TomcatInstall.TomcatVersion.TOMCAT8,
             ContainerInstall.ConnectionType.CLIENT_SERVER,
-            portSupplier::getAvailablePort, TomcatInstall.CommitValve.DEFAULT);
+            portSupplier::getAvailablePort);
 
     classPathTomcat7079 = tomcat7079AndCurrentModules.getHome() + "/lib/*" + File.pathSeparator
         + tomcat7079AndCurrentModules.getHome() + "/bin/*";
