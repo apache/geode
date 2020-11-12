@@ -2209,6 +2209,11 @@ public class ClusterDistributionManager implements DistributionManager {
     }
   }
 
+  private List<MembershipTestHook> getMembershipTestHooks() {
+    return membershipTestHooks;
+  }
+
+
   @Override
   public Set<InternalDistributedMember> getAdminMemberSet() {
     return distribution.getView().getMembers().stream()
@@ -2283,7 +2288,7 @@ public class ClusterDistributionManager implements DistributionManager {
    * This is the listener implementation for responding from events from the Membership Manager.
    *
    */
-  private class DMListener implements
+  static class DMListener implements
       org.apache.geode.distributed.internal.membership.api.MembershipListener<InternalDistributedMember> {
     ClusterDistributionManager dm;
 
@@ -2293,26 +2298,25 @@ public class ClusterDistributionManager implements DistributionManager {
 
     @Override
     public void membershipFailure(String reason, Throwable t) {
-      exceptionInThreads = true;
-      rootCause = t;
-      if (rootCause != null && !(rootCause instanceof ForcedDisconnectException)) {
-        logger.info("cluster membership failed due to ", rootCause);
-        rootCause = new ForcedDisconnectException(rootCause.getMessage());
+      dm.exceptionInThreads = true;
+      Throwable cause = t;
+      if (cause != null && !(cause instanceof ForcedDisconnectException)) {
+        logger.info("cluster membership failed due to ", cause);
+        cause = new ForcedDisconnectException(cause.getMessage());
       }
+      dm.setRootCause(cause);
       try {
-        if (membershipTestHooks != null) {
-          List<MembershipTestHook> l = membershipTestHooks;
-          for (final MembershipTestHook aL : l) {
-            MembershipTestHook dml = aL;
-            dml.beforeMembershipFailure(reason, rootCause);
+        List<MembershipTestHook> testHooks = dm.getMembershipTestHooks();
+        if (testHooks != null) {
+          for (final MembershipTestHook testHook : testHooks) {
+            testHook.beforeMembershipFailure(reason, cause);
           }
         }
-        getSystem().disconnect(reason, true);
-        if (membershipTestHooks != null) {
-          List<MembershipTestHook> l = membershipTestHooks;
-          for (final MembershipTestHook aL : l) {
-            MembershipTestHook dml = aL;
-            dml.afterMembershipFailure(reason, rootCause);
+        dm.getSystem().disconnect(reason, true);
+        testHooks = dm.getMembershipTestHooks();
+        if (testHooks != null) {
+          for (final MembershipTestHook testHook : testHooks) {
+            testHook.afterMembershipFailure(reason, cause);
           }
         }
       } catch (RuntimeException re) {
@@ -2344,7 +2348,7 @@ public class ClusterDistributionManager implements DistributionManager {
     @Override
     public void memberDeparted(InternalDistributedMember theId, boolean crashed, String reason) {
       try {
-        boolean wasAdmin = getAdminMemberSet().contains(theId);
+        boolean wasAdmin = dm.getAdminMemberSet().contains(theId);
         if (wasAdmin) {
           // Pretend we received an AdminConsoleDisconnectMessage from the console that
           // is no longer in the JavaGroup view.
@@ -2357,9 +2361,9 @@ public class ClusterDistributionManager implements DistributionManager {
           message.setIgnoreAlertListenerRemovalFailure(true); // we don't know if it was a listener
                                                               // so
           // don't issue a warning
-          message.setRecipient(localAddress);
+          message.setRecipient(dm.getDistributionManagerId());
           message.setReason(reason); // added for #37950
-          handleIncomingDMsg(message);
+          dm.handleIncomingDMsg(message);
         }
         dm.handleManagerDeparture(theId, crashed, reason);
       } catch (DistributedSystemDisconnectedException se) {
@@ -2393,8 +2397,8 @@ public class ClusterDistributionManager implements DistributionManager {
 
     @Override
     public void saveConfig() {
-      if (!getConfig().getDisableAutoReconnect()) {
-        cache.saveCacheXmlForReconnect();
+      if (!dm.getConfig().getDisableAutoReconnect()) {
+        dm.getCache().saveCacheXmlForReconnect();
       }
     }
   }
