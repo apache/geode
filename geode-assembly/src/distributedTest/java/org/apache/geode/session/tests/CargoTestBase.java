@@ -24,7 +24,6 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.concurrent.TimeUnit;
 import java.util.function.IntSupplier;
 
 import org.apache.logging.log4j.Logger;
@@ -256,7 +255,7 @@ public abstract class CargoTestBase {
     client.setMaxInactive(1); // max inactive time is 1 second. Lets wait a second.
     Thread.sleep(2000);
 
-    await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
+    await().untilAsserted(() -> {
       verifySessionIsRemoved(key);
       Thread.sleep(1000);
     });
@@ -292,7 +291,7 @@ public abstract class CargoTestBase {
     for (int i = 0; i < manager.numContainers(); i++) {
       client.setPort(Integer.parseInt(manager.getContainerPort(i)));
       if (install.getConnectionType() == ContainerInstall.ConnectionType.CACHING_CLIENT_SERVER) {
-        await().atMost(30, TimeUnit.SECONDS).until(() -> Integer.toString(expected)
+        await().until(() -> Integer.toString(expected)
             .equals(client.executionFunction(GetMaxInactiveInterval.class).getResponse()));
       } else {
         assertEquals(Integer.toString(expected),
