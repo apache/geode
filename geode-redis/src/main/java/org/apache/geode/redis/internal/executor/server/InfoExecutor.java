@@ -133,12 +133,17 @@ public class InfoExecutor extends AbstractExecutor {
   }
 
   private String getKeyspaceSection(ExecutionHandlerContext context) {
-    final String KEYSPACE_STRING =
-        "# Keyspace\r\n" +
-            "db0:keys=" + context.getRegionProvider().getDataRegion().size() +
-            ",expires=0" +
-            ",avg_ttl=0\r\n";
-    return KEYSPACE_STRING;
+    int numberOfKeys = context.getRegionProvider().getDataRegion().size();
+    String keyspaceString = "# Keyspace\r\n";
+
+    if (numberOfKeys > 0) {
+      keyspaceString +=
+          "db0:keys=" + numberOfKeys +
+              ",expires=0" +
+              ",avg_ttl=0\r\n";
+    }
+
+    return keyspaceString;
   }
 
   private String getPersistenceSection() {
