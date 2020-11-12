@@ -19,12 +19,14 @@
 
 cd ..
 
-# We are currently using a personal fork for this repo because our code does not implement all
+# We are currently using a patched version of this repo because our code does not implement all
 # Redis commands.  Once all commands needed to run relevant test files are implemented, we hope to
-# use Redis's repo instead.
-git clone --config transfer.fsckObjects=false https://github.com/prettyClouds/redis.git
+# use Redis's repo without a patch.
+git clone --config transfer.fsckObjects=false https://github.com/redis/redis.git
+cp geode-redis/src/acceptanceTest/resources/0001-configure-redis-tests.patch redis
 cd redis
-git checkout tests-geode-redis
+git checkout origin/5.0
+git am < 0001-configure-redis-tests.patch
 
 export JAVA_HOME=${JAVA_TEST_PATH}
 
@@ -50,7 +52,7 @@ failCount=0
   --redis-bind-address=127.0.0.1
 
 ./runtest --host 127.0.0.1 --port 6379 --single unit/type/set --single unit/expire \
---single unit/type/hash --single unit/type/string --single unit/type/srandmember \
+--single unit/type/hash --single unit/type/string \
 --single unit/quit --single unit/pubsub
 
 ((failCount+=$?))
