@@ -15,11 +15,13 @@
 
 package org.apache.geode.redis.internal.executor.server;
 
+import static org.apache.geode.redis.internal.executor.server.AbstractHitsMissesIntegrationTest.getInfo;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.After;
 import org.junit.Before;
@@ -32,6 +34,7 @@ import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
 public abstract class AbstractInfoIntegrationTest implements RedisPortSupplier {
 
+  private static final String KEYSPACE_START = "db0";
   private Jedis jedis;
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
@@ -43,6 +46,7 @@ public abstract class AbstractInfoIntegrationTest implements RedisPortSupplier {
 
   @After
   public void tearDown() {
+    jedis.flushAll();
     jedis.close();
   }
 
@@ -162,9 +166,26 @@ public abstract class AbstractInfoIntegrationTest implements RedisPortSupplier {
   }
 
   @Test
+  public void shouldReturnKeySpaceSection_givenServerWithOneOrMoreKeys() {
+    jedis.set("key", "value");
+
+    Map<String, String> info = getInfo(jedis);
+
+    assertThat(info.get(KEYSPACE_START)).startsWith("keys=1");
+  }
+
+  @Test
+  public void shouldNotReturnKeySpaceSection_givenServerWithNoKeys() {
+    Map<String, String> info = getInfo(jedis);
+
+    assertThat(info.get("db0")).isNull();
+  }
+
+  @Test
   public void shouldThrowExceptionIfGivenMoreThanOneParameter() {
     assertThatThrownBy(
         () -> jedis.sendCommand(
             Protocol.Command.INFO, "Server", "Cluster")).hasMessageContaining("ERR syntax error");
   }
+
 }
