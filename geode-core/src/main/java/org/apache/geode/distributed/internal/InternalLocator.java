@@ -1099,12 +1099,15 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
    *
    * @return true if able to reconnect the locator to the new distributed system
    */
-  private boolean attemptReconnect() throws InterruptedException, IOException {
+  boolean attemptReconnect() throws InterruptedException, IOException {
     boolean restarted = false;
     if (stoppedForReconnect) {
-      logger.info("attempting to restart locator");
       boolean tcpServerStarted = false;
       InternalDistributedSystem system = internalDistributedSystem;
+      if (system == null) {
+        return false;
+      }
+      logger.info("attempting to restart locator");
       long waitTime = system.getConfig().getMaxWaitTimeForReconnect() / 2;
       QuorumChecker quorumChecker = null;
 
