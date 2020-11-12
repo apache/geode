@@ -1534,6 +1534,33 @@ public class AbstractRegionMapTest {
     verify(arm._getOwner()).unlockWhenRegionIsInitializing();
   }
 
+  @Test
+  public void isInTokenModeNeededReturnsFalseIfConcurrencyChecksEnabled() {
+    TestableAbstractRegionMap arm = new TestableAbstractRegionMap(true, true,
+        mock(ConcurrentMapWithReusableEntries.class), mock(RegionEntryFactory.class),
+        mock(RegionEntry.class));
+
+    assertThat(arm.isInTokenModeNeeded(arm._getOwner(), true)).isFalse();
+  }
+
+  @Test
+  public void isInTokenModeNeededReturnsFalseIfInTokenModeIsFalse() {
+    TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, true,
+        mock(ConcurrentMapWithReusableEntries.class), mock(RegionEntryFactory.class),
+        mock(RegionEntry.class));
+
+    assertThat(arm.isInTokenModeNeeded(arm._getOwner(), false)).isFalse();
+  }
+
+  @Test
+  public void isInTokenModeNeededReturnsTrueIfConcurrencyChecksNotEnabledAndInTokenMode() {
+    TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, true,
+        mock(ConcurrentMapWithReusableEntries.class), mock(RegionEntryFactory.class),
+        mock(RegionEntry.class));
+
+    assertThat(arm.isInTokenModeNeeded(arm._getOwner(), true)).isTrue();
+  }
+
   private static class TxNoRegionEntryTestableAbstractRegionMap
       extends TxTestableAbstractRegionMap {
     @Override
