@@ -302,6 +302,7 @@ dependencies {
     testRuntime('com.pholser:junit-quickcheck-generators')
 
   integrationTestImplementation(project(":geode-common-services"))
+  integrationTestImplementation(project(":geode-module-launcher"))
   integrationTestImplementation(project(':geode-gfsh'))
     integrationTestImplementation(project(':geode-junit')) {
         exclude module: 'geode-core'

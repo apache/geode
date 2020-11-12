@@ -43,6 +43,7 @@ dependencies {
   testImplementation('org.mockito:mockito-core')
 
   integrationTestImplementation(project(':geode-common-services'))
+  integrationTestImplementation(project(':geode-process-utils'))
   integrationTestImplementation('junit:junit')
   integrationTestImplementation('org.awaitility:awaitility')
   integrationTestImplementation('org.hamcrest:hamcrest')

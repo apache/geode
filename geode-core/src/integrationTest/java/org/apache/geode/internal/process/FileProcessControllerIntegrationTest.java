@@ -37,11 +37,11 @@ import org.junit.rules.ErrorCollector;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
+import org.apache.geode.distributed.AbstractLauncher;
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.LocatorLauncher.Builder;
 import org.apache.geode.distributed.LocatorLauncher.LocatorState;
 import org.apache.geode.internal.process.io.EmptyFileWriter;
-import org.apache.geode.launcher.Status;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 /**
@@ -230,7 +230,7 @@ public class FileProcessControllerIntegrationTest {
   private static String generateStatusJson() {
     Builder builder = new Builder();
     LocatorLauncher defaultLauncher = builder.build();
-    Status status = Status.ONLINE;
+    AbstractLauncher.Status status = AbstractLauncher.Status.ONLINE;
     LocatorState locatorState = new LocatorState(defaultLauncher, status);
     return locatorState.toJson();
   }

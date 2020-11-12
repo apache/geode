@@ -85,6 +85,7 @@ public class ModuleServerLauncher implements ServerLauncherConfig {
 
   private static final String DEFAULT_SERVER_LOG_EXT = ".log";
   private static final String DEFAULT_SERVER_LOG_NAME = "gemfire";
+  // TODO: Find a way to find this jar without hard coding it
   private static final String GEODE_CORE_DEPENDENCIES_PATH =
       "/Users/patrickjohnson/projects/geode/geode-assembly/build/install/apache-geode/lib/geode-core-dependencies.jar";
   // System.getProperty("user.dir")

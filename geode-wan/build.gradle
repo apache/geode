@@ -42,6 +42,7 @@ dependencies {
   testImplementation('org.mockito:mockito-core')
 
   integrationTestImplementation(project(':geode-junit'))
+  integrationTestImplementation(project(':geode-process-utils'))
   integrationTestImplementation('org.assertj:assertj-core')
   integrationTestImplementation('junit:junit')
 

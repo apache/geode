@@ -207,6 +207,7 @@ dependencies {
 
 
   integrationTestImplementation(project(':geode-common-services'))
+  integrationTestImplementation(project(':geode-module-launcher'))
   integrationTestImplementation(project(':geode-core'))
   integrationTestImplementation(project(':geode-membership'))
   integrationTestImplementation(project(':geode-gfsh'))
@@ -241,6 +242,7 @@ dependencies {
 
 
   distributedTestImplementation(project(':geode-common-services'))
+  distributedTestImplementation(project(':geode-module-launcher'))
   distributedTestCompileOnly(platform(project(':boms:geode-all-bom')))
   distributedTestCompileOnly('io.swagger:swagger-annotations')
   distributedTestImplementation(project(':geode-gfsh'))
@@ -308,6 +310,7 @@ dependencies {
   uiTestRuntimeOnly('org.seleniumhq.selenium:selenium-chrome-driver')
 
   upgradeTestImplementation(project(':geode-gfsh'))
+  upgradeTestImplementation(project(':geode-module-launcher'))
   upgradeTestImplementation(project(':geode-logging'))
   upgradeTestImplementation(project(':geode-serialization'))
   upgradeTestImplementation(project(':geode-core'))

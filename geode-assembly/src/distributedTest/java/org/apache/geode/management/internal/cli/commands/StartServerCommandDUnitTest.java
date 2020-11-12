@@ -57,6 +57,7 @@ import org.apache.geode.cache.client.internal.locator.GetAllServersRequest;
 import org.apache.geode.cache.client.internal.locator.GetAllServersResponse;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.distributed.AbstractLauncher;
 import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.ServerLocation;
@@ -64,7 +65,6 @@ import org.apache.geode.distributed.internal.ServerLocator;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.internal.process.ProcessUtils;
-import org.apache.geode.launcher.Status;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -351,7 +351,7 @@ public class StartServerCommandDUnitTest implements Serializable {
     assertThat(serverLauncher).isNotNull();
 
     ServerLauncher.ServerState serverState = serverLauncher.status();
-    assertThat(serverState.getStatus()).isEqualTo(Status.ONLINE);
+    assertThat(serverState.getStatus()).isEqualTo(AbstractLauncher.Status.ONLINE);
     assertThat(serverState.isVmWithProcessIdRunning()).isTrue();
 
     Integer serverPid = serverState.getPid();
