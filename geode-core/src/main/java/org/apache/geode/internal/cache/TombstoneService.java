@@ -197,7 +197,7 @@ public class TombstoneService {
   }
 
 
-  private TombstoneSweeper getSweeper(LocalRegion r) {
+  public TombstoneSweeper getSweeper(LocalRegion r) {
     if (r.getScope().isDistributed() && r.getServerProxy() == null
         && r.getDataPolicy().withReplication()) {
       return this.replicatedTombstoneSweeper;
@@ -450,6 +450,24 @@ public class TombstoneService {
 
     @Override
     protected void beforeSleepChecks() {}
+
+    @Override
+    public long getOldestTombstoneTime() {
+      long result = 0;
+      if (tombstones.peek() != null) {
+        result = tombstones.peek().getVersionTimeStamp();
+      }
+      return result;
+    }
+
+    @Override
+    public String getOldestTombstone() {
+      String result = null;
+      if (tombstones.peek() != null) {
+        result = tombstones.peek().toString();
+      }
+      return result;
+    }
   }
 
   private static class ReplicateTombstoneSweeper extends TombstoneSweeper {
@@ -740,6 +758,24 @@ public class TombstoneService {
     }
 
     @Override
+    public long getOldestTombstoneTime() {
+      long result = 0;
+      if (tombstones.peek() != null) {
+        result = tombstones.peek().getVersionTimeStamp();
+      }
+      return result;
+    }
+
+    @Override
+    public String getOldestTombstone() {
+      String result = null;
+      if (tombstones.peek() != null) {
+        result = tombstones.peek().toString();
+      }
+      return result;
+    }
+
+    @Override
     protected void handleNoUnexpiredTombstones() {
       testHook_forceExpirationCount = 0;
     }
@@ -779,7 +815,7 @@ public class TombstoneService {
     }
   }
 
-  private abstract static class TombstoneSweeper implements Runnable {
+  public abstract static class TombstoneSweeper implements Runnable {
     /**
      * the expiration time for tombstones in this sweeper
      */
@@ -805,7 +841,7 @@ public class TombstoneService {
      * are left in this queue and the sweeper thread figures out that they are no longer valid
      * tombstones.
      */
-    private final Queue<Tombstone> tombstones;
+    protected final Queue<Tombstone> tombstones;
     /**
      * Estimate of the amount of memory used by this sweeper
      */
@@ -1092,5 +1128,10 @@ public class TombstoneService {
 
     abstract boolean testHook_forceExpiredTombstoneGC(int count, long timeout, TimeUnit unit)
         throws InterruptedException;
+
+    public abstract long getOldestTombstoneTime();
+
+    public abstract String getOldestTombstone();
+
   } // class TombstoneSweeper
 }
