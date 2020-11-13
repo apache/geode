@@ -34,13 +34,13 @@ class DependencyConstraints implements Plugin<Project> {
     // These version numbers are consumed by :geode-modules-assembly:distAppServer filtering
     // Some of these are referenced below as well
     deps.put("antlr.version", "2.7.7")
-    deps.put("commons-io.version", "2.6")
+    deps.put("commons-io.version", "2.8.0")
     deps.put("commons-lang3.version", "3.10")
     deps.put("commons-validator.version", "1.6")
     deps.put("fastutil.version", "8.3.1")
     deps.put("javax.transaction-api.version", "1.3")
     deps.put("jgroups.version", "3.6.14.Final")
-    deps.put("log4j.version", "2.13.1")
+    deps.put("log4j.version", "2.13.3")
     deps.put("micrometer.version", "1.4.1")
     deps.put("shiro.version", "1.6.0")
     deps.put("slf4j-api.version", "1.7.30")
@@ -57,7 +57,7 @@ class DependencyConstraints implements Plugin<Project> {
 
     // The jetty version is also hard-coded in geode-assembly:test
     // at o.a.g.sessions.tests.GenericAppServerInstall.java
-    deps.put("jetty.version", "9.4.24.v20191120")
+    deps.put("jetty.version", "9.4.33.v20201020")
 
     // These version numbers are consumed by protobuf configurations that are plugin-specific and not
     // part of the typical Gradle dependency configurations.
@@ -88,8 +88,8 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'com.arakelian', name: 'java-jq', version: '0.10.1')
         api(group: 'com.carrotsearch.randomizedtesting', name: 'randomizedtesting-runner', version: '2.7.7')
         api(group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-joda', version: '2.9.8')
-        api(group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.11.2')
-        api(group: 'com.fasterxml.jackson.module', name: 'jackson-module-scala_2.10', version: '2.10.0')
+        api(group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.11.3')
+        api(group: 'com.fasterxml.jackson.module', name: 'jackson-module-scala_2.10', version: '2.11.3')
         api(group: 'com.github.davidmoten', name: 'geo', version: '0.7.7')
         api(group: 'com.github.stefanbirkner', name: 'system-rules', version: '1.19.0')
         api(group: 'com.github.stephenc.findbugs', name: 'findbugs-annotations', version: '1.3.9-1')
@@ -173,7 +173,7 @@ class DependencyConstraints implements Plugin<Project> {
       }
     }
 
-    dependencySet(group: 'com.fasterxml.jackson.core', version: '2.10.2') {
+    dependencySet(group: 'com.fasterxml.jackson.core', version: '2.11.3') {
       entry('jackson-annotations')
       entry('jackson-core')
       entry('jackson-databind')
@@ -251,7 +251,7 @@ class DependencyConstraints implements Plugin<Project> {
       entry('spring-security-oauth2-jose')
     }
 
-    dependencySet(group: 'org.springframework', version: '5.2.9.RELEASE') {
+    dependencySet(group: 'org.springframework', version: '5.3.0') {
       entry('spring-aspects')
       entry('spring-beans')
       entry('spring-context')

@@ -22,7 +22,6 @@ import java.util.Properties;
 
 import org.springframework.shell.core.Parser;
 import org.springframework.shell.event.ParseResult;
-import org.springframework.util.StringUtils;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Cache;
@@ -94,7 +93,7 @@ public class OnlineCommandProcessor implements CommandProcessor {
       List<String> stagedFilePaths) {
     CommentSkipHelper commentSkipper = new CommentSkipHelper();
     String commentLessLine = commentSkipper.skipComments(command);
-    if (StringUtils.isEmpty(commentLessLine)) {
+    if ((commentLessLine == null || "".equals(commentLessLine))) {
       return null;
     }
 

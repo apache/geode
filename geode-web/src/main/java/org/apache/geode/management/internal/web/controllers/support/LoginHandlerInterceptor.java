@@ -26,7 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.web.context.ServletContextAware;
-import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
+import org.springframework.web.servlet.AsyncHandlerInterceptor;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.internal.HttpService;
@@ -42,12 +42,12 @@ import org.apache.geode.management.internal.security.ResourceConstants;
  *
  * @see javax.servlet.http.HttpServletRequest
  * @see javax.servlet.http.HttpServletResponse
- * @see org.springframework.web.servlet.handler.HandlerInterceptorAdapter
+ * @see org.springframework.web.servlet.AsyncHandlerInterceptor
  * @since GemFire 8.0
  */
 @SuppressWarnings("unused")
-public class LoginHandlerInterceptor extends HandlerInterceptorAdapter
-    implements ServletContextAware {
+public class LoginHandlerInterceptor
+    implements ServletContextAware, AsyncHandlerInterceptor {
 
   private static final Logger logger = LogService.getLogger();
 
