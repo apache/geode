@@ -26,6 +26,7 @@ import org.apache.geode.redis.internal.ParameterRequirements.MaximumParameterReq
 import org.apache.geode.redis.internal.ParameterRequirements.MinimumParameterRequirements;
 import org.apache.geode.redis.internal.ParameterRequirements.OddParameterRequirements;
 import org.apache.geode.redis.internal.ParameterRequirements.ParameterRequirements;
+import org.apache.geode.redis.internal.ParameterRequirements.SlowlogParameterRequirements;
 import org.apache.geode.redis.internal.ParameterRequirements.SpopParameterRequirements;
 import org.apache.geode.redis.internal.ParameterRequirements.UnspecifiedParameterRequirements;
 import org.apache.geode.redis.internal.executor.Executor;
@@ -73,6 +74,7 @@ import org.apache.geode.redis.internal.executor.server.DBSizeExecutor;
 import org.apache.geode.redis.internal.executor.server.FlushAllExecutor;
 import org.apache.geode.redis.internal.executor.server.InfoExecutor;
 import org.apache.geode.redis.internal.executor.server.ShutDownExecutor;
+import org.apache.geode.redis.internal.executor.server.SlowlogExecutor;
 import org.apache.geode.redis.internal.executor.server.TimeExecutor;
 import org.apache.geode.redis.internal.executor.set.SAddExecutor;
 import org.apache.geode.redis.internal.executor.set.SCardExecutor;
@@ -265,6 +267,9 @@ public enum RedisCommandType {
   FLUSHDB(new FlushAllExecutor(), UNSUPPORTED, new MaximumParameterRequirements(2, ERROR_SYNTAX)),
   INFO(new InfoExecutor(), UNSUPPORTED, new MaximumParameterRequirements(2, ERROR_SYNTAX)),
   SHUTDOWN(new ShutDownExecutor(), UNSUPPORTED, new MaximumParameterRequirements(2, ERROR_SYNTAX)),
+  SLOWLOG(new SlowlogExecutor(), UNSUPPORTED, new MinimumParameterRequirements(2)
+      .and(new MaximumParameterRequirements(3, ERROR_SYNTAX))
+      .and(new SlowlogParameterRequirements())),
   TIME(new TimeExecutor(), UNSUPPORTED, new ExactParameterRequirements(1)),
 
   /////////// UNIMPLEMENTED /////////////////////
@@ -333,7 +338,6 @@ public enum RedisCommandType {
   SCRIPT(null, UNIMPLEMENTED),
   SLAVEOF(null, UNIMPLEMENTED),
   REPLICAOF(null, UNIMPLEMENTED),
-  SLOWLOG(null, UNIMPLEMENTED),
   SORT(null, UNIMPLEMENTED),
   STRALGO(null, UNIMPLEMENTED),
   SWAPDB(null, UNIMPLEMENTED),

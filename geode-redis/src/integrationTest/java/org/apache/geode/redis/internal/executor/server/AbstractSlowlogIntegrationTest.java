@@ -1,0 +1,117 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
+package org.apache.geode.redis.internal.executor.server;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.util.List;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
+import redis.clients.jedis.util.Slowlog;
+
+import org.apache.geode.test.awaitility.GeodeAwaitility;
+import org.apache.geode.test.dunit.rules.RedisPortSupplier;
+
+public abstract class AbstractSlowlogIntegrationTest implements RedisPortSupplier {
+
+  private Jedis jedis;
+  private static final int REDIS_CLIENT_TIMEOUT =
+      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
+
+  @Before
+  public void setUp() {
+    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+  }
+
+  @After
+  public void tearDown() {
+    jedis.close();
+  }
+
+  abstract int getExposedPort();
+
+  @Test
+  public void shouldReturnEmptyArray_whenGetSubcommandSpecified() {
+    List<Slowlog> actualResult = jedis.slowlogGet();
+
+    assertThat(actualResult.size()).isEqualTo(0);
+  }
+
+  @Test
+  public void shouldReturnEmptyArray_whenGetSubcommandSpecified_withLengthParameter() {
+    List<Slowlog> actualResult = jedis.slowlogGet(200);
+
+    assertThat(actualResult.size()).isEqualTo(0);
+  }
+
+  @Test
+  public void shouldReturnEmptyArray_whenGetSubcommandSpecified_withNegativeLengthParameter() {
+    List<Slowlog> actualResult = jedis.slowlogGet(-200);
+
+    assertThat(actualResult.size()).isEqualTo(0);
+  }
+
+  @Test
+  public void shouldReturnZero_whenLenSubcommandSpecified() {
+    Long length = jedis.slowlogLen();
+
+    assertThat(length).isEqualTo(0L);
+  }
+
+  @Test
+  public void shouldReturnOK_whenResetSubcommandSpecified() {
+    String response = jedis.slowlogReset();
+
+    assertThat(response).isEqualTo("OK");
+  }
+
+  @Test
+  public void shouldThrowException_IfResetGivenAParameter() {
+    assertThatThrownBy(
+        () -> jedis.sendCommand(
+            Protocol.Command.SLOWLOG, "RESET", "Superfluous"))
+                .hasMessageContaining("ERR Unknown subcommand or wrong number of arguments for");
+  }
+
+  @Test
+  public void shouldThrowException_IfLenGivenAParameter() {
+    assertThatThrownBy(
+        () -> jedis.sendCommand(
+            Protocol.Command.SLOWLOG, "LEN", "Superfluous"))
+                .hasMessageContaining("ERR Unknown subcommand or wrong number of arguments for");
+  }
+
+  @Test
+  public void shouldThrowException_IfGetGivenNonIntegerParameter() {
+    assertThatThrownBy(
+        () -> jedis.sendCommand(
+            Protocol.Command.SLOWLOG, "GET", "I am not a number"))
+                .hasMessageContaining("ERR value is not an integer or out of range");
+  }
+
+  @Test
+  public void shouldThrowException_IfGivenUnknownSubcommand() {
+    assertThatThrownBy(
+        () -> jedis.sendCommand(
+            Protocol.Command.SLOWLOG, "xlerb"))
+                .hasMessageContaining("ERR Unknown subcommand or wrong number of arguments for");
+  }
+}

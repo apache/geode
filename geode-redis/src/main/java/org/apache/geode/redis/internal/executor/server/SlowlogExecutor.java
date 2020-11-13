@@ -15,10 +15,7 @@
 
 package org.apache.geode.redis.internal.executor.server;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.ParameterRequirements.RedisParametersMismatchException;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
@@ -30,7 +27,21 @@ public class SlowlogExecutor extends AbstractExecutor {
   @Override
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
-    List<ByteArrayWrapper> values = new ArrayList<ByteArrayWrapper>();
-    return RedisResponse.array(values);
+    String subCommand = command.getStringKey();
+    if (subCommand.toLowerCase().equals("get")) {
+      return RedisResponse.emptyArray();
+    } else if (subCommand.toLowerCase().equals("len")) {
+      return RedisResponse.integer(0);
+    } else if (subCommand.toLowerCase().equals("reset")) {
+      return RedisResponse.ok();
+    }
+    throw new RedisParametersMismatchException(wrongNumberOfArgumentsErrorMessage());
+  }
+
+  public String wrongNumberOfArgumentsErrorMessage() {
+    String result;
+    result = String
+        .format("Unknown subcommand or wrong number of arguments for 'len'. Try SLOWLOG HELP.");
+    return result;
   }
 }
