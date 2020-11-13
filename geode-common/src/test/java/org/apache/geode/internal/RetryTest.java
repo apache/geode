@@ -33,41 +33,43 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class RetryTest {
-  Retry.Clock clock;
+  Retry.Timer timer;
 
   @Before
   public void before() throws Exception {
     AtomicLong atomicLong = new AtomicLong();
-    clock = mock(Retry.Clock.class);
-    when(clock.nanoTime()).thenReturn(1L, 2L, 3L);
+    timer = mock(Retry.Timer.class);
+    when(timer.nanoTime()).thenReturn(1L, 2L, 3L);
   }
 
   @Test
   public void tryForReturnsImmediatelyOnPredicateMatch()
       throws TimeoutException, InterruptedException {
-    final Integer value = Retry.tryFor(1, 1, NANOSECONDS, () -> 10, (v) -> v == 10, clock);
+    final Integer value =
+        Retry.tryFor(1, NANOSECONDS, 1, NANOSECONDS, () -> 10, (v) -> v == 10, timer);
     assertThat(value).isEqualTo(10);
     // nanoTime is only called one time if predicate match immediately
-    verify(clock, times(1)).nanoTime();
+    verify(timer, times(1)).nanoTime();
     // sleep is never called if predicate matches immediately
-    verify(clock, never()).sleep(1, NANOSECONDS);
+    verify(timer, never()).sleep(1, NANOSECONDS);
   }
 
   @Test
   public void tryForReturnsAfterRetries() throws TimeoutException, InterruptedException {
     final AtomicInteger shared = new AtomicInteger();
     final Integer value =
-        Retry.tryFor(3, 1, NANOSECONDS, shared::getAndIncrement, (v) -> v == 3, clock);
+        Retry.tryFor(3, NANOSECONDS, 1, NANOSECONDS, shared::getAndIncrement, (v) -> v == 3, timer);
     assertThat(value).isEqualTo(3);
-    verify(clock, times(4)).nanoTime();
-    verify(clock, times(3)).sleep(1, NANOSECONDS);
+    verify(timer, times(4)).nanoTime();
+    verify(timer, times(3)).sleep(1, NANOSECONDS);
   }
 
   @Test
   public void tryForThrowsAfterTimeout() throws InterruptedException {
-    assertThatThrownBy(() -> Retry.tryFor(1, 1, NANOSECONDS, () -> null, Objects::nonNull, clock))
-        .isInstanceOf(TimeoutException.class);
-    verify(clock, times(2)).nanoTime();
-    verify(clock, times(1)).sleep(1, NANOSECONDS);
+    assertThatThrownBy(
+        () -> Retry.tryFor(1, NANOSECONDS, 1, NANOSECONDS, () -> null, Objects::nonNull, timer))
+            .isInstanceOf(TimeoutException.class);
+    verify(timer, times(2)).nanoTime();
+    verify(timer, times(1)).sleep(1, NANOSECONDS);
   }
 }

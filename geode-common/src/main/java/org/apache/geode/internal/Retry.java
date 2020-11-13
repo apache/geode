@@ -29,13 +29,13 @@ import org.apache.geode.annotations.VisibleForTesting;
  */
 public class Retry {
 
-  interface Clock {
+  interface Timer {
     long nanoTime();
 
     void sleep(long sleepTime, TimeUnit sleepTimeUnit) throws InterruptedException;
   }
 
-  private static class SteadyClock implements Clock {
+  private static class SteadyTimer implements Timer {
     @Override
     public long nanoTime() {
       return System.nanoTime();
@@ -47,35 +47,34 @@ public class Retry {
     }
   }
 
-  private static final SteadyClock steadyClock = new SteadyClock();
+  private static final SteadyTimer steadyClock = new SteadyTimer();
 
   /**
    * Try the supplier function until the predicate is true or timeout occurs.
    *
    * @param timeout to retry for
+   * @param timeoutUnit the unit for timeout
    * @param interval time between each try
-   * @param timeUnit to retry for
+   * @param intervalUnit the unit for interval
    * @param supplier to execute until predicate is true or times out
    * @param predicate to test for retry
    * @param <T> type of return value
    * @return value from supplier after it passes predicate or times out.
    */
-  public static <T> T tryFor(long timeout,
-      long interval,
-      TimeUnit timeUnit,
+  public static <T> T tryFor(long timeout, TimeUnit timeoutUnit,
+      long interval, TimeUnit intervalUnit,
       Supplier<T> supplier,
       Predicate<T> predicate) throws TimeoutException, InterruptedException {
-    return tryFor(timeout, interval, timeUnit, supplier, predicate, steadyClock);
+    return tryFor(timeout, timeoutUnit, interval, intervalUnit, supplier, predicate, steadyClock);
   }
 
   @VisibleForTesting
-  static <T> T tryFor(long timeout,
-      long interval,
-      TimeUnit timeUnit,
+  static <T> T tryFor(long timeout, TimeUnit timeoutUnit,
+      long interval, TimeUnit intervalUnit,
       Supplier<T> supplier,
       Predicate<T> predicate,
-      Clock clock) throws TimeoutException, InterruptedException {
-    long until = clock.nanoTime() + NANOSECONDS.convert(timeout, timeUnit);
+      Timer timer) throws TimeoutException, InterruptedException {
+    long until = timer.nanoTime() + NANOSECONDS.convert(timeout, timeoutUnit);
 
     T value;
     do {
@@ -83,9 +82,9 @@ public class Retry {
       if (predicate.test(value)) {
         return value;
       } else {
-        clock.sleep(interval, timeUnit);
+        timer.sleep(interval, intervalUnit);
       }
-    } while (clock.nanoTime() < until);
+    } while (timer.nanoTime() < until);
 
     throw new TimeoutException();
   }

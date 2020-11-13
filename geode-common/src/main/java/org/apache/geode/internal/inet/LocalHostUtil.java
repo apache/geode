@@ -73,7 +73,7 @@ public class LocalHostUtil {
    */
   private static InetAddress tryToResolveLocalHost() {
     try {
-      return tryFor(60, 1, SECONDS, LocalHostUtil::resolveLocalHost, Objects::nonNull);
+      return tryFor(60, SECONDS, 1, SECONDS, LocalHostUtil::resolveLocalHost, Objects::nonNull);
     } catch (TimeoutException | InterruptedException ignored) {
     }
     return null;
