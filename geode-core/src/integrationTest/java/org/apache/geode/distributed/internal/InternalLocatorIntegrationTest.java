@@ -138,18 +138,6 @@ public class InternalLocatorIntegrationTest {
   }
 
   @Test
-  public void startedLocatorDoesNotAttemptReconnect() throws IOException, InterruptedException {
-    // start a locator that's not part of a cluster
-    final boolean joinCluster = false;
-    internalLocator = InternalLocator.startLocator(port, logFile, logWriter,
-        securityLogWriter, bindAddress, joinCluster,
-        distributedSystemProperties, hostnameForClients, workingDirectory);
-    port = internalLocator.getPort();
-    // the locator shouldn't attempt a reconnect because it's not part of a cluster
-    assertThat(internalLocator.attemptReconnect()).isFalse();
-  }
-
-  @Test
   public void stoppedLocatorIsStopped() throws IOException {
     internalLocator = InternalLocator.startLocator(port, logFile, logWriter,
         securityLogWriter, bindAddress, true,
