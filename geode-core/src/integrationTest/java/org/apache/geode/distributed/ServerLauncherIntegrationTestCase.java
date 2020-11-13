@@ -37,13 +37,13 @@ import org.junit.rules.ErrorCollector;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.distributed.AbstractLauncher.Status;
 import org.apache.geode.distributed.ServerLauncher.Builder;
 import org.apache.geode.distributed.ServerLauncher.ServerState;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
 import org.apache.geode.internal.process.ProcessType;
-import org.apache.geode.launcher.Status;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.services.module.internal.impl.ServiceLoaderModuleService;
 

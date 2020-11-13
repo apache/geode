@@ -14,10 +14,10 @@
  */
 package org.apache.geode.distributed;
 
+import static org.apache.geode.distributed.AbstractLauncher.Status.NOT_RESPONDING;
+import static org.apache.geode.distributed.AbstractLauncher.Status.ONLINE;
+import static org.apache.geode.distributed.AbstractLauncher.Status.STOPPED;
 import static org.apache.geode.internal.inet.LocalHostUtil.getLocalHost;
-import static org.apache.geode.launcher.Status.NOT_RESPONDING;
-import static org.apache.geode.launcher.Status.ONLINE;
-import static org.apache.geode.launcher.Status.STOPPED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
