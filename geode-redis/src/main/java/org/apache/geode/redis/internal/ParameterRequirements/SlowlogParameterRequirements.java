@@ -59,4 +59,11 @@ public class SlowlogParameterRequirements implements ParameterRequirements {
     }
   }
 
+  public String unknownSubcommandOrWrongNumberOfArgumentsErrorMessage(String command) {
+    String result;
+    result =
+        String.format("Unknown subcommand or wrong number of arguments for '%s'. Try SLOWLOG HELP.",
+            command);
+    return result;
+  }
 }

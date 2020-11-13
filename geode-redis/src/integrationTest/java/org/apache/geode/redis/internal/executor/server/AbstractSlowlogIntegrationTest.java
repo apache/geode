@@ -46,25 +46,27 @@ public abstract class AbstractSlowlogIntegrationTest implements RedisPortSupplie
     jedis.close();
   }
 
+  abstract int getExposedPort();
+
   @Test
   public void shouldReturnEmptyArray_whenGetSubcommandSpecified() {
     List<Slowlog> actualResult = jedis.slowlogGet();
 
-    assertThat(actualResult.isEmpty());
+    assertThat(actualResult.size()).isEqualTo(0);
   }
 
   @Test
   public void shouldReturnEmptyArray_whenGetSubcommandSpecified_withLengthParameter() {
     List<Slowlog> actualResult = jedis.slowlogGet(200);
 
-    assertThat(actualResult.isEmpty());
+    assertThat(actualResult.size()).isEqualTo(0);
   }
 
   @Test
   public void shouldReturnEmptyArray_whenGetSubcommandSpecified_withNegativeLengthParameter() {
     List<Slowlog> actualResult = jedis.slowlogGet(-200);
 
-    assertThat(actualResult.isEmpty());
+    assertThat(actualResult.size()).isEqualTo(0);
   }
 
   @Test
