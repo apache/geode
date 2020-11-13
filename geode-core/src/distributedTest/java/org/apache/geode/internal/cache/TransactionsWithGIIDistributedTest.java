@@ -135,7 +135,6 @@ public class TransactionsWithGIIDistributedTest implements Serializable {
   }
 
   private void doConcurrentPutInTx(String s) throws Exception {
-    logger.info("do put in tx");
     for (int i = 0; i < workers; i++) {
       queue.add(i);
     }
@@ -157,7 +156,6 @@ public class TransactionsWithGIIDistributedTest implements Serializable {
   }
 
   private void doConcurrentDestroyInTx() throws Exception {
-    logger.info("do destroy in tx");
     for (int i = 0; i < workers; i++) {
       queue.add(i);
     }
