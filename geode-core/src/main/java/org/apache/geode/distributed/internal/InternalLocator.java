@@ -156,6 +156,8 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
    */
   public static final String LOCATORS_PREFERRED_AS_COORDINATORS =
       GEMFIRE_PREFIX + "disable-floating-coordinator";
+  static final String IGNORING_RECONNECT_REQUEST =
+      "ignoring request to reconnect to the cluster - there is no DistributedSystem available to reconnect.";
 
   /**
    * the locator hosted by this JVM. As of 7.0 it is a singleton.
@@ -178,7 +180,8 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
   /**
    * whether the locator was stopped during forced-disconnect processing but a reconnect will occur
    */
-  private volatile boolean stoppedForReconnect;
+  @VisibleForTesting
+  volatile boolean stoppedForReconnect;
   private volatile boolean reconnected;
 
   /**
@@ -1099,12 +1102,18 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
    *
    * @return true if able to reconnect the locator to the new distributed system
    */
-  private boolean attemptReconnect() throws InterruptedException, IOException {
+  @VisibleForTesting
+  boolean attemptReconnect() throws InterruptedException, IOException {
     boolean restarted = false;
     if (stoppedForReconnect) {
-      logger.info("attempting to restart locator");
       boolean tcpServerStarted = false;
       InternalDistributedSystem system = internalDistributedSystem;
+      if (system == null) {
+        logger.info(
+            IGNORING_RECONNECT_REQUEST);
+        return false;
+      }
+      logger.info("attempting to restart locator");
       long waitTime = system.getConfig().getMaxWaitTimeForReconnect() / 2;
       QuorumChecker quorumChecker = null;
 
