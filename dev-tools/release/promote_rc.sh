@@ -434,6 +434,7 @@ echo "2. Go to https://github.com/${GITHUB_USER}/homebrew-core/pull/new/apache-g
 echo "3. Go to https://github.com/${GITHUB_USER}/geode/pull/new/add-${VERSION}-to-old-versions and create the pull request"
 echo "4. Validate docker image: docker run -it apachegeode/geode"
 echo "5. Bulk-transition JIRA issues fixed in this release to Closed"
+echo "5b.Publish to GitHub (see https://cwiki.apache.org/confluence/display/GEODE/Releasing+Apache+Geode#ReleasingApacheGeode-PublishtoGitHub)"
 echo "6. Wait overnight for apache mirror sites to sync"
 echo "7. Confirm that your homebrew PR passed its PR checks and was merged to master"
 echo "8. Check that ${VERSION} documentation has been published to https://geode.apache.org/docs/"
