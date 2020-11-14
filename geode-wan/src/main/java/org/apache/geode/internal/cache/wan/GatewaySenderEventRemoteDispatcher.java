@@ -25,6 +25,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.GemFireIOException;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.ServerOperationException;
@@ -280,6 +281,11 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
     }
   }
 
+  @VisibleForTesting
+  ReentrantReadWriteLock getConnectionLifeCycleLock() {
+    return this.connectionLifeCycleLock;
+  }
+
   /**
    * Acquires or adds a new <code>Connection</code> to the corresponding <code>Gateway</code>
    *
@@ -295,9 +301,16 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
     // OR the connection's ServerLocation doesn't match with the one stored in sender
     // THEN initialize the connection
     if (!this.sender.isParallel()) {
-      if (this.connection == null || this.connection.isDestroyed()
-          || this.connection.getServer() == null
-          || !this.connection.getServer().equals(this.sender.getServerLocation())) {
+      boolean needToReconnect = false;
+      getConnectionLifeCycleLock().readLock().lock();
+      try {
+        needToReconnect = this.connection == null || this.connection.isDestroyed()
+            || this.connection.getServer() == null
+            || !this.connection.getServer().equals(this.sender.getServerLocation());
+      } finally {
+        getConnectionLifeCycleLock().readLock().unlock();
+      }
+      if (needToReconnect) {
         if (logger.isDebugEnabled()) {
           logger.debug(
               "Initializing new connection as serverLocation of old connection is : {} and the serverLocation to connect is {}",
