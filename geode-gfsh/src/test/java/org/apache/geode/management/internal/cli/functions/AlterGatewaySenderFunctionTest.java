@@ -22,8 +22,6 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Map;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -33,6 +31,7 @@ import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
 import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 
@@ -46,8 +45,7 @@ public class AlterGatewaySenderFunctionTest {
   private ArgumentCaptor<CliFunctionResult> resultCaptor;
   private GatewaySenderFunctionArgs args;
   private GatewaySender sender;
-  private ArgumentCaptor<Map> updateCapture1;
-  private ArgumentCaptor<Map> updateCapture2;
+  private ArgumentCaptor<GatewaySenderAttributes> updateCapture1;
 
   @Before
   @SuppressWarnings("unchecked")
@@ -65,8 +63,7 @@ public class AlterGatewaySenderFunctionTest {
     when(args.getId()).thenReturn("id");
     resultCaptor = ArgumentCaptor.forClass(CliFunctionResult.class);
     when(cache.getDistributedSystem()).thenReturn(mock(DistributedSystem.class));
-    updateCapture1 = ArgumentCaptor.forClass(Map.class);
-    updateCapture2 = ArgumentCaptor.forClass(Map.class);
+    updateCapture1 = ArgumentCaptor.forClass(GatewaySenderAttributes.class);
     when(sender.getId()).thenReturn("id");
   }
 
@@ -95,11 +92,11 @@ public class AlterGatewaySenderFunctionTest {
     when(args.mustGroupTransactionEvents()).thenReturn(null);
 
     function.execute(context);
-    verify(sender).update(updateCapture1.capture(), updateCapture2.capture());
-    Map map1 = updateCapture1.getValue();
-    Map map2 = updateCapture2.getValue();
-    assertThat(map1.size()).isEqualTo(0);
-    assertThat(map2.size()).isEqualTo(0);
+    verify(sender).update(updateCapture1.capture());
+    GatewaySenderAttributes attr = updateCapture1.getValue();
+    assertThat(attr.modifyAlertThreshold()).isFalse();
+    assertThat(attr.modifyBatchSize()).isFalse();
+    assertThat(attr.modifyBatchTimeInterval()).isFalse();
 
     verify(resultSender).lastResult(resultCaptor.capture());
     CliFunctionResult result = resultCaptor.getValue();
@@ -120,11 +117,14 @@ public class AlterGatewaySenderFunctionTest {
     when(args.mustGroupTransactionEvents()).thenReturn(null);
 
     function.execute(context);
-    verify(sender).update(updateCapture1.capture(), updateCapture2.capture());
-    Map map1 = updateCapture1.getValue();
-    Map map2 = updateCapture2.getValue();
-    assertThat(map1.size()).isEqualTo(3);
-    assertThat(map2.size()).isEqualTo(0);
+    verify(sender).update(updateCapture1.capture());
+    GatewaySenderAttributes attr = updateCapture1.getValue();
+    assertThat(attr.modifyAlertThreshold()).isTrue();
+    assertThat(attr.getAlertThreshold()).isEqualTo(200);
+    assertThat(attr.modifyBatchSize()).isTrue();
+    assertThat(attr.getBatchSize()).isEqualTo(50);
+    assertThat(attr.modifyBatchTimeInterval()).isTrue();
+    assertThat(attr.getBatchTimeInterval()).isEqualTo(150);
 
     verify(resultSender).lastResult(resultCaptor.capture());
     CliFunctionResult result = resultCaptor.getValue();

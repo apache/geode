@@ -88,6 +88,21 @@ public class GatewaySenderAttributes {
   public boolean enforceThreadsConnectSameReceiver =
       GatewaySender.DEFAULT_ENFORCE_THREADS_CONNECT_SAME_RECEIVER;
 
+  // Added due to "alter gateway-sender" command
+
+  public boolean modifyAlertThreshold = false;
+
+  public boolean modifyBatchSize = false;
+
+  public boolean modifyBatchTimeInterval = false;
+
+  public boolean modifyGroupTransactionEvents = false;
+
+  public boolean modifyGatewayEventFilter = false;
+
+  public boolean modifyGatewayTransportFilter = false;
+
+
   public int getSocketBufferSize() {
     return this.socketBufferSize;
   }
@@ -211,4 +226,32 @@ public class GatewaySenderAttributes {
   public boolean getEnforceThreadsConnectSameReceiver() {
     return this.enforceThreadsConnectSameReceiver;
   }
+
+  // Added due to "alter gateway-sender" command
+
+  public boolean modifyAlertThreshold() {
+    return this.modifyAlertThreshold;
+  }
+
+  public boolean modifyBatchSize() {
+    return this.modifyBatchSize;
+  }
+
+  public boolean modifyBatchTimeInterval() {
+    return this.modifyBatchTimeInterval;
+  }
+
+  public boolean modifyGroupTransactionEvents() {
+    return this.modifyGroupTransactionEvents;
+  }
+
+  public boolean modifyGatewayEventFilter() {
+    return this.modifyGatewayEventFilter;
+  }
+
+  public boolean modifyGatewayTransportFilter() {
+    return this.modifyGatewayTransportFilter;
+  }
+
+
 }

@@ -14,21 +14,18 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheCallback;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.internal.cache.execute.InternalFunction;
+import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
 import org.apache.geode.internal.security.CallbackInstantiator;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
@@ -73,63 +70,52 @@ public class AlterGatewaySenderFunction implements InternalFunction<GatewaySende
       throw new EntityNotFoundException(message);
     }
 
-    Map<String, String> runTimeGatewaySenderAttributes = new HashMap<>();
-    Map<String, List<CacheCallback>> runTimeGatewaySenderFilters = new HashMap<>();
-
+    GatewaySenderAttributes attributes = new GatewaySenderAttributes();
 
     Integer alertThreshold = gatewaySenderCreateArgs.getAlertThreshold();
     if (alertThreshold != null) {
-      runTimeGatewaySenderAttributes.put(
-          CliStrings.ALTER_GATEWAYSENDER__ALERTTHRESHOLD,
-          alertThreshold.toString());
+      attributes.modifyAlertThreshold = true;
+      attributes.alertThreshold = alertThreshold;
     }
 
     Integer batchSize = gatewaySenderCreateArgs.getBatchSize();
     if (batchSize != null) {
-      runTimeGatewaySenderAttributes.put(
-          CliStrings.ALTER_GATEWAYSENDER__BATCHSIZE,
-          batchSize.toString());
+      attributes.modifyBatchSize = true;
+      attributes.batchSize = batchSize;
     }
 
     Integer batchTimeInterval = gatewaySenderCreateArgs.getBatchTimeInterval();
     if (batchTimeInterval != null) {
-      runTimeGatewaySenderAttributes.put(
-          CliStrings.ALTER_GATEWAYSENDER__BATCHTIMEINTERVAL,
-          batchTimeInterval.toString());
+      attributes.modifyBatchTimeInterval = true;
+      attributes.batchTimeInterval = batchTimeInterval;
     }
 
     Boolean groupTransactionEvents = gatewaySenderCreateArgs.mustGroupTransactionEvents();
     if (groupTransactionEvents != null) {
-      runTimeGatewaySenderAttributes.put(
-          CliStrings.ALTER_GATEWAYSENDER__GROUPTRANSACTIONEVENTS,
-          groupTransactionEvents.toString());
+      attributes.modifyGroupTransactionEvents = true;
+      attributes.groupTransactionEvents = groupTransactionEvents;
     }
 
     List<String> gatewayEventFilters = gatewaySenderCreateArgs.getGatewayEventFilter();
     if (gatewayEventFilters != null) {
-      List<CacheCallback> tempEventList = new ArrayList<>();
+      attributes.modifyGatewayEventFilter = true;
       for (String filter : gatewayEventFilters) {
-        tempEventList.add(CallbackInstantiator.getObjectOfTypeFromClassName(filter,
+        attributes.addGatewayEventFilter(CallbackInstantiator.getObjectOfTypeFromClassName(filter,
             GatewayEventFilter.class));
       }
-      runTimeGatewaySenderFilters.put(
-          CliStrings.ALTER_GATEWAYSENDER__GATEWAYEVENTFILTER,
-          tempEventList);
     }
 
     List<String> gatewayTransportFilters = gatewaySenderCreateArgs.getGatewayTransportFilter();
     if (gatewayTransportFilters != null) {
-      List<CacheCallback> tempTransList = new ArrayList<>();
+      attributes.modifyGatewayTransportFilter = true;
       for (String filter : gatewayTransportFilters) {
-        tempTransList.add(CallbackInstantiator.getObjectOfTypeFromClassName(filter,
-            GatewayTransportFilter.class));
+        attributes
+            .addGatewayTransportFilter(CallbackInstantiator.getObjectOfTypeFromClassName(filter,
+                GatewayTransportFilter.class));
       }
-      runTimeGatewaySenderFilters.put(
-          CliStrings.ALTER_GATEWAYSENDER__GATEWAYTRANSPORTFILTER,
-          tempTransList);
     }
 
-    gateway.update(runTimeGatewaySenderAttributes, runTimeGatewaySenderFilters);
+    gateway.update(attributes);
     return gateway;
   }
 
