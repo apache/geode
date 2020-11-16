@@ -129,13 +129,13 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
   @Test
   public void testBitpos() {
     jedis.bitpos("string", true);
-    Map<String, String> info = getInfo();
+    Map<String, String> info = getInfo(jedis);
 
     assertThat(info.get(HITS)).isEqualTo("1");
     assertThat(info.get(MISSES)).isEqualTo("0");
 
     jedis.bitpos("missed", true);
-    info = getInfo();
+    info = getInfo(jedis);
 
     assertThat(info.get(HITS)).isEqualTo("1");
     assertThat(info.get(MISSES)).isEqualTo("1");
@@ -144,13 +144,13 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
   @Test
   public void testBitop() {
     jedis.bitop(BitOP.OR, "dest", "string", "string");
-    Map<String, String> info = getInfo();
+    Map<String, String> info = getInfo(jedis);
 
     assertThat(info.get(HITS)).isEqualTo("2");
     assertThat(info.get(MISSES)).isEqualTo("0");
 
     jedis.bitop(BitOP.OR, "dest", "string", "missed");
-    info = getInfo();
+    info = getInfo(jedis);
 
     assertThat(info.get(HITS)).isEqualTo("3");
     assertThat(info.get(MISSES)).isEqualTo("1");
@@ -288,13 +288,13 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
 
   private void runCommandAndAssertHitsAndMisses(String key, Consumer<String> command) {
     command.accept(key);
-    Map<String, String> info = getInfo();
+    Map<String, String> info = getInfo(jedis);
 
     assertThat(info.get(HITS)).isEqualTo("1");
     assertThat(info.get(MISSES)).isEqualTo("0");
 
     command.accept("missed");
-    info = getInfo();
+    info = getInfo(jedis);
 
     assertThat(info.get(HITS)).isEqualTo("1");
     assertThat(info.get(MISSES)).isEqualTo("1");
@@ -302,13 +302,13 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
 
   private void runCommandAndAssertHitsAndMisses(String key, BiConsumer<String, String> command) {
     command.accept(key, "42");
-    Map<String, String> info = getInfo();
+    Map<String, String> info = getInfo(jedis);
 
     assertThat(info.get(HITS)).isEqualTo("1");
     assertThat(info.get(MISSES)).isEqualTo("0");
 
     command.accept("missed", "42");
-    info = getInfo();
+    info = getInfo(jedis);
 
     assertThat(info.get(HITS)).isEqualTo("1");
     assertThat(info.get(MISSES)).isEqualTo("1");
@@ -317,13 +317,13 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
   private void runDiffCommandAndAssertHitsAndMisses(String key,
       BiConsumer<String, String> command) {
     command.accept(key, key);
-    Map<String, String> info = getInfo();
+    Map<String, String> info = getInfo(jedis);
 
     assertThat(info.get(HITS)).isEqualTo("2");
     assertThat(info.get(MISSES)).isEqualTo("0");
 
     command.accept(key, "missed");
-    info = getInfo();
+    info = getInfo(jedis);
 
     assertThat(info.get(HITS)).isEqualTo("3");
     assertThat(info.get(MISSES)).isEqualTo("1");
@@ -335,13 +335,13 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
   private void runDiffStoreCommandAndAssertNoStatUpdates(String key,
       TriConsumer<String, String, String> command) {
     command.accept("destination", key, key);
-    Map<String, String> info = getInfo();
+    Map<String, String> info = getInfo(jedis);
 
     assertThat(info.get(HITS)).isEqualTo("0");
     assertThat(info.get(MISSES)).isEqualTo("0");
 
     command.accept("destination", key, "missed");
-    info = getInfo();
+    info = getInfo(jedis);
 
     assertThat(info.get(HITS)).isEqualTo("0");
     assertThat(info.get(MISSES)).isEqualTo("0");
@@ -349,7 +349,7 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
 
   private void runCommandAndAssertNoStatUpdates(String key, Consumer<String> command) {
     command.accept(key);
-    Map<String, String> info = getInfo();
+    Map<String, String> info = getInfo(jedis);
 
     assertThat(info.get(HITS)).isEqualTo("0");
     assertThat(info.get(MISSES)).isEqualTo("0");
@@ -357,7 +357,7 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
 
   private void runCommandAndAssertNoStatUpdates(String key, BiConsumer<String, String> command) {
     command.accept(key, "42");
-    Map<String, String> info = getInfo();
+    Map<String, String> info = getInfo(jedis);
 
     assertThat(info.get(HITS)).isEqualTo("0");
     assertThat(info.get(MISSES)).isEqualTo("0");
@@ -366,7 +366,7 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
   private void runCommandAndAssertNoStatUpdates(String key,
       TriConsumer<String, String, String> command) {
     command.accept(key, key, "42");
-    Map<String, String> info = getInfo();
+    Map<String, String> info = getInfo(jedis);
 
     assertThat(info.get(HITS)).isEqualTo("0");
     assertThat(info.get(MISSES)).isEqualTo("0");
@@ -375,7 +375,7 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
   /**
    * Convert the values returned by the INFO command into a basic param:value map.
    */
-  private Map<String, String> getInfo() {
+  static Map<String, String> getInfo(Jedis jedis) {
     Map<String, String> results = new HashMap<>();
     String rawInfo = jedis.info();
 
