@@ -75,5 +75,6 @@ public class GatewaySenderEventRemoteDispatcherJUnitTest {
     doNothing().when(dispatcher).initializeConnection();
     Connection newConnection = dispatcher.getConnection(true);
     verify(dispatcher, times(1)).initializeConnection();
+    verify(dispatcher, times(2)).getConnectionLifeCycleLock();
   }
 }
