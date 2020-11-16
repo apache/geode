@@ -1,0 +1,297 @@
+#------------------------------------------------------------
+# Default owner(s) if nothing is matched
+#------------------------------------------------------------
+#*
+
+#------------------------------------------------------------
+# CODEOWNERS and .asf.yml - owned by everyone
+#------------------------------------------------------------
+CODEOWNERS @apache/geode-committers
+.asf.yml @apache/geode-committers
+ 
+#------------------------------------------------------------
+# Serialization
+#------------------------------------------------------------
+#geode-serialization/**
+#geode-core/**/org/apache/geode/pdx/**
+#geode-core/**/org/apache/geode/internal/*
+
+#------------------------------------------------------------
+# Membership
+#------------------------------------------------------------
+#geode-membership/**
+#geode-old-client-support/**
+#geode-tcp-server/**
+#geode-core/**/org/apache/geode/distributed/internal/membership/**
+
+#------------------------------------------------------------
+# P2P Messaging
+#------------------------------------------------------------
+#geode-core/**/org/apache/geode/internal/tcp/**
+#geode-core/**/org/apache/geode/distributed/internal/direct/**
+#geode-core/**/org/apache/geode/internal/net/**
+#geode-core/**/org/apache/geode/net/**
+#geode-core/**/org/apache/geode/distributed/*
+#geode-core/**/org/apache/geode/distributed/internal/*
+
+#------------------------------------------------------------
+# Client/server messaging and cache operations
+#------------------------------------------------------------
+#geode-core/**/org/apache/geode/cache/client/**
+#geode-core/**/org/apache/geode/cache/server/**
+#geode-core/**/org/apache/geode/internal/cache/client/**
+#geode-core/**/org/apache/geode/internal/cache/tier/**
+
+#--------------------------------------------------
+# Client Queues
+#--------------------------------------------------
+#geode-core/**/org/apache/geode/internal/cache/ha/**
+#geode-core/**/org/apache/geode/internal/cache/tier/CacheClient*
+ 
+#------------------------------------------------------------
+# Experimental Protobuf based Client/Server
+#------------------------------------------------------------
+#geode-experimental-driver/**
+#geode-protobuf/**
+#geode-protobuf-messages/**
+
+#------------------------------------------------------------
+# Core Public API packages - Cache, Region, etc.
+#------------------------------------------------------------
+#geode-core/**/org/apache/geode/*
+#geode-core/**/org/apache/geode/cache/*
+#geode-core/**/org/apache/geode/cache/util/**
+
+#------------------------------------------------------------
+# Distributed Locks
+#------------------------------------------------------------
+#geode-core/**/org/apache/geode/distributed/internal/locks/**
+
+#------------------------------------------------------------
+# Core region implementations and plumbing
+#------------------------------------------------------------
+#geode-core/**/org/apache/geode/internal/cache/*
+
+#------------------------------------------------------------
+# Region entry management
+#------------------------------------------------------------
+#geode-core/**/org/apache/geode/internal/cache/entries/**
+#geode-core/**/org/apache/geode/internal/cache/region/entry/**
+#geode-core/**/org/apache/geode/internal/cache/map/**
+#geode-core/**/org/apache/geode/compression/**
+#geode-core/**/org/apache/geode/internal/cache/compression/**
+
+#------------------------------------------------------------
+# Partitioned Regions
+#------------------------------------------------------------
+#geode-rebalancer/**
+#geode-core/**/org/apache/geode/internal/cache/partitioned/**
+#geode-core/**/org/apache/geode/cache/partition/**
+
+#------------------------------------------------------------
+# Event tracking
+#------------------------------------------------------------
+#geode-core/**/org/apache/geode/internal/cache/event/**
+
+#------------------------------------------------------------
+# Eviction
+#------------------------------------------------------------
+#geode-core/**/org/apache/geode/internal/cache/eviction/**
+#geode-core/**/org/apache/geode/internal/size/**
+
+#------------------------------------------------------------
+# Offheap
+#------------------------------------------------------------
+#geode-core/**/org/apache/geode/internal/offheap/**
+
+#------------------------------------------------------------
+# Transactions
+#------------------------------------------------------------
+#geode-core/**/org/apache/geode/internal/cache/tx/**
+#geode-core/**/org/apache/geode/internal/jta/**
+#geode-core/**/org/apache/geode/internal/cache/locks/**
+
+#------------------------------------------------------------
+# Function Execution
+#------------------------------------------------------------
+#geode-core/**/org/apache/geode/internal/cache/execute/**
+#geode-core/**/org/apache/geode/cache/execute/**
+
+#------------------------------------------------------------
+# Querying
+#------------------------------------------------------------
+#geode-cq/**
+#geode-core/**/org/apache/geode/cache/query/**
+
+#------------------------------------------------------------
+# Session State:
+#------------------------------------------------------------
+#extensions/**
+#geode-core/**/org/apache/geode/internal/modules/util/**
+
+#------------------------------------------------------------
+# DEV rest API
+#------------------------------------------------------------
+#geode-web-api/**
+
+#------------------------------------------------------------
+# Lucene integration
+#------------------------------------------------------------
+#geode-lucene/**
+
+#------------------------------------------------------------
+# Memcached integration
+#------------------------------------------------------------
+#geode-memcached/**
+
+#------------------------------------------------------------
+# Misc Utilities
+#------------------------------------------------------------
+#geode-core/**/org/apache/geode/internal/util/concurrent/**
+#geode-core/**/org/apache/geode/internal/shared/**
+#geode-core/**/org/apache/geode/internal/sequencelog/**
+#geode-core/**/org/apache/geode/internal/concurrent/**
+#geode-core/**/org/apache/geode/distributed/internal/unsafe/**
+#geode-core/**/org/apache/geode/internal/lang/**
+#geode-core/**/org/apache/geode/internal/monitoring/**
+#geode-core/**/org/apache/geode/internal/exception/**
+#geode-core/**/org/apache/geode/lang/**
+#geode-core/**/org/apache/geode/ra/**
+#geode-core/**/org/apache/geode/internal/util/**
+#geode-core/**/org/apache/geode/internal/cache/vmotion/**
+#geode-core/**/org/apache/geode/internal/jndi/**
+#geode-common/**
+#geode-unsafe/**
+
+#------------------------------------------------------------
+# Persistence
+#------------------------------------------------------------
+#geode-core/**/org/apache/geode/cache/persistence/**
+#geode-core/**/org/apache/geode/internal/cache/persistence/**
+#geode-core/**/org/apache/geode/internal/cache/backup/**
+
+#------------------------------------------------------------
+# Region Version Vectors - used for sychronization on 
+# member failures and persistent recovery
+#------------------------------------------------------------
+#geode-core/**/org/apache/geode/internal/cache/versions/**
+
+
+#------------------------------------------------------------
+# WAN messaging and queues
+#------------------------------------------------------------
+#geode-wan/**
+#geode-core/**/org/apache/geode/cache/asyncqueue/**
+#geode-core/**/org/apache/geode/cache/wan/**
+#geode-core/**/org/apache/geode/internal/cache/wan/**
+
+#------------------------------------------------------------
+# Management
+#------------------------------------------------------------
+#geode-management/**
+#geode-web-management/**
+#geode-gfsh/**
+#geode-pulse/**
+#geode-http-service/**
+#geode-web/**
+#geode-core/**/org/apache/geode/admin/**
+#geode-core/**/org/apache/geode/alerting/**
+#geode-core/**/org/apache/geode/management/**
+#geode-core/**/org/apache/geode/cache/configuration/**
+#geode-core/**/org/apache/geode/internal/admin/**
+#geode-core/**/org/apache/geode/internal/cache/xmlcache/**
+#geode-core/**/org/apache/geode/internal/cache/extension/**
+#geode-core/**/org/apache/geode/internal/config/**
+#geode-core/**/org/apache/geode/internal/process/**
+#geode-core/**/org/apache/geode/cache/internal/*
+
+#------------------------------------------------------------
+# Security
+#------------------------------------------------------------
+#geode-core/**/org/apache/geode/examples/security/**
+#geode-core/**/org/apache/geode/examples/**
+#geode-core/**/org/apache/geode/security/**
+#geode-core/**/org/apache/geode/internal/security/**
+#geode-core/**/org/apache/geode/cache/operations/**
+#geode-core/**/org/apache/geode/internal/cache/operations/**
+
+#------------------------------------------------------------
+# Logging
+#------------------------------------------------------------
+#geode-log4j/**
+#geode-logging/**
+#geode-core/**/org/apache/geode/logging/**
+#geode-core/**/org/apache/geode/internal/logging/**
+#geode-core/**/org/apache/geode/i18n/**
+#geode-core/**/org/apache/geode/internal/i18n/**
+#geode-core/**/org/apache/geode/internal/io/**
+
+#------------------------------------------------------------
+# Metrics & Statistics
+#------------------------------------------------------------
+#geode-core/**/org/apache/geode/internal/statistics/**
+#geode-core/**/org/apache/geode/internal/stats50/**
+#geode-core/**/org/apache/geode/metrics/**
+
+#------------------------------------------------------------
+# Region Snapshots
+#------------------------------------------------------------
+#geode-core/**/org/apache/geode/cache/snapshot/**
+#geode-core/**/org/apache/geode/internal/cache/snapshot/**
+
+#------------------------------------------------------------
+# JDBC connector
+#------------------------------------------------------------
+#geode-connectors/**
+#geode-core/**/org/apache/geode/datasource/**
+#geode-core/**/org/apache/geode/internal/datasource/**
+
+
+#------------------------------------------------------------
+# Resource manager
+#------------------------------------------------------------
+#geode-core/**/org/apache/geode/cache/control/**
+#geode-core/**/org/apache/geode/internal/cache/control/**
+
+#------------------------------------------------------------
+# Testing utilities
+#------------------------------------------------------------
+#geode-concurrency-test/**
+#geode-dunit/**
+#geode-junit/**
+#geode-jmh/**
+
+#------------------------------------------------------------
+# Redis API
+#------------------------------------------------------------
+#geode-redis/**
+
+#------------------------------------------------------------
+# Build and tooling
+#------------------------------------------------------------
+#*.gradle
+#etc/**
+#build.gradle
+#buildSrc/**
+#ci/**
+#dev-tools/**
+#docker/**
+#etc/**
+#boms/**
+#*gradle*
+#static-analysis/**
+#geode-old-versions/**
+#KEYS
+#geode-assembly/**
+
+#------------------------------------------------------------
+# Documentation
+#------------------------------------------------------------
+#geode-book/**
+#geode-docs/**
+#BUILDING.md
+#CODE_OF_CONDUCT.md
+#LICENSE
+#NOTICE
+#README.md
+#TESTING.md
