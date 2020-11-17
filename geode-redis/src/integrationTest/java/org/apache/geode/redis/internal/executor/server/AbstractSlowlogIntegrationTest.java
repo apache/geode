@@ -84,34 +84,58 @@ public abstract class AbstractSlowlogIntegrationTest implements RedisPortSupplie
   }
 
   @Test
-  public void shouldThrowException_IfResetGivenAParameter() {
+  public void shouldThrowException_givenAnyExtraParameterIsProvidedToReset() {
     assertThatThrownBy(
         () -> jedis.sendCommand(
             Protocol.Command.SLOWLOG, "RESET", "Superfluous"))
-                .hasMessageContaining("ERR Unknown subcommand or wrong number of arguments for");
+                .hasMessage("ERR Unknown subcommand or wrong number of arguments for 'RESET'. Try SLOWLOG HELP.");
   }
 
   @Test
-  public void shouldThrowException_IfLenGivenAParameter() {
+  public void shouldThrowException_givenAnyExtraParameterIsProvidedToLenAParameter() {
     assertThatThrownBy(
         () -> jedis.sendCommand(
             Protocol.Command.SLOWLOG, "LEN", "Superfluous"))
-                .hasMessageContaining("ERR Unknown subcommand or wrong number of arguments for");
+                .hasMessage("ERR Unknown subcommand or wrong number of arguments for 'LEN'. Try SLOWLOG HELP.");
   }
 
   @Test
-  public void shouldThrowException_IfGetGivenNonIntegerParameter() {
+  public void shouldMatchCaseOfSentCommand_whenThrowingException() {
+    assertThatThrownBy(
+        () -> jedis.sendCommand(
+            Protocol.Command.SLOWLOG, "lEn", "Superfluous"))
+        .hasMessage("ERR Unknown subcommand or wrong number of arguments for 'lEn'. Try SLOWLOG HELP.");
+  }
+
+  @Test
+  public void shouldThrowException_givenNonIntegerParameterToGET() {
     assertThatThrownBy(
         () -> jedis.sendCommand(
             Protocol.Command.SLOWLOG, "GET", "I am not a number"))
-                .hasMessageContaining("ERR value is not an integer or out of range");
+                .hasMessage("ERR value is not an integer or out of range");
   }
 
   @Test
-  public void shouldThrowException_IfGivenUnknownSubcommand() {
+  public void shouldThrowException_givenMoreThanThreeArgumentsAfterCommand() {
+    assertThatThrownBy(
+        () -> jedis.sendCommand(
+            Protocol.Command.SLOWLOG, "secondArg", "thirdArg", "fourthArg"))
+        .hasMessage("ERR Unknown subcommand or wrong number of arguments for 'secondArg'. Try SLOWLOG HELP.");
+  }
+
+  @Test
+  public void shouldThrowException_givenUnknownSubcommand() {
     assertThatThrownBy(
         () -> jedis.sendCommand(
             Protocol.Command.SLOWLOG, "xlerb"))
-                .hasMessageContaining("ERR Unknown subcommand or wrong number of arguments for");
+                .hasMessage("ERR Unknown subcommand or wrong number of arguments for 'xlerb'. Try SLOWLOG HELP.");
+  }
+
+  @Test
+  public void shouldThrowException_givenNoSubcommand() {
+    assertThatThrownBy(
+        () -> jedis.sendCommand(
+            Protocol.Command.SLOWLOG))
+        .hasMessage("ERR wrong number of arguments for 'slowlog' command");
   }
 }

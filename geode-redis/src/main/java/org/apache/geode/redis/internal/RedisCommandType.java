@@ -267,9 +267,7 @@ public enum RedisCommandType {
   FLUSHDB(new FlushAllExecutor(), UNSUPPORTED, new MaximumParameterRequirements(2, ERROR_SYNTAX)),
   INFO(new InfoExecutor(), UNSUPPORTED, new MaximumParameterRequirements(2, ERROR_SYNTAX)),
   SHUTDOWN(new ShutDownExecutor(), UNSUPPORTED, new MaximumParameterRequirements(2, ERROR_SYNTAX)),
-  SLOWLOG(new SlowlogExecutor(), UNSUPPORTED, new MinimumParameterRequirements(2)
-      .and(new MaximumParameterRequirements(3, ERROR_SYNTAX))
-      .and(new SlowlogParameterRequirements())),
+  SLOWLOG(new SlowlogExecutor(), UNSUPPORTED, new SlowlogParameterRequirements()),
   TIME(new TimeExecutor(), UNSUPPORTED, new ExactParameterRequirements(1)),
 
   /////////// UNIMPLEMENTED /////////////////////
