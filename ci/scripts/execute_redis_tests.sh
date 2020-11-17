@@ -23,10 +23,10 @@ cd ..
 # Redis commands.  Once all commands needed to run relevant test files are implemented, we hope to
 # use Redis's repo without a patch.
 git clone --config transfer.fsckObjects=false https://github.com/redis/redis.git
-cp geode-redis/src/acceptanceTest/resources/0001-configure-redis-tests.patch redis
+REDIS_PATCH=${PWD}/geode-redis/src/acceptanceTest/resources/0001-configure-redis-tests.patch
 cd redis
 git checkout origin/5.0
-git am < 0001-configure-redis-tests.patch
+git apply ${REDIS_PATCH}
 
 export JAVA_HOME=${JAVA_TEST_PATH}
 
@@ -41,7 +41,7 @@ failCount=0
 
 ./runtest --host 127.0.0.1 --port 6380 --single unit/auth
 
-((failCount+=$?))
+((failCount += $?))
 
 
 ../geode-assembly/build/install/apache-geode/bin/gfsh start server \
@@ -55,6 +55,6 @@ failCount=0
 --single unit/type/hash --single unit/type/string \
 --single unit/quit --single unit/pubsub
 
-((failCount+=$?))
+((failCount += $?))
 
-exit $failCount
+exit ${failCount}
