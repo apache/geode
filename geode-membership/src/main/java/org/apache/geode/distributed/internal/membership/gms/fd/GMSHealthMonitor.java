@@ -130,7 +130,7 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
   public static final long MEMBER_SUSPECT_COLLECTION_INTERVAL =
       Long.getLong("geode.suspect-member-collection-interval", 200);
 
-  private volatile long currentTimeStamp;
+  volatile long currentTimeStamp;
 
   /**
    * this member's ID
@@ -152,7 +152,7 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
   /**
    * Members undergoing final checks
    */
-  private final List<ID> membersInFinalCheck =
+  final List<ID> membersInFinalCheck =
       Collections.synchronizedList(new ArrayList<>(30));
 
   /**
@@ -206,7 +206,7 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
    * /**
    * this class is to avoid garbage
    */
-  private static class TimeStamp {
+  static class TimeStamp {
 
     private volatile long timeStamp;
 
@@ -257,6 +257,7 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
           return;
         }
 
+        // TODO - why are we taking two clock readings and setting currentTimeStamp twice?
         long currentTime = System.currentTimeMillis();
         // this is the start of interval to record member activity
         GMSHealthMonitor.this.currentTimeStamp = currentTime;
@@ -1242,7 +1243,11 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
     if (isStopping) {
       return;
     }
-    contactedBy(m.getSuspect());
+    // if we're currently processing a final-check for this member don't artificially update the
+    // timestamp of the member or the final-check will be invalid
+    if (!membersInFinalCheck.contains(m.getSuspect())) {
+      contactedBy(m.getSuspect());
+    }
   }
 
 
