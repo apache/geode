@@ -127,7 +127,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'javax.ejb', name: 'ejb-api', version: '3.0')
         api(group: 'javax.mail', name: 'javax.mail-api', version: '1.6.2')
         api(group: 'javax.resource', name: 'javax.resource-api', version: '1.7.1')
-        api(group: 'javax.servlet', name: 'javax.servlet-api', version: '3.1.0')
+        api(group: 'javax.servlet', name: 'javax.servlet-api', version: '4.0.1')
         api(group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1')
         api(group: 'joda-time', name: 'joda-time', version: '2.9.8')
         api(group: 'junit', name: 'junit', version: get('junit.version'))

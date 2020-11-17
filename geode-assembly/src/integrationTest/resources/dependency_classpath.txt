@@ -52,7 +52,7 @@ jetty-webapp-9.4.33.v20201020.jar
 jetty-servlet-9.4.33.v20201020.jar
 jetty-security-9.4.33.v20201020.jar
 jetty-server-9.4.33.v20201020.jar
-javax.servlet-api-3.1.0.jar
+javax.servlet-api-4.0.1.jar
 jna-platform-5.5.0.jar
 jna-5.5.0.jar
 jopt-simple-5.0.4.jar
