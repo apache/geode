@@ -23,14 +23,12 @@ import java.util.function.IntSupplier;
 
 import javax.servlet.http.HttpSession;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 
-@Ignore("GEODE-8704")
 public class Jetty9CachingClientServerTest extends GenericAppServerClientServerTest {
 
   @Override
