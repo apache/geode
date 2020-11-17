@@ -20,8 +20,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -84,6 +86,12 @@ public class LinuxProcFsStatistics {
   private static final String PGPGOUT = "pgpgout ";
   private static final String PSWPIN = "pswpin ";
   private static final String PSWPOUT = "pswpout ";
+
+  /** /proc/net/netstat tokens */
+  public static final String TCP_SYNCOOKIES_SENT_NAME = "SyncookiesSent";
+  public static final String TCP_SYNCOOKIES_RECV_NAME = "SyncookiesRecv";
+  public static final String TCP_LISTEN_OVERFLOWS_NAME = "ListenOverflows";
+  public static final String TCP_LISTEN_DROPS_NAME = "ListenDrops";
 
   // Do not create instances of this class
   private LinuxProcFsStatistics() {}
@@ -324,32 +332,53 @@ public class LinuxProcFsStatistics {
     }
   }
 
-  /*
-   * TcpExt:=0 SyncookiesSent=1
-   * ListenOverflows=20 ListenDrops=21
-   */
   private static void getNetStatStats(LocalStatisticsImpl stats) {
+    SpaceTokenizer headerTokenizer = new SpaceTokenizer();
     try (FileInputStream fileInputStream = new FileInputStream("/proc/net/netstat");
         InputStreamReader isr = new InputStreamReader(fileInputStream);
         BufferedReader br = new BufferedReader(isr)) {
-      String line;
+
+      String line = br.readLine(); // header;
+      headerTokenizer.setString(line);
+
       do {
-        br.readLine(); // header
         line = br.readLine();
       } while (line != null && !line.startsWith("TcpExt:"));
 
       tokenizer.setString(line);
-      tokenizer.skipTokens(1);
-      long tcpSyncookiesSent = tokenizer.nextTokenAsLong();
-      long tcpSyncookiesRecv = tokenizer.nextTokenAsLong();
-      tokenizer.skipTokens(17);
-      long tcpListenOverflows = tokenizer.nextTokenAsLong();
-      long tcpListenDrops = tokenizer.nextTokenAsLong();
 
-      stats.setLong(LinuxSystemStats.tcpExtSynCookiesRecvLONG, tcpSyncookiesRecv);
-      stats.setLong(LinuxSystemStats.tcpExtSynCookiesSentLONG, tcpSyncookiesSent);
-      stats.setLong(LinuxSystemStats.tcpExtListenDropsLONG, tcpListenDrops);
-      stats.setLong(LinuxSystemStats.tcpExtListenOverflowsLONG, tcpListenOverflows);
+      Set<String> tokenNames = new HashSet<>();
+
+      tokenNames.add(TCP_SYNCOOKIES_SENT_NAME);
+      tokenNames.add(TCP_SYNCOOKIES_RECV_NAME);
+      tokenNames.add(TCP_LISTEN_OVERFLOWS_NAME);
+      tokenNames.add(TCP_LISTEN_DROPS_NAME);
+
+      // Find the token position for each stat we're interested in from the header line and read the
+      // corresponding token from the stats line
+      while (headerTokenizer.hasMoreTokens() && !tokenNames.isEmpty()) {
+        String currentToken = headerTokenizer.peekToken();
+        if (tokenNames.contains(currentToken)) {
+          long statValue = SpaceTokenizer.parseAsLong(tokenizer.peekToken());
+          switch (currentToken) {
+            case TCP_SYNCOOKIES_SENT_NAME:
+              stats.setLong(LinuxSystemStats.tcpExtSynCookiesSentLONG, statValue);
+              break;
+            case TCP_SYNCOOKIES_RECV_NAME:
+              stats.setLong(LinuxSystemStats.tcpExtSynCookiesRecvLONG, statValue);
+              break;
+            case TCP_LISTEN_OVERFLOWS_NAME:
+              stats.setLong(LinuxSystemStats.tcpExtListenOverflowsLONG, statValue);
+              break;
+            case TCP_LISTEN_DROPS_NAME:
+              stats.setLong(LinuxSystemStats.tcpExtListenDropsLONG, statValue);
+              break;
+          }
+          tokenNames.remove(currentToken);
+        }
+        headerTokenizer.skipToken();
+        tokenizer.skipToken();
+      }
 
       if (!soMaxConnProcessed) {
         try (FileInputStream fileInputStream2 = new FileInputStream("/proc/sys/net/core/somaxconn");
@@ -367,6 +396,7 @@ public class LinuxProcFsStatistics {
     } catch (NoSuchElementException | IOException ignore) {
     } finally {
       tokenizer.releaseResources();
+      headerTokenizer.releaseResources();
     }
   }
 
