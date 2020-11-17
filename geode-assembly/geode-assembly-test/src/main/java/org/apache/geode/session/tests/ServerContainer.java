@@ -202,6 +202,7 @@ public abstract class ServerContainer {
           " --add-opens java.base/jdk.internal.reflect=ALL-UNNAMED" +
           " --add-opens java.base/jdk.internal.misc=ALL-UNNAMED" +
           " --add-opens java.base/jdk.internal.ref=ALL-UNNAMED" +
+          " --add-opens java.base/jdk.internal.platform.cgroupv1=ALL-UNNAMED" +
           " --add-opens jdk.management/com.sun.management.internal=ALL-UNNAMED";
     }
     config.setProperty(GeneralPropertySet.START_JVMARGS, jvmArgs);
