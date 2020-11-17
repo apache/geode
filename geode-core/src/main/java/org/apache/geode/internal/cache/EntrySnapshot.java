@@ -129,9 +129,9 @@ public class EntrySnapshot implements Region.Entry, DataSerializable {
    */
   public Object getValuePreferringCachedDeserializable() {
     checkEntryDestroyed();
-    Object v = this.regionEntry.getValue(null);
-    if (v instanceof CachedDeserializable) {
-      return v;
+    Object value = regionEntry.getValue(null);
+    if (value instanceof CachedDeserializable) {
+      return value;
     } else {
       return getRawValue();
     }

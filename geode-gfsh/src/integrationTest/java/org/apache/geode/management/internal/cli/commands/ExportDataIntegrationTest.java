@@ -66,8 +66,8 @@ public class ExportDataIntegrationTest {
 
     private String value;
 
-    public StringWrapper(String v) {
-      value = v;
+    public StringWrapper(String string) {
+      value = string;
     }
 
     @Override
