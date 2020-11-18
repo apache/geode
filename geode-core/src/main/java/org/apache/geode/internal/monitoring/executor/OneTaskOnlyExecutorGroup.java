@@ -14,15 +14,12 @@
  */
 package org.apache.geode.internal.monitoring.executor;
 
-import org.apache.geode.internal.monitoring.ThreadsMonitoring;
-
 public class OneTaskOnlyExecutorGroup extends AbstractExecutor {
 
   public static final String GROUPNAME = "OneTaskOnlyExecutor";
 
-  public OneTaskOnlyExecutorGroup(ThreadsMonitoring tMonitoring) {
-    super(tMonitoring);
-    setGroupName(GROUPNAME);
+  public OneTaskOnlyExecutorGroup() {
+    super(GROUPNAME);
   }
 
 }

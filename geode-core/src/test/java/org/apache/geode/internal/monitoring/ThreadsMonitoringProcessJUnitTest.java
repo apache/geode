@@ -53,7 +53,7 @@ public class ThreadsMonitoringProcessJUnitTest {
 
     int timeLimit = distributionConfigImpl.getThreadMonitorTimeLimit();
 
-    AbstractExecutor absExtgroup = new PooledExecutorGroup(threadsMonitoringImpl);
+    AbstractExecutor absExtgroup = new PooledExecutorGroup();
     absExtgroup.setStartTime(absExtgroup.getStartTime() - timeLimit - 1);
 
     threadsMonitoringImpl.getMonitorMap().put(threadID, absExtgroup);
@@ -71,7 +71,7 @@ public class ThreadsMonitoringProcessJUnitTest {
 
     int timeLimit = distributionConfigImpl.getThreadMonitorTimeLimit();
 
-    AbstractExecutor absExtgroup = new PooledExecutorGroup(threadsMonitoringImpl, threadID);
+    AbstractExecutor absExtgroup = new PooledExecutorGroup(threadID);
     absExtgroup.setStartTime(absExtgroup.getStartTime() - timeLimit - 1);
 
     threadsMonitoringImpl.getMonitorMap().put(threadID, absExtgroup);

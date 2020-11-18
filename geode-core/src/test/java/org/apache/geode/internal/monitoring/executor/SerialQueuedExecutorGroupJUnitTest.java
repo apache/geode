@@ -34,7 +34,7 @@ public class SerialQueuedExecutorGroupJUnitTest {
    */
   @Test
   public void testVerifyGroupName() {
-    AbstractExecutor serialQueuedExecutorGroup = new SerialQueuedExecutorGroup(null);
+    AbstractExecutor serialQueuedExecutorGroup = new SerialQueuedExecutorGroup();
     assertTrue(serialQueuedExecutorGroup.getGroupName().equals(GROUPNAME));
   }
 }

@@ -99,22 +99,22 @@ public class ThreadsMonitoringImpl implements ThreadsMonitoring {
     AbstractExecutor absExtgroup;
     switch (mode) {
       case FunctionExecutor:
-        absExtgroup = new FunctionExecutionPooledExecutorGroup(this);
+        absExtgroup = new FunctionExecutionPooledExecutorGroup();
         break;
       case PooledExecutor:
-        absExtgroup = new PooledExecutorGroup(this);
+        absExtgroup = new PooledExecutorGroup();
         break;
       case SerialQueuedExecutor:
-        absExtgroup = new SerialQueuedExecutorGroup(this);
+        absExtgroup = new SerialQueuedExecutorGroup();
         break;
       case OneTaskOnlyExecutor:
-        absExtgroup = new OneTaskOnlyExecutorGroup(this);
+        absExtgroup = new OneTaskOnlyExecutorGroup();
         break;
       case ScheduledThreadExecutor:
-        absExtgroup = new ScheduledThreadPoolExecutorWKAGroup(this);
+        absExtgroup = new ScheduledThreadPoolExecutorWKAGroup();
         break;
       case AGSExecutor:
-        absExtgroup = new GatewaySenderEventProcessorGroup(this);
+        absExtgroup = new GatewaySenderEventProcessorGroup();
         break;
       default:
         return false;

@@ -14,19 +14,18 @@
  */
 package org.apache.geode.internal.monitoring.executor;
 
-import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.annotations.VisibleForTesting;
 
 public class PooledExecutorGroup extends AbstractExecutor {
 
   public static final String GROUPNAME = "PooledExecutorWithDMStats";
 
-  public PooledExecutorGroup(ThreadsMonitoring tMonitoring) {
-    super(tMonitoring);
-    setGroupName(GROUPNAME);
+  public PooledExecutorGroup() {
+    super(GROUPNAME);
   }
 
-  public PooledExecutorGroup(ThreadsMonitoring tMonitoring, long threadID) {
-    super(tMonitoring, threadID);
-    setGroupName(GROUPNAME);
+  @VisibleForTesting
+  public PooledExecutorGroup(long threadID) {
+    super(GROUPNAME, threadID);
   }
 }
