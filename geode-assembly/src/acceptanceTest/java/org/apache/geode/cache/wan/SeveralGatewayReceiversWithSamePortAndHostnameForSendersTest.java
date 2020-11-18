@@ -81,14 +81,14 @@ import org.apache.geode.test.junit.categories.WanTest;
  * received the ping in time.
  */
 @Category({WanTest.class})
-public class SeveralGatewayReceiversWithSamePortAndHostnameForSenders {
+public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
 
   private static final int NUM_SERVERS = 2;
 
   private static Cache cache;
 
   private static final URL DOCKER_COMPOSE_PATH =
-      SeveralGatewayReceiversWithSamePortAndHostnameForSenders.class
+      SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest.class
           .getResource("docker-compose.yml");
 
   // Docker compose does not work on windows in CI. Ignore this test on windows
@@ -118,12 +118,13 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSenders {
         arguments("gfsh", "run", "--file=/geode/scripts/geode-starter-create.gfsh"));
   }
 
-  public SeveralGatewayReceiversWithSamePortAndHostnameForSenders() {
+  public SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest() {
     super();
   }
 
   @Test
-  public void testPingsToReceiversWithSamePortAndHostnameForSendersReachTheRightReceivers() {
+  public void testPingsToReceiversWithSamePortAndHostnameForSendersReachTheRightReceivers()
+      throws InterruptedException {
     String senderId = "ln";
     String regionName = "region-wan";
     final int remoteLocPort = 20334;
@@ -148,14 +149,11 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSenders {
     putKeyValues(vm1, NUM_PUTS, regionName);
 
     // Wait longer than the value set in the receivers for
-    // maximum-time-between-pings (60000) to verify that connections are not closed
+    // maximum-time-between-pings: 10000 (see geode-starter-create.gfsh)
+    // to verify that connections are not closed
     // by the receivers because each has received the pings timely.
-    int maxTimeBetweenPingsInReceiver = 65000;
-    try {
-      Thread.sleep(maxTimeBetweenPingsInReceiver);
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    }
+    int maxTimeBetweenPingsInReceiver = 15000;
+    Thread.sleep(maxTimeBetweenPingsInReceiver);
 
     int senderPoolDisconnects = getSenderPoolDisconnects(vm1, senderId);
     assertEquals(0, senderPoolDisconnects);
