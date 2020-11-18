@@ -97,7 +97,9 @@ public class LoggingExecutors {
     return newScheduledThreadPool(1, threadName);
   }
 
-  /** Used for P2P Reader Threads in ConnectionTable */
+  /**
+   * Used for P2P Reader Threads in ConnectionTable
+   */
   public static Executor newThreadOnEachExecute(String threadName) {
     return command -> new LoggingThread(threadName, command).start();
   }

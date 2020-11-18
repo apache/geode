@@ -20,6 +20,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
 /**
@@ -29,7 +30,7 @@ import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 public class SerialQueuedExecutorWithDMStats extends ThreadPoolExecutor {
 
   private final PoolStatHelper poolStatHelper;
-  private final ThreadsMonitoring threadMonitoring;
+  private final ThreadsMonitoring threadsMonitoring;
 
   public SerialQueuedExecutorWithDMStats(BlockingQueue<Runnable> workQueue,
       ThreadFactory threadFactory, PoolStatHelper poolStatHelper,
@@ -38,7 +39,7 @@ public class SerialQueuedExecutorWithDMStats extends ThreadPoolExecutor {
         new PooledExecutorWithDMStats.BlockHandler());
 
     this.poolStatHelper = poolStatHelper;
-    threadMonitoring = threadsMonitoring;
+    this.threadsMonitoring = threadsMonitoring;
   }
 
   @Override
@@ -46,8 +47,8 @@ public class SerialQueuedExecutorWithDMStats extends ThreadPoolExecutor {
     if (poolStatHelper != null) {
       poolStatHelper.startJob();
     }
-    if (threadMonitoring != null) {
-      threadMonitoring.startMonitor(ThreadsMonitoring.Mode.SerialQueuedExecutor);
+    if (threadsMonitoring != null) {
+      threadsMonitoring.startMonitor(ThreadsMonitoring.Mode.SerialQueuedExecutor);
     }
   }
 
@@ -56,8 +57,13 @@ public class SerialQueuedExecutorWithDMStats extends ThreadPoolExecutor {
     if (poolStatHelper != null) {
       poolStatHelper.endJob();
     }
-    if (threadMonitoring != null) {
-      threadMonitoring.endMonitor();
+    if (threadsMonitoring != null) {
+      threadsMonitoring.endMonitor();
     }
+  }
+
+  @VisibleForTesting
+  public PoolStatHelper getPoolStatHelper() {
+    return poolStatHelper;
   }
 }

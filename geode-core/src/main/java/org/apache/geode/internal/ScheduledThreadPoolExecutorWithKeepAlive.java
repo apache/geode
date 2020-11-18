@@ -33,6 +33,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
 /**
@@ -220,6 +221,11 @@ public class ScheduledThreadPoolExecutorWithKeepAlive
     timer.setExecuteExistingDelayedTasksAfterShutdownPolicy(b);
   }
 
+  @VisibleForTesting
+  public ScheduledThreadPoolExecutor getDelegateExecutor() {
+    return timer;
+  }
+
   /**
    * A Runnable which we put in the timer which simply hands off the contain task for execution in
    * the thread pool when the timer fires.
@@ -317,7 +323,8 @@ public class ScheduledThreadPoolExecutorWithKeepAlive
    * A RejectedExecutionHandler which causes the caller to block until there is space in the queue
    * for the task.
    */
-  protected static class BlockCallerPolicy implements RejectedExecutionHandler {
+  @VisibleForTesting
+  public static class BlockCallerPolicy implements RejectedExecutionHandler {
 
     @Override
     public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
