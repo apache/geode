@@ -21,7 +21,7 @@ import java.text.SimpleDateFormat;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public abstract class AbstractExecutor {
@@ -29,18 +29,18 @@ public abstract class AbstractExecutor {
   private static final int THREAD_DUMP_DEPTH = 40;
   private static final Logger logger = LogService.getLogger();
   public static final String LOCK_OWNER_THREAD_STACK = "Lock owner thread stack";
-  private long threadID;
-  private String groupName;
+  private final long threadID;
+  private final String groupName;
   private short numIterationsStuck;
   private long startTime;
 
-  public AbstractExecutor(ThreadsMonitoring tMonitoring) {
-    this.startTime = System.currentTimeMillis();
-    this.numIterationsStuck = 0;
-    this.threadID = Thread.currentThread().getId();
+  public AbstractExecutor(String groupName) {
+    this(groupName, Thread.currentThread().getId());
   }
 
-  public AbstractExecutor(ThreadsMonitoring tMonitoring, long threadID) {
+  @VisibleForTesting
+  AbstractExecutor(String groupName, long threadID) {
+    this.groupName = groupName;
     this.startTime = System.currentTimeMillis();
     this.numIterationsStuck = 0;
     this.threadID = threadID;
@@ -130,10 +130,6 @@ public abstract class AbstractExecutor {
 
   public String getGroupName() {
     return this.groupName;
-  }
-
-  public void setGroupName(String groupName) {
-    this.groupName = groupName;
   }
 
   public long getThreadID() {
