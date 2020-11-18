@@ -440,10 +440,12 @@ echo "7. Confirm that your homebrew PR passed its PR checks and was merged to ma
 echo "8. Check that ${VERSION} documentation has been published to https://geode.apache.org/docs/"
 [ -z "$DID_REMOVE" ] || DID_REMOVE=" and ${DID_REMOVE} info has been removed"
 echo "9. Check that ${VERSION} download info has been published to https://geode.apache.org/releases/${DID_REMOVE}"
+MAJOR="${VERSION_MM%.*}"
+MINOR="${VERSION_MM#*.}"
 PATCH="${VERSION##*.}"
 [ "${PATCH}" -ne 0 ] || echo "10. Ask on the dev list for a volunteer to begin the chore of updating 3rd-party dependency versions on develop (see dev-tools/dependencies/README.md)"
 M=$(date --date '+9 months' '+%a, %B %d %Y' 2>/dev/null || date -v +9m "+%a, %B %d %Y" 2>/dev/null || echo "9 months from now")
-[ "${PATCH}" -ne 0 ] || echo "11. Mark your calendar for $M to run ${0%/*}/end_of_support.sh -v ${VERSION_MM}"
+[ "${PATCH}" -ne 0 ] || echo "11. Mark your calendar for $M (assuming we release Geode ${MAJOR}.$((MINOR + 3)) on that day) to run ${0%/*}/end_of_support.sh -v ${VERSION_MM}"
 [ "${PATCH}" -ne 0 ] || echo "12. Log in to https://hub.docker.com/repository/docker/apachegeode/geode and update the latest Dockerfile linktext and url to ${VERSION_MM}"
 echo "Bump support pipeline to ${VERSION_MM}.$(( PATCH + 1 )) by plussing BumpPatch in https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-support-${VERSION_MM//./-}-main?group=Semver%20Management"
 echo "Run ${0%/*}/set_versions.sh -v ${VERSION_MM}.$(( PATCH + 1 )) -s"
