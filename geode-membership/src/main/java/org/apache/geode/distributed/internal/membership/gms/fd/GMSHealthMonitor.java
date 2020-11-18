@@ -52,6 +52,7 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.Logger;
 import org.jgroups.util.UUID;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.api.MemberStartupException;
 import org.apache.geode.distributed.internal.membership.api.MembershipClosedException;
@@ -130,6 +131,10 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
   public static final long MEMBER_SUSPECT_COLLECTION_INTERVAL =
       Long.getLong("geode.suspect-member-collection-interval", 200);
 
+  /**
+   * A millisecond clock reading used to mark the last time a peer made contact.
+   */
+  @VisibleForTesting
   volatile long currentTimeStamp;
 
   /**
@@ -152,6 +157,7 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
   /**
    * Members undergoing final checks
    */
+  @VisibleForTesting
   final List<ID> membersInFinalCheck =
       Collections.synchronizedList(new ArrayList<>(30));
 
