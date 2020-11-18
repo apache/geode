@@ -21,6 +21,7 @@ import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.monitoring.executor.AbstractExecutor;
@@ -96,31 +97,7 @@ public class ThreadsMonitoringImpl implements ThreadsMonitoring {
 
   @Override
   public boolean startMonitor(Mode mode) {
-    AbstractExecutor absExtgroup;
-    switch (mode) {
-      case FunctionExecutor:
-        absExtgroup = new FunctionExecutionPooledExecutorGroup();
-        break;
-      case PooledExecutor:
-        absExtgroup = new PooledExecutorGroup();
-        break;
-      case SerialQueuedExecutor:
-        absExtgroup = new SerialQueuedExecutorGroup();
-        break;
-      case OneTaskOnlyExecutor:
-        absExtgroup = new OneTaskOnlyExecutorGroup();
-        break;
-      case ScheduledThreadExecutor:
-        absExtgroup = new ScheduledThreadPoolExecutorWKAGroup();
-        break;
-      case AGSExecutor:
-        absExtgroup = new GatewaySenderEventProcessorGroup();
-        break;
-      default:
-        return false;
-    }
-    this.monitorMap.put(Thread.currentThread().getId(), absExtgroup);
-    return true;
+    return startMonitoring(createAbstractExecutor(mode));
   }
 
   @Override
@@ -128,7 +105,50 @@ public class ThreadsMonitoringImpl implements ThreadsMonitoring {
     this.monitorMap.remove(Thread.currentThread().getId());
   }
 
-  public Timer getTimer() {
+  @VisibleForTesting
+  boolean isMonitoring() {
+    return monitorMap.containsKey(Thread.currentThread().getId());
+  }
+
+  @Override
+  public AbstractExecutor createAbstractExecutor(Mode mode) {
+    switch (mode) {
+      case FunctionExecutor:
+        return new FunctionExecutionPooledExecutorGroup();
+      case PooledExecutor:
+        return new PooledExecutorGroup();
+      case SerialQueuedExecutor:
+        return new SerialQueuedExecutorGroup();
+      case OneTaskOnlyExecutor:
+        return new OneTaskOnlyExecutorGroup();
+      case ScheduledThreadExecutor:
+        return new ScheduledThreadPoolExecutorWKAGroup();
+      case AGSExecutor:
+        return new GatewaySenderEventProcessorGroup();
+      default:
+        throw new IllegalStateException("Unhandled mode=" + mode);
+    }
+  }
+
+  @Override
+  public boolean startMonitoring(AbstractExecutor executor) {
+    executor.setStartTime(System.currentTimeMillis());
+    this.monitorMap.put(executor.getThreadID(), executor);
+    return true;
+  }
+
+  @Override
+  public void stopMonitoring(AbstractExecutor executor) {
+    this.monitorMap.remove(executor.getThreadID());
+  }
+
+  @VisibleForTesting
+  boolean isMonitoring(AbstractExecutor executor) {
+    return monitorMap.containsKey(executor.getThreadID());
+  }
+
+  @VisibleForTesting
+  Timer getTimer() {
     return this.timer;
   }
 
