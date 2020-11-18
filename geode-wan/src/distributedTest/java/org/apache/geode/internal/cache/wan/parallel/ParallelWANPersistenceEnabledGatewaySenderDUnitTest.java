@@ -1905,13 +1905,12 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
   @Test
   public void testPersistentPRWithGatewaySenderPersistenceEnabled_RestartAndStopServer() {
     // create locator on local site
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     // create locator on remote site
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
-    // create receiver on remote site
+    // create cache in remote site
     createCacheInVMs(nyPort, vm2, vm3);
-    // createReceiverInVMs(vm2, vm3);
 
     // create cache in local site
     createCacheInVMs(lnPort, vm4, vm5);
@@ -1919,13 +1918,10 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
     vm5.invoke(() -> setNumDispatcherThreadsForTheRun(2));
 
     // create senders with disk store
-    String diskStore1 = (String) vm4.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
+    vm4.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
         true, 100, 10, false, true, null, null, true));
-    String diskStore2 = (String) vm5.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
+    String diskStore2 = vm5.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
         true, 100, 10, false, true, null, null, true));
-
-    LogWriterUtils.getLogWriter()
-        .info("The DS are: " + diskStore1 + "," + diskStore2);
 
     // create PR on remote site
     vm2.invoke(() -> WANTestBase.createPersistentPartitionedRegion(getTestMethodName(), null, 1,
@@ -1943,43 +1939,33 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
     startSenderInVMs("ln", vm4, vm5);
 
     // wait for senders to become running
-    vm4.invoke(waitForSenderRunnable());
-    vm5.invoke(waitForSenderRunnable());
+    vm4.invoke("Waiting for senders running.", waitForSenderRunnable());
+    vm5.invoke("Waiting for senders running.", waitForSenderRunnable());
 
     // start puts in region on local site
-    vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName(), 10));
-    LogWriterUtils.getLogWriter().info("Completed puts in the region");
+    vm4.invoke("Do puts to the region", () -> WANTestBase.doPuts(getTestMethodName(), 10));
 
     // --------------------close and rebuild local site
     // -------------------------------------------------
     // kill the sender in vm5
-    vm5.invoke(killSenderRunnable());
-
-    LogWriterUtils.getLogWriter().info("Killed vm5 sender.");
+    vm5.invoke("Kill sender.", killSenderRunnable());
 
     // restart the vm
-    createCacheInVMs(lnPort, vm5);
+    vm5.invoke("Create back the cache", () -> createCache(lnPort));
     vm5.invoke(() -> setNumDispatcherThreadsForTheRun(2));
 
-    LogWriterUtils.getLogWriter().info("Created back the cache");
-
     // create senders with disk store
-    vm5.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2, true, 100, 10, false, true,
-        null, diskStore2, false));
+    vm5.invoke("Create sender back from the disk store.",
+        () -> WANTestBase.createSenderWithDiskStore("ln", 2, true, 100, 10, false, true,
+            null, diskStore2, false));
 
-    LogWriterUtils.getLogWriter().info("Created the senders back from the disk store.");
     // create PR on local site
-    vm5.invoke(() -> WANTestBase.createPersistentPartitionedRegion(getTestMethodName(), "ln", 1,
-        13, isOffHeap()));
+    vm5.invoke("Create back the partitioned region",
+        () -> WANTestBase.createPersistentPartitionedRegion(getTestMethodName(), "ln", 1,
+            13, isOffHeap()));
 
-
-    LogWriterUtils.getLogWriter().info("Created back the partitioned regions");
-
-    LogWriterUtils.getLogWriter().info("Waiting for senders running.");
     // wait for senders running
-    vm5.invoke(waitForSenderRunnable());
-
-    LogWriterUtils.getLogWriter().info("All the senders are now running...");
+    vm5.invoke("Waiting for senders running.", waitForSenderRunnable());
 
     // ----------------------------------------------------------------------------------------------------
 
