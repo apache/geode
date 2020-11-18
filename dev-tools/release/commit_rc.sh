@@ -124,6 +124,7 @@ echo "============================================================"
 for DIR in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ${GEODE_BENCHMARKS} ; do
     set -x
     cd ${DIR}
+    git pull -r
     git push -u origin
     git push origin rel/v${FULL_VERSION}
     set +x

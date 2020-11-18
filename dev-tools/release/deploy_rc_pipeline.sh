@@ -58,6 +58,11 @@ resources:
     branch: support/<VERSION_MM>
     tag_filter: rel/v<VERSION_MM>.*.RC*
     uri: https://github.com/apache/geode.git
+- name: geode-develop
+  type: git
+  source:
+    branch: develop
+    uri: https://github.com/apache/geode.git
 - name: geode-examples
   type: git
   source:
@@ -116,7 +121,7 @@ jobs:
               ./gradlew test installDist
               gfsh=geode-assembly/build/install/apache-geode/bin/gfsh
               $gfsh version --full | grep "^Source-Revision: ${SHA}$"
-              $gfsh version --full | grep "^Product-Version: ${VERSION}$"
+              $gfsh version --full | grep "^Product-Version: ${VERSION}-build"
               ! $gfsh version --full | grep Oracle
   - name: build-geode-from-src-tgz
     serial: true
@@ -154,7 +159,7 @@ jobs:
               ./gradlew test installDist
               gfsh=geode-assembly/build/install/apache-geode/bin/gfsh
               $gfsh version --full | grep "^Source-Revision: ${SHA}$"
-              $gfsh version --full | grep "^Product-Version: ${VERSION}$"
+              $gfsh version --full | grep "^Product-Version: ${VERSION}-build"
               ! $gfsh version --full | grep Oracle
   - name: run-gfsh-from-tgz
     serial: true
@@ -579,6 +584,8 @@ jobs:
       - aggregate:
           - get: geode
             trigger: true
+      - aggregate:
+          - get: geode-develop
       - task: validate
         timeout: 1h
         config:
@@ -589,6 +596,7 @@ jobs:
               tag: 8
           inputs:
             - name: geode
+            - name: geode-develop
           platform: linux
           run:
             path: /bin/bash
@@ -599,7 +607,7 @@ jobs:
               apt update -q
               apt install -qq -y --no-install-recommends unzip git
               FULL_VERSION=$(cd geode && git describe --tags | sed -e 's#^rel/v##')
-              ./geode/dev-tools/release/license_review.sh -v $FULL_VERSION
+              ./geode-develop/dev-tools/release/license_review.sh -v $FULL_VERSION
 EOF
 fly -t concourse.apachegeode-ci.info-main login --team-name main --concourse-url https://concourse.apachegeode-ci.info/
 fly -t concourse.apachegeode-ci.info-main set-pipeline -p apache-support-${VERSION_MM//./-}-rc -c $PIPEYML

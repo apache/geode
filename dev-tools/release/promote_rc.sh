@@ -50,7 +50,7 @@ if [[ ${FULL_VERSION} == "" ]] || [[ ${SIGNING_KEY} == "" ]] || [[ ${GITHUB_USER
     usage
 fi
 
-SIGNING_KEY=$(gpg --list-keys "${SIGNING_KEY}" | grep "${SIGNING_KEY}" | tr -d ' ')
+SIGNING_KEY=$(gpg --fingerprint "${SIGNING_KEY}"  | tr -d ' ' | grep "${SIGNING_KEY}" | tail -1)
 
 SIGNING_KEY=$(echo $SIGNING_KEY|sed 's/[^0-9A-Fa-f]//g')
 if [[ $SIGNING_KEY =~ ^[0-9A-Fa-f]{40}$ ]]; then
@@ -91,7 +91,7 @@ fi
 function failMsg {
   errln=$1
   echo "ERROR: script did NOT complete successfully"
-  echo "Comment out any steps that already succeeded (approximately lines 99-$(( errln - 1 ))) and try again"
+  echo "Comment out any steps that already succeeded (approximately lines 116-$(( errln - 1 ))) and try again"
 }
 trap 'failMsg $LINENO' ERR
 
@@ -434,15 +434,18 @@ echo "2. Go to https://github.com/${GITHUB_USER}/homebrew-core/pull/new/apache-g
 echo "3. Go to https://github.com/${GITHUB_USER}/geode/pull/new/add-${VERSION}-to-old-versions and create the pull request"
 echo "4. Validate docker image: docker run -it apachegeode/geode"
 echo "5. Bulk-transition JIRA issues fixed in this release to Closed"
+echo "5b.Publish to GitHub (see https://cwiki.apache.org/confluence/display/GEODE/Releasing+Apache+Geode#ReleasingApacheGeode-PublishtoGitHub)"
 echo "6. Wait overnight for apache mirror sites to sync"
 echo "7. Confirm that your homebrew PR passed its PR checks and was merged to master"
 echo "8. Check that ${VERSION} documentation has been published to https://geode.apache.org/docs/"
 [ -z "$DID_REMOVE" ] || DID_REMOVE=" and ${DID_REMOVE} info has been removed"
 echo "9. Check that ${VERSION} download info has been published to https://geode.apache.org/releases/${DID_REMOVE}"
+MAJOR="${VERSION_MM%.*}"
+MINOR="${VERSION_MM#*.}"
 PATCH="${VERSION##*.}"
 [ "${PATCH}" -ne 0 ] || echo "10. Ask on the dev list for a volunteer to begin the chore of updating 3rd-party dependency versions on develop (see dev-tools/dependencies/README.md)"
 M=$(date --date '+9 months' '+%a, %B %d %Y' 2>/dev/null || date -v +9m "+%a, %B %d %Y" 2>/dev/null || echo "9 months from now")
-[ "${PATCH}" -ne 0 ] || echo "11. Mark your calendar for $M to run ${0%/*}/end_of_support.sh -v ${VERSION_MM}"
+[ "${PATCH}" -ne 0 ] || echo "11. Mark your calendar for $M (assuming we release Geode ${MAJOR}.$((MINOR + 3)) on that day) to run ${0%/*}/end_of_support.sh -v ${VERSION_MM}"
 [ "${PATCH}" -ne 0 ] || echo "12. Log in to https://hub.docker.com/repository/docker/apachegeode/geode and update the latest Dockerfile linktext and url to ${VERSION_MM}"
 echo "Bump support pipeline to ${VERSION_MM}.$(( PATCH + 1 )) by plussing BumpPatch in https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-support-${VERSION_MM//./-}-main?group=Semver%20Management"
 echo "Run ${0%/*}/set_versions.sh -v ${VERSION_MM}.$(( PATCH + 1 )) -s"
