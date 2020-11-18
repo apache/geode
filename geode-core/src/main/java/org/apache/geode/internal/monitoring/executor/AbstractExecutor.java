@@ -41,7 +41,7 @@ public abstract class AbstractExecutor {
   @VisibleForTesting
   AbstractExecutor(String groupName, long threadID) {
     this.groupName = groupName;
-    this.startTime = System.currentTimeMillis();
+    this.startTime = 0;
     this.numIterationsStuck = 0;
     this.threadID = threadID;
   }
