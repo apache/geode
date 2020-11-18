@@ -32,7 +32,7 @@ public class SlowlogParameterRequirements implements ParameterRequirements {
       confirmKnownSubcommands(command);
     } else if (numberOfArguments == 3) {
       confirmArgumentsToGetSubcommand(command);
-    } else if (numberOfArguments > 3) {
+    } else { // numberOfArguments > 3
       throw new RedisParametersMismatchException(
           String.format(ERROR_UNKNOWN_SLOWLOG_SUBCOMMAND, command.getStringKey()));
     }
