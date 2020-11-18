@@ -53,7 +53,7 @@ public class SlowlogParameterRequirements implements ParameterRequirements {
           String.format(ERROR_UNKNOWN_SLOWLOG_SUBCOMMAND, command.getStringKey()));
     }
     try {
-      Integer.parseInt(new String(command.getProcessedCommand().get(2)));
+      Long.parseLong(new String(command.getProcessedCommand().get(2)));
     } catch (NumberFormatException nex) {
       throw new RedisParametersMismatchException(ERROR_NOT_INTEGER);
     }

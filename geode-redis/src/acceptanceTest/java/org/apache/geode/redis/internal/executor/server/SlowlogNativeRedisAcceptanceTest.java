@@ -28,9 +28,4 @@ public class SlowlogNativeRedisAcceptanceTest extends AbstractSlowlogIntegration
   public int getPort() {
     return redis.getPort();
   }
-
-  @Override
-  int getExposedPort() {
-    return redis.getExposedPort();
-  }
 }

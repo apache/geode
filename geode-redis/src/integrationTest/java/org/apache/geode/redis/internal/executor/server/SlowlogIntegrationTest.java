@@ -31,9 +31,4 @@ public class SlowlogIntegrationTest extends AbstractSlowlogIntegrationTest {
   public int getPort() {
     return server.getPort();
   }
-
-  @Override
-  public int getExposedPort() {
-    return getPort();
-  }
 }
