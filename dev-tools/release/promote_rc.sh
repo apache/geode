@@ -91,7 +91,7 @@ fi
 function failMsg {
   errln=$1
   echo "ERROR: script did NOT complete successfully"
-  echo "Comment out any steps that already succeeded (approximately lines 99-$(( errln - 1 ))) and try again"
+  echo "Comment out any steps that already succeeded (approximately lines 116-$(( errln - 1 ))) and try again"
 }
 trap 'failMsg $LINENO' ERR
 
