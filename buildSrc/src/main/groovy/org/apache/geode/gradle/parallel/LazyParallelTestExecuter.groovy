@@ -20,6 +20,7 @@ import org.gradle.internal.operations.BuildOperationExecutor
 import org.gradle.internal.service.ServiceRegistry
 import org.gradle.internal.time.Clock
 import org.gradle.internal.work.WorkerLeaseRegistry
+import org.gradle.process.internal.worker.WorkerProcessFactory
 
 /**
  * A {@link TestExecuter) that defers creating a real {@link ParallelTestExecuter} until
@@ -43,6 +44,11 @@ class LazyParallelTestExecuter implements TestExecuter<JvmTestExecutionSpec> {
     }
     executer.stopNow()
     executer = null
+  }
+
+  // TODO Dale: Rewrite OverriddenTestExecutor so that it doesn't need to call this
+  WorkerProcessFactory getWorkerFactory() {
+    return  test.workerProcessBuilderFactory()
   }
 
   TestExecuter<JvmTestExecutionSpec> executer() {
