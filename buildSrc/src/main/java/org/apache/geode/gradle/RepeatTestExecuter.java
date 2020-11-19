@@ -83,6 +83,7 @@ class RepeatTestExecuter implements TestExecuter<JvmTestExecutionSpec> {
   @Override
   public void execute(final JvmTestExecutionSpec testExecutionSpec,
       TestResultProcessor testResultProcessor) {
+    System.out.printf("DHE: %s executing tests %s%n", getClass().getSimpleName(), testExecutionSpec.getPath());
     final TestFramework testFramework = testExecutionSpec.getTestFramework();
     final WorkerTestClassProcessorFactory testInstanceFactory = testFramework.getProcessorFactory();
     final WorkerLeaseRegistry.WorkerLease currentWorkerLease =

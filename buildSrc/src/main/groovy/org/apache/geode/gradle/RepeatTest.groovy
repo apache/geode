@@ -41,7 +41,8 @@ class RepeatTest extends Test {
 
   @Override
   protected TestExecuter<JvmTestExecutionSpec> createTestExecuter() {
-    return new RepeatTestExecuter(
+    println "DHE: Creating RepeatTestExecuter for " + name
+    def e = new RepeatTestExecuter(
         getProcessBuilderFactory(),
         getActorFactory(),
         getModuleRegistry(),
@@ -51,5 +52,7 @@ class RepeatTest extends Test {
         getServices().get(Clock.class),
         getServices().get(DocumentationRegistry.class),
         (DefaultTestFilter) getFilter())
+    println "DHE: Created RepeatTestExecuter for " + name
+    return e
   }
 }

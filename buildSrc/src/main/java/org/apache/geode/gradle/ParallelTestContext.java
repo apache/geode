@@ -43,8 +43,9 @@ public class ParallelTestContext {
       "AvailablePortHelper.membershipPortUpperBound";
 
   /**
-   * The unique sequence ID to assign to the next test context. The test context will configure the
-   * name of the JVM's working directory to include this ID to make the working directory unique.
+   * The unique sequence ID to assign to the next test JVM to be configured. The test context will
+   * configure the name of the JVM's working directory to include this ID to make the working
+   * directory unique.
    */
   private static final AtomicInteger SEQUENCE_ID = new AtomicInteger();
 
@@ -95,6 +96,8 @@ public class ParallelTestContext {
         String.valueOf(nonMembershipPorts.lowerBound()));
     javaCommand.systemProperty(NON_MEMBERSHIP_PORT_UPPER_BOUND_PROPERTY,
         String.valueOf(nonMembershipPorts.upperBound()));
+    System.out.printf("DHE: Configured test JVM membership %s non-membership %s dir %s%n",
+        membershipPorts, nonMembershipPorts, workerWorkingDir);
   }
 
   private String uniqueWorkingDirName() {

@@ -84,6 +84,7 @@ public class ParallelTestExecuter implements TestExecuter<JvmTestExecutionSpec> 
   @Override
   public void execute(final JvmTestExecutionSpec testExecutionSpec,
       TestResultProcessor testResultProcessor) {
+    System.out.printf("DHE: %s executing tests %s%n", getClass().getSimpleName(), testExecutionSpec.getPath());
     int maxProcessors = getMaxParallelForks(testExecutionSpec);
     long forkEvery = testExecutionSpec.getForkEvery();
 
