@@ -200,16 +200,16 @@ start server \
 |                    	| SINTER                                             	| CLUSTER INFO                  	|
 |                    	| SINTERSTORE                                        	| CLUSTER KEYSLOT                 	|
 |                    	| SISMEMBER                                          	| CLUSTER MEET                     	|
-|                    	| SMOVE                                              	| CLUSTER MYID                   	|
-|                    	| SPOP                                               	| CLUSTER NODES                 	|
-|                    	| SRANDMEMBER                                        	| CLUSTER REPLICAS                 	|
-|                    	| SSCAN                                              	| CLUSTER REPLICATE              	|
-|                    	| STRLEN                                             	| CLUSTER RESET                  	|
-|                    	| SUNION                                             	| CLUSTER SAVECONFIG                |
-|                    	| SUNIONSTORE                                        	| CLUSTER SET-CONFIG-EPOCH          |
-|                    	| TIME                                               	| CLUSTER SETSLOT                 	|
-|                    	| UNLINK [1]                                         	| CLUSTER SLAVES                  	|
-|                    	|                                                    	| CLUSTER SLOTS                 	|
+|                    	| SLOWLOG                                            	| CLUSTER MYID                   	|
+|                    	| SMOVE                                              	| CLUSTER NODES                 	|
+|                    	| SPOP                                               	| CLUSTER REPLICAS                 	|
+|                    	| SRANDMEMBER                                        	| CLUSTER REPLICATE              	|
+|                    	| SSCAN                                              	| CLUSTER RESET                  	|
+|                    	| STRLEN                                             	| CLUSTER SAVECONFIG                |
+|                    	| SUNION                                             	| CLUSTER SET-CONFIG-EPOCH          |
+|                    	| SUNIONSTORE                                        	| CLUSTER SETSLOT                 	|
+|                    	| TIME                                               	| CLUSTER SLAVES                  	|
+|                    	| UNLINK [1]                                         	| CLUSTER SLOTS                 	|
 |                    	|                                                    	| COMMAND                       	|
 |                    	|                                                    	| COMMAND COUNT                 	|
 |                    	|                                                    	| COMMAND GETKEYS               	|
@@ -289,7 +289,6 @@ start server \
 |                    	|                                                    	| SCRIPT KILL                   	|
 |                    	|                                                    	| SCRIPT LOAD                   	|
 |                    	|                                                    	| SLAVEOF                       	|
-|                    	|                                                    	| SLOWLOG                       	|
 |                    	|                                                    	| SORT                          	|
 |                    	|                                                    	| STRALGO LCS                   	|
 |                    	|                                                    	| SWAPDB                        	|

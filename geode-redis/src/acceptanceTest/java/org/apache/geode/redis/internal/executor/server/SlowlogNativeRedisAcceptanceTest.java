@@ -15,27 +15,17 @@
 
 package org.apache.geode.redis.internal.executor.server;
 
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
-import org.apache.geode.redis.internal.executor.RedisResponse;
-import org.apache.geode.redis.internal.netty.Command;
-import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
+import org.junit.ClassRule;
 
-// TODO: only exists for Redis monitoring software, maybe make functional someday?
-public class SlowlogExecutor extends AbstractExecutor {
+import org.apache.geode.NativeRedisTestRule;
+
+public class SlowlogNativeRedisAcceptanceTest extends AbstractSlowlogIntegrationTest {
+
+  @ClassRule
+  public static NativeRedisTestRule redis = new NativeRedisTestRule();
 
   @Override
-  public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
-    String subCommand = command.getStringKey().toLowerCase();
-    switch (subCommand) {
-      case "get":
-        return RedisResponse.emptyArray();
-      case "len":
-        return RedisResponse.integer(0);
-      case "reset":
-        return RedisResponse.ok();
-      default:
-        return null; // Should never happen
-    }
+  public int getPort() {
+    return redis.getPort();
   }
 }

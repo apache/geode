@@ -15,27 +15,20 @@
 
 package org.apache.geode.redis.internal.executor.server;
 
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
-import org.apache.geode.redis.internal.executor.RedisResponse;
-import org.apache.geode.redis.internal.netty.Command;
-import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 
-// TODO: only exists for Redis monitoring software, maybe make functional someday?
-public class SlowlogExecutor extends AbstractExecutor {
+import org.junit.ClassRule;
+
+import org.apache.geode.redis.GeodeRedisServerRule;
+
+public class SlowlogIntegrationTest extends AbstractSlowlogIntegrationTest {
+
+  @ClassRule
+  public static GeodeRedisServerRule server = new GeodeRedisServerRule()
+      .withProperty(LOG_LEVEL, "info");
 
   @Override
-  public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
-    String subCommand = command.getStringKey().toLowerCase();
-    switch (subCommand) {
-      case "get":
-        return RedisResponse.emptyArray();
-      case "len":
-        return RedisResponse.integer(0);
-      case "reset":
-        return RedisResponse.ok();
-      default:
-        return null; // Should never happen
-    }
+  public int getPort() {
+    return server.getPort();
   }
 }

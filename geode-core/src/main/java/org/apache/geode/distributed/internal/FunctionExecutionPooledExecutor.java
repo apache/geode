@@ -31,6 +31,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -156,71 +157,9 @@ public class FunctionExecutionPooledExecutor extends ThreadPoolExecutor {
 
   private static RejectedExecutionHandler newRejectedExecutionHandler(
       BlockingQueue<Runnable> blockingQueue, boolean forFunctionExecution) {
+
     if (forFunctionExecution) {
-      return new RejectedExecutionHandler() {
-        @Override
-        public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
-          if (executor.isShutdown()) {
-            throw new RejectedExecutionException("executor has been shutdown");
-          }
-          if (isBufferConsumer((FunctionExecutionPooledExecutor) executor)) {
-            handleRejectedExecutionForBufferConsumer(r, executor);
-          } else if (isFunctionExecutionThread()) {
-            handleRejectedExecutionForFunctionExecutionThread(r, executor);
-          } else {
-            // In the normal case, add the rejected request to the blocking queue.
-            try {
-              blockingQueue.put(r);
-            } catch (InterruptedException e) {
-              Thread.currentThread().interrupt();
-              // this thread is being shutdown so just return;
-            }
-          }
-        }
-
-        private boolean isBufferConsumer(FunctionExecutionPooledExecutor executor) {
-          return Thread.currentThread() == executor.bufferConsumer;
-        }
-
-        private boolean isFunctionExecutionThread() {
-          return isFunctionExecutionThread.get();
-        }
-
-        /**
-         * Handle rejected execution for the bufferConsumer (the thread that takes from the blocking
-         * queue and offers to the synchronous queue). Spin off a thread directly in this case,
-         * since an offer has already been made to the synchronous queue and failed. This means that
-         * all the function execution threads are in use.
-         */
-        private void handleRejectedExecutionForBufferConsumer(Runnable r,
-            ThreadPoolExecutor executor) {
-          logger.warn("An additional " + FUNCTION_EXECUTION_PROCESSOR_THREAD_PREFIX
-              + " thread is being launched because all " + executor.getMaximumPoolSize()
-              + " thread pool threads are in use for greater than " + OFFER_TIME_MILLIS + " ms");
-          launchAdditionalThread(r, executor);
-        }
-
-        /**
-         * Handle rejected execution for a function execution thread. Spin off a thread directly in
-         * this case, since that means a function is executing another function. The child function
-         * request shouldn't be in the queue behind the parent request since the parent function is
-         * dependent on the child function executing.
-         */
-        private void handleRejectedExecutionForFunctionExecutionThread(Runnable r,
-            ThreadPoolExecutor executor) {
-          if (logger.isDebugEnabled()) {
-            logger.warn(
-                "An additional {} thread is being launched to prevent slow performance due to nested function executions",
-                FUNCTION_EXECUTION_PROCESSOR_THREAD_PREFIX);
-          }
-          launchAdditionalThread(r, executor);
-        }
-
-        private void launchAdditionalThread(Runnable r, ThreadPoolExecutor executor) {
-          Thread th = executor.getThreadFactory().newThread(r);
-          th.start();
-        }
-      };
+      return new FunctionExecutionRejectedExecutionHandler(blockingQueue);
     }
 
     if (blockingQueue instanceof SynchronousQueue) {
@@ -284,11 +223,90 @@ public class FunctionExecutionPooledExecutor extends ThreadPoolExecutor {
     }
   }
 
+  @VisibleForTesting
+  public BlockingQueue<Runnable> getBufferQueue() {
+    return bufferQueue;
+  }
+
   private static int getCorePoolSize(int maxSize) {
     if (maxSize == Integer.MAX_VALUE) {
       return 0;
     }
     return 1;
+  }
+
+  @VisibleForTesting
+  public static class FunctionExecutionRejectedExecutionHandler
+      implements RejectedExecutionHandler {
+
+    private final BlockingQueue<Runnable> blockingQueue;
+
+    private FunctionExecutionRejectedExecutionHandler(BlockingQueue<Runnable> blockingQueue) {
+      this.blockingQueue = blockingQueue;
+    }
+
+    @Override
+    public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
+      if (executor.isShutdown()) {
+        throw new RejectedExecutionException("executor has been shutdown");
+      }
+      if (isBufferConsumer((FunctionExecutionPooledExecutor) executor)) {
+        handleRejectedExecutionForBufferConsumer(r, executor);
+      } else if (isFunctionExecutionThread()) {
+        handleRejectedExecutionForFunctionExecutionThread(r, executor);
+      } else {
+        // In the normal case, add the rejected request to the blocking queue.
+        try {
+          blockingQueue.put(r);
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+          // this thread is being shutdown so just return;
+        }
+      }
+    }
+
+    private boolean isBufferConsumer(FunctionExecutionPooledExecutor executor) {
+      return Thread.currentThread() == executor.bufferConsumer;
+    }
+
+    private boolean isFunctionExecutionThread() {
+      return isFunctionExecutionThread.get();
+    }
+
+    /**
+     * Handle rejected execution for the bufferConsumer (the thread that takes from the blocking
+     * queue and offers to the synchronous queue). Spin off a thread directly in this case,
+     * since an offer has already been made to the synchronous queue and failed. This means that
+     * all the function execution threads are in use.
+     */
+    private void handleRejectedExecutionForBufferConsumer(Runnable r,
+        ThreadPoolExecutor executor) {
+      logger.warn("An additional " + FUNCTION_EXECUTION_PROCESSOR_THREAD_PREFIX
+          + " thread is being launched because all " + executor.getMaximumPoolSize()
+          + " thread pool threads are in use for greater than " + OFFER_TIME_MILLIS + " ms");
+      launchAdditionalThread(r, executor);
+    }
+
+    /**
+     * Handle rejected execution for a function execution thread. Spin off a thread directly in
+     * this case, since that means a function is executing another function. The child function
+     * request shouldn't be in the queue behind the parent request since the parent function is
+     * dependent on the child function executing.
+     */
+    private void handleRejectedExecutionForFunctionExecutionThread(Runnable r,
+        ThreadPoolExecutor executor) {
+      if (logger.isDebugEnabled()) {
+        logger.warn(
+            "An additional {} thread is being launched to prevent slow performance due to nested function executions",
+            FUNCTION_EXECUTION_PROCESSOR_THREAD_PREFIX);
+      }
+      launchAdditionalThread(r, executor);
+    }
+
+    private void launchAdditionalThread(Runnable r, ThreadPoolExecutor executor) {
+      Thread th = executor.getThreadFactory().newThread(r);
+      th.start();
+    }
   }
 
   /**
