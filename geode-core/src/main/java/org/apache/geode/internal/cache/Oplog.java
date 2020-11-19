@@ -5789,6 +5789,8 @@ public class Oplog implements CompactableOplog, Flushable {
       if (((rv / (double) rvHWMtmp) * 100) <= parent.getCompactionThreshold()) {
         return true;
       }
+    } else if (this.totalLiveCount.get() <= 0) {
+      return true;
     }
 
     return false;
