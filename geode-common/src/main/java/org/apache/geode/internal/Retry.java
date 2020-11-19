@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 import java.util.concurrent.TimeUnit;
@@ -32,18 +31,21 @@ public class Retry {
   interface Timer {
     long nanoTime();
 
-    void sleep(long sleepTime, TimeUnit sleepTimeUnit) throws InterruptedException;
+    void sleep(long sleepTimeInNano) throws InterruptedException;
   }
 
-  private static class SteadyTimer implements Timer {
+  static class SteadyTimer implements Timer {
     @Override
     public long nanoTime() {
       return System.nanoTime();
     }
 
     @Override
-    public void sleep(long sleepTime, TimeUnit sleepTimeUnit) throws InterruptedException {
-      Thread.sleep(MILLISECONDS.convert(sleepTime, sleepTimeUnit));
+    public void sleep(long sleepTimeInNano) throws InterruptedException {
+      // avoid throwing IllegalArgumentException
+      if (sleepTimeInNano > 0) {
+        Thread.sleep(NANOSECONDS.toMillis(sleepTimeInNano));
+      }
     }
   }
 
@@ -82,7 +84,9 @@ public class Retry {
       if (predicate.test(value)) {
         return value;
       } else {
-        timer.sleep(interval, intervalUnit);
+        long sleepTimeInNano =
+            Math.min(NANOSECONDS.convert(interval, intervalUnit), until - timer.nanoTime());
+        timer.sleep(sleepTimeInNano);
       }
     } while (timer.nanoTime() < until);
 

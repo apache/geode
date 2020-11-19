@@ -17,7 +17,9 @@ package org.apache.geode.internal;
 
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -39,7 +41,7 @@ public class RetryTest {
   public void before() throws Exception {
     AtomicLong atomicLong = new AtomicLong();
     timer = mock(Retry.Timer.class);
-    when(timer.nanoTime()).thenReturn(1L, 2L, 3L);
+    when(timer.nanoTime()).thenReturn(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L, 10L);
   }
 
   @Test
@@ -51,17 +53,18 @@ public class RetryTest {
     // nanoTime is only called one time if predicate match immediately
     verify(timer, times(1)).nanoTime();
     // sleep is never called if predicate matches immediately
-    verify(timer, never()).sleep(1, NANOSECONDS);
+    verify(timer, never()).sleep(anyLong());
   }
 
   @Test
   public void tryForReturnsAfterRetries() throws TimeoutException, InterruptedException {
     final AtomicInteger shared = new AtomicInteger();
     final Integer value =
-        Retry.tryFor(3, NANOSECONDS, 1, NANOSECONDS, shared::getAndIncrement, (v) -> v == 3, timer);
+        Retry.tryFor(10, NANOSECONDS, 1, NANOSECONDS, shared::getAndIncrement, (v) -> v == 3,
+            timer);
     assertThat(value).isEqualTo(3);
-    verify(timer, times(4)).nanoTime();
-    verify(timer, times(3)).sleep(1, NANOSECONDS);
+    verify(timer, times(7)).nanoTime();
+    verify(timer, times(3)).sleep(1L);
   }
 
   @Test
@@ -69,7 +72,22 @@ public class RetryTest {
     assertThatThrownBy(
         () -> Retry.tryFor(1, NANOSECONDS, 1, NANOSECONDS, () -> null, Objects::nonNull, timer))
             .isInstanceOf(TimeoutException.class);
-    verify(timer, times(2)).nanoTime();
-    verify(timer, times(1)).sleep(1, NANOSECONDS);
+    verify(timer, times(3)).nanoTime();
+    verify(timer, times(1)).sleep(0L);
+  }
+
+  @Test
+  public void timerSleepCanTakeNegativeArgument() throws Exception {
+    Retry.SteadyTimer steadyTimer = new Retry.SteadyTimer();
+    assertThatNoException().isThrownBy(() -> steadyTimer.sleep(-2));
+  }
+
+  @Test
+  public void lastIterationSleepForLessThanIntervalTime() throws Exception {
+    assertThatThrownBy(
+        () -> Retry.tryFor(2, NANOSECONDS, 3, NANOSECONDS, () -> null, Objects::nonNull, timer))
+            .isInstanceOf(TimeoutException.class);
+    verify(timer, times(3)).nanoTime();
+    verify(timer, times(1)).sleep(1L);
   }
 }
