@@ -41,6 +41,7 @@ import org.apache.geode.distributed.internal.Distribution;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.net.BufferPool;
 import org.apache.geode.internal.net.SocketCloser;
 import org.apache.geode.test.junit.categories.MembershipTest;
@@ -75,6 +76,7 @@ public class ConnectionTest {
     CancelCriterion stopper = mock(CancelCriterion.class);
     SocketCloser socketCloser = mock(SocketCloser.class);
     TCPConduit tcpConduit = mock(TCPConduit.class);
+    ThreadsMonitoring threadMonitoring = mock(ThreadsMonitoring.class);
 
     when(connectionTable.getBufferPool()).thenReturn(new BufferPool(dmStats));
     when(connectionTable.getConduit()).thenReturn(tcpConduit);
@@ -86,6 +88,7 @@ public class ConnectionTest {
     when(tcpConduit.getDM()).thenReturn(distributionManager);
     when(tcpConduit.getSocketId()).thenReturn(new InetSocketAddress(getLocalHost(), 10337));
     when(tcpConduit.getStats()).thenReturn(dmStats);
+    when(distributionManager.getThreadMonitoring()).thenReturn(threadMonitoring);
 
     SocketChannel channel = SocketChannel.open();
 
