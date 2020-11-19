@@ -28,6 +28,7 @@ import org.apache.geode.internal.monitoring.executor.AbstractExecutor;
 import org.apache.geode.internal.monitoring.executor.FunctionExecutionPooledExecutorGroup;
 import org.apache.geode.internal.monitoring.executor.GatewaySenderEventProcessorGroup;
 import org.apache.geode.internal.monitoring.executor.OneTaskOnlyExecutorGroup;
+import org.apache.geode.internal.monitoring.executor.P2PReaderExecutorGroup;
 import org.apache.geode.internal.monitoring.executor.PooledExecutorGroup;
 import org.apache.geode.internal.monitoring.executor.ScheduledThreadPoolExecutorWKAGroup;
 import org.apache.geode.internal.monitoring.executor.SerialQueuedExecutorGroup;
@@ -125,6 +126,8 @@ public class ThreadsMonitoringImpl implements ThreadsMonitoring {
         return new ScheduledThreadPoolExecutorWKAGroup();
       case AGSExecutor:
         return new GatewaySenderEventProcessorGroup();
+      case P2PReaderExecutor:
+        return new P2PReaderExecutorGroup();
       default:
         throw new IllegalStateException("Unhandled mode=" + mode);
     }

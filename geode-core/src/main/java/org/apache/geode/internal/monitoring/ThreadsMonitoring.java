@@ -27,7 +27,8 @@ public interface ThreadsMonitoring {
     SerialQueuedExecutor,
     OneTaskOnlyExecutor,
     ScheduledThreadExecutor,
-    AGSExecutor
+    AGSExecutor,
+    P2PReaderExecutor
   };
 
   Map<Long, AbstractExecutor> getMonitorMap();
