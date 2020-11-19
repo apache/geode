@@ -42,9 +42,10 @@ public class Retry {
 
     @Override
     public void sleep(long sleepTimeInNano) throws InterruptedException {
+      long millis = NANOSECONDS.toMillis(sleepTimeInNano);
       // avoid throwing IllegalArgumentException
-      if (sleepTimeInNano > 0) {
-        Thread.sleep(NANOSECONDS.toMillis(sleepTimeInNano));
+      if (millis > 0) {
+        Thread.sleep(millis);
       }
     }
   }
