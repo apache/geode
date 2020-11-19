@@ -39,7 +39,7 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-
+@Ignore("OOM when run in parallel")
 public class NetstatDUnitTest {
   @ClassRule
   public static ClusterStartupRule lsRule = new ClusterStartupRule();
