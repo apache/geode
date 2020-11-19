@@ -78,18 +78,23 @@ public class Retry {
       Predicate<T> predicate,
       Timer timer) throws TimeoutException, InterruptedException {
     long until = timer.nanoTime() + NANOSECONDS.convert(timeout, timeoutUnit);
+    long intervalNano = NANOSECONDS.convert(interval, intervalUnit);
 
     T value;
-    do {
+    for (;;) {
       value = supplier.get();
       if (predicate.test(value)) {
         return value;
       } else {
-        long sleepTimeInNano =
-            Math.min(NANOSECONDS.convert(interval, intervalUnit), until - timer.nanoTime());
-        timer.sleep(sleepTimeInNano);
+        // if there is still more time left after we sleep for interval period, then sleep and retry
+        // otherwise break out and throw TimeoutException
+        if ((timer.nanoTime() + intervalNano) < until) {
+          timer.sleep(intervalNano);
+        } else {
+          break;
+        }
       }
-    } while (timer.nanoTime() < until);
+    }
 
     throw new TimeoutException();
   }

@@ -41,7 +41,7 @@ public class RetryTest {
   public void before() throws Exception {
     AtomicLong atomicLong = new AtomicLong();
     timer = mock(Retry.Timer.class);
-    when(timer.nanoTime()).thenReturn(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L, 10L);
+    when(timer.nanoTime()).thenReturn(0L, 1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L);
   }
 
   @Test
@@ -63,17 +63,17 @@ public class RetryTest {
         Retry.tryFor(10, NANOSECONDS, 1, NANOSECONDS, shared::getAndIncrement, (v) -> v == 3,
             timer);
     assertThat(value).isEqualTo(3);
-    verify(timer, times(7)).nanoTime();
+    verify(timer, times(4)).nanoTime();
     verify(timer, times(3)).sleep(1L);
   }
 
   @Test
   public void tryForThrowsAfterTimeout() throws InterruptedException {
     assertThatThrownBy(
-        () -> Retry.tryFor(1, NANOSECONDS, 1, NANOSECONDS, () -> null, Objects::nonNull, timer))
+        () -> Retry.tryFor(3, NANOSECONDS, 1, NANOSECONDS, () -> null, Objects::nonNull, timer))
             .isInstanceOf(TimeoutException.class);
     verify(timer, times(3)).nanoTime();
-    verify(timer, times(1)).sleep(0L);
+    verify(timer, times(1)).sleep(1L);
   }
 
   @Test
@@ -87,7 +87,7 @@ public class RetryTest {
     assertThatThrownBy(
         () -> Retry.tryFor(2, NANOSECONDS, 3, NANOSECONDS, () -> null, Objects::nonNull, timer))
             .isInstanceOf(TimeoutException.class);
-    verify(timer, times(3)).nanoTime();
-    verify(timer, times(1)).sleep(1L);
+    verify(timer, times(2)).nanoTime();
+    verify(timer, never()).sleep(anyLong());
   }
 }
