@@ -24,6 +24,8 @@ import java.util.stream.IntStream;
 
 import org.junit.Test;
 
+import org.apache.geode.gradle.PortRange;
+
 public class PortRangeTest {
   @Test
   public void firstPartitionHasSameLowerBoundAsFullRange() {

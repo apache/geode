@@ -1,6 +1,6 @@
 import org.apache.geode.gradle.TestPropertiesWriter
 import org.apache.geode.gradle.RepeatTest
-import org.apache.geode.gradle.parallel.LazyParallelTestExecuter
+import org.apache.geode.gradle.Parallel
 import org.apache.geode.gradle.plugins.DependencyConstraints
 
 /*
@@ -156,8 +156,10 @@ task repeatUnitTest(type: RepeatTest) {
   // default classpath works for this one.
 }
 
-configure([acceptanceTest, distributedTest, integrationTest, uiTest, upgradeTest, repeatAcceptanceTest, repeatDistributedTest, repeatIntegrationTest, repeatUnitTest, repeatUpgradeTest]) {
-  testExecuter = new LazyParallelTestExecuter(it);
+configure([acceptanceTest, distributedTest, integrationTest, uiTest, upgradeTest]) {
+  doFirst {
+    testExecuter = Parallel.executerFor(it)
+  }
 }
 
 configure([integrationTest, distributedTest, performanceTest, acceptanceTest, uiTest, upgradeTest]) {
