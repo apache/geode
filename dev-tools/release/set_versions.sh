@@ -112,7 +112,7 @@ trap 'failMsg2 $LINENO' ERR
 
 echo ""
 echo "============================================================"
-echo "Setting Geode versions and updating expected pom"
+echo "Setting Geode versions"
 echo "============================================================"
 set -x
 cd ${GEODE}
@@ -121,9 +121,14 @@ set +x
 #version = 1.13.0-build.0
 sed -e "s/^version =.*/version = ${VERSION}${BUILDSUFFIX}/" -i.bak gradle.properties
 
-rm gradle.properties.bak
+#  product_version: '1.13.2'
+sed -E \
+    -e "s#product_version: '[0-9.]+'#product_version: '${VERSION}'#" \
+    -i.bak geode-book/config.yml
+
+rm -f gradle.properties.bak geode-book/config.yml.bak
 set -x
-git add gradle.properties
+git add gradle.properties geode-book/config.yml
 if [ $(git diff --staged | wc -l) -gt 0 ] ; then
   git diff --staged --color | cat
   git commit -m "Bumping version to ${VERSION}${BUILDSUFFIX}"
