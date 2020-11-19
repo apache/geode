@@ -456,6 +456,26 @@ public class ParallelGatewaySenderQueueJUnitTest {
     assertEquals(3, peekedAfter.size());
   }
 
+  @Test
+  public void testCalculateTimeToSleepNegativeInputReturnsZero() {
+    assertEquals(0L, ParallelGatewaySenderQueue.calculateTimeToSleep(-3));
+  }
+
+  @Test
+  public void testCalculateTimeToSleepZeroInputReturnsZero() {
+    assertEquals(0L, ParallelGatewaySenderQueue.calculateTimeToSleep(0));
+  }
+
+  @Test
+  public void testCalculateTimeToSleepInputGreaterThanOneThousand() {
+    assertEquals(50L, ParallelGatewaySenderQueue.calculateTimeToSleep(1002));
+  }
+
+  @Test
+  public void testCalculateTimeToSleepInputSmallerThanOneThousand() {
+    assertEquals(2L, ParallelGatewaySenderQueue.calculateTimeToSleep(40));
+  }
+
   private GatewaySenderEventImpl createGatewaySenderEventImpl(int transactionId,
       boolean isLastEventInTransaction) {
     GatewaySenderEventImpl event = mock(GatewaySenderEventImpl.class);
