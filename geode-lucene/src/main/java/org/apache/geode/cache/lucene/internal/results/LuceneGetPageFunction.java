@@ -35,8 +35,6 @@ import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.management.internal.security.ResourcePermissions;
-import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.security.ResourcePermission;
 
 /**
@@ -57,8 +55,10 @@ public class LuceneGetPageFunction implements InternalFunction<Object> {
       Set<?> keys = ctx.getFilter();
       SecurityService securityService = ((InternalCache) ctx.getCache()).getSecurityService();
       List<PageEntry> results = new PageResults(keys.size());
+      Object principal = context.getPrincipal();
+
       for (Object key : keys) {
-        PageEntry entry = getEntry(region, key, securityService);
+        PageEntry entry = getEntry(region, key, securityService, principal);
         if (entry != null) {
           results.add(entry);
         }
@@ -71,7 +71,7 @@ public class LuceneGetPageFunction implements InternalFunction<Object> {
   }
 
   protected PageEntry getEntry(final Region region, final Object key,
-      SecurityService securityService) {
+      SecurityService securityService, Object principal) {
     final EntrySnapshot entry = (EntrySnapshot) region.getEntry(key);
     if (entry == null) {
       return null;
@@ -81,14 +81,8 @@ public class LuceneGetPageFunction implements InternalFunction<Object> {
     if (value == null || Token.isInvalidOrRemoved(value)) {
       return null;
     } else if (securityService.needPostProcess()) {
-      value = entry.getValue();
-      if (value instanceof PdxInstance) {
-        value = securityService.postProcess(region.getFullPath(), key,
-            ((PdxInstance) value).getObject(), false);
-
-      } else {
-        value = securityService.postProcess(region.getFullPath(), key, value, false);
-      }
+      value = securityService.postProcess(principal, region.getFullPath(), key, entry.getValue(),
+          false);
     }
 
     return new PageEntry(key, value);
