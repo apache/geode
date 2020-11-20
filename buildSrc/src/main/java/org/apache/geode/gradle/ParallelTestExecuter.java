@@ -84,9 +84,9 @@ public class ParallelTestExecuter implements TestExecuter<JvmTestExecutionSpec> 
   @Override
   public void execute(final JvmTestExecutionSpec testExecutionSpec,
       TestResultProcessor testResultProcessor) {
-    System.out.printf("DHE: %s executing tests %s%n", getClass().getSimpleName(), testExecutionSpec.getPath());
     int maxProcessors = getMaxParallelForks(testExecutionSpec);
     long forkEvery = testExecutionSpec.getForkEvery();
+    System.out.printf("DHE: %s executing tests %s with maxProcessors %d and maxWorkerCount %d%n", getClass().getSimpleName(), testExecutionSpec.getPath(), maxProcessors, maxWorkerCount);
 
     TestFramework testFramework = testExecutionSpec.getTestFramework();
     WorkerTestClassProcessorFactory testInstanceFactory = testFramework.getProcessorFactory();
@@ -100,7 +100,7 @@ public class ParallelTestExecuter implements TestExecuter<JvmTestExecutionSpec> 
         () -> new IsolatingForkingTestClassProcessor(currentWorkerLease, workerFactory,
             testInstanceFactory, testExecutionSpec.getJavaForkOptions(), classpath,
             testFramework.getWorkerConfigurationAction(), moduleRegistry, documentationRegistry,
-            maxWorkerCount);
+            maxProcessors);
 
     Factory<TestClassProcessor> reforkingProcessorFactory =
         () -> new RestartEveryNTestClassProcessor(forkingProcessorFactory, forkEvery);

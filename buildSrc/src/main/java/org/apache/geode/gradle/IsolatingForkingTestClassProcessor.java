@@ -60,7 +60,7 @@ public class IsolatingForkingTestClassProcessor implements TestClassProcessor {
   /**
    * The test contexts that are not assigned to a running test JVM.
    */
-  private static final AtomicReference<Deque<ParallelTestContext>> FOO_AVAILABLE_TEST_CONTEXTS =
+  private static final AtomicReference<Deque<ParallelTestContext>> AVAILABLE_TEST_CONTEXTS =
       new AtomicReference<>();
 
   private final WorkerLeaseRegistry.WorkerLease currentWorkerLease;
@@ -224,18 +224,20 @@ public class IsolatingForkingTestClassProcessor implements TestClassProcessor {
   }
 
   private void assignTestContext() {
-    testContext = FOO_AVAILABLE_TEST_CONTEXTS.get().pollFirst();
-    System.out.println("DHE: Assigned " + testContext);
+    Deque<ParallelTestContext> contexts = AVAILABLE_TEST_CONTEXTS.get();
+    testContext = contexts.pollFirst();
+    System.out.printf("DHE: Assigned %s leaving ~%d available%n", testContext, contexts.size());
   }
 
   private void releaseTestContext() {
-    FOO_AVAILABLE_TEST_CONTEXTS.get().addLast(testContext);
-    System.out.println("DHE: Released " + testContext);
+    Deque<ParallelTestContext> contexts = AVAILABLE_TEST_CONTEXTS.get();
+    contexts.addLast(testContext);
     testContext = null;
+    System.out.printf("DHE: Released %s leaving ~%d available%n", testContext, contexts.size());
   }
 
   private static void initializeTestContexts(int numberOfContexts) {
-    FOO_AVAILABLE_TEST_CONTEXTS.updateAndGet(currentValue -> {
+    AVAILABLE_TEST_CONTEXTS.updateAndGet(currentValue -> {
       if (currentValue != null) {
         return currentValue;
       }
