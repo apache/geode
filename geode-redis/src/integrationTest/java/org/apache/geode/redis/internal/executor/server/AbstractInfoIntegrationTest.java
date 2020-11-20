@@ -106,7 +106,8 @@ public abstract class AbstractInfoIntegrationTest implements RedisPortSupplier {
       Stream.of(SERVER_PROPERTIES, PERSISTENCE_PROPERTIES, CLUSTER_PROPERTIES,
           MEMORY_PROPERTIES, CLIENTS_PROPERTIES, STATS_PROPERTIES, REPLICATION_PROPERTIES)
           .flatMap(Collection::stream)
-          .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
+          .collect(
+              Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
 
   @Before
   public void setUp() {
