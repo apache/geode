@@ -126,7 +126,13 @@ sed -E \
     -e "s#product_version: '[0-9.]+'#product_version: '${VERSION}'#" \
     -i.bak geode-book/config.yml
 
-rm -f gradle.properties.bak geode-book/config.yml.bak
+#git clone -b branch --depth 1 https://github.com/apache/geode.git geode
+sed -e "s#clone -b [ds][evlopurt/0-9.]*#clone -b support/${VERSION_MM}#" \
+    -i.bak \
+    ci/docker/cache_dependencies.sh \
+    ci/images/google-geode-builder/scripts/cache_dependencies.sh
+
+rm -f gradle.properties.bak geode-book/config.yml.bak ci/docker/cache_dependencies.sh.bak ci/images/google-geode-builder/scripts/cache_dependencies.sh.bak
 set -x
 git add gradle.properties geode-book/config.yml
 if [ $(git diff --staged | wc -l) -gt 0 ] ; then
