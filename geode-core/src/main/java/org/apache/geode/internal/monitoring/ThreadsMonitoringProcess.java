@@ -15,7 +15,6 @@
 
 package org.apache.geode.internal.monitoring;
 
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.TimerTask;
 
@@ -53,16 +52,24 @@ public class ThreadsMonitoringProcess extends TimerTask {
   public boolean mapValidation() {
     boolean isStuck = false;
     int numOfStuck = 0;
-    for (Entry<Long, AbstractExecutor> entry1 : this.threadsMonitoring.getMonitorMap().entrySet()) {
-      logger.trace("Checking thread {}", entry1.getKey());
-      long currentTime = System.currentTimeMillis();
-      long delta = currentTime - entry1.getValue().getStartTime();
+    for (AbstractExecutor executor : threadsMonitoring.getMonitorMap().values()) {
+      if (executor.isMonitoringSuspended()) {
+        continue;
+      }
+      final long startTime = executor.getStartTime();
+      final long currentTime = System.currentTimeMillis();
+      if (startTime == 0) {
+        executor.setStartTime(currentTime);
+        continue;
+      }
+      long threadId = executor.getThreadID();
+      logger.trace("Checking thread {}", threadId);
+      long delta = currentTime - startTime;
       if (delta >= this.timeLimit) {
         isStuck = true;
         numOfStuck++;
-        logger.warn("Thread {} (0x{}) is stuck", entry1.getKey(),
-            Long.toHexString(entry1.getKey()));
-        entry1.getValue().handleExpiry(delta);
+        logger.warn("Thread {} (0x{}) is stuck", threadId, Long.toHexString(threadId));
+        executor.handleExpiry(delta);
       }
     }
     if (!isStuck) {

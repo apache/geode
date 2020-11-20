@@ -1587,13 +1587,17 @@ public class Connection implements Runnable {
         logger.debug("Starting {} on {}", p2pReaderName(), socket);
       }
     }
-    final AbstractExecutor threadMonitorExecutor =
-        getThreadMonitoring().createAbstractExecutor(P2PReaderExecutor);
+
     // we should not change the state of the connection if we are a handshake reader thread
     // as there is a race between this thread and the application thread doing direct ack
     boolean handshakeHasBeenRead = false;
     // if we're using SSL/TLS the input buffer may already have data to process
     boolean skipInitialRead = getInputBuffer().position() > 0;
+    final ThreadsMonitoring threadMonitoring = getThreadMonitoring();
+    final AbstractExecutor threadMonitorExecutor =
+        threadMonitoring.createAbstractExecutor(P2PReaderExecutor);
+    threadMonitorExecutor.suspendMonitoring();
+    threadMonitoring.register(threadMonitorExecutor);
     try {
       for (boolean isInitialRead = true;;) {
         if (stopped) {
@@ -1719,6 +1723,7 @@ public class Connection implements Runnable {
         }
       }
     } finally {
+      threadMonitoring.unregister(threadMonitorExecutor);
       hasResidualReaderThread = false;
       if (!handshakeHasBeenRead || (sharedResource && !asyncMode)) {
         synchronized (stateLock) {
@@ -3252,7 +3257,7 @@ public class Connection implements Runnable {
   private boolean dispatchMessage(DistributionMessage msg, int bytesRead, boolean directAck,
       AbstractExecutor threadMonitorExecutor)
       throws MemberShunnedException {
-    getThreadMonitoring().startMonitoring(threadMonitorExecutor);
+    threadMonitorExecutor.resumeMonitoring();
     try {
       msg.setDoDecMessagesBeingReceived(true);
       if (directAck) {
@@ -3263,10 +3268,10 @@ public class Connection implements Runnable {
       owner.getConduit().messageReceived(this, msg, bytesRead);
       return true;
     } finally {
+      threadMonitorExecutor.suspendMonitoring();
       if (msg.containsRegionContentChange()) {
         messagesReceived++;
       }
-      getThreadMonitoring().stopMonitoring(threadMonitorExecutor);
     }
   }
 
