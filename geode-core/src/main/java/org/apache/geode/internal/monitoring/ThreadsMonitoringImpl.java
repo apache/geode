@@ -16,13 +16,11 @@
 package org.apache.geode.internal.monitoring;
 
 
-import java.util.Properties;
 import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.monitoring.executor.AbstractExecutor;
 import org.apache.geode.internal.monitoring.executor.FunctionExecutionPooledExecutorGroup;
@@ -40,20 +38,17 @@ public class ThreadsMonitoringImpl implements ThreadsMonitoring {
   /** Monitors the health of the entire distributed system */
   private ThreadsMonitoringProcess tmProcess = null;
 
-  private final Properties nonDefault = new Properties();
-  private final DistributionConfigImpl distributionConfigImpl =
-      new DistributionConfigImpl(nonDefault);
-
   private final Timer timer =
       new Timer("ThreadsMonitor", true);
 
   /** Is this ThreadsMonitoringImpl closed?? */
   private boolean isClosed = true;
 
-  public ThreadsMonitoringImpl(InternalDistributedSystem iDistributedSystem) {
+  public ThreadsMonitoringImpl(InternalDistributedSystem iDistributedSystem, int timeInterval,
+      int timeLimit) {
     this.monitorMap = new ConcurrentHashMap<>();
     this.isClosed = false;
-    setThreadsMonitoringProcess(iDistributedSystem);
+    setThreadsMonitoringProcess(iDistributedSystem, timeInterval, timeLimit);
   }
 
   @Override
@@ -79,9 +74,10 @@ public class ThreadsMonitoringImpl implements ThreadsMonitoring {
   }
 
   /** Starts a new {@link org.apache.geode.internal.monitoring.ThreadsMonitoringProcess} */
-  private void setThreadsMonitoringProcess(InternalDistributedSystem iDistributedSystem) {
-    this.tmProcess = new ThreadsMonitoringProcess(this, iDistributedSystem);
-    this.timer.schedule(tmProcess, 0, distributionConfigImpl.getThreadMonitorInterval());
+  private void setThreadsMonitoringProcess(InternalDistributedSystem iDistributedSystem,
+      int timeInterval, int timeLimit) {
+    this.tmProcess = new ThreadsMonitoringProcess(this, iDistributedSystem, timeLimit);
+    this.timer.schedule(tmProcess, 0, timeInterval);
   }
 
   public ThreadsMonitoringProcess getThreadsMonitoringProcess() {
