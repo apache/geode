@@ -30,7 +30,7 @@ import org.gradle.internal.work.WorkerLeaseRegistry
 
 class Parallel {
   static TestExecuter<JvmTestExecutionSpec> executerFor(Test test) {
-    println "DHE: Creating RepeatTestExecuter for " + test.name
+    println "DHE: Creating ParallelTestExecuter for " + test.path
     ServiceRegistry services = test.getServices()
     def e = new ParallelTestExecuter(
         test.getProcessBuilderFactory(),
@@ -42,7 +42,7 @@ class Parallel {
         services.get(Clock.class),
         services.get(DocumentationRegistry.class),
         (DefaultTestFilter) test.getFilter())
-    println "DHE: Created RepeatTestExecuter for " + test.name
+    println "DHE: Created ParallelTestExecuter for " + test.path
     return e
   }
 }

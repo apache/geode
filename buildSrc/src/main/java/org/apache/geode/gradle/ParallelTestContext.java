@@ -77,6 +77,7 @@ public class ParallelTestContext {
   public static List<ParallelTestContext> create(int numberOfContexts) {
     return IntStream.range(0, numberOfContexts)
         .mapToObj(i -> new ParallelTestContext(i, numberOfContexts))
+        .peek(c -> System.out.println("DHE: Created " + c))
         .collect(toList());
   }
 
@@ -96,8 +97,8 @@ public class ParallelTestContext {
         String.valueOf(nonMembershipPorts.lowerBound()));
     javaCommand.systemProperty(NON_MEMBERSHIP_PORT_UPPER_BOUND_PROPERTY,
         String.valueOf(nonMembershipPorts.upperBound()));
-    System.out.printf("DHE: Configured test JVM membership %s non-membership %s dir %s%n",
-        membershipPorts, nonMembershipPorts, workerWorkingDir);
+    System.out.printf("DHE: Configured test JVM with %s and working dir %s%n",
+        this, workerWorkingDir);
   }
 
   private String uniqueWorkingDirName() {
@@ -123,5 +124,13 @@ public class ParallelTestContext {
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
+  }
+
+  @Override
+  public String toString() {
+    return "ParallelTestContext{" +
+        "membershipPorts=" + membershipPorts +
+        ", nonMembershipPorts=" + nonMembershipPorts +
+        '}';
   }
 }

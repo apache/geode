@@ -60,7 +60,7 @@ public class IsolatingForkingTestClassProcessor implements TestClassProcessor {
   /**
    * The test contexts that are not assigned to a running test JVM.
    */
-  private static final AtomicReference<Deque<ParallelTestContext>> AVAILABLE_TEST_CONTEXTS =
+  private static final AtomicReference<Deque<ParallelTestContext>> FOO_AVAILABLE_TEST_CONTEXTS =
       new AtomicReference<>();
 
   private final WorkerLeaseRegistry.WorkerLease currentWorkerLease;
@@ -108,12 +108,11 @@ public class IsolatingForkingTestClassProcessor implements TestClassProcessor {
       if (!stoppedNow) {
         if (remoteProcessor == null) {
           completion = currentWorkerLease.startChild();
-          testContext = AVAILABLE_TEST_CONTEXTS.get().pollFirst();
+          assignTestContext();
           try {
             remoteProcessor = forkProcess();
           } catch (RuntimeException e) {
-            AVAILABLE_TEST_CONTEXTS.get().addLast(testContext);
-            testContext = null;
+            releaseTestContext();
             completion.leaseFinish();
             completion = null;
             throw e;
@@ -203,8 +202,7 @@ public class IsolatingForkingTestClassProcessor implements TestClassProcessor {
             e.getCause());
       }
     } finally {
-      AVAILABLE_TEST_CONTEXTS.get().addLast(testContext);
-      testContext = null;
+      releaseTestContext();
       if (completion != null) {
         completion.leaseFinish();
       }
@@ -225,8 +223,19 @@ public class IsolatingForkingTestClassProcessor implements TestClassProcessor {
     }
   }
 
+  private void assignTestContext() {
+    testContext = FOO_AVAILABLE_TEST_CONTEXTS.get().pollFirst();
+    System.out.println("DHE: Assigned " + testContext);
+  }
+
+  private void releaseTestContext() {
+    FOO_AVAILABLE_TEST_CONTEXTS.get().addLast(testContext);
+    System.out.println("DHE: Released " + testContext);
+    testContext = null;
+  }
+
   private static void initializeTestContexts(int numberOfContexts) {
-    AVAILABLE_TEST_CONTEXTS.updateAndGet(currentValue -> {
+    FOO_AVAILABLE_TEST_CONTEXTS.updateAndGet(currentValue -> {
       if (currentValue != null) {
         return currentValue;
       }
