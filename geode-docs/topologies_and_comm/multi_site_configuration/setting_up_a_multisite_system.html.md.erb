@@ -387,3 +387,51 @@ boglesbymac(ny-3:88715)<v4>:36808 | 5371 | 5            |["boglesbymac(ln-1:8865
 boglesbymac(ny-4:88724)<v5>:52993 | 5247 | 6            |["boglesbymac(ln-1:88651)<v2>:48277","boglesbymac(ln-4:88681)<v5>:42784","boglesbymac(ln-2:88662)<v3>:12796","boglesbymac(ln-3:88672)<v4>:43675"]
 ```
 
+### <a id="setting_up_a_multisite_system__section_E3A44F85359046C7ADD12861D261637C" class="no-quick-link"></a>Configuring just one IP address and port to access all gateway receivers in a site
+
+There could be WAN deployments in which we do not want to expose the IP address and port of every gateway receiver to the other site but instead expose just one IP address and port for all gateway receivers. This way, the internal topology of the site is hidden to the other site. This case is quite common in cloud deployments, in which a reverse proxy/load balancer distributes incoming requests to the site (in our case, replication requests) among the available servers (in our case, gateway receivers).
+
+<%=vars.product_name%> supports this configuration by means of a particular use of the hostname-for-senders, start-port and end-port parameters of the gateway receiver.
+
+In order to configure a WAN deployment that hides the gateway receivers behind the same IP address and port, all the gateway receivers must have the same value for the hostname-for-senders parameter (the hostname or IP address to be used by clients to access them) and the same value in the start-port and end-port parameters (the port to be used by clients to access them).
+
+As an example, a deployment in which all gateway receivers of a site are accessed via the "gateway1.mycompany.com" hostname and port "1971", every gateway receiver in that site must be configured as follows:
+
+``` pre
+gfsh> create gateway-receiver --hostname-for-senders="gateway1.mycompany.com" --start-port=1971 --end-port=1971
+```
+
+The following output shows how the receiver side would look like after this configuration if 4 gateway recievers were configured:
+
+``` pre
+Cluster-ny gfsh>list gateways
+GatewayReceiver Section
+
+                    Member        | Port | Sender Count | Senders Connected
+----------------------------------| ---- | ------------ | --------------------------------------------------------------------------------------------------------------------------------------
+192.168.1.20(ny1:21901)<v1>:41000 | 1971 | 1            | 192.168.0.13(ln4:22520)<v4>:41005
+192.168.2.20(ny2:22150)<v2>:41000 | 1971 | 2            | 192.168.0.13(ln2:22004)<v2>:41003, 192.168.0.13(ln3:22252)<v3>:41004
+192.168.3.20(ny3:22371)<v3>:41000 | 1971 | 2            | 192.168.0.13(ln3:22252)<v3>:41004, 192.168.0.13(ln2:22004)<v2>:41003
+192.168.4.20(ny4:22615)<v4>:41000 | 1971 | 3            | 192.168.0.13(ln4:22520)<v4>:41005, 192.168.0.13(ln1:21755)<v1>:41002, 192.168.0.13(ln1:21755)<v1>:41002
+```
+
+When the gateway senders on one site are started, they will get the information about the gateway receivers of the remote site from the locator(s) running on the remote site. The remote locator will provide a list of gateway receivers to send replication events to (one element per gateway receiver running in the site), with all of them listening on the same hostname and port, which for the gateway senders concern it would be as if only one gateway receiver was on the other side.
+
+
+The following output shows the gateways information at the sender side in which it can be appreciated that there is only one IP address/hostname and port for the receiver location (gateway1.mycompany.com:1971) while the reality is that there are four gateway receivers at the other side.
+
+``` pre
+Cluster-ln gfsh>list gateways
+GatewaySender Section
+
+GatewaySender Id |                    Member         | Remote Cluster Id |   Type   |        Status         | Queued Events | Receiver Location
+---------------- | ----------------------------------| ----------------- | -------- | --------------------- | ------------- | ---------------------------
+ny               | 192.168.0.13(ln2:22004)<v2>:41003 | 2                 | Parallel | Running and Connected | 0             | gateway1.mycompany.com:1971
+ny               | 192.168.0.13(ln3:22252)<v3>:41004 | 2                 | Parallel | Running and Connected | 0             | gateway1.mycompany.com:1971
+ny               | 192.168.0.13(ln4:22520)<v4>:41005 | 2                 | Parallel | Running and Connected | 0             | gateway1.mycompany.com:1971
+ny               | 192.168.0.13(ln1:21755)<v1>:41002 | 2                 | Parallel | Running and Connected | 0             | gateway1.mycompany.com:1971
+
+```
+
+
+In order for the gateway senders to communicate with the remote gateway receivers, a reverse proxy/load balancer service must be in place in the deployment in order to receive the requests directed to the gateway receivers on the IP address and port configured, and forward them to one of the gateway receivers on the remote site.
