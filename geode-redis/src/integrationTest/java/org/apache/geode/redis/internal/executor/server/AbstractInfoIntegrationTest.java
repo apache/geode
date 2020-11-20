@@ -19,8 +19,10 @@ import static org.apache.geode.redis.internal.executor.server.AbstractHitsMisses
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -104,7 +106,7 @@ public abstract class AbstractInfoIntegrationTest implements RedisPortSupplier {
       Stream.of(SERVER_PROPERTIES, PERSISTENCE_PROPERTIES, CLUSTER_PROPERTIES,
           MEMORY_PROPERTIES, CLIENTS_PROPERTIES, STATS_PROPERTIES, REPLICATION_PROPERTIES)
           .flatMap(Collection::stream)
-          .collect(Collectors.toList());
+          .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
 
   @Before
   public void setUp() {
@@ -167,7 +169,7 @@ public abstract class AbstractInfoIntegrationTest implements RedisPortSupplier {
 
   @Test
   public void shouldReturnServerSections_givenServerSectionParameter() {
-    List<String> nonServerProperties = ALL_PROPERTIES;
+    List<String> nonServerProperties = new ArrayList<>(ALL_PROPERTIES);
     nonServerProperties.removeAll(SERVER_PROPERTIES);
 
     String actualResult = jedis.info("server");
@@ -178,7 +180,7 @@ public abstract class AbstractInfoIntegrationTest implements RedisPortSupplier {
 
   @Test
   public void shouldReturnClusterSections_givenClusterSectionParameter() {
-    List<String> nonClusterProperties = ALL_PROPERTIES;
+    List<String> nonClusterProperties = new ArrayList<>(ALL_PROPERTIES);
     nonClusterProperties.removeAll(CLUSTER_PROPERTIES);
 
     String actualResult = jedis.info("cluster");
@@ -189,7 +191,7 @@ public abstract class AbstractInfoIntegrationTest implements RedisPortSupplier {
 
   @Test
   public void shouldReturnPersistenceSections_givenPersistenceSectionParameter() {
-    List<String> nonPersistenceProperties = ALL_PROPERTIES;
+    List<String> nonPersistenceProperties = new ArrayList<>(ALL_PROPERTIES);
     nonPersistenceProperties.removeAll(PERSISTENCE_PROPERTIES);
 
     String actualResult = jedis.info("persistence");
@@ -200,7 +202,7 @@ public abstract class AbstractInfoIntegrationTest implements RedisPortSupplier {
 
   @Test
   public void shouldReturnStatsSections_givenStatsSectionParameter() {
-    List<String> nonStatsProperties = ALL_PROPERTIES;
+    List<String> nonStatsProperties = new ArrayList<>(ALL_PROPERTIES);
     nonStatsProperties.removeAll(STATS_PROPERTIES);
 
     String actualResult = jedis.info("stats");
@@ -211,7 +213,7 @@ public abstract class AbstractInfoIntegrationTest implements RedisPortSupplier {
 
   @Test
   public void shouldReturnClientsSections_givenClientsSectionParameter() {
-    List<String> nonClientsProperties = ALL_PROPERTIES;
+    List<String> nonClientsProperties = new ArrayList<>(ALL_PROPERTIES);
     nonClientsProperties.removeAll(CLIENTS_PROPERTIES);
 
     String actualResult = jedis.info("clients");
@@ -222,7 +224,7 @@ public abstract class AbstractInfoIntegrationTest implements RedisPortSupplier {
 
   @Test
   public void shouldReturnMemorySections_givenMemorySectionParameter() {
-    List<String> nonMemoryProperties = ALL_PROPERTIES;
+    List<String> nonMemoryProperties = new ArrayList<>(ALL_PROPERTIES);
     nonMemoryProperties.removeAll(MEMORY_PROPERTIES);
 
     String actualResult = jedis.info("memory");
@@ -233,7 +235,7 @@ public abstract class AbstractInfoIntegrationTest implements RedisPortSupplier {
 
   @Test
   public void shouldReturnKeySpaceSections_givenKeySpaceKeyspaceParameter() {
-    List<String> nonKeyspaceProperties = ALL_PROPERTIES;
+    List<String> nonKeyspaceProperties = new ArrayList<>(ALL_PROPERTIES);
     nonKeyspaceProperties.removeAll(KEYSPACE_PROPERTIES);
 
     jedis.set("key", "value");
@@ -245,7 +247,7 @@ public abstract class AbstractInfoIntegrationTest implements RedisPortSupplier {
 
   @Test
   public void shouldReturnReplicationSections_givenKeySpaceReplicationParameter() {
-    List<String> nonReplicationProperties = ALL_PROPERTIES;
+    List<String> nonReplicationProperties = new ArrayList<>(ALL_PROPERTIES);
     nonReplicationProperties.removeAll(REPLICATION_PROPERTIES);
 
     String actualResult = jedis.info("replication");
