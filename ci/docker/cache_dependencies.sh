@@ -20,7 +20,7 @@ set -e
 WORK_DIR=$(mktemp -d)
 
 pushd ${WORK_DIR}
-  git clone -b support/1.12 --depth 1 https://github.com/apache/geode.git geode
+  git clone -b support/1.13 --depth 1 https://github.com/apache/geode.git geode
 
   pushd geode
     ./gradlew --no-daemon resolveDependencies
