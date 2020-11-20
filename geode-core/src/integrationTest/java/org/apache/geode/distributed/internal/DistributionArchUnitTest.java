@@ -24,6 +24,7 @@ import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.junit.ArchUnitRunner;
 import com.tngtech.archunit.junit.CacheMode;
 import com.tngtech.archunit.lang.ArchRule;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.distributed.internal.membership.MembershipJUnitTest;
@@ -32,6 +33,7 @@ import org.apache.geode.distributed.internal.membership.api.Membership;
 @RunWith(ArchUnitRunner.class)
 @AnalyzeClasses(packages = "org.apache.geode", cacheMode = CacheMode.PER_CLASS,
     importOptions = ImportOption.DoNotIncludeArchives.class)
+@Ignore("Disabling until we can fix the memory usage of this test")
 public class DistributionArchUnitTest {
 
   @ArchTest
