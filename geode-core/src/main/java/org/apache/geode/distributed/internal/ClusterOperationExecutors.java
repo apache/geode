@@ -179,7 +179,8 @@ public class ClusterOperationExecutors implements OperationExecutors {
 
     DistributionConfig config = system.getConfig();
 
-    threadMonitor = config.getThreadMonitorEnabled() ? new ThreadsMonitoringImpl(system)
+    threadMonitor = config.getThreadMonitorEnabled() ? new ThreadsMonitoringImpl(system,
+        config.getThreadMonitorInterval(), config.getThreadMonitorTimeLimit())
         : new ThreadsMonitoringImplDummy();
 
 

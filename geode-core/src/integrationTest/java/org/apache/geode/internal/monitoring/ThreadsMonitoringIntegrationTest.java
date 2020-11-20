@@ -74,9 +74,6 @@ public class ThreadsMonitoringIntegrationTest {
 
     impl.getTimer().cancel();
 
-    // to initiate ResourceManagerStats
-    impl.getThreadsMonitoringProcess().run();
-
     assertThat(impl.getThreadsMonitoringProcess().mapValidation())
         .describedAs("ThreadMonitor monitoring process map validation should be false.")
         .isFalse();
@@ -129,9 +126,6 @@ public class ThreadsMonitoringIntegrationTest {
     ThreadsMonitoringImpl impl = ((ThreadsMonitoringImpl) threadMonitoring);
 
     impl.getTimer().cancel();
-
-    // to initiate ResourceManagerStats
-    impl.getThreadsMonitoringProcess().run();
 
     assertThat(impl.getThreadsMonitoringProcess().mapValidation())
         .describedAs("ThreadMonitor monitoring process map validation should be false.")
