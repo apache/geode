@@ -20,6 +20,7 @@ import java.util.TimerTask;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.DistributionManager;
@@ -49,6 +50,7 @@ public class ThreadsMonitoringProcess extends TimerTask {
     this.internalDistributedSystem = iDistributedSystem;
   }
 
+  @VisibleForTesting
   public boolean mapValidation() {
     boolean isStuck = false;
     int numOfStuck = 0;
@@ -106,6 +108,7 @@ public class ThreadsMonitoringProcess extends TimerTask {
       mapValidation();
   }
 
+  @VisibleForTesting
   public ResourceManagerStats getResourceManagerStats() {
     return this.resourceManagerStats;
   }
