@@ -32,7 +32,7 @@ public abstract class AbstractExecutor {
   private final long threadID;
   private final String groupName;
   private short numIterationsStuck;
-  private long startTime;
+  private volatile long startTime;
 
   public AbstractExecutor(String groupName) {
     this(groupName, Thread.currentThread().getId());
@@ -134,6 +134,14 @@ public abstract class AbstractExecutor {
 
   public long getThreadID() {
     return this.threadID;
+  }
+
+  public void suspendMonitoring() {}
+
+  public void resumeMonitoring() {}
+
+  public boolean isMonitoringSuspended() {
+    return false;
   }
 
 }

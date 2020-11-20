@@ -98,7 +98,9 @@ public class ThreadsMonitoringImpl implements ThreadsMonitoring {
 
   @Override
   public boolean startMonitor(Mode mode) {
-    return startMonitoring(createAbstractExecutor(mode));
+    AbstractExecutor executor = createAbstractExecutor(mode);
+    executor.setStartTime(System.currentTimeMillis());
+    return register(executor);
   }
 
   @Override
@@ -108,7 +110,11 @@ public class ThreadsMonitoringImpl implements ThreadsMonitoring {
 
   @VisibleForTesting
   boolean isMonitoring() {
-    return monitorMap.containsKey(Thread.currentThread().getId());
+    AbstractExecutor executor = monitorMap.get(Thread.currentThread().getId());
+    if (executor == null) {
+      return false;
+    }
+    return !executor.isMonitoringSuspended();
   }
 
   @Override
@@ -134,19 +140,21 @@ public class ThreadsMonitoringImpl implements ThreadsMonitoring {
   }
 
   @Override
-  public boolean startMonitoring(AbstractExecutor executor) {
-    executor.setStartTime(System.currentTimeMillis());
+  public boolean register(AbstractExecutor executor) {
     this.monitorMap.put(executor.getThreadID(), executor);
     return true;
   }
 
   @Override
-  public void stopMonitoring(AbstractExecutor executor) {
+  public void unregister(AbstractExecutor executor) {
     this.monitorMap.remove(executor.getThreadID());
   }
 
   @VisibleForTesting
   boolean isMonitoring(AbstractExecutor executor) {
+    if (executor.isMonitoringSuspended()) {
+      return false;
+    }
     return monitorMap.containsKey(executor.getThreadID());
   }
 

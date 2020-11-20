@@ -38,12 +38,12 @@ public class ThreadsMonitoringImplDummy implements ThreadsMonitoring {
   }
 
   @Override
-  public boolean startMonitoring(AbstractExecutor executor) {
+  public boolean register(AbstractExecutor executor) {
     return true;
   }
 
   @Override
-  public void stopMonitoring(AbstractExecutor executor) {
+  public void unregister(AbstractExecutor executor) {
 
   }
 

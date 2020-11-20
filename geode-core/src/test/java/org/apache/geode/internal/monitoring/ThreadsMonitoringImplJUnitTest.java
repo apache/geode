@@ -74,19 +74,21 @@ public class ThreadsMonitoringImplJUnitTest {
 
   @Test
   public void verifyExecutorMonitoringLifeCycle() {
-    AbstractExecutor executor = threadsMonitoringImpl.createAbstractExecutor(Mode.FunctionExecutor);
-    long createTime = executor.getStartTime();
-    assertFalse(threadsMonitoringImpl.isMonitoring(executor));
-    threadsMonitoringImpl.startMonitoring(executor);
-    long startTime = executor.getStartTime();
-    assertTrue(startTime != createTime);
-    assertTrue(threadsMonitoringImpl.isMonitoring(executor));
-    threadsMonitoringImpl.stopMonitoring(executor);
-    assertFalse(threadsMonitoringImpl.isMonitoring(executor));
-    threadsMonitoringImpl.startMonitoring(executor);
-    assertTrue(threadsMonitoringImpl.isMonitoring(executor));
-    threadsMonitoringImpl.stopMonitoring(executor);
-    assertFalse(threadsMonitoringImpl.isMonitoring(executor));
+    AbstractExecutor executor =
+        threadsMonitoringImpl.createAbstractExecutor(Mode.P2PReaderExecutor);
+    assertThat(threadsMonitoringImpl.isMonitoring(executor)).isFalse();
+    threadsMonitoringImpl.register(executor);
+    assertThat(threadsMonitoringImpl.isMonitoring(executor)).isTrue();
+    executor.suspendMonitoring();
+    assertThat(threadsMonitoringImpl.isMonitoring(executor)).isFalse();
+    executor.resumeMonitoring();
+    assertThat(threadsMonitoringImpl.isMonitoring(executor)).isTrue();
+    threadsMonitoringImpl.unregister(executor);
+    assertThat(threadsMonitoringImpl.isMonitoring(executor)).isFalse();
+    threadsMonitoringImpl.register(executor);
+    assertThat(threadsMonitoringImpl.isMonitoring(executor)).isTrue();
+    threadsMonitoringImpl.unregister(executor);
+    assertThat(threadsMonitoringImpl.isMonitoring(executor)).isFalse();
   }
 
   @Test

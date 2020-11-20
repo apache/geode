@@ -18,7 +18,26 @@ public class P2PReaderExecutorGroup extends AbstractExecutor {
 
   public static final String GROUP_NAME = "P2PReaderExecutor";
 
+  private volatile boolean suspended;
+
   public P2PReaderExecutorGroup() {
     super(GROUP_NAME);
   }
+
+  @Override
+  public void suspendMonitoring() {
+    suspended = true;
+  }
+
+  @Override
+  public void resumeMonitoring() {
+    setStartTime(0);
+    suspended = false;
+  }
+
+  @Override
+  public boolean isMonitoringSuspended() {
+    return suspended;
+  }
+
 }

@@ -53,7 +53,7 @@ public interface ThreadsMonitoring {
 
   /**
    * Creates a new executor that is associated with the calling thread.
-   * Callers need to pass the returned executor to {@link #startMonitoring(AbstractExecutor)}
+   * Callers need to pass the returned executor to {@link #register(AbstractExecutor)}
    * for this executor to be monitored.
    *
    * @param mode describes the group the calling thread should be associated with.
@@ -68,7 +68,7 @@ public interface ThreadsMonitoring {
    * @param executor the executor to monitor.
    * @return true - if succeeded , false - if failed.
    */
-  public boolean startMonitoring(AbstractExecutor executor);
+  public boolean register(AbstractExecutor executor);
 
   /**
    * Call to cause this thread monitor to stop monitoring
@@ -76,7 +76,7 @@ public interface ThreadsMonitoring {
    *
    * @param executor the executor to stop monitoring.
    */
-  public void stopMonitoring(AbstractExecutor executor);
+  public void unregister(AbstractExecutor executor);
 
   /**
    * A long-running thread that may appear stuck should periodically update its "alive"
