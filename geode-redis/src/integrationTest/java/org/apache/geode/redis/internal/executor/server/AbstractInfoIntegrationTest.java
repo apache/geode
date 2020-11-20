@@ -100,8 +100,7 @@ public abstract class AbstractInfoIntegrationTest implements RedisPortSupplier {
           "rejected_connections:");
 
 
-  final List<String>
-      ALL_PROPERTIES =
+  final List<String> ALL_PROPERTIES =
       Stream.of(SERVER_PROPERTIES, PERSISTENCE_PROPERTIES, CLUSTER_PROPERTIES,
           MEMORY_PROPERTIES, CLIENTS_PROPERTIES, STATS_PROPERTIES, REPLICATION_PROPERTIES)
           .flatMap(Collection::stream)
