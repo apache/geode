@@ -255,12 +255,18 @@ jobs:
               apt install -qq -y --no-install-recommends unzip git
               FULL_VERSION=$(cd geode-examples && git describe --tags | sed -e 's#^rel/v##' -e 's#-.*##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
-              STAGING_MAVEN=$(cat geode-examples/gradle.properties | grep geodeRepositoryUrl | awk '{print $3}')
-              curl -L -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-examples-${VERSION}-src.tgz > src.tgz
+              if [ "${FULL_VERSION}" = "${VERSION}" ] ; then
+                GRADLE_ARGS=""
+                curl -L -s https://downloads.apache.org/geode/${VERSION}/apache-geode-examples-${VERSION}-src.tgz > src.tgz
+              else
+                STAGING_MAVEN=$(cat geode-examples/gradle.properties | grep geodeRepositoryUrl | awk '{print $3}')
+                GRADLE_ARGS="-PgeodeReleaseUrl=https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION} -PgeodeRepositoryUrl=${STAGING_MAVEN}""
+                curl -L -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-examples-${VERSION}-src.tgz > src.tgz
+              fi
               tar xzf src.tgz
               cd apache-geode-examples-${VERSION}-src
               java -version
-              ./gradlew -PgeodeReleaseUrl=https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION} -PgeodeRepositoryUrl=${STAGING_MAVEN} build runAll
+              ./gradlew ${GRADLE_ARGS} build runAll
   - name: build-geode-native-from-tag
     serial: true
     public: true
