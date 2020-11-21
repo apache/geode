@@ -260,7 +260,7 @@ jobs:
                 curl -L -s https://downloads.apache.org/geode/${VERSION}/apache-geode-examples-${VERSION}-src.tgz > src.tgz
               else
                 STAGING_MAVEN=$(cat geode-examples/gradle.properties | grep geodeRepositoryUrl | awk '{print $3}')
-                GRADLE_ARGS="-PgeodeReleaseUrl=https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION} -PgeodeRepositoryUrl=${STAGING_MAVEN}""
+                GRADLE_ARGS="-PgeodeReleaseUrl=https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION} -PgeodeRepositoryUrl=${STAGING_MAVEN}"
                 curl -L -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-examples-${VERSION}-src.tgz > src.tgz
               fi
               tar xzf src.tgz
