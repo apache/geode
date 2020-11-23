@@ -19,9 +19,14 @@ import static org.apache.geode.redis.internal.executor.server.AbstractHitsMisses
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.After;
 import org.junit.Before;
@@ -38,6 +43,71 @@ public abstract class AbstractInfoIntegrationTest implements RedisPortSupplier {
   private Jedis jedis;
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
+
+  final List<String> SERVER_PROPERTIES =
+      Arrays.asList(
+          "# Server",
+          "redis_version:",
+          "redis_mode:",
+          "tcp_port:",
+          "uptime_in_days:",
+          "uptime_in_seconds:");
+
+  final List<String> PERSISTENCE_PROPERTIES =
+      Arrays.asList(
+          "# Persistence",
+          "rdb_changes_since_last_save",
+          "rdb_last_save_time",
+          "loading:");
+
+  final List<String> REPLICATION_PROPERTIES =
+      Arrays.asList(
+          "# Replication",
+          "role:",
+          "connected_slaves:");
+
+  final List<String> CLUSTER_PROPERTIES =
+      Arrays.asList(
+          "# Cluster",
+          "cluster_enabled:");
+
+  final List<String> CLIENTS_PROPERTIES =
+      Arrays.asList(
+          "# Clients",
+          "connected_clients:",
+          "blocked_clients:");
+
+  final List<String> MEMORY_PROPERTIES =
+      Arrays.asList(
+          "# Memory",
+          "used_memory:",
+          "mem_fragmentation_ratio:");
+
+  final List<String> KEYSPACE_PROPERTIES =
+      Arrays.asList(
+          "# Keyspace",
+          "db0:");
+
+  final List<String> STATS_PROPERTIES =
+      Arrays.asList(
+          "# Stats",
+          "total_commands_processed:",
+          "instantaneous_ops_per_sec:",
+          "total_net_input_bytes:",
+          "instantaneous_input_kbps:",
+          "total_connections_received:",
+          "keyspace_hits:",
+          "keyspace_misses:",
+          "evicted_keys:",
+          "rejected_connections:");
+
+
+  final List<String> ALL_PROPERTIES =
+      Stream.of(SERVER_PROPERTIES, PERSISTENCE_PROPERTIES, CLUSTER_PROPERTIES,
+          MEMORY_PROPERTIES, CLIENTS_PROPERTIES, STATS_PROPERTIES, REPLICATION_PROPERTIES)
+          .flatMap(Collection::stream)
+          .collect(
+              Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
 
   @Before
   public void setUp() {
@@ -98,71 +168,115 @@ public abstract class AbstractInfoIntegrationTest implements RedisPortSupplier {
     assertThat(actualResult).contains(expectedResult);
   }
 
-  final List<String> SERVER_PROPERTIES =
-      Arrays.asList(
-          "# Server",
-          "redis_version:",
-          "tcp_port:",
-          "redis_mode:");
-
-  final List<String> PERSISTENCE_PROPERTIES =
-      Arrays.asList(
-          "# Persistence",
-          "loading:");
-
-  final List<String> CLUSTER_PROPERTIES =
-      Arrays.asList(
-          "# Cluster",
-          "cluster_enabled:");
-
   @Test
-  public void shouldReturnServerSectionsGivenServerSectionParameter() {
+  public void shouldReturnServerSections_givenServerSectionParameter() {
+    List<String> nonServerProperties = new ArrayList<>(ALL_PROPERTIES);
+    nonServerProperties.removeAll(SERVER_PROPERTIES);
+
     String actualResult = jedis.info("server");
 
     assertThat(actualResult).contains(SERVER_PROPERTIES);
-    assertThat(actualResult).doesNotContain(CLUSTER_PROPERTIES);
-    assertThat(actualResult).doesNotContain(PERSISTENCE_PROPERTIES);
+    assertThat(actualResult).doesNotContain(nonServerProperties);
   }
 
   @Test
-  public void shouldReturnClusterSectionsGivenClusterSectionParameter() {
+  public void shouldReturnClusterSections_givenClusterSectionParameter() {
+    List<String> nonClusterProperties = new ArrayList<>(ALL_PROPERTIES);
+    nonClusterProperties.removeAll(CLUSTER_PROPERTIES);
+
     String actualResult = jedis.info("cluster");
 
     assertThat(actualResult).contains(CLUSTER_PROPERTIES);
-    assertThat(actualResult).doesNotContain(SERVER_PROPERTIES);
-    assertThat(actualResult).doesNotContain(PERSISTENCE_PROPERTIES);
+    assertThat(actualResult).doesNotContain(nonClusterProperties);
   }
 
   @Test
-  public void shouldReturnPersistenceSectionsGivenPersistenceSectionParameter() {
+  public void shouldReturnPersistenceSections_givenPersistenceSectionParameter() {
+    List<String> nonPersistenceProperties = new ArrayList<>(ALL_PROPERTIES);
+    nonPersistenceProperties.removeAll(PERSISTENCE_PROPERTIES);
+
     String actualResult = jedis.info("persistence");
 
     assertThat(actualResult).contains(PERSISTENCE_PROPERTIES);
-    assertThat(actualResult).doesNotContain(SERVER_PROPERTIES);
-    assertThat(actualResult).doesNotContain(CLUSTER_PROPERTIES);
+    assertThat(actualResult).doesNotContain(nonPersistenceProperties);
   }
 
   @Test
-  public void shouldReturnEmptyStringGivenUnknownParameter() {
+  public void shouldReturnStatsSections_givenStatsSectionParameter() {
+    List<String> nonStatsProperties = new ArrayList<>(ALL_PROPERTIES);
+    nonStatsProperties.removeAll(STATS_PROPERTIES);
+
+    String actualResult = jedis.info("stats");
+
+    assertThat(actualResult).contains(STATS_PROPERTIES);
+    assertThat(actualResult).doesNotContain(nonStatsProperties);
+  }
+
+  @Test
+  public void shouldReturnClientsSections_givenClientsSectionParameter() {
+    List<String> nonClientsProperties = new ArrayList<>(ALL_PROPERTIES);
+    nonClientsProperties.removeAll(CLIENTS_PROPERTIES);
+
+    String actualResult = jedis.info("clients");
+
+    assertThat(actualResult).contains(CLIENTS_PROPERTIES);
+    assertThat(actualResult).doesNotContain(nonClientsProperties);
+  }
+
+  @Test
+  public void shouldReturnMemorySections_givenMemorySectionParameter() {
+    List<String> nonMemoryProperties = new ArrayList<>(ALL_PROPERTIES);
+    nonMemoryProperties.removeAll(MEMORY_PROPERTIES);
+
+    String actualResult = jedis.info("memory");
+
+    assertThat(actualResult).contains(MEMORY_PROPERTIES);
+    assertThat(actualResult).doesNotContain(nonMemoryProperties);
+  }
+
+  @Test
+  public void shouldReturnKeySpaceSections_givenKeySpaceKeyspaceParameter() {
+    List<String> nonKeyspaceProperties = new ArrayList<>(ALL_PROPERTIES);
+    nonKeyspaceProperties.removeAll(KEYSPACE_PROPERTIES);
+
+    jedis.set("key", "value");
+    String actualResult = jedis.info("keyspace");
+
+    assertThat(actualResult).contains(KEYSPACE_PROPERTIES);
+    assertThat(actualResult).doesNotContain(nonKeyspaceProperties);
+  }
+
+  @Test
+  public void shouldReturnReplicationSections_givenKeySpaceReplicationParameter() {
+    List<String> nonReplicationProperties = new ArrayList<>(ALL_PROPERTIES);
+    nonReplicationProperties.removeAll(REPLICATION_PROPERTIES);
+
+    String actualResult = jedis.info("replication");
+
+    assertThat(actualResult).contains(REPLICATION_PROPERTIES);
+    assertThat(actualResult).doesNotContain(nonReplicationProperties);
+  }
+
+  @Test
+  public void shouldReturnEmptyString_givenUnknownParameter() {
     String actualResult = jedis.info("nonesuch");
     assertThat(actualResult).isEqualTo("");
   }
 
-
   @Test
-  public void shouldReturnDefaultsGivenDefaultParameter() {
+  public void shouldReturnDefaults_givenDefaultParameter() {
+    jedis.set("key", "value");
     String actualResult = jedis.info("default");
-    assertThat(actualResult).contains(CLUSTER_PROPERTIES);
-    assertThat(actualResult).contains(SERVER_PROPERTIES);
-    assertThat(actualResult).contains(PERSISTENCE_PROPERTIES);
+    assertThat(actualResult)
+        .contains(ALL_PROPERTIES);
   }
 
   @Test
-  public void shouldReturnDefaultsGivenAllParameter() {
+  public void shouldReturnDefaults_givenAllParameters() {
+    jedis.set("key", "value"); // make sure keyspace is there
     String actualResult = jedis.info("all");
-    assertThat(actualResult).contains(CLUSTER_PROPERTIES);
-    assertThat(actualResult).contains(SERVER_PROPERTIES);
-    assertThat(actualResult).contains(PERSISTENCE_PROPERTIES);
+    assertThat(actualResult)
+        .contains(ALL_PROPERTIES);
   }
 
   @Test
@@ -178,14 +292,13 @@ public abstract class AbstractInfoIntegrationTest implements RedisPortSupplier {
   public void shouldNotReturnKeySpaceSection_givenServerWithNoKeys() {
     Map<String, String> info = getInfo(jedis);
 
-    assertThat(info.get("db0")).isNull();
+    assertThat(info.get(KEYSPACE_START)).isNull();
   }
 
   @Test
-  public void shouldThrowExceptionIfGivenMoreThanOneParameter() {
+  public void shouldThrowException_ifGivenMoreThanOneParameter() {
     assertThatThrownBy(
         () -> jedis.sendCommand(
             Protocol.Command.INFO, "Server", "Cluster")).hasMessageContaining("ERR syntax error");
   }
-
 }
