@@ -48,6 +48,7 @@ import org.apache.geode.cache.client.internal.pooling.ConnectionManager;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.distributed.internal.ServerLocationAndMemberId;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
 import org.apache.geode.internal.logging.InternalLogWriter;
@@ -570,7 +571,7 @@ public class OpExecutorImplJUnitTest {
     }
 
     @Override
-    public Map<ServerLocation, Endpoint> getEndpointMap() {
+    public Map<ServerLocationAndMemberId, Endpoint> getEndpointMap() {
       return null;
     }
 
@@ -590,7 +591,7 @@ public class OpExecutorImplJUnitTest {
     }
 
     @Override
-    public Map<ServerLocation, ConnectionStats> getAllStats() {
+    public Map<ServerLocationAndMemberId, ConnectionStats> getAllStats() {
       return null;
     }
 
