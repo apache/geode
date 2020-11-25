@@ -191,7 +191,7 @@ class DependencyConstraints implements Plugin<Project> {
       entry('docker-compose-rule-junit4')
     }
 
-    dependencySet(group: 'com.pholser', version: '0.9.5') {
+    dependencySet(group: 'com.pholser', version: '1.0') {
       entry('junit-quickcheck-core')
       entry('junit-quickcheck-generators')
     }
