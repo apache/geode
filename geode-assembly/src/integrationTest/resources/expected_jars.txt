@@ -48,6 +48,7 @@ jetty-security
 jetty-server
 jetty-servlet
 jetty-util
+jetty-util-ajax
 jetty-webapp
 jetty-xml
 jgroups
