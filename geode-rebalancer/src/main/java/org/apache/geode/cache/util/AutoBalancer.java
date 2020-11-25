@@ -236,7 +236,7 @@ public class AutoBalancer implements Declarable {
       ZoneId localTimeZone = ZoneId.systemDefault();
       LocalDateTime now = currentInstant.atZone(localTimeZone).toLocalDateTime();
       LocalDateTime next = generator.next(now);
-      long nextSchedule = next.toEpochSecond(localTimeZone.getRules().getOffset(next));
+      long nextSchedule = 1000 * next.toEpochSecond(localTimeZone.getRules().getOffset(next));
       long delay = nextSchedule - currentTime;
 
       if (logger.isDebugEnabled()) {
