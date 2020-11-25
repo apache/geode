@@ -15,6 +15,9 @@
 package org.apache.geode.cache.util;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -230,7 +233,11 @@ public class AutoBalancer implements Declarable {
 
     private void submitNext() {
       long currentTime = clock.currentTimeMillis();
-      long nextSchedule = generator.next(Instant.ofEpochMilli(currentTime)).toEpochMilli();
+      Instant currentInstant = new Date(currentTime).toInstant();
+      ZoneId localTimeZone = ZoneId.systemDefault();
+      LocalDateTime now = currentInstant.atZone(localTimeZone).toLocalDateTime();
+      LocalDateTime next = generator.next(now);
+      long nextSchedule = next.toEpochSecond(localTimeZone.getRules().getOffset(next));
       long delay = nextSchedule - currentTime;
 
       if (logger.isDebugEnabled()) {
