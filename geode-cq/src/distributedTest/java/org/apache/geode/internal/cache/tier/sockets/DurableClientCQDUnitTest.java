@@ -128,9 +128,181 @@ public class DurableClientCQDUnitTest extends DurableClientTestBase {
 
     // verify cq events for all 3 cqs
     checkCqListenerEvents(durableClientVM, "GreaterThan5", 4 /* numEventsExpected */,
-        /* numEventsToWaitFor */ 15/* secondsToWait */);
+        /* numEventsToWaitFor */ 30/* secondsToWait */);
     checkCqListenerEvents(durableClientVM, "LessThan5", 5 /* numEventsExpected */,
-        /* numEventsToWaitFor */ 15/* secondsToWait */);
+        /* numEventsToWaitFor */ 30/* secondsToWait */);
+    checkCqListenerEvents(durableClientVM, "All", 0 /* numEventsExpected */,
+        /* numEventsToWaitFor */ 5/* secondsToWait */);
+
+    // Stop the durable client
+    this.durableClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+
+    // Stop the publisher client
+    this.publisherClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+
+    // Stop the server
+    this.server1VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+  }
+
+  /**
+   * Test functionality to close the cq and drain all events from the ha queue from the server
+   */
+  @Test
+  public void testCloseCqAndDrainEvents2() {
+    String greaterThan5Query = "select * from " + SEPARATOR + regionName + " p where p.ID > 5";
+    String allQuery = "select * from " + SEPARATOR + regionName + " p where p.ID > -1";
+    String lessThan5Query = "select * from " + SEPARATOR + regionName + " p where p.ID < 5";
+
+    // Start a server
+    server1Port = this.server1VM
+        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE));
+
+    // Start a durable client that is kept alive on the server when it stops
+    // normally
+    durableClientId = getName() + "_client";
+    startDurableClient(durableClientVM, durableClientId, server1Port, regionName);
+    // register durable cqs
+    createCq(durableClientVM, "GreaterThan5", greaterThan5Query, true);
+    createCq(durableClientVM, "All", allQuery, true);
+    createCq(durableClientVM, "LessThan5", lessThan5Query, true);
+    // send client ready
+    sendClientReady(durableClientVM);
+
+    // Verify durable client on server
+    verifyDurableClientPresent(DistributionConfig.DEFAULT_DURABLE_CLIENT_TIMEOUT, durableClientId,
+        server1VM);
+
+    // Stop the durable client
+    this.disconnectDurableClient(true);
+
+    // Start normal publisher client
+    startClient(publisherClientVM, server1Port, regionName);
+
+    // Publish some entries
+    publishEntries(regionName, 10);
+
+    publishEntries(regionName, 10);
+
+    this.server1VM.invoke(new CacheSerializableRunnable("Close cq for durable client") {
+      @Override
+      public void run2() throws CacheException {
+
+        final CacheClientNotifier ccnInstance = CacheClientNotifier.getInstance();
+
+        try {
+          ccnInstance.closeClientCq(durableClientId, "All");
+        } catch (CqException e) {
+          fail("failed", e);
+        }
+      }
+    });
+
+    // Restart the durable client
+    startDurableClient(durableClientVM, durableClientId, server1Port, regionName);
+
+    // Re-register durable cqs
+    createCq(durableClientVM, "GreaterThan5",
+        "select * from " + SEPARATOR + regionName + " p where p.ID > 5",
+        true);
+    createCq(durableClientVM, "All",
+        "select * from " + SEPARATOR + regionName + " p where p.ID > -1", true);
+    createCq(durableClientVM, "LessThan5",
+        "select * from " + SEPARATOR + regionName + " p where p.ID < 5",
+        true);
+    // send client ready
+    sendClientReady(durableClientVM);
+
+    // verify cq events for all 3 cqs
+    checkCqListenerEvents(durableClientVM, "GreaterThan5", 8 /* numEventsExpected */,
+        /* numEventsToWaitFor */ 30/* secondsToWait */);
+    checkCqListenerEvents(durableClientVM, "LessThan5", 10 /* numEventsExpected */,
+        /* numEventsToWaitFor */ 30/* secondsToWait */);
+    checkCqListenerEvents(durableClientVM, "All", 0 /* numEventsExpected */,
+        /* numEventsToWaitFor */ 5/* secondsToWait */);
+
+    // Stop the durable client
+    this.durableClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+
+    // Stop the publisher client
+    this.publisherClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+
+    // Stop the server
+    this.server1VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+  }
+
+  /**
+   * Test functionality to close the cq and drain all events from the ha queue from the server
+   */
+  @Test
+  public void testCloseCqAndDrainEvents3() {
+    String greaterThan5Query = "select * from " + SEPARATOR + regionName + " p where p.ID > 5";
+    String allQuery = "select * from " + SEPARATOR + regionName + " p where p.ID > -1";
+    String lessThan5Query = "select * from " + SEPARATOR + regionName + " p where p.ID < 5";
+
+    // Start a server
+    server1Port = this.server1VM
+        .invoke(() -> CacheServerTestUtil.createCacheServerCQUpdate(regionName, Boolean.TRUE));
+
+    // Start a durable client that is kept alive on the server when it stops
+    // normally
+    durableClientId = getName() + "_client";
+    startDurableClient(durableClientVM, durableClientId, server1Port, regionName);
+    // register durable cqs
+    createCq(durableClientVM, "GreaterThan5", greaterThan5Query, true);
+    createCq(durableClientVM, "All", allQuery, true);
+    createCq(durableClientVM, "LessThan5", lessThan5Query, true);
+    // send client ready
+    sendClientReady(durableClientVM);
+
+    // Verify durable client on server
+    verifyDurableClientPresent(DistributionConfig.DEFAULT_DURABLE_CLIENT_TIMEOUT, durableClientId,
+        server1VM);
+
+    // Stop the durable client
+    this.disconnectDurableClient(true);
+
+    // Start normal publisher client
+    startClient(publisherClientVM, server1Port, regionName);
+
+    // Publish some entries
+    publishEntries(regionName, 10);
+
+    publishEntries(regionName, 10);
+
+    this.server1VM.invoke(new CacheSerializableRunnable("Close cq for durable client") {
+      @Override
+      public void run2() throws CacheException {
+
+        final CacheClientNotifier ccnInstance = CacheClientNotifier.getInstance();
+
+        try {
+          ccnInstance.closeClientCq(durableClientId, "All");
+        } catch (CqException e) {
+          fail("failed", e);
+        }
+      }
+    });
+
+    // Restart the durable client
+    startDurableClient(durableClientVM, durableClientId, server1Port, regionName);
+
+    // Re-register durable cqs
+    createCq(durableClientVM, "GreaterThan5",
+        "select * from " + SEPARATOR + regionName + " p where p.ID > 5",
+        true);
+    createCq(durableClientVM, "All",
+        "select * from " + SEPARATOR + regionName + " p where p.ID > -1", true);
+    createCq(durableClientVM, "LessThan5",
+        "select * from " + SEPARATOR + regionName + " p where p.ID < 5",
+        true);
+    // send client ready
+    sendClientReady(durableClientVM);
+
+    // verify cq events for all 3 cqs
+    checkCqListenerEvents(durableClientVM, "GreaterThan5", 4 /* numEventsExpected */,
+        /* numEventsToWaitFor */ 30/* secondsToWait */);
+    checkCqListenerEvents(durableClientVM, "LessThan5", 5 /* numEventsExpected */,
+        /* numEventsToWaitFor */ 30/* secondsToWait */);
     checkCqListenerEvents(durableClientVM, "All", 0 /* numEventsExpected */,
         /* numEventsToWaitFor */ 5/* secondsToWait */);
 

@@ -25,6 +25,8 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.query.CqException;
 import org.apache.geode.cache.query.cq.internal.CqServiceImpl;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -36,10 +38,14 @@ public class CqServiceImplJUnitTest {
     InternalCache cache = mock(InternalCache.class);
     CancelCriterion cancelCriterion = mock(CancelCriterion.class);
     DistributedSystem distributedSystem = mock(DistributedSystem.class);
+    DistributionManager distributionManager = mock(DistributionManager.class);
+    DistributionConfig config = mock(DistributionConfig.class);
     doNothing().when(cancelCriterion).checkCancelInProgress(null);
     when(cache.getCancelCriterion()).thenReturn(cancelCriterion);
     when(cache.getDistributedSystem()).thenReturn(distributedSystem);
-
+    when(cache.getDistributionManager()).thenReturn(distributionManager);
+    when(distributionManager.getConfig()).thenReturn(config);
+    when(config.getSuppressCqUpdate()).thenReturn(false);
 
     ClientProxyMembershipID clientProxyMembershipID = mock(ClientProxyMembershipID.class);
     CacheClientNotifier cacheClientNotifier = mock(CacheClientNotifier.class);

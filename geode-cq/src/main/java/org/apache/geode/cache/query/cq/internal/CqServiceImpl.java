@@ -142,6 +142,8 @@ public class CqServiceImpl implements CqService {
   /* This is to manage region to CQs map, client side book keeping. */
   private HashMap<String, ArrayList<String>> baseRegionToCqNameMap = new HashMap<>();
 
+  private boolean suppressCqUpdate;
+
   /**
    * Access and modification to the contents of this map do not necessarily need to be lock
    * protected. This is just used to optimize construction of a server side cq name. Missing values
@@ -171,6 +173,7 @@ public class CqServiceImpl implements CqService {
     StatisticsFactory factory = this.cache.getDistributedSystem();
     this.stats = new CqServiceVsdStats(factory);
     this.cqServiceStats = new CqServiceStatisticsImpl(this);
+    this.suppressCqUpdate = cache.getDistributionManager().getConfig().getSuppressCqUpdate();
   }
 
   /**
@@ -1465,14 +1468,16 @@ public class CqServiceImpl implements CqService {
         }
 
         if (cqEvent != null && cQuery.isRunning()) {
-          if (isDebugEnabled) {
-            logger.debug("Added event to CQ with client-side name: {} key: {} operation : {}",
-                cQuery.cqName, eventKey, cqEvent);
-          }
-          cqInfo.put(filterID, cqEvent);
-          CqQueryVsdStats stats = cQuery.getVsdStats();
-          if (stats != null) {
-            stats.updateStats(cqEvent);
+          if (!suppressCqUpdate || (cqEvent != MESSAGE_TYPE_LOCAL_UPDATE)) {
+            if (isDebugEnabled) {
+              logger.debug("Added event to CQ with client-side name: {} key: {} operation : {}",
+                  cQuery.cqName, eventKey, cqEvent);
+            }
+            cqInfo.put(filterID, cqEvent);
+            CqQueryVsdStats stats = cQuery.getVsdStats();
+            if (stats != null) {
+              stats.updateStats(cqEvent);
+            }
           }
         }
       }

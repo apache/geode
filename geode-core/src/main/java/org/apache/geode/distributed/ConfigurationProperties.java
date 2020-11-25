@@ -1821,6 +1821,20 @@ public interface ConfigurationProperties {
    * <U>Allowed values</U>: true|false
    */
   String STATISTIC_SAMPLING_ENABLED = "statistic-sampling-enabled";
+
+  /**
+   * The static String definition of the <i>"suppress-cq-update"</i> property
+   * <p>
+   * <a name="suppress-cq-update"/a>
+   * <p>
+   * <U>Decription:</U>If true, CQ Update notifications will be suppressed.
+   * <p>
+   * <U>Default</U>: "false"
+   * <p>
+   * <U>Allowed values</U>: true or false
+   */
+  String SUPPRESS_CQ_UPDATE = "suppress-cq-update";
+
   /**
    * The static String definition of the <i>"tcp-port"</i> property <a name="tcp-port"/a>
    * <p>

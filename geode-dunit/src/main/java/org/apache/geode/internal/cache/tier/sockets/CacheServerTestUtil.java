@@ -21,6 +21,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.SUPPRESS_CQ_UPDATE;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;
 import static org.apache.geode.test.dunit.Assert.fail;
 
@@ -371,6 +372,28 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
     server1.start();
     return new Integer(server1.getPort());
   }
+
+  public static Integer createCacheServerCQUpdate(String regionName, Boolean notifyBySubscription)
+      throws Exception {
+    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    Properties props = new Properties();
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(SUPPRESS_CQ_UPDATE, "true");
+    props.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
+    new CacheServerTestUtil().createCache(props);
+    AttributesFactory factory = new AttributesFactory();
+    factory.setScope(Scope.DISTRIBUTED_ACK);
+    factory.setEnableBridgeConflation(true);
+    factory.setDataPolicy(DataPolicy.REPLICATE);
+    RegionAttributes attrs = factory.create();
+    cache.createRegion(regionName, attrs);
+    CacheServer server = cache.addCacheServer();
+    server.setPort(port);
+    server.setNotifyBySubscription(notifyBySubscription.booleanValue());
+    server.start();
+    return port;
+  }
+
 
   private void createCache(Properties props) throws Exception {
     DistributedSystem ds = getSystem(props);

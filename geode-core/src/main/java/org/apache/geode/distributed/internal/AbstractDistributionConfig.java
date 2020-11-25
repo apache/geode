@@ -174,6 +174,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARCHIVE_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLE_RATE;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
+import static org.apache.geode.distributed.ConfigurationProperties.SUPPRESS_CQ_UPDATE;
 import static org.apache.geode.distributed.ConfigurationProperties.TCP_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.THREAD_MONITOR_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.THREAD_MONITOR_INTERVAL;
@@ -1478,6 +1479,10 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         "This property determines is the HTTP service with use mutual ssl authentication.");
     m.put(SSL_PARAMETER_EXTENSION,
         "User defined fully qualified class name implementing SSLParameterExtension interface for SSL parameter extensions. Defaults to \"{0}\". Legal values can be any \"class name\" implementing SSLParameterExtension that is present in the classpath.");
+    m.put(SUPPRESS_CQ_UPDATE,
+        String.format(
+            "If true then CQ Update notifications are suppressed.  Defaults to %s.",
+            Boolean.FALSE));
     m.put(VALIDATE_SERIALIZABLE_OBJECTS,
         "If true checks incoming java serializable objects against a filter");
     m.put(SERIALIZABLE_OBJECT_FILTER, "The filter to check incoming java serializables against");

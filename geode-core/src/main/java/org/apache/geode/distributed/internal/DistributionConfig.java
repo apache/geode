@@ -174,6 +174,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARCHIVE_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLE_RATE;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
+import static org.apache.geode.distributed.ConfigurationProperties.SUPPRESS_CQ_UPDATE;
 import static org.apache.geode.distributed.ConfigurationProperties.TCP_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.THREAD_MONITOR_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.THREAD_MONITOR_INTERVAL;
@@ -5365,6 +5366,29 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    * Current value is a pattern for rejecting everything <code>"!*"</code>
    */
   String DEFAULT_SERIALIZABLE_OBJECT_FILTER = "!*";
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#SUPPRESS_CQ_UPDATE} property
+   */
+  @ConfigAttributeGetter(name = SUPPRESS_CQ_UPDATE)
+  boolean getSuppressCqUpdate();
+
+  /**
+   * Sets {@link ConfigurationProperties#SUPPRESS_CQ_UPDATE}
+   */
+  @ConfigAttributeSetter(name = SUPPRESS_CQ_UPDATE)
+  void setSuppressCqUpdate(boolean newValue);
+
+  /**
+   * The name of the {@link ConfigurationProperties#SUPPRESS_CQ_UPDATE} property
+   */
+  @ConfigAttribute(type = Boolean.class)
+  String SUPPRESS_CQ_UPDATE_NAME = SUPPRESS_CQ_UPDATE;
+
+  /**
+   * The default value of the {@link ConfigurationProperties#SUPPRESS_CQ_UPDATE} property
+   */
+  boolean DEFAULT_SUPPRESS_CQ_UPDATE = false;
 
   /**
    * Returns true if locators and mcast-port are not configured.

@@ -673,6 +673,11 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   private int threadMonitorTimeLimit = DEFAULT_THREAD_MONITOR_TIME_LIMIT;
 
   /**
+   * Is CQ update suppressed?
+   */
+  protected boolean suppressCqUpdate = DEFAULT_SUPPRESS_CQ_UPDATE;
+
+  /**
    * Create a new <code>DistributionConfigImpl</code> from the contents of another
    * <code>DistributionConfig</code>.
    */
@@ -878,6 +883,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     this.sslDefaultAlias = other.getSSLDefaultAlias();
     this.sslWebServiceRequireAuthentication = other.getSSLWebRequireAuthentication();
     this.sslParameterExtension = other.getSSLParameterExtension();
+    this.suppressCqUpdate = other.getSuppressCqUpdate();
 
     validateSerializableObjects = other.getValidateSerializableObjects();
     serializableObjectFilter = other.getSerializableObjectFilter();
@@ -3156,6 +3162,16 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   }
 
   @Override
+  public boolean getSuppressCqUpdate() {
+    return suppressCqUpdate;
+  }
+
+  @Override
+  public void setSuppressCqUpdate(boolean newValue) {
+    suppressCqUpdate = newValue;
+  }
+
+  @Override
   public boolean getValidateSerializableObjects() {
     return validateSerializableObjects;
   }
@@ -3336,6 +3352,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         .append(sslTrustStore, that.sslTrustStore)
         .append(sslTrustStorePassword, that.sslTrustStorePassword)
         .append(sslParameterExtension, that.sslParameterExtension)
+        .append(suppressCqUpdate, that.suppressCqUpdate)
         .append(locatorSSLAlias, that.locatorSSLAlias).append(sslDefaultAlias, that.sslDefaultAlias)
         .append(sourceMap, that.sourceMap).append(userCommandPackages, that.userCommandPackages)
         .append(offHeapMemorySize, that.offHeapMemorySize).append(shiroInit, that.shiroInit)
@@ -3409,7 +3426,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         .append(httpServiceSSLAlias).append(securableCommunicationChannels).append(sslProtocols)
         .append(sslCiphers).append(sslRequireAuthentication).append(sslKeyStore)
         .append(sslKeyStoreType).append(sslKeyStorePassword).append(sslTrustStore)
-        .append(sslTrustStorePassword).append(sslParameterExtension)
+        .append(sslTrustStorePassword).append(sslParameterExtension).append(suppressCqUpdate)
         .append(sslWebServiceRequireAuthentication)
         .append(locatorSSLAlias).append(sslDefaultAlias).append(sourceMap)
         .append(userCommandPackages).append(offHeapMemorySize).append(lockMemory).append(shiroInit)
