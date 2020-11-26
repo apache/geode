@@ -534,7 +534,8 @@ public class DefaultQueryService implements InternalQueryService {
       throws QueryInvalidException, CqException {
     ClientCQ cq = null;
     try {
-      cq = (ClientCQ) getCqService().newCq(null, queryString, cqAttributes, this.pool, false);
+      cq = (ClientCQ) getCqService().newCq(null, queryString, cqAttributes, this.pool, false,
+          false);
     } catch (CqExistsException cqe) {
       // Should not throw in here.
       if (logger.isDebugEnabled()) {
@@ -566,7 +567,43 @@ public class DefaultQueryService implements InternalQueryService {
       throws QueryInvalidException, CqException {
     ClientCQ cq = null;
     try {
-      cq = (ClientCQ) getCqService().newCq(null, queryString, cqAttributes, this.pool, isDurable);
+      cq = (ClientCQ) getCqService().newCq(null, queryString, cqAttributes, this.pool, isDurable,
+          false);
+    } catch (CqExistsException cqe) {
+      // Should not throw in here.
+      if (logger.isDebugEnabled()) {
+        logger.debug("Unable to createCq. Error :{}", cqe.getMessage(), cqe);
+      }
+    }
+    return cq;
+  }
+
+  /**
+   * Constructs a new continuous query, represented by an instance of CqQuery. The CqQuery is not
+   * executed until the execute method is invoked on the CqQuery.
+   *
+   * @param queryString the OQL query
+   * @param cqAttributes the CqAttributes
+   * @param isDurable true if the CQ is durable
+   * @param suppressUpdate true if update is suppressed
+   * @return the newly created CqQuery object
+   * @throws IllegalArgumentException if queryString or cqAttr is null
+   * @throws IllegalStateException if this method is called from a cache server
+   * @throws QueryInvalidException if there is a syntax error in the query
+   * @throws CqException if failed to create cq, failure during creating managing cq metadata info.
+   *         E.g.: Query string should refer only one region, join not supported. The query must be
+   *         a SELECT statement. DISTINCT queries are not supported. Projections are not supported.
+   *         Only one iterator in the FROM clause is supported, and it must be a region path. Bind
+   *         parameters in the query are not yet supported.
+   */
+  @Override
+  public CqQuery newCq(String queryString, CqAttributes cqAttributes, boolean isDurable,
+      boolean suppressUpdate)
+      throws QueryInvalidException, CqException {
+    ClientCQ cq = null;
+    try {
+      cq = (ClientCQ) getCqService().newCq(null, queryString, cqAttributes, this.pool, isDurable,
+          suppressUpdate);
     } catch (CqExistsException cqe) {
       // Should not throw in here.
       if (logger.isDebugEnabled()) {
@@ -604,7 +641,7 @@ public class DefaultQueryService implements InternalQueryService {
           "cqName must not be null");
     }
     ClientCQ cq =
-        (ClientCQ) getCqService().newCq(cqName, queryString, cqAttributes, this.pool, false);
+        (ClientCQ) getCqService().newCq(cqName, queryString, cqAttributes, this.pool, false, false);
     return cq;
   }
 
@@ -636,7 +673,43 @@ public class DefaultQueryService implements InternalQueryService {
           "cqName must not be null");
     }
     ClientCQ cq =
-        (ClientCQ) getCqService().newCq(cqName, queryString, cqAttributes, this.pool, isDurable);
+        (ClientCQ) getCqService().newCq(cqName, queryString, cqAttributes, this.pool, isDurable,
+            false);
+    return cq;
+  }
+
+  /**
+   * Constructs a new named continuous query, represented by an instance of CqQuery. The CqQuery is
+   * not executed, however, until the execute method is invoked on the CqQuery. The name of the
+   * query will be used to identify this query in statistics archival.
+   *
+   * @param cqName the String name for this query
+   * @param queryString the OQL query
+   * @param cqAttributes the CqAttributes
+   * @param isDurable true if the CQ is durable
+   * @param suppressUpdate true if update is suppressed
+   * @return the newly created CqQuery object
+   * @throws CqExistsException if a CQ by this name already exists on this client
+   * @throws IllegalArgumentException if queryString or cqAttr is null
+   * @throws IllegalStateException if this method is called from a cache server
+   * @throws QueryInvalidException if there is a syntax error in the query
+   * @throws CqException if failed to create cq, failure during creating managing cq metadata info.
+   *         E.g.: Query string should refer only one region, join not supported. The query must be
+   *         a SELECT statement. DISTINCT queries are not supported. Projections are not supported.
+   *         Only one iterator in the FROM clause is supported, and it must be a region path. Bind
+   *         parameters in the query are not yet supported.
+   */
+  @Override
+  public CqQuery newCq(String cqName, String queryString, CqAttributes cqAttributes,
+      boolean isDurable, boolean suppressUpdate)
+      throws QueryInvalidException, CqExistsException, CqException {
+    if (cqName == null) {
+      throw new IllegalArgumentException(
+          "cqName must not be null");
+    }
+    ClientCQ cq =
+        (ClientCQ) getCqService().newCq(cqName, queryString, cqAttributes, this.pool, isDurable,
+            suppressUpdate);
     return cq;
   }
 

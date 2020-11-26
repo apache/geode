@@ -560,6 +560,29 @@ public interface QueryService {
   CqQuery newCq(String queryString, CqAttributes cqAttr, boolean isDurable)
       throws QueryInvalidException, CqException;
 
+
+  /**
+   * Constructs a new continuous query, represented by an instance of CqQuery. The CqQuery is not
+   * executed until the execute method is invoked on the CqQuery.
+   *
+   * @since Geode 1.14
+   * @param queryString the OQL query
+   * @param cqAttr the CqAttributes
+   * @param isDurable true if the CQ is durable
+   * @param suppressUpdate true if update is suppressed
+   * @return the newly created CqQuery object
+   * @throws IllegalArgumentException if queryString or cqAttr is null.
+   * @throws IllegalStateException if this method is called from a cache server.
+   * @throws QueryInvalidException if there is a syntax error in the query.
+   * @throws CqException if failed to create CQ. E.g.: Query string should refer to only one region.
+   *         Joins are not supported. The query must be a SELECT statement. DISTINCT queries are not
+   *         supported. Projections are not supported. Only one iterator in the FROM clause is
+   *         supported, and it must be a region path. Bind parameters in the query are not yet
+   *         supported.
+   */
+  CqQuery newCq(String queryString, CqAttributes cqAttr, boolean isDurable, boolean suppressUpdate)
+      throws QueryInvalidException, CqException;
+
   /**
    * Constructs a new named continuous query, represented by an instance of CqQuery. The CqQuery is
    * not executed until the execute method is invoked on the CqQuery. The name of the query will be
@@ -609,6 +632,35 @@ public interface QueryService {
    */
   CqQuery newCq(String name, String queryString, CqAttributes cqAttr, boolean isDurable)
       throws QueryInvalidException, CqExistsException, CqException;
+
+
+  /**
+   * Constructs a new named continuous query, represented by an instance of CqQuery. The CqQuery is
+   * not executed until the execute method is invoked on the CqQuery. The name of the query will be
+   * used to identify this query in statistics archival.
+   *
+   * @since Geode 1.14
+   * @param name the String name for this query
+   * @param queryString the OQL query
+   * @param cqAttr the CqAttributes
+   * @param isDurable true if the CQ is durable
+   * @param suppressUpdate true if update is suppressed
+   * @return the newly created CqQuery object
+   * @throws CqExistsException if a CQ by this name already exists on this client
+   * @throws IllegalArgumentException if queryString or cqAttr is null.
+   * @throws IllegalStateException if this method is called from a cache server.
+   * @throws QueryInvalidException if there is a syntax error in the query.
+   * @throws CqException if failed to create cq. E.g.: Query string should refer to only one region.
+   *         Joins are not supported. The query must be a SELECT statement. DISTINCT queries are not
+   *         supported. Projections are not supported. Only one iterator in the FROM clause is
+   *         supported, and it must be a region path. Bind parameters in the query are not yet
+   *         supported.
+   *
+   */
+  CqQuery newCq(String name, String queryString, CqAttributes cqAttr, boolean isDurable,
+      boolean suppressUpdate)
+      throws QueryInvalidException, CqExistsException, CqException;
+
 
   /**
    * Unregister all Continuous Queries. All artifacts and resources associated with the CQs are

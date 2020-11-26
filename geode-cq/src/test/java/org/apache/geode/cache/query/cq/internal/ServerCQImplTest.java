@@ -48,7 +48,7 @@ public class ServerCQImplTest {
         .thenReturn(mock(InternalLogWriter.class));
     serverCq = spy(
         new ServerCQImpl(mockCqService, "cqName", "SELECT * FROM " + SEPARATOR + "region", false,
-            "test"));
+            "test", false));
   }
 
   @Test

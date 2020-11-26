@@ -49,6 +49,7 @@ public interface CqService {
    * @param queryString the OQL query
    * @param cqAttributes the CqAttributes
    * @param isDurable true if the CQ is durable
+   * @param suppressUpdate true if the update is suppressed
    * @return the newly created CqQuery object
    * @throws CqExistsException if a CQ by this name already exists on this client
    * @throws IllegalArgumentException if queryString or cqAttr is null
@@ -62,7 +63,8 @@ public interface CqService {
    *
    */
   ClientCQ newCq(String cqName, String queryString, CqAttributes cqAttributes, InternalPool pool,
-      boolean isDurable) throws QueryInvalidException, CqExistsException, CqException;
+      boolean isDurable, boolean suppressUpdate)
+      throws QueryInvalidException, CqExistsException, CqException;
 
   /**
    * Retrieve a cq by client cq name from server
@@ -218,11 +220,12 @@ public interface CqService {
    * @param regionDataPolicy the data policy of the region associated with the query. This is only
    *        needed if manageEmptyRegions is true.
    * @param emptyRegionsMap map of empty regions.
+   * @param suppressUpdate true if the update is suppressed.
    * @throws IllegalStateException if this is called at client side.
    */
   ServerCQ executeCq(String cqName, String queryString, int cqState,
       ClientProxyMembershipID clientProxyId, CacheClientNotifier ccn, boolean isDurable,
-      boolean manageEmptyRegions, int regionDataPolicy, Map emptyRegionsMap)
+      boolean manageEmptyRegions, int regionDataPolicy, Map emptyRegionsMap, boolean suppressUpdate)
       throws CqException, RegionNotFoundException, CqClosedException;
 
   /**

@@ -300,7 +300,7 @@ public class ProxyQueryService implements QueryService {
     ClientCQ cq = null;
     try {
       cq = ((DefaultQueryService) realQueryService).getCqService().newCq(null, queryString,
-          cqAttributes, ((DefaultQueryService) realQueryService).getPool(), false);
+          cqAttributes, ((DefaultQueryService) realQueryService).getPool(), false, false);
       cq.setProxyCache(this.proxyCache);
       this.cqNames.add(cq.getName());
     } catch (CqExistsException cqe) {
@@ -321,7 +321,30 @@ public class ProxyQueryService implements QueryService {
     ClientCQ cq = null;
     try {
       cq = ((DefaultQueryService) realQueryService).getCqService().newCq(null, queryString,
-          cqAttributes, ((DefaultQueryService) realQueryService).getPool(), isDurable);
+          cqAttributes, ((DefaultQueryService) realQueryService).getPool(), isDurable, false);
+      cq.setProxyCache(this.proxyCache);
+      this.cqNames.add(cq.getName());
+    } catch (CqExistsException cqe) {
+      // Should not throw in here.
+      if (logger.isDebugEnabled()) {
+        logger.debug("Unable to createCq. Error: {}", cqe.getMessage(), cqe);
+      }
+    } finally {
+      postOp();
+    }
+    return cq;
+  }
+
+  @Override
+  public CqQuery newCq(String queryString, CqAttributes cqAttributes, boolean isDurable,
+      boolean suppressUpdate)
+      throws QueryInvalidException, CqException {
+    preOp(true);
+    ClientCQ cq = null;
+    try {
+      cq = ((DefaultQueryService) realQueryService).getCqService().newCq(null, queryString,
+          cqAttributes, ((DefaultQueryService) realQueryService).getPool(), isDurable,
+          suppressUpdate);
       cq.setProxyCache(this.proxyCache);
       this.cqNames.add(cq.getName());
     } catch (CqExistsException cqe) {
@@ -345,7 +368,8 @@ public class ProxyQueryService implements QueryService {
             "cqName must not be null");
       }
       ClientCQ cq = ((DefaultQueryService) realQueryService).getCqService().newCq(cqName,
-          queryString, cqAttributes, ((DefaultQueryService) realQueryService).getPool(), false);
+          queryString, cqAttributes, ((DefaultQueryService) realQueryService).getPool(), false,
+          false);
       cq.setProxyCache(proxyCache);
       this.cqNames.add(cq.getName());
       return cq;
@@ -364,7 +388,8 @@ public class ProxyQueryService implements QueryService {
             "cqName must not be null");
       }
       ClientCQ cq = ((DefaultQueryService) realQueryService).getCqService().newCq(cqName,
-          queryString, cqAttributes, ((DefaultQueryService) realQueryService).getPool(), isDurable);
+          queryString, cqAttributes, ((DefaultQueryService) realQueryService).getPool(), isDurable,
+          false);
       cq.setProxyCache(proxyCache);
       this.cqNames.add(cq.getName());
       return cq;
@@ -372,6 +397,28 @@ public class ProxyQueryService implements QueryService {
       postOp();
     }
   }
+
+  @Override
+  public CqQuery newCq(String cqName, String queryString, CqAttributes cqAttributes,
+      boolean isDurable, boolean suppressUpdate)
+      throws QueryInvalidException, CqExistsException, CqException {
+    preOp(true);
+    try {
+      if (cqName == null) {
+        throw new IllegalArgumentException(
+            "cqName must not be null");
+      }
+      ClientCQ cq = ((DefaultQueryService) realQueryService).getCqService().newCq(cqName,
+          queryString, cqAttributes, ((DefaultQueryService) realQueryService).getPool(), isDurable,
+          suppressUpdate);
+      cq.setProxyCache(proxyCache);
+      this.cqNames.add(cq.getName());
+      return cq;
+    } finally {
+      postOp();
+    }
+  }
+
 
   @Override
   public Query newQuery(String queryString) {

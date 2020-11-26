@@ -47,6 +47,8 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class ServerCQImpl extends CqQueryImpl implements DataSerializable, ServerCQ {
@@ -73,8 +75,8 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
   private Long filterID;
 
   public ServerCQImpl(CqServiceImpl cqService, String cqName, String queryString, boolean isDurable,
-      String serverCqName) {
-    super(cqService, cqName, queryString, isDurable);
+      String serverCqName, boolean suppressUpdate) {
+    super(cqService, cqName, queryString, isDurable, suppressUpdate);
     this.serverCqName = serverCqName; // On Client Side serverCqName and cqName will be same.
   }
 
@@ -469,6 +471,11 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
     this.isDurable = DataSerializer.readBoolean(in);
     this.queryString = DataSerializer.readString(in);
     this.filterID = in.readLong();
+    if (StaticSerialization.getVersionForDataStream(in).isNotOlderThan(KnownVersion.GEODE_1_14_0)) {
+      this.suppressUpdate = DataSerializer.readBoolean(in);
+    } else {
+      this.suppressUpdate = false;
+    }
   }
 
   @Override
@@ -477,6 +484,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
     DataSerializer.writeBoolean(this.isDurable, out);
     DataSerializer.writeString(this.queryString, out);
     out.writeLong(this.filterID);
+    DataSerializer.writeBoolean(this.suppressUpdate, out);
   }
 
   @Override

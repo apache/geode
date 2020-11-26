@@ -190,7 +190,7 @@ public class CqServiceImpl implements CqService {
 
   @Override
   public synchronized ClientCQ newCq(String cqName, String queryString, CqAttributes cqAttributes,
-      InternalPool pool, boolean isDurable)
+      InternalPool pool, boolean isDurable, boolean suppressUpdate)
       throws QueryInvalidException, CqExistsException, CqException {
     if (queryString == null) {
       throw new IllegalArgumentException(
@@ -216,7 +216,8 @@ public class CqServiceImpl implements CqService {
 
     ServerCQProxyImpl serverProxy = pool == null ? null : new ServerCQProxyImpl(pool);
     ClientCQImpl cQuery =
-        new ClientCQImpl(this, cqName, queryString, cqAttributes, serverProxy, isDurable);
+        new ClientCQImpl(this, cqName, queryString, cqAttributes, serverProxy, isDurable,
+            suppressUpdate);
     cQuery.updateCqCreateStats();
 
     // cQuery.initCq();
@@ -264,7 +265,7 @@ public class CqServiceImpl implements CqService {
   @Override
   public synchronized ServerCQ executeCq(String cqName, String queryString, int cqState,
       ClientProxyMembershipID clientProxyId, CacheClientNotifier ccn, boolean isDurable,
-      boolean manageEmptyRegions, int regionDataPolicy, Map emptyRegionsMap)
+      boolean manageEmptyRegions, int regionDataPolicy, Map emptyRegionsMap, boolean suppressUpdate)
       throws CqException, RegionNotFoundException, CqClosedException {
     if (!isServer()) {
       throw new IllegalStateException(
@@ -278,7 +279,7 @@ public class CqServiceImpl implements CqService {
     // If this CQ is not yet registered in Server, register CQ.
     if (!isCqExists(serverCqName)) {
       cQuery = new ServerCQImpl(this, cqName, queryString, isDurable,
-          constructServerCqName(cqName, clientProxyId));
+          constructServerCqName(cqName, clientProxyId), suppressUpdate);
 
       try {
         cQuery.registerCq(clientProxyId, ccn, cqState);
@@ -1465,14 +1466,16 @@ public class CqServiceImpl implements CqService {
         }
 
         if (cqEvent != null && cQuery.isRunning()) {
-          if (isDebugEnabled) {
-            logger.debug("Added event to CQ with client-side name: {} key: {} operation : {}",
-                cQuery.cqName, eventKey, cqEvent);
-          }
-          cqInfo.put(filterID, cqEvent);
-          CqQueryVsdStats stats = cQuery.getVsdStats();
-          if (stats != null) {
-            stats.updateStats(cqEvent);
+          if (!cQuery.isUpdateSuppressed() || cqEvent.equals(MESSAGE_TYPE_LOCAL_UPDATE)) {
+            if (isDebugEnabled) {
+              logger.debug("Added event to CQ with client-side name: {} key: {} operation : {}",
+                  cQuery.cqName, eventKey, cqEvent);
+            }
+            cqInfo.put(filterID, cqEvent);
+            CqQueryVsdStats stats = cQuery.getVsdStats();
+            if (stats != null) {
+              stats.updateStats(cqEvent);
+            }
           }
         }
       }

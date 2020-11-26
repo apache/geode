@@ -3807,7 +3807,7 @@ public class InitialImageOperation {
               // found.
               cqService.executeCq(e.getKey(), cq.getQueryString(),
                   ((CqStateImpl) cq.getState()).getState(), proxy.getProxyID(), ccn, cq.isDurable(),
-                  true, -1, this.emptyRegionMap);
+                  true, -1, this.emptyRegionMap, cq.isUpdateSuppressed());
             } catch (Exception ex) {
               logger.info("Failed to register CQ during HARegion GII. CQ: {} {}", e.getKey(),
                   ex.getMessage(), ex);

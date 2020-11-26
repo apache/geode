@@ -60,8 +60,9 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
   private boolean connected = false;
 
   public ClientCQImpl(CqServiceImpl cqService, String cqName, String queryString,
-      CqAttributes cqAttributes, ServerCQProxyImpl serverProxy, boolean isDurable) {
-    super(cqService, cqName, queryString, isDurable);
+      CqAttributes cqAttributes, ServerCQProxyImpl serverProxy, boolean isDurable,
+      boolean suppressUpdate) {
+    super(cqService, cqName, queryString, isDurable, suppressUpdate);
     this.cqAttributes = cqAttributes;
     this.cqProxy = serverProxy;
   }
@@ -571,6 +572,6 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
 
     int state = this.cqState.getState();
     this.cqProxy.createOn(getName(), conn, getQueryString(), state, isDurable,
-        regionDataPolicyOrdinal);
+        regionDataPolicyOrdinal, isUpdateSuppressed());
   }
 }

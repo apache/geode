@@ -80,4 +80,7 @@ public interface InternalCqQuery extends CqQuery {
 
   @Override
   void stop() throws CqClosedException, CqException;
+
+  @Override
+  boolean isUpdateSuppressed();
 }

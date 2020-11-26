@@ -83,8 +83,19 @@ public class ExecuteCQ61 extends BaseCQCommand {
     byte[] isDurableByte = isDurablePart.getSerializedForm();
     boolean isDurable = !(isDurableByte == null || isDurableByte[0] == 0);
     // region data policy
-    Part regionDataPolicyPart = clientMessage.getPart(clientMessage.getNumberOfParts() - 1);
+    int indexOfRegionDataPolicy = clientMessage.getNumberOfParts() - 1;
+    if (clientMessage.getNumberOfParts() > 5) {
+      indexOfRegionDataPolicy = 4;
+    }
+    Part regionDataPolicyPart = clientMessage.getPart(indexOfRegionDataPolicy);
     byte[] regionDataPolicyPartBytes = regionDataPolicyPart.getSerializedForm();
+    boolean suppressUpdate = false;
+    if (clientMessage.getNumberOfParts() > 5) {
+      Part suppressUpdatePart = clientMessage.getPart(clientMessage.getNumberOfParts() - 1);
+      byte[] suppressUpdateByte = suppressUpdatePart.getSerializedForm();
+      suppressUpdate = !(suppressUpdateByte == null || suppressUpdateByte[0] == 0);
+    }
+
     if (logger.isDebugEnabled()) {
       logger.debug("{}: Received {} request from {} CqName: {} queryString: {}",
           serverConnection.getName(), MessageType.getString(clientMessage.getMessageType()),
@@ -149,7 +160,7 @@ public class ExecuteCQ61 extends BaseCQCommand {
       // registering cq auth before as possibility that you may get event
       serverConnection.setCq(cqName, isDurable);
       cqQuery = (ServerCQImpl) cqServiceForExec.executeCq(cqName, cqQueryString, cqState, id, ccn,
-          isDurable, true, regionDataPolicyPartBytes[0], null);
+          isDurable, true, regionDataPolicyPartBytes[0], null, suppressUpdate);
     } catch (CqException cqe) {
       sendCqResponse(MessageType.CQ_EXCEPTION_TYPE, "", clientMessage.getTransactionId(), cqe,
           serverConnection);

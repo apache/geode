@@ -43,10 +43,12 @@ public class CreateCQOp {
    * @param cqState int cqState to be set.
    * @param isDurable true if CQ is durable
    * @param regionDataPolicy the data policy ordinal of the region
+   * @param suppressUpdate true if update is suppressed
    */
   public static Object execute(ExecutablePool pool, String cqName, String queryStr, int cqState,
-      boolean isDurable, byte regionDataPolicy) {
-    AbstractOp op = new CreateCQOpImpl(cqName, queryStr, cqState, isDurable, regionDataPolicy);
+      boolean isDurable, byte regionDataPolicy, boolean suppressUpdate) {
+    AbstractOp op =
+        new CreateCQOpImpl(cqName, queryStr, cqState, isDurable, regionDataPolicy, suppressUpdate);
     return pool.executeOnQueuesAndReturnPrimaryResult(op);
   }
 
@@ -61,10 +63,13 @@ public class CreateCQOp {
    * @param cqState int cqState to be set.
    * @param isDurable true if CQ is durable
    * @param regionDataPolicy the data policy ordinal of the region
+   * @param suppressUpdate true if update is suppressed
    */
   public static Object executeOn(ExecutablePool pool, Connection conn, String cqName,
-      String queryStr, int cqState, boolean isDurable, byte regionDataPolicy) {
-    AbstractOp op = new CreateCQOpImpl(cqName, queryStr, cqState, isDurable, regionDataPolicy);
+      String queryStr, int cqState, boolean isDurable, byte regionDataPolicy,
+      boolean suppressUpdate) {
+    AbstractOp op =
+        new CreateCQOpImpl(cqName, queryStr, cqState, isDurable, regionDataPolicy, suppressUpdate);
     return pool.executeOn(conn, op);
   }
 
@@ -81,8 +86,8 @@ public class CreateCQOp {
      * @throws org.apache.geode.SerializationException if serialization fails
      */
     public CreateCQOpImpl(String cqName, String queryStr, int cqState, boolean isDurable,
-        byte regionDataPolicy) {
-      super(MessageType.EXECUTECQ_MSG_TYPE, 5);
+        byte regionDataPolicy, boolean suppressUpdate) {
+      super(MessageType.EXECUTECQ_MSG_TYPE, 6);
       getMessage().addStringPart(cqName);
       getMessage().addStringPart(queryStr);
       getMessage().addIntPart(cqState);
@@ -91,6 +96,10 @@ public class CreateCQOp {
         getMessage().addBytesPart(new byte[] {durableByte});
       }
       getMessage().addBytesPart(new byte[] {regionDataPolicy});
+      {
+        byte suppressByte = (byte) (suppressUpdate ? 0x01 : 0x00);
+        getMessage().addBytesPart(new byte[] {suppressByte});
+      }
     }
 
     @Override

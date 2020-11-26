@@ -68,6 +68,8 @@ public abstract class CqQueryImpl implements InternalCqQuery {
 
   protected boolean isDurable = false;
 
+  protected boolean suppressUpdate = false;
+
   /** Stats counters */
   private CqStatisticsImpl cqStats;
 
@@ -85,12 +87,13 @@ public abstract class CqQueryImpl implements InternalCqQuery {
   public CqQueryImpl() {}
 
   public CqQueryImpl(CqServiceImpl cqService, String cqName, String queryString,
-      boolean isDurable) {
+      boolean isDurable, boolean suppressUpdate) {
     this.cqName = cqName;
     this.queryString = queryString;
     this.securityLogWriter = (InternalLogWriter) cqService.getCache().getSecurityLoggerI18n();
     this.cqService = cqService;
     this.isDurable = isDurable;
+    this.suppressUpdate = suppressUpdate;
   }
 
   /**
@@ -264,7 +267,6 @@ public abstract class CqQueryImpl implements InternalCqQuery {
    * @return Returns the Region name on which this cq is created.
    */
   String getBaseRegionName() {
-
     return this.regionName;
   }
 
@@ -359,6 +361,16 @@ public abstract class CqQueryImpl implements InternalCqQuery {
   @Override
   public boolean isDurable() {
     return this.isDurable;
+  }
+
+  /**
+   * Return true if the CQ use option to suppress CQ update notification.
+   *
+   * @return true if update is suppressed, false otherwise
+   */
+  @Override
+  public boolean isUpdateSuppressed() {
+    return suppressUpdate;
   }
 
   /**

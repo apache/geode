@@ -155,4 +155,12 @@ public interface CqQuery {
    */
   boolean isDurable();
 
+  /**
+   * This allows to check if the CQ use option to suppress CQ update notification.
+   *
+   * @return boolean true if update is suppressed, false otherwise
+   * @since Geode 14.0
+   */
+  boolean isUpdateSuppressed();
+
 }
