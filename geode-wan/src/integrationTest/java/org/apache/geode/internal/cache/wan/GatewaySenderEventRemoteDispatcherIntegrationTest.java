@@ -22,7 +22,6 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import java.net.InetAddress;
 import java.util.LinkedList;
 import java.util.Properties;
 
@@ -36,7 +35,6 @@ import org.apache.geode.cache.client.internal.Endpoint;
 import org.apache.geode.cache.client.internal.EndpointManager;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.client.internal.pooling.PooledConnection;
-import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
@@ -63,15 +61,12 @@ public class GatewaySenderEventRemoteDispatcherIntegrationTest {
 
     final PoolImpl pool = getPool();
 
-    final ServerLocation serverLocation = new ServerLocation("127.0.0.1", 2);
+    final ServerLocation serverLocation = mock(ServerLocation.class);
 
     final AbstractGatewaySenderEventProcessor eventProcessor =
         getMockedAbstractGatewaySenderEventProcessor(pool, serverLocation);
 
-    InternalDistributedMember member =
-        new InternalDistributedMember(InetAddress.getByName("127.0.0.1"), 1);
-
-    final Endpoint endpoint = getMockedEndpoint(serverLocation, member);
+    final Endpoint endpoint = getMockedEndpoint(serverLocation);
     final Connection connection = getMockedConnection(serverLocation, endpoint);
 
     /*
@@ -80,7 +75,7 @@ public class GatewaySenderEventRemoteDispatcherIntegrationTest {
      * connection
      */
     final EndpointManager endpointManager = pool.getEndpointManager();
-    endpointManager.referenceEndpoint(serverLocation, member);
+    endpointManager.referenceEndpoint(serverLocation, mock(InternalDistributedMember.class));
 
     final GatewaySenderEventRemoteDispatcher dispatcher =
         new GatewaySenderEventRemoteDispatcher(eventProcessor, connection);
@@ -167,10 +162,9 @@ public class GatewaySenderEventRemoteDispatcherIntegrationTest {
     return eventProcessor;
   }
 
-  private Endpoint getMockedEndpoint(ServerLocation serverLocation, DistributedMember member) {
+  private Endpoint getMockedEndpoint(ServerLocation serverLocation) {
     final Endpoint endpoint = mock(Endpoint.class);
     doReturn(serverLocation).when(endpoint).getLocation();
-    doReturn(member).when(endpoint).getMemberId();
     return endpoint;
   }
 

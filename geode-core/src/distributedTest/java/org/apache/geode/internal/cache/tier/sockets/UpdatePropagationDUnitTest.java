@@ -48,7 +48,7 @@ import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache30.CacheSerializableRunnable;
-import org.apache.geode.distributed.internal.ServerLocationAndMemberId;
+import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -176,9 +176,8 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
    */
   private boolean hasEndPointWithPort(final PoolImpl pool, final int port) {
     EndpointManager endpointManager = pool.getEndpointManager();
-    final Set<ServerLocationAndMemberId> slAndMemberIds = endpointManager.getEndpointMap().keySet();
-    return slAndMemberIds.stream()
-        .anyMatch(slAndMemberId -> slAndMemberId.getServerLocation().getPort() == port);
+    final Set<ServerLocation> servers = endpointManager.getEndpointMap().keySet();
+    return servers.stream().anyMatch(location -> location.getPort() == port);
   }
 
   private void acquireConnectionsAndPutonK1andK2(String host) {

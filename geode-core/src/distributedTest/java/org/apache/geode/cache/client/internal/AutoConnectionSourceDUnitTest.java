@@ -41,7 +41,7 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.distributed.internal.ServerLocationAndMemberId;
+import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.management.membership.ClientMembership;
 import org.apache.geode.management.membership.ClientMembershipEvent;
@@ -496,12 +496,12 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
         expectedEndpointPorts.add(expectedPort);
       }
       await().untilAsserted(() -> {
-        List<ServerLocationAndMemberId> endpoints;
+        List<ServerLocation> endpoints;
         HashSet<Integer> actualEndpointPorts;
         endpoints = pool.getCurrentServers();
         actualEndpointPorts = new HashSet<>();
-        for (ServerLocationAndMemberId slAndMemberId : endpoints) {
-          actualEndpointPorts.add(slAndMemberId.getServerLocation().getPort());
+        for (ServerLocation sl : endpoints) {
+          actualEndpointPorts.add(sl.getPort());
         }
         assertEquals(expectedEndpointPorts, actualEndpointPorts);
       });

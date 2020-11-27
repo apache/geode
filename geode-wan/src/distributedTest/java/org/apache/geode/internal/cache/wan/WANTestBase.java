@@ -1265,6 +1265,24 @@ public class WANTestBase extends DistributedTestCase {
     return poolStats.getDisConnects();
   }
 
+  protected static int getTotalBucketQueueSize(PartitionedRegion prQ, boolean isPrimary) {
+    int size = 0;
+    if (prQ != null) {
+      Set<Map.Entry<Integer, BucketRegion>> allBuckets = prQ.getDataStore().getAllLocalBuckets();
+      List<Integer> thisProcessorBuckets = new ArrayList<Integer>();
+
+      for (Map.Entry<Integer, BucketRegion> bucketEntry : allBuckets) {
+        BucketRegion bucket = bucketEntry.getValue();
+        int bId = bucket.getId();
+        if ((isPrimary && bucket.getBucketAdvisor().isPrimary())
+            || (!isPrimary && !bucket.getBucketAdvisor().isPrimary())) {
+          size += bucket.size();
+        }
+      }
+    }
+    return size;
+  }
+
   public static List<Integer> getSenderStatsForDroppedEvents(String senderId) {
     AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender(senderId);
     GatewaySenderStats statistics = sender.getStatistics();

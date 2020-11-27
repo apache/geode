@@ -34,7 +34,6 @@ import org.apache.geode.cache.client.internal.SenderProxy;
 import org.apache.geode.cache.client.internal.pooling.ConnectionDestroyedException;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.distributed.internal.ServerLocationAndMemberId;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.UpdateAttributesProcessor;
 import org.apache.geode.internal.cache.tier.sockets.MessageTooLargeException;
@@ -468,13 +467,13 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
     if (e.getCause() instanceof GemFireSecurityException) {
       gse = new GatewaySenderException(e.getCause());
     } else {
-      List<ServerLocationAndMemberId> servers = this.sender.getProxy().getCurrentServers();
+      List<ServerLocation> servers = this.sender.getProxy().getCurrentServers();
       String ioMsg;
       if (servers.size() == 0) {
         ioMsg = "There are no active servers.";
       } else {
         final StringBuilder buffer = new StringBuilder();
-        for (ServerLocationAndMemberId server : servers) {
+        for (ServerLocation server : servers) {
           String endpointName = String.valueOf(server);
           if (buffer.length() > 0) {
             buffer.append(", ");

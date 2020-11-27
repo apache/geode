@@ -202,7 +202,7 @@ import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.distributed.internal.ResourceEventsListener;
-import org.apache.geode.distributed.internal.ServerLocationAndMemberId;
+import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.i18n.LogWriterI18n;
@@ -2773,14 +2773,12 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     Set<InetSocketAddress> result = null;
     for (Pool pool : pools.values()) {
       PoolImpl poolImpl = (PoolImpl) pool;
-      for (ServerLocationAndMemberId serverLocationAndMemberId : poolImpl.getCurrentServers()) {
+      for (ServerLocation serverLocation : poolImpl.getCurrentServers()) {
         if (result == null) {
           result = new HashSet<>();
         }
-        result.add(
-            InetSocketAddress.createUnresolved(
-                serverLocationAndMemberId.getServerLocation().getHostName(),
-                serverLocationAndMemberId.getServerLocation().getPort()));
+        result.add(InetSocketAddress.createUnresolved(serverLocation.getHostName(),
+            serverLocation.getPort()));
       }
     }
     if (result == null) {

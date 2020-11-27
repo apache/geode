@@ -18,7 +18,6 @@ import java.util.Map;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.distributed.internal.ServerLocationAndMemberId;
 
 /**
  * The endpoint manager keeps track of which servers we are connected to. Other parts of the client
@@ -47,7 +46,7 @@ public interface EndpointManager {
    *
    * @return a map for ServerLocation->Endpoint
    */
-  Map<ServerLocationAndMemberId, Endpoint> getEndpointMap();
+  Map<ServerLocation, Endpoint> getEndpointMap();
 
   void close();
 
@@ -66,7 +65,7 @@ public interface EndpointManager {
    *
    * @return a map of ServerLocation-> ConnectionStats
    */
-  Map<ServerLocationAndMemberId, ConnectionStats> getAllStats();
+  Map<ServerLocation, ConnectionStats> getAllStats();
 
   /**
    * Test hook that returns the number of servers we currently have connections to.
