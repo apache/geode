@@ -25,16 +25,16 @@ import org.apache.geode.internal.PdxSerializerObject;
 public class TestAutoSerializerObject2 implements PdxSerializerObject {
   protected String data1;
   protected String data2;
-  protected int numData3;
+  protected int numData;
 
   public TestAutoSerializerObject2() {
     this("", "", 0);
   }
 
-  protected TestAutoSerializerObject2(String data1, String data2, int numData3) {
+  protected TestAutoSerializerObject2(String data1, String data2, int numData) {
     this.data1 = data1;
     this.data2 = data2;
-    this.numData3 = numData3;
+    this.numData = numData;
   }
 
   public String getData1() {
@@ -49,12 +49,12 @@ public class TestAutoSerializerObject2 implements PdxSerializerObject {
     this.data2 = data2;
   }
 
-  public int getNumData3() {
-    return numData3;
+  public int getNumData() {
+    return numData;
   }
 
-  public void setNumData3(int numData3) {
-    this.numData3 = numData3;
+  public void setNumData(int numData) {
+    this.numData = numData;
   }
 
   public String toString() {
@@ -71,12 +71,12 @@ public class TestAutoSerializerObject2 implements PdxSerializerObject {
         builder.append(data2);
       }
 
-      if (0 < numData3) {
+      if (0 < numData) {
         if (0 < builder.length() && '(' != builder.charAt(builder.length() - 1)) {
           builder.append(", ");
         }
-        builder.append("numData3: ");
-        builder.append(numData3);
+        builder.append("numData: ");
+        builder.append(numData);
       }
 
       builder.append(")");
@@ -89,15 +89,13 @@ public class TestAutoSerializerObject2 implements PdxSerializerObject {
     if (this == o)
       return true;
 
-    if (o == null)
+    if (o == null || getClass() != o.getClass())
       return false;
 
-    if (getClass() != o.getClass())
-      return false;
     TestAutoSerializerObject2 test = (TestAutoSerializerObject2) o;
     // field comparison
     return Objects.equals(data1, test.data1)
-        && Objects.equals(data2, test.data2) && Objects.equals(numData3, test.numData3);
+        && Objects.equals(data2, test.data2) && Objects.equals(numData, test.numData);
   }
 
   @Override
@@ -105,7 +103,7 @@ public class TestAutoSerializerObject2 implements PdxSerializerObject {
     int result = 17;
     result = 31 * result + data1.hashCode();
     result = 31 * result + data2.hashCode();
-    result = 31 * result + numData3;
+    result = 31 * result + numData;
     return result;
   }
 }

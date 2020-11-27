@@ -50,7 +50,7 @@ import org.apache.geode.test.junit.categories.SerializationTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category({ClientSubscriptionTest.class, SerializationTest.class})
-public class DurableClientCQAutoSerializer implements Serializable {
+public class DurableClientCQAutoSerializerDUnitTest implements Serializable {
   private static final String REPLICATE_REGION_NAME = "ReplicateRegion";
   private static final String PARTITION_REGION_NAME = "PartitionRegion";
 
@@ -119,7 +119,7 @@ public class DurableClientCQAutoSerializer implements Serializable {
   }
 
   @Test
-  public void correctClassPathsAutoSerializer()
+  public void testCorrectClassPathsAutoSerializer()
       throws Exception {
 
     String query1 = "SELECT * FROM " + SEPARATOR + REPLICATE_REGION_NAME;
@@ -139,7 +139,7 @@ public class DurableClientCQAutoSerializer implements Serializable {
   }
 
   @Test
-  public void faultyClassPathAutoSerializer()
+  public void testFaultyClassPathAutoSerializer()
       throws Exception {
     String query1 = "SELECT * FROM " + SEPARATOR + REPLICATE_REGION_NAME;
     String query2 = "SELECT * FROM " + SEPARATOR + PARTITION_REGION_NAME;
@@ -176,7 +176,7 @@ public class DurableClientCQAutoSerializer implements Serializable {
   private void createDurableCQs(String... queries) {
     client.invoke(() -> {
       TestAutoSerializerCqListener cqListener = new TestAutoSerializerCqListener();
-      DurableClientCQAutoSerializer.cqListener = cqListener;
+      DurableClientCQAutoSerializerDUnitTest.cqListener = cqListener;
       assertThat(ClusterStartupRule.getClientCache()).isNotNull();
       QueryService queryService = ClusterStartupRule.getClientCache().getQueryService();
       CqAttributesFactory cqAttributesFactory = new CqAttributesFactory();
@@ -205,16 +205,16 @@ public class DurableClientCQAutoSerializer implements Serializable {
     // Check if number of events is correct
     client.invoke(() -> {
       await().untilAsserted(() -> assertThat(
-          DurableClientCQAutoSerializer.cqListener.getNumEvents())
+          DurableClientCQAutoSerializerDUnitTest.cqListener.getNumEvents())
               .isEqualTo(expectedTestAutoSerializerObject1 + expectedTestAutoSerializerObject2));
 
       // Check if events are deserialized correctly
       if (expectedTestAutoSerializerObject1 != 0) {
-        assertEquals(DurableClientCQAutoSerializer.cqListener.testAutoSerializerObject1,
+        assertEquals(DurableClientCQAutoSerializerDUnitTest.cqListener.testAutoSerializerObject1,
             LIST_TEST_OBJECT1);
       }
       if (expectedTestAutoSerializerObject2 != 0) {
-        assertEquals(DurableClientCQAutoSerializer.cqListener.testAutoSerializerObject2,
+        assertEquals(DurableClientCQAutoSerializerDUnitTest.cqListener.testAutoSerializerObject2,
             LIST_TEST_OBJECT2);
       }
     });
