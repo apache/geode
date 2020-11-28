@@ -269,6 +269,128 @@ public class CQDistributedTest implements Serializable {
     await().untilAsserted(() -> assertThat(testListener2.onEventUpdateCalls).isEqualTo(0));
   }
 
+  @Test
+  public void cqEventsCreatUpdate_suppressUpdate_false() throws Exception {
+    qs.newCq("Select * from " + SEPARATOR + "region r where r.ID > 1", cqa, false, false).execute();
+
+    server.invoke(() -> {
+      Region regionOnServer = ClusterStartupRule.getCache().getRegion("region");
+      regionOnServer.put(0, new Portfolio(0));
+      regionOnServer.put(1, new Portfolio(1));
+      regionOnServer.put(2, new Portfolio(2));
+      regionOnServer.put(3, new Portfolio(3));
+      regionOnServer.put(4, new Portfolio(4));
+
+      regionOnServer.put(0, new Portfolio(0));
+      regionOnServer.put(1, new Portfolio(1));
+      regionOnServer.put(2, new Portfolio(2));
+      regionOnServer.put(3, new Portfolio(3));
+      regionOnServer.put(4, new Portfolio(4));
+    });
+
+    await()
+        .untilAsserted(() -> assertEquals(6, testListener.onEventCalls));
+  }
+
+  @Test
+  public void cqEventsCreatUpdate_suppressUpdate_true() throws Exception {
+    qs.newCq("Select * from " + SEPARATOR + "region r where r.ID > 1", cqa, false, true).execute();
+
+    server.invoke(() -> {
+      Region regionOnServer = ClusterStartupRule.getCache().getRegion("region");
+      regionOnServer.put(0, new Portfolio(0));
+      regionOnServer.put(1, new Portfolio(1));
+      regionOnServer.put(2, new Portfolio(2));
+      regionOnServer.put(3, new Portfolio(3));
+      regionOnServer.put(4, new Portfolio(4));
+
+      regionOnServer.put(0, new Portfolio(0));
+      regionOnServer.put(1, new Portfolio(1));
+      regionOnServer.put(2, new Portfolio(2));
+      regionOnServer.put(3, new Portfolio(3));
+      regionOnServer.put(4, new Portfolio(4));
+    });
+
+    await()
+        .untilAsserted(() -> assertEquals(3, testListener.onEventCalls));
+  }
+
+  @Test
+  public void cqExecuteWithInitialResultsWithValuesMatchingPrimaryKey_suppressUpdate_false()
+      throws Exception {
+    server.invoke(() -> {
+      Region regionOnServer = ClusterStartupRule.getCache().getRegion("region");
+      ClusterStartupRule.getCache().getQueryService().createKeyIndex("PrimaryKeyIndex", "ID",
+          SEPARATOR + "region");
+      regionOnServer.put(0, new Portfolio(0));
+      regionOnServer.put(1, new Portfolio(1));
+      regionOnServer.put(2, new Portfolio(2));
+      regionOnServer.put(3, new Portfolio(3));
+      regionOnServer.put(4, new Portfolio(4));
+
+    });
+
+    SelectResults results =
+        qs.newCq("Select * from " + SEPARATOR + "region where ID = 1", cqa, false, false)
+            .executeWithInitialResults();
+    assertEquals(1, results.size());
+
+    server.invoke(() -> {
+      Region regionOnServer = ClusterStartupRule.getCache().getRegion("region");
+      regionOnServer.put(0, new Portfolio(0));
+      regionOnServer.put(1, new Portfolio(1));
+      regionOnServer.put(2, new Portfolio(2));
+      regionOnServer.put(3, new Portfolio(3));
+      regionOnServer.put(4, new Portfolio(4));
+
+      regionOnServer.put(0, new Portfolio(0));
+      regionOnServer.put(1, new Portfolio(1));
+      regionOnServer.put(2, new Portfolio(2));
+      regionOnServer.put(3, new Portfolio(3));
+      regionOnServer.put(4, new Portfolio(4));
+    });
+
+    await()
+        .untilAsserted(() -> assertEquals(2, testListener.onEventCalls));
+  }
+
+  @Test
+  public void cqExecuteWithInitialResultsWithValuesMatchingPrimaryKey_suppressUpdate_true()
+      throws Exception {
+    server.invoke(() -> {
+      Region regionOnServer = ClusterStartupRule.getCache().getRegion("region");
+      ClusterStartupRule.getCache().getQueryService().createKeyIndex("PrimaryKeyIndex", "ID",
+          SEPARATOR + "region");
+      regionOnServer.put(0, new Portfolio(0));
+      regionOnServer.put(1, new Portfolio(1));
+      regionOnServer.put(2, new Portfolio(2));
+      regionOnServer.put(3, new Portfolio(3));
+      regionOnServer.put(4, new Portfolio(4));
+    });
+
+    SelectResults results =
+        qs.newCq("Select * from " + SEPARATOR + "region where ID = 1", cqa, false, true)
+            .executeWithInitialResults();
+    assertEquals(1, results.size());
+
+    server.invoke(() -> {
+      Region regionOnServer = ClusterStartupRule.getCache().getRegion("region");
+      regionOnServer.put(0, new Portfolio(0));
+      regionOnServer.put(1, new Portfolio(1));
+      regionOnServer.put(2, new Portfolio(2));
+      regionOnServer.put(3, new Portfolio(3));
+      regionOnServer.put(4, new Portfolio(4));
+
+      regionOnServer.put(0, new Portfolio(0));
+      regionOnServer.put(1, new Portfolio(1));
+      regionOnServer.put(2, new Portfolio(2));
+      regionOnServer.put(3, new Portfolio(3));
+      regionOnServer.put(4, new Portfolio(4));
+    });
+
+    await()
+        .untilAsserted(() -> assertEquals(0, testListener.onEventCalls));
+  }
 
   private class TestCqListener implements CqListener, Serializable {
     public int onEventCalls = 0;

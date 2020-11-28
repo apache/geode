@@ -1466,7 +1466,7 @@ public class CqServiceImpl implements CqService {
         }
 
         if (cqEvent != null && cQuery.isRunning()) {
-          if (!cQuery.isUpdateSuppressed() || cqEvent.equals(MESSAGE_TYPE_LOCAL_UPDATE)) {
+          if (!cQuery.isUpdateSuppressed() || !cqEvent.equals(MESSAGE_TYPE_LOCAL_UPDATE)) {
             if (isDebugEnabled) {
               logger.debug("Added event to CQ with client-side name: {} key: {} operation : {}",
                   cQuery.cqName, eventKey, cqEvent);

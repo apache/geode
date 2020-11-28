@@ -408,7 +408,16 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
     cqf.initCqListeners(cqListeners);
     CqAttributes cqa = cqf.create();
     return qs.newCq(cqName, cqQuery, cqa, durable);
+  }
 
+  private CqQuery createCq_suppress(String cqName, String cqQuery, boolean durable)
+      throws CqException, CqExistsException {
+    QueryService qs = CacheServerTestUtil.getCache().getQueryService();
+    CqAttributesFactory cqf = new CqAttributesFactory();
+    CqListener[] cqListeners = {new CacheServerTestUtil.ControlCqListener()};
+    cqf.initCqListeners(cqListeners);
+    CqAttributes cqa = cqf.create();
+    return qs.newCq(cqName, cqQuery, cqa, durable, true);
   }
 
   Pool getClientPool(String host, int serverPort, boolean establishCallbackConnection) {
@@ -561,6 +570,21 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
 
         try {
           createCq(cqName, cqQuery, durable).execute();
+        } catch (CqExistsException | CqException | RegionNotFoundException e) {
+          throw new CacheException(e) {};
+        }
+
+      }
+    });
+  }
+
+  void createCq_suppress(VM vm, final String cqName, final String cqQuery, final boolean durable) {
+    vm.invoke(new CacheSerializableRunnable("Register cq " + cqName) {
+      @Override
+      public void run2() throws CacheException {
+
+        try {
+          createCq_suppress(cqName, cqQuery, durable).execute();
         } catch (CqExistsException | CqException | RegionNotFoundException e) {
           throw new CacheException(e) {};
         }
