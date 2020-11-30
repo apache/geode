@@ -14,6 +14,14 @@
  */
 package org.apache.geode.internal.statistics;
 
+import static org.apache.geode.internal.statistics.platform.LinuxProcFsStatistics.TCP_LISTEN_DROPS_NAME;
+import static org.apache.geode.internal.statistics.platform.LinuxProcFsStatistics.TCP_LISTEN_OVERFLOWS_NAME;
+import static org.apache.geode.internal.statistics.platform.LinuxProcFsStatistics.TCP_SYNCOOKIES_RECV_NAME;
+import static org.apache.geode.internal.statistics.platform.LinuxProcFsStatistics.TCP_SYNCOOKIES_SENT_NAME;
+import static org.apache.geode.internal.statistics.platform.LinuxSystemStats.TCP_EXT_LISTEN_DROPS;
+import static org.apache.geode.internal.statistics.platform.LinuxSystemStats.TCP_EXT_LISTEN_OVERFLOWS;
+import static org.apache.geode.internal.statistics.platform.LinuxSystemStats.TCP_EXT_SYN_COOKIES_RECV;
+import static org.apache.geode.internal.statistics.platform.LinuxSystemStats.TCP_EXT_SYN_COOKIES_SENT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 
@@ -93,7 +101,7 @@ public class LinuxSystemStatsTest extends StatSamplerTestCase {
         // add on 4 clicks 4 idle 0 steal
         "cpu  0 0 0 4 0 0 0 0 0 0"};
 
-    doTest(results, 0);
+    doStealTimeTest(results, 0);
   }
 
   @Test
@@ -102,7 +110,7 @@ public class LinuxSystemStatsTest extends StatSamplerTestCase {
         // add on 4 clicks 3 idle 1 steal
         "cpu  0 0 0 3 0 0 0 1 0 0"};
 
-    doTest(results, 25);
+    doStealTimeTest(results, 25);
   }
 
   @Test
@@ -111,7 +119,7 @@ public class LinuxSystemStatsTest extends StatSamplerTestCase {
         // add on 3 clicks 1 idle 2 steal
         "cpu  0 0 0 1 0 0 0 2 0 0"};
 
-    doTest(results, 66);
+    doStealTimeTest(results, 66);
   }
 
   @Test
@@ -120,10 +128,38 @@ public class LinuxSystemStatsTest extends StatSamplerTestCase {
         // add on 1 clicks 0 idle 1 steal
         "cpu  0 0 0 0 0 0 0 1 0 0"};
 
-    doTest(results, 100);
+    doStealTimeTest(results, 100);
   }
 
-  private void doTest(String[] results, int expectedStatValue) throws Exception {
+  @Test
+  public void netstatStatsTest() throws Exception {
+    long expectedSyncookiesSent = 1L;
+    long expectedSyncookiesRecv = 2L;
+    long dummyStatValue = -1L;
+    long expectedListenOverflows = 3L;
+    long expectedListenDrops = 4L;
+
+    // This string simulates the contents of the /proc/net/netstat file, omitting all stats that
+    // aren't parsed in the LinuxProcFsStatistics.getNetStatStats() method and including a dummy
+    // stat that should not be parsed
+    String mockNetstatStats = "TcpExt: " + TCP_SYNCOOKIES_SENT_NAME + " " + TCP_SYNCOOKIES_RECV_NAME
+        + " DummyStat " + TCP_LISTEN_OVERFLOWS_NAME + " " + TCP_LISTEN_DROPS_NAME + "\n"
+        + "TcpExt: " + expectedSyncookiesSent + " " + expectedSyncookiesRecv + " " + dummyStatValue
+        + " " + expectedListenOverflows + " " + expectedListenDrops;
+
+    Answer<FileInputStream> answer = new MyNetstatAnswer(mockNetstatStats);
+    PowerMockito.whenNew(FileInputStream.class).withArguments(anyString()).thenAnswer(answer);
+
+    LinuxProcFsStatistics.refreshSystem(localStats);
+
+    Statistics statistics = getStatisticsManager().findStatisticsByTextId("LinuxSystemStats")[0];
+    assertThat(statistics.getLong(TCP_EXT_SYN_COOKIES_SENT)).isEqualTo(expectedSyncookiesSent);
+    assertThat(statistics.getLong(TCP_EXT_SYN_COOKIES_RECV)).isEqualTo(expectedSyncookiesRecv);
+    assertThat(statistics.getLong(TCP_EXT_LISTEN_OVERFLOWS)).isEqualTo(expectedListenOverflows);
+    assertThat(statistics.getLong(TCP_EXT_LISTEN_DROPS)).isEqualTo(expectedListenDrops);
+  }
+
+  private void doStealTimeTest(String[] results, int expectedStatValue) throws Exception {
     Answer<FileInputStream> answer = new MyStealTimeAnswer(results);
     PowerMockito.whenNew(FileInputStream.class).withArguments(anyString()).thenAnswer(answer);
 
@@ -182,6 +218,26 @@ public class LinuxSystemStatsTest extends StatSamplerTestCase {
       // Since we are mocking the test we can run this test on any OS.
       if ("/proc/stat".equals(invocation.getArgument(0))) {
         return results.remove(0);
+      }
+      return bogus;
+    }
+  }
+
+  private class MyNetstatAnswer implements Answer<FileInputStream> {
+
+    private final FileInputStream results;
+    private final FileInputStream bogus;
+
+    MyNetstatAnswer(String sample) throws IOException {
+      results = new FileInputStream(writeStringToFile(sample));
+      bogus = new FileInputStream(writeStringToFile(""));
+    }
+
+    @Override
+    public FileInputStream answer(InvocationOnMock invocation) throws Throwable {
+      // Since we are mocking the test we can run this test on any OS.
+      if ("/proc/net/netstat".equals(invocation.getArgument(0))) {
+        return results;
       }
       return bogus;
     }
