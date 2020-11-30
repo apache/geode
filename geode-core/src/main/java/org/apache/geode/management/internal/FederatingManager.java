@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -32,6 +33,7 @@ import javax.management.ObjectName;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.annotations.VisibleForTesting;
@@ -51,6 +53,7 @@ import org.apache.geode.internal.cache.HasCachePerfStats;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.statistics.StatisticsClock;
+import org.apache.geode.internal.util.concurrent.StoppableNonReentrantLock;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.ManagementException;
 
@@ -79,26 +82,39 @@ public class FederatingManager extends Manager {
    * unbounded in practical situation as number of members will be a finite set at any given point
    * of time
    */
-  private ExecutorService executorService;
-
-  @VisibleForTesting
-  FederatingManager(ManagementResourceRepo repo, InternalDistributedSystem system,
-      SystemManagementService service, InternalCache cache, StatisticsFactory statisticsFactory,
-      StatisticsClock statisticsClock, MBeanProxyFactory proxyFactory, MemberMessenger messenger,
-      ExecutorService executorService) {
-    this(repo, system, service, cache, statisticsFactory, statisticsClock, proxyFactory, messenger,
-        () -> executorService);
-  }
+  private final AtomicReference<ExecutorService> executorService = new AtomicReference<>();
+  private boolean pendingStartup = true;
+  private final StoppableNonReentrantLock pendingTasksLock;
+  private final List<Runnable> pendingTasks = new CopyOnWriteArrayList<>();
 
   FederatingManager(ManagementResourceRepo repo, InternalDistributedSystem system,
       SystemManagementService service, InternalCache cache, StatisticsFactory statisticsFactory,
       StatisticsClock statisticsClock, MBeanProxyFactory proxyFactory, MemberMessenger messenger,
       Supplier<ExecutorService> executorServiceSupplier) {
+    this(repo, system, service, cache, statisticsFactory, statisticsClock, proxyFactory, messenger,
+        system.getCancelCriterion(), executorServiceSupplier);
+  }
+
+  @VisibleForTesting
+  FederatingManager(ManagementResourceRepo repo, InternalDistributedSystem system,
+      SystemManagementService service, InternalCache cache, StatisticsFactory statisticsFactory,
+      StatisticsClock statisticsClock, MBeanProxyFactory proxyFactory, MemberMessenger messenger,
+      CancelCriterion cancelCriterion, ExecutorService executorService) {
+    this(repo, system, service, cache, statisticsFactory, statisticsClock, proxyFactory, messenger,
+        cancelCriterion, () -> executorService);
+  }
+
+  @VisibleForTesting
+  FederatingManager(ManagementResourceRepo repo, InternalDistributedSystem system,
+      SystemManagementService service, InternalCache cache, StatisticsFactory statisticsFactory,
+      StatisticsClock statisticsClock, MBeanProxyFactory proxyFactory, MemberMessenger messenger,
+      CancelCriterion cancelCriterion, Supplier<ExecutorService> executorServiceSupplier) {
     super(repo, system, cache, statisticsFactory, statisticsClock);
     this.service = service;
     this.proxyFactory = proxyFactory;
     this.messenger = messenger;
     this.executorServiceSupplier = executorServiceSupplier;
+    pendingTasksLock = new StoppableNonReentrantLock(cancelCriterion);
   }
 
   /**
@@ -108,15 +124,38 @@ public class FederatingManager extends Manager {
   @Override
   public synchronized void startManager() {
     try {
+      if (running) {
+        return;
+      }
       if (logger.isDebugEnabled()) {
         logger.debug("Starting the Federating Manager.... ");
       }
 
-      executorService = executorServiceSupplier.get();
+      pendingTasksLock.lock();
+      try {
+        pendingStartup = true;
+      } finally {
+        pendingTasksLock.unlock();
+      }
+
+      executorService.set(executorServiceSupplier.get());
 
       running = true;
       startManagingActivity();
+
+      pendingTasksLock.lock();
+      try {
+        for (Runnable task : pendingTasks) {
+          executeTask(task);
+        }
+      } finally {
+        pendingTasks.clear();
+        pendingStartup = false;
+        pendingTasksLock.unlock();
+      }
+
       messenger.broadcastManagerInfo();
+
     } catch (Exception e) {
       running = false;
       throw new ManagementException(e);
@@ -129,10 +168,11 @@ public class FederatingManager extends Manager {
     if (!running) {
       return;
     }
-    running = false;
     if (logger.isDebugEnabled()) {
       logger.debug("Stopping the Federating Manager.... ");
     }
+
+    running = false;
     stopManagingActivity();
   }
 
@@ -154,7 +194,17 @@ public class FederatingManager extends Manager {
    * listener
    */
   void removeMember(DistributedMember member, boolean crashed) {
-    executeTask(new RemoveMemberTask(member, crashed));
+    pendingTasksLock.lock();
+    try {
+      Runnable task = new RemoveMemberTask(member, crashed);
+      if (pendingStartup) {
+        pendingTasks.add(task);
+      } else if (running) {
+        executeTask(task);
+      }
+    } finally {
+      pendingTasksLock.unlock();
+    }
   }
 
   /**
@@ -212,7 +262,7 @@ public class FederatingManager extends Manager {
    */
   private void stopManagingActivity() {
     try {
-      executorService.shutdownNow();
+      executorService.get().shutdownNow();
 
       for (DistributedMember distributedMember : repo.getMonitoringRegionMap().keySet()) {
         removeMemberArtifacts(distributedMember, false);
@@ -224,7 +274,7 @@ public class FederatingManager extends Manager {
 
   private synchronized void executeTask(Runnable task) {
     try {
-      executorService.execute(task);
+      executorService.get().execute(task);
     } catch (RejectedExecutionException ignored) {
       // Ignore, we are getting shutdown
     }
@@ -250,7 +300,7 @@ public class FederatingManager extends Manager {
         logger.debug("Management Resource creation started  : ");
       }
       List<Future<InternalDistributedMember>> futureTaskList =
-          executorService.invokeAll(giiTaskList);
+          executorService.get().invokeAll(giiTaskList);
 
       for (Future<InternalDistributedMember> futureTask : futureTaskList) {
         try {
@@ -305,15 +355,8 @@ public class FederatingManager extends Manager {
    */
   @VisibleForTesting
   void addMember(InternalDistributedMember member) {
-    GIITask giiTask = new GIITask(member);
-    executeTask(() -> {
-      try {
-        giiTask.call();
-      } catch (RuntimeException e) {
-        logger.warn("Error federating new member {}", member.getId(), e);
-        latestException.set(e);
-      }
-    });
+    Runnable task = () -> new GIITask(member).call();
+    executeTask(task);
   }
 
   @VisibleForTesting
@@ -364,7 +407,7 @@ public class FederatingManager extends Manager {
   }
 
   @VisibleForTesting
-  synchronized Exception getAndResetLatestException() {
+  Exception getAndResetLatestException() {
     return latestException.getAndSet(null);
   }
 
@@ -501,6 +544,11 @@ public class FederatingManager extends Manager {
       // Send manager info to the added member
       messenger.sendManagerInfo(member);
     }
+  }
+
+  @VisibleForTesting
+  List<Runnable> pendingTasks() {
+    return pendingTasks;
   }
 
   /**

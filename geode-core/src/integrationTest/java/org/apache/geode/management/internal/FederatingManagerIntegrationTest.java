@@ -14,13 +14,13 @@
  */
 package org.apache.geode.management.internal;
 
+import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.quality.Strictness.STRICT_STUBS;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.concurrent.Executors;
 
 import org.junit.Before;
@@ -31,6 +31,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import org.apache.geode.CancelCriterion;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -65,6 +66,8 @@ public class FederatingManagerIntegrationTest {
   public InternalDistributedSystem system;
   @Mock
   public DistributionManager distributionManager;
+  @Mock
+  public CancelCriterion cancelCriterion;
 
   @Before
   public void setUp() throws IOException, ClassNotFoundException {
@@ -77,11 +80,11 @@ public class FederatingManagerIntegrationTest {
   @Test
   public void restartDoesNotThrowIfOtherMembersExist() {
     when(distributionManager.getOtherDistributionManagerIds())
-        .thenReturn(Collections.singleton(mock(InternalDistributedMember.class)));
+        .thenReturn(singleton(mock(InternalDistributedMember.class)));
 
     FederatingManager federatingManager =
-        new FederatingManager(repo, system, service, cache, statisticsFactory,
-            statisticsClock, proxyFactory, messenger, Executors::newSingleThreadExecutor);
+        new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
+            proxyFactory, messenger, cancelCriterion, Executors::newSingleThreadExecutor);
 
     federatingManager.startManager();
     federatingManager.stopManager();
