@@ -30,10 +30,10 @@ dependencies {
     implementation(project(':geode-membership'))
     implementation(project(':geode-serialization'))
     implementation(project(':geode-unsafe'))
-    implementation('org.springframework:spring-web')
+    implementation(project(':frameworks:springframework'))
     implementation('org.apache.commons:commons-lang3')
     implementation('com.healthmarketscience.rmiio:rmiio')
-    implementation('com.fasterxml.jackson.core:jackson-databind')
+    implementation(project(':frameworks:jackson'))
 
 //    //Find bugs is used in multiple places in the code to suppress findbugs warnings
     testImplementation('com.github.stephenc.findbugs:findbugs-annotations')
@@ -45,7 +45,7 @@ dependencies {
     integrationTestImplementation(project(':geode-dunit'))
     integrationTestImplementation('pl.pragmatists:JUnitParams')
     integrationTestRuntimeOnly('org.apache.derby:derby')
-    
+
     distributedTestImplementation(project(':geode-dunit'))
     distributedTestImplementation('pl.pragmatists:JUnitParams')
     distributedTestRuntimeOnly('org.apache.derby:derby')
@@ -68,7 +68,7 @@ dependencies {
     implementation('org.apache.logging.log4j:log4j-api')
 
     //Spring core is used by the the gfsh cli
-    implementation('org.springframework:spring-core') {
+    implementation(project(':frameworks:springframework')){
         ext.optional = true
     }
 

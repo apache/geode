@@ -198,7 +198,7 @@ dependencies {
     testCompileOnly('com.github.stephenc.findbugs:findbugs-annotations')
 
     //Spring web is used for SerializableObjectHttpMessageConverter
-    implementation('org.springframework:spring-web')
+    implementation(project(':frameworks:springframework'))
     // find bugs leaks in from spring, needed to remove warnings.
     compileOnly('com.google.code.findbugs:jsr305')
 
@@ -208,15 +208,11 @@ dependencies {
     //Antlr is used by the query engine.
     implementation('antlr:antlr')
 
-    //Jackson annotations is used in gfsh
-    implementation('com.fasterxml.jackson.core:jackson-annotations')
-
-    //Jackson databind is used in gfsh, and also in pdx
-    implementation('com.fasterxml.jackson.core:jackson-databind')
+    //Jackson is used in gfsh
+    implementation(project(':frameworks:jackson'))
 
     //Commons validator is used to validate inet addresses in membership
     implementation('commons-validator:commons-validator')
-
 
     //jaxb is used by cluster configuration
     implementation('javax.xml.bind:jaxb-api')

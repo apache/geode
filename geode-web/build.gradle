@@ -36,9 +36,11 @@ dependencies {
   //in particular should not be duplicated in the war.
   providedCompile(project(':geode-logging'))
   providedCompile(project(':geode-serialization'))
+  implementation(project(':frameworks:springframework'))
   providedCompile(project(':geode-gfsh')) {
     exclude module: 'spring-web'
     exclude module: 'spring-core'
+    exclude module: 'spring-jcl'
   }
 
   providedCompile(platform(project(':boms:geode-all-bom')))
