@@ -38,17 +38,28 @@ public class ThreadsMonitoringImpl implements ThreadsMonitoring {
   /** Monitors the health of the entire distributed system */
   private ThreadsMonitoringProcess tmProcess = null;
 
-  private final Timer timer =
-      new Timer("ThreadsMonitor", true);
+  private final Timer timer;
 
   /** Is this ThreadsMonitoringImpl closed?? */
   private boolean isClosed = true;
 
   public ThreadsMonitoringImpl(InternalDistributedSystem iDistributedSystem, int timeIntervalMillis,
       int timeLimitMillis) {
+    this(iDistributedSystem, timeIntervalMillis, timeLimitMillis, true);
+  }
+
+  @VisibleForTesting
+  ThreadsMonitoringImpl(InternalDistributedSystem iDistributedSystem, int timeIntervalMillis,
+      int timeLimitMillis, boolean startThread) {
     this.monitorMap = new ConcurrentHashMap<>();
     this.isClosed = false;
-    setThreadsMonitoringProcess(iDistributedSystem, timeIntervalMillis, timeLimitMillis);
+    if (startThread) {
+      timer = new Timer("ThreadsMonitor", true);
+      this.tmProcess = new ThreadsMonitoringProcess(this, iDistributedSystem, timeLimitMillis);
+      this.timer.schedule(tmProcess, 0, timeIntervalMillis);
+    } else {
+      timer = null;
+    }
   }
 
   @Override
@@ -66,18 +77,11 @@ public class ThreadsMonitoringImpl implements ThreadsMonitoring {
       return;
 
     isClosed = true;
-    if (tmProcess != null) {
+    if (timer != null) {
       this.timer.cancel();
       this.tmProcess = null;
     }
     this.monitorMap.clear();
-  }
-
-  /** Starts a new {@link org.apache.geode.internal.monitoring.ThreadsMonitoringProcess} */
-  private void setThreadsMonitoringProcess(InternalDistributedSystem iDistributedSystem,
-      int timeIntervalMillis, int timeLimitMillis) {
-    this.tmProcess = new ThreadsMonitoringProcess(this, iDistributedSystem, timeLimitMillis);
-    this.timer.schedule(tmProcess, 0, timeIntervalMillis);
   }
 
   public ThreadsMonitoringProcess getThreadsMonitoringProcess() {
