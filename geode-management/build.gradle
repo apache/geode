@@ -23,10 +23,8 @@ apply from: "${project.projectDir}/../gradle/warnings.gradle"
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
   implementation('org.apache.commons:commons-lang3')
-  implementation('com.fasterxml.jackson.core:jackson-databind')
-  implementation('com.fasterxml.jackson.core:jackson-core')
-  implementation('com.fasterxml.jackson.core:jackson-annotations')
-  implementation('org.springframework:spring-web')
+  implementation(project(':frameworks:jackson'))
+  implementation(project(':frameworks:springframework'))
   implementation('org.apache.httpcomponents:httpclient')
 
   compileOnly(project(':geode-common')) {

@@ -45,6 +45,10 @@ class DependencyConstraints implements Plugin<Project> {
     deps.put("shiro.version", "1.7.1")
     deps.put("slf4j-api.version", "1.7.30")
 
+    deps.put("jackson.version", "2.12.1")
+    deps.put("springframework.version", "5.3.3")
+    deps.put("springshell.version", "1.2.0.RELEASE")
+
     // These version numbers are used in testing various versions of tomcat and are consumed explicitly
     // in will be called explicitly in the relevant extensions module, and respective configurations
     // in geode-assembly.gradle.  Moreover, dependencyManagement does not seem to play nicely when
@@ -163,7 +167,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'org.slf4j', name: 'slf4j-api', version: get('slf4j-api.version'))
         api(group: 'org.springframework.hateoas', name: 'spring-hateoas', version: '1.2.3')
         api(group: 'org.springframework.ldap', name: 'spring-ldap-core', version: '2.3.2.RELEASE')
-        api(group: 'org.springframework.shell', name: 'spring-shell', version: '1.2.0.RELEASE')
+        api(group: 'org.springframework.shell', name: 'spring-shell', version: get('springshell.version'))
         api(group: 'org.testcontainers', name: 'testcontainers', version: '1.14.3')
         api(group: 'pl.pragmatists', name: 'JUnitParams', version: '1.1.0')
         api(group: 'redis.clients', name: 'jedis', version: '3.5.1')
@@ -172,7 +176,7 @@ class DependencyConstraints implements Plugin<Project> {
       }
     }
 
-    dependencySet(group: 'com.fasterxml.jackson.core', version: '2.12.1') {
+    dependencySet(group: 'com.fasterxml.jackson.core', version: get('jackson.version')) {
       entry('jackson-annotations')
       entry('jackson-core')
       entry('jackson-databind')
@@ -252,7 +256,7 @@ class DependencyConstraints implements Plugin<Project> {
       entry('spring-security-oauth2-jose')
     }
 
-    dependencySet(group: 'org.springframework', version: '5.3.3') {
+    dependencySet(group: 'org.springframework', version: get('springframework.version')) {
       entry('spring-aspects')
       entry('spring-beans')
       entry('spring-context')
