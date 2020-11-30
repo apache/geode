@@ -34,14 +34,14 @@ public class ThreadsMonitoringProcess extends TimerTask {
   private static final Logger logger = LogService.getLogger();
 
   private final ThreadsMonitoring threadsMonitoring;
-  private final int timeLimit;
+  private final int timeLimitMillis;
   private final InternalDistributedSystem internalDistributedSystem;
 
   private ResourceManagerStats resourceManagerStats = null;
 
   protected ThreadsMonitoringProcess(ThreadsMonitoring tMonitoring,
-      InternalDistributedSystem iDistributedSystem, int timeLimit) {
-    this.timeLimit = timeLimit;
+      InternalDistributedSystem iDistributedSystem, int timeLimitMillis) {
+    this.timeLimitMillis = timeLimitMillis;
     this.threadsMonitoring = tMonitoring;
     this.internalDistributedSystem = iDistributedSystem;
   }
@@ -65,7 +65,7 @@ public class ThreadsMonitoringProcess extends TimerTask {
       long threadId = executor.getThreadID();
       logger.trace("Checking thread {}", threadId);
       long delta = currentTime - startTime;
-      if (delta >= timeLimit) {
+      if (delta >= timeLimitMillis) {
         numOfStuck++;
         logger.warn("Thread {} (0x{}) is stuck", threadId, Long.toHexString(threadId));
         executor.handleExpiry(delta);
