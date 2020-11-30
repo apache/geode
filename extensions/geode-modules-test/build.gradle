@@ -23,7 +23,7 @@ dependencies {
   // main
   implementation(platform(project(':boms:geode-all-bom')))
   implementation(project(':geode-dunit'))
-  implementation('org.springframework:spring-core')
+  implementation(project(':frameworks:springframework'))
   implementation('org.httpunit:httpunit')
   implementation('pl.pragmatists:JUnitParams')
 

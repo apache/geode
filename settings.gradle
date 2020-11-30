@@ -70,6 +70,10 @@ include 'boms:geode-client-bom'
 include 'boms:geode-all-bom'
 include 'static-analysis:pmd-rules'
 include 'geode-deployment-legacy'
+include 'frameworks:springframework'
+include 'frameworks:jackson'
+include 'frameworks:shiro'
+include 'frameworks:springshell'
 
 
 ['1.0.0-incubating',

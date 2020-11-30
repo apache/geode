@@ -36,10 +36,9 @@ dependencies {
   }
   implementation('org.apache.commons:commons-lang3')
   implementation('mx4j:mx4j')
-  implementation('org.apache.logging.log4j:log4j-api')
 
   compileOnly(platform(project(':boms:geode-all-bom')))
-  compileOnly('com.fasterxml.jackson.core:jackson-annotations')
+  compileOnly(project(':frameworks:jackson'))
 
   runtimeOnly('org.apache.lucene:lucene-analyzers-phonetic')
 
