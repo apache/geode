@@ -44,8 +44,7 @@ dependencies {
   api('org.mockito:mockito-core')
 
   api('io.github.classgraph:classgraph')
-  api('com.fasterxml.jackson.core:jackson-annotations')
-  api('com.fasterxml.jackson.core:jackson-databind')
+  api(project(':frameworks:jackson'))
   api('com.github.stefanbirkner:system-rules') {
     exclude module: 'junit-dep'
   }

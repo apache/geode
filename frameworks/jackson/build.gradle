@@ -1,3 +1,5 @@
+import org.apache.geode.gradle.plugins.DependencyConstraints
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,25 +17,8 @@
  * limitations under the License.
  */
 
-apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
-
-apply from: "${project.projectDir}/../gradle/publish-java.gradle"
-apply from: "${project.projectDir}/../gradle/warnings.gradle"
-
+project.group = "org.apache.geode.frameworks"
+project.version = DependencyConstraints.get('jackson.version')
 dependencies {
-  api(platform(project(':boms:geode-all-bom')))
-  implementation(project(':geode-logging'))
-
-  implementation('org.eclipse.jetty:jetty-webapp')
-  implementation('org.eclipse.jetty:jetty-server')
-  implementation('org.apache.commons:commons-lang3')
-
-  compileOnly(project(':geode-core'))
-  compileOnly(project(':geode-common')) {
-    exclude module: 'junit'
-  }
-
-  testImplementation(project(':geode-core'))
-  testImplementation(project(':geode-common'))
-  testImplementation(project(':geode-junit'))
+    api('com.fasterxml.jackson.core:jackson-databind')
 }

@@ -28,8 +28,6 @@ dependencies {
   implementation(project(':geode-logging'))
   implementation(project(':geode-serialization'))
 
-  implementation('org.apache.logging.log4j:log4j-api')
-
   testImplementation('org.mockito:mockito-core')
   testImplementation(project(':geode-junit'))
 
