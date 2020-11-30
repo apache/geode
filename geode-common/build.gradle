@@ -24,4 +24,5 @@ dependencies {
   compile('com.fasterxml.jackson.core:jackson-databind')
   testCompile('junit:junit')
   testCompile('org.assertj:assertj-core')
+  testCompile('org.mockito:mockito-core')
 }
