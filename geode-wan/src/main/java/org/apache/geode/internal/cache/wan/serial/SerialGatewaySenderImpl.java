@@ -117,15 +117,8 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
   }
 
   protected AbstractGatewaySenderEventProcessor createEventProcessor(boolean cleanQueues) {
-    AbstractGatewaySenderEventProcessor eventProcessor;
-    if (getDispatcherThreads() > 1) {
-      eventProcessor = new RemoteConcurrentSerialGatewaySenderEventProcessor(
-          SerialGatewaySenderImpl.this, getThreadMonitorObj(), cleanQueues);
-    } else {
-      eventProcessor = new RemoteSerialGatewaySenderEventProcessor(SerialGatewaySenderImpl.this,
-          getId(), getThreadMonitorObj(), cleanQueues);
-    }
-    return eventProcessor;
+    return new RemoteConcurrentSerialGatewaySenderEventProcessor(
+        SerialGatewaySenderImpl.this, getThreadMonitorObj(), cleanQueues);
   }
 
   @Override

@@ -450,6 +450,31 @@ public class ListGatewaysCommandDUnitTest implements Serializable {
         .hasRowSize(expectedGwReceiverSectionSize).hasColumns().contains("Port", "Member");
   }
 
+  @Test
+  public void testListGatewaysWithOneDispatcherThread() {
+    String command =
+        "create gateway-sender --id=ln_Serial --remote-distributed-system-id=2 --dispatcher-threads=1";
+
+    int lnPort = locatorSite1.getPort();
+    int nyPort = locatorSite2.getPort();
+
+    // setup servers in Site #1 (London)
+    server1 = clusterStartupRule.startServerVM(3, lnPort);
+    server2 = clusterStartupRule.startServerVM(4, lnPort);
+    server3 = clusterStartupRule.startServerVM(5, lnPort);
+
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
+
+    gfsh.executeAndAssertThat("list gateways").statusIsSuccess()
+        .hasTableSection("gatewaySenders")
+        .hasRowSize(3).hasColumn("Status").contains("Running, not Connected");
+
+    gfsh.executeAndAssertThat("list gateways --senders-only").statusIsSuccess()
+        .hasNoSection("gatewayReceivers")
+        .hasTableSection("gatewaySenders")
+        .hasRowSize(3).hasColumn("Status").contains("Running, not Connected");
+  }
+
   void setupClusters() {
     Integer lnPort = locatorSite1.getPort();
     Integer nyPort = locatorSite2.getPort();
