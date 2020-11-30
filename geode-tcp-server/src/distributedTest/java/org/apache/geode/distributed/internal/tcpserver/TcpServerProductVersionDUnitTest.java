@@ -40,6 +40,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import org.apache.geode.annotations.internal.SuppressDeprecationForBackwardsCompatibilityTesting;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.InternalLocator;
@@ -193,6 +194,7 @@ public class TcpServerProductVersionDUnitTest implements Serializable {
         tcpClient = getLegacyTcpClient();
       }
 
+      @SuppressDeprecationForBackwardsCompatibilityTesting
       @SuppressWarnings("deprecation")
       final InetAddress localHost = SocketCreator.getLocalHost();
       Object response;
