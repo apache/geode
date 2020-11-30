@@ -1,3 +1,5 @@
+import org.apache.geode.gradle.plugins.DependencyConstraints
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,24 +17,22 @@
  * limitations under the License.
  */
 
-apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
-
-apply from: "${project.projectDir}/../gradle/publish-java.gradle"
-apply from: "${project.projectDir}/../gradle/warnings.gradle"
-apply from: "${project.projectDir}/../gradle/jmh.gradle"
-
+project.group = "org.apache.geode.frameworks"
+project.version = DependencyConstraints.get('springshell.version')
 dependencies {
-  // main
-  implementation(platform(project(':boms:geode-all-bom')))
-  implementation(project(':frameworks:jackson'))
 
-  // test
-  testImplementation('junit:junit')
-  testImplementation('org.assertj:assertj-core')
-  testImplementation('org.mockito:mockito-core')
-
-
-  // jmhTest
-  jmhTestImplementation('junit:junit')
-  jmhTestImplementation('org.assertj:assertj-core')
+    //Spring shell is used by the gfsh cli. It's unclear why we can exclude
+    //So many transitive dependencies - are these really optional?
+    //GfshCommand is a public API class that depends on spring shell
+    api('org.springframework.shell:spring-shell') {
+        exclude module: 'aopalliance'
+        exclude module: 'asm'
+        exclude module: 'cglib'
+        exclude module: 'guava'
+        exclude module: 'spring-aop'
+        exclude module: 'spring-context-support'
+        exclude module: 'spring-core'
+    }
+    implementation(project(':frameworks:springframework'))
 }
+

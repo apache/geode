@@ -28,7 +28,6 @@ dependencies {
   implementation(project(':geode-logging'))
   implementation('org.apache.commons:commons-lang3')
 
-  implementation('org.apache.logging.log4j:log4j-api')
   implementation('org.apache.logging.log4j:log4j-core')
 
   //This routes slf4j logs to log4j. Shiro and micrometer use slf4j

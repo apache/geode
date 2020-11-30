@@ -63,18 +63,41 @@ publishing {
           // Geode dependency versions, as with all versions, are locked by the
           // Spring dependency-management plugin.  We remove version specification as injected by
           // project dependencies, e.g., compile project(':geode-core')
-          asNode().dependencies.dependency.each { dep ->
+          def nodesToReplace = []
+          def thisNode = asNode()
+          def dependency = thisNode.dependencies.dependency
+          dependency.each { dep ->
             if (dep.toString().contains("org.apache.geode")) {
               dep.remove(dep["version"])
             }
+            if (dep.toString().contains("org.apache.geode.frameworks")) {
+              nodesToReplace.add(dep)
+
+            }
           }
+
+          nodesToReplace.each { nodeToReplace ->
+            def proj = project(":frameworks:${nodeToReplace["artifactId"].text()}")
+            ['api', 'implementation', 'runtimeOnly'].each { config ->
+              proj.configurations
+                      .getByName(config)
+                      .getDependencies().each { dep ->
+                def geodeDependency = thisNode.dependencies*.appendNode('dependency')
+                geodeDependency*.appendNode('groupId')*.setValue(dep.getGroup())
+                geodeDependency*.appendNode('artifactId')*.setValue(dep.getName())
+                geodeDependency*.appendNode('scope')*.setValue('compile')
+              }
+            }
+            nodeToReplace.parent().remove(nodeToReplace)
+          }
+          thisNode
         }
         afterEvaluate {
           withXml {
             def providerAsElement = asElement()
             providerAsElement.insertBefore(
-                providerAsElement.ownerDocument().createComment(apacheLicense),
-                providerAsElement.firstChild)
+                    providerAsElement.ownerDocument().createComment(apacheLicense),
+                    providerAsElement.firstChild)
           }
         }
       }
@@ -84,7 +107,7 @@ publishing {
     maven {
       // Use specified mavenRepository if provided, else use release or snapshot defaults.
       url = project.findProperty("mavenRepository") ?:
-          project.isReleaseVersion ? project.mavenReleaseUrl : project.mavenSnapshotUrl
+              project.isReleaseVersion ? project.mavenReleaseUrl : project.mavenSnapshotUrl
       if (url.toString().startsWith("http") || url.toString().startsWith("sftp")) {
         // Username / password credentials are only supported for http, https, and sftp repos.
         // See the Gradle documentation on Repository Types for more information.
@@ -98,7 +121,7 @@ publishing {
 }
 
 signing {
-  required({project.isReleaseVersion && project.hasProperty('signing.keyId') && project.hasProperty('signing.secretKeyRingFile')})
+  required({ project.isReleaseVersion && project.hasProperty('signing.keyId') && project.hasProperty('signing.secretKeyRingFile') })
   sign publishing.publications.maven
 }
 

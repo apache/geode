@@ -45,12 +45,7 @@ dependencies {
     exclude module: 'commons-io'
   }
   // jackson-annotations must be accessed from the geode classloader and not the webapp
-  compileOnly('com.fasterxml.jackson.core:jackson-annotations')
-  implementation('com.fasterxml.jackson.core:jackson-core')
-  implementation('com.fasterxml.jackson.core:jackson-databind'){
-    exclude module: 'jackson-annotations'
-  }
-
+  implementation(project(':frameworks:jackson'))
   compileOnly('io.swagger:swagger-annotations')
 
   implementation('io.springfox:springfox-swagger2') {
@@ -63,11 +58,10 @@ dependencies {
     exclude module: 'slf4j-api'
   }
 
-  implementation('org.springframework:spring-beans')
+  implementation(project(':frameworks:springframework'))
   implementation('org.springframework.security:spring-security-core')
   implementation('org.springframework.security:spring-security-web')
   implementation('org.springframework.security:spring-security-config')
-  implementation('org.springframework:spring-web')
   implementation('org.springframework:spring-webmvc')
   implementation('org.springframework.hateoas:spring-hateoas') {
     exclude module: 'aopalliance'
@@ -86,8 +80,6 @@ dependencies {
     exclude module: 'spring-core'
     exclude module: 'spring-beans'
   }
-  compileOnly('org.apache.logging.log4j:log4j-api')
-
 
   testImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'

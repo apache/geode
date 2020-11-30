@@ -48,7 +48,7 @@ dependencies {
   implementation(project(':geode-core'))
   implementation(project(':geode-gfsh'))
   implementation('org.apache.httpcomponents:httpcore')
-  implementation('com.fasterxml.jackson.core:jackson-databind')
+  implementation(project(':frameworks:jackson'))
 
   testImplementation(project(':geode-membership'))
   testImplementation(project(':geode-junit')) {
@@ -76,18 +76,10 @@ dependencies {
   implementation('com.zaxxer:HikariCP')
   implementation('org.apache.commons:commons-lang3')
   implementation('javax.xml.bind:jaxb-api')
-  implementation('org.apache.logging.log4j:log4j-api')
   implementation('org.apache.logging.log4j:log4j-jcl') {
     ext.optional = true
   }
-  implementation('org.springframework.shell:spring-shell') {
-    exclude module: 'aopalliance'
-    exclude module: 'asm'
-    exclude module: 'cglib'
-    exclude module: 'guava'
-    exclude module: 'spring-aop'
-    exclude module: 'spring-context-support'
-    exclude module: 'spring-core'
+  api(project(':frameworks:springshell')) {
     ext.optional = true
   }
   implementation('com.healthmarketscience.rmiio:rmiio')
