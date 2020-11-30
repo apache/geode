@@ -66,6 +66,18 @@ public class InfoExecutor extends AbstractExecutor {
       case "replication":
         result = getReplicationSection();
         break;
+      case "stats":
+        result = getStatsSection(context);
+        break;
+      case "clients":
+        result = getClientsSection(context);
+        break;
+      case "memory":
+        result = getMemorySection(context);
+        break;
+      case "keyspace":
+        result = getKeyspaceSection(context);
+        break;
       case "default":
       case "all":
         result = getAllSections(context);

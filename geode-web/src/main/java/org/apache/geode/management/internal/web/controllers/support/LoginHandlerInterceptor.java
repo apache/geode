@@ -26,7 +26,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.web.context.ServletContextAware;
-import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
+import org.springframework.web.servlet.AsyncHandlerInterceptor;
+import org.springframework.web.servlet.ModelAndView;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.internal.HttpService;
@@ -42,12 +43,11 @@ import org.apache.geode.management.internal.security.ResourceConstants;
  *
  * @see javax.servlet.http.HttpServletRequest
  * @see javax.servlet.http.HttpServletResponse
- * @see org.springframework.web.servlet.handler.HandlerInterceptorAdapter
+ * @see org.springframework.web.servlet.AsyncHandlerInterceptor
  * @since GemFire 8.0
  */
 @SuppressWarnings("unused")
-public class LoginHandlerInterceptor extends HandlerInterceptorAdapter
-    implements ServletContextAware {
+public class LoginHandlerInterceptor implements AsyncHandlerInterceptor, ServletContextAware {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -137,4 +137,8 @@ public class LoginHandlerInterceptor extends HandlerInterceptorAdapter
     securityService = (SecurityService) servletContext
         .getAttribute(HttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM);
   }
+
+  @Override
+  public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
+      ModelAndView modelAndView) {}
 }
