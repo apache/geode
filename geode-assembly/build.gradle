@@ -190,22 +190,16 @@ dependencies {
   integrationTestImplementation(project(':geode-core'))
   integrationTestImplementation(project(':geode-membership'))
   integrationTestImplementation(project(':geode-gfsh'))
-  integrationTestImplementation(project(':geode-log4j')) {
-    exclude module: 'geode-core'
-  }
-  integrationTestImplementation(project(':geode-junit')) {
-    exclude module: 'geode-core'
-  }
-  integrationTestImplementation(project(':geode-dunit')) {
-    exclude module: 'geode-core'
-  }
+  integrationTestImplementation(project(':geode-log4j'))
+  integrationTestImplementation(project(':geode-junit'))
+  integrationTestImplementation(project(':geode-dunit'))
   integrationTestImplementation(project(':geode-pulse'))
   integrationTestImplementation(project(':geode-assembly:geode-assembly-test'))
   integrationTestImplementation(project(':geode-logging'))
+
+  integrationTestImplementation(project(':frameworks:springframework'))
+
   integrationTestImplementation('org.apache.httpcomponents:httpclient')
-  integrationTestImplementation('org.springframework:spring-beans')
-  integrationTestImplementation('org.springframework:spring-context')
-  integrationTestImplementation('org.springframework:spring-web')
   integrationTestImplementation('org.springframework.security:spring-security-oauth2-core')
   integrationTestImplementation('org.springframework.security:spring-security-oauth2-client')
   integrationTestImplementation('org.springframework.security:spring-security-oauth2-jose')
@@ -235,7 +229,7 @@ dependencies {
   distributedTestImplementation(project(':extensions:session-testing-war'))
   distributedTestImplementation(project(':geode-assembly:geode-assembly-test'))
   distributedTestImplementation('org.apache.httpcomponents:httpclient')
-  distributedTestImplementation('org.springframework:spring-web')
+  distributedTestImplementation(project(':frameworks:springframework'))
   distributedTestImplementation(project(':geode-management'))
   distributedTestImplementation(project(':geode-web-management'))
   distributedTestImplementation('com.arakelian:java-jq')
@@ -304,8 +298,7 @@ dependencies {
   webServerTomcat9('org.apache.tomcat:tomcat:' + DependencyConstraints.get('tomcat9.version') + '@zip')
   webServerJetty('org.eclipse.jetty:jetty-distribution:' + DependencyConstraints.get('jetty.version') + '@zip')
 
-  gfshDependencies ('org.springframework:spring-web') {
-    exclude module: 'spring-core'
+  gfshDependencies(project(':frameworks:springframework')) {
     exclude module: 'commons-logging'
   }
 }
