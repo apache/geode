@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
-public class P2PReaderExecutorGroupJUnitTest {
+public class P2PReaderExecutorGroupTest {
 
   @Test
   public void testVerifyGroupName() {
