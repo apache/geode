@@ -671,6 +671,29 @@ public class GMSHealthMonitorJUnitTest {
   }
 
   @Test
+  public void testFinalCheckInProgressPreemptsLivenessGossip() throws Exception {
+    // if a member is undergoing a final check we should not accept another member's
+    // gossip about the suspect being alive and should not update the contact timestamp
+    // because that interferes with the final check
+    useGMSHealthMonitorTestClass = true;
+    simulateHeartbeatInGMSHealthMonitorTestClass = false;
+
+    GMSMembershipView v = installAView();
+    setFailureDetectionPorts(v);
+
+    MemberIdentifier memberToCheck = gmsHealthMonitor.getNextNeighbor();
+    GMSHealthMonitorTest testMonitor = (GMSHealthMonitorTest) gmsHealthMonitor;
+
+    // set an old contact timestamp for the suspect, tell the monitor that an availability
+    // check succeeded and then make sure it didn't update the timestamp for the suspect
+    final long timestamp = testMonitor.establishCurrentTime() - 2000;
+    testMonitor.setContactTimestamp(memberToCheck, timestamp);
+    testMonitor.addMemberInFinalCheck(memberToCheck);
+    testMonitor.processMessage(new FinalCheckPassedMessage(null, memberToCheck));
+    assertThat(testMonitor.getContactTimestamp(memberToCheck)).isEqualTo(timestamp);
+  }
+
+  @Test
   public void testFailedSelfCheckRemovesMemberAsSuspect() throws Exception {
     useGMSHealthMonitorTestClass = true;
     simulateHeartbeatInGMSHealthMonitorTestClass = false;
@@ -1056,6 +1079,34 @@ public class GMSHealthMonitorJUnitTest {
       } else {
         return serverSocket;
       }
+    }
+
+    /**
+     * when a suspect is undergoing an availability check its identifier will
+     * be in the membersInFinalCheck collection
+     */
+    public void addMemberInFinalCheck(MemberIdentifier memberToCheck) {
+      membersInFinalCheck.add(memberToCheck);
+    }
+
+    public void setContactTimestamp(MemberIdentifier memberToCheck, long timestamp) {
+      memberTimeStamps.put(memberToCheck, new TimeStamp(timestamp));
+    }
+
+    public long getContactTimestamp(MemberIdentifier memberIdentifier) {
+      return ((TimeStamp) memberTimeStamps.get(memberIdentifier)).getTime();
+    }
+
+    /**
+     * Establish the currentTimeStamp for the health monitor. This is the timestamp
+     * used in contactedBy() updates and is usually established by the Monitor thread
+     * in GMSHealthMonitor but is initially zero.
+     *
+     * @return the timestamp
+     */
+    public long establishCurrentTime() {
+      currentTimeStamp = System.currentTimeMillis();
+      return currentTimeStamp;
     }
   }
 
