@@ -19,6 +19,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -128,16 +129,19 @@ public class ThreadsMonitoringImplJUnitTest {
   }
 
   @Test
-  public void updateThreadStatus() {
+  public void updateThreadStatusCallsSetStartTime() {
     AbstractExecutor executor = mock(AbstractExecutor.class);
     long threadId = Thread.currentThread().getId();
 
     threadsMonitoringImpl.getMonitorMap().put(threadId, executor);
     threadsMonitoringImpl.updateThreadStatus();
-
-    // also test the case where there is no AbstractExcecutor present
-    threadsMonitoringImpl.getMonitorMap().remove(threadId);
-    threadsMonitoringImpl.updateThreadStatus();
     verify(executor, times(1)).setStartTime(any(Long.class));
+  }
+
+  @Test
+  public void updateThreadStatusWithoutExecutorInMapDoesNotCallSetStartTime() {
+    AbstractExecutor executor = mock(AbstractExecutor.class);
+    threadsMonitoringImpl.updateThreadStatus();
+    verify(executor, never()).setStartTime(any(Long.class));
   }
 }
