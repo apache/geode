@@ -29,7 +29,6 @@ dependencies {
     implementation(project(':geode-serialization'))
     implementation(project(':geode-tcp-server'))
 
-    implementation('org.apache.logging.log4j:log4j-api')
     implementation('org.jgroups:jgroups')
     implementation('org.apache.commons:commons-lang3')
     implementation('it.unimi.dsi:fastutil')

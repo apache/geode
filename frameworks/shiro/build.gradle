@@ -1,3 +1,5 @@
+import org.apache.geode.gradle.plugins.DependencyConstraints
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,24 +17,9 @@
  * limitations under the License.
  */
 
-apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
-
-apply from: "${project.projectDir}/../gradle/publish-java.gradle"
-apply from: "${project.projectDir}/../gradle/warnings.gradle"
-apply from: "${project.projectDir}/../gradle/jmh.gradle"
-
+project.group = "org.apache.geode.frameworks"
+project.version = DependencyConstraints.get('shiro.version')
 dependencies {
-  // main
-  implementation(platform(project(':boms:geode-all-bom')))
-  implementation(project(':frameworks:jackson'))
-
-  // test
-  testImplementation('junit:junit')
-  testImplementation('org.assertj:assertj-core')
-  testImplementation('org.mockito:mockito-core')
-
-
-  // jmhTest
-  jmhTestImplementation('junit:junit')
-  jmhTestImplementation('org.assertj:assertj-core')
+    api('org.apache.shiro:shiro-core')
 }
+

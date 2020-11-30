@@ -49,6 +49,10 @@ class DependencyConstraints implements Plugin<Project> {
     deps.put("springshell.version", "1.2.0.RELEASE")
     deps.put("springframework.version", "5.3.7")
 
+    deps.put("jackson.version", "2.12.1")
+    deps.put("springframework.version", "5.3.3")
+    deps.put("springshell.version", "1.2.0.RELEASE")
+
     // These version numbers are used in testing various versions of tomcat and are consumed explicitly
     // in will be called explicitly in the relevant extensions module, and respective configurations
     // in geode-assembly.gradle.  Moreover, dependencyManagement does not seem to play nicely when
