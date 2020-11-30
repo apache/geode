@@ -39,11 +39,16 @@ dependencies {
   providedCompile(project(':geode-gfsh')) {
     exclude module: 'spring-web'
     exclude module: 'spring-core'
+    exclude module: 'spring-jcl'
+    exclude module: 'spring-aop'
+    exclude module: 'spring-aspects'
+    exclude module: 'spring-beans'
+    exclude module: 'spring-context'
+    exclude module: 'spring-expression'
   }
 
   providedCompile(platform(project(':boms:geode-all-bom')))
   providedCompile('javax.servlet:javax.servlet-api')
-  providedCompile('org.apache.logging.log4j:log4j-api')
 
   implementation('org.springframework:spring-webmvc')
   implementation('org.apache.commons:commons-lang3')

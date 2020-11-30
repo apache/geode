@@ -30,9 +30,9 @@ dependencies {
     exclude module: 'geode-core'
   }
 
-  implementation('org.apache.logging.log4j:log4j-api')
-  implementation('org.springframework:spring-context') {
-    exclude module: 'spring-beans'
+  implementation(project(':frameworks:springframework')){
+    exclude module: 'spring-jcl'
+    exclude module: 'spring-shell'
     exclude module: 'spring-expression'
     exclude module: 'spring-aop'
   }

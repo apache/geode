@@ -30,7 +30,7 @@ dependencies {
   implementation('it.unimi.dsi:fastutil')
 
   //Log4j is used everywhere
-  implementation('org.apache.logging.log4j:log4j-api')
+  implementation(project(':geode-logging'))
 
   testImplementation(project(':geode-junit')) {
     exclude module: 'geode-serialization'

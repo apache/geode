@@ -42,22 +42,21 @@ dependencies {
   api('org.mockito:mockito-core')
 
   api('io.github.classgraph:classgraph')
-  api('com.fasterxml.jackson.core:jackson-annotations')
-  api('com.fasterxml.jackson.core:jackson-databind')
+  api(project(':frameworks:jackson'))
   api('com.github.stefanbirkner:system-rules') {
     exclude module: 'junit-dep'
   }
   api('com.google.guava:guava')
   api('com.jayway.jsonpath:json-path')
   api('commons-io:commons-io')
-  
+
   api('org.apache.commons:commons-lang3')
   api('org.apache.logging.log4j:log4j-api')
-  
+
   api('org.awaitility:awaitility')
   api('org.hamcrest:hamcrest')
   api('io.micrometer:micrometer-core')
-  
+
   api('org.skyscreamer:jsonassert')
 
   testImplementation('pl.pragmatists:JUnitParams')
