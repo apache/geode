@@ -44,11 +44,11 @@ public class ThreadsMonitoringImpl implements ThreadsMonitoring {
   /** Is this ThreadsMonitoringImpl closed?? */
   private boolean isClosed = true;
 
-  public ThreadsMonitoringImpl(InternalDistributedSystem iDistributedSystem, int timeInterval,
-      int timeLimit) {
+  public ThreadsMonitoringImpl(InternalDistributedSystem iDistributedSystem, int timeIntervalMillis,
+      int timeLimitMillis) {
     this.monitorMap = new ConcurrentHashMap<>();
     this.isClosed = false;
-    setThreadsMonitoringProcess(iDistributedSystem, timeInterval, timeLimit);
+    setThreadsMonitoringProcess(iDistributedSystem, timeIntervalMillis, timeLimitMillis);
   }
 
   @Override
@@ -75,9 +75,9 @@ public class ThreadsMonitoringImpl implements ThreadsMonitoring {
 
   /** Starts a new {@link org.apache.geode.internal.monitoring.ThreadsMonitoringProcess} */
   private void setThreadsMonitoringProcess(InternalDistributedSystem iDistributedSystem,
-      int timeInterval, int timeLimit) {
-    this.tmProcess = new ThreadsMonitoringProcess(this, iDistributedSystem, timeLimit);
-    this.timer.schedule(tmProcess, 0, timeInterval);
+      int timeIntervalMillis, int timeLimitMillis) {
+    this.tmProcess = new ThreadsMonitoringProcess(this, iDistributedSystem, timeLimitMillis);
+    this.timer.schedule(tmProcess, 0, timeIntervalMillis);
   }
 
   public ThreadsMonitoringProcess getThreadsMonitoringProcess() {

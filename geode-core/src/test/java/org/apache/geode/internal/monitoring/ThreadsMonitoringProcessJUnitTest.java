@@ -31,13 +31,13 @@ import org.apache.geode.internal.monitoring.executor.PooledExecutorGroup;
  */
 public class ThreadsMonitoringProcessJUnitTest {
 
-  private static final int TIME_LIMIT = 1000;
+  private static final int TIME_LIMIT_MILLIS = 1000;
 
   private ThreadsMonitoringImpl threadsMonitoringImpl;
 
   @Before
   public void before() {
-    threadsMonitoringImpl = new ThreadsMonitoringImpl(null, 100000, TIME_LIMIT);
+    threadsMonitoringImpl = new ThreadsMonitoringImpl(null, 100000, TIME_LIMIT_MILLIS);
   }
 
   /**
@@ -49,7 +49,7 @@ public class ThreadsMonitoringProcessJUnitTest {
     final long threadID = 123456;
 
     AbstractExecutor absExtgroup = new PooledExecutorGroup();
-    absExtgroup.setStartTime(absExtgroup.getStartTime() - TIME_LIMIT - 1);
+    absExtgroup.setStartTime(absExtgroup.getStartTime() - TIME_LIMIT_MILLIS - 1);
 
     threadsMonitoringImpl.getMonitorMap().put(threadID, absExtgroup);
 
@@ -63,7 +63,7 @@ public class ThreadsMonitoringProcessJUnitTest {
     final long threadID = Long.MAX_VALUE;
 
     AbstractExecutor absExtgroup = new PooledExecutorGroup(threadID);
-    absExtgroup.setStartTime(absExtgroup.getStartTime() - TIME_LIMIT - 1);
+    absExtgroup.setStartTime(absExtgroup.getStartTime() - TIME_LIMIT_MILLIS - 1);
 
     threadsMonitoringImpl.getMonitorMap().put(threadID, absExtgroup);
 
