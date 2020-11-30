@@ -42,7 +42,7 @@ public class ThreadsMonitoringImplJUnitTest {
 
   @Before
   public void before() {
-    threadsMonitoringImpl = new ThreadsMonitoringImpl(null, 100000, 0);
+    threadsMonitoringImpl = new ThreadsMonitoringImpl(null, 100000, 0, false);
   }
 
   @After
@@ -121,11 +121,12 @@ public class ThreadsMonitoringImplJUnitTest {
    */
   @Test
   public void testClosure() {
-    assertTrue(threadsMonitoringImpl.getThreadsMonitoringProcess() != null);
-    assertFalse(threadsMonitoringImpl.isClosed());
-    threadsMonitoringImpl.close();
-    assertTrue(threadsMonitoringImpl.isClosed());
-    assertFalse(threadsMonitoringImpl.getThreadsMonitoringProcess() != null);
+    ThreadsMonitoringImpl liveMonitor = new ThreadsMonitoringImpl(null, 100000, 0, true);
+    assertTrue(liveMonitor.getThreadsMonitoringProcess() != null);
+    assertFalse(liveMonitor.isClosed());
+    liveMonitor.close();
+    assertTrue(liveMonitor.isClosed());
+    assertFalse(liveMonitor.getThreadsMonitoringProcess() != null);
   }
 
   @Test
