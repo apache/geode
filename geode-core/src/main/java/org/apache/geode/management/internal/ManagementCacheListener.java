@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal;
 
+import java.util.concurrent.CountDownLatch;
+
 import javax.management.ObjectName;
 
 import org.apache.logging.log4j.Logger;
@@ -33,20 +35,18 @@ public class ManagementCacheListener extends CacheListenerAdapter<String, Object
 
   private static final Logger logger = LogService.getLogger();
 
-  private MBeanProxyFactory proxyHelper;
+  private final MBeanProxyFactory proxyHelper;
 
-  private volatile boolean readyForEvents;
+  private final CountDownLatch readyForEvents;
 
   public ManagementCacheListener(MBeanProxyFactory proxyHelper) {
     this.proxyHelper = proxyHelper;
-    this.readyForEvents = false;
+    this.readyForEvents = new CountDownLatch(1);
   }
 
   @Override
   public void afterCreate(EntryEvent<String, Object> event) {
-    if (!readyForEvents) {
-      return;
-    }
+    blockUntilReady();
     ObjectName objectName = null;
 
     try {
@@ -64,6 +64,7 @@ public class ManagementCacheListener extends CacheListenerAdapter<String, Object
 
   @Override
   public void afterDestroy(EntryEvent<String, Object> event) {
+    blockUntilReady();
     ObjectName objectName = null;
 
     try {
@@ -76,16 +77,14 @@ public class ManagementCacheListener extends CacheListenerAdapter<String, Object
             e);
       }
     }
-
   }
 
   @Override
   public void afterUpdate(EntryEvent<String, Object> event) {
+    blockUntilReady();
+
     ObjectName objectName = null;
     try {
-      if (!readyForEvents) {
-        return;
-      }
       objectName = ObjectName.getInstance(event.getKey());
 
       ProxyInfo proxyInfo = proxyHelper.findProxyInfo(objectName);
@@ -109,8 +108,15 @@ public class ManagementCacheListener extends CacheListenerAdapter<String, Object
 
   }
 
-  void markReady() {
-    readyForEvents = true;
+  private void blockUntilReady() {
+    try {
+      readyForEvents.await();
+    } catch (InterruptedException e) {
+      // ignored
+    }
   }
 
+  void markReady() {
+    readyForEvents.countDown();
+  }
 }
