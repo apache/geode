@@ -40,6 +40,7 @@ import org.apache.geode.cache.client.internal.Endpoint;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.distributed.internal.ServerLocationAndMemberId;
 import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
 
 public class GatewaySenderEventRemoteDispatcherJUnitTest {
@@ -265,16 +266,16 @@ public class GatewaySenderEventRemoteDispatcherJUnitTest {
     when(endpointMock.getMemberId()).thenReturn(memberIdMock);
     when(memberIdMock.getUniqueId()).thenReturn("notExpectedId");
     when(eventProcessorMock.getExpectedReceiverUniqueId()).thenReturn("expectedId");
-    List<ServerLocation> currentServers = new ArrayList<>();
-    currentServers.add(new ServerLocation("host1", 1));
-    currentServers.add(new ServerLocation("host2", 2));
+    List<ServerLocationAndMemberId> currentServers = new ArrayList<>();
+    currentServers.add(new ServerLocationAndMemberId(new ServerLocation("host1", 1), "id1"));
+    currentServers.add(new ServerLocationAndMemberId(new ServerLocation("host2", 2), "id2"));
     when(poolMock.getCurrentServers()).thenReturn(currentServers);
 
     eventDispatcher = new GatewaySenderEventRemoteDispatcher(eventProcessorMock, null);
     GatewaySenderEventRemoteDispatcher dispatcherSpy = spy(eventDispatcher);
 
     String expectedExceptionMessage =
-        "No available connection was found, but the following active servers exist: host1:1, host2:2 "
+        "No available connection was found, but the following active servers exist: host1:1@id1, host2:2@id2 "
             + GatewaySenderEventRemoteDispatcher.maxAttemptsReachedConnectingServerIdExceptionMessage
             + " [expectedId] (5 attempts)";
     assertThatThrownBy(() -> {
