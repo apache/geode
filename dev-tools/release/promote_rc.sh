@@ -75,12 +75,13 @@ GEODE=$WORKSPACE/geode
 GEODE_DEVELOP=$WORKSPACE/geode-develop
 GEODE_EXAMPLES=$WORKSPACE/geode-examples
 GEODE_NATIVE=$WORKSPACE/geode-native
+GEODE_NATIVE_DEVELOP=$WORKSPACE/geode-native-develop
 GEODE_BENCHMARKS=$WORKSPACE/geode-benchmarks
 BREW_DIR=$WORKSPACE/homebrew-core
 SVN_DIR=$WORKSPACE/dist/dev/geode
 set +x
 
-if [ -d "$GEODE" ] && [ -d "$GEODE_DEVELOP" ] && [ -d "$GEODE_EXAMPLES" ] && [ -d "$GEODE_NATIVE" ] && [ -d "$GEODE_BENCHMARKS" ] && [ -d "$BREW_DIR" ] && [ -d "$SVN_DIR" ] ; then
+if [ -d "$GEODE" ] && [ -d "$GEODE_DEVELOP" ] && [ -d "$GEODE_EXAMPLES" ] && [ -d "$GEODE_NATIVE" ] && [ -d "$GEODE_NATIVE_DEVELOP" ] && [ -d "$GEODE_BENCHMARKS" ] && [ -d "$BREW_DIR" ] && [ -d "$SVN_DIR" ] ; then
     true
 else
     echo "Please run this script from the same working directory as you initially ran prepare_rc.sh"
@@ -212,7 +213,7 @@ rm Dockerfile.bak
 set -x
 git add Dockerfile
 git diff --staged --color | cat
-git commit -m "apache-geode ${VERSION}"
+git commit -m "update Dockerfile to apache-geode ${VERSION}"
 git push
 set +x
 
@@ -225,15 +226,13 @@ set -x
 cd ${GEODE_NATIVE}/docker
 git pull -r
 set +x
-sed -e "/wget.*closer.*apache-geode-/s#http.*filename=geode#https://downloads.apache.org/geode#" \
-    -e "/wget.*closer.*apache-rat-/s#http.*filename=creadur#https://archive.apache.org/dist/creadur#" \
-    -e "s/^ENV GEODE_VERSION.*/ENV GEODE_VERSION ${VERSION}/" \
+sed -e "s/^ENV GEODE_VERSION.*/ENV GEODE_VERSION ${VERSION}/" \
     -i.bak Dockerfile
 rm Dockerfile.bak
 set -x
 git add Dockerfile
 git diff --staged --color | cat
-git commit -m "apache-geode ${VERSION}"
+git commit -m "update Dockerfile to apache-geode ${VERSION}"
 git push
 set +x
 
@@ -283,6 +282,62 @@ cd ${GEODE_NATIVE}/docker
 docker push apachegeode/geode-native-build:${VERSION}
 [ -n "$LATER" ] || docker push apachegeode/geode-native-build:latest
 set +x
+
+
+echo ""
+echo "============================================================"
+echo "Setting Geode version for geode-native"
+echo "============================================================"
+set -x
+cd ${GEODE_NATIVE}
+git pull
+set +x
+
+#.travis.yml
+# DOCKER_IMAGE="apachegeode/geode-native-build:latest"
+#.lgtm.yml
+# GEODE_VERSION=1.12.0
+
+sed -e "s/geode-native-build:[latest0-9.]*/geode-native-build:${VERSION}/" \
+    -e "s/GEODE_VERSION=[0-9.]*/GEODE_VERSION=${VERSION}/" \
+    -i.bak .travis.yml .lgtm.yml
+
+rm .travis.yml.bak .lgtm.yml.bak
+set -x
+git add .
+if [ $(git diff --staged | wc -l) -gt 0 ] ; then
+  git diff --staged --color | cat
+  git commit -m "Bumping Geode version to ${VERSION} for CI"
+  git push -u origin
+fi
+set +x
+
+
+if [ -z "$LATER" ] ; then
+  echo ""
+  echo "============================================================"
+  echo "Setting Geode version for geode-native develop"
+  echo "============================================================"
+  set -x
+  cd ${GEODE_NATIVE_DEVELOP}
+  git pull
+  set +x
+
+  sed -e "s/geode-native-build:[latest0-9.]*/geode-native-build:latest/" \
+      -e "s/GEODE_VERSION=[0-9.]*/GEODE_VERSION=${VERSION}/" \
+      -e "s/^ENV GEODE_VERSION.*/ENV GEODE_VERSION ${VERSION}/" \
+      -i.bak .travis.yml .lgtm.yml docker/Dockerfile
+
+  rm .travis.yml.bak .lgtm.yml.bak docker/Dockerfile.bak
+  set -x
+  git add .
+  if [ $(git diff --staged | wc -l) -gt 0 ] ; then
+    git diff --staged --color | cat
+    git commit -m "Bumping Geode version to ${VERSION} for CI"
+    git push -u origin
+  fi
+  set +x
+fi
 
 
 echo ""
