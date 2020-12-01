@@ -295,7 +295,7 @@ dependencies {
 
     //Shiro is used for security checks throughout geode-core
     //API - Shiro is exposed in geode's ResourcePermission class
-    api('org.apache.shiro:shiro-core')
+    api(project(':frameworks:shiro'))
 
     //Classgraph is used by the gfsh cli, and also for function deployment (which happens in a server
     //in response to a gfsh command)

@@ -31,6 +31,7 @@ dependencies {
     implementation(project(':geode-serialization'))
     implementation(project(':geode-unsafe'))
     implementation(project(':frameworks:springframework'))
+    api(project(':frameworks:spring-shell'))
     implementation('org.apache.commons:commons-lang3')
     implementation('com.healthmarketscience.rmiio:rmiio')
     implementation(project(':frameworks:jackson'))
@@ -75,7 +76,7 @@ dependencies {
     //Spring shell is used by the gfsh cli. It's unclear why we can exclude
     //So many transitive dependencies - are these really optional?
     //GfshCommand is a public API class that depends on spring shell
-    api('org.springframework.shell:spring-shell') {
+    implementation('org.springframework.shell:spring-shell') {
         exclude module: 'aopalliance'
         exclude module: 'asm'
         exclude module: 'cglib'

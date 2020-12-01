@@ -1017,6 +1017,7 @@ lib/gfsh-dependencies.jar
 lib/httpclient-4.5.13.jar
 lib/httpcore-4.4.13.jar
 lib/istack-commons-runtime-3.0.11.jar
+lib/jackson-2.11.3.jar
 lib/jackson-annotations-2.11.3.jar
 lib/jackson-core-2.11.3.jar
 lib/jackson-databind-2.11.3.jar
@@ -1059,6 +1060,7 @@ lib/netty-all-4.1.54.Final.jar
 lib/protobuf-java-3.11.4.jar
 lib/ra.jar
 lib/rmiio-2.1.2.jar
+lib/shiro-1.7.0.jar
 lib/shiro-cache-1.7.0.jar
 lib/shiro-config-core-1.7.0.jar
 lib/shiro-config-ogdl-1.7.0.jar
@@ -1070,12 +1072,15 @@ lib/shiro-event-1.7.0.jar
 lib/shiro-lang-1.7.0.jar
 lib/slf4j-api-1.7.30.jar
 lib/snappy-0.4.jar
+lib/spring-aop-5.3.1.jar
 lib/spring-beans-5.3.1.jar
 lib/spring-context-5.3.1.jar
 lib/spring-core-5.3.1.jar
+lib/spring-expression-5.3.1.jar
 lib/spring-jcl-5.3.1.jar
 lib/spring-shell-1.2.0.RELEASE.jar
 lib/spring-web-5.3.1.jar
+lib/springframework-5.3.1.jar
 lib/swagger-annotations-1.6.2.jar
 tools/ClientProtocol/geode-protobuf-messages-definitions-0.0.0.zip
 tools/Extensions/geode-web-0.0.0.war

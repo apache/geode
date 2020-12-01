@@ -71,6 +71,8 @@ include 'boms:geode-all-bom'
 include 'static-analysis:pmd-rules'
 include 'frameworks:springframework'
 include 'frameworks:jackson'
+include 'frameworks:shiro'
+include 'frameworks:spring-shell'
 
 
 ['1.0.0-incubating',

@@ -57,9 +57,49 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
+      <groupId>org.apache.geode</groupId>
+      <artifactId>geode-logging</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.geode</groupId>
+      <artifactId>geode-membership</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.geode</groupId>
+      <artifactId>geode-serialization</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.geode</groupId>
+      <artifactId>geode-unsafe</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.healthmarketscience.rmiio</groupId>
+      <artifactId>rmiio</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>net.sf.jopt-simple</groupId>
+      <artifactId>jopt-simple</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-api</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
       <groupId>org.springframework.shell</groupId>
       <artifactId>spring-shell</artifactId>
-      <scope>compile</scope>
+      <scope>runtime</scope>
       <exclusions>
         <exclusion>
           <artifactId>cglib</artifactId>
@@ -92,60 +132,34 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.apache.geode</groupId>
-      <artifactId>geode-logging</artifactId>
-      <scope>runtime</scope>
+      <groupId>org.springframework.shell</groupId>
+      <artifactId>spring-shell</artifactId>
+      <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.geode</groupId>
-      <artifactId>geode-membership</artifactId>
-      <scope>runtime</scope>
+      <groupId>org.apache.geode.frameworks</groupId>
+      <artifactId>springframework</artifactId>
+      <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.geode</groupId>
-      <artifactId>geode-serialization</artifactId>
-      <scope>runtime</scope>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context</artifactId>
+      <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.geode</groupId>
-      <artifactId>geode-unsafe</artifactId>
-      <scope>runtime</scope>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-jcl</artifactId>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-web</artifactId>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-lang3</artifactId>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.healthmarketscience.rmiio</groupId>
-      <artifactId>rmiio</artifactId>
-      <scope>runtime</scope>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>net.sf.jopt-simple</groupId>
-      <artifactId>jopt-simple</artifactId>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-api</artifactId>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-core</artifactId>
-      <scope>runtime</scope>
-      <optional>true</optional>
+      <scope>compile</scope>
     </dependency>
   </dependencies>
 </project>

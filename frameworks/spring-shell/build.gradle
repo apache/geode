@@ -18,7 +18,17 @@ import org.apache.geode.gradle.plugins.DependencyConstraints
  */
 
 project.group = "org.apache.geode.frameworks"
-project.version = DependencyConstraints.get('jackson.version')
+project.version = DependencyConstraints.get('springshell.version')
 dependencies {
-    api('com.fasterxml.jackson.core:jackson-databind')
+    api('org.springframework.shell:spring-shell') {
+        exclude module: 'aopalliance'
+        exclude module: 'asm'
+        exclude module: 'cglib'
+        exclude module: 'guava'
+        exclude module: 'spring-aop'
+        exclude module: 'spring-context-support'
+        exclude module: 'spring-core'
+    }
+    implementation(project(':frameworks:springframework'))
 }
+
