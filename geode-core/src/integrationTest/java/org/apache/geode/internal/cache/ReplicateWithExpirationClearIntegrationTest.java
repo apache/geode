@@ -50,7 +50,9 @@ public class ReplicateWithExpirationClearIntegrationTest {
 
   @After
   public void tearDown() {
-    cache.close();
+    if (cache != null) {
+      cache.close();
+    }
   }
 
   @Test
