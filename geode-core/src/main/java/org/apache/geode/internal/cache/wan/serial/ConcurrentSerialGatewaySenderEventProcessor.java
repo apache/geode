@@ -243,6 +243,9 @@ public class ConcurrentSerialGatewaySenderEventProcessor
   private int getHashCode(EntryEventImpl event) {
     // Get the hash code for the event based on the configured order policy
     int eventHashCode = 0;
+    if (this.sender.getDispatcherThreads() == 1 && this.sender.getOrderPolicy() == null) {
+      return event.getKey().hashCode();
+    }
     switch (this.sender.getOrderPolicy()) {
       case KEY:
         // key ordering

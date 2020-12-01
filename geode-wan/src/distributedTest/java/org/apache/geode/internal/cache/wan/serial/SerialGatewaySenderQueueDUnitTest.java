@@ -48,6 +48,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
+import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.InternalGatewaySenderFactory;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.dunit.AsyncInvocation;
@@ -110,18 +111,18 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
     // Give the unprocessedTokens map time to empty
     Thread.sleep(2000);
 
-    int numUnprocessedTokensVM4 = vm4.invoke(() -> unprocessedTokensSize("ln"));
+    long numUnprocessedTokensVM4 = vm4.invoke(() -> unprocessedTokensSize("ln"));
     assertThat(numUnprocessedTokensVM4).isEqualTo(0);
 
-    int numUnprocessedTokensVM5 = vm5.invoke(() -> unprocessedTokensSize("ln"));
+    long numUnprocessedTokensVM5 = vm5.invoke(() -> unprocessedTokensSize("ln"));
     assertThat(numUnprocessedTokensVM5).isEqualTo(0);
   }
 
-  private int unprocessedTokensSize(String senderId) {
+  private long unprocessedTokensSize(String senderId) {
     AbstractGatewaySender sender = (AbstractGatewaySender) findGatewaySender(senderId);
-    SerialGatewaySenderEventProcessor processor =
-        (SerialGatewaySenderEventProcessor) sender.getEventProcessor();
-    return processor.numUnprocessedEventTokens();
+    AbstractGatewaySenderEventProcessor processor =
+        sender.getEventProcessor();
+    return processor.getNumEventsDispatched();
   }
 
   private GatewaySender findGatewaySender(String senderId) {
