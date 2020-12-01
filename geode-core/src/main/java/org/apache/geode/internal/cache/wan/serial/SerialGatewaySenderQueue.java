@@ -49,6 +49,7 @@ import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.TimeoutException;
@@ -1163,7 +1164,14 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
   @Override
   public void close() {
-    removeCacheListener();
+    Region r = getRegion();
+    if (r != null && !r.isDestroyed()) {
+      try {
+        r.close();
+      } catch (RegionDestroyedException e) {
+      }
+    }
+
   }
 
   private class BatchRemovalThread extends Thread {

@@ -432,6 +432,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
 
     for (;;) {
       if (stopped()) {
+        this.resetLastPeekedEvents = true;
         break;
       }
 
