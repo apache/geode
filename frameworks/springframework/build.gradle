@@ -16,13 +16,14 @@ import org.apache.geode.gradle.plugins.DependencyConstraints
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 plugins {
     id 'java-library'
     id 'geode-dependency-constraints'
 }
 
 project.group = "org.apache.geode.frameworks"
-project.version = DependencyConstraints.get('org.springframework')
+project.version = DependencyConstraints.get('springframework.version')
 dependencies {
     api('org.springframework:spring-core')
     api('org.springframework:spring-beans')

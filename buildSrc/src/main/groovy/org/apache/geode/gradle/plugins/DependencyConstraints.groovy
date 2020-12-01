@@ -45,6 +45,9 @@ class DependencyConstraints implements Plugin<Project> {
     deps.put("shiro.version", "1.7.0")
     deps.put("slf4j-api.version", "1.7.30")
 
+    deps.put("jackson.version", "2.11.3")
+    deps.put("springframework.version", "5.3.1")
+
     // These version numbers are used in testing various versions of tomcat and are consumed explicitly
     // in will be called explicitly in the relevant extensions module, and respective configurations
     // in geode-assembly.gradle.  Moreover, dependencyManagement does not seem to play nicely when
@@ -175,7 +178,7 @@ class DependencyConstraints implements Plugin<Project> {
       }
     }
 
-    dependencySet(group: 'com.fasterxml.jackson.core', version: '2.11.3') {
+    dependencySet(group: 'com.fasterxml.jackson.core', version: get('jackson.version')) {
       entry('jackson-annotations')
       entry('jackson-core')
       entry('jackson-databind')
@@ -250,7 +253,7 @@ class DependencyConstraints implements Plugin<Project> {
       entry('spring-security-oauth2-jose')
     }
 
-    dependencySet(group: 'org.springframework', version: '5.3.1') {
+    dependencySet(group: 'org.springframework', version: get('springframework.version')) {
       entry('spring-aspects')
       entry('spring-beans')
       entry('spring-context')

@@ -16,13 +16,16 @@ import org.apache.geode.gradle.plugins.DependencyConstraints
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 plugins {
     id 'java-library'
     id 'geode-dependency-constraints'
 }
 
+
 project.group = "org.apache.geode.frameworks"
-project.version = DependencyConstraints.get('com.fasterxml.jackson.core')
+project.version = DependencyConstraints.get('jackson.version')
+
 dependencies {
     api('com.fasterxml.jackson.core:jackson-databind')
 }
