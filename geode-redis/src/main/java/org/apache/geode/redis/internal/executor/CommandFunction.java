@@ -16,6 +16,7 @@
 
 package org.apache.geode.redis.internal.executor;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -198,7 +199,7 @@ public class CommandFunction extends SingleResultRedisFunction {
       case SSCAN: {
         Pattern matchPattern = (Pattern) args[1];
         int count = (int) args[2];
-        int cursor = (int) args[3];
+        BigInteger cursor = (BigInteger) args[3];
         return setCommands.sscan(key, matchPattern, count, cursor);
       }
       case SUNIONSTORE: {
@@ -249,7 +250,7 @@ public class CommandFunction extends SingleResultRedisFunction {
       case HSCAN: {
         Pattern pattern = (Pattern) args[1];
         int count = (int) args[2];
-        int cursor = (int) args[3];
+        BigInteger cursor = (BigInteger) args[3];
         return hashCommands.hscan(key, pattern, count, cursor);
       }
       case HINCRBY: {

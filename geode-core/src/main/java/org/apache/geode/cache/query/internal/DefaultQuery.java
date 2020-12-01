@@ -783,6 +783,7 @@ public class DefaultQuery implements Query {
       } else {
         queryObserver = qo;
       }
+      logger.info("Starting query: " + this.queryString);
     }
     return queryObserver;
   }
@@ -797,12 +798,12 @@ public class DefaultQuery implements Query {
 
       String queryVerboseMsg =
           DefaultQuery.getLogMessage(indexObserver, startTime, resultSize, this.queryString);
-      this.cache.getLogger().info(queryVerboseMsg);
+      logger.info(queryVerboseMsg);
     }
   }
 
   public void endTrace(QueryObserver indexObserver, long startTime, Collection<Collection> result) {
-    if (this.cache != null && this.cache.getLogger().infoEnabled() && this.traceOn) {
+    if (logger.isInfoEnabled() && this.traceOn) {
       int resultSize = 0;
 
       for (Collection aResult : result) {
@@ -811,8 +812,8 @@ public class DefaultQuery implements Query {
 
       String queryVerboseMsg =
           DefaultQuery.getLogMessage(indexObserver, startTime, resultSize, this.queryString);
-      if (this.cache.getLogger().infoEnabled()) {
-        this.cache.getLogger().info(queryVerboseMsg);
+      if (logger.isInfoEnabled()) {
+        logger.info(queryVerboseMsg);
       }
     }
   }

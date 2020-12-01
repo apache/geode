@@ -53,7 +53,6 @@ import org.apache.geode.management.internal.cli.dto.Value1;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -121,17 +120,13 @@ public class QueryCommandDUnitTestBase {
 
   @Test
   public void testWithUnsetGfshEnvironmentVariables() {
-    IgnoredException ex =
-        addIgnoredException(QueryInvalidException.class.getSimpleName(), locator.getVM());
-    try {
-      String query =
-          "query --query=\"select ID , status , createTime , pk, floatMinValue from ${UNSET_REGION} where ID <= ${UNSET_PORTFOLIO_ID}"
-              + " and status=${UNSET_STATUS}" + "\" --interactive=false";
-      gfsh.executeAndAssertThat(query).statusIsError()
-          .containsOutput(String.format("Syntax error in query: %s", ""));
-    } finally {
-      ex.remove();
-    }
+    addIgnoredException(QueryInvalidException.class.getSimpleName(), locator.getVM());
+    String query =
+        "query --query=\"select ID , status , createTime , pk, floatMinValue from ${UNSET_REGION} "
+            + "where ID <= ${UNSET_PORTFOLIO_ID}"
+            + " and status=${UNSET_STATUS}" + "\" --interactive=false";
+    gfsh.executeAndAssertThat(query).statusIsError()
+        .containsOutput(String.format("Syntax error in query: %s", ""));
   }
 
   @Test
@@ -182,9 +177,7 @@ public class QueryCommandDUnitTestBase {
 
   @Test
   public void testQueryEvictedDataNotDeserializable() {
-    IgnoredException ex =
-        addIgnoredException(Exception.class.getSimpleName(), locator.getVM());
-
+    addIgnoredException(Exception.class.getSimpleName(), server1.getVM());
     server1.invoke(() -> setupReplicatedRegionWithEviction(DATA_REGION_WITH_EVICTION_NAME));
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_REGION_WITH_EVICTION_NAME_PATH, 1);
     server1
@@ -196,8 +189,6 @@ public class QueryCommandDUnitTestBase {
     validateSelectResult(commandResult, Boolean.FALSE, -1, new String[] {"Value"});
     assertThat(commandResult.asString())
         .contains("An IOException was thrown while deserializing");
-
-    ex.remove();
   }
 
   private static void prepareDataForRegion(String regionPath) {

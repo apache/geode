@@ -14,9 +14,14 @@
  */
 package org.apache.geode.redis.internal.executor.set;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -24,17 +29,21 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
 
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
 public abstract class AbstractSPopIntegrationTest implements RedisPortSupplier {
   private Jedis jedis;
   private Jedis jedis2;
+  private static final int REDIS_CLIENT_TIMEOUT =
+      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), 10000000);
-    jedis2 = new Jedis("localhost", getPort(), 10000000);
+    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
@@ -42,6 +51,24 @@ public abstract class AbstractSPopIntegrationTest implements RedisPortSupplier {
     jedis.flushAll();
     jedis.close();
     jedis2.close();
+  }
+
+  @Test
+  public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SPOP))
+        .hasMessageContaining("ERR wrong number of arguments for 'spop' command");
+  }
+
+  @Test
+  public void givenMoreThanThreeArguments_returnsSyntaxError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SPOP, "key", "NaN", "extraArg"))
+        .hasMessageContaining(ERROR_SYNTAX);
+  }
+
+  @Test
+  public void givenCountIsNotAnInteger_returnsNotIntegerError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SPOP, "key", "NaN"))
+        .hasMessageContaining(ERROR_NOT_INTEGER);
   }
 
   @Test
@@ -170,5 +197,70 @@ public abstract class AbstractSPopIntegrationTest implements RedisPortSupplier {
 
     popped1.addAll(popped2);
     assertThat(popped1.toArray()).containsExactlyInAnyOrder(masterSet.toArray());
+  }
+
+  @Test
+  public void testSPopWithOutCount_shouldReturnNil_givenEmptySet() {
+
+    Object result = jedis.sendCommand(Protocol.Command.SPOP, "noneSuch");
+
+    assertThat(result).isNull();
+  }
+
+  @Test
+  public void testSPopWithCount_shouldReturnEmptyList_givenEmptySet() {
+    Set<String> result = jedis.spop("noneSuch", 2);
+
+    assertThat(result).isEmpty();
+  }
+
+  @Test
+  public void testSPopWithCountOfOne_shouldReturnList() {
+    jedis.sadd("set", "one");
+
+    Object actual = jedis.sendCommand(Protocol.Command.SPOP, "set", "1");
+
+    assertThat(actual).isInstanceOf(List.class);
+  }
+
+  @Test
+  public void testSPopWithoutCount_shouldNotReturnList() {
+    jedis.sadd("set", "one");
+
+    Object actual = jedis.sendCommand(Protocol.Command.SPOP, "set");
+
+    assertThat(actual).isNotInstanceOf(List.class);
+  }
+
+  @Test
+  public void testSPopWithCountZero_shouldReturnEmptyList() {
+    jedis.sadd("set", "one");
+
+    Set<String> result = jedis.spop("set", 0);
+
+    assertThat(result).isEmpty();
+  }
+
+  @Test
+  public void testSPopWithoutArg_shouldReturnBulkString() throws Exception {
+    jedis.sadd("set", "one");
+
+    try (Socket redisSocket = new Socket("localhost", getPort())) {
+      byte[] rawBytes = new byte[] {
+          '*', '2', 0x0d, 0x0a,
+          '$', '4', 0x0d, 0x0a,
+          'S', 'P', 'O', 'P', 0x0d, 0x0a,
+          '$', '3', 0x0d, 0x0a,
+          's', 'e', 't', 0x0d, 0x0a,
+      };
+
+      redisSocket.getOutputStream().write(rawBytes);
+
+      byte[] inputBuffer = new byte[1024];
+      int n = redisSocket.getInputStream().read(inputBuffer);
+      String result = new String(Arrays.copyOfRange(inputBuffer, 0, n));
+
+      assertThat(result).isEqualTo("$3\r\none\r\n");
+    }
   }
 }

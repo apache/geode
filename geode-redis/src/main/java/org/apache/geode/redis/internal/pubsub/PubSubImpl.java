@@ -139,9 +139,17 @@ public class PubSubImpl implements PubSub {
   }
 
   @Override
-  public List<byte[]> findSubscribedChannels(Client client) {
+  public List<byte[]> findSubscriptionNames(Client client) {
     return subscriptions.findSubscriptions(client).stream()
-        .map(Subscription::getChannelName)
+        .map(Subscription::getSubscriptionName)
+        .collect(Collectors.toList());
+  }
+
+  @Override
+  public List<byte[]> findSubscriptionNames(Client client, Subscription.Type type) {
+    return subscriptions.findSubscriptions(client).stream()
+        .filter(s -> s.getType() == (type))
+        .map(Subscription::getSubscriptionName)
         .collect(Collectors.toList());
   }
 

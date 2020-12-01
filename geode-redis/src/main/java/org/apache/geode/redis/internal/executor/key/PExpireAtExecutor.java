@@ -15,7 +15,6 @@
  */
 package org.apache.geode.redis.internal.executor.key;
 
-import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 
 public class PExpireAtExecutor extends ExpireAtExecutor {
 
@@ -24,8 +23,4 @@ public class PExpireAtExecutor extends ExpireAtExecutor {
     return true;
   }
 
-  @Override
-  public String getArgsError() {
-    return ArityDef.PEXPIREAT;
-  }
 }

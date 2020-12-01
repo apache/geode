@@ -16,6 +16,7 @@
 package org.apache.geode.redis.internal.executor.key;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -23,6 +24,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
 import redis.clients.jedis.params.SetParams;
 
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -46,6 +48,18 @@ public abstract class AbstractPersistIntegrationTest implements RedisPortSupplie
     jedis.flushAll();
     jedis.close();
     jedis2.close();
+  }
+
+  @Test
+  public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.PERSIST))
+        .hasMessageContaining("ERR wrong number of arguments for 'persist' command");
+  }
+
+  @Test
+  public void givenMoreThanTwoArguments_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.PERSIST, "key", "extraArg"))
+        .hasMessageContaining("ERR wrong number of arguments for 'persist' command");
   }
 
   @Test

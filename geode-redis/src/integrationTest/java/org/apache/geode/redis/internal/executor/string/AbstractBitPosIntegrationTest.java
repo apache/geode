@@ -22,22 +22,38 @@ import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.BitPosParams;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
 
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
 public abstract class AbstractBitPosIntegrationTest implements RedisPortSupplier {
 
   private Jedis jedis;
+  private static final int REDIS_CLIENT_TIMEOUT =
+      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), 10000000);
+    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
     jedis.flushAll();
     jedis.close();
+  }
+
+  @Test
+  public void bitpos_givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.BITPOS))
+        .hasMessageContaining("ERR wrong number of arguments for 'bitpos' command");
+  }
+
+  @Test
+  public void bitpos_givenBitNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.BITPOS, "key"))
+        .hasMessageContaining("ERR wrong number of arguments for 'bitpos' command");
   }
 
   @Test
@@ -63,5 +79,53 @@ public abstract class AbstractBitPosIntegrationTest implements RedisPortSupplier
     assertThat(jedis.bitpos("emptyKey", true)).isEqualTo(-1);
     assertThat(jedis.bitpos("emptyKey", false, new BitPosParams(4, 7))).isEqualTo(-1);
     assertThat(jedis.bitpos("emptyKey", true, new BitPosParams(4, 7))).isEqualTo(-1);
+  }
+
+  @Test
+  public void bitpos_givenBitInFirstByte() {
+    byte[] key = {1, 2, 3};
+    byte[] bytes = {1, 1, 1, 1, 1};
+    jedis.set(key, bytes);
+    assertThat(jedis.bitpos(key, true)).isEqualTo(7);
+  }
+
+  @Test
+  public void bitpos_givenOneInSecondByte() {
+    byte[] key = {1, 2, 3};
+    byte[] bytes = {0, 1, 1, 1, 1};
+    jedis.set(key, bytes);
+    assertThat(jedis.bitpos(key, true)).isEqualTo(7 + 8);
+  }
+
+  @Test
+  public void bitposFalse_givenBitInFirstByte() {
+    byte[] key = {1, 2, 3};
+    byte[] bytes = {-2, 1, 1, 1, 1};
+    jedis.set(key, bytes);
+    assertThat(jedis.bitpos(key, false)).isEqualTo(7);
+  }
+
+  @Test
+  public void bitposFalse_givenOneInSecondByte() {
+    byte[] key = {1, 2, 3};
+    byte[] bytes = {-1, -2, 1, 1, 1};
+    jedis.set(key, bytes);
+    assertThat(jedis.bitpos(key, false)).isEqualTo(7 + 8);
+  }
+
+  @Test
+  public void bitposWithStart_givenOneInLastByte() {
+    byte[] key = {1, 2, 3};
+    byte[] bytes = {1, 1, 1, 1};
+    jedis.set(key, bytes);
+    assertThat(jedis.bitpos(key, true, new BitPosParams(-1))).isEqualTo(7 + 3 * 8);
+  }
+
+  @Test
+  public void bitposWithStartAndEnd_givenNoBits() {
+    byte[] key = {1, 2, 3};
+    byte[] bytes = {1, 0, 0, 1};
+    jedis.set(key, bytes);
+    assertThat(jedis.bitpos(key, true, new BitPosParams(1, 2))).isEqualTo(-1);
   }
 }

@@ -142,6 +142,7 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCacheBuilder;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.PoolStats;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.execute.data.CustId;
 import org.apache.geode.internal.cache.execute.data.Customer;
@@ -1202,6 +1203,15 @@ public class WANTestBase extends DistributedTestCase {
     return statistics.getSecondaryEventQueueSize();
   }
 
+  public static void checkQueueSizeInStats(String senderId, final int expectedQueueSize) {
+    AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender(senderId);
+    GatewaySenderStats statistics = sender.getStatistics();
+    await()
+        .untilAsserted(() -> assertEquals("Expected queue size: " + expectedQueueSize
+            + " but actual size: " + statistics.getEventQueueSize(), expectedQueueSize,
+            statistics.getEventQueueSize()));
+  }
+
   public static void checkConnectionStats(String senderId) {
     AbstractGatewaySender sender =
         (AbstractGatewaySender) CacheFactory.getAnyInstance().getGatewaySender(senderId);
@@ -1245,22 +1255,14 @@ public class WANTestBase extends DistributedTestCase {
     return stats;
   }
 
-  protected static int getTotalBucketQueueSize(PartitionedRegion prQ, boolean isPrimary) {
-    int size = 0;
-    if (prQ != null) {
-      Set<Map.Entry<Integer, BucketRegion>> allBuckets = prQ.getDataStore().getAllLocalBuckets();
-      List<Integer> thisProcessorBuckets = new ArrayList<Integer>();
+  public static int getGatewaySenderPoolDisconnects(String senderId) {
+    AbstractGatewaySender sender =
+        (AbstractGatewaySender) CacheFactory.getAnyInstance().getGatewaySender(senderId);
+    assertNotNull(sender);
 
-      for (Map.Entry<Integer, BucketRegion> bucketEntry : allBuckets) {
-        BucketRegion bucket = bucketEntry.getValue();
-        int bId = bucket.getId();
-        if ((isPrimary && bucket.getBucketAdvisor().isPrimary())
-            || (!isPrimary && !bucket.getBucketAdvisor().isPrimary())) {
-          size += bucket.size();
-        }
-      }
-    }
-    return size;
+    PoolStats poolStats = sender.getProxy().getStats();
+
+    return poolStats.getDisConnects();
   }
 
   public static List<Integer> getSenderStatsForDroppedEvents(String senderId) {
@@ -2044,18 +2046,30 @@ public class WANTestBase extends DistributedTestCase {
     }
   }
 
-  public static void createReceiverInVMs(VM... vms) {
+  public static void createReceiverInVMs(int maximumTimeBetweenPings, VM... vms) {
     for (VM vm : vms) {
-      vm.invoke(() -> createReceiver());
+      vm.invoke(() -> createReceiverWithMaximumTimeBetweenPings(maximumTimeBetweenPings));
     }
   }
 
+
+  public static void createReceiverInVMs(VM... vms) {
+    createReceiverInVMs(-1, vms);
+  }
+
   public static int createReceiver() {
+    return createReceiverWithMaximumTimeBetweenPings(-1);
+  }
+
+  public static int createReceiverWithMaximumTimeBetweenPings(int maximumTimeBetweenPings) {
     GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
     int port = AvailablePortHelper.getRandomAvailableTCPPort();
     fact.setStartPort(port);
     fact.setEndPort(port);
     fact.setManualStart(true);
+    if (maximumTimeBetweenPings > 0) {
+      fact.setMaximumTimeBetweenPings(maximumTimeBetweenPings);
+    }
     GatewayReceiver receiver = fact.create();
     try {
       receiver.start();
@@ -2140,6 +2154,10 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   public static int createServer(int locPort) {
+    return createServer(locPort, -1);
+  }
+
+  public static int createServer(int locPort, int maximumTimeBetweenPings) {
     WANTestBase test = new WANTestBase();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
@@ -2151,6 +2169,9 @@ public class WANTestBase extends DistributedTestCase {
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     server.setPort(port);
     server.setHostnameForClients("localhost");
+    if (maximumTimeBetweenPings > 0) {
+      server.setMaximumTimeBetweenPings(maximumTimeBetweenPings);
+    }
     try {
       server.start();
     } catch (IOException e) {

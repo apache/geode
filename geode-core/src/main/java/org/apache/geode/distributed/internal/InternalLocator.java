@@ -14,6 +14,7 @@
  */
 package org.apache.geode.distributed.internal;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
 import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
@@ -155,6 +156,8 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
    */
   public static final String LOCATORS_PREFERRED_AS_COORDINATORS =
       GEMFIRE_PREFIX + "disable-floating-coordinator";
+  static final String IGNORING_RECONNECT_REQUEST =
+      "ignoring request to reconnect to the cluster - there is no DistributedSystem available to reconnect.";
 
   /**
    * the locator hosted by this JVM. As of 7.0 it is a singleton.
@@ -177,7 +180,8 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
   /**
    * whether the locator was stopped during forced-disconnect processing but a reconnect will occur
    */
-  private volatile boolean stoppedForReconnect;
+  @VisibleForTesting
+  volatile boolean stoppedForReconnect;
   private volatile boolean reconnected;
 
   /**
@@ -541,10 +545,9 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
           new RemoteTransportConfig(distributionConfig, MemberIdentifier.LOCATOR_DM_TYPE),
           distributionConfig);
       Supplier<ExecutorService> executor = () -> CoreLoggingExecutors
-          .newThreadPoolWithSynchronousFeed("locator request thread ",
-              MAX_POOL_SIZE, new DelayedPoolStatHelper(),
-              POOL_IDLE_TIMEOUT,
-              new ThreadPoolExecutor.CallerRunsPolicy());
+          .newThreadPoolWithSynchronousFeed(MAX_POOL_SIZE, POOL_IDLE_TIMEOUT, MILLISECONDS,
+              "locator request thread ", new ThreadPoolExecutor.CallerRunsPolicy(),
+              new DelayedPoolStatHelper());
       final TcpSocketCreator socketCreator = SocketCreatorFactory
           .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR);
       membershipLocator =
@@ -1099,12 +1102,18 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
    *
    * @return true if able to reconnect the locator to the new distributed system
    */
-  private boolean attemptReconnect() throws InterruptedException, IOException {
+  @VisibleForTesting
+  boolean attemptReconnect() throws InterruptedException, IOException {
     boolean restarted = false;
     if (stoppedForReconnect) {
-      logger.info("attempting to restart locator");
       boolean tcpServerStarted = false;
       InternalDistributedSystem system = internalDistributedSystem;
+      if (system == null) {
+        logger.info(
+            IGNORING_RECONNECT_REQUEST);
+        return false;
+      }
+      logger.info("attempting to restart locator");
       long waitTime = system.getConfig().getMaxWaitTimeForReconnect() / 2;
       QuorumChecker quorumChecker = null;
 
@@ -1135,7 +1144,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
         }
 
         try {
-          system.waitUntilReconnected(waitTime, TimeUnit.MILLISECONDS);
+          system.waitUntilReconnected(waitTime, MILLISECONDS);
         } catch (CancelException e) {
           continue; // DistributedSystem failed to restart - loop until it gives up
         }

@@ -58,10 +58,8 @@ public class SetExecutor extends StringExecutor {
     return commandElementsBytes.subList(3, commandElementsBytes.size());
   }
 
-  private RedisResponse doSet(ByteArrayWrapper key,
-      ByteArrayWrapper value,
-      RedisStringCommands redisStringCommands,
-      SetOptions setOptions) {
+  private RedisResponse doSet(ByteArrayWrapper key, ByteArrayWrapper value,
+      RedisStringCommands redisStringCommands, SetOptions setOptions) {
 
     boolean setCompletedSuccessfully = redisStringCommands.set(key, value, setOptions);
 

@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.wan.serial;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
@@ -109,10 +111,9 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
       ThreadsMonitoring tMonitoring, boolean cleanQueues) {
     super("Event Processor for GatewaySender_" + id, sender, tMonitoring);
 
+    initializeMessageQueue(id, cleanQueues);
     this.unprocessedEvents = new LinkedHashMap<EventID, EventWrapper>();
     this.unprocessedTokens = new LinkedHashMap<EventID, Long>();
-
-    initializeMessageQueue(id, cleanQueues);
   }
 
   @Override
@@ -819,7 +820,8 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
    */
   private void initializeListenerExecutor() {
     this.executor =
-        LoggingExecutors.newFixedThreadPoolWithTimeout("Queued Gateway Listener Thread", 1, 120);
+        LoggingExecutors.newFixedThreadPoolWithTimeout(1, 120, SECONDS,
+            "Queued Gateway Listener Thread");
   }
 
   private void shutdownListenerExecutor() {

@@ -69,6 +69,11 @@ public class ManagementUtils {
         cache.getDistributionManager().getNormalDistributionManagerIds());
   }
 
+  public static Set<DistributedMember> getAllLocators(InternalCache cache) {
+    return new HashSet<DistributedMember>(
+        cache.getDistributionManager().getLocatorDistributionManagerIds());
+  }
+
   /**
    * Returns a set of all the members of the distributed system of a specific version excluding
    * locators.

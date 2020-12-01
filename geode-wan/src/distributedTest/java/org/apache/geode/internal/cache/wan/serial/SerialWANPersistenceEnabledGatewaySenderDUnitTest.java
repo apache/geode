@@ -586,8 +586,6 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
     String secondDStore = (String) vm5.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
         false, 100, 10, false, true, null, null, true));
 
-
-
     logger.info("The first ds is " + firstDStore);
     logger.info("The second ds is " + secondDStore);
 
@@ -597,8 +595,6 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
         () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
 
     startSenderInVMs("ln", vm4, vm5);
-    vm4.invoke(() -> WANTestBase.pauseSender("ln"));
-    vm5.invoke(() -> WANTestBase.pauseSender("ln"));
 
     vm4.invoke(() -> WANTestBase.createPersistentReplicatedRegion(getTestMethodName() + "_RR", "ln",
         isOffHeap()));
@@ -608,6 +604,9 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
         isOffHeap()));
     vm7.invoke(() -> WANTestBase.createPersistentReplicatedRegion(getTestMethodName() + "_RR", "ln",
         isOffHeap()));
+
+    vm4.invoke(() -> WANTestBase.pauseSender("ln"));
+    vm5.invoke(() -> WANTestBase.pauseSender("ln"));
 
     vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
 
@@ -622,13 +621,10 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
     AsyncInvocation inv1 = vm4.invokeAsync(() -> WANTestBase.startSenderwithCleanQueues("ln"));
     logger.info("Started the sender in vm 4");
 
-    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 0));
-    vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 0));
-
     vm5.invoke(() -> WANTestBase.startSenderwithCleanQueues("ln"));
     logger.info("Started the sender in vm 5");
     try {
-      inv1.await();
+      inv1.join();
     } catch (InterruptedException e) {
       fail("Got interrupted exception while waiting for startSender to finish.");
     }

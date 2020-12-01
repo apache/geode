@@ -634,7 +634,7 @@ public abstract class ServerConnection implements Runnable {
         chmRegistered = true;
       }
       if (registerClient) {
-        chm.registerClient(proxyId);
+        chm.registerClient(proxyId, acceptor.getMaximumTimeBetweenPings());
       }
       serverConnectionCollection = chm.addConnection(proxyId, this);
       acceptor.getConnectionListener().connectionOpened(registerClient, communicationMode);
@@ -1070,8 +1070,10 @@ public abstract class ServerConnection implements Runnable {
 
       credBytes = handshake.getEncryptor().decryptBytes(credBytes);
 
-      ByteArrayDataInput dinp = new ByteArrayDataInput(credBytes);
-      Properties credentials = DataSerializer.readProperties(dinp);
+      Properties credentials;
+      try (ByteArrayDataInput dinp = new ByteArrayDataInput(credBytes)) {
+        credentials = DataSerializer.readProperties(dinp);
+      }
 
       // When here, security is enforced on server, if login returns a subject, then it's the newly
       // integrated security, otherwise, do it the old way.

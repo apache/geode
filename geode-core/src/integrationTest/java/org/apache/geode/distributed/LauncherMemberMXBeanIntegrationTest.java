@@ -18,10 +18,12 @@ import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
 import static javax.management.MBeanServerInvocationHandler.newProxyInstance;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLE_RATE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import javax.management.InstanceNotFoundException;
@@ -34,7 +36,6 @@ import javax.management.QueryExp;
 import javax.management.ReflectionException;
 import javax.management.openmbean.CompositeDataSupport;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,6 +49,8 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public class LauncherMemberMXBeanIntegrationTest extends LauncherIntegrationTestCase {
 
+  private static final int SAMPLE_RATE = 100;
+
   private ObjectName pattern;
   private QueryExp constraint;
   private Set<ObjectName> mbeanNames;
@@ -58,6 +61,7 @@ public class LauncherMemberMXBeanIntegrationTest extends LauncherIntegrationTest
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
+    props.setProperty(STATISTIC_SAMPLE_RATE, SAMPLE_RATE + "");
     props.setProperty("name", getUniqueName());
     new CacheFactory(props).create();
 
@@ -123,30 +127,23 @@ public class LauncherMemberMXBeanIntegrationTest extends LauncherIntegrationTest
     assertThat(osMetrics.getTotalSwapSpaceSize()).isEqualTo(cds.get("totalSwapSpaceSize"));
     assertThat(osMetrics.getVersion()).isEqualTo(cds.get("version"));
 
-    assertThat(tryConvergeVolatileOSMetrics("committedVirtualMemorySize",
-        m -> m.getCommittedVirtualMemorySize()))
-            .matches(pair -> pair.getLeft().equals(pair.getRight()),
-                "committed virtual memory size]");
+    tryConvergeVolatileOSMetrics("committedVirtualMemorySize",
+        OSMetrics::getCommittedVirtualMemorySize);
 
-    assertThat(tryConvergeVolatileOSMetrics("freePhysicalMemorySize",
-        m -> m.getFreePhysicalMemorySize()))
-            .matches(pair -> pair.getLeft().equals(pair.getRight()), "free physical memory size");
+    tryConvergeVolatileOSMetrics("freePhysicalMemorySize",
+        OSMetrics::getFreePhysicalMemorySize);
 
-    assertThat(tryConvergeVolatileOSMetrics("freeSwapSpaceSize",
-        m -> m.getFreeSwapSpaceSize()))
-            .matches(pair -> pair.getLeft().equals(pair.getRight()), "free swap space size");
+    tryConvergeVolatileOSMetrics("freeSwapSpaceSize",
+        OSMetrics::getFreeSwapSpaceSize);
 
-    assertThat(tryConvergeVolatileOSMetrics("openFileDescriptorCount",
-        m -> m.getOpenFileDescriptorCount()))
-            .matches(pair -> pair.getLeft().equals(pair.getRight()), "open file descriptor count");
+    tryConvergeVolatileOSMetrics("openFileDescriptorCount",
+        OSMetrics::getOpenFileDescriptorCount);
 
-    assertThat(tryConvergeVolatileOSMetrics("processCpuTime",
-        m -> m.getProcessCpuTime()))
-            .matches(pair -> pair.getLeft().equals(pair.getRight()), "process cpu time");
+    tryConvergeVolatileOSMetrics("processCpuTime",
+        OSMetrics::getProcessCpuTime);
 
-    assertThat(tryConvergeVolatileOSMetrics("systemLoadAverage",
-        m -> m.getSystemLoadAverage()))
-            .matches(pair -> pair.getLeft().equals(pair.getRight()), "system load average");
+    tryConvergeVolatileOSMetrics("systemLoadAverage",
+        OSMetrics::getSystemLoadAverage);
   }
 
   @Test
@@ -168,70 +165,43 @@ public class LauncherMemberMXBeanIntegrationTest extends LauncherIntegrationTest
     assertThat(jvmMetrics.getInitMemory()).isEqualTo(cds.get("initMemory"));
     assertThat(jvmMetrics.getMaxMemory()).isEqualTo(cds.get("maxMemory"));
 
-    assertThat(tryConvergeVolatileJVMMetrics("committedMemory",
-        m -> m.getCommittedMemory()))
-            .matches(pair -> pair.getLeft().equals(pair.getRight()), "committed memory");
+    tryConvergeVolatileJVMMetrics("committedMemory", JVMMetrics::getCommittedMemory);
 
-    assertThat(tryConvergeVolatileJVMMetrics("gcCount",
-        m -> m.getGcCount()))
-            .matches(pair -> pair.getLeft().equals(pair.getRight()), "gc count");
+    tryConvergeVolatileJVMMetrics("gcCount", JVMMetrics::getGcCount);
 
-    assertThat(tryConvergeVolatileJVMMetrics("gcTimeMillis",
-        m -> m.getGcTimeMillis()))
-            .matches(pair -> pair.getLeft().equals(pair.getRight()), "gc time millis");
+    tryConvergeVolatileJVMMetrics("gcTimeMillis", JVMMetrics::getGcTimeMillis);
 
+    tryConvergeVolatileJVMMetrics("totalThreads", JVMMetrics::getTotalThreads);
 
-    assertThat(tryConvergeVolatileJVMMetrics("totalThreads",
-        m -> m.getTotalThreads()))
-            .matches(pair -> pair.getLeft().equals(pair.getRight()), "total threads");
-
-    assertThat(tryConvergeVolatileJVMMetrics("usedMemory",
-        m -> m.getUsedMemory()))
-            .matches(pair -> pair.getLeft().equals(pair.getRight()), "used memory");
+    tryConvergeVolatileJVMMetrics("usedMemory", JVMMetrics::getUsedMemory);
   }
 
   /*
    * Sometimes there is a change in metric value between getting the MBean proxy and retrieving
    * the composite data structure. Try at most 5 times otherwise return the last values retrieved.
    */
-  private Pair<Number, Number> tryConvergeVolatileJVMMetrics(String attribute,
-      Function<JVMMetrics, Number> func) {
-    try {
-      Number cdsValue = 0;
-      Number jvmMetricValue = -1;
-      for (int i = 0; i < 5; i++) {
-        CompositeDataSupport cds = (CompositeDataSupport) getPlatformMBeanServer()
-            .invoke(mbeanObjectName, "showJVMMetrics", null, null);
-        cdsValue = (Number) cds.get(attribute);
-        jvmMetricValue = func.apply(getMXBeanProxy().showJVMMetrics());
-        if (cdsValue.equals(jvmMetricValue)) {
-          break;
-        }
-      }
-      return Pair.of(cdsValue, jvmMetricValue);
-    } catch (Exception ex) {
-      return null;
-    }
+  private void tryConvergeVolatileJVMMetrics(String attribute, Function<JVMMetrics, Number> func) {
+    GeodeAwaitility.await(attribute).atMost(SAMPLE_RATE * 5, TimeUnit.MILLISECONDS)
+        .untilAsserted(() -> {
+          CompositeDataSupport cds = (CompositeDataSupport) getPlatformMBeanServer()
+              .invoke(mbeanObjectName, "showJVMMetrics", null, null);
+          Number cdsValue = (Number) cds.get(attribute);
+          Number jvmMetricValue = func.apply(getMXBeanProxy().showJVMMetrics());
+
+          assertThat(cdsValue).isEqualTo(jvmMetricValue);
+        });
   }
 
-  private Pair<Number, Number> tryConvergeVolatileOSMetrics(String attribute,
-      Function<OSMetrics, Number> func) {
-    try {
-      Number cdsValue = 0;
-      Number osMetricValue = -1;
-      for (int i = 0; i < 5; i++) {
-        CompositeDataSupport cds = (CompositeDataSupport) getPlatformMBeanServer()
-            .invoke(mbeanObjectName, "showOSMetrics", null, null);
-        cdsValue = (Number) cds.get(attribute);
-        osMetricValue = func.apply(getMXBeanProxy().showOSMetrics());
-        if (cdsValue.equals(osMetricValue)) {
-          break;
-        }
-      }
-      return Pair.of(cdsValue, osMetricValue);
-    } catch (Exception ex) {
-      return null;
-    }
+  private void tryConvergeVolatileOSMetrics(String attribute, Function<OSMetrics, Number> func) {
+    GeodeAwaitility.await(attribute).atMost(SAMPLE_RATE * 5, TimeUnit.MILLISECONDS)
+        .untilAsserted(() -> {
+          CompositeDataSupport cds = (CompositeDataSupport) getPlatformMBeanServer()
+              .invoke(mbeanObjectName, "showOSMetrics", null, null);
+          Number cdsValue = (Number) cds.get(attribute);
+          Number osMetricValue = func.apply(getMXBeanProxy().showOSMetrics());
+
+          assertThat(cdsValue).isEqualTo(osMetricValue);
+        });
   }
 
   private MemberMXBean getMXBeanProxy() {

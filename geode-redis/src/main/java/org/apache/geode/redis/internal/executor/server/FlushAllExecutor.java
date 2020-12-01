@@ -28,6 +28,7 @@ public class FlushAllExecutor extends AbstractExecutor {
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     RedisKeyCommands redisKeyCommands = getRedisKeyCommands(context);
+
     for (ByteArrayWrapper skey : context.getRegionProvider().getDataRegion().keySet()) {
       redisKeyCommands.del(skey);
     }

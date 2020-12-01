@@ -107,7 +107,7 @@ public class RedundancyLevelTestBase extends JUnit4DistributedTestCase {
     server2 = VM.getVM(2);
     server3 = VM.getVM(3);
 
-    IgnoredException.addIgnoredException("java.net.SocketException||java.net.ConnectException");
+    IgnoredException.addIgnoredException("java.net.SocketException|java.net.ConnectException");
 
     // start servers first
     PORT1 = server0.invoke(RedundancyLevelTestBase::createServerCache);

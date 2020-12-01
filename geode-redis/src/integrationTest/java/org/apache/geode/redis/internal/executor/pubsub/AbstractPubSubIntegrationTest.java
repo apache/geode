@@ -32,9 +32,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.config.Configurator;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -42,7 +39,6 @@ import org.junit.Test;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
 
-import org.apache.geode.logging.internal.log4j.api.FastLogger;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.mocks.MockBinarySubscriber;
 import org.apache.geode.redis.mocks.MockSubscriber;
@@ -395,35 +391,6 @@ public abstract class AbstractPubSubIntegrationTest implements RedisPortSupplier
   }
 
   @Test
-  public void testUnsubscribingImplicitlyFromAllChannels() {
-    MockSubscriber mockSubscriber = new MockSubscriber();
-
-    Runnable runnable = () -> subscriber.subscribe(mockSubscriber, "salutations", "yuletide");
-
-    Thread subscriberThread = new Thread(runnable);
-    subscriberThread.start();
-
-    waitFor(() -> mockSubscriber.getSubscribedChannels() == 2);
-
-    mockSubscriber.unsubscribe();
-    waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
-    waitFor(() -> !subscriberThread.isAlive());
-
-    List<String> unsubscribedChannels = mockSubscriber.unsubscribeInfos.stream()
-        .map(x -> x.channel)
-        .collect(Collectors.toList());
-    assertThat(unsubscribedChannels).containsExactlyInAnyOrder("salutations", "yuletide");
-
-    List<Integer> channelCounts = mockSubscriber.unsubscribeInfos.stream()
-        .map(x -> x.count)
-        .collect(Collectors.toList());
-    assertThat(channelCounts).containsExactlyInAnyOrder(1, 0);
-
-    Long result = publisher.publish("salutations", "greetings");
-    assertThat(result).isEqualTo(0);
-  }
-
-  @Test
   public void testPsubscribingAndPunsubscribingFromMultipleChannels() {
     MockSubscriber mockSubscriber = new MockSubscriber();
 
@@ -519,7 +486,6 @@ public abstract class AbstractPubSubIntegrationTest implements RedisPortSupplier
 
     return mockSubscriber.getReceivedEvents();
   }
-
 
   @Test
   public void testTwoSubscribersOneChannel() {
@@ -859,10 +825,6 @@ public abstract class AbstractPubSubIntegrationTest implements RedisPortSupplier
   @Test
   public void concurrentSubscribers_andPublishers_doesNotHang()
       throws InterruptedException, ExecutionException {
-    Logger logger = LogService.getLogger("org.apache.geode.redis");
-    Configurator.setAllLevels(logger.getName(), Level.getLevel("DEBUG"));
-    FastLogger.setDelegating(true);
-
     AtomicBoolean running = new AtomicBoolean(true);
 
     Future<Integer> makeSubscribersFuture1 =

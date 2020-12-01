@@ -1002,12 +1002,13 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       if (hdosSize < 32) {
         hdosSize = 32;
       }
-      HeapDataOutputStream hdos = new HeapDataOutputStream(hdosSize, KnownVersion.CURRENT);
-      hdos.write(b);
-      writeDiskRegionID(hdos, dr.getId());
-      hdos.writeUTF(s);
-      hdos.write(END_OF_RECORD_ID);
-      writeIFRecord(hdos, true);
+      try (HeapDataOutputStream hdos = new HeapDataOutputStream(hdosSize, KnownVersion.CURRENT)) {
+        hdos.write(b);
+        writeDiskRegionID(hdos, dr.getId());
+        hdos.writeUTF(s);
+        hdos.write(END_OF_RECORD_ID);
+        writeIFRecord(hdos, true);
+      }
     } catch (IOException ex) {
       DiskAccessException dae = new DiskAccessException(
           String.format("Failed writing data to initialization file because: %s", ex),
@@ -1026,15 +1027,16 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       if (hdosSize < 32) {
         hdosSize = 32;
       }
-      HeapDataOutputStream hdos = new HeapDataOutputStream(hdosSize, KnownVersion.CURRENT);
-      hdos.write(b);
-      writeDiskRegionID(hdos, regionId);
-      hdos.writeUTF(fileName);
-      // TODO - plum the correct compactor info to this point, to optimize
-      // serialization
-      DataSerializer.writeObject(compactorInfo, hdos);
-      hdos.write(END_OF_RECORD_ID);
-      writeIFRecord(hdos, true);
+      try (HeapDataOutputStream hdos = new HeapDataOutputStream(hdosSize, KnownVersion.CURRENT)) {
+        hdos.write(b);
+        writeDiskRegionID(hdos, regionId);
+        hdos.writeUTF(fileName);
+        // TODO - plum the correct compactor info to this point, to optimize
+        // serialization
+        DataSerializer.writeObject(compactorInfo, hdos);
+        hdos.write(END_OF_RECORD_ID);
+        writeIFRecord(hdos, true);
+      }
     } catch (IOException ex) {
       DiskAccessException dae = new DiskAccessException(
           String.format("Failed writing data to initialization file because: %s", ex),
@@ -1053,12 +1055,13 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       if (hdosSize < 32) {
         hdosSize = 32;
       }
-      HeapDataOutputStream hdos = new HeapDataOutputStream(hdosSize, KnownVersion.CURRENT);
-      hdos.write(b);
-      writeDiskRegionID(hdos, regionId);
-      hdos.writeUTF(fileName);
-      hdos.write(END_OF_RECORD_ID);
-      writeIFRecord(hdos, true);
+      try (HeapDataOutputStream hdos = new HeapDataOutputStream(hdosSize, KnownVersion.CURRENT)) {
+        hdos.write(b);
+        writeDiskRegionID(hdos, regionId);
+        hdos.writeUTF(fileName);
+        hdos.write(END_OF_RECORD_ID);
+        writeIFRecord(hdos, true);
+      }
     } catch (IOException ex) {
       DiskAccessException dae = new DiskAccessException(
           String.format("Failed writing data to initialization file because: %s", ex),
@@ -1694,8 +1697,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
   }
 
   private void writeRevokedMember(PersistentMemberPattern revoked) {
-    try {
-      HeapDataOutputStream hdos = new HeapDataOutputStream(32, KnownVersion.CURRENT);
+    try (HeapDataOutputStream hdos = new HeapDataOutputStream(32, KnownVersion.CURRENT)) {
       hdos.write(IFREC_REVOKE_DISK_STORE_ID);
       InternalDataSerializer.invokeToData(revoked, hdos);
       hdos.write(END_OF_RECORD_ID);
@@ -1712,12 +1714,11 @@ public class DiskInitFile implements DiskInitFileInterpreter {
   }
 
   private void writeRegionConfig(DiskRegionView drv) {
-    try {
-      int len = estimateByteSize(drv.getPartitionName());
+    int len = estimateByteSize(drv.getPartitionName());
+    try (HeapDataOutputStream bb = new HeapDataOutputStream(
+        1 + DR_ID_MAX_BYTES + 1 + 1 + 4 + 4 + 4 + 1 + 1 + 4 + len + 4 + 1 + 1 + 1,
+        KnownVersion.CURRENT)) {
       int comprLen = estimateByteSize(drv.getCompressorClassName());
-      HeapDataOutputStream bb = new HeapDataOutputStream(
-          1 + DR_ID_MAX_BYTES + 1 + 1 + 4 + 4 + 4 + 1 + 1 + 4 + len + 4 + 1 + 1 + 1,
-          KnownVersion.CURRENT);
       bb.write(IFREC_REGION_CONFIG_ID_90);
       writeDiskRegionID(bb, drv.getId());
       bb.write(drv.getLruAlgorithm());
@@ -1749,13 +1750,12 @@ public class DiskInitFile implements DiskInitFileInterpreter {
   }
 
   private void writePRCreate(String name, PRPersistentConfig config) {
-    try {
-      int nameLength = estimateByteSize(name);
-      String colocatedWith = config.getColocatedWith();
-      colocatedWith = colocatedWith == null ? "" : colocatedWith;
-      int colocatedLength = estimateByteSize(colocatedWith);
-      HeapDataOutputStream hdos =
-          new HeapDataOutputStream(1 + nameLength + 4 + colocatedLength + 1, KnownVersion.CURRENT);
+    int nameLength = estimateByteSize(name);
+    String colocatedWith = config.getColocatedWith();
+    colocatedWith = colocatedWith == null ? "" : colocatedWith;
+    int colocatedLength = estimateByteSize(colocatedWith);
+    try (HeapDataOutputStream hdos =
+        new HeapDataOutputStream(1 + nameLength + 4 + colocatedLength + 1, KnownVersion.CURRENT)) {
       hdos.write(IFREC_PR_CREATE);
       hdos.writeUTF(name);
       hdos.writeInt(config.getTotalNumBuckets());
@@ -1774,10 +1774,9 @@ public class DiskInitFile implements DiskInitFileInterpreter {
   }
 
   private void writePRDestroy(String name) {
-    try {
-      int nameLength = estimateByteSize(name);
-      HeapDataOutputStream hdos =
-          new HeapDataOutputStream(1 + nameLength + 4 + 1, KnownVersion.CURRENT);
+    int nameLength = estimateByteSize(name);
+    try (HeapDataOutputStream hdos =
+        new HeapDataOutputStream(1 + nameLength + 4 + 1, KnownVersion.CURRENT)) {
       hdos.write(IFREC_PR_DESTROY);
       hdos.writeUTF(name);
       hdos.write(END_OF_RECORD_ID);
@@ -1794,8 +1793,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
   }
 
   private void writeCanonicalId(int id, Object object) {
-    try {
-      HeapDataOutputStream hdos = new HeapDataOutputStream(32, KnownVersion.CURRENT);
+    try (HeapDataOutputStream hdos = new HeapDataOutputStream(32, KnownVersion.CURRENT)) {
       hdos.write(IFREC_ADD_CANONICAL_MEMBER_ID);
       hdos.writeInt(id);
       DataSerializer.writeObject(object, hdos);
@@ -2000,8 +1998,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
    * Write a clear with an RVV record.
    */
   private void writeClearRecord(DiskRegionView dr, RegionVersionVector rvv) {
-    try {
-      HeapDataOutputStream hdos = new HeapDataOutputStream(32, KnownVersion.CURRENT);
+    try (HeapDataOutputStream hdos = new HeapDataOutputStream(32, KnownVersion.CURRENT)) {
       hdos.write(IFREC_CLEAR_REGION_WITH_RVV_ID);
       writeDiskRegionID(hdos, dr.getId());
       // We only need the memberToVersionMap for clear purposes

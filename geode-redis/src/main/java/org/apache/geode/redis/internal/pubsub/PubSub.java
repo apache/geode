@@ -81,11 +81,19 @@ public interface PubSub {
   long punsubscribe(GlobPattern pattern, Client client);
 
   /**
-   * Return a list of channel names that a client has subscribed to
+   * Return a list of channel names or patterns that a client has subscribed to
    *
    * @param client the Client which is to be queried
-   * @return the list of channels
+   * @return the list of channels or patterns
    */
-  List<byte[]> findSubscribedChannels(Client client);
+  List<byte[]> findSubscriptionNames(Client client, Subscription.Type type);
+
+  /**
+   * Return a list of channel names and patterns that a client has subscribed to
+   *
+   * @param client the Client which is to be queried
+   * @return the list of channels and patterns
+   */
+  List<byte[]> findSubscriptionNames(Client client);;
 
 }

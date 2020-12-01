@@ -84,7 +84,13 @@ public class CommandHelper {
   }
 
   RedisSet getRedisSet(ByteArrayWrapper key) {
-    return checkSetType(getRedisData(key, NULL_REDIS_SET));
+    RedisData redisData = getRedisData(key, NULL_REDIS_SET);
+    if (redisData == NULL_REDIS_SET) {
+      redisStats.incKeyspaceMisses();
+    } else {
+      redisStats.incKeyspaceHits();
+    }
+    return checkSetType(redisData);
   }
 
   private RedisSet checkSetType(RedisData redisData) {
@@ -98,7 +104,14 @@ public class CommandHelper {
   }
 
   RedisHash getRedisHash(ByteArrayWrapper key) {
-    return checkHashType(getRedisData(key, NULL_REDIS_HASH));
+    RedisData redisData = getRedisData(key, NULL_REDIS_HASH);
+    if (redisData == NULL_REDIS_HASH) {
+      redisStats.incKeyspaceMisses();
+    } else {
+      redisStats.incKeyspaceHits();
+    }
+
+    return checkHashType(redisData);
   }
 
   private RedisHash checkHashType(RedisData redisData) {
@@ -125,19 +138,34 @@ public class CommandHelper {
   }
 
   RedisString getRedisString(ByteArrayWrapper key) {
-    return checkStringType(getRedisData(key, NULL_REDIS_STRING), false);
+    RedisData redisData = getRedisData(key, NULL_REDIS_STRING);
+    if (redisData == NULL_REDIS_STRING) {
+      redisStats.incKeyspaceMisses();
+    } else {
+      redisStats.incKeyspaceHits();
+    }
+
+    return checkStringType(redisData, false);
   }
 
   RedisString getRedisStringIgnoringType(ByteArrayWrapper key) {
-    return checkStringType(getRedisData(key, NULL_REDIS_STRING), true);
+    RedisData redisData = getRedisData(key, NULL_REDIS_STRING);
+    if (redisData == NULL_REDIS_STRING) {
+      redisStats.incKeyspaceMisses();
+    } else {
+      redisStats.incKeyspaceHits();
+    }
+    return checkStringType(redisData, true);
   }
 
   RedisString setRedisString(ByteArrayWrapper key, ByteArrayWrapper value) {
     RedisString result;
     RedisData redisData = getRedisData(key);
     if (redisData.isNull() || redisData.getType() != REDIS_STRING) {
+      redisStats.incKeyspaceMisses();
       result = new RedisString(value);
     } else {
+      redisStats.incKeyspaceHits();
       result = (RedisString) redisData;
       result.set(value);
     }

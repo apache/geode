@@ -153,11 +153,18 @@ public interface ConfigurationProperties {
    * <U>Description</U>: This property specifies the directory in which the cluster configuration
    * related disk-store and artifacts are stored This property is only applicable to dedicated
    * locators which have "enable-cluster-configuration" set to true.
+   *
+   * Since 1.12, the product does not use this property anymore.
    * </p>
    * <U>Default</U>: ""
    * </p>
    * <U>Since</U>: GemFire 8.1
+   *
+   * @deprecated Since Geode1.14. use import-cluster-configuration and export-cluster-configuration
+   *             to upload/download cluster configuration to/from the cluster.
    */
+
+  @Deprecated
   String CLUSTER_CONFIGURATION_DIR = "cluster-configuration-dir";
 
   /**

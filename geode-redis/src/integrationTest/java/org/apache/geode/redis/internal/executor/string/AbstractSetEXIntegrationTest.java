@@ -21,16 +21,20 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
 
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
 public abstract class AbstractSetEXIntegrationTest implements RedisPortSupplier {
 
   private Jedis jedis;
+  private static final int REDIS_CLIENT_TIMEOUT =
+      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), 10000000);
+    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
@@ -44,6 +48,31 @@ public abstract class AbstractSetEXIntegrationTest implements RedisPortSupplier 
     jedis.setex("key", 20, "value");
 
     assertThat(jedis.ttl("key")).isGreaterThanOrEqualTo(15);
+  }
+
+  @Test
+  public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SETEX))
+        .hasMessageContaining("ERR wrong number of arguments for 'setex' command");
+  }
+
+  @Test
+  public void givenTimeNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SETEX, "key"))
+        .hasMessageContaining("ERR wrong number of arguments for 'setex' command");
+  }
+
+  @Test
+  public void givenValueNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SETEX, "key", "10"))
+        .hasMessageContaining("ERR wrong number of arguments for 'setex' command");
+  }
+
+  @Test
+  public void givenMoreThanFourArgumentsProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(
+        () -> jedis.sendCommand(Protocol.Command.SETEX, "key", "10", "value", "extraArg"))
+            .hasMessageContaining("ERR wrong number of arguments for 'setex' command");
   }
 
   @Test

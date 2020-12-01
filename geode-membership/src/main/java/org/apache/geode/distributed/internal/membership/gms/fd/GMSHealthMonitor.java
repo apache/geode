@@ -52,6 +52,7 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.Logger;
 import org.jgroups.util.UUID;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.api.MemberStartupException;
 import org.apache.geode.distributed.internal.membership.api.MembershipClosedException;
@@ -130,7 +131,11 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
   public static final long MEMBER_SUSPECT_COLLECTION_INTERVAL =
       Long.getLong("geode.suspect-member-collection-interval", 200);
 
-  private volatile long currentTimeStamp;
+  /**
+   * A millisecond clock reading used to mark the last time a peer made contact.
+   */
+  @VisibleForTesting
+  volatile long currentTimeStamp;
 
   /**
    * this member's ID
@@ -152,7 +157,8 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
   /**
    * Members undergoing final checks
    */
-  private final List<ID> membersInFinalCheck =
+  @VisibleForTesting
+  final List<ID> membersInFinalCheck =
       Collections.synchronizedList(new ArrayList<>(30));
 
   /**
@@ -206,7 +212,7 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
    * /**
    * this class is to avoid garbage
    */
-  private static class TimeStamp {
+  static class TimeStamp {
 
     private volatile long timeStamp;
 
@@ -257,6 +263,7 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
           return;
         }
 
+        // TODO - why are we taking two clock readings and setting currentTimeStamp twice?
         long currentTime = System.currentTimeMillis();
         // this is the start of interval to record member activity
         GMSHealthMonitor.this.currentTimeStamp = currentTime;
@@ -339,11 +346,10 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
 
     @Override
     public void run() {
-      try {
+      try (DataInputStream in = new DataInputStream(socket.getInputStream())) {
         socket.setTcpNoDelay(true);
-        DataInputStream in = new DataInputStream(socket.getInputStream());
         OutputStream out = socket.getOutputStream();
-        @SuppressWarnings("UnusedAssignment")
+        @SuppressWarnings("UnusedVariable")
         short version = in.readShort();
         int vmViewId = in.readInt();
         long uuidLSBs = in.readLong();
@@ -583,6 +589,9 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
         // this is expected if it is a connection-timeout or other failure
         // to connect
       } catch (IllegalStateException e) {
+        // This is expected if ConnectTimeoutTask is scheduled on a timer that was already
+        // cancelled.
+        // Once a timer has been terminated, no more tasks may be scheduled on it.
         if (!isStopping) {
           logger.trace("Unexpected exception", e);
         }
@@ -670,7 +679,7 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
 
   @Override
   public void start() throws MemberStartupException {
-    scheduler = LoggingExecutors.newScheduledThreadPool("Geode Failure Detection Scheduler", 1);
+    scheduler = LoggingExecutors.newScheduledThreadPool(1, "Geode Failure Detection Scheduler");
     checkExecutor = LoggingExecutors.newCachedThreadPool("Geode Failure Detection thread ", true);
     Monitor m = this.new Monitor(memberTimeout);
     monitorInterval = memberTimeout / LOGICAL_INTERVAL;
@@ -1240,7 +1249,11 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
     if (isStopping) {
       return;
     }
-    contactedBy(m.getSuspect());
+    // if we're currently processing a final-check for this member don't artificially update the
+    // timestamp of the member or the final-check will be invalid
+    if (!membersInFinalCheck.contains(m.getSuspect())) {
+      contactedBy(m.getSuspect());
+    }
   }
 
 

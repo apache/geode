@@ -49,9 +49,11 @@ public class BlobHelper {
    */
   public static byte[] serializeToBlob(Object obj, KnownVersion version) throws IOException {
     final long start = startSerialization();
-    HeapDataOutputStream hdos = new HeapDataOutputStream(version);
-    DataSerializer.writeObject(obj, hdos);
-    byte[] result = hdos.toByteArray();
+    byte[] result;
+    try (HeapDataOutputStream hdos = new HeapDataOutputStream(version)) {
+      DataSerializer.writeObject(obj, hdos);
+      result = hdos.toByteArray();
+    }
     endSerialization(start, result.length);
     return result;
   }
@@ -86,8 +88,9 @@ public class BlobHelper {
       // blob in a PdxInputStream instead.
       // This will prevent us from making a copy of the byte[]
       // every time we deserialize a PdxInstance.
-      PdxInputStream is = new PdxInputStream(blob);
-      result = DataSerializer.readObject(is);
+      try (PdxInputStream is = new PdxInputStream(blob)) {
+        result = DataSerializer.readObject(is);
+      }
     } else {
       // if we have a nested pdx then we want to make a copy
       // when a PdxInstance is created so that the byte[] will
@@ -113,8 +116,9 @@ public class BlobHelper {
     // For both top level and nested pdxs we just want a reference to this off-heap blob.
     // No copies.
     // For non-pdx we want a stream that will read directly from the chunk.
-    PdxInputStream is = new PdxInputStream(blob);
-    result = DataSerializer.readObject(is);
+    try (PdxInputStream is = new PdxInputStream(blob)) {
+      result = DataSerializer.readObject(is);
+    }
     endDeserialization(start, blob.getDataSize());
     return result;
   }

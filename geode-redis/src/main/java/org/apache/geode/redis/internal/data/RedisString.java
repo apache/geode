@@ -16,8 +16,6 @@
 
 package org.apache.geode.redis.internal.data;
 
-
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -46,6 +44,14 @@ public class RedisString extends AbstractRedisData {
   // for serialization
   public RedisString() {}
 
+  public ByteArrayWrapper get() {
+    return new ByteArrayWrapper(value.toBytes());
+  }
+
+  public void set(ByteArrayWrapper value) {
+    valueSet(value);
+  }
+
   public int append(ByteArrayWrapper appendValue,
       Region<ByteArrayWrapper, RedisData> region,
       ByteArrayWrapper key) {
@@ -53,14 +59,6 @@ public class RedisString extends AbstractRedisData {
     appendSequence++;
     storeChanges(region, key, new AppendDeltaInfo(appendValue.toBytes(), appendSequence));
     return value.length();
-  }
-
-  public ByteArrayWrapper get() {
-    return new ByteArrayWrapper(value.toBytes());
-  }
-
-  public void set(ByteArrayWrapper value) {
-    valueSet(value);
   }
 
   public long incr(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key)
@@ -94,12 +92,9 @@ public class RedisString extends AbstractRedisData {
       double increment)
       throws NumberFormatException, ArithmeticException {
     double doubleValue = parseValueAsDouble();
-    if (doubleValue >= 0 && increment > (Double.MAX_VALUE - doubleValue)) {
-      throw new ArithmeticException(RedisConstants.ERROR_OVERFLOW);
-    }
     doubleValue += increment;
     if (Double.isNaN(doubleValue) || Double.isInfinite(doubleValue)) {
-      throw new ArithmeticException(RedisConstants.ERROR_OVERFLOW);
+      throw new ArithmeticException(RedisConstants.ERROR_NAN_OR_INFINITY);
     }
     valueSetBytes(Coder.doubleToBytes(doubleValue));
     // numeric strings are short so no need to use delta
@@ -144,12 +139,12 @@ public class RedisString extends AbstractRedisData {
   private double parseValueAsDouble() {
     String valueString = value.toString();
     if (valueString.contains(" ")) {
-      throw new NumberFormatException("Value at this key cannot be incremented numerically");
+      throw new NumberFormatException(RedisConstants.ERROR_NOT_A_VALID_FLOAT);
     }
     try {
       return Coder.stringToDouble(valueString);
     } catch (NumberFormatException e) {
-      throw new NumberFormatException("Value at this key cannot be incremented numerically");
+      throw new NumberFormatException(RedisConstants.ERROR_NOT_A_VALID_FLOAT);
     }
 
   }

@@ -79,6 +79,7 @@ org/apache/geode/management/internal/cli/functions/ListDurableCqNamesFunction,tr
 org/apache/geode/management/internal/cli/functions/ListFunctionFunction,true,1
 org/apache/geode/management/internal/cli/functions/ListIndexFunction,false
 org/apache/geode/management/internal/cli/functions/ListJndiBindingFunction,true,5254506785395069200
+org/apache/geode/management/internal/cli/functions/ManageIndexDefinitionFunction,false
 org/apache/geode/management/internal/cli/functions/NetstatFunction,true,1
 org/apache/geode/management/internal/cli/functions/NetstatFunction$NetstatFunctionArgument,true,1,lineSeparator:java/lang/String,withlsof:boolean
 org/apache/geode/management/internal/cli/functions/NetstatFunction$NetstatFunctionResult,true,1,compressedBytes:org/apache/geode/management/internal/cli/CliUtil$DeflaterInflaterData,headerInfo:java/lang/String,host:java/lang/String

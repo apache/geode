@@ -26,6 +26,7 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.net.BufferPool;
+import org.apache.geode.internal.net.ByteBufferSharing;
 import org.apache.geode.internal.net.NioFilter;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -54,28 +55,30 @@ public class MsgReader {
   }
 
   Header readHeader() throws IOException {
-    ByteBuffer unwrappedBuffer = readAtLeast(Connection.MSG_HEADER_BYTES);
+    try (final ByteBufferSharing sharedBuffer = readAtLeast(Connection.MSG_HEADER_BYTES)) {
+      ByteBuffer unwrappedBuffer = sharedBuffer.getBuffer();
 
-    Assert.assertTrue(unwrappedBuffer.remaining() >= Connection.MSG_HEADER_BYTES);
+      Assert.assertTrue(unwrappedBuffer.remaining() >= Connection.MSG_HEADER_BYTES);
 
-    try {
-      int nioMessageLength = unwrappedBuffer.getInt();
-      /* nioMessageVersion = */
-      Connection.calcHdrVersion(nioMessageLength);
-      nioMessageLength = Connection.calcMsgByteSize(nioMessageLength);
-      byte nioMessageType = unwrappedBuffer.get();
-      short nioMsgId = unwrappedBuffer.getShort();
+      try {
+        int nioMessageLength = unwrappedBuffer.getInt();
+        /* nioMessageVersion = */
+        Connection.calcHdrVersion(nioMessageLength);
+        nioMessageLength = Connection.calcMsgByteSize(nioMessageLength);
+        byte nioMessageType = unwrappedBuffer.get();
+        short nioMsgId = unwrappedBuffer.getShort();
 
-      boolean directAck = (nioMessageType & Connection.DIRECT_ACK_BIT) != 0;
-      if (directAck) {
-        nioMessageType &= ~Connection.DIRECT_ACK_BIT; // clear the ack bit
+        boolean directAck = (nioMessageType & Connection.DIRECT_ACK_BIT) != 0;
+        if (directAck) {
+          nioMessageType &= ~Connection.DIRECT_ACK_BIT; // clear the ack bit
+        }
+
+        header.setFields(nioMessageLength, nioMessageType, nioMsgId);
+
+        return header;
+      } catch (BufferUnderflowException e) {
+        throw e;
       }
-
-      header.setFields(nioMessageLength, nioMessageType, nioMsgId);
-
-      return header;
-    } catch (BufferUnderflowException e) {
-      throw e;
     }
 
   }
@@ -87,37 +90,41 @@ public class MsgReader {
    */
   DistributionMessage readMessage(Header header)
       throws IOException, ClassNotFoundException {
-    ByteBuffer nioInputBuffer = readAtLeast(header.messageLength);
-    Assert.assertTrue(nioInputBuffer.remaining() >= header.messageLength);
-    this.getStats().incMessagesBeingReceived(true, header.messageLength);
-    long startSer = this.getStats().startMsgDeserialization();
-    try {
-      byteBufferInputStream.setBuffer(nioInputBuffer);
-      ReplyProcessor21.initMessageRPId();
-      return (DistributionMessage) InternalDataSerializer.readDSFID(byteBufferInputStream);
-    } catch (RuntimeException e) {
-      throw e;
-    } catch (IOException e) {
-      throw e;
-    } finally {
-      this.getStats().endMsgDeserialization(startSer);
-      this.getStats().decMessagesBeingReceived(header.messageLength);
-      ioFilter.doneReadingDirectAck(nioInputBuffer);
+    try (final ByteBufferSharing sharedBuffer = readAtLeast(header.messageLength)) {
+      ByteBuffer nioInputBuffer = sharedBuffer.getBuffer();
+      Assert.assertTrue(nioInputBuffer.remaining() >= header.messageLength);
+      this.getStats().incMessagesBeingReceived(true, header.messageLength);
+      long startSer = this.getStats().startMsgDeserialization();
+      try {
+        byteBufferInputStream.setBuffer(nioInputBuffer);
+        ReplyProcessor21.initMessageRPId();
+        return (DistributionMessage) InternalDataSerializer.readDSFID(byteBufferInputStream);
+      } catch (RuntimeException e) {
+        throw e;
+      } catch (IOException e) {
+        throw e;
+      } finally {
+        this.getStats().endMsgDeserialization(startSer);
+        this.getStats().decMessagesBeingReceived(header.messageLength);
+        ioFilter.doneReadingDirectAck(nioInputBuffer);
+      }
     }
   }
 
   void readChunk(Header header, MsgDestreamer md)
       throws IOException {
-    ByteBuffer unwrappedBuffer = readAtLeast(header.messageLength);
-    this.getStats().incMessagesBeingReceived(md.size() == 0, header.messageLength);
-    md.addChunk(unwrappedBuffer, header.messageLength);
-    // show that the bytes have been consumed by adjusting the buffer's position
-    unwrappedBuffer.position(unwrappedBuffer.position() + header.messageLength);
+    try (final ByteBufferSharing sharedBuffer = readAtLeast(header.messageLength)) {
+      ByteBuffer unwrappedBuffer = sharedBuffer.getBuffer();
+      this.getStats().incMessagesBeingReceived(md.size() == 0, header.messageLength);
+      md.addChunk(unwrappedBuffer, header.messageLength);
+      // show that the bytes have been consumed by adjusting the buffer's position
+      unwrappedBuffer.position(unwrappedBuffer.position() + header.messageLength);
+    }
   }
 
 
 
-  private ByteBuffer readAtLeast(int bytes) throws IOException {
+  private ByteBufferSharing readAtLeast(int bytes) throws IOException {
     peerNetData = ioFilter.ensureWrappedCapacity(bytes, peerNetData,
         BufferPool.BufferType.TRACKED_RECEIVER);
     return ioFilter.readAtLeast(conn.getSocket().getChannel(), bytes, peerNetData);

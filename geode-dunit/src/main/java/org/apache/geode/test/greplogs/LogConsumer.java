@@ -74,7 +74,7 @@ public class LogConsumer {
     this.skipLimit = repeatLimit;
   }
 
-  public StringBuilder consume(CharSequence line) {
+  public String consume(CharSequence line) {
     lineNumber++;
 
     // IgnoredException injects lines into the log to start or end ignore periods.
@@ -131,7 +131,7 @@ public class LogConsumer {
     return null;
   }
 
-  public StringBuilder close() {
+  public String close() {
     if (saveFlag) {
       saveFlag = false;
       return enforceErrorLimit(1, all.toString(), savelinenum, logName);
@@ -183,7 +183,7 @@ public class LogConsumer {
     }
   }
 
-  private StringBuilder enforceErrorLimitsAtShortErrMatcher() {
+  private String enforceErrorLimitsAtShortErrMatcher() {
     // we found a blank line so print the suspect string and reset the savetag flag
     saveFlag = false;
 
@@ -270,26 +270,22 @@ public class LogConsumer {
         constantIgnoredPatterns.stream().anyMatch(p -> p.matcher(line).find());
   }
 
-  private StringBuilder enforceErrorLimit(int hits, String line, int linenum, String filename) {
+  private String enforceErrorLimit(int hits, String line, int linenum, String filename) {
     if (hits < skipLimit) {
-      StringBuilder string = new StringBuilder();
-      string
-          .append("-----------------------------------------------------------------------")
-          .append(lineSeparator())
-          .append("Found suspect string in ").append(filename).append(" at line ").append(linenum)
-          .append(lineSeparator()).append(lineSeparator())
-          .append(line).append(lineSeparator());
+      String string = "-----------------------------------------------------------------------"
+          + lineSeparator()
+          + "Found suspect string in '" + filename + "' at line " + linenum
+          + lineSeparator() + lineSeparator()
+          + line + lineSeparator();
       return string;
     }
 
     if (hits == skipLimit) {
-      StringBuilder string = new StringBuilder();
-      string
-          .append(lineSeparator()).append(lineSeparator())
-          .append("Hit occurrence limit of ").append(hits).append(" for this string.")
-          .append(lineSeparator())
-          .append("Further reporting of this type of error will be suppressed.")
-          .append(lineSeparator());
+      String string = lineSeparator() + lineSeparator()
+          + "Hit occurrence limit of " + hits + " for this string."
+          + lineSeparator()
+          + "Further reporting of this type of error will be suppressed."
+          + lineSeparator();
       return string;
     }
     return null;

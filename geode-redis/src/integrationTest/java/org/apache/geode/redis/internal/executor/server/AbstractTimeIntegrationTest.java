@@ -17,6 +17,7 @@
 package org.apache.geode.redis.internal.executor.server;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.List;
 
@@ -24,6 +25,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
 
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
@@ -45,12 +47,29 @@ public abstract class AbstractTimeIntegrationTest implements RedisPortSupplier {
   }
 
   @Test
-  public void timeCommandRespondsWIthTwoValues() {
+  public void givenMoreThanOneArgument_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.TIME, "extraArg"))
+        .hasMessageContaining("ERR wrong number of arguments for 'time' command");
+  }
+
+  @Test
+  public void timeCommandRespondsWithTwoValues() {
     List<String> timestamp = jedis.time();
 
     assertThat(timestamp).hasSize(2);
     assertThat(Long.parseLong(timestamp.get(0))).isGreaterThan(0);
     assertThat(Long.parseLong(timestamp.get(1))).isNotNegative();
   }
-
+  //
+  // @Test
+  // public void addAlotOfKeysToNativeRedis() {
+  // for(int i=0; i < 1000000; i++) {
+  // jedis.set(String.valueOf(i), "whatevs");
+  // }
+  //
+  // jedis.sendCommand(Protocol.Command.FLUSHALL, "ASYNC");
+  // Set<String> keys = jedis.keys("*");
+  //
+  // assertThat(keys).isEmpty();
+  // }
 }

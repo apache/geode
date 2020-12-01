@@ -16,6 +16,7 @@
 
 package org.apache.geode.redis.internal.executor.server;
 
+
 import org.junit.ClassRule;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
@@ -30,4 +31,9 @@ public class FlushAllIntegrationTest extends AbstractFlushAllIntegrationTest {
     return server.getPort();
   }
 
+  // @Test
+  // public void givenAsyncParameter_returnsUnimplementedError() {
+  // assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.FLUSHALL, "ASYNC", "extraArg"))
+  // .hasMessageContaining(ERROR_SYNTAX);
+  // }
 }

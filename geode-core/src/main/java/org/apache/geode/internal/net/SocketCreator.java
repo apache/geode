@@ -68,6 +68,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.annotations.internal.DeprecatedButRequiredForBackwardsCompatibilityTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
@@ -155,8 +156,10 @@ public class SocketCreator extends TcpSocketCreatorImpl {
    * This method has migrated to LocalHostUtil but is kept in place here for
    * backward-compatibility testing.
    *
-   * @deprecated use LocalHostUtil.getLocalHost()
+   * @deprecated use {@link LocalHostUtil#getLocalHost()}
    */
+  @DeprecatedButRequiredForBackwardsCompatibilityTesting
+  @Deprecated
   public static InetAddress getLocalHost() throws UnknownHostException {
     return LocalHostUtil.getLocalHost();
   }
@@ -334,21 +337,22 @@ public class SocketCreator extends TcpSocketCreatorImpl {
 
     KeyStore ts = KeyStore.getInstance(trustStoreType);
     String trustStorePath = sslConfig.getTruststore();
-    FileInputStream fis = new FileInputStream(trustStorePath);
-    String passwordString = sslConfig.getTruststorePassword();
     char[] password = null;
-    if (passwordString != null) {
-      if (passwordString.trim().equals("")) {
-        if (!StringUtils.isEmpty(passwordString)) {
-          String toDecrypt = "encrypted(" + passwordString + ")";
-          passwordString = PasswordUtil.decrypt(toDecrypt);
+    try (FileInputStream fis = new FileInputStream(trustStorePath)) {
+      String passwordString = sslConfig.getTruststorePassword();
+      if (passwordString != null) {
+        if (passwordString.trim().equals("")) {
+          if (!StringUtils.isEmpty(passwordString)) {
+            String toDecrypt = "encrypted(" + passwordString + ")";
+            passwordString = PasswordUtil.decrypt(toDecrypt);
+            password = passwordString.toCharArray();
+          }
+        } else {
           password = passwordString.toCharArray();
         }
-      } else {
-        password = passwordString.toCharArray();
       }
+      ts.load(fis, password);
     }
-    ts.load(fis, password);
 
     // default algorithm can be changed by setting property "ssl.TrustManagerFactory.algorithm" in
     // security properties
@@ -383,22 +387,23 @@ public class SocketCreator extends TcpSocketCreatorImpl {
     }
 
 
-    FileInputStream fileInputStream = new FileInputStream(keyStoreFilePath);
-    String passwordString = sslConfig.getKeystorePassword();
     char[] password = null;
-    if (passwordString != null) {
-      if (passwordString.trim().equals("")) {
-        String encryptedPass = System.getenv("javax.net.ssl.keyStorePassword");
-        if (!StringUtils.isEmpty(encryptedPass)) {
-          String toDecrypt = "encrypted(" + encryptedPass + ")";
-          passwordString = PasswordUtil.decrypt(toDecrypt);
+    try (FileInputStream fileInputStream = new FileInputStream(keyStoreFilePath)) {
+      String passwordString = sslConfig.getKeystorePassword();
+      if (passwordString != null) {
+        if (passwordString.trim().equals("")) {
+          String encryptedPass = System.getenv("javax.net.ssl.keyStorePassword");
+          if (!StringUtils.isEmpty(encryptedPass)) {
+            String toDecrypt = "encrypted(" + encryptedPass + ")";
+            passwordString = PasswordUtil.decrypt(toDecrypt);
+            password = passwordString.toCharArray();
+          }
+        } else {
           password = passwordString.toCharArray();
         }
-      } else {
-        password = passwordString.toCharArray();
       }
+      keyStore.load(fileInputStream, password);
     }
-    keyStore.load(fileInputStream, password);
     // default algorithm can be changed by setting property "ssl.KeyManagerFactory.algorithm" in
     // security properties
     KeyManagerFactory keyManagerFactory =

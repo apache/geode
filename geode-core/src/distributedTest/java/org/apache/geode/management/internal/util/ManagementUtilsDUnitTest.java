@@ -241,6 +241,17 @@ public class ManagementUtilsDUnitTest {
     });
   }
 
+  @Test
+  public void getAllLocators() throws Exception {
+    MemberVM newLocator = lsRule.startLocatorVM(5, locator.getPort());
+    locator.invoke(() -> {
+      Set<DistributedMember> allLocators =
+          ManagementUtils.getAllLocators(ClusterStartupRule.getCache());
+      assertThat(allLocators).hasSize(2);
+    });
+    newLocator.stop();
+  }
+
   private static Set<String> getNames(Set<DistributedMember> members) {
     return members.stream().map(DistributedMember::getName).collect(Collectors.toSet());
   }

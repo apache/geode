@@ -50,14 +50,14 @@ public class LogConsumerTest {
 
   @Test
   public void consume_returnsNull_ifLineIsOk() {
-    StringBuilder value = logConsumer.consume("ok");
+    String value = logConsumer.consume("ok");
 
     assertThat(value).isNull();
   }
 
   @Test
   public void consume_returnsNull_ifLineIsEmpty() {
-    StringBuilder value = logConsumer.consume("");
+    String value = logConsumer.consume("");
 
     assertThat(value).isNull();
   }
@@ -74,7 +74,7 @@ public class LogConsumerTest {
   public void close_returnsNull_ifLineIsOk() {
     logConsumer.consume("ok");
 
-    StringBuilder value = logConsumer.close();
+    String value = logConsumer.close();
 
     assertThat(value).isNull();
   }
@@ -83,7 +83,7 @@ public class LogConsumerTest {
   public void close_returnsNull_ifLineIsEmpty() {
     logConsumer.consume("");
 
-    StringBuilder value = logConsumer.close();
+    String value = logConsumer.close();
 
     assertThat(value).isNull();
   }
@@ -93,7 +93,7 @@ public class LogConsumerTest {
     logConsumer.consume("[info 019/06/13 14:41:05.750 PDT <main> tid=0x1] " +
         NullPointerException.class.getName());
 
-    StringBuilder value = logConsumer.close();
+    String value = logConsumer.close();
 
     assertThat(value).isNull();
   }
@@ -103,7 +103,7 @@ public class LogConsumerTest {
     String line = "[error 019/06/13 14:41:05.750 PDT <main> tid=0x1] message";
     logConsumer.consume(line);
 
-    StringBuilder value = logConsumer.close();
+    String value = logConsumer.close();
 
     assertThat(value).contains(line);
   }
@@ -112,7 +112,7 @@ public class LogConsumerTest {
   public void close_returnsNull_ifLineContains_warningLevelMessage() {
     logConsumer.consume("[warning 2019/06/13 14:41:05.750 PDT <main> tid=0x1] message");
 
-    StringBuilder value = logConsumer.close();
+    String value = logConsumer.close();
 
     assertThat(value).isNull();
   }
@@ -122,7 +122,7 @@ public class LogConsumerTest {
     String line = "[fatal 2019/06/13 14:41:05.750 PDT <main> tid=0x1] message";
     logConsumer.consume(line);
 
-    StringBuilder value = logConsumer.close();
+    String value = logConsumer.close();
 
     assertThat(value).contains(line);
   }
@@ -132,7 +132,7 @@ public class LogConsumerTest {
     String line = "[severe 2019/06/13 14:41:05.750 PDT <main> tid=0x1] message";
     logConsumer.consume(line);
 
-    StringBuilder value = logConsumer.close();
+    String value = logConsumer.close();
 
     assertThat(value).contains(line);
   }
@@ -142,7 +142,7 @@ public class LogConsumerTest {
     String line = "[info 2019/06/13 14:41:05.750 PDT <main> tid=0x1] contains {}";
     logConsumer.consume(line);
 
-    StringBuilder value = logConsumer.close();
+    String value = logConsumer.close();
 
     assertThat(value).contains(line);
   }
@@ -152,7 +152,7 @@ public class LogConsumerTest {
     String line = "hydra.MasterDescription.master.locators={}";
     logConsumer.consume(line);
 
-    StringBuilder value = logConsumer.close();
+    String value = logConsumer.close();
 
     assertThat(value).isNull();
   }
@@ -161,7 +161,7 @@ public class LogConsumerTest {
   public void close_returnsLine_ifLineContainsException() {
     logConsumer.consume(EXCEPTION_MESSAGE);
 
-    StringBuilder value = logConsumer.close();
+    String value = logConsumer.close();
 
     assertThat(value).contains(EXCEPTION_MESSAGE);
   }

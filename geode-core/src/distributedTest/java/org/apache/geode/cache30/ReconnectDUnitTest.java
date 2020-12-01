@@ -134,6 +134,8 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
 
   @Override
   public final void postSetUp() throws Exception {
+    IgnoredException.addIgnoredException("ForcedDisconnectException");
+    IgnoredException.addIgnoredException("Possible loss of quorum");
     locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final int locPort = locatorPort;
     Host.getHost(0).getVM(locatorVMNumber).invoke(new SerializableRunnable("start locator") {
@@ -148,8 +150,6 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
           system = (InternalDistributedSystem) locator.getDistributedSystem();
           cache = ((InternalLocator) locator).getCache();
           ReconnectDUnitTest.savedSystem = locator.getDistributedSystem();
-          IgnoredException.addIgnoredException(
-              "org.apache.geode.ForcedDisconnectException||Possible loss of quorum");
           // MembershipManagerHelper.getMembershipManager(InternalDistributedSystem.getConnectedInstance()).setDebugJGroups(true);
         } catch (IOException e) {
           Assert.fail("unable to start locator", e);
@@ -265,8 +265,8 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
             props.put(MAX_NUM_RECONNECT_TRIES, "2");
             // props.put("log-file", "autoReconnectVM"+VM.getCurrentVMNum()+"_"+getPID()+".log");
             cache = (InternalCache) new CacheFactory(props).create();
-            IgnoredException.addIgnoredException(
-                "org.apache.geode.ForcedDisconnectException||Possible loss of quorum");
+            IgnoredException.addIgnoredException("org.apache.geode.ForcedDisconnectException");
+            IgnoredException.addIgnoredException("Possible loss of quorum");
             Region myRegion = cache.getRegion("root" + SEPARATOR + "myRegion");
             ReconnectDUnitTest.savedSystem = cache.getDistributedSystem();
             myRegion.put("MyKey1", "MyValue1");
@@ -679,7 +679,8 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void testReconnectWithRoleLoss() throws TimeoutException, RegionExistsException {
-
+    IgnoredException.addIgnoredException(CacheClosedException.class);
+    IgnoredException.addIgnoredException(DistributedSystemDisconnectedException.class);
     final String rr1 = "RoleA";
     final String rr2 = "RoleB";
     final String[] requiredRoles = {rr1, rr2};
@@ -810,6 +811,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
   // for the 2014 8.0 release.
   @Test
   public void testReconnectWithRequiredRoleRegained() throws Throwable {
+    IgnoredException.addIgnoredException(DistributedSystemDisconnectedException.class);
 
     final String rr1 = "RoleA";
     // final String rr2 = "RoleB";
@@ -1116,6 +1118,9 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void testReconnectFailsDueToBadCacheXML() throws Exception {
+    IgnoredException.addIgnoredException(DistributedSystemDisconnectedException.class);
+    IgnoredException.addIgnoredException("Cause parsing to fail");
+    IgnoredException.addIgnoredException("Exception while initializing an instance");
 
     Host host = getHost(0);
     VM vm0 = host.getVM(0);

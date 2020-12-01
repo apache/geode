@@ -101,12 +101,13 @@ public class UpgradeOfflineDiskStoreCommand extends GfshCommand {
       procBuilder.redirectErrorStream(true);
       upgraderProcess = procBuilder.start();
 
-      InputStream inputStream = upgraderProcess.getInputStream();
-      BufferedReader inputReader = new BufferedReader(new InputStreamReader(inputStream));
-
       String line;
-      while ((line = inputReader.readLine()) != null) {
-        infoResult.addLine(line);
+      try (InputStream inputStream = upgraderProcess.getInputStream();
+          InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+          BufferedReader inputReader = new BufferedReader(inputStreamReader)) {
+        while ((line = inputReader.readLine()) != null) {
+          infoResult.addLine(line);
+        }
       }
 
       upgraderProcess.waitFor(2, TimeUnit.SECONDS);

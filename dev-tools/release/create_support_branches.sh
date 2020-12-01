@@ -188,12 +188,12 @@ sed -e "s#return Collections.unmodifiableMap(allCommands#allCommands.put(Version
   -i.bak $COM
 
 #  directory: docs/guide/113
-#  product_version: '1.13'
+#  product_version: '1.13.2'
 #  product_version_nodot: '113'
 #  product_version_geode: '1.13'
 sed -E \
     -e "s#docs/guide/[0-9]+#docs/guide/${NEWVERSION_MM_NODOT}#" \
-    -e "s#product_version: '[0-9.]+'#product_version: '${NEWVERSION_MM}'#" \
+    -e "s#product_version: '[0-9.]+'#product_version: '${NEWVERSION}'#" \
     -e "s#version_nodot: '[0-9]+'#version_nodot: '${NEWVERSION_MM_NODOT}'#" \
     -e "s#product_version_geode: '[0-9.]+'#product_version_geode: '${NEWVERSION_MM}'#" \
     -i.bak geode-book/config.yml

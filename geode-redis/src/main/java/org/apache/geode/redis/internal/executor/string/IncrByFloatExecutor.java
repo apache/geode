@@ -14,10 +14,10 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
-
 import java.util.List;
+import java.util.regex.Pattern;
 
-import org.apache.geode.redis.internal.RedisConstants.ArityDef;
+import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Coder;
@@ -26,35 +26,28 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class IncrByFloatExecutor extends StringExecutor {
 
-  private static final String ERROR_INCREMENT_NOT_USABLE =
-      "The increment on this key must be a valid floating point numeric";
-
   private static final int INCREMENT_INDEX = 2;
 
+  private static final Pattern invalidArgs =
+      Pattern.compile("[+-]?(inf|infinity)", Pattern.CASE_INSENSITIVE);
+
   @Override
-  public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
-
-    if (commandElems.size() < 3) {
-      return RedisResponse.error(ArityDef.INCRBYFLOAT);
-    }
-
     ByteArrayWrapper key = command.getKey();
     RedisStringCommands stringCommands = getRedisStringCommands(context);
 
     byte[] incrArray = commandElems.get(INCREMENT_INDEX);
     String doub = Coder.bytesToString(incrArray).toLowerCase();
-    if (doub.contains("inf") || doub.contains("nan")) {
-      return RedisResponse.error("Increment would produce NaN or infinity");
+    if (invalidArgs.matcher(doub).matches()) {
+      return RedisResponse.error(RedisConstants.ERROR_NAN_OR_INFINITY);
     }
 
     double increment;
-
     try {
-      increment = Coder.stringToDouble(doub);
+      increment = Coder.bytesToDouble(incrArray);
     } catch (NumberFormatException e) {
-      return RedisResponse.error(ERROR_INCREMENT_NOT_USABLE);
+      return RedisResponse.error(RedisConstants.ERROR_NOT_A_VALID_FLOAT);
     }
 
     double result = stringCommands.incrbyfloat(key, increment);

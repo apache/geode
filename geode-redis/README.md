@@ -120,7 +120,7 @@ As this command will shut down the entire Geode instance/cluster, you will be pr
 As a lot of data in memory will be lost, including possibly events in queues, do you really want to shutdown the entire distributed system? (Y/n)
 ```
 
-To confirm that everything shutdown correctly, if you try and execute a Redis command in the redis-cli you should see the following message:
+To confirm that everything shutdown correctly, if you execute a Redis command in the redis-cli you should see the following message:
 
 ```commandline
 Could not connect to Redis at 127.0.0.1:6379: Connection refused 
@@ -185,31 +185,31 @@ start server \
 | SUBSCRIBE          	| INCRBYFLOAT                                        	| CLIENT LIST                   	|
 | TTL                	| MGET                                               	| CLIENT PAUSE                  	|
 | TYPE               	| MSET                                               	| CLIENT REPLY                  	|
-| UNSUBSCRIBE        	| MSETNX                                             	| CLIENT SETNAME                	|
+| UNSUBSCRIBE       	| MSETNX                                             	| CLIENT SETNAME                	|
 |                    	| PSETEX                                             	| CLIENT TRACKING               	|
 |                    	| SCAN                                               	| CLIENT UNBLOCK                	|
 |                    	| SCARD                                              	| CLUSTER ADDSLOTS              	|
 |                    	| SDIFF                                              	| CLUSTER BUMPEPOCH             	|
 |                    	| SDIFFSTORE                                         	| CLUSTER COUNT-FAILURE-REPORTS 	|
-|                    	| SETBIT                                             	| CLUSTER COUNTKEYSINSLOT       	|
-|                    	| SETEX                                              	| CLUSTER DELSLOTS              	|
-|                    	| SETNX                                              	| CLUSTER FAILOVER              	|
-|                    	| SETRANGE                                           	| CLUSTER FLUSHSLOTS            	|
-|                    	| SHUTDOWN                                           	| CLUSTER FORGET                	|
-|                    	| SINTER                                             	| CLUSTER GETKEYSINSLOT         	|
-|                    	| SINTERSTORE                                        	| CLUSTER INFO                  	|
-|                    	| SISMEMBER                                          	| CLUSTER KEYSLOT               	|
-|                    	| SMOVE                                              	| CLUSTER MEET                  	|
-|                    	| SPOP                                               	| CLUSTER MYID                  	|
-|                    	| SRANDMEMBER                                        	| CLUSTER NODES                 	|
-|                    	| SSCAN                                              	| CLUSTER REPLICAS              	|
-|                    	| STRLEN                                             	| CLUSTER REPLICATE             	|
-|                    	| SUNION                                             	| CLUSTER RESET                 	|
-|                    	| SUNIONSTORE                                        	| CLUSTER SAVECONFIG            	|
-|                    	| TIME                                               	| CLUSTER SET-CONFIG-EPOCH      	|
-|                    	|                                                    	| CLUSTER SETSLOT               	|
-|                    	|                                                    	| CLUSTER SLAVES                	|
-|                    	|                                                    	| CLUSTER SLOTS                 	|
+|                    	| SELECT                                             	| CLUSTER COUNTKEYSINSLOT       	|
+|                    	| SETBIT                                             	| CLUSTER DELSLOTS      	        |
+|                    	| SETEX                                              	| CLUSTER FAILOVER              	|
+|                    	| SETNX                                              	| CLUSTER FLUSHSLOTS               	|
+|                    	| SETRANGE                                           	| CLUSTER FORGET                   	|
+|                    	| SHUTDOWN                                           	| CLUSTER GETKEYSINSLOT            	|
+|                    	| SINTER                                             	| CLUSTER INFO                  	|
+|                    	| SINTERSTORE                                        	| CLUSTER KEYSLOT                 	|
+|                    	| SISMEMBER                                          	| CLUSTER MEET                     	|
+|                    	| SLOWLOG                                            	| CLUSTER MYID                   	|
+|                    	| SMOVE                                              	| CLUSTER NODES                 	|
+|                    	| SPOP                                               	| CLUSTER REPLICAS                 	|
+|                    	| SRANDMEMBER                                        	| CLUSTER REPLICATE              	|
+|                    	| SSCAN                                              	| CLUSTER RESET                  	|
+|                    	| STRLEN                                             	| CLUSTER SAVECONFIG                |
+|                    	| SUNION                                             	| CLUSTER SET-CONFIG-EPOCH          |
+|                    	| SUNIONSTORE                                        	| CLUSTER SETSLOT                 	|
+|                    	| TIME                                               	| CLUSTER SLAVES                  	|
+|                    	| UNLINK [1]                                         	| CLUSTER SLOTS                 	|
 |                    	|                                                    	| COMMAND                       	|
 |                    	|                                                    	| COMMAND COUNT                 	|
 |                    	|                                                    	| COMMAND GETKEYS               	|
@@ -231,7 +231,6 @@ start server \
 |                    	|                                                    	| GEOPOS                        	|
 |                    	|                                                    	| GEORADIUS                     	|
 |                    	|                                                    	| GEORADIUSBYMEMBER             	|
-|                    	|                                                    	| HELLO                         	|
 |                    	|                                                    	| HSTRLEN                       	|
 |                    	|                                                    	| INFO                          	|
 |                    	|                                                    	| LASTSAVE                      	|
@@ -289,16 +288,13 @@ start server \
 |                    	|                                                    	| SCRIPT FLUSH                  	|
 |                    	|                                                    	| SCRIPT KILL                   	|
 |                    	|                                                    	| SCRIPT LOAD                   	|
-|                    	|                                                    	| SELECT                        	|
 |                    	|                                                    	| SLAVEOF                       	|
-|                    	|                                                    	| SLOWLOG                       	|
 |                    	|                                                    	| SORT                          	|
 |                    	|                                                    	| STRALGO LCS                   	|
 |                    	|                                                    	| SWAPDB                        	|
 |                    	|                                                    	| SYNC                          	|
 |                    	|                                                    	| TOUCH                         	|
-|                    	|                                                    	| UNLINK                        	|
-|                    	|                                                    	| UNWATCH                       	|
+|                    	|                                                    	| UNWATCH                        	|
 |                    	|                                                    	| WAIT                          	|
 |                    	|                                                    	| WATCH                         	|
 |                    	|                                                    	| XACK                          	|
@@ -336,3 +332,8 @@ start server \
 |                    	|                                                    	| ZSCAN                         	|
 |                    	|                                                    	| ZSCORE                        	|
 |                    	|                                                    	| ZUNIONSTORE                   	|
+|                    	|                                                    	|              	                    |
+
+**NOTES:**
+
+[1] - UNLINK is implemented as a synonym to DEL and does not unlink asynchronously.

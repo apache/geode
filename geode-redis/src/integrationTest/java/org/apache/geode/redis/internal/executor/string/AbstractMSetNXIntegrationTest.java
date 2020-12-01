@@ -15,6 +15,7 @@
 package org.apache.geode.redis.internal.executor.string;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -23,22 +24,46 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
 
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
 public abstract class AbstractMSetNXIntegrationTest implements RedisPortSupplier {
 
   private Jedis jedis;
+  private static final int REDIS_CLIENT_TIMEOUT =
+      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), 10000000);
+    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
     jedis.flushAll();
     jedis.close();
+  }
+
+  @Test
+  public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.MSETNX))
+        .hasMessageContaining("ERR wrong number of arguments for 'msetnx' command");
+  }
+
+  @Test
+  public void givenValueNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.MSETNX, "key"))
+        .hasMessageContaining("ERR wrong number of arguments for 'msetnx' command");
+  }
+
+  @Test
+  public void givenEvenNumberOfArgumentsProvided_returnsWrongNumberOfArgumentsError() {
+    // Redis returns this message in this scenario: "ERR wrong number of arguments for MSET"
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.MSETNX, "key1", "value1", "key2",
+        "value2", "key3"))
+            .hasMessageContaining("ERR wrong number of arguments");
   }
 
   @Test

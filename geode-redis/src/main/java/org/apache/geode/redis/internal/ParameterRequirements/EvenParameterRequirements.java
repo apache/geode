@@ -19,14 +19,33 @@ import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class EvenParameterRequirements implements ParameterRequirements {
+
+  private final String errorMessage;
+
+  public EvenParameterRequirements() {
+    this.errorMessage = null;
+  }
+
+  public EvenParameterRequirements(String errorMessage) {
+    this.errorMessage = errorMessage;
+  }
+
   @Override
   public void checkParameters(Command command, ExecutionHandlerContext executionHandlerContext) {
     if (!isEven(command.getProcessedCommand().size())) {
-      throw new RedisParametersMismatchException(command.wrongNumberOfArgumentsErrorMessage());
+      throw new RedisParametersMismatchException(getErrorMessage(command));
     }
   }
 
   private boolean isEven(int n) {
     return n % 2 == 0;
+  }
+
+  private String getErrorMessage(Command command) {
+    if (errorMessage != null) {
+      return errorMessage;
+    }
+
+    return command.wrongNumberOfArgumentsErrorMessage();
   }
 }

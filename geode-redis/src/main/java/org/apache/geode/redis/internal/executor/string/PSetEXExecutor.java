@@ -14,19 +14,11 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
-import org.apache.geode.redis.internal.RedisConstants.ArityDef;
-
-
 public class PSetEXExecutor extends SetEXExecutor {
 
   @Override
   public boolean timeUnitMillis() {
     return true;
-  }
-
-  @Override
-  public String getArgsError() {
-    return ArityDef.PSETEX;
   }
 
 }

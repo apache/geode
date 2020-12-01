@@ -31,6 +31,7 @@ dependencies {
   }
 
   compile(project(':geode-core'))
+  compile(project(':geode-membership'))
   compile(project(':geode-http-service'))
   compile(project(':geode-junit')) {
     exclude module: 'geode-core'

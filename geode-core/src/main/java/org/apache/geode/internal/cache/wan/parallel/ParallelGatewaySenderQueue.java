@@ -278,6 +278,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     for (Region userRegion : listOfRegions) {
       if (userRegion instanceof PartitionedRegion) {
         addShadowPartitionedRegionForUserPR((PartitionedRegion) userRegion);
+        if (index == 0 && getRegion(userRegion.getFullPath()) != null) {
+          this.stats.incQueueSize(getRegion(userRegion.getFullPath()).getLocalSize());
+        }
       } else {
         // Fix for Bug#51491. Once decided to support this configuration we have call
         // addShadowPartitionedRegionForUserRR
@@ -642,7 +645,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
   private void initializeConflationThreadPool() {
     int poolSize = Runtime.getRuntime().availableProcessors();
     conflationExecutor =
-        LoggingExecutors.newFixedThreadPool("WAN Queue Conflation Thread", true, poolSize);
+        LoggingExecutors.newFixedThreadPool(poolSize, "WAN Queue Conflation Thread", true);
   }
 
   /**
@@ -1304,7 +1307,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         // Sleep a bit before trying again.
         long currentTime = System.currentTimeMillis();
         try {
-          Thread.sleep(getTimeToSleep(end - currentTime));
+          Thread.sleep(calculateTimeToSleep(end - currentTime));
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt();
           break;
@@ -1390,7 +1393,11 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     return (incompleteTransactions.size() == 0);
   }
 
-  private long getTimeToSleep(long timeToWait) {
+  @VisibleForTesting
+  static long calculateTimeToSleep(long timeToWait) {
+    if (timeToWait <= 0) {
+      return 0;
+    }
     // Get the minimum of 50 and 5% of the time to wait (which by default is 1000 ms)
     long timeToSleep = Math.min(50L, ((long) (timeToWait * 0.05)));
 
@@ -1728,12 +1735,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     for (int i = helpArray.length - 1; i >= 0; i--) {
       GatewaySenderEventImpl event = (GatewaySenderEventImpl) helpArray[i];
       final int bucketId = event.getBucketId();
-      final PartitionedRegion region = (PartitionedRegion) event.getRegion();
-      if (region.getRegionAdvisor().isPrimaryForBucket(bucketId)) {
-        BucketRegionQueue brq = getBucketRegionQueueByBucketId(getRandomShadowPR(), bucketId);
-        if (brq != null) {
-          brq.pushKeyIntoQueue(event.getShadowKey());
-        }
+      BucketRegionQueue brq = getBucketRegionQueueByBucketId(getRandomShadowPR(), bucketId);
+      if (brq != null) {
+        brq.pushKeyIntoQueue(event.getShadowKey());
       }
     }
   }

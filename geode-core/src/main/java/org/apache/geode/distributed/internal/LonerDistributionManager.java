@@ -1389,6 +1389,10 @@ public class LonerDistributionManager implements DistributionManager {
     return getDistributionManagerIds();
   }
 
+  public Set<InternalDistributedMember> getLocatorDistributionManagerIds() {
+    return Collections.<InternalDistributedMember>emptySet();
+  }
+
   @Override
   public Map<InternalDistributedMember, Collection<String>> getAllHostedLocatorsWithSharedConfiguration() {
     return Collections.<InternalDistributedMember, Collection<String>>emptyMap();

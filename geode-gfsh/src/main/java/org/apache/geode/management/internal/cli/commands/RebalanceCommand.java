@@ -30,6 +30,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.management.cli.CliMetaData;
@@ -46,6 +47,9 @@ import org.apache.geode.management.runtime.RebalanceResult;
 import org.apache.geode.security.ResourcePermission;
 
 public class RebalanceCommand extends GfshCommand {
+  @VisibleForTesting
+  public static String THREAD_NAME = "RebalanceCommand";
+
   @CliCommand(value = CliStrings.REBALANCE, help = CliStrings.REBALANCE__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION})
   @ResourceOperation(resource = ResourcePermission.Resource.DATA,
@@ -62,7 +66,7 @@ public class RebalanceCommand extends GfshCommand {
           help = CliStrings.REBALANCE__SIMULATE__HELP) boolean simulate) {
 
     ExecutorService commandExecutors =
-        LoggingExecutors.newSingleThreadExecutor("RebalanceCommand", true);
+        LoggingExecutors.newSingleThreadExecutor(THREAD_NAME, true);
     List<Future<ResultModel>> commandResult = new ArrayList<>();
     ResultModel result;
     try {

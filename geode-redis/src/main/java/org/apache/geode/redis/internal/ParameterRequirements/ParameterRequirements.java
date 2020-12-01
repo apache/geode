@@ -19,8 +19,7 @@ import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public interface ParameterRequirements {
-  void checkParameters(Command command,
-      ExecutionHandlerContext executionHandlerContext);
+  void checkParameters(Command command, ExecutionHandlerContext executionHandlerContext);
 
   default ParameterRequirements and(ParameterRequirements moreRequirements) {
     return new MultipleParameterRequirements(this, moreRequirements);

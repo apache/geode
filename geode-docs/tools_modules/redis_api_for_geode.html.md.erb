@@ -78,10 +78,11 @@ The following Redis API for <%=vars.product_name%> commands are **unsupported**.
 commands are available to use, but have not been fully tested. There is no guarantee they will work
 exactly as expected.
 
--   **Connection**: ECHO
+-   **Connection**: ECHO, SELECT
 -   **Hashes**: HDEL, HEXISTS, HGET, HINCRBY, HINCRBYFLOAT, HKEYS, HLEN, HMGET, HSCAN, HSETNX, HVALS
--   **Keys**: SCAN
--   **Server**: DBSIZE, FLUSHALL (no async option), FLUSHDB (no async option), SHUTDOWN, TIME
+-   **Keys**: SCAN, UNLINK
+-   **Server**: DBSIZE, FLUSHALL (no async option), FLUSHDB (no async option), SHUTDOWN, SLOWLOG,
+  TIME
 -   **Sets**: SCARD, SDIFF, SDIFFSTORE, SINTER, SINTERSTORE, SISMEMBER, SMOVE, SPOP, SRANDMEMBER,
   SSCAN, SUNION, SUNIONSTORE
 -   **Strings**: BITCOUNT, BITOP, BITPOS, DECR, DECRBY, GETBIT, GETRANGE, GETSET, INCR, INCRBY, INCRBYFLOAT, MGET,

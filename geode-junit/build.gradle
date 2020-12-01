@@ -25,6 +25,7 @@ dependencies {
 
   testImplementation(project(':geode-common'))
   compileOnly(project(':geode-core'))
+  compileOnly(project(':geode-membership'))
   compileOnly(project(':geode-logging'))
   compileOnly(project(':geode-serialization'))
   compileOnly(project(':geode-unsafe'))
@@ -36,7 +37,7 @@ dependencies {
   api('org.assertj:assertj-core')
   api('org.mockito:mockito-core')
 
-
+  api('io.github.classgraph:classgraph')
   api('com.fasterxml.jackson.core:jackson-annotations')
   api('com.fasterxml.jackson.core:jackson-databind')
   api('com.github.stefanbirkner:system-rules') {

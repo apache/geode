@@ -39,6 +39,11 @@ class ChannelSubscription extends AbstractSubscription {
   }
 
   @Override
+  public Type getType() {
+    return Type.CHANNEL;
+  }
+
+  @Override
   public List<Object> createResponse(byte[] channel, byte[] message) {
     return Arrays.asList("message", channel, message);
   }
@@ -57,7 +62,7 @@ class ChannelSubscription extends AbstractSubscription {
   }
 
   @Override
-  public byte[] getChannelName() {
+  public byte[] getSubscriptionName() {
     return channel;
   }
 }

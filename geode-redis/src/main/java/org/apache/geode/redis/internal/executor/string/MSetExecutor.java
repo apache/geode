@@ -16,7 +16,6 @@ package org.apache.geode.redis.internal.executor.string;
 
 import java.util.List;
 
-import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
@@ -27,14 +26,9 @@ public class MSetExecutor extends StringExecutor {
   private static final String SUCCESS = "OK";
 
   @Override
-  public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
+
     List<byte[]> commandElems = command.getProcessedCommand();
-
-    if (commandElems.size() < 3 || commandElems.size() % 2 == 0) {
-      return RedisResponse.error(ArityDef.MSET);
-    }
-
     RedisStringCommands stringCommands = getRedisStringCommands(context);
 
     // TODO: make this atomic

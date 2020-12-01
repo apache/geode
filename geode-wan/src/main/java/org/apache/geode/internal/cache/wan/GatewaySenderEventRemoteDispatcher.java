@@ -35,6 +35,7 @@ import org.apache.geode.cache.client.internal.SenderProxy;
 import org.apache.geode.cache.client.internal.pooling.ConnectionDestroyedException;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.distributed.internal.ServerLocationAndMemberId;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.UpdateAttributesProcessor;
 import org.apache.geode.internal.cache.tier.sockets.MessageTooLargeException;
@@ -112,13 +113,13 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
       if (logger.isDebugEnabled()) {
         logger.debug(" Receiving ack on the thread {}", connection);
       }
-      this.connectionLifeCycleLock.readLock().lock();
+      getConnectionLifeCycleLock().readLock().lock();
       try {
         if (connection != null && !processor.isStopped()) {
           ack = (GatewayAck) sp.receiveAckFromReceiver(connection);
         }
       } finally {
-        this.connectionLifeCycleLock.readLock().unlock();
+        getConnectionLifeCycleLock().readLock().unlock();
       }
 
     } catch (Exception e) {
@@ -202,7 +203,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
         isRetry = true;
       }
       SenderProxy sp = new SenderProxy(this.sender.getProxy());
-      this.connectionLifeCycleLock.readLock().lock();
+      getConnectionLifeCycleLock().readLock().lock();
       try {
         if (connection != null && !connection.isDestroyed()) {
           sp.dispatchBatch_NewWAN(connection, events, currentBatchId,
@@ -217,7 +218,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
           throw new ConnectionDestroyedException();
         }
       } finally {
-        this.connectionLifeCycleLock.readLock().unlock();
+        getConnectionLifeCycleLock().readLock().unlock();
       }
       return true;
     } catch (ServerOperationException e) {
@@ -284,6 +285,11 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
     }
   }
 
+  @VisibleForTesting
+  ReentrantReadWriteLock getConnectionLifeCycleLock() {
+    return this.connectionLifeCycleLock;
+  }
+
   /**
    * Acquires or adds a new <code>Connection</code> to the corresponding <code>Gateway</code>
    *
@@ -299,9 +305,16 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
     // OR the connection's ServerLocation doesn't match with the one stored in sender
     // THEN initialize the connection
     if (!this.sender.isParallel()) {
-      if (this.connection == null || this.connection.isDestroyed()
-          || this.connection.getServer() == null
-          || !this.connection.getServer().equals(this.sender.getServerLocation())) {
+      boolean needToReconnect = false;
+      getConnectionLifeCycleLock().readLock().lock();
+      try {
+        needToReconnect = this.connection == null || this.connection.isDestroyed()
+            || this.connection.getServer() == null
+            || !this.connection.getServer().equals(this.sender.getServerLocation());
+      } finally {
+        getConnectionLifeCycleLock().readLock().unlock();
+      }
+      if (needToReconnect) {
         if (logger.isDebugEnabled()) {
           logger.debug(
               "Initializing new connection as serverLocation of old connection is : {} and the serverLocation to connect is {}",
@@ -333,7 +346,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
   }
 
   public void destroyConnection() {
-    this.connectionLifeCycleLock.writeLock().lock();
+    getConnectionLifeCycleLock().writeLock().lock();
     try {
       Connection con = this.connection;
       if (con != null) {
@@ -348,7 +361,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
         this.sender.setServerLocation(null);
       }
     } finally {
-      this.connectionLifeCycleLock.writeLock().unlock();
+      getConnectionLifeCycleLock().writeLock().unlock();
     }
   }
 
@@ -405,7 +418,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
     if (ackReaderThread != null) {
       ackReaderThread.shutDownAckReaderConnection(connection);
     }
-    this.connectionLifeCycleLock.writeLock().lock();
+    getConnectionLifeCycleLock().writeLock().lock();
     try {
       // Attempt to acquire a connection
       if (this.sender.getProxy() == null || this.sender.getProxy().isDestroyed()) {
@@ -491,7 +504,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
               this.processor.getSender().getId(), e.getMessage()),
           e);
     } finally {
-      this.connectionLifeCycleLock.writeLock().unlock();
+      getConnectionLifeCycleLock().writeLock().unlock();
     }
   }
 
@@ -501,13 +514,13 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
     if (e.getCause() instanceof GemFireSecurityException) {
       gse = new GatewaySenderException(e.getCause());
     } else {
-      List<ServerLocation> servers = this.sender.getProxy().getCurrentServers();
+      List<ServerLocationAndMemberId> servers = this.sender.getProxy().getCurrentServers();
       String ioMsg;
       if (servers.size() == 0) {
         ioMsg = "There are no active servers.";
       } else {
         final StringBuilder buffer = new StringBuilder();
-        for (ServerLocation server : servers) {
+        for (ServerLocationAndMemberId server : servers) {
           String endpointName = String.valueOf(server);
           if (buffer.length() > 0) {
             buffer.append(", ");

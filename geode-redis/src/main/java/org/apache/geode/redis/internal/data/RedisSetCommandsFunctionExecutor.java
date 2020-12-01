@@ -18,11 +18,14 @@ package org.apache.geode.redis.internal.data;
 
 import static org.apache.geode.redis.internal.data.RedisSet.NULL_REDIS_SET;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.geode.redis.internal.executor.set.RedisSetCommands;
 
@@ -103,8 +106,8 @@ public class RedisSetCommandsFunctionExecutor extends RedisDataCommandsFunctionE
   }
 
   @Override
-  public List<Object> sscan(
-      ByteArrayWrapper key, Pattern matchPattern, int count, int cursor) {
+  public Pair<BigInteger, List<Object>> sscan(ByteArrayWrapper key, Pattern matchPattern, int count,
+      BigInteger cursor) {
     return stripedExecute(key, () -> getRedisSet(key).sscan(matchPattern, count, cursor));
   }
 

@@ -16,11 +16,16 @@
 package org.apache.geode.redis.internal.executor.key;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
 
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
@@ -40,6 +45,18 @@ public abstract class AbstractKeysIntegrationTest implements RedisPortSupplier {
   public void tearDown() {
     jedis.flushAll();
     jedis.close();
+  }
+
+  @Test
+  public void givenPatternNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.KEYS))
+        .hasMessageContaining("ERR wrong number of arguments for 'keys' command");
+  }
+
+  @Test
+  public void givenMoreThanTwoArguments_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.KEYS, "*", "extraArg"))
+        .hasMessageContaining("ERR wrong number of arguments for 'keys' command");
   }
 
   @Test
@@ -77,11 +94,31 @@ public abstract class AbstractKeysIntegrationTest implements RedisPortSupplier {
   }
 
   @Test
-  public void givenBinaryValue_withExactMatch_preservesBinaryData() {
+  public void givenBinaryValue_withExactMatch_preservesBinaryData()
+      throws UnsupportedEncodingException {
+    String chinese_utf16 = "子";
+    byte[] utf16encodedBytes = chinese_utf16.getBytes("UTF-16");
     byte[] stringKey =
         new byte[] {(byte) 0xac, (byte) 0xed, 0, 4, 0, 5, 's', 't', 'r', 'i', 'n', 'g', '1'};
-    jedis.set(stringKey, stringKey);
-    assertThat(jedis.keys(stringKey)).containsExactlyInAnyOrder(stringKey);
+    byte[] allByteArray = new byte[utf16encodedBytes.length + stringKey.length];
+
+    ByteBuffer buff = ByteBuffer.wrap(allByteArray);
+    buff.put(utf16encodedBytes);
+    buff.put(stringKey);
+    byte[] combined = buff.array();
+
+    jedis.set(combined, combined);
+    assertThat(jedis.keys("*".getBytes())).containsExactlyInAnyOrder(combined);
+  }
+
+  @Test
+  public void givenSplat_withCarriageReturnLineFeedAndTab_returnsExpectedMatches() {
+    jedis.set(" foo bar ", "123");
+    jedis.set(" foo\r\nbar\r\n ", "456");
+    jedis.set(" \r\n\t\\x07\\x13 ", "789");
+
+    assertThat(jedis.keys("*")).containsExactlyInAnyOrder(" \r\n\t\\x07\\x13 ", " foo\r\nbar\r\n ",
+        " foo bar ");
   }
 
   @Test

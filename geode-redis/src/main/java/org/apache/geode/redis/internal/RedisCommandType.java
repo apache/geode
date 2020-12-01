@@ -18,12 +18,15 @@ package org.apache.geode.redis.internal;
 import static org.apache.geode.redis.internal.RedisCommandSupportLevel.SUPPORTED;
 import static org.apache.geode.redis.internal.RedisCommandSupportLevel.UNIMPLEMENTED;
 import static org.apache.geode.redis.internal.RedisCommandSupportLevel.UNSUPPORTED;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 
 import org.apache.geode.redis.internal.ParameterRequirements.EvenParameterRequirements;
 import org.apache.geode.redis.internal.ParameterRequirements.ExactParameterRequirements;
 import org.apache.geode.redis.internal.ParameterRequirements.MaximumParameterRequirements;
 import org.apache.geode.redis.internal.ParameterRequirements.MinimumParameterRequirements;
+import org.apache.geode.redis.internal.ParameterRequirements.OddParameterRequirements;
 import org.apache.geode.redis.internal.ParameterRequirements.ParameterRequirements;
+import org.apache.geode.redis.internal.ParameterRequirements.SlowlogParameterRequirements;
 import org.apache.geode.redis.internal.ParameterRequirements.SpopParameterRequirements;
 import org.apache.geode.redis.internal.ParameterRequirements.UnspecifiedParameterRequirements;
 import org.apache.geode.redis.internal.executor.Executor;
@@ -33,6 +36,7 @@ import org.apache.geode.redis.internal.executor.connection.AuthExecutor;
 import org.apache.geode.redis.internal.executor.connection.EchoExecutor;
 import org.apache.geode.redis.internal.executor.connection.PingExecutor;
 import org.apache.geode.redis.internal.executor.connection.QuitExecutor;
+import org.apache.geode.redis.internal.executor.connection.SelectExecutor;
 import org.apache.geode.redis.internal.executor.hash.HDelExecutor;
 import org.apache.geode.redis.internal.executor.hash.HExistsExecutor;
 import org.apache.geode.redis.internal.executor.hash.HGetAllExecutor;
@@ -70,6 +74,7 @@ import org.apache.geode.redis.internal.executor.server.DBSizeExecutor;
 import org.apache.geode.redis.internal.executor.server.FlushAllExecutor;
 import org.apache.geode.redis.internal.executor.server.InfoExecutor;
 import org.apache.geode.redis.internal.executor.server.ShutDownExecutor;
+import org.apache.geode.redis.internal.executor.server.SlowlogExecutor;
 import org.apache.geode.redis.internal.executor.server.TimeExecutor;
 import org.apache.geode.redis.internal.executor.set.SAddExecutor;
 import org.apache.geode.redis.internal.executor.set.SCardExecutor;
@@ -179,38 +184,42 @@ public enum RedisCommandType {
    *************** Connection *************
    ***************************************/
 
-  ECHO(new EchoExecutor(), UNSUPPORTED),
+  ECHO(new EchoExecutor(), UNSUPPORTED, new ExactParameterRequirements(2)),
+  SELECT(new SelectExecutor(), UNSUPPORTED, new ExactParameterRequirements(2)),
 
   /***************************************
    *************** Keys ******************
    ***************************************/
 
-  SCAN(new ScanExecutor(), UNSUPPORTED),
+  SCAN(new ScanExecutor(), UNSUPPORTED, new EvenParameterRequirements(ERROR_SYNTAX).and(new MinimumParameterRequirements(2))),
+  UNLINK(new DelExecutor(), UNSUPPORTED, new MinimumParameterRequirements(2)),
 
   /***************************************
    ************** Strings ****************
    ***************************************/
 
-  BITCOUNT(new BitCountExecutor(), UNSUPPORTED),
-  BITOP(new BitOpExecutor(), UNSUPPORTED),
-  BITPOS(new BitPosExecutor(), UNSUPPORTED),
-  DECR(new DecrExecutor(), UNSUPPORTED),
-  DECRBY(new DecrByExecutor(), UNSUPPORTED),
-  GETBIT(new GetBitExecutor(), UNSUPPORTED),
-  GETRANGE(new GetRangeExecutor(), UNSUPPORTED),
-  GETSET(new GetSetExecutor(), UNSUPPORTED),
-  INCR(new IncrExecutor(), UNSUPPORTED),
-  INCRBY(new IncrByExecutor(), UNSUPPORTED),
-  INCRBYFLOAT(new IncrByFloatExecutor(), UNSUPPORTED),
-  MGET(new MGetExecutor(), UNSUPPORTED),
-  MSET(new MSetExecutor(), UNSUPPORTED),
-  MSETNX(new MSetNXExecutor(), UNSUPPORTED),
-  PSETEX(new PSetEXExecutor(), UNSUPPORTED),
-  SETEX(new SetEXExecutor(), UNSUPPORTED),
-  SETBIT(new SetBitExecutor(), UNSUPPORTED),
-  SETNX(new SetNXExecutor(), UNSUPPORTED),
-  SETRANGE(new SetRangeExecutor(), UNSUPPORTED),
-  STRLEN(new StrlenExecutor(), UNSUPPORTED),
+  BITCOUNT(new BitCountExecutor(), UNSUPPORTED, new MinimumParameterRequirements(2)),
+  BITOP(new BitOpExecutor(), UNSUPPORTED, new MinimumParameterRequirements(4)),
+  BITPOS(new BitPosExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3)),
+  DECR(new DecrExecutor(), UNSUPPORTED, new ExactParameterRequirements(2)),
+  DECRBY(new DecrByExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
+  GETBIT(new GetBitExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
+  GETRANGE(new GetRangeExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
+  GETSET(new GetSetExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
+  INCR(new IncrExecutor(), UNSUPPORTED, new ExactParameterRequirements(2)),
+  INCRBY(new IncrByExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
+  INCRBYFLOAT(new IncrByFloatExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
+  MGET(new MGetExecutor(), UNSUPPORTED, new MinimumParameterRequirements(2)),
+  MSET(new MSetExecutor(), UNSUPPORTED,
+      new MinimumParameterRequirements(3).and(new OddParameterRequirements())),
+  MSETNX(new MSetNXExecutor(), UNSUPPORTED,
+      new MinimumParameterRequirements(3).and(new OddParameterRequirements())),
+  PSETEX(new PSetEXExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
+  SETEX(new SetEXExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
+  SETBIT(new SetBitExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
+  SETNX(new SetNXExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
+  SETRANGE(new SetRangeExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
+  STRLEN(new StrlenExecutor(), UNSUPPORTED, new ExactParameterRequirements(2)),
 
   /***************************************
    **************** Hashes ***************
@@ -224,7 +233,8 @@ public enum RedisCommandType {
   HKEYS(new HKeysExecutor(), UNSUPPORTED, new ExactParameterRequirements(2)),
   HLEN(new HLenExecutor(), UNSUPPORTED, new ExactParameterRequirements(2)),
   HMGET(new HMGetExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3)),
-  HSCAN(new HScanExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3)),
+  HSCAN(new HScanExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3),
+      new OddParameterRequirements(ERROR_SYNTAX)),
   HSETNX(new HSetNXExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
   HSTRLEN(new HStrLenExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
   HVALS(new HValsExecutor(), UNSUPPORTED, new ExactParameterRequirements(2)),
@@ -240,27 +250,25 @@ public enum RedisCommandType {
   SINTER(new SInterExecutor(), UNSUPPORTED, new MinimumParameterRequirements(2)),
   SINTERSTORE(new SInterStoreExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3)),
   SMOVE(new SMoveExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
-  SPOP(new SPopExecutor(), UNSUPPORTED,
-      new MinimumParameterRequirements(2).and(new MaximumParameterRequirements(3))
-          .and(new SpopParameterRequirements())),
+  SPOP(new SPopExecutor(), UNSUPPORTED, new MinimumParameterRequirements(2)
+      .and(new MaximumParameterRequirements(3, ERROR_SYNTAX)).and(new SpopParameterRequirements())),
   SRANDMEMBER(new SRandMemberExecutor(), UNSUPPORTED, new MinimumParameterRequirements(2)),
   SUNION(new SUnionExecutor(), UNSUPPORTED, new MinimumParameterRequirements(2)),
   SUNIONSTORE(new SUnionStoreExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3)),
-  SSCAN(new SScanExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3)),
+  SSCAN(new SScanExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3),
+      new OddParameterRequirements(ERROR_SYNTAX)),
 
   /***************************************
    *************** Server ****************
    ***************************************/
 
-  DBSIZE(new DBSizeExecutor(), UNSUPPORTED),
-  FLUSHALL(new FlushAllExecutor(), UNSUPPORTED),
-  FLUSHDB(new FlushAllExecutor(), UNSUPPORTED),
-  INFO(new InfoExecutor(),
-      UNSUPPORTED,
-      new MaximumParameterRequirements(2,
-          RedisConstants.ERROR_SYNTAX)),
-  SHUTDOWN(new ShutDownExecutor(), UNSUPPORTED),
-  TIME(new TimeExecutor(), UNSUPPORTED),
+  DBSIZE(new DBSizeExecutor(), UNSUPPORTED, new ExactParameterRequirements(1)),
+  FLUSHALL(new FlushAllExecutor(), UNSUPPORTED, new MaximumParameterRequirements(2, ERROR_SYNTAX)),
+  FLUSHDB(new FlushAllExecutor(), UNSUPPORTED, new MaximumParameterRequirements(2, ERROR_SYNTAX)),
+  INFO(new InfoExecutor(), UNSUPPORTED, new MaximumParameterRequirements(2, ERROR_SYNTAX)),
+  SHUTDOWN(new ShutDownExecutor(), UNSUPPORTED, new MaximumParameterRequirements(2, ERROR_SYNTAX)),
+  SLOWLOG(new SlowlogExecutor(), UNSUPPORTED, new SlowlogParameterRequirements()),
+  TIME(new TimeExecutor(), UNSUPPORTED, new ExactParameterRequirements(1)),
 
   /////////// UNIMPLEMENTED /////////////////////
 
@@ -289,7 +297,6 @@ public enum RedisCommandType {
   GEODIST(null, UNIMPLEMENTED),
   GEORADIUS(null, UNIMPLEMENTED),
   GEORADIUSBYMEMBER(null, UNIMPLEMENTED),
-  HELLO(null, UNIMPLEMENTED),
   LATENCY(null, UNIMPLEMENTED),
   LASTSAVE(null, UNIMPLEMENTED),
   LINDEX(null, UNIMPLEMENTED),
@@ -327,16 +334,13 @@ public enum RedisCommandType {
   RPUSHX(null, UNIMPLEMENTED),
   SAVE(null, UNIMPLEMENTED),
   SCRIPT(null, UNIMPLEMENTED),
-  SELECT(null, UNIMPLEMENTED),
   SLAVEOF(null, UNIMPLEMENTED),
   REPLICAOF(null, UNIMPLEMENTED),
-  SLOWLOG(null, UNIMPLEMENTED),
   SORT(null, UNIMPLEMENTED),
   STRALGO(null, UNIMPLEMENTED),
   SWAPDB(null, UNIMPLEMENTED),
   SYNC(null, UNIMPLEMENTED),
   TOUCH(null, UNIMPLEMENTED),
-  UNLINK(null, UNIMPLEMENTED),
   UNWATCH(null, UNIMPLEMENTED),
   WAIT(null, UNIMPLEMENTED),
   WATCH(null, UNIMPLEMENTED),
@@ -379,6 +383,7 @@ public enum RedisCommandType {
 
   private final Executor executor;
   private final ParameterRequirements parameterRequirements;
+  private final ParameterRequirements deferredParameterRequirements;
   private final RedisCommandSupportLevel supportLevel;
 
   RedisCommandType(Executor executor, RedisCommandSupportLevel supportLevel) {
@@ -387,9 +392,16 @@ public enum RedisCommandType {
 
   RedisCommandType(Executor executor, RedisCommandSupportLevel supportLevel,
       ParameterRequirements parameterRequirements) {
+    this(executor, supportLevel, parameterRequirements, new UnspecifiedParameterRequirements());
+  }
+
+  RedisCommandType(Executor executor, RedisCommandSupportLevel supportLevel,
+      ParameterRequirements parameterRequirements,
+      ParameterRequirements deferredParameterRequirements) {
     this.executor = executor;
     this.supportLevel = supportLevel;
     this.parameterRequirements = parameterRequirements;
+    this.deferredParameterRequirements = deferredParameterRequirements;
   }
 
   public boolean isSupported() {
@@ -418,8 +430,14 @@ public enum RedisCommandType {
     }
   }
 
+  public void checkDeferredParameters(Command command,
+      ExecutionHandlerContext executionHandlerContext) {
+    deferredParameterRequirements.checkParameters(command, executionHandlerContext);
+  }
+
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext executionHandlerContext) {
+
     parameterRequirements.checkParameters(command, executionHandlerContext);
 
     return executor.executeCommand(command, executionHandlerContext);

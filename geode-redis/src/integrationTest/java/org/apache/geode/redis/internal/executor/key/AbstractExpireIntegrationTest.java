@@ -15,12 +15,15 @@
 
 package org.apache.geode.redis.internal.executor.key;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
 
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
@@ -40,6 +43,30 @@ public abstract class AbstractExpireIntegrationTest implements RedisPortSupplier
   public void flushAll() {
     jedis.flushAll();
     jedis.close();
+  }
+
+  @Test
+  public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.EXPIRE))
+        .hasMessageContaining("ERR wrong number of arguments for 'expire' command");
+  }
+
+  @Test
+  public void givenTimestampNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.EXPIRE, "key"))
+        .hasMessageContaining("ERR wrong number of arguments for 'expire' command");
+  }
+
+  @Test
+  public void givenMoreThanThreeArgumentsProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.EXPIRE, "key", "10", "extraArg"))
+        .hasMessageContaining("ERR wrong number of arguments for 'expire' command");
+  }
+
+  @Test
+  public void givenInvalidTimestamp_returnsNotIntegerError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.EXPIRE, "key", "notInteger"))
+        .hasMessageContaining(ERROR_NOT_INTEGER);
   }
 
   @Test

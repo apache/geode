@@ -1001,8 +1001,7 @@ public class LocatorDUnitTest implements Serializable {
       // I guess it can throw this too...
 
     } catch (GemFireConfigException ex) {
-      String s = ex.getMessage();
-      assertThat(s.contains("Locator does not exist")).isTrue();
+      assertThat(ex.getCause().getMessage().contains("Locator does not exist")).isTrue();
     }
   }
 

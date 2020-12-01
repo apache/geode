@@ -17,28 +17,46 @@ package org.apache.geode.redis.internal.executor.string;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.nio.charset.StandardCharsets;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.redis.internal.RedisConstants;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
 public abstract class AbstractStrLenIntegrationTest implements RedisPortSupplier {
 
   private Jedis jedis;
+  private static final int REDIS_CLIENT_TIMEOUT =
+      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), 10000000);
+    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
     jedis.flushAll();
     jedis.close();
+  }
+
+  @Test
+  public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.STRLEN))
+        .hasMessageContaining("ERR wrong number of arguments for 'strlen' command");
+  }
+
+  @Test
+  public void givenMoreThanTwoArgumentsProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.STRLEN, "key", "extraArg"))
+        .hasMessageContaining("ERR wrong number of arguments for 'strlen' command");
   }
 
   @Test
@@ -68,11 +86,46 @@ public abstract class AbstractStrLenIntegrationTest implements RedisPortSupplier
   }
 
   @Test
+  public void testStrlen_withEmptyByte() {
+    byte[] key = new byte[] {0};
+    jedis.set(key, new byte[] {});
+
+    assertThat(jedis.strlen(key)).isEqualTo(0);
+  }
+
+  @Test
   public void testStrlen_withBinaryData() {
     byte[] zero = new byte[] {0};
     jedis.set(zero, zero);
 
     assertThat(jedis.strlen(zero)).isEqualTo(1);
+  }
+
+  @Test
+  public void testStrlen_withUTF16BinaryData() {
+    String test_utf16_string = "最𐐷𤭢";
+    byte[] testBytes = test_utf16_string.getBytes(StandardCharsets.UTF_16);
+    jedis.set(testBytes, testBytes);
+
+    assertThat(jedis.strlen(testBytes)).isEqualTo(12);
+  }
+
+  @Test
+  public void testStrlen_withIntData() {
+    byte[] key = new byte[] {0};
+    byte[] value = new byte[] {1, 0, 0};
+    jedis.set(key, value);
+
+    assertThat(jedis.strlen(key)).isEqualTo(value.length);
+  }
+
+  @Test
+  public void testStrlen_withFloatData() {
+    byte[] key = new byte[] {0};
+    byte[] value = new byte[] {'0', '.', '9'};
+    jedis.set(key, value);
+
+    assertThat(jedis.strlen(key)).isEqualTo(value.length);
   }
 
 }

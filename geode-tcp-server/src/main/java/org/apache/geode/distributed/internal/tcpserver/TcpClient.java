@@ -200,21 +200,24 @@ public class TcpClient {
       out.flush();
 
       if (replyExpected) {
-        DataInputStream in = new DataInputStream(sock.getInputStream());
-        if (debugVersionMessage != null && logger.isDebugEnabled()) {
-          logger.debug(debugVersionMessage);
-        }
-        in = new VersionedDataInputStream(in, serverVersion);
-        try {
-          Object response = objectDeserializer.readObject(in);
-          logger.debug("received response: {}", response);
-          return response;
-        } catch (EOFException ex) {
-          logger.debug("requestToServer EOFException ", ex);
-          EOFException eof = new EOFException("Locator at " + addr
-              + " did not respond. This is normal if the locator was shutdown. If it wasn't check its log for exceptions.");
-          eof.initCause(ex);
-          throw eof;
+
+        try (DataInputStream dataInputStream = new DataInputStream(sock.getInputStream());
+            VersionedDataInputStream versionedDataInputStream =
+                new VersionedDataInputStream(dataInputStream, serverVersion)) {
+          if (debugVersionMessage != null && logger.isDebugEnabled()) {
+            logger.debug(debugVersionMessage);
+          }
+          try {
+            Object response = objectDeserializer.readObject(versionedDataInputStream);
+            logger.debug("received response: {}", response);
+            return response;
+          } catch (EOFException ex) {
+            logger.debug("requestToServer EOFException ", ex);
+            EOFException eof = new EOFException("Locator at " + addr
+                + " did not respond. This is normal if the locator was shutdown. If it wasn't check its log for exceptions.");
+            eof.initCause(ex);
+            throw eof;
+          }
         }
       } else {
         return null;
@@ -271,11 +274,13 @@ public class TcpClient {
     } catch (SSLException e) {
       throw new IllegalStateException("Unable to form SSL connection", e);
     }
-
-    try {
-      OutputStream outputStream = new BufferedOutputStream(sock.getOutputStream());
-      DataOutputStream out =
-          new VersionedDataOutputStream(new DataOutputStream(outputStream), KnownVersion.GFE_57);
+    try (OutputStream outputStream = new BufferedOutputStream(sock.getOutputStream());
+        DataOutputStream out =
+            new VersionedDataOutputStream(new DataOutputStream(outputStream), KnownVersion.GFE_57);
+        InputStream inputStream = sock.getInputStream();
+        DataInputStream in = new DataInputStream(inputStream);
+        VersionedDataInputStream versionedIn =
+            new VersionedDataInputStream(in, KnownVersion.GFE_57)) {
 
       out.writeInt(gossipVersion);
 
@@ -283,11 +288,8 @@ public class TcpClient {
       objectSerializer.writeObject(verRequest, out);
       out.flush();
 
-      InputStream inputStream = sock.getInputStream();
-      DataInputStream in = new DataInputStream(inputStream);
-      in = new VersionedDataInputStream(in, KnownVersion.GFE_57);
       try {
-        Object readObject = objectDeserializer.readObject(in);
+        Object readObject = objectDeserializer.readObject(versionedIn);
         if (!(readObject instanceof VersionResponse)) {
           throw new IllegalThreadStateException(
               "Server version response invalid: "

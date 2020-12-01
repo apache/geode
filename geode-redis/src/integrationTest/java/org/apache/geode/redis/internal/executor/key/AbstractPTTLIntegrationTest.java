@@ -45,6 +45,18 @@ public abstract class AbstractPTTLIntegrationTest implements RedisPortSupplier {
   }
 
   @Test
+  public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.PTTL))
+        .hasMessageContaining("ERR wrong number of arguments for 'pttl' command");
+  }
+
+  @Test
+  public void givenMoreThanTwoArguments_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.PTTL, "key", "extraArg"))
+        .hasMessageContaining("ERR wrong number of arguments for 'pttl' command");
+  }
+
+  @Test
   public void shouldReturnNegativeTwo_givenKeyDoesNotExist() {
     assertThat(jedis.pttl("doesNotExist")).isEqualTo(-2);
   }
@@ -62,13 +74,5 @@ public abstract class AbstractPTTLIntegrationTest implements RedisPortSupplier {
     jedis.expire("orange", 20);
 
     assertThat(jedis.pttl("orange")).isGreaterThan(1500);
-  }
-
-  @Test
-  public void shouldThrowError_givenMultipleKeys() {
-    jedis.set("orange", "crush");
-
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.PTTL, "orange", "blue"))
-        .hasMessageContaining("wrong number of arguments");
   }
 }

@@ -24,16 +24,17 @@ public class AuthIds {
   private long uniqueId;
 
   public AuthIds(byte[] bytes) throws Exception {
-    ByteArrayDataInput dis = new ByteArrayDataInput(bytes);
-    if (bytes.length == 8) {
-      // only connectionid
-      connectionId = dis.readLong();
-    } else if (bytes.length == 16) {
-      // first connectionId and then uniqueID
-      connectionId = dis.readLong();
-      uniqueId = dis.readLong();
-    } else {
-      throw new Exception("Auth ids are not in right form");
+    try (ByteArrayDataInput dis = new ByteArrayDataInput(bytes)) {
+      if (bytes.length == 8) {
+        // only connectionid
+        connectionId = dis.readLong();
+      } else if (bytes.length == 16) {
+        // first connectionId and then uniqueID
+        connectionId = dis.readLong();
+        uniqueId = dis.readLong();
+      } else {
+        throw new Exception("Auth ids are not in right form");
+      }
     }
   }
 

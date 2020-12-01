@@ -119,7 +119,7 @@ public class GeodeRedisServer {
   private static RedisStats createStats(InternalCache cache) {
     InternalDistributedSystem system = cache.getInternalDistributedSystem();
     StatisticsClock statisticsClock =
-        StatisticsClockFactory.clock(system.getConfig().getEnableTimeStatistics());
+        StatisticsClockFactory.clock(true);
     return new RedisStats(system.getStatisticsManager(), statisticsClock);
   }
 

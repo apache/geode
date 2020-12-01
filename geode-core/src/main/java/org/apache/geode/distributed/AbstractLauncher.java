@@ -173,8 +173,8 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
     }
     Properties properties = new Properties();
 
-    try {
-      properties.load(new FileReader(new File(url.toURI())));
+    try (FileReader reader = new FileReader(new File(url.toURI()))) {
+      properties.load(reader);
     } catch (IOException | URISyntaxException handled) {
       // not in the file system, try the classpath
       loadGemFirePropertiesFromClassPath(properties);

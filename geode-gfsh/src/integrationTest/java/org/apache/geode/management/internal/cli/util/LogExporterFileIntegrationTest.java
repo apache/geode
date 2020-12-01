@@ -24,7 +24,9 @@ import static org.mockito.Mockito.when;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
@@ -151,5 +153,13 @@ public class LogExporterFileIntegrationTest {
     assertThat(logExporter.findLogFiles(workingDir.toPath())).contains(gcLogFile.toPath());
     assertThat(logExporter.findLogFiles(workingDir.toPath()))
         .contains(gcRolledOverLogFile.toPath());
+  }
+
+  @Test
+  public void ignoresDirectoriesWhoseNamesMatchLogAndStatFilePredicates() throws IOException {
+    Files.createDirectories(workingDir.toPath().resolve("should-be-ignored.log"));
+    Files.createDirectories(workingDir.toPath().resolve("should-be-ignored.gfs"));
+
+    assertThat(logExporter.export()).isNull();
   }
 }

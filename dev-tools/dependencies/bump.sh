@@ -23,15 +23,19 @@ if ! [ -d dev-tools ] ; then
 fi
 
 if [ "$1" = "-l" ] ; then
+	if [ "$2" = "" ] ; then
+		echo "Usage: $0 -l <jira>"
+		exit 1
+	fi
   ./gradlew dependencyUpdates; find . | grep build/dependencyUpdates/report.txt | xargs cat \
    | grep ' -> ' | egrep -v '(Gradle|antlr|protobuf|lucene|JUnitParams|docker-compose-rule|javax.servlet-api|gradle-tooling-api|springfox|archunit)' \
-   | sort -u | tr -d '][' | sed -e 's/ -> / /' -e 's#.*:#'"$0"' #'
+   | sort -u | tr -d '][' | sed -e 's/ -> / /' -e 's#.*:#'"$0 $2"' #'
   exit 0
 fi
 
-if [ "$3" = "" ] ; then
-  echo "Usage: $0 <library-name> <old-ver> <new-ver>"
-  echo "   or: $0 -l"
+if [ "$4" = "" ] ; then
+  echo "Usage: $0 <jira> <library-name> <old-ver> <new-ver>"
+  echo "   or: $0 -l <jira>"
   exit 1
 fi
 
@@ -40,9 +44,10 @@ if [ $(git diff | wc -l) -gt 0 ] ; then
   exit 1
 fi
 
-NAME="$1"
-SRCH="$2"
-REPL="$3"
+JIRA="$1"
+NAME="$2"
+SRCH="$3"
+REPL="$4"
 OLDV="$SRCH"
 SRCH=${SRCH//./\\.}
 git grep -n --color "$SRCH" | cat
@@ -51,7 +56,7 @@ git grep -l "$SRCH" | while read f; do
   rm -f $f.bak
 done
 git add -p
-git commit -m "Bump $NAME from $OLDV to $REPL"
+git commit -m "${JIRA}: Bump $NAME from $OLDV to $REPL"
 if [ $(git diff | wc -l) -gt 0 ] ; then
   git stash
   git stash drop

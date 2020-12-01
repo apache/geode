@@ -158,8 +158,9 @@ public abstract class AbstractOp implements Op {
         return;
       }
       byte[] bytes = ((ConnectionImpl) cnx).decryptBytes(partBytes);
-      ByteArrayDataInput dis = new ByteArrayDataInput(bytes);
-      cnx.setConnectionID(dis.readLong());
+      try (ByteArrayDataInput dis = new ByteArrayDataInput(bytes)) {
+        cnx.setConnectionID(dis.readLong());
+      }
     }
   }
 

@@ -16,47 +16,21 @@
 
 package org.apache.geode.redis.internal.executor.server;
 
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.exceptions.JedisConnectionException;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 
-public class ShutdownIntegrationTest {
-
-  public Jedis jedis;
-  public static final int REDIS_CLIENT_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
+public class ShutdownIntegrationTest extends AbstractShutDownIntegrationTest {
 
   @Rule
-  public GeodeRedisServerRule server = new GeodeRedisServerRule()
-      .withProperty(LOG_LEVEL, "info");
+  public GeodeRedisServerRule server = new GeodeRedisServerRule();
 
-  @Before
-  public void setUp() {
-    jedis = new Jedis("localhost", server.getPort(), REDIS_CLIENT_TIMEOUT);
-  }
-
-  @After
-  public void tearDown() {
-    jedis.close();
-  }
-
-  @Test
-  public void shutdownActuallyShutsDownTheServer() {
-    // This is the default, but it's here just to be obvious
-    server.getServer().setAllowUnsupportedCommands(true);
-    jedis.shutdown();
-
-    assertThatThrownBy(() -> jedis.echo("foo")).isInstanceOf(JedisConnectionException.class);
+  @Override
+  public int getPort() {
+    return server.getPort();
   }
 
   @Test

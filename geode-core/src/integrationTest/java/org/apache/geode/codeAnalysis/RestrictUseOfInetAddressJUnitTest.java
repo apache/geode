@@ -195,7 +195,6 @@ public class RestrictUseOfInetAddressJUnitTest {
         "org/apache/geode/internal/AbstractConfig",
         // server-side communications
         "org/apache/geode/distributed/internal/direct/DirectChannel",
-        "org/apache/geode/internal/AvailablePort",
         "org/apache/geode/internal/cache/tier/sockets/AcceptorImpl",
         // old command-line tool replaced by gfsh
         "org/apache/geode/internal/DistributionLocator",

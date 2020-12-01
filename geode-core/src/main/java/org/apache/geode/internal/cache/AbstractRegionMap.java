@@ -848,20 +848,8 @@ public abstract class AbstractRegionMap extends BaseRegionMap
                     if (!oldIsDestroyedOrRemoved) {
                       owner.updateSizeOnRemove(key, oldSize);
                     }
-                    if (owner.getServerProxy() == null
-                        && owner.getVersionVector().isTombstoneTooOld(
-                            entryVersion.getMemberID(), entryVersion.getRegionVersion())) {
-                      // the received tombstone has already been reaped, so don't retain it
-                      if (owner.getIndexManager() != null) {
-                        owner.getIndexManager().updateIndexes(oldRe, IndexManager.REMOVE_ENTRY,
-                            IndexProtocol.REMOVE_DUE_TO_GII_TOMBSTONE_CLEANUP);
-                      }
-                      removeTombstone(oldRe, entryVersion, false, false);
-                      return false;
-                    } else {
-                      owner.scheduleTombstone(oldRe, entryVersion);
-                      lruEntryDestroy(oldRe);
-                    }
+                    owner.scheduleTombstone(oldRe, entryVersion);
+                    lruEntryDestroy(oldRe);
                   } else {
                     int newSize = owner.calculateRegionEntryValueSize(oldRe);
                     if (!oldIsTombstone) {
@@ -993,6 +981,7 @@ public abstract class AbstractRegionMap extends BaseRegionMap
     final LocalRegion owner = _getOwner();
 
     final boolean isRegionReady = !inTokenMode;
+    inTokenMode = isInTokenModeNeeded(owner, inTokenMode);
     final boolean hasRemoteOrigin = !txId.getMemberId().equals(owner.getMyId());
     boolean callbackEventAddedToPending = false;
     IndexManager oqlIndexManager = owner.getIndexManager();
@@ -1092,10 +1081,9 @@ public abstract class AbstractRegionMap extends BaseRegionMap
             oqlIndexManager.countDownIndexUpdaters();
           }
         }
-      } else if (inTokenMode || owner.getConcurrencyChecksEnabled()) {
+      } else if (!isRegionReady || owner.getConcurrencyChecksEnabled()) {
         // treating tokenMode and re == null as same, since we now want to
         // generate versions and Tombstones for destroys
-        boolean dispatchListenerEvent = inTokenMode;
         boolean opCompleted = false;
         RegionEntry newRe = getEntryFactory().createEntry(owner, key, Token.REMOVED_PHASE1);
         if (oqlIndexManager != null) {
@@ -1261,6 +1249,10 @@ public abstract class AbstractRegionMap extends BaseRegionMap
         owner.unlockWhenRegionIsInitializing();
       }
     }
+  }
+
+  boolean isInTokenModeNeeded(LocalRegion owner, boolean inTokenMode) {
+    return !owner.getConcurrencyChecksEnabled() && inTokenMode;
   }
 
   void releaseEvent(final EntryEventImpl event) {

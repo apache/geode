@@ -16,6 +16,7 @@
 package org.apache.geode.redis.internal.executor.key;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -23,6 +24,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -32,7 +34,6 @@ public abstract class AbstractDelIntegrationTest implements RedisPortSupplier {
 
   private Jedis jedis;
   private Jedis jedis2;
-  private static int ITERATION_COUNT = 4000;
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
@@ -50,9 +51,15 @@ public abstract class AbstractDelIntegrationTest implements RedisPortSupplier {
   }
 
   @Test
+  public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.DEL))
+        .hasMessageContaining("ERR wrong number of arguments for 'del' command");
+  }
+
+  @Test
   public void testDel_deletingOneKey_removesKeyAndReturnsOne() {
     String key1 = "firstKey";
-    jedis.set(key1, randString());
+    jedis.set(key1, "value1");
 
     Long deletedCount = jedis.del(key1);
 
@@ -71,8 +78,8 @@ public abstract class AbstractDelIntegrationTest implements RedisPortSupplier {
     String key2 = "secondKey";
     String key3 = "thirdKey";
 
-    jedis.set(key1, randString());
-    jedis.set(key2, randString());
+    jedis.set(key1, "value1");
+    jedis.set(key2, "value2");
 
     assertThat(jedis.del(key1, key2, key3)).isEqualTo(2L);
     assertThat(jedis.get(key1)).isNull();
@@ -83,8 +90,8 @@ public abstract class AbstractDelIntegrationTest implements RedisPortSupplier {
   public void testConcurrentDel_differentClients() {
     String keyBaseName = "DELBASE";
 
-    new ConcurrentLoopingThreads(
-        ITERATION_COUNT,
+    int ITERATION_COUNT = 4000;
+    new ConcurrentLoopingThreads(ITERATION_COUNT,
         (i) -> jedis.set(keyBaseName + i, "value" + i))
             .run();
 
@@ -112,7 +119,4 @@ public abstract class AbstractDelIntegrationTest implements RedisPortSupplier {
     assertThat(jedis.get(key)).isNull();
   }
 
-  private String randString() {
-    return Long.toHexString(Double.doubleToLongBits(Math.random()));
-  }
 }

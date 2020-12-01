@@ -1833,10 +1833,9 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
         }
       }
       boolean deltaBytesApplied = false;
-      try {
+      try (ByteArrayDataInput in = new ByteArrayDataInput(getDeltaBytes())) {
         long start = getRegion().getCachePerfStats().getTime();
-        ((org.apache.geode.Delta) value)
-            .fromDelta(new ByteArrayDataInput(getDeltaBytes()));
+        ((org.apache.geode.Delta) value).fromDelta(in);
         getRegion().getCachePerfStats().endDeltaUpdate(start);
         deltaBytesApplied = true;
       } catch (RuntimeException rte) {
@@ -2114,8 +2113,8 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     if (obj == null || obj == Token.NOT_AVAILABLE || Token.isInvalidOrRemoved(obj))
       throw new IllegalArgumentException(
           String.format("Must not serialize %s in this context.", obj));
+    HeapDataOutputStream hdos = null;
     try {
-      HeapDataOutputStream hdos = null;
       if (wrapper.getBytes().length < 32) {
         hdos = new HeapDataOutputStream(KnownVersion.CURRENT);
       } else {
@@ -2129,6 +2128,10 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
           "An IOException was thrown while serializing.");
       e2.initCause(e);
       throw e2;
+    } finally {
+      if (hdos != null) {
+        hdos.close();
+      }
     }
   }
 
@@ -2993,5 +2996,10 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     if (getRegion().isUsedForPartitionedRegionBucket()) {
       setRegion(getRegion().getPartitionedRegion());
     }
+  }
+
+  @Override
+  public boolean isTransactional() {
+    return getTransactionId() != null;
   }
 }

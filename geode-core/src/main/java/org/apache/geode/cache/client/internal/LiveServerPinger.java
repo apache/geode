@@ -87,6 +87,7 @@ public class LiveServerPinger extends EndpointListenerAdapter {
     public void run2() {
       if (endpoint.timeToPing(pingIntervalNanos)) {
         try {
+          endpoint.updateLastExecute();
           PingOp.execute(pool, endpoint.getLocation(), endpoint.getMemberId());
         } catch (Exception e) {
           if (logger.isDebugEnabled()) {

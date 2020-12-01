@@ -15,6 +15,7 @@
  */
 package org.apache.geode.redis.internal.executor.key;
 
+import java.math.BigInteger;
 import java.util.regex.Pattern;
 
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
@@ -22,13 +23,7 @@ import org.apache.geode.redis.internal.executor.GlobPattern;
 
 public abstract class AbstractScanExecutor extends AbstractExecutor {
 
-  protected final String ERROR_CURSOR = "invalid cursor";
-
-  protected final String ERROR_COUNT = "Count must be numeric and positive";
-
-  protected final String ERROR_INVALID_CURSOR =
-      "Cursor is invalid, dataset may have been altered if this is cursor from a previous scan";
-
+  protected final BigInteger UNSIGNED_LONG_CAPACITY = new BigInteger("18446744073709551615");
   protected final int DEFAULT_COUNT = 10;
 
   /**

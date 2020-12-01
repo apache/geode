@@ -15,6 +15,7 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
+
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -69,6 +70,12 @@ public class ClientHealthMonitor {
       new ConcurrentHashMap<>();
 
   /**
+   * The map of known clients and maximum time between pings.
+   */
+  private ConcurrentMap<ClientProxyMembershipID, Integer> clientMaximumTimeBetweenPings =
+      new ConcurrentHashMap<>();
+
+  /**
    * THe GemFire <code>Cache</code>
    */
   private final InternalCache cache;
@@ -77,7 +84,7 @@ public class ClientHealthMonitor {
     return maximumTimeBetweenPings;
   }
 
-  private final int maximumTimeBetweenPings;
+  private volatile int maximumTimeBetweenPings;
 
   /**
    * A thread that validates client connections
@@ -191,12 +198,19 @@ public class ClientHealthMonitor {
     refCount = 0;
   }
 
+  public void registerClient(ClientProxyMembershipID proxyID) {
+    registerClient(proxyID, maximumTimeBetweenPings);
+  }
+
   /**
    * Registers a new client to be monitored.
    *
    * @param proxyID The id of the client to be registered
    */
-  public void registerClient(ClientProxyMembershipID proxyID) {
+  public void registerClient(ClientProxyMembershipID proxyID, int maximumTimeBetweenPings) {
+    if (!clientMaximumTimeBetweenPings.containsKey(proxyID)) {
+      clientMaximumTimeBetweenPings.putIfAbsent(proxyID, maximumTimeBetweenPings);
+    }
     if (!clientHeartbeats.containsKey(proxyID)) {
       if (null == clientHeartbeats.putIfAbsent(proxyID,
           new AtomicLong(System.currentTimeMillis()))) {
@@ -233,6 +247,7 @@ public class ClientHealthMonitor {
       }
       expireTXStates(proxyID);
     }
+    clientMaximumTimeBetweenPings.remove(proxyID);
   }
 
   /**
@@ -349,7 +364,7 @@ public class ClientHealthMonitor {
 
     AtomicLong heartbeat = clientHeartbeats.get(proxyID);
     if (null == heartbeat) {
-      registerClient(proxyID);
+      registerClient(proxyID, getMaximumTimeBetweenPings(proxyID));
     } else {
       heartbeat.set(System.currentTimeMillis());
     }
@@ -581,6 +596,7 @@ public class ClientHealthMonitor {
    *
    * @param cache The GemFire <code>Cache</code>
    * @param maximumTimeBetweenPings The maximum time allowed between pings before determining the
+   *        client has died and interrupting its sockets
    */
   protected static synchronized void createInstance(InternalCache cache,
       int maximumTimeBetweenPings, CacheClientNotifierStats stats) {
@@ -597,6 +613,7 @@ public class ClientHealthMonitor {
    *
    * @param cache The GemFire <code>Cache</code>
    * @param maximumTimeBetweenPings The maximum time allowed between pings before determining the
+   *        client has died and interrupting its sockets
    */
   private ClientHealthMonitor(InternalCache cache, int maximumTimeBetweenPings,
       CacheClientNotifierStats stats) {
@@ -658,6 +675,10 @@ public class ClientHealthMonitor {
 
   public boolean hasDeltaClients() {
     return getNumberOfClientsAtOrAboveVersion(KnownVersion.GFE_61) > 0;
+  }
+
+  private int getMaximumTimeBetweenPings(ClientProxyMembershipID proxyID) {
+    return clientMaximumTimeBetweenPings.getOrDefault(proxyID, maximumTimeBetweenPings);
   }
 
   /**
@@ -786,8 +807,9 @@ public class ClientHealthMonitor {
                     (currentTime - latestHeartbeat), proxyID);
               }
 
+              int maximumTimeBetweenPingsForClient = getMaximumTimeBetweenPings(proxyID);
               if (checkHeartbeat.timedOut(currentTime, latestHeartbeat,
-                  _maximumTimeBetweenPings)) {
+                  maximumTimeBetweenPingsForClient)) {
                 // This client has been idle for too long. Determine whether
                 // any of its ServerConnection threads are currently processing
                 // a message. If so, let it go. If not, disconnect it.
@@ -795,7 +817,8 @@ public class ClientHealthMonitor {
                   if (cleanupClientThreads(proxyID, true)) {
                     logger.warn(
                         "Monitoring client with member id {}. It had been {} ms since the latest heartbeat. Max interval is {}. Terminated client.",
-                        entry.getKey(), currentTime - latestHeartbeat, _maximumTimeBetweenPings);
+                        entry.getKey(), currentTime - latestHeartbeat,
+                        maximumTimeBetweenPingsForClient);
                   }
                 } else {
                   if (logger.isDebugEnabled()) {

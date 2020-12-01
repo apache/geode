@@ -14,6 +14,9 @@
  */
 package org.apache.geode.internal.tcp;
 
+import static java.lang.Integer.MAX_VALUE;
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.lang.ref.Reference;
@@ -211,8 +214,8 @@ public class ConnectionTable {
     if (conserveSockets) {
       return LoggingExecutors.newThreadOnEachExecute("SharedP2PReader");
     }
-    return CoreLoggingExecutors.newThreadPoolWithSynchronousFeed("UnsharedP2PReader", 1,
-        Integer.MAX_VALUE, READER_POOL_KEEP_ALIVE_TIME);
+    return CoreLoggingExecutors.newThreadPoolWithSynchronousFeed(1, MAX_VALUE,
+        READER_POOL_KEEP_ALIVE_TIME, SECONDS, "UnsharedP2PReader");
   }
 
   /** conduit calls acceptConnection after an accept */

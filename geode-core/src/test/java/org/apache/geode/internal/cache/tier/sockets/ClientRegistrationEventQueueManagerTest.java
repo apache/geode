@@ -63,7 +63,7 @@ public class ClientRegistrationEventQueueManagerTest {
 
     when(filterRoutingInfo.getLocalFilterInfo()).thenReturn(
         filterInfo);
-    when(filterProfile.getFilterRoutingInfoPart2(null, internalCacheEvent))
+    when(filterProfile.getFilterRoutingInfoPart2(null, internalCacheEvent, true))
         .thenReturn(filterRoutingInfo);
     when(localRegion.getFilterProfile()).thenReturn(filterProfile);
     when(internalCacheEvent.getRegion()).thenReturn(localRegion);

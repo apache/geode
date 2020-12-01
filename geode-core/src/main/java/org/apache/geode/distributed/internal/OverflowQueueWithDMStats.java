@@ -19,6 +19,8 @@ import java.util.Collection;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.annotations.VisibleForTesting;
+
 /**
  * A LinkedBlockingQueue that supports stats. Named OverflowQueue for historical reasons.
  *
@@ -182,5 +184,10 @@ public class OverflowQueueWithDMStats<E> extends LinkedBlockingQueue<E> {
    */
   protected void postDrain(Collection<? super E> c) {
     // do nothing in this class. sub-classes can override
+  }
+
+  @VisibleForTesting
+  public QueueStatHelper getQueueStatHelper() {
+    return stats;
   }
 }

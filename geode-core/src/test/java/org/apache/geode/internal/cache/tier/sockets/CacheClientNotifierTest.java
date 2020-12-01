@@ -262,7 +262,7 @@ public class CacheClientNotifierTest {
 
     FilterRoutingInfo filterRoutingInfo = mock(FilterRoutingInfo.class);
     when(filterRoutingInfo.getLocalFilterInfo()).thenReturn(filterInfo);
-    when(filterProfile.getFilterRoutingInfoPart2(null, internalCacheEvent))
+    when(filterProfile.getFilterRoutingInfoPart2(null, internalCacheEvent, true))
         .thenReturn(filterRoutingInfo);
     doReturn(clientUpdateMessage).when(cacheClientNotifierSpy)
         .constructClientMessage(internalCacheEvent);

@@ -120,8 +120,7 @@ public class SSLUtil {
         keyStoreStream = new FileInputStream(sslConfig.getKeystore());
         clientKeys.load(keyStoreStream, sslConfig.getKeystorePassword().toCharArray());
 
-        keyManagerFactory =
-            KeyManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        keyManagerFactory = getDefaultKeyManagerFactory();
         keyManagerFactory.init(clientKeys, sslConfig.getKeystorePassword().toCharArray());
       }
     } finally {
@@ -131,6 +130,10 @@ public class SSLUtil {
     }
 
     return keyManagerFactory != null ? keyManagerFactory.getKeyManagers() : null;
+  }
+
+  static KeyManagerFactory getDefaultKeyManagerFactory() throws NoSuchAlgorithmException {
+    return KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
   }
 
   private static TrustManager[] getTrustManagers(SSLConfig sslConfig, boolean skipSslVerification)
@@ -162,8 +165,7 @@ public class SSLUtil {
         KeyStore serverPub = KeyStore.getInstance(trustStoreType);
         trustStoreStream = new FileInputStream(sslConfig.getTruststore());
         serverPub.load(trustStoreStream, sslConfig.getTruststorePassword().toCharArray());
-        trustManagerFactory =
-            TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        trustManagerFactory = getDefaultTrustManagerFactory();
         trustManagerFactory.init(serverPub);
       }
     } finally {
@@ -172,6 +174,11 @@ public class SSLUtil {
       }
     }
     return trustManagerFactory != null ? trustManagerFactory.getTrustManagers() : null;
+  }
+
+  static TrustManagerFactory getDefaultTrustManagerFactory()
+      throws NoSuchAlgorithmException {
+    return TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
   }
 
 }

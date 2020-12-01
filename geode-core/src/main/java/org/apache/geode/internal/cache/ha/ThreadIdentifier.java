@@ -201,9 +201,8 @@ public class ThreadIdentifier implements DataSerializable {
 
   public String expensiveToString() {
     Object mbr;
-    try {
-      mbr = InternalDistributedMember
-          .readEssentialData(new ByteArrayDataInput(membershipID));
+    try (ByteArrayDataInput byteArrayDataInput = new ByteArrayDataInput(membershipID)) {
+      mbr = InternalDistributedMember.readEssentialData(byteArrayDataInput);
     } catch (Exception e) {
       mbr = membershipID; // punt and use the bytes
     }
