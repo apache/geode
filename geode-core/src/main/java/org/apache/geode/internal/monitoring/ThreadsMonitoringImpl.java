@@ -55,8 +55,8 @@ public class ThreadsMonitoringImpl implements ThreadsMonitoring {
     this.isClosed = false;
     if (startThread) {
       timer = new Timer("ThreadsMonitor", true);
-      this.tmProcess = new ThreadsMonitoringProcess(this, iDistributedSystem, timeLimitMillis);
-      this.timer.schedule(tmProcess, 0, timeIntervalMillis);
+      tmProcess = new ThreadsMonitoringProcess(this, iDistributedSystem, timeLimitMillis);
+      timer.schedule(tmProcess, 0, timeIntervalMillis);
     } else {
       timer = null;
     }
@@ -105,7 +105,7 @@ public class ThreadsMonitoringImpl implements ThreadsMonitoring {
 
   @Override
   public void endMonitor() {
-    this.monitorMap.remove(Thread.currentThread().getId());
+    monitorMap.remove(Thread.currentThread().getId());
   }
 
   @VisibleForTesting
@@ -141,13 +141,13 @@ public class ThreadsMonitoringImpl implements ThreadsMonitoring {
 
   @Override
   public boolean register(AbstractExecutor executor) {
-    this.monitorMap.put(executor.getThreadID(), executor);
+    monitorMap.put(executor.getThreadID(), executor);
     return true;
   }
 
   @Override
   public void unregister(AbstractExecutor executor) {
-    this.monitorMap.remove(executor.getThreadID());
+    monitorMap.remove(executor.getThreadID());
   }
 
   @VisibleForTesting
