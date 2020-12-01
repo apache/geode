@@ -242,7 +242,9 @@ public class GatewaySenderEventRemoteDispatcherJUnitTest {
     GatewaySenderEventRemoteDispatcher dispatcherSpy = spy(eventDispatcher);
 
     String expectedExceptionMessage =
-        "There are no active servers. Cannot get connection to [expectedId] after 5 attempts.";
+        "There are no active servers. "
+            + GatewaySenderEventRemoteDispatcher.maxAttemptsReachedConnectingServerIdExceptionMessage
+            + " [expectedId] (5 attempts)";
     assertThatThrownBy(() -> {
       dispatcherSpy.initializeConnection();
     }).isInstanceOf(GatewaySenderException.class).hasMessageContaining(expectedExceptionMessage);
@@ -272,7 +274,9 @@ public class GatewaySenderEventRemoteDispatcherJUnitTest {
     GatewaySenderEventRemoteDispatcher dispatcherSpy = spy(eventDispatcher);
 
     String expectedExceptionMessage =
-        "No available connection was found, but the following active servers exist: host1:1, host2:2 Cannot get connection to [expectedId] after 5 attempts.";
+        "No available connection was found, but the following active servers exist: host1:1, host2:2 "
+            + GatewaySenderEventRemoteDispatcher.maxAttemptsReachedConnectingServerIdExceptionMessage
+            + " [expectedId] (5 attempts)";
     assertThatThrownBy(() -> {
       dispatcherSpy.initializeConnection();
     }).isInstanceOf(GatewaySenderException.class).hasMessageContaining(expectedExceptionMessage);

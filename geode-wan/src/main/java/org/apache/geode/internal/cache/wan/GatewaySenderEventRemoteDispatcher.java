@@ -64,6 +64,9 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
 
   private ReentrantReadWriteLock connectionLifeCycleLock = new ReentrantReadWriteLock();
 
+  protected static final String maxAttemptsReachedConnectingServerIdExceptionMessage =
+      "Reached max attempts number trying to connect to desired server id";
+
   /*
    * Called after each attempt at processing an outbound (dispatch) or inbound (ack)
    * message, whether the attempt is successful or not. The purpose is testability.
@@ -391,8 +394,8 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
         attempt++;
         this.sender.getProxy().returnConnection(con);
         if (attempt >= maxAttempts) {
-          throw new ServerConnectivityException("Cannot get connection to ["
-              + expectedServerId + "] after " + maxAttempts + " attempts.");
+          throw new ServerConnectivityException(maxAttemptsReachedConnectingServerIdExceptionMessage
+              + " [" + expectedServerId + "] (" + maxAttempts + " attempts).");
         }
         if (server != null) {
           con = this.sender.getProxy().acquireConnection(server);
@@ -530,7 +533,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
                 buffer.toString());
       }
       if (this.sender.getEnforceThreadsConnectSameReceiver()) {
-        if (Pattern.compile("Cannot get connection to .* after .* attempts.")
+        if (Pattern.compile(maxAttemptsReachedConnectingServerIdExceptionMessage + ".*")
             .matcher(e.getMessage()).find()) {
           ioMsg += " " + e.getMessage();
         }
