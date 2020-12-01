@@ -24,14 +24,17 @@ benchmarks:
     flag: ''
     options: ''
     max_in_flight: 4
+    timeout: 24h
   - title: '_with_ssl'
     flag: '-PwithSsl -PtestJVM=/usr/lib/jvm/bellsoft-java11-amd64'
     options: '--tests=*GetBenchmark --tests=*PutBenchmark'
     max_in_flight: 1
+    timeout: 3h
   - title: '_with_security_manager'
     flag: '-PwithSecurityManager'
     options: '--tests=Partitioned*'
     max_in_flight: 2
+    timeout: 5h
 
 build_test:
   ARTIFACT_SLUG: build
@@ -129,10 +132,10 @@ tests:
   RAM: '90'
   name: Integration
 - ARTIFACT_SLUG: upgradetestfiles
-  CALL_STACK_TIMEOUT: '3000'
+  CALL_STACK_TIMEOUT: '4800'
   CPUS: '96'
   DUNIT_PARALLEL_FORKS: '48'
-  EXECUTE_TEST_TIMEOUT: 1h
+  EXECUTE_TEST_TIMEOUT: 90m
   GRADLE_TASK: upgradeTest
   MAX_IN_FLIGHT: 2
   PARALLEL_DUNIT: 'true'

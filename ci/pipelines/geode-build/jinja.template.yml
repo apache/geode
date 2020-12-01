@@ -505,7 +505,7 @@ jobs:
         - name: concourse-metadata-resource
         outputs:
         - name: results
-      timeout: 8h
+      timeout: {{ run_var.timeout }}
       ensure:
         do:
         - task: cleanup_benchmarks
