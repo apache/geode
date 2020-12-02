@@ -196,20 +196,16 @@ dependencies {
   integrationTestImplementation(project(':geode-core'))
   integrationTestImplementation(project(':geode-membership'))
   integrationTestImplementation(project(':geode-gfsh'))
-  integrationTestImplementation(project(':geode-log4j')) {
-    exclude module: 'geode-core'
-  }
-  integrationTestImplementation(project(':geode-junit')) {
-    exclude module: 'geode-core'
-  }
-  integrationTestImplementation(project(':geode-dunit')) {
-    exclude module: 'geode-core'
-  }
+  integrationTestImplementation(project(':geode-log4j'))
+  integrationTestImplementation(project(':geode-junit'))
+  integrationTestImplementation(project(':geode-dunit'))
   integrationTestImplementation(project(':geode-pulse'))
   integrationTestImplementation(project(':geode-assembly:geode-assembly-test'))
   integrationTestImplementation(project(':geode-logging'))
-  integrationTestImplementation('org.apache.httpcomponents:httpclient')
+
   integrationTestImplementation(project(':frameworks:springframework'))
+
+  integrationTestImplementation('org.apache.httpcomponents:httpclient')
   integrationTestImplementation('org.springframework.security:spring-security-oauth2-core')
   integrationTestImplementation('org.springframework.security:spring-security-oauth2-client')
   integrationTestImplementation('org.springframework.security:spring-security-oauth2-jose')
