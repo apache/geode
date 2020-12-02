@@ -35,6 +35,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.management.GatewayReceiverMXBean;
+import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -452,10 +453,11 @@ public class ListGatewaysCommandDUnitTest implements Serializable {
 
   @Test
   public void testListGatewaysWithOneDispatcherThread() {
-    String command = CliStrings.CREATE_GATEWAYSENDER + " --" + CliStrings.CREATE_GATEWAYSENDER__ID
-        + "=ln_Serial --"
-        + CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID + "=2 --"
-        + CliStrings.CREATE_GATEWAYSENDER__DISPATCHERTHREADS + "=1";
+    String command = new CommandStringBuilder(CliStrings.CREATE_GATEWAYSENDER)
+        .addOption(CliStrings.CREATE_GATEWAYSENDER__ID, "ln_Serial")
+        .addOption(CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID, "2")
+        .addOption(CliStrings.CREATE_GATEWAYSENDER__DISPATCHERTHREADS, "1")
+        .getCommandString();
 
     int lnPort = locatorSite1.getPort();
 
