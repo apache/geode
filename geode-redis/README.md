@@ -179,39 +179,39 @@ start server \
 | QUIT               	| HMGET                                              	| BZPOPMIN                      	|
 | RENAME             	| HSCAN                                              	| CLIENT CACHING                	|
 | SADD               	| HSETNX                                             	| CLIENT GETNAME                	|
-| SET                	| HVALS                                              	| CLIENT GETREDIR               	|
-| SMEMBERS           	| INCR                                               	| CLIENT ID                     	|
-| SREM               	| INCRBY                                             	| CLIENT KILL                   	|
-| SUBSCRIBE          	| INCRBYFLOAT                                        	| CLIENT LIST                   	|
-| TTL                	| MGET                                               	| CLIENT PAUSE                  	|
-| TYPE               	| MSET                                               	| CLIENT REPLY                  	|
-| UNSUBSCRIBE       	| MSETNX                                             	| CLIENT SETNAME                	|
-|                    	| PSETEX                                             	| CLIENT TRACKING               	|
-|                    	| SCAN                                               	| CLIENT UNBLOCK                	|
-|                    	| SCARD                                              	| CLUSTER ADDSLOTS              	|
-|                    	| SDIFF                                              	| CLUSTER BUMPEPOCH             	|
-|                    	| SDIFFSTORE                                         	| CLUSTER COUNT-FAILURE-REPORTS 	|
-|                    	| SELECT                                             	| CLUSTER COUNTKEYSINSLOT       	|
-|                    	| SETBIT                                             	| CLUSTER DELSLOTS      	        |
-|                    	| SETEX                                              	| CLUSTER FAILOVER              	|
-|                    	| SETNX                                              	| CLUSTER FLUSHSLOTS               	|
-|                    	| SETRANGE                                           	| CLUSTER FORGET                   	|
-|                    	| SHUTDOWN                                           	| CLUSTER GETKEYSINSLOT            	|
-|                    	| SINTER                                             	| CLUSTER INFO                  	|
-|                    	| SINTERSTORE                                        	| CLUSTER KEYSLOT                 	|
-|                    	| SISMEMBER                                          	| CLUSTER MEET                     	|
-|                    	| SLOWLOG                                            	| CLUSTER MYID                   	|
-|                    	| SMOVE                                              	| CLUSTER NODES                 	|
-|                    	| SPOP                                               	| CLUSTER REPLICAS                 	|
-|                    	| SRANDMEMBER                                        	| CLUSTER REPLICATE              	|
-|                    	| SSCAN                                              	| CLUSTER RESET                  	|
-|                    	| STRLEN                                             	| CLUSTER SAVECONFIG                |
-|                    	| SUNION                                             	| CLUSTER SET-CONFIG-EPOCH          |
-|                    	| SUNIONSTORE                                        	| CLUSTER SETSLOT                 	|
-|                    	| TIME                                               	| CLUSTER SLAVES                  	|
-|                    	| UNLINK [1]                                         	| CLUSTER SLOTS                 	|
-|                    	|                                                    	| COMMAND                       	|
-|                    	|                                                    	| COMMAND COUNT                 	|
+| SET                	| HSTRLEN                                           	| CLIENT GETREDIR               	|
+| SMEMBERS           	| HVALS                                              	| CLIENT ID                     	|
+| SREM               	| INCR                                               	| CLIENT KILL                   	|
+| SUBSCRIBE          	| INCRBY                                             	| CLIENT LIST                   	|
+| TTL                	| INCRBYFLOAT                                        	| CLIENT PAUSE                  	|
+| TYPE               	| INFO                                                  | CLIENT REPLY                  	|
+| UNSUBSCRIBE       	| MGET                                               	| CLIENT SETNAME                	|
+|                    	| MSET                                               	| CLIENT TRACKING               	|
+|                    	| MSETNX                                             	| CLIENT UNBLOCK                	|
+|                    	| PSETEX                                             	| CLUSTER ADDSLOTS              	|
+|                    	| SCAN                                               	| CLUSTER BUMPEPOCH             	|
+|                    	| SCARD                                              	| CLUSTER COUNT-FAILURE-REPORTS 	|
+|                    	| SDIFF                                              	| CLUSTER COUNTKEYSINSLOT       	|
+|                    	| SDIFFSTORE                                         	| CLUSTER DELSLOTS     	            |
+|                    	| SELECT                                             	| CLUSTER FAILOVER              	|
+|                    	| SETBIT                                             	| CLUSTER FLUSHSLOTS                |
+|                    	| SETEX                                              	| CLUSTER FORGET                    |
+|                    	| SETNX                                              	| CLUSTER GETKEYSINSLOT             |
+|                    	| SETRANGE                                           	| CLUSTER INFO                  	|
+|                    	| SHUTDOWN                                           	| CLUSTER KEYSLOT                   |
+|                    	| SINTER                                             	| CLUSTER MEET                      |
+|                    	| SINTERSTORE                                        	| CLUSTER MYID                   	|
+|                    	| SISMEMBER                                          	| CLUSTER NODES                 	|
+|                    	| SLOWLOG                                            	| CLUSTER REPLICAS                  |
+|                    	| SMOVE                                              	| CLUSTER REPLICATE              	|
+|                    	| SPOP                                               	| CLUSTER RESET                  	|
+|                    	| SRANDMEMBER                                        	| CLUSTER SAVECONFIG                |
+|                    	| SSCAN                                              	| CLUSTER SET-CONFIG-EPOCH          |
+|                    	| STRLEN                                             	| CLUSTER SETSLOT                   |
+|                    	| SUNION                                             	| CLUSTER SLAVES                    |
+|                    	| SUNIONSTORE                                        	| CLUSTER SLOTS                 	|
+|                    	| TIME                                                  | COMMAND                       	|
+|                    	| UNLINK [1]                                         	| COMMAND COUNT                 	|
 |                    	|                                                    	| COMMAND GETKEYS               	|
 |                    	|                                                    	| COMMAND INFO                  	|
 |                    	|                                                    	| CONFIG GET                    	|
@@ -231,8 +231,6 @@ start server \
 |                    	|                                                    	| GEOPOS                        	|
 |                    	|                                                    	| GEORADIUS                     	|
 |                    	|                                                    	| GEORADIUSBYMEMBER             	|
-|                    	|                                                    	| HSTRLEN                       	|
-|                    	|                                                    	| INFO                          	|
 |                    	|                                                    	| LASTSAVE                      	|
 |                    	|                                                    	| LATENCY DOCTOR                	|
 |                    	|                                                    	| LATENCY GRAPH                 	|
