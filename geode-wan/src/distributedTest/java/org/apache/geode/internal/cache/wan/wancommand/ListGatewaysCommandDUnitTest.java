@@ -452,8 +452,10 @@ public class ListGatewaysCommandDUnitTest implements Serializable {
 
   @Test
   public void testListGatewaysWithOneDispatcherThread() {
-    String command =
-        "create gateway-sender --id=ln_Serial --remote-distributed-system-id=2 --dispatcher-threads=1";
+    String command = CliStrings.CREATE_GATEWAYSENDER + " --" + CliStrings.CREATE_GATEWAYSENDER__ID
+        + "=ln_Serial --"
+        + CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID + "=2 --"
+        + CliStrings.CREATE_GATEWAYSENDER__DISPATCHERTHREADS + "=1";
 
     int lnPort = locatorSite1.getPort();
 
@@ -464,11 +466,13 @@ public class ListGatewaysCommandDUnitTest implements Serializable {
 
     gfsh.executeAndAssertThat(command).statusIsSuccess();
 
-    gfsh.executeAndAssertThat("list gateways").statusIsSuccess()
+    gfsh.executeAndAssertThat(CliStrings.LIST_GATEWAY).statusIsSuccess()
         .hasTableSection("gatewaySenders")
         .hasRowSize(3).hasColumn("Status").contains("Running, not Connected");
 
-    gfsh.executeAndAssertThat("list gateways --senders-only").statusIsSuccess()
+    gfsh.executeAndAssertThat(
+        CliStrings.LIST_GATEWAY + " --" + CliStrings.LIST_GATEWAY__SHOW_SENDERS_ONLY)
+        .statusIsSuccess()
         .hasNoSection("gatewayReceivers")
         .hasTableSection("gatewaySenders")
         .hasRowSize(3).hasColumn("Status").contains("Running, not Connected");
