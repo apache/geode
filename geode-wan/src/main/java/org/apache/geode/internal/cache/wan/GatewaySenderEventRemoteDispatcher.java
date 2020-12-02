@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Vector;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
@@ -379,7 +380,9 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
       connectedToExpectedReceiver = true;
     }
     int attempt = 0;
-    final int maxAttempts = 5;
+    final int attemptsPerServer = 5;
+    int maxAttempts = attemptsPerServer;
+    Vector<String> notExpectedServerIds = new Vector<String>();
     while (!connectedToExpectedReceiver) {
       if (connectedServerId.equals(expectedServerId)) {
         if (isDebugEnabled) {
@@ -392,6 +395,10 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
               + "] but got connection to [" + connectedServerId + "]");
         }
         attempt++;
+        if (!notExpectedServerIds.contains(connectedServerId)) {
+          notExpectedServerIds.add(connectedServerId);
+          maxAttempts += attemptsPerServer;
+        }
         this.sender.getProxy().returnConnection(con);
         if (attempt >= maxAttempts) {
           throw new ServerConnectivityException(maxAttemptsReachedConnectingServerIdExceptionMessage
