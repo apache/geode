@@ -45,7 +45,11 @@ public class AlterGatewaySenderCommandDUnitTest {
 
   public static final String CREATE =
       "create gateway-sender --id=sender1 --remote-distributed-system-id=2";
+  public static final String CREATE_PARALLEL =
+      "create gateway-sender --id=sender1P --remote-distributed-system-id=2 --parallel=true";
   public static final String DESTROY = "destroy gateway-sender --id=sender1";
+  public static final String DESTROY_PARALLEL = "destroy gateway-sender --id=sender1P";
+
 
   @ClassRule
   public static ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
@@ -86,6 +90,7 @@ public class AlterGatewaySenderCommandDUnitTest {
   @After
   public void after() {
     gfsh.executeAndAssertThat(DESTROY + " --if-exists").statusIsSuccess();
+    gfsh.executeAndAssertThat(DESTROY_PARALLEL + " --if-exists").statusIsSuccess();
     exln.remove();
   }
 
@@ -265,6 +270,56 @@ public class AlterGatewaySenderCommandDUnitTest {
           .isEqualTo(GatewaySender.DEFAULT_BATCH_TIME_INTERVAL);
       assertThat(sender.getAlertThreshold()).isEqualTo(100);
       assertThat(sender.getGatewayEventFilters().get(0).beforeEnqueue(null)).isTrue();
+    });
+  }
+
+  @Test
+  public void testCreateParallelGatewaySenderAndAlterBatchSize() throws Exception {
+    gfsh.executeAndAssertThat(CREATE_PARALLEL).statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting")
+        .hasTableSection()
+        .hasColumn("Message")
+        .containsExactly("GatewaySender \"sender1P\" created on \"happyserver1\"",
+            "GatewaySender \"sender1P\" created on \"happyserver2\"");
+
+    gfsh.executeAndAssertThat("list gateways").statusIsSuccess()
+        .containsOutput("sender1P");
+
+    gfsh.executeAndAssertThat(
+        "alter gateway-sender --id=sender1P --batch-size=200 --alert-threshold=100")
+        .statusIsSuccess();
+
+    // verify that server1's event queue has the default value
+    server1.invoke(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
+      GatewaySender sender = cache.getGatewaySender("sender1P");
+      assertThat(sender.getBatchSize()).isEqualTo(200);
+      assertThat(sender.getBatchTimeInterval())
+          .isEqualTo(GatewaySender.DEFAULT_BATCH_TIME_INTERVAL);
+      assertThat(sender.getAlertThreshold()).isEqualTo(100);
+    });
+  }
+
+  @Test
+  public void testCreateParallelGatewaySenderAndChangeGroupTransaction() throws Exception {
+    gfsh.executeAndAssertThat(CREATE_PARALLEL).statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting")
+        .hasTableSection()
+        .hasColumn("Message")
+        .containsExactly("GatewaySender \"sender1P\" created on \"happyserver1\"",
+            "GatewaySender \"sender1P\" created on \"happyserver2\"");
+
+    gfsh.executeAndAssertThat("list gateways").statusIsSuccess()
+        .containsOutput("sender1P");
+
+    gfsh.executeAndAssertThat("alter gateway-sender --id=sender1P --group-transaction-events=true")
+        .statusIsSuccess();
+
+    // verify that server1's event queue has the default value
+    server1.invoke(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
+      GatewaySender sender = cache.getGatewaySender("sender1P");
+      assertThat(sender.mustGroupTransactionEvents()).isTrue();
     });
   }
 
