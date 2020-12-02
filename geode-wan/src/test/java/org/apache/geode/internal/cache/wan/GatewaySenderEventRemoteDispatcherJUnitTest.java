@@ -134,7 +134,7 @@ public class GatewaySenderEventRemoteDispatcherJUnitTest {
   }
 
   @Test
-  public void enforceThreadsConnectSameReceiver_initializeParallelSenderConnection_retriesAreNotUsed() {
+  public void initializeConnectionWithParallelSenderDoesNotRetryInitializeConnection() {
     when(senderMock.isParallel()).thenReturn(true);
 
     eventDispatcher = new GatewaySenderEventRemoteDispatcher(eventProcessorMock, null);
@@ -148,7 +148,7 @@ public class GatewaySenderEventRemoteDispatcherJUnitTest {
   }
 
   @Test
-  public void enforceThreadsConnectSameReceiver_initializingConnectionOfSerialSenderWithOptionSetToFalse_retriesAreNotUsed() {
+  public void initializeConnectionWithSerialSenderAndEnforceThreadsConnectSameRecieverFalseDoesNotRetryInitializeConnection() {
     when(senderMock.getEnforceThreadsConnectSameReceiver()).thenReturn(false);
 
     when(connectionMock.getEndpoint()).thenReturn(endpointMock);
@@ -166,7 +166,7 @@ public class GatewaySenderEventRemoteDispatcherJUnitTest {
   }
 
   @Test
-  public void enforceThreadsConnectSameReceiver_initializingConnectionOfSerialSenderWithOptionSetToTrue_firstThreadObtainsTheReceiverId() {
+  public void initializeConnectionWithSerialSenderAndEnforceThreadsConnectSameReceiverTrueAndNoExpectedReceiverIdSetsReceiverIdAndDoesNotReacquireConnection() {
 
     when(senderMock.getEnforceThreadsConnectSameReceiver()).thenReturn(true);
 
@@ -187,7 +187,7 @@ public class GatewaySenderEventRemoteDispatcherJUnitTest {
   }
 
   @Test
-  public void enforceThreadsConnectSameReceiver_initializingConnectionOfSerialSenderWithOptionSetToTrue_threadConnectsToExpectedReceiverWithNoRetry() {
+  public void initializeConnectionWithSerialSenderAndEnforceThreadsConnectSameReceiverTrueAndConnectedToExpectedReceiverDoesNotReacquireConnection() {
 
     when(senderMock.getEnforceThreadsConnectSameReceiver()).thenReturn(true);
 
@@ -208,7 +208,7 @@ public class GatewaySenderEventRemoteDispatcherJUnitTest {
   }
 
   @Test
-  public void enforceThreadsConnectSameReceiver_initializingConnectionOfSerialSenderWithOptionSetToTrue_threadConnectsToExpectedReceiverWithRetry() {
+  public void initializeConnectionWithSerialSenderAndEnforceThreadsConnectSameReceiverTrueAndConnectedToExpectedReceiverOnSecondTryReacquiresConnectionOnce() {
 
     when(senderMock.getEnforceThreadsConnectSameReceiver()).thenReturn(true);
 
@@ -230,7 +230,7 @@ public class GatewaySenderEventRemoteDispatcherJUnitTest {
   }
 
   @Test
-  public void enforceThreadsConnectSameReceiver_initializingConnectionOfSerialSenderWithOptionSetToTrue_exceptionThrownWhenMaxRetriesReachedAndNoServersAvailable() {
+  public void initializeConnectionWithSerialSenderAndEnforceThreadsConnectSameReceiverTrueAndMaxRetriesExceededAndNoServersAvailableThrowsException() {
 
     when(senderMock.getEnforceThreadsConnectSameReceiver()).thenReturn(true);
 
@@ -258,7 +258,7 @@ public class GatewaySenderEventRemoteDispatcherJUnitTest {
   }
 
   @Test
-  public void enforceThreadsConnectSameReceiver_initializingConnectionOfSerialSenderWithOptionSetToTrue_exceptionThrownWhenMaxRetriesReachedButServersAreAvailable() {
+  public void initializeConnectionWithSerialSenderAndEnforceThreadsConnectSameReceiverTrueAndMaxRetriesExceededAndServersAvailableThrowsException() {
 
     when(senderMock.getEnforceThreadsConnectSameReceiver()).thenReturn(true);
 
