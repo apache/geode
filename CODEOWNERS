@@ -267,11 +267,11 @@ CODEOWNERS @apache/geode-committers
 #*.gradle
 #etc/**
 #build.gradle
-#buildSrc/**
-#ci/**
-#dev-tools/**
-#docker/**
-#etc/**
+buildSrc/**                                                  @onichols-pivotal
+ci/**                                                        @onichols-pivotal
+dev-tools/**                                                 @onichols-pivotal
+docker/**                                                    @onichols-pivotal
+geode-management/src/test/script/update-management-wiki.sh   @onichols-pivotal
 #boms/**
 #*gradle*
 #static-analysis/**
@@ -286,7 +286,7 @@ CODEOWNERS @apache/geode-committers
 #geode-docs/**
 #BUILDING.md
 #CODE_OF_CONDUCT.md
-#LICENSE
-#NOTICE
+LICENSE                                                      @onichols-pivotal
+NOTICE                                                       @onichols-pivotal
 #README.md
 #TESTING.md
