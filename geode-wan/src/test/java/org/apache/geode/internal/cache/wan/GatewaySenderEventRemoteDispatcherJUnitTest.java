@@ -245,7 +245,7 @@ public class GatewaySenderEventRemoteDispatcherJUnitTest {
     String expectedExceptionMessage =
         "There are no active servers. "
             + GatewaySenderEventRemoteDispatcher.maxAttemptsReachedConnectingServerIdExceptionMessage
-            + " [expectedId] (5 attempts)";
+            + " [expectedId] (10 attempts)";
     assertThatThrownBy(() -> {
       dispatcherSpy.initializeConnection();
     }).isInstanceOf(GatewaySenderException.class).hasMessageContaining(expectedExceptionMessage);
@@ -253,7 +253,7 @@ public class GatewaySenderEventRemoteDispatcherJUnitTest {
     verify(senderMock, times(1)).getLockForConcurrentDispatcher();
     verify(senderMock, times(2)).getEnforceThreadsConnectSameReceiver();
     verify(dispatcherSpy, times(1)).retryInitializeConnection(connectionMock);
-    verify(poolMock, times(5)).acquireConnection();
+    verify(poolMock, times(10)).acquireConnection();
     verify(eventProcessorMock, times(0)).setExpectedReceiverUniqueId(any());
   }
 
@@ -277,7 +277,7 @@ public class GatewaySenderEventRemoteDispatcherJUnitTest {
     String expectedExceptionMessage =
         "No available connection was found, but the following active servers exist: host1:1@id1, host2:2@id2 "
             + GatewaySenderEventRemoteDispatcher.maxAttemptsReachedConnectingServerIdExceptionMessage
-            + " [expectedId] (5 attempts)";
+            + " [expectedId] (10 attempts)";
     assertThatThrownBy(() -> {
       dispatcherSpy.initializeConnection();
     }).isInstanceOf(GatewaySenderException.class).hasMessageContaining(expectedExceptionMessage);
@@ -285,7 +285,8 @@ public class GatewaySenderEventRemoteDispatcherJUnitTest {
     verify(senderMock, times(1)).getLockForConcurrentDispatcher();
     verify(senderMock, times(2)).getEnforceThreadsConnectSameReceiver();
     verify(dispatcherSpy, times(1)).retryInitializeConnection(connectionMock);
-    verify(poolMock, times(5)).acquireConnection();
+    verify(poolMock, times(10)).acquireConnection();
     verify(eventProcessorMock, times(0)).setExpectedReceiverUniqueId(any());
   }
+
 }
