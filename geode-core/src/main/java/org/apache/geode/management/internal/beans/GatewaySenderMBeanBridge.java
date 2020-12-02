@@ -324,10 +324,20 @@ public class GatewaySenderMBeanBridge {
         }
       }
     } else {
-      ConcurrentSerialGatewaySenderEventProcessor cProc =
-          (ConcurrentSerialGatewaySenderEventProcessor) ((AbstractGatewaySender) sender)
-              .getEventProcessor();
-      for (SerialGatewaySenderEventProcessor lProc : cProc.getProcessors()) {
+      if (getDispatcherThreads() > 1) {
+        ConcurrentSerialGatewaySenderEventProcessor cProc =
+            (ConcurrentSerialGatewaySenderEventProcessor) ((AbstractGatewaySender) sender)
+                .getEventProcessor();
+        for (SerialGatewaySenderEventProcessor lProc : cProc.getProcessors()) {
+          if (lProc.getDispatcher() != null && lProc.getDispatcher().isConnectedToRemote()) {
+            this.dispatcher = lProc.getDispatcher();
+            return true;
+          }
+        }
+      } else {
+        SerialGatewaySenderEventProcessor lProc =
+            (SerialGatewaySenderEventProcessor) ((AbstractGatewaySender) sender)
+                .getEventProcessor();
         if (lProc.getDispatcher() != null && lProc.getDispatcher().isConnectedToRemote()) {
           this.dispatcher = lProc.getDispatcher();
           return true;
