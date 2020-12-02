@@ -69,7 +69,8 @@ The Redis API for <%=vars.product_name%> currently supports the following comman
 
 -   **Connection**: AUTH, PING, QUIT
 -   **Hashes**: HGETALL, HMSET, HSET
--   **Keys**: DEL, EXISTS, EXPIRE, EXPIREAT, KEYS, PERSIST, PEXPIRE, PEXPIREAT, PTTL, RENAME, TTL, TYPE
+-   **Keys**: DEL, EXISTS, EXPIRE, EXPIREAT, KEYS, PERSIST, PEXPIRE, PEXPIREAT, PTTL, RENAME, TTL,
+  TYPE
 -   **Publish/Subscribe**: PUBLISH, PSUBSCRIBE, PUNSUBSCRIBE, SUBSCRIBE, UNSUBSCRIBE
 -   **Sets**: SADD, SMEMBERS, SREM
 -   **Strings**: APPEND, GET, SET
@@ -79,14 +80,15 @@ commands are available to use, but have not been fully tested. There is no guara
 exactly as expected.
 
 -   **Connection**: ECHO, SELECT
--   **Hashes**: HDEL, HEXISTS, HGET, HINCRBY, HINCRBYFLOAT, HKEYS, HLEN, HMGET, HSCAN, HSETNX, HVALS
+-   **Hashes**: HDEL, HEXISTS, HGET, HINCRBY, HINCRBYFLOAT, HKEYS, HLEN, HMGET, HSCAN, HSETNX,
+  HSTRLEN, HVALS
 -   **Keys**: SCAN, UNLINK
--   **Server**: DBSIZE, FLUSHALL (no async option), FLUSHDB (no async option), SHUTDOWN, SLOWLOG,
-  TIME
+-   **Server**: DBSIZE, FLUSHALL (no async option), FLUSHDB (no async option), INFO, SHUTDOWN,
+  SLOWLOG, TIME
 -   **Sets**: SCARD, SDIFF, SDIFFSTORE, SINTER, SINTERSTORE, SISMEMBER, SMOVE, SPOP, SRANDMEMBER,
   SSCAN, SUNION, SUNIONSTORE
--   **Strings**: BITCOUNT, BITOP, BITPOS, DECR, DECRBY, GETBIT, GETRANGE, GETSET, INCR, INCRBY, INCRBYFLOAT, MGET,
-  MSET, MSETNX, PSETEX, SETBIT, SETEX, SETNX, SETRANGE, STRLEN
+-   **Strings**: BITCOUNT, BITOP, BITPOS, DECR, DECRBY, GETBIT, GETRANGE, GETSET, INCR, INCRBY,
+  INCRBYFLOAT, MGET, MSET, MSETNX, PSETEX, SETBIT, SETEX, SETNX, SETRANGE, STRLEN
 
 
 If you already have some Geode servers running with Redis enabled, you can execute the following
