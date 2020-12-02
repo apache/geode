@@ -372,6 +372,8 @@ public class RegionMapDestroy {
           } finally {
             removeEntryOrLeaveTombstone();
           }
+        } else {
+            removeEntryOrLeaveTombstone(); // GEM-2133, remove evicted entries
         }
       } // synchronized(newRegionEntry)
     }
