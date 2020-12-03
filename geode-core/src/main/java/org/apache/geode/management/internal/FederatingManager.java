@@ -407,7 +407,7 @@ public class FederatingManager extends Manager {
           monitorFactory.setDataPolicy(DataPolicy.REPLICATE);
           monitorFactory.setConcurrencyChecksEnabled(false);
           ManagementCacheListener managementCacheListener =
-              new ManagementCacheListener(proxyFactory);
+              new ManagementCacheListener(proxyFactory, cache);
           monitorFactory.addCacheListener(managementCacheListener);
           monitorFactory.setIsUsedForMetaRegion(true);
           monitorFactory.setCachePerfStatsHolder(monitoringRegionStats);

@@ -14,14 +14,15 @@
  */
 package org.apache.geode.management.internal;
 
-import java.util.concurrent.CountDownLatch;
-
 import javax.management.ObjectName;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.internal.cache.InternalCacheForClientAccess;
+import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -37,16 +38,18 @@ public class ManagementCacheListener extends CacheListenerAdapter<String, Object
 
   private final MBeanProxyFactory proxyHelper;
 
-  private final CountDownLatch readyForEvents;
+  private final StoppableCountDownLatch readyForEvents;
 
-  public ManagementCacheListener(MBeanProxyFactory proxyHelper) {
+
+  public ManagementCacheListener(MBeanProxyFactory proxyHelper,
+                                 InternalCacheForClientAccess cache) {
     this.proxyHelper = proxyHelper;
-    this.readyForEvents = new CountDownLatch(1);
+    this.readyForEvents = new StoppableCountDownLatch(new CacheListenerStopper(cache), 1);
   }
 
   @Override
   public void afterCreate(EntryEvent<String, Object> event) {
-    blockUntilReady();
+    blockUntilReady(event);
     ObjectName objectName = null;
 
     try {
@@ -59,12 +62,11 @@ public class ManagementCacheListener extends CacheListenerAdapter<String, Object
         logger.debug("Proxy Create failed for {} with exception {}", objectName, e.getMessage(), e);
       }
     }
-
   }
 
   @Override
   public void afterDestroy(EntryEvent<String, Object> event) {
-    blockUntilReady();
+    blockUntilReady(event);
     ObjectName objectName = null;
 
     try {
@@ -81,7 +83,7 @@ public class ManagementCacheListener extends CacheListenerAdapter<String, Object
 
   @Override
   public void afterUpdate(EntryEvent<String, Object> event) {
-    blockUntilReady();
+    blockUntilReady(event);
 
     ObjectName objectName = null;
     try {
@@ -103,20 +105,45 @@ public class ManagementCacheListener extends CacheListenerAdapter<String, Object
       if (logger.isDebugEnabled()) {
         logger.debug("Proxy Update failed for {} with exception {}", objectName, e.getMessage(), e);
       }
-
     }
-
   }
 
-  private void blockUntilReady() {
+  private void blockUntilReady(EntryEvent event) {
     try {
       readyForEvents.await();
     } catch (InterruptedException e) {
-      // ignored
+      Thread.interrupted();
+      throw new RuntimeException(e);
     }
   }
 
   void markReady() {
     readyForEvents.countDown();
   }
+
+  private class CacheListenerStopper extends CancelCriterion{
+    private InternalCacheForClientAccess cache;
+
+    public CacheListenerStopper(InternalCacheForClientAccess cache) {
+      this.cache = cache;
+    }
+
+    @Override
+    public String cancelInProgress(){
+       if (cacheIsClosed()){
+        //throw ??
+       }
+      return null;
+    }
+
+    @Override
+    public RuntimeException generateCancelledException(Throwable throwable) {
+      return null;
+    }
+
+    private boolean cacheIsClosed(){
+      return this.cache.isClosed();
+    };
+  }
+
 }
