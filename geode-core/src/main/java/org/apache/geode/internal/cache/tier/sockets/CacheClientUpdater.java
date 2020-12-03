@@ -87,6 +87,7 @@ import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.pdx.PdxSerializationException;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
@@ -1794,7 +1795,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
     try {
       ByteArrayDataInput dis = new ByteArrayDataInput(serializedBytes);
       deserializedObject = DataSerializer.readObject(dis);
-    } catch (ClassNotFoundException | IOException ignore) {
+    } catch (ClassNotFoundException | IOException | PdxSerializationException e) {
     }
     return deserializedObject;
   }
