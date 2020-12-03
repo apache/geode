@@ -283,7 +283,8 @@ CODEOWNERS @apache/geode-committers
 #*.gradle
 #etc/**
 #build.gradle
-buildSrc/**                                                  @onichols-pivotal
+#buildSrc/**
+buildSrc/**/DependencyConstraints.groovy                     @onichols-pivotal
 ci/**                                                        @onichols-pivotal
 dev-tools/**                                                 @onichols-pivotal
 docker/**                                                    @onichols-pivotal
