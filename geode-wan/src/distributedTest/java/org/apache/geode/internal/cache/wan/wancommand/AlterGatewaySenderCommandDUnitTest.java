@@ -171,6 +171,16 @@ public class AlterGatewaySenderCommandDUnitTest {
       assertThat(sender.getAlertThreshold()).isEqualTo(100);
     });
 
+    // verify that server1's event queue has the default value
+    server2.invoke(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
+      GatewaySender sender = cache.getGatewaySender("sender1");
+      assertThat(sender.getBatchSize()).isEqualTo(200);
+      assertThat(sender.getBatchTimeInterval())
+          .isEqualTo(GatewaySender.DEFAULT_BATCH_TIME_INTERVAL);
+      assertThat(sender.getAlertThreshold()).isEqualTo(100);
+    });
+
     locatorSite1.invoke(() -> {
       InternalLocator locator = ClusterStartupRule.getLocator();
       assertThat(locator).isNotNull();

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
@@ -23,9 +24,7 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewaySender;
-import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.internal.cache.execute.InternalFunction;
-import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
 import org.apache.geode.internal.security.CallbackInstantiator;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
@@ -70,52 +69,45 @@ public class AlterGatewaySenderFunction implements InternalFunction<GatewaySende
       throw new EntityNotFoundException(message);
     }
 
-    GatewaySenderAttributes attributes = new GatewaySenderAttributes();
+    boolean pause = false;
+    if (gateway.isRunning() && !gateway.isPaused()) {
+      gateway.pause();
+      pause = true;
+    }
 
     Integer alertThreshold = gatewaySenderCreateArgs.getAlertThreshold();
     if (alertThreshold != null) {
-      attributes.modifyAlertThreshold = true;
-      attributes.alertThreshold = alertThreshold;
+      gateway.setAlertThreshold(alertThreshold.intValue());
     }
 
     Integer batchSize = gatewaySenderCreateArgs.getBatchSize();
     if (batchSize != null) {
-      attributes.modifyBatchSize = true;
-      attributes.batchSize = batchSize;
+      gateway.setBatchSize(batchSize.intValue());
     }
 
     Integer batchTimeInterval = gatewaySenderCreateArgs.getBatchTimeInterval();
     if (batchTimeInterval != null) {
-      attributes.modifyBatchTimeInterval = true;
-      attributes.batchTimeInterval = batchTimeInterval;
+      gateway.setBatchTimeInterval(batchTimeInterval.intValue());
     }
 
     Boolean groupTransactionEvents = gatewaySenderCreateArgs.mustGroupTransactionEvents();
     if (groupTransactionEvents != null) {
-      attributes.modifyGroupTransactionEvents = true;
-      attributes.groupTransactionEvents = groupTransactionEvents;
+      gateway.setGroupTransactionEvents(groupTransactionEvents.booleanValue());
     }
 
     List<String> gatewayEventFilters = gatewaySenderCreateArgs.getGatewayEventFilter();
     if (gatewayEventFilters != null) {
-      attributes.modifyGatewayEventFilter = true;
+      List<GatewayEventFilter> filters = new ArrayList<>();
       for (String filter : gatewayEventFilters) {
-        attributes.addGatewayEventFilter(CallbackInstantiator.getObjectOfTypeFromClassName(filter,
+        filters.add(CallbackInstantiator.getObjectOfTypeFromClassName(filter,
             GatewayEventFilter.class));
       }
+      gateway.setGatewayEventFilters(filters);
     }
 
-    List<String> gatewayTransportFilters = gatewaySenderCreateArgs.getGatewayTransportFilter();
-    if (gatewayTransportFilters != null) {
-      attributes.modifyGatewayTransportFilter = true;
-      for (String filter : gatewayTransportFilters) {
-        attributes
-            .addGatewayTransportFilter(CallbackInstantiator.getObjectOfTypeFromClassName(filter,
-                GatewayTransportFilter.class));
-      }
+    if (pause) {
+      gateway.resume();
     }
-
-    gateway.update(attributes);
     return gateway;
   }
 

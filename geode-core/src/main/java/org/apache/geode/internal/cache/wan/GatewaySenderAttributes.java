@@ -102,7 +102,6 @@ public class GatewaySenderAttributes {
 
   public boolean modifyGatewayTransportFilter = false;
 
-
   public int getSocketBufferSize() {
     return this.socketBufferSize;
   }
@@ -252,6 +251,5 @@ public class GatewaySenderAttributes {
   public boolean modifyGatewayTransportFilter() {
     return this.modifyGatewayTransportFilter;
   }
-
 
 }

@@ -17,7 +17,6 @@ package org.apache.geode.cache.wan;
 import java.util.List;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -277,11 +276,6 @@ public interface GatewaySender {
   void rebalance();
 
   /**
-   * Update this GatewaySender.
-   */
-  void update(GatewaySenderAttributes attributes);
-
-  /**
    * Returns whether or not this GatewaySender is running.
    */
   boolean isRunning();
@@ -468,7 +462,6 @@ public interface GatewaySender {
 
   int getMaxParallelismForReplicatedRegion();
 
-
   /**
    * Destroys the GatewaySender.
    * <p>
@@ -487,4 +480,45 @@ public interface GatewaySender {
    *
    */
   boolean getEnforceThreadsConnectSameReceiver();
+
+  /**
+   * Set AlertThreshold for this GatewaySender.
+   *
+   * @since Geode 1.14
+   *
+   */
+  void setAlertThreshold(int alertThreshold);
+
+  /**
+   * Set BatchSize for this GatewaySender.
+   *
+   * @since Geode 1.14
+   *
+   */
+  void setBatchSize(int batchSize);
+
+  /**
+   * Set BatchTimeInterval for this GatewaySender.
+   *
+   * @since Geode 1.14
+   *
+   */
+  void setBatchTimeInterval(int batchTimeInterval);
+
+  /**
+   * Set GroupTransactionEvents for this GatewaySender.
+   *
+   * @since Geode 1.14
+   *
+   */
+  void setGroupTransactionEvents(boolean groupTransactionEvents);
+
+  /**
+   * Set GatewayEventFilters for this GatewaySender.
+   *
+   * @since Geode 1.14
+   *
+   */
+  void setGatewayEventFilters(List<GatewayEventFilter> filters);
+
 }

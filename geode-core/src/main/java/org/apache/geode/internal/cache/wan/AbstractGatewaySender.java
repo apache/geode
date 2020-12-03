@@ -680,54 +680,35 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
         "GatewaySender {} has been rebalanced", this);
   }
 
+  @Override
+  public void setAlertThreshold(int alertThreshold) {
+    this.alertThreshold = alertThreshold;
+  };
 
   @Override
-  public void update(GatewaySenderAttributes attributes) {
-    logger.info(
-        "AbstractGatewaySender update");
-    try {
-      // Pause the sender
-      pause();
-
-      if (this.eventProcessor != null) {
-        this.eventProcessor.waitForDispatcherToPause();
-      }
-
-      if (attributes.modifyAlertThreshold()) {
-        this.alertThreshold = attributes.getAlertThreshold();
-      }
-
-      if (attributes.modifyBatchSize()) {
-        this.batchSize = attributes.getBatchSize();
-        if (this.eventProcessor != null) {
-          this.eventProcessor.setBatchSize(this.batchSize);
-        }
-      }
-
-      if (attributes.modifyBatchTimeInterval()) {
-        this.batchTimeInterval = attributes.getBatchTimeInterval();
-        if (this.eventProcessor != null) {
-          this.eventProcessor.setBatchTimeInterval(this.batchTimeInterval);
-        }
-      }
-
-      if (attributes.modifyGroupTransactionEvents()) {
-        this.groupTransactionEvents = attributes.mustGroupTransactionEvents();
-      }
-
-      if (attributes.modifyGatewayEventFilter()) {
-        this.eventFilters = Collections.unmodifiableList(attributes.getGatewayEventFilters());
-      }
-
-      if (attributes.modifyGatewayTransportFilter()) {
-        this.transFilters = Collections.unmodifiableList(attributes.getGatewayTransportFilters());
-      }
-
-    } finally {
-      // Resume the sender
-      resume();
+  public void setBatchSize(int batchSize) {
+    this.batchSize = batchSize;
+    if (this.eventProcessor != null) {
+      this.eventProcessor.setBatchSize(this.batchSize);
     }
+  };
 
+  @Override
+  public void setBatchTimeInterval(int batchTimeInterval) {
+    this.batchTimeInterval = batchTimeInterval;
+    if (this.eventProcessor != null) {
+      this.eventProcessor.setBatchTimeInterval(this.batchTimeInterval);
+    }
+  };
+
+  @Override
+  public void setGroupTransactionEvents(boolean groupTransactionEvents) {
+    this.groupTransactionEvents = groupTransactionEvents;
+  };
+
+  @Override
+  public void setGatewayEventFilters(List<GatewayEventFilter> filters) {
+    this.eventFilters = Collections.unmodifiableList(filters);
   };
 
   public boolean beforeEnqueue(GatewayQueueEvent gatewayEvent) {

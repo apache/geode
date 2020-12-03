@@ -63,7 +63,6 @@ public class AlterGatewaySenderFunctionTest {
     when(args.getId()).thenReturn("id");
     resultCaptor = ArgumentCaptor.forClass(CliFunctionResult.class);
     when(cache.getDistributedSystem()).thenReturn(mock(DistributedSystem.class));
-    updateCapture1 = ArgumentCaptor.forClass(GatewaySenderAttributes.class);
     when(sender.getId()).thenReturn("id");
   }
 
@@ -88,15 +87,9 @@ public class AlterGatewaySenderFunctionTest {
     when(args.getBatchSize()).thenReturn(null);
     when(args.getBatchTimeInterval()).thenReturn(null);
     when(args.getGatewayEventFilter()).thenReturn(null);
-    when(args.getGatewayTransportFilter()).thenReturn(null);
     when(args.mustGroupTransactionEvents()).thenReturn(null);
 
     function.execute(context);
-    verify(sender).update(updateCapture1.capture());
-    GatewaySenderAttributes attr = updateCapture1.getValue();
-    assertThat(attr.modifyAlertThreshold()).isFalse();
-    assertThat(attr.modifyBatchSize()).isFalse();
-    assertThat(attr.modifyBatchTimeInterval()).isFalse();
 
     verify(resultSender).lastResult(resultCaptor.capture());
     CliFunctionResult result = resultCaptor.getValue();
@@ -113,18 +106,12 @@ public class AlterGatewaySenderFunctionTest {
     when(args.getBatchSize()).thenReturn(50);
     when(args.getBatchTimeInterval()).thenReturn(150);
     when(args.getGatewayEventFilter()).thenReturn(null);
-    when(args.getGatewayTransportFilter()).thenReturn(null);
     when(args.mustGroupTransactionEvents()).thenReturn(null);
 
     function.execute(context);
-    verify(sender).update(updateCapture1.capture());
-    GatewaySenderAttributes attr = updateCapture1.getValue();
-    assertThat(attr.modifyAlertThreshold()).isTrue();
-    assertThat(attr.getAlertThreshold()).isEqualTo(200);
-    assertThat(attr.modifyBatchSize()).isTrue();
-    assertThat(attr.getBatchSize()).isEqualTo(50);
-    assertThat(attr.modifyBatchTimeInterval()).isTrue();
-    assertThat(attr.getBatchTimeInterval()).isEqualTo(150);
+    verify(sender).setAlertThreshold(200);
+    verify(sender).setBatchSize(50);
+    verify(sender).setBatchTimeInterval(150);
 
     verify(resultSender).lastResult(resultCaptor.capture());
     CliFunctionResult result = resultCaptor.getValue();
