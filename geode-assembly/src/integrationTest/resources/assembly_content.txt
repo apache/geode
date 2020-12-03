@@ -1000,7 +1000,7 @@ lib/geode-jca-0.0.0.5.rar
 lib/geode-log4j-0.0.0.5.jar
 lib/geode-logging-0.0.0.5.jar
 lib/geode-lucene-0.0.0.5.jar
-lib/geode-management-0.0.0.5jar
+lib/geode-management-0.0.0.5.jar
 lib/geode-membership-0.0.0.5.jar
 lib/geode-memcached-0.0.0.5.jar
 lib/geode-old-client-support-0.0.0.5.jar
