@@ -29,35 +29,18 @@ import org.junit.Before;
 import org.junit.Test;
 
 
-
 public class OplogTest {
   private final DiskStoreImpl.OplogCompactor compactor = mock(DiskStoreImpl.OplogCompactor.class);
   private final PersistentOplogSet parent = mock(PersistentOplogSet.class);
   private final long oplogId = 1;
   private Oplog oplog;
-  private DiskStoreImpl diskStore;
 
   @Before
   public void setup() {
-    diskStore = mock(DiskStoreImpl.class);
-    when(parent.getParent()).thenReturn(diskStore);
+    when(parent.getParent()).thenReturn(mock(DiskStoreImpl.class));
     oplog = spy(new Oplog(oplogId, parent));
+    doReturn(true).when(oplog).needsCompaction();
     doReturn(true).when(oplog).calledByCompactorThread();
-  }
-
-  @Test
-  public void needsCompactionReturnsTrueWhenTotalCountAndTotalLiveCountAreZero() {
-    when(parent.isCompactionPossible()).thenReturn(true);
-    when(diskStore.getCompactionThreshold()).thenReturn(50);
-    assertThat(oplog.needsCompaction()).isTrue();
-  }
-
-  @Test
-  public void needsCompactionReturnsFalseWhenTotalCountIsZeroAndTotalLiveCountIsGreaterThanZero() {
-    when(parent.isCompactionPossible()).thenReturn(true);
-    when(diskStore.getCompactionThreshold()).thenReturn(50);
-    oplog.incLiveCount();
-    assertThat(oplog.needsCompaction()).isFalse();
   }
 
   @Test
@@ -68,14 +51,12 @@ public class OplogTest {
 
   @Test
   public void noCompactIfNotKeepCompactorRunning() {
-    doReturn(true).when(oplog).needsCompaction();
     when(compactor.keepCompactorRunning()).thenReturn(false);
     assertThat(oplog.compact(compactor)).isEqualTo(0);
   }
 
   @Test
   public void handlesNoLiveValuesIfNoLiveValueInOplog() {
-    doReturn(true).when(oplog).needsCompaction();
     when(compactor.keepCompactorRunning()).thenReturn(true);
 
     doReturn(true).when(oplog).hasNoLiveValues();
@@ -85,7 +66,6 @@ public class OplogTest {
 
   @Test
   public void invockeCleanupAfterCompaction() {
-    doReturn(true).when(oplog).needsCompaction();
     when(compactor.keepCompactorRunning()).thenReturn(true);
     doReturn(mock(DiskStoreStats.class)).when(oplog).getStats();
     doReturn(false).when(oplog).hasNoLiveValues();
@@ -95,7 +75,6 @@ public class OplogTest {
 
   @Test
   public void handlesNoLiveValuesIfCompactSuccessful() {
-    doReturn(true).when(oplog).needsCompaction();
     oplog.getTotalLiveCount().set(5);
     oplog.cleanupAfterCompaction(false);
     verify(oplog, times(1)).handleNoLiveValues();
