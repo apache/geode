@@ -20,6 +20,10 @@ import org.apache.geode.gradle.plugins.DependencyConstraints
 project.group = "org.apache.geode.frameworks"
 project.version = DependencyConstraints.get('springshell.version')
 dependencies {
+
+    //Spring shell is used by the gfsh cli. It's unclear why we can exclude
+    //So many transitive dependencies - are these really optional?
+    //GfshCommand is a public API class that depends on spring shell
     api('org.springframework.shell:spring-shell') {
         exclude module: 'aopalliance'
         exclude module: 'asm'

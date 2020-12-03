@@ -50,7 +50,6 @@ dependencies {
   distributedTestImplementation(project(':geode-protobuf:geode-protobuf-test'))
 
   implementation('com.google.protobuf:protobuf-java')
-  implementation('org.apache.logging.log4j:log4j-api')
   implementation(project(':frameworks:shiro'))
 
   integrationTestImplementation('com.github.stefanbirkner:system-rules') {

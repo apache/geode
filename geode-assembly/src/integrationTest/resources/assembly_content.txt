@@ -1081,6 +1081,7 @@ lib/spring-jcl-5.3.1.jar
 lib/spring-shell-1.2.0.RELEASE.jar
 lib/spring-web-5.3.1.jar
 lib/springframework-5.3.1.jar
+lib/springshell-1.2.0.RELEASE.jar
 lib/swagger-annotations-1.6.2.jar
 tools/ClientProtocol/geode-protobuf-messages-definitions-0.0.0.zip
 tools/Extensions/geode-web-0.0.0.war

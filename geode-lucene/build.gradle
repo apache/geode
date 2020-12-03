@@ -36,7 +36,6 @@ dependencies {
   }
   implementation('org.apache.commons:commons-lang3')
   implementation('mx4j:mx4j')
-  implementation('org.apache.logging.log4j:log4j-api')
 
   compileOnly(platform(project(':boms:geode-all-bom')))
   compileOnly(project(':frameworks:jackson'))

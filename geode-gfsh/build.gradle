@@ -31,7 +31,6 @@ dependencies {
     implementation(project(':geode-serialization'))
     implementation(project(':geode-unsafe'))
     implementation(project(':frameworks:springframework'))
-    api(project(':frameworks:spring-shell'))
     implementation('org.apache.commons:commons-lang3')
     implementation('com.healthmarketscience.rmiio:rmiio')
     implementation(project(':frameworks:jackson'))
@@ -65,24 +64,10 @@ dependencies {
 
     implementation('net.sf.jopt-simple:jopt-simple')
 
-    //Log4j is used everywhere
-    implementation('org.apache.logging.log4j:log4j-api')
-
     //Spring core is used by the the gfsh cli
     implementation(project(':frameworks:springframework')){
         ext.optional = true
     }
 
-    //Spring shell is used by the gfsh cli. It's unclear why we can exclude
-    //So many transitive dependencies - are these really optional?
-    //GfshCommand is a public API class that depends on spring shell
-    implementation('org.springframework.shell:spring-shell') {
-        exclude module: 'aopalliance'
-        exclude module: 'asm'
-        exclude module: 'cglib'
-        exclude module: 'guava'
-        exclude module: 'spring-aop'
-        exclude module: 'spring-context-support'
-        exclude module: 'spring-core'
-    }
+    api(project(':frameworks:springshell'))
 }
