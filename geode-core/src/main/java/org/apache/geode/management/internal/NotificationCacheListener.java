@@ -15,12 +15,14 @@
 package org.apache.geode.management.internal;
 
 
-import java.util.concurrent.CountDownLatch;
 
 import javax.management.Notification;
 
+import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.internal.cache.InternalCacheForClientAccess;
+import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
 
 /**
  * This listener will be attached to each notification region corresponding to a member
@@ -28,11 +30,15 @@ import org.apache.geode.cache.util.CacheListenerAdapter;
 public class NotificationCacheListener extends CacheListenerAdapter<NotificationKey, Notification> {
 
   private final NotificationHubClient notifClient;
-  private final CountDownLatch readyForEvents;
+  private final StoppableCountDownLatch readyForEvents;
 
-  public NotificationCacheListener(MBeanProxyFactory proxyHelper) {
-    notifClient = new NotificationHubClient(proxyHelper);
-    this.readyForEvents = new CountDownLatch(1);
+  public NotificationCacheListener(InternalCacheForClientAccess cache,
+      MBeanProxyFactory proxyHelper) {
+    notifClient =
+        new NotificationHubClient(proxyHelper);
+
+    this.readyForEvents =
+        new StoppableCountDownLatch(new CacheListenerCancelCriterion(cache), 1);
   }
 
   @Override
@@ -51,11 +57,34 @@ public class NotificationCacheListener extends CacheListenerAdapter<Notification
     try {
       readyForEvents.await();
     } catch (InterruptedException e) {
-      // ignored
+      Thread.interrupted();
+      throw new RuntimeException(e);
     }
   }
 
   void markReady() {
     readyForEvents.countDown();
+  }
+
+  private class CacheListenerCancelCriterion extends CancelCriterion {
+    private InternalCacheForClientAccess cache;
+
+    public CacheListenerCancelCriterion(InternalCacheForClientAccess cache) {
+      this.cache = cache;
+    }
+
+    @Override
+    public String cancelInProgress() {
+      String reason = cache.getCancelCriterion().cancelInProgress();
+      if (reason != null) {
+        return reason;
+      }
+      return null;
+    }
+
+    @Override
+    public RuntimeException generateCancelledException(Throwable throwable) {
+      return null;
+    }
   }
 }

@@ -27,10 +27,9 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * This listener is attached to the Monitoring Region to receive any addition or deletion of MBEans
- *
- * It updates the last refreshed time of proxy once it gets the update request from the Managed Node
- *
- *
+ * <p>
+ * It updates the last refreshed time of proxy once it gets the update request from the Managed
+ * Node
  */
 public class ManagementCacheListener extends CacheListenerAdapter<String, Object> {
 
@@ -42,14 +41,14 @@ public class ManagementCacheListener extends CacheListenerAdapter<String, Object
 
 
   public ManagementCacheListener(MBeanProxyFactory proxyHelper,
-                                 InternalCacheForClientAccess cache) {
+      InternalCacheForClientAccess cache) {
     this.proxyHelper = proxyHelper;
-    this.readyForEvents = new StoppableCountDownLatch(new CacheListenerStopper(cache), 1);
+    this.readyForEvents = new StoppableCountDownLatch(new CacheListenerCancelCriterion(cache), 1);
   }
 
   @Override
   public void afterCreate(EntryEvent<String, Object> event) {
-    blockUntilReady(event);
+    blockUntilReady();
     ObjectName objectName = null;
 
     try {
@@ -66,7 +65,7 @@ public class ManagementCacheListener extends CacheListenerAdapter<String, Object
 
   @Override
   public void afterDestroy(EntryEvent<String, Object> event) {
-    blockUntilReady(event);
+    blockUntilReady();
     ObjectName objectName = null;
 
     try {
@@ -83,7 +82,7 @@ public class ManagementCacheListener extends CacheListenerAdapter<String, Object
 
   @Override
   public void afterUpdate(EntryEvent<String, Object> event) {
-    blockUntilReady(event);
+    blockUntilReady();
 
     ObjectName objectName = null;
     try {
@@ -108,7 +107,7 @@ public class ManagementCacheListener extends CacheListenerAdapter<String, Object
     }
   }
 
-  private void blockUntilReady(EntryEvent event) {
+  private void blockUntilReady() {
     try {
       readyForEvents.await();
     } catch (InterruptedException e) {
@@ -121,18 +120,19 @@ public class ManagementCacheListener extends CacheListenerAdapter<String, Object
     readyForEvents.countDown();
   }
 
-  private class CacheListenerStopper extends CancelCriterion{
+  private class CacheListenerCancelCriterion extends CancelCriterion {
     private InternalCacheForClientAccess cache;
 
-    public CacheListenerStopper(InternalCacheForClientAccess cache) {
+    public CacheListenerCancelCriterion(InternalCacheForClientAccess cache) {
       this.cache = cache;
     }
 
     @Override
-    public String cancelInProgress(){
-       if (cacheIsClosed()){
-        //throw ??
-       }
+    public String cancelInProgress() {
+      String reason = cache.getCancelCriterion().cancelInProgress();
+      if (reason != null) {
+        return reason;
+      }
       return null;
     }
 
@@ -140,10 +140,5 @@ public class ManagementCacheListener extends CacheListenerAdapter<String, Object
     public RuntimeException generateCancelledException(Throwable throwable) {
       return null;
     }
-
-    private boolean cacheIsClosed(){
-      return this.cache.isClosed();
-    };
   }
-
 }
