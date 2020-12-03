@@ -33,8 +33,12 @@ public class RemoteConcurrentSerialGatewaySenderEventProcessor
   @Override
   protected void initializeMessageQueue(String id, boolean cleanQueues) {
     for (int i = 0; i < sender.getDispatcherThreads(); i++) {
-      processors.add(new RemoteSerialGatewaySenderEventProcessor(this.sender, id + "." + i,
-          getThreadMonitorObj(), cleanQueues));
+      RemoteSerialGatewaySenderEventProcessor eventProcessor =
+          new RemoteSerialGatewaySenderEventProcessor(this.sender, id + "." + i,
+              getThreadMonitorObj());
+      eventProcessor.addSerialSecondaryGatewayListenerAndQueueToEventProcessor(id + "." + i,
+          cleanQueues);
+      processors.add(eventProcessor);
       if (logger.isDebugEnabled()) {
         logger.debug("Created the RemoteSerialGatewayEventProcessor_{}->{}", i, processors.get(i));
       }

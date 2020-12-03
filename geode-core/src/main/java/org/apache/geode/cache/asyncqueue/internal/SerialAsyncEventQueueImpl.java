@@ -130,7 +130,9 @@ public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
     } else {
       eventProcessor =
           new SerialGatewaySenderEventProcessor(SerialAsyncEventQueueImpl.this, getId(),
-              getThreadMonitorObj(), cleanQueues);
+              getThreadMonitorObj());
+      ((SerialGatewaySenderEventProcessor) eventProcessor)
+          .addSerialSecondaryGatewayListenerAndQueueToEventProcessor(getId(), cleanQueues);
     }
     return eventProcessor;
   }

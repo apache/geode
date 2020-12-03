@@ -123,7 +123,9 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
           SerialGatewaySenderImpl.this, getThreadMonitorObj(), cleanQueues);
     } else {
       eventProcessor = new RemoteSerialGatewaySenderEventProcessor(SerialGatewaySenderImpl.this,
-          getId(), getThreadMonitorObj(), cleanQueues);
+          getId(), getThreadMonitorObj());
+      ((SerialGatewaySenderEventProcessor) eventProcessor)
+          .addSerialSecondaryGatewayListenerAndQueueToEventProcessor(getId(), cleanQueues);
     }
     return eventProcessor;
   }

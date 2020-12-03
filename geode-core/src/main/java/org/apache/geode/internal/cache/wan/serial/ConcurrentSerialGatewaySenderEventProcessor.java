@@ -89,9 +89,12 @@ public class ConcurrentSerialGatewaySenderEventProcessor
   @Override
   protected void initializeMessageQueue(String id, boolean cleanQueues) {
     for (int i = 0; i < sender.getDispatcherThreads(); i++) {
-      processors.add(
-          new SerialGatewaySenderEventProcessor(this.sender, id + "." + i, getThreadMonitorObj(),
-              cleanQueues));
+      String identifier = id + "." + i;
+      SerialGatewaySenderEventProcessor serialGatewaySenderEventProcessor =
+          new SerialGatewaySenderEventProcessor(this.sender, identifier, getThreadMonitorObj());
+      serialGatewaySenderEventProcessor
+          .addSerialSecondaryGatewayListenerAndQueueToEventProcessor(identifier, cleanQueues);
+      processors.add(serialGatewaySenderEventProcessor);
       if (logger.isDebugEnabled()) {
         logger.debug("Created the SerialGatewayEventProcessor_{}->{}", i, processors.get(i));
       }

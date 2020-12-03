@@ -108,16 +108,15 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
 
 
   public SerialGatewaySenderEventProcessor(AbstractGatewaySender sender, String id,
-      ThreadsMonitoring tMonitoring, boolean cleanQueues) {
+      ThreadsMonitoring tMonitoring) {
     super("Event Processor for GatewaySender_" + id, sender, tMonitoring);
 
-    initializeMessageQueue(id, cleanQueues);
     this.unprocessedEvents = new LinkedHashMap<EventID, EventWrapper>();
     this.unprocessedTokens = new LinkedHashMap<EventID, Long>();
   }
 
-  @Override
-  protected void initializeMessageQueue(String id, boolean cleanQueues) {
+  public void addSerialSecondaryGatewayListenerAndQueueToEventProcessor(String id,
+      boolean cleanQueues) {
     // Create the region name
     StringBuffer regionNameBuffer = new StringBuffer();
     regionNameBuffer.append(id).append("_SERIAL_GATEWAY_SENDER_QUEUE");
@@ -129,11 +128,24 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
       initializeListenerExecutor();
     }
     // Create the region queue
-    this.queue = new SerialGatewaySenderQueue(sender, regionName, listener, cleanQueues);
+    this.queue = new SerialGatewaySenderQueue(sender, regionName, null, cleanQueues);
 
     if (logger.isDebugEnabled()) {
       logger.debug("Created queue: {}", this.queue);
     }
+  }
+
+  @Override
+  protected void initializeMessageQueue(String id, boolean cleanQueues) {
+    /*
+     * We need to create a SerialSecondaryGatewayListener which takes 'this'
+     * as a parameter. Hence we cannot use this method in the constructor as it
+     * will lead to leaking 'this' from the constructor.
+     *
+     * Hence we created the addSerialSecondaryGatewayListener method which needs to
+     * be called immediately after the constructor is called to attach the listener.
+     *
+     */
   }
 
   /**
