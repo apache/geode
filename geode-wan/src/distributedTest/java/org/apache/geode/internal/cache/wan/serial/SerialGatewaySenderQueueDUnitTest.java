@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.wan.serial;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -107,14 +108,8 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
     a1.await();
     a2.await();
 
-    // Give the unprocessedTokens map time to empty
-    Thread.sleep(2000);
-
-    int numUnprocessedTokensVM4 = vm4.invoke(() -> unprocessedTokensSize("ln"));
-    assertThat(numUnprocessedTokensVM4).isEqualTo(0);
-
-    int numUnprocessedTokensVM5 = vm5.invoke(() -> unprocessedTokensSize("ln"));
-    assertThat(numUnprocessedTokensVM5).isEqualTo(0);
+    vm4.invoke(() -> await().untilAsserted(this::queueIsDrained));
+    vm5.invoke(() -> await().untilAsserted(this::queueIsDrained));
   }
 
   private int unprocessedTokensSize(String senderId) {
@@ -543,5 +538,11 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
     } finally {
       exp.remove();
     }
+  }
+
+  private void queueIsDrained() {
+    assertThat(unprocessedTokensSize("ln"))
+        .as("number of unprocessed tokens in queue")
+        .isEqualTo(0);
   }
 }

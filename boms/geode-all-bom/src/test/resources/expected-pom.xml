@@ -532,7 +532,7 @@
       <dependency>
         <groupId>org.testcontainers</groupId>
         <artifactId>testcontainers</artifactId>
-        <version>1.15.0</version>
+        <version>1.14.3</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
