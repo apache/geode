@@ -1780,8 +1780,9 @@ public class Oplog implements CompactableOplog, Flushable {
           keyBytes = DataSerializer.readByteArray(dis);
         } // while
         setRecoverNewEntryId(oplogKeyIdHWM);
-        if (totalCount.get() == 0 && totalLiveCount.get() > 0) {
-          totalCount.set(totalLiveCount.get());
+        long tlc = totalLiveCount.get();
+        if (totalCount.get() == 0 && tlc > 0) {
+          totalCount.set(tlc);
         }
       } catch (IOException ex) {
         try {
