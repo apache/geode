@@ -56,7 +56,7 @@ import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
-public class CompactDiskStoreDUnitTest implements Serializable {
+public class CompactOfflineDiskStoreDUnitTest implements Serializable {
 
   @Rule
   public transient GfshCommandRule gfsh = new GfshCommandRule();
@@ -79,8 +79,6 @@ public class CompactDiskStoreDUnitTest implements Serializable {
 
   private static final AtomicReference<LocatorLauncher> LOCATOR =
       new AtomicReference<>(DUMMY_LOCATOR);
-
-  private VM locator;
 
   private VM server;
 
@@ -105,7 +103,7 @@ public class CompactDiskStoreDUnitTest implements Serializable {
 
   @Before
   public void setUp() throws Exception {
-    locator = getVM(0);
+    VM locator = getVM(0);
     server = getVM(1);
 
     locatorName = "locator";
@@ -141,21 +139,21 @@ public class CompactDiskStoreDUnitTest implements Serializable {
   @Test
   public void testDuplicateDiskStoreCompaction() {
 
-    createDiskStore(DISK_STORE_NAME);
+    createDiskStore();
 
-    createRegion(REGION_NAME, DISK_STORE_NAME);
+    createRegion();
 
     populateRegions();
 
     AssertRegionSizeAndDiskStore();
 
-    server.invoke(CompactDiskStoreDUnitTest::stopServer);
+    server.invoke(CompactOfflineDiskStoreDUnitTest::stopServer);
 
-    server.invoke(() -> compactOfflineDiskStore());
+    server.invoke(this::compactOfflineDiskStore);
 
     server.invoke(() -> startServer(serverName, serverDir, serverPort, locators, false));
 
-    server.invoke(() -> verifyDiskStoreOplogs());
+    server.invoke(CompactOfflineDiskStoreDUnitTest::verifyDiskStoreOplogs);
 
     AssertRegionSizeAndDiskStore();
 
@@ -225,23 +223,24 @@ public class CompactDiskStoreDUnitTest implements Serializable {
   }
 
   private void AssertRegionSizeAndDiskStore() {
-    assertRegionSize(REGION_NAME);
-    assertDiskStore(serverName, DISK_STORE_NAME, REGION_NAME);
+    assertRegionSize();
+    assertDiskStore(serverName);
   }
 
-  private void assertDiskStore(String serverName, String diskStoreName, String expected) {
+  private void assertDiskStore(String serverName) {
     String command;
     command = new CommandStringBuilder("describe disk-store")
-        .addOption("name", diskStoreName)
+        .addOption("name", CompactOfflineDiskStoreDUnitTest.DISK_STORE_NAME)
         .addOption("member", serverName)
         .getCommandString();
-    gfsh.executeAndAssertThat(command).statusIsSuccess().containsOutput(expected);
+    gfsh.executeAndAssertThat(command).statusIsSuccess().containsOutput(
+        CompactOfflineDiskStoreDUnitTest.REGION_NAME);
   }
 
-  private void assertRegionSize(String regionName) {
+  private void assertRegionSize() {
     String command;
     command = new CommandStringBuilder("describe region")
-        .addOption("name", regionName)
+        .addOption("name", CompactOfflineDiskStoreDUnitTest.REGION_NAME)
         .getCommandString();
 
     gfsh.executeAndAssertThat(command).statusIsSuccess()
@@ -262,21 +261,21 @@ public class CompactDiskStoreDUnitTest implements Serializable {
     });
   }
 
-  private void createRegion(String regionName, String diskStoreName) {
+  private void createRegion() {
     String command;
     command = new CommandStringBuilder("create region")
-        .addOption("name", regionName)
+        .addOption("name", CompactOfflineDiskStoreDUnitTest.REGION_NAME)
         .addOption("type", "PARTITION_PERSISTENT")
-        .addOption("disk-store", diskStoreName)
+        .addOption("disk-store", CompactOfflineDiskStoreDUnitTest.DISK_STORE_NAME)
         .getCommandString();
 
     gfsh.executeAndAssertThat(command).statusIsSuccess();
   }
 
-  private void createDiskStore(String diskStoreName) {
+  private void createDiskStore() {
     String command;
     command = new CommandStringBuilder("create disk-store")
-        .addOption("name", diskStoreName)
+        .addOption("name", CompactOfflineDiskStoreDUnitTest.DISK_STORE_NAME)
         .addOption("dir", serverDir.getAbsolutePath())
         .addOption("auto-compact", "true")
         .addOption("allow-force-compaction", "true")
