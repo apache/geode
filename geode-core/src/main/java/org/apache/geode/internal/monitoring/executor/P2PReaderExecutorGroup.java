@@ -14,27 +14,30 @@
  */
 package org.apache.geode.internal.monitoring.executor;
 
-import static org.junit.Assert.assertTrue;
+public class P2PReaderExecutorGroup extends AbstractExecutor {
 
-import org.junit.Test;
+  public static final String GROUP_NAME = "P2PReaderExecutor";
 
-/**
- * Contains simple tests for the {@link
- * org.apache.geode.internal.monitoring.executor.PooledExecutorGroup}.
- *
- * @since Geode 1.5
- */
-public class PooledExecutorGroupJUnitTest {
+  private volatile boolean suspended;
 
-  public static final String GROUPNAME = "PooledExecutorWithDMStats";
-
-  /**
-   * Tests that {@link org.apache.geode.internal.monitoring.executor.PooledExecutorGroup} is setting
-   * the correct Group name
-   */
-  @Test
-  public void testVerifyGroupName() {
-    AbstractExecutor pooledExecutorGroup = new PooledExecutorGroup();
-    assertTrue(pooledExecutorGroup.getGroupName().equals(GROUPNAME));
+  public P2PReaderExecutorGroup() {
+    super(GROUP_NAME);
   }
+
+  @Override
+  public void suspendMonitoring() {
+    suspended = true;
+  }
+
+  @Override
+  public void resumeMonitoring() {
+    setStartTime(0);
+    suspended = false;
+  }
+
+  @Override
+  public boolean isMonitoringSuspended() {
+    return suspended;
+  }
+
 }

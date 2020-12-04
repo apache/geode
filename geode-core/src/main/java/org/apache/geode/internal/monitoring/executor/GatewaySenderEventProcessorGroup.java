@@ -14,15 +14,12 @@
  */
 package org.apache.geode.internal.monitoring.executor;
 
-import org.apache.geode.internal.monitoring.ThreadsMonitoring;
-
 public class GatewaySenderEventProcessorGroup extends AbstractExecutor {
 
   public static final String GROUPNAME = "GatewaySenderEventProcessor";
 
-  public GatewaySenderEventProcessorGroup(ThreadsMonitoring tMonitoring) {
-    super(tMonitoring);
-    setGroupName(GROUPNAME);
+  public GatewaySenderEventProcessorGroup() {
+    super(GROUPNAME);
   }
 
 }

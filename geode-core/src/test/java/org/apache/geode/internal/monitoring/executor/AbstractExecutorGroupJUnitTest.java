@@ -31,7 +31,7 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 public class AbstractExecutorGroupJUnitTest {
 
   private final AbstractExecutor abstractExecutorGroup =
-      new FunctionExecutionPooledExecutorGroup(null);
+      new FunctionExecutionPooledExecutorGroup();
 
   private static final long timeoutInMilliseconds = GeodeAwaitility.getTimeout().toMillis();
 
@@ -91,7 +91,7 @@ public class AbstractExecutorGroupJUnitTest {
     blockedThread.start();
     await().until(() -> blockedThreadWaiting[0]);
     try {
-      AbstractExecutor executor = new AbstractExecutor(null, blockedThread.getId()) {
+      AbstractExecutor executor = new AbstractExecutor("testGroup", blockedThread.getId()) {
         @Override
         public void handleExpiry(long stuckTime) {
           // no-op

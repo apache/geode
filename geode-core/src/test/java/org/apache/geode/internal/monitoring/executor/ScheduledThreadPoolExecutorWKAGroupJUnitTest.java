@@ -36,7 +36,7 @@ public class ScheduledThreadPoolExecutorWKAGroupJUnitTest {
   @Test
   public void testVerifyGroupName() {
     AbstractExecutor scheduledThreadPoolExecutorWKAGroup =
-        new ScheduledThreadPoolExecutorWKAGroup(null);
+        new ScheduledThreadPoolExecutorWKAGroup();
     assertTrue(scheduledThreadPoolExecutorWKAGroup.getGroupName().equals(GROUPNAME));
   }
 }

@@ -34,11 +34,12 @@ public class ThreadsMonitoringJUnitTest {
     SerialQueuedExecutor,
     OneTaskOnlyExecutor,
     ScheduledThreadExecutor,
-    AGSExecutor
+    AGSExecutor,
+    P2PReaderExecutor
   };
 
 
-  public final int numberOfElements = 6;
+  public final int numberOfElements = 7;
   private static final Logger logger = LogService.getLogger();
 
   /**

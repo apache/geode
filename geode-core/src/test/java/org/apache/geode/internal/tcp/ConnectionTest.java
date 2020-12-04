@@ -16,6 +16,7 @@ package org.apache.geode.internal.tcp;
 
 import static org.apache.geode.internal.inet.LocalHostUtil.getLocalHost;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
@@ -41,6 +42,8 @@ import org.apache.geode.distributed.internal.Distribution;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.internal.monitoring.executor.AbstractExecutor;
 import org.apache.geode.internal.net.BufferPool;
 import org.apache.geode.internal.net.SocketCloser;
 import org.apache.geode.test.junit.categories.MembershipTest;
@@ -75,6 +78,8 @@ public class ConnectionTest {
     CancelCriterion stopper = mock(CancelCriterion.class);
     SocketCloser socketCloser = mock(SocketCloser.class);
     TCPConduit tcpConduit = mock(TCPConduit.class);
+    ThreadsMonitoring threadMonitoring = mock(ThreadsMonitoring.class);
+    AbstractExecutor abstractExecutor = mock(AbstractExecutor.class);
 
     when(connectionTable.getBufferPool()).thenReturn(new BufferPool(dmStats));
     when(connectionTable.getConduit()).thenReturn(tcpConduit);
@@ -86,6 +91,8 @@ public class ConnectionTest {
     when(tcpConduit.getDM()).thenReturn(distributionManager);
     when(tcpConduit.getSocketId()).thenReturn(new InetSocketAddress(getLocalHost(), 10337));
     when(tcpConduit.getStats()).thenReturn(dmStats);
+    when(distributionManager.getThreadMonitoring()).thenReturn(threadMonitoring);
+    when(threadMonitoring.createAbstractExecutor(any())).thenReturn(abstractExecutor);
 
     SocketChannel channel = SocketChannel.open();
 

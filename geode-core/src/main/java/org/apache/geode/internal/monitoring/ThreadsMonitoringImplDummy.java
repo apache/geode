@@ -33,6 +33,21 @@ public class ThreadsMonitoringImplDummy implements ThreadsMonitoring {
   public void endMonitor() {}
 
   @Override
+  public AbstractExecutor createAbstractExecutor(Mode mode) {
+    return null;
+  }
+
+  @Override
+  public boolean register(AbstractExecutor executor) {
+    return true;
+  }
+
+  @Override
+  public void unregister(AbstractExecutor executor) {
+
+  }
+
+  @Override
   public void updateThreadStatus() {}
 
   @Override

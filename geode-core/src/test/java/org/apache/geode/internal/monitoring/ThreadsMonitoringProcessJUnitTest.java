@@ -17,12 +17,9 @@ package org.apache.geode.internal.monitoring;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.util.Properties;
-
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring.Mode;
 import org.apache.geode.internal.monitoring.executor.AbstractExecutor;
 import org.apache.geode.internal.monitoring.executor.PooledExecutorGroup;
@@ -34,11 +31,13 @@ import org.apache.geode.internal.monitoring.executor.PooledExecutorGroup;
  */
 public class ThreadsMonitoringProcessJUnitTest {
 
+  private static final int TIME_LIMIT_MILLIS = 1000;
+
   private ThreadsMonitoringImpl threadsMonitoringImpl;
 
   @Before
   public void before() {
-    threadsMonitoringImpl = new ThreadsMonitoringImpl(null);
+    threadsMonitoringImpl = new ThreadsMonitoringImpl(null, 100000, TIME_LIMIT_MILLIS);
   }
 
   /**
@@ -47,14 +46,10 @@ public class ThreadsMonitoringProcessJUnitTest {
   @Test
   public void testThreadIsStuck() {
 
-    final Properties nonDefault = new Properties();
-    final DistributionConfigImpl distributionConfigImpl = new DistributionConfigImpl(nonDefault);
     final long threadID = 123456;
 
-    int timeLimit = distributionConfigImpl.getThreadMonitorTimeLimit();
-
-    AbstractExecutor absExtgroup = new PooledExecutorGroup(threadsMonitoringImpl);
-    absExtgroup.setStartTime(absExtgroup.getStartTime() - timeLimit - 1);
+    AbstractExecutor absExtgroup = new PooledExecutorGroup();
+    absExtgroup.setStartTime(absExtgroup.getStartTime() - TIME_LIMIT_MILLIS - 1);
 
     threadsMonitoringImpl.getMonitorMap().put(threadID, absExtgroup);
 
@@ -65,14 +60,10 @@ public class ThreadsMonitoringProcessJUnitTest {
 
   @Test
   public void monitorHandlesDefunctThread() {
-    final Properties nonDefault = new Properties();
-    final DistributionConfigImpl distributionConfigImpl = new DistributionConfigImpl(nonDefault);
     final long threadID = Long.MAX_VALUE;
 
-    int timeLimit = distributionConfigImpl.getThreadMonitorTimeLimit();
-
-    AbstractExecutor absExtgroup = new PooledExecutorGroup(threadsMonitoringImpl, threadID);
-    absExtgroup.setStartTime(absExtgroup.getStartTime() - timeLimit - 1);
+    AbstractExecutor absExtgroup = new PooledExecutorGroup(threadID);
+    absExtgroup.setStartTime(absExtgroup.getStartTime() - TIME_LIMIT_MILLIS - 1);
 
     threadsMonitoringImpl.getMonitorMap().put(threadID, absExtgroup);
 
