@@ -110,10 +110,11 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
   public SerialGatewaySenderEventProcessor(AbstractGatewaySender sender, String id,
       ThreadsMonitoring tMonitoring, boolean cleanQueues) {
     super("Event Processor for GatewaySender_" + id, sender, tMonitoring);
-
-    initializeMessageQueue(id, cleanQueues);
-    this.unprocessedEvents = new LinkedHashMap<EventID, EventWrapper>();
-    this.unprocessedTokens = new LinkedHashMap<EventID, Long>();
+    synchronized (this.unprocessedEventsLock) {
+      initializeMessageQueue(id, cleanQueues);
+      this.unprocessedEvents = new LinkedHashMap<EventID, EventWrapper>();
+      this.unprocessedTokens = new LinkedHashMap<EventID, Long>();
+    }
   }
 
   @Override
@@ -624,6 +625,11 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
     GatewaySenderStats statistics = this.sender.getStatistics();
     // Get the event from the map
     synchronized (unprocessedEventsLock) {
+      // If handleFailover() acquired the lock hence double checking
+      if (this.sender.isPrimary()) {
+        // no need to do anything if we have become the primary
+        return false;
+      }
       if (this.unprocessedEvents == null)
         return false;
       // now we can safely use the unprocessedEvents field
@@ -645,6 +651,11 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
     GatewaySenderStats statistics = this.sender.getStatistics();
     // Get the event from the map
     synchronized (unprocessedEventsLock) {
+      // If handleFailover() acquired the lock hence double checking
+      if (this.sender.isPrimary()) {
+        // no need to do anything if we have become the primary
+        return;
+      }
       if (this.unprocessedEvents == null)
         return;
       // now we can safely use the unprocessedEvents field
