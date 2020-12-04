@@ -1216,7 +1216,8 @@ public class SerialGatewaySenderOperationsDistributedTest extends CacheTestCase 
     await()
         .untilAsserted(() -> {
           assertThat(sender.getStatistics().getUnprocessedEventMapSize())
-              .as("Sender statistics unprocessed event map size")
+              .as("Sender statistics unprocessed event map contents: "
+                  + sender.getEventProcessor().printUnprocessedEvents())
               .isEqualTo(queueSize);
         });
   }
