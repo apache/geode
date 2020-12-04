@@ -16,17 +16,17 @@
 package org.apache.geode.internal.monitoring;
 
 
-import java.util.Properties;
 import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.monitoring.executor.AbstractExecutor;
 import org.apache.geode.internal.monitoring.executor.FunctionExecutionPooledExecutorGroup;
 import org.apache.geode.internal.monitoring.executor.GatewaySenderEventProcessorGroup;
 import org.apache.geode.internal.monitoring.executor.OneTaskOnlyExecutorGroup;
+import org.apache.geode.internal.monitoring.executor.P2PReaderExecutorGroup;
 import org.apache.geode.internal.monitoring.executor.PooledExecutorGroup;
 import org.apache.geode.internal.monitoring.executor.ScheduledThreadPoolExecutorWKAGroup;
 import org.apache.geode.internal.monitoring.executor.SerialQueuedExecutorGroup;
@@ -38,20 +38,28 @@ public class ThreadsMonitoringImpl implements ThreadsMonitoring {
   /** Monitors the health of the entire distributed system */
   private ThreadsMonitoringProcess tmProcess = null;
 
-  private final Properties nonDefault = new Properties();
-  private final DistributionConfigImpl distributionConfigImpl =
-      new DistributionConfigImpl(nonDefault);
-
-  private final Timer timer =
-      new Timer("ThreadsMonitor", true);
+  private final Timer timer;
 
   /** Is this ThreadsMonitoringImpl closed?? */
   private boolean isClosed = true;
 
-  public ThreadsMonitoringImpl(InternalDistributedSystem iDistributedSystem) {
+  public ThreadsMonitoringImpl(InternalDistributedSystem iDistributedSystem, int timeIntervalMillis,
+      int timeLimitMillis) {
+    this(iDistributedSystem, timeIntervalMillis, timeLimitMillis, true);
+  }
+
+  @VisibleForTesting
+  ThreadsMonitoringImpl(InternalDistributedSystem iDistributedSystem, int timeIntervalMillis,
+      int timeLimitMillis, boolean startThread) {
     this.monitorMap = new ConcurrentHashMap<>();
     this.isClosed = false;
-    setThreadsMonitoringProcess(iDistributedSystem);
+    if (startThread) {
+      timer = new Timer("ThreadsMonitor", true);
+      tmProcess = new ThreadsMonitoringProcess(this, iDistributedSystem, timeLimitMillis);
+      timer.schedule(tmProcess, 0, timeIntervalMillis);
+    } else {
+      timer = null;
+    }
   }
 
   @Override
@@ -69,17 +77,11 @@ public class ThreadsMonitoringImpl implements ThreadsMonitoring {
       return;
 
     isClosed = true;
-    if (tmProcess != null) {
+    if (timer != null) {
       this.timer.cancel();
       this.tmProcess = null;
     }
     this.monitorMap.clear();
-  }
-
-  /** Starts a new {@link org.apache.geode.internal.monitoring.ThreadsMonitoringProcess} */
-  private void setThreadsMonitoringProcess(InternalDistributedSystem iDistributedSystem) {
-    this.tmProcess = new ThreadsMonitoringProcess(this, iDistributedSystem);
-    this.timer.schedule(tmProcess, 0, distributionConfigImpl.getThreadMonitorInterval());
   }
 
   public ThreadsMonitoringProcess getThreadsMonitoringProcess() {
@@ -96,39 +98,68 @@ public class ThreadsMonitoringImpl implements ThreadsMonitoring {
 
   @Override
   public boolean startMonitor(Mode mode) {
-    AbstractExecutor absExtgroup;
-    switch (mode) {
-      case FunctionExecutor:
-        absExtgroup = new FunctionExecutionPooledExecutorGroup(this);
-        break;
-      case PooledExecutor:
-        absExtgroup = new PooledExecutorGroup(this);
-        break;
-      case SerialQueuedExecutor:
-        absExtgroup = new SerialQueuedExecutorGroup(this);
-        break;
-      case OneTaskOnlyExecutor:
-        absExtgroup = new OneTaskOnlyExecutorGroup(this);
-        break;
-      case ScheduledThreadExecutor:
-        absExtgroup = new ScheduledThreadPoolExecutorWKAGroup(this);
-        break;
-      case AGSExecutor:
-        absExtgroup = new GatewaySenderEventProcessorGroup(this);
-        break;
-      default:
-        return false;
-    }
-    this.monitorMap.put(Thread.currentThread().getId(), absExtgroup);
-    return true;
+    AbstractExecutor executor = createAbstractExecutor(mode);
+    executor.setStartTime(System.currentTimeMillis());
+    return register(executor);
   }
 
   @Override
   public void endMonitor() {
-    this.monitorMap.remove(Thread.currentThread().getId());
+    monitorMap.remove(Thread.currentThread().getId());
   }
 
-  public Timer getTimer() {
+  @VisibleForTesting
+  boolean isMonitoring() {
+    AbstractExecutor executor = monitorMap.get(Thread.currentThread().getId());
+    if (executor == null) {
+      return false;
+    }
+    return !executor.isMonitoringSuspended();
+  }
+
+  @Override
+  public AbstractExecutor createAbstractExecutor(Mode mode) {
+    switch (mode) {
+      case FunctionExecutor:
+        return new FunctionExecutionPooledExecutorGroup();
+      case PooledExecutor:
+        return new PooledExecutorGroup();
+      case SerialQueuedExecutor:
+        return new SerialQueuedExecutorGroup();
+      case OneTaskOnlyExecutor:
+        return new OneTaskOnlyExecutorGroup();
+      case ScheduledThreadExecutor:
+        return new ScheduledThreadPoolExecutorWKAGroup();
+      case AGSExecutor:
+        return new GatewaySenderEventProcessorGroup();
+      case P2PReaderExecutor:
+        return new P2PReaderExecutorGroup();
+      default:
+        throw new IllegalStateException("Unhandled mode=" + mode);
+    }
+  }
+
+  @Override
+  public boolean register(AbstractExecutor executor) {
+    monitorMap.put(executor.getThreadID(), executor);
+    return true;
+  }
+
+  @Override
+  public void unregister(AbstractExecutor executor) {
+    monitorMap.remove(executor.getThreadID());
+  }
+
+  @VisibleForTesting
+  boolean isMonitoring(AbstractExecutor executor) {
+    if (executor.isMonitoringSuspended()) {
+      return false;
+    }
+    return monitorMap.containsKey(executor.getThreadID());
+  }
+
+  @VisibleForTesting
+  Timer getTimer() {
     return this.timer;
   }
 

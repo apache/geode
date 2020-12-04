@@ -15,14 +15,12 @@
 
 package org.apache.geode.internal.monitoring;
 
-import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.TimerTask;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
@@ -33,73 +31,86 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class ThreadsMonitoringProcess extends TimerTask {
 
-  private final ThreadsMonitoring threadsMonitoring;
-  private ResourceManagerStats resourceManagerStats = null;
   private static final Logger logger = LogService.getLogger();
-  private final int timeLimit;
+
+  private final ThreadsMonitoring threadsMonitoring;
+  private final int timeLimitMillis;
   private final InternalDistributedSystem internalDistributedSystem;
 
-  private final Properties nonDefault = new Properties();
-  private final DistributionConfigImpl distributionConfigImpl =
-      new DistributionConfigImpl(nonDefault);
+  private ResourceManagerStats resourceManagerStats = null;
 
   protected ThreadsMonitoringProcess(ThreadsMonitoring tMonitoring,
-      InternalDistributedSystem iDistributedSystem) {
-    this.timeLimit = this.distributionConfigImpl.getThreadMonitorTimeLimit();
+      InternalDistributedSystem iDistributedSystem, int timeLimitMillis) {
+    this.timeLimitMillis = timeLimitMillis;
     this.threadsMonitoring = tMonitoring;
     this.internalDistributedSystem = iDistributedSystem;
   }
 
+  @VisibleForTesting
+  /**
+   * Returns true if a stuck thread was detected
+   */
   public boolean mapValidation() {
-    boolean isStuck = false;
     int numOfStuck = 0;
-    for (Entry<Long, AbstractExecutor> entry1 : this.threadsMonitoring.getMonitorMap().entrySet()) {
-      logger.trace("Checking thread {}", entry1.getKey());
-      long currentTime = System.currentTimeMillis();
-      long delta = currentTime - entry1.getValue().getStartTime();
-      if (delta >= this.timeLimit) {
-        isStuck = true;
+    for (AbstractExecutor executor : threadsMonitoring.getMonitorMap().values()) {
+      if (executor.isMonitoringSuspended()) {
+        continue;
+      }
+      final long startTime = executor.getStartTime();
+      final long currentTime = System.currentTimeMillis();
+      if (startTime == 0) {
+        executor.setStartTime(currentTime);
+        continue;
+      }
+      long threadId = executor.getThreadID();
+      logger.trace("Checking thread {}", threadId);
+      long delta = currentTime - startTime;
+      if (delta >= timeLimitMillis) {
         numOfStuck++;
-        logger.warn("Thread {} (0x{}) is stuck", entry1.getKey(),
-            Long.toHexString(entry1.getKey()));
-        entry1.getValue().handleExpiry(delta);
+        logger.warn("Thread {} (0x{}) is stuck", threadId, Long.toHexString(threadId));
+        executor.handleExpiry(delta);
       }
     }
-    if (!isStuck) {
-      if (this.resourceManagerStats != null)
-        this.resourceManagerStats.setNumThreadStuck(0);
+    updateNumThreadStuckStatistic(numOfStuck);
+    if (numOfStuck == 0) {
       logger.trace("There are no stuck threads in the system");
-      return false;
+    } else if (numOfStuck != 1) {
+      logger.warn("There are {} stuck threads in this node", numOfStuck);
     } else {
-      if (this.resourceManagerStats != null)
-        this.resourceManagerStats.setNumThreadStuck(numOfStuck);
-      if (numOfStuck != 1) {
-        logger.warn("There are {} stuck threads in this node", numOfStuck);
-      } else {
-        logger.warn("There is 1 stuck thread in this node");
-      }
-      return true;
+      logger.warn("There is 1 stuck thread in this node");
+    }
+    return numOfStuck != 0;
+  }
+
+  private void updateNumThreadStuckStatistic(int numOfStuck) {
+    ResourceManagerStats stats = getResourceManagerStats();
+    if (stats != null) {
+      stats.setNumThreadStuck(numOfStuck);
     }
   }
 
   @Override
   public void run() {
-    if (this.resourceManagerStats == null) {
-      try {
-        if (this.internalDistributedSystem == null || !this.internalDistributedSystem.isConnected())
-          return;
-        DistributionManager distributionManager =
-            this.internalDistributedSystem.getDistributionManager();
-        InternalCache cache = distributionManager.getExistingCache();
-        this.resourceManagerStats = cache.getInternalResourceManager().getStats();
-      } catch (CacheClosedException e1) {
-        logger.trace("No cache exists yet - process will run on next iteration");
-      }
-    } else
-      mapValidation();
+    mapValidation();
   }
 
+  @VisibleForTesting
   public ResourceManagerStats getResourceManagerStats() {
-    return this.resourceManagerStats;
+    ResourceManagerStats result = resourceManagerStats;
+    if (result == null) {
+      try {
+        if (internalDistributedSystem == null || !internalDistributedSystem.isConnected()) {
+          return null;
+        }
+        DistributionManager distributionManager =
+            internalDistributedSystem.getDistributionManager();
+        InternalCache cache = distributionManager.getExistingCache();
+        result = cache.getInternalResourceManager().getStats();
+        resourceManagerStats = result;
+      } catch (CacheClosedException e1) {
+        logger.trace("could not update statistic since cache is closed");
+      }
+    }
+    return result;
   }
 }
