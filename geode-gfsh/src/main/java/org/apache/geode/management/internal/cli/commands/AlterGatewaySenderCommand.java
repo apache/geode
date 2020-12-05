@@ -71,8 +71,6 @@ public class AlterGatewaySenderCommand extends SingleGfshCommand {
           help = CliStrings.ALTER_GATEWAYSENDER__BATCHTIMEINTERVAL__HELP) Integer batchTimeInterval,
       @CliOption(key = CliStrings.ALTER_GATEWAYSENDER__GATEWAYEVENTFILTER,
           help = CliStrings.ALTER_GATEWAYSENDER__GATEWAYEVENTFILTER__HELP) String[] gatewayEventFilters,
-      @CliOption(key = CliStrings.ALTER_GATEWAYSENDER__GATEWAYTRANSPORTFILTER,
-          help = CliStrings.ALTER_GATEWAYSENDER__GATEWAYTRANSPORTFILTER__HELP) String[] gatewayTransportFilters,
       @CliOption(key = CliStrings.ALTER_GATEWAYSENDER__GROUPTRANSACTIONEVENTS,
           specifiedDefaultValue = "true",
           help = CliStrings.ALTER_GATEWAYSENDER__GROUPTRANSACTIONEVENTS__HELP) Boolean groupTransactionEvents)
@@ -146,12 +144,6 @@ public class AlterGatewaySenderCommand extends SingleGfshCommand {
           .addAll((stringsToDeclarableTypes(gatewayEventFilters)));
     }
 
-    if (gatewayTransportFilters != null) {
-      modify = true;
-      gwConfiguration.getGatewayTransportFilters()
-          .addAll((stringsToDeclarableTypes(gatewayTransportFilters)));
-    }
-
     if (!modify) {
       return ResultModel.createError(CliStrings.ALTER_GATEWAYSENDER__RELEVANT__OPTION__MESSAGE);
     }
@@ -208,12 +200,6 @@ public class AlterGatewaySenderCommand extends SingleGfshCommand {
           sender.getGatewayEventFilters().addAll(gwConfiguration.getGatewayEventFilters());
         }
 
-        if (!gwConfiguration.getGatewayTransportFilters().isEmpty()) {
-          if (!sender.getGatewayTransportFilters().isEmpty()) {
-            sender.getGatewayTransportFilters().clear();
-          }
-          sender.getGatewayTransportFilters().addAll(gwConfiguration.getGatewayTransportFilters());
-        }
       }
     }
     return gwConfigsHaveBeenUpdated;

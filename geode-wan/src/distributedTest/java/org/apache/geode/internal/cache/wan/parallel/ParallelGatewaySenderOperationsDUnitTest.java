@@ -1133,6 +1133,56 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
 
   }
 
+
+  @Test
+  public void testParallelGWSenderUpdateFiltersWhilePuttingOnOneDispatcThread() throws Exception {
+    Integer[] locatorPorts = createLNAndNYLocators();
+    Integer lnPort = locatorPorts[0];
+    Integer nyPort = locatorPorts[1];
+
+    List<GatewayEventFilter> filters = new ArrayList<>();
+    filters.add(new MyGatewayEventFilter_AfterAck());
+    filters.add(new PDXGatewayEventFilter());
+
+    List<GatewayEventFilter> filters2 = new ArrayList<>();
+    filters.add(new MyGatewayEventFilter());
+    filters.add(new MyGatewayEventFilter_AfterAck());
+    filters.add(new PDXGatewayEventFilter());
+
+    createCacheInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
+
+    createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
+    vm4.invoke(() -> setNumDispatcherThreadsForTheRun(1));
+    vm5.invoke(() -> setNumDispatcherThreadsForTheRun(1));
+    vm6.invoke(() -> setNumDispatcherThreadsForTheRun(1));
+    vm7.invoke(() -> setNumDispatcherThreadsForTheRun(1));
+
+    vm4.invoke(() -> createSender("ln", 2, true, 100, 10, false, false, null, false));
+    vm5.invoke(() -> createSender("ln", 2, true, 100, 10, false, false, null, false));
+    vm6.invoke(() -> createSender("ln", 2, true, 100, 10, false, false, null, false));
+    vm7.invoke(() -> createSender("ln", 2, true, 100, 10, false, false, null, false));
+
+    createPartitionedRegions(false);
+
+    vm4.invoke(() -> waitForSenderRunningState("ln"));
+    vm5.invoke(() -> waitForSenderRunningState("ln"));
+    vm6.invoke(() -> waitForSenderRunningState("ln"));
+    vm7.invoke(() -> waitForSenderRunningState("ln"));
+
+    AsyncInvocation async = vm4.invokeAsync(() -> doPuts(getUniqueName() + "_PR", 5000));
+    checkBatchSize(10);
+
+    updateBatchSize(100);
+    updateGatewayEventFilters(filters);
+    checkBatchSize(100);
+    updateGatewayEventFilters(filters2);
+
+    async.await();
+
+  }
+
+
   private void clearShadowBucketRegions(PartitionedRegion shadowRegion) {
     PartitionedRegionDataStore.BucketVisitor bucketVisitor =
         new PartitionedRegionDataStore.BucketVisitor() {

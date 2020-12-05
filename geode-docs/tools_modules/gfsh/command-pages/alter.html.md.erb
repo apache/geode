@@ -198,8 +198,7 @@ Alter attributes of a specified gateway sender on one or more members of a clust
 ``` pre
 alter gateway-sender --id=value [--members=value(,value)*] [--groups=value(,value)*]
     [--alert-threshold=value] [--batch-size=value] [--batch-time-interval=value]
-    [--gateway-event-filter=value(,value)*] [--gateway-transport-filter=value(,value)*]
-    [--group-transaction-events(=value)?]
+    [--gateway-event-filter=value(,value)*] [--group-transaction-events(=value)?]
 ```
 
 The required option, `--id`, identifies the gateway sender to be altered.
@@ -245,10 +244,6 @@ The required option, `--id`, identifies the gateway sender to be altered.
 <td><span class="keyword parmname">\-\-gateway-event-filter</span></td>
 <td>A list of fully-qualified class names of GatewayEventFilters (separated by commas) to be associated with the GatewaySender. This serves as a callback for users to filter out events before dispatching to a remote cluster. For example:
 <pre class="pre codeblock"><code>gateway-event-filter=com.user.filters.MyFilter1,com.user.filters.MyFilters2</code></pre></td>
-</tr>
-<tr>
-<td><span class="keyword parmname">\-\-gateway-transport-filter</span></td>
-<td>The fully-qualified class name of the GatewayTransportFilter to be added to the GatewaySender.</td>
 </tr>
 <tr>
 <td><span class="keyword parmname">\-\-group-transaction-events</span></td>

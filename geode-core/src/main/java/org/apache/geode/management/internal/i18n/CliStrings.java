@@ -354,11 +354,6 @@ public class CliStrings {
           + "This serves as a callback for users to filter out events before dispatching to the remote distributed system.\n"
           + "E.g gateway-event-filter=com.user.filters.MyFilter1,com.user.filters.MyFilters2";
 
-  public static final String ALTER_GATEWAYSENDER__GATEWAYTRANSPORTFILTER =
-      "gateway-transport-filter";
-  public static final String ALTER_GATEWAYSENDER__GATEWAYTRANSPORTFILTER__HELP =
-      "The fully qualified class name of a GatewayTransportFilter to be added to the GatewaySender.";
-
   public static final String ALTER_GATEWAYSENDER__GROUPTRANSACTIONEVENTS =
       "group-transaction-events";
   public static final String ALTER_GATEWAYSENDER__GROUPTRANSACTIONEVENTS__HELP =
