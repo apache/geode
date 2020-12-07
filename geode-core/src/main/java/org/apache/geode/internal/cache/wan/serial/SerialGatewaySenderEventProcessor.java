@@ -607,7 +607,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
       my_executor.execute(new Runnable() {
         @Override
         public void run() {
-          basicHandlePrimaryDestroy(gatewayEvent.getEventId());
+          basicHandlePrimaryDestroy(gatewayEvent.getEventId(), false);
         }
       });
     }
@@ -617,7 +617,8 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
    * Just remove the event from the unprocessed events map if it is present. This method added to
    * fix bug 37603
    */
-  protected boolean basicHandlePrimaryDestroy(final EventID eventId) {
+  protected boolean basicHandlePrimaryDestroy(final EventID eventId,
+      boolean addToUnprocessedTokens) {
     if (this.sender.isPrimary()) {
       // no need to do anything if we have become the primary
       return false;
@@ -638,6 +639,17 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
         ew.event.release();
         statistics.incUnprocessedEventsRemovedByPrimary();
         return true;
+      } else if (addToUnprocessedTokens) {
+        // Secondary event may not have arrived
+        Long mapValue =
+            Long.valueOf(System.currentTimeMillis() + AbstractGatewaySender.TOKEN_TIMEOUT);
+        Long oldv = this.unprocessedTokens.put(eventId, mapValue);
+        if (oldv == null) {
+          statistics.incUnprocessedTokensAddedByPrimary();
+        } else {
+          // its ok for oldv to be non-null
+          // this shouldn't happen anymore @todo add an assertion here
+        }
       }
     }
     return false;
