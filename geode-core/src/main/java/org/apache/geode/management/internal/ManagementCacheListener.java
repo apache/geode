@@ -45,7 +45,7 @@ public class ManagementCacheListener extends CacheListenerAdapter<String, Object
 
   @Override
   public void afterCreate(EntryEvent<String, Object> event) {
-//    blockUntilReady();
+    // blockUntilReady();
     ObjectName objectName = null;
 
     try {
@@ -62,7 +62,7 @@ public class ManagementCacheListener extends CacheListenerAdapter<String, Object
 
   @Override
   public void afterDestroy(EntryEvent<String, Object> event) {
-//    blockUntilReady();
+    // blockUntilReady();
     ObjectName objectName = null;
 
     try {
@@ -79,7 +79,7 @@ public class ManagementCacheListener extends CacheListenerAdapter<String, Object
 
   @Override
   public void afterUpdate(EntryEvent<String, Object> event) {
-//    blockUntilReady();
+    // blockUntilReady();
 
     ObjectName objectName = null;
 
