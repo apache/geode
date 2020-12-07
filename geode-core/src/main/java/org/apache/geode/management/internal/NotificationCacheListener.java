@@ -14,14 +14,11 @@
  */
 package org.apache.geode.management.internal;
 
-
-
 import javax.management.Notification;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.util.CacheListenerAdapter;
-import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
 
 /**
@@ -32,13 +29,12 @@ public class NotificationCacheListener extends CacheListenerAdapter<Notification
   private final NotificationHubClient notifClient;
   private final StoppableCountDownLatch readyForEvents;
 
-  public NotificationCacheListener(InternalCacheForClientAccess cache,
-      MBeanProxyFactory proxyHelper) {
+  public NotificationCacheListener(MBeanProxyFactory proxyHelper, CancelCriterion cancelCriterion) {
     notifClient =
         new NotificationHubClient(proxyHelper);
 
     this.readyForEvents =
-        new StoppableCountDownLatch(new CacheListenerCancelCriterion(cache), 1);
+        new StoppableCountDownLatch(cancelCriterion, 1);
   }
 
   @Override
@@ -64,27 +60,5 @@ public class NotificationCacheListener extends CacheListenerAdapter<Notification
 
   void markReady() {
     readyForEvents.countDown();
-  }
-
-  private class CacheListenerCancelCriterion extends CancelCriterion {
-    private InternalCacheForClientAccess cache;
-
-    public CacheListenerCancelCriterion(InternalCacheForClientAccess cache) {
-      this.cache = cache;
-    }
-
-    @Override
-    public String cancelInProgress() {
-      String reason = cache.getCancelCriterion().cancelInProgress();
-      if (reason != null) {
-        return reason;
-      }
-      return null;
-    }
-
-    @Override
-    public RuntimeException generateCancelledException(Throwable throwable) {
-      return null;
-    }
   }
 }

@@ -21,7 +21,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.util.CacheListenerAdapter;
-import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -38,14 +37,15 @@ public class ManagementCacheListener extends CacheListenerAdapter<String, Object
   private final StoppableCountDownLatch readyForEvents;
 
   public ManagementCacheListener(MBeanProxyFactory proxyHelper,
-      InternalCacheForClientAccess cache) {
+      CancelCriterion cancelCriterion) {
     this.proxyHelper = proxyHelper;
-    this.readyForEvents = new StoppableCountDownLatch(new CacheListenerCancelCriterion(cache), 1);
+    this.readyForEvents = new StoppableCountDownLatch(
+        cancelCriterion, 1);
   }
 
   @Override
   public void afterCreate(EntryEvent<String, Object> event) {
-    // blockUntilReady();
+    blockUntilReady();
     ObjectName objectName = null;
 
     try {
@@ -62,7 +62,7 @@ public class ManagementCacheListener extends CacheListenerAdapter<String, Object
 
   @Override
   public void afterDestroy(EntryEvent<String, Object> event) {
-    // blockUntilReady();
+    blockUntilReady();
     ObjectName objectName = null;
 
     try {
@@ -79,8 +79,7 @@ public class ManagementCacheListener extends CacheListenerAdapter<String, Object
 
   @Override
   public void afterUpdate(EntryEvent<String, Object> event) {
-    // blockUntilReady();
-
+    blockUntilReady();
     ObjectName objectName = null;
 
     try {
@@ -116,27 +115,5 @@ public class ManagementCacheListener extends CacheListenerAdapter<String, Object
 
   void markReady() {
     readyForEvents.countDown();
-  }
-
-  private class CacheListenerCancelCriterion extends CancelCriterion {
-    private InternalCacheForClientAccess cache;
-
-    public CacheListenerCancelCriterion(InternalCacheForClientAccess cache) {
-      this.cache = cache;
-    }
-
-    @Override
-    public String cancelInProgress() {
-      String reason = cache.getCancelCriterion().cancelInProgress();
-      if (reason != null) {
-        return reason;
-      }
-      return null;
-    }
-
-    @Override
-    public RuntimeException generateCancelledException(Throwable throwable) {
-      return null;
-    }
   }
 }

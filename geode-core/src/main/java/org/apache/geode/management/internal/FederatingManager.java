@@ -32,6 +32,7 @@ import javax.management.ObjectName;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.annotations.VisibleForTesting;
@@ -68,6 +69,8 @@ public class FederatingManager extends Manager {
 
   private final SystemManagementService service;
   private final AtomicReference<Exception> latestException = new AtomicReference<>();
+  private final AtomicReference<Exception> errorDuringAddMemberArtifacts =
+      new AtomicReference<Exception>(null);
 
   private final Supplier<ExecutorService> executorServiceSupplier;
   private final MBeanProxyFactory proxyFactory;
@@ -380,7 +383,10 @@ public class FederatingManager extends Manager {
         return;
       }
 
+      FederatingManagerCancelCriterion cancelCriterion =
+          new FederatingManagerCancelCriterion(errorDuringAddMemberArtifacts);
       try {
+
         // GII wont start at all if its interrupted
         if (!Thread.currentThread().isInterrupted()) {
 
@@ -406,46 +412,11 @@ public class FederatingManager extends Manager {
           monitorFactory.setDataPolicy(DataPolicy.REPLICATE);
           monitorFactory.setConcurrencyChecksEnabled(false);
           ManagementCacheListener managementCacheListener =
-              new ManagementCacheListener(proxyFactory, cache);
+              new ManagementCacheListener(proxyFactory, cancelCriterion);
           monitorFactory.addCacheListener(managementCacheListener);
           monitorFactory.setIsUsedForMetaRegion(true);
           monitorFactory.setCachePerfStatsHolder(monitoringRegionStats);
 
-          Region<String, Object> proxyMonitoringRegion;
-
-          if (!running) {
-            return;
-          }
-
-          try {
-            proxyMonitoringRegion = monitorFactory.create(monitoringRegionName);
-            if (logger.isDebugEnabled()) {
-              logger.debug("Monitoring Region created with Name : {}",
-                  proxyMonitoringRegion.getName());
-            }
-          } catch (TimeoutException | RegionExistsException e) {
-            if (logger.isDebugEnabled()) {
-              logger.debug("Error During Internal Region creation", e);
-            }
-            throw new ManagementException(e);
-          }
-
-          repo.putEntryInMonitoringRegionMap(member, proxyMonitoringRegion);
-          if (!running) {
-            return;
-          }
-
-          try {
-            proxyFactory.createAllProxies(member, proxyMonitoringRegion);
-            // managementCacheListener.markReady();
-          } catch (Exception e) {
-            if (logger.isDebugEnabled()) {
-              logger.debug("Error During GII Proxy creation", e);
-            }
-            throw new ManagementException(e);
-          }
-
-          // ######### Notification ###########
           // Notification region for member is created
           InternalRegionFactory<NotificationKey, Notification> notificationFactory =
               cache.createInternalRegionFactory();
@@ -459,25 +430,32 @@ public class FederatingManager extends Manager {
                   ManagementConstants.NOTIF_REGION_MAX_ENTRIES, EvictionAction.LOCAL_DESTROY));
 
           NotificationCacheListener notifListener =
-              new NotificationCacheListener(cache, proxyFactory);
+              new NotificationCacheListener(proxyFactory, cancelCriterion);
           notificationFactory.addCacheListener(notifListener);
           notificationFactory.setIsUsedForMetaRegion(true);
           notificationFactory.setCachePerfStatsHolder(monitoringRegionStats);
 
-          boolean proxyNotificationRegionCreated = false;
-          Region<NotificationKey, Notification> proxyNotificationRegion;
-
-          if (!running) {
-            return;
+          Region<String, Object> proxyMonitoringRegion;
+          try {
+            if (!running) {
+              return;
+            }
+            proxyMonitoringRegion = monitorFactory.create(monitoringRegionName);
+          } catch (TimeoutException | RegionExistsException e) {
+            if (logger.isDebugEnabled()) {
+              logger.debug("Error During Internal Region creation", e);
+            }
+            throw new ManagementException(e);
           }
 
+          boolean proxyNotificationRegionCreated = false;
+          Region<NotificationKey, Notification> proxyNotificationRegion;
           try {
+            if (!running) {
+              return;
+            }
             proxyNotificationRegion = notificationFactory.create(notificationRegionName);
             proxyNotificationRegionCreated = true;
-            if (logger.isDebugEnabled()) {
-              logger.debug("Notification Region created with Name : {}",
-                  proxyNotificationRegion.getName());
-            }
           } catch (TimeoutException | RegionExistsException e) {
             if (logger.isDebugEnabled()) {
               logger.debug("Error During Internal Region creation", e);
@@ -487,22 +465,39 @@ public class FederatingManager extends Manager {
             if (!proxyNotificationRegionCreated) {
               // Destroy the proxy region if proxy notification region is not created
               proxyMonitoringRegion.localDestroyRegion();
-              if (logger.isDebugEnabled()) {
-                logger.debug(" Failed to create proxy notification region,"
-                    + "destroying proxy monitoring region with name : {}",
-                    proxyMonitoringRegion.getName());
-              }
             }
+          }
+
+          if (logger.isDebugEnabled()) {
+            logger.debug("Management Region created with Name : {}",
+                proxyMonitoringRegion.getName());
+            logger.debug("Notification Region created with Name : {}",
+                proxyNotificationRegion.getName());
           }
 
           // Only the exception case would have destroyed the proxy
           // regions. We can safely proceed here.
+          repo.putEntryInMonitoringRegionMap(member, proxyMonitoringRegion);
           repo.putEntryInNotifRegionMap(member, proxyNotificationRegion);
-          // notifListener.markReady(); //@todo was dependent on proxies for monitoring region being
-          // created before we moved it
+          try {
+            if (!running) {
+              return;
+            }
+            proxyFactory.createAllProxies(member, proxyMonitoringRegion);
+
+            managementCacheListener.markReady();
+            notifListener.markReady();
+          } catch (Exception e) {
+            if (logger.isDebugEnabled()) {
+              logger.debug("Error During GII Proxy creation", e);
+            }
+
+            throw new ManagementException(e);
+          }
         }
 
       } catch (Exception e) {
+        errorDuringAddMemberArtifacts.set(e);
         throw new ManagementException(e);
       }
 
@@ -514,6 +509,29 @@ public class FederatingManager extends Manager {
       messenger.sendManagerInfo(member);
     }
   }
+
+  private class FederatingManagerCancelCriterion extends CancelCriterion {
+    private AtomicReference errorDuringAddMemberArtifacts;
+
+    public FederatingManagerCancelCriterion(
+        AtomicReference<Exception> errorDuringAddMemberArtifacts) {
+      this.errorDuringAddMemberArtifacts = errorDuringAddMemberArtifacts;
+    }
+
+    @Override
+    public String cancelInProgress() {
+      if (!errorDuringAddMemberArtifacts.get().equals(null)) {
+        throw new RuntimeException(errorDuringAddMemberArtifacts.get().toString());
+      }
+      return null;
+    }
+
+    @Override
+    public RuntimeException generateCancelledException(Throwable throwable) {
+      return null;
+    }
+  }
+
 
   /**
    * Actual task of doing the GII
