@@ -150,6 +150,6 @@ if (project.hasProperty('parallelDunit')) {
   upgradeTest.configure(project.ext.dockerConfig)
   repeatUpgradeTest.configure(project.ext.dockerConfig)
 
-  acceptanceTest.configure(project.ext.dockerConfig)
-  repeatAcceptanceTest.configure(project.ext.dockerConfig)
+  // acceptanceTest.configure(project.ext.dockerConfig)
+  // repeatAcceptanceTest.configure(project.ext.dockerConfig)
 }
