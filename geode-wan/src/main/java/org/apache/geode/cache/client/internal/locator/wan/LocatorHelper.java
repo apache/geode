@@ -50,6 +50,28 @@ public class LocatorHelper {
         existingValue.add(locator);
         addServerLocator(distributedSystemId, locatorListener, locator);
         locatorListener.locatorJoined(distributedSystemId, locator, sourceLocator);
+      } else if (locator.getMemberName() != null) {
+        DistributionLocatorId tempLocator = null;
+        for (DistributionLocatorId locElement : existingValue) {
+          if (locator.equals(locElement) && locElement.getMemberName() != null) {
+            tempLocator = locElement;
+            break;
+          }
+        }
+        if (tempLocator != null) {
+          if (!locator.additionalCheckEqual(tempLocator)) {
+            existingValue.remove(tempLocator);
+            ConcurrentHashMap<Integer, Set<String>> allServerLocatorsInfo =
+                (ConcurrentHashMap<Integer, Set<String>>) locatorListener
+                    .getAllServerLocatorsInfo();
+            Set<String> alllocators = allServerLocatorsInfo.get(distributedSystemId);
+            alllocators.remove(tempLocator.toString());
+            addServerLocator(distributedSystemId, locatorListener, locator);
+            locatorListener.locatorJoined(distributedSystemId, locator, sourceLocator);
+            return true;
+          }
+        }
+        return false;
       } else {
         return false;
       }

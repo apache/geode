@@ -49,6 +49,8 @@ public class DistributionLocatorId implements java.io.Serializable {
   private boolean serverLocator = true;
   private String hostnameForClients;
   private String hostname;
+  private final String membername;
+
 
   /**
    * Constructs a DistributionLocatorId with the given host and port.
@@ -59,6 +61,7 @@ public class DistributionLocatorId implements java.io.Serializable {
     this.port = port;
     this.bindAddress = validateBindAddress(bindAddress);
     this.sslConfig = validateSSLConfig(sslConfig);
+    this.membername = null;
   }
 
   /**
@@ -69,6 +72,11 @@ public class DistributionLocatorId implements java.io.Serializable {
   }
 
   public DistributionLocatorId(int port, String bindAddress, String hostnameForClients) {
+    this(port, bindAddress, hostnameForClients, null);
+  }
+
+  public DistributionLocatorId(int port, String bindAddress, String hostnameForClients,
+      String membername) {
     try {
       this.host = LocalHostUtil.getLocalHost();
     } catch (UnknownHostException ex) {
@@ -79,6 +87,7 @@ public class DistributionLocatorId implements java.io.Serializable {
     this.bindAddress = validateBindAddress(bindAddress);
     this.sslConfig = validateSSLConfig(null);
     this.hostnameForClients = hostnameForClients;
+    this.membername = membername;
   }
 
   public DistributionLocatorId(InetAddress host, int port, String bindAddress, SSLConfig sslConfig,
@@ -88,6 +97,7 @@ public class DistributionLocatorId implements java.io.Serializable {
     this.bindAddress = validateBindAddress(bindAddress);
     this.sslConfig = validateSSLConfig(sslConfig);
     this.hostnameForClients = hostnameForClients;
+    this.membername = null;
   }
 
   /**
@@ -104,6 +114,12 @@ public class DistributionLocatorId implements java.io.Serializable {
    * two.
    */
   public DistributionLocatorId(String marshalled) {
+    this(marshalled, null);
+  }
+
+  public DistributionLocatorId(String marshalled, String membername) {
+    this.membername = membername;
+
     final int portStartIdx = marshalled.indexOf('[');
     final int portEndIdx = marshalled.indexOf(']');
 
@@ -258,6 +274,10 @@ public class DistributionLocatorId implements java.io.Serializable {
     return this.hostnameForClients;
   }
 
+  public String getMemberName() {
+    return this.membername;
+  }
+
   // private String hostNameToString() {
   // if (this.host.isMulticastAddress()) {
   // return this.host.getHostAddress();
@@ -317,6 +337,36 @@ public class DistributionLocatorId implements java.io.Serializable {
       return false;
     final DistributionLocatorId that = (DistributionLocatorId) other;
 
+    if (this.membername != null && that.membername != null) {
+      if (this.membername.equals(that.membername))
+        return true;
+
+      return false;
+    }
+
+    if (!StringUtils.equals(this.hostnameForClients, that.hostnameForClients))
+      return false;
+    if (this.host != that.host && !(this.host != null && this.host.equals(that.host)))
+      return false;
+    if (this.port != that.port)
+      return false;
+    if (!StringUtils.equals(this.bindAddress, that.bindAddress))
+      return false;
+
+    return true;
+  }
+
+  public boolean additionalCheckEqual(Object other) {
+    if (other == this)
+      return true;
+    if (other == null)
+      return false;
+    if (!(other instanceof DistributionLocatorId))
+      return false;
+    final DistributionLocatorId that = (DistributionLocatorId) other;
+
+    if (!StringUtils.equals(this.hostnameForClients, that.hostnameForClients))
+      return false;
     if (this.host != that.host && !(this.host != null && this.host.equals(that.host)))
       return false;
     if (this.port != that.port)
@@ -337,6 +387,11 @@ public class DistributionLocatorId implements java.io.Serializable {
   public int hashCode() {
     int result = 17;
     final int mult = 37;
+
+    if (this.membername != null) {
+      result = mult * result + this.membername.hashCode();
+      return result;
+    }
 
     result = mult * result + (this.host == null ? 0 : this.host.hashCode());
     result = mult * result + this.port;
