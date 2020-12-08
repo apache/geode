@@ -38,7 +38,7 @@ public class PRClearIntegrationTest {
   public ExecutorServiceRule executor = new ExecutorServiceRule();
 
   @Test
-  public void shouldNotHang() throws Exception {
+  public void doesNotHangWhenClearWithConcurrentPutsAndInvalidates() throws Exception {
     InternalCache cache = server.getCache();
     Region<Object, Object> region = server.createPartitionRegion("regionA", f -> {
     }, f -> f.setTotalNumBuckets(1));
