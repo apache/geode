@@ -299,8 +299,8 @@ geode-management/src/test/script/update-management-wiki.sh   @onichols-pivotal
 #------------------------------------------------------------
 # Documentation
 #------------------------------------------------------------
-#geode-book/**
-#geode-docs/**
+geode-book/**                                                @karensmolermiller @davebarnes97
+geode-docs/**
 #BUILDING.md
 #CODE_OF_CONDUCT.md
 LICENSE                                                      @onichols-pivotal
