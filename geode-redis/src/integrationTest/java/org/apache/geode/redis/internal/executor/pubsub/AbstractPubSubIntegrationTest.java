@@ -747,11 +747,6 @@ public abstract class AbstractPubSubIntegrationTest implements RedisPortSupplier
         lastException);
   }
 
-  @Test
-  public void dockerout() {
-    runit("docker", "ps", "-a");
-  }
-
   private void runit(String command, String... args) {
     StreamConsumer consumer = stream -> {
       InputStreamReader inputStreamReader = new InputStreamReader(stream);
