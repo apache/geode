@@ -320,7 +320,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
         // this method is invoked by memberDeparted events and may not be for the current lock owner
         return;
       }
-      unlockVersionGeneration(locker);
+      unlockVersionGeneration();
     }
   }
 
@@ -416,7 +416,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
 
   }
 
-  private void unlockVersionGeneration(final InternalDistributedMember locker) {
+  private void unlockVersionGeneration() {
     synchronized (clearLockSync) {
       this.doUnlock = true;
       this.clearLockSync.notifyAll();
