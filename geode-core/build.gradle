@@ -224,13 +224,6 @@ dependencies {
     //jaxb is used by cluster configuration
     implementation('com.sun.xml.bind:jaxb-impl')
 
-    //istack appears to be used only by jaxb, not in our code. jaxb doesn't
-    //declare this as required dependency though. It's unclear if this is needed
-    //Runtime
-    runtimeOnly('com.sun.istack:istack-commons-runtime') {
-        exclude group: '*'
-    }
-
     //Commons lang is used in many different places in core
     implementation('org.apache.commons:commons-lang3')
 
