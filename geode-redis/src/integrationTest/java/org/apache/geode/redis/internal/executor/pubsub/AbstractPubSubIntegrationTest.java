@@ -17,6 +17,10 @@ package org.apache.geode.redis.internal.executor.pubsub;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -32,6 +36,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
+import org.buildobjects.process.ProcBuilder;
+import org.buildobjects.process.ProcResult;
+import org.buildobjects.process.StreamConsumer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -733,8 +741,31 @@ public abstract class AbstractPubSubIntegrationTest implements RedisPortSupplier
       }
     }
 
+    runit("docker", "ps", "-a");
+
     throw new RuntimeException("Tried 10 times, but could not get a good connection.",
         lastException);
+  }
+
+  @Test
+  public void dockerout() {
+    runit("docker", "ps", "-a");
+  }
+
+  private void runit(String command, String... args) {
+    StreamConsumer consumer = stream -> {
+      InputStreamReader inputStreamReader = new InputStreamReader(stream);
+      BufferedReader bufReader = new BufferedReader(inputStreamReader);
+      String line;
+      while ((line = bufReader.readLine()) != null){
+        System.err.println("::: - " + line);
+      }
+    };
+
+    new ProcBuilder(command)
+        .withArgs(args)
+        .withOutputConsumer(consumer)
+        .run();
   }
 
   int doPublishing(int index, int minimumIterations, AtomicBoolean running) {
