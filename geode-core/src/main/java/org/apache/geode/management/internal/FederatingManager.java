@@ -86,16 +86,20 @@ public class FederatingManager extends Manager {
 
   @VisibleForTesting
   FederatingManager(ManagementResourceRepo repo, InternalDistributedSystem system,
-      SystemManagementService service, InternalCache cache, StatisticsFactory statisticsFactory,
-      StatisticsClock statisticsClock, MBeanProxyFactory proxyFactory, MemberMessenger messenger,
+      SystemManagementService service, InternalCache cache,
+      StatisticsFactory statisticsFactory,
+      StatisticsClock statisticsClock, MBeanProxyFactory proxyFactory,
+      MemberMessenger messenger,
       ExecutorService executorService) {
     this(repo, system, service, cache, statisticsFactory, statisticsClock, proxyFactory, messenger,
         () -> executorService);
   }
 
   FederatingManager(ManagementResourceRepo repo, InternalDistributedSystem system,
-      SystemManagementService service, InternalCache cache, StatisticsFactory statisticsFactory,
-      StatisticsClock statisticsClock, MBeanProxyFactory proxyFactory, MemberMessenger messenger,
+      SystemManagementService service, InternalCache cache,
+      StatisticsFactory statisticsFactory,
+      StatisticsClock statisticsClock, MBeanProxyFactory proxyFactory,
+      MemberMessenger messenger,
       Supplier<ExecutorService> executorServiceSupplier) {
     super(repo, system, cache, statisticsFactory, statisticsClock);
     this.service = service;
@@ -177,7 +181,6 @@ public class FederatingManager extends Manager {
    * This will return the last updated time of the proxyMBean.
    *
    * @param objectName {@link ObjectName} of the MBean
-   *
    * @return last updated time of the proxy
    */
   long getLastUpdateTime(ObjectName objectName) {
@@ -186,12 +189,11 @@ public class FederatingManager extends Manager {
 
   /**
    * Find a particular proxy instance for a {@link ObjectName}, {@link DistributedMember} and
-   * interface class If the proxy interface does not implement the given interface class a
-   * {@link ClassCastException} will be thrown
+   * interface class If the proxy interface does not implement the given interface class a {@link
+   * ClassCastException} will be thrown
    *
    * @param objectName {@link ObjectName} of the MBean
    * @param interfaceClass interface class implemented by proxy
-   *
    * @return an instance of proxy exposing the given interface
    */
   <T> T findProxy(ObjectName objectName, Class<T> interfaceClass) {
@@ -202,7 +204,6 @@ public class FederatingManager extends Manager {
    * Find a set of proxies given a {@link DistributedMember}.
    *
    * @param member {@link DistributedMember}
-   *
    * @return a set of {@link ObjectName}
    */
   Set<ObjectName> findAllProxies(DistributedMember member) {
@@ -210,8 +211,8 @@ public class FederatingManager extends Manager {
   }
 
   /**
-   * This method will be invoked whenever a member stops being a managing node. The
-   * {@code ManagementException} has to be handled by the caller.
+   * This method will be invoked whenever a member stops being a managing node. The {@code
+   * ManagementException} has to be handled by the caller.
    */
   private void stopManagingActivity() {
     try {
@@ -520,7 +521,7 @@ public class FederatingManager extends Manager {
 
     @Override
     public String cancelInProgress() {
-      if (!errorDuringAddMemberArtifacts.get().equals(null)) {
+      if (errorDuringAddMemberArtifacts.get() != null) {
         throw new RuntimeException(errorDuringAddMemberArtifacts.get().toString());
       }
       return null;
