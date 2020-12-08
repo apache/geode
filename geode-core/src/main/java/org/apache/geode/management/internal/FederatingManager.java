@@ -385,9 +385,9 @@ public class FederatingManager extends Manager {
       }
 
       FederatingManagerCancelCriterion cancelCriterion =
-          new FederatingManagerCancelCriterion(errorDuringAddMemberArtifacts);
-      try {
+          new FederatingManagerCancelCriterion();
 
+      try {
         // GII wont start at all if its interrupted
         if (!Thread.currentThread().isInterrupted()) {
 
@@ -492,13 +492,12 @@ public class FederatingManager extends Manager {
             if (logger.isDebugEnabled()) {
               logger.debug("Error During GII Proxy creation", e);
             }
-
             throw new ManagementException(e);
           }
         }
 
       } catch (Exception e) {
-        errorDuringAddMemberArtifacts.set(e);
+        cancelCriterion.markErrorOccurred(e);
         throw new ManagementException(e);
       }
 
@@ -512,24 +511,23 @@ public class FederatingManager extends Manager {
   }
 
   private class FederatingManagerCancelCriterion extends CancelCriterion {
-    private AtomicReference errorDuringAddMemberArtifacts;
+    private Exception errorOccurred;
 
-    public FederatingManagerCancelCriterion(
-        AtomicReference<Exception> errorDuringAddMemberArtifacts) {
-      this.errorDuringAddMemberArtifacts = errorDuringAddMemberArtifacts;
+    public void markErrorOccurred(Exception exception) {
+      this.errorOccurred = exception;
     }
 
     @Override
     public String cancelInProgress() {
-      if (errorDuringAddMemberArtifacts.get() != null) {
-        throw new RuntimeException(errorDuringAddMemberArtifacts.get().toString());
+      if (errorOccurred != null) {
+        return "cancel";
       }
       return null;
     }
 
     @Override
     public RuntimeException generateCancelledException(Throwable throwable) {
-      return null;
+      return new RuntimeException(errorOccurred);
     }
   }
 
