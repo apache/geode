@@ -580,12 +580,10 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
-    String firstDStore =
-        (String) vm4.invoke("Creating DS", () -> WANTestBase.createSenderWithDiskStore("ln", 2,
-            false, 100, 10, false, true, null, null, true));
-    String secondDStore =
-        (String) vm5.invoke("Creating DS", () -> WANTestBase.createSenderWithDiskStore("ln", 2,
-            false, 100, 10, false, true, null, null, true));
+    vm4.invoke("Creating DS", () -> WANTestBase.createSenderWithDiskStore("ln", 2,
+        false, 100, 10, false, true, null, null, true));
+    vm5.invoke("Creating DS", () -> WANTestBase.createSenderWithDiskStore("ln", 2,
+        false, 100, 10, false, true, null, null, true));
 
     vm2.invoke(
         () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
@@ -612,7 +610,7 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
 
     createReceiverInVMs(vm2, vm3);
 
-    AsyncInvocation inv1 = vm4.invokeAsync("Starting sender with clean queues",
+    AsyncInvocation<?> inv1 = vm4.invokeAsync("Starting sender with clean queues",
         () -> WANTestBase.startSenderwithCleanQueues("ln"));
     vm5.invoke("Starting sender with clean queues",
         () -> WANTestBase.startSenderwithCleanQueues("ln"));

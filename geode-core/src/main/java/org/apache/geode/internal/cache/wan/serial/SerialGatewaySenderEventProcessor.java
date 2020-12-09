@@ -641,14 +641,15 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
         return true;
       } else if (addToUnprocessedTokens) {
         // Secondary event may not have arrived
+        if (logger.isTraceEnabled()) {
+          logger.trace("{}: fromPrimary destroy event {} : added to unprocessed token map",
+              sender.getId(), eventId);
+        }
         Long mapValue =
-            Long.valueOf(System.currentTimeMillis() + AbstractGatewaySender.TOKEN_TIMEOUT);
+            System.currentTimeMillis() + AbstractGatewaySender.TOKEN_TIMEOUT;
         Long oldv = this.unprocessedTokens.put(eventId, mapValue);
         if (oldv == null) {
           statistics.incUnprocessedTokensAddedByPrimary();
-        } else {
-          // its ok for oldv to be non-null
-          // this shouldn't happen anymore @todo add an assertion here
         }
       }
     }
@@ -682,13 +683,10 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
         }
         {
           Long mapValue =
-              Long.valueOf(System.currentTimeMillis() + AbstractGatewaySender.TOKEN_TIMEOUT);
+              System.currentTimeMillis() + AbstractGatewaySender.TOKEN_TIMEOUT;
           Long oldv = this.unprocessedTokens.put(gatewayEvent.getEventId(), mapValue);
           if (oldv == null) {
             statistics.incUnprocessedTokensAddedByPrimary();
-          } else {
-            // its ok for oldv to be non-null
-            // this shouldn't happen anymore @todo add an assertion here
           }
         }
       } else {
