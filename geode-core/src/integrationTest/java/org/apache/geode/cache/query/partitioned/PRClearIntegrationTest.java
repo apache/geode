@@ -63,7 +63,7 @@ public class PRClearIntegrationTest {
 
     CompletableFuture<Void> clear = executor.runAsync(() -> {
       Thread.currentThread().setName("Clear-Thread");
-      region.clear();
+      IntStream.range(0, 10).forEach(i -> region.clear());
     });
 
     put.get(5, TimeUnit.SECONDS);
