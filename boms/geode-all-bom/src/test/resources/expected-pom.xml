@@ -74,12 +74,6 @@
         <scope>compile</scope>
       </dependency>
       <dependency>
-        <groupId>com.fasterxml.jackson.module</groupId>
-        <artifactId>jackson-module-scala_2.10</artifactId>
-        <version>2.11.3</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
         <groupId>com.github.davidmoten</groupId>
         <artifactId>geo</artifactId>
         <version>0.7.7</version>
@@ -148,7 +142,7 @@
       <dependency>
         <groupId>com.sun.istack</groupId>
         <artifactId>istack-commons-runtime</artifactId>
-        <version>3.0.11</version>
+        <version>4.0.0</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
@@ -166,7 +160,7 @@
       <dependency>
         <groupId>com.tngtech.archunit</groupId>
         <artifactId>archunit-junit4</artifactId>
-        <version>0.12.0</version>
+        <version>0.14.1</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
@@ -262,7 +256,7 @@
       <dependency>
         <groupId>it.unimi.dsi</groupId>
         <artifactId>fastutil</artifactId>
-        <version>8.4.3</version>
+        <version>8.4.4</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
@@ -406,7 +400,7 @@
       <dependency>
         <groupId>org.apache.httpcomponents</groupId>
         <artifactId>httpcore</artifactId>
-        <version>4.4.13</version>
+        <version>4.4.14</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
@@ -550,7 +544,7 @@
       <dependency>
         <groupId>io.lettuce</groupId>
         <artifactId>lettuce-core</artifactId>
-        <version>5.3.5.RELEASE</version>
+        <version>6.0.1.RELEASE</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
@@ -748,49 +742,49 @@
       <dependency>
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-config</artifactId>
-        <version>5.4.1</version>
+        <version>5.4.2</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-core</artifactId>
-        <version>5.4.1</version>
+        <version>5.4.2</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-ldap</artifactId>
-        <version>5.4.1</version>
+        <version>5.4.2</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-test</artifactId>
-        <version>5.4.1</version>
+        <version>5.4.2</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-web</artifactId>
-        <version>5.4.1</version>
+        <version>5.4.2</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-oauth2-core</artifactId>
-        <version>5.4.1</version>
+        <version>5.4.2</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-oauth2-client</artifactId>
-        <version>5.4.1</version>
+        <version>5.4.2</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-oauth2-jose</artifactId>
-        <version>5.4.1</version>
+        <version>5.4.2</version>
         <scope>compile</scope>
       </dependency>
       <dependency>

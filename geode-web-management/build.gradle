@@ -68,7 +68,6 @@ dependencies {
     exclude module: 'jackson-annotations'
   }
 
-  compileOnly('com.fasterxml.jackson.module:jackson-module-scala_2.10')
   compileOnly('io.swagger:swagger-annotations')
 
   implementation('io.springfox:springfox-swagger2') {
