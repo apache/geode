@@ -430,7 +430,6 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
     List<AsyncEvent> batch =
         new ArrayList<AsyncEvent>(size == BATCH_BASED_ON_TIME_ONLY ? DEFAULT_BATCH_SIZE : size);
-    Set<TransactionId> incompleteTransactionsInBatch = new HashSet<>();
     long lastKey = -1;
     while (size == BATCH_BASED_ON_TIME_ONLY || batch.size() < size) {
       KeyAndEventPair pair = peekAhead();
@@ -439,16 +438,6 @@ public class SerialGatewaySenderQueue implements RegionQueue {
         AsyncEvent object = pair.event;
         lastKey = pair.key;
         batch.add(object);
-        if (object instanceof GatewaySenderEventImpl) {
-          GatewaySenderEventImpl event = (GatewaySenderEventImpl) object;
-          if (event.getTransactionId() != null) {
-            if (event.isLastEventInTransaction()) {
-              incompleteTransactionsInBatch.remove(event.getTransactionId());
-            } else {
-              incompleteTransactionsInBatch.add(event.getTransactionId());
-            }
-          }
-        }
       } else {
         // If time to wait is -1 (don't wait) or time interval has elapsed
         long currentTime = System.currentTimeMillis();
@@ -476,7 +465,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       }
     }
     if (batch.size() > 0) {
-      peekEventsFromIncompleteTransactions(batch, incompleteTransactionsInBatch, lastKey);
+      peekEventsFromIncompleteTransactions(batch, lastKey);
     }
 
     if (isTraceEnabled) {
@@ -487,12 +476,12 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     // so no need to worry about off-heap refCount.
   }
 
-  private void peekEventsFromIncompleteTransactions(List<AsyncEvent> batch,
-      Set<TransactionId> incompleteTransactionIdsInBatch, long lastKey) {
+  private void peekEventsFromIncompleteTransactions(List<AsyncEvent> batch, long lastKey) {
     if (!mustGroupTransactionEvents()) {
       return;
     }
 
+    Set<TransactionId> incompleteTransactionIdsInBatch = getIncompleteTransactionsInBatch(batch);
     if (areAllTransactionsCompleteInBatch(incompleteTransactionIdsInBatch)) {
       return;
     }
@@ -532,6 +521,23 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
   private boolean areAllTransactionsCompleteInBatch(Set incompleteTransactions) {
     return (incompleteTransactions.size() == 0);
+  }
+
+  private Set<TransactionId> getIncompleteTransactionsInBatch(List batch) {
+    Set<TransactionId> incompleteTransactionsInBatch = new HashSet<>();
+    for (Object object : batch) {
+      if (object instanceof GatewaySenderEventImpl) {
+        GatewaySenderEventImpl event = (GatewaySenderEventImpl) object;
+        if (event.getTransactionId() != null) {
+          if (event.isLastEventInTransaction()) {
+            incompleteTransactionsInBatch.remove(event.getTransactionId());
+          } else {
+            incompleteTransactionsInBatch.add(event.getTransactionId());
+          }
+        }
+      }
+    }
+    return incompleteTransactionsInBatch;
   }
 
   @Override
@@ -842,7 +848,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
   private EventsAndLastKey peekEventsWithTransactionId(TransactionId transactionId, long lastKey) {
     Predicate<GatewaySenderEventImpl> hasTransactionIdPredicate =
-        x -> x.getTransactionId().equals(transactionId);
+        x -> transactionId.equals(x.getTransactionId());
     Predicate<GatewaySenderEventImpl> isLastEventInTransactionPredicate =
         x -> x.isLastEventInTransaction();
 

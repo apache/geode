@@ -39,6 +39,7 @@ import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderHelper;
+import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
 import org.apache.geode.internal.statistics.DummyStatisticsFactory;
 import org.apache.geode.test.fake.Fakes;
 
@@ -138,7 +139,7 @@ public class BucketRegionQueueJUnitTest {
   }
 
   @Test
-  public void testGetElementsMatchingWithHasTransactionIdPredicateAndIsLastEventInTransactionPredicate()
+  public void testGetElementsMatchingWithParallelGatewaySenderQueuePredicatesAndSomeEventsNotInTransactions()
       throws ForceReattemptException {
     ParallelGatewaySenderEventProcessor processor =
         ParallelGatewaySenderHelper.createParallelGatewaySenderEventProcessor(this.sender);
@@ -148,6 +149,7 @@ public class BucketRegionQueueJUnitTest {
     TransactionId tx3 = new TXId(null, 3);
 
     GatewaySenderEventImpl event1 = createMockGatewaySenderEvent(1, tx1, false);
+    GatewaySenderEventImpl eventNotInTransaction1 = createMockGatewaySenderEvent(8, null, false);
     GatewaySenderEventImpl event2 = createMockGatewaySenderEvent(2, tx2, false);
     GatewaySenderEventImpl event3 = createMockGatewaySenderEvent(3, tx1, true);
     GatewaySenderEventImpl event4 = createMockGatewaySenderEvent(4, tx2, true);
@@ -159,17 +161,18 @@ public class BucketRegionQueueJUnitTest {
         .cleanUpDestroyedTokensAndMarkGIIComplete(InitialImageOperation.GIIStatus.NO_GII);
 
     this.bucketRegionQueue.addToQueue(Long.valueOf(1), event1);
-    this.bucketRegionQueue.addToQueue(Long.valueOf(2), event2);
-    this.bucketRegionQueue.addToQueue(Long.valueOf(3), event3);
-    this.bucketRegionQueue.addToQueue(Long.valueOf(4), event4);
-    this.bucketRegionQueue.addToQueue(Long.valueOf(5), event5);
-    this.bucketRegionQueue.addToQueue(Long.valueOf(6), event6);
-    this.bucketRegionQueue.addToQueue(Long.valueOf(7), event7);
+    this.bucketRegionQueue.addToQueue(Long.valueOf(2), eventNotInTransaction1);
+    this.bucketRegionQueue.addToQueue(Long.valueOf(3), event2);
+    this.bucketRegionQueue.addToQueue(Long.valueOf(4), event3);
+    this.bucketRegionQueue.addToQueue(Long.valueOf(5), event4);
+    this.bucketRegionQueue.addToQueue(Long.valueOf(6), event5);
+    this.bucketRegionQueue.addToQueue(Long.valueOf(7), event6);
+    this.bucketRegionQueue.addToQueue(Long.valueOf(8), event7);
 
     Predicate<GatewaySenderEventImpl> hasTransactionIdPredicate =
-        x -> x.getTransactionId().equals(tx1);
+        ParallelGatewaySenderQueue.getHasTransactionIdPredicate(tx1);
     Predicate<GatewaySenderEventImpl> isLastEventInTransactionPredicate =
-        x -> x.isLastEventInTransaction();
+        ParallelGatewaySenderQueue.getIsLastEventInTransactionPredicate();
     List<Object> objects = this.bucketRegionQueue.getElementsMatching(hasTransactionIdPredicate,
         isLastEventInTransactionPredicate);
 
@@ -182,7 +185,7 @@ public class BucketRegionQueueJUnitTest {
     assertEquals(objects, Arrays.asList(new Object[] {event7}));
 
     hasTransactionIdPredicate =
-        x -> x.getTransactionId().equals(tx2);
+        ParallelGatewaySenderQueue.getHasTransactionIdPredicate(tx2);
     objects = this.bucketRegionQueue.getElementsMatching(hasTransactionIdPredicate,
         isLastEventInTransactionPredicate);
     assertEquals(2, objects.size());
