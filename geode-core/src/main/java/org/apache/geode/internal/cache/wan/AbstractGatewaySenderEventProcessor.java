@@ -158,6 +158,13 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
     this.threadMonitoring = tMonitoring;
   }
 
+  public AbstractGatewaySenderEventProcessor(String string,
+      GatewaySender sender, ThreadsMonitoring tMonitoring,
+      boolean enforceThreadsConnectSameReceiver) {
+    this(string, sender, tMonitoring);
+    this.enforceThreadsConnectSameReceiver = enforceThreadsConnectSameReceiver;
+  }
+
   public void setExpectedReceiverUniqueId(String uniqueId) {
     this.expectedReceiverUniqueId = uniqueId;
   }

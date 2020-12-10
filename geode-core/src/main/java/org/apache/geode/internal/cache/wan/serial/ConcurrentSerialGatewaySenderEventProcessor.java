@@ -77,6 +77,20 @@ public class ConcurrentSerialGatewaySenderEventProcessor
     }
   }
 
+  public ConcurrentSerialGatewaySenderEventProcessor(AbstractGatewaySender sender,
+      ThreadsMonitoring tMonitoring, boolean cleanQueues,
+      boolean enforceThreadsConnectSameReceiver) {
+    super("Event Processor for GatewaySender_" + sender.getId(), sender, tMonitoring,
+        enforceThreadsConnectSameReceiver);
+    this.sender = sender;
+
+    initializeMessageQueue(sender.getId(), cleanQueues);
+    queues = new HashSet<RegionQueue>();
+    for (SerialGatewaySenderEventProcessor processor : processors) {
+      queues.add(processor.getQueue());
+    }
+  }
+
   @Override
   public int getTotalQueueSize() {
     int totalSize = 0;
@@ -89,11 +103,9 @@ public class ConcurrentSerialGatewaySenderEventProcessor
   @Override
   protected void initializeMessageQueue(String id, boolean cleanQueues) {
     for (int i = 0; i < sender.getDispatcherThreads(); i++) {
-      SerialGatewaySenderEventProcessor processor =
+      processors.add(
           new SerialGatewaySenderEventProcessor(this.sender, id + "." + i, getThreadMonitorObj(),
-              cleanQueues);
-      processor.setEnforceThreadsConnectSameReceiver(getEnforceThreadsConnectSameReceiver());
-      processors.add(processor);
+              cleanQueues));
       if (logger.isDebugEnabled()) {
         logger.debug("Created the SerialGatewayEventProcessor_{}->{}", i, processors.get(i));
       }

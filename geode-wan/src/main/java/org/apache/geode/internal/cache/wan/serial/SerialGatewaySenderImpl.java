@@ -120,8 +120,9 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
     AbstractGatewaySenderEventProcessor eventProcessor;
     if (getDispatcherThreads() > 1) {
       eventProcessor = new RemoteConcurrentSerialGatewaySenderEventProcessor(
-          SerialGatewaySenderImpl.this, getThreadMonitorObj(), cleanQueues);
-      eventProcessor.setEnforceThreadsConnectSameReceiver(enforceThreadsConnectSameReceiver);
+          SerialGatewaySenderImpl.this, getThreadMonitorObj(), cleanQueues,
+          enforceThreadsConnectSameReceiver);
+      // eventProcessor.setEnforceThreadsConnectSameReceiver(enforceThreadsConnectSameReceiver);
     } else {
       eventProcessor = new RemoteSerialGatewaySenderEventProcessor(SerialGatewaySenderImpl.this,
           getId(), getThreadMonitorObj(), cleanQueues);
