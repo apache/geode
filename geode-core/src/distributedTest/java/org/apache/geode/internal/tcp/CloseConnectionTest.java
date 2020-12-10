@@ -48,6 +48,10 @@ public class CloseConnectionTest implements Serializable {
   @Rule
   public DistributedRule distributedRule = new DistributedRule();
 
+  /**
+   * The test case in this class requires that conserve-sockets=true in order for the connections to
+   * be shared.
+   */
   @Rule
   public CacheRule cacheRule = new CacheRule.Builder().addConfig(CONSERVE_SOCKETS, "true").build();
 
