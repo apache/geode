@@ -22,13 +22,16 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.Vector;
 
 import com.palantir.docker.compose.DockerComposeRule;
 import org.junit.BeforeClass;
@@ -71,14 +74,8 @@ import org.apache.geode.test.junit.categories.WanTest;
  * traffic directed to the 2324 port to the receivers in a round robin fashion.
  *
  * - Another site consisting of a 1-server, 1-locator Geode cluster.
- * The server hosts a partition region (region-wan) and has a parallel gateway receiver
+ * The server hosts a partition region (region-wan) and has a gateway receiver
  * to send events to the remote site.
- *
- * The aim of the tests is verify that when several gateway receivers in a remote site
- * share the same port and hostname-for-senders, the pings sent from the gateway senders
- * reach the right gateway receiver and not just any of the receivers. Failure to do this
- * may result in the closing of connections by a gateway receiver for not having
- * received the ping in time.
  */
 @Category({WanTest.class})
 public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
@@ -122,6 +119,13 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
     super();
   }
 
+  /**
+   * The aim of this test is verify that when several gateway receivers in a remote site
+   * share the same port and hostname-for-senders, the pings sent from the gateway senders
+   * reach the right gateway receiver and not just any of the receivers. Failure to do this
+   * may result in the closing of connections by a gateway receiver for not having
+   * received the ping in time.
+   */
   @Test
   public void testPingsToReceiversWithSamePortAndHostnameForSendersReachTheRightReceivers()
       throws InterruptedException {
@@ -157,6 +161,81 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
 
     int senderPoolDisconnects = getSenderPoolDisconnects(vm1, senderId);
     assertEquals(0, senderPoolDisconnects);
+  }
+
+  @Test
+  public void testSerialGatewaySenderThreadsConnectToSameReceiver() {
+    String senderId = "ln";
+    String regionName = "region-wan";
+    final int remoteLocPort = 20334;
+
+    int locPort = createLocator(VM.getVM(0), 1, remoteLocPort);
+
+    VM vm1 = VM.getVM(1);
+    createCache(vm1, locPort);
+
+    createGatewaySender(vm1, senderId, 2, false, 5,
+        3, GatewaySender.DEFAULT_ORDER_POLICY);
+
+    createPartitionedRegion(vm1, regionName, senderId, 0, 10);
+
+    assertTrue(allDispatchersConnectedToSameReceiver(1));
+    assertTrue(allDispatchersConnectedToSameReceiver(2));
+
+  }
+
+  private boolean allDispatchersConnectedToSameReceiver(int server) {
+
+    String gfshOutput = runListGatewayReceiversCommandInServer(server);
+    Vector<String> sendersConnectedToServer = parseSendersConnectedFromGfshOutput(gfshOutput);
+    String firstSenderId = "";
+    for (String senderId : sendersConnectedToServer) {
+      if (firstSenderId.equals("")) {
+        firstSenderId = senderId;
+      } else {
+        assertEquals("Found two different senders (" + firstSenderId + " and " + senderId
+            + ") connected to same receiver in server " + server, firstSenderId, senderId);
+      }
+    }
+    return true;
+  }
+
+
+  private String runListGatewayReceiversCommandInServer(int serverN) {
+    String result = "";
+    try {
+      result = docker.get().exec(options("-T"), "locator",
+          arguments("gfsh", "run",
+              "--file=/geode/scripts/geode-list-gateway-receivers-server" + serverN + ".gfsh"));
+    } catch (IOException e) {
+      e.printStackTrace();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    } finally {
+      return result;
+    }
+  }
+
+  private Vector<String> parseSendersConnectedFromGfshOutput(String gfshOutput) {
+    String lines[] = gfshOutput.split(System.getProperty("line.separator"));
+    final String sendersConnectedColumnHeader = "Senders Connected";
+    String receiverInfo = null;
+    for (int i = 0; i < lines.length; i++) {
+      if (lines[i].contains(sendersConnectedColumnHeader)) {
+        receiverInfo = lines[i + 2];
+        break;
+      }
+    }
+    assertNotNull(
+        "Error parsing gfsh output. '" + sendersConnectedColumnHeader + "' column header not found",
+        receiverInfo);
+    String[] tableRow = receiverInfo.split("\\|");
+    String sendersConnectedColumnValue = tableRow[3].trim();
+    Vector<String> senders = new Vector<String>();
+    for (String sender : sendersConnectedColumnValue.split(",")) {
+      senders.add(sender.trim());
+    }
+    return senders;
   }
 
   private int createLocator(VM memberVM, int dsId, int remoteLocPort) {
