@@ -28,6 +28,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -1423,14 +1424,7 @@ public class GMSJoinLeaveJUnitTest {
   @Test
   public void testCoordinatorFindRequestSuccess() throws Exception {
     initMocks(false);
-    HashSet<MemberIdentifier> registrants = new HashSet<>();
-    registrants.add(mockMembers[0]);
-    FindCoordinatorResponse fcr = new FindCoordinatorResponse(mockMembers[0], mockMembers[0], false,
-        null, registrants, false, true, null);
-
-    when(locatorClient.requestToServer(isA(HostAndPort.class),
-        isA(FindCoordinatorRequest.class), anyInt(), anyBoolean()))
-            .thenReturn(fcr);
+    mockRequestToServer(isA(HostAndPort.class));
 
     boolean foundCoordinator = gmsJoinLeave.findCoordinator();
     assertTrue(gmsJoinLeave.searchState.toString(), foundCoordinator);
@@ -1441,22 +1435,72 @@ public class GMSJoinLeaveJUnitTest {
   public void testCoordinatorFindRequestFailure() throws Exception {
     try {
       initMocks(false);
-      HashSet<MemberIdentifier> registrants = new HashSet<>();
-      registrants.add(mockMembers[0]);
-      FindCoordinatorResponse fcr = new FindCoordinatorResponse(mockMembers[0], mockMembers[0],
-          false, null, registrants, false, true, null);
+      mockRequestToServer(eq(new HostAndPort("localhost", 12346)));
       GMSMembershipView view = createView();
       JoinResponseMessage jrm = new JoinResponseMessage(mockMembers[0], view, 0);
       gmsJoinLeave.setJoinResponseMessage(jrm);
 
-      when(locatorClient.requestToServer(eq(new HostAndPort("localhost", 12346)),
-          isA(FindCoordinatorRequest.class), anyInt(), anyBoolean()))
-              .thenReturn(fcr);
-
-      assertFalse("Should not be able to join ", gmsJoinLeave.join());
+      assertThatThrownBy(() -> gmsJoinLeave.join())
+          .isInstanceOf(MembershipConfigurationException.class);
     } finally {
-
     }
+  }
+
+  @Test
+  public void testJoinFailureWhenSleepInterrupted() throws Exception {
+    initMocks(false);
+    mockRequestToServer(isA(HostAndPort.class));
+
+    when(mockConfig.getMemberTimeout()).thenReturn(100L);
+    when(mockConfig.getJoinTimeout()).thenReturn(1000L);
+
+    GMSJoinLeave spyGmsJoinLeave = spy(gmsJoinLeave);
+    when(spyGmsJoinLeave.hasCoordinatorJoinedCluster(-1, GMSJoinLeave.JOIN_RETRY_SLEEP))
+        .thenThrow(new InterruptedException());
+
+    assertThatThrownBy(spyGmsJoinLeave::join)
+        .isInstanceOf(MembershipConfigurationException.class)
+        .hasMessageContaining("Retry sleep interrupted");
+  }
+
+  @Test
+  public void testJoinFailureWhenTimeout() throws Exception {
+    initMocks(false);
+    mockRequestToServer(isA(HostAndPort.class));
+
+    assertThatThrownBy(() -> gmsJoinLeave.join())
+        .isInstanceOf(MembershipConfigurationException.class)
+        .hasMessageContaining("Operation timed out");
+  }
+
+  @Test
+  public void testHasCoordinatorJoinedCluster() throws InterruptedException {
+    locatorClient = mock(TcpClient.class);
+    gmsJoinLeave = new GMSJoinLeave(locatorClient);
+    assertThat(gmsJoinLeave.hasCoordinatorJoinedCluster(-1, GMSJoinLeave.JOIN_RETRY_SLEEP))
+        .isFalse();
+    assertThat(gmsJoinLeave.hasCoordinatorJoinedCluster(1, GMSJoinLeave.JOIN_RETRY_SLEEP)).isTrue();
+  }
+
+  @Test
+  public void testJoinFailureWhenNoLocator() throws Exception {
+    initMocks(false);
+
+    assertThatThrownBy(() -> gmsJoinLeave.join())
+        .isInstanceOf(MembershipConfigurationException.class)
+        .hasMessageContaining("Could not contact any of the locators");
+  }
+
+  private void mockRequestToServer(HostAndPort hostAndPort)
+      throws IOException, ClassNotFoundException {
+    HashSet<MemberIdentifier> registrants = new HashSet<>();
+    registrants.add(mockMembers[0]);
+
+    FindCoordinatorResponse fcr = new FindCoordinatorResponse(mockMembers[0], mockMembers[0], false,
+        null, registrants, false, true, null);
+    when(locatorClient.requestToServer(hostAndPort,
+        isA(FindCoordinatorRequest.class), anyInt(), anyBoolean()))
+            .thenReturn(fcr);
   }
 
   private void waitForViewAndFinalCheckInProgress(int viewId) throws InterruptedException {

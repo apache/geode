@@ -29,7 +29,7 @@ public interface JoinLeave<ID extends MemberIdentifier> extends Service<ID> {
    * joins the distributed system and returns true if successful, false if not. Throws
    * MemberStartupException and MemberConfigurationException
    */
-  boolean join() throws MemberStartupException;
+  void join() throws MemberStartupException;
 
   /**
    * leaves the distributed system. Should be invoked before stop()

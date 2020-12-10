@@ -315,14 +315,14 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
    * @return true if successful, false if not
    */
   @Override
-  public boolean join() throws MemberStartupException {
+  public void join() throws MemberStartupException {
 
     try {
       if (Boolean.getBoolean(BYPASS_DISCOVERY_PROPERTY)) {
         synchronized (viewInstallationLock) {
           becomeCoordinator();
         }
-        return true;
+        return;
       }
 
       SearchState<ID> state = searchState;
@@ -355,11 +355,11 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
               synchronized (viewInstallationLock) {
                 becomeCoordinator();
               }
-              return true;
+              return;
             }
           } else {
             if (attemptToJoin()) {
-              return true;
+              return;
             }
             if (this.isStopping) {
               break;
@@ -383,40 +383,44 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
             break;
           }
         }
-        try {
-          if (found && !state.hasContactedAJoinedLocator) {
-            // if locators are restarting they may be handing out IDs from a stale view that
-            // we should go through quickly. Otherwise we should sleep a bit to let failure
-            // detection select a new coordinator
-            if (state.possibleCoordinator.getVmViewId() < 0) {
-              logger.debug("sleeping for {} before making another attempt to find the coordinator",
-                  retrySleep);
-              Thread.sleep(retrySleep);
-            } else {
+        if (found && !state.hasContactedAJoinedLocator) {
+          try {
+            if (hasCoordinatorJoinedCluster(state.possibleCoordinator.getVmViewId(), retrySleep)) {
               // since we were given a coordinator that couldn't be used we should keep trying
               tries = 0;
               giveupTime = System.currentTimeMillis() + timeout;
             }
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new MembershipConfigurationException(
+                "Retry sleep interrupted. Giving up on joining the distributed system.");
           }
-        } catch (InterruptedException e) {
-          logger.debug("retry sleep interrupted - giving up on joining the distributed system");
-          return false;
         }
       } // for
 
       if (!this.isJoined) {
         logger.debug("giving up attempting to join the distributed system after "
             + (System.currentTimeMillis() - startTime) + "ms");
-      }
 
-      // to preserve old behavior we need to throw a MemberStartupException if
-      // unable to contact any of the locators
-      if (!this.isJoined && state.hasContactedAJoinedLocator) {
-        throw new MemberStartupException("Unable to join the distributed system in "
-            + (System.currentTimeMillis() - startTime) + "ms");
-      }
+        // to preserve old behavior we need to throw a MemberStartupException if
+        // unable to contact any of the locators
+        if (state.hasContactedAJoinedLocator) {
+          throw new MemberStartupException("Unable to join the distributed system in "
+              + (System.currentTimeMillis() - startTime) + "ms");
+        }
 
-      return this.isJoined;
+        if (state.locatorsContacted == 0) {
+          throw new MembershipConfigurationException(
+              "Unable to join the distributed system. Could not contact any of the locators: "
+                  + locators);
+        }
+
+        if (System.currentTimeMillis() > giveupTime) {
+          throw new MembershipConfigurationException(
+              "Unable to join the distributed system. Operation timed out");
+        }
+      }
+      return;
     } finally {
       // notify anyone waiting on the address to be completed
       if (this.isJoined) {
@@ -426,6 +430,24 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
       }
       searchState.cleanup();
     }
+  }
+
+  boolean hasCoordinatorJoinedCluster(int viewId, long retrySleep)
+      throws InterruptedException {
+    // if locators are restarting they may be handing out IDs from a stale view that
+    // we should go through quickly. Otherwise we should sleep a bit to let failure
+    // detection select a new coordinator
+    if (viewId < 0) {
+      // the process hasn't finished joining the cluster.
+      logger.debug("sleeping for {} before making another attempt to find the coordinator",
+          retrySleep);
+      Thread.sleep(retrySleep);
+    } else {
+      // the member has joined the cluster.
+      return true;
+    }
+
+    return false;
   }
 
   /**
