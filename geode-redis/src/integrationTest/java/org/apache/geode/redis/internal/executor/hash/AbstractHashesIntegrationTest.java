@@ -31,6 +31,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.logging.log4j.Logger;
 import org.assertj.core.util.Maps;
 import org.junit.After;
 import org.junit.Before;
@@ -40,6 +41,7 @@ import redis.clients.jedis.Protocol;
 import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.exceptions.JedisDataException;
 
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
@@ -49,6 +51,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   private Jedis jedis;
   private Jedis jedis2;
   private static int ITERATION_COUNT = 4000;
+  private static final Logger logger = LogService.getLogger();
 
   @Before
   public void setUp() throws IOException {
@@ -717,13 +720,20 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   private void doABunchOfHSets(String key, Map<String, String> record, Jedis jedis) {
     String field;
     String fieldValue;
+
     for (int i = 0; i < ITERATION_COUNT; i++) {
       field = randString();
       fieldValue = randString();
 
       record.put(field, fieldValue);
+      Long numberOfHSetKeys;
 
-      jedis.hset(key, field, fieldValue);
+      do {
+        numberOfHSetKeys = jedis.hset(key, field, fieldValue);
+        if (numberOfHSetKeys == 0) {
+          logger.info("retrying HSet");
+        }
+      } while (numberOfHSetKeys < 1);
     }
   }
 
