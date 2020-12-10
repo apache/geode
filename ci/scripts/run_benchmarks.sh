@@ -71,7 +71,7 @@ do
     rm ${input}
   fi
 
-  if [ -z "${BASELINE_VERSION}" ]; then
+  if [[ -z "${BASELINE_VERSION}" ]]; then
     BASELINE_OPTION="-B ${BASELINE_BRANCH} -R ${BASELINE_REPO}"
     METADATA_BASELINE="'benchmark_branch':'${BASELINE_BRANCH}'"
   else
@@ -79,22 +79,16 @@ do
     METADATA_BASELINE="'benchmark_version':'${BASELINE_VERSION}'"
   fi
 
+  set +e
+
   ./run_on_cluster.sh -t ${CLUSTER_TAG} -- pkill -9 java
   ./run_on_cluster.sh -t ${CLUSTER_TAG} -- rm /home/geode/locator10334view.dat;
 
-  if [[ ${i} != 5 ]]; then
-    set +e
+  if ./run_against_baseline.sh -t ${CLUSTER_TAG} -b ${GEODE_SHA} -r ${GEODE_REPO} -p ${BENCHMARKS_REPO} ${BASELINE_OPTION} -e ${BENCHMARKS_BRANCH} -o ${RESULTS_DIR} -m "'source':'geode-ci',${METADATA_BASELINE},'baseline_branch':'${BASELINE_BRANCH}','geode_branch':'${GEODE_SHA}'" --ci -- ${FLAGS} ${TEST_OPTIONS} ; then
+    break
   fi
 
-  ./run_against_baseline.sh -t ${CLUSTER_TAG} -b ${GEODE_SHA} -r ${GEODE_REPO} -p ${BENCHMARKS_REPO} ${BASELINE_OPTION} -e ${BENCHMARKS_BRANCH} -o ${RESULTS_DIR} -m "'source':'geode-ci',${METADATA_BASELINE},'baseline_branch':'${BASELINE_BRANCH}','geode_branch':'${GEODE_SHA}'" --ci -- ${FLAGS} ${TEST_OPTIONS}
-
-  if [[ $? -eq 0 ]]; then
-    break;
-  fi
-
-  if [[ i != 5 ]]; then
-    set -e
-  fi
+  set -e
 done
 
 popd
