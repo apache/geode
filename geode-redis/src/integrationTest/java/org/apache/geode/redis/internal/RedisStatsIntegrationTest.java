@@ -49,6 +49,10 @@ public class RedisStatsIntegrationTest {
   private static long START_TIME;
   private static StatisticsClock statisticsClock;
 
+  private Long preTestKeySpaceHits = 0l;
+  private Long preTestKeySpaceMisses = 0l;
+  private Long preTestConnectionsReceived = 0l;
+  private Long preTestConnectedClients = 0l;
 
 
   @ClassRule
@@ -70,13 +74,20 @@ public class RedisStatsIntegrationTest {
     jedis.sadd(EXISTING_SET_KEY_2, "m4", "m5", "m6");
 
     redisStats = server.getServer().getStats();
-    redisStats.clearAllStats();
+
+    preTestKeySpaceHits = redisStats.getKeyspaceHits();
+    preTestKeySpaceMisses = redisStats.getKeyspaceMisses();
+    preTestConnectionsReceived = redisStats.getConnectionsReceived();
+    preTestConnectedClients = redisStats.getConnectedClients();
   }
 
   @After
   public void after() {
     jedis.flushAll();
     jedis.close();
+    GeodeAwaitility.await().atMost(Duration.ofSeconds(2))
+        .untilAsserted(() -> assertThat(redisStats.getConnectedClients())
+            .isEqualTo(0));
   }
 
   // #############Stats Section###################################
@@ -86,10 +97,10 @@ public class RedisStatsIntegrationTest {
     jedis.get(EXISTING_STRING_KEY);
 
     assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(1);
+        .isEqualTo(preTestKeySpaceHits + 1);
 
     assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(0);
+        .isEqualTo(preTestKeySpaceMisses);
   }
 
   @Test
@@ -98,9 +109,9 @@ public class RedisStatsIntegrationTest {
     jedis.get("Nonexistent_Key");
 
     assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(0);
+        .isEqualTo(preTestKeySpaceHits);
     assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(1);
+        .isEqualTo(preTestKeySpaceMisses + 1);
   }
 
   // TODO: Set doesn't work like native Redis!
@@ -109,9 +120,9 @@ public class RedisStatsIntegrationTest {
     jedis.set(EXISTING_STRING_KEY, "New_Value");
 
     assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(1);
+        .isEqualTo(preTestKeySpaceHits + 1);
     assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(0);
+        .isEqualTo(preTestKeySpaceMisses);
   }
 
   // TODO: Set doesn't work like native Redis!
@@ -120,9 +131,9 @@ public class RedisStatsIntegrationTest {
     jedis.set("Another_Key", "Another_Value");
 
     assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(0);
+        .isEqualTo(preTestKeySpaceHits);
     assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(1);
+        .isEqualTo(preTestKeySpaceMisses + 1);
   }
 
   @Test
@@ -130,9 +141,9 @@ public class RedisStatsIntegrationTest {
     jedis.getbit(EXISTING_STRING_KEY, 0);
 
     assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(1);
+        .isEqualTo(preTestKeySpaceHits + 1);
     assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(0);
+        .isEqualTo(preTestKeySpaceMisses);
   }
 
   @Test
@@ -140,9 +151,9 @@ public class RedisStatsIntegrationTest {
     jedis.getbit("Nonexistent_Key", 0);
 
     assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(0);
+        .isEqualTo(preTestKeySpaceHits);
     assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(1);
+        .isEqualTo(preTestKeySpaceMisses + 1);
   }
 
   @Test
@@ -150,9 +161,9 @@ public class RedisStatsIntegrationTest {
     jedis.getrange(EXISTING_STRING_KEY, 0, 1);
 
     assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(1);
+        .isEqualTo(preTestKeySpaceHits + 1);
     assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(0);
+        .isEqualTo(preTestKeySpaceMisses);
   }
 
   @Test
@@ -160,9 +171,9 @@ public class RedisStatsIntegrationTest {
     jedis.getrange("Nonexistent_Key", 0, 1);
 
     assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(0);
+        .isEqualTo(preTestKeySpaceHits);
     assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(1);
+        .isEqualTo(preTestKeySpaceMisses + 1);
   }
 
   @Test
@@ -170,9 +181,9 @@ public class RedisStatsIntegrationTest {
     jedis.getSet(EXISTING_STRING_KEY, "New_Value");
 
     assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(1);
+        .isEqualTo(preTestKeySpaceHits + 1);
     assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(0);
+        .isEqualTo(preTestKeySpaceMisses);
   }
 
   @Test
@@ -180,9 +191,9 @@ public class RedisStatsIntegrationTest {
     jedis.getSet("Nonexistent_Key", "FakeValue");
 
     assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(0);
+        .isEqualTo(preTestKeySpaceHits);
     assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(1);
+        .isEqualTo(preTestKeySpaceMisses + 1);
   }
 
   @Test
@@ -190,9 +201,9 @@ public class RedisStatsIntegrationTest {
     jedis.strlen(EXISTING_STRING_KEY);
 
     assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(1);
+        .isEqualTo(preTestKeySpaceHits + 1);
     assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(0);
+        .isEqualTo(preTestKeySpaceMisses);
   }
 
   @Test
@@ -200,9 +211,9 @@ public class RedisStatsIntegrationTest {
     jedis.strlen(NONEXISTENT_KEY);
 
     assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(0);
+        .isEqualTo(preTestKeySpaceHits);
     assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(1);
+        .isEqualTo(preTestKeySpaceMisses + 1);
   }
 
   @Test
@@ -210,9 +221,9 @@ public class RedisStatsIntegrationTest {
     jedis.mget(EXISTING_STRING_KEY, "Nonexistent_Key");
 
     assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(1);
+        .isEqualTo(preTestKeySpaceHits + 1);
     assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(1);
+        .isEqualTo(preTestKeySpaceMisses + 1);
   }
 
   @Test
@@ -220,9 +231,9 @@ public class RedisStatsIntegrationTest {
     jedis.bitop(BitOP.AND, EXISTING_STRING_KEY, EXISTING_STRING_KEY, "Nonexistent_Key");
 
     assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(0 + 2);
+        .isEqualTo(preTestKeySpaceHits + 2);
     assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(1);
+        .isEqualTo(preTestKeySpaceMisses + 1);
   }
 
   @Test
@@ -230,9 +241,9 @@ public class RedisStatsIntegrationTest {
     jedis.bitcount(EXISTING_STRING_KEY);
 
     assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(1);
+        .isEqualTo(preTestKeySpaceHits + 1);
     assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(0);
+        .isEqualTo(preTestKeySpaceMisses);
   }
 
   @Test
@@ -240,9 +251,9 @@ public class RedisStatsIntegrationTest {
     jedis.bitcount("Nonexistent_Key");
 
     assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(0);
+        .isEqualTo(preTestKeySpaceHits);
     assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(1);
+        .isEqualTo(preTestKeySpaceMisses + 1);
   }
 
   @Test
@@ -250,9 +261,9 @@ public class RedisStatsIntegrationTest {
     jedis.bitpos(EXISTING_STRING_KEY, true);
 
     assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(1);
+        .isEqualTo(preTestKeySpaceHits + 1);
     assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(0);
+        .isEqualTo(preTestKeySpaceMisses);
   }
 
   @Test
@@ -260,9 +271,9 @@ public class RedisStatsIntegrationTest {
     jedis.bitpos("Nonexistent_Key", true);
 
     assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(0);
+        .isEqualTo(preTestKeySpaceHits);
     assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(1);
+        .isEqualTo(preTestKeySpaceMisses + 1);
   }
 
   @Test
@@ -270,9 +281,9 @@ public class RedisStatsIntegrationTest {
     jedis.hget(EXISTING_HASH_KEY, "Field1");
 
     assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(1);
+        .isEqualTo(preTestKeySpaceHits + 1);
     assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(0);
+        .isEqualTo(preTestKeySpaceMisses);
   }
 
   @Test
@@ -280,9 +291,9 @@ public class RedisStatsIntegrationTest {
     jedis.hget("Nonexistent_Hash", "Field1");
 
     assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(0);
+        .isEqualTo(preTestKeySpaceHits);
     assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(1);
+        .isEqualTo(preTestKeySpaceMisses + 1);
   }
 
   @Test
@@ -290,9 +301,9 @@ public class RedisStatsIntegrationTest {
     jedis.smembers(EXISTING_SET_KEY_1);
 
     assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(1);
+        .isEqualTo(preTestKeySpaceHits + 1);
     assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(0);
+        .isEqualTo(preTestKeySpaceMisses);
   }
 
   @Test
@@ -300,9 +311,9 @@ public class RedisStatsIntegrationTest {
     jedis.smembers("Nonexistent_Set");
 
     assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(0);
+        .isEqualTo(preTestKeySpaceHits);
     assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(1);
+        .isEqualTo(preTestKeySpaceMisses + 1);
   }
 
   @Test
@@ -314,9 +325,9 @@ public class RedisStatsIntegrationTest {
         "Nonexistent_Set");
 
     assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(0 + 2);
+        .isEqualTo(preTestKeySpaceHits + 2);
     assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(1);
+        .isEqualTo(preTestKeySpaceMisses + 1);
   }
 
   @Test
@@ -324,9 +335,9 @@ public class RedisStatsIntegrationTest {
     jedis.exists(EXISTING_STRING_KEY);
 
     assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(1);
+        .isEqualTo(preTestKeySpaceHits + 1);
     assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(0);
+        .isEqualTo(preTestKeySpaceMisses);
   }
 
   @Test
@@ -334,9 +345,9 @@ public class RedisStatsIntegrationTest {
     jedis.exists(NONEXISTENT_KEY);
 
     assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(0);
+        .isEqualTo(preTestKeySpaceHits);
     assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(1);
+        .isEqualTo(preTestKeySpaceMisses + 1);
   }
 
   @Test
@@ -344,9 +355,9 @@ public class RedisStatsIntegrationTest {
     jedis.type(EXISTING_STRING_KEY);
 
     assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(1);
+        .isEqualTo(preTestKeySpaceHits + 1);
     assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(0);
+        .isEqualTo(preTestKeySpaceMisses);
   }
 
   @Test
@@ -354,9 +365,9 @@ public class RedisStatsIntegrationTest {
     jedis.type(NONEXISTENT_KEY);
 
     assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(0);
+        .isEqualTo(preTestKeySpaceHits);
     assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(1);
+        .isEqualTo(preTestKeySpaceMisses + 1);
   }
 
   @Test
@@ -364,9 +375,9 @@ public class RedisStatsIntegrationTest {
     jedis.ttl(EXISTING_STRING_KEY);
 
     assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(1);
+        .isEqualTo(preTestKeySpaceHits + 1);
     assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(0);
+        .isEqualTo(preTestKeySpaceMisses);
   }
 
   @Test
@@ -374,9 +385,9 @@ public class RedisStatsIntegrationTest {
     jedis.ttl(NONEXISTENT_KEY);
 
     assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(0);
+        .isEqualTo(preTestKeySpaceHits);
     assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(1);
+        .isEqualTo(preTestKeySpaceMisses + 1);
   }
 
   @Test
@@ -468,33 +479,33 @@ public class RedisStatsIntegrationTest {
 
   }
 
-
   // ######################### Clients Section #################################
 
   @Test
   public void clientsStat_withConnectAndClose_isCorrect() {
 
-    jedis = new Jedis("localhost", server.getPort(), TIMEOUT);
-    jedis.ping();
+    Jedis jedis2 = new Jedis("localhost", server.getPort(), TIMEOUT);
+    jedis2.ping();
 
-    assertThat(redisStats.getConnectedClients()).isEqualTo(1);
+    assertThat(redisStats.getConnectedClients()).isEqualTo(preTestConnectedClients + 1);
 
-    jedis.close();
+    jedis2.close();
     GeodeAwaitility.await().atMost(Duration.ofSeconds(2))
-        .untilAsserted(() -> assertThat(redisStats.getConnectedClients()).isEqualTo(0));
+        .untilAsserted(
+            () -> assertThat(redisStats.getConnectedClients()).isEqualTo(preTestConnectedClients));
   }
 
   @Test
   public void connectionsReceivedStat_shouldIncrement_WhenNewConnectionOccurs() {
 
-    jedis = new Jedis("localhost", server.getPort(), TIMEOUT);
-    jedis.ping();
+    Jedis jedis2 = new Jedis("localhost", server.getPort(), TIMEOUT);
+    jedis2.ping();
 
-    assertThat(redisStats.getConnectionsReceived()).isEqualTo(1);
+    assertThat(redisStats.getConnectionsReceived()).isEqualTo(preTestConnectionsReceived + 1);
 
-    jedis.close();
+    jedis2.close();
 
-    assertThat(redisStats.getConnectionsReceived()).isEqualTo(1);
+    assertThat(redisStats.getConnectionsReceived()).isEqualTo(preTestConnectionsReceived + 1);
   }
 
   // ######################## Server Section ################
@@ -524,7 +535,6 @@ public class RedisStatsIntegrationTest {
     assertThat(redisStats.getUptimeInDays())
         .isEqualTo(expectedDays);
   }
-
 
   public long getStartTime() {
     return START_TIME;
