@@ -18,21 +18,45 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import org.junit.Before;
 import org.junit.Test;
 
 public class ClusterOperationExecutorsTest {
+  private DistributionStats stats;
+  private InternalDistributedSystem system;
+  private DistributionConfig config;
+
+  @Before
+  public void setup() {
+    stats = mock(DistributionStats.class);
+    system = mock(InternalDistributedSystem.class);
+    config = mock(DistributionConfig.class);
+    when(system.getConfig()).thenReturn(config);
+  }
 
   @Test
   public void numOfFEThreadsIsAtLeast100() {
-    DistributionStats stats = mock(DistributionStats.class);
-    InternalDistributedSystem system = mock(InternalDistributedSystem.class);
-    DistributionConfig config = mock(DistributionConfig.class);
-    when(system.getConfig()).thenReturn(config);
     int minNumberOfFunctionExecutionThreads = 100;
 
     ClusterOperationExecutors executors = new ClusterOperationExecutors(stats, system);
 
     assertThat(executors.MAX_FE_THREADS)
         .isGreaterThanOrEqualTo(minNumberOfFunctionExecutionThreads);
+  }
+
+  @Test
+  public void numOfFEThreadsCanBeSet() {
+    int numberOfFunctionExecutionThreads = 400;
+    String functionExecutionThreadsPropertyName = "DistributionManager.MAX_FE_THREADS";
+    System.setProperty(functionExecutionThreadsPropertyName,
+        Integer.toString(numberOfFunctionExecutionThreads));
+
+    try {
+      ClusterOperationExecutors executors = new ClusterOperationExecutors(stats, system);
+
+      assertThat(executors.MAX_FE_THREADS).isEqualTo(numberOfFunctionExecutionThreads);
+    } finally {
+      System.clearProperty(functionExecutionThreadsPropertyName);
+    }
   }
 }
