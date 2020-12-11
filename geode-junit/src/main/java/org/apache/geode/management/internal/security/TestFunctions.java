@@ -33,13 +33,18 @@ public final class TestFunctions implements Serializable {
 
     @Override
     public void execute(FunctionContext<Object> context) {
-      assertThat(context.getPrincipal()).as("Principal cannot be null").isNotNull();
+      verifyPrincipal(context);
       context.getResultSender().lastResult(SUCCESS_OUTPUT);
     }
 
     @Override
     public String getId() {
       return "writeData";
+    }
+
+    @Override
+    public boolean optimizeForWrite() {
+      return true;
     }
   }
 
@@ -48,7 +53,7 @@ public final class TestFunctions implements Serializable {
 
     @Override
     public void execute(FunctionContext<Object> context) {
-      assertThat(context.getPrincipal()).as("Principal cannot be null").isNotNull();
+      verifyPrincipal(context);
       context.getResultSender().lastResult(SUCCESS_OUTPUT);
     }
 
@@ -61,5 +66,17 @@ public final class TestFunctions implements Serializable {
     public String getId() {
       return "readData";
     }
+
+    @Override
+    public boolean optimizeForWrite() {
+      return true;
+    }
+  }
+
+  private static void verifyPrincipal(FunctionContext<Object> context) {
+    String principal = (String) context.getPrincipal();
+    assertThat(principal).as("Principal cannot be null").isNotNull();
+    assertThat(principal).startsWith("data");
+
   }
 }

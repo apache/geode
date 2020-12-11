@@ -28,6 +28,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
@@ -109,8 +110,10 @@ public class ClientCacheRule extends SerializableExternalResource {
     return cache;
   }
 
-  public Region createProxyRegion(String regionPath) {
-    return cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(regionPath);
+  public <K, V> Region<K, V> createProxyRegion(String regionPath) {
+    ClientRegionFactory<K, V> regionFactory =
+        cache.createClientRegionFactory(ClientRegionShortcut.PROXY);
+    return regionFactory.create(regionPath);
   }
 
   public RegionService createAuthenticatedView(String username, String password) {
