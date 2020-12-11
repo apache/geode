@@ -395,8 +395,9 @@ public class RedisStatsIntegrationTest {
     long initialCommandsProcessed = redisStats.getCommandsProcessed();
     jedis.ttl("key");
 
-    assertThat(redisStats.getCommandsProcessed())
-        .isEqualTo(initialCommandsProcessed + 1);
+    GeodeAwaitility.await().atMost(Duration.ofSeconds(5)).untilAsserted(() ->
+        assertThat(redisStats.getCommandsProcessed())
+        .isEqualTo(initialCommandsProcessed + 1));
   }
 
   @Test
