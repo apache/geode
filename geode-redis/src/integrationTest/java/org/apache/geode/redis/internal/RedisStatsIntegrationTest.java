@@ -65,7 +65,7 @@ public class RedisStatsIntegrationTest {
   }
 
   @Before
-  public void before() {
+  synchronized public void before() {
     jedis = new Jedis("localhost", server.getPort(), TIMEOUT);
 
     jedis.set(EXISTING_STRING_KEY, "A_Value");
