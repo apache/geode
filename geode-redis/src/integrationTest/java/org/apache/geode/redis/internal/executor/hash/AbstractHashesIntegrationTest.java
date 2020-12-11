@@ -18,7 +18,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.offset;
 
-import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,8 +29,6 @@ import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.logging.log4j.Logger;
 import org.assertj.core.util.Maps;
 import org.junit.After;
 import org.junit.Before;
@@ -41,7 +38,6 @@ import redis.clients.jedis.Protocol;
 import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.exceptions.JedisDataException;
 
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
@@ -51,10 +47,9 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   private Jedis jedis;
   private Jedis jedis2;
   private static int ITERATION_COUNT = 4000;
-  private static final Logger logger = LogService.getLogger();
 
   @Before
-  public void setUp() throws IOException {
+  public void setUp() {
     rand = new Random();
     jedis = new Jedis("localhost", getPort(), 10000000);
     jedis2 = new Jedis("localhost", getPort(), 10000000);
@@ -106,10 +101,10 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   @Test
   public void testHMSet() {
     int num = 10;
-    String key = randString();
+    String key = "key";
     Map<String, String> hash = new HashMap<String, String>();
     for (int i = 0; i < num; i++) {
-      hash.put(randString(), randString());
+      hash.put("field_" + i, "member_" + i);
     }
     String response = jedis.hmset(key, hash);
     assertThat(response).isEqualTo("OK");
@@ -118,14 +113,16 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
 
   @Test
   public void testHSet() {
-    String key = randString();
+    String key = "key";
     Map<String, String> hash = new HashMap<String, String>();
 
     for (int i = 0; i < 10; i++) {
-      hash.put(randString(), randString());
+      hash.put("field_" + i, "member_" + i);
     }
+
     Set<String> keys = hash.keySet();
     Long count = 1L;
+
     for (String field : keys) {
       Long res = jedis.hset(key, field, hash.get(field));
       assertThat(res).isEqualTo(1);
@@ -137,12 +134,10 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
 
   @Test
   public void testHMGetHDelHGetAllHVals() {
-    String key = randString();
+    String key = "key";
     Map<String, String> hash = new HashMap<String, String>();
     for (int i = 0; i < 10; i++) {
-      String m = randString();
-      String f = randString();
-      hash.put(m, f);
+      hash.put("field_" + i, "member_" + i);
     }
     jedis.hmset(key, hash);
     Set<String> keys = hash.keySet();
@@ -206,10 +201,10 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
 
   @Test
   public void testHkeys() {
-    String key = randString();
+    String key = "key";
     Map<String, String> hash = new HashMap<String, String>();
     for (int i = 0; i < 10; i++) {
-      hash.put(randString(), randString());
+      hash.put("field_" + i, "member_" + i);
     }
     jedis.hmset(key, hash);
 
@@ -221,8 +216,8 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
 
   @Test
   public void testHIncrBy() {
-    String key = randString();
-    String field = randString();
+    String key = "key";
+    String field = "field";
 
     Long incr = (long) rand.nextInt(50);
     if (incr == 0) {
@@ -232,14 +227,14 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
     long response1 = jedis.hincrBy(key, field, incr);
     assertThat(response1).isEqualTo(incr);
 
-    long response2 = jedis.hincrBy(randString(), randString(), incr);
+    long response2 = jedis.hincrBy("newHash", "newField", incr);
     assertThat(response2).isEqualTo(incr);
 
     long response3 = jedis.hincrBy(key, field, incr);
     assertThat(response3).as(response3 + "=" + 2 * incr)
         .isEqualTo(2 * incr);
 
-    String field1 = randString();
+    String field1 = "field1";
     long myincr = incr;
     assertThatThrownBy(() -> {
       jedis.hincrBy(key, field1, Long.MAX_VALUE);
@@ -250,8 +245,8 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
 
   @Test
   public void testHIncrFloatBy() {
-    String key = randString();
-    String field = randString();
+    String key = "key";
+    String field = "field";
 
     DecimalFormat decimalFormat = new DecimalFormat("#.#####");
     double incr = rand.nextDouble();
@@ -266,7 +261,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
 
     assertThat(response1).isEqualTo(Double.valueOf(jedis.hget(key, field)), offset(.00001));
 
-    double response2 = jedis.hincrByFloat(randString(), randString(), incr);
+    double response2 = jedis.hincrByFloat("new", "newField", incr);
 
     assertThat(response2).isEqualTo(incr, offset(.00001));
 
@@ -279,8 +274,8 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
 
   @Test
   public void incrByFloatFailsWithNonFloatFieldValue() {
-    String key = randString();
-    String field = randString();
+    String key = "key";
+    String field = "field";
     jedis.hset(key, field, "foobar");
     assertThatThrownBy(() -> {
       jedis.hincrByFloat(key, field, 1.5);
@@ -348,9 +343,9 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
    */
   @Test
   public void testHSetNXExecutor() {
-    String key = "HSetNX" + randString();
-    String field = randString();
-    String value = randString();
+    String key = "HSetNX_Key";
+    String field = "field";
+    String value = "value";
 
     // 1 if field is a new field in the hash and value was set.
     Long result = jedis.hsetnx(key, field, value);
@@ -374,11 +369,11 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
    * Test the HVALS command
    */
   @Test
-  public void testHVals() throws Exception {
-    String key = "HVals" + randString();
-    String field1 = randString();
-    String field2 = randString();
-    String value = randString();
+  public void testHVals() {
+    String key = "HVals_key";
+    String field1 = "field_1";
+    String field2 = "field_2";
+    String value = "value";
 
     List<String> list = jedis.hvals(key);
     assertThat(list == null || list.isEmpty()).isTrue();
@@ -415,10 +410,10 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   @Test
   public void testHLen() {
 
-    String key = "HLen" + randString();
-    String field1 = randString();
-    String field2 = randString();
-    String value = randString();
+    String key = "HLen_key";
+    String field1 = "field_1";
+    String field2 = "field_2";
+    String value = "value";
 
     Long result = jedis.hlen(key); // check error handling when key does not exist
 
@@ -449,11 +444,11 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
    */
   @Test
   public void testHKeys() {
-    String key = "HKeys" + randString();
-    String field1 = randString();
-    String field2 = randString();
-    String field1Value = randString();
-    String field2Value = randString();
+    String key = "HKeys_key";
+    String field1 = "field_1";
+    String field2 = "field_2";
+    String field1Value = "field1Value";
+    String field2Value = "field2Value";
 
     Set<String> set = jedis.hkeys(key);
     assertThat(set == null || set.isEmpty()).isTrue();
@@ -485,15 +480,15 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   @Test
   public void testHGETALL() {
 
-    String key = "HGETALL" + randString();
+    String key = "HGETALL_key";
 
     Map<String, String> map = jedis.hgetAll(key);
     assertThat(map == null || map.isEmpty()).isTrue();
 
-    String field1 = randString();
-    String field2 = randString();
-    String field1Value = randString();
-    String field2Value = randString();
+    String field1 = "field_1";
+    String field2 = "field_2";
+    String field1Value = "field1Value";
+    String field2Value = "field2Value";
 
     Long result = jedis.hset(key, field1, field1Value);
     assertThat(result).isEqualTo(1);
@@ -511,13 +506,13 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
 
   @Test
   public void testHsetHandlesMultipleFields() {
-    String key = "key" + randString();
+    String key = "key";
 
     Long fieldsAdded;
 
     Map<String, String> hsetMap = new HashMap<>();
-    hsetMap.put(randString(), randString());
-    hsetMap.put(randString(), randString());
+    hsetMap.put("key_1", "value_1");
+    hsetMap.put("key_2", "value_2");
 
     fieldsAdded = jedis.hset(key, hsetMap);
 
@@ -563,7 +558,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
 
   @Test
   public void testConcurrentHSetNX() {
-    String key = "HSETNX" + randString();
+    String key = "HSETNX_key";
 
     AtomicLong successCount = new AtomicLong();
     new ConcurrentLoopingThreads(ITERATION_COUNT,
@@ -623,8 +618,8 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
 
   @Test
   public void testConcurrentHIncrByFloat_sameKeyPerClient() throws InterruptedException {
-    String key = "HSET" + randString();
-    String field = "FIELD" + randString();
+    String key = "HSET_KEY";
+    String field = "HSET_FIELD";
 
     jedis.hset(key, field, "0");
 
@@ -722,24 +717,11 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
     String fieldValue;
 
     for (int i = 0; i < ITERATION_COUNT; i++) {
-      field = randString();
-      fieldValue = randString();
+      field = "key_" + i;
+      fieldValue = "value_" + i;
 
       record.put(field, fieldValue);
-      Long numberOfHSetKeys;
-
-      do {
-        numberOfHSetKeys = jedis.hset(key, field, fieldValue);
-        if (numberOfHSetKeys == 0) {
-          logger.info("retrying HSet");
-        }
-      } while (numberOfHSetKeys < 1);
+      jedis.hset(key, field, fieldValue);
     }
   }
-
-  private String randString() {
-    int length = rand.nextInt(8) + 5;
-    return RandomStringUtils.randomAlphanumeric(length);
-  }
-
 }
