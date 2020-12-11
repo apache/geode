@@ -18,6 +18,7 @@ package org.apache.geode.cache.execute;
 import org.apache.logging.log4j.util.Strings;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.security.LegacySecurityService;
@@ -108,6 +109,10 @@ public interface FunctionContext<T1> {
    * @return the principal that has been authenticated
    */
   default Object getPrincipal() {
-    return ((InternalCache) getCache()).getSecurityService().getPrincipal();
+    try {
+      return ((InternalCache) getCache()).getSecurityService().getPrincipal();
+    } catch (CacheClosedException ex) {
+      return null;
+    }
   }
 }
