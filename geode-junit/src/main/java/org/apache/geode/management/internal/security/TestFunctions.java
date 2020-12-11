@@ -17,6 +17,7 @@ package org.apache.geode.management.internal.security;
 
 import static org.apache.geode.security.ResourcePermission.Operation.READ;
 import static org.apache.geode.security.ResourcePermission.Resource.DATA;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -27,11 +28,12 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.security.ResourcePermission;
 
 public final class TestFunctions implements Serializable {
-  public static class WriteFunction implements Function {
+  public static class WriteFunction implements Function<Object> {
     public static final String SUCCESS_OUTPUT = "writeDataFunctionSucceeded";
 
     @Override
-    public void execute(FunctionContext context) {
+    public void execute(FunctionContext<Object> context) {
+      assertThat(context.getPrincipal()).as("Principal cannot be null").isNotNull();
       context.getResultSender().lastResult(SUCCESS_OUTPUT);
     }
 
@@ -45,7 +47,8 @@ public final class TestFunctions implements Serializable {
     public static final String SUCCESS_OUTPUT = "readDataFunctionSucceeded";
 
     @Override
-    public void execute(FunctionContext context) {
+    public void execute(FunctionContext<Object> context) {
+      assertThat(context.getPrincipal()).as("Principal cannot be null").isNotNull();
       context.getResultSender().lastResult(SUCCESS_OUTPUT);
     }
 

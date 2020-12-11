@@ -89,6 +89,8 @@ public class FunctionContextImpl implements FunctionContext {
     buf.append(this.functionId);
     buf.append(";args=");
     buf.append(this.args);
+    buf.append(";principal=");
+    buf.append(getPrincipal());
     buf.append(']');
     return buf.toString();
   }

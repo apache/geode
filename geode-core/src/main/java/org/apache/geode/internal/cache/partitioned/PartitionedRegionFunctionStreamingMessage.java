@@ -100,7 +100,7 @@ public class PartitionedRegionFunctionStreamingMessage extends PartitionMessage 
       // if null call executeOnDataStore otherwise execute on LocalBuckets
       ds.executeOnDataStore(context.getFilter(), context.getFunction(), context.getArgs(),
           getProcessorId(), context.getBucketArray(), context.isReExecute(), this, startTime, null,
-          0);
+          0, context.getPrincipal());
 
       if (!this.replyLastMsg && context.getFunction().hasResult()) {
         sendReply(getSender(), getProcessorId(), dm,

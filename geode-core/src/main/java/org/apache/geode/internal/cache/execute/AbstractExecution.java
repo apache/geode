@@ -22,6 +22,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
+import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.ThreadState;
 
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.SystemFailure;
@@ -41,9 +43,11 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.metrics.FunctionStats;
 import org.apache.geode.internal.cache.execute.metrics.FunctionStatsManager;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.util.internal.GeodeGlossary;
 
@@ -267,14 +271,26 @@ public abstract class AbstractExecution implements InternalExecution {
                   fn.getId())));
         }
       } else {
-
         final ClusterDistributionManager newDM = (ClusterDistributionManager) dm;
+        SecurityService securityService = ((InternalCache) cx.getCache()).getSecurityService();
+        Subject subject = securityService.getSubject();
+
         newDM.getExecutors().getFunctionExecutor().execute(() -> {
-          executeFunctionLocally(fn, cx, sender, newDM);
-          if (!sender.isLastResultReceived() && fn.hasResult()) {
-            ((InternalResultSender) sender).setException(new FunctionException(
-                String.format("The function, %s, did not send last result",
-                    fn.getId())));
+          ThreadState threadState = null;
+          if (subject != null) {
+            threadState = securityService.bindSubject(subject);
+          }
+          try {
+            executeFunctionLocally(fn, cx, sender, newDM);
+            if (!sender.isLastResultReceived() && fn.hasResult()) {
+              ((InternalResultSender) sender).setException(new FunctionException(
+                  String.format("The function, %s, did not send last result",
+                      fn.getId())));
+            }
+          } finally {
+            if (threadState != null) {
+              threadState.restore();
+            }
           }
         });
       }
@@ -294,13 +310,26 @@ public abstract class AbstractExecution implements InternalExecution {
   public void executeFunctionOnLocalNode(final Function<?> fn, final FunctionContext cx,
       final ResultSender sender, DistributionManager dm, final boolean isTx) {
     if (dm instanceof ClusterDistributionManager && !isTx) {
+      SecurityService securityService = ((InternalCache) cx.getCache()).getSecurityService();
+      Subject subject = securityService.getSubject();
+
       final ClusterDistributionManager newDM = (ClusterDistributionManager) dm;
       newDM.getExecutors().getFunctionExecutor().execute(() -> {
-        executeFunctionLocally(fn, cx, sender, newDM);
-        if (!((InternalResultSender) sender).isLastResultReceived() && fn.hasResult()) {
-          ((InternalResultSender) sender).setException(new FunctionException(
-              String.format("The function, %s, did not send last result",
-                  fn.getId())));
+        ThreadState threadState = null;
+        if (subject != null) {
+          threadState = securityService.bindSubject(subject);
+        }
+        try {
+          executeFunctionLocally(fn, cx, sender, newDM);
+          if (!((InternalResultSender) sender).isLastResultReceived() && fn.hasResult()) {
+            ((InternalResultSender) sender).setException(new FunctionException(
+                String.format("The function, %s, did not send last result",
+                    fn.getId())));
+          }
+        } finally {
+          if (threadState != null) {
+            threadState.restore();
+          }
         }
       });
     } else {
