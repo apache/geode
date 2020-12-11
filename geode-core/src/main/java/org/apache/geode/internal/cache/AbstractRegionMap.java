@@ -1282,16 +1282,19 @@ public abstract class AbstractRegionMap extends BaseRegionMap
     DiskRegion dr = owner.getDiskRegion();
     boolean ownerIsInitialized = owner.isInitialized();
 
-    // Fix for Bug #44431. We do NOT want to update the region and wait
-    // later for index INIT as region.clear() can cause inconsistency if
-    // happened in parallel as it also does index INIT.
-    IndexManager oqlIndexManager = owner.getIndexManager();
-    if (oqlIndexManager != null) {
-      oqlIndexManager.waitForIndexInit();
-    }
+    // lock before waitForIndexInit so that we should wait
+    // till a concurrent clear to finish
     lockForCacheModification(owner, event);
-    final boolean locked = owner.lockWhenRegionIsInitializing();
+    boolean locked = false;
     try {
+      // Fix for Bug #44431. We do NOT want to update the region and wait
+      // later for index INIT as region.clear() can cause inconsistency if
+      // happened in parallel as it also does index INIT.
+      IndexManager oqlIndexManager = owner.getIndexManager();
+      if (oqlIndexManager != null) {
+        oqlIndexManager.waitForIndexInit();
+      }
+      locked = owner.lockWhenRegionIsInitializing();
       try {
         try {
           if (forceNewEntry || forceCallbacks) {
@@ -1660,7 +1663,6 @@ public abstract class AbstractRegionMap extends BaseRegionMap
       }
       releaseCacheModificationLock(owner, event);
     }
-
   }
 
   /**
