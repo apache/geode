@@ -1350,7 +1350,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
     Map<TransactionId, Integer> incompleteTransactionIdsInBatch =
         getIncompleteTransactionsInBatch(batch);
-    if (areAllTransactionsCompleteInBatch(incompleteTransactionIdsInBatch)) {
+    if (incompleteTransactionIdsInBatch.size() == 0) {
       return;
     }
 
@@ -1383,10 +1383,10 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     }
   }
 
-  private Map<TransactionId, Integer> getIncompleteTransactionsInBatch(List batch) {
+  private Map<TransactionId, Integer> getIncompleteTransactionsInBatch(
+      List<GatewaySenderEventImpl> batch) {
     Map<TransactionId, Integer> incompleteTransactionsInBatch = new HashMap<>();
-    for (Object object : batch) {
-      GatewaySenderEventImpl event = (GatewaySenderEventImpl) object;
+    for (GatewaySenderEventImpl event : batch) {
       if (event.getTransactionId() != null) {
         if (event.isLastEventInTransaction()) {
           incompleteTransactionsInBatch.remove(event.getTransactionId());
@@ -1396,10 +1396,6 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       }
     }
     return incompleteTransactionsInBatch;
-  }
-
-  private boolean areAllTransactionsCompleteInBatch(Map incompleteTransactions) {
-    return (incompleteTransactions.size() == 0);
   }
 
   @VisibleForTesting

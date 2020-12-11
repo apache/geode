@@ -413,12 +413,12 @@ public class SerialGatewaySenderQueue implements RegionQueue {
   }
 
   @Override
-  public List<AsyncEvent> peek(int size) throws CacheException {
+  public List<AsyncEvent<?, ?>> peek(int size) throws CacheException {
     return peek(size, -1);
   }
 
   @Override
-  public List<AsyncEvent> peek(int size, int timeToWait) throws CacheException {
+  public List<AsyncEvent<?, ?>> peek(int size, int timeToWait) throws CacheException {
     final boolean isTraceEnabled = logger.isTraceEnabled();
 
     long start = System.currentTimeMillis();
@@ -428,14 +428,14 @@ public class SerialGatewaySenderQueue implements RegionQueue {
           timeToWait);
     }
 
-    List<AsyncEvent> batch =
-        new ArrayList<AsyncEvent>(size == BATCH_BASED_ON_TIME_ONLY ? DEFAULT_BATCH_SIZE : size);
+    List<AsyncEvent<?, ?>> batch =
+        new ArrayList<>(size == BATCH_BASED_ON_TIME_ONLY ? DEFAULT_BATCH_SIZE : size);
     long lastKey = -1;
     while (size == BATCH_BASED_ON_TIME_ONLY || batch.size() < size) {
       KeyAndEventPair pair = peekAhead();
       // Conflate here
       if (pair != null) {
-        AsyncEvent object = pair.event;
+        AsyncEvent<?, ?> object = pair.event;
         lastKey = pair.key;
         batch.add(object);
       } else {
@@ -476,13 +476,13 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     // so no need to worry about off-heap refCount.
   }
 
-  private void peekEventsFromIncompleteTransactions(List<AsyncEvent> batch, long lastKey) {
+  private void peekEventsFromIncompleteTransactions(List<AsyncEvent<?, ?>> batch, long lastKey) {
     if (!mustGroupTransactionEvents()) {
       return;
     }
 
     Set<TransactionId> incompleteTransactionIdsInBatch = getIncompleteTransactionsInBatch(batch);
-    if (areAllTransactionsCompleteInBatch(incompleteTransactionIdsInBatch)) {
+    if (incompleteTransactionIdsInBatch.size() == 0) {
       return;
     }
 
@@ -519,11 +519,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     return sender.mustGroupTransactionEvents();
   }
 
-  private boolean areAllTransactionsCompleteInBatch(Set incompleteTransactions) {
-    return (incompleteTransactions.size() == 0);
-  }
-
-  private Set<TransactionId> getIncompleteTransactionsInBatch(List batch) {
+  private Set<TransactionId> getIncompleteTransactionsInBatch(List<AsyncEvent<?, ?>> batch) {
     Set<TransactionId> incompleteTransactionsInBatch = new HashSet<>();
     for (Object object : batch) {
       if (object instanceof GatewaySenderEventImpl) {
@@ -563,9 +559,9 @@ public class SerialGatewaySenderQueue implements RegionQueue {
   public void removeCacheListener() {
     AttributesMutator mutator = this.region.getAttributesMutator();
     CacheListener[] listeners = this.region.getAttributes().getCacheListeners();
-    for (int i = 0; i < listeners.length; i++) {
-      if (listeners[i] instanceof SerialSecondaryGatewayListener) {
-        mutator.removeCacheListener(listeners[i]);
+    for (CacheListener listener : listeners) {
+      if (listener instanceof SerialSecondaryGatewayListener) {
+        mutator.removeCacheListener(listener);
         break;
       }
     }
@@ -597,7 +593,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       try {
         Map<Object, Long> latestIndexesForRegion = this.indexes.get(rName);
         if (latestIndexesForRegion == null) {
-          latestIndexesForRegion = new HashMap<Object, Long>();
+          latestIndexesForRegion = new HashMap<>();
           this.indexes.put(rName, latestIndexesForRegion);
         }
 
@@ -670,7 +666,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     Object o = null;
     try {
       o = lr.getValueInVMOrDiskWithoutFaultIn(k);
-      if (o != null && o instanceof CachedDeserializable) {
+      if (o instanceof CachedDeserializable) {
         o = ((CachedDeserializable) o).getDeserializedValue(lr, lr.getRegionEntry(k));
       }
     } catch (EntryNotFoundException ok) {

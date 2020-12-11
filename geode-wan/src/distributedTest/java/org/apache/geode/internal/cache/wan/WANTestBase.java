@@ -1739,22 +1739,14 @@ public class WANTestBase extends DistributedTestCase {
 
   public static void createSender(String dsName, int remoteDsId, boolean isParallel,
       Integer maxMemory, Integer batchSize, boolean isConflation, boolean isPersistent,
-      GatewayEventFilter filter, boolean isManualStart, boolean groupTransactionEvents) {
-    createSender(dsName, remoteDsId, isParallel, maxMemory, batchSize, isConflation, isPersistent,
-        filter, isManualStart, groupTransactionEvents, 0);
-  }
-
-  public static void createSender(String dsName, int remoteDsId, boolean isParallel,
-      Integer maxMemory, Integer batchSize, boolean isConflation, boolean isPersistent,
       GatewayEventFilter filter, boolean isManualStart) {
     createSender(dsName, remoteDsId, isParallel, maxMemory, batchSize, isConflation, isPersistent,
-        filter, isManualStart, false, 0);
+        filter, isManualStart, false);
   }
 
   public static void createSender(String dsName, int remoteDsId, boolean isParallel,
       Integer maxMemory, Integer batchSize, boolean isConflation, boolean isPersistent,
-      GatewayEventFilter filter, boolean isManualStart, boolean groupTransactionEvents,
-      int dispatcherThreads) {
+      GatewayEventFilter filter, boolean isManualStart, boolean groupTransactionEvents) {
     final IgnoredException exln = IgnoredException.addIgnoredException("Could not connect");
     try {
       File persistentDirectory =
@@ -1762,12 +1754,9 @@ public class WANTestBase extends DistributedTestCase {
       persistentDirectory.mkdir();
       DiskStoreFactory dsf = cache.createDiskStoreFactory();
       File[] dirs1 = new File[] {persistentDirectory};
-      if (dispatcherThreads == 0) {
-        dispatcherThreads = numDispatcherThreadsForTheRun;
-      }
       GatewaySenderFactory gateway = configureGateway(dsf, dirs1, dsName, isParallel, maxMemory,
           batchSize, isConflation, isPersistent, filter, isManualStart,
-          dispatcherThreads, GatewaySender.DEFAULT_ORDER_POLICY,
+          numDispatcherThreadsForTheRun, GatewaySender.DEFAULT_ORDER_POLICY,
           GatewaySender.DEFAULT_SOCKET_BUFFER_SIZE);
       gateway.setGroupTransactionEvents(groupTransactionEvents);
       gateway.create(dsName, remoteDsId);

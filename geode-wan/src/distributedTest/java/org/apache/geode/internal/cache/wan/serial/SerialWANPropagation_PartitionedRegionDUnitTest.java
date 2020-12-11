@@ -43,10 +43,10 @@ public class SerialWANPropagation_PartitionedRegionDUnitTest extends WANTestBase
   }
 
   @Test
-  public void testPartitionedSerialPropagation() throws Exception {
+  public void testPartitionedSerialPropagation() {
 
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -79,10 +79,10 @@ public class SerialWANPropagation_PartitionedRegionDUnitTest extends WANTestBase
   }
 
   @Test
-  public void testBothReplicatedAndPartitionedSerialPropagation() throws Exception {
+  public void testBothReplicatedAndPartitionedSerialPropagation() {
 
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -130,10 +130,10 @@ public class SerialWANPropagation_PartitionedRegionDUnitTest extends WANTestBase
   }
 
   @Test
-  public void testSerialReplicatedAndPartitionedPropagation() throws Exception {
+  public void testSerialReplicatedAndPartitionedPropagation() {
 
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -184,10 +184,10 @@ public class SerialWANPropagation_PartitionedRegionDUnitTest extends WANTestBase
   }
 
   @Test
-  public void testSerialReplicatedAndSerialPartitionedPropagation() throws Exception {
+  public void testSerialReplicatedAndSerialPartitionedPropagation() {
 
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -244,11 +244,11 @@ public class SerialWANPropagation_PartitionedRegionDUnitTest extends WANTestBase
   }
 
   @Test
-  public void testPartitionedSerialPropagationToTwoWanSites() throws Exception {
+  public void testPartitionedSerialPropagationToTwoWanSites() {
 
     Integer lnPort = createFirstLocatorWithDSId(1);
-    Integer nyPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
-    Integer tkPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(3, lnPort));
+    Integer nyPort = vm0.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer tkPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(3, lnPort));
 
     createCacheInVMs(nyPort, vm2);
     vm2.invoke(() -> WANTestBase.createReceiver());
@@ -296,8 +296,8 @@ public class SerialWANPropagation_PartitionedRegionDUnitTest extends WANTestBase
     IgnoredException.addIgnoredException("Connection reset");
     IgnoredException.addIgnoredException("Unexpected IOException");
 
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -330,12 +330,12 @@ public class SerialWANPropagation_PartitionedRegionDUnitTest extends WANTestBase
     IgnoredException.addIgnoredException(CacheClosedException.class.getName());
     IgnoredException.addIgnoredException(ForceReattemptException.class.getName());
     // start async puts
-    AsyncInvocation inv =
+    AsyncInvocation<Void> inv =
         vm5.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 1000));
     // close the cache on vm4 in between the puts
     vm4.invoke(() -> WANTestBase.killSender());
 
-    inv.join();
+    inv.await();
     vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 1000));
     vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 1000));
     vm4.invoke(() -> WANTestBase.checkConflatedStats("ln", 0));
@@ -343,10 +343,10 @@ public class SerialWANPropagation_PartitionedRegionDUnitTest extends WANTestBase
   }
 
   @Test
-  public void testPartitionedSerialPropagationWithParallelThreads() throws Exception {
+  public void testPartitionedSerialPropagationWithParallelThreads() {
 
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
@@ -390,14 +390,19 @@ public class SerialWANPropagation_PartitionedRegionDUnitTest extends WANTestBase
     createReceiverInVMs(vm2, vm3);
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
+    vm4.invoke(() -> setNumDispatcherThreadsForTheRun(1));
+    vm5.invoke(() -> setNumDispatcherThreadsForTheRun(1));
+    vm6.invoke(() -> setNumDispatcherThreadsForTheRun(1));
+    vm7.invoke(() -> setNumDispatcherThreadsForTheRun(1));
+
     vm4.invoke(
-        () -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true, true, 1));
+        () -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true, true));
     vm5.invoke(
-        () -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true, true, 1));
+        () -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true, true));
     vm6.invoke(
-        () -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true, true, 1));
+        () -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true, true));
     vm7.invoke(
-        () -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true, true, 1));
+        () -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true, true));
 
 
     vm4.invoke(
@@ -421,7 +426,7 @@ public class SerialWANPropagation_PartitionedRegionDUnitTest extends WANTestBase
     int customers = 4;
 
     int transactionsPerCustomer = 1000;
-    final Map keyValuesInTransactions = new HashMap();
+    final Map<Object, Object> keyValuesInTransactions = new HashMap<>();
     for (int custId = 0; custId < customers; custId++) {
       for (int i = 0; i < transactionsPerCustomer; i++) {
         CustId custIdObject = new CustId(custId);
@@ -438,7 +443,7 @@ public class SerialWANPropagation_PartitionedRegionDUnitTest extends WANTestBase
 
     int ordersPerCustomerNotInTransactions = 1000;
 
-    final Map keyValuesNotInTransactions = new HashMap();
+    final Map<Object, Object> keyValuesNotInTransactions = new HashMap<>();
     for (int custId = 0; custId < customers; custId++) {
       for (int i = 0; i < ordersPerCustomerNotInTransactions; i++) {
         CustId custIdObject = new CustId(custId);
@@ -449,12 +454,12 @@ public class SerialWANPropagation_PartitionedRegionDUnitTest extends WANTestBase
 
     // eventsPerTransaction is 1 (orders) + 3 (shipments)
     int eventsPerTransaction = 4;
-    AsyncInvocation inv1 =
+    AsyncInvocation<Void> inv1 =
         vm7.invokeAsync(
             () -> WANTestBase.doOrderAndShipmentPutsInsideTransactions(keyValuesInTransactions,
                 eventsPerTransaction));
 
-    AsyncInvocation inv2 =
+    AsyncInvocation<Void> inv2 =
         vm6.invokeAsync(
             () -> WANTestBase.putGivenKeyValue(orderRegionName, keyValuesNotInTransactions));
 
