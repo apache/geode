@@ -77,7 +77,7 @@ public class RedisStatsIntegrationTest {
 
     preTestKeySpaceHits = redisStats.getKeyspaceHits();
     preTestKeySpaceMisses = redisStats.getKeyspaceMisses();
-    preTestConnectionsReceived = redisStats.getConnectionsReceived();
+    preTestConnectionsReceived = redisStats.getTotalConnectionsReceived();
     preTestConnectedClients = redisStats.getConnectedClients();
   }
 
@@ -496,16 +496,16 @@ public class RedisStatsIntegrationTest {
   }
 
   @Test
-  public void connectionsReceivedStat_shouldIncrement_WhenNewConnectionOccurs() {
+  public void totalConnectionsReceivedStat_shouldIncrement_WhenNewConnectionOccurs() {
 
     Jedis jedis2 = new Jedis("localhost", server.getPort(), TIMEOUT);
     jedis2.ping();
 
-    assertThat(redisStats.getConnectionsReceived()).isEqualTo(preTestConnectionsReceived + 1);
+    assertThat(redisStats.getTotalConnectionsReceived()).isEqualTo(preTestConnectionsReceived + 1);
 
     jedis2.close();
 
-    assertThat(redisStats.getConnectionsReceived()).isEqualTo(preTestConnectionsReceived + 1);
+    assertThat(redisStats.getTotalConnectionsReceived()).isEqualTo(preTestConnectionsReceived + 1);
   }
 
   // ######################## Server Section ################

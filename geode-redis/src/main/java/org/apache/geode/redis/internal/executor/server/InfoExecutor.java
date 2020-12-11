@@ -101,7 +101,7 @@ public class InfoExecutor extends AbstractExecutor {
             "instantaneous_ops_per_sec:" + redisStats.getOpsPerformedOverLastSecond() + "\r\n" +
             "total_net_input_bytes:" + redisStats.getTotalNetworkBytesRead() + "\r\n" +
             "instantaneous_input_kbps:" + instantaneous_input_kbps + "\r\n" +
-            "total_connections_received:" + redisStats.getConnectionsReceived() + "\r\n" +
+            "total_connections_received:" + redisStats.getTotalConnectionsReceived() + "\r\n" +
             "keyspace_hits:" + redisStats.getKeyspaceHits() + "\r\n" +
             "keyspace_misses:" + redisStats.getKeyspaceMisses() + "\r\n" +
             "evicted_keys:0\r\n" +

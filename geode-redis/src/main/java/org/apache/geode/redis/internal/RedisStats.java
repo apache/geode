@@ -54,7 +54,7 @@ public class RedisStats {
   private final AtomicLong commandsProcessed = new AtomicLong();
   private final AtomicLong opsPerSecond = new AtomicLong();
   private final AtomicLong totalNetworkBytesRead = new AtomicLong();
-  private final AtomicLong connectionsReceived = new AtomicLong();
+  private final AtomicLong totalConnectionsReceived = new AtomicLong();
   private final AtomicLong expirations = new AtomicLong();
   private final AtomicLong keyspaceHits = new AtomicLong();
   private final AtomicLong keyspaceMisses = new AtomicLong();
@@ -195,7 +195,7 @@ public class RedisStats {
   }
 
   public void addClient() {
-    connectionsReceived.incrementAndGet();
+    totalConnectionsReceived.incrementAndGet();
     stats.incLong(clientId, 1);
   }
 
@@ -203,8 +203,8 @@ public class RedisStats {
     stats.incLong(clientId, -1);
   }
 
-  public long getConnectionsReceived() {
-    return connectionsReceived.get();
+  public long getTotalConnectionsReceived() {
+    return totalConnectionsReceived.get();
   }
 
   public long getConnectedClients() {
