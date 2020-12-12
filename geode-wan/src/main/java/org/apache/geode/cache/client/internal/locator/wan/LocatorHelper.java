@@ -122,6 +122,17 @@ public class LocatorHelper {
           if (!localLocators.equals(entry.getValue())) {
             entry.getValue().removeAll(localLocators);
             for (DistributionLocatorId locator : entry.getValue()) {
+              if (locator.getMemberName() == null && !localLocators.isEmpty()) {
+                boolean locatorExist = false;
+                for (DistributionLocatorId locId : localLocators) {
+                  if (locId.equals(locator)) {
+                    locatorExist = true;
+                    break;
+                  }
+                }
+                if (locatorExist)
+                  continue;
+              }
               localLocators.add(locator);
               addServerLocator(entry.getKey(), locatorListener, locator);
               locatorListener.locatorJoined(entry.getKey(), locator, null);
