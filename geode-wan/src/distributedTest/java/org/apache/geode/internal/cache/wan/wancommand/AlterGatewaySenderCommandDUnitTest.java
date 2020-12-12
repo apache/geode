@@ -271,6 +271,8 @@ public class AlterGatewaySenderCommandDUnitTest {
           .isEqualTo(GatewaySender.DEFAULT_BATCH_TIME_INTERVAL);
       assertThat(sender.getAlertThreshold()).isEqualTo(100);
       assertThat(sender.getGatewayEventFilters().get(0).beforeEnqueue(null)).isTrue();
+      assertThat(sender.getGatewayEventFilters().size()).isEqualTo(1);
+
     });
     server2.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
@@ -280,8 +282,76 @@ public class AlterGatewaySenderCommandDUnitTest {
           .isEqualTo(GatewaySender.DEFAULT_BATCH_TIME_INTERVAL);
       assertThat(sender.getAlertThreshold()).isEqualTo(100);
       assertThat(sender.getGatewayEventFilters().get(0).beforeEnqueue(null)).isTrue();
+      assertThat(sender.getGatewayEventFilters().size()).isEqualTo(1);
     });
   }
+
+  @Test
+  public void testCreateSerialGatewaySenderAndAlterEventFitersAndRemove() throws Exception {
+    gfsh.executeAndAssertThat(CREATE).statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting")
+        .hasTableSection()
+        .hasColumn("Message")
+        .containsExactly("GatewaySender \"sender1\" created on \"happyserver1\"",
+            "GatewaySender \"sender1\" created on \"happyserver2\"");
+
+    gfsh.executeAndAssertThat("list gateways").statusIsSuccess()
+        .containsOutput("sender1");
+
+    gfsh.executeAndAssertThat(
+        "alter gateway-sender --id=sender1 --batch-size=200 --alert-threshold=100 --gateway-event-filter="
+            + MyGatewayEventFilter.class.getName())
+        .statusIsSuccess();
+
+    // verify that server1's event queue has the default value
+    server1.invoke(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
+      GatewaySender sender = cache.getGatewaySender("sender1");
+      assertThat(sender.getBatchSize()).isEqualTo(200);
+      assertThat(sender.getBatchTimeInterval())
+          .isEqualTo(GatewaySender.DEFAULT_BATCH_TIME_INTERVAL);
+      assertThat(sender.getAlertThreshold()).isEqualTo(100);
+      assertThat(sender.getGatewayEventFilters().get(0).beforeEnqueue(null)).isTrue();
+      assertThat(sender.getGatewayEventFilters().size()).isEqualTo(1);
+
+    });
+    server2.invoke(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
+      GatewaySender sender = cache.getGatewaySender("sender1");
+      assertThat(sender.getBatchSize()).isEqualTo(200);
+      assertThat(sender.getBatchTimeInterval())
+          .isEqualTo(GatewaySender.DEFAULT_BATCH_TIME_INTERVAL);
+      assertThat(sender.getAlertThreshold()).isEqualTo(100);
+      assertThat(sender.getGatewayEventFilters().get(0).beforeEnqueue(null)).isTrue();
+      assertThat(sender.getGatewayEventFilters().size()).isEqualTo(1);
+    });
+
+    gfsh.executeAndAssertThat(
+        "alter gateway-sender --id=sender1 --batch-size=111 --alert-threshold=55 --gateway-event-filter=null")
+        .statusIsSuccess();
+
+    // verify that server1's event queue has the default value
+    server1.invoke(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
+      GatewaySender sender = cache.getGatewaySender("sender1");
+      assertThat(sender.getBatchSize()).isEqualTo(111);
+      assertThat(sender.getBatchTimeInterval())
+          .isEqualTo(GatewaySender.DEFAULT_BATCH_TIME_INTERVAL);
+      assertThat(sender.getAlertThreshold()).isEqualTo(55);
+      assertThat(sender.getGatewayEventFilters().isEmpty()).isTrue();
+
+    });
+    server2.invoke(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
+      GatewaySender sender = cache.getGatewaySender("sender1");
+      assertThat(sender.getBatchSize()).isEqualTo(111);
+      assertThat(sender.getBatchTimeInterval())
+          .isEqualTo(GatewaySender.DEFAULT_BATCH_TIME_INTERVAL);
+      assertThat(sender.getAlertThreshold()).isEqualTo(55);
+      assertThat(sender.getGatewayEventFilters().isEmpty()).isTrue();
+    });
+  }
+
 
   @Test
   public void testCreateParallelGatewaySenderAndAlterBatchSize() throws Exception {

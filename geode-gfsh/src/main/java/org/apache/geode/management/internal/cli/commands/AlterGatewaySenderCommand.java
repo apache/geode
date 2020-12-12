@@ -140,8 +140,13 @@ public class AlterGatewaySenderCommand extends SingleGfshCommand {
 
     if (gatewayEventFilters != null) {
       modify = true;
-      gwConfiguration.getGatewayEventFilters()
-          .addAll((stringsToDeclarableTypes(gatewayEventFilters)));
+      if (gatewayEventFilters.length == 1
+          && gatewayEventFilters[0].equalsIgnoreCase(CliStrings.NULL)) {
+        gwConfiguration.getGatewayEventFilters();
+      } else {
+        gwConfiguration.getGatewayEventFilters()
+            .addAll((stringsToDeclarableTypes(gatewayEventFilters)));
+      }
     }
 
     if (!modify) {
@@ -193,11 +198,13 @@ public class AlterGatewaySenderCommand extends SingleGfshCommand {
           sender.setGroupTransactionEvents(gwConfiguration.mustGroupTransactionEvents());
         }
 
-        if (!gwConfiguration.getGatewayEventFilters().isEmpty()) {
+        if (gwConfiguration.areGatewayEventFiltersUpdated()) {
           if (!sender.getGatewayEventFilters().isEmpty()) {
             sender.getGatewayEventFilters().clear();
           }
-          sender.getGatewayEventFilters().addAll(gwConfiguration.getGatewayEventFilters());
+          if (!gwConfiguration.getGatewayEventFilters().isEmpty()) {
+            sender.getGatewayEventFilters().addAll(gwConfiguration.getGatewayEventFilters());
+          }
         }
 
       }

@@ -98,9 +98,11 @@ public class AlterGatewaySenderFunction implements InternalFunction<GatewaySende
     List<String> gatewayEventFilters = gatewaySenderCreateArgs.getGatewayEventFilter();
     if (gatewayEventFilters != null) {
       List<GatewayEventFilter> filters = new ArrayList<>();
-      for (String filter : gatewayEventFilters) {
-        filters.add(CallbackInstantiator.getObjectOfTypeFromClassName(filter,
-            GatewayEventFilter.class));
+      if (!gatewayEventFilters.isEmpty()) {
+        for (String filter : gatewayEventFilters) {
+          filters.add(CallbackInstantiator.getObjectOfTypeFromClassName(filter,
+              GatewayEventFilter.class));
+        }
       }
       gateway.setGatewayEventFilters(filters);
     }

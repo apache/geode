@@ -708,7 +708,11 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   @Override
   public void setGatewayEventFilters(List<GatewayEventFilter> filters) {
-    this.eventFilters = Collections.unmodifiableList(filters);
+    if (filters.isEmpty()) {
+      this.eventFilters = Collections.emptyList();
+    } else {
+      this.eventFilters = Collections.unmodifiableList(filters);
+    }
   };
 
   public boolean beforeEnqueue(GatewayQueueEvent gatewayEvent) {
