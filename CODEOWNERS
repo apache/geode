@@ -56,8 +56,8 @@ CODEOWNERS @apache/geode-committers
 #--------------------------------------------------
 # Client Queues
 #--------------------------------------------------
-#geode-core/**/org/apache/geode/internal/cache/ha/**
-#geode-core/**/org/apache/geode/internal/cache/tier/CacheClient*
+geode-core/**/org/apache/geode/internal/cache/ha/**              @agingade
+geode-core/**/org/apache/geode/internal/cache/tier/CacheClient*  @agingade
  
 #------------------------------------------------------------
 # Experimental Protobuf based Client/Server
@@ -102,7 +102,7 @@ CODEOWNERS @apache/geode-committers
 #------------------------------------------------------------
 # Event tracking
 #------------------------------------------------------------
-#geode-core/**/org/apache/geode/internal/cache/event/**
+geode-core/**/org/apache/geode/internal/cache/event/**       @agingade
 
 #------------------------------------------------------------
 # Eviction
@@ -179,7 +179,7 @@ geode-web-api/**                                             @jdeppe-pivotal
 #------------------------------------------------------------
 #geode-core/**/org/apache/geode/cache/persistence/**
 #geode-core/**/org/apache/geode/internal/cache/persistence/**
-#geode-core/**/org/apache/geode/internal/cache/backup/**
+geode-core/**/org/apache/geode/internal/cache/backup/**      @agingade
 
 #------------------------------------------------------------
 # Region Version Vectors - used for sychronization on 
@@ -247,15 +247,15 @@ geode-core/**/org/apache/geode/internal/cache/operations/**  @jdeppe-pivotal
 #------------------------------------------------------------
 # Region Snapshots
 #------------------------------------------------------------
-#geode-core/**/org/apache/geode/cache/snapshot/**
-#geode-core/**/org/apache/geode/internal/cache/snapshot/**
+geode-core/**/org/apache/geode/cache/snapshot/**             @agingade
+geode-core/**/org/apache/geode/internal/cache/snapshot/**    @agingade
 
 #------------------------------------------------------------
 # JDBC connector
 #------------------------------------------------------------
 #geode-connectors/**
-#geode-core/**/org/apache/geode/datasource/**
-#geode-core/**/org/apache/geode/internal/datasource/**
+geode-core/**/org/apache/geode/datasource/**                 @agingade
+geode-core/**/org/apache/geode/internal/datasource/**        @agingade
 
 
 #------------------------------------------------------------
