@@ -210,8 +210,7 @@ public class Destroy65 extends BaseCommand {
 
     final LocalRegion region = (LocalRegion) serverConnection.getCache().getRegion(regionName);
     if (region == null) {
-      String reason = String.format("%s was not found during destroy request",
-          regionName);
+      String reason = " was not found during destroy request";
       writeRegionDestroyedEx(clientMessage, regionName, reason, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       return;
