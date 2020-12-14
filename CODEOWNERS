@@ -143,7 +143,7 @@ CODEOWNERS @apache/geode-committers
 #------------------------------------------------------------
 # DEV rest API
 #------------------------------------------------------------
-geode-web-api/**                                             @jdeppe-pivotal
+#geode-web-api/**
 
 #------------------------------------------------------------
 # Lucene integration
@@ -199,22 +199,22 @@ geode-web-api/**                                             @jdeppe-pivotal
 #------------------------------------------------------------
 # Management
 #------------------------------------------------------------
-geode-management/**                                          @jdeppe-pivotal
-geode-web-management/**                                      @jdeppe-pivotal
-geode-gfsh/**                                                @jdeppe-pivotal
-geode-pulse/**                                               @jdeppe-pivotal
-geode-http-service/**                                        @jdeppe-pivotal
-geode-web/**                                                 @jdeppe-pivotal
-geode-core/**/org/apache/geode/admin/**                      @jdeppe-pivotal
-geode-core/**/org/apache/geode/alerting/**                   @jdeppe-pivotal
-geode-core/**/org/apache/geode/management/**                 @jdeppe-pivotal
-geode-core/**/org/apache/geode/cache/configuration/**        @jdeppe-pivotal
-geode-core/**/org/apache/geode/internal/admin/**             @jdeppe-pivotal
-geode-core/**/org/apache/geode/internal/cache/xmlcache/**    @jdeppe-pivotal
-geode-core/**/org/apache/geode/internal/cache/extension/**   @jdeppe-pivotal
-geode-core/**/org/apache/geode/internal/config/**            @jdeppe-pivotal
-geode-core/**/org/apache/geode/internal/process/**           @jdeppe-pivotal
-geode-core/**/org/apache/geode/cache/internal/*              @jdeppe-pivotal
+#geode-management/**
+#geode-web-management/**
+#geode-gfsh/**
+#geode-pulse/**
+#geode-http-service/**
+#geode-web/**
+#geode-core/**/org/apache/geode/admin/**
+#geode-core/**/org/apache/geode/alerting/**
+#geode-core/**/org/apache/geode/management/**
+#geode-core/**/org/apache/geode/cache/configuration/**
+#geode-core/**/org/apache/geode/internal/admin/**
+#geode-core/**/org/apache/geode/internal/cache/xmlcache/**
+#geode-core/**/org/apache/geode/internal/cache/extension/**
+#geode-core/**/org/apache/geode/internal/config/**
+#geode-core/**/org/apache/geode/internal/process/**
+#geode-core/**/org/apache/geode/cache/internal/*
 
 #------------------------------------------------------------
 # Security
@@ -275,7 +275,7 @@ geode-core/**/org/apache/geode/cache/internal/*              @jdeppe-pivotal
 #------------------------------------------------------------
 # Redis API
 #------------------------------------------------------------
-geode-redis/**                                               @jdeppe-pivotal
+#geode-redis/**
 
 #------------------------------------------------------------
 # Build and tooling
