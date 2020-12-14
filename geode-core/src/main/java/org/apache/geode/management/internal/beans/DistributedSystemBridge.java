@@ -1272,10 +1272,24 @@ public class DistributedSystemBridge {
   }
 
   /**
+   * @return total batches distributed
+   */
+  public int getGatewaySenderTotalBatchesDistributed() {
+    return senderMonitor.getGatewaySenderTotalBatchesDistributed();
+  }
+
+  /**
    * @return total batches redistributed
    */
   public int getGatewaySenderTotalBatchesRedistributed() {
     return senderMonitor.getGatewaySenderTotalBatchesRedistributed();
+  }
+
+  /**
+   * @return total batches with incomplete transactions
+   */
+  public int getGatewaySenderTotalBatchesWithIncompleteTransactions() {
+    return senderMonitor.getGatewaySenderTotalBatchesWithIncompleteTransactions();
   }
 
   /**
