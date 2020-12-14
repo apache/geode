@@ -338,7 +338,7 @@ public interface ConfigurationProperties {
    * "false" then every application thread that sends distribution messages to other members of the
    * distributed system will own its own sockets and have exclusive access to them. The length of
    * time a thread can have exclusive access to a socket can be configured with "socket-lease-time".
-   * <U>Default</U>: "true"
+   * <U>Default</U>: "false"
    * </p>
    * <U>Allowed values</U>: true|false
    * </p>

@@ -294,6 +294,8 @@ public class ClusterDistributionManagerDUnitTest extends CacheTestCase {
     Region<String, String> region = regionFactory.create("testRegion");
 
     addIgnoredException("elapsed while waiting for replies");
+    // Ignore logging from Connection.doSevereAlertProcessing()
+    addIgnoredException("seconds have elapsed waiting for a response from");
     vm1.invoke("Connect to distributed system", () -> {
       config.setProperty(NAME, "sleeper");
       getSystem(config);
@@ -345,6 +347,8 @@ public class ClusterDistributionManagerDUnitTest extends CacheTestCase {
     Region<String, String> region = regionFactory.create("testRegion");
 
     addIgnoredException("sec have elapsed while waiting for replies");
+    // Ignore logging from Connection.doSevereAlertProcessing()
+    addIgnoredException("seconds have elapsed waiting for a response from");
 
     vm1.invoke(new SerializableRunnable("Connect to distributed system") {
       @Override
