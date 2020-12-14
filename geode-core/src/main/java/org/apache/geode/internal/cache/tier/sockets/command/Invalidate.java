@@ -113,8 +113,7 @@ public class Invalidate extends BaseCommand {
     }
     LocalRegion region = (LocalRegion) serverConnection.getCache().getRegion(regionName);
     if (region == null) {
-      String reason = String.format("%s was not found during %s request",
-          regionName, "invalidate");
+      String reason = " was not found during invalidate request";
       writeRegionDestroyedEx(clientMessage, regionName, reason, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       return;
