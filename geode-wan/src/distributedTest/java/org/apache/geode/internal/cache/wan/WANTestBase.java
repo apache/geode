@@ -1252,6 +1252,7 @@ public class WANTestBase extends DistributedTestCase {
     stats.add(statistics.getSecondaryEventQueueSize());
     stats.add(statistics.getEventsProcessedByPQRM());
     stats.add(statistics.getEventsExceedingAlertThreshold());
+    stats.add(statistics.getBatchesWithIncompleteTransactions());
     return stats;
   }
 
