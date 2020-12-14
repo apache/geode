@@ -34,6 +34,7 @@ import redis.clients.jedis.Jedis;
 import org.apache.geode.internal.statistics.EnabledStatisticsClock;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.redis.GeodeRedisServerRule;
+import org.apache.geode.redis.internal.statistics.RedisStats;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public class RedisStatsIntegrationTest {

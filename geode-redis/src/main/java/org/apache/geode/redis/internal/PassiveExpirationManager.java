@@ -33,6 +33,7 @@ import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.executor.key.RedisKeyCommands;
 import org.apache.geode.redis.internal.executor.key.RedisKeyCommandsFunctionInvoker;
+import org.apache.geode.redis.internal.statistics.RedisStats;
 
 public class PassiveExpirationManager {
   private static final Logger logger = LogService.getLogger();
