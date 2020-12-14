@@ -17,15 +17,19 @@ package org.apache.geode;
 
 import java.io.Serializable;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.RuleChain;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 import org.testcontainers.containers.GenericContainer;
 
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.junit.rules.IgnoreOnWindowsRule;
 
 public class NativeRedisTestRule extends ExternalResource implements Serializable {
+
+  private static final Logger logger = LogService.getLogger();
 
   private GenericContainer<?> redisContainer;
   private final RuleChain delegate;
@@ -57,6 +61,8 @@ public class NativeRedisTestRule extends ExternalResource implements Serializabl
                 .withExposedPorts(PORT_TO_EXPOSE);
 
         redisContainer.start();
+        logger.info("Started redis container with exposed port {} -> {}", PORT_TO_EXPOSE,
+            getPort());
         try {
           base.evaluate(); // This will run the test.
         } finally {
