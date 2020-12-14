@@ -147,7 +147,7 @@ public class ValidateOfflineDiskStoreDUnitTest implements Serializable {
 
     populateRegions();
 
-    AssertRegionSizeAndDiskStore();
+    assertRegionSizeAndDiskStore();
 
     server.invoke(ValidateOfflineDiskStoreDUnitTest::stopServer);
 
@@ -216,7 +216,7 @@ public class ValidateOfflineDiskStoreDUnitTest implements Serializable {
     SERVER.get().stop();
   }
 
-  private void AssertRegionSizeAndDiskStore() {
+  private void assertRegionSizeAndDiskStore() {
     assertRegionSize();
     assertDiskStore(serverName);
   }
