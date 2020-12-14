@@ -70,6 +70,7 @@ public class AlterGatewaySenderCommand extends SingleGfshCommand {
       @CliOption(key = CliStrings.ALTER_GATEWAYSENDER__BATCHTIMEINTERVAL,
           help = CliStrings.ALTER_GATEWAYSENDER__BATCHTIMEINTERVAL__HELP) Integer batchTimeInterval,
       @CliOption(key = CliStrings.ALTER_GATEWAYSENDER__GATEWAYEVENTFILTER,
+          specifiedDefaultValue = CliStrings.NULL,
           help = CliStrings.ALTER_GATEWAYSENDER__GATEWAYEVENTFILTER__HELP) String[] gatewayEventFilters,
       @CliOption(key = CliStrings.ALTER_GATEWAYSENDER__GROUPTRANSACTIONEVENTS,
           specifiedDefaultValue = "true",

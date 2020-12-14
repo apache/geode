@@ -327,7 +327,7 @@ public class AlterGatewaySenderCommandDUnitTest {
     });
 
     gfsh.executeAndAssertThat(
-        "alter gateway-sender --id=sender1 --batch-size=111 --alert-threshold=55 --gateway-event-filter=null")
+        "alter gateway-sender --id=sender1 --batch-size=111 --alert-threshold=55 --gateway-event-filter")
         .statusIsSuccess();
 
     // verify that server1's event queue has the default value

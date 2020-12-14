@@ -244,7 +244,7 @@ The required option, `--id`, identifies the gateway sender to be altered.
 <td><span class="keyword parmname">\-\-gateway-event-filter</span></td>
 <td>A list of fully-qualified class names of GatewayEventFilters (separated by commas) to be associated with the GatewaySender. This serves as a callback for users to filter out events before dispatching to a remote cluster. For example:
 <pre class="pre codeblock"><code>gateway-event-filter=com.user.filters.MyFilter1,com.user.filters.MyFilters2</code></pre>
-<p>In case value is "null", all existing filters will be removed.</p></td>
+<p>In case no value is provided, all existing filters will be removed.</p></td>
 </tr>
 <tr>
 <td><span class="keyword parmname">\-\-group-transaction-events</span></td>
