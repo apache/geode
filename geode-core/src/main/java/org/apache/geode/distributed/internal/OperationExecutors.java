@@ -29,7 +29,7 @@ public interface OperationExecutors {
       Integer.getInteger("DistributionManager.MAX_THREADS", 100);
 
   int MAX_FE_THREADS = Integer.getInteger("DistributionManager.MAX_FE_THREADS",
-      Math.max(Runtime.getRuntime().availableProcessors() * 4, 16));
+      Math.max(Runtime.getRuntime().availableProcessors() * 16, 100));
   /**
    * @see PooledDistributionMessage
    */
