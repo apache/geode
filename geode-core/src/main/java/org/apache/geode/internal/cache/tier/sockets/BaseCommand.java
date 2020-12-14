@@ -618,10 +618,10 @@ public abstract class BaseCommand implements Command {
     errorMsg.send(serverConnection);
   }
 
-  protected static void writeRegionDestroyedEx(Message msg, String regionName, String title,
+  protected static void writeRegionDestroyedEx(Message msg, String regionName, String reason,
       ServerConnection serverConnection) throws IOException {
-    String reason = serverConnection.getName() + ": Region named " + regionName + title;
-    RegionDestroyedException ex = new RegionDestroyedException(reason, regionName);
+    String exceptionMessage = serverConnection.getName() + ": Region named " + regionName + reason;
+    RegionDestroyedException ex = new RegionDestroyedException(exceptionMessage, regionName);
     if (serverConnection.getTransientFlag(REQUIRES_CHUNKED_RESPONSE)) {
       writeChunkedException(msg, ex, serverConnection);
     } else {

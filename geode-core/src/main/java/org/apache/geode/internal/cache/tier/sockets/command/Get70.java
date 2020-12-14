@@ -125,7 +125,7 @@ public class Get70 extends BaseCommand {
 
     Region region = serverConnection.getCache().getRegion(regionName);
     if (region == null) {
-      String reason = String.format("%s was not found during get request", regionName);
+      String reason = " was not found during get request";
       writeRegionDestroyedEx(clientMessage, regionName, reason, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       return;
