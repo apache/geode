@@ -77,8 +77,8 @@ public class RedisStatsIntegrationTest {
     jedis.sadd(EXISTING_SET_KEY_1, "m1", "m2", "m3");
     jedis.sadd(EXISTING_SET_KEY_2, "m4", "m5", "m6");
 
-    GeodeAwaitility.await().atMost(Duration.ofSeconds(2)).untilAsserted(() ->
-        assertThat(redisStats.getCommandsProcessed())
+    GeodeAwaitility.await().atMost(Duration.ofSeconds(2))
+        .untilAsserted(() -> assertThat(redisStats.getCommandsProcessed())
             .isEqualTo(preSetupCommandsProcessed + 4));
 
     preTestKeySpaceHits = redisStats.getKeyspaceHits();
@@ -401,9 +401,9 @@ public class RedisStatsIntegrationTest {
     long initialCommandsProcessed = redisStats.getCommandsProcessed();
     jedis.ttl("key");
 
-    GeodeAwaitility.await().atMost(Duration.ofSeconds(5)).untilAsserted(() ->
-        assertThat(redisStats.getCommandsProcessed())
-        .isEqualTo(initialCommandsProcessed + 1));
+    GeodeAwaitility.await().atMost(Duration.ofSeconds(5))
+        .untilAsserted(() -> assertThat(redisStats.getCommandsProcessed())
+            .isEqualTo(initialCommandsProcessed + 1));
   }
 
   @Test

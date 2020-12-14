@@ -52,7 +52,6 @@ public class RedisStats {
   private static final int expirationsId;
   private static final int expirationTimeId;
   private final AtomicLong commandsProcessed = new AtomicLong();
-  private final AtomicLong opsPerSecond = new AtomicLong();
   private final AtomicLong totalNetworkBytesRead = new AtomicLong();
   private final AtomicLong totalConnectionsReceived = new AtomicLong();
   private final AtomicLong expirations = new AtomicLong();
