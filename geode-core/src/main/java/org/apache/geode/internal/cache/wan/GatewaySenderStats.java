@@ -246,7 +246,7 @@ public class GatewaySenderStats {
             f.createIntCounter(BATCHES_REDISTRIBUTED,
                 "Number of batches of events removed from the event queue and resent.",
                 "operations", false),
-            f.createIntCounter(BATCHES_WITH_INCOMPLETE_TRANSACTIONS,
+            f.createLongCounter(BATCHES_WITH_INCOMPLETE_TRANSACTIONS,
                 "Number of batches of events sent with incomplete transactions.",
                 "operations", false),
             f.createIntCounter(BATCHES_RESIZED,
@@ -492,8 +492,8 @@ public class GatewaySenderStats {
    *
    * @return the current value of the batchesWithIncompleteTransactions" stat
    */
-  public int getBatchesWithIncompleteTransactions() {
-    return this.stats.getInt(batchesWithIncompleteTransactionsId);
+  public long getBatchesWithIncompleteTransactions() {
+    return this.stats.getLong(batchesWithIncompleteTransactionsId);
   }
 
   /**
@@ -516,7 +516,7 @@ public class GatewaySenderStats {
    * Increments the value of the "batchesWithIncompleteTransactions" stat by 1.
    */
   public void incBatchesWithIncompleteTransactions() {
-    this.stats.incInt(batchesWithIncompleteTransactionsId, 1);
+    this.stats.incLong(batchesWithIncompleteTransactionsId, 1);
   }
 
   /**

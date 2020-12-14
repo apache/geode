@@ -1355,7 +1355,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       return;
     }
 
-    boolean areAllEventsForTransactionsInBatch = true;
+    boolean batchHasIncompleteTransactions = false;
     for (Map.Entry<TransactionId, Integer> pendingTransaction : incompleteTransactionIdsInBatch
         .entrySet()) {
       TransactionId transactionId = pendingTransaction.getKey();
@@ -1379,12 +1379,12 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         }
       }
       if (!areAllEventsForTransactionInBatch) {
-        areAllEventsForTransactionsInBatch = false;
+        batchHasIncompleteTransactions = true;
         logger.warn("Not able to retrieve all events for transaction {} after {} tries",
             transactionId, retries);
       }
     }
-    if (!areAllEventsForTransactionsInBatch) {
+    if (batchHasIncompleteTransactions) {
       stats.incBatchesWithIncompleteTransactions();
     }
   }

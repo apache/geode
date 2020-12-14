@@ -490,6 +490,12 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     startSenderInVMs("ln", vm4);
 
     // Adding events in transactions
+    // Transactions will contain objects assigned to different buckets but given that there is only
+    // one server, there will be no TransactionDataNotCollocatedException.
+    // With this and by using more than one dispatcher thread, we will provoke that
+    // it will be impossible for the batches to have complete transactions as some
+    // events for a transaction will be handled by one dispatcher thread and some other events by
+    // another thread.
     final Map<Object, Object> keyValue = new HashMap<>();
     int entries = 30;
     for (int i = 0; i < entries; i++) {
