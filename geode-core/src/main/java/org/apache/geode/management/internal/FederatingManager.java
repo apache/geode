@@ -26,6 +26,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
 import javax.management.Notification;
@@ -53,7 +54,6 @@ import org.apache.geode.internal.cache.HasCachePerfStats;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.statistics.StatisticsClock;
-import org.apache.geode.internal.util.concurrent.StoppableNonReentrantLock;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.ManagementException;
 
@@ -66,15 +66,8 @@ import org.apache.geode.management.ManagementException;
  *
  * @since GemFire 7.0
  */
-public class FederatingManager extends Manager {
+public class FederatingManager extends Manager implements ManagerMembership {
   private static final Logger logger = LogService.getLogger();
-
-  private final SystemManagementService service;
-  private final AtomicReference<Exception> latestException = new AtomicReference<>();
-
-  private final Supplier<ExecutorService> executorServiceSupplier;
-  private final MBeanProxyFactory proxyFactory;
-  private final MemberMessenger messenger;
 
   /**
    * This Executor uses a pool of thread to execute the member addition /removal tasks, This will
@@ -83,9 +76,16 @@ public class FederatingManager extends Manager {
    * of time
    */
   private final AtomicReference<ExecutorService> executorService = new AtomicReference<>();
-  private boolean pendingStartup = true;
-  private final StoppableNonReentrantLock pendingTasksLock;
+  private final AtomicReference<Exception> latestException = new AtomicReference<>();
   private final List<Runnable> pendingTasks = new CopyOnWriteArrayList<>();
+
+  private final SystemManagementService service;
+  private final Supplier<ExecutorService> executorServiceSupplier;
+  private final MBeanProxyFactory proxyFactory;
+  private final MemberMessenger messenger;
+  private final ReentrantLock lifecycleLock;
+
+  private boolean starting;
 
   FederatingManager(ManagementResourceRepo repo, InternalDistributedSystem system,
       SystemManagementService service, InternalCache cache, StatisticsFactory statisticsFactory,
@@ -114,7 +114,7 @@ public class FederatingManager extends Manager {
     this.proxyFactory = proxyFactory;
     this.messenger = messenger;
     this.executorServiceSupplier = executorServiceSupplier;
-    pendingTasksLock = new StoppableNonReentrantLock(cancelCriterion);
+    lifecycleLock = new ReentrantLock();
   }
 
   /**
@@ -124,55 +124,60 @@ public class FederatingManager extends Manager {
   @Override
   public synchronized void startManager() {
     try {
-      if (running) {
-        return;
-      }
-      if (logger.isDebugEnabled()) {
-        logger.debug("Starting the Federating Manager.... ");
-      }
-
-      pendingTasksLock.lock();
+      lifecycleLock.lock();
       try {
-        pendingStartup = true;
+        if (starting || running) {
+          return;
+        }
+        if (logger.isDebugEnabled()) {
+          logger.debug("Starting the Federating Manager.... ");
+        }
+        starting = true;
+        executorService.set(executorServiceSupplier.get());
+        running = true;
       } finally {
-        pendingTasksLock.unlock();
+        lifecycleLock.unlock();
       }
 
-      executorService.set(executorServiceSupplier.get());
-
-      running = true;
       startManagingActivity();
 
-      pendingTasksLock.lock();
+      lifecycleLock.lock();
       try {
         for (Runnable task : pendingTasks) {
           executeTask(task);
         }
       } finally {
         pendingTasks.clear();
-        pendingStartup = false;
-        pendingTasksLock.unlock();
+        starting = false;
+        lifecycleLock.unlock();
       }
 
       messenger.broadcastManagerInfo();
 
     } catch (Exception e) {
+      pendingTasks.clear();
       running = false;
+      starting = false;
       throw new ManagementException(e);
     }
   }
 
   @Override
   public synchronized void stopManager() {
-    // remove hidden management regions and federatedMBeans
-    if (!running) {
-      return;
-    }
-    if (logger.isDebugEnabled()) {
-      logger.debug("Stopping the Federating Manager.... ");
+    lifecycleLock.lock();
+    try {
+      // remove hidden management regions and federatedMBeans
+      if (!running) {
+        return;
+      }
+      if (logger.isDebugEnabled()) {
+        logger.debug("Stopping the Federating Manager.... ");
+      }
+      running = false;
+    } finally {
+      lifecycleLock.unlock();
     }
 
-    running = false;
     stopManagingActivity();
   }
 
@@ -181,43 +186,54 @@ public class FederatingManager extends Manager {
     return running;
   }
 
-  public MemberMessenger getMessenger() {
-    return messenger;
-  }
-
   /**
-   * This method will be invoked from MembershipListener which is registered when the member becomes
-   * a Management node.
-   *
-   * <p>
    * This method will delegate task to another thread and exit, so that it wont block the membership
    * listener
    */
-  void removeMember(DistributedMember member, boolean crashed) {
-    pendingTasksLock.lock();
+  @Override
+  public void addMember(InternalDistributedMember member) {
+    lifecycleLock.lock();
+    try {
+      if (!running) {
+        return;
+      }
+      executeTask(() -> new AddMemberTask(member).call());
+    } finally {
+      lifecycleLock.unlock();
+    }
+  }
+
+  /**
+   * This method will delegate task to another thread and exit, so that it wont block the membership
+   * listener
+   */
+  @Override
+  public void removeMember(DistributedMember member, boolean crashed) {
+    lifecycleLock.lock();
     try {
       Runnable task = new RemoveMemberTask(member, crashed);
-      if (pendingStartup) {
+      if (starting) {
         pendingTasks.add(task);
       } else if (running) {
         executeTask(task);
       }
     } finally {
-      pendingTasksLock.unlock();
+      lifecycleLock.unlock();
     }
   }
 
   /**
-   * This method will be invoked from MembershipListener which is registered when the member becomes
-   * a Management node.
-   *
-   * <p>
    * this method will delegate task to another thread and exit, so that it wont block the membership
    * listener
    */
-  void suspectMember(DistributedMember member, InternalDistributedMember whoSuspected,
+  @Override
+  public void suspectMember(DistributedMember member, InternalDistributedMember whoSuspected,
       String reason) {
     service.memberSuspect((InternalDistributedMember) member, whoSuspected, reason);
+  }
+
+  public MemberMessenger getMessenger() {
+    return messenger;
   }
 
   /**
@@ -257,30 +273,6 @@ public class FederatingManager extends Manager {
   }
 
   /**
-   * This method will be invoked whenever a member stops being a managing node. The
-   * {@code ManagementException} has to be handled by the caller.
-   */
-  private void stopManagingActivity() {
-    try {
-      executorService.get().shutdownNow();
-
-      for (DistributedMember distributedMember : repo.getMonitoringRegionMap().keySet()) {
-        removeMemberArtifacts(distributedMember, false);
-      }
-    } catch (Exception e) {
-      throw new ManagementException(e);
-    }
-  }
-
-  private synchronized void executeTask(Runnable task) {
-    try {
-      executorService.get().execute(task);
-    } catch (RejectedExecutionException ignored) {
-      // Ignore, we are getting shutdown
-    }
-  }
-
-  /**
    * This method will be invoked when a node transitions from managed node to managing node This
    * method will block for all GIIs to be completed But each GII is given a specific time frame.
    * After that the task will be marked as cancelled.
@@ -292,7 +284,7 @@ public class FederatingManager extends Manager {
 
     for (InternalDistributedMember member : system.getDistributionManager()
         .getOtherDistributionManagerIds()) {
-      giiTaskList.add(new GIITask(member));
+      giiTaskList.add(new AddMemberTask(member));
     }
 
     try {
@@ -346,69 +338,27 @@ public class FederatingManager extends Manager {
   }
 
   /**
-   * This method will be invoked from MembershipListener which is registered when the member becomes
-   * a Management node.
-   *
-   * <p>
-   * This method will delegate task to another thread and exit, so that it wont block the membership
-   * listener
+   * This method will be invoked whenever a member stops being a managing node. The
+   * {@code ManagementException} has to be handled by the caller.
    */
-  @VisibleForTesting
-  void addMember(InternalDistributedMember member) {
-    Runnable task = () -> new GIITask(member).call();
-    executeTask(task);
-  }
+  private void stopManagingActivity() {
+    try {
+      executorService.get().shutdownNow();
 
-  @VisibleForTesting
-  void removeMemberArtifacts(DistributedMember member, boolean crashed) {
-    Region<String, Object> monitoringRegion = repo.getEntryFromMonitoringRegionMap(member);
-    Region<NotificationKey, Notification> notificationRegion =
-        repo.getEntryFromNotifRegionMap(member);
-
-    if (monitoringRegion == null && notificationRegion == null) {
-      return;
-    }
-
-    repo.romoveEntryFromMonitoringRegionMap(member);
-    repo.removeEntryFromNotifRegionMap(member);
-
-    // If cache is closed all the regions would have been destroyed implicitly
-    if (!cache.isClosed()) {
-      try {
-        if (monitoringRegion != null) {
-          proxyFactory.removeAllProxies(member, monitoringRegion);
-          monitoringRegion.localDestroyRegion();
-        }
-      } catch (CancelException | RegionDestroyedException ignore) {
-        // ignored
+      for (DistributedMember distributedMember : repo.getMonitoringRegionMap().keySet()) {
+        removeMemberArtifacts(distributedMember, false);
       }
-
-      try {
-        if (notificationRegion != null) {
-          notificationRegion.localDestroyRegion();
-        }
-      } catch (CancelException | RegionDestroyedException ignore) {
-        // ignored
-      }
-    }
-
-    if (!system.getDistributedMember().equals(member)) {
-      try {
-        service.memberDeparted((InternalDistributedMember) member, crashed);
-      } catch (CancelException | RegionDestroyedException ignore) {
-        // ignored
-      }
+    } catch (Exception e) {
+      throw new ManagementException(e);
     }
   }
 
-  @VisibleForTesting
-  public MBeanProxyFactory getProxyFactory() {
-    return proxyFactory;
-  }
-
-  @VisibleForTesting
-  Exception getAndResetLatestException() {
-    return latestException.getAndSet(null);
+  private synchronized void executeTask(Runnable task) {
+    try {
+      executorService.get().execute(task);
+    } catch (RejectedExecutionException ignored) {
+      // Ignore, we are getting shutdown
+    }
   }
 
   @VisibleForTesting
@@ -547,23 +497,74 @@ public class FederatingManager extends Manager {
   }
 
   @VisibleForTesting
+  void removeMemberArtifacts(DistributedMember member, boolean crashed) {
+    Region<String, Object> monitoringRegion = repo.getEntryFromMonitoringRegionMap(member);
+    Region<NotificationKey, Notification> notificationRegion =
+        repo.getEntryFromNotifRegionMap(member);
+
+    if (monitoringRegion == null && notificationRegion == null) {
+      return;
+    }
+
+    repo.romoveEntryFromMonitoringRegionMap(member);
+    repo.removeEntryFromNotifRegionMap(member);
+
+    // If cache is closed all the regions would have been destroyed implicitly
+    if (!cache.isClosed()) {
+      try {
+        if (monitoringRegion != null) {
+          proxyFactory.removeAllProxies(member, monitoringRegion);
+          monitoringRegion.localDestroyRegion();
+        }
+      } catch (CancelException | RegionDestroyedException ignore) {
+        // ignored
+      }
+
+      try {
+        if (notificationRegion != null) {
+          notificationRegion.localDestroyRegion();
+        }
+      } catch (CancelException | RegionDestroyedException ignore) {
+        // ignored
+      }
+    }
+
+    if (!system.getDistributedMember().equals(member)) {
+      try {
+        service.memberDeparted((InternalDistributedMember) member, crashed);
+      } catch (CancelException | RegionDestroyedException ignore) {
+        // ignored
+      }
+    }
+  }
+
+  @VisibleForTesting
+  public MBeanProxyFactory proxyFactory() {
+    return proxyFactory;
+  }
+
+  @VisibleForTesting
+  Exception latestException() {
+    return latestException.getAndSet(null);
+  }
+
+  @VisibleForTesting
   List<Runnable> pendingTasks() {
     return pendingTasks;
   }
 
   /**
-   * Actual task of doing the GII
+   * Actual task of adding a member.
    *
    * <p>
-   * It will perform the GII request which might originate from TransitionListener or Membership
-   * Listener.
+   * Perform the GII request which might originate from transition listener or membership listener.
    *
    * <p>
-   * Managing Node side resources are created per member which is visible to this node:
+   * Manager resources are created per member which is visible to this node:
    *
    * <pre>
-   * 1)Management Region : its a Replicated NO_ACK region
-   * 2)Notification Region : its a Replicated Proxy NO_ACK region
+   * 1) Management Region : its a Replicated NO_ACK region
+   * 2) Notification Region : its a Replicated Proxy NO_ACK region
    * </pre>
    *
    * <p>
@@ -576,13 +577,13 @@ public class FederatingManager extends Manager {
    *
    * <p>
    * This task can be cancelled from the calling thread if a timeout happens. In that case we have
-   * to handle the thread interrupt
+   * to handle the thread interrupt.
    */
-  private class GIITask implements Callable<InternalDistributedMember> {
+  private class AddMemberTask implements Callable<InternalDistributedMember> {
 
     private final InternalDistributedMember member;
 
-    private GIITask(InternalDistributedMember member) {
+    private AddMemberTask(InternalDistributedMember member) {
       this.member = member;
     }
 

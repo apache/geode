@@ -16,7 +16,6 @@ package org.apache.geode.management;
 
 import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
 import static java.util.Arrays.asList;
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static javax.management.ObjectName.getInstance;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
@@ -29,31 +28,27 @@ import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME
 import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
 import static org.apache.geode.distributed.internal.membership.api.MembershipManagerHelper.crashDistributedSystem;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
-import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
-import static org.apache.geode.test.dunit.Disconnect.disconnectAllFromDS;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
-import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.dunit.VM.getVMId;
 import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 
 import java.io.File;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.Callable;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
+import javax.management.QueryExp;
 
-import org.awaitility.core.ConditionFactory;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.ForcedDisconnectException;
@@ -64,82 +59,83 @@ import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.api.MemberDisconnectedException;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedErrorCollector;
+import org.apache.geode.test.dunit.rules.DistributedReference;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.DistributedRule;
+import org.apache.geode.test.junit.categories.JMXTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
-public class JMXMBeanLocatorRestartTest implements Serializable {
+@Category(JMXTest.class)
+@SuppressWarnings({"serial", "CodeBlock2Expr", "SameParameterValue"})
+public class JmxLocatorReconnectDistributedTest implements Serializable {
 
-  private static final long TIMEOUT_MILLIS = getTimeout().toMillis();
-  private static final LocatorLauncher DUMMY_LOCATOR = mock(LocatorLauncher.class);
-  private static final ServerLauncher DUMMY_SERVER = mock(ServerLauncher.class);
+  private static final String LOCATOR_NAME = "locator";
+  private static final String SERVER_NAME = "server";
+  private static final String REGION_NAME = "region";
+  private static final QueryExp QUERY_ALL = null;
 
-  private static final AtomicReference<CountDownLatch> BEFORE =
-      new AtomicReference<>(new CountDownLatch(0));
-  private static final AtomicReference<CountDownLatch> AFTER =
-      new AtomicReference<>(new CountDownLatch(0));
-
-  private static final AtomicReference<LocatorLauncher> LOCATOR =
-      new AtomicReference<>(DUMMY_LOCATOR);
-  private static final AtomicReference<ServerLauncher> SERVER =
-      new AtomicReference<>(DUMMY_SERVER);
+  private static final ObjectName GEMFIRE_MXBEANS =
+      execute(() -> getInstance("GemFire:*"));
+  private static final Set<ObjectName> EXPECTED_SERVER_MXBEANS =
+      execute(() -> expectedServerMXBeans(SERVER_NAME, REGION_NAME));
+  private static final Set<ObjectName> EXPECTED_LOCATOR_MXBEANS =
+      execute(() -> expectedLocatorMXBeans(LOCATOR_NAME));
+  private static final Set<ObjectName> EXPECTED_DISTRIBUTED_MXBEANS =
+      execute(() -> expectedDistributedMXBeans(REGION_NAME));
 
   private VM locatorVM;
   private VM serverVM;
 
-  private String locatorName;
-  private String serverName;
   private String locators;
   private int locatorPort;
   private int locatorJmxPort;
-  private String regionName;
   private Set<ObjectName> mxbeansOnServer;
   private Set<ObjectName> mxbeansOnLocator;
 
   @Rule
-  public DistributedRule distributedRule = new DistributedRule();
-  @Rule
-  public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
+  public DistributedRule distributedRule = new DistributedRule(2);
   @Rule
   public DistributedErrorCollector errorCollector = new DistributedErrorCollector();
   @Rule
-  public transient GfshCommandRule gfsh = new GfshCommandRule();
+  public DistributedReference<LocatorLauncher> locatorLauncher = new DistributedReference<>();
+  @Rule
+  public DistributedReference<ServerLauncher> serverLauncher = new DistributedReference<>();
   @Rule
   public DistributedRestoreSystemProperties restoreProps = new DistributedRestoreSystemProperties();
+  @Rule
+  public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
+  @Rule
+  public transient GfshCommandRule gfsh = new GfshCommandRule();
 
   @Before
   public void setUp() throws Exception {
-    locatorVM = getVM(1);
-    serverVM = getVM(0);
+    locatorVM = getVM(0);
+    serverVM = getVM(1);
+
+    File locatorDir = temporaryFolder.newFolder(LOCATOR_NAME);
+    File serverDir = temporaryFolder.newFolder(SERVER_NAME);
 
     for (VM vm : asList(locatorVM, serverVM)) {
       vm.invoke(() -> System.setProperty(GEMFIRE_PREFIX + "standard-output-always-on", "true"));
     }
 
-    locatorName = "locator1";
-    serverName = "server1";
-    File locator1Dir = temporaryFolder.newFolder(locatorName);
-    File serverDir = temporaryFolder.newFolder(serverName);
-
-    int[] port = getRandomAvailableTCPPorts(4);
+    int[] port = getRandomAvailableTCPPorts(2);
     locatorPort = port[0];
-    locatorJmxPort = port[2];
+    locatorJmxPort = port[1];
     locators = "localhost[" + locatorPort + "]";
 
     locatorVM.invoke(() -> {
-      startLocator(locatorName, locator1Dir, locatorPort, locatorJmxPort, locators);
+      locatorLauncher.set(startLocator(locatorDir, locatorPort, locatorJmxPort, locators));
     });
 
-    serverVM.invoke(() -> startServer(serverName, serverDir, locators));
+    serverVM.invoke(() -> serverLauncher.set(startServer(serverDir, locators)));
 
     gfsh.connectAndVerify(locatorJmxPort, GfshCommandRule.PortType.jmxManager);
 
-    regionName = "region1";
-    String createRegionCommand = "create region --type=REPLICATE --name=" + SEPARATOR + regionName;
+    String createRegionCommand = "create region --type=REPLICATE --name=" + SEPARATOR + REGION_NAME;
     gfsh.executeAndAssertThat(createRegionCommand).statusIsSuccess();
 
     addIgnoredException(AlertingIOException.class);
@@ -152,41 +148,75 @@ public class JMXMBeanLocatorRestartTest implements Serializable {
 
     mxbeansOnServer = serverVM.invoke(() -> {
       await().untilAsserted(() -> {
-        assertThat(getPlatformMBeanServer().queryNames(getInstance("GemFire:*"), null))
-            .as("GemFire mbeans on server1")
-            .containsAll(expectedServerMXBeans(serverName, regionName));
+        assertThat(getPlatformMBeanServer().queryNames(GEMFIRE_MXBEANS, QUERY_ALL))
+            .as("GemFire mxbeans on server")
+            .containsAll(EXPECTED_SERVER_MXBEANS);
       });
-      return getPlatformMBeanServer().queryNames(getInstance("GemFire:*"), null);
+      return getPlatformMBeanServer().queryNames(GEMFIRE_MXBEANS, QUERY_ALL);
     });
 
     mxbeansOnLocator = locatorVM.invoke(() -> {
       await().untilAsserted(() -> {
-        assertThat(getPlatformMBeanServer().queryNames(getInstance("GemFire:*"), null))
-            .as("GemFire mbeans on locator1")
-            .containsAll(expectedServerMXBeans(serverName, regionName))
-            .containsAll(expectedLocatorMXBeans(locatorName))
-            .containsAll(expectedDistributedMXBeans(regionName));
+        assertThat(getPlatformMBeanServer().queryNames(GEMFIRE_MXBEANS, QUERY_ALL))
+            .as("GemFire mxbeans on locator")
+            .containsAll(EXPECTED_SERVER_MXBEANS)
+            .containsAll(EXPECTED_LOCATOR_MXBEANS)
+            .containsAll(EXPECTED_DISTRIBUTED_MXBEANS);
       });
-
-      return getPlatformMBeanServer().queryNames(getInstance("GemFire:*"), null);
+      return getPlatformMBeanServer().queryNames(GEMFIRE_MXBEANS, QUERY_ALL);
     });
   }
 
-  @After
-  public void tearDown() {
-    invokeInEveryVM(() -> {
-      BEFORE.get().countDown();
-      AFTER.get().countDown();
-      SERVER.getAndSet(DUMMY_SERVER).stop();
-      LOCATOR.getAndSet(DUMMY_LOCATOR).stop();
+  @Test
+  public void serverMXBeanOnServerIsUnaffectedByLocatorCrash() {
+    locatorVM.invoke(() -> {
+      crashDistributedSystem(locatorLauncher.get().getCache().getDistributedSystem());
+
+      await().untilAsserted(() -> {
+        assertThat(getPlatformMBeanServer().queryNames(GEMFIRE_MXBEANS, QUERY_ALL))
+            .as("GemFire mxbeans on locator")
+            .isEmpty();
+      });
     });
-    disconnectAllFromDS();
+
+    serverVM.invoke(() -> {
+      assertThat(getPlatformMBeanServer().queryNames(GEMFIRE_MXBEANS, QUERY_ALL))
+          .as("GemFire mxbeans on server")
+          .containsExactlyInAnyOrderElementsOf(mxbeansOnServer);
+    });
+
+    locatorVM.invoke(() -> {
+      InternalLocator locator = (InternalLocator) locatorLauncher.get().getLocator();
+
+      await().untilAsserted(() -> {
+        boolean isReconnected = locator.isReconnected();
+        boolean isSharedConfigurationRunning = locator.isSharedConfigurationRunning();
+        Set<ObjectName> mbeanNames =
+            getPlatformMBeanServer().queryNames(GEMFIRE_MXBEANS, QUERY_ALL);
+
+        assertThat(isReconnected)
+            .as("Locator is reconnected on locator")
+            .isTrue();
+        assertThat(isSharedConfigurationRunning)
+            .as("Locator shared configuration is running on locator")
+            .isTrue();
+        assertThat(mbeanNames)
+            .as("GemFire mxbeans on locator")
+            .isEqualTo(mxbeansOnLocator);
+      });
+    });
+
+    serverVM.invoke(() -> {
+      assertThat(getPlatformMBeanServer().queryNames(GEMFIRE_MXBEANS, QUERY_ALL))
+          .as("GemFire mxbeans on server")
+          .containsExactlyInAnyOrderElementsOf(mxbeansOnServer);
+    });
   }
 
-  private static void startLocator(String name, File workingDirectory, int locatorPort, int jmxPort,
+  private static LocatorLauncher startLocator(File workingDirectory, int locatorPort, int jmxPort,
       String locators) {
-    LOCATOR.set(new LocatorLauncher.Builder()
-        .setMemberName(name)
+    LocatorLauncher locatorLauncher = new LocatorLauncher.Builder()
+        .setMemberName(LOCATOR_NAME)
         .setPort(locatorPort)
         .setWorkingDirectory(workingDirectory.getAbsolutePath())
         .set(HTTP_SERVICE_PORT, "0")
@@ -194,43 +224,47 @@ public class JMXMBeanLocatorRestartTest implements Serializable {
         .set(JMX_MANAGER_PORT, String.valueOf(jmxPort))
         .set(JMX_MANAGER_START, "true")
         .set(LOCATORS, locators)
-        .set(LOG_FILE, new File(workingDirectory, name + ".log").getAbsolutePath())
+        .set(LOG_FILE, new File(workingDirectory, LOCATOR_NAME + ".log").getAbsolutePath())
         .set(MAX_WAIT_TIME_RECONNECT, "1000")
         .set(MEMBER_TIMEOUT, "2000")
-        .build());
+        .build();
 
-    LOCATOR.get().start();
+    locatorLauncher.start();
+
+    InternalLocator locator = (InternalLocator) locatorLauncher.getLocator();
 
     await().untilAsserted(() -> {
-      InternalLocator locator = (InternalLocator) LOCATOR.get().getLocator();
       assertThat(locator.isSharedConfigurationRunning())
           .as("Locator shared configuration is running on locator" + getVMId())
           .isTrue();
     });
+
+    return locatorLauncher;
   }
 
-  private static void startServer(String name, File workingDirectory, String locators) {
-    SERVER.set(new ServerLauncher.Builder()
+  private static ServerLauncher startServer(File workingDirectory, String locators) {
+    ServerLauncher serverLauncher = new ServerLauncher.Builder()
         .setDisableDefaultServer(true)
-        .setMemberName(name)
+        .setMemberName(SERVER_NAME)
         .setWorkingDirectory(workingDirectory.getAbsolutePath())
         .set(HTTP_SERVICE_PORT, "0")
         .set(LOCATORS, locators)
-        .set(LOG_FILE, new File(workingDirectory, name + ".log").getAbsolutePath())
+        .set(LOG_FILE, new File(workingDirectory, SERVER_NAME + ".log").getAbsolutePath())
         .set(MAX_WAIT_TIME_RECONNECT, "1000")
         .set(MEMBER_TIMEOUT, "2000")
-        .build());
+        .build();
 
-    SERVER.get().start();
+    serverLauncher.start();
+
+    return serverLauncher;
   }
 
   private static Set<ObjectName> expectedServerMXBeans(String memberName, String regionName)
       throws MalformedObjectNameException {
     return new HashSet<>(asList(
         getInstance("GemFire:type=Member,member=" + memberName),
-        getInstance(
-            "GemFire:service=Region,name=" + SEPARATOR + regionName + ",type=Member,member=" +
-                memberName)));
+        getInstance("GemFire:service=Region,name=" + SEPARATOR + regionName +
+            ",type=Member,member=" + memberName)));
   }
 
   private static Set<ObjectName> expectedLocatorMXBeans(String memberName)
@@ -255,63 +289,11 @@ public class JMXMBeanLocatorRestartTest implements Serializable {
         getInstance("GemFire:service=System,type=Distributed")));
   }
 
-  private static ConditionFactory await() {
-    return GeodeAwaitility.await().atMost(1, MINUTES);
-  }
-
-  @Test
-  public void locatorHasMemberTypeMXBeanForServer() {
-    locatorVM.invoke(() -> {
-      await().untilAsserted(() -> {
-        assertThat(getPlatformMBeanServer().queryNames(getInstance("GemFire:*"), null))
-            .as("GemFire mbeans on server1")
-            .containsAll(expectedServerMXBeans(serverName, regionName));
-      });
-    });
-  }
-
-  @Test
-  public void serverMXBeanOnServerIsUnaffectedByLocatorCrash() {
-    locatorVM.invoke(() -> {
-      crashDistributedSystem(LOCATOR.get().getCache().getDistributedSystem());
-
-      await().untilAsserted(() -> {
-        assertThat(getPlatformMBeanServer().queryNames(getInstance("GemFire:*"), null))
-            .as("GemFire mbeans on locator1")
-            .isEmpty();
-      });
-    });
-
-    serverVM.invoke(() -> {
-      assertThat(getPlatformMBeanServer().queryNames(getInstance("GemFire:*"), null))
-          .as("GemFire mbeans on server1")
-          .containsExactlyElementsOf(mxbeansOnServer);
-    });
-
-    locatorVM.invoke(() -> {
-      InternalLocator locator = (InternalLocator) LOCATOR.get().getLocator();
-
-      await().untilAsserted(() -> {
-        boolean isReconnected = locator.isReconnected();
-        boolean isSharedConfigurationRunning = locator.isSharedConfigurationRunning();
-        Set<ObjectName> mbeanNames =
-            getPlatformMBeanServer().queryNames(getInstance("GemFire:*"), null);
-        assertThat(isReconnected)
-            .as("Locator is reconnected on locator1")
-            .isTrue();
-        assertThat(isSharedConfigurationRunning)
-            .as("Locator shared configuration is running on locator1")
-            .isTrue();
-        assertThat(mbeanNames)
-            .as("GemFire mbeans on locator1")
-            .isEqualTo(mxbeansOnLocator);
-      });
-    });
-
-    serverVM.invoke(() -> {
-      assertThat(getPlatformMBeanServer().queryNames(getInstance("GemFire:*"), null))
-          .as("GemFire mbeans on server1")
-          .containsExactlyElementsOf(mxbeansOnServer);
-    });
+  private static <V> V execute(Callable<V> task) {
+    try {
+      return task.call();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 }

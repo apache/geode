@@ -14,16 +14,18 @@
  */
 package org.apache.geode.management.internal;
 
+import static java.util.Collections.singleton;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -34,6 +36,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Supplier;
 
@@ -67,10 +70,8 @@ import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 public class FederatingManagerTest {
 
   private InternalCache cache;
-  private InternalCacheForClientAccess cacheForClientAccess;
   private CancelCriterion cancelCriterion;
   private ExecutorService executorService;
-  private MBeanJMXAdapter jmxAdapter;
   private MemberMessenger messenger;
   private MBeanProxyFactory proxyFactory;
   private ManagementResourceRepo repo;
@@ -89,10 +90,8 @@ public class FederatingManagerTest {
   @Before
   public void setUp() {
     cache = mock(InternalCache.class);
-    cacheForClientAccess = mock(InternalCacheForClientAccess.class);
     cancelCriterion = mock(CancelCriterion.class);
     executorService = mock(ExecutorService.class);
-    jmxAdapter = mock(MBeanJMXAdapter.class);
     messenger = mock(MemberMessenger.class);
     proxyFactory = mock(MBeanProxyFactory.class);
     repo = mock(ManagementResourceRepo.class);
@@ -103,14 +102,19 @@ public class FederatingManagerTest {
     regionFactory1 = mock(InternalRegionFactory.class);
     regionFactory2 = mock(InternalRegionFactory.class);
 
+    InternalCacheForClientAccess cacheForClientAccess = mock(InternalCacheForClientAccess.class);
     DistributedSystemMXBean distributedSystemMXBean = mock(DistributedSystemMXBean.class);
+    MBeanJMXAdapter jmxAdapter = mock(MBeanJMXAdapter.class);
 
     when(cache.getCacheForProcessingClientRequests())
         .thenReturn(cacheForClientAccess);
-    when(cacheForClientAccess.createInternalRegionFactory()).thenReturn(regionFactory1)
+    when(cacheForClientAccess.createInternalRegionFactory())
+        .thenReturn(regionFactory1)
         .thenReturn(regionFactory2);
-    when(regionFactory1.create(any())).thenReturn(mock(Region.class));
-    when(regionFactory2.create(any())).thenReturn(mock(Region.class));
+    when(regionFactory1.create(any()))
+        .thenReturn(mock(Region.class));
+    when(regionFactory2.create(any()))
+        .thenReturn(mock(Region.class));
     when(distributedSystemMXBean.getAlertLevel())
         .thenReturn(AlertLevel.WARNING.name());
     when(jmxAdapter.getDistributedSystemMXBean())
@@ -140,8 +144,7 @@ public class FederatingManagerTest {
 
     federatingManager.addMemberArtifacts(member(2, 40));
 
-    ArgumentCaptor<HasCachePerfStats> captor =
-        ArgumentCaptor.forClass(HasCachePerfStats.class);
+    ArgumentCaptor<HasCachePerfStats> captor = forClass(HasCachePerfStats.class);
     verify(regionFactory1).setCachePerfStatsHolder(captor.capture());
     assertThat(captor.getValue().hasOwnStats()).isTrue();
   }
@@ -167,8 +170,7 @@ public class FederatingManagerTest {
 
     federatingManager.addMemberArtifacts(member(4, 80));
 
-    ArgumentCaptor<HasCachePerfStats> captor =
-        ArgumentCaptor.forClass(HasCachePerfStats.class);
+    ArgumentCaptor<HasCachePerfStats> captor = forClass(HasCachePerfStats.class);
     verify(regionFactory2).setCachePerfStatsHolder(captor.capture());
     assertThat(captor.getValue().hasOwnStats()).isTrue();
   }
@@ -189,8 +191,7 @@ public class FederatingManagerTest {
 
     federatingManager.removeMemberArtifacts(member, false);
 
-    verify(monitoringRegion)
-        .localDestroyRegion();
+    verify(monitoringRegion).localDestroyRegion();
   }
 
   @Test
@@ -209,8 +210,7 @@ public class FederatingManagerTest {
 
     federatingManager.removeMemberArtifacts(member, false);
 
-    verify(notificationRegion)
-        .localDestroyRegion();
+    verify(notificationRegion).localDestroyRegion();
   }
 
   @Test
@@ -231,8 +231,7 @@ public class FederatingManagerTest {
 
     federatingManager.removeMemberArtifacts(member, false);
 
-    verify(monitoringRegion)
-        .localDestroyRegion();
+    verify(monitoringRegion).localDestroyRegion();
   }
 
   @Test
@@ -253,8 +252,7 @@ public class FederatingManagerTest {
 
     federatingManager.removeMemberArtifacts(member, false);
 
-    verify(notificationRegion)
-        .localDestroyRegion();
+    verify(notificationRegion).localDestroyRegion();
   }
 
   @Test
@@ -276,8 +274,7 @@ public class FederatingManagerTest {
 
     federatingManager.removeMemberArtifacts(member, false);
 
-    verify(proxyFactory)
-        .removeAllProxies(member, monitoringRegion);
+    verify(proxyFactory).removeAllProxies(member, monitoringRegion);
   }
 
   @Test
@@ -299,8 +296,7 @@ public class FederatingManagerTest {
 
     federatingManager.removeMemberArtifacts(member, false);
 
-    verify(proxyFactory)
-        .removeAllProxies(member, monitoringRegion);
+    verify(proxyFactory).removeAllProxies(member, monitoringRegion);
   }
 
   @Test
@@ -321,8 +317,7 @@ public class FederatingManagerTest {
 
     federatingManager.removeMemberArtifacts(member, false);
 
-    verify(notificationRegion)
-        .localDestroyRegion();
+    verify(notificationRegion).localDestroyRegion();
   }
 
   @Test
@@ -343,8 +338,7 @@ public class FederatingManagerTest {
 
     federatingManager.removeMemberArtifacts(member, false);
 
-    verify(monitoringRegion)
-        .localDestroyRegion();
+    verify(monitoringRegion).localDestroyRegion();
   }
 
   @Test
@@ -366,8 +360,7 @@ public class FederatingManagerTest {
 
     federatingManager.removeMemberArtifacts(member, false);
 
-    verify(proxyFactory)
-        .removeAllProxies(member, monitoringRegion);
+    verify(proxyFactory).removeAllProxies(member, monitoringRegion);
   }
 
   @Test
@@ -388,8 +381,7 @@ public class FederatingManagerTest {
 
     federatingManager.removeMemberArtifacts(member, false);
 
-    verify(notificationRegion)
-        .localDestroyRegion();
+    verify(notificationRegion).localDestroyRegion();
   }
 
   @Test
@@ -410,8 +402,7 @@ public class FederatingManagerTest {
 
     federatingManager.removeMemberArtifacts(member, false);
 
-    verify(monitoringRegion)
-        .localDestroyRegion();
+    verify(monitoringRegion).localDestroyRegion();
   }
 
   @Test
@@ -429,8 +420,7 @@ public class FederatingManagerTest {
 
     Throwable thrown = catchThrowable(() -> federatingManager.removeMemberArtifacts(member, false));
 
-    assertThat(thrown)
-        .isNull();
+    assertThat(thrown).isNull();
   }
 
   @Test
@@ -448,14 +438,14 @@ public class FederatingManagerTest {
 
     Throwable thrown = catchThrowable(() -> federatingManager.removeMemberArtifacts(member, false));
 
-    assertThat(thrown)
-        .isNull();
+    assertThat(thrown).isNull();
   }
 
   @Test
   public void startManagerGetsNewExecutorServiceFromSupplier() {
     Supplier<ExecutorService> executorServiceSupplier = mock(Supplier.class);
-    when(executorServiceSupplier.get()).thenReturn(mock(ExecutorService.class));
+    when(executorServiceSupplier.get())
+        .thenReturn(mock(ExecutorService.class));
     FederatingManager federatingManager =
         new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
             proxyFactory, messenger, cancelCriterion, executorServiceSupplier);
@@ -497,8 +487,8 @@ public class FederatingManagerTest {
     });
 
     FederatingManager federatingManager =
-        spy(new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
-            proxyFactory, messenger, cancelCriterion, executorService));
+        new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
+            proxyFactory, messenger, cancelCriterion, executorService);
 
     executorServiceRule.submit(() -> {
       federatingManager.startManager();
@@ -529,6 +519,25 @@ public class FederatingManagerTest {
     assertThat(federatingManager.pendingTasks()).isEmpty();
   }
 
+  @Test
+  public void restartDoesNotThrowIfOtherMembersExist() {
+    DistributionManager distributionManager = mock(DistributionManager.class);
+    when(distributionManager.getOtherDistributionManagerIds())
+        .thenReturn(singleton(mock(InternalDistributedMember.class)));
+    when(system.getDistributionManager())
+        .thenReturn(distributionManager);
+
+    FederatingManager federatingManager =
+        new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
+            proxyFactory, messenger, cancelCriterion, Executors::newSingleThreadExecutor);
+
+    federatingManager.startManager();
+    federatingManager.stopManager();
+
+    assertThatCode(federatingManager::startManager)
+        .doesNotThrowAnyException();
+  }
+
   private void awaitCyclicBarrier(CyclicBarrier barrier) {
     try {
       barrier.await(getTimeout().toMillis(), MILLISECONDS);
@@ -553,9 +562,12 @@ public class FederatingManagerTest {
 
   private InternalDistributedMember member(int viewId, int port) {
     InternalDistributedMember member = mock(InternalDistributedMember.class);
-    when(member.getInetAddress()).thenReturn(mock(InetAddress.class));
-    when(member.getVmViewId()).thenReturn(viewId);
-    when(member.getMembershipPort()).thenReturn(port);
+    when(member.getInetAddress())
+        .thenReturn(mock(InetAddress.class));
+    when(member.getVmViewId())
+        .thenReturn(viewId);
+    when(member.getMembershipPort())
+        .thenReturn(port);
     return member;
   }
 }
