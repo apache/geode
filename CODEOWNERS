@@ -137,8 +137,8 @@ CODEOWNERS @apache/geode-committers
 #------------------------------------------------------------
 # Session State:
 #------------------------------------------------------------
-#extensions/**
-#geode-core/**/org/apache/geode/internal/modules/util/**
+#extensions/**                                                @sabbey37
+#geode-core/**/org/apache/geode/internal/modules/util/**      @sabbey37
 
 #------------------------------------------------------------
 # DEV rest API
@@ -275,7 +275,7 @@ CODEOWNERS @apache/geode-committers
 #------------------------------------------------------------
 # Redis API
 #------------------------------------------------------------
-#geode-redis/**
+geode-redis/**                                               @sabbey37
 
 #------------------------------------------------------------
 # Build and tooling
