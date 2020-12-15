@@ -137,8 +137,8 @@ geode-core/**/org/apache/geode/internal/cache/event/**       @agingade
 #------------------------------------------------------------
 # Session State:
 #------------------------------------------------------------
-extensions/**                                                @sabbey37 @jdeppe-pivotal
-geode-core/**/org/apache/geode/internal/modules/util/**      @sabbey37 @jdeppe-pivotal
+extensions/**                                                @sabbey37 @jdeppe-pivotal @bross
+geode-core/**/org/apache/geode/internal/modules/util/**      @sabbey37 @jdeppe-pivotal @bross
 
 #------------------------------------------------------------
 # DEV rest API
@@ -254,8 +254,8 @@ geode-core/**/org/apache/geode/internal/cache/snapshot/**    @agingade
 # JDBC connector
 #------------------------------------------------------------
 #geode-connectors/**
-geode-core/**/org/apache/geode/datasource/**                 @agingade
-geode-core/**/org/apache/geode/internal/datasource/**        @agingade
+geode-core/**/org/apache/geode/datasource/**                 @agingade @bross
+geode-core/**/org/apache/geode/internal/datasource/**        @agingade @bross
 
 
 #------------------------------------------------------------
