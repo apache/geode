@@ -18,7 +18,6 @@ import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabl
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -119,7 +118,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   protected boolean isPersistence;
 
-  protected volatile int alertThreshold;
+  protected int alertThreshold;
 
   protected boolean manualStart;
 
@@ -133,9 +132,9 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   protected String diskStoreName;
 
-  protected volatile List<GatewayEventFilter> eventFilters;
+  protected List<GatewayEventFilter> eventFilters;
 
-  protected volatile List<GatewayTransportFilter> transFilters;
+  protected List<GatewayTransportFilter> transFilters;
 
   protected List<AsyncEventListener> listeners;
 
@@ -261,8 +260,8 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     this.isForInternalUse = attrs.isForInternalUse();
     this.diskStoreName = attrs.getDiskStoreName();
     this.remoteDSId = attrs.getRemoteDSId();
-    this.eventFilters = Collections.unmodifiableList(attrs.getGatewayEventFilters());
-    this.transFilters = Collections.unmodifiableList(attrs.getGatewayTransportFilters());
+    this.eventFilters = attrs.getGatewayEventFilters();
+    this.transFilters = attrs.getGatewayTransportFilters();
     this.listeners = attrs.getAsyncEventListeners();
     this.substitutionFilter = attrs.getGatewayEventSubstitutionFilter();
     this.locatorDiscoveryCallback = attrs.getGatewayLocatoDiscoveryCallback();
@@ -529,26 +528,19 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   @Override
   public void removeGatewayEventFilter(GatewayEventFilter filter) {
-    if (filter == null) {
-      return;
-    }
-    if (this.eventFilters.isEmpty()) {
-      return;
-    }
-    List<GatewayEventFilter> templist = new ArrayList<>(this.eventFilters);
-    templist.remove(filter);
-    this.eventFilters = Collections.unmodifiableList(templist);
+    this.eventFilters.remove(filter);
   }
 
   @Override
   public void addGatewayEventFilter(GatewayEventFilter filter) {
+    if (this.eventFilters.isEmpty()) {
+      this.eventFilters = new ArrayList<GatewayEventFilter>();
+    }
     if (filter == null) {
       throw new IllegalStateException(
           "null value can not be added to gateway-event-filters list");
     }
-    List<GatewayEventFilter> templist = new ArrayList<>(this.eventFilters);
-    templist.add(filter);
-    this.eventFilters = Collections.unmodifiableList(templist);
+    this.eventFilters.add(filter);
   }
 
   @Override
@@ -672,56 +664,6 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     logger.info(
         "GatewaySender {} has been rebalanced", this);
   }
-
-
-  @Override
-  public void update(GatewaySenderAttributes attributes) {
-    logger.info(
-        "AbstractGatewaySender update");
-    try {
-      // Pause the sender
-      pause();
-
-      if (this.eventProcessor != null) {
-        this.eventProcessor.waitForDispatcherToPause();
-      }
-
-      if (attributes.modifyAlertThreshold()) {
-        this.alertThreshold = attributes.getAlertThreshold();
-      }
-
-      if (attributes.modifyBatchSize()) {
-        this.batchSize = attributes.getBatchSize();
-        if (this.eventProcessor != null) {
-          this.eventProcessor.setBatchSize(this.batchSize);
-        }
-      }
-
-      if (attributes.modifyBatchTimeInterval()) {
-        this.batchTimeInterval = attributes.getBatchTimeInterval();
-        if (this.eventProcessor != null) {
-          this.eventProcessor.setBatchTimeInterval(this.batchTimeInterval);
-        }
-      }
-
-      if (attributes.modifyGroupTransactionEvents()) {
-        this.groupTransactionEvents = attributes.mustGroupTransactionEvents();
-      }
-
-      if (attributes.modifyGatewayEventFilter()) {
-        this.eventFilters = Collections.unmodifiableList(attributes.getGatewayEventFilters());
-      }
-
-      if (attributes.modifyGatewayTransportFilter()) {
-        this.transFilters = Collections.unmodifiableList(attributes.getGatewayTransportFilters());
-      }
-
-    } finally {
-      // Resume the sender
-      resume();
-    }
-
-  };
 
   public boolean beforeEnqueue(GatewayQueueEvent gatewayEvent) {
     boolean enqueue = true;
