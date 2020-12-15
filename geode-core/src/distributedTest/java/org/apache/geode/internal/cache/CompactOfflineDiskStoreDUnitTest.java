@@ -145,7 +145,7 @@ public class CompactOfflineDiskStoreDUnitTest implements Serializable {
 
     populateRegions();
 
-    AssertRegionSizeAndDiskStore();
+    assertRegionSizeAndDiskStore();
 
     server.invoke(CompactOfflineDiskStoreDUnitTest::stopServer);
 
@@ -155,7 +155,7 @@ public class CompactOfflineDiskStoreDUnitTest implements Serializable {
 
     server.invoke(CompactOfflineDiskStoreDUnitTest::verifyDiskStoreOplogs);
 
-    AssertRegionSizeAndDiskStore();
+    assertRegionSizeAndDiskStore();
 
   }
 
@@ -222,7 +222,7 @@ public class CompactOfflineDiskStoreDUnitTest implements Serializable {
     });
   }
 
-  private void AssertRegionSizeAndDiskStore() {
+  private void assertRegionSizeAndDiskStore() {
     assertRegionSize();
     assertDiskStore(serverName);
   }
