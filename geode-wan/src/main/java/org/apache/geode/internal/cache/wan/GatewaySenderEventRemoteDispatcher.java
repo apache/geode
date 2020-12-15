@@ -371,46 +371,55 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
     ServerLocation server = this.sender.getServerLocation();
     String connectedServerId = con.getEndpoint().getMemberId().getUniqueId();
     String expectedServerId = this.processor.getExpectedReceiverUniqueId();
-    boolean connectedToExpectedReceiver = connectedServerId.equals(expectedServerId);
+
     if (expectedServerId.equals("")) {
       if (isDebugEnabled) {
-        logger.debug("First dispatcher connected to endpoint " + connectedServerId);
+        logger.debug("First dispatcher connected to server " + connectedServerId);
       }
       this.processor.setExpectedReceiverUniqueId(connectedServerId);
-      connectedToExpectedReceiver = true;
+      return con;
     }
+
     int attempt = 0;
     final int attemptsPerServer = 5;
     int maxAttempts = attemptsPerServer;
     Vector<String> notExpectedServerIds = new Vector<String>();
+    boolean connectedToExpectedReceiver = connectedServerId.equals(expectedServerId);
     while (!connectedToExpectedReceiver) {
-      if (connectedServerId.equals(expectedServerId)) {
-        if (isDebugEnabled) {
-          logger.debug("Dispatcher connected to expected endpoint " + connectedServerId);
-        }
-        connectedToExpectedReceiver = true;
-      } else {
-        if (isDebugEnabled) {
-          logger.debug("Expected connection to [" + expectedServerId
-              + "] but got connection to [" + connectedServerId + "]");
-        }
-        attempt++;
-        if (!notExpectedServerIds.contains(connectedServerId)) {
-          notExpectedServerIds.add(connectedServerId);
-          maxAttempts += attemptsPerServer;
-        }
-        this.sender.getProxy().returnConnection(con);
-        if (attempt >= maxAttempts) {
-          throw new ServerConnectivityException(maxAttemptsReachedConnectingServerIdExceptionMessage
-              + " [" + expectedServerId + "] (" + maxAttempts + " attempts).");
-        }
-        if (server != null) {
-          con = this.sender.getProxy().acquireConnection(server);
-        } else {
-          con = this.sender.getProxy().acquireConnection();
-        }
-        connectedServerId = con.getEndpoint().getMemberId().getUniqueId();
+
+      if (isDebugEnabled) {
+        logger.debug("Dispatcher wants to connect to [" + expectedServerId
+            + "] but got connection to [" + connectedServerId + "]");
       }
+      attempt++;
+      if (!notExpectedServerIds.contains(connectedServerId)) {
+        if (isDebugEnabled) {
+          logger.debug(
+              "Increasing dispatcher connection max retries number due to connection to unknown server ("
+                  + connectedServerId + ")");
+        }
+        notExpectedServerIds.add(connectedServerId);
+        maxAttempts += attemptsPerServer;
+      }
+
+      if (attempt >= maxAttempts) {
+        throw new ServerConnectivityException(maxAttemptsReachedConnectingServerIdExceptionMessage
+            + " [" + expectedServerId + "] (" + maxAttempts + " attempts).");
+      }
+
+      con.destroy();
+      this.sender.getProxy().returnConnection(con);
+      con = this.sender.getProxy().acquireConnection();
+
+      connectedServerId = con.getEndpoint().getMemberId().getUniqueId();
+      if (connectedServerId.equals(expectedServerId)) {
+        connectedToExpectedReceiver = true;
+      }
+    }
+
+    if (isDebugEnabled) {
+      logger.debug("Dispatcher connected to expected endpoint " + connectedServerId
+          + " after " + attempt + " retries.");
     }
     return con;
   }
@@ -539,7 +548,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
                 "No available connection was found, but the following active servers exist: %s",
                 buffer.toString());
       }
-      if (this.sender.getEnforceThreadsConnectSameReceiver()) {
+      if (this.sender.getEnforceThreadsConnectSameReceiver() && e.getMessage() != null) {
         if (Pattern.compile(maxAttemptsReachedConnectingServerIdExceptionMessage + ".*")
             .matcher(e.getMessage()).find()) {
           ioMsg += " " + e.getMessage();
