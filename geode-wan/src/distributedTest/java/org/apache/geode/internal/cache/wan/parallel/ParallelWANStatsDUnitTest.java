@@ -511,6 +511,9 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     ArrayList<Integer> v4List =
         (ArrayList<Integer>) vm4.invoke(() -> WANTestBase.getSenderStats("ln", 0));
 
+    // The number of batches will be 4 because each
+    // dispatcher thread (there are 2) will send half the number of entries,
+    // each on 2 batches.
     int batches = 4;
     // queue size:
     assertEquals(0, (int) v4List.get(0));
