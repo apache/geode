@@ -119,8 +119,7 @@ public class Put extends BaseCommand {
 
     LocalRegion region = (LocalRegion) serverConnection.getCache().getRegion(regionName);
     if (region == null) {
-      String reason =
-          ": Region was not found during put request";
+      String reason = " was not found during put request";
       writeRegionDestroyedEx(clientMessage, regionName, reason, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       return;

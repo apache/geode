@@ -110,7 +110,7 @@ public class DestroyRegion extends BaseCommand {
     LocalRegion region = (LocalRegion) serverConnection.getCache().getRegion(regionName);
     if (region == null) {
       String reason =
-          "Region was not found during destroy region request";
+          " was not found during destroy region request";
       writeRegionDestroyedEx(clientMessage, regionName, reason, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       return;
