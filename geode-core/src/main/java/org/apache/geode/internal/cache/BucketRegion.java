@@ -560,6 +560,11 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     }
   }
 
+  /**
+   * this starts with a primary bucket, clears it, and distribute a DistributedClearOperation
+   * .OperationType.OP_CLEAR operation to other members.
+   * If this member is not locked yet, lock it and send OP_LOCK_FOR_CLEAR to others first.
+   */
   @Override
   public void cmnClearRegion(RegionEventImpl regionEvent, boolean cacheWrite, boolean useRVV) {
     if (!getBucketAdvisor().isPrimary()) {

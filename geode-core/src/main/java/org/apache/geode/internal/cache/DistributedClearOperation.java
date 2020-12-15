@@ -186,6 +186,10 @@ public class DistributedClearOperation extends DistributedCacheOperation {
       return OperationExecutors.HIGH_PRIORITY_EXECUTOR;
     }
 
+    public OperationType getOperationType() {
+      return clearOp;
+    }
+
     @Override
     protected InternalCacheEvent createEvent(DistributedRegion rgn) throws EntryNotFoundException {
       RegionEventImpl event = createRegionEvent(rgn);
@@ -211,7 +215,7 @@ public class DistributedClearOperation extends DistributedCacheOperation {
       switch (this.clearOp) {
         case OP_CLEAR:
           region.clearRegionLocally((RegionEventImpl) event, false, this.rvv);
-          region.notifyBridgeClients((RegionEventImpl) event);
+          region.notifyBridgeClients(event);
           this.appliedOperation = true;
           break;
         case OP_LOCK_FOR_CLEAR:

@@ -181,12 +181,14 @@ public class BucketRegionJUnitTest extends DistributedRegionJUnitTest {
   }
 
   @Test
-  public void obtainWriteLocksForClearInBRShouldNotDistribute() {
+  public void obtainWriteLocksForClearInBRShouldDistribute() {
     RegionEventImpl event = createClearRegionEvent();
     BucketRegion region = (BucketRegion) event.getRegion();
     doNothing().when(region).lockLocallyForClear(any(), any(), any());
+    doNothing().when(region).lockAndFlushClearToOthers(any(), any());
     region.obtainWriteLocksForClear(event, null);
-    assertTrue(region.isUsedForPartitionedRegionBucket());
+    verify(region).lockLocallyForClear(any(), any(), eq(event));
+    verify(region).lockAndFlushClearToOthers(eq(event), eq(null));
   }
 
   @Test

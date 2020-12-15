@@ -440,6 +440,15 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
     });
   }
 
+  public Region createPartitionRegion(String name,
+      Consumer<PartitionAttributesFactory> attributesFactoryConsumer) {
+    return createRegion(RegionShortcut.PARTITION, name, rf -> {
+      PartitionAttributesFactory attributeFactory = new PartitionAttributesFactory();
+      attributesFactoryConsumer.accept(attributeFactory);
+      rf.setPartitionAttributes(attributeFactory.create());
+    });
+  }
+
   public void waitTillCacheClientProxyHasBeenPaused() {
     await().until(() -> {
       CacheClientNotifier clientNotifier = CacheClientNotifier.getInstance();
