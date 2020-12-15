@@ -21,6 +21,7 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -95,6 +96,7 @@ public class ClientServerSessionCacheJUnitTest extends AbstractSessionCacheJUnit
     when(cache.getDistributedSystem()).thenReturn(distributedSystem);
     doReturn(regionFactory).when(cache)
         .createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY_HEAP_LRU);
+    doReturn(sessionRegion).when(regionFactory).create(any());
     when(((InternalClientCache) cache).isClient()).thenReturn(true);
 
     when(emptyExecution.execute(any(Function.class))).thenReturn(collector);
@@ -188,7 +190,6 @@ public class ClientServerSessionCacheJUnitTest extends AbstractSessionCacheJUnit
     sessionCache.initialize();
 
     verify(regionFactory).addCacheListener(any(SessionExpirationCacheListener.class));
-    verify(sessionRegion).registerInterest("ALL_KEYS", InterestResultPolicy.KEYS);
   }
 
   @Test
@@ -231,11 +232,26 @@ public class ClientServerSessionCacheJUnitTest extends AbstractSessionCacheJUnit
     doReturn(sessionRegion).when(cache).getRegion(sessionRegionName);
     doReturn(attributes).when(sessionRegion).getAttributes();
     doReturn(cacheListeners).when(attributes).getCacheListeners();
+    when(attributes.getDataPolicy()).thenReturn(DataPolicy.DEFAULT);
+
+    sessionCache.initialize();
+
+    verify(sessionRegion).registerInterestForAllKeys(InterestResultPolicy.KEYS);
+  }
+
+  @Test
+  public void createOrRetrieveRegionWithNonNullSessionProxyRegionNotRegistersInterestIfEmpty() {
+    @SuppressWarnings("unchecked")
+    CacheListener<String, HttpSession>[] cacheListeners =
+        new CacheListener[] {new SessionExpirationCacheListener()};
+    doReturn(sessionRegion).when(cache).getRegion(sessionRegionName);
+    doReturn(attributes).when(sessionRegion).getAttributes();
+    doReturn(cacheListeners).when(attributes).getCacheListeners();
     when(attributes.getDataPolicy()).thenReturn(DataPolicy.EMPTY);
 
     sessionCache.initialize();
 
-    verify(sessionRegion).registerInterest("ALL_KEYS", InterestResultPolicy.KEYS);
+    verify(sessionRegion, never()).registerInterestForAllKeys(InterestResultPolicy.KEYS);
   }
 
   @Test
