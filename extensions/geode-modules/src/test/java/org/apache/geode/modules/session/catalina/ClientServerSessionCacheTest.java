@@ -14,15 +14,19 @@
  */
 package org.apache.geode.modules.session.catalina;
 
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 import org.junit.Test;
 
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.client.ClientCache;
 
 public class ClientServerSessionCacheTest {
@@ -32,7 +36,7 @@ public class ClientServerSessionCacheTest {
   public void registerInterestForSessionRegion() {
     SessionManager manager = mock(SessionManager.class);
     ClientCache clientCache = mock(ClientCache.class);
-    Region region = mock(Region.class);
+    Region region = mock(Region.class, RETURNS_DEEP_STUBS);
     ClientServerSessionCache cache = spy(new ClientServerSessionCache(manager, clientCache));
     doReturn(region).when(cache).createLocalSessionRegion();
 
@@ -41,4 +45,19 @@ public class ClientServerSessionCacheTest {
     verify(region).registerInterestForAllKeys(InterestResultPolicy.KEYS);
   }
 
+  @Test
+  public void doesNotRegisterInterestIfLocalCacheNotEnabled() {
+    final SessionManager manager = mock(SessionManager.class);
+    final ClientCache clientCache = mock(ClientCache.class);
+    final Region<?, ?> region = mock(Region.class);
+    final RegionAttributes<?, ?> attributes = mock(RegionAttributes.class);
+    final ClientServerSessionCache cache = spy(new ClientServerSessionCache(manager, clientCache));
+    doReturn(region).when(cache).createLocalSessionRegion();
+    doReturn(attributes).when(region).getAttributes();
+    doReturn(DataPolicy.EMPTY).when(attributes).getDataPolicy();
+
+    cache.createLocalSessionRegionWithRegisterInterest();
+
+    verify(region, never()).registerInterestForAllKeys(InterestResultPolicy.KEYS);
+  }
 }
