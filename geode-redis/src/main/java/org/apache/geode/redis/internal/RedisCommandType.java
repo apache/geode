@@ -177,6 +177,17 @@ public enum RedisCommandType {
   UNKNOWN(new UnknownExecutor(), SUPPORTED),
 
   /***************************************
+   *** Unknown Commands ***
+   ***************************************/
+  /**
+   * This handles the special case when using the lettuce (and perhaps other) clients. This
+   * client sends a HELLO command to try and infer which protocol to use. If it receives back
+   * 'UNKNOWN command', it uses the older, RESP2, protocol. This also needs to work when
+   * authentication is enabled.
+   */
+  HELLO(new UnknownExecutor(), RedisCommandSupportLevel.UNKNOWN),
+
+  /***************************************
    *** Unsupported Commands ***
    ***************************************/
 
@@ -414,6 +425,10 @@ public enum RedisCommandType {
 
   public boolean isUnimplemented() {
     return supportLevel == UNIMPLEMENTED;
+  }
+
+  public boolean isUnknown() {
+    return supportLevel == RedisCommandSupportLevel.UNKNOWN;
   }
 
   public boolean isAllowedWhileSubscribed() {
