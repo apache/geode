@@ -61,11 +61,13 @@ public class FunctionContextImpl implements FunctionContext {
     this.resultSender = resultSender;
     this.isPossDup = isPossibleDuplicate;
 
+    Object tmpPrincipal = null;
     if (cache != null) {
-      this.principal = ((InternalCache) cache).getSecurityService().getPrincipal();
-    } else {
-      this.principal = null;
+      if (((InternalCache) cache).getSecurityService() != null) {
+        tmpPrincipal = ((InternalCache) cache).getSecurityService().getPrincipal();
+      }
     }
+    this.principal = tmpPrincipal;
   }
 
   /**
