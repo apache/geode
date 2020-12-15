@@ -2225,6 +2225,12 @@ public class Oplog implements CompactableOplog, Flushable {
         if (getParent().isOfflineCompacting()) {
           getParent().incLiveEntryCount(getRecoveryMap().size());
         }
+        long tc = totalCount.get();
+        long tlc = totalLiveCount.get();
+        if (getParent().isValidating() && tlc >= 0
+            && tc > tlc) {
+          getParent().incDeadRecordCount(tc - tlc);
+        }
         getParent().incDeadRecordCount(getRecordsSkipped());
       }
       if (getParent().isOfflineCompacting()) {
