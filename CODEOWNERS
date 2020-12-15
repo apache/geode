@@ -14,296 +14,296 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#------------------------------------------------------------
+#-----------------------------------------------------------------
 # CODEOWNERS and .asf.yml - owned by everyone
-#------------------------------------------------------------
+#-----------------------------------------------------------------
 CODEOWNERS @apache/geode-committers
 .asf.yml @apache/geode-committers
  
-#------------------------------------------------------------
+#-----------------------------------------------------------------
 # Serialization
-#------------------------------------------------------------
-#geode-serialization/**
-#geode-core/**/org/apache/geode/pdx/**
-#geode-core/**/org/apache/geode/internal/*
+#-----------------------------------------------------------------
+geode-serialization/**                                            @bschuchardt @Bill
+geode-core/**/org/apache/geode/pdx/**                             @upthewaterspout @dschneider-pivotal
+geode-core/**/org/apache/geode/internal/*                         @bschuchardt @Bill
 
-#------------------------------------------------------------
+#-----------------------------------------------------------------
 # Membership
-#------------------------------------------------------------
-#geode-membership/**
-#geode-old-client-support/**
-#geode-tcp-server/**
-#geode-core/**/org/apache/geode/distributed/internal/membership/**
+#-----------------------------------------------------------------
+geode-membership/**                                               @bschuchardt @Bill
+geode-old-client-support/**                                       @bschuchardt @Bill
+geode-tcp-server/**                                               @bschuchardt @Bill
+geode-core/**/org/apache/geode/distributed/internal/membership/** @bschuchardt @Bill
 
-#------------------------------------------------------------
+#-----------------------------------------------------------------
 # P2P Messaging
-#------------------------------------------------------------
-#geode-core/**/org/apache/geode/internal/tcp/**
-#geode-core/**/org/apache/geode/distributed/internal/direct/**
-#geode-core/**/org/apache/geode/internal/net/**
-#geode-core/**/org/apache/geode/net/**
-#geode-core/**/org/apache/geode/distributed/*
-#geode-core/**/org/apache/geode/distributed/internal/*
+#-----------------------------------------------------------------
+geode-core/**/org/apache/geode/internal/tcp/**                    @bschuchardt @Bill
+geode-core/**/org/apache/geode/distributed/internal/direct/**     @bschuchardt @Bill
+geode-core/**/org/apache/geode/internal/net/**                    @bschuchardt @Bill
+geode-core/**/org/apache/geode/net/**                             @bschuchardt @Bill
+geode-core/**/org/apache/geode/distributed/*                      @bschuchardt @Bill
+geode-core/**/org/apache/geode/distributed/internal/*             @bschuchardt @Bill
 
-#------------------------------------------------------------
+#-----------------------------------------------------------------
 # Client/server messaging and cache operations
-#------------------------------------------------------------
-#geode-core/**/org/apache/geode/cache/client/**
-#geode-core/**/org/apache/geode/cache/server/**
-#geode-core/**/org/apache/geode/internal/cache/client/**
-#geode-core/**/org/apache/geode/internal/cache/tier/**
+#-----------------------------------------------------------------
+geode-core/**/org/apache/geode/cache/client/**                    @bschuchardt @Bill
+geode-core/**/org/apache/geode/cache/server/**                    @bschuchardt @Bill
+geode-core/**/org/apache/geode/internal/cache/client/**           @bschuchardt @echobravopapa
+geode-core/**/org/apache/geode/internal/cache/tier/**             @bschuchardt @echobravopapa
 
-#--------------------------------------------------
+#-----------------------------------------------------------------
 # Client Queues
-#--------------------------------------------------
-geode-core/**/org/apache/geode/internal/cache/ha/**              @agingade
-geode-core/**/org/apache/geode/internal/cache/tier/CacheClient*  @agingade
+#-----------------------------------------------------------------
+geode-core/**/org/apache/geode/internal/cache/ha/**               @agingade @boglesby
+geode-core/**/org/apache/geode/internal/cache/tier/CacheClient*   @agingade @boglesby
  
-#------------------------------------------------------------
+#-----------------------------------------------------------------
 # Experimental Protobuf based Client/Server
-#------------------------------------------------------------
-#geode-experimental-driver/**
-#geode-protobuf/**
-#geode-protobuf-messages/**
+#-----------------------------------------------------------------
+geode-experimental-driver/**                                      @kohlmu-pivotal @PurelyApplied
+geode-protobuf/**                                                 @kohlmu-pivotal @PurelyApplied
+geode-protobuf-messages/**                                        @kohlmu-pivotal @PurelyApplied
 
-#------------------------------------------------------------
+#-----------------------------------------------------------------
 # Core Public API packages - Cache, Region, etc.
-#------------------------------------------------------------
-#geode-core/**/org/apache/geode/*
-#geode-core/**/org/apache/geode/cache/*
-#geode-core/**/org/apache/geode/cache/util/**
+#-----------------------------------------------------------------
+geode-core/**/org/apache/geode/*                                  @dschneider-pivotal @DonalEvans
+geode-core/**/org/apache/geode/cache/*                            @dschneider-pivotal @DonalEvans
+geode-core/**/org/apache/geode/cache/util/**                      @dschneider-pivotal @DonalEvans
 
-#------------------------------------------------------------
+#-----------------------------------------------------------------
 # Distributed Locks
-#------------------------------------------------------------
-#geode-core/**/org/apache/geode/distributed/internal/locks/**
+#-----------------------------------------------------------------
+geode-core/**/org/apache/geode/distributed/internal/locks/**      @kirklund @dschneider-pivotal
 
-#------------------------------------------------------------
+#-----------------------------------------------------------------
 # Core region implementations and plumbing
-#------------------------------------------------------------
-#geode-core/**/org/apache/geode/internal/cache/*
+#-----------------------------------------------------------------
+geode-core/**/org/apache/geode/internal/cache/*                   @nabarunnag @DonalEvans
 
-#------------------------------------------------------------
+#-----------------------------------------------------------------
 # Region entry management
-#------------------------------------------------------------
-#geode-core/**/org/apache/geode/internal/cache/entries/**
-#geode-core/**/org/apache/geode/internal/cache/region/entry/**
-#geode-core/**/org/apache/geode/internal/cache/map/**
-#geode-core/**/org/apache/geode/compression/**
-#geode-core/**/org/apache/geode/internal/cache/compression/**
+#-----------------------------------------------------------------
+geode-core/**/org/apache/geode/internal/cache/entries/**          @dschneider-pivotal @sabbey37
+geode-core/**/org/apache/geode/internal/cache/region/entry/**     @dschneider-pivotal @sabbey37
+geode-core/**/org/apache/geode/internal/cache/map/**              @dschneider-pivotal @sabbey37
+geode-core/**/org/apache/geode/compression/**                     @dschneider-pivotal @sabbey37
+geode-core/**/org/apache/geode/internal/cache/compression/**      @dschneider-pivotal @sabbey37
 
-#------------------------------------------------------------
+#-----------------------------------------------------------------
 # Partitioned Regions
-#------------------------------------------------------------
-#geode-rebalancer/**
-#geode-core/**/org/apache/geode/internal/cache/partitioned/**
-#geode-core/**/org/apache/geode/cache/partition/**
+#-----------------------------------------------------------------
+geode-rebalancer/**                                               @boglesby @bross
+geode-core/**/org/apache/geode/internal/cache/partitioned/**      @boglesby @bross
+geode-core/**/org/apache/geode/cache/partition/**                 @boglesby @bross
 
-#------------------------------------------------------------
+#-----------------------------------------------------------------
 # Event tracking
-#------------------------------------------------------------
-geode-core/**/org/apache/geode/internal/cache/event/**       @agingade
+#-----------------------------------------------------------------
+geode-core/**/org/apache/geode/internal/cache/event/**            @agingade @nabarunnag @gesterzhou
 
-#------------------------------------------------------------
+#-----------------------------------------------------------------
 # Eviction
-#------------------------------------------------------------
-#geode-core/**/org/apache/geode/internal/cache/eviction/**
-#geode-core/**/org/apache/geode/internal/size/**
+#-----------------------------------------------------------------
+geode-core/**/org/apache/geode/internal/cache/eviction/**         @agingade @dschneider-pivotal
+geode-core/**/org/apache/geode/internal/size/**                   @agingade @dschneider-pivotal
 
-#------------------------------------------------------------
+#-----------------------------------------------------------------
 # Offheap
-#------------------------------------------------------------
-#geode-core/**/org/apache/geode/internal/offheap/**
+#-----------------------------------------------------------------
+geode-core/**/org/apache/geode/internal/offheap/**                @pivotal-eshu @dschneider-pivotal
 
-#------------------------------------------------------------
+#-----------------------------------------------------------------
 # Transactions
-#------------------------------------------------------------
-#geode-core/**/org/apache/geode/internal/cache/tx/**
-#geode-core/**/org/apache/geode/internal/jta/**
-#geode-core/**/org/apache/geode/internal/cache/locks/**
+#-----------------------------------------------------------------
+geode-core/**/org/apache/geode/internal/cache/tx/**               @pivotal-eshu @gesterzhou
+geode-core/**/org/apache/geode/internal/jta/**                    @pivotal-eshu @gesterzhou
+geode-core/**/org/apache/geode/internal/cache/locks/**            @pivotal-eshu @gesterzhou
 
-#------------------------------------------------------------
+#-----------------------------------------------------------------
 # Function Execution
-#------------------------------------------------------------
-#geode-core/**/org/apache/geode/internal/cache/execute/**
-#geode-core/**/org/apache/geode/cache/execute/**
+#-----------------------------------------------------------------
+geode-core/**/org/apache/geode/internal/cache/execute/**          @boglesby @sabbey37
+geode-core/**/org/apache/geode/cache/execute/**                   @boglesby @sabbey37
 
-#------------------------------------------------------------
+#-----------------------------------------------------------------
 # Querying
-#------------------------------------------------------------
-#geode-cq/**
-#geode-core/**/org/apache/geode/cache/query/**
+#-----------------------------------------------------------------
+geode-cq/**                                                       @nabarunnag @DonalEvans
+geode-core/**/org/apache/geode/cache/query/**                     @nabarunnag @DonalEvans
 
-#------------------------------------------------------------
+#-----------------------------------------------------------------
 # Session State:
-#------------------------------------------------------------
-extensions/**                                                @sabbey37 @jdeppe-pivotal @bross
-geode-core/**/org/apache/geode/internal/modules/util/**      @sabbey37 @jdeppe-pivotal @bross
+#-----------------------------------------------------------------
+extensions/**                                                     @sabbey37 @jdeppe-pivotal @bross
+geode-core/**/org/apache/geode/internal/modules/util/**           @sabbey37 @jdeppe-pivotal @bross
 
-#------------------------------------------------------------
+#-----------------------------------------------------------------
 # DEV rest API
-#------------------------------------------------------------
-geode-web-api/**                                             @jdeppe-pivotal
+#-----------------------------------------------------------------
+geode-web-api/**                                                  @jdeppe-pivotal @jinmeiliao
 
-#------------------------------------------------------------
+#-----------------------------------------------------------------
 # Lucene integration
-#------------------------------------------------------------
-#geode-lucene/**
+#-----------------------------------------------------------------
+geode-lucene/**                                                   @nabarunnag @DonalEvans
 
-#------------------------------------------------------------
+#-----------------------------------------------------------------
 # Memcached integration
-#------------------------------------------------------------
-#geode-memcached/**
+#-----------------------------------------------------------------
+geode-memcached/**                                                @nabarunnag @DonalEvans
 
-#------------------------------------------------------------
+#-----------------------------------------------------------------
 # Misc Utilities
-#------------------------------------------------------------
-#geode-core/**/org/apache/geode/internal/util/concurrent/**
-#geode-core/**/org/apache/geode/internal/shared/**
-#geode-core/**/org/apache/geode/internal/sequencelog/**
-#geode-core/**/org/apache/geode/internal/concurrent/**
-#geode-core/**/org/apache/geode/distributed/internal/unsafe/**
-#geode-core/**/org/apache/geode/internal/lang/**
-#geode-core/**/org/apache/geode/internal/monitoring/**
-#geode-core/**/org/apache/geode/internal/exception/**
-#geode-core/**/org/apache/geode/lang/**
-#geode-core/**/org/apache/geode/ra/**
-#geode-core/**/org/apache/geode/internal/util/**
-#geode-core/**/org/apache/geode/internal/cache/vmotion/**
-#geode-core/**/org/apache/geode/internal/jndi/**
-#geode-common/**
-#geode-unsafe/**
+#-----------------------------------------------------------------
+geode-core/**/org/apache/geode/internal/util/concurrent/**        @nabarunnag @boglesby
+geode-core/**/org/apache/geode/internal/shared/**                 @nabarunnag @boglesby
+geode-core/**/org/apache/geode/internal/sequencelog/**            @nabarunnag @boglesby
+geode-core/**/org/apache/geode/internal/concurrent/**             @nabarunnag @boglesby
+geode-core/**/org/apache/geode/distributed/internal/unsafe/**     @nabarunnag @boglesby
+geode-core/**/org/apache/geode/internal/lang/**                   @nabarunnag @boglesby
+geode-core/**/org/apache/geode/internal/monitoring/**             @nabarunnag @boglesby
+geode-core/**/org/apache/geode/internal/exception/**              @nabarunnag @boglesby
+geode-core/**/org/apache/geode/lang/**                            @nabarunnag @boglesby
+geode-core/**/org/apache/geode/ra/**                              @nabarunnag @boglesby
+geode-core/**/org/apache/geode/internal/util/**                   @nabarunnag @boglesby
+geode-core/**/org/apache/geode/internal/cache/vmotion/**          @nabarunnag @boglesby
+geode-core/**/org/apache/geode/internal/jndi/**                   @nabarunnag @boglesby
+geode-common/**                                                   @nabarunnag @boglesby
+geode-unsafe/**                                                   @nabarunnag @boglesby
 
-#------------------------------------------------------------
+#-----------------------------------------------------------------
 # Persistence
-#------------------------------------------------------------
-#geode-core/**/org/apache/geode/cache/persistence/**
-#geode-core/**/org/apache/geode/internal/cache/persistence/**
-geode-core/**/org/apache/geode/internal/cache/backup/**      @agingade
+#-----------------------------------------------------------------
+geode-core/**/org/apache/geode/cache/persistence/**               @kirklund @dschneider-pivotal
+geode-core/**/org/apache/geode/internal/cache/persistence/**      @kirklund @dschneider-pivotal
+geode-core/**/org/apache/geode/internal/cache/backup/**           @kirklund @dschneider-pivotal @agingade
 
-#------------------------------------------------------------
+#-----------------------------------------------------------------
 # Region Version Vectors - used for sychronization on 
 # member failures and persistent recovery
-#------------------------------------------------------------
-#geode-core/**/org/apache/geode/internal/cache/versions/**
+#-----------------------------------------------------------------
+geode-core/**/org/apache/geode/internal/cache/versions/**         @dschneider-pivotal @gesterzhou
 
 
-#------------------------------------------------------------
+#-----------------------------------------------------------------
 # WAN messaging and queues
-#------------------------------------------------------------
-#geode-wan/**
-#geode-core/**/org/apache/geode/cache/asyncqueue/**
-#geode-core/**/org/apache/geode/cache/wan/**
-#geode-core/**/org/apache/geode/internal/cache/wan/**
+#-----------------------------------------------------------------
+geode-wan/**                                                      @gesterzhou @jujoramos
+geode-core/**/org/apache/geode/cache/asyncqueue/**                @gesterzhou @jujoramos
+geode-core/**/org/apache/geode/cache/wan/**                       @gesterzhou @jujoramos
+geode-core/**/org/apache/geode/internal/cache/wan/**              @gesterzhou @jujoramos
 
-#------------------------------------------------------------
+#-----------------------------------------------------------------
 # Management
-#------------------------------------------------------------
-geode-management/**                                          @jdeppe-pivotal
-geode-web-management/**                                      @jdeppe-pivotal
-geode-gfsh/**                                                @jdeppe-pivotal
-geode-pulse/**                                               @jdeppe-pivotal
-geode-http-service/**                                        @jdeppe-pivotal
-geode-web/**                                                 @jdeppe-pivotal
-geode-core/**/org/apache/geode/admin/**                      @jdeppe-pivotal
-geode-core/**/org/apache/geode/alerting/**                   @jdeppe-pivotal
-geode-core/**/org/apache/geode/management/**                 @jdeppe-pivotal
-geode-core/**/org/apache/geode/cache/configuration/**        @jdeppe-pivotal
-geode-core/**/org/apache/geode/internal/admin/**             @jdeppe-pivotal
-geode-core/**/org/apache/geode/internal/cache/xmlcache/**    @jdeppe-pivotal
-geode-core/**/org/apache/geode/internal/cache/extension/**   @jdeppe-pivotal
-geode-core/**/org/apache/geode/internal/config/**            @jdeppe-pivotal
-geode-core/**/org/apache/geode/internal/process/**           @jdeppe-pivotal
-geode-core/**/org/apache/geode/cache/internal/*              @jdeppe-pivotal
+#-----------------------------------------------------------------
+geode-management/**                                               @jdeppe-pivotal @kirklund @jinmeiliao
+geode-web-management/**                                           @jdeppe-pivotal @kirklund @jinmeiliao
+geode-gfsh/**                                                     @jdeppe-pivotal @kirklund @jinmeiliao
+geode-pulse/**                                                    @jdeppe-pivotal @kirklund @jinmeiliao
+geode-http-service/**                                             @jdeppe-pivotal @kirklund @jinmeiliao
+geode-web/**                                                      @jdeppe-pivotal @kirklund @jinmeiliao
+geode-core/**/org/apache/geode/admin/**                           @jdeppe-pivotal @kirklund @jinmeiliao
+geode-core/**/org/apache/geode/alerting/**                        @jdeppe-pivotal @kirklund @jinmeiliao
+geode-core/**/org/apache/geode/management/**                      @jdeppe-pivotal @kirklund @jinmeiliao
+geode-core/**/org/apache/geode/cache/configuration/**             @jdeppe-pivotal @kirklund @jinmeiliao
+geode-core/**/org/apache/geode/internal/admin/**                  @jdeppe-pivotal @kirklund @jinmeiliao
+geode-core/**/org/apache/geode/internal/cache/xmlcache/**         @jdeppe-pivotal @kirklund @jinmeiliao
+geode-core/**/org/apache/geode/internal/cache/extension/**        @jdeppe-pivotal @kirklund @jinmeiliao
+geode-core/**/org/apache/geode/internal/config/**                 @jdeppe-pivotal @kirklund @jinmeiliao
+geode-core/**/org/apache/geode/internal/process/**                @jdeppe-pivotal @kirklund @jinmeiliao
+geode-core/**/org/apache/geode/cache/internal/*                   @jdeppe-pivotal @kirklund @jinmeiliao
 
-#------------------------------------------------------------
+#-----------------------------------------------------------------
 # Security
-#------------------------------------------------------------
-geode-core/**/org/apache/geode/examples/security/**          @jdeppe-pivotal
-geode-core/**/org/apache/geode/examples/**                   @jdeppe-pivotal
-geode-core/**/org/apache/geode/security/**                   @jdeppe-pivotal
-geode-core/**/org/apache/geode/internal/security/**          @jdeppe-pivotal
-geode-core/**/org/apache/geode/cache/operations/**           @jdeppe-pivotal
-geode-core/**/org/apache/geode/internal/cache/operations/**  @jdeppe-pivotal
+#-----------------------------------------------------------------
+geode-core/**/org/apache/geode/examples/security/**               @jdeppe-pivotal @mhansonp @jinmeiliao
+geode-core/**/org/apache/geode/examples/**                        @jdeppe-pivotal @mhansonp @jinmeiliao
+geode-core/**/org/apache/geode/security/**                        @jdeppe-pivotal @mhansonp @jinmeiliao
+geode-core/**/org/apache/geode/internal/security/**               @jdeppe-pivotal @mhansonp @jinmeiliao
+geode-core/**/org/apache/geode/cache/operations/**                @jdeppe-pivotal @mhansonp @jinmeiliao
+geode-core/**/org/apache/geode/internal/cache/operations/**       @jdeppe-pivotal @mhansonp @jinmeiliao
 
-#------------------------------------------------------------
+#-----------------------------------------------------------------
 # Logging
-#------------------------------------------------------------
-#geode-log4j/**
-#geode-logging/**
-#geode-core/**/org/apache/geode/logging/**
-#geode-core/**/org/apache/geode/internal/logging/**
-#geode-core/**/org/apache/geode/i18n/**
-#geode-core/**/org/apache/geode/internal/i18n/**
-#geode-core/**/org/apache/geode/internal/io/**
+#-----------------------------------------------------------------
+geode-log4j/**                                                    @kirklund @mhansonp
+geode-logging/**                                                  @kirklund @mhansonp
+geode-core/**/org/apache/geode/logging/**                         @kirklund @mhansonp
+geode-core/**/org/apache/geode/internal/logging/**                @kirklund @mhansonp
+geode-core/**/org/apache/geode/i18n/**                            @kirklund @mhansonp
+geode-core/**/org/apache/geode/internal/i18n/**                   @kirklund @mhansonp
+geode-core/**/org/apache/geode/internal/io/**                     @kirklund @mhansonp
 
-#------------------------------------------------------------
+#-----------------------------------------------------------------
 # Metrics & Statistics
-#------------------------------------------------------------
-#geode-core/**/org/apache/geode/internal/statistics/**
-#geode-core/**/org/apache/geode/internal/stats50/**
-#geode-core/**/org/apache/geode/metrics/**
+#-----------------------------------------------------------------
+geode-core/**/org/apache/geode/internal/statistics/**             @dschneider-pivotal @kirklund
+geode-core/**/org/apache/geode/internal/stats50/**                @dschneider-pivotal @kirklund
+geode-core/**/org/apache/geode/metrics/**                         @dschneider-pivotal @kirklund
 
-#------------------------------------------------------------
+#-----------------------------------------------------------------
 # Region Snapshots
-#------------------------------------------------------------
-geode-core/**/org/apache/geode/cache/snapshot/**             @agingade
-geode-core/**/org/apache/geode/internal/cache/snapshot/**    @agingade
+#-----------------------------------------------------------------
+geode-core/**/org/apache/geode/cache/snapshot/**                  @agingade @jchen21
+geode-core/**/org/apache/geode/internal/cache/snapshot/**         @agingade @jchen21
 
-#------------------------------------------------------------
+#-----------------------------------------------------------------
 # JDBC connector
-#------------------------------------------------------------
-#geode-connectors/**
-geode-core/**/org/apache/geode/datasource/**                 @agingade @bross
-geode-core/**/org/apache/geode/internal/datasource/**        @agingade @bross
+#-----------------------------------------------------------------
+geode-connectors/**                                               @agingade @jchen21
+geode-core/**/org/apache/geode/datasource/**                      @agingade @bross
+geode-core/**/org/apache/geode/internal/datasource/**             @agingade @bross
 
 
-#------------------------------------------------------------
+#-----------------------------------------------------------------
 # Resource manager
-#------------------------------------------------------------
-#geode-core/**/org/apache/geode/cache/control/**
-#geode-core/**/org/apache/geode/internal/cache/control/**
+#-----------------------------------------------------------------
+geode-core/**/org/apache/geode/cache/control/**                   @kirklund @mhansonp
+geode-core/**/org/apache/geode/internal/cache/control/**          @kirklund @mhansonp
 
-#------------------------------------------------------------
+#-----------------------------------------------------------------
 # Testing utilities
-#------------------------------------------------------------
-#geode-concurrency-test/**
-#geode-dunit/**
-#geode-junit/**
-#geode-jmh/**
+#-----------------------------------------------------------------
+geode-concurrency-test/**                                         @kirklund @mhansonp
+geode-dunit/**                                                    @kirklund @mhansonp
+geode-junit/**                                                    @kirklund @mhansonp
+geode-jmh/**                                                      @kirklund @mhansonp
 
-#------------------------------------------------------------
+#-----------------------------------------------------------------
 # Redis API
-#------------------------------------------------------------
-geode-redis/**                                               @sabbey37 @jdeppe-pivotal
+#-----------------------------------------------------------------
+geode-redis/**                                                    @sabbey37 @jdeppe-pivotal @nonbinaryprogrammer
 
-#------------------------------------------------------------
+#-----------------------------------------------------------------
 # Build and tooling
-#------------------------------------------------------------
-#*.gradle
-#etc/**
-#build.gradle
-#buildSrc/**
-buildSrc/**/DependencyConstraints.groovy                     @onichols-pivotal
-ci/**                                                        @onichols-pivotal
-dev-tools/**                                                 @onichols-pivotal
-docker/**                                                    @onichols-pivotal
-geode-management/src/test/script/update-management-wiki.sh   @onichols-pivotal
-#boms/**
-#*gradle*
-#static-analysis/**
-#geode-old-versions/**
-#KEYS
-#geode-assembly/**
+#-----------------------------------------------------------------
+*.gradle                                                          @rhoughton-pivot
+etc/**                                                            @rhoughton-pivot @pivotal-jbarrett
+build.gradle                                                      @rhoughton-pivot
+buildSrc/**                                                       @rhoughton-pivot @jdeppe-pivotal
+buildSrc/**/DependencyConstraints.groovy                          @onichols-pivotal @dickcav
+ci/**                                                             @onichols-pivotal @dickcav
+dev-tools/**                                                      @onichols-pivotal @dickcav
+docker/**                                                         @onichols-pivotal @dickcav
+geode-management/src/test/script/update-management-wiki.sh        @onichols-pivotal @dickcav
+boms/**                                                           @rhoughton-pivot @pivotal-jbarrett
+*gradle*                                                          @rhoughton-pivot
+static-analysis/**                                                @rhoughton-pivot
+geode-old-versions/**                                             @onichols-pivotal @dickcav
+KEYS                                                              @onichols-pivotal @dickcav
+geode-assembly/**                                                 @rhoughton-pivot
 
-#------------------------------------------------------------
+#-----------------------------------------------------------------
 # Documentation
-#------------------------------------------------------------
-geode-book/**                                                @karensmolermiller @davebarnes97
-geode-docs/**                                                @karensmolermiller @davebarnes97
-#BUILDING.md
-#CODE_OF_CONDUCT.md
-LICENSE                                                      @onichols-pivotal
-NOTICE                                                       @onichols-pivotal
-#README.md
-#TESTING.md
+#-----------------------------------------------------------------
+geode-book/**                                                     @karensmolermiller @davebarnes97
+geode-docs/**                                                     @karensmolermiller @davebarnes97
+BUILDING.md                                                       @rhoughton-pivot @upthewaterspout
+CODE_OF_CONDUCT.md                                                @upthewaterspout @metatype
+LICENSE                                                           @onichols-pivotal @metatype
+NOTICE                                                            @onichols-pivotal @metatype
+README.md                                                         @upthewaterspout @metatype
+TESTING.md                                                        @upthewaterspout @kirklund
