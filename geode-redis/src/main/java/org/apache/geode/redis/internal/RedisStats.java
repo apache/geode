@@ -52,9 +52,8 @@ public class RedisStats {
   private static final int expirationsId;
   private static final int expirationTimeId;
   private final AtomicLong commandsProcessed = new AtomicLong();
-  private final AtomicLong opsPerSecond = new AtomicLong();
   private final AtomicLong totalNetworkBytesRead = new AtomicLong();
-  private final AtomicLong connectionsReceived = new AtomicLong();
+  private final AtomicLong totalConnectionsReceived = new AtomicLong();
   private final AtomicLong expirations = new AtomicLong();
   private final AtomicLong keyspaceHits = new AtomicLong();
   private final AtomicLong keyspaceMisses = new AtomicLong();
@@ -112,22 +111,6 @@ public class RedisStats {
     this.clock = clock;
     this.START_TIME_IN_NANOS = this.clock.getTime();
     perSecondExecutor = startPerSecondUpdater();
-  }
-
-  public void clearAllStats() {
-    commandsProcessed.set(0);
-    opsPerSecond.set(0);
-    totalNetworkBytesRead.set(0);
-    connectionsReceived.set(0);
-    expirations.set(0);
-    keyspaceHits.set(0);
-    keyspaceMisses.set(0);
-    stats.setLong(clientId, 0);
-    stats.setLong(passiveExpirationChecksId, 0);
-    stats.setLong(passiveExpirationCheckTimeId, 0);
-    stats.setLong(passiveExpirationsId, 0);
-    stats.setLong(expirationsId, 0);
-    stats.setLong(expirationTimeId, 0);
   }
 
   private static void fillListWithCompletedCommandDescriptors(StatisticsTypeFactory f,
@@ -211,7 +194,7 @@ public class RedisStats {
   }
 
   public void addClient() {
-    connectionsReceived.incrementAndGet();
+    totalConnectionsReceived.incrementAndGet();
     stats.incLong(clientId, 1);
   }
 
@@ -219,8 +202,8 @@ public class RedisStats {
     stats.incLong(clientId, -1);
   }
 
-  public long getConnectionsReceived() {
-    return connectionsReceived.get();
+  public long getTotalConnectionsReceived() {
+    return totalConnectionsReceived.get();
   }
 
   public long getConnectedClients() {
