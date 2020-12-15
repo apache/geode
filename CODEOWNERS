@@ -95,9 +95,9 @@ geode-core/**/org/apache/geode/internal/cache/compression/**      @dschneider-pi
 #-----------------------------------------------------------------
 # Partitioned Regions
 #-----------------------------------------------------------------
-geode-rebalancer/**                                               @boglesby @bross
-geode-core/**/org/apache/geode/internal/cache/partitioned/**      @boglesby @bross
-geode-core/**/org/apache/geode/cache/partition/**                 @boglesby @bross
+geode-rebalancer/**                                               @boglesby @BenjaminPerryRoss
+geode-core/**/org/apache/geode/internal/cache/partitioned/**      @boglesby @BenjaminPerryRoss
+geode-core/**/org/apache/geode/cache/partition/**                 @boglesby @BenjaminPerryRoss
 
 #-----------------------------------------------------------------
 # Event tracking
@@ -137,8 +137,8 @@ geode-core/**/org/apache/geode/cache/query/**                     @nabarunnag @D
 #-----------------------------------------------------------------
 # Session State:
 #-----------------------------------------------------------------
-extensions/**                                                     @sabbey37 @jdeppe-pivotal @bross
-geode-core/**/org/apache/geode/internal/modules/util/**           @sabbey37 @jdeppe-pivotal @bross
+extensions/**                                                     @sabbey37 @jdeppe-pivotal @BenjaminPerryRoss
+geode-core/**/org/apache/geode/internal/modules/util/**           @sabbey37 @jdeppe-pivotal @BenjaminPerryRoss
 
 #-----------------------------------------------------------------
 # DEV rest API
@@ -254,8 +254,8 @@ geode-core/**/org/apache/geode/internal/cache/snapshot/**         @agingade @jch
 # JDBC connector
 #-----------------------------------------------------------------
 geode-connectors/**                                               @agingade @jchen21
-geode-core/**/org/apache/geode/datasource/**                      @agingade @bross
-geode-core/**/org/apache/geode/internal/datasource/**             @agingade @bross
+geode-core/**/org/apache/geode/datasource/**                      @agingade @BenjaminPerryRoss
+geode-core/**/org/apache/geode/internal/datasource/**             @agingade @BenjaminPerryRoss
 
 
 #-----------------------------------------------------------------
