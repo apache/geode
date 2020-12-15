@@ -22,13 +22,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
-import org.apache.shiro.subject.Subject;
-import org.apache.shiro.util.ThreadState;
 
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.internal.MakeNotStatic;
-import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.TransactionException;
 import org.apache.geode.cache.client.internal.ProxyCache;
@@ -44,13 +41,10 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.metrics.FunctionStats;
 import org.apache.geode.internal.cache.execute.metrics.FunctionStatsManager;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -273,26 +267,14 @@ public abstract class AbstractExecution implements InternalExecution {
                   fn.getId())));
         }
       } else {
-        final ClusterDistributionManager newDM = (ClusterDistributionManager) dm;
-        Subject subject = getSubject(cx);
 
+        final ClusterDistributionManager newDM = (ClusterDistributionManager) dm;
         newDM.getExecutors().getFunctionExecutor().execute(() -> {
-          ThreadState threadState = null;
-          if (subject != null) {
-            SecurityService securityService = ((InternalCache) cx.getCache()).getSecurityService();
-            threadState = securityService.bindSubject(subject);
-          }
-          try {
-            executeFunctionLocally(fn, cx, sender, newDM);
-            if (!sender.isLastResultReceived() && fn.hasResult()) {
-              ((InternalResultSender) sender).setException(new FunctionException(
-                  String.format("The function, %s, did not send last result",
-                      fn.getId())));
-            }
-          } finally {
-            if (threadState != null) {
-              threadState.restore();
-            }
+          executeFunctionLocally(fn, cx, sender, newDM);
+          if (!sender.isLastResultReceived() && fn.hasResult()) {
+            ((InternalResultSender) sender).setException(new FunctionException(
+                String.format("The function, %s, did not send last result",
+                    fn.getId())));
           }
         });
       }
@@ -309,29 +291,16 @@ public abstract class AbstractExecution implements InternalExecution {
   // Bug41118 : in case of lonerDistribuedSystem do local execution through
   // main thread otherwise give execution to FunctionExecutor from
   // DistributionManager
-  public void executeFunctionOnLocalNode(final Function<?> fn, final FunctionContext<?> cx,
-      final ResultSender<?> sender, DistributionManager dm, final boolean isTx) {
+  public void executeFunctionOnLocalNode(final Function<?> fn, final FunctionContext cx,
+      final ResultSender sender, DistributionManager dm, final boolean isTx) {
     if (dm instanceof ClusterDistributionManager && !isTx) {
-      Subject subject = getSubject(cx);
       final ClusterDistributionManager newDM = (ClusterDistributionManager) dm;
-
       newDM.getExecutors().getFunctionExecutor().execute(() -> {
-        ThreadState threadState = null;
-        if (subject != null) {
-          SecurityService securityService = ((InternalCache) cx.getCache()).getSecurityService();
-          threadState = securityService.bindSubject(subject);
-        }
-        try {
-          executeFunctionLocally(fn, cx, sender, newDM);
-          if (!((InternalResultSender) sender).isLastResultReceived() && fn.hasResult()) {
-            ((InternalResultSender) sender).setException(new FunctionException(
-                String.format("The function, %s, did not send last result",
-                    fn.getId())));
-          }
-        } finally {
-          if (threadState != null) {
-            threadState.restore();
-          }
+        executeFunctionLocally(fn, cx, sender, newDM);
+        if (!((InternalResultSender) sender).isLastResultReceived() && fn.hasResult()) {
+          ((InternalResultSender) sender).setException(new FunctionException(
+              String.format("The function, %s, did not send last result",
+                  fn.getId())));
         }
       });
     } else {
@@ -341,15 +310,6 @@ public abstract class AbstractExecution implements InternalExecution {
             String.format("The function, %s, did not send last result",
                 fn.getId())));
       }
-    }
-  }
-
-  private Subject getSubject(FunctionContext<?> context) {
-    try {
-      SecurityService securityService = ((InternalCache) context.getCache()).getSecurityService();
-      return securityService.getSubject();
-    } catch (CacheClosedException | AuthenticationRequiredException ex) {
-      return null;
     }
   }
 

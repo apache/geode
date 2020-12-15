@@ -21,6 +21,7 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
+import org.apache.geode.internal.cache.InternalCache;
 
 /**
  * Context available to application functions which is passed from GemFire to {@link Function}. <br>
@@ -45,6 +46,8 @@ public class FunctionContextImpl implements FunctionContext {
 
   private final boolean isPossDup;
 
+  private final Object principal;
+
   public FunctionContextImpl(final Cache cache, final String functionId, final Object args,
       ResultSender resultSender) {
     this(cache, functionId, args, resultSender, false);
@@ -57,6 +60,12 @@ public class FunctionContextImpl implements FunctionContext {
     this.args = args;
     this.resultSender = resultSender;
     this.isPossDup = isPossibleDuplicate;
+
+    if (cache != null) {
+      this.principal = ((InternalCache) cache).getSecurityService().getPrincipal();
+    } else {
+      this.principal = null;
+    }
   }
 
   /**
@@ -113,4 +122,8 @@ public class FunctionContextImpl implements FunctionContext {
     return cache;
   }
 
+  @Override
+  public Object getPrincipal() {
+    return principal;
+  }
 }
