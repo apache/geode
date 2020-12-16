@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.internal.InternalInstantiator.getInstantiators;
 import static org.apache.geode.test.dunit.DistributedTestUtils.unregisterInstantiatorsInThisVM;
 import static org.junit.Assert.assertEquals;
@@ -50,7 +51,6 @@ import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.ClientServerObserverAdapter;
 import org.apache.geode.internal.cache.ClientServerObserverHolder;
@@ -146,7 +146,7 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
     factory.setMirrorType(MirrorType.KEYS_VALUES);
     RegionAttributes attrs = factory.create();
     cache.createRegion(REGION_NAME, attrs);
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = getRandomAvailableTCPPort();
     CacheServer server1 = cache.addCacheServer();
     server1.setPort(port);
     server1.setMaxThreads(maxThreads.intValue());
@@ -813,7 +813,7 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
 
     RegionAttributes attrs = factory.create();
     cache.createRegion(REGION_NAME, attrs);
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = getRandomAvailableTCPPort();
     CacheServer server1 = cache.addCacheServer();
     server1.setPort(port);
     server1.setMaxThreads(maxThreads.intValue());
@@ -832,7 +832,7 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
     factory.setMirrorType(MirrorType.KEYS_VALUES);
     RegionAttributes attrs = factory.create();
     cache.createRegion(REGION_NAME, attrs);
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = getRandomAvailableTCPPort();
     CacheServer server1 = cache.addCacheServer();
     server1.setPort(port);
     server1.setMaxThreads(maxThreads.intValue());

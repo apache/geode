@@ -30,10 +30,9 @@ import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR
 import static org.apache.geode.distributed.ConfigurationProperties.TCP_PORT;
 import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_ACK_WAIT_THRESHOLD;
 import static org.apache.geode.distributed.internal.OperationExecutors.SERIAL_EXECUTOR;
-import static org.apache.geode.internal.AvailablePort.MULTICAST;
-import static org.apache.geode.internal.AvailablePort.SOCKET;
-import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPortRange;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableUDPPort;
 import static org.apache.geode.internal.inet.LocalHostUtil.getLocalHost;
 import static org.apache.geode.test.dunit.DistributedTestUtils.getDUnitLocatorPort;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
@@ -98,9 +97,9 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
   public void before() throws Exception {
     disconnectAllFromDS();
 
-    this.mcastPort = getRandomAvailablePort(MULTICAST);
-    this.locatorPort = getRandomAvailablePort(SOCKET);
-    this.tcpPort = getRandomAvailablePort(SOCKET);
+    this.mcastPort = getRandomAvailableUDPPort();
+    this.locatorPort = getRandomAvailableTCPPort();
+    this.tcpPort = getRandomAvailableTCPPort();
 
     int[] portRange = getRandomAvailableTCPPortRange(3, true);
     this.lowerBoundOfPortRange = portRange[0];

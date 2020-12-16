@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.internal.cache.ExpiryTask.permitExpiration;
 import static org.apache.geode.internal.cache.ExpiryTask.suspendExpiration;
 import static org.junit.Assert.assertEquals;
@@ -102,7 +103,6 @@ import org.apache.geode.cache.util.CacheWriterAdapter;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.execute.CustomerIDPartitionResolver;
 import org.apache.geode.internal.cache.execute.InternalFunctionService;
 import org.apache.geode.internal.cache.execute.data.CustId;
@@ -3737,7 +3737,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
     return (Integer) vm.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+        int port = getRandomAvailableTCPPort();
         CacheServer s = getCache().addCacheServer();
         s.setPort(port);
         s.start();
