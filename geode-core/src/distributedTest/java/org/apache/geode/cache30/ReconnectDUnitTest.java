@@ -38,6 +38,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANA
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.apache.geode.distributed.Locator.getLocator;
 import static org.apache.geode.distributed.internal.membership.api.MembershipManagerHelper.getDistribution;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.apache.geode.test.dunit.Host.getHost;
@@ -94,7 +95,6 @@ import org.apache.geode.distributed.internal.ServerLocator;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.api.MembershipManagerHelper;
 import org.apache.geode.examples.SimpleSecurityManager;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
@@ -136,7 +136,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
   public final void postSetUp() throws Exception {
     IgnoredException.addIgnoredException("ForcedDisconnectException");
     IgnoredException.addIgnoredException("Possible loss of quorum");
-    locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    locatorPort = getRandomAvailableTCPPort();
     final int locPort = locatorPort;
     Host.getHost(0).getVM(locatorVMNumber).invoke(new SerializableRunnable("start locator") {
       @Override

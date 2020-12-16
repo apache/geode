@@ -16,6 +16,7 @@ package org.apache.geode.distributed.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
@@ -35,7 +36,6 @@ import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
@@ -66,7 +66,7 @@ public class ProductUseLogDUnitTest extends JUnit4CacheTestCase {
     VM vm1 = host.getVM(1);
 
     // use a locator so we will monitor server load and record member->server mappings
-    int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int locatorPort = getRandomAvailableTCPPort();
     Properties p = new Properties();
     p.put(START_LOCATOR, "localhost[" + locatorPort + "],peer=false");
     p.put(USE_CLUSTER_CONFIGURATION, "false");

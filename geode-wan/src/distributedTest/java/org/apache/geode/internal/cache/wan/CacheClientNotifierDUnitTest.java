@@ -18,6 +18,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIEN
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -44,7 +45,6 @@ import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.server.ClientSubscriptionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheServer;
@@ -63,7 +63,7 @@ public class CacheClientNotifierDUnitTest extends WANTestBase {
 
   private int createCacheServerWithCSC(VM vm, final boolean withCSC, final int capacity,
       final String policy, final String diskStoreName) {
-    final int serverPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final int serverPort = getRandomAvailableTCPPort();
 
     SerializableRunnable createCacheServer = new SerializableRunnable() {
       @Override

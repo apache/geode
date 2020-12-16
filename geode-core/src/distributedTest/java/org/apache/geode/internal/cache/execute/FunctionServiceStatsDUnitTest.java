@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.execute;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -55,7 +56,6 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.PartitionAttributesImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionTestHelper;
@@ -345,7 +345,7 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase {
         }
         CacheServer server = cache.addCacheServer();
         assertNotNull(server);
-        int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+        int port = getRandomAvailableTCPPort();
         server.setPort(port);
         try {
           server.start();

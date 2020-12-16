@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -43,7 +45,6 @@ import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
@@ -171,7 +172,7 @@ public abstract class TxCommitMessageBCTestBase extends JUnit4DistributedTestCas
     rf2.create(PARTITION_REGION_NAME);
 
     CacheServer server = cache.addCacheServer();
-    server.setPort(AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET));
+    server.setPort(getRandomAvailableTCPPort());
     server.start();
     return server.getPort();
   }
