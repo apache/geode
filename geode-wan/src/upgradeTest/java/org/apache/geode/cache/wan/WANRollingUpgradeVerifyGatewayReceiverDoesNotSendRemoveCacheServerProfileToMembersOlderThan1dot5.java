@@ -14,13 +14,13 @@
  */
 package org.apache.geode.cache.wan;
 
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -39,7 +39,7 @@ public class WANRollingUpgradeVerifyGatewayReceiverDoesNotSendRemoveCacheServerP
     VM currentServer = host.getVM(VersionManager.CURRENT_VERSION, 2);
 
     // Start locator
-    final int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final int port = getRandomAvailableTCPPort();
     oldLocator.invoke(() -> DistributedTestUtils.deleteLocatorStateFile(port));
     final String locators = NetworkUtils.getServerHostName(host) + "[" + port + "]";
     oldLocator.invoke(() -> startLocator(port, 0, locators, ""));
