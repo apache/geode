@@ -210,20 +210,20 @@ public class GeodeRedisStats {
       ArrayList<StatisticDescriptor> descriptorList) {
 
     descriptorList.add(statisticsTypeFactory.createLongGauge("connectedClients",
-        "Number of clients currently connected to this redis server.",
+        "Current client connections to this redis server.",
         "clients"));
 
     descriptorList.add(statisticsTypeFactory.createLongCounter("commandsProcessed",
-        "Current number of commands processed by this redis server.",
+        "Total number of commands processed by this redis server.",
         "commands"));
 
     descriptorList.add(statisticsTypeFactory.createLongCounter("keyspaceHits",
-        "total number of items looked for and successfully retrieved"
+        "Total number of successful key lookups on this redis server"
             + " from cache on this redis server.",
         "hits"));
 
     descriptorList.add(statisticsTypeFactory.createLongCounter("keyspaceMisses",
-        "total number of items lookedFor, but not found in cache on this redis server.",
+        "Total number of keys requested but not found on this redis server.",
         "misses"));
 
     descriptorList.add(statisticsTypeFactory.createLongCounter("totalNetworkBytesRead",
