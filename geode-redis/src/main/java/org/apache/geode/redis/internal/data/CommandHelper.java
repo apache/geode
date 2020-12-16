@@ -25,8 +25,8 @@ import static org.apache.geode.redis.internal.data.RedisString.NULL_REDIS_STRING
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.RedisConstants;
-import org.apache.geode.redis.internal.RedisStats;
 import org.apache.geode.redis.internal.executor.StripedExecutor;
+import org.apache.geode.redis.internal.statistics.RedisStats;
 
 /**
  * Provides methods to help implement command execution.

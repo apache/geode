@@ -28,13 +28,13 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.execute.RegionFunctionContextImpl;
-import org.apache.geode.redis.internal.RedisStats;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.CommandHelper;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKeyCommandsFunctionExecutor;
 import org.apache.geode.redis.internal.executor.SingleResultCollector;
 import org.apache.geode.redis.internal.executor.StripedExecutor;
+import org.apache.geode.redis.internal.statistics.RedisStats;
 
 @SuppressWarnings("unchecked")
 public class RenameFunction implements InternalFunction {

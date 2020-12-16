@@ -19,12 +19,12 @@ import java.text.DecimalFormat;
 import java.util.List;
 
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.redis.internal.RedisStats;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.statistics.RedisStats;
 
 public class InfoExecutor extends AbstractExecutor {
 
