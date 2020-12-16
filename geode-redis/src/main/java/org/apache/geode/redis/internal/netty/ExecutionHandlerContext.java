@@ -281,6 +281,11 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
             channel.remoteAddress().toString());
       }
 
+      if (command.isUnknown()) {
+        writeToChannel(command.execute(this));
+        return;
+      }
+
       if (!isAuthenticated()) {
         writeToChannel(handleUnAuthenticatedCommand(command));
         return;

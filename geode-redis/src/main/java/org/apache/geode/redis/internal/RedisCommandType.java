@@ -174,8 +174,6 @@ public enum RedisCommandType {
   PUNSUBSCRIBE(new PunsubscribeExecutor(), SUPPORTED, new MinimumParameterRequirements(1)),
   UNSUBSCRIBE(new UnsubscribeExecutor(), SUPPORTED, new MinimumParameterRequirements(1)),
 
-  UNKNOWN(new UnknownExecutor(), SUPPORTED),
-
   /***************************************
    *** Unsupported Commands ***
    ***************************************/
@@ -379,7 +377,12 @@ public enum RedisCommandType {
   ZREVRANK(null, UNIMPLEMENTED),
   ZSCORE(null, UNIMPLEMENTED),
   ZUNIONSCORE(null, UNIMPLEMENTED),
-  ZSCAN(null, UNIMPLEMENTED);
+  ZSCAN(null, UNIMPLEMENTED),
+
+  /***************************************
+   *** Unknown Commands ***
+   ***************************************/
+  UNKNOWN(new UnknownExecutor(), RedisCommandSupportLevel.UNKNOWN);
 
   private final Executor executor;
   private final ParameterRequirements parameterRequirements;
@@ -414,6 +417,10 @@ public enum RedisCommandType {
 
   public boolean isUnimplemented() {
     return supportLevel == UNIMPLEMENTED;
+  }
+
+  public boolean isUnknown() {
+    return supportLevel == RedisCommandSupportLevel.UNKNOWN;
   }
 
   public boolean isAllowedWhileSubscribed() {

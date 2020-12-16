@@ -80,6 +80,10 @@ public class Command {
     return commandType.isUnimplemented();
   }
 
+  public boolean isUnknown() {
+    return commandType.isUnknown();
+  }
+
   /**
    * Used to get the command element list
    *
