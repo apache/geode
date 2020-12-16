@@ -32,17 +32,22 @@ public class RedisStringCommandsFunctionExecutor extends RedisDataCommandsFuncti
   }
 
   private RedisString getRedisString(ByteArrayWrapper key) {
-    return helper.getRedisString(key);
+    return helper.getRedisString(key, true);
   }
 
-  private RedisString getRedisStringIgnoringType(ByteArrayWrapper key) {
-    return helper.getRedisStringIgnoringType(key);
+  private RedisString getRedisString(ByteArrayWrapper key, boolean updateStats) {
+    return helper.getRedisString(key, updateStats);
+  }
+
+  private RedisString getRedisStringIgnoringType(ByteArrayWrapper key, boolean updateStats) {
+    return helper.getRedisStringIgnoringType(key, updateStats);
   }
 
   @Override
   public long append(ByteArrayWrapper key, ByteArrayWrapper valueToAppend) {
     return stripedExecute(key,
-        () -> getRedisString(key).append(valueToAppend, getRegion(), key));
+        () -> getRedisString(key, false)
+            .append(valueToAppend, getRegion(), key));
   }
 
   @Override
@@ -52,7 +57,7 @@ public class RedisStringCommandsFunctionExecutor extends RedisDataCommandsFuncti
 
   @Override
   public ByteArrayWrapper mget(ByteArrayWrapper key) {
-    return stripedExecute(key, () -> getRedisStringIgnoringType(key).get());
+    return stripedExecute(key, () -> getRedisStringIgnoringType(key, true).get());
   }
 
   @Override

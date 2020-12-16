@@ -176,7 +176,7 @@ public class NullRedisString extends RedisString {
       }
     }
 
-    RedisString redisString = helper.setRedisString(key, value);
+    RedisString redisString = helper.setRedisString(key, value, false);
     redisString.handleSetExpiration(options);
     return true;
   }
@@ -230,7 +230,7 @@ public class NullRedisString extends RedisString {
       int selfIndex,
       List<ByteArrayWrapper> sourceValues) {
     if (selfIndex != -1) {
-      RedisString redisString = helper.getRedisString(key);
+      RedisString redisString = helper.getRedisString(key, true);
       if (!redisString.isNull()) {
         sourceValues.set(selfIndex, redisString.getValue());
       }
@@ -259,7 +259,7 @@ public class NullRedisString extends RedisString {
     if (newValue.length() == 0) {
       helper.getRegion().remove(key);
     } else {
-      helper.setRedisString(key, newValue);
+      helper.setRedisString(key, newValue, false);
     }
     return newValue.length();
   }

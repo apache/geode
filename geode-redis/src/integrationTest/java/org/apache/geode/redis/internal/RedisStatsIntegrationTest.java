@@ -121,18 +121,16 @@ public class RedisStatsIntegrationTest {
         .isEqualTo(preTestKeySpaceMisses + 1);
   }
 
-  // TODO: Set doesn't work like native Redis!
   @Test
   public void keyspaceStats_setCommand_existingKey() {
     jedis.set(EXISTING_STRING_KEY, "New_Value");
 
     assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(preTestKeySpaceHits + 1);
+        .isEqualTo(preTestKeySpaceHits);
     assertThat(redisStats.getKeyspaceMisses())
         .isEqualTo(preTestKeySpaceMisses);
   }
 
-  // TODO: Set doesn't work like native Redis!
   @Test
   public void keyspaceStats_setCommand_nonexistentKey() {
     jedis.set("Another_Key", "Another_Value");
@@ -140,7 +138,7 @@ public class RedisStatsIntegrationTest {
     assertThat(redisStats.getKeyspaceHits())
         .isEqualTo(preTestKeySpaceHits);
     assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(preTestKeySpaceMisses + 1);
+        .isEqualTo(preTestKeySpaceMisses);
   }
 
   @Test
@@ -235,10 +233,10 @@ public class RedisStatsIntegrationTest {
 
   @Test
   public void keyspaceStats_bitopCommand() {
-    jedis.bitop(BitOP.AND, EXISTING_STRING_KEY, EXISTING_STRING_KEY, "Nonexistent_Key");
+    jedis.bitop(BitOP.AND, "Destination_Key", EXISTING_STRING_KEY, "Nonexistent_Key");
 
     assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(preTestKeySpaceHits + 2);
+        .isEqualTo(preTestKeySpaceHits + 1);
     assertThat(redisStats.getKeyspaceMisses())
         .isEqualTo(preTestKeySpaceMisses + 1);
   }
@@ -332,9 +330,37 @@ public class RedisStatsIntegrationTest {
         "Nonexistent_Set");
 
     assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(preTestKeySpaceHits + 2);
+        .isEqualTo(preTestKeySpaceHits);
     assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(preTestKeySpaceMisses + 1);
+        .isEqualTo(preTestKeySpaceMisses);
+  }
+
+  @Test
+  public void keyspaceStats_sdiffstoreCommand_existingKey() {
+    jedis.sdiffstore(
+        "New_Set",
+        EXISTING_SET_KEY_1,
+        EXISTING_SET_KEY_2,
+        "Nonexistent_Set");
+
+    assertThat(redisStats.getKeyspaceHits())
+        .isEqualTo(preTestKeySpaceHits);
+    assertThat(redisStats.getKeyspaceMisses())
+        .isEqualTo(preTestKeySpaceMisses);
+  }
+
+  @Test
+  public void keyspaceStats_sinterstoreCommand_existingKey() {
+    jedis.sinterstore(
+        "New_Set",
+        EXISTING_SET_KEY_1,
+        EXISTING_SET_KEY_2,
+        "Nonexistent_Set");
+
+    assertThat(redisStats.getKeyspaceHits())
+        .isEqualTo(preTestKeySpaceHits);
+    assertThat(redisStats.getKeyspaceMisses())
+        .isEqualTo(preTestKeySpaceMisses);
   }
 
   @Test

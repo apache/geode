@@ -15,6 +15,7 @@
 
 package org.apache.geode.redis.internal;
 
+import static org.apache.geode.redis.internal.RedisCommandSupportLevel.INTERNAL;
 import static org.apache.geode.redis.internal.RedisCommandSupportLevel.SUPPORTED;
 import static org.apache.geode.redis.internal.RedisCommandSupportLevel.UNIMPLEMENTED;
 import static org.apache.geode.redis.internal.RedisCommandSupportLevel.UNSUPPORTED;
@@ -167,12 +168,19 @@ public enum RedisCommandType {
   SREM(new SRemExecutor(), SUPPORTED, new MinimumParameterRequirements(3)),
 
   /********** Publish Subscribe **********/
-
-  SUBSCRIBE(new SubscribeExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
   PUBLISH(new PublishExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
   PSUBSCRIBE(new PsubscribeExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
   PUNSUBSCRIBE(new PunsubscribeExecutor(), SUPPORTED, new MinimumParameterRequirements(1)),
   UNSUBSCRIBE(new UnsubscribeExecutor(), SUPPORTED, new MinimumParameterRequirements(1)),
+  SUBSCRIBE(new SubscribeExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
+
+  /***************************************
+   ********** Internal Commands **********
+   * /
+   ***************************************/
+  // do not call these directly, only to be used in other commands
+  INTERNALPTTL(null, INTERNAL, new ExactParameterRequirements(2)),
+  INTERNALSMEMBERS(null, INTERNAL, new ExactParameterRequirements(3)),
 
   /***************************************
    *** Unsupported Commands ***

@@ -132,7 +132,7 @@ class NullRedisSet extends RedisSet {
     }
     for (Set<ByteArrayWrapper> set : nonDestinationSets) {
       if (set == null) {
-        set = helper.getRedisSet(destination).smembers();
+        set = helper.getRedisSet(destination, false).smembers();
       }
       if (result == null) {
         result = set;
@@ -169,7 +169,7 @@ class NullRedisSet extends RedisSet {
       if (key.equals(destination)) {
         result.add(null);
       } else {
-        result.add(redisSetCommands.smembers(key));
+        result.add(redisSetCommands.internalsmembers(key));
       }
     }
     return result;

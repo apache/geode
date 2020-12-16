@@ -34,19 +34,25 @@ public class RedisHashCommandsFunctionExecutor extends RedisDataCommandsFunction
   }
 
   private RedisHash getRedisHash(ByteArrayWrapper key) {
-    return helper.getRedisHash(key);
+    return helper.getRedisHash(key, true);
+  }
+
+  private RedisHash getRedisHash(ByteArrayWrapper key, boolean updateStats) {
+    return helper.getRedisHash(key, updateStats);
   }
 
   @Override
   public int hset(ByteArrayWrapper key, List<ByteArrayWrapper> fieldsToSet, boolean NX) {
-    return stripedExecute(key, () -> getRedisHash(key)
-        .hset(getRegion(), key, fieldsToSet, NX));
+    return stripedExecute(key,
+        () -> getRedisHash(key, false)
+            .hset(getRegion(), key, fieldsToSet, NX));
   }
 
   @Override
   public int hdel(ByteArrayWrapper key, List<ByteArrayWrapper> fieldsToRemove) {
-    return stripedExecute(key, () -> getRedisHash(key)
-        .hdel(getRegion(), key, fieldsToRemove));
+    return stripedExecute(key,
+        () -> getRedisHash(key, false)
+            .hdel(getRegion(), key, fieldsToRemove));
   }
 
   @Override
@@ -92,7 +98,9 @@ public class RedisHashCommandsFunctionExecutor extends RedisDataCommandsFunction
   @Override
   public Pair<BigInteger, List<Object>> hscan(ByteArrayWrapper key, Pattern matchPattern, int count,
       BigInteger cursor) {
-    return stripedExecute(key, () -> getRedisHash(key).hscan(matchPattern, count, cursor));
+    return stripedExecute(key,
+        () -> getRedisHash(key, true)
+            .hscan(matchPattern, count, cursor));
   }
 
   @Override
