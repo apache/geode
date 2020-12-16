@@ -838,11 +838,11 @@ public abstract class AbstractRegionMap extends BaseRegionMap
                 if (result) {
                   if (oldIsTombstone) {
                     owner.unscheduleTombstone(oldRe);
-                    if (newValue != Token.TOMBSTONE) {
-                      lruEntryCreate(oldRe);
-                    } else {
-                      lruEntryUpdate(oldRe);
-                    }
+                  }
+                  if (newValue != Token.TOMBSTONE) {
+                    lruEntryCreate(oldRe);
+                  } else {
+                    lruEntryUpdate(oldRe);
                   }
                   if (newValue == Token.TOMBSTONE) {
                     if (!oldIsDestroyedOrRemoved) {
@@ -943,10 +943,12 @@ public abstract class AbstractRegionMap extends BaseRegionMap
       done = false;
       cleared = true;
     } finally {
-      if (done && !deferLRUCallback) {
-        lruUpdateCallback();
-      } else if (!cleared) {
-        resetThreadLocals();
+      if (!deferLRUCallback) {
+        if (done) {
+          lruUpdateCallback();
+        } else if (!cleared) {
+          resetThreadLocals();
+        }
       }
     }
 
