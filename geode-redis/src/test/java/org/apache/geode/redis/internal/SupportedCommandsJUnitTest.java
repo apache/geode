@@ -58,7 +58,6 @@ public class SupportedCommandsJUnitTest {
       "SUBSCRIBE",
       "TTL",
       "TYPE",
-      "UNKNOWN",
       "UNSUBSCRIBE",
   };
 
@@ -232,7 +231,7 @@ public class SupportedCommandsJUnitTest {
   };
 
   private final String[] unknownCommands = new String[] {
-      "HELLO"
+      "UNKNOWN"
   };
 
   @Test

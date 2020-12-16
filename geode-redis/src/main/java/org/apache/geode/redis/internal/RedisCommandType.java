@@ -174,19 +174,6 @@ public enum RedisCommandType {
   PUNSUBSCRIBE(new PunsubscribeExecutor(), SUPPORTED, new MinimumParameterRequirements(1)),
   UNSUBSCRIBE(new UnsubscribeExecutor(), SUPPORTED, new MinimumParameterRequirements(1)),
 
-  UNKNOWN(new UnknownExecutor(), SUPPORTED),
-
-  /***************************************
-   *** Unknown Commands ***
-   ***************************************/
-  /**
-   * This handles the special case when using the lettuce (and perhaps other) clients. This
-   * client sends a HELLO command to try and infer which protocol to use. If it receives back
-   * 'UNKNOWN command', it uses the older, RESP2, protocol. This also needs to work when
-   * authentication is enabled.
-   */
-  HELLO(new UnknownExecutor(), RedisCommandSupportLevel.UNKNOWN),
-
   /***************************************
    *** Unsupported Commands ***
    ***************************************/
@@ -390,7 +377,12 @@ public enum RedisCommandType {
   ZREVRANK(null, UNIMPLEMENTED),
   ZSCORE(null, UNIMPLEMENTED),
   ZUNIONSCORE(null, UNIMPLEMENTED),
-  ZSCAN(null, UNIMPLEMENTED);
+  ZSCAN(null, UNIMPLEMENTED),
+
+  /***************************************
+   *** Unknown Commands ***
+   ***************************************/
+  UNKNOWN(new UnknownExecutor(), RedisCommandSupportLevel.UNKNOWN);
 
   private final Executor executor;
   private final ParameterRequirements parameterRequirements;
