@@ -19,7 +19,6 @@ import static java.util.Comparator.naturalOrder;
 import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE;
 import static org.apache.geode.internal.AvailablePort.AVAILABLE_PORTS_LOWER_BOUND;
 import static org.apache.geode.internal.AvailablePort.AVAILABLE_PORTS_UPPER_BOUND;
-import static org.apache.geode.internal.AvailablePort.MULTICAST;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPortRange;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableUDPPort;
@@ -148,7 +147,7 @@ public class AvailablePortHelperIntegrationTest {
   public void getRandomAvailableUDPPort_returnsAvailableUdpPort() {
     int udpPort = getRandomAvailableUDPPort();
 
-    assertThat(AvailablePort.isPortAvailable(udpPort, MULTICAST))
+    assertThat(AvailablePort.isAvailableForTCP(udpPort))
         .isTrue();
   }
 

@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal;
 
+import static org.apache.geode.distributed.internal.membership.api.MembershipConfig.DEFAULT_MCAST_ADDRESS;
+
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
@@ -30,6 +32,7 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.Random;
+import java.util.function.IntPredicate;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfig;
@@ -37,140 +40,184 @@ import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
- * This class determines whether or not a given port is available and can also provide a randomly
- * selected available port.
+ * AvailablePort determines whether a given port is available and can also randomly select an
+ * available port.
  */
 public class AvailablePort {
   public static final int AVAILABLE_PORTS_LOWER_BOUND = 20001;// 20000/udp is securid
   public static final int AVAILABLE_PORTS_UPPER_BOUND = 29999;// 30000/tcp is spoolfax
 
-  /** Is the port available for a Socket (TCP) connection? */
-  public static final int SOCKET = 0;
-  /** Is the port available for a JGroups (UDP) multicast connection */
-  public static final int MULTICAST = 1;
+  /**
+   * Randomly selects a port that is available for TCP on {@link #bindAddress() the bind address},
+   * or on all addresses if the bind address is undefined. The port is selected from the range
+   * {@link #AVAILABLE_PORTS_LOWER_BOUND} to {@link #AVAILABLE_PORTS_UPPER_BOUND}.
+   */
+  public static int getRandomAvailableTCPPort() {
+    return getRandomAvailableTCPPort(bindAddress());
+  }
 
   /**
-   * see if there is a gemfire system property that establishes a default address for the given
-   * protocol, and return it
+   * Randomly selects a port that is available for TCP on the given address, or on all addresses if
+   * address is null. The port is selected from the range {@link #AVAILABLE_PORTS_LOWER_BOUND} to
+   * {@link #AVAILABLE_PORTS_UPPER_BOUND}.
    */
-  public static InetAddress getAddress(int protocol) {
-    String name = null;
+  public static int getRandomAvailableTCPPort(InetAddress address) {
+    return getRandomAvailablePort(p -> isAvailableForTCP(p, address));
+  }
+
+  /**
+   * Randomly selects a port in the given range that is available for TCP on
+   * {@link #bindAddress() the bind address}, or on all addresses if the bind address is undefined.
+   */
+  public static int getRandomAvailableTCPPortInRange(int lowerBound, int upperBound) {
+    int numberOfPorts = upperBound - lowerBound;
+    // do "5 times the numberOfPorts" iterations to select a port number. This will ensure that
+    // each of the ports from given port range get a chance at least once
+    int numberOfRetrys = numberOfPorts * 5;
+    InetAddress address = bindAddress();
+    for (int i = 0; i < numberOfRetrys; i++) {
+      int port = randomNumberInRange(lowerBound, upperBound);
+      if (isAvailableForTCP(port, address)) {
+        return port;
+      }
+    }
+    return -1;
+  }
+
+  /**
+   * Randomly selects a port that is available to listen for multicast messages on
+   * {@link #mcastAddress() the mcast address}, or on
+   * {@link MembershipConfig#DEFAULT_MCAST_ADDRESS the default mcast address} if the mcast
+   * address is undefined. The port is selected from the range
+   * {@link #AVAILABLE_PORTS_LOWER_BOUND} to {@link #AVAILABLE_PORTS_UPPER_BOUND}.
+   */
+  public static int getRandomAvailableMulticastPort() {
+    return getRandomAvailableMulticastPort(mcastAddress());
+  }
+
+  /**
+   * Randomly selects a port that is available to listen for multicast messages on the given
+   * address, or on {@link MembershipConfig#DEFAULT_MCAST_ADDRESS the default mcast address} if
+   * address is null. The port is selected from the range {@link #AVAILABLE_PORTS_LOWER_BOUND} to
+   * {@link #AVAILABLE_PORTS_UPPER_BOUND}.
+   */
+  public static int getRandomAvailableMulticastPort(InetAddress address) {
+    return getRandomAvailablePort(p -> isAvailableForMulticast(p, address));
+  }
+
+  /**
+   * Returns whether the port is available for TCP on the given address, or on all addresses if
+   * address is null.
+   */
+  public static boolean isAvailableForTCP(int port, InetAddress address) {
+    if (address == null) {
+      return testAllInterfaces(port);
+    } else {
+      return testOneInterface(address, port);
+    }
+  }
+
+  /**
+   * Returns whether the port is available for TCP on {@link #bindAddress() the bind address}, or on
+   * all addresses if the bind address is undefined.
+   */
+  public static boolean isAvailableForTCP(int port) {
+    return isAvailableForTCP(port, bindAddress());
+  }
+
+  /**
+   * Returns whether the port is available to listen for multicast messages on the given address,
+   * or on {@link MembershipConfig#DEFAULT_MCAST_ADDRESS the default mcast address} if address is
+   * null.
+   */
+  public static boolean isAvailableForMulticast(int port, InetAddress address) {
+    MulticastSocket socket = null;
     try {
-      if (protocol == SOCKET) {
-        name = System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "bind-address");
-      } else if (protocol == MULTICAST) {
-        name = System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "mcast-address");
-      }
-      if (name != null) {
-        return InetAddress.getByName(name);
-      }
-    } catch (UnknownHostException e) {
-      throw new RuntimeException("Unable to resolve address " + name);
-    }
-    return null;
-  }
-
-  /**
-   * Returns whether or not the given port on the local host is available (that is, unused).
-   *
-   * @param port The port to check
-   * @param protocol The protocol to check (either {@link #SOCKET} or {@link #MULTICAST}).
-   *
-   * @throws IllegalArgumentException <code>protocol</code> is unknown
-   */
-  public static boolean isPortAvailable(final int port, int protocol) {
-    return isPortAvailable(port, protocol, getAddress(protocol));
-  }
-
-  /**
-   * Returns whether or not the given port on the local host is available (that is, unused).
-   *
-   * @param port The port to check
-   * @param protocol The protocol to check (either {@link #SOCKET} or {@link #MULTICAST}).
-   * @param addr the bind address (or mcast address) to use
-   *
-   * @throws IllegalArgumentException <code>protocol</code> is unknown
-   */
-  public static boolean isPortAvailable(final int port, int protocol, InetAddress addr) {
-    if (protocol == SOCKET) {
-      // Try to create a ServerSocket
-      if (addr == null) {
-        return testAllInterfaces(port);
-      } else {
-        return testOneInterface(addr, port);
-      }
-    }
-
-    else if (protocol == MULTICAST) {
-      MulticastSocket socket = null;
+      socket = new MulticastSocket();
+      InetAddress localHost = LocalHostUtil.getLocalHost();
+      socket.setInterface(localHost);
+      socket.setSoTimeout(Integer.getInteger("AvailablePort.timeout", 2000));
+      socket.setReuseAddress(true);
+      byte[] buffer = new byte[4];
+      buffer[0] = (byte) 'p';
+      buffer[1] = (byte) 'i';
+      buffer[2] = (byte) 'n';
+      buffer[3] = (byte) 'g';
+      InetAddress mcid =
+          address == null ? InetAddress.getByName(DEFAULT_MCAST_ADDRESS) : address;
+      SocketAddress mcaddr = new InetSocketAddress(mcid, port);
+      socket.joinGroup(mcid);
+      DatagramPacket packet = new DatagramPacket(buffer, 0, buffer.length, mcaddr);
+      socket.send(packet);
       try {
-        socket = new MulticastSocket();
-        InetAddress localHost = LocalHostUtil.getLocalHost();
-        socket.setInterface(localHost);
-        socket.setSoTimeout(Integer.getInteger("AvailablePort.timeout", 2000).intValue());
-        socket.setReuseAddress(true);
-        byte[] buffer = new byte[4];
-        buffer[0] = (byte) 'p';
-        buffer[1] = (byte) 'i';
-        buffer[2] = (byte) 'n';
-        buffer[3] = (byte) 'g';
-        InetAddress mcid =
-            addr == null ? InetAddress.getByName(MembershipConfig.DEFAULT_MCAST_ADDRESS) : addr;
-        SocketAddress mcaddr = new InetSocketAddress(mcid, port);
-        socket.joinGroup(mcid);
-        DatagramPacket packet = new DatagramPacket(buffer, 0, buffer.length, mcaddr);
-        socket.send(packet);
-        try {
-          socket.receive(packet);
-          packet.getData(); // make sure there's data, but no need to process it
-          return false;
-        } catch (SocketTimeoutException ste) {
-          // System.out.println("socket read timed out");
-          return true;
-        } catch (Exception e) {
-          e.printStackTrace();
-          return false;
-        }
-      } catch (java.io.IOException ioe) {
-        if (ioe.getMessage().equals("Network is unreachable")) {
-          throw new RuntimeException(
-              "Network is unreachable", ioe);
-        }
-        ioe.printStackTrace();
+        socket.receive(packet);
         return false;
+      } catch (SocketTimeoutException ste) {
+        return true;
       } catch (Exception e) {
         e.printStackTrace();
         return false;
-      } finally {
-        if (socket != null) {
-          try {
-            socket.close();
-          } catch (Exception e) {
-            e.printStackTrace();
-          }
+      }
+    } catch (java.io.IOException ioe) {
+      if (ioe.getMessage().equals("Network is unreachable")) {
+        throw new RuntimeException(
+            "Network is unreachable", ioe);
+      }
+      ioe.printStackTrace();
+      return false;
+    } catch (Exception e) {
+      e.printStackTrace();
+      return false;
+    } finally {
+      if (socket != null) {
+        try {
+          socket.close();
+        } catch (Exception e) {
+          e.printStackTrace();
         }
       }
     }
+  }
 
-    else {
-      throw new IllegalArgumentException(String.format("Unknown protocol: %s",
-          Integer.valueOf(protocol)));
+  /**
+   * Returns whether the port is available to listen for multicast messages on on
+   * {@link #mcastAddress() the mcast address}, or on
+   * {@link MembershipConfig#DEFAULT_MCAST_ADDRESS the default mcast address} if the mcast
+   * address is undefined.
+   */
+  public static boolean isAvailableForMulticast(int port) {
+    return isAvailableForMulticast(port, mcastAddress());
+  }
+
+  public static Keeper keepPortForTCP(final int port) {
+    return keepPortForTCP(port, bindAddress());
+  }
+
+  public static Keeper keepPortForTCP(final int port, InetAddress addr) {
+    if (addr == null) {
+      return keepAllInterfaces(port);
+    } else {
+      return keepOneInterface(addr, port);
     }
   }
 
-  public static Keeper isPortKeepable(final int port, int protocol, InetAddress addr) {
-    if (protocol == SOCKET) {
-      // Try to create a ServerSocket
-      if (addr == null) {
-        return keepAllInterfaces(port);
-      } else {
-        return keepOneInterface(addr, port);
+  private static InetAddress getAddress(String host) {
+    if (host == null) {
+      return null;
+    }
+    try {
+      return InetAddress.getByName(host);
+    } catch (UnknownHostException e) {
+      throw new RuntimeException("Unable to resolve address " + host);
+    }
+  }
+
+  private static int getRandomAvailablePort(IntPredicate availabilityTester) {
+    while (true) {
+      int port = randomNumberInRange(AVAILABLE_PORTS_LOWER_BOUND, AVAILABLE_PORTS_UPPER_BOUND);
+      if (availabilityTester.test(port)) {
+        return port;
       }
-    } else if (protocol == MULTICAST) {
-      throw new IllegalArgumentException("You can not keep the JGROUPS protocol");
-    } else {
-      throw new IllegalArgumentException(String.format("Unknown protocol: %s",
-          Integer.valueOf(protocol)));
     }
   }
 
@@ -187,7 +234,6 @@ public class AvailablePort {
   private static Keeper keepOneInterface(InetAddress addr, int port) {
     ServerSocket server = null;
     try {
-      // (new Exception("Opening server socket on " + port)).printStackTrace();
       server = new ServerSocket();
       server.setReuseAddress(true);
       if (addr != null) {
@@ -202,7 +248,6 @@ public class AvailablePort {
       if (ioe.getMessage().equals("Network is unreachable")) {
         throw new RuntimeException("Network is unreachable");
       }
-      // ioe.printStackTrace();
       if (addr instanceof Inet6Address) {
         byte[] addrBytes = addr.getAddress();
         if ((addrBytes[0] == (byte) 0xfe) && (addrBytes[1] == (byte) 0x80)) {
@@ -220,12 +265,12 @@ public class AvailablePort {
     } catch (Exception ex) {
       return null;
     } finally {
-      if (server != null)
+      if (server != null) {
         try {
           server.close();
-        } catch (Exception ex) {
-
+        } catch (Exception ignored) {
         }
+      }
     }
   }
 
@@ -259,17 +304,17 @@ public class AvailablePort {
     // Note that we still need the check of the wildcard address, above,
     // because on some systems (aix) we can still bind to specific addresses
     // if someone else has bound to the wildcard address.
-    Enumeration en;
+    Enumeration<NetworkInterface> interfaces;
     try {
-      en = NetworkInterface.getNetworkInterfaces();
+      interfaces = NetworkInterface.getNetworkInterfaces();
     } catch (SocketException e) {
       throw new RuntimeException(e);
     }
-    while (en.hasMoreElements()) {
-      NetworkInterface next = (NetworkInterface) en.nextElement();
-      Enumeration en2 = next.getInetAddresses();
-      while (en2.hasMoreElements()) {
-        InetAddress addr = (InetAddress) en2.nextElement();
+    while (interfaces.hasMoreElements()) {
+      NetworkInterface next = interfaces.nextElement();
+      Enumeration<InetAddress> addressesOnInterface = next.getInetAddresses();
+      while (addressesOnInterface.hasMoreElements()) {
+        InetAddress addr = addressesOnInterface.nextElement();
         boolean available = testOneInterface(addr, port);
         if (!available) {
           return null;
@@ -281,94 +326,40 @@ public class AvailablePort {
   }
 
   /**
-   * Returns a randomly selected available port in the range 5001 to 32767.
-   *
-   * @param protocol The protocol to check (either {@link #SOCKET} or {@link #MULTICAST}).
-   *
-   * @throws IllegalArgumentException <code>protocol</code> is unknown
+   * Returns the address named by the "bind-address" system property, or null if "bind-address"
+   * is undefined.
    */
-  public static int getRandomAvailablePort(int protocol) {
-    return getRandomAvailablePort(protocol, getAddress(protocol));
+  private static InetAddress bindAddress() {
+    return getAddress(System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "bind-address"));
   }
 
   /**
-   * Returns a randomly selected available port in the range 5001 to 32767.
-   *
-   * @param protocol The protocol to check (either {@link #SOCKET} or {@link #MULTICAST}).
-   * @param addr the bind-address or mcast address to use
-   *
-   * @throws IllegalArgumentException <code>protocol</code> is unknown
+   * Returns the address named by the "mcast-address" system property, or null if "mcast-address"
+   * is undefined.
    */
-  public static int getRandomAvailablePort(int protocol, InetAddress addr) {
-    return getRandomAvailablePort(protocol, addr, false);
-  }
-
-  /**
-   * Returns a randomly selected available port in the range 5001 to 32767.
-   *
-   * @param protocol The protocol to check (either {@link #SOCKET} or {@link #MULTICAST}).
-   * @param addr the bind-address or mcast address to use
-   * @param useMembershipPortRange use true if the port will be used for membership
-   *
-   * @throws IllegalArgumentException <code>protocol</code> is unknown
-   */
-  public static int getRandomAvailablePort(int protocol, InetAddress addr,
-      boolean useMembershipPortRange) {
-    while (true) {
-      int port = getRandomWildcardBindPortNumber(useMembershipPortRange);
-      if (isPortAvailable(port, protocol, addr)) {
-        // don't return the products default multicast port
-        if (!(protocol == MULTICAST && port == MembershipConfig.DEFAULT_MCAST_PORT)) {
-          return port;
-        }
-      }
-    }
+  private static InetAddress mcastAddress() {
+    return getAddress(System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "mcast-address"));
   }
 
   @Immutable
-  public static final Random rand;
+  private static final Random rand;
 
   static {
     boolean fast = Boolean.getBoolean("AvailablePort.fastRandom");
-    if (fast)
+    if (fast) {
       rand = new Random();
-    else
-      rand = new java.security.SecureRandom();
-  }
-
-  private static int getRandomWildcardBindPortNumber(boolean useMembershipPortRange) {
-    int rangeBase;
-    int rangeTop;
-    if (!useMembershipPortRange) {
-      rangeBase = AVAILABLE_PORTS_LOWER_BOUND; // 20000/udp is securid
-      rangeTop = AVAILABLE_PORTS_UPPER_BOUND; // 30000/tcp is spoolfax
     } else {
-      rangeBase = MembershipConfig.DEFAULT_MEMBERSHIP_PORT_RANGE[0];
-      rangeTop = MembershipConfig.DEFAULT_MEMBERSHIP_PORT_RANGE[1];
+      rand = new java.security.SecureRandom();
     }
-
-    return rand.nextInt(rangeTop - rangeBase) + rangeBase;
   }
 
-  public static int getRandomAvailablePortInRange(int rangeBase, int rangeTop, int protocol) {
-    int numberOfPorts = rangeTop - rangeBase;
-    // do "5 times the numberOfPorts" iterations to select a port number. This will ensure that
-    // each of the ports from given port range get a chance at least once
-    int numberOfRetrys = numberOfPorts * 5;
-    for (int i = 0; i < numberOfRetrys; i++) {
-      int port = rand.nextInt(numberOfPorts + 1) + rangeBase;// add 1 to numberOfPorts so that
-                                                             // rangeTop also gets included
-      if (isPortAvailable(port, protocol, getAddress(protocol))) {
-        return port;
-      }
-    }
-    return -1;
+  private static int randomNumberInRange(int lowerBound, int upperBound) {
+    return rand.nextInt(upperBound + 1 - lowerBound) + lowerBound;
   }
 
   /**
    * This class will keep an allocated port allocated until it is used. This makes the window
    * smaller that can cause bug 46690
-   *
    */
   public static class Keeper implements Serializable {
     private final transient ServerSocket ss;
@@ -385,7 +376,7 @@ public class AvailablePort {
     }
 
     public int getPort() {
-      return this.port;
+      return port;
     }
 
     /**
@@ -393,8 +384,8 @@ public class AvailablePort {
      */
     public void release() {
       try {
-        if (this.ss != null) {
-          this.ss.close();
+        if (ss != null) {
+          ss.close();
         }
       } catch (IOException ignore) {
       }
@@ -411,10 +402,11 @@ public class AvailablePort {
   private static void usage(String s) {
     err.println("\n** " + s + "\n");
     err.println("usage: java AvailablePort socket|jgroups [\"addr\" network-address] [port]");
-    err.println("");
+    err.println();
     err.println(
-        "This program either prints whether or not a port is available for a given protocol, or it prints out an available port for a given protocol.");
-    err.println("");
+        "This program either prints whether or not a port is available for a given protocol, or "
+            + "it prints out an available port for a given protocol.");
+    err.println();
     System.exit(1);
   }
 
@@ -426,7 +418,6 @@ public class AvailablePort {
     for (int i = 0; i < args.length; i++) {
       if (protocolString == null) {
         protocolString = args[i];
-
       } else if (args[i].equals("addr") && i < args.length - 1) {
         addrString = args[++i];
       } else if (portString == null) {
@@ -436,47 +427,103 @@ public class AvailablePort {
       }
     }
 
-    int protocol;
+    InetAddress addr = addrString == null ? null : InetAddress.getByName(addrString);
 
     if (protocolString == null) {
       usage("Missing protocol");
       return;
+    }
 
-    } else if (protocolString.equalsIgnoreCase("socket")) {
-      protocol = SOCKET;
-
+    IntPredicate availabilityTester;
+    if (protocolString.equalsIgnoreCase("socket")) {
+      availabilityTester = p -> isAvailableForTCP(p, addr);
     } else if (protocolString.equalsIgnoreCase("javagroups")
         || protocolString.equalsIgnoreCase("jgroups")) {
-      protocol = MULTICAST;
-
+      availabilityTester = p -> isAvailableForMulticast(p, addr);
     } else {
       usage("Unknown protocol: " + protocolString);
       return;
     }
 
-    InetAddress addr = null;
-    if (addrString != null) {
-      addr = InetAddress.getByName(addrString);
-    }
-
-    if (portString != null) {
-      int port;
-      try {
-        port = Integer.parseInt(portString);
-
-      } catch (NumberFormatException ex) {
-        usage("Malformed port: " + portString);
-        return;
-      }
-
-      out.println("\nPort " + port + " is " + (isPortAvailable(port, protocol, addr) ? "" : "not ")
-          + "available for a " + protocolString + " connection\n");
-
-    } else {
+    if (portString == null) {
       out.println("\nRandomly selected " + protocolString + " port: "
-          + getRandomAvailablePort(protocol, addr) + "\n");
-
+          + getRandomAvailablePort(availabilityTester) + "\n");
+      return;
     }
 
+    int port;
+    try {
+      port = Integer.parseInt(portString);
+    } catch (NumberFormatException ex) {
+      usage("Malformed port: " + portString);
+      return;
+    }
+    boolean isAvailable = availabilityTester.test(port);
+    out.println("\nPort " + port + " is " + (isAvailable ? "" : "not ")
+        + "available for a " + protocolString + " connection\n");
+  }
+
+  /**
+   * @deprecated call {@link #getRandomAvailableTCPPort(InetAddress)} or
+   *             {@link #getRandomAvailableMulticastPort(InetAddress)}
+   */
+  @Deprecated()
+  public static int getRandomAvailablePort(int protocol, InetAddress address) {
+    return getRandomAvailablePort(portTester(protocol, address));
+  }
+
+  /**
+   * @deprecated call {@link #getRandomAvailableTCPPort()} or
+   *             {@link #getRandomAvailableMulticastPort()}
+   */
+  public static int getRandomAvailablePort(int protocol) {
+    return getRandomAvailablePort(portTester(protocol, defaultAddress(protocol)));
+  }
+
+  /**
+   * @deprecated call {@link #isAvailableForTCP(int, InetAddress)} or
+   *             {@link #isAvailableForMulticast(int, InetAddress)}
+   */
+  public static boolean isPortAvailable(int port, int protocol, InetAddress address) {
+    return portTester(protocol, address).test(port);
+  }
+
+  /**
+   * @deprecated call {@link #isAvailableForTCP(int)} or {@link #isAvailableForMulticast(int)}
+   */
+  public static boolean isPortAvailable(int port, int protocol) {
+    return portTester(protocol, defaultAddress(protocol)).test(port);
+  }
+
+  /**
+   * @deprecated call the appropriate TCP method
+   */
+  public static final int SOCKET = 0;
+
+  /**
+   * @deprecated call the appropriate Multicast method
+   */
+  public static final int MULTICAST = 1;
+
+  private static IntPredicate portTester(int protocol, InetAddress address) {
+    switch (protocol) {
+      case SOCKET:
+        return p -> isAvailableForTCP(p, address);
+      case MULTICAST:
+        return p -> isAvailableForMulticast(p, address);
+      default:
+        throw new IllegalArgumentException(String.format("Unknown protocol: %d", protocol));
+    }
+  }
+
+  private static InetAddress defaultAddress(int protocol) {
+    switch (protocol) {
+      case SOCKET:
+        return bindAddress();
+      case MULTICAST:
+        return mcastAddress();
+      default:
+        throw new IllegalArgumentException(String.format("Unknown protocol: %d", protocol));
+    }
   }
 }

@@ -49,7 +49,7 @@ public class RestServersIntegrationTest {
   public static void before() throws Exception {
     assumeTrue(
         "Default port was unavailable for testing.  Please ensure the testing environment is clean.",
-        AvailablePort.isPortAvailable(DEFAULT_HTTP_SERVICE_PORT, AvailablePort.SOCKET));
+        AvailablePort.isAvailableForTCP(DEFAULT_HTTP_SERVICE_PORT));
     serverStarter.startServer();
     assertThat(serverStarter.getHttpPort()).isEqualTo(DEFAULT_HTTP_SERVICE_PORT);
     restClient = new GeodeDevRestClient("localhost", serverStarter.getHttpPort());

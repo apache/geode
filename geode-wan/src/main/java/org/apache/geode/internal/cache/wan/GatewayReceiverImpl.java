@@ -14,10 +14,7 @@
  */
 package org.apache.geode.internal.cache.wan;
 
-import static org.apache.geode.internal.AvailablePort.SOCKET;
-import static org.apache.geode.internal.AvailablePort.getAddress;
-import static org.apache.geode.internal.AvailablePort.getRandomAvailablePortInRange;
-import static org.apache.geode.internal.AvailablePort.isPortAvailable;
+import static org.apache.geode.internal.AvailablePort.getRandomAvailableTCPPortInRange;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -33,6 +30,7 @@ import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ResourceEvent;
+import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheServer;
 import org.apache.geode.internal.inet.LocalHostUtil;
@@ -66,8 +64,8 @@ public class GatewayReceiverImpl implements GatewayReceiver {
       final boolean manualStart) {
     this(cache, startPort, endPort, maximumTimeBetweenPings, socketBufferSize, bindAddress,
         gatewayTransportFilters, hostnameForSenders, manualStart,
-        port -> isPortAvailable(port, SOCKET, getAddress(SOCKET)),
-        portRange -> getRandomAvailablePortInRange(portRange.startPort, portRange.endPort, SOCKET));
+        AvailablePort::isAvailableForTCP,
+        portRange -> getRandomAvailableTCPPortInRange(portRange.startPort, portRange.endPort));
   }
 
   @VisibleForTesting

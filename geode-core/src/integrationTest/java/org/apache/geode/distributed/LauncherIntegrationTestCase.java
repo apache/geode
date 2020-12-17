@@ -17,8 +17,7 @@ package org.apache.geode.distributed;
 import static java.lang.System.lineSeparator;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.internal.AvailablePort.SOCKET;
-import static org.apache.geode.internal.AvailablePort.isPortAvailable;
+import static org.apache.geode.internal.AvailablePort.isAvailableForTCP;
 import static org.apache.geode.internal.process.ProcessUtils.identifyPid;
 import static org.apache.geode.internal.process.ProcessUtils.isProcessAlive;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
@@ -263,11 +262,11 @@ public abstract class LauncherIntegrationTestCase {
   }
 
   private void assertThatPortIsFree(final int port) {
-    assertThat(isPortAvailable(port, SOCKET)).isTrue();
+    assertThat(isAvailableForTCP(port)).isTrue();
   }
 
   private void assertThatPortIsInUse(final int port) {
-    assertThat(isPortAvailable(port, SOCKET)).isFalse();
+    assertThat(isAvailableForTCP(port)).isFalse();
   }
 
   private void assertThatPortIsInUseBySocket(final int port) {
@@ -297,7 +296,7 @@ public abstract class LauncherIntegrationTestCase {
           .createServerSocket(port, 50, bindAddress);
       assertThat(socket.isBound()).isTrue();
       assertThat(socket.isClosed()).isFalse();
-      assertThat(isPortAvailable(port, SOCKET)).isFalse();
+      assertThat(isAvailableForTCP(port)).isFalse();
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }

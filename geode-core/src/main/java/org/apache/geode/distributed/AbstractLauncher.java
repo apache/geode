@@ -137,7 +137,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
    */
   protected static void assertPortAvailable(final InetAddress bindAddress, final int port)
       throws BindException {
-    if (!AvailablePort.isPortAvailable(port, AvailablePort.SOCKET, bindAddress)) {
+    if (!AvailablePort.isAvailableForTCP(port, bindAddress)) {
       throw new BindException(
           String.format("Network is unreachable; port (%1$d) is not available on %2$s.", port,
               bindAddress != null ? bindAddress.getCanonicalHostName() : "localhost"));

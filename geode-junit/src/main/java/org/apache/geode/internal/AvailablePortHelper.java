@@ -18,15 +18,13 @@ import static java.util.stream.Collectors.toList;
 import static org.apache.geode.distributed.internal.membership.api.MembershipConfig.DEFAULT_MEMBERSHIP_PORT_RANGE;
 import static org.apache.geode.internal.AvailablePort.AVAILABLE_PORTS_LOWER_BOUND;
 import static org.apache.geode.internal.AvailablePort.AVAILABLE_PORTS_UPPER_BOUND;
-import static org.apache.geode.internal.AvailablePort.MULTICAST;
-import static org.apache.geode.internal.AvailablePort.SOCKET;
-import static org.apache.geode.internal.AvailablePort.getAddress;
-import static org.apache.geode.internal.AvailablePort.isPortAvailable;
-import static org.apache.geode.internal.AvailablePort.isPortKeepable;
+import static org.apache.geode.internal.AvailablePort.isAvailableForTCP;
+import static org.apache.geode.internal.AvailablePort.keepPortForTCP;
 
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.IntPredicate;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -55,14 +53,14 @@ public class AvailablePortHelper {
    * Returns an available tcp port.
    */
   public static int getRandomAvailableTCPPort() {
-    return availablePort(SOCKET);
+    return availablePort(AvailablePort::isAvailableForTCP);
   }
 
   /**
    * Returns an available udp port.
    */
   public static int getRandomAvailableUDPPort() {
-    return availablePort(MULTICAST);
+    return availablePort(AvailablePort::isAvailableForMulticast);
   }
 
   /**
@@ -99,7 +97,7 @@ public class AvailablePortHelper {
       needMorePorts = false; // Assume we'll find enough in this batch
       for (int i = 0; i < count; i++) {
         int port = base + i;
-        if (isPortAvailable(port, SOCKET, getAddress(SOCKET))) {
+        if (isAvailableForTCP(port)) {
           ports[i] = port;
           continue;
         }
@@ -153,7 +151,7 @@ public class AvailablePortHelper {
     singleton.nextAvailablePort.addAndGet(chunkNumber * availableRange / numChunks);
   }
 
-  private static int availablePort(int protocol) {
+  private static int availablePort(IntPredicate available) {
     AtomicInteger targetRange = singleton.nextAvailablePort;
 
     while (true) {
@@ -163,7 +161,7 @@ public class AvailablePortHelper {
         continue;
       }
 
-      if (isPortAvailable(port, protocol, getAddress(protocol))) {
+      if (available.test(port)) {
         return port;
       }
     }
@@ -179,7 +177,7 @@ public class AvailablePortHelper {
         targetRange.set(AVAILABLE_PORTS_LOWER_BOUND);
         continue;
       }
-      Keeper keeper = isPortKeepable(uniquePort, SOCKET, getAddress(SOCKET));
+      Keeper keeper = keepPortForTCP(uniquePort);
       if (keeper != null) {
         return keeper;
       }
