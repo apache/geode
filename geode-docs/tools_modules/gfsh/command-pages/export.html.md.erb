@@ -183,7 +183,9 @@ Latest\server1\region2_20121001.gfd on host : 192.0.2.0
 
 Export logs to a given directory.
 
-All files that have logs in the specified time range will be exported. If no time range is specified, all logs will be exported.
+All files that have logs in the specified time range will be exported. If no time range is specified, all logs will be exported. It should be noted that when specifying an `--end-time` argument using a date only, the time is assumed to be `00:00`, meaning that no logs that were written on the date provided will be exported, only those written up until `23:59:59.999` on the day prior.
+
+When using the `yyyy/MM/dd/HH/mm/ss/SSS/z` format for `--start-time` or `--end-time`, the time zone, denoted `z`, should be specified as either a 3-letter time zone such as `PST` or as an offset to GMT/UTC such as `GMT+08:00`.
 
 The `--dir` parameter specifies a local directory to which log files will be written. This is used only when you are exporting logs using an http connection.  If executed over http, the zip archive will be saved in the specified directory on the user's client machine. If not specified, logs are written to the location specified by the `user.dir` system property. When the command is executed over JMX, logs will be saved as `exportedLogs_xxx.zip` in the connected locator's working directory.
 
@@ -219,6 +221,13 @@ export logs [--dir=value] [--groups=value(,value)*] [--members=value(,value)*]
 ``` pre
 gfsh>export logs --dir=data/logs
 Logs exported to the connected member's file system: /my-locator/data/logs/exportedLogs_1489513007261.zip
+```
+
+``` pre
+gfsh>export logs --start-time=2020/12/14/12/00/00/000/GMT-08:00 --end-time=2020/12/27 --dir=data/logs
+Start time parsed as 2020-12-14T12:00 PST
+End time parsed as 2020-12-27T00:00 PST
+Logs exported to the connected member's file system: /my-locator/data/logs/exportedLogs_1608165308676.zip
 ```
 
 ``` pre
