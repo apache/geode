@@ -132,7 +132,7 @@ Enable verbose logging in the BridgeServer
 <!-- -------------------------------------------------------  -->
 <dt><strong>BridgeServer.HANDSHAKE_POOL_SIZE</strong></dt>
 <dd>
-<em>Public:</em> yes
+<em>Public:</em> true
 <p>
 <em>Integer</em> (default is 4)
 <p>
@@ -144,7 +144,7 @@ TBA
 <!-- -------------------------------------------------------  -->
 <dt><strong>BridgeServer.MAXIMUM_CHUNK_SIZE</strong></dt>
 <dd>
-<em>Public:</em> yes
+<em>Public:</em> true
 <p>
 <em>Integer</em> (default is 100)
 <p>
@@ -156,7 +156,7 @@ TBA
 <!-- -------------------------------------------------------  -->
 <dt><strong>BridgeServer.MAX_INCOMING_DATA</strong></dt>
 <dd>
-<em>Public:</em> yes?
+<em>Public:</em> true
 <p>
 <em>Integer</em> (default is -1)
 <p>
@@ -175,7 +175,7 @@ TBA
 <!-- -------------------------------------------------------  -->
 <dt><strong>BridgeServer.MAX_INCOMING_MSGS</strong></dt>
 <dd>
-<em>Public:</em> yes?
+<em>Public:</em> true
 <p>
 <em>Integer</em> (default is -1)
 <p>
@@ -193,7 +193,7 @@ TBA
 <!-- -------------------------------------------------------  -->
 <dt><strong>BridgeServer.SELECTOR</strong></dt>
 <dd>
-<em>Public:</em> jpmc-cbb
+<em>Public:</em> false
 <p>
 <em>Boolean</em> (default is false)
 <p>
@@ -205,7 +205,7 @@ TBA
 <!-- -------------------------------------------------------  -->
 <dt><strong>BridgeServer.SELECTOR_POOL_SIZE</strong></dt>
 <dd>
-<em>Public:</em> jpmc-cbb
+<em>Public:</em> false
 <p>
 <em>Integer</em> (default is 16)
 <p>
@@ -223,7 +223,7 @@ TBA
 <!-- -------------------------------------------------------  -->
 <dt><strong>BridgeServer.SOCKET_BUFFER_SIZE</strong></dt>
 <dd>
-<em>Public:</em> yes
+<em>Public:</em> true
 <p>
 <em>Integer</em> (default is 32768)
 <p>
@@ -344,7 +344,7 @@ TBA
 <!-- -------------------------------------------------------  -->
 <dt><strong>DistributionManager.INCOMING_QUEUE_LIMIT</strong></dt>
 <dd>
-<em>Public:</em> jpmc-cbb
+<em>Public:</em> false
 <p>
 <em>Integer</em> (default is 80000)
 <p>
@@ -573,7 +573,7 @@ TBA
 <!-- -------------------------------------------------------  -->
 <dt><strong>DistributionManager.VERBOSE</strong></dt>
 <dd>
-<em>Public:</em> yes (general debugging)
+<em>Public:</em> true
 <p>
 <em>Boolean</em> (default is false)
 <p>
@@ -752,7 +752,7 @@ TBA
 <!-- -------------------------------------------------------  -->
 <dt><strong>GetInitialImage.chunkSize</strong></dt>
 <dd>
-<em>Public:</em> ml-rio
+<em>Public:</em> true
 <p>
 <em>Integer</em> (default is 500 * 1024)
 <p>
@@ -812,7 +812,7 @@ As of 7.0.
 <!-- -------------------------------------------------------  -->
 <dt><strong>Locator.inhibitDMBanner</strong></dt>
 <dd>
-<em>Public:</em> ml-rio
+<em>Public:</em> true
 <p>
 <em>Boolean</em> (default is false)
 <p>
@@ -1089,7 +1089,7 @@ TBA
 <!-- -------------------------------------------------------  -->
 <dt><strong>gemfire.Cache.ASYNC_EVENT_LISTENERS</strong></dt>
 <dd>
-<em>Public:</em> yes
+<em>Public:</em> true
 <p>
 <em>Boolean</em> (default is false)
 <p>
@@ -1735,7 +1735,7 @@ TBA
 <!-- -------------------------------------------------------  -->
 <dt><strong>gemfire.bridge.suppressIOExceptionLogging</strong></dt>
 <dd>
-<em>Public:</em> jpmc-jets
+<em>Public:</em> false
 <p>
 <em>Boolean</em> (default is false)
 <p>
@@ -1859,7 +1859,7 @@ Disable access time updates on put event
 <!-- -------------------------------------------------------  -->
 <dt><strong>gemfire.disable-event-old-value</strong></dt>
 <dd>
-<em>Public:</em> jpmc-cbb
+<em>Public:</em> false
 <p>
 <em>Boolean</em> (default is false)
 <p>
@@ -1942,9 +1942,9 @@ to a non-default value.
 <!-- -------------------------------------------------------  -->
 <dt><strong>gemfire.disk.recoverValues</strong></dt>
 <dd>
-<em>Public:</em> jpmc-cbb
+<em>Public:</em> true
 <p>
-<em>Boolean</em> (default is false)
+<em>Boolean</em> (default is true)
 <p>
 See <code>org.apache.geode.internal.cache.SimpleDiskRegion</code>.
 <p>
@@ -2010,7 +2010,7 @@ for more information.
 <!-- -------------------------------------------------------  -->
 <dt><strong>gemfire.gateway-conserve-sockets-allowed</strong></dt>
 <dd>
-<em>Public:</em> yes
+<em>Public:</em> true
 <p>
 <em>Boolean</em> (default is false)
 <p>
@@ -2031,7 +2031,7 @@ TBA
 <!-- -------------------------------------------------------  -->
 <dt><strong>gemfire.gateway-queue-no-ack</strong></dt>
 <dd>
-<em>Public:</em> yes
+<em>Public:</em> true
 <p>
 <em>Boolean</em> (default is false)
 <p>
@@ -2369,7 +2369,7 @@ TBA
 <!-- -------------------------------------------------------  -->
 <dt><strong>gemfirePropertyFile</strong></dt>
 <dd>
-<em>Public:</em> yes
+<em>Public:</em> true
 <p>
 <em>String</em>
 <p>
