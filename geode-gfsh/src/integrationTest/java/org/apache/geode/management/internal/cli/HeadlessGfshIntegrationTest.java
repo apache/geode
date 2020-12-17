@@ -20,8 +20,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_P
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
-import static org.apache.geode.internal.AvailablePort.SOCKET;
-import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
@@ -63,7 +62,7 @@ public class HeadlessGfshIntegrationTest {
 
   @Before
   public void setup() throws IOException {
-    port = getRandomAvailablePort(SOCKET);
+    port = getRandomAvailableTCPPort();
 
     Properties properties = new Properties();
     properties.put(NAME, this.testName.getMethodName());

@@ -21,8 +21,7 @@ import static org.apache.commons.io.FileUtils.readFileToString;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
-import static org.apache.geode.internal.AvailablePort.SOCKET;
-import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -79,7 +78,7 @@ public class ManagementRequestLoggingDistributedTest implements Serializable {
     serverName = "server1";
     locatorDir = temporaryFolder.newFolder(locatorName);
     serverDir = temporaryFolder.newFolder(serverName);
-    httpPort = getRandomAvailablePort(SOCKET);
+    httpPort = getRandomAvailableTCPPort();
 
     locatorPort = locatorVM.invoke(this::startLocator);
     serverVM.invoke(this::startServer);

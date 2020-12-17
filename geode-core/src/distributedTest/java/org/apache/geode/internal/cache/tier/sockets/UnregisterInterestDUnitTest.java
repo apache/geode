@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.tier.sockets;
 import static org.apache.geode.cache.client.PoolManager.find;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
@@ -37,7 +38,6 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.FilterProfile;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -332,7 +332,7 @@ public class UnregisterInterestDUnitTest extends JUnit4DistributedTestCase {
     RegionFactory rf = ((GemFireCacheImpl) cache).createRegionFactory(RegionShortcut.REPLICATE);
     rf.create(regionname);
     CacheServer server = ((GemFireCacheImpl) cache).addCacheServer();
-    server.setPort(AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET));
+    server.setPort(getRandomAvailableTCPPort());
     server.start();
     return server.getPort();
   }

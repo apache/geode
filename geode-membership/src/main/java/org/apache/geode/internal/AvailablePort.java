@@ -41,15 +41,13 @@ import org.apache.geode.util.internal.GeodeGlossary;
  * selected available port.
  */
 public class AvailablePort {
+  public static final int AVAILABLE_PORTS_LOWER_BOUND = 20001;// 20000/udp is securid
+  public static final int AVAILABLE_PORTS_UPPER_BOUND = 29999;// 30000/tcp is spoolfax
 
   /** Is the port available for a Socket (TCP) connection? */
   public static final int SOCKET = 0;
-  public static final int AVAILABLE_PORTS_LOWER_BOUND = 20001;// 20000/udp is securid
-  public static final int AVAILABLE_PORTS_UPPER_BOUND = 29999;// 30000/tcp is spoolfax
   /** Is the port available for a JGroups (UDP) multicast connection */
   public static final int MULTICAST = 1;
-
-  /////////////////////// Static Methods ///////////////////////
 
   /**
    * see if there is a gemfire system property that establishes a default address for the given
@@ -72,7 +70,6 @@ public class AvailablePort {
     return null;
   }
 
-
   /**
    * Returns whether or not the given port on the local host is available (that is, unused).
    *
@@ -84,7 +81,6 @@ public class AvailablePort {
   public static boolean isPortAvailable(final int port, int protocol) {
     return isPortAvailable(port, protocol, getAddress(protocol));
   }
-
 
   /**
    * Returns whether or not the given port on the local host is available (that is, unused).
@@ -284,7 +280,6 @@ public class AvailablePort {
     return keepOneInterface(null, port);
   }
 
-
   /**
    * Returns a randomly selected available port in the range 5001 to 32767.
    *
@@ -295,33 +290,6 @@ public class AvailablePort {
   public static int getRandomAvailablePort(int protocol) {
     return getRandomAvailablePort(protocol, getAddress(protocol));
   }
-
-  public static Keeper getRandomAvailablePortKeeper(int protocol) {
-    return getRandomAvailablePortKeeper(protocol, getAddress(protocol));
-  }
-
-  /**
-   * Returns a randomly selected available port in the provided range.
-   *
-   * @param protocol The protocol to check (either {@link #SOCKET} or {@link #MULTICAST}).
-   *
-   * @throws IllegalArgumentException <code>protocol</code> is unknown
-   */
-  public static int getAvailablePortInRange(int rangeBase, int rangeTop, int protocol) {
-    return getAvailablePortInRange(protocol, getAddress(protocol), rangeBase, rangeTop);
-  }
-
-  /**
-   * Returns a randomly selected available port in the range 5001 to 32767 that satisfies a modulus
-   *
-   * @param protocol The protocol to check (either {@link #SOCKET} or {@link #MULTICAST}).
-   *
-   * @throws IllegalArgumentException <code>protocol</code> is unknown
-   */
-  public static int getRandomAvailablePortWithMod(int protocol, int mod) {
-    return getRandomAvailablePortWithMod(protocol, getAddress(protocol), mod);
-  }
-
 
   /**
    * Returns a randomly selected available port in the range 5001 to 32767.
@@ -357,58 +325,6 @@ public class AvailablePort {
     }
   }
 
-  public static Keeper getRandomAvailablePortKeeper(int protocol, InetAddress addr) {
-    return getRandomAvailablePortKeeper(protocol, addr, false);
-  }
-
-  public static Keeper getRandomAvailablePortKeeper(int protocol, InetAddress addr,
-      boolean useMembershipPortRange) {
-    while (true) {
-      int port = getRandomWildcardBindPortNumber(useMembershipPortRange);
-      Keeper result = isPortKeepable(port, protocol, addr);
-      if (result != null) {
-        return result;
-      }
-    }
-  }
-
-  /**
-   * Returns a randomly selected available port in the provided range.
-   *
-   * @param protocol The protocol to check (either {@link #SOCKET} or {@link #MULTICAST}).
-   * @param addr the bind-address or mcast address to use
-   *
-   * @throws IllegalArgumentException <code>protocol</code> is unknown
-   */
-  public static int getAvailablePortInRange(int protocol, InetAddress addr, int rangeBase,
-      int rangeTop) {
-    for (int port = rangeBase; port <= rangeTop; port++) {
-      if (isPortAvailable(port, protocol, addr)) {
-        return port;
-      }
-    }
-    return -1;
-  }
-
-  /**
-   * Returns a randomly selected available port in the range 5001 to 32767 that satisfies a modulus
-   * and the provided protocol
-   *
-   * @param protocol The protocol to check (either {@link #SOCKET} or {@link #MULTICAST}).
-   * @param addr the bind-address or mcast address to use
-   *
-   * @throws IllegalArgumentException <code>protocol</code> is unknown
-   */
-  public static int getRandomAvailablePortWithMod(int protocol, InetAddress addr, int mod) {
-    while (true) {
-      int port = getRandomWildcardBindPortNumber();
-      if (isPortAvailable(port, protocol, addr) && (port % mod) == 0) {
-        return port;
-      }
-    }
-  }
-
-
   @Immutable
   public static final Random rand;
 
@@ -418,10 +334,6 @@ public class AvailablePort {
       rand = new Random();
     else
       rand = new java.security.SecureRandom();
-  }
-
-  private static int getRandomWildcardBindPortNumber() {
-    return getRandomWildcardBindPortNumber(false);
   }
 
   private static int getRandomWildcardBindPortNumber(boolean useMembershipPortRange) {
@@ -435,10 +347,6 @@ public class AvailablePort {
       rangeTop = MembershipConfig.DEFAULT_MEMBERSHIP_PORT_RANGE[1];
     }
 
-    return rand.nextInt(rangeTop - rangeBase) + rangeBase;
-  }
-
-  private static int getRandomPortNumberInRange(int rangeBase, int rangeTop) {
     return rand.nextInt(rangeTop - rangeBase) + rangeBase;
   }
 
@@ -571,5 +479,4 @@ public class AvailablePort {
     }
 
   }
-
 }

@@ -16,6 +16,7 @@ package org.apache.geode.cache;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -29,7 +30,6 @@ import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheWriterAdapter;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
@@ -65,7 +65,7 @@ public class ConnectionPoolAndLoaderDUnitTest extends JUnit4CacheTestCase {
     VM server = host.getVM(0);
     VM client = host.getVM(1);
 
-    final int serverPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final int serverPort = getRandomAvailableTCPPort();
     server.invoke(new SerializableCallable() {
       @Override
       public Object call() throws IOException {
@@ -147,7 +147,7 @@ public class ConnectionPoolAndLoaderDUnitTest extends JUnit4CacheTestCase {
     VM server = host.getVM(0);
     VM client = host.getVM(1);
 
-    final int serverPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final int serverPort = getRandomAvailableTCPPort();
     server.invoke(new SerializableCallable() {
       @Override
       public Object call() throws IOException {
@@ -249,7 +249,7 @@ public class ConnectionPoolAndLoaderDUnitTest extends JUnit4CacheTestCase {
     VM client1 = host.getVM(1);
     VM client2 = host.getVM(2);
 
-    final int serverPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final int serverPort = getRandomAvailableTCPPort();
     server.invoke(new SerializableCallable() {
       @Override
       public Object call() throws IOException {

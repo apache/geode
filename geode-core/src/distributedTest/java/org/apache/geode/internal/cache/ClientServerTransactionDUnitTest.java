@@ -19,6 +19,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMORY_SIZE;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.LogWriterUtils.getDUnitLogLevel;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
@@ -100,7 +101,6 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.execute.data.CustId;
 import org.apache.geode.internal.cache.execute.data.Customer;
 import org.apache.geode.internal.cache.execute.data.Order;
@@ -195,7 +195,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         TXManagerImpl txMgr = (TXManagerImpl) getCache().getCacheTransactionManager();
         txMgr.setTransactionTimeToLiveForTest(txTimeoutSecs);
         if (startServer) {
-          int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+          int port = getRandomAvailableTCPPort();
           CacheServer s = getCache().addCacheServer();
           s.setPort(port);
           s.start();
@@ -222,7 +222,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         TXManagerImpl txMgr = (TXManagerImpl) cache.getCacheTransactionManager();
         txMgr.setTransactionTimeToLiveForTest(10);
         if (startServer) {
-          int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+          int port = getRandomAvailableTCPPort();
           CacheServer s = cache.addCacheServer();
           s.setPort(port);
           s.start();
@@ -295,7 +295,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
           public Object call() throws Exception {
             TXManagerImpl txMgr = (TXManagerImpl) getCache().getCacheTransactionManager();
             txMgr.setTransactionTimeToLiveForTest(10);
-            int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+            int port = getRandomAvailableTCPPort();
             CacheServer s = getCache().addCacheServer();
             s.setPort(port);
             s.start();
@@ -2994,7 +2994,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     final int port2 = (Integer) datastore1.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        return AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+        return getRandomAvailableTCPPort();
       }
     });
 
@@ -3106,7 +3106,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     VM client = host.getVM(3);
 
     final int port1 = createRegionsAndStartServer(server, false);
-    final int port2 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final int port2 = getRandomAvailableTCPPort();
 
     server.invoke(new CreateReplicateRegion("r1"));
 

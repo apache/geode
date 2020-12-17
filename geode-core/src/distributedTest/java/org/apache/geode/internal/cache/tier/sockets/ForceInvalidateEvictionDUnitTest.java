@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.junit.Assert.assertFalse;
 
 import java.io.IOException;
@@ -41,7 +42,6 @@ import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.Token;
@@ -380,7 +380,7 @@ public class ForceInvalidateEvictionDUnitTest extends JUnit4CacheTestCase {
   }
 
   private int addCacheServer(VM vm) {
-    final int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final int port = getRandomAvailableTCPPort();
     vm.invoke(new SerializableRunnable("add cache server") {
       @Override
       public void run() {
