@@ -371,7 +371,7 @@ TBA
 <dd>
 <em>Public:</em> false
 <p>
-<em>Integer:</em> (default is 100)
+<em>Integer:</em> (default is 100 or 16 * number of processors, whichever is larger)
 <p>
 Maximum function execution threads.
 <p>
@@ -383,7 +383,7 @@ See <code>org.apache.geode.distributed.internal.DistributionManager#MAX_FE_THREA
 <dd>
 <em>Public:</em> false
 <p>
-<em>Integer</em> (default is 200)
+<em>Integer</em> (default is 200 or 32 * number of processors, whichever is larger)
 <p>
 See <code>org.apache.geode.distributed.internal.DistributionManager#MAX_PR_THREADS</code>.
 <p>
