@@ -26,7 +26,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
  */
 public interface OperationExecutors {
   int MAX_THREADS =
-      Integer.getInteger("DistributionManager.MAX_THREADS", 100);
+      Integer.getInteger("DistributionManager.MAX_THREADS", 300);
 
   int MAX_FE_THREADS = Integer.getInteger("DistributionManager.MAX_FE_THREADS",
       Math.max(Runtime.getRuntime().availableProcessors() * 16, 100));

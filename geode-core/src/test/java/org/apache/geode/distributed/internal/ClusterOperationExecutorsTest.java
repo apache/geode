@@ -14,24 +14,37 @@
  */
 package org.apache.geode.distributed.internal;
 
+import static org.apache.geode.distributed.internal.OperationExecutors.PARTITIONED_REGION_EXECUTOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.concurrent.ThreadPoolExecutor;
+
 import org.junit.Before;
 import org.junit.Test;
+
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
 public class ClusterOperationExecutorsTest {
   private DistributionStats stats;
   private InternalDistributedSystem system;
-  private DistributionConfig config;
 
   @Before
   public void setup() {
     stats = mock(DistributionStats.class);
     system = mock(InternalDistributedSystem.class);
-    config = mock(DistributionConfig.class);
+    DistributionConfig config = mock(DistributionConfig.class);
     when(system.getConfig()).thenReturn(config);
+  }
+
+  @Test
+  public void numOfThreadsIsAtLeast300() {
+    int minNumberOfThreads = 300;
+
+    ClusterOperationExecutors executors = new ClusterOperationExecutors(stats, system);
+
+    assertThat(executors.MAX_THREADS).isGreaterThanOrEqualTo(minNumberOfThreads);
   }
 
   @Test
@@ -45,18 +58,13 @@ public class ClusterOperationExecutorsTest {
   }
 
   @Test
-  public void numOfFEThreadsCanBeSet() {
-    int numberOfFunctionExecutionThreads = 400;
-    String functionExecutionThreadsPropertyName = "DistributionManager.MAX_FE_THREADS";
-    System.setProperty(functionExecutionThreadsPropertyName,
-        Integer.toString(numberOfFunctionExecutionThreads));
+  public void numOfPRThreadsIsAtLeast200() {
+    int minNumberOfPartitionedRegionThreads = 200;
 
-    try {
-      ClusterOperationExecutors executors = new ClusterOperationExecutors(stats, system);
+    ClusterOperationExecutors executors = new ClusterOperationExecutors(stats, system);
+    int threads = ((ThreadPoolExecutor) executors.getExecutor(PARTITIONED_REGION_EXECUTOR,
+        mock(InternalDistributedMember.class))).getMaximumPoolSize();
 
-      assertThat(executors.MAX_FE_THREADS).isEqualTo(numberOfFunctionExecutionThreads);
-    } finally {
-      System.clearProperty(functionExecutionThreadsPropertyName);
-    }
+    assertThat(threads).isGreaterThanOrEqualTo(minNumberOfPartitionedRegionThreads);
   }
 }
