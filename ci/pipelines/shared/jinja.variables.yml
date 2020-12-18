@@ -29,12 +29,12 @@ benchmarks:
     flag: '-PwithSsl -PtestJVM=/usr/lib/jvm/bellsoft-java11-amd64'
     options: '--tests=*GetBenchmark --tests=*PutBenchmark'
     max_in_flight: 1
-    timeout: 3h
+    timeout: 8h
   - title: '_with_security_manager'
     flag: '-PwithSecurityManager'
     options: '--tests=Partitioned*'
     max_in_flight: 2
-    timeout: 5h
+    timeout: 12h
 
 build_test:
   ARTIFACT_SLUG: build

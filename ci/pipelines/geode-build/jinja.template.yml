@@ -34,6 +34,7 @@
     trigger: true
     passed:
     - Build
+    version: every
 {% endmacro %}
 
 {%- macro deep_merge(a, b): %}
@@ -476,6 +477,7 @@ jobs:
     - get: geode-build-version
       trigger: true
       passed: *benchmark-inputs
+      version: every
     - put: concourse-metadata-resource
   - do:
     - task: run_benchmarks{{ run_var.title }}
