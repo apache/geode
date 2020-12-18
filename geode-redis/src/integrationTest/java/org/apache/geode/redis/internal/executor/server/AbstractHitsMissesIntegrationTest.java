@@ -60,6 +60,11 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
   // ------------ Key related commands -----------
 
   @Test
+  public void testKeys() {
+    runCommandAndAssertNoStatUpdates("*", k -> jedis.keys(k));
+  }
+
+  @Test
   public void testExists() {
     runCommandAndAssertHitsAndMisses("string", k -> jedis.exists(k));
   }
@@ -153,17 +158,17 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
     Long currentHits = Long.parseLong(info.get(HITS));
     Long currentMisses = Long.parseLong(info.get(MISSES));
 
-    jedis.bitop(BitOP.OR, "dest", "string", "string");
+    jedis.bitop(BitOP.OR, "dest", "string", "string", "dest");
     info = getInfo(jedis);
 
     assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits + 2));
-    assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses));
+    assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses + 1));
 
     jedis.bitop(BitOP.OR, "dest", "string", "missed");
     info = getInfo(jedis);
 
-    assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits + 3));
-    assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses + 1));
+    assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits + 2 + 1));
+    assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses + 1 + 1));
   }
 
   // ------------ Set related commands -----------
@@ -262,8 +267,8 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
   }
 
   @Test
-  public void testKeys() {
-    runCommandAndAssertNoStatUpdates("hash", k -> jedis.keys(k));
+  public void testHkeys() {
+    runCommandAndAssertHitsAndMisses("hash", k -> jedis.hkeys(k));
   }
 
   @Test

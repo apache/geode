@@ -126,6 +126,7 @@ public class RedisStats {
 
   public void incKeyspaceHits() {
     keyspaceHits.incrementAndGet();
+    geodeRedisStats.incrementKeyspaceHits();
   }
 
   public long getKeyspaceHits() {
@@ -134,6 +135,7 @@ public class RedisStats {
 
   public void incKeyspaceMisses() {
     keyspaceMisses.incrementAndGet();
+    geodeRedisStats.incrementKeyspaceMisses();
   }
 
   public long getKeyspaceMisses() {
