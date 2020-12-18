@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.wan;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 
 import java.util.Set;
 
@@ -98,6 +99,83 @@ public class GatewaySenderOverflowMBeanAttributesDistributedTest extends WANTest
 
   @Test
   @Parameters({"true", "false"})
+  public void testParallelGatewaySenderOverflowMBeanAttributesAfterServerRestart(
+      boolean createSenderFirst) {
+    Integer lnPort = vm0.invoke(() -> createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> createFirstRemoteLocator(2, lnPort));
+
+    createCacheInVMs(lnPort, vm4, vm5);
+
+    String senderId = "ln";
+    vm4.invoke(() -> createPartitionedRegionWithPersistence(getTestMethodName(), senderId, 1, 100));
+    vm5.invoke(() -> createPartitionedRegionWithPersistence(getTestMethodName(), senderId, 1, 100));
+    vm4.invoke(() -> createSender(senderId, 2, true, 1, 10, false, true, null, false));
+    String diskStore5 = vm5.invoke(
+        () -> createSenderWithDiskStore(senderId, 2, true, 1, 10, false, true, null, null, false));
+
+    // Do some puts to cause overflow
+    int numPuts = 10;
+    vm4.invoke(() -> doHeavyPuts(getTestMethodName(), numPuts));
+
+    vm4.invoke(() -> checkQueueSize(senderId, numPuts));
+    vm5.invoke(() -> checkQueueSize(senderId, numPuts));
+    vm4.invoke(() -> checkEntriesOverflowedToDisk(senderId, numPuts));
+    vm5.invoke(() -> checkEntriesOverflowedToDisk(senderId, numPuts));
+    long bytesOverflowedToDiskInVm4 = vm4.invoke(() -> getBytesOverflowedToDisk(senderId));
+    long bytesOverflowedToDiskInVm5 = vm5.invoke(() -> getBytesOverflowedToDisk(senderId));
+
+    // stop one member
+    vm5.invoke(() -> killSender());
+
+    // Check that the remaining alive member has the same number of overflow figures
+    vm4.invoke(() -> checkQueueSize(senderId, numPuts));
+    vm4.invoke(() -> checkEntriesOverflowedToDisk(senderId, numPuts));
+    vm4.invoke(() -> checkBytesOverflowedToDisk(senderId, bytesOverflowedToDiskInVm4));
+
+    // restart server
+    createCacheInVMs(lnPort, vm5);
+    if (createSenderFirst) {
+      vm5.invoke(() -> createSenderWithDiskStore(senderId, 2, true, 1, 10, false, true, null,
+          diskStore5, false));
+      vm5.invoke(
+          () -> createPartitionedRegionWithPersistence(getTestMethodName(), senderId, 1, 100));
+    } else {
+      vm5.invoke(
+          () -> createPartitionedRegionWithPersistence(getTestMethodName(), senderId, 1, 100));
+      vm5.invoke(() -> createSenderWithDiskStore(senderId, 2, true, 1, 10, false, true, null,
+          diskStore5, false));
+    }
+    vm5.invoke(() -> waitForSenderRunningState(senderId));
+
+    // Check that the restarted sender has the same number of overflow figures as prior to the
+    // restart
+    if (createSenderFirst) {
+      vm5.invoke(() -> checkQueueSize(senderId, numPuts));
+      vm5.invoke(() -> checkEntriesOverflowedToDisk(senderId, numPuts));
+      vm5.invoke(() -> checkBytesOverflowedToDisk(senderId, bytesOverflowedToDiskInVm5));
+    } else {
+      vm5.invoke(() -> checkQueueSize(senderId, numPuts));
+      vm5.invoke(() -> checkEntriesOverflowedToDisk(senderId, numPuts));
+      vm5.invoke(() -> checkBytesOverflowedToDisk(senderId, bytesOverflowedToDiskInVm5));
+    }
+
+    // Check that the not restarted sender has the same number of overflow figures
+    vm4.invoke(() -> checkQueueSize(senderId, numPuts));
+    vm4.invoke(() -> checkEntriesOverflowedToDisk(senderId, numPuts));
+    vm4.invoke(() -> checkBytesOverflowedToDisk(senderId, bytesOverflowedToDiskInVm4));
+
+    // Start a gateway receiver
+    vm2.invoke(() -> createCache(nyPort));
+    vm2.invoke(() -> createReceiver());
+    vm2.invoke(() -> createPartitionedRegion(getTestMethodName(), null, 1, 100, isOffHeap()));
+
+    // Wait for queue to drain
+    vm4.invoke(() -> checkQueueSize(senderId, 0));
+    vm5.invoke(() -> checkQueueSize(senderId, 0));
+  }
+
+  @Test
+  @Parameters({"true", "false"})
   public void testSerialGatewaySenderOverflowMBeanAttributes(boolean createSenderFirst)
       throws Exception {
     // Start the locators
@@ -162,9 +240,7 @@ public class GatewaySenderOverflowMBeanAttributesDistributedTest extends WANTest
     assertThat(drs).isNotNull();
 
     // Get gateway sender mbean
-    ManagementService service = ManagementService.getManagementService(cache);
-    GatewaySenderMXBean bean = service.getLocalGatewaySenderMXBean(senderId);
-    assertThat(bean).isNotNull();
+    GatewaySenderMXBean bean = getGatewaySenderMXBean(senderId);
 
     // Wait for the sampler to take a few samples
     waitForSamplerToSample(5);
@@ -174,6 +250,33 @@ public class GatewaySenderOverflowMBeanAttributesDistributedTest extends WANTest
       assertThat(bean.getEntriesOverflowedToDisk()).isEqualTo(drs.getNumOverflowOnDisk());
       assertThat(bean.getBytesOverflowedToDisk()).isEqualTo(drs.getNumOverflowBytesOnDisk());
     });
+  }
+
+  private void checkEntriesOverflowedToDisk(String senderId, long entriesOverflowedToDisk) {
+    GatewaySenderMXBean bean = getGatewaySenderMXBean(senderId);
+    await().untilAsserted(() -> {
+      assertEquals(entriesOverflowedToDisk, bean.getEntriesOverflowedToDisk());
+    });
+  }
+
+  private void checkBytesOverflowedToDisk(String senderId, long bytesOverflowedToDisk) {
+    GatewaySenderMXBean bean = getGatewaySenderMXBean(senderId);
+    await().untilAsserted(() -> {
+      assertEquals(bytesOverflowedToDisk, bean.getBytesOverflowedToDisk());
+    });
+  }
+
+  private long getBytesOverflowedToDisk(String senderId) throws Exception {
+    GatewaySenderMXBean bean = getGatewaySenderMXBean(senderId);
+    return bean.getBytesOverflowedToDisk();
+  }
+
+  private GatewaySenderMXBean getGatewaySenderMXBean(String senderId) {
+    // Get gateway sender mbean
+    ManagementService service = ManagementService.getManagementService(cache);
+    GatewaySenderMXBean bean = service.getLocalGatewaySenderMXBean(senderId);
+    assertThat(bean).isNotNull();
+    return bean;
   }
 
   private void compareSerialOverflowStatsToMBeanAttributes(String senderId) throws Exception {
