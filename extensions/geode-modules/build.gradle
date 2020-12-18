@@ -53,6 +53,7 @@ dependencies {
 
   // distributedTest
   distributedTestImplementation(project(':geode-dunit'))
+  distributedTestImplementation('org.apache.tomcat:catalina-ha:' + DependencyConstraints.get('tomcat6.version'))
 }
 
 sonarqube {
