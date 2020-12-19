@@ -1070,12 +1070,12 @@ lib/shiro-event-1.7.0.jar
 lib/shiro-lang-1.7.0.jar
 lib/slf4j-api-1.7.30.jar
 lib/snappy-0.4.jar
-lib/spring-beans-5.3.1.jar
-lib/spring-context-5.3.1.jar
-lib/spring-core-5.3.1.jar
-lib/spring-jcl-5.3.1.jar
+lib/spring-beans-5.3.2.jar
+lib/spring-context-5.3.2.jar
+lib/spring-core-5.3.2.jar
+lib/spring-jcl-5.3.2.jar
 lib/spring-shell-1.2.0.RELEASE.jar
-lib/spring-web-5.3.1.jar
+lib/spring-web-5.3.2.jar
 lib/swagger-annotations-1.6.2.jar
 tools/ClientProtocol/geode-protobuf-messages-definitions-0.0.0.zip
 tools/Extensions/geode-web-0.0.0.war
