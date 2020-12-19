@@ -135,7 +135,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'mysql', name: 'mysql-connector-java', version: '5.1.46')
         api(group: 'net.java.dev.jna', name: 'jna', version: '5.6.0')
         api(group: 'net.java.dev.jna', name: 'jna-platform', version: '5.6.0')
-        api(group: 'net.openhft', name: 'compiler', version: '2.4.0')
+        api(group: 'net.openhft', name: 'compiler', version: '2.4.1')
         api(group: 'net.sf.jopt-simple', name: 'jopt-simple', version: '5.0.4')
         api(group: 'net.sourceforge.pmd', name: 'pmd-java', version: '6.30.0')
         api(group: 'net.sourceforge.pmd', name: 'pmd-test', version: '6.30.0')
