@@ -430,7 +430,7 @@
       <dependency>
         <groupId>org.codehaus.cargo</groupId>
         <artifactId>cargo-core-uberjar</artifactId>
-        <version>1.8.2</version>
+        <version>1.8.3</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
