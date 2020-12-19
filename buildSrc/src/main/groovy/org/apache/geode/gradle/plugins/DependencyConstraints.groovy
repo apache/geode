@@ -180,7 +180,7 @@ class DependencyConstraints implements Plugin<Project> {
       entry('jackson-databind')
     }
 
-    dependencySet(group: 'com.jayway.jsonpath', version: '2.4.0') {
+    dependencySet(group: 'com.jayway.jsonpath', version: '2.5.0') {
       entry('json-path-assert')
       entry('json-path')
     }
