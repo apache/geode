@@ -75,13 +75,13 @@ dependencies {
   // This only exists for debugging PubSubNativeRedisAcceptanceTest
   acceptanceTestImplementation('org.buildobjects:jproc:2.3.0')
 
-  distributedTestCompile('org.apache.logging.log4j:log4j-core')
+  distributedTestImplementation('org.apache.logging.log4j:log4j-core')
   distributedTestImplementation(project(':geode-dunit'))
   distributedTestImplementation(sourceSets.commonTest.output)
   distributedTestImplementation('redis.clients:jedis')
   distributedTestImplementation('io.lettuce:lettuce-core')
 
-  distributedTestCompile('javax.servlet:javax.servlet-api')
+  distributedTestImplementation('javax.servlet:javax.servlet-api')
   distributedTestImplementation('org.springframework.boot:spring-boot-starter-jetty')
   distributedTestImplementation('org.springframework.boot:spring-boot-starter-web') {
     exclude module: 'spring-boot-starter-tomcat'
