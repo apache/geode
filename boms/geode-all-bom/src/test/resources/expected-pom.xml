@@ -352,13 +352,13 @@
       <dependency>
         <groupId>net.sourceforge.pmd</groupId>
         <artifactId>pmd-java</artifactId>
-        <version>6.29.0</version>
+        <version>6.30.0</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>net.sourceforge.pmd</groupId>
         <artifactId>pmd-test</artifactId>
-        <version>6.29.0</version>
+        <version>6.30.0</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
