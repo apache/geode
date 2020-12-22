@@ -1051,11 +1051,11 @@ lib/lucene-analyzers-phonetic-6.6.6.jar
 lib/lucene-core-6.6.6.jar
 lib/lucene-queries-6.6.6.jar
 lib/lucene-queryparser-6.6.6.jar
-lib/micrometer-core-1.6.1.jar
+lib/micrometer-core-1.6.2.jar
 lib/mx4j-3.0.2.jar
 lib/mx4j-remote-3.0.2.jar
 lib/mx4j-tools-3.0.1.jar
-lib/netty-all-4.1.54.Final.jar
+lib/netty-all-4.1.56.Final.jar
 lib/protobuf-java-3.11.4.jar
 lib/ra.jar
 lib/rmiio-2.1.2.jar
