@@ -346,6 +346,8 @@ dependencies {
     testRuntime('commons-validator:commons-validator')
     testRuntime('com.pholser:junit-quickcheck-generators')
 
+    // Needed for JDK8, not JDK11, after nebula.facet v7.0.9
+    integrationTestImplementation(files("${System.getProperty('java.home')}/../lib/tools.jar"))
     integrationTestImplementation(project(':geode-gfsh'))
     integrationTestImplementation(project(':geode-junit'))
     integrationTestImplementation(project(':geode-dunit'))
