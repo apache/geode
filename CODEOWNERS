@@ -71,7 +71,7 @@ geode-core/**/org/apache/geode/internal/cache/tier/CacheClient*   @agingade @bog
 #-----------------------------------------------------------------
 geode-core/**/org/apache/geode/*                                  @dschneider-pivotal @boglesby
 geode-core/**/org/apache/geode/cache/*                            @dschneider-pivotal @boglesby
-geode-core/**/org/apache/geode/cache/util/**                      @dschneider-pivotal @DonalEvans
+geode-core/**/org/apache/geode/cache/util/**                      @dschneider-pivotal @boglesby
 
 #-----------------------------------------------------------------
 # Distributed Locks
