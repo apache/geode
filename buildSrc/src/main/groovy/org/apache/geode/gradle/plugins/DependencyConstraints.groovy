@@ -256,10 +256,13 @@ class DependencyConstraints implements Plugin<Project> {
       entry('spring-core')
       entry('spring-expression')
       entry('spring-oxm')
-      entry('spring-test')
       entry('spring-tx')
       entry('spring-web')
       entry('spring-webmvc')
+    }
+
+    dependencySet(group: 'org.springframework', version: '5.3.1') {
+      entry('spring-test')
     }
 
     dependencySet(group: 'org.springframework.boot', version: '2.4.1') {
