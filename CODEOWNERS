@@ -62,9 +62,9 @@ geode-core/**/org/apache/geode/internal/cache/tier/CacheClient*   @agingade @bog
 #-----------------------------------------------------------------
 # Experimental Protobuf based Client/Server
 #-----------------------------------------------------------------
-geode-experimental-driver/**                                      @kohlmu-pivotal @PurelyApplied
-geode-protobuf/**                                                 @kohlmu-pivotal @PurelyApplied
-geode-protobuf-messages/**                                        @kohlmu-pivotal @PurelyApplied
+#geode-experimental-driver/**
+#geode-protobuf/**
+#geode-protobuf-messages/**
 
 #-----------------------------------------------------------------
 # Core Public API packages - Cache, Region, etc.
@@ -191,10 +191,10 @@ geode-core/**/org/apache/geode/internal/cache/versions/**         @dschneider-pi
 #-----------------------------------------------------------------
 # WAN messaging and queues
 #-----------------------------------------------------------------
-geode-wan/**                                                      @gesterzhou @jujoramos
-geode-core/**/org/apache/geode/cache/asyncqueue/**                @gesterzhou @jujoramos
-geode-core/**/org/apache/geode/cache/wan/**                       @gesterzhou @jujoramos
-geode-core/**/org/apache/geode/internal/cache/wan/**              @gesterzhou @jujoramos
+geode-wan/**                                                      @gesterzhou @boglesby
+geode-core/**/org/apache/geode/cache/asyncqueue/**                @gesterzhou @boglesby
+geode-core/**/org/apache/geode/cache/wan/**                       @gesterzhou @boglesby
+geode-core/**/org/apache/geode/internal/cache/wan/**              @gesterzhou @boglesby
 
 #-----------------------------------------------------------------
 # Management
