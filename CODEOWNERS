@@ -70,7 +70,7 @@ geode-core/**/org/apache/geode/internal/cache/tier/CacheClient*   @agingade @bog
 # Core Public API packages - Cache, Region, etc.
 #-----------------------------------------------------------------
 geode-core/**/org/apache/geode/*                                  @dschneider-pivotal @boglesby
-geode-core/**/org/apache/geode/cache/*                            @dschneider-pivotal @DonalEvans
+geode-core/**/org/apache/geode/cache/*                            @dschneider-pivotal @boglesby
 geode-core/**/org/apache/geode/cache/util/**                      @dschneider-pivotal @DonalEvans
 
 #-----------------------------------------------------------------
