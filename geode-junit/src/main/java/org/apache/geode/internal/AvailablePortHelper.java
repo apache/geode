@@ -27,22 +27,37 @@ import static org.apache.geode.internal.AvailablePort.isPortKeepable;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.apache.geode.internal.AvailablePort.Keeper;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Methods for acquiring one or more available ports. Despite "random" in the names, these methods
  * allocate ports in a round-robin fashion.
  */
 public class AvailablePortHelper {
-  public static final int MEMBERSHIP_PORTS_LOWER_BOUND =
-      Integer.getInteger("AvailablePortHelper.membershipPortLowerBound",
-          DEFAULT_MEMBERSHIP_PORT_RANGE[0]);
-  public static final int MEMBERSHIP_PORTS_UPPER_BOUND =
-      Integer.getInteger("AvailablePortHelper.membershipPortUpperBound",
-          DEFAULT_MEMBERSHIP_PORT_RANGE[1]);
+  private static final Pattern MEMBERSHIP_PORT_RANGE_PATTERN =
+      Pattern.compile("^\\s*(\\d+)\\s*-\\s*(\\d+)\\s*$");
+  private static final int MEMBERSHIP_PORTS_LOWER_BOUND;
+  private static final int MEMBERSHIP_PORTS_UPPER_BOUND;
+
+  static {
+    String membershipRange = System.getProperty(
+        GeodeGlossary.GEMFIRE_PREFIX + "membership-port-range", "");
+    Matcher matcher = MEMBERSHIP_PORT_RANGE_PATTERN.matcher(membershipRange);
+    if (matcher.matches()) {
+      MEMBERSHIP_PORTS_LOWER_BOUND = Integer.parseInt(matcher.group(1));
+      MEMBERSHIP_PORTS_UPPER_BOUND = Integer.parseInt(matcher.group(2));
+    } else {
+      MEMBERSHIP_PORTS_LOWER_BOUND = DEFAULT_MEMBERSHIP_PORT_RANGE[0];
+      MEMBERSHIP_PORTS_UPPER_BOUND = DEFAULT_MEMBERSHIP_PORT_RANGE[1];
+    }
+  }
+
   private final AtomicInteger nextMembershipPort;
   private final AtomicInteger nextAvailablePort;
 
@@ -51,10 +66,20 @@ public class AvailablePortHelper {
 
   AvailablePortHelper() {
     Random rand = rand();
-    nextMembershipPort =
-        randomInRange(rand, MEMBERSHIP_PORTS_LOWER_BOUND, MEMBERSHIP_PORTS_UPPER_BOUND);
     nextAvailablePort =
         randomInRange(rand, AVAILABLE_PORTS_LOWER_BOUND, AVAILABLE_PORTS_UPPER_BOUND);
+    System.out.printf("DHE: AvailablePortHelper available ports: %d-%d%n",
+        AVAILABLE_PORTS_LOWER_BOUND, AVAILABLE_PORTS_UPPER_BOUND);
+
+    nextMembershipPort = randomInRange(rand,
+        MEMBERSHIP_PORTS_LOWER_BOUND, MEMBERSHIP_PORTS_UPPER_BOUND);
+    System.out.printf("DHE: AvailablePortHelper membership ports: %d-%d%n",
+        MEMBERSHIP_PORTS_LOWER_BOUND, MEMBERSHIP_PORTS_UPPER_BOUND);
+
+    System.out.println(
+        "DHE: AvailablePortHelper.nextAvailablePort randomly initialized to " + nextAvailablePort);
+    System.out.println("DHE: AvailablePortHelper.nextMembershipPort randomly initialized to "
+        + nextMembershipPort);
   }
 
   /**
@@ -150,6 +175,7 @@ public class AvailablePortHelper {
     if (jvmIndex == 0) {
       return;
     }
+
     int membershipRange = MEMBERSHIP_PORTS_UPPER_BOUND - MEMBERSHIP_PORTS_LOWER_BOUND;
     int availableRange = AVAILABLE_PORTS_UPPER_BOUND - AVAILABLE_PORTS_LOWER_BOUND;
     int numChunks = Integer.highestOneBit(jvmIndex) << 1;
@@ -157,6 +183,12 @@ public class AvailablePortHelper {
 
     singleton.nextMembershipPort.addAndGet(chunkNumber * membershipRange / numChunks);
     singleton.nextAvailablePort.addAndGet(chunkNumber * availableRange / numChunks);
+    System.out
+        .printf("DHE: AvailablePortHelper.nextAvailablePort: initialized to %s for VM index %d%n",
+            singleton.nextAvailablePort, jvmIndex);
+    System.out
+        .printf("DHE: AvailablePortHelper.nextMembershipPort: initialized to %s for VM index %d%n",
+            singleton.nextMembershipPort, jvmIndex);
   }
 
   private static int availablePort(int protocol) {

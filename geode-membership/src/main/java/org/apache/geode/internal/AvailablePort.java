@@ -14,6 +14,9 @@
  */
 package org.apache.geode.internal;
 
+import static org.apache.geode.distributed.internal.membership.api.MembershipConfig.DEFAULT_MCAST_ADDRESS;
+import static org.apache.geode.distributed.internal.membership.api.MembershipConfig.DEFAULT_MEMBERSHIP_PORT_RANGE;
+
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
@@ -30,9 +33,10 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.distributed.internal.membership.api.MembershipConfig;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.util.internal.GeodeGlossary;
 
@@ -41,18 +45,42 @@ import org.apache.geode.util.internal.GeodeGlossary;
  * selected available port.
  */
 public class AvailablePort {
+  private static final Pattern MEMBERSHIP_PORT_RANGE_PATTERN =
+      Pattern.compile("^\\s*(\\d+)\\s*-\\s*(\\d+)\\s*$");
+
   private static final int DEFAULT_PORT_RANGE_LOWER_BOUND = 20001; // 20000/udp is securid
   private static final int DEFAULT_PORT_RANGE_UPPER_BOUND = 29999; // 30000/tcp is spoolfax
+  public static final int AVAILABLE_PORTS_LOWER_BOUND;
+  public static final int AVAILABLE_PORTS_UPPER_BOUND;
+
+  public static final int MEMBERSHIP_PORTS_LOWER_BOUND;
+  public static final int MEMBERSHIP_PORTS_UPPER_BOUND;
+
+  static {
+    AVAILABLE_PORTS_LOWER_BOUND =
+        Integer.getInteger("AvailablePort.lowerBound", DEFAULT_PORT_RANGE_LOWER_BOUND);
+    AVAILABLE_PORTS_UPPER_BOUND =
+        Integer.getInteger("AvailablePort.upperBound", DEFAULT_PORT_RANGE_UPPER_BOUND);
+    String membershipRange = System.getProperty(
+        GeodeGlossary.GEMFIRE_PREFIX + "membership-port-range", "");
+    Matcher matcher = MEMBERSHIP_PORT_RANGE_PATTERN.matcher(membershipRange);
+    if (matcher.matches()) {
+      MEMBERSHIP_PORTS_LOWER_BOUND = Integer.parseInt(matcher.group(1));
+      MEMBERSHIP_PORTS_UPPER_BOUND = Integer.parseInt(matcher.group(2));
+    } else {
+      MEMBERSHIP_PORTS_LOWER_BOUND = DEFAULT_MEMBERSHIP_PORT_RANGE[0];
+      MEMBERSHIP_PORTS_UPPER_BOUND = DEFAULT_MEMBERSHIP_PORT_RANGE[1];
+    }
+    System.out.printf("DHE: AvailablePort available ports: %d-%d%n",
+        AVAILABLE_PORTS_LOWER_BOUND, AVAILABLE_PORTS_UPPER_BOUND);
+    System.out.printf("DHE: AvailablePort membership ports: %d-%d%n",
+        MEMBERSHIP_PORTS_LOWER_BOUND, MEMBERSHIP_PORTS_UPPER_BOUND);
+  }
 
   /**
    * Is the port available for a Socket (TCP) connection?
    */
   public static final int SOCKET = 0;
-  public static final int AVAILABLE_PORTS_LOWER_BOUND =
-      Integer.getInteger("AvailablePort.lowerBound", DEFAULT_PORT_RANGE_LOWER_BOUND);
-  public static final int AVAILABLE_PORTS_UPPER_BOUND =
-      Integer.getInteger("AvailablePort.upperBound", DEFAULT_PORT_RANGE_UPPER_BOUND);
-
   /**
    * Is the port available for a JGroups (UDP) multicast connection
    */
@@ -119,8 +147,7 @@ public class AvailablePort {
         buffer[1] = (byte) 'i';
         buffer[2] = (byte) 'n';
         buffer[3] = (byte) 'g';
-        InetAddress mcid =
-            addr == null ? InetAddress.getByName(MembershipConfig.DEFAULT_MCAST_ADDRESS) : addr;
+        InetAddress mcid = addr == null ? InetAddress.getByName(DEFAULT_MCAST_ADDRESS) : addr;
         SocketAddress mcaddr = new InetSocketAddress(mcid, port);
         socket.joinGroup(mcid);
         DatagramPacket packet = new DatagramPacket(buffer, 0, buffer.length, mcaddr);
@@ -314,10 +341,7 @@ public class AvailablePort {
     while (true) {
       int port = getRandomWildcardBindPortNumber(useMembershipPortRange);
       if (isPortAvailable(port, protocol, addr)) {
-        // don't return the products default multicast port
-        if (!(protocol == MULTICAST && port == MembershipConfig.DEFAULT_MCAST_PORT)) {
-          return port;
-        }
+        return port;
       }
     }
   }
@@ -341,8 +365,8 @@ public class AvailablePort {
       rangeBase = AVAILABLE_PORTS_LOWER_BOUND; // 20000/udp is securid
       rangeTop = AVAILABLE_PORTS_UPPER_BOUND; // 30000/tcp is spoolfax
     } else {
-      rangeBase = MembershipConfig.DEFAULT_MEMBERSHIP_PORT_RANGE[0];
-      rangeTop = MembershipConfig.DEFAULT_MEMBERSHIP_PORT_RANGE[1];
+      rangeBase = MEMBERSHIP_PORTS_LOWER_BOUND;
+      rangeTop = MEMBERSHIP_PORTS_UPPER_BOUND;
     }
 
     return rand.nextInt(rangeTop - rangeBase) + rangeBase;
@@ -354,8 +378,8 @@ public class AvailablePort {
     // each of the ports from given port range get a chance at least once
     int numberOfRetrys = numberOfPorts * 5;
     for (int i = 0; i < numberOfRetrys; i++) {
-      int port = rand.nextInt(numberOfPorts + 1) + rangeBase;// add 1 to numberOfPorts so that
-      // rangeTop also gets included
+      // add 1 to numberOfPorts so that rangeTop also gets included
+      int port = rand.nextInt(numberOfPorts + 1) + rangeBase;
       if (isPortAvailable(port, protocol, getAddress(protocol))) {
         return port;
       }
@@ -410,7 +434,7 @@ public class AvailablePort {
     err.println("usage: java AvailablePort socket|jgroups [\"addr\" network-address] [port]");
     err.println();
     err.println(
-        "This program either prints whether or not a port is available for a given protocol,"
+        "This program either prints whether or not a port is available for a given protocol, "
             + "or it prints out an available port for a given protocol.");
     err.println();
     System.exit(1);

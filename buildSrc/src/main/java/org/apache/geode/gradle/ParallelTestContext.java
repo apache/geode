@@ -35,12 +35,9 @@ import org.gradle.process.internal.JavaExecHandleBuilder;
  */
 public class ParallelTestContext {
   private static final String GEMFIRE_PROPERTIES_FILENAME = "gemfire.properties";
-  private static final String NON_MEMBERSHIP_PORT_LOWER_BOUND_PROPERTY = "AvailablePort.lowerBound";
-  private static final String NON_MEMBERSHIP_PORT_UPPER_BOUND_PROPERTY = "AvailablePort.upperBound";
-  private static final String MEMBERSHIP_PORT_LOWER_BOUND_PROPERTY =
-      "AvailablePortHelper.membershipPortLowerBound";
-  private static final String MEMBERSHIP_PORT_UPPER_BOUND_PROPERTY =
-      "AvailablePortHelper.membershipPortUpperBound";
+  private static final String AVAILABLE_PORT_LOWER_BOUND_PROPERTY = "AvailablePort.lowerBound";
+  private static final String AVAILABLE_PORT_UPPER_BOUND_PROPERTY = "AvailablePort.upperBound";
+  private static final String MEMBERSHIP_PORT_RANGE_PROPERTY = "gemfire.membership-port-range";
 
   /**
    * The unique sequence ID to assign to the next test JVM to be configured. The test context will
@@ -54,7 +51,7 @@ public class ParallelTestContext {
    * <p>
    * This range must match AvailablePort's default port range: [20001, 29999]
    */
-  public static final PortRange NON_MEMBERSHIP_PORT_FULL_RANGE = new PortRange(20001, 29999);
+  public static final PortRange AVAILABLE_PORT_FULL_RANGE = new PortRange(20001, 29999);
 
   /**
    * The full range of port numbers available for membership port use.
@@ -64,11 +61,11 @@ public class ParallelTestContext {
   public static final PortRange MEMBERSHIP_PORT_FULL_RANGE = new PortRange(41000, 61000);
 
   private final PortRange membershipPorts;
-  private final PortRange nonMembershipPorts;
+  private final PortRange availablePorts;
 
   private ParallelTestContext(int index, int numberOfContexts) {
     membershipPorts = MEMBERSHIP_PORT_FULL_RANGE.partition(index, numberOfContexts);
-    nonMembershipPorts = NON_MEMBERSHIP_PORT_FULL_RANGE.partition(index, numberOfContexts);
+    availablePorts = AVAILABLE_PORT_FULL_RANGE.partition(index, numberOfContexts);
   }
 
   /**
@@ -90,12 +87,12 @@ public class ParallelTestContext {
     copyGemFirePropertiesFile(taskWorkingDir, workerWorkingDir);
     javaCommand.setWorkingDir(workerWorkingDir);
 
-    javaCommand.systemProperty(MEMBERSHIP_PORT_LOWER_BOUND_PROPERTY, membershipPorts.lowerBound());
-    javaCommand.systemProperty(MEMBERSHIP_PORT_UPPER_BOUND_PROPERTY, membershipPorts.upperBound());
-    javaCommand.systemProperty(NON_MEMBERSHIP_PORT_LOWER_BOUND_PROPERTY,
-        String.valueOf(nonMembershipPorts.lowerBound()));
-    javaCommand.systemProperty(NON_MEMBERSHIP_PORT_UPPER_BOUND_PROPERTY,
-        String.valueOf(nonMembershipPorts.upperBound()));
+    javaCommand.systemProperty(MEMBERSHIP_PORT_RANGE_PROPERTY,
+        membershipPorts.lowerBound() + "-" + membershipPorts.upperBound());
+    javaCommand.systemProperty(AVAILABLE_PORT_LOWER_BOUND_PROPERTY,
+        String.valueOf(availablePorts.lowerBound()));
+    javaCommand.systemProperty(AVAILABLE_PORT_UPPER_BOUND_PROPERTY,
+        String.valueOf(availablePorts.upperBound()));
   }
 
   private String uniqueWorkingDirName() {
@@ -127,7 +124,7 @@ public class ParallelTestContext {
   public String toString() {
     return "ParallelTestContext{" +
         "membershipPorts=" + membershipPorts +
-        ", nonMembershipPorts=" + nonMembershipPorts +
+        ", availablePorts=" + availablePorts +
         '}';
   }
 }

@@ -65,6 +65,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 
@@ -86,6 +87,9 @@ import org.apache.geode.util.internal.GeodeGlossary;
  */
 @Category({MembershipTest.class})
 public class InternalDistributedSystemJUnitTest {
+  @Rule
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+
   /**
    * A connection to a distributed system created by this test
    */
@@ -140,6 +144,7 @@ public class InternalDistributedSystemJUnitTest {
    */
   @Test
   public void testDefaultProperties() {
+    clearTestFrameworkPortRanges();
     Properties props = new Properties();
     // a loner is all this test needs
     props.setProperty(MCAST_PORT, "0");
@@ -194,6 +199,16 @@ public class InternalDistributedSystemJUnitTest {
 
     assertEquals(DistributionConfig.DEFAULT_ENABLE_NETWORK_PARTITION_DETECTION,
         config.getEnableNetworkPartitionDetection());
+  }
+
+  /**
+   * Remove the port range properties set by the test framework. Call this only in tests that
+   * explicitly test port range configuration.
+   */
+  private static void clearTestFrameworkPortRanges() {
+    System.clearProperty("AvailablePort.lowerBound");
+    System.clearProperty("AvailablePort.upperBound");
+    System.clearProperty("gemfire.membership-port-range");
   }
 
   @Test
@@ -368,6 +383,7 @@ public class InternalDistributedSystemJUnitTest {
 
   @Test
   public void testMembershipPortRange() {
+    clearTestFrameworkPortRanges();
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
@@ -379,6 +395,7 @@ public class InternalDistributedSystemJUnitTest {
 
   @Test
   public void testBadMembershipPortRange() {
+    clearTestFrameworkPortRanges();
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
