@@ -427,6 +427,10 @@ public enum RedisCommandType {
     return supportLevel == UNIMPLEMENTED;
   }
 
+  public boolean isInternal() {
+    return supportLevel == INTERNAL;
+  }
+
   public boolean isUnknown() {
     return supportLevel == RedisCommandSupportLevel.UNKNOWN;
   }
