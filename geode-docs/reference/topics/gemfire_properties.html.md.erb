@@ -387,18 +387,18 @@ See <a href="../../configuring/cluster_config/using_member_groups.html">Using Me
 <tr>
 <td>mcast-port</td>
 <td>Port used, along with the mcast-address, for multicast communication with other members of the cluster. If zero, multicast is disabled.
+Valid values are in the range 0..65535.
 <div class="note note">
 <strong>Note:</strong>
 <p>Select different multicast addresses and ports for different clusters. Do not just use different addresses. Some operating systems may not keep communication separate between systems that use unique addresses but the same port number.</p>
 </div>
-<p>Valid values are in the range 0..65535.</p>
 <div class="note note">
 <strong>Note:</strong>
 <p>This setting controls only peer-to-peer communication and does not apply to client/server or multi-site communication.</p>
 </div>
-<p>If you have values specified for the <code class="ph codeph">locators</code> property, the <code class="ph codeph">mcast-port</code> property defaults to 0.</p></td>
+</td>
 <td>S, L</td>
-<td>10334</td>
+<td>0</td>
 </tr>
 <tr>
 <td>mcast-recv-buffer-size</td>
