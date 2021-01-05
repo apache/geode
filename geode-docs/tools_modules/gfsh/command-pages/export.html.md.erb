@@ -183,11 +183,9 @@ Latest\server1\region2_20121001.gfd on host : 192.0.2.0
 
 Export logs to a given directory.
 
-All files that have logs in the specified time range will be exported. If no time range is specified, all logs will be exported. It should be noted that when specifying an `--end-time` argument using a date only, the time is assumed to be `00:00`, meaning that no logs that were written on the date provided will be exported, only those written up until `23:59:59.999` on the day prior.
+All files that have logs in the specified time range will be exported. If no time range is specified, all logs will be exported.
 
-When using the `yyyy/MM/dd/HH/mm/ss/SSS/z` format for `--start-time` or `--end-time`, the time zone, denoted `z`, should be specified as either a 3-letter time zone such as `PST` or as an offset to GMT/UTC such as `GMT+08:00`.
-
-The `--dir` parameter specifies a local directory to which log files will be written. This is used only when you are exporting logs using an http connection.  If executed over http, the zip archive will be saved in the specified directory on the user's client machine. If not specified, logs are written to the location specified by the `user.dir` system property. When the command is executed over JMX, logs will be saved as `exportedLogs_xxx.zip` in the connected locator's working directory.
+The `--dir` parameter specifies a local directory to which log files will be written. This is used only when you are exporting logs using an http connection. If executed over http, the zip archive will be saved in the specified directory on the user's client machine. If not specified, logs are written to the location specified by the `user.dir` system property. When the command is executed over JMX, logs will be saved as `exportedLogs_xxx.zip` in the connected locator's working directory.
 
 **Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
 
@@ -210,8 +208,8 @@ export logs [--dir=value] [--groups=value(,value)*] [--members=value(,value)*]
 | <span class="keyword parmname">\\-\\-log-level</span>      | Minimum level of log entries to export. Valid values are: `OFF`, `FATAL`, `ERROR`, `WARN`, `INFO`, `DEBUG`, `TRACE`, and `ALL`. | `INFO`        |
 | <span class="keyword parmname">\\-\\-only-log-level</span> | Whether to only include only entries that exactly match the <span class="keyword parmname">\\-\\-log-level</span> specified.  | false         |
 | <span class="keyword parmname">&#8209;&#8209;merge&#8209;log</span>      | Whether to merge logs after exporting to the target directory (deprecated).                                                             | false         |
-| <span class="keyword parmname">\\-\\-start-time</span>     | Log entries that occurred after this time will be exported. Format: yyyy/MM/dd/HH/mm/ss/SSS/z OR yyyy/MM/dd                | no limit      |
-| <span class="keyword parmname">\\-\\-end-time</span>       | Log entries that occurred before this time will be exported. Format: yyyy/MM/dd/HH/mm/ss/SSS/z OR yyyy/MM/dd               | no limit      |
+| <span class="keyword parmname">\\-\\-start-time</span>     | Log entries that occurred after this time will be exported. Format: `yyyy/MM/dd/HH/mm/ss/SSS/z` OR `yyyy/MM/dd`. When using the `yyyy/MM/dd/HH/mm/ss/SSS/z` format, the time zone, denoted `z`, should be specified as either a 3-letter time zone such as `PST` or as an offset to GMT/UTC such as `GMT+08:00`.                | no limit      |
+| <span class="keyword parmname">\\-\\-end-time</span>       | Log entries that occurred before this time will be exported. Format: `yyyy/MM/dd/HH/mm/ss/SSS/z` OR `yyyy/MM/dd`. When using the `yyyy/MM/dd/HH/mm/ss/SSS/z` format, the time zone, denoted `z`, should be specified as either a 3-letter time zone such as `PST` or as an offset to GMT/UTC such as `GMT+08:00`. An end time specified by only a date implements a time of `00:00`. This exports logs written up until `23:59:59.999` on the date prior to the one specified.             | no limit      |
 | <span class="keyword parmname">\\-\\-logs-only</span>       | Whether to export only logs (not statistics)               | If parameter not specified: false. If parameter specified without a value: true      |
 | <span class="keyword parmname">\\-\\-stats-only</span>       | Whether to export only statistics (not logs)               | If parameter not specified: false. If parameter specified without a value: true      |
 | <span class="keyword parmname">\\-\\-file-size-limit</span>       | Limits total unzipped size of the exported files. Specify 0 (zero) for no limit. Value is in megabytes by default or [k,m,g,t] may be specified.              | If parameter not specified: 100m. If parameter specified without a value: 0      |
