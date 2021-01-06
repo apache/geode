@@ -56,9 +56,9 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_C
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENDPOINT_IDENTIFICATION_ENABLED;
 import static org.apache.geode.internal.security.SecurableCommunicationChannel.ALL;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
 
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -162,15 +162,9 @@ public class SSLConfigJUnitTest {
     props.setProperty(SSL_ENABLED_COMPONENTS, "cluster");
     props.setProperty(ASYNC_DISTRIBUTION_TIMEOUT, "1");
 
-    try {
-      new DistributionConfigImpl(props);
-      fail("Did not get expected excepion");
-    } catch (IllegalArgumentException e) {
-      if (!e.toString().contains(
-          "async-distribution-timeout greater than 0 is not allowed with cluster TLS/SSL.")) {
-        throw new Exception("Did not get expected exception, got this instead...", e);
-      }
-    }
+    Throwable thrown = catchThrowable(() -> new DistributionConfigImpl(props));
+    assertThat(thrown).isInstanceOf(IllegalArgumentException.class).hasMessageContaining(
+        "async-distribution-timeout greater than 0 is not allowed with cluster TLS/SSL.");
   }
 
   @Test
@@ -179,15 +173,9 @@ public class SSLConfigJUnitTest {
     props.setProperty(SSL_ENABLED_COMPONENTS, "all");
     props.setProperty(ASYNC_DISTRIBUTION_TIMEOUT, "1");
 
-    try {
-      new DistributionConfigImpl(props);
-      fail("Did not get expected excepion");
-    } catch (IllegalArgumentException e) {
-      if (!e.toString().contains(
-          "async-distribution-timeout greater than 0 is not allowed with cluster TLS/SSL.")) {
-        throw new Exception("Did not get expected exception, got this instead...", e);
-      }
-    }
+    Throwable thrown = catchThrowable(() -> new DistributionConfigImpl(props));
+    assertThat(thrown).isInstanceOf(IllegalArgumentException.class).hasMessageContaining(
+        "async-distribution-timeout greater than 0 is not allowed with cluster TLS/SSL.");
   }
 
   @Test
@@ -205,15 +193,9 @@ public class SSLConfigJUnitTest {
     props.setProperty(CLUSTER_SSL_ENABLED, "true");
     props.setProperty(ASYNC_DISTRIBUTION_TIMEOUT, "1");
 
-    try {
-      new DistributionConfigImpl(props);
-      fail("Did not get expected excepion");
-    } catch (IllegalArgumentException e) {
-      if (!e.toString().contains(
-          "async-distribution-timeout greater than 0 is not allowed with cluster TLS/SSL.")) {
-        throw new Exception("Did not get expected exception, got this instead...", e);
-      }
-    }
+    Throwable thrown = catchThrowable(() -> new DistributionConfigImpl(props));
+    assertThat(thrown).isInstanceOf(IllegalArgumentException.class).hasMessageContaining(
+        "async-distribution-timeout greater than 0 is not allowed with cluster TLS/SSL.");
   }
 
   @Test
