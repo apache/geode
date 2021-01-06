@@ -26,12 +26,10 @@ import java.util.function.Consumer;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import redis.clients.jedis.BitOP;
 import redis.clients.jedis.Jedis;
 
-import org.apache.geode.redis.mocks.MockSubscriber;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
@@ -298,17 +296,13 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
     runCommandAndAssertHitsAndMisses("hash", (k, v) -> jedis.hscan(k, v));
   }
 
-  // TODO what happened here??
   @Test
   public void testHMSet() {
-
     Map<String, String> map = new HashMap<>();
     map.put("key1", "value1");
     map.put("key2", "value2");
 
-    jedis.hmset("key", map);
-
-    runCommandAndAssertNoStatUpdates("key", map, (k, v) -> jedis.hmset(k, (Map<String, String>) v));
+    runCommandAndAssertNoStatUpdates("key", (k) -> jedis.hmset(k, map));
   }
 
   // ------------ Key related commands -----------
@@ -320,17 +314,10 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
 
   @Test
   public void testPassiveExpiration() {
-    Map<String, String> info = getInfo(jedis);
-    String currentHits = info.get(HITS);
-    String currentMisses = info.get(MISSES);
-
-    jedis.expire("hash", 1);
-
-    GeodeAwaitility.await().during(Duration.ofSeconds(3)).until(() -> true);
-
-    info = getInfo(jedis);
-    assertThat(info.get(HITS)).isEqualTo(currentHits);
-    assertThat(info.get(MISSES)).isEqualTo(currentMisses);
+    runCommandAndAssertNoStatUpdates("hash", (k) -> {
+      jedis.expire(k, 1);
+      GeodeAwaitility.await().during(Duration.ofSeconds(3)).until(() -> true);
+    });
   }
 
   @Test
@@ -452,19 +439,6 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
     command.accept(key, "42");
     info = getInfo(jedis);
 
-    assertThat(info.get(HITS)).isEqualTo(currentHits);
-    assertThat(info.get(MISSES)).isEqualTo(currentMisses);
-  }
-
-  private void runCommandAndAssertNoStatUpdates(String key, Map valueMap,
-      BiConsumer<String, Object> command) {
-    Map<String, String> info = getInfo(jedis);
-    String currentHits = info.get(HITS);
-    String currentMisses = info.get(MISSES);
-
-    command.accept(key, valueMap);
-
-    info = getInfo(jedis);
     assertThat(info.get(HITS)).isEqualTo(currentHits);
     assertThat(info.get(MISSES)).isEqualTo(currentMisses);
   }
