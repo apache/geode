@@ -47,7 +47,6 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.ErrorCollector;
 import org.mockito.ArgumentCaptor;
 
-import org.apache.geode.CancelCriterion;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.alerting.internal.spi.AlertLevel;
 import org.apache.geode.cache.CacheClosedException;
@@ -70,7 +69,6 @@ import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 public class FederatingManagerTest {
 
   private InternalCache cache;
-  private CancelCriterion cancelCriterion;
   private ExecutorService executorService;
   private MemberMessenger messenger;
   private MBeanProxyFactory proxyFactory;
@@ -90,7 +88,6 @@ public class FederatingManagerTest {
   @Before
   public void setUp() {
     cache = mock(InternalCache.class);
-    cancelCriterion = mock(CancelCriterion.class);
     executorService = mock(ExecutorService.class);
     messenger = mock(MemberMessenger.class);
     proxyFactory = mock(MBeanProxyFactory.class);
@@ -127,7 +124,7 @@ public class FederatingManagerTest {
   public void addMemberArtifactsCreatesMonitoringRegion() {
     FederatingManager federatingManager =
         new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
-            proxyFactory, messenger, cancelCriterion, executorService);
+            proxyFactory, messenger, executorService);
     federatingManager.startManager();
 
     federatingManager.addMemberArtifacts(member(1, 20));
@@ -139,7 +136,7 @@ public class FederatingManagerTest {
   public void addMemberArtifactsCreatesMonitoringRegionWithHasOwnStats() {
     FederatingManager federatingManager =
         new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
-            proxyFactory, messenger, cancelCriterion, executorService);
+            proxyFactory, messenger, executorService);
     federatingManager.startManager();
 
     federatingManager.addMemberArtifacts(member(2, 40));
@@ -153,7 +150,7 @@ public class FederatingManagerTest {
   public void addMemberArtifactsCreatesNotificationRegion() {
     FederatingManager federatingManager =
         new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
-            proxyFactory, messenger, cancelCriterion, executorService);
+            proxyFactory, messenger, executorService);
     federatingManager.startManager();
 
     federatingManager.addMemberArtifacts(member(3, 60));
@@ -165,7 +162,7 @@ public class FederatingManagerTest {
   public void addMemberArtifactsCreatesNotificationRegionWithHasOwnStats() {
     FederatingManager federatingManager =
         new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
-            proxyFactory, messenger, cancelCriterion, executorService);
+            proxyFactory, messenger, executorService);
     federatingManager.startManager();
 
     federatingManager.addMemberArtifacts(member(4, 80));
@@ -187,7 +184,7 @@ public class FederatingManagerTest {
         .thenReturn(member);
     FederatingManager federatingManager =
         new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
-            proxyFactory, messenger, cancelCriterion, executorService);
+            proxyFactory, messenger, executorService);
 
     federatingManager.removeMemberArtifacts(member, false);
 
@@ -206,7 +203,7 @@ public class FederatingManagerTest {
         .thenReturn(member);
     FederatingManager federatingManager =
         new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
-            proxyFactory, messenger, cancelCriterion, executorService);
+            proxyFactory, messenger, executorService);
 
     federatingManager.removeMemberArtifacts(member, false);
 
@@ -227,7 +224,7 @@ public class FederatingManagerTest {
         .thenReturn(member);
     FederatingManager federatingManager =
         new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
-            proxyFactory, messenger, cancelCriterion, executorService);
+            proxyFactory, messenger, executorService);
 
     federatingManager.removeMemberArtifacts(member, false);
 
@@ -248,7 +245,7 @@ public class FederatingManagerTest {
         .thenReturn(member);
     FederatingManager federatingManager =
         new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
-            proxyFactory, messenger, cancelCriterion, executorService);
+            proxyFactory, messenger, executorService);
 
     federatingManager.removeMemberArtifacts(member, false);
 
@@ -270,7 +267,7 @@ public class FederatingManagerTest {
         .thenReturn(member);
     FederatingManager federatingManager =
         new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
-            proxyFactory, messenger, cancelCriterion, executorService);
+            proxyFactory, messenger, executorService);
 
     federatingManager.removeMemberArtifacts(member, false);
 
@@ -292,7 +289,7 @@ public class FederatingManagerTest {
         .thenReturn(member);
     FederatingManager federatingManager =
         new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
-            proxyFactory, messenger, cancelCriterion, executorService);
+            proxyFactory, messenger, executorService);
 
     federatingManager.removeMemberArtifacts(member, false);
 
@@ -313,7 +310,7 @@ public class FederatingManagerTest {
         .thenReturn(member);
     FederatingManager federatingManager =
         new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
-            proxyFactory, messenger, cancelCriterion, executorService);
+            proxyFactory, messenger, executorService);
 
     federatingManager.removeMemberArtifacts(member, false);
 
@@ -334,7 +331,7 @@ public class FederatingManagerTest {
         .thenReturn(member);
     FederatingManager federatingManager =
         new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
-            proxyFactory, messenger, cancelCriterion, executorService);
+            proxyFactory, messenger, executorService);
 
     federatingManager.removeMemberArtifacts(member, false);
 
@@ -356,7 +353,7 @@ public class FederatingManagerTest {
         .thenReturn(member);
     FederatingManager federatingManager =
         new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
-            proxyFactory, messenger, cancelCriterion, executorService);
+            proxyFactory, messenger, executorService);
 
     federatingManager.removeMemberArtifacts(member, false);
 
@@ -377,7 +374,7 @@ public class FederatingManagerTest {
         .thenReturn(member);
     FederatingManager federatingManager =
         new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
-            proxyFactory, messenger, cancelCriterion, executorService);
+            proxyFactory, messenger, executorService);
 
     federatingManager.removeMemberArtifacts(member, false);
 
@@ -398,7 +395,7 @@ public class FederatingManagerTest {
         .thenReturn(member);
     FederatingManager federatingManager =
         new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
-            proxyFactory, messenger, cancelCriterion, executorService);
+            proxyFactory, messenger, executorService);
 
     federatingManager.removeMemberArtifacts(member, false);
 
@@ -416,7 +413,7 @@ public class FederatingManagerTest {
         .thenReturn(member);
     FederatingManager federatingManager =
         new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
-            proxyFactory, messenger, cancelCriterion, executorService);
+            proxyFactory, messenger, executorService);
 
     Throwable thrown = catchThrowable(() -> federatingManager.removeMemberArtifacts(member, false));
 
@@ -434,7 +431,7 @@ public class FederatingManagerTest {
         .thenReturn(member);
     FederatingManager federatingManager =
         new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
-            proxyFactory, messenger, cancelCriterion, executorService);
+            proxyFactory, messenger, executorService);
 
     Throwable thrown = catchThrowable(() -> federatingManager.removeMemberArtifacts(member, false));
 
@@ -448,7 +445,7 @@ public class FederatingManagerTest {
         .thenReturn(mock(ExecutorService.class));
     FederatingManager federatingManager =
         new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
-            proxyFactory, messenger, cancelCriterion, executorServiceSupplier);
+            proxyFactory, messenger, executorServiceSupplier);
 
     federatingManager.startManager();
 
@@ -466,7 +463,7 @@ public class FederatingManagerTest {
         .thenReturn(member);
     FederatingManager federatingManager =
         new FederatingManager(repo, system, service, cache, statisticsFactory,
-            statisticsClock, proxyFactory, messenger, cancelCriterion, executorService);
+            statisticsClock, proxyFactory, messenger, executorService);
 
     federatingManager.removeMemberArtifacts(member, false);
 
@@ -488,7 +485,7 @@ public class FederatingManagerTest {
 
     FederatingManager federatingManager =
         new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
-            proxyFactory, messenger, cancelCriterion, executorService);
+            proxyFactory, messenger, executorService);
 
     executorServiceRule.submit(() -> {
       federatingManager.startManager();
@@ -514,7 +511,7 @@ public class FederatingManagerTest {
   public void pendingTasksIsEmptyByDefault() {
     FederatingManager federatingManager =
         new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
-            proxyFactory, messenger, cancelCriterion, executorService);
+            proxyFactory, messenger, executorService);
 
     assertThat(federatingManager.pendingTasks()).isEmpty();
   }
@@ -529,7 +526,7 @@ public class FederatingManagerTest {
 
     FederatingManager federatingManager =
         new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
-            proxyFactory, messenger, cancelCriterion, Executors::newSingleThreadExecutor);
+            proxyFactory, messenger, Executors::newSingleThreadExecutor);
 
     federatingManager.startManager();
     federatingManager.stopManager();

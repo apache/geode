@@ -34,7 +34,6 @@ import javax.management.ObjectName;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.annotations.VisibleForTesting;
@@ -87,28 +86,19 @@ public class FederatingManager extends Manager implements ManagerMembership {
 
   private boolean starting;
 
+  @VisibleForTesting
+  FederatingManager(ManagementResourceRepo repo, InternalDistributedSystem system,
+      SystemManagementService service, InternalCache cache, StatisticsFactory statisticsFactory,
+      StatisticsClock statisticsClock, MBeanProxyFactory proxyFactory, MemberMessenger messenger,
+      ExecutorService executorService) {
+    this(repo, system, service, cache, statisticsFactory, statisticsClock, proxyFactory, messenger,
+        () -> executorService);
+  }
+
   FederatingManager(ManagementResourceRepo repo, InternalDistributedSystem system,
       SystemManagementService service, InternalCache cache, StatisticsFactory statisticsFactory,
       StatisticsClock statisticsClock, MBeanProxyFactory proxyFactory, MemberMessenger messenger,
       Supplier<ExecutorService> executorServiceSupplier) {
-    this(repo, system, service, cache, statisticsFactory, statisticsClock, proxyFactory, messenger,
-        system.getCancelCriterion(), executorServiceSupplier);
-  }
-
-  @VisibleForTesting
-  FederatingManager(ManagementResourceRepo repo, InternalDistributedSystem system,
-      SystemManagementService service, InternalCache cache, StatisticsFactory statisticsFactory,
-      StatisticsClock statisticsClock, MBeanProxyFactory proxyFactory, MemberMessenger messenger,
-      CancelCriterion cancelCriterion, ExecutorService executorService) {
-    this(repo, system, service, cache, statisticsFactory, statisticsClock, proxyFactory, messenger,
-        cancelCriterion, () -> executorService);
-  }
-
-  @VisibleForTesting
-  FederatingManager(ManagementResourceRepo repo, InternalDistributedSystem system,
-      SystemManagementService service, InternalCache cache, StatisticsFactory statisticsFactory,
-      StatisticsClock statisticsClock, MBeanProxyFactory proxyFactory, MemberMessenger messenger,
-      CancelCriterion cancelCriterion, Supplier<ExecutorService> executorServiceSupplier) {
     super(repo, system, cache, statisticsFactory, statisticsClock);
     this.service = service;
     this.proxyFactory = proxyFactory;
