@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal;
 
+import static org.apache.geode.distributed.ConfigurationProperties.ASYNC_DISTRIBUTION_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_CIPHERS;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_KEYSTORE;
@@ -51,11 +52,13 @@ import static org.apache.geode.distributed.ConfigurationProperties.SERVER_SSL_PR
 import static org.apache.geode.distributed.ConfigurationProperties.SERVER_SSL_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.SERVER_SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SERVER_SSL_TRUSTSTORE_PASSWORD;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENDPOINT_IDENTIFICATION_ENABLED;
 import static org.apache.geode.internal.security.SecurableCommunicationChannel.ALL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
 
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -152,6 +155,57 @@ public class SSLConfigJUnitTest {
 
   @After
   public void tearDownTest() {}
+
+  @Test
+  public void slowerReceiverShouldThrowExceptionWhenEnabledClusterTLS() throws Exception {
+    Properties props = new Properties();
+    props.setProperty(SSL_ENABLED_COMPONENTS, "cluster");
+    props.setProperty(ASYNC_DISTRIBUTION_TIMEOUT, "1");
+
+    try {
+      new DistributionConfigImpl(props);
+      fail("Did not get expected excepion");
+    } catch (IllegalArgumentException e) {
+      if (!e.toString().contains(
+          "async-distribution-timeout greater than 0 is not allowed with cluster TLS/SSL.")) {
+        throw new Exception("Did not get expected exception, got this instead...", e);
+      }
+    }
+  }
+
+  @Test
+  public void slowerReceiverShouldThrowExceptionWhenEnabledAllTLS() throws Exception {
+    Properties props = new Properties();
+    props.setProperty(SSL_ENABLED_COMPONENTS, "all");
+    props.setProperty(ASYNC_DISTRIBUTION_TIMEOUT, "1");
+
+    try {
+      new DistributionConfigImpl(props);
+      fail("Did not get expected excepion");
+    } catch (IllegalArgumentException e) {
+      if (!e.toString().contains(
+          "async-distribution-timeout greater than 0 is not allowed with cluster TLS/SSL.")) {
+        throw new Exception("Did not get expected exception, got this instead...", e);
+      }
+    }
+  }
+
+  @Test
+  public void slowerReceiverShouldThrowExceptionWhenLegacyClusterTLS() throws Exception {
+    Properties props = new Properties();
+    props.setProperty(CLUSTER_SSL_ENABLED, "true");
+    props.setProperty(ASYNC_DISTRIBUTION_TIMEOUT, "1");
+
+    try {
+      new DistributionConfigImpl(props);
+      fail("Did not get expected excepion");
+    } catch (IllegalArgumentException e) {
+      if (!e.toString().contains(
+          "async-distribution-timeout greater than 0 is not allowed with cluster TLS/SSL.")) {
+        throw new Exception("Did not get expected exception, got this instead...", e);
+      }
+    }
+  }
 
   @Test
   public void testMCastPortWithClusterSSL() throws Exception {
