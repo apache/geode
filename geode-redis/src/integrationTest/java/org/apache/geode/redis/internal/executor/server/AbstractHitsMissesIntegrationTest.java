@@ -83,15 +83,7 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
 
   @Test
   public void testRename() {
-    Map<String, String> info = getInfo(jedis);
-    Long currentHits = Long.parseLong(info.get(HITS));
-    Long currentMisses = Long.parseLong(info.get(MISSES));
-
-    jedis.rename("string", "newString");
-
-    info = getInfo(jedis);
-    assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits));
-    assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses));
+    runCommandAndAssertNoStatUpdates("string", (k, v) -> jedis.rename(k, v));
   }
 
   // ------------ String related commands -----------
@@ -308,9 +300,6 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
 
   @Test
   public void testHMSet() {
-    Map<String, String> info = getInfo(jedis);
-    Long currentHits = Long.parseLong(info.get(HITS));
-    Long currentMisses = Long.parseLong(info.get(MISSES));
 
     Map<String, String> map = new HashMap<>();
     map.put("key1", "value1");
@@ -318,10 +307,7 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
 
     jedis.hmset("key", map);
 
-    info = getInfo(jedis);
-
-    assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits));
-    assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses));
+    runCommandAndAssertNoStatUpdates("key", map, (k, v) -> jedis.hmset(k, (Map<String, String>) v));
   }
 
   // ------------ Connection related commands -----------
@@ -597,6 +583,19 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
     command.accept(key, "42");
     info = getInfo(jedis);
 
+    assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits));
+    assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses));
+  }
+
+  private void runCommandAndAssertNoStatUpdates(String key, Map valueMap,
+      BiConsumer<String, Object> command) {
+    Map<String, String> info = getInfo(jedis);
+    Long currentHits = Long.parseLong(info.get(HITS));
+    Long currentMisses = Long.parseLong(info.get(MISSES));
+
+    command.accept(key, valueMap);
+
+    info = getInfo(jedis);
     assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits));
     assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses));
   }
