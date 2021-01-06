@@ -191,6 +191,15 @@ public class SSLConfigJUnitTest {
   }
 
   @Test
+  public void slowerReceiverShouldNotThrowExceptionWhenEnabledLocatorTLS() throws Exception {
+    Properties props = new Properties();
+    props.setProperty(SSL_ENABLED_COMPONENTS, "locator");
+    props.setProperty(ASYNC_DISTRIBUTION_TIMEOUT, "1");
+
+    new DistributionConfigImpl(props);
+  }
+
+  @Test
   public void slowerReceiverShouldThrowExceptionWhenLegacyClusterTLS() throws Exception {
     Properties props = new Properties();
     props.setProperty(CLUSTER_SSL_ENABLED, "true");
