@@ -298,6 +298,7 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
     runCommandAndAssertHitsAndMisses("hash", (k, v) -> jedis.hscan(k, v));
   }
 
+  // TODO what happened here??
   @Test
   public void testHMSet() {
 
@@ -547,70 +548,70 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
   private void runDiffStoreCommandAndAssertNoStatUpdates(String key,
       TriConsumer<String, String, String> command) {
     Map<String, String> info = getInfo(jedis);
-    Long currentHits = Long.parseLong(info.get(HITS));
-    Long currentMisses = Long.parseLong(info.get(MISSES));
+    String currentHits = info.get(HITS);
+    String currentMisses = info.get(MISSES);
 
     command.accept("destination", key, key);
     info = getInfo(jedis);
 
-    assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits));
-    assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses));
+    assertThat(info.get(HITS)).isEqualTo(currentHits);
+    assertThat(info.get(MISSES)).isEqualTo(currentMisses);
 
     command.accept("destination", key, "missed");
     info = getInfo(jedis);
 
-    assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits));
-    assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses));
+    assertThat(info.get(HITS)).isEqualTo(currentHits);
+    assertThat(info.get(MISSES)).isEqualTo(currentMisses);
   }
 
   private void runCommandAndAssertNoStatUpdates(String key, Consumer<String> command) {
     Map<String, String> info = getInfo(jedis);
-    Long currentHits = Long.parseLong(info.get(HITS));
-    Long currentMisses = Long.parseLong(info.get(MISSES));
+    String currentHits = info.get(HITS);
+    String currentMisses = info.get(MISSES);
 
     command.accept(key);
     info = getInfo(jedis);
 
-    assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits));
-    assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses));
+    assertThat(info.get(HITS)).isEqualTo(currentHits);
+    assertThat(info.get(MISSES)).isEqualTo(currentMisses);
   }
 
   private void runCommandAndAssertNoStatUpdates(String key, BiConsumer<String, String> command) {
     Map<String, String> info = getInfo(jedis);
-    Long currentHits = Long.parseLong(info.get(HITS));
-    Long currentMisses = Long.parseLong(info.get(MISSES));
+    String currentHits = info.get(HITS);
+    String currentMisses = info.get(MISSES);
 
     command.accept(key, "42");
     info = getInfo(jedis);
 
-    assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits));
-    assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses));
+    assertThat(info.get(HITS)).isEqualTo(currentHits);
+    assertThat(info.get(MISSES)).isEqualTo(currentMisses);
   }
 
   private void runCommandAndAssertNoStatUpdates(String key, Map valueMap,
       BiConsumer<String, Object> command) {
     Map<String, String> info = getInfo(jedis);
-    Long currentHits = Long.parseLong(info.get(HITS));
-    Long currentMisses = Long.parseLong(info.get(MISSES));
+    String currentHits = info.get(HITS);
+    String currentMisses = info.get(MISSES);
 
     command.accept(key, valueMap);
 
     info = getInfo(jedis);
-    assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits));
-    assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses));
+    assertThat(info.get(HITS)).isEqualTo(currentHits);
+    assertThat(info.get(MISSES)).isEqualTo(currentMisses);
   }
 
   private void runCommandAndAssertNoStatUpdates(String key,
       TriConsumer<String, String, String> command) {
     Map<String, String> info = getInfo(jedis);
-    Long currentHits = Long.parseLong(info.get(HITS));
-    Long currentMisses = Long.parseLong(info.get(MISSES));
+    String currentHits = info.get(HITS);
+    String currentMisses = info.get(MISSES);
 
     command.accept(key, key, "42");
     info = getInfo(jedis);
 
-    assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits));
-    assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses));
+    assertThat(info.get(HITS)).isEqualTo(currentHits);
+    assertThat(info.get(MISSES)).isEqualTo(currentMisses);
   }
 
   /**
