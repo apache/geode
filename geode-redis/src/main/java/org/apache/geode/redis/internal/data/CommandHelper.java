@@ -166,23 +166,15 @@ public class CommandHelper {
     return checkStringType(redisData, true);
   }
 
-  RedisString setRedisString(ByteArrayWrapper key, ByteArrayWrapper value, boolean updateStats) {
+  RedisString setRedisString(ByteArrayWrapper key, ByteArrayWrapper value) {
     RedisString result;
     RedisData redisData = getRedisData(key);
 
     if (redisData.isNull() || redisData.getType() != REDIS_STRING) {
       result = new RedisString(value);
-
-      if (updateStats) {
-        redisStats.incKeyspaceMisses();
-      }
     } else {
       result = (RedisString) redisData;
       result.set(value);
-
-      if (updateStats) {
-        redisStats.incKeyspaceHits();
-      }
     }
     region.put(key, result);
     return result;

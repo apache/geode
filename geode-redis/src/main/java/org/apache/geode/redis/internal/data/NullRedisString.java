@@ -176,7 +176,7 @@ public class NullRedisString extends RedisString {
       }
     }
 
-    RedisString redisString = helper.setRedisString(key, value, false);
+    RedisString redisString = helper.setRedisString(key, value);
     redisString.handleSetExpiration(options);
     return true;
   }
@@ -259,7 +259,7 @@ public class NullRedisString extends RedisString {
     if (newValue.length() == 0) {
       helper.getRegion().remove(key);
     } else {
-      helper.setRedisString(key, newValue, false);
+      helper.setRedisString(key, newValue);
     }
     return newValue.length();
   }
