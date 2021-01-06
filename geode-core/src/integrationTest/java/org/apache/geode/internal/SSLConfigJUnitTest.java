@@ -157,7 +157,7 @@ public class SSLConfigJUnitTest {
   public void tearDownTest() {}
 
   @Test
-  public void slowerReceiverShouldThrowExceptionWhenEnabledClusterTLS() throws Exception {
+  public void slowReceiverShouldThrowExceptionWhenEnabledClusterTLS() throws Exception {
     Properties props = new Properties();
     props.setProperty(SSL_ENABLED_COMPONENTS, "cluster");
     props.setProperty(ASYNC_DISTRIBUTION_TIMEOUT, "1");
@@ -174,7 +174,7 @@ public class SSLConfigJUnitTest {
   }
 
   @Test
-  public void slowerReceiverShouldThrowExceptionWhenEnabledAllTLS() throws Exception {
+  public void slowReceiverShouldThrowExceptionWhenEnabledAllTLS() throws Exception {
     Properties props = new Properties();
     props.setProperty(SSL_ENABLED_COMPONENTS, "all");
     props.setProperty(ASYNC_DISTRIBUTION_TIMEOUT, "1");
@@ -191,7 +191,7 @@ public class SSLConfigJUnitTest {
   }
 
   @Test
-  public void slowerReceiverShouldNotThrowExceptionWhenEnabledLocatorTLS() throws Exception {
+  public void slowReceiverShouldNotThrowExceptionWhenEnabledLocatorTLS() throws Exception {
     Properties props = new Properties();
     props.setProperty(SSL_ENABLED_COMPONENTS, "locator");
     props.setProperty(ASYNC_DISTRIBUTION_TIMEOUT, "1");
@@ -200,7 +200,7 @@ public class SSLConfigJUnitTest {
   }
 
   @Test
-  public void slowerReceiverShouldThrowExceptionWhenLegacyClusterTLS() throws Exception {
+  public void slowReceiverShouldThrowExceptionWhenLegacyClusterTLS() throws Exception {
     Properties props = new Properties();
     props.setProperty(CLUSTER_SSL_ENABLED, "true");
     props.setProperty(ASYNC_DISTRIBUTION_TIMEOUT, "1");
