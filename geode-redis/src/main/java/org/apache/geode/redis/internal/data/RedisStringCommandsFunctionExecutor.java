@@ -31,10 +31,6 @@ public class RedisStringCommandsFunctionExecutor extends RedisDataCommandsFuncti
     super(helper);
   }
 
-  private RedisString getRedisString(ByteArrayWrapper key) {
-    return helper.getRedisString(key, true);
-  }
-
   private RedisString getRedisString(ByteArrayWrapper key, boolean updateStats) {
     return helper.getRedisString(key, updateStats);
   }
@@ -52,7 +48,7 @@ public class RedisStringCommandsFunctionExecutor extends RedisDataCommandsFuncti
 
   @Override
   public ByteArrayWrapper get(ByteArrayWrapper key) {
-    return stripedExecute(key, () -> getRedisString(key).get());
+    return stripedExecute(key, () -> getRedisString(key, true).get());
   }
 
   @Override
@@ -68,30 +64,30 @@ public class RedisStringCommandsFunctionExecutor extends RedisDataCommandsFuncti
 
   @Override
   public long incr(ByteArrayWrapper key) {
-    return stripedExecute(key, () -> getRedisString(key).incr(getRegion(), key));
+    return stripedExecute(key, () -> getRedisString(key, true).incr(getRegion(), key));
   }
 
   @Override
   public long decr(ByteArrayWrapper key) {
-    return stripedExecute(key, () -> getRedisString(key).decr(getRegion(), key));
+    return stripedExecute(key, () -> getRedisString(key, true).decr(getRegion(), key));
   }
 
   @Override
   public ByteArrayWrapper getset(ByteArrayWrapper key, ByteArrayWrapper value) {
     return stripedExecute(key,
-        () -> getRedisString(key).getset(getRegion(), key, value));
+        () -> getRedisString(key, true).getset(getRegion(), key, value));
   }
 
   @Override
   public long incrby(ByteArrayWrapper key, long increment) {
     return stripedExecute(key,
-        () -> getRedisString(key).incrby(getRegion(), key, increment));
+        () -> getRedisString(key, true).incrby(getRegion(), key, increment));
   }
 
   @Override
   public double incrbyfloat(ByteArrayWrapper key, double increment) {
     return stripedExecute(key,
-        () -> getRedisString(key)
+        () -> getRedisString(key, true)
             .incrbyfloat(getRegion(), key, increment));
   }
 
@@ -104,46 +100,46 @@ public class RedisStringCommandsFunctionExecutor extends RedisDataCommandsFuncti
   @Override
   public long decrby(ByteArrayWrapper key, long decrement) {
     return stripedExecute(key,
-        () -> getRedisString(key).decrby(getRegion(), key, decrement));
+        () -> getRedisString(key, true).decrby(getRegion(), key, decrement));
   }
 
   @Override
   public ByteArrayWrapper getrange(ByteArrayWrapper key, long start, long end) {
-    return stripedExecute(key, () -> getRedisString(key).getrange(start, end));
+    return stripedExecute(key, () -> getRedisString(key, true).getrange(start, end));
   }
 
   @Override
   public int setrange(ByteArrayWrapper key, int offset, byte[] value) {
     return stripedExecute(key,
-        () -> getRedisString(key)
+        () -> getRedisString(key, true)
             .setrange(getRegion(), key, offset, value));
   }
 
   @Override
   public int bitpos(ByteArrayWrapper key, int bit, int start, Integer end) {
     return stripedExecute(key,
-        () -> getRedisString(key)
+        () -> getRedisString(key, true)
             .bitpos(getRegion(), key, bit, start, end));
   }
 
   @Override
   public long bitcount(ByteArrayWrapper key, int start, int end) {
-    return stripedExecute(key, () -> getRedisString(key).bitcount(start, end));
+    return stripedExecute(key, () -> getRedisString(key, true).bitcount(start, end));
   }
 
   @Override
   public long bitcount(ByteArrayWrapper key) {
-    return stripedExecute(key, () -> getRedisString(key).bitcount());
+    return stripedExecute(key, () -> getRedisString(key, true).bitcount());
   }
 
   @Override
   public int strlen(ByteArrayWrapper key) {
-    return stripedExecute(key, () -> getRedisString(key).strlen());
+    return stripedExecute(key, () -> getRedisString(key, true).strlen());
   }
 
   @Override
   public int getbit(ByteArrayWrapper key, int offset) {
-    return stripedExecute(key, () -> getRedisString(key).getbit(offset));
+    return stripedExecute(key, () -> getRedisString(key, true).getbit(offset));
   }
 
   @Override
@@ -151,7 +147,7 @@ public class RedisStringCommandsFunctionExecutor extends RedisDataCommandsFuncti
     int byteIndex = (int) (offset / 8);
     byte bitIndex = (byte) (offset % 8);
     return stripedExecute(key,
-        () -> getRedisString(key)
+        () -> getRedisString(key, true)
             .setbit(getRegion(), key, value, byteIndex, bitIndex));
   }
 
