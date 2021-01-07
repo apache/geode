@@ -81,7 +81,7 @@ geode-core/**/org/apache/geode/distributed/internal/locks/**      @kirklund @dsc
 #-----------------------------------------------------------------
 # Core region implementations and plumbing
 #-----------------------------------------------------------------
-geode-core/**/org/apache/geode/internal/cache/*                   @nabarunnag @DonalEvans
+geode-core/**/org/apache/geode/internal/cache/*                   @nabarunnag @DonalEvans @jchen21
 
 #-----------------------------------------------------------------
 # Region entry management
@@ -177,9 +177,9 @@ geode-unsafe/**                                                   @nabarunnag @b
 #-----------------------------------------------------------------
 # Persistence
 #-----------------------------------------------------------------
-geode-core/**/org/apache/geode/cache/persistence/**               @kirklund @dschneider-pivotal
-geode-core/**/org/apache/geode/internal/cache/persistence/**      @kirklund @dschneider-pivotal
-geode-core/**/org/apache/geode/internal/cache/backup/**           @kirklund @dschneider-pivotal @agingade
+geode-core/**/org/apache/geode/cache/persistence/**               @kirklund @dschneider-pivotal @jchen21
+geode-core/**/org/apache/geode/internal/cache/persistence/**      @kirklund @dschneider-pivotal @jchen21
+geode-core/**/org/apache/geode/internal/cache/backup/**           @kirklund @dschneider-pivotal @agingade @jchen21
 
 #-----------------------------------------------------------------
 # Region Version Vectors - used for sychronization on 
@@ -254,8 +254,8 @@ geode-core/**/org/apache/geode/internal/cache/snapshot/**         @agingade @jch
 # JDBC connector
 #-----------------------------------------------------------------
 geode-connectors/**                                               @agingade @jchen21
-geode-core/**/org/apache/geode/datasource/**                      @agingade @BenjaminPerryRoss
-geode-core/**/org/apache/geode/internal/datasource/**             @agingade @BenjaminPerryRoss
+geode-core/**/org/apache/geode/datasource/**                      @agingade @BenjaminPerryRoss @jchen21
+geode-core/**/org/apache/geode/internal/datasource/**             @agingade @BenjaminPerryRoss @jchen21
 
 
 #-----------------------------------------------------------------
