@@ -273,11 +273,13 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
     int lastFindCoordinatorInViewId = -1000;
     final Set<FindCoordinatorResponse<ID>> responses = new HashSet<>();
     public int responsesExpected;
+    Exception lastLocatorException;
 
     void cleanup() {
       alreadyTried.clear();
       possibleCoordinator = null;
       view = null;
+      lastLocatorException = null;
       synchronized (responses) {
         responses.clear();
       }
@@ -385,7 +387,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
         }
         if (found && !state.hasContactedAJoinedLocator) {
           try {
-            if (hasCoordinatorJoinedCluster(state.possibleCoordinator.getVmViewId(), retrySleep)) {
+            if (pauseIfThereIsNoCoordinator(state.possibleCoordinator.getVmViewId(), retrySleep)) {
               // since we were given a coordinator that couldn't be used we should keep trying
               tries = 0;
               giveupTime = System.currentTimeMillis() + timeout;
@@ -412,7 +414,8 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
         if (state.locatorsContacted == 0) {
           throw new MembershipConfigurationException(
               "Unable to join the distributed system. Could not contact any of the locators: "
-                  + locators);
+                  + locators,
+              state.lastLocatorException);
         }
 
         if (System.currentTimeMillis() > giveupTime) {
@@ -432,7 +435,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
     }
   }
 
-  boolean hasCoordinatorJoinedCluster(int viewId, long retrySleep)
+  boolean pauseIfThereIsNoCoordinator(int viewId, long retrySleep)
       throws InterruptedException {
     // if locators are restarting they may be handing out IDs from a stale view that
     // we should go through quickly. Otherwise we should sleep a bit to let failure
@@ -1221,6 +1224,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
         } catch (IOException | ClassNotFoundException problem) {
           logger.info("Unable to contact locator " + laddr + ": " + problem);
           logger.debug("Exception thrown when contacting a locator", problem);
+          state.lastLocatorException = problem;
           if (state.locatorsContacted == 0 && System.currentTimeMillis() < giveUpTime) {
             try {
               Thread.sleep(FIND_LOCATOR_RETRY_SLEEP);

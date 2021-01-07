@@ -22,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
@@ -116,11 +117,18 @@ public class GMSJoinLeaveJUnitTest {
 
   public void initMocks(boolean enableNetworkPartition, boolean useTestGMSJoinLeave)
       throws Exception {
+    String locator = "localhost[12345]";
+    initMocks(enableNetworkPartition, useTestGMSJoinLeave, locator, locator);
+  }
+
+  public void initMocks(boolean enableNetworkPartition, boolean useTestGMSJoinLeave,
+      String locators, String startLoactor)
+      throws Exception {
     mockConfig = mock(MembershipConfig.class);
     when(mockConfig.isNetworkPartitionDetectionEnabled()).thenReturn(enableNetworkPartition);
     when(mockConfig.getSecurityUDPDHAlgo()).thenReturn("");
-    when(mockConfig.getStartLocator()).thenReturn("localhost[12345]");
-    when(mockConfig.getLocators()).thenReturn("localhost[12345]");
+    when(mockConfig.getStartLocator()).thenReturn(startLoactor);
+    when(mockConfig.getLocators()).thenReturn(locators);
     when(mockConfig.getMcastPort()).thenReturn(0);
     when(mockConfig.getMemberTimeout()).thenReturn(2000L);
 
@@ -1440,7 +1448,7 @@ public class GMSJoinLeaveJUnitTest {
       JoinResponseMessage jrm = new JoinResponseMessage(mockMembers[0], view, 0);
       gmsJoinLeave.setJoinResponseMessage(jrm);
 
-      assertThatThrownBy(() -> gmsJoinLeave.join())
+      assertThatThrownBy(gmsJoinLeave::join)
           .isInstanceOf(MembershipConfigurationException.class);
     } finally {
     }
@@ -1455,7 +1463,7 @@ public class GMSJoinLeaveJUnitTest {
     when(mockConfig.getJoinTimeout()).thenReturn(1000L);
 
     GMSJoinLeave spyGmsJoinLeave = spy(gmsJoinLeave);
-    when(spyGmsJoinLeave.hasCoordinatorJoinedCluster(-1, GMSJoinLeave.JOIN_RETRY_SLEEP))
+    when(spyGmsJoinLeave.pauseIfThereIsNoCoordinator(-1, GMSJoinLeave.JOIN_RETRY_SLEEP))
         .thenThrow(new InterruptedException());
 
     assertThatThrownBy(spyGmsJoinLeave::join)
@@ -1474,21 +1482,29 @@ public class GMSJoinLeaveJUnitTest {
   }
 
   @Test
-  public void testHasCoordinatorJoinedCluster() throws InterruptedException {
+  public void testPauseIfThereIsNoCoordinator() throws InterruptedException {
     locatorClient = mock(TcpClient.class);
     gmsJoinLeave = new GMSJoinLeave(locatorClient);
-    assertThat(gmsJoinLeave.hasCoordinatorJoinedCluster(-1, GMSJoinLeave.JOIN_RETRY_SLEEP))
+    assertThat(gmsJoinLeave.pauseIfThereIsNoCoordinator(-1, GMSJoinLeave.JOIN_RETRY_SLEEP))
         .isFalse();
-    assertThat(gmsJoinLeave.hasCoordinatorJoinedCluster(1, GMSJoinLeave.JOIN_RETRY_SLEEP)).isTrue();
+    assertThat(gmsJoinLeave.pauseIfThereIsNoCoordinator(1, GMSJoinLeave.JOIN_RETRY_SLEEP)).isTrue();
   }
 
   @Test
   public void testJoinFailureWhenNoLocator() throws Exception {
-    initMocks(false);
+    final String locator1 = "locator1[12345]";
+    final String locator2 = "locator2[54321]";
+    locatorClient = mock(TcpClient.class);
 
-    assertThatThrownBy(() -> gmsJoinLeave.join())
+    initMocks(false, false, locator1 + ',' + locator2, locator1);
+    when(locatorClient.requestToServer(any(), any(), anyInt(), anyBoolean()))
+        .thenThrow(IOException.class);
+
+    assertThatThrownBy(gmsJoinLeave::join)
         .isInstanceOf(MembershipConfigurationException.class)
-        .hasMessageContaining("Could not contact any of the locators");
+        .hasMessageContaining(
+            "Could not contact any of the locators: [HostAndPort[locator1:12345], HostAndPort[locator2:54321]]")
+        .hasCauseInstanceOf(IOException.class);
   }
 
   private void mockRequestToServer(HostAndPort hostAndPort)
