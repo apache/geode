@@ -93,8 +93,7 @@ public class StressNewTestHelper {
       }
 
       command.append(sourceToGradleMapping.get(sourceSet));
-      command.append(" --tests ");
-      command.append(String.join(",", entry.getValue()));
+      entry.getValue().forEach(x -> command.append(" --tests ").append(x));
       command.append(" ");
       testCount += entry.getValue().size();
     }
