@@ -14,12 +14,19 @@
  *
  */
 
-package org.apache.geode.redis.internal;
+package org.apache.geode.redis.internal.executor.server;
 
-public enum RedisCommandSupportLevel {
-  SUPPORTED,
-  UNSUPPORTED,
-  UNIMPLEMENTED,
-  UNKNOWN,
-  INTERNAL
+import org.junit.ClassRule;
+
+import org.apache.geode.redis.GeodeRedisServerRule;
+
+public class HitsMissesIntegrationTest extends AbstractHitsMissesIntegrationTest {
+
+  @ClassRule
+  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
+
+  @Override
+  public int getPort() {
+    return server.getPort();
+  }
 }

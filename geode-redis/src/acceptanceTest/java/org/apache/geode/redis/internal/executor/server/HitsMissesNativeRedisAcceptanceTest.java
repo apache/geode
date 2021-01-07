@@ -28,10 +28,4 @@ public class HitsMissesNativeRedisAcceptanceTest extends AbstractHitsMissesInteg
   public int getPort() {
     return redis.getPort();
   }
-
-  @Override
-  void resetStats() {
-    jedis.configResetStat();
-  }
-
 }

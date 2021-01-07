@@ -71,7 +71,7 @@ public class PassiveExpirationManager {
         try {
           if (entry.getValue().hasExpired(now)) {
             // pttl will do its own check using active expiration and expire the key if needed
-            if (-2 == redisKeyCommands.pttl(entry.getKey())) {
+            if (-2 == redisKeyCommands.internalPttl(entry.getKey())) {
               expireCount++;
             }
           }

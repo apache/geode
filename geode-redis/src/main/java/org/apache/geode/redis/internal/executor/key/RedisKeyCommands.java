@@ -27,6 +27,8 @@ public interface RedisKeyCommands {
 
   long pttl(ByteArrayWrapper key);
 
+  long internalPttl(ByteArrayWrapper key);
+
   int pexpireat(ByteArrayWrapper key, long timestamp);
 
   int persist(ByteArrayWrapper key);

@@ -28,7 +28,6 @@ import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.redis.internal.RedisCommandType;
 
 public class RedisStats {
-
   private final AtomicLong commandsProcessed = new AtomicLong();
   private final AtomicLong totalNetworkBytesRead = new AtomicLong();
   private final AtomicLong totalConnectionsReceived = new AtomicLong();
@@ -127,7 +126,6 @@ public class RedisStats {
 
   public void incKeyspaceHits() {
     keyspaceHits.incrementAndGet();
-    geodeRedisStats.incrementKeyspaceHits();
   }
 
   public long getKeyspaceHits() {
@@ -136,7 +134,6 @@ public class RedisStats {
 
   public void incKeyspaceMisses() {
     keyspaceMisses.incrementAndGet();
-    geodeRedisStats.incrementKeyspaceMisses();
   }
 
   public long getKeyspaceMisses() {

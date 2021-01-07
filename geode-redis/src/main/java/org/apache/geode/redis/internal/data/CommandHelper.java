@@ -83,12 +83,14 @@ public class CommandHelper {
     }
   }
 
-  RedisSet getRedisSet(ByteArrayWrapper key) {
+  RedisSet getRedisSet(ByteArrayWrapper key, boolean updateStats) {
     RedisData redisData = getRedisData(key, NULL_REDIS_SET);
-    if (redisData == NULL_REDIS_SET) {
-      redisStats.incKeyspaceMisses();
-    } else {
-      redisStats.incKeyspaceHits();
+    if (updateStats) {
+      if (redisData == NULL_REDIS_SET) {
+        redisStats.incKeyspaceMisses();
+      } else {
+        redisStats.incKeyspaceHits();
+      }
     }
     return checkSetType(redisData);
   }
@@ -103,14 +105,15 @@ public class CommandHelper {
     return (RedisSet) redisData;
   }
 
-  RedisHash getRedisHash(ByteArrayWrapper key) {
+  RedisHash getRedisHash(ByteArrayWrapper key, boolean updateStats) {
     RedisData redisData = getRedisData(key, NULL_REDIS_HASH);
-    if (redisData == NULL_REDIS_HASH) {
-      redisStats.incKeyspaceMisses();
-    } else {
-      redisStats.incKeyspaceHits();
+    if (updateStats) {
+      if (redisData == NULL_REDIS_HASH) {
+        redisStats.incKeyspaceMisses();
+      } else {
+        redisStats.incKeyspaceHits();
+      }
     }
-
     return checkHashType(redisData);
   }
 
@@ -137,35 +140,39 @@ public class CommandHelper {
     return (RedisString) redisData;
   }
 
-  RedisString getRedisString(ByteArrayWrapper key) {
+  RedisString getRedisString(ByteArrayWrapper key, boolean updateStats) {
     RedisData redisData = getRedisData(key, NULL_REDIS_STRING);
-    if (redisData == NULL_REDIS_STRING) {
-      redisStats.incKeyspaceMisses();
-    } else {
-      redisStats.incKeyspaceHits();
+    if (updateStats) {
+      if (redisData == NULL_REDIS_STRING) {
+        redisStats.incKeyspaceMisses();
+      } else {
+        redisStats.incKeyspaceHits();
+      }
     }
 
     return checkStringType(redisData, false);
   }
 
-  RedisString getRedisStringIgnoringType(ByteArrayWrapper key) {
+  RedisString getRedisStringIgnoringType(ByteArrayWrapper key, boolean updateStats) {
     RedisData redisData = getRedisData(key, NULL_REDIS_STRING);
-    if (redisData == NULL_REDIS_STRING) {
-      redisStats.incKeyspaceMisses();
-    } else {
-      redisStats.incKeyspaceHits();
+    if (updateStats) {
+      if (redisData == NULL_REDIS_STRING) {
+        redisStats.incKeyspaceMisses();
+      } else {
+        redisStats.incKeyspaceHits();
+      }
     }
+
     return checkStringType(redisData, true);
   }
 
   RedisString setRedisString(ByteArrayWrapper key, ByteArrayWrapper value) {
     RedisString result;
     RedisData redisData = getRedisData(key);
+
     if (redisData.isNull() || redisData.getType() != REDIS_STRING) {
-      redisStats.incKeyspaceMisses();
       result = new RedisString(value);
     } else {
-      redisStats.incKeyspaceHits();
       result = (RedisString) redisData;
       result.set(value);
     }

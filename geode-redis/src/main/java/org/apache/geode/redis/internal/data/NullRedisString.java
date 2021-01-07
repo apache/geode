@@ -230,7 +230,7 @@ public class NullRedisString extends RedisString {
       int selfIndex,
       List<ByteArrayWrapper> sourceValues) {
     if (selfIndex != -1) {
-      RedisString redisString = helper.getRedisString(key);
+      RedisString redisString = helper.getRedisString(key, true);
       if (!redisString.isNull()) {
         sourceValues.set(selfIndex, redisString.getValue());
       }
