@@ -177,6 +177,13 @@ public class GatewaySenderOverflowMonitor extends MBeanStatsMonitor {
   @Override
   public void removeStatisticsFromMonitor(Statistics stats) {}
 
+  public void clearCounters() {
+    lruEvictions = 0;
+    bytesOverflowedToDisk = 0;
+    entriesOverflowedToDisk = 0;
+    bytesInUse = 0;
+  }
+
   class GatewaySenderOverflowStatisticsListener implements StatisticsListener {
     Map<String, Number> statsMap = new HashMap<>();
 
