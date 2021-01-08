@@ -2971,7 +2971,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
   public void executeOnDataStore(final Set localKeys, final Function function, final Object object,
       final int prid, final int[] bucketArray, final boolean isReExecute,
       final PartitionedRegionFunctionStreamingMessage msg, long time, ServerConnection servConn,
-      int transactionID) {
+      int transactionID, Object principal) {
 
     if (!areAllBucketsHosted(bucketArray)) {
       throw new BucketMovedException(
@@ -2986,7 +2986,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
         new RegionFunctionContextImpl(getPartitionedRegion().getCache(), function.getId(),
             this.partitionedRegion, object, localKeys, ColocationHelper
                 .constructAndGetAllColocatedLocalDataSet(this.partitionedRegion, bucketArray),
-            bucketArray, resultSender, isReExecute);
+            bucketArray, resultSender, isReExecute, principal);
 
     FunctionStats stats = FunctionStatsManager.getFunctionStats(function.getId(), dm.getSystem());
     long start = stats.startFunctionExecution(function.hasResult());
