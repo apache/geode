@@ -271,6 +271,7 @@ geode-concurrency-test/**                                         @kirklund @mha
 geode-dunit/**                                                    @kirklund @mhansonp
 geode-junit/**                                                    @kirklund @mhansonp
 geode-jmh/**                                                      @kirklund @mhansonp
+geode-junit/**/org/apache/geode/test/util                         @jdeppe-pivotal @onichols-pivotal
 
 #-----------------------------------------------------------------
 # Redis API
@@ -286,6 +287,8 @@ build.gradle                                                      @rhoughton-piv
 buildSrc/**                                                       @rhoughton-pivot @jdeppe-pivotal
 buildSrc/**/DependencyConstraints.groovy                          @onichols-pivotal @dickcav
 ci/**                                                             @onichols-pivotal @dickcav
+ci/scripts/**                                                     @onichols-pivotal @dickcav @rhoughton-pivot
+ci/scripts/repeat-new-tests.sh                                    @onichols-pivotal @dickcav @rhoughton-pivot @upthewaterspout @jdeppe-pivotal
 dev-tools/**                                                      @onichols-pivotal @dickcav
 docker/**                                                         @onichols-pivotal @dickcav
 geode-management/src/test/script/update-management-wiki.sh        @onichols-pivotal @dickcav
@@ -302,8 +305,8 @@ geode-assembly/**                                                 @rhoughton-piv
 geode-book/**                                                     @karensmolermiller @davebarnes97
 geode-docs/**                                                     @karensmolermiller @davebarnes97
 BUILDING.md                                                       @rhoughton-pivot @upthewaterspout
-CODE_OF_CONDUCT.md                                                @upthewaterspout @metatype
-LICENSE                                                           @onichols-pivotal @metatype
-NOTICE                                                            @onichols-pivotal @metatype
-README.md                                                         @upthewaterspout @metatype
+CODE_OF_CONDUCT.md                                                @upthewaterspout @pivotal-amurmann @nonbinaryprogrammer
+LICENSE                                                           @onichols-pivotal @dickcav @metatype
+NOTICE                                                            @onichols-pivotal @dickcav @metatype
+README.md                                                         @upthewaterspout @pivotal-amurmann
 TESTING.md                                                        @upthewaterspout @kirklund
