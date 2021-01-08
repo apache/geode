@@ -452,8 +452,10 @@ public class RedisStatsIntegrationTest {
     long expected =
         (numberOfCommandsExecuted.get() / NUMBER_SECONDS_TO_RUN);
 
+
     assertThat(actual_commandsProcessed.get())
-        .isCloseTo(expected, Offset.offset(1d));
+        .isCloseTo(expected, Offset.offset(
+            getTenPercentOf(actual_commandsProcessed.get())));
 
     // if time passes w/o operations
     GeodeAwaitility
@@ -576,5 +578,9 @@ public class RedisStatsIntegrationTest {
 
   public long getCurrentTime() {
     return this.statisticsClock.getTime();
+  }
+
+  private double getTenPercentOf(Double value) {
+    return Math.ceil(value * .1);
   }
 }
