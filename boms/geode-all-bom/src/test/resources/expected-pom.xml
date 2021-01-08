@@ -424,13 +424,13 @@
       <dependency>
         <groupId>org.bouncycastle</groupId>
         <artifactId>bcpkix-jdk15on</artifactId>
-        <version>1.67</version>
+        <version>1.68</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.codehaus.cargo</groupId>
         <artifactId>cargo-core-uberjar</artifactId>
-        <version>1.8.3</version>
+        <version>1.8.4</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
@@ -472,7 +472,7 @@
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
-        <version>3.6.28</version>
+        <version>3.7.0</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
@@ -538,7 +538,7 @@
       <dependency>
         <groupId>redis.clients</groupId>
         <artifactId>jedis</artifactId>
-        <version>3.4.0</version>
+        <version>3.4.1</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
