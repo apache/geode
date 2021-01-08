@@ -31,8 +31,6 @@ import org.apache.geode.internal.serialization.Version;
 
 /**
  * FunctionContext for remote/target nodes
- *
- *
  */
 public class FunctionRemoteContext implements DataSerializable {
 
@@ -50,16 +48,19 @@ public class FunctionRemoteContext implements DataSerializable {
 
   private Function function;
 
+  private Object principal;
+
   public FunctionRemoteContext() {}
 
   public FunctionRemoteContext(final Function function, Object object, Set filter,
-      int[] bucketArray, boolean isReExecute, boolean isFnSerializationReqd) {
+      int[] bucketArray, boolean isReExecute, boolean isFnSerializationReqd, Object principal) {
     this.function = function;
     this.args = object;
     this.filter = filter;
     this.bucketArray = bucketArray;
     this.isReExecute = isReExecute;
     this.isFnSerializationReqd = isFnSerializationReqd;
+    this.principal = principal;
   }
 
   @Override
@@ -84,6 +85,13 @@ public class FunctionRemoteContext implements DataSerializable {
       this.bucketArray = BucketSetHelper.fromSet(bucketSet);
     }
     this.isReExecute = DataSerializer.readBoolean(in);
+
+    // Account for this change being introduced in ordinals 1.12.1 and 1.13.1 but is not
+    // compatible with 1.13.0.
+    if (StaticSerialization.getVersionForDataStream(in).isNotOlderThan(Version.GEODE_1_12_1)
+        && !StaticSerialization.getVersionForDataStream(in).equals(Version.GEODE_1_13_0)) {
+      this.principal = DataSerializer.readObject(in);
+    }
   }
 
   @Override
@@ -102,6 +110,13 @@ public class FunctionRemoteContext implements DataSerializable {
       DataSerializer.writeHashSet((HashSet) bucketSet, out);
     }
     DataSerializer.writeBoolean(this.isReExecute, out);
+
+    // Account for this change being introduced in ordinals 1.12.1 and 1.13.1 but is not
+    // compatible with 1.13.0.
+    if (StaticSerialization.getVersionForDataStream(out).isNotOlderThan(Version.GEODE_1_12_1)
+        && !StaticSerialization.getVersionForDataStream(out).equals(Version.GEODE_1_13_0)) {
+      DataSerializer.writeObject(this.principal, out);
+    }
   }
 
   public Set getFilter() {
@@ -126,6 +141,10 @@ public class FunctionRemoteContext implements DataSerializable {
 
   public String getFunctionId() {
     return functionId;
+  }
+
+  public Object getPrincipal() {
+    return principal;
   }
 
   @Override

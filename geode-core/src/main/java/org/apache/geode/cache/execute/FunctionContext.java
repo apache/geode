@@ -14,10 +14,12 @@
  */
 package org.apache.geode.cache.execute;
 
+
 import org.apache.logging.log4j.util.Strings;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.security.LegacySecurityService;
 
 /**
  * Defines the execution context of a {@link Function}. It is required by the
@@ -97,4 +99,12 @@ public interface FunctionContext<T1> {
 
     return member.getId();
   }
+
+  /**
+   * If available, returns the principal that has been authenticated to execute this function. This
+   * will always be null if the {@link LegacySecurityService} is in use.
+   *
+   * @return the principal that has been authenticated
+   */
+  Object getPrincipal();
 }
