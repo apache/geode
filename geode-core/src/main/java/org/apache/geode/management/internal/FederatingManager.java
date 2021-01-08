@@ -84,7 +84,7 @@ public class FederatingManager extends Manager implements ManagerMembership {
   private final MemberMessenger messenger;
   private final ReentrantLock lifecycleLock;
 
-  private boolean starting;
+  private volatile boolean starting;
 
   @VisibleForTesting
   FederatingManager(ManagementResourceRepo repo, InternalDistributedSystem system,
@@ -145,10 +145,19 @@ public class FederatingManager extends Manager implements ManagerMembership {
       messenger.broadcastManagerInfo();
 
     } catch (Exception e) {
+      cleanupFailedStart();
+      throw new ManagementException(e);
+    }
+  }
+
+  private void cleanupFailedStart() {
+    lifecycleLock.lock();
+    try {
       pendingTasks.clear();
       running = false;
       starting = false;
-      throw new ManagementException(e);
+    } finally {
+      lifecycleLock.unlock();
     }
   }
 
@@ -541,6 +550,11 @@ public class FederatingManager extends Manager implements ManagerMembership {
   @VisibleForTesting
   List<Runnable> pendingTasks() {
     return pendingTasks;
+  }
+
+  @VisibleForTesting
+  boolean isStarting() {
+    return starting;
   }
 
   /**

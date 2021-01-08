@@ -62,6 +62,7 @@ import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.management.DistributedSystemMXBean;
+import org.apache.geode.management.ManagementException;
 import org.apache.geode.test.junit.categories.JMXTest;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
@@ -533,6 +534,67 @@ public class FederatingManagerTest {
 
     assertThatCode(federatingManager::startManager)
         .doesNotThrowAnyException();
+  }
+
+  @Test
+  public void startManagerThrowsManagementExceptionWithNestedCauseOfFailure() {
+    FederatingManager federatingManager =
+        new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
+            proxyFactory, messenger, executorService);
+    RuntimeException exception = new RuntimeException("startManager failed");
+    doThrow(exception)
+        .when(messenger).broadcastManagerInfo();
+
+    Throwable thrown = catchThrowable(() -> federatingManager.startManager());
+
+    assertThat(thrown)
+        .isInstanceOf(ManagementException.class)
+        .hasCause(exception);
+  }
+
+  @Test
+  public void pendingTasksIsClearIfStartManagerFails() {
+    FederatingManager federatingManager =
+        new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
+            proxyFactory, messenger, executorService);
+    RuntimeException exception = new RuntimeException("startManager failed");
+    doThrow(exception)
+        .when(messenger).broadcastManagerInfo();
+
+    Throwable thrown = catchThrowable(() -> federatingManager.startManager());
+    assertThat(thrown).isNotNull();
+
+    assertThat(federatingManager.pendingTasks()).isEmpty();
+  }
+
+  @Test
+  public void startingIsFalseIfStartManagerFails() {
+    FederatingManager federatingManager =
+        new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
+            proxyFactory, messenger, executorService);
+    RuntimeException exception = new RuntimeException("startManager failed");
+    doThrow(exception)
+        .when(messenger).broadcastManagerInfo();
+
+    Throwable thrown = catchThrowable(() -> federatingManager.startManager());
+    assertThat(thrown).isNotNull();
+
+    assertThat(federatingManager.isStarting()).isFalse();
+  }
+
+  @Test
+  public void runningIsFalseIfStartManagerFails() {
+    FederatingManager federatingManager =
+        new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
+            proxyFactory, messenger, executorService);
+    RuntimeException exception = new RuntimeException("startManager failed");
+    doThrow(exception)
+        .when(messenger).broadcastManagerInfo();
+
+    Throwable thrown = catchThrowable(() -> federatingManager.startManager());
+    assertThat(thrown).isNotNull();
+
+    assertThat(federatingManager.isRunning()).isFalse();
   }
 
   private void awaitCyclicBarrier(CyclicBarrier barrier) {
