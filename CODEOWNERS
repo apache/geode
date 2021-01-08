@@ -177,9 +177,9 @@ geode-unsafe/**                                                   @nabarunnag @b
 #-----------------------------------------------------------------
 # Persistence
 #-----------------------------------------------------------------
-geode-core/**/org/apache/geode/cache/persistence/**               @kirklund @dschneider-pivotal @jchen21
-geode-core/**/org/apache/geode/internal/cache/persistence/**      @kirklund @dschneider-pivotal @jchen21
-geode-core/**/org/apache/geode/internal/cache/backup/**           @kirklund @dschneider-pivotal @agingade @jchen21
+geode-core/**/org/apache/geode/cache/persistence/**               @dschneider-pivotal @jchen21 @upthewaterspout @gesterzhou
+geode-core/**/org/apache/geode/internal/cache/persistence/**      @dschneider-pivotal @jchen21 @upthewaterspout @gesterzhou
+geode-core/**/org/apache/geode/internal/cache/backup/**           @dschneider-pivotal @agingade @jchen21 @upthewaterspout @gesterzhou
 
 #-----------------------------------------------------------------
 # Region Version Vectors - used for sychronization on 
