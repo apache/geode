@@ -89,6 +89,11 @@ public class GatewaySenderMBeanBridge {
     }
   }
 
+  public void clearOverflowStatistics() {
+    overflowMonitor.stopListener();
+    overflowMonitor.clearCounters();
+  }
+
   public void stopMonitor() {
     monitor.stopListener();
   }
