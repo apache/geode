@@ -470,36 +470,36 @@ public class GatewaySenderStats {
   }
 
   /**
-   * Returns the current value of the batchesDistributed" stat.
+   * Returns the current value of the "batchesDistributed" stat.
    *
-   * @return the current value of the batchesDistributed" stat
+   * @return the current value of the "batchesDistributed" stat
    */
   public int getBatchesDistributed() {
     return this.stats.getInt(batchesDistributedId);
   }
 
   /**
-   * Returns the current value of the batchesRedistributed" stat.
+   * Returns the current value of the "batchesRedistributed" stat.
    *
-   * @return the current value of the batchesRedistributed" stat
+   * @return the current value of the "batchesRedistributed" stat
    */
   public int getBatchesRedistributed() {
     return this.stats.getInt(batchesRedistributedId);
   }
 
   /**
-   * Returns the current value of the batchesWithIncompleteTransactions" stat.
+   * Returns the current value of the "batchesWithIncompleteTransactions" stat.
    *
-   * @return the current value of the batchesWithIncompleteTransactions" stat
+   * @return the current value of the "batchesWithIncompleteTransactions" stat
    */
   public long getBatchesWithIncompleteTransactions() {
     return this.stats.getLong(batchesWithIncompleteTransactionsId);
   }
 
   /**
-   * Returns the current value of the batchesResized" stat.
+   * Returns the current value of the "batchesResized" stat.
    *
-   * @return the current value of the batchesResized" stat
+   * @return the current value of the "batchesResized" stat
    */
   public int getBatchesResized() {
     return this.stats.getInt(batchesResizedId);
