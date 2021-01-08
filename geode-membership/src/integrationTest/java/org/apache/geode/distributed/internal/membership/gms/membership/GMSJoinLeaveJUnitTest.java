@@ -122,12 +122,12 @@ public class GMSJoinLeaveJUnitTest {
   }
 
   public void initMocks(boolean enableNetworkPartition, boolean useTestGMSJoinLeave,
-      String locators, String startLoactor)
+      String locators, String startLocator)
       throws Exception {
     mockConfig = mock(MembershipConfig.class);
     when(mockConfig.isNetworkPartitionDetectionEnabled()).thenReturn(enableNetworkPartition);
     when(mockConfig.getSecurityUDPDHAlgo()).thenReturn("");
-    when(mockConfig.getStartLocator()).thenReturn(startLoactor);
+    when(mockConfig.getStartLocator()).thenReturn(startLocator);
     when(mockConfig.getLocators()).thenReturn(locators);
     when(mockConfig.getMcastPort()).thenReturn(0);
     when(mockConfig.getMemberTimeout()).thenReturn(2000L);
