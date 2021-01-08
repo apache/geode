@@ -31,6 +31,11 @@ import org.junit.Test;
 import redis.clients.jedis.BitOP;
 import redis.clients.jedis.Jedis;
 
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsType;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.statistics.EnabledStatisticsClock;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.redis.GeodeRedisServerRule;
@@ -39,30 +44,107 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public class RedisStatsIntegrationTest {
 
-  public static final int TIMEOUT = (int) GeodeAwaitility.getTimeout().toMillis();
-  public static final String EXISTING_HASH_KEY = "Existing_Hash";
-  public static final String EXISTING_STRING_KEY = "Existing_String";
-  public static final String EXISTING_SET_KEY_1 = "Existing_Set_1";
-  public static final String EXISTING_SET_KEY_2 = "Existing_Set_2";
-  public static final String NONEXISTENT_KEY = "Nonexistent_Key";
+  private static final int TIMEOUT = (int) GeodeAwaitility.getTimeout().toMillis();
+  private static final String EXISTING_HASH_KEY = "Existing_Hash";
+  private static final String EXISTING_STRING_KEY = "Existing_String";
+  private static final String EXISTING_SET_KEY_1 = "Existing_Set_1";
+  private static final String EXISTING_SET_KEY_2 = "Existing_Set_2";
+  private static final String NONEXISTENT_KEY = "Nonexistent_Key";
+
   private Jedis jedis;
   private RedisStats redisStats;
   private static long START_TIME;
   private static StatisticsClock statisticsClock;
 
-  private Long preTestKeySpaceHits = 0l;
-  private Long preTestKeySpaceMisses = 0l;
-  private Long preTestConnectionsReceived = 0l;
-  private Long preTestConnectedClients = 0l;
-
+  private long preTestKeySpaceHits = 0;
+  private long preTestKeySpaceMisses = 0;
+  private long preTestConnectionsReceived = 0;
+  private long preTestConnectedClients = 0;
 
   @ClassRule
   public static GeodeRedisServerRule server = new GeodeRedisServerRule();
+
+  private static StatsValidator statsValidator;
+
+  private static class StatsValidator {
+
+    private final RedisStats redisStats;
+    private final Statistics geodeStats;
+
+    public StatsValidator(GeodeRedisServerRule serverRule) {
+      redisStats = serverRule.getServer().getStats();
+
+      InternalCache cache = (InternalCache) CacheFactory.getAnyInstance();
+      InternalDistributedSystem system = (InternalDistributedSystem) cache.getDistributedSystem();
+
+      StatisticsType statSamplerType = system.findType("RedisStats");
+      Statistics[] statsArray = system.findStatisticsByType(statSamplerType);
+      assertThat(statsArray).hasSize(1);
+
+      geodeStats = statsArray[0];
+    }
+
+    public void validateKeyspaceHits(long before, long delta) {
+      assertThat(redisStats.getKeyspaceHits()).isEqualTo(before + delta);
+
+      long geodeKeyspaceHits = geodeStats.getLong("keyspaceHits");
+      assertThat(geodeKeyspaceHits).isEqualTo(before + delta);
+    }
+
+    public void validateKeyspaceMisses(long before, long delta) {
+      assertThat(redisStats.getKeyspaceMisses()).isEqualTo(before + delta);
+
+      long geodeKeyspaceMisses = geodeStats.getLong("keyspaceMisses");
+      assertThat(geodeKeyspaceMisses).isEqualTo(before + delta);
+    }
+
+    public void validateCommandsProcessed(long before, long delta) {
+      GeodeAwaitility.await().atMost(Duration.ofSeconds(5))
+          .untilAsserted(() -> assertThat(redisStats.getCommandsProcessed())
+              .isEqualTo(before + delta));
+
+      GeodeAwaitility.await().atMost(Duration.ofSeconds(5))
+          .untilAsserted(() -> {
+            long geodeCommandsProcessed = geodeStats.getLong("commandsProcessed");
+            assertThat(geodeCommandsProcessed).isEqualTo(before + delta);
+          });
+    }
+
+    public void validateNetworkBytesRead(long before, long delta) {
+      assertThat(redisStats.getTotalNetworkBytesRead()).isEqualTo(before + delta);
+
+      long geodeNetworkBytesRead = geodeStats.getLong("totalNetworkBytesRead");
+      assertThat(geodeNetworkBytesRead).isEqualTo(before + delta);
+    }
+
+    public void validateConnectedClients(long before, long delta) {
+      GeodeAwaitility.await().atMost(Duration.ofSeconds(2))
+          .untilAsserted(() -> {
+            assertThat(redisStats.getConnectedClients()).isEqualTo(before + delta);
+          });
+
+      GeodeAwaitility.await().atMost(Duration.ofSeconds(2))
+          .untilAsserted(() -> {
+            long geodeConnectedClients = geodeStats.getLong("connectedClients");
+            assertThat(geodeConnectedClients).isEqualTo(before + delta);
+          });
+    }
+
+    public void validateConnectionsReceived(long before, long delta) {
+      assertThat(redisStats.getTotalConnectionsReceived()).isEqualTo(before + delta);
+
+      long geodeConnectionsReceived = geodeStats.getLong("totalConnectionsReceived");
+      assertThat(geodeConnectionsReceived).isEqualTo(before + delta);
+    }
+
+  }
 
   @BeforeClass
   public static void beforeClass() {
     statisticsClock = new EnabledStatisticsClock();
     START_TIME = statisticsClock.getTime();
+
+    statsValidator = new StatsValidator(server);
   }
 
   @Before
@@ -103,324 +185,280 @@ public class RedisStatsIntegrationTest {
   public void keyspaceHitsStat_shouldIncrement_whenKeyAccessed() {
     jedis.get(EXISTING_STRING_KEY);
 
-    assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(preTestKeySpaceHits + 1);
-
-    assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(preTestKeySpaceMisses);
+    statsValidator.validateKeyspaceHits(preTestKeySpaceHits, 1);
+    statsValidator.validateKeyspaceMisses(preTestKeySpaceMisses, 0);
   }
 
   @Test
   public void keyspaceHitsStat_shouldNotIncrement_whenNonexistentKeyAccessed() {
-
     jedis.get("Nonexistent_Key");
 
-    assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(preTestKeySpaceHits);
-    assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(preTestKeySpaceMisses + 1);
+    statsValidator.validateKeyspaceHits(preTestKeySpaceHits, 0);
+    statsValidator.validateKeyspaceMisses(preTestKeySpaceMisses, 1);
   }
 
   @Test
   public void keyspaceStats_setCommand_existingKey() {
     jedis.set(EXISTING_STRING_KEY, "New_Value");
 
-    assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(preTestKeySpaceHits);
-    assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(preTestKeySpaceMisses);
+    statsValidator.validateKeyspaceHits(preTestKeySpaceHits, 0);
+    statsValidator.validateKeyspaceMisses(preTestKeySpaceMisses, 0);
   }
 
   @Test
   public void keyspaceStats_setCommand_nonexistentKey() {
     jedis.set("Another_Key", "Another_Value");
 
-    assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(preTestKeySpaceHits);
-    assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(preTestKeySpaceMisses);
+    statsValidator.validateKeyspaceHits(preTestKeySpaceHits, 0);
+    statsValidator.validateKeyspaceMisses(preTestKeySpaceMisses, 0);
   }
 
   @Test
   public void keyspaceStats_getBitCommand_existingKey() {
     jedis.getbit(EXISTING_STRING_KEY, 0);
 
-    assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(preTestKeySpaceHits + 1);
-    assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(preTestKeySpaceMisses);
+    statsValidator.validateKeyspaceHits(preTestKeySpaceHits, 1);
+    statsValidator.validateKeyspaceMisses(preTestKeySpaceMisses, 0);
   }
 
   @Test
   public void keyspaceStats_getBitCommand_nonexistentKey() {
     jedis.getbit("Nonexistent_Key", 0);
 
-    assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(preTestKeySpaceHits);
-    assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(preTestKeySpaceMisses + 1);
+    statsValidator.validateKeyspaceHits(preTestKeySpaceHits, 0);
+    statsValidator.validateKeyspaceMisses(preTestKeySpaceMisses, 1);
   }
 
   @Test
   public void keyspaceStats_getRangeCommand_existingKey() {
     jedis.getrange(EXISTING_STRING_KEY, 0, 1);
 
-    assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(preTestKeySpaceHits + 1);
-    assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(preTestKeySpaceMisses);
+    statsValidator.validateKeyspaceHits(preTestKeySpaceHits, 1);
+    statsValidator.validateKeyspaceMisses(preTestKeySpaceMisses, 0);
   }
 
   @Test
   public void keyspaceStats_getRangeCommand_nonexistentKey() {
     jedis.getrange("Nonexistent_Key", 0, 1);
 
-    assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(preTestKeySpaceHits);
-    assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(preTestKeySpaceMisses + 1);
+    statsValidator.validateKeyspaceHits(preTestKeySpaceHits, 0);
+    statsValidator.validateKeyspaceMisses(preTestKeySpaceMisses, 1);
   }
 
   @Test
   public void keyspaceStats_getSetCommand_existingKey() {
     jedis.getSet(EXISTING_STRING_KEY, "New_Value");
 
-    assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(preTestKeySpaceHits + 1);
-    assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(preTestKeySpaceMisses);
+    statsValidator.validateKeyspaceHits(preTestKeySpaceHits, 1);
+    statsValidator.validateKeyspaceMisses(preTestKeySpaceMisses, 0);
   }
 
   @Test
   public void keyspaceStats_getSetCommand_nonexistentKey() {
     jedis.getSet("Nonexistent_Key", "FakeValue");
 
-    assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(preTestKeySpaceHits);
-    assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(preTestKeySpaceMisses + 1);
+    statsValidator.validateKeyspaceHits(preTestKeySpaceHits, 0);
+    statsValidator.validateKeyspaceMisses(preTestKeySpaceMisses, 1);
   }
 
   @Test
   public void keyspaceStats_strlenCommand_existingKey() {
     jedis.strlen(EXISTING_STRING_KEY);
 
-    assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(preTestKeySpaceHits + 1);
-    assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(preTestKeySpaceMisses);
+    statsValidator.validateKeyspaceHits(preTestKeySpaceHits, 1);
+    statsValidator.validateKeyspaceMisses(preTestKeySpaceMisses, 0);
   }
 
   @Test
   public void keyspaceStats_strlenCommand_nonexistentKey() {
     jedis.strlen(NONEXISTENT_KEY);
 
-    assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(preTestKeySpaceHits);
-    assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(preTestKeySpaceMisses + 1);
+    statsValidator.validateKeyspaceHits(preTestKeySpaceHits, 0);
+    statsValidator.validateKeyspaceMisses(preTestKeySpaceMisses, 1);
   }
 
   @Test
   public void keyspaceStats_mgetCommand() {
     jedis.mget(EXISTING_STRING_KEY, "Nonexistent_Key");
 
-    assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(preTestKeySpaceHits + 1);
-    assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(preTestKeySpaceMisses + 1);
+    statsValidator.validateKeyspaceHits(preTestKeySpaceHits, 1);
+    statsValidator.validateKeyspaceMisses(preTestKeySpaceMisses, 1);
   }
 
   @Test
-  public void keyspaceStats_bitopCommand() {
-    jedis.bitop(BitOP.AND, "Destination_Key", EXISTING_STRING_KEY, "Nonexistent_Key");
+  public void keyspaceStats_bitopCommand_existingKey() {
+    jedis.bitop(BitOP.AND, EXISTING_STRING_KEY, EXISTING_STRING_KEY, "Nonexistent_Key");
 
-    assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(preTestKeySpaceHits + 1);
-    assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(preTestKeySpaceMisses + 1);
+    statsValidator.validateKeyspaceHits(preTestKeySpaceHits, 1);
+    statsValidator.validateKeyspaceMisses(preTestKeySpaceMisses, 1);
+  }
+
+  @Test
+  public void keyspaceStats_bitopCommand_newKey() {
+    jedis.bitop(BitOP.AND, "destination-key", EXISTING_STRING_KEY, "Nonexistent_Key");
+
+    statsValidator.validateKeyspaceHits(preTestKeySpaceHits, 1);
+    statsValidator.validateKeyspaceMisses(preTestKeySpaceMisses, 1);
   }
 
   @Test
   public void keyspaceStats_bitcountCommand_existingKey() {
     jedis.bitcount(EXISTING_STRING_KEY);
 
-    assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(preTestKeySpaceHits + 1);
-    assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(preTestKeySpaceMisses);
+    statsValidator.validateKeyspaceHits(preTestKeySpaceHits, 1);
+    statsValidator.validateKeyspaceMisses(preTestKeySpaceMisses, 0);
   }
 
   @Test
   public void keyspaceStats_bitcountCommand_nonexistentKey() {
     jedis.bitcount("Nonexistent_Key");
 
-    assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(preTestKeySpaceHits);
-    assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(preTestKeySpaceMisses + 1);
+    statsValidator.validateKeyspaceHits(preTestKeySpaceHits, 0);
+    statsValidator.validateKeyspaceMisses(preTestKeySpaceMisses, 1);
   }
 
   @Test
   public void keyspaceStats_bitposCommand_existingKey() {
     jedis.bitpos(EXISTING_STRING_KEY, true);
 
-    assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(preTestKeySpaceHits + 1);
-    assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(preTestKeySpaceMisses);
+    statsValidator.validateKeyspaceHits(preTestKeySpaceHits, 1);
+    statsValidator.validateKeyspaceMisses(preTestKeySpaceMisses, 0);
   }
 
   @Test
   public void keyspaceStats_bitposCommand_nonexistentKey() {
     jedis.bitpos("Nonexistent_Key", true);
 
-    assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(preTestKeySpaceHits);
-    assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(preTestKeySpaceMisses + 1);
+    statsValidator.validateKeyspaceHits(preTestKeySpaceHits, 0);
+    statsValidator.validateKeyspaceMisses(preTestKeySpaceMisses, 1);
   }
 
   @Test
   public void keyspaceStats_hgetCommand_existingKey() {
     jedis.hget(EXISTING_HASH_KEY, "Field1");
 
-    assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(preTestKeySpaceHits + 1);
-    assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(preTestKeySpaceMisses);
+    statsValidator.validateKeyspaceHits(preTestKeySpaceHits, 1);
+    statsValidator.validateKeyspaceMisses(preTestKeySpaceMisses, 0);
   }
 
   @Test
   public void keyspaceStats_hgetCommand_nonexistentKey() {
     jedis.hget("Nonexistent_Hash", "Field1");
 
-    assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(preTestKeySpaceHits);
-    assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(preTestKeySpaceMisses + 1);
+    statsValidator.validateKeyspaceHits(preTestKeySpaceHits, 0);
+    statsValidator.validateKeyspaceMisses(preTestKeySpaceMisses, 1);
   }
 
   @Test
   public void keyspaceStats_smembersCommand_existingKey() {
     jedis.smembers(EXISTING_SET_KEY_1);
 
-    assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(preTestKeySpaceHits + 1);
-    assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(preTestKeySpaceMisses);
+    statsValidator.validateKeyspaceHits(preTestKeySpaceHits, 1);
+    statsValidator.validateKeyspaceMisses(preTestKeySpaceMisses, 0);
   }
 
   @Test
   public void keyspaceStats_smembersCommand_nonexistentKey() {
     jedis.smembers("Nonexistent_Set");
 
-    assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(preTestKeySpaceHits);
-    assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(preTestKeySpaceMisses + 1);
+    statsValidator.validateKeyspaceHits(preTestKeySpaceHits, 0);
+    statsValidator.validateKeyspaceMisses(preTestKeySpaceMisses, 1);
   }
 
   @Test
   public void keyspaceStats_sunionstoreCommand_existingKey() {
+    jedis.sunionstore(
+        EXISTING_SET_KEY_1,
+        EXISTING_SET_KEY_1,
+        EXISTING_SET_KEY_2,
+        "Nonexistent_Set");
+
+    statsValidator.validateKeyspaceHits(preTestKeySpaceHits, 0);
+    statsValidator.validateKeyspaceMisses(preTestKeySpaceMisses, 0);
+  }
+
+  @Test
+  public void keyspaceStats_sunionstoreCommand_newKey() {
     jedis.sunionstore(
         "New_Set",
         EXISTING_SET_KEY_1,
         EXISTING_SET_KEY_2,
         "Nonexistent_Set");
 
-    assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(preTestKeySpaceHits);
-    assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(preTestKeySpaceMisses);
+    statsValidator.validateKeyspaceHits(preTestKeySpaceHits, 0);
+    statsValidator.validateKeyspaceMisses(preTestKeySpaceMisses, 0);
   }
 
   @Test
-  public void keyspaceStats_sdiffstoreCommand_existingKey() {
+  public void keyspaceStats_sdiffstoreCommand_newKey() {
     jedis.sdiffstore(
         "New_Set",
         EXISTING_SET_KEY_1,
         EXISTING_SET_KEY_2,
         "Nonexistent_Set");
 
-    assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(preTestKeySpaceHits);
-    assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(preTestKeySpaceMisses);
+    statsValidator.validateKeyspaceHits(preTestKeySpaceHits, 0);
+    statsValidator.validateKeyspaceMisses(preTestKeySpaceMisses, 0);
   }
 
   @Test
-  public void keyspaceStats_sinterstoreCommand_existingKey() {
+  public void keyspaceStats_sinterstoreCommand_newKey() {
     jedis.sinterstore(
         "New_Set",
         EXISTING_SET_KEY_1,
         EXISTING_SET_KEY_2,
         "Nonexistent_Set");
 
-    assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(preTestKeySpaceHits);
-    assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(preTestKeySpaceMisses);
+    statsValidator.validateKeyspaceHits(preTestKeySpaceHits, 0);
+    statsValidator.validateKeyspaceMisses(preTestKeySpaceMisses, 0);
   }
 
   @Test
   public void keyspaceStats_ExistsCommand_existingKey() {
     jedis.exists(EXISTING_STRING_KEY);
 
-    assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(preTestKeySpaceHits + 1);
-    assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(preTestKeySpaceMisses);
+    statsValidator.validateKeyspaceHits(preTestKeySpaceHits, 1);
+    statsValidator.validateKeyspaceMisses(preTestKeySpaceMisses, 0);
   }
 
   @Test
   public void keyspaceStats_ExistsCommand_nonexistentKey() {
     jedis.exists(NONEXISTENT_KEY);
 
-    assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(preTestKeySpaceHits);
-    assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(preTestKeySpaceMisses + 1);
+    statsValidator.validateKeyspaceHits(preTestKeySpaceHits, 0);
+    statsValidator.validateKeyspaceMisses(preTestKeySpaceMisses, 1);
   }
 
   @Test
   public void keyspaceStats_TypeCommand_existingKey() {
     jedis.type(EXISTING_STRING_KEY);
 
-    assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(preTestKeySpaceHits + 1);
-    assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(preTestKeySpaceMisses);
+    statsValidator.validateKeyspaceHits(preTestKeySpaceHits, 1);
+    statsValidator.validateKeyspaceMisses(preTestKeySpaceMisses, 0);
   }
 
   @Test
   public void keyspaceStats_TypeCommand_nonexistentKey() {
     jedis.type(NONEXISTENT_KEY);
 
-    assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(preTestKeySpaceHits);
-    assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(preTestKeySpaceMisses + 1);
+    statsValidator.validateKeyspaceHits(preTestKeySpaceHits, 0);
+    statsValidator.validateKeyspaceMisses(preTestKeySpaceMisses, 1);
   }
 
   @Test
   public void keyspaceStats_PTTL_TTLCommand_existingKey() {
     jedis.ttl(EXISTING_STRING_KEY);
 
-    assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(preTestKeySpaceHits + 1);
-    assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(preTestKeySpaceMisses);
+    statsValidator.validateKeyspaceHits(preTestKeySpaceHits, 1);
+    statsValidator.validateKeyspaceMisses(preTestKeySpaceMisses, 0);
   }
 
   @Test
   public void keyspaceStats_PTTL_TTL_Command_nonexistentKey() {
     jedis.ttl(NONEXISTENT_KEY);
 
-    assertThat(redisStats.getKeyspaceHits())
-        .isEqualTo(preTestKeySpaceHits);
-    assertThat(redisStats.getKeyspaceMisses())
-        .isEqualTo(preTestKeySpaceMisses + 1);
+    statsValidator.validateKeyspaceHits(preTestKeySpaceHits, 0);
+    statsValidator.validateKeyspaceMisses(preTestKeySpaceMisses, 1);
   }
 
   @Test
@@ -428,9 +466,7 @@ public class RedisStatsIntegrationTest {
     long initialCommandsProcessed = redisStats.getCommandsProcessed();
     jedis.ttl("key");
 
-    GeodeAwaitility.await().atMost(Duration.ofSeconds(5))
-        .untilAsserted(() -> assertThat(redisStats.getCommandsProcessed())
-            .isEqualTo(initialCommandsProcessed + 1));
+    statsValidator.validateCommandsProcessed(initialCommandsProcessed, 1);
   }
 
   @Test
@@ -451,7 +487,6 @@ public class RedisStatsIntegrationTest {
 
     long expected =
         (numberOfCommandsExecuted.get() / NUMBER_SECONDS_TO_RUN);
-
 
     assertThat(actual_commandsProcessed.get())
         .isCloseTo(expected, Offset.offset(
@@ -474,12 +509,11 @@ public class RedisStatsIntegrationTest {
 
     jedis.set("key", "value");
 
-    assertThat(redisStats.getTotalNetworkBytesRead())
-        .isEqualTo(initialNetworkBytesRead + respCommandString.length());
+    statsValidator.validateNetworkBytesRead(initialNetworkBytesRead, respCommandString.length());
   }
 
   @Test
-  public void NetworkKiloBytesReadOverLastSecond_shouldReturnCorrectData() {
+  public void networkKiloBytesReadOverLastSecond_shouldReturnCorrectData() {
 
     double REASONABLE_SOUNDING_OFFSET = .8;
     int NUMBER_SECONDS_TO_RUN = 2;
@@ -519,35 +553,32 @@ public class RedisStatsIntegrationTest {
 
   @Test
   public void clientsStat_withConnectAndClose_isCorrect() {
-
     Jedis jedis2 = new Jedis("localhost", server.getPort(), TIMEOUT);
     jedis2.ping();
 
-    assertThat(redisStats.getConnectedClients()).isEqualTo(preTestConnectedClients + 1);
+    statsValidator.validateConnectedClients(preTestConnectedClients, 1);
 
     jedis2.close();
-    GeodeAwaitility.await().atMost(Duration.ofSeconds(2))
-        .untilAsserted(
-            () -> assertThat(redisStats.getConnectedClients()).isEqualTo(preTestConnectedClients));
+
+    statsValidator.validateConnectedClients(preTestConnectedClients, 0);
   }
 
   @Test
-  public void totalConnectionsReceivedStat_shouldIncrement_WhenNewConnectionOccurs() {
-
+  public void totalConnectionsReceivedStat_shouldIncrement_whenNewConnectionOccurs() {
     Jedis jedis2 = new Jedis("localhost", server.getPort(), TIMEOUT);
     jedis2.ping();
 
-    assertThat(redisStats.getTotalConnectionsReceived()).isEqualTo(preTestConnectionsReceived + 1);
+    statsValidator.validateConnectedClients(preTestConnectedClients, 1);
 
     jedis2.close();
 
-    assertThat(redisStats.getTotalConnectionsReceived()).isEqualTo(preTestConnectionsReceived + 1);
+    statsValidator.validateConnectionsReceived(preTestConnectionsReceived, 1);
   }
 
   // ######################## Server Section ################
 
   @Test
-  public void uptimeInSeconds_ShouldReturnCorrectValue() {
+  public void uptimeInSeconds_shouldReturnCorrectValue() {
     long serverUptimeAtStartOfTestInNanos = getCurrentTime();
     long statsUpTimeAtStartOfTest = redisStats.getUptimeInSeconds();
 
