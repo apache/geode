@@ -163,6 +163,7 @@ resources:
     - ci/*
     - dev-tools/release/*
     - "*.md"
+    - CODEOWNERS
     {{ github_access() | indent(4) }}
 - name: geode-ci
   type: git
