@@ -84,6 +84,12 @@ public class WhatExtendsJUnitTest {
     assertThat(scanner.buildGradleCommand()).isEqualTo("-PtestCount=0");
   }
 
+  @Test
+  public void ignoreNonGeodeClasses() {
+    scanner.add("foo/src/test/java/org/example/Foo.java");
+    assertThat(scanner.buildGradleCommand()).isEqualTo("-PtestCount=0");
+  }
+
   private String getClassLocation(Class<?> clazz) {
     String codeSource = clazz.getProtectionDomain().getCodeSource().getLocation().getFile();
     String classFile = clazz.getName().replace(".", "/");
