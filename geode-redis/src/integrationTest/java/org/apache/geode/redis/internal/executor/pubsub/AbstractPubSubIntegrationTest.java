@@ -715,7 +715,7 @@ public abstract class AbstractPubSubIntegrationTest implements RedisPortSupplier
   private Jedis getConnection() {
     Exception lastException = null;
 
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 20; i++) {
       Jedis client = null;
       try {
         client = new Jedis("localhost", getPort(), JEDIS_TIMEOUT);
@@ -731,7 +731,7 @@ public abstract class AbstractPubSubIntegrationTest implements RedisPortSupplier
         }
       }
       try {
-        Thread.sleep(1000);
+        Thread.sleep(5000);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
