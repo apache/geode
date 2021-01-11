@@ -1567,7 +1567,8 @@ public class AbstractRegionMapTest {
     ConcurrentMapWithReusableEntries map = mock(ConcurrentMapWithReusableEntries.class);
     RegionEntry entry = mock(RegionEntry.class);
     when(entry.isTombstone()).thenReturn(true);
-    when(entry.initialImagePut(any(), anyLong(), any(), anyBoolean(), anyBoolean())).thenReturn(true);
+    when(entry.initialImagePut(any(), anyLong(), any(), anyBoolean(), anyBoolean()))
+        .thenReturn(true);
     when(map.putIfAbsent(eq(KEY), any())).thenReturn(entry);
     TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, map, null);
     TestableAbstractRegionMap armSpy = spy(arm);
@@ -1580,7 +1581,8 @@ public class AbstractRegionMapTest {
     ConcurrentMapWithReusableEntries map = mock(ConcurrentMapWithReusableEntries.class);
     RegionEntry entry = mock(RegionEntry.class);
     when(entry.isTombstone()).thenReturn(false);
-    when(entry.initialImagePut(any(), anyLong(), any(), anyBoolean(), anyBoolean())).thenReturn(true);
+    when(entry.initialImagePut(any(), anyLong(), any(), anyBoolean(), anyBoolean()))
+        .thenReturn(true);
     when(map.putIfAbsent(eq(KEY), any())).thenReturn(entry);
     TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, map, null);
     TestableAbstractRegionMap armSpy = spy(arm);
