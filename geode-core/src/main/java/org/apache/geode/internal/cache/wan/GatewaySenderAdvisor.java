@@ -232,6 +232,14 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
               "Cannot create Gateway Sender %s with isDiskSynchronous %s because another cache has the same Gateway Sender defined with isDiskSynchronous %s",
               sp.Id, sp.isDiskSynchronous, sender.isDiskSynchronous()));
     }
+
+    if (sp.enforceThreadsConnectSameReceiver != sender.getEnforceThreadsConnectSameReceiver()) {
+      throw new IllegalStateException(
+          String.format(
+              "Cannot create Gateway Sender %s with enforceThreadsConnectSameReceiver %s because another cache has the same Gateway Sender defined with enforceThreadsConnectSameReceiver %s",
+              sp.Id, sp.enforceThreadsConnectSameReceiver,
+              sender.getEnforceThreadsConnectSameReceiver()));
+    }
   }
 
   /**
@@ -532,6 +540,8 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
 
     public ServerLocation serverLocation;
 
+    public boolean enforceThreadsConnectSameReceiver = false;
+
     public GatewaySenderProfile(InternalDistributedMember memberId, int version) {
       super(memberId, version);
     }
@@ -578,6 +588,7 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
         this.serverLocation = new ServerLocation();
         InternalDataSerializer.invokeFromData(this.serverLocation, in);
       }
+      this.enforceThreadsConnectSameReceiver = in.readBoolean();
     }
 
     @Override
@@ -617,6 +628,7 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
       if (serverLocationFound) {
         InternalDataSerializer.invokeToData(serverLocation, out);
       }
+      out.writeBoolean(enforceThreadsConnectSameReceiver);
     }
 
     public void fromDataPre_GFE_8_0_0_0(DataInput in, DeserializationContext context)
