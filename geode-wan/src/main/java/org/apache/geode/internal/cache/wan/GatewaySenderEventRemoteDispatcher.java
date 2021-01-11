@@ -368,7 +368,6 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
 
   Connection retryInitializeConnection(Connection con) {
     final boolean isDebugEnabled = logger.isDebugEnabled();
-    ServerLocation server = this.sender.getServerLocation();
     String connectedServerId = con.getEndpoint().getMemberId().getUniqueId();
     String expectedServerId = this.processor.getExpectedReceiverUniqueId();
 
