@@ -24,7 +24,7 @@ When you get an entry value from the cache, by default, the retrieval methods re
 **Note:**
 Do not directly modify cached values. Modifying a value in place bypasses the <%=vars.product_name%> distribution framework, including cache writers and listeners, expiration activities, and transaction management, and can produce undesired results.
 
-Always change your entries using copies of the retrieved objects—never directly modify the returned objects. You can do this in one of two ways:
+Always change your entries using copies of the retrieved objects. Never directly modify the returned objects. You can do this in one of two ways:
 
 1.  Change the entry retrieval behavior for your cache by setting the cache attribute, `copy-on-read`, to true (the default is false).
 
