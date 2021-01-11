@@ -178,7 +178,7 @@ public class MBeanFederationErrorHandlingDistributedTest implements Serializable
         (SystemManagementService) ManagementService.getManagementService(cache);
     service.startManager();
     FederatingManager federatingManager = service.getFederatingManager();
-    proxyFactory = federatingManager.getProxyFactory();
+    proxyFactory = federatingManager.proxyFactory();
 
     return locatorLauncher.getPort();
   }
