@@ -96,7 +96,7 @@ Use the following procedure to run a <%=vars.product_name%> global JTA transacti
 1.  **Configure the external data sources in the external container.** Do not configure the data sources in cache.xml . They are not guaranteed to get bound to the JNDI tree.
 2.  
 
-    Configure <%=vars.product_name%> for any necessary transactional behavior in the `cache.xml` file. For example, enable `copy-on-read` and specify a transaction listener, as needed. See [Safe Entry Modification](../../basic_config/data_entries_custom_classes/managing_data_entries.html#managing_data_entries__section_A0E0F889AC344EFA8DF304FD64418809).
+    Configure <%=vars.product_name%> for any necessary transactional behavior in the `cache.xml` file. For example, enable `copy-on-read` and specify a transaction listener, as needed. See [Copy on Read Behavior](../../basic_config/data_entries_custom_classes/copy_on_read.html).
 3.  
 
     Make sure that JTA transactions are enabled for the regions that will participate in the transaction. See [Turning Off JTA Transactions](turning_off_jta.html#concept_nw2_5gs_xk) for details. 
@@ -176,7 +176,7 @@ path and file names:
 </ol>
 3.  Make sure that the `geode-dependencies.jar` is accessible in the CLASSPATH of the JTA transaction coordinator container.
 4.  Deploy the version-specific `geode-jca` RAR file on the JTA transaction coordinator container. When deploying the file, you specify the JNDI name and so on. 
-5.  Configure <%=vars.product_name%> for any necessary transactional behavior. Enable `copy-on-read` and specify a transaction listener, if you need one.  See [Safe Entry Modification](../../basic_config/data_entries_custom_classes/managing_data_entries.html#managing_data_entries__section_A0E0F889AC344EFA8DF304FD64418809).
+5.  Configure <%=vars.product_name%> for any necessary transactional behavior. Enable `copy-on-read` and specify a transaction listener, if you need one.  See [Copy on Read Behavior](../../basic_config/data_entries_custom_classes/copy_on_read.html).
 6.  Get an initial context through `org.apache.geode.cache.GemFireCache.getJNDIContext`. For example:
 
     ``` pre
