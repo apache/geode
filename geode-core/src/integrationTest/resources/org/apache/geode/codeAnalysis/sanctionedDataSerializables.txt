@@ -1910,10 +1910,12 @@ org/apache/geode/internal/cache/versions/VersionTag,2
 fromData,225
 toData,254
 
-org/apache/geode/internal/cache/wan/GatewaySenderAdvisor$GatewaySenderProfile,4
-fromData,283
+org/apache/geode/internal/cache/wan/GatewaySenderAdvisor$GatewaySenderProfile,6
+fromData,17
+fromDataPre_GEODE_1_14_0_0,293
 fromDataPre_GFE_8_0_0_0,188
-toData,271
+toData,17
+toDataPre_GEODE_1_14_0_0,281
 toDataPre_GFE_8_0_0_0,236
 
 org/apache/geode/internal/cache/wan/GatewaySenderEventCallbackArgument,2
