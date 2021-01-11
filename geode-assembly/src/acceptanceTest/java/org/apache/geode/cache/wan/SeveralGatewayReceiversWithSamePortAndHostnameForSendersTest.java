@@ -22,6 +22,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -184,6 +185,30 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
 
   }
 
+  @Test
+  public void testTwoSendersWithSameIdShouldUseSameValueForEnforceThreadsConnectToSameServer() {
+    String senderId = "ln";
+    final int remoteLocPort = 20334;
+
+    int locPort = createLocator(VM.getVM(0), 1, remoteLocPort);
+
+    VM vm1 = VM.getVM(1);
+    createCache(vm1, locPort);
+
+    VM vm2 = VM.getVM(2);
+    createCache(vm2, locPort);
+
+    createGatewaySender(vm1, senderId, 2, false, 5,
+        3, GatewaySender.DEFAULT_ORDER_POLICY);
+
+    Exception exception =
+        assertThrows(Exception.class, () -> createGatewaySender(vm2, senderId, 2, false, 5,
+            3, GatewaySender.DEFAULT_ORDER_POLICY, false));
+    assertEquals(exception.getCause().getMessage(), "Cannot create Gateway Sender " + senderId
+        + " with enforceThreadsConnectSameReceiver false because another cache has the same Gateway Sender defined with enforceThreadsConnectSameReceiver true");
+
+  }
+
   private boolean allDispatchersConnectedToSameReceiver(int server) {
 
     String gfshOutput = runListGatewayReceiversCommandInServer(server);
@@ -261,6 +286,14 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
       boolean isParallel, Integer batchSize,
       int numDispatchers,
       GatewaySender.OrderPolicy orderPolicy) {
+    createGatewaySender(vm, dsName, remoteDsId, isParallel, batchSize, numDispatchers, orderPolicy,
+        true);
+  }
+
+  public static void createGatewaySender(VM vm, String dsName, int remoteDsId,
+      boolean isParallel, Integer batchSize,
+      int numDispatchers,
+      GatewaySender.OrderPolicy orderPolicy, boolean enforceThreadsConnectToSameReceiver) {
     vm.invoke(() -> {
       final IgnoredException exln = IgnoredException.addIgnoredException("Could not connect");
       try {
@@ -270,6 +303,7 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
         gateway.setBatchSize(batchSize);
         gateway.setDispatcherThreads(numDispatchers);
         gateway.setOrderPolicy(orderPolicy);
+        gateway.setEnforceThreadsConnectSameReceiver(enforceThreadsConnectToSameReceiver);
         gateway.create(dsName, remoteDsId);
 
       } finally {
