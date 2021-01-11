@@ -82,7 +82,7 @@ public class FederatingManagerConcurrencyIntegrationTest {
 
     await().until(() -> !cache.getAllRegions().isEmpty());
 
-    assertThat(federatingManager.latestException()).isNull();
+    assertThat(federatingManager.getAndResetLatestException()).isNull();
   }
 
   private InternalDistributedMember member() throws UnknownHostException {

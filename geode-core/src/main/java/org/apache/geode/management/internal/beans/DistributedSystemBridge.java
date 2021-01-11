@@ -23,7 +23,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -284,8 +283,6 @@ public class DistributedSystemBridge {
     }
 
     if (mapOfMembers != null) {
-      Objects.requireNonNull(objectName);
-      Objects.requireNonNull(proxy);
       mapOfMembers.put(objectName, proxy);
       memberSetSize = mapOfMembers.values().size();
 

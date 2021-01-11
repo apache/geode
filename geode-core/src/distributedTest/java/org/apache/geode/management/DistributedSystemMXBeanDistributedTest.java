@@ -114,18 +114,15 @@ public class DistributedSystemMXBeanDistributedTest implements Serializable {
   public void getMemberCount() {
     // 1 manager, 3 members, 1 dunit locator
     managerVM.invoke(() -> {
-      await().untilAsserted(() -> {
-        assertThat(distributedSystemMXBean.getMemberCount()).isEqualTo(5);
-      });
+      await()
+          .untilAsserted(() -> assertThat(distributedSystemMXBean.getMemberCount()).isEqualTo(5));
     });
   }
 
   @Test
   public void showJVMMetrics() {
     managerVM.invoke(() -> {
-      await().untilAsserted(() -> {
-        assertThat(distributedSystemMXBean.getMemberCount()).isEqualTo(5);
-      });
+      await().until(() -> distributedSystemMXBean.getMemberCount() == 5);
 
       for (DistributedMember member : getOtherNormalMembers()) {
         assertThat(distributedSystemMXBean.showJVMMetrics(member.getName())).isNotNull();
@@ -136,9 +133,7 @@ public class DistributedSystemMXBeanDistributedTest implements Serializable {
   @Test
   public void showOSMetrics() {
     managerVM.invoke(() -> {
-      await().untilAsserted(() -> {
-        assertThat(distributedSystemMXBean.getMemberCount()).isEqualTo(5);
-      });
+      await().until(() -> distributedSystemMXBean.getMemberCount() == 5);
 
       Set<InternalDistributedMember> otherMembers = getOtherNormalMembers();
       for (DistributedMember member : otherMembers) {
@@ -152,18 +147,15 @@ public class DistributedSystemMXBeanDistributedTest implements Serializable {
     managerVM.invoke(() -> {
       distributedSystemMXBean.shutDownAllMembers();
 
-      await().untilAsserted(() -> {
-        assertThat(getOtherNormalMembers()).hasSize(0);
-      });
+      await().untilAsserted(() -> assertThat(getOtherNormalMembers()).hasSize(0));
     });
   }
 
   @Test
   public void listMemberObjectNames() {
     managerVM.invoke(() -> {
-      await().untilAsserted(() -> {
-        assertThat(distributedSystemMXBean.listMemberObjectNames()).hasSize(4);
-      });
+      await().untilAsserted(
+          () -> assertThat(distributedSystemMXBean.listMemberObjectNames()).hasSize(4));
     });
   }
 
@@ -172,9 +164,7 @@ public class DistributedSystemMXBeanDistributedTest implements Serializable {
     managerVM.invoke(() -> {
       String memberName = distributedMember.getName();
 
-      await().untilAsserted(() -> {
-        assertThat(distributedSystemMXBean.fetchMemberObjectName(memberName)).isNotNull();
-      });
+      await().until(() -> distributedSystemMXBean.fetchMemberObjectName(memberName) != null);
 
       ObjectName memberMXBeanName = distributedSystemMXBean.fetchMemberObjectName(memberName);
       assertThat(memberMXBeanName).isEqualTo(getMemberMBeanName(memberName));

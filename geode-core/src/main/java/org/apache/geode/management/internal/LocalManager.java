@@ -14,15 +14,12 @@
  */
 package org.apache.geode.management.internal;
 
-import static org.apache.geode.logging.internal.executors.LoggingExecutors.newSingleThreadScheduledExecutor;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.Notification;
@@ -46,6 +43,7 @@ import org.apache.geode.internal.cache.HasCachePerfStats;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.statistics.StatisticsClock;
+import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.ManagementException;
 
@@ -63,14 +61,13 @@ public class LocalManager extends Manager {
   /**
    * Management Task pushes data to the admin regions
    */
-  private final AtomicReference<ManagementTask> managementTask = new AtomicReference<>();
+  private ManagementTask managementTask;
 
   /**
    * This service will be responsible for executing ManagementTasks and periodically push data to
    * localMonitoringRegion
    */
-  private final AtomicReference<ScheduledExecutorService> singleThreadFederationScheduler =
-      new AtomicReference<>();
+  private ScheduledExecutorService singleThreadFederationScheduler;
 
   /**
    * This map holds all the components which are eligible for federation. Although filters might
@@ -106,7 +103,8 @@ public class LocalManager extends Manager {
       if (repo.getLocalMonitoringRegion() != null) {
         return;
       }
-      singleThreadFederationScheduler.set(newSingleThreadScheduledExecutor("Management Task"));
+      singleThreadFederationScheduler =
+          LoggingExecutors.newSingleThreadScheduledExecutor("Management Task");
 
       if (logger.isDebugEnabled()) {
         logger.debug("Creating  Management Region :");
@@ -167,14 +165,14 @@ public class LocalManager extends Manager {
         }
       }
 
-      managementTask.set(new ManagementTask());
+      managementTask = new ManagementTask();
       // call run to get us initialized immediately with a sync call
-      managementTask.get().run();
+      managementTask.run();
       // All local resources are created for the ManagementTask
       // Now Management tasks can proceed.
       int updateRate = system.getConfig().getJmxManagerUpdateRate();
-      singleThreadFederationScheduler.get().scheduleAtFixedRate(managementTask.get(), updateRate,
-          updateRate, TimeUnit.MILLISECONDS);
+      singleThreadFederationScheduler.scheduleAtFixedRate(managementTask, updateRate, updateRate,
+          TimeUnit.MILLISECONDS);
 
       if (logger.isDebugEnabled()) {
         logger.debug("Management Region created with Name : {}",
@@ -208,9 +206,8 @@ public class LocalManager extends Manager {
   private void shutdownTasks() {
     // No need of pooledGIIExecutor as this node wont do GII again
     // so better to release resources
-    ScheduledExecutorService executor = singleThreadFederationScheduler.get();
-    if (executor != null) {
-      executor.shutdownNow();
+    if (singleThreadFederationScheduler != null) {
+      singleThreadFederationScheduler.shutdownNow();
     }
   }
 
@@ -249,7 +246,7 @@ public class LocalManager extends Manager {
    */
   @VisibleForTesting
   public ScheduledExecutorService getFederationScheduler() {
-    return singleThreadFederationScheduler.get();
+    return singleThreadFederationScheduler;
   }
 
   /**
@@ -258,7 +255,7 @@ public class LocalManager extends Manager {
    */
   @VisibleForTesting
   public void runManagementTaskAdhoc() {
-    managementTask.get().run();
+    managementTask.run();
   }
 
   @Override
