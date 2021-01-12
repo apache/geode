@@ -41,10 +41,9 @@ import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
 import com.fasterxml.jackson.databind.ser.ResolvableSerializer;
 import com.fasterxml.jackson.databind.type.ArrayType;
 
-public class QueryResultFormatter extends AbstractJSONFormatter {
+import org.apache.geode.internal.logging.DateFormatter;
 
-  public static final String DATE_FORMAT_PATTERN =
-      "EEE " + new SimpleDateFormat().toLocalizedPattern() + " zzz";
+public class QueryResultFormatter extends AbstractJSONFormatter {
   /**
    * map contains the named objects to be serialized
    */
@@ -80,7 +79,7 @@ public class QueryResultFormatter extends AbstractJSONFormatter {
 
       // Consistency: use the same date format java.sql.Date as well as java.util.Date.
       mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-      SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT_PATTERN);
+      SimpleDateFormat sdf = DateFormatter.createLocalizedDateFormat();
       mapper.setDateFormat(sdf);
       typeModule.addSerializer(java.sql.Date.class, new SqlDateSerializer(mapper.getDateFormat()));
 
