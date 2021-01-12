@@ -281,9 +281,8 @@ geode-redis/**                                                    @sabbey37 @jde
 #-----------------------------------------------------------------
 # Build and tooling
 #-----------------------------------------------------------------
-*.gradle                                                          @rhoughton-pivot
 #etc/**
-build.gradle                                                      @rhoughton-pivot
+*gradle*                                                          @rhoughton-pivot @onichols-pivotal
 buildSrc/**                                                       @rhoughton-pivot @jdeppe-pivotal
 buildSrc/**/DependencyConstraints.groovy                          @onichols-pivotal @dickcav
 ci/**                                                             @onichols-pivotal @dickcav
@@ -293,11 +292,10 @@ dev-tools/**                                                      @onichols-pivo
 docker/**                                                         @onichols-pivotal @dickcav
 geode-management/src/test/script/update-management-wiki.sh        @onichols-pivotal @dickcav
 #boms/**
-*gradle*                                                          @rhoughton-pivot
-static-analysis/**                                                @rhoughton-pivot
+static-analysis/**                                                @rhoughton-pivot @onichols-pivotal
 geode-old-versions/**                                             @onichols-pivotal @dickcav
 KEYS                                                              @onichols-pivotal @dickcav
-geode-assembly/**                                                 @rhoughton-pivot
+geode-assembly/**                                                 @rhoughton-pivot @onichols-pivotal
 
 #-----------------------------------------------------------------
 # Documentation
