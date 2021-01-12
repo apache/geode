@@ -29,8 +29,8 @@ import org.junit.Test;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.internal.logging.DateFormatter;
 import org.apache.geode.management.DistributedSystemMXBean;
-import org.apache.geode.management.internal.json.QueryResultFormatter;
 import org.apache.geode.management.model.Employee;
 import org.apache.geode.test.junit.assertions.TabularResultModelAssert;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -87,8 +87,7 @@ public class DistributedSystemMBeanIntegrationTest {
   // this is to make sure dates are formatted correctly and it does not honor the json annotations
   @Test
   public void queryAllUsingMBean() throws Exception {
-    SimpleDateFormat formater =
-        new SimpleDateFormat(QueryResultFormatter.DATE_FORMAT_PATTERN);
+    SimpleDateFormat formater = DateFormatter.createLocalizedDateFormat();
     String dateString = formater.format(date);
     String result = bean.queryData(SELECT_ALL, "server", 100);
     System.out.println(result);
