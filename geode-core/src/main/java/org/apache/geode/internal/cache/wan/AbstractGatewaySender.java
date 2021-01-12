@@ -171,6 +171,8 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   private ServerLocation serverLocation;
 
+  private String expectedReceiverUniqueId = "";
+
   protected Object queuedEventsSync = new Object();
 
   protected volatile boolean enqueuedAllTempQueueEvents = false;
@@ -1435,6 +1437,14 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       throw new UnsupportedOperationException(
           "waitUntilFlushed is not currently supported for serial gateway senders");
     }
+  }
+
+  public void setExpectedReceiverUniqueId(String expectedReceiverUniqueId) {
+    this.expectedReceiverUniqueId = expectedReceiverUniqueId;
+  }
+
+  public String getExpectedReceiverUniqueId() {
+    return this.expectedReceiverUniqueId;
   }
 
   /**
