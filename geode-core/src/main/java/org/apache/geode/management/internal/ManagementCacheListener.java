@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal;
 
+import java.util.Objects;
+
 import javax.management.ObjectName;
 
 import org.apache.logging.log4j.Logger;
@@ -37,6 +39,8 @@ public class ManagementCacheListener extends CacheListenerAdapter<String, Object
   private final StoppableCountDownLatch readyLatch;
 
   ManagementCacheListener(MBeanProxyFactory mBeanProxyFactory, CancelCriterion cancelCriterion) {
+    Objects.requireNonNull(mBeanProxyFactory);
+    Objects.requireNonNull(cancelCriterion);
     this.mBeanProxyFactory = mBeanProxyFactory;
     readyLatch = new StoppableCountDownLatch(cancelCriterion, 1);
   }
@@ -69,7 +73,8 @@ public class ManagementCacheListener extends CacheListenerAdapter<String, Object
       mBeanProxyFactory.removeProxy(event.getDistributedMember(), objectName, oldObject);
     } catch (Exception e) {
       if (logger.isDebugEnabled()) {
-        logger.debug("Proxy Destroy failed for {} with exception {}", objectName, e.getMessage(), e);
+        logger.debug("Proxy Destroy failed for {} with exception {}", objectName, e.getMessage(),
+            e);
       }
     }
   }

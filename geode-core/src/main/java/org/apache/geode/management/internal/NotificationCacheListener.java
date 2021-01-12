@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal;
 
+import java.util.Objects;
+
 import javax.management.Notification;
 
 import org.apache.geode.CancelCriterion;
@@ -30,6 +32,8 @@ public class NotificationCacheListener extends CacheListenerAdapter<Notification
   private final StoppableCountDownLatch readyLatch;
 
   NotificationCacheListener(MBeanProxyFactory proxyHelper, CancelCriterion cancelCriterion) {
+    Objects.requireNonNull(proxyHelper);
+    Objects.requireNonNull(cancelCriterion);
     notificationHubClient = new NotificationHubClient(proxyHelper);
     readyLatch = new StoppableCountDownLatch(cancelCriterion, 1);
   }

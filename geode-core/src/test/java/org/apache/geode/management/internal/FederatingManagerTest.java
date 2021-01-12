@@ -47,6 +47,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.ErrorCollector;
 import org.mockito.ArgumentCaptor;
 
+import org.apache.geode.CancelCriterion;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.alerting.internal.spi.AlertLevel;
 import org.apache.geode.cache.CacheClosedException;
@@ -106,17 +107,19 @@ public class FederatingManagerTest {
 
     when(cache.getCacheForProcessingClientRequests())
         .thenReturn(cacheForClientAccess);
+    when(cacheForClientAccess.getCancelCriterion())
+        .thenReturn(mock(CancelCriterion.class));
     when(cacheForClientAccess.createInternalRegionFactory())
         .thenReturn(regionFactory1)
         .thenReturn(regionFactory2);
-    when(regionFactory1.create(any()))
-        .thenReturn(mock(Region.class));
-    when(regionFactory2.create(any()))
-        .thenReturn(mock(Region.class));
     when(distributedSystemMXBean.getAlertLevel())
         .thenReturn(AlertLevel.WARNING.name());
     when(jmxAdapter.getDistributedSystemMXBean())
         .thenReturn(distributedSystemMXBean);
+    when(regionFactory1.create(any()))
+        .thenReturn(mock(Region.class));
+    when(regionFactory2.create(any()))
+        .thenReturn(mock(Region.class));
     when(system.getDistributionManager())
         .thenReturn(mock(DistributionManager.class));
   }
