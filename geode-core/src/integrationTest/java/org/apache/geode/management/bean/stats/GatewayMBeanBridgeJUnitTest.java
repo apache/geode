@@ -51,6 +51,10 @@ public class GatewayMBeanBridgeJUnitTest extends MBeanStatsTestCase {
 
   @Test
   public void testSenderStats() throws InterruptedException {
+    senderStats.incBatchesWithIncompleteTransactions();
+    senderStats.incBatchesWithIncompleteTransactions();
+    senderStats.incBatchesWithIncompleteTransactions();
+    senderStats.incBatchesRedistributed();
     senderStats.incBatchesRedistributed();
     senderStats.incEventsReceived();
     Mockito.when(sender.getEventQueueSize()).thenReturn(10);
@@ -61,7 +65,9 @@ public class GatewayMBeanBridgeJUnitTest extends MBeanStatsTestCase {
 
     sample();
 
-    assertEquals(1, getTotalBatchesRedistributed());
+    assertEquals(1, getTotalBatchesDistributed());
+    assertEquals(2, getTotalBatchesRedistributed());
+    assertEquals(3, getTotalBatchesWithIncompleteTransactions());
     assertEquals(1, getTotalEventsConflated());
     assertEquals(10, getEventQueueSize());
     assertTrue(getEventsQueuedRate() > 0);
@@ -71,8 +77,16 @@ public class GatewayMBeanBridgeJUnitTest extends MBeanStatsTestCase {
     assertTrue(getEventsExceedingAlertThreshold() > 0);
   }
 
+  private int getTotalBatchesDistributed() {
+    return bridge.getTotalBatchesDistributed();
+  }
+
   private int getTotalBatchesRedistributed() {
     return bridge.getTotalBatchesRedistributed();
+  }
+
+  private int getTotalBatchesWithIncompleteTransactions() {
+    return bridge.getTotalBatchesWithIncompleteTransactions();
   }
 
   private int getTotalEventsConflated() {

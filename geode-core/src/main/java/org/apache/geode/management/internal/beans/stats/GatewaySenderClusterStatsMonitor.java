@@ -30,7 +30,12 @@ public class GatewaySenderClusterStatsMonitor {
 
   private static final String EVENTS_QUEUED_RATE = "EventsQueuedRate";
 
+  private static final String TOTAL_BATCHES_DISTRIBUTED = "TotalBatchesDistributed";
+
   private static final String TOTAL_BATCHES_REDISTRIBUTED = "TotalBatchesRedistributed";
+
+  private static final String TOTAL_BATCHES_WITH_INCOMPLETE_TRANSACTIONS =
+      "TotalBatchesWithIncompleteTransactions";
 
   private static final String TOTAL_EVENTS_CONFLATED = "TotalEventsConflated";
 
@@ -54,7 +59,9 @@ public class GatewaySenderClusterStatsMonitor {
     typeMap.put(BATCHES_DISPATCHED_RATE, Float.TYPE);
     typeMap.put(EVENT_QUEUE_SIZE, Integer.TYPE);
     typeMap.put(EVENTS_QUEUED_RATE, Float.TYPE);
+    typeMap.put(TOTAL_BATCHES_DISTRIBUTED, Integer.TYPE);
     typeMap.put(TOTAL_BATCHES_REDISTRIBUTED, Integer.TYPE);
+    typeMap.put(TOTAL_BATCHES_WITH_INCOMPLETE_TRANSACTIONS, Integer.TYPE);
     typeMap.put(TOTAL_EVENTS_CONFLATED, Integer.TYPE);
 
   }
@@ -75,8 +82,16 @@ public class GatewaySenderClusterStatsMonitor {
     return aggregator.getFloatValue(EVENTS_QUEUED_RATE);
   }
 
+  public int getGatewaySenderTotalBatchesDistributed() {
+    return aggregator.getIntValue(TOTAL_BATCHES_DISTRIBUTED);
+  }
+
   public int getGatewaySenderTotalBatchesRedistributed() {
     return aggregator.getIntValue(TOTAL_BATCHES_REDISTRIBUTED);
+  }
+
+  public int getGatewaySenderTotalBatchesWithIncompleteTransactions() {
+    return aggregator.getIntValue(TOTAL_BATCHES_WITH_INCOMPLETE_TRANSACTIONS);
   }
 
   public int getGatewaySenderTotalEventsConflated() {

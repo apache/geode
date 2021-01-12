@@ -469,6 +469,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       return;
     }
 
+    boolean batchHasIncompleteTransactions = true;
     for (TransactionId transactionId : incompleteTransactionIdsInBatch) {
       boolean areAllEventsForTransactionInBatch = false;
       int retries = 0;
@@ -492,9 +493,13 @@ public class SerialGatewaySenderQueue implements RegionQueue {
         lastKeyForTransaction = eventsAndKey.lastKey;
       }
       if (!areAllEventsForTransactionInBatch) {
+        batchHasIncompleteTransactions = true;
         logger.warn("Not able to retrieve all events for transaction {} after {} tries",
             transactionId, retries);
       }
+    }
+    if (batchHasIncompleteTransactions) {
+      stats.incBatchesWithIncompleteTransactions();
     }
   }
 

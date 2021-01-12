@@ -248,9 +248,17 @@ public class GatewaySenderMBeanBridge {
 
   /** Statistics Related Attributes **/
 
+  public int getTotalBatchesDistributed() {
+    return getStatistic(StatsKey.GATEWAYSENDER_BATCHES_DISTRIBUTED).intValue();
+  }
 
   public int getTotalBatchesRedistributed() {
     return getStatistic(StatsKey.GATEWAYSENDER_TOTAL_BATCHES_REDISTRIBUTED).intValue();
+  }
+
+  public int getTotalBatchesWithIncompleteTransactions() {
+    return getStatistic(StatsKey.GATEWAYSENDER_TOTAL_BATCHES_WITH_INCOMPLETE_TRANSACTIONS)
+        .intValue();
   }
 
   public int getTotalEventsConflated() {

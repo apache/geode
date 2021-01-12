@@ -124,8 +124,18 @@ public class GatewaySenderMBean extends NotificationBroadcasterSupport
   }
 
   @Override
+  public int getTotalBatchesDistributed() {
+    return bridge.getTotalBatchesDistributed();
+  }
+
+  @Override
   public int getTotalBatchesRedistributed() {
     return bridge.getTotalBatchesRedistributed();
+  }
+
+  @Override
+  public int getTotalBatchesWithIncompleteTransactions() {
+    return bridge.getTotalBatchesWithIncompleteTransactions();
   }
 
   @Override
