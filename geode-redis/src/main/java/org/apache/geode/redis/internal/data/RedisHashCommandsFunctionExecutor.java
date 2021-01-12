@@ -102,14 +102,14 @@ public class RedisHashCommandsFunctionExecutor extends RedisDataCommandsFunction
   @Override
   public long hincrby(ByteArrayWrapper key, ByteArrayWrapper field, long increment) {
     return stripedExecute(key,
-        () -> getRedisHash(key, true)
+        () -> getRedisHash(key, false)
             .hincrby(getRegion(), key, field, increment));
   }
 
   @Override
   public double hincrbyfloat(ByteArrayWrapper key, ByteArrayWrapper field, double increment) {
     return stripedExecute(key,
-        () -> getRedisHash(key, true)
+        () -> getRedisHash(key, false)
             .hincrbyfloat(getRegion(), key, field, increment));
   }
 

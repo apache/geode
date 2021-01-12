@@ -19,8 +19,7 @@ import org.junit.ClassRule;
 
 import org.apache.geode.NativeRedisTestRule;
 
-public class InfoNativeRedisAcceptanceTest extends AbstractInfoIntegrationTest {
-
+public class InfoStatsNativeRedisAcceptanceTest extends AbstractRedisInfoStatsIntegrationTest {
   @ClassRule
   public static NativeRedisTestRule redis = new NativeRedisTestRule();
 

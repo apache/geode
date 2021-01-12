@@ -120,8 +120,6 @@ public abstract class AbstractInfoIntegrationTest implements RedisPortSupplier {
     jedis.close();
   }
 
-  abstract int getExposedPort();
-
   @Test
   public void shouldReturnRedisVersion() {
     String expectedResult = "redis_version:5.0.6";
@@ -133,7 +131,7 @@ public abstract class AbstractInfoIntegrationTest implements RedisPortSupplier {
 
   @Test
   public void shouldReturnTCPPort() {
-    int expectedPort = getExposedPort();
+    int expectedPort = getPort();
     String expectedResult = "tcp_port:" + expectedPort;
 
     String actualResult = jedis.info();
