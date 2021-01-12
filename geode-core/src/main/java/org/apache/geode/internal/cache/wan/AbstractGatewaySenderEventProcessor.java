@@ -146,8 +146,6 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
    */
   private int batchSize;
 
-  private String expectedReceiverUniqueId = "";
-
   public AbstractGatewaySenderEventProcessor(String string,
       GatewaySender sender, ThreadsMonitoring tMonitoring) {
     super(string);
@@ -157,11 +155,11 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
   }
 
   public void setExpectedReceiverUniqueId(String uniqueId) {
-    this.expectedReceiverUniqueId = uniqueId;
+    this.sender.setExpectedReceiverUniqueId(uniqueId);
   }
 
   public String getExpectedReceiverUniqueId() {
-    return this.expectedReceiverUniqueId;
+    return this.sender.getExpectedReceiverUniqueId();
   }
 
   public Object getRunningStateLock() {
