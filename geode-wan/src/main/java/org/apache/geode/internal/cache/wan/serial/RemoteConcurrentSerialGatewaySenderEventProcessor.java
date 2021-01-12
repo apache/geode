@@ -30,20 +30,11 @@ public class RemoteConcurrentSerialGatewaySenderEventProcessor
     super(sender, tMonitoring, cleanQueues);
   }
 
-  public RemoteConcurrentSerialGatewaySenderEventProcessor(AbstractGatewaySender sender,
-      ThreadsMonitoring tMonitoring, boolean cleanQueues,
-      boolean enforceThreadsConnectSameReceiver) {
-    super(sender, tMonitoring, cleanQueues, enforceThreadsConnectSameReceiver);
-  }
-
   @Override
   protected void initializeMessageQueue(String id, boolean cleanQueues) {
     for (int i = 0; i < sender.getDispatcherThreads(); i++) {
-      SerialGatewaySenderEventProcessor processor =
-          new RemoteSerialGatewaySenderEventProcessor(this.sender, id + "." + i,
-              getThreadMonitorObj(), cleanQueues);
-      processor.setEnforceThreadsConnectSameReceiver(getEnforceThreadsConnectSameReceiver());
-      processors.add(processor);
+      processors.add(new RemoteSerialGatewaySenderEventProcessor(this.sender, id + "." + i,
+          getThreadMonitorObj(), cleanQueues));
       if (logger.isDebugEnabled()) {
         logger.debug("Created the RemoteSerialGatewayEventProcessor_{}->{}", i, processors.get(i));
       }
