@@ -115,7 +115,7 @@ public class FederatingManager extends Manager implements ManagerMembership {
    * Management exception has to be handled by the caller.
    */
   @Override
-  public synchronized void startManager() {
+  public void startManager() {
     try {
       lifecycleLock.lock();
       try {
@@ -165,7 +165,7 @@ public class FederatingManager extends Manager implements ManagerMembership {
   }
 
   @Override
-  public synchronized void stopManager() {
+  public void stopManager() {
     lifecycleLock.lock();
     try {
       // remove hidden management regions and federatedMBeans
@@ -355,7 +355,7 @@ public class FederatingManager extends Manager implements ManagerMembership {
     }
   }
 
-  private synchronized void executeTask(Runnable task) {
+  private void executeTask(Runnable task) {
     try {
       executorService.get().execute(task);
     } catch (RejectedExecutionException ignored) {
