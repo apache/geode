@@ -77,20 +77,6 @@ public class ConcurrentSerialGatewaySenderEventProcessor
     }
   }
 
-  public ConcurrentSerialGatewaySenderEventProcessor(AbstractGatewaySender sender,
-      ThreadsMonitoring tMonitoring, boolean cleanQueues,
-      boolean enforceThreadsConnectSameReceiver) {
-    super("Event Processor for GatewaySender_" + sender.getId(), sender, tMonitoring,
-        enforceThreadsConnectSameReceiver);
-    this.sender = sender;
-
-    initializeMessageQueue(sender.getId(), cleanQueues);
-    queues = new HashSet<RegionQueue>();
-    for (SerialGatewaySenderEventProcessor processor : processors) {
-      queues.add(processor.getQueue());
-    }
-  }
-
   @Override
   public int getTotalQueueSize() {
     int totalSize = 0;
@@ -194,7 +180,7 @@ public class ConcurrentSerialGatewaySenderEventProcessor
   @Override
   public void run() {
     boolean isDebugEnabled = logger.isDebugEnabled();
-    if (getEnforceThreadsConnectSameReceiver()) {
+    if (this.sender.getEnforceThreadsConnectSameReceiver()) {
       this.processors.get(0).start();
       waitForRunningStatus(this.processors.get(0));
       String receiverUniqueId = this.processors.get(0).getExpectedReceiverUniqueId();
@@ -206,7 +192,8 @@ public class ConcurrentSerialGatewaySenderEventProcessor
       }
     }
 
-    for (int i = getEnforceThreadsConnectSameReceiver() ? 1 : 0; i < this.processors.size(); i++) {
+    for (int i = this.sender.getEnforceThreadsConnectSameReceiver() ? 1 : 0; i < this.processors
+        .size(); i++) {
       if (isDebugEnabled) {
         logger.debug("Starting the serialProcessor {}", i);
       }

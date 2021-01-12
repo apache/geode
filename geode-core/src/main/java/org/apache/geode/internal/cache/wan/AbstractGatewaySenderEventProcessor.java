@@ -148,8 +148,6 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
 
   private String expectedReceiverUniqueId = "";
 
-  private boolean enforceThreadsConnectSameReceiver = false;
-
   public AbstractGatewaySenderEventProcessor(String string,
       GatewaySender sender, ThreadsMonitoring tMonitoring) {
     super(string);
@@ -158,27 +156,12 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
     this.threadMonitoring = tMonitoring;
   }
 
-  public AbstractGatewaySenderEventProcessor(String string,
-      GatewaySender sender, ThreadsMonitoring tMonitoring,
-      boolean enforceThreadsConnectSameReceiver) {
-    this(string, sender, tMonitoring);
-    this.enforceThreadsConnectSameReceiver = enforceThreadsConnectSameReceiver;
-  }
-
   public void setExpectedReceiverUniqueId(String uniqueId) {
     this.expectedReceiverUniqueId = uniqueId;
   }
 
   public String getExpectedReceiverUniqueId() {
     return this.expectedReceiverUniqueId;
-  }
-
-  public void setEnforceThreadsConnectSameReceiver(boolean value) {
-    this.enforceThreadsConnectSameReceiver = value;
-  }
-
-  public boolean getEnforceThreadsConnectSameReceiver() {
-    return this.enforceThreadsConnectSameReceiver;
   }
 
   public Object getRunningStateLock() {
