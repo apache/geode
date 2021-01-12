@@ -399,7 +399,7 @@ public class FederatingManager extends Manager implements ManagerMembership {
           monitorFactory.setDataPolicy(DataPolicy.REPLICATE);
           monitorFactory.setConcurrencyChecksEnabled(false);
           ManagementCacheListener managementCacheListener =
-              new ManagementCacheListener(proxyFactory);
+              new ManagementCacheListener(proxyFactory, cache.getCancelCriterion());
           monitorFactory.addCacheListener(managementCacheListener);
           monitorFactory.setIsUsedForMetaRegion(true);
           monitorFactory.setCachePerfStatsHolder(monitoringRegionStats);
@@ -416,7 +416,8 @@ public class FederatingManager extends Manager implements ManagerMembership {
               .setEvictionAttributes(EvictionAttributes.createLRUEntryAttributes(
                   ManagementConstants.NOTIF_REGION_MAX_ENTRIES, EvictionAction.LOCAL_DESTROY));
 
-          NotificationCacheListener notifListener = new NotificationCacheListener(proxyFactory);
+          NotificationCacheListener notifListener =
+              new NotificationCacheListener(proxyFactory, cache.getCancelCriterion());
           notificationFactory.addCacheListener(notifListener);
           notificationFactory.setIsUsedForMetaRegion(true);
           notificationFactory.setCachePerfStatsHolder(monitoringRegionStats);

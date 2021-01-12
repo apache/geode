@@ -18,77 +18,71 @@ import javax.management.ObjectName;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
- * This listener is attached to the Monitoring Region to receive any addition or deletion of MBEans
- *
- * It updates the last refreshed time of proxy once it gets the update request from the Managed Node
- *
- *
+ * This listener is attached to the monitoring region to receive any addition or deletion of
+ * MXBeans. It updates the last refreshed time of proxy once it gets the update request from the
+ * managed node.
  */
 public class ManagementCacheListener extends CacheListenerAdapter<String, Object> {
 
   private static final Logger logger = LogService.getLogger();
 
-  private MBeanProxyFactory proxyHelper;
+  private final MBeanProxyFactory mBeanProxyFactory;
+  private final StoppableCountDownLatch readyLatch;
 
-  private volatile boolean readyForEvents;
-
-  public ManagementCacheListener(MBeanProxyFactory proxyHelper) {
-    this.proxyHelper = proxyHelper;
-    this.readyForEvents = false;
+  ManagementCacheListener(MBeanProxyFactory mBeanProxyFactory, CancelCriterion cancelCriterion) {
+    this.mBeanProxyFactory = mBeanProxyFactory;
+    readyLatch = new StoppableCountDownLatch(cancelCriterion, 1);
   }
 
   @Override
   public void afterCreate(EntryEvent<String, Object> event) {
-    if (!readyForEvents) {
-      return;
-    }
-    ObjectName objectName = null;
+    waitUntilReady();
 
+    ObjectName objectName = null;
     try {
       objectName = ObjectName.getInstance(event.getKey());
       Object newObject = event.getNewValue();
-      proxyHelper.createProxy(event.getDistributedMember(), objectName, event.getRegion(),
+      mBeanProxyFactory.createProxy(event.getDistributedMember(), objectName, event.getRegion(),
           newObject);
     } catch (Exception e) {
       if (logger.isDebugEnabled()) {
         logger.debug("Proxy Create failed for {} with exception {}", objectName, e.getMessage(), e);
       }
     }
-
   }
 
   @Override
   public void afterDestroy(EntryEvent<String, Object> event) {
-    ObjectName objectName = null;
+    waitUntilReady();
 
+    ObjectName objectName = null;
     try {
       objectName = ObjectName.getInstance(event.getKey());
       Object oldObject = event.getOldValue();
-      proxyHelper.removeProxy(event.getDistributedMember(), objectName, oldObject);
+      mBeanProxyFactory.removeProxy(event.getDistributedMember(), objectName, oldObject);
     } catch (Exception e) {
       if (logger.isDebugEnabled()) {
-        logger.debug("Proxy Destroy failed for {} with exception {}", objectName, e.getMessage(),
-            e);
+        logger.debug("Proxy Destroy failed for {} with exception {}", objectName, e.getMessage(), e);
       }
     }
-
   }
 
   @Override
   public void afterUpdate(EntryEvent<String, Object> event) {
+    waitUntilReady();
+
     ObjectName objectName = null;
     try {
-      if (!readyForEvents) {
-        return;
-      }
       objectName = ObjectName.getInstance(event.getKey());
 
-      ProxyInfo proxyInfo = proxyHelper.findProxyInfo(objectName);
+      ProxyInfo proxyInfo = mBeanProxyFactory.findProxyInfo(objectName);
       if (proxyInfo != null) {
         ProxyInterface proxyObj = (ProxyInterface) proxyInfo.getProxyInstance();
         // Will return null if proxy is filtered out
@@ -97,20 +91,26 @@ public class ManagementCacheListener extends CacheListenerAdapter<String, Object
         }
         Object oldObject = event.getOldValue();
         Object newObject = event.getNewValue();
-        proxyHelper.updateProxy(objectName, proxyInfo, newObject, oldObject);
+        mBeanProxyFactory.updateProxy(objectName, proxyInfo, newObject, oldObject);
       }
 
     } catch (Exception e) {
       if (logger.isDebugEnabled()) {
         logger.debug("Proxy Update failed for {} with exception {}", objectName, e.getMessage(), e);
       }
-
     }
-
   }
 
   void markReady() {
-    readyForEvents = true;
+    readyLatch.countDown();
   }
 
+  private void waitUntilReady() {
+    try {
+      readyLatch.await();
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new RuntimeException(e);
+    }
+  }
 }
