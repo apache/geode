@@ -24,7 +24,7 @@ that is invoked after any and all client and `gfsh` operations that get data,
 but before the data is returned.
 It permits the callback to intervene and format the data
 that is to be returned.
-The callbacks do not modify the region data,
+The callbacks must not modify the region data,
 only the data to be returned.
 
 The `processRegionValue` method is given the principal of the 
@@ -34,6 +34,11 @@ implying that the principal will have been authorized to complete
 the requested operation.
 The post processing can therefore format the returned data based
 on the identity of the requester (principal).
+
+By default, the key and value parameters to the `processRegionValue` method
+are references to the region entry.
+Modify copies of these parameters to avoid changing the region entries.
+[Copy on Read Behavior](../../basic_config/data_entries_custom_classes/copy_on_read.html) discusses the issue.
 
 <!-- GEODE-2153 aims to make this possible:
 A use of post processing will be to sanitize or mask out sensitive
