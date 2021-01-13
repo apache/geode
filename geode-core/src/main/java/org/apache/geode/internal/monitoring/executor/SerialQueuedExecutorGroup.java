@@ -14,15 +14,12 @@
  */
 package org.apache.geode.internal.monitoring.executor;
 
-import org.apache.geode.internal.monitoring.ThreadsMonitoring;
-
 public class SerialQueuedExecutorGroup extends AbstractExecutor {
 
   public static final String GROUPNAME = "SerialQueuedExecutorWithDMStats";
 
-  public SerialQueuedExecutorGroup(ThreadsMonitoring tMonitoring) {
-    super(tMonitoring);
-    setGroupName(GROUPNAME);
+  public SerialQueuedExecutorGroup() {
+    super(GROUPNAME);
   }
 
 }

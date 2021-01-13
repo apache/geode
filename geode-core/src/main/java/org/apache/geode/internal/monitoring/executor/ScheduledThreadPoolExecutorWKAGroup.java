@@ -14,16 +14,13 @@
  */
 package org.apache.geode.internal.monitoring.executor;
 
-import org.apache.geode.internal.monitoring.ThreadsMonitoring;
-
 public class ScheduledThreadPoolExecutorWKAGroup extends AbstractExecutor {
 
   public static final String GROUPNAME = "ScheduledThreadPoolExecutorWithKeepAlive";
 
 
-  public ScheduledThreadPoolExecutorWKAGroup(ThreadsMonitoring tMonitoring) {
-    super(tMonitoring);
-    setGroupName(GROUPNAME);
+  public ScheduledThreadPoolExecutorWKAGroup() {
+    super(GROUPNAME);
   }
 
 }

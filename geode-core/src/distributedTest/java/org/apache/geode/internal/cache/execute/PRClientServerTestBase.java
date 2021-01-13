@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.execute;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -53,7 +54,6 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.functions.TestFunction;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -148,7 +148,7 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
     assertNotNull(region);
     CacheServer server1 = cache.addCacheServer();
     assertNotNull(server1);
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = getRandomAvailableTCPPort();
     server1.setPort(port);
     try {
       server1.start();
@@ -179,7 +179,7 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
     assertNotNull(region);
     CacheServer server1 = cache.addCacheServer();
     assertNotNull(server1);
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = getRandomAvailableTCPPort();
     server1.setPort(port);
     server1.setMaxThreads(16);
     server1.start();
@@ -209,7 +209,7 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
     assertNotNull(region2);
     CacheServer server1 = cache.addCacheServer();
     assertNotNull(server1);
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = getRandomAvailableTCPPort();
     server1.setPort(port);
     server1.start();
     assertTrue(server1.isRunning());
@@ -220,7 +220,7 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
   public static Integer createCacheServer() throws Exception {
     CacheServer server1 = cache.addCacheServer();
     assertNotNull(server1);
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = getRandomAvailableTCPPort();
     server1.setPort(port);
     server1.start();
     assertTrue(server1.isRunning());
@@ -238,7 +238,7 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
 
     CacheServer server1 = cache.addCacheServer();
     assertNotNull(server1);
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = getRandomAvailableTCPPort();
     server1.setPort(port);
     server1.start();
     assertTrue(server1.isRunning());

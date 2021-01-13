@@ -68,6 +68,7 @@ public class HScanExecutor extends AbstractScanExecutor {
 
     ByteArrayWrapper key = command.getKey();
     if (!getDataRegion(context).containsKey(key)) {
+      context.getRedisStats().incKeyspaceMisses();
       return RedisResponse.emptyScan();
     }
 

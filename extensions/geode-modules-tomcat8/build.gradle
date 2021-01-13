@@ -45,6 +45,7 @@ dependencies {
   // integrationTest
   integrationTestImplementation(project(':extensions:geode-modules-test'))
   integrationTestImplementation(project(':geode-dunit'))
+  integrationTestImplementation('org.apache.tomcat:tomcat-catalina:' + DependencyConstraints.get('tomcat8.version'))
 
 
   // distributedTest
@@ -52,6 +53,7 @@ dependencies {
   distributedTestImplementation(project(':geode-dunit'))
   distributedTestImplementation(project(':geode-logging'))
   distributedTestImplementation('org.httpunit:httpunit')
+  distributedTestImplementation('org.apache.tomcat:tomcat-catalina:' + DependencyConstraints.get('tomcat8.version'))
 }
 
 sonarqube {

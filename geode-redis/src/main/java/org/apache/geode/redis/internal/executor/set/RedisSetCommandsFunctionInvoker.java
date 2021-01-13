@@ -15,6 +15,7 @@
 
 package org.apache.geode.redis.internal.executor.set;
 
+import static org.apache.geode.redis.internal.RedisCommandType.INTERNALSMEMBERS;
 import static org.apache.geode.redis.internal.RedisCommandType.SADD;
 import static org.apache.geode.redis.internal.RedisCommandType.SCARD;
 import static org.apache.geode.redis.internal.RedisCommandType.SDIFFSTORE;
@@ -66,6 +67,11 @@ public class RedisSetCommandsFunctionInvoker extends RedisCommandsFunctionInvoke
   @Override
   public Set<ByteArrayWrapper> smembers(ByteArrayWrapper key) {
     return invokeCommandFunction(key, SMEMBERS);
+  }
+
+  @Override
+  public Set<ByteArrayWrapper> internalsmembers(ByteArrayWrapper key) {
+    return invokeCommandFunction(key, INTERNALSMEMBERS);
   }
 
   @Override

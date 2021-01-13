@@ -33,6 +33,7 @@ import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.executor.key.RedisKeyCommands;
 import org.apache.geode.redis.internal.executor.key.RedisKeyCommandsFunctionInvoker;
+import org.apache.geode.redis.internal.statistics.RedisStats;
 
 public class PassiveExpirationManager {
   private static final Logger logger = LogService.getLogger();
@@ -70,7 +71,7 @@ public class PassiveExpirationManager {
         try {
           if (entry.getValue().hasExpired(now)) {
             // pttl will do its own check using active expiration and expire the key if needed
-            if (-2 == redisKeyCommands.pttl(entry.getKey())) {
+            if (-2 == redisKeyCommands.internalPttl(entry.getKey())) {
               expireCount++;
             }
           }

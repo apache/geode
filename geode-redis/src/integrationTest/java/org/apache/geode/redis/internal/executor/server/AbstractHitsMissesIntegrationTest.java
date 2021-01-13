@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal.executor.server;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -41,13 +42,9 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
-  abstract void resetStats();
-
   @Before
   public void classSetup() {
     jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
-
-    resetStats();
 
     jedis.set("string", "yarn");
     jedis.sadd("set", "cotton");
@@ -61,6 +58,11 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
   }
 
   // ------------ Key related commands -----------
+
+  @Test
+  public void testKeys() {
+    runCommandAndAssertNoStatUpdates("*", k -> jedis.keys(k));
+  }
 
   @Test
   public void testExists() {
@@ -80,6 +82,11 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
   @Test
   public void testPttl() {
     runCommandAndAssertHitsAndMisses("string", k -> jedis.pttl(k));
+  }
+
+  @Test
+  public void testRename() {
+    runCommandAndAssertNoStatUpdates("string", (k, v) -> jedis.rename(k, v));
   }
 
   // ------------ String related commands -----------
@@ -128,32 +135,40 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
 
   @Test
   public void testBitpos() {
-    jedis.bitpos("string", true);
     Map<String, String> info = getInfo(jedis);
+    Long currentHits = Long.parseLong(info.get(HITS));
+    Long currentMisses = Long.parseLong(info.get(MISSES));
 
-    assertThat(info.get(HITS)).isEqualTo("1");
-    assertThat(info.get(MISSES)).isEqualTo("0");
+    jedis.bitpos("string", true);
+    info = getInfo(jedis);
+
+    assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits + 1));
+    assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses));
 
     jedis.bitpos("missed", true);
     info = getInfo(jedis);
 
-    assertThat(info.get(HITS)).isEqualTo("1");
-    assertThat(info.get(MISSES)).isEqualTo("1");
+    assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits + 1));
+    assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses + 1));
   }
 
   @Test
   public void testBitop() {
-    jedis.bitop(BitOP.OR, "dest", "string", "string");
     Map<String, String> info = getInfo(jedis);
+    Long currentHits = Long.parseLong(info.get(HITS));
+    Long currentMisses = Long.parseLong(info.get(MISSES));
 
-    assertThat(info.get(HITS)).isEqualTo("2");
-    assertThat(info.get(MISSES)).isEqualTo("0");
+    jedis.bitop(BitOP.OR, "dest", "string", "string", "dest");
+    info = getInfo(jedis);
+
+    assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits + 2));
+    assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses + 1));
 
     jedis.bitop(BitOP.OR, "dest", "string", "missed");
     info = getInfo(jedis);
 
-    assertThat(info.get(HITS)).isEqualTo("3");
-    assertThat(info.get(MISSES)).isEqualTo("1");
+    assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits + 2 + 1));
+    assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses + 1 + 1));
   }
 
   // ------------ Set related commands -----------
@@ -286,47 +301,105 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
     runCommandAndAssertHitsAndMisses("hash", (k, v) -> jedis.hscan(k, v));
   }
 
-  private void runCommandAndAssertHitsAndMisses(String key, Consumer<String> command) {
-    command.accept(key);
-    Map<String, String> info = getInfo(jedis);
+  @Test
+  public void testHMSet() {
+    Map<String, String> map = new HashMap<>();
+    map.put("key1", "value1");
+    map.put("key2", "value2");
 
-    assertThat(info.get(HITS)).isEqualTo("1");
-    assertThat(info.get(MISSES)).isEqualTo("0");
+    runCommandAndAssertNoStatUpdates("key", (k) -> jedis.hmset(k, map));
+  }
+
+  // ------------ Key related commands -----------
+
+  @Test
+  public void testExpire() {
+    runCommandAndAssertNoStatUpdates("hash", (k) -> jedis.expire(k, 5));
+  }
+
+  @Test
+  public void testPassiveExpiration() {
+    runCommandAndAssertNoStatUpdates("hash", (k) -> {
+      jedis.expire(k, 1);
+      GeodeAwaitility.await().during(Duration.ofSeconds(3)).until(() -> true);
+    });
+  }
+
+  @Test
+  public void testExpireAt() {
+    runCommandAndAssertNoStatUpdates("hash", (k) -> jedis.expireAt(k, 2145916800));
+  }
+
+  @Test
+  public void testPExpire() {
+    runCommandAndAssertNoStatUpdates("hash", (k) -> jedis.pexpire(k, 1024));
+  }
+
+  @Test
+  public void testPExpireAt() {
+    runCommandAndAssertNoStatUpdates("hash", (k) -> jedis.pexpireAt(k, 1608247597));
+  }
+
+  @Test
+  public void testPersist() {
+    runCommandAndAssertNoStatUpdates("hash", (k) -> jedis.persist(k));
+  }
+
+  // ------------ Helper Methods -----------
+
+  private void runCommandAndAssertHitsAndMisses(String key, Consumer<String> command) {
+    Map<String, String> info = getInfo(jedis);
+    Long currentHits = Long.parseLong(info.get(HITS));
+    Long currentMisses = Long.parseLong(info.get(MISSES));
+
+    command.accept(key);
+    info = getInfo(jedis);
+
+    assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits + 1));
+    assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses));
 
     command.accept("missed");
     info = getInfo(jedis);
 
-    assertThat(info.get(HITS)).isEqualTo("1");
-    assertThat(info.get(MISSES)).isEqualTo("1");
+    assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits + 1));
+    assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses + 1));
   }
 
   private void runCommandAndAssertHitsAndMisses(String key, BiConsumer<String, String> command) {
-    command.accept(key, "42");
     Map<String, String> info = getInfo(jedis);
+    Long currentHits = Long.parseLong(info.get(HITS));
+    Long currentMisses = Long.parseLong(info.get(MISSES));
 
-    assertThat(info.get(HITS)).isEqualTo("1");
-    assertThat(info.get(MISSES)).isEqualTo("0");
+    command.accept(key, "42");
+    info = getInfo(jedis);
+
+    assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits + 1));
+    assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses));
 
     command.accept("missed", "42");
     info = getInfo(jedis);
 
-    assertThat(info.get(HITS)).isEqualTo("1");
-    assertThat(info.get(MISSES)).isEqualTo("1");
+    assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits + 1));
+    assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses + 1));
   }
 
   private void runDiffCommandAndAssertHitsAndMisses(String key,
       BiConsumer<String, String> command) {
-    command.accept(key, key);
     Map<String, String> info = getInfo(jedis);
+    Long currentHits = Long.parseLong(info.get(HITS));
+    Long currentMisses = Long.parseLong(info.get(MISSES));
 
-    assertThat(info.get(HITS)).isEqualTo("2");
-    assertThat(info.get(MISSES)).isEqualTo("0");
+    command.accept(key, key);
+    info = getInfo(jedis);
+
+    assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits + 2));
+    assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses));
 
     command.accept(key, "missed");
     info = getInfo(jedis);
 
-    assertThat(info.get(HITS)).isEqualTo("3");
-    assertThat(info.get(MISSES)).isEqualTo("1");
+    assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits + 3));
+    assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses + 1));
   }
 
   /**
@@ -334,42 +407,58 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
    */
   private void runDiffStoreCommandAndAssertNoStatUpdates(String key,
       TriConsumer<String, String, String> command) {
-    command.accept("destination", key, key);
     Map<String, String> info = getInfo(jedis);
+    String currentHits = info.get(HITS);
+    String currentMisses = info.get(MISSES);
 
-    assertThat(info.get(HITS)).isEqualTo("0");
-    assertThat(info.get(MISSES)).isEqualTo("0");
+    command.accept("destination", key, key);
+    info = getInfo(jedis);
+
+    assertThat(info.get(HITS)).isEqualTo(currentHits);
+    assertThat(info.get(MISSES)).isEqualTo(currentMisses);
 
     command.accept("destination", key, "missed");
     info = getInfo(jedis);
 
-    assertThat(info.get(HITS)).isEqualTo("0");
-    assertThat(info.get(MISSES)).isEqualTo("0");
+    assertThat(info.get(HITS)).isEqualTo(currentHits);
+    assertThat(info.get(MISSES)).isEqualTo(currentMisses);
   }
 
   private void runCommandAndAssertNoStatUpdates(String key, Consumer<String> command) {
-    command.accept(key);
     Map<String, String> info = getInfo(jedis);
+    String currentHits = info.get(HITS);
+    String currentMisses = info.get(MISSES);
 
-    assertThat(info.get(HITS)).isEqualTo("0");
-    assertThat(info.get(MISSES)).isEqualTo("0");
+    command.accept(key);
+    info = getInfo(jedis);
+
+    assertThat(info.get(HITS)).isEqualTo(currentHits);
+    assertThat(info.get(MISSES)).isEqualTo(currentMisses);
   }
 
   private void runCommandAndAssertNoStatUpdates(String key, BiConsumer<String, String> command) {
-    command.accept(key, "42");
     Map<String, String> info = getInfo(jedis);
+    String currentHits = info.get(HITS);
+    String currentMisses = info.get(MISSES);
 
-    assertThat(info.get(HITS)).isEqualTo("0");
-    assertThat(info.get(MISSES)).isEqualTo("0");
+    command.accept(key, "42");
+    info = getInfo(jedis);
+
+    assertThat(info.get(HITS)).isEqualTo(currentHits);
+    assertThat(info.get(MISSES)).isEqualTo(currentMisses);
   }
 
   private void runCommandAndAssertNoStatUpdates(String key,
       TriConsumer<String, String, String> command) {
-    command.accept(key, key, "42");
     Map<String, String> info = getInfo(jedis);
+    String currentHits = info.get(HITS);
+    String currentMisses = info.get(MISSES);
 
-    assertThat(info.get(HITS)).isEqualTo("0");
-    assertThat(info.get(MISSES)).isEqualTo("0");
+    command.accept(key, key, "42");
+    info = getInfo(jedis);
+
+    assertThat(info.get(HITS)).isEqualTo(currentHits);
+    assertThat(info.get(MISSES)).isEqualTo(currentMisses);
   }
 
   /**

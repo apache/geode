@@ -93,7 +93,8 @@ public class LonerDistributionManager implements DistributionManager {
     DistributionConfig config = system.getConfig();
 
     if (config.getThreadMonitorEnabled()) {
-      this.threadMonitor = new ThreadsMonitoringImpl(system);
+      this.threadMonitor = new ThreadsMonitoringImpl(system, config.getThreadMonitorInterval(),
+          config.getThreadMonitorTimeLimit());
       logger.info("[ThreadsMonitor] New Monitor object and process were created.\n");
     } else {
       this.threadMonitor = new ThreadsMonitoringImplDummy();

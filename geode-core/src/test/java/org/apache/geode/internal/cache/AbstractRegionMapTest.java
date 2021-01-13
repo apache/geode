@@ -634,11 +634,7 @@ public class AbstractRegionMapTest {
         anyBoolean(), anyBoolean());
     verify(arm._getOwner(), never()).basicDestroyPart3(any(), any(), anyBoolean(), anyBoolean(),
         anyBoolean(), any());
-    // This seems to be a bug. We should not leave an entry in the map
-    // added by the destroy call if destroy returns false.
-    assertThat(arm.getEntryMap().containsKey(event.getKey())).isTrue();
-    RegionEntry re = (RegionEntry) arm.getEntryMap().get(event.getKey());
-    assertThat(re.getValueAsToken()).isEqualTo(Token.REMOVED_PHASE1);
+    assertThat(arm.getEntryMap().containsKey(event.getKey())).isFalse();
   }
 
   @Test

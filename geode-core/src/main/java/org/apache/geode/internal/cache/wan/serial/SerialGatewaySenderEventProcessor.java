@@ -110,10 +110,11 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
   public SerialGatewaySenderEventProcessor(AbstractGatewaySender sender, String id,
       ThreadsMonitoring tMonitoring, boolean cleanQueues) {
     super("Event Processor for GatewaySender_" + id, sender, tMonitoring);
-
-    initializeMessageQueue(id, cleanQueues);
-    this.unprocessedEvents = new LinkedHashMap<EventID, EventWrapper>();
-    this.unprocessedTokens = new LinkedHashMap<EventID, Long>();
+    synchronized (this.unprocessedEventsLock) {
+      initializeMessageQueue(id, cleanQueues);
+      this.unprocessedEvents = new LinkedHashMap<EventID, EventWrapper>();
+      this.unprocessedTokens = new LinkedHashMap<EventID, Long>();
+    }
   }
 
   @Override
@@ -606,7 +607,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
       my_executor.execute(new Runnable() {
         @Override
         public void run() {
-          basicHandlePrimaryDestroy(gatewayEvent.getEventId());
+          basicHandlePrimaryDestroy(gatewayEvent.getEventId(), false);
         }
       });
     }
@@ -616,7 +617,8 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
    * Just remove the event from the unprocessed events map if it is present. This method added to
    * fix bug 37603
    */
-  protected boolean basicHandlePrimaryDestroy(final EventID eventId) {
+  protected boolean basicHandlePrimaryDestroy(final EventID eventId,
+      boolean addToUnprocessedTokens) {
     if (this.sender.isPrimary()) {
       // no need to do anything if we have become the primary
       return false;
@@ -624,6 +626,11 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
     GatewaySenderStats statistics = this.sender.getStatistics();
     // Get the event from the map
     synchronized (unprocessedEventsLock) {
+      // If handleFailover() acquired the lock hence double checking
+      if (this.sender.isPrimary()) {
+        // no need to do anything if we have become the primary
+        return false;
+      }
       if (this.unprocessedEvents == null)
         return false;
       // now we can safely use the unprocessedEvents field
@@ -632,6 +639,18 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
         ew.event.release();
         statistics.incUnprocessedEventsRemovedByPrimary();
         return true;
+      } else if (addToUnprocessedTokens) {
+        // Secondary event may not have arrived
+        if (logger.isTraceEnabled()) {
+          logger.trace("{}: fromPrimary destroy event {} : added to unprocessed token map",
+              sender.getId(), eventId);
+        }
+        Long mapValue =
+            System.currentTimeMillis() + AbstractGatewaySender.TOKEN_TIMEOUT;
+        Long oldv = this.unprocessedTokens.put(eventId, mapValue);
+        if (oldv == null) {
+          statistics.incUnprocessedTokensAddedByPrimary();
+        }
       }
     }
     return false;
@@ -645,6 +664,11 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
     GatewaySenderStats statistics = this.sender.getStatistics();
     // Get the event from the map
     synchronized (unprocessedEventsLock) {
+      // If handleFailover() acquired the lock hence double checking
+      if (this.sender.isPrimary()) {
+        // no need to do anything if we have become the primary
+        return;
+      }
       if (this.unprocessedEvents == null)
         return;
       // now we can safely use the unprocessedEvents field
@@ -659,13 +683,10 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
         }
         {
           Long mapValue =
-              Long.valueOf(System.currentTimeMillis() + AbstractGatewaySender.TOKEN_TIMEOUT);
+              System.currentTimeMillis() + AbstractGatewaySender.TOKEN_TIMEOUT;
           Long oldv = this.unprocessedTokens.put(gatewayEvent.getEventId(), mapValue);
           if (oldv == null) {
             statistics.incUnprocessedTokensAddedByPrimary();
-          } else {
-            // its ok for oldv to be non-null
-            // this shouldn't happen anymore @todo add an assertion here
           }
         }
       } else {

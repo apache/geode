@@ -47,12 +47,12 @@ import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.redis.internal.ParameterRequirements.RedisParametersMismatchException;
 import org.apache.geode.redis.internal.RedisCommandType;
 import org.apache.geode.redis.internal.RedisConstants;
-import org.apache.geode.redis.internal.RedisStats;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.data.RedisDataTypeMismatchException;
 import org.apache.geode.redis.internal.executor.CommandFunction;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.pubsub.PubSub;
+import org.apache.geode.redis.internal.statistics.RedisStats;
 
 /**
  * This class extends {@link ChannelInboundHandlerAdapter} from Netty and it is the last part of the
@@ -281,6 +281,11 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
             channel.remoteAddress().toString());
       }
 
+      if (command.isUnknown()) {
+        writeToChannel(command.execute(this));
+        return;
+      }
+
       if (!isAuthenticated()) {
         writeToChannel(handleUnAuthenticatedCommand(command));
         return;
@@ -306,7 +311,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
         }
       }
 
-      final long start = redisStats.startCommand(command.getCommandType());
+      final long start = redisStats.startCommand();
       try {
         writeToChannel(command.execute(this));
       } finally {

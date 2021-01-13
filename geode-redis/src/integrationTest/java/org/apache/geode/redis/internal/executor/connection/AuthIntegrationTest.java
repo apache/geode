@@ -20,6 +20,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.lettuce.core.RedisClient;
+import io.lettuce.core.RedisURI;
 import org.junit.After;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
@@ -136,5 +138,26 @@ public class AuthIntegrationTest {
 
     authorizedJedis.close();
     nonAuthorizedJedis.close();
+  }
+
+  @Test
+  public void lettuceAuthClient_withLettuceVersion6() {
+    setupCacheWithPassword();
+
+    RedisURI uri = RedisURI.create(String.format("redis://%s@localhost:%d", PASSWORD, getPort()));
+    RedisClient client = RedisClient.create(uri);
+
+    client.connect().sync().ping();
+  }
+
+  @Test
+  public void lettuceAuthClient_withLettuceVersion6_andNoAuthentication() {
+    setupCacheWithoutPassword();
+
+    RedisURI uri = RedisURI.create(String.format("redis://%s@localhost:%d", PASSWORD, getPort()));
+    RedisClient client = RedisClient.create(uri);
+
+    assertThatThrownBy(() -> client.connect().sync().ping())
+        .hasRootCauseMessage("ERR Client sent AUTH, but no password is set");
   }
 }

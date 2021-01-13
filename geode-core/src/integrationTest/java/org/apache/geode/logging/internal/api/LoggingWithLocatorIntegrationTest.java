@@ -18,6 +18,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTE
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.logging.internal.spi.LogWriterLevel.CONFIG;
 import static org.apache.geode.logging.internal.spi.LogWriterLevel.INFO;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
@@ -40,7 +41,6 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.logging.internal.log4j.LogWriterLogger;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.logging.internal.spi.LogConfig;
@@ -77,7 +77,7 @@ public class LoggingWithLocatorIntegrationTest {
         testName.getMethodName() + "-system-" + System.currentTimeMillis() + ".log");
     securityLogFile = new File("");
 
-    port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    port = getRandomAvailableTCPPort();
   }
 
   @After

@@ -22,25 +22,21 @@ if ! [ -d dev-tools ] ; then
   exit 1
 fi
 
-if [ "$1" = "-l" ] ; then
-	if [ "$2" = "" ] ; then
-		echo "Usage: $0 -l <jira>"
-		exit 1
-	fi
-  ./gradlew dependencyUpdates; find . | grep build/dependencyUpdates/report.txt | xargs cat \
-   | grep ' -> ' | egrep -v '(Gradle|antlr|protobuf|lucene|JUnitParams|docker-compose-rule|javax.servlet-api|gradle-tooling-api|springfox|archunit)' \
-   | sort -u | tr -d '][' | sed -e 's/ -> / /' -e 's#.*:#'"$0 $2"' #'
+if [ "$2" = "-l" ] ; then
+  ./gradlew dependencyUpdates -Drevision=release ; find . | grep build/dependencyUpdates/report.txt | xargs cat \
+   | grep ' -> ' | egrep -v '(Gradle|antlr|protobuf|lucene|JUnitParams|docker-compose-rule|javax.servlet-api|gradle-tooling-api|springfox|derby|classgraph|selenium|jgroups|jmh|\[6.0.37|commons-collections|jaxb|testcontainers)' \
+   | sort -u | tr -d '][' | sed -e 's/ -> / /' -e 's#.*:#'"$0 $1"' #'
   exit 0
 fi
 
 if [ "$4" = "" ] ; then
   echo "Usage: $0 <jira> <library-name> <old-ver> <new-ver>"
-  echo "   or: $0 -l <jira>"
+  echo "   or: $0 <jira> -l"
   exit 1
 fi
 
 if [ $(git diff | wc -l) -gt 0 ] ; then
-  echo "Your workspace has uncommitted changes, please stash them."
+  echo "Your workspace has uncommitted changes, please stash or commit them."
   exit 1
 fi
 

@@ -19,10 +19,12 @@ import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -234,11 +236,25 @@ public class ClientServerSessionCacheTest extends AbstractSessionCacheTest {
     doReturn(sessionRegion).when(cache).getRegion(sessionRegionName);
     doReturn(attributes).when(sessionRegion).getAttributes();
     doReturn(cacheListeners).when(attributes).getCacheListeners();
-    when(attributes.getDataPolicy()).thenReturn(DataPolicy.EMPTY);
+    when(attributes.getDataPolicy()).thenReturn(DataPolicy.DEFAULT);
 
     sessionCache.initialize();
 
     verify(sessionRegion).registerInterestForAllKeys(InterestResultPolicy.KEYS);
+  }
+
+  @Test
+  public void createOrRetrieveRegionWithNonNullSessionProxyRegionNotRegistersInterestIfEmpty() {
+    final CacheListener<String, HttpSession>[] cacheListeners =
+        uncheckedCast(new CacheListener[] {new SessionExpirationCacheListener()});
+    doReturn(sessionRegion).when(cache).getRegion(sessionRegionName);
+    doReturn(attributes).when(sessionRegion).getAttributes();
+    doReturn(cacheListeners).when(attributes).getCacheListeners();
+    when(attributes.getDataPolicy()).thenReturn(DataPolicy.EMPTY);
+
+    sessionCache.initialize();
+
+    verify(sessionRegion, never()).registerInterestForAllKeys(InterestResultPolicy.KEYS);
   }
 
   @Test
@@ -325,7 +341,7 @@ public class ClientServerSessionCacheTest extends AbstractSessionCacheTest {
   public void registerInterestForSessionRegion() {
     final SessionManager manager = mock(SessionManager.class);
     final ClientCache clientCache = mock(ClientCache.class);
-    final Region region = mock(Region.class);
+    final Region<?, ?> region = mock(Region.class, RETURNS_DEEP_STUBS);
     final ClientServerSessionCache cache = spy(new ClientServerSessionCache(manager, clientCache));
     doReturn(region).when(cache).createLocalSessionRegion();
 
@@ -334,4 +350,19 @@ public class ClientServerSessionCacheTest extends AbstractSessionCacheTest {
     verify(region).registerInterestForAllKeys(InterestResultPolicy.KEYS);
   }
 
+  @Test
+  public void doesNotRegisterInterestIfLocalCacheNotEnabled() {
+    final SessionManager manager = mock(SessionManager.class);
+    final ClientCache clientCache = mock(ClientCache.class);
+    final Region<?, ?> region = mock(Region.class);
+    final RegionAttributes<?, ?> attributes = mock(RegionAttributes.class);
+    final ClientServerSessionCache cache = spy(new ClientServerSessionCache(manager, clientCache));
+    doReturn(region).when(cache).createLocalSessionRegion();
+    doReturn(attributes).when(region).getAttributes();
+    doReturn(DataPolicy.EMPTY).when(attributes).getDataPolicy();
+
+    cache.createLocalSessionRegionWithRegisterInterest();
+
+    verify(region, never()).registerInterestForAllKeys(InterestResultPolicy.KEYS);
+  }
 }

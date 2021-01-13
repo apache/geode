@@ -19,12 +19,12 @@ import java.text.DecimalFormat;
 import java.util.List;
 
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.redis.internal.RedisStats;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.statistics.RedisStats;
 
 public class InfoExecutor extends AbstractExecutor {
 
@@ -101,7 +101,7 @@ public class InfoExecutor extends AbstractExecutor {
             "instantaneous_ops_per_sec:" + redisStats.getOpsPerformedOverLastSecond() + "\r\n" +
             "total_net_input_bytes:" + redisStats.getTotalNetworkBytesRead() + "\r\n" +
             "instantaneous_input_kbps:" + instantaneous_input_kbps + "\r\n" +
-            "total_connections_received:" + redisStats.getConnectionsReceived() + "\r\n" +
+            "total_connections_received:" + redisStats.getTotalConnectionsReceived() + "\r\n" +
             "keyspace_hits:" + redisStats.getKeyspaceHits() + "\r\n" +
             "keyspace_misses:" + redisStats.getKeyspaceMisses() + "\r\n" +
             "evicted_keys:0\r\n" +

@@ -17,6 +17,8 @@ package org.apache.geode.redis.internal.executor.pubsub;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -32,6 +34,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+import org.buildobjects.process.ProcBuilder;
+import org.buildobjects.process.StreamConsumer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -711,7 +715,7 @@ public abstract class AbstractPubSubIntegrationTest implements RedisPortSupplier
   private Jedis getConnection() {
     Exception lastException = null;
 
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 20; i++) {
       Jedis client = null;
       try {
         client = new Jedis("localhost", getPort(), JEDIS_TIMEOUT);
@@ -727,14 +731,35 @@ public abstract class AbstractPubSubIntegrationTest implements RedisPortSupplier
         }
       }
       try {
-        Thread.sleep(1000);
+        Thread.sleep(5000);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
     }
 
+    runit("docker", "ps", "-a");
+
     throw new RuntimeException("Tried 10 times, but could not get a good connection.",
         lastException);
+  }
+
+  // TODO: This exists for debugging some flakiness in this test. If this is fully resolved in the
+  // future, please delete this and the associated dependency in build.gradle
+  private void runit(String command, String... args) {
+    StreamConsumer consumer = stream -> {
+      InputStreamReader inputStreamReader = new InputStreamReader(stream);
+      BufferedReader bufReader = new BufferedReader(inputStreamReader);
+      String line;
+      while ((line = bufReader.readLine()) != null) {
+        System.err.println("::::: " + line);
+      }
+    };
+
+    new ProcBuilder(command)
+        .withArgs(args)
+        .withOutputConsumer(consumer)
+        .withTimeoutMillis(60000)
+        .run();
   }
 
   int doPublishing(int index, int minimumIterations, AtomicBoolean running) {

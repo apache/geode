@@ -22,7 +22,8 @@ services:
     hostname: geode
     expose:
       - '10334'
-      - '40404'
+      - '8501'
+      - '8502'
     entrypoint: 'sh'
     command: '-c /geode/scripts/forever'
     networks:

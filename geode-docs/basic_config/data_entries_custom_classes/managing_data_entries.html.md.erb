@@ -23,7 +23,7 @@ Program your applications to create, modify, and manage your cached data entries
 
 <a id="managing_data_entries__section_AACC36127F17411F86D1E409B86C6E5C"></a>
 **Note:**
-If you do not have the cache's `copy-on-read` attribute set to true, do not change the objects returned from the Java entry access methods. See [Safe Entry Modification](#managing_data_entries__section_A0E0F889AC344EFA8DF304FD64418809).
+If you do not have the cache's `copy-on-read` attribute set to true, do not change the objects returned from the Java entry access methods. See [Copy on Read Behavior](copy_on_read.html).
 
 ## <a id="managing_data_entry_keys" class="no-quick-link"></a>Keys
 
@@ -135,44 +135,6 @@ The processing of a map with many entries and/or extra-large data values
 may affect system performance and cause cache update timeouts,
 especially if the region uses overflow or persistence to disk.
 The processing may also cause a `LowMemoryException` to be thrown.
-
-## <a id="managing_data_entries__section_A0E0F889AC344EFA8DF304FD64418809" class="no-quick-link"></a>Safe Entry Modification
-
-When you get an entry value from the cache, by default, the retrieval methods return a direct reference to the cached object. This provides the value as quickly as possible, but also opens the cache to direct, in-place changes.
-
-**Note:**
-Do not directly modify cached values. Modifying a value in place bypasses the <%=vars.product_name%> distribution framework, including cache writers and listeners, expiration activities, and transaction management, and can produce undesired results.
-
-Always change your entries using copies of the retrieved objects—never directly modify the returned objects. You can do this in one of two ways:
-
-1.  Change the entry retrieval behavior for your cache by setting the cache attribute, `copy-on-read`, to true (the default is false).
-
-    ``` pre
-    <cache copy-on-read="true">
-     ...
-    </cache>
-    ```
-
-    When `copy-on-read` is true, the entry access methods return copies of the entries. This protects you from inadvertently modifying in-place, but negatively impacts performance and memory consumption when copying is not needed.
-
-    These entry access methods return an entry reference if `copy-on-read` is false and a copy of the entry if `copy-on-read` is true:
-
-    `Region.get`
-    result of `Region.put`
-    `EntryEvent.getNewValue`
-    `Region.values`
-    `Region.Entry.getValue`
-    `EntryEvent.getOldValue`
-    `Query.select`
-
-2.  Create a copy of the returned object and work with that. For objects that are cloneable or serializable, you can copy the entry value to a new object using `org.apache.geode.CopyHelper.copy`. Example:
-
-    ``` pre
-    Object o = (StringBuffer)region.get("stringBuf");
-    StringBuffer s = (StringBuffer) CopyHelper.copy(o);
-    s.append("Changes to value, added using put.");
-    region.put("stringBuf", s);
-    ```
 
 ## <a id="managing_data_entries__section_78F6731642944DE594316B86ECB4E70F" class="no-quick-link"></a>Retrieving Region Entries from Proxy Members
 

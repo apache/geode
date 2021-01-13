@@ -36,6 +36,8 @@ import org.apache.geode.redis.internal.netty.NettyRedisServer;
 import org.apache.geode.redis.internal.pubsub.PubSub;
 import org.apache.geode.redis.internal.pubsub.PubSubImpl;
 import org.apache.geode.redis.internal.pubsub.Subscriptions;
+import org.apache.geode.redis.internal.statistics.GeodeRedisStats;
+import org.apache.geode.redis.internal.statistics.RedisStats;
 
 /**
  * The GeodeRedisServer is a server that understands the Redis protocol. As commands are sent to the
@@ -120,12 +122,15 @@ public class GeodeRedisServer {
     InternalDistributedSystem system = cache.getInternalDistributedSystem();
     StatisticsClock statisticsClock =
         StatisticsClockFactory.clock(true);
-    return new RedisStats(system.getStatisticsManager(), statisticsClock);
+
+    return new RedisStats(statisticsClock,
+        new GeodeRedisStats(system.getStatisticsManager(),
+            "redisStats",
+            statisticsClock));
   }
 
-
   @VisibleForTesting
-  RedisStats getStats() {
+  public RedisStats getStats() {
     return redisStats;
   }
 

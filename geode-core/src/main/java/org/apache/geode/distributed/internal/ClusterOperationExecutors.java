@@ -68,8 +68,7 @@ public class ClusterOperationExecutors implements OperationExecutors {
       Integer.getInteger("DistributionManager.MAX_PR_META_DATA_CLEANUP_THREADS", 1);
 
   private static final int MAX_PR_THREADS = Integer.getInteger("DistributionManager.MAX_PR_THREADS",
-      Math.max(Runtime.getRuntime().availableProcessors() * 4, 16));
-
+      Math.max(Runtime.getRuntime().availableProcessors() * 32, 200));
 
   private static final int INCOMING_QUEUE_LIMIT =
       Integer.getInteger("DistributionManager.INCOMING_QUEUE_LIMIT", 80000);
@@ -179,7 +178,8 @@ public class ClusterOperationExecutors implements OperationExecutors {
 
     DistributionConfig config = system.getConfig();
 
-    threadMonitor = config.getThreadMonitorEnabled() ? new ThreadsMonitoringImpl(system)
+    threadMonitor = config.getThreadMonitorEnabled() ? new ThreadsMonitoringImpl(system,
+        config.getThreadMonitorInterval(), config.getThreadMonitorTimeLimit())
         : new ThreadsMonitoringImplDummy();
 
 

@@ -49,7 +49,7 @@ public class WhatExtendsJUnitTest {
   public void classAisExtendedByBandC() {
     scanner.add(getClassLocation(A.class));
     assertThat(scanner.buildGradleCommand()).isEqualTo(
-        "repeatUnitTest --tests WhatExtendsJUnitTest$B,WhatExtendsJUnitTest$C -PtestCount=2");
+        "repeatUnitTest --tests WhatExtendsJUnitTest$B --tests WhatExtendsJUnitTest$C -PtestCount=2");
   }
 
   @Test
@@ -58,7 +58,7 @@ public class WhatExtendsJUnitTest {
     scanner.add(getClassLocation(A.class));
     assertThat(scanner.buildGradleCommand())
         .isEqualTo(
-            "repeatUnitTest --tests WhatExtendsJUnitTest$B,WhatExtendsJUnitTest$C -PtestCount=2");
+            "repeatUnitTest --tests WhatExtendsJUnitTest$B --tests WhatExtendsJUnitTest$C -PtestCount=2");
   }
 
   @Test
@@ -66,7 +66,7 @@ public class WhatExtendsJUnitTest {
     scanner.add(getClassLocation(A.class, "foo/src/test/java/"));
     assertThat(scanner.buildGradleCommand())
         .isEqualTo(
-            "repeatUnitTest --tests WhatExtendsJUnitTest$B,WhatExtendsJUnitTest$C -PtestCount=2");
+            "repeatUnitTest --tests WhatExtendsJUnitTest$B --tests WhatExtendsJUnitTest$C -PtestCount=2");
   }
 
   @Test
@@ -75,12 +75,18 @@ public class WhatExtendsJUnitTest {
     scanner.add(getClassLocation(this.getClass(), "foo/src/integrationTest/java/"));
     assertThat(scanner.buildGradleCommand())
         .isEqualTo(
-            "repeatUnitTest --tests WhatExtendsJUnitTest$B,WhatExtendsJUnitTest$C repeatIntegrationTest --tests WhatExtendsJUnitTest -PtestCount=3");
+            "repeatUnitTest --tests WhatExtendsJUnitTest$B --tests WhatExtendsJUnitTest$C repeatIntegrationTest --tests WhatExtendsJUnitTest -PtestCount=3");
   }
 
   @Test
   public void ignoreAcceptanceTestSourcesForNow() {
     scanner.add(getClassLocation(this.getClass(), "foo/src/acceptanceTest/java/"));
+    assertThat(scanner.buildGradleCommand()).isEqualTo("-PtestCount=0");
+  }
+
+  @Test
+  public void ignoreNonGeodeClasses() {
+    scanner.add("foo/src/test/java/org/example/Foo.java");
     assertThat(scanner.buildGradleCommand()).isEqualTo("-PtestCount=0");
   }
 

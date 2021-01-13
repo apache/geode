@@ -58,7 +58,6 @@ public class SupportedCommandsJUnitTest {
       "SUBSCRIBE",
       "TTL",
       "TYPE",
-      "UNKNOWN",
       "UNSUBSCRIBE",
   };
 
@@ -231,6 +230,15 @@ public class SupportedCommandsJUnitTest {
       "ZSCAN"
   };
 
+  private final String[] unknownCommands = new String[] {
+      "UNKNOWN"
+  };
+
+  private final String[] internalCommands = new String[] {
+      "INTERNALSMEMBERS",
+      "INTERNALPTTL"
+  };
+
   @Test
   public void crossCheckAllUnsupportedCommands_areMarkedUnsupported() {
     for (String commandName : unSupportedCommands) {
@@ -278,8 +286,9 @@ public class SupportedCommandsJUnitTest {
     List<String> allCommands = new ArrayList<>(asList(supportedCommands));
     allCommands.addAll(asList(unSupportedCommands));
 
-    List<String> implementedCommands =
-        getAllImplementedCommands().stream().map(Enum::name).collect(Collectors.toList());
+    List<String> implementedCommands = getAllImplementedCommands().stream()
+        .filter(c -> !c.isUnknown())
+        .map(Enum::name).collect(Collectors.toList());
 
     assertThat(implementedCommands).containsExactlyInAnyOrderElementsOf(allCommands);
   }
@@ -289,6 +298,8 @@ public class SupportedCommandsJUnitTest {
     List<String> allCommands = new ArrayList<>(asList(supportedCommands));
     allCommands.addAll(asList(unSupportedCommands));
     allCommands.addAll(asList(unImplementedCommands));
+    allCommands.addAll(asList(unknownCommands));
+    allCommands.addAll(asList(internalCommands));
 
     List<String> definedCommands =
         Arrays.stream(RedisCommandType.values()).map(Enum::name).collect(Collectors.toList());
@@ -296,9 +307,30 @@ public class SupportedCommandsJUnitTest {
     assertThat(definedCommands).containsExactlyInAnyOrderElementsOf(allCommands);
   }
 
+  @Test
+  public void checkAllInternalCommands_areIncludedInInternalLists() {
+    List<String> allInternalCommands = new ArrayList<>(asList(internalCommands));
+
+    List<String> internalCommands = getAllInternalCommands().stream()
+        .filter(c -> !c.isUnknown())
+        .map(Enum::name).collect(Collectors.toList());
+
+    assertThat(internalCommands).containsExactlyInAnyOrderElementsOf(allInternalCommands);
+  }
+
   private List<RedisCommandType> getAllImplementedCommands() {
     List<RedisCommandType> implementedCommands = new ArrayList<>(asList(RedisCommandType.values()));
     implementedCommands.removeIf(RedisCommandType::isUnimplemented);
+    implementedCommands.removeIf(RedisCommandType::isInternal);
     return implementedCommands;
+  }
+
+  private List<RedisCommandType> getAllInternalCommands() {
+    List<RedisCommandType> internalCommands = new ArrayList<>(asList(RedisCommandType.values()));
+    internalCommands.removeIf(RedisCommandType::isUnimplemented);
+    internalCommands.removeIf(RedisCommandType::isSupported);
+    internalCommands.removeIf(RedisCommandType::isUnsupported);
+
+    return internalCommands;
   }
 }

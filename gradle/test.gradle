@@ -44,46 +44,23 @@ test {
 apply plugin: 'nebula.facet'
 facets {
   integrationTest {
-    testTaskName = 'integrationTest'
     includeInCheckLifecycle = false
   }
   distributedTest {
-    testTaskName = 'distributedTest'
     includeInCheckLifecycle = false
   }
   performanceTest {
-    testTaskName = 'performanceTest'
     includeInCheckLifecycle = false
   }
   acceptanceTest {
-    testTaskName = 'acceptanceTest'
     includeInCheckLifecycle = false
   }
   uiTest {
-    testTaskName = 'uiTest'
     includeInCheckLifecycle = false
   }
   upgradeTest {
-    testTaskName = 'upgradeTest'
     includeInCheckLifecycle = false
   }
-}
-
-configurations {
-  testAnnotationProcessor.extendsFrom annotationProcessor
-  integrationTestAnnotationProcessor.extendsFrom annotationProcessor
-  distributedTestAnnotationProcessor.extendsFrom annotationProcessor
-  performanceTestAnnotationProcessor.extendsFrom annotationProcessor
-  acceptanceTestAnnotationProcessor.extendsFrom annotationProcessor
-  uiTestAnnotationProcessor.extendsFrom annotationProcessor
-  upgradeTestAnnotationProcessor.extendsFrom annotationProcessor
-  // Facets does not extend the new runtimeOnly configurations
-  integrationTestRuntimeOnly.extendsFrom(runtimeOnly)
-  distributedTestRuntimeOnly.extendsFrom(runtimeOnly)
-  performanceTestRuntimeOnly.extendsFrom(runtimeOnly)
-  acceptanceTestRuntimeOnly.extendsFrom(runtimeOnly)
-  uiTestRuntimeOnly.extendsFrom(runtimeOnly)
-  upgradeTestRuntimeOnly.extendsFrom(runtimeOnly)
 }
 
 dependencies {

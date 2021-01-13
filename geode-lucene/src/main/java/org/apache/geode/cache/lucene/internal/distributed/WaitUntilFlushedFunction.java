@@ -27,7 +27,6 @@ import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.internal.cache.execute.InternalFunction;
-import org.apache.geode.management.internal.security.ResourcePermissions;
 import org.apache.geode.security.ResourcePermission;
 
 /**
@@ -85,6 +84,7 @@ public class WaitUntilFlushedFunction implements InternalFunction<Object> {
 
   @Override
   public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
-    return Collections.singletonList(ResourcePermissions.DATA_READ);
+    return Collections.singletonList(new ResourcePermission(ResourcePermission.Resource.DATA,
+        ResourcePermission.Operation.READ, regionName));
   }
 }

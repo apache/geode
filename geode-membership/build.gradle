@@ -55,7 +55,7 @@ dependencies {
     integrationTestImplementation('com.tngtech.archunit:archunit-junit4')
     integrationTestImplementation('pl.pragmatists:JUnitParams')
 
-    integrationTestRuntime('org.apache.logging.log4j:log4j-core')
+    integrationTestRuntimeOnly('org.apache.logging.log4j:log4j-core')
 
 
     distributedTestImplementation(project(':geode-junit'))

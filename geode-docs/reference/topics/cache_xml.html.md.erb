@@ -299,7 +299,8 @@ Configures a gateway sender to distribute region events to another <%=vars.produ
 <td>group-transaction-events</td>
 <td>Boolean value to ensure that all the events of a transaction are sent in the same batch, i.e., they are never spread across different batches.
 <p>Only allowed to be set on gateway senders with the <code class="ph codeph">parallel</code> attribute set to false and <code class="ph codeph">dispatcher-threads</code> attribute equal to 1, or on gateway senders with the <code class="ph codeph">parallel</code> attribute set to true. Also, the  <code class="ph codeph">enable-batch-conflation</code> attribute of the gateway sender must be set to false.</p>
-<p><b>Note:</b> In order to work for a transaction, the regions to which the transaction events belong must be replicated by the same set of senders with this flag enabled.</p></td>
+<p><b>Note:</b> In order to work for a transaction, the regions to which the transaction events belong must be replicated by the same set of senders with this flag enabled.</p>
+<p><b>Note:</b> If the above condition is not fulfilled or under very high load traffic conditions, it may not be guaranteed that all the events for a transaction will be sent in the same batch, even if <code class="ph codeph">group-transaction-events</code> is enabled. The number of batches sent with incomplete transactions can be retrieved from the <code class="ph codeph">GatewaySenderMXBean</code> bean.</p></td>
 <td>false</td>
 </tr>
 </tbody>

@@ -14,8 +14,7 @@
  */
 package org.apache.geode.security;
 
-import static org.apache.geode.internal.AvailablePort.SOCKET;
-import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.security.ClientAuthenticationTestUtils.createCacheClient;
 import static org.apache.geode.security.ClientAuthenticationTestUtils.createCacheServer;
 import static org.apache.geode.security.ClientAuthenticationTestUtils.registerAllInterest;
@@ -483,7 +482,7 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
 
     // Get a port for second server but do not start it
     // This forces the clients to connect to the first server
-    int port2 = getRandomAvailablePort(SOCKET);
+    int port2 = getRandomAvailableTCPPort();
 
     // Start the clients with valid credentials
     Properties credentials1 = gen.getValidCredentials(5);
@@ -564,7 +563,7 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
 
     // Get a port for second server but do not start it
     // This forces the clients to connect to the first server
-    int port2 = getRandomAvailablePort(SOCKET);
+    int port2 = getRandomAvailableTCPPort();
 
     // Start the clients with valid credentials
     Properties credentials1 = gen.getValidCredentials(3);

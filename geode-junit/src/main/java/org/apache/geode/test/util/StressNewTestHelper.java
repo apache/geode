@@ -93,8 +93,7 @@ public class StressNewTestHelper {
       }
 
       command.append(sourceToGradleMapping.get(sourceSet));
-      command.append(" --tests ");
-      command.append(String.join(",", entry.getValue()));
+      entry.getValue().forEach(x -> command.append(" --tests ").append(x));
       command.append(" ");
       testCount += entry.getValue().size();
     }
@@ -110,7 +109,13 @@ public class StressNewTestHelper {
     TestClassInfo testClassInfo = createTestClassInfo(javaFile);
     List<TestClassInfo> extenders = whatExtends(testClassInfo);
 
-    if (!scanResult.getClassInfo(testClassInfo.className).isAbstract()) {
+    ClassInfo classInfo = scanResult.getClassInfo(testClassInfo.className);
+    // This is a possibility for non org.apache.geode files
+    if (classInfo == null) {
+      return;
+    }
+
+    if (!classInfo.isAbstract()) {
       extenders.add(testClassInfo);
     }
 

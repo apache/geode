@@ -59,6 +59,11 @@ public class RedisKeyCommandsFunctionExecutor extends RedisDataCommandsFunctionE
   }
 
   @Override
+  public long internalPttl(ByteArrayWrapper key) {
+    return stripedExecute(key, () -> getRedisData(key).pttl(getRegion(), key));
+  }
+
+  @Override
   public int pexpireat(ByteArrayWrapper key, long timestamp) {
     return stripedExecute(key,
         () -> getRedisData(key).pexpireat(helper, key, timestamp));

@@ -1078,8 +1078,8 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
           if (isDebugEnabled) {
             logger.debug("Returning back without putting into the gateway sender queue:" + event);
           }
-          if (this.eventProcessor != null) {
-            this.eventProcessor.registerEventDroppedInPrimaryQueue(event);
+          if (this.isPrimary()) {
+            recordDroppedEvent(clonedEvent);
           }
           return;
         }

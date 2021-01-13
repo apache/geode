@@ -19,8 +19,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER_AUTHENTICATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER_AUTH_INIT;
-import static org.apache.geode.internal.AvailablePort.SOCKET;
-import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.security.SecurityTestUtils.startLocator;
 import static org.apache.geode.security.SecurityTestUtils.stopLocator;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
@@ -86,7 +85,7 @@ public class P2PAuthenticationDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testIllegalPropertyCombos() throws Exception {
-    int port = getRandomAvailablePort(SOCKET);
+    int port = getRandomAvailableTCPPort();
 
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "26753");
@@ -151,7 +150,7 @@ public class P2PAuthenticationDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testP2PAuthenticationWithInvalidAuthInitialize() throws Exception {
-    int locatorPort = getRandomAvailablePort(SOCKET);
+    int locatorPort = getRandomAvailableTCPPort();
 
     CredentialGenerator gen = new DummyCredentialGenerator();
     assertNotNull(gen.getAuthenticator());
@@ -183,7 +182,7 @@ public class P2PAuthenticationDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testP2PAuthenticationWithInvalidAuthenticator() throws Exception {
-    int locatorPort = getRandomAvailablePort(SOCKET);
+    int locatorPort = getRandomAvailableTCPPort();
 
     CredentialGenerator gen = new DummyCredentialGenerator();
     assertNotNull(gen.getAuthInit());
@@ -212,7 +211,7 @@ public class P2PAuthenticationDUnitTest extends JUnit4DistributedTestCase {
 
   @Test
   public void testP2PAuthenticationWithNoCredentials() throws Exception {
-    int locatorPort = getRandomAvailablePort(SOCKET);
+    int locatorPort = getRandomAvailableTCPPort();
 
     CredentialGenerator gen = new DummyCredentialGenerator();
     assertNotNull(gen.getAuthenticator());
@@ -242,7 +241,7 @@ public class P2PAuthenticationDUnitTest extends JUnit4DistributedTestCase {
 
   @Test
   public void testP2PAuthenticationWithValidCredentials() throws Exception {
-    int locatorPort = getRandomAvailablePort(SOCKET);
+    int locatorPort = getRandomAvailableTCPPort();
 
     CredentialGenerator gen = new DummyCredentialGenerator();
     assertNotNull(gen.getAuthenticator());
@@ -274,7 +273,7 @@ public class P2PAuthenticationDUnitTest extends JUnit4DistributedTestCase {
   public void testP2PAuthenticationWithBothValidAndInValidCredentials() throws Exception {
     addIgnoredException("Authentication failed");
 
-    int locatorPort = getRandomAvailablePort(SOCKET);
+    int locatorPort = getRandomAvailableTCPPort();
 
     CredentialGenerator gen = new DummyCredentialGenerator();
     assertNotNull(gen.getAuthenticator());
@@ -353,7 +352,7 @@ public class P2PAuthenticationDUnitTest extends JUnit4DistributedTestCase {
 
     // Start the locator with the LDAP authenticator
     Properties props = new Properties();
-    int port = getRandomAvailablePort(SOCKET);
+    int port = getRandomAvailableTCPPort();
     final String locators = getIPLiteral() + "[" + port + "]";
 
     props.setProperty(SECURITY_PEER_AUTH_INIT, authInit);
@@ -440,7 +439,7 @@ public class P2PAuthenticationDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testP2PLargeCredentialSucceeds() throws Exception {
-    int locatorPort = getRandomAvailablePort(SOCKET);
+    int locatorPort = getRandomAvailableTCPPort();
 
     final Host host = Host.getHost(0);
     final VM peer2 = host.getVM(1);

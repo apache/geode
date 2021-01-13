@@ -34,6 +34,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
 import org.apache.geode.cache.query.data.CollectionHolder;
+import org.apache.geode.internal.logging.DateFormatter;
 import org.apache.geode.management.model.Employee;
 import org.apache.geode.management.model.Item;
 import org.apache.geode.management.model.Order;
@@ -119,16 +120,20 @@ public class QueryResultFormatterTest {
 
     QueryResultFormatter stringResult = new QueryResultFormatter(100).add(RESULT, "String");
     checkResult(stringResult, "{\"result\":[[\"java.lang.String\",\"String\"]]}");
+  }
 
-    Date date = new Date(0);
-    String expectedString =
-        new SimpleDateFormat(QueryResultFormatter.DATE_FORMAT_PATTERN).format(date);
+  @Test
+  public void testDateTimes() throws Exception {
+    long time = System.currentTimeMillis();
+    Date date = new Date(time);
+    SimpleDateFormat format = DateFormatter.createLocalizedDateFormat();
+    String expectedString = format.format(date);
     QueryResultFormatter javaDateResult =
         new QueryResultFormatter(100).add(RESULT, date);
     checkResult(javaDateResult,
         "{\"result\":[[\"java.util.Date\",\"" + expectedString + "\"]]}");
 
-    java.sql.Date sqlDate = new java.sql.Date(0);
+    java.sql.Date sqlDate = new java.sql.Date(time);
     QueryResultFormatter sqlDateResult =
         new QueryResultFormatter(100).add(RESULT, sqlDate);
     checkResult(sqlDateResult,

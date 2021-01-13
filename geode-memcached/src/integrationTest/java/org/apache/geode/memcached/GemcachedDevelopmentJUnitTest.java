@@ -15,6 +15,7 @@
 package org.apache.geode.memcached;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -39,7 +40,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
 import org.apache.geode.util.internal.GeodeGlossary;
 
@@ -55,7 +55,7 @@ public class GemcachedDevelopmentJUnitTest {
   @Before
   public void setUp() throws Exception {
     System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + MCAST_PORT, "0");
-    PORT = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    PORT = getRandomAvailableTCPPort();
     this.server = new GemFireMemcachedServer("", PORT, getProtocol());
     server.start();
     logger.addHandler(new StreamHandler());

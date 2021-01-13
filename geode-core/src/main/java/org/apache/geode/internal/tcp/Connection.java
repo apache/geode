@@ -18,6 +18,7 @@ import static java.lang.Boolean.FALSE;
 import static java.lang.ThreadLocal.withInitial;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER_AUTH_INIT;
 import static org.apache.geode.distributed.internal.DistributionConfigImpl.SECURITY_SYSTEM_PREFIX;
+import static org.apache.geode.internal.monitoring.ThreadsMonitoring.Mode.P2PReaderExecutor;
 import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
 
 import java.io.DataInput;
@@ -77,6 +78,8 @@ import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.SystemTimer.SystemTimerTask;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.internal.monitoring.executor.AbstractExecutor;
 import org.apache.geode.internal.net.BufferPool;
 import org.apache.geode.internal.net.ByteBufferSharing;
 import org.apache.geode.internal.net.NioFilter;
@@ -506,6 +509,10 @@ public class Connection implements Runnable {
     } catch (SocketException e) {
       // unable to get the settings we want. Don't log an error because it will likely happen a lot
     }
+  }
+
+  private ThreadsMonitoring getThreadMonitoring() {
+    return conduit.getDM().getThreadMonitoring();
   }
 
   public boolean isSharedResource() {
@@ -1580,11 +1587,17 @@ public class Connection implements Runnable {
         logger.debug("Starting {} on {}", p2pReaderName(), socket);
       }
     }
+
     // we should not change the state of the connection if we are a handshake reader thread
     // as there is a race between this thread and the application thread doing direct ack
     boolean handshakeHasBeenRead = false;
     // if we're using SSL/TLS the input buffer may already have data to process
     boolean skipInitialRead = getInputBuffer().position() > 0;
+    final ThreadsMonitoring threadMonitoring = getThreadMonitoring();
+    final AbstractExecutor threadMonitorExecutor =
+        threadMonitoring.createAbstractExecutor(P2PReaderExecutor);
+    threadMonitorExecutor.suspendMonitoring();
+    threadMonitoring.register(threadMonitorExecutor);
     try {
       for (boolean isInitialRead = true;;) {
         if (stopped) {
@@ -1635,7 +1648,7 @@ public class Connection implements Runnable {
             }
             return;
           }
-          processInputBuffer();
+          processInputBuffer(threadMonitorExecutor);
 
           if (!handshakeHasBeenRead && !isReceiver && (handshakeRead || handshakeCancelled)) {
             if (logger.isDebugEnabled()) {
@@ -1710,6 +1723,7 @@ public class Connection implements Runnable {
         }
       }
     } finally {
+      threadMonitoring.unregister(threadMonitorExecutor);
       hasResidualReaderThread = false;
       if (!handshakeHasBeenRead || (sharedResource && !asyncMode)) {
         synchronized (stateLock) {
@@ -2748,7 +2762,8 @@ public class Connection implements Runnable {
    * processes the current NIO buffer. If there are complete messages in the buffer, they are
    * deserialized and passed to TCPConduit for further processing
    */
-  private void processInputBuffer() throws ConnectionException, IOException {
+  private void processInputBuffer(AbstractExecutor threadMonitorExecutor)
+      throws ConnectionException, IOException {
     inputBuffer.flip();
 
     try (final ByteBufferSharing sharedBuffer = ioFilter.unwrap(inputBuffer)) {
@@ -2779,7 +2794,7 @@ public class Connection implements Runnable {
 
             if (handshakeRead) {
               try {
-                readMessage(peerDataBuffer);
+                readMessage(peerDataBuffer, threadMonitorExecutor);
               } catch (SerializationException e) {
                 logger.info("input buffer startPos {} oldLimit {}", startPos, oldLimit);
                 throw e;
@@ -2949,7 +2964,7 @@ public class Connection implements Runnable {
     return false;
   }
 
-  private void readMessage(ByteBuffer peerDataBuffer) {
+  private void readMessage(ByteBuffer peerDataBuffer, AbstractExecutor threadMonitorExecutor) {
     if (messageType == NORMAL_MSG_TYPE) {
       owner.getConduit().getStats().incMessagesBeingReceived(true, messageLength);
       try (ByteBufferInputStream bbis =
@@ -2975,7 +2990,7 @@ public class Connection implements Runnable {
               bbis.available());
         }
         try {
-          if (!dispatchMessage(msg, messageLength, directAck)) {
+          if (!dispatchMessage(msg, messageLength, directAck, threadMonitorExecutor)) {
             directAck = false;
           }
         } catch (MemberShunnedException e) {
@@ -3095,7 +3110,7 @@ public class Connection implements Runnable {
       }
       if (msg != null) {
         try {
-          if (!dispatchMessage(msg, msgLength, directAck)) {
+          if (!dispatchMessage(msg, msgLength, directAck, threadMonitorExecutor)) {
             directAck = false;
           }
         } catch (MemberShunnedException e) {
@@ -3239,8 +3254,10 @@ public class Connection implements Runnable {
     }
   }
 
-  private boolean dispatchMessage(DistributionMessage msg, int bytesRead, boolean directAck)
+  private boolean dispatchMessage(DistributionMessage msg, int bytesRead, boolean directAck,
+      AbstractExecutor threadMonitorExecutor)
       throws MemberShunnedException {
+    threadMonitorExecutor.resumeMonitoring();
     try {
       msg.setDoDecMessagesBeingReceived(true);
       if (directAck) {
@@ -3251,6 +3268,7 @@ public class Connection implements Runnable {
       owner.getConduit().messageReceived(this, msg, bytesRead);
       return true;
     } finally {
+      threadMonitorExecutor.suspendMonitoring();
       if (msg.containsRegionContentChange()) {
         messagesReceived++;
       }

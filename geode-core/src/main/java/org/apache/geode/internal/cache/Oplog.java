@@ -1780,6 +1780,10 @@ public class Oplog implements CompactableOplog, Flushable {
           keyBytes = DataSerializer.readByteArray(dis);
         } // while
         setRecoverNewEntryId(oplogKeyIdHWM);
+        long tlc = totalLiveCount.get();
+        if (totalCount.get() == 0 && tlc > 0) {
+          totalCount.set(tlc);
+        }
       } catch (IOException ex) {
         try {
           fis.close();
@@ -2224,6 +2228,12 @@ public class Oplog implements CompactableOplog, Flushable {
       if (!isPhase2()) {
         if (getParent().isOfflineCompacting()) {
           getParent().incLiveEntryCount(getRecoveryMap().size());
+        }
+        long tc = totalCount.get();
+        long tlc = totalLiveCount.get();
+        if (getParent().isValidating() && tlc >= 0
+            && tc > tlc) {
+          getParent().incDeadRecordCount(tc - tlc);
         }
         getParent().incDeadRecordCount(getRecordsSkipped());
       }

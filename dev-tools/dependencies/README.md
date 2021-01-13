@@ -9,28 +9,15 @@ Step 0: Create a JIRA ticket for this work.
 Step 1: List bump commands for all dependencies for which maven offers a newer version:
 
 cd geode
-dev-tools/dependencies/bump.sh -l <jira you will be committing this work under>
+dev-tools/dependencies/bump.sh <jira you will be committing this work under> -l
 
-Step 2: Filter out certain dependencies that we cannot change, such as:
-- jgroups
-- classgraph
-- gradle-tooling-api
-- JUnitParams
-- docker-compose-rule
-- javax.servlet-api
-- protobuf
-- lucene
-- tomcat 6
-- archunit (13.0 and later get OOM on JDK8)
-
-Step 3: In some cases, maven suggests new majors, beta releases, or just wrong releases.
+Step 2: In some cases, maven suggests beta releases, which Geode should not use.
 Manually search for those dependencies on mavencentral to see if there is a better choice.
-Examples include:
-- commons-collections (versioning back in 2004 predated semver)
-- springfox-swagger (stay on 2.9, as 2.10 and later is completely re-architected)
-- selenium-api (these tests are very old, so stay on version pi)
+Special cases:
+- tomcat6 (do not upgrade)
+- tomcat (upgrade to latest patch only for each of 7, 8.5, and 9)
 
-Step 4: Create a PR and start bumping dependencies.  Push to the PR every few to run PR
+Step 3: Create a PR and start bumping dependencies.  Push to the PR every few to run PR
 checks.  Later, review the PR checks and try to narrow down which bump introduced problems
 and revert it.  At the end, create separate PRs for each one that was problematic and ask
 for help from someone in the community who knows that area better.

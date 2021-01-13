@@ -22,7 +22,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 
-import org.apache.geode.redis.internal.RedisStats;
+import org.apache.geode.redis.internal.statistics.RedisStats;
 
 /**
  * This is the first part of the channel pipeline for Netty. Here incoming bytes are read and a

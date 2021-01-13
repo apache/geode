@@ -41,6 +41,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTOR
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.internal.security.SecurableCommunicationChannel.LOCATOR;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Disconnect.disconnectFromDS;
@@ -258,7 +259,7 @@ public class LocatorDUnitTest implements Serializable {
   @Test
   @Ignore("GEODE=7760 - test sometimes hangs due to product issue")
   public void testCrashLocatorMultipleTimes() throws Exception {
-    port1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    port1 = getRandomAvailableTCPPort();
     DistributedTestUtils.deleteLocatorStateFile(port1);
     File logFile = new File("");
     File stateFile = new File("locator" + port1 + "state.dat");
@@ -1001,7 +1002,8 @@ public class LocatorDUnitTest implements Serializable {
       // I guess it can throw this too...
 
     } catch (GemFireConfigException ex) {
-      assertThat(ex.getCause().getMessage().contains("Locator does not exist")).isTrue();
+      assertThat(ex.getCause().getMessage().contains("Could not contact any of the locators"))
+          .isTrue();
     }
   }
 

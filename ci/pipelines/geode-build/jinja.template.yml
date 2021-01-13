@@ -34,6 +34,7 @@
     trigger: true
     passed:
     - Build
+    version: every
 {% endmacro %}
 
 {%- macro deep_merge(a, b): %}
@@ -162,6 +163,7 @@ resources:
     - ci/*
     - dev-tools/release/*
     - "*.md"
+    - CODEOWNERS
     {{ github_access() | indent(4) }}
 - name: geode-ci
   type: git
@@ -476,6 +478,7 @@ jobs:
     - get: geode-build-version
       trigger: true
       passed: *benchmark-inputs
+      version: every
     - put: concourse-metadata-resource
   - do:
     - task: run_benchmarks{{ run_var.title }}

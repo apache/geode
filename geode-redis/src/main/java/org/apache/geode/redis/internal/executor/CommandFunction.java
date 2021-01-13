@@ -25,7 +25,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.redis.internal.RedisCommandType;
-import org.apache.geode.redis.internal.RedisStats;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.CommandHelper;
 import org.apache.geode.redis.internal.data.RedisData;
@@ -34,6 +33,7 @@ import org.apache.geode.redis.internal.data.RedisKeyCommandsFunctionExecutor;
 import org.apache.geode.redis.internal.data.RedisSetCommandsFunctionExecutor;
 import org.apache.geode.redis.internal.data.RedisStringCommandsFunctionExecutor;
 import org.apache.geode.redis.internal.executor.string.SetOptions;
+import org.apache.geode.redis.internal.statistics.RedisStats;
 
 public class CommandFunction extends SingleResultRedisFunction {
 
@@ -98,6 +98,8 @@ public class CommandFunction extends SingleResultRedisFunction {
         return keyCommands.persist(key);
       case PTTL:
         return keyCommands.pttl(key);
+      case INTERNALPTTL:
+        return keyCommands.internalPttl(key);
       case APPEND: {
         ByteArrayWrapper valueToAdd = (ByteArrayWrapper) args[1];
         return stringCommands.append(key, valueToAdd);
@@ -182,6 +184,8 @@ public class CommandFunction extends SingleResultRedisFunction {
       }
       case SMEMBERS:
         return setCommands.smembers(key);
+      case INTERNALSMEMBERS:
+        return setCommands.internalsmembers(key);
       case SCARD:
         return setCommands.scard(key);
       case SISMEMBER: {
