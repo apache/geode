@@ -412,7 +412,7 @@ else
   #after:
   # '1.9.0',
   # '1.9.1',
-  sed -e "s/'${PREV}',/'${PREV}',\\
+  sed -e "s/'${PREV}'/'${PREV}',\\
  '${VERSION}'/" \
     -i.bak settings.gradle
 fi
@@ -490,7 +490,7 @@ echo "3. Go to https://github.com/${GITHUB_USER}/geode/pull/new/add-${VERSION}-t
 echo "4. Validate docker image: docker run -it apachegeode/geode"
 echo "5. Bulk-transition JIRA issues fixed in this release to Closed"
 echo "5b.Publish to GitHub (see https://cwiki.apache.org/confluence/display/GEODE/Releasing+Apache+Geode#ReleasingApacheGeode-PublishtoGitHub)"
-echo "6. Wait overnight for apache mirror sites to sync"
+echo "6. Wait overnight for apache mirror sites and mavencentral to sync"
 echo "7. Confirm that your homebrew PR passed its PR checks and was merged to master"
 echo "8. Check that ${VERSION} documentation has been published to https://geode.apache.org/docs/"
 [ -z "$DID_REMOVE" ] || DID_REMOVE=" and ${DID_REMOVE} info has been removed"
@@ -501,7 +501,8 @@ PATCH="${VERSION##*.}"
 [ "${PATCH}" -ne 0 ] || echo "10. Ask on the dev list for a volunteer to begin the chore of updating 3rd-party dependency versions on develop (see dev-tools/dependencies/README.md)"
 M=$(date --date '+9 months' '+%a, %B %d %Y' 2>/dev/null || date -v +9m "+%a, %B %d %Y" 2>/dev/null || echo "9 months from now")
 [ "${PATCH}" -ne 0 ] || echo "11. Mark your calendar for $M (assuming we release Geode ${MAJOR}.$((MINOR + 3)) on that day) to run ${0%/*}/end_of_support.sh -v ${VERSION_MM}"
-[ "${PATCH}" -ne 0 ] || echo "12. Log in to https://hub.docker.com/repository/docker/apachegeode/geode and update the latest Dockerfile linktext and url to ${VERSION_MM}"
+[ "${PATCH}" -ne 0 ] || [ -n "$LATER" ] || echo "12. Log in to https://hub.docker.com/repository/docker/apachegeode/geode and update the latest Dockerfile linktext and url to ${VERSION_MM}"
+[ -z "$LATER" ] || echo "Manually add '${VERSION}' to settings.gradle in all later support branches"
 echo "Bump support pipeline to ${VERSION_MM}.$(( PATCH + 1 )) by plussing BumpPatch in https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-support-${VERSION_MM//./-}-main?group=Semver%20Management"
 echo "Run ${0%/*}/set_versions.sh -v ${VERSION_MM}.$(( PATCH + 1 )) -s"
 echo 'Finally, send announce email!'
