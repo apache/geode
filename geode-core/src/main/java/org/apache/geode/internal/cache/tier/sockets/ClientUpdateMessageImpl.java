@@ -1188,10 +1188,10 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     StringBuilder buffer = new StringBuilder();
     buffer.append("ClientUpdateMessageImpl[").append("op=").append(this._operation)
         .append(";region=").append(this._regionName).append(";key=").append(this._keyOfInterest);
-    if (logger.isTraceEnabled()) {
-      buffer.append(";value=").append(
-          (this._value instanceof byte[]) ? deserialize((byte[]) this._value) : this._value);
-    }
+    // if (logger.isTraceEnabled()) {
+    buffer.append(";value=").append(
+        (this._value instanceof byte[]) ? deserialize((byte[]) this._value) : this._value);
+    // }
     buffer.append(";isObject=").append(_valueIsObject).append(";cbArg=")
         .append(this._callbackArgument).append(";memberId=").append(this._membershipId)
         .append(";eventId=").append(_eventIdentifier).append(";shouldConflate=")

@@ -651,8 +651,8 @@ public class HARegionQueue implements RegionQueue {
 
         this.giiQueue.add(object);
       } else {
-        if (logger.isTraceEnabled()) {
-          logger.trace("{}: adding message to HA queue: {}", this.regionName, object);
+        if (logger.isDebugEnabled()) {
+          logger.debug("{}: adding message to HA queue: {}", this.regionName, object);
         }
         basicPut(object);
       }

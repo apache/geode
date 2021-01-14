@@ -691,6 +691,7 @@ public class CacheClientNotifier {
       HAEventWrapper wrapper = new HAEventWrapper(clientMessage);
       wrapper.incrementPutInProgressCounter("notify clients");
       conflatable = wrapper;
+      logger.debug("KIRK: Created HAEventWrapper {} for {}", wrapper, clientMessage);
     }
     if (!filterClients.isEmpty()) {
       if (event.getOperation().isEntry()) {

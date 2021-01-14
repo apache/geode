@@ -612,8 +612,8 @@ public class MessageDispatcher extends LoggingThread {
     if (!this._proxy.isPaused()) {
       sendMessage(message);
 
-      if (logger.isTraceEnabled()) {
-        logger.trace("{}: Dispatched {}", this, clientMessage);
+      if (logger.isDebugEnabled()) {
+        logger.debug("{}: Dispatched {} to {}", this, clientMessage, _proxy);
       }
       isDispatched = true;
     } else {

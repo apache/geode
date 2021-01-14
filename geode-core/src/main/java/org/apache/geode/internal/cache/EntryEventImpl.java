@@ -2152,33 +2152,33 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     buf.append(getRegion().getFullPath());
     buf.append(";key=");
     buf.append(this.getKey());
-    if (Boolean.getBoolean("gemfire.insecure-logvalues")) {
-      buf.append(";oldValue=");
-      if (mayHaveOffHeapReferences()) {
-        synchronized (this.offHeapLock) {
-          try {
-            ArrayUtils.objectStringNonRecursive(basicGetOldValue(), buf);
-          } catch (IllegalStateException ignore) {
-            buf.append("OFFHEAP_VALUE_FREED");
-          }
+    // if (Boolean.getBoolean("gemfire.insecure-logvalues")) {
+    buf.append(";oldValue=");
+    if (mayHaveOffHeapReferences()) {
+      synchronized (this.offHeapLock) {
+        try {
+          ArrayUtils.objectStringNonRecursive(basicGetOldValue(), buf);
+        } catch (IllegalStateException ignore) {
+          buf.append("OFFHEAP_VALUE_FREED");
         }
-      } else {
-        ArrayUtils.objectStringNonRecursive(basicGetOldValue(), buf);
       }
-
-      buf.append(";newValue=");
-      if (mayHaveOffHeapReferences()) {
-        synchronized (this.offHeapLock) {
-          try {
-            ArrayUtils.objectStringNonRecursive(basicGetNewValue(), buf);
-          } catch (IllegalStateException ignore) {
-            buf.append("OFFHEAP_VALUE_FREED");
-          }
-        }
-      } else {
-        ArrayUtils.objectStringNonRecursive(basicGetNewValue(), buf);
-      }
+    } else {
+      ArrayUtils.objectStringNonRecursive(basicGetOldValue(), buf);
     }
+
+    buf.append(";newValue=");
+    if (mayHaveOffHeapReferences()) {
+      synchronized (this.offHeapLock) {
+        try {
+          ArrayUtils.objectStringNonRecursive(basicGetNewValue(), buf);
+        } catch (IllegalStateException ignore) {
+          buf.append("OFFHEAP_VALUE_FREED");
+        }
+      }
+    } else {
+      ArrayUtils.objectStringNonRecursive(basicGetNewValue(), buf);
+    }
+    // }
     buf.append(";callbackArg=");
     buf.append(this.getRawCallbackArgument());
     buf.append(";originRemote=");
