@@ -672,6 +672,8 @@ public class CacheClientNotifier {
     Set<ClientProxyMembershipID> filterClients =
         getFilterClientIDs(event, regionProfile, filterInfo, clientMessage);
 
+    logger.debug("KIRK: filterClients={}, filterInfo={}", filterClients, filterInfo);
+
     Conflatable conflatable;
 
     if (clientMessage instanceof ClientTombstoneMessage) {
@@ -696,7 +698,9 @@ public class CacheClientNotifier {
     if (!filterClients.isEmpty()) {
       if (event.getOperation().isEntry()) {
         EntryEventImpl entryEvent = (EntryEventImpl) event;
+        logger.debug("KIRK: before clientMessage={}", clientMessage);
         entryEvent.exportNewValue(clientMessage);
+        logger.debug("KIRK: after clientMessage={}", clientMessage);
       }
     }
 
