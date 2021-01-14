@@ -185,6 +185,7 @@ import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
+import org.apache.geode.deployment.internal.JarDeploymentServiceFactory;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
@@ -565,7 +566,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   private final Set<RegionEntrySynchronizationListener> synchronizationListeners =
       ConcurrentHashMap.newKeySet();
 
-  private final ClusterConfigurationLoader ccLoader = new ClusterConfigurationLoader();
+  private final ClusterConfigurationLoader clusterConfigurationLoader =
+      new ClusterConfigurationLoader();
 
   private final StatisticsClock statisticsClock;
 
@@ -969,7 +971,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         configurationResponse = requestSharedConfiguration();
 
         // apply the cluster's properties config and initialize security using that config
-        ccLoader.applyClusterPropertiesConfiguration(configurationResponse, system.getConfig());
+        clusterConfigurationLoader.applyClusterPropertiesConfiguration(configurationResponse,
+            system.getConfig());
 
         securityService =
             securityServiceFactory.create(system.getConfig().getSecurityProps(), cacheConfig);
@@ -1233,9 +1236,10 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   public void reLoadClusterConfiguration() throws IOException, ClassNotFoundException {
     configurationResponse = requestSharedConfiguration();
     if (configurationResponse != null) {
-      ccLoader.deployJarsReceivedFromClusterConfiguration(configurationResponse);
-      ccLoader.applyClusterPropertiesConfiguration(configurationResponse, system.getConfig());
-      ccLoader.applyClusterXmlConfiguration(this, configurationResponse,
+      clusterConfigurationLoader.deployJarsReceivedFromClusterConfiguration(configurationResponse);
+      clusterConfigurationLoader.applyClusterPropertiesConfiguration(configurationResponse,
+          system.getConfig());
+      clusterConfigurationLoader.applyClusterXmlConfiguration(this, configurationResponse,
           system.getConfig().getGroups());
       initializeDeclarativeCache();
     }
@@ -1304,7 +1308,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
 
     try {
-      ConfigurationResponse response = ccLoader.requestConfigurationFromLocators(
+      ConfigurationResponse response = clusterConfigurationLoader.requestConfigurationFromLocators(
           system.getConfig().getGroups(), locatorsWithClusterConfig.keySet());
 
       // log the configuration received from the locator
@@ -1413,7 +1417,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     ClassPathLoader.setLatestToDefault(system.getConfig().getDeployWorkingDir());
 
     try {
-      ccLoader.deployJarsReceivedFromClusterConfiguration(configurationResponse);
+      clusterConfigurationLoader.deployJarsReceivedFromClusterConfiguration(configurationResponse);
     } catch (IOException | ClassNotFoundException e) {
       throw new GemFireConfigException(
           "Exception while deploying the jars received as a part of cluster Configuration",
@@ -1489,9 +1493,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   void applyJarAndXmlFromClusterConfig() {
     if (configurationResponse == null) {
       // Deploy all the jars from the deploy working dir.
-      ClassPathLoader.getLatest().getJarDeployer().loadPreviouslyDeployedJarsFromDisk();
+      JarDeploymentServiceFactory.getJarDeploymentServiceInstance().loadJarsFromWorkingDirectory();
     }
-    ccLoader.applyClusterXmlConfiguration(this, configurationResponse,
+    clusterConfigurationLoader.applyClusterXmlConfiguration(this, configurationResponse,
         system.getConfig().getGroups());
   }
 
@@ -2159,6 +2163,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   boolean doClose(String reason, Throwable systemFailureCause, boolean keepAlive,
       boolean keepDS, boolean skipAwait) {
     securityService.close();
+    JarDeploymentServiceFactory.shutdownJarDeploymentService();
 
     if (waitIfClosing(skipAwait)) {
       return false;

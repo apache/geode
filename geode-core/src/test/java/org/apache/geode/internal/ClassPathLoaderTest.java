@@ -25,6 +25,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.time.Instant;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
@@ -40,6 +41,9 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.deployment.JarDeploymentService;
+import org.apache.geode.deployment.internal.JarDeploymentServiceFactory;
+import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.test.compiler.ClassBuilder;
 
 /**
@@ -78,8 +82,14 @@ public class ClassPathLoaderTest {
     File zeroFile = tempFolder.newFile("JarDeployerDUnitZLF.jar");
     zeroFile.createNewFile();
 
+    JarDeploymentService jarDeploymentService =
+        JarDeploymentServiceFactory.getJarDeploymentServiceInstance();
     assertThatThrownBy(() -> {
-      ClassPathLoader.getLatest().getJarDeployer().deploy(zeroFile);
+      Deployment deployment =
+          new Deployment("JarDeployerDUnitZLF.jar", "test", Instant.now().toString());
+      deployment.setFile(zeroFile);
+      jarDeploymentService.deploy(
+          deployment);
     }).isInstanceOf(IllegalArgumentException.class);
 
     byte[] validBytes = new ClassBuilder().createJarFromName("JarDeployerDUnitZLF1");
@@ -91,8 +101,17 @@ public class ClassPathLoaderTest {
     files.add(zeroFile);
 
     assertThatThrownBy(() -> {
-      ClassPathLoader.getLatest().getJarDeployer().deploy(files);
+      for (File file : files) {
+        Deployment deployment = new Deployment(file.getName(), "test", Instant.now().toString());
+        deployment.setFile(file);
+        jarDeploymentService.deploy(deployment);
+      }
     }).isInstanceOf(IllegalArgumentException.class);
+
+    // clean up the deployed files
+    jarDeploymentService.listDeployed()
+        .forEach(deployment -> jarDeploymentService
+            .undeployByDeploymentName(deployment.getDeploymentName()));
   }
 
   /**

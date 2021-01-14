@@ -23,6 +23,7 @@ apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
   compile(project(':geode-core'))
+  compileOnly(project(':geode-common'))
   compileOnly(project(':geode-protobuf'))
 
   implementation('junit:junit')

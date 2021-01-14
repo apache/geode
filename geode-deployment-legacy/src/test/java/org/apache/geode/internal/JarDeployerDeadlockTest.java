@@ -23,6 +23,7 @@ import java.io.FileOutputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
+import java.time.Instant;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -36,6 +37,8 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.deployment.internal.JarDeploymentServiceFactory;
+import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.test.compiler.ClassBuilder;
 
 public class JarDeployerDeadlockTest {
@@ -50,7 +53,9 @@ public class JarDeployerDeadlockTest {
   @Before
   public void setup() throws Exception {
     File workingDir = temporaryFolder.newFolder();
-    ClassPathLoader.setLatestToDefault(workingDir);
+    // ClassPathLoader.setLatestToDefault(workingDir);
+    JarDeploymentServiceFactory.getJarDeploymentServiceInstance()
+        .reinitializeWithWorkingDirectory(workingDir);
     classBuilder = new ClassBuilder();
   }
 
@@ -60,7 +65,7 @@ public class JarDeployerDeadlockTest {
       FunctionService.unregisterFunction(functionName);
     }
 
-    ClassPathLoader.setLatestToDefault();
+    JarDeploymentServiceFactory.shutdownJarDeploymentService();
   }
 
   @Test
@@ -69,13 +74,15 @@ public class JarDeployerDeadlockTest {
     byte[] jarBytes = this.classBuilder.createJarFromName("JarClassLoaderJUnitA");
     File jarFile = temporaryFolder.newFile("JarClassLoaderJUnitA.jar");
     IOUtils.copy(new ByteArrayInputStream(jarBytes), new FileOutputStream(jarFile));
-    ClassPathLoader.getLatest().getJarDeployer().deploy(jarFile);
+    JarDeploymentServiceFactory.getJarDeploymentServiceInstance()
+        .deploy(createDeploymentFromJar(jarFile));
 
     jarBytes = this.classBuilder.createJarFromClassContent("com/jcljunit/JarClassLoaderJUnitB",
         "package com.jcljunit; public class JarClassLoaderJUnitB {}");
     File jarFile2 = temporaryFolder.newFile("JarClassLoaderJUnitB.jar");
     IOUtils.copy(new ByteArrayInputStream(jarBytes), new FileOutputStream(jarFile2));
-    ClassPathLoader.getLatest().getJarDeployer().deploy(jarFile2);
+    JarDeploymentServiceFactory.getJarDeploymentServiceInstance()
+        .deploy(createDeploymentFromJar(jarFile2));
 
     String[] classNames = new String[] {"JarClassLoaderJUnitA", "com.jcljunit.JarClassLoaderJUnitB",
         "NON-EXISTENT CLASS"};
@@ -122,7 +129,7 @@ public class JarDeployerDeadlockTest {
         try {
           // Random select a name from the list of class names and try to load it
           String className = this.classNames[random.nextInt(this.classNames.length)];
-          ClassPathLoader.getLatest().forName(className);
+          this.getClass().forName(className);
         } catch (ClassNotFoundException expected) { // expected
         } catch (Exception e) {
           throw new RuntimeException(e);
@@ -131,4 +138,9 @@ public class JarDeployerDeadlockTest {
     }
   }
 
+  private Deployment createDeploymentFromJar(File jar) {
+    Deployment deployment = new Deployment(jar.getName(), "test", Instant.now().toString());
+    deployment.setFile(jar);
+    return deployment;
+  }
 }

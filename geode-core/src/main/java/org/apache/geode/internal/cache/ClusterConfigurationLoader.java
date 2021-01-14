@@ -32,7 +32,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -51,15 +50,14 @@ import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.deployment.JarDeploymentService;
+import org.apache.geode.deployment.internal.JarDeploymentServiceFactory;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.LockServiceDestroyedException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.ConfigSource;
-import org.apache.geode.internal.DeployedJar;
-import org.apache.geode.internal.JarDeployer;
 import org.apache.geode.internal.config.ClusterConfigurationNotAvailableException;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.beans.FileUploader;
@@ -94,26 +92,16 @@ public class ClusterConfigurationLoader {
             .flatMap(Set::stream)
             .collect(Collectors.toList());
 
-    if (jarFileNames != null && !jarFileNames.isEmpty()) {
+    if (!jarFileNames.isEmpty()) {
       logger.info("Got response with jars: {}", jarFileNames.stream().collect(joining(",")));
-      JarDeployer jarDeployer = ClassPathLoader.getLatest().getJarDeployer();
-      jarDeployer.suspendAll();
-      try {
-        Set<File> stagedJarFiles =
-            getJarsFromLocator(response.getMember(), response.getJarNames());
+      JarDeploymentService jarDeploymentService =
+          JarDeploymentServiceFactory.getJarDeploymentServiceInstance();
 
-        for (File stagedJarFile : stagedJarFiles) {
-          logger.info("Removing old versions of {} in cluster configuration.",
-              stagedJarFile.getName());
-          jarDeployer.deleteAllVersionsOfJar(stagedJarFile.getName());
-        }
-
-        List<DeployedJar> deployedJars = jarDeployer.deploy(stagedJarFiles);
-
-        deployedJars.stream().filter(Objects::nonNull)
-            .forEach((jar) -> logger.info("Deployed: {}", jar.getFile().getAbsolutePath()));
-      } finally {
-        jarDeployer.resumeAll();
+      Set<File> stagedJarFiles =
+          getJarsFromLocator(response.getMember(), response.getJarNames());
+      for (File file : stagedJarFiles) {
+        jarDeploymentService.undeployByFileName(file.getName());
+        jarDeploymentService.deploy(file);
       }
     }
   }

@@ -44,6 +44,10 @@ class DependencyConstraints implements Plugin<Project> {
     deps.put("micrometer.version", "1.6.3")
     deps.put("shiro.version", "1.7.1")
     deps.put("slf4j-api.version", "1.7.30")
+    deps.put("jboss-modules.version", "1.11.0.Final")
+    deps.put("jackson.version", "2.12.1")
+    deps.put("springshell.version", "1.2.0.RELEASE")
+    deps.put("springframework.version", "5.3.3")
 
     // These version numbers are used in testing various versions of tomcat and are consumed explicitly
     // in will be called explicitly in the relevant extensions module, and respective configurations
@@ -87,6 +91,8 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'cglib', name: 'cglib', version: get('cglib.version'))
         api(group: 'com.arakelian', name: 'java-jq', version: '1.1.0')
         api(group: 'com.carrotsearch.randomizedtesting', name: 'randomizedtesting-runner', version: '2.7.8')
+        api(group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-joda', version: get('jackson.version'))
+        api(group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: get('jackson.version'))
         api(group: 'com.github.davidmoten', name: 'geo', version: '0.7.7')
         api(group: 'com.github.stefanbirkner', name: 'system-rules', version: '1.19.0')
         api(group: 'com.github.stephenc.findbugs', name: 'findbugs-annotations', version: '1.3.9-1')
@@ -154,6 +160,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'org.eclipse.persistence', name: 'javax.persistence', version: '2.2.1')
         api(group: 'org.httpunit', name: 'httpunit', version: '1.7.3')
         api(group: 'org.iq80.snappy', name: 'snappy', version: '0.4')
+        api(group: 'org.jboss.modules', name: 'jboss-modules', version: get('jboss-modules.version'))
         api(group: 'org.jgroups', name: 'jgroups', version: get('jgroups.version'))
         api(group: 'org.mockito', name: 'mockito-core', version: '3.7.7')
         api(group: 'org.mortbay.jetty', name: 'servlet-api', version: '3.0.20100224')
@@ -163,7 +170,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'org.slf4j', name: 'slf4j-api', version: get('slf4j-api.version'))
         api(group: 'org.springframework.hateoas', name: 'spring-hateoas', version: '1.2.3')
         api(group: 'org.springframework.ldap', name: 'spring-ldap-core', version: '2.3.2.RELEASE')
-        api(group: 'org.springframework.shell', name: 'spring-shell', version: '1.2.0.RELEASE')
+        api(group: 'org.springframework.shell', name: 'spring-shell', version: get('springshell.version'))
         api(group: 'org.testcontainers', name: 'testcontainers', version: '1.14.3')
         api(group: 'pl.pragmatists', name: 'JUnitParams', version: '1.1.0')
         api(group: 'redis.clients', name: 'jedis', version: '3.5.1')
@@ -172,15 +179,10 @@ class DependencyConstraints implements Plugin<Project> {
       }
     }
 
-    dependencySet(group: 'com.fasterxml.jackson.core', version: '2.12.1') {
+    dependencySet(group: 'com.fasterxml.jackson.core', version: get('jackson.version')) {
       entry('jackson-annotations')
       entry('jackson-core')
       entry('jackson-databind')
-    }
-
-    dependencySet(group: 'com.fasterxml.jackson.datatype', version: '2.12.1') {
-      entry('jackson-datatype-joda')
-      entry('jackson-datatype-jsr310')
     }
 
     dependencySet(group: 'com.jayway.jsonpath', version: '2.5.0') {
@@ -252,7 +254,7 @@ class DependencyConstraints implements Plugin<Project> {
       entry('spring-security-oauth2-jose')
     }
 
-    dependencySet(group: 'org.springframework', version: '5.3.3') {
+    dependencySet(group: 'org.springframework', version: get('springframework.version')) {
       entry('spring-aspects')
       entry('spring-beans')
       entry('spring-context')

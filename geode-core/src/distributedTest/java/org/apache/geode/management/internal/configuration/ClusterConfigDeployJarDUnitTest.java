@@ -60,7 +60,7 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
     assertThat(gfshConnector.isConnected()).isTrue();
 
     gfshConnector.executeAndAssertThat("deploy --jar=" + clusterJarPath).statusIsSuccess();
-    ConfigGroup cluster = new ConfigGroup("cluster").jars("cluster.jar");
+    ConfigGroup cluster = new ConfigGroup("cluster").deployments("cluster");
     ClusterConfig expectedClusterConfig = new ClusterConfig(cluster);
 
     expectedClusterConfig.verify(locator);
@@ -81,7 +81,7 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
 
     gfshConnector.executeAndAssertThat("deploy --jar=" + clusterJar).statusIsSuccess();
 
-    ConfigGroup cluster = new ConfigGroup("cluster").jars("cluster.jar");
+    ConfigGroup cluster = new ConfigGroup("cluster").deployments("cluster");
     ClusterConfig expectedClusterConfig = new ClusterConfig(cluster);
 
     expectedClusterConfig.verify(locator);
@@ -107,7 +107,7 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
 
     gfshConnector.executeAndAssertThat("deploy --jar=" + clusterJar).statusIsSuccess();
 
-    ConfigGroup cluster = new ConfigGroup("cluster").jars("cluster.jar");
+    ConfigGroup cluster = new ConfigGroup("cluster").deployments("cluster");
     ClusterConfig expectedClusterConfig = new ClusterConfig(cluster);
     expectedClusterConfig.verify(locator);
     expectedClusterConfig.verify(server1);
@@ -117,7 +117,7 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
     gfshConnector.executeAndAssertThat("deploy --jar=" + group1Jar + " --group=group1")
         .statusIsSuccess();
 
-    ConfigGroup group1 = new ConfigGroup("group1").jars("group1.jar");
+    ConfigGroup group1 = new ConfigGroup("group1").deployments("group1");
     ClusterConfig expectedGroup1Config = new ClusterConfig(cluster, group1);
     expectedGroup1Config.verify(locator);
     expectedClusterConfig.verify(server1);
@@ -127,7 +127,7 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
     gfshConnector.executeAndAssertThat("deploy --jar=" + group2Jar + " --group=group2")
         .statusIsSuccess();
 
-    ConfigGroup group2 = new ConfigGroup("group2").jars("group2.jar");
+    ConfigGroup group2 = new ConfigGroup("group2").deployments("group2");
     ClusterConfig expectedGroup1and2Config = new ClusterConfig(cluster, group1, group2);
 
     expectedGroup1and2Config.verify(locator);
@@ -159,7 +159,7 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
     gfshConnector.executeAndAssertThat("list deployed").statusIsSuccess()
         .containsOutput("No JAR Files Found");
 
-    ConfigGroup cluster = new ConfigGroup("cluster").jars();
+    ConfigGroup cluster = new ConfigGroup("cluster").deployments();
     ClusterConfig expectedClusterConfig = new ClusterConfig(cluster);
     expectedClusterConfig.verify(locator);
   }
@@ -190,7 +190,7 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
     gfshConnector.executeAndAssertThat("deploy --jar=" + clusterJar).statusIsSuccess();
 
     // deploy cluster.jar to the cluster
-    cluster.addJar("cluster.jar");
+    cluster.addDeployment("cluster");
     expectedClusterConfig.verify(locator);
     expectedClusterConfig.verify(server1);
     expectedClusterConfig.verify(server2);
@@ -200,17 +200,21 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
     gfshConnector.executeAndAssertThat("deploy --jar=" + group1Jar + " --group=group1,group2")
         .statusIsSuccess();
 
-    group1.addJar("group1.jar");
-    group2.addJar("group1.jar");
+    group1.addDeployment("group1");
+    group2.addDeployment("group1");
     server3Config.verify(locator);
     server1Config.verify(server1);
     server2Config.verify(server2);
     server3Config.verify(server3);
 
     // test undeploy cluster
-    gfshConnector.executeAndAssertThat("undeploy --jar=cluster.jar").statusIsSuccess();
+    gfshConnector.executeAndAssertThat("undeploy --jar=cluster.jar")
+        .statusIsSuccess();
 
-    cluster = cluster.removeJar("cluster.jar");
+    gfshConnector.executeAndAssertThat("list deployed")
+        .statusIsSuccess();
+
+    cluster = cluster.removeDeployment("cluster");
     server3Config.verify(locator);
     server1Config.verify(server1);
     server2Config.verify(server2);
@@ -219,7 +223,7 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
     gfshConnector.executeAndAssertThat("undeploy --jar=group1.jar --group=group1")
         .statusIsSuccess();
 
-    group1 = group1.removeJar("group1.jar");
+    group1 = group1.removeDeployment("group1");
     /*
      * TODO: This is the current (weird) behavior If you started server4 with group1,group2 after
      * this undeploy command, it would have group1.jar (brought from
@@ -227,7 +231,7 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
      * have this jar.
      */
     ClusterConfig weirdServer3Config =
-        new ClusterConfig(cluster, group1, new ConfigGroup(group2).removeJar("group1.jar"));
+        new ClusterConfig(cluster, group1, new ConfigGroup(group2).removeDeployment("group1"));
 
     server3Config.verify(locator);
     server1Config.verify(server1);
@@ -261,7 +265,7 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
     gfshConnector.executeAndAssertThat("deploy --jar=" + clusterJar).statusIsSuccess();
 
     // deploy cluster.jar to the cluster
-    cluster.addJar("cluster.jar");
+    cluster.addDeployment("cluster");
     expectedClusterConfig.verify(locator);
     expectedClusterConfig.verify(server1);
     expectedClusterConfig.verify(server2);
@@ -271,8 +275,8 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
     gfshConnector.executeAndAssertThat("deploy --jar=" + group1Jar + " --group=group1,group2")
         .statusIsSuccess();
 
-    group1.addJar("group1.jar");
-    group2.addJar("group1.jar");
+    group1.addDeployment("group1");
+    group2.addDeployment("group1");
     server3Config.verify(locator);
     server1Config.verify(server1);
     server2Config.verify(server2);
@@ -281,10 +285,11 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
     server3.getVM().bounce();
 
     // test undeploy cluster
-    gfshConnector.executeAndAssertThat("undeploy --jar=cluster.jar").statusIsSuccess();
+    gfshConnector.executeAndAssertThat("undeploy --jar=cluster.jar")
+        .statusIsSuccess();
     server3 = lsRule.startServerVM(3, serverProps, locator.getPort());
 
-    cluster = cluster.removeJar("cluster.jar");
+    cluster = cluster.removeDeployment("cluster");
     server3Config.verify(locator);
     server1Config.verify(server1);
     server2Config.verify(server2);
@@ -293,15 +298,16 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
     gfshConnector.executeAndAssertThat("undeploy --jar=group1.jar --group=group1")
         .statusIsSuccess();
 
-    group1 = group1.removeJar("group1.jar");
+    group1 = group1.removeDeployment("group1");
     /*
      * TODO: GEODE-2779 This is the current (weird) behavior If you started server4 with
-     * group1,group2 after this undeploy command, it would have group1.jar (brought from
+     * group1,group2 after this undeploy command, it would have group1.jar (brought
+     * from
      * cluster_config/group2/group1.jar on locator) whereas server3 (also in group1,group2) does not
      * have this jar.
      */
     ClusterConfig weirdServer3Config =
-        new ClusterConfig(cluster, group1, new ConfigGroup(group2).removeJar("group1.jar"));
+        new ClusterConfig(cluster, group1, new ConfigGroup(group2).removeDeployment("group1"));
 
     server3Config.verify(locator);
     server1Config.verify(server1);

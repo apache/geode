@@ -67,7 +67,6 @@ import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.locks.DLockService;
-import org.apache.geode.internal.JarDeployer;
 import org.apache.geode.internal.cache.ClusterConfigurationLoader;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionFactory;
@@ -85,6 +84,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.configuration.messages.ConfigurationResponse;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
+import org.apache.geode.management.internal.utils.JarFileUtil;
 import org.apache.geode.security.AuthenticationRequiredException;
 
 public class InternalConfigurationPersistenceService implements ConfigurationPersistenceService {
@@ -328,12 +328,12 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
   }
 
   private static void removeOtherVersionsOf(Path groupDir, String jarFileName) {
-    String artifactId = JarDeployer.getArtifactId(jarFileName);
+    String artifactId = JarFileUtil.getArtifactId(jarFileName);
     for (File file : groupDir.toFile().listFiles()) {
       if (file.getName().equals(jarFileName)) {
         continue;
       }
-      if (JarDeployer.getArtifactId(file.getName()).equals(artifactId)) {
+      if (JarFileUtil.getArtifactId(file.getName()).equals(artifactId)) {
         FileUtils.deleteQuietly(file);
       }
     }
@@ -355,11 +355,11 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
   /**
    * Removes the jar files from the shared configuration. used when un-deploy jars
    *
-   * @param jarNames Names of the jar files.
+   * @param deploymentsToRemove Names of the jar files.
    * @param groups Names of the groups which had the jar file deployed.
    * @return true on success.
    */
-  public boolean removeJars(String[] jarNames, String[] groups) {
+  public boolean removeDeployments(Map<String, String> deploymentsToRemove, String[] groups) {
     lockSharedConfiguration();
     boolean success = true;
     try {
@@ -373,21 +373,21 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
           break;
         }
 
-        for (String jarRemoved : jarNames) {
-          File jar = getPathToJarOnThisLocator(group, jarRemoved).toFile();
+        for (String deploymentToRemove : deploymentsToRemove.values()) {
+          File jar = getPathToJarOnThisLocator(group, deploymentToRemove).toFile();
           if (jar.exists()) {
             try {
               FileUtils.forceDelete(jar);
             } catch (IOException e) {
               logger.error(
                   "Exception occurred while attempting to delete a jar from the filesystem: {}",
-                  jarRemoved, e);
+                  deploymentToRemove, e);
             }
           }
         }
 
         Configuration configurationCopy = new Configuration(configuration);
-        configurationCopy.removeJarNames(jarNames);
+        configurationCopy.removeDeployments(deploymentsToRemove.keySet());
         configRegion.put(group, configurationCopy);
       }
     } catch (Exception e) {

@@ -48,7 +48,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 
-public class InternalConfigurationPersistenceServiceDeployedJarTest {
+public class InternalConfigurationPersistenceServiceDeploymentTest {
   @Rule
   public TemporaryFolder tempDir = new TemporaryFolder();
   private InternalConfigurationPersistenceService service;
@@ -112,10 +112,7 @@ public class InternalConfigurationPersistenceServiceDeployedJarTest {
   }
 
   private Deployment createDeployment(String jarFileName, String deployedby, String deployedtime) {
-    Deployment result = new Deployment();
-    result.setFileName(jarFileName);
-    result.setDeployedBy(deployedby);
-    result.setDeployedTime(deployedtime);
+    Deployment result = new Deployment(jarFileName, deployedby, deployedtime);
     return result;
   }
 

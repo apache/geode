@@ -20,8 +20,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -47,6 +45,7 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.deployment.FunctionScanner;
+import org.apache.geode.management.internal.utils.JarFileUtil;
 import org.apache.geode.pdx.internal.TypeRegistry;
 
 /**
@@ -80,19 +79,19 @@ public class DeployedJar {
   }
 
   public int getVersion() {
-    return JarDeployer.extractVersionFromFilename(this.file.getName());
+    return JarFileUtil.extractVersionFromFilename(this.file.getName());
   }
 
   /**
    * Writes the given jarBytes to versionedJarFile
    */
   public DeployedJar(File versionedJarFile) {
-    String artifactId = JarDeployer.toArtifactId(versionedJarFile.getName());
+    String artifactId = JarFileUtil.toArtifactId(versionedJarFile.getName());
 
     this.file = versionedJarFile;
     this.artifactId = artifactId;
 
-    if (!hasValidJarContent(versionedJarFile)) {
+    if (!JarFileUtil.hasValidJarContent(versionedJarFile)) {
       throw new IllegalArgumentException(
           "File does not contain valid JAR content: " + versionedJarFile.getAbsolutePath());
     }
@@ -106,25 +105,6 @@ public class DeployedJar {
       // Ignored
     }
     this.md5hash = digest;
-  }
-
-  /**
-   * Peek into the JAR data and make sure that it is valid JAR content.
-   *
-   * @param jarFile Jar containing data to be validated.
-   * @return True if the data has JAR content, false otherwise
-   */
-  public static boolean hasValidJarContent(File jarFile) {
-    boolean valid = false;
-
-    try (FileInputStream fileInputStream = new FileInputStream(jarFile);
-        JarInputStream jarInputStream = new JarInputStream(fileInputStream)) {
-      valid = jarInputStream.getNextJarEntry() != null;
-    } catch (IOException ignore) {
-      // Ignore this exception and just return false
-    }
-
-    return valid;
   }
 
   /**
@@ -284,6 +264,7 @@ public class DeployedJar {
    * @param clazz Class to check for implementation of the Function class
    * @return A collection of Objects that implement the Function interface.
    */
+  @SuppressWarnings({"deprecation", "unchecked"})
   private Collection<Function> getRegisterableFunctionsFromClass(Class<?> clazz) {
     final List<Function> registerableFunctions = new ArrayList<>();
 
@@ -301,7 +282,6 @@ public class DeployedJar {
               // with different properties. So, register the function using each set of
               // properties.
               for (Properties properties : propertiesList) {
-                @SuppressWarnings("unchecked")
                 Function function = newFunction((Class<Function>) clazz, true);
                 if (function != null) {
                   ((Declarable) function).initialize(cache, properties);
@@ -375,7 +355,7 @@ public class DeployedJar {
    * @return the filename as user deployed, i.e remove the sequence number
    */
   public String getDeployedFileName() {
-    String fileBaseName = JarDeployer.getDeployedFileBaseName(this.file.getName());
+    String fileBaseName = JarFileUtil.getDeployedFileBaseName(this.file.getName());
     if (fileBaseName == null) {
       throw new IllegalStateException("file name needs to have a sequence number");
     }
@@ -384,15 +364,6 @@ public class DeployedJar {
 
   public String getFileCanonicalPath() throws IOException {
     return this.file.getCanonicalPath();
-  }
-
-  public URL getFileURL() {
-    try {
-      return this.file.toURL();
-    } catch (MalformedURLException e) {
-      logger.warn(e);
-    }
-    return null;
   }
 
   private boolean hasFunctionWithId(String id) {

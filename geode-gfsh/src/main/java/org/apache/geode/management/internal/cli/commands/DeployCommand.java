@@ -22,6 +22,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -37,7 +38,6 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
-import org.apache.geode.internal.DeployedJar;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
@@ -52,10 +52,12 @@ import org.apache.geode.management.internal.cli.remote.CommandExecutor;
 import org.apache.geode.management.internal.cli.result.model.FileResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
+import org.apache.geode.management.internal.cli.util.DeploymentInfoTableUtil;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.management.internal.util.ManagementUtils;
+import org.apache.geode.management.internal.utils.JarFileUtil;
 import org.apache.geode.security.ResourcePermission;
 
 public class DeployCommand extends GfshCommand {
@@ -81,7 +83,9 @@ public class DeployCommand extends GfshCommand {
       @CliOption(key = {CliStrings.JAR, CliStrings.JARS}, optionContext = ConverterHint.JARFILES,
           help = CliStrings.DEPLOY__JAR__HELP) String[] jars,
       @CliOption(key = {CliStrings.DEPLOY__DIR}, optionContext = ConverterHint.JARDIR,
-          help = CliStrings.DEPLOY__DIR__HELP) String dir)
+          help = CliStrings.DEPLOY__DIR__HELP) String dir,
+      @CliOption(key = CliStrings.DEPLOYMENT__NAME, help = CliStrings.DEPLOYMENT__NAME__HELP,
+          specifiedDefaultValue = "") String deploymentName)
       throws IOException {
 
     ResultModel result = new ResultModel();
@@ -94,7 +98,7 @@ public class DeployCommand extends GfshCommand {
     Set<DistributedMember> targetMembers;
     targetMembers = findMembers(groups, null);
 
-    List<List<Object>> results = new ArrayList<>();
+    List<List<Object>> results = new LinkedList<>();
     ManagementAgent agent = ((SystemManagementService) getManagementService()).getManagementAgent();
     RemoteStreamExporter exporter = agent.getRemoteStreamExporter();
 
@@ -121,7 +125,8 @@ public class DeployCommand extends GfshCommand {
 
         // this deploys the jars to all the matching servers
         ResultCollector<?, ?> resultCollector =
-            executeFunction(this.deployFunction, new Object[] {jarNames, remoteStreams}, member);
+            executeFunction(this.deployFunction,
+                new Object[] {jarNames, remoteStreams, deploymentName}, member);
 
         @SuppressWarnings("unchecked")
         final List<List<Object>> resultCollectorResult =
@@ -140,7 +145,9 @@ public class DeployCommand extends GfshCommand {
 
     List<CliFunctionResult> cleanedResults = CliFunctionResult.cleanResults(results);
 
-    createDeployedJarTable(result, deployResult, cleanedResults);
+    DeploymentInfoTableUtil.writeDeploymentInfoToTable(
+        new String[] {"Member", "Deployment Name", "JAR", "JAR Location"}, deployResult,
+        DeploymentInfoTableUtil.getDeploymentInfoFromFunctionResults(cleanedResults));
 
     if (result.getStatus() == Result.Status.OK) {
       InternalConfigurationPersistenceService sc = getConfigurationPersistenceService();
@@ -153,33 +160,19 @@ public class DeployCommand extends GfshCommand {
     return result;
   }
 
-  @SuppressWarnings("deprecation")
-  private void createDeployedJarTable(ResultModel result, TabularResultModel deployResult,
-      List<CliFunctionResult> cleanedResults) {
-    deployResult.setColumnHeader("Member", "Deployed JAR", "Deployed JAR Location");
-    for (CliFunctionResult cliResult : cleanedResults) {
-      if (cliResult.getThrowable() != null) {
-        deployResult.addRow(cliResult.getMemberIdOrName(), "",
-            "ERROR: " + cliResult.getThrowable().getClass().getName() + ": "
-                + cliResult.getThrowable().getMessage());
-        result.setStatus(Result.Status.ERROR);
-      } else {
-        String[] strings = (String[]) cliResult.getSerializables();
-        for (int i = 0; i < strings.length - 1; i += 2) {
-          deployResult.addRow(cliResult.getMemberIdOrName(), strings[i], strings[i + 1]);
-        }
-      }
-    }
-  }
-
   private void verifyJarContent(List<String> jarNames) {
     for (String jarName : jarNames) {
       File jar = new File(jarName);
-      if (!DeployedJar.hasValidJarContent(jar)) {
+      if (!JarFileUtil.hasValidJarContent(jar)) {
         throw new IllegalArgumentException(
             "File does not contain valid JAR content: " + jar.getName());
       }
     }
+  }
+
+  @Override
+  public boolean affectsClusterConfiguration() {
+    return true;
   }
 
   /**
@@ -239,10 +232,5 @@ public class DeployCommand extends GfshCommand {
 
       return result;
     }
-  }
-
-  @Override
-  public boolean affectsClusterConfiguration() {
-    return true;
   }
 }

@@ -32,10 +32,12 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -43,14 +45,17 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.DiskStore;
+import org.apache.geode.deployment.JarDeploymentService;
+import org.apache.geode.deployment.impl.legacy.LegacyJarDeploymentService;
+import org.apache.geode.deployment.internal.JarDeploymentServiceFactory;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.DeployedJar;
-import org.apache.geode.internal.JarDeployer;
 import org.apache.geode.internal.cache.DirectoryHolder;
 import org.apache.geode.internal.cache.DiskInitFile;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.Oplog;
+import org.apache.geode.management.configuration.Deployment;
+import org.apache.geode.test.compiler.JarBuilder;
 
 public class BackupFileCopierIntegrationTest {
   private static final String CONFIG_DIRECTORY = "config";
@@ -68,14 +73,21 @@ public class BackupFileCopierIntegrationTest {
   private TemporaryBackupFiles tempFiles;
   private Path tempFilesLocation;
   private BackupFileCopier fileCopier;
+  private JarDeploymentService jarDeploymentService;
 
   @Before
   public void setup() throws IOException {
+    jarDeploymentService = new LegacyJarDeploymentService();
     cache = mock(InternalCache.class);
     tempFiles = mock(TemporaryBackupFiles.class);
     tempFilesLocation = tempFolder.newFolder("temporaryBackupFiles").toPath();
     when(tempFiles.getDirectory()).thenReturn(tempFilesLocation);
-    fileCopier = spy(new BackupFileCopier(cache, tempFiles));
+    fileCopier = spy(new BackupFileCopier(cache, jarDeploymentService, tempFiles));
+  }
+
+  @After
+  public void tearDown() {
+    JarDeploymentServiceFactory.shutdownJarDeploymentService();
   }
 
   @Test
@@ -131,20 +143,30 @@ public class BackupFileCopierIntegrationTest {
 
   @Test
   public void copiesDeployedJarsToCorrectLocation() throws IOException {
-    File myJarFile = tempFolder.newFile("myJar.jar");
-    JarDeployer deployer = mock(JarDeployer.class);
-    DeployedJar deployedJar = mock(DeployedJar.class);
-    when(deployedJar.getFileCanonicalPath()).thenReturn(myJarFile.getCanonicalPath());
-    when(deployer.findDeployedJars()).thenReturn(Collections.singletonList(deployedJar));
-    fileCopier = spy(fileCopier);
-    doReturn(deployer).when(fileCopier).getJarDeployer();
+    File myJarFile = new File(tempFolder.getRoot().getCanonicalPath() + "/myJar.jar");
+    JarBuilder jarBuilder = new JarBuilder();
+    jarBuilder.buildJar(myJarFile, createClassContent("version1", "Abc"));
+    Deployment deployment = new Deployment(myJarFile.getName(), "", Instant.now().toString());
+    deployment.setFile(myJarFile);
+    jarDeploymentService.deploy(deployment);
+    fileCopier = new BackupFileCopier(cache, jarDeploymentService, tempFiles);
 
-    fileCopier.copyDeployedJars();
+    Set<File> files = fileCopier.copyDeployedJars();
+    files.forEach(file -> {
+      try {
+        System.err
+            .println("BackupFileCopierIntegrationTest.copiesDeployedJarsToCorrectLocation:  "
+                + file.getCanonicalPath());
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    });
 
-    Path expectedJar = tempFilesLocation.resolve(USER_FILES).resolve("myJar.jar");
+    Path expectedJar = tempFilesLocation.resolve(USER_FILES).resolve("myJar.v1.jar");
     assertThat(expectedJar).exists();
     assertThat(fileCopier.getBackupDefinition().getDeployedJars().keySet())
         .containsExactly(expectedJar);
+    jarDeploymentService.undeployByDeploymentName("myJar");
   }
 
   @Test
@@ -268,5 +290,14 @@ public class BackupFileCopierIntegrationTest {
         .containsOnlyKeys(diskStore);
     assertThat(fileCopier.getBackupDefinition().getOplogFilesByDiskStore().get(diskStore))
         .containsExactlyInAnyOrder(expectedCrfFile, expectedDrfFile, expectedKrfFile);
+  }
+
+  private static String createClassContent(String version, String functionName) {
+    return "package jddunit.function;" + "import org.apache.geode.cache.execute.Function;"
+        + "import org.apache.geode.cache.execute.FunctionContext;" + "public class "
+        + functionName + " implements Function {" + "public boolean hasResult() {return true;}"
+        + "public String getId() {return \"" + version + "\";}"
+        + "public void execute(FunctionContext context) {context.getResultSender().lastResult(\""
+        + version + "\");}}";
   }
 }

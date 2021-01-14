@@ -29,6 +29,7 @@ dependencies {
     exclude module: 'geode-modules'
   }
   compile(project(':geode-core'))
+  compile(project(':geode-common'))
   integrationTestImplementation(project(':extensions:geode-modules'))
   integrationTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'

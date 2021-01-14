@@ -69,7 +69,7 @@ public class DeploymentValidatorTest {
 
     assertThatThrownBy(() -> deploymentValidator.validate(CREATE, deployment))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("File does not contain valid JAR content:");
+        .hasMessageContaining("do not contain valid JAR contents");
   }
 
   @Test

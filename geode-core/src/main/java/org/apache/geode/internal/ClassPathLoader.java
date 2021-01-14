@@ -20,9 +20,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Proxy;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -34,7 +34,10 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.deployment.JarDeploymentService;
+import org.apache.geode.deployment.internal.JarDeploymentServiceFactory;
 import org.apache.geode.internal.util.CollectionUtils;
+import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -83,19 +86,20 @@ public class ClassPathLoader {
 
   private volatile DeployJarChildFirstClassLoader leafLoader;
 
-  private final JarDeployer jarDeployer;
+  private final JarDeploymentService jarDeploymentService;
 
   private final boolean excludeTCCL;
 
-  public ClassPathLoader(boolean excludeTCCL) {
+  private ClassPathLoader(boolean excludeTCCL) {
     this.excludeTCCL = excludeTCCL;
-    jarDeployer = new JarDeployer();
+    jarDeploymentService = JarDeploymentServiceFactory.getJarDeploymentServiceInstance();
     rebuildClassLoaderForDeployedJars();
   }
 
-  public ClassPathLoader(boolean excludeTCCL, File workingDir) {
+  private ClassPathLoader(boolean excludeTCCL, File workingDir) {
     this.excludeTCCL = excludeTCCL;
-    jarDeployer = new JarDeployer(workingDir);
+    jarDeploymentService = JarDeploymentServiceFactory
+        .reinitializeJarDeploymentServiceWithWorkingDirectory(workingDir);
     rebuildClassLoaderForDeployedJars();
   }
 
@@ -110,10 +114,6 @@ public class ClassPathLoader {
     return latest;
   }
 
-  public JarDeployer getJarDeployer() {
-    return jarDeployer;
-  }
-
   /**
    * createWithDefaults is exposed for testing.
    */
@@ -124,9 +124,9 @@ public class ClassPathLoader {
 
   private synchronized void rebuildClassLoaderForDeployedJars() {
     leafLoader = null;
-    Collection<DeployedJar> deployedJars = jarDeployer.getDeployedJars().values();
-    for (DeployedJar deployedJar : deployedJars) {
-      chainClassloader(deployedJar);
+    List<Deployment> deployments = jarDeploymentService.listDeployed();
+    for (Deployment deployment : deployments) {
+      chainClassloader(deployment.getFile(), deployment.getDeploymentName());
     }
   }
 
@@ -137,9 +137,13 @@ public class ClassPathLoader {
     return leafLoader;
   }
 
-  synchronized void chainClassloader(DeployedJar jar) {
-    leafLoader = new DeployJarChildFirstClassLoader(artifactIdsToClassLoader,
-        new URL[] {jar.getFileURL()}, jar.getArtifactId(), getLeafLoader());
+  synchronized void chainClassloader(File jar, String deploymentName) {
+    try {
+      leafLoader = new DeployJarChildFirstClassLoader(artifactIdsToClassLoader,
+          new URL[] {jar.toURI().toURL()}, deploymentName, getLeafLoader());
+    } catch (MalformedURLException e) {
+      e.printStackTrace();
+    }
   }
 
   synchronized void unloadClassloaderForArtifact(String artifactId) {
@@ -240,7 +244,7 @@ public class ClassPathLoader {
     final StringBuilder sb = new StringBuilder(getClass().getName());
     sb.append("@").append(System.identityHashCode(this)).append("{");
     sb.append("excludeTCCL=").append(excludeTCCL);
-    sb.append(", jarDeployer=").append(jarDeployer);
+    sb.append(", jarDeployer=").append(jarDeploymentService);
     sb.append(", classLoaders=[");
     sb.append(getClassLoaders().stream().map(ClassLoader::toString).collect(joining(", ")));
     sb.append("]}");
