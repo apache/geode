@@ -51,7 +51,9 @@ import org.apache.geode.internal.security.SecurityService;
  * client else do not send the reply back to the client
  *
  * @since GemFire 5.8Beta
+ * @deprecated use {@link ExecuteFunction70}
  */
+@Deprecated
 public class ExecuteFunction extends BaseCommand {
 
   @Immutable

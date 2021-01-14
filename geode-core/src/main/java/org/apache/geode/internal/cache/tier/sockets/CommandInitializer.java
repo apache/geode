@@ -15,6 +15,8 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static java.util.Collections.unmodifiableMap;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -30,35 +32,22 @@ import org.apache.geode.internal.cache.tier.sockets.command.ClearRegion;
 import org.apache.geode.internal.cache.tier.sockets.command.ClientReady;
 import org.apache.geode.internal.cache.tier.sockets.command.CloseConnection;
 import org.apache.geode.internal.cache.tier.sockets.command.CommitCommand;
-import org.apache.geode.internal.cache.tier.sockets.command.ContainsKey;
 import org.apache.geode.internal.cache.tier.sockets.command.ContainsKey66;
 import org.apache.geode.internal.cache.tier.sockets.command.CreateRegion;
-import org.apache.geode.internal.cache.tier.sockets.command.Destroy;
-import org.apache.geode.internal.cache.tier.sockets.command.Destroy65;
 import org.apache.geode.internal.cache.tier.sockets.command.Destroy70;
 import org.apache.geode.internal.cache.tier.sockets.command.DestroyRegion;
-import org.apache.geode.internal.cache.tier.sockets.command.ExecuteFunction;
-import org.apache.geode.internal.cache.tier.sockets.command.ExecuteFunction65;
-import org.apache.geode.internal.cache.tier.sockets.command.ExecuteFunction66;
 import org.apache.geode.internal.cache.tier.sockets.command.ExecuteFunction70;
-import org.apache.geode.internal.cache.tier.sockets.command.ExecuteRegionFunction;
-import org.apache.geode.internal.cache.tier.sockets.command.ExecuteRegionFunction65;
 import org.apache.geode.internal.cache.tier.sockets.command.ExecuteRegionFunction66;
 import org.apache.geode.internal.cache.tier.sockets.command.ExecuteRegionFunctionGeode18;
 import org.apache.geode.internal.cache.tier.sockets.command.ExecuteRegionFunctionSingleHop;
 import org.apache.geode.internal.cache.tier.sockets.command.GatewayReceiverCommand;
 import org.apache.geode.internal.cache.tier.sockets.command.Get70;
-import org.apache.geode.internal.cache.tier.sockets.command.GetAll;
 import org.apache.geode.internal.cache.tier.sockets.command.GetAll651;
 import org.apache.geode.internal.cache.tier.sockets.command.GetAll70;
-import org.apache.geode.internal.cache.tier.sockets.command.GetAllForRI;
 import org.apache.geode.internal.cache.tier.sockets.command.GetAllWithCallback;
-import org.apache.geode.internal.cache.tier.sockets.command.GetClientPRMetadataCommand;
 import org.apache.geode.internal.cache.tier.sockets.command.GetClientPRMetadataCommand66;
-import org.apache.geode.internal.cache.tier.sockets.command.GetClientPartitionAttributesCommand;
 import org.apache.geode.internal.cache.tier.sockets.command.GetClientPartitionAttributesCommand66;
 import org.apache.geode.internal.cache.tier.sockets.command.GetEntry70;
-import org.apache.geode.internal.cache.tier.sockets.command.GetEntryCommand;
 import org.apache.geode.internal.cache.tier.sockets.command.GetFunctionAttribute;
 import org.apache.geode.internal.cache.tier.sockets.command.GetPDXEnumById;
 import org.apache.geode.internal.cache.tier.sockets.command.GetPDXIdForEnum;
@@ -67,18 +56,12 @@ import org.apache.geode.internal.cache.tier.sockets.command.GetPDXTypeById;
 import org.apache.geode.internal.cache.tier.sockets.command.GetPdxEnums70;
 import org.apache.geode.internal.cache.tier.sockets.command.GetPdxTypes70;
 import org.apache.geode.internal.cache.tier.sockets.command.Invalid;
-import org.apache.geode.internal.cache.tier.sockets.command.Invalidate;
 import org.apache.geode.internal.cache.tier.sockets.command.Invalidate70;
 import org.apache.geode.internal.cache.tier.sockets.command.KeySet;
 import org.apache.geode.internal.cache.tier.sockets.command.MakePrimary;
 import org.apache.geode.internal.cache.tier.sockets.command.PeriodicAck;
 import org.apache.geode.internal.cache.tier.sockets.command.Ping;
-import org.apache.geode.internal.cache.tier.sockets.command.Put;
-import org.apache.geode.internal.cache.tier.sockets.command.Put61;
-import org.apache.geode.internal.cache.tier.sockets.command.Put65;
 import org.apache.geode.internal.cache.tier.sockets.command.Put70;
-import org.apache.geode.internal.cache.tier.sockets.command.PutAll;
-import org.apache.geode.internal.cache.tier.sockets.command.PutAll70;
 import org.apache.geode.internal.cache.tier.sockets.command.PutAll80;
 import org.apache.geode.internal.cache.tier.sockets.command.PutAllWithCallback;
 import org.apache.geode.internal.cache.tier.sockets.command.PutUserCredentials;
@@ -87,14 +70,10 @@ import org.apache.geode.internal.cache.tier.sockets.command.QueryGeode10;
 import org.apache.geode.internal.cache.tier.sockets.command.QueryWithParametersGeode10;
 import org.apache.geode.internal.cache.tier.sockets.command.RegisterDataSerializers;
 import org.apache.geode.internal.cache.tier.sockets.command.RegisterInstantiators;
-import org.apache.geode.internal.cache.tier.sockets.command.RegisterInterest;
 import org.apache.geode.internal.cache.tier.sockets.command.RegisterInterest61;
-import org.apache.geode.internal.cache.tier.sockets.command.RegisterInterestList;
-import org.apache.geode.internal.cache.tier.sockets.command.RegisterInterestList61;
 import org.apache.geode.internal.cache.tier.sockets.command.RegisterInterestList66;
 import org.apache.geode.internal.cache.tier.sockets.command.RemoveAll;
 import org.apache.geode.internal.cache.tier.sockets.command.RemoveUserAuth;
-import org.apache.geode.internal.cache.tier.sockets.command.Request;
 import org.apache.geode.internal.cache.tier.sockets.command.RequestEventValue;
 import org.apache.geode.internal.cache.tier.sockets.command.RollbackCommand;
 import org.apache.geode.internal.cache.tier.sockets.command.Size;
@@ -157,184 +136,23 @@ public class CommandInitializer {
 
   private static Map<KnownVersion, Map<Integer, Command>> initializeAllCommands() {
     final LinkedHashMap<KnownVersion, Map<Integer, Command>> allCommands =
-        new LinkedHashMap<KnownVersion, Map<Integer, Command>>();
+        new LinkedHashMap<>();
 
-    allCommands.put(KnownVersion.GFE_56, new HashMap<>());
+    final Map<Integer, Command> gfe82Commands = buildGfe82Commands();
+    allCommands.put(KnownVersion.GFE_82, gfe82Commands);
 
-    // Initialize the GFE 5.7 commands
-    Map<Integer, Command> gfe57Commands = new HashMap<Integer, Command>();
-    allCommands.put(KnownVersion.GFE_57, gfe57Commands);
-    gfe57Commands.put(MessageType.PING, Ping.getCommand());
-    gfe57Commands.put(MessageType.REQUEST, Request.getCommand());
-    gfe57Commands.put(MessageType.PUT, Put.getCommand());
-    gfe57Commands.put(MessageType.PUTALL, PutAll.getCommand());
-    gfe57Commands.put(MessageType.DESTROY, Destroy.getCommand());
-    gfe57Commands.put(MessageType.QUERY,
-        org.apache.geode.internal.cache.tier.sockets.command.Query.getCommand());
-    gfe57Commands.put(MessageType.CLEAR_REGION, ClearRegion.getCommand());
-    gfe57Commands.put(MessageType.DESTROY_REGION, DestroyRegion.getCommand());
-    gfe57Commands.put(MessageType.REGISTER_INTEREST, RegisterInterest.getCommand());
-    gfe57Commands.put(MessageType.UNREGISTER_INTEREST, UnregisterInterest.getCommand());
-    gfe57Commands.put(MessageType.REGISTER_INTEREST_LIST, RegisterInterestList.getCommand());
-    gfe57Commands.put(MessageType.UNREGISTER_INTEREST_LIST, UnregisterInterestList.getCommand());
-    gfe57Commands.put(MessageType.KEY_SET, KeySet.getCommand());
-    gfe57Commands.put(MessageType.CONTAINS_KEY, ContainsKey.getCommand());
-    gfe57Commands.put(MessageType.CREATE_REGION, CreateRegion.getCommand());
-    gfe57Commands.put(MessageType.MAKE_PRIMARY, MakePrimary.getCommand());
-    gfe57Commands.put(MessageType.PERIODIC_ACK, PeriodicAck.getCommand());
-    gfe57Commands.put(MessageType.REGISTER_INSTANTIATORS, RegisterInstantiators.getCommand());
-    gfe57Commands.put(MessageType.UPDATE_CLIENT_NOTIFICATION,
-        UpdateClientNotification.getCommand());
-    gfe57Commands.put(MessageType.CLOSE_CONNECTION, CloseConnection.getCommand());
-    gfe57Commands.put(MessageType.CLIENT_READY, ClientReady.getCommand());
-    gfe57Commands.put(MessageType.INVALID, Invalid.getCommand());
+    final Map<Integer, Command> gfe90Commands = buildGfe90Commands(allCommands.get(KnownVersion.GFE_82));
+    allCommands.put(KnownVersion.GFE_90, gfe90Commands);
+    allCommands.put(KnownVersion.GEODE_1_1_0, gfe90Commands);
+    allCommands.put(KnownVersion.GEODE_1_1_1, gfe90Commands);
+    allCommands.put(KnownVersion.GEODE_1_2_0, gfe90Commands);
+    allCommands.put(KnownVersion.GEODE_1_3_0, gfe90Commands);
+    allCommands.put(KnownVersion.GEODE_1_4_0, gfe90Commands);
+    allCommands.put(KnownVersion.GEODE_1_5_0, gfe90Commands);
+    allCommands.put(KnownVersion.GEODE_1_6_0, gfe90Commands);
+    allCommands.put(KnownVersion.GEODE_1_7_0, gfe90Commands);
 
-
-    gfe57Commands.put(MessageType.GET_ALL, GetAll.getCommand());
-
-    // Initialize the GFE 5.8 commands example
-    Map<Integer, Command> gfe58Commands = new HashMap<Integer, Command>();
-    allCommands.put(KnownVersion.GFE_58, gfe58Commands);
-    gfe58Commands.putAll(allCommands.get(KnownVersion.GFE_57));
-    gfe58Commands.put(MessageType.EXECUTE_REGION_FUNCTION, ExecuteRegionFunction.getCommand());
-    gfe58Commands.put(MessageType.EXECUTE_FUNCTION, ExecuteFunction.getCommand());
-
-    // Initialize the GFE 6.0.3 commands map
-    Map<Integer, Command> gfe603Commands =
-        new HashMap<Integer, Command>(allCommands.get(KnownVersion.GFE_58));
-    allCommands.put(KnownVersion.GFE_603, gfe603Commands);
-
-    // Initialize the GFE 6.1 commands
-    Map<Integer, Command> gfe61Commands = new HashMap<Integer, Command>();
-    allCommands.put(KnownVersion.GFE_61, gfe61Commands);
-    gfe61Commands.putAll(allCommands.get(KnownVersion.GFE_603));
-    gfe61Commands.put(MessageType.REGISTER_INTEREST, RegisterInterest61.getCommand());
-    gfe61Commands.put(MessageType.REGISTER_INTEREST_LIST, RegisterInterestList61.getCommand());
-    gfe61Commands.put(MessageType.REQUEST_EVENT_VALUE, RequestEventValue.getCommand());
-    gfe61Commands.put(MessageType.PUT, Put61.getCommand());
-    gfe61Commands.put(MessageType.REGISTER_DATASERIALIZERS, RegisterDataSerializers.getCommand());
-
-    // Initialize the GFE 6.5 commands
-    Map<Integer, Command> gfe65Commands = new HashMap<Integer, Command>();
-    allCommands.put(KnownVersion.GFE_65, gfe65Commands);
-    gfe65Commands.putAll(allCommands.get(KnownVersion.GFE_61));
-    gfe65Commands.put(MessageType.DESTROY, Destroy65.getCommand());
-    gfe65Commands.put(MessageType.PUT, Put65.getCommand());
-    gfe65Commands.put(MessageType.EXECUTE_REGION_FUNCTION, ExecuteRegionFunction65.getCommand());
-    gfe65Commands.put(MessageType.EXECUTE_FUNCTION, ExecuteFunction65.getCommand());
-    gfe65Commands.put(MessageType.GET_CLIENT_PR_METADATA, GetClientPRMetadataCommand.getCommand());
-    gfe65Commands.put(MessageType.GET_CLIENT_PARTITION_ATTRIBUTES,
-        GetClientPartitionAttributesCommand.getCommand());
-    gfe65Commands.put(MessageType.USER_CREDENTIAL_MESSAGE, PutUserCredentials.getCommand());
-    gfe65Commands.put(MessageType.REMOVE_USER_AUTH, RemoveUserAuth.getCommand());
-    gfe65Commands.put(MessageType.EXECUTE_REGION_FUNCTION_SINGLE_HOP,
-        ExecuteRegionFunctionSingleHop.getCommand());
-
-    // Initialize the GFE 6.5.1 commands
-    Map<Integer, Command> gfe651Commands = new HashMap<Integer, Command>();
-    allCommands.put(KnownVersion.GFE_651, gfe651Commands);
-    gfe651Commands.putAll(allCommands.get(KnownVersion.GFE_65));
-    gfe651Commands.put(MessageType.QUERY_WITH_PARAMETERS, Query651.getCommand());
-
-    // Initialize the GFE 6.5.1.6 commands
-    Map<Integer, Command> gfe6516Commands = new HashMap<Integer, Command>();
-    allCommands.put(KnownVersion.GFE_6516, gfe6516Commands);
-    gfe6516Commands.putAll(allCommands.get(KnownVersion.GFE_651));
-    gfe6516Commands.put(MessageType.GET_ALL, GetAll651.getCommand());
-    gfe6516Commands.put(MessageType.GET_CLIENT_PR_METADATA,
-        GetClientPRMetadataCommand66.getCommand());
-
-    // Initialize the GFE 6.6 commands
-    Map<Integer, Command> gfe66Commands = new HashMap<Integer, Command>();
-    allCommands.put(KnownVersion.GFE_66, gfe66Commands);
-    gfe66Commands.putAll(allCommands.get(KnownVersion.GFE_6516));
-    gfe66Commands.put(MessageType.ADD_PDX_TYPE, AddPdxType.getCommand());
-    gfe66Commands.put(MessageType.GET_PDX_ID_FOR_TYPE, GetPDXIdForType.getCommand());
-    gfe66Commands.put(MessageType.GET_PDX_TYPE_BY_ID, GetPDXTypeById.getCommand());
-    gfe66Commands.put(MessageType.SIZE, Size.getCommand());
-    gfe66Commands.put(MessageType.INVALIDATE, Invalidate.getCommand());
-    gfe66Commands.put(MessageType.COMMIT, CommitCommand.getCommand());
-    gfe66Commands.put(MessageType.ROLLBACK, RollbackCommand.getCommand());
-    gfe66Commands.put(MessageType.TX_FAILOVER, TXFailoverCommand.getCommand());
-    gfe66Commands.put(MessageType.GET_ENTRY, GetEntryCommand.getCommand());
-    gfe66Commands.put(MessageType.TX_SYNCHRONIZATION, TXSynchronizationCommand.getCommand());
-    gfe66Commands.put(MessageType.GET_CLIENT_PARTITION_ATTRIBUTES,
-        GetClientPartitionAttributesCommand66.getCommand());
-    gfe66Commands.put(MessageType.REGISTER_INTEREST_LIST, RegisterInterestList66.getCommand());
-    gfe66Commands.put(MessageType.GET_FUNCTION_ATTRIBUTES, GetFunctionAttribute.getCommand());
-    gfe66Commands.put(MessageType.EXECUTE_REGION_FUNCTION, ExecuteRegionFunction66.getCommand());
-    gfe66Commands.put(MessageType.EXECUTE_FUNCTION, ExecuteFunction66.getCommand());
-    gfe66Commands.put(MessageType.GET_ALL_FOR_RI, GetAllForRI.getCommand());
-    gfe66Commands.put(MessageType.GATEWAY_RECEIVER_COMMAND, GatewayReceiverCommand.getCommand());
-    gfe66Commands.put(MessageType.CONTAINS_KEY, ContainsKey66.getCommand());
-
-    // Initialize the GFE 6.6.2 commands
-    Map<Integer, Command> gfe662Commands = new HashMap<Integer, Command>();
-    allCommands.put(KnownVersion.GFE_662, gfe662Commands);
-    gfe662Commands.putAll(allCommands.get(KnownVersion.GFE_66));
-    gfe662Commands.put(MessageType.ADD_PDX_ENUM, AddPdxEnum.getCommand());
-    gfe662Commands.put(MessageType.GET_PDX_ID_FOR_ENUM, GetPDXIdForEnum.getCommand());
-    gfe662Commands.put(MessageType.GET_PDX_ENUM_BY_ID, GetPDXEnumById.getCommand());
-
-    // Initialize the GFE 6.6.2.2 commands (same commands as the GFE 6.6.2 commands)
-    // The SERVER_TO_CLIENT_PING message was added, but it doesn't need to be registered here
-    allCommands.put(KnownVersion.GFE_6622, gfe662Commands);
-
-    // Initialize the GFE 70 commands
-    Map<Integer, Command> gfe70Commands = new HashMap<Integer, Command>();
-    allCommands.put(KnownVersion.GFE_70, gfe70Commands);
-    gfe70Commands.putAll(allCommands.get(KnownVersion.GFE_662));
-    gfe70Commands.remove(MessageType.GET_ALL_FOR_RI);
-    gfe70Commands.put(MessageType.REQUEST, Get70.getCommand());
-    gfe70Commands.put(MessageType.GET_ENTRY, GetEntry70.getCommand());
-    gfe70Commands.put(MessageType.GET_ALL_70, GetAll70.getCommand());
-    gfe70Commands.put(MessageType.PUTALL, PutAll70.getCommand());
-    gfe70Commands.put(MessageType.PUT, Put70.getCommand());
-    gfe70Commands.put(MessageType.DESTROY, Destroy70.getCommand());
-    gfe70Commands.put(MessageType.INVALIDATE, Invalidate70.getCommand());
-    gfe70Commands.put(MessageType.GET_PDX_TYPES, GetPdxTypes70.getCommand());
-    gfe70Commands.put(MessageType.GET_PDX_ENUMS, GetPdxEnums70.getCommand());
-    gfe70Commands.put(MessageType.EXECUTE_FUNCTION, ExecuteFunction70.getCommand());
-
-    allCommands.put(KnownVersion.GFE_701, gfe70Commands);
-    allCommands.put(KnownVersion.GFE_7099, gfe70Commands);
-    allCommands.put(KnownVersion.GFE_71, gfe70Commands);
-
-    Map<Integer, Command> gfe80Commands =
-        new HashMap<Integer, Command>(allCommands.get(KnownVersion.GFE_71));
-    allCommands.put(KnownVersion.GFE_80, gfe80Commands);
-    // PutAll is changed to chunk responses back to the client
-    gfe80Commands.put(MessageType.PUTALL, PutAll80.getCommand());
-
-    allCommands.put(KnownVersion.GFE_8009, gfe80Commands);
-
-    Map<Integer, Command> gfe81Commands = new HashMap<Integer, Command>(gfe80Commands);
-    gfe81Commands.put(MessageType.GET_ALL_WITH_CALLBACK, GetAllWithCallback.getCommand());
-    gfe81Commands.put(MessageType.PUT_ALL_WITH_CALLBACK, PutAllWithCallback.getCommand());
-    gfe81Commands.put(MessageType.REMOVE_ALL, RemoveAll.getCommand());
-
-    allCommands.put(KnownVersion.GFE_81, gfe81Commands);
-    allCommands.put(KnownVersion.GFE_82, gfe81Commands);
-
-    Map<Integer, Command> commands =
-        new HashMap<Integer, Command>(allCommands.get(KnownVersion.GFE_82));
-    allCommands.put(KnownVersion.GFE_90, commands);
-    commands.put(MessageType.QUERY_WITH_PARAMETERS, QueryWithParametersGeode10.getCommand());
-    commands.put(MessageType.QUERY, QueryGeode10.getCommand());
-
-    allCommands.put(KnownVersion.GEODE_1_1_0, commands);
-    allCommands.put(KnownVersion.GEODE_1_1_1, commands);
-    allCommands.put(KnownVersion.GEODE_1_2_0, commands);
-    allCommands.put(KnownVersion.GEODE_1_3_0, commands);
-    allCommands.put(KnownVersion.GEODE_1_4_0, commands);
-    allCommands.put(KnownVersion.GEODE_1_5_0, commands);
-    allCommands.put(KnownVersion.GEODE_1_6_0, commands);
-    allCommands.put(KnownVersion.GEODE_1_7_0, commands);
-
-    Map<Integer, Command> geode18Commands =
-        new HashMap<Integer, Command>(allCommands.get(KnownVersion.GEODE_1_7_0));
-    geode18Commands.put(MessageType.EXECUTE_REGION_FUNCTION,
-        ExecuteRegionFunctionGeode18.getCommand());
+    final Map<Integer, Command> geode18Commands = buildGeode18Commands(allCommands.get(KnownVersion.GEODE_1_7_0));
     allCommands.put(KnownVersion.GEODE_1_8_0, geode18Commands);
     allCommands.put(KnownVersion.GEODE_1_9_0, geode18Commands);
     allCommands.put(KnownVersion.GEODE_1_10_0, geode18Commands);
@@ -345,7 +163,102 @@ public class CommandInitializer {
     allCommands.put(KnownVersion.GEODE_1_13_1, geode18Commands);
 
     allCommands.put(KnownVersion.GEODE_1_14_0, geode18Commands);
-    return Collections.unmodifiableMap(allCommands);
+
+    return unmodifiableMap(allCommands);
+  }
+
+  private static Map<Integer, Command> buildGeode18Commands(final Map<Integer, Command> baseCommands) {
+    final Map<Integer, Command> geode18Commands = new HashMap<>(baseCommands);
+    initializeGeode18Commands(geode18Commands);
+    return unmodifiableMap(geode18Commands);
+  }
+
+  private static Map<Integer, Command> buildGfe90Commands(final Map<Integer, Command> baseCommands) {
+    final Map<Integer, Command> gfe90Commands = new HashMap<>(baseCommands);
+    initializeGfe90Commands(gfe90Commands);
+    return unmodifiableMap(gfe90Commands);
+  }
+
+  private static Map<Integer, Command> buildGfe82Commands() {
+    final Map<Integer, Command> gfe82Commands = new HashMap<>();
+    initializeGfe82Commands(gfe82Commands);
+    return unmodifiableMap(gfe82Commands);
+  }
+
+  static void initializeGeode18Commands(final Map<Integer, Command> commands) {
+    commands.put(MessageType.EXECUTE_REGION_FUNCTION, ExecuteRegionFunctionGeode18.getCommand());
+  }
+
+  static void initializeGfe90Commands(final Map<Integer, Command> commands) {
+    commands.put(MessageType.QUERY_WITH_PARAMETERS, QueryWithParametersGeode10.getCommand());
+    commands.put(MessageType.QUERY, QueryGeode10.getCommand());
+  }
+
+  static void initializeGfe82Commands(final Map<Integer, Command> commands) {
+    commands.put(MessageType.PING, Ping.getCommand());
+    commands.put(MessageType.QUERY,
+        org.apache.geode.internal.cache.tier.sockets.command.Query.getCommand());
+    commands.put(MessageType.CLEAR_REGION, ClearRegion.getCommand());
+    commands.put(MessageType.DESTROY_REGION, DestroyRegion.getCommand());
+    commands.put(MessageType.UNREGISTER_INTEREST, UnregisterInterest.getCommand());
+    commands.put(MessageType.UNREGISTER_INTEREST_LIST, UnregisterInterestList.getCommand());
+    commands.put(MessageType.KEY_SET, KeySet.getCommand());
+    commands.put(MessageType.CREATE_REGION, CreateRegion.getCommand());
+    commands.put(MessageType.MAKE_PRIMARY, MakePrimary.getCommand());
+    commands.put(MessageType.PERIODIC_ACK, PeriodicAck.getCommand());
+    commands.put(MessageType.REGISTER_INSTANTIATORS, RegisterInstantiators.getCommand());
+    commands.put(MessageType.UPDATE_CLIENT_NOTIFICATION,
+        UpdateClientNotification.getCommand());
+    commands.put(MessageType.CLOSE_CONNECTION, CloseConnection.getCommand());
+    commands.put(MessageType.CLIENT_READY, ClientReady.getCommand());
+    commands.put(MessageType.INVALID, Invalid.getCommand());
+
+    commands.put(MessageType.REGISTER_INTEREST, RegisterInterest61.getCommand());
+    commands.put(MessageType.REQUEST_EVENT_VALUE, RequestEventValue.getCommand());
+    commands.put(MessageType.REGISTER_DATASERIALIZERS, RegisterDataSerializers.getCommand());
+
+    commands.put(MessageType.USER_CREDENTIAL_MESSAGE, PutUserCredentials.getCommand());
+    commands.put(MessageType.REMOVE_USER_AUTH, RemoveUserAuth.getCommand());
+    commands.put(MessageType.EXECUTE_REGION_FUNCTION_SINGLE_HOP, ExecuteRegionFunctionSingleHop.getCommand());
+
+    commands.put(MessageType.QUERY_WITH_PARAMETERS, Query651.getCommand());
+
+    commands.put(MessageType.GET_ALL, GetAll651.getCommand());
+    commands.put(MessageType.GET_CLIENT_PR_METADATA, GetClientPRMetadataCommand66.getCommand());
+
+    commands.put(MessageType.ADD_PDX_TYPE, AddPdxType.getCommand());
+    commands.put(MessageType.GET_PDX_ID_FOR_TYPE, GetPDXIdForType.getCommand());
+    commands.put(MessageType.GET_PDX_TYPE_BY_ID, GetPDXTypeById.getCommand());
+    commands.put(MessageType.SIZE, Size.getCommand());
+    commands.put(MessageType.COMMIT, CommitCommand.getCommand());
+    commands.put(MessageType.ROLLBACK, RollbackCommand.getCommand());
+    commands.put(MessageType.TX_FAILOVER, TXFailoverCommand.getCommand());
+    commands.put(MessageType.TX_SYNCHRONIZATION, TXSynchronizationCommand.getCommand());
+    commands.put(MessageType.GET_CLIENT_PARTITION_ATTRIBUTES, GetClientPartitionAttributesCommand66.getCommand());
+    commands.put(MessageType.REGISTER_INTEREST_LIST, RegisterInterestList66.getCommand());
+    commands.put(MessageType.GET_FUNCTION_ATTRIBUTES, GetFunctionAttribute.getCommand());
+    commands.put(MessageType.EXECUTE_REGION_FUNCTION, ExecuteRegionFunction66.getCommand());
+    commands.put(MessageType.GATEWAY_RECEIVER_COMMAND, GatewayReceiverCommand.getCommand());
+    commands.put(MessageType.CONTAINS_KEY, ContainsKey66.getCommand());
+
+    commands.put(MessageType.ADD_PDX_ENUM, AddPdxEnum.getCommand());
+    commands.put(MessageType.GET_PDX_ID_FOR_ENUM, GetPDXIdForEnum.getCommand());
+    commands.put(MessageType.GET_PDX_ENUM_BY_ID, GetPDXEnumById.getCommand());
+
+    commands.put(MessageType.REQUEST, Get70.getCommand());
+    commands.put(MessageType.GET_ENTRY, GetEntry70.getCommand());
+    commands.put(MessageType.GET_ALL_70, GetAll70.getCommand());
+    commands.put(MessageType.PUT, Put70.getCommand());
+    commands.put(MessageType.DESTROY, Destroy70.getCommand());
+    commands.put(MessageType.INVALIDATE, Invalidate70.getCommand());
+    commands.put(MessageType.GET_PDX_TYPES, GetPdxTypes70.getCommand());
+    commands.put(MessageType.GET_PDX_ENUMS, GetPdxEnums70.getCommand());
+    commands.put(MessageType.EXECUTE_FUNCTION, ExecuteFunction70.getCommand());
+
+    commands.put(MessageType.PUTALL, PutAll80.getCommand());
+    commands.put(MessageType.GET_ALL_WITH_CALLBACK, GetAllWithCallback.getCommand());
+    commands.put(MessageType.PUT_ALL_WITH_CALLBACK, PutAllWithCallback.getCommand());
+    commands.put(MessageType.REMOVE_ALL, RemoveAll.getCommand());
   }
 
   public static Map<Integer, Command> getCommands(KnownVersion version) {

@@ -49,6 +49,10 @@ import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
+/**
+ * @deprecated Use {@link PutAll80}.
+ */
+@Deprecated
 public class PutAll70 extends BaseCommand {
 
   @Immutable

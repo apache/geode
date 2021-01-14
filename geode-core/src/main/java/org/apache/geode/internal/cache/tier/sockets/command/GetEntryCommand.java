@@ -28,7 +28,9 @@ import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
  * in Request so as to not invoke loader.
  *
  * @since GemFire 6.6
+ * @deprecated use {@link GetEntry70}.
  */
+@Deprecated
 public class GetEntryCommand extends Request {
 
   @Immutable

@@ -48,7 +48,9 @@ import org.apache.geode.internal.security.SecurityService;
 
 /**
  * @since GemFire 6.5
+ * @deprecated Use {@link ExecuteRegionFunction66}
  */
+@Deprecated
 public class ExecuteRegionFunction65 extends BaseCommand {
 
   @Immutable

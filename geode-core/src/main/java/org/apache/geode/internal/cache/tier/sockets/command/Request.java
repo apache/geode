@@ -40,6 +40,10 @@ import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
+/**
+ * @deprecated Use {@link Get70}
+ */
+@Deprecated
 public class Request extends BaseCommand {
 
   @Immutable

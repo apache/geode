@@ -37,7 +37,9 @@ import org.apache.geode.internal.security.SecurityService;
  *
  *
  * @since GemFire 6.5
+ * @deprecated Use {@link GetClientPRMetadataCommand66}.
  */
+@Deprecated
 public class GetClientPRMetadataCommand extends BaseCommand {
 
   @Immutable

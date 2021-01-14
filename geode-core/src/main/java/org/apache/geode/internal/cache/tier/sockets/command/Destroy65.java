@@ -46,6 +46,10 @@ import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.ResourcePermission.Resource;
 
+/**
+ * @deprecated Use {@link Destroy70}
+ */
+@Deprecated
 public class Destroy65 extends BaseCommand {
 
   @Immutable

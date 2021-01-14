@@ -50,7 +50,9 @@ import org.apache.geode.internal.security.SecurityService;
 
 /**
  * @since GemFire 6.5
+ * @deprecated use {@link ExecuteFunction70}
  */
+@Deprecated
 public class ExecuteFunction65 extends BaseCommand {
 
   @Immutable

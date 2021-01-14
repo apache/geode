@@ -54,7 +54,9 @@ import org.apache.geode.security.ResourcePermission.Resource;
 
 /**
  * @since GemFire 6.5
+ * @deprecated Use {@link Put70}
  */
+@Deprecated
 public class Put65 extends BaseCommand {
 
   @Immutable

@@ -40,6 +40,10 @@ import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
+/**
+ * @deprecated Use {@link Put70}
+ */
+@Deprecated
 public class Put extends BaseCommand {
 
   @Immutable

@@ -41,6 +41,10 @@ import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
+/**
+ * @deprecated Use {@link Invalidate70}.
+ */
+@Deprecated
 public class Invalidate extends BaseCommand {
 
   @Immutable

@@ -35,6 +35,10 @@ import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
+/**
+ * @deprecated Use {@link RegisterInterest61}
+ */
+@Deprecated
 public class RegisterInterest extends BaseCommand {
 
   @Immutable

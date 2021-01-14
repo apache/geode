@@ -33,7 +33,9 @@ import org.apache.geode.internal.security.SecurityService;
  * {@link Command} for {@link GetClientPartitionAttributesOp} operation
  *
  * @since GemFire 6.5
+ * @deprecated Use {@link GetClientPartitionAttributesCommand66}.
  */
+@Deprecated
 public class GetClientPartitionAttributesCommand extends BaseCommand {
 
   @Immutable

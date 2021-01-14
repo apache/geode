@@ -32,6 +32,10 @@ import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
+/**
+ * @deprecated Use {@link ContainsKey66}
+ */
+@Deprecated
 public class ContainsKey extends BaseCommand {
 
   @Immutable

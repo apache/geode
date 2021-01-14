@@ -61,7 +61,9 @@ import org.apache.geode.logging.internal.executors.LoggingExecutors;
 
 /**
  * @since GemFire 6.6
+ * @deprecated use {@link ExecuteFunction70}
  */
+@Deprecated
 public class ExecuteFunction66 extends BaseCommand {
   @Immutable
   private static final ExecuteFunction66 singleton = new ExecuteFunction66();

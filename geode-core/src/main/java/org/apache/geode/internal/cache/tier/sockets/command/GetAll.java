@@ -37,6 +37,10 @@ import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
+/**
+ * @deprecated Use {@link GetAll651}
+ */
+@Deprecated
 public class GetAll extends BaseCommand {
 
   @Immutable

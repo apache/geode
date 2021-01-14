@@ -39,7 +39,9 @@ import org.apache.geode.security.ResourcePermission.Resource;
 
 /**
  * @since GemFire 6.1
+ * @deprecated Use {@link RegisterInterestList66}
  */
+@Deprecated
 public class RegisterInterestList61 extends BaseCommand {
 
   @Immutable
