@@ -16,24 +16,29 @@
  */
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
-
+apply from: "${rootDir}/${scriptDir}/jboss-modules.gradle"
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
 compileJava {
   options.compilerArgs << '-Xlint:-sunapi'
   options.compilerArgs << '-XDenableSunApiLintControl'
 }
+configurations {
+  jbossModular
+}
 
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
 
-  testImplementation(project(':geode-common'))
-  compileOnly(project(':geode-core'))
-  compileOnly(project(':geode-membership'))
-  compileOnly(project(':geode-logging'))
-  compileOnly(project(':geode-serialization'))
-  compileOnly(project(':geode-unsafe'))
-  compileOnly(project(':geode-gfsh'))
+  implementation(project(':geode-common'))
+  implementation(project(':geode-core'))
+  implementation(project(':geode-membership'))
+  implementation(project(':geode-serialization'))
+  implementation(project(':geode-unsafe'))
+  implementation(project(':geode-gfsh'))
+  implementation(project(':geode-logging'))
+  jbossModular(project(':geode-dunit'))
+  jbossModular(project(':geode-wan'))
 
   api('junit:junit') {
     exclude module: 'hamcrest'
@@ -44,7 +49,8 @@ dependencies {
   api('org.mockito:mockito-core')
 
   api('io.github.classgraph:classgraph')
-  api(project(':frameworks:jackson'))
+  api('com.fasterxml.jackson.core:jackson-annotations')
+  api('com.fasterxml.jackson.core:jackson-databind')
   api('com.github.stefanbirkner:system-rules') {
     exclude module: 'junit-dep'
   }
@@ -53,7 +59,6 @@ dependencies {
   api('commons-io:commons-io')
 
   api('org.apache.commons:commons-lang3')
-  api('org.apache.logging.log4j:log4j-api')
 
   api('org.awaitility:awaitility')
   api('org.hamcrest:hamcrest')
@@ -78,4 +83,17 @@ test {
 integrationTest {
   // Some tests have inner tests that should be ignored
   exclude "**/*\$*.class"
+}
+
+jbossModulesExtension {
+  geodeConfigurations {
+    distributedTest {
+      packagesToExport = [
+        "util",
+        "perffmwk",
+        "parReg/query/unittest",
+        "com/examples/"
+      ]
+    }
+  }
 }

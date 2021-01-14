@@ -14,10 +14,6 @@
  */
 package org.apache.geode.distributed.internal.tcpserver;
 
-import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
-import static org.apache.geode.distributed.ConfigurationProperties.NAME;
-import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.Serializable;
@@ -32,6 +28,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
+import org.assertj.core.api.Assertions;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -41,6 +38,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import org.apache.geode.annotations.internal.SuppressDeprecationForBackwardsCompatibilityTesting;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.InternalLocator;
@@ -237,7 +235,7 @@ public class TcpServerProductVersionDUnitTest implements Serializable {
 
       final Class<?> responseClass = Class.forName(responseClassName);
 
-      assertThat(response).isInstanceOf(responseClass);
+      Assertions.assertThat(response).isInstanceOf(responseClass);
     };
 
   }
@@ -270,11 +268,11 @@ public class TcpServerProductVersionDUnitTest implements Serializable {
 
   public Properties getDistributedSystemProperties() {
     Properties properties = new Properties();
-    properties.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
-    properties.setProperty(USE_CLUSTER_CONFIGURATION, "false");
+    properties.setProperty(ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION, "false");
+    properties.setProperty(ConfigurationProperties.USE_CLUSTER_CONFIGURATION, "false");
     @SuppressWarnings("deprecation")
     final int currentVMNum = VM.getCurrentVMNum();
-    properties.setProperty(NAME, "vm" + currentVMNum);
+    properties.setProperty(ConfigurationProperties.NAME, "vm" + currentVMNum);
     return properties;
   }
 

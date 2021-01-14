@@ -185,9 +185,9 @@ public class InternalHttpService implements HttpService {
     webapp.setParentLoaderPriority(false);
 
     // GEODE-7334: load all jackson classes from war file except jackson annotations
-    webapp.getSystemClasspathPattern().add("com.fasterxml.jackson.annotation.");
-    webapp.getServerClasspathPattern().add("com.fasterxml.jackson.",
-        "-com.fasterxml.jackson.annotation.");
+    // webapp.getSystemClasspathPattern().add("com.fasterxml.jackson.annotation.");
+    // webapp.getServerClasspathPattern().add("com.fasterxml.jackson.",
+    // "-com.fasterxml.jackson.annotation.");
     // add the member's working dir as the extra classpath
     webapp.setExtraClasspath(new File(".").getAbsolutePath());
 

@@ -263,7 +263,7 @@ public class ClusterStartupRule implements SerializableTestRule {
     final String defaultName = "server-" + index;
     VM serverVM = getVM(index, version);
     ServerStarterRule serverStarter = new ServerStarterRule();
-    Server server = serverVM.invoke("startServerVM", () -> {
+    Server server = serverVM.invoke(() -> {
       memberStarter = serverStarter;
       if (logFile) {
         serverStarter.withLogFile();
@@ -283,6 +283,7 @@ public class ClusterStartupRule implements SerializableTestRule {
   public ClientVM startClientVM(int index, String clientVersion,
       SerializableConsumerIF<ClientCacheRule> clientCacheRuleSetUp) throws Exception {
     VM client = getVM(index, clientVersion);
+    client.initializeAsClientVM();
     Exception error = client.invoke(() -> {
       clientCacheRule = new ClientCacheRule();
       try {

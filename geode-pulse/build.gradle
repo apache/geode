@@ -32,11 +32,12 @@ dependencies {
 
   implementation('org.springframework.security:spring-security-core')
   implementation('javax.servlet:javax.servlet-api')
-  implementation('mx4j:mx4j') {
+  runtimeOnly('mx4j:mx4j') {
     ext.optional = true
   }
   implementation('mx4j:mx4j-remote') {
     ext.optional = true
+    ext.embed = true
   }
 
   uiTestImplementation('junit:junit')
@@ -45,7 +46,7 @@ dependencies {
   uiTestImplementation('org.assertj:assertj-core')
   uiTestImplementation('org.apache.httpcomponents:httpclient')
   uiTestImplementation('org.seleniumhq.selenium:selenium-support')
-  implementation(project(':frameworks:springframework'))
+  implementation('org.springframework:spring-beans')
 
   // Needed to fully use log4j instead of commons-logging.
   implementation('org.apache.logging.log4j:log4j-jcl')
@@ -77,13 +78,16 @@ dependencies {
     exclude module: 'spring-expression'
     exclude module: 'spring-jdbc'
   }
-  implementation(project(':frameworks:springframework'))
+  implementation('org.springframework:spring-context')
+  implementation('org.springframework:spring-web')
   runtimeOnly('org.springframework:spring-webmvc') {
     exclude module: 'aopalliance'
     exclude module: 'aspectjweaver'
   }
   implementation('org.springframework:spring-tx')
-  implementation(project(':frameworks:jackson'))
+  implementation('com.fasterxml.jackson.core:jackson-annotations')
+  implementation('com.fasterxml.jackson.core:jackson-core')
+  implementation('com.fasterxml.jackson.core:jackson-databind')
 
   compileOnly('org.mortbay.jetty:servlet-api')
 

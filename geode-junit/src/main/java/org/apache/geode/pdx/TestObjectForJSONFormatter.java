@@ -34,12 +34,11 @@ import java.util.Stack;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-enum Day {
-  Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday
-}
-
-
 public class TestObjectForJSONFormatter implements PdxSerializable {
+
+  public enum Day {
+    Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday
+  }
 
   private boolean p_bool;
   private byte p_byte;

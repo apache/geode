@@ -16,10 +16,11 @@
  */
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
-
+apply from: "${rootDir}/${scriptDir}/jboss-modules-extensions.gradle"
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
 dependencies {
+  implementation(platform(project(':boms:geode-all-bom')))
   compileOnly(platform(project(':boms:geode-all-bom')))
   compileOnly('com.github.stephenc.findbugs:findbugs-annotations')
 

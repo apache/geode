@@ -21,7 +21,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -119,11 +118,11 @@ public class AgentUtil {
           geodeHome + "/tools/Pulse/" + unversionedWarFileName,
           geodeHome + "/lib/" + unversionedWarFileName};
     }
-    return findPossibleWarLocationFromStream(Arrays.stream(possibleFiles));
+    return findPossibleWarLocationFromStream(possibleFiles);
   }
 
-  private URI findPossibleWarLocationFromStream(Stream<String> stream) {
-    return stream.filter(possiblePath -> new File(possiblePath).isFile())
+  private URI findPossibleWarLocationFromStream(String[] possiblePaths) {
+    return Arrays.stream(possiblePaths).filter(possiblePath -> new File(possiblePath).isFile())
         .findFirst().map(s -> new File(s).toURI()).orElse(null);
   }
 

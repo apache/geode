@@ -22,9 +22,12 @@ apply plugin: 'war'
 apply from: "${project.projectDir}/../gradle/publish-war.gradle"
 apply from: "${project.projectDir}/../gradle/warnings.gradle"
 
+apply from: "${rootDir}/${scriptDir}/jboss-modules-extensions.gradle"
+
 jar.enabled = false
 
 configurations {
+  distributedTestJbossModular
   war {}
 }
 dependencies {
@@ -39,16 +42,11 @@ dependencies {
   providedCompile(project(':geode-gfsh')) {
     exclude module: 'spring-web'
     exclude module: 'spring-core'
-    exclude module: 'spring-jcl'
-    exclude module: 'spring-aop'
-    exclude module: 'spring-aspects'
-    exclude module: 'spring-beans'
-    exclude module: 'spring-context'
-    exclude module: 'spring-expression'
   }
 
   providedCompile(platform(project(':boms:geode-all-bom')))
   providedCompile('javax.servlet:javax.servlet-api')
+  providedCompile('org.apache.logging.log4j:log4j-api')
 
   implementation('org.springframework:spring-webmvc')
   implementation('org.apache.commons:commons-lang3')
@@ -68,9 +66,12 @@ dependencies {
 
   distributedTestImplementation(project(':geode-common'))
   distributedTestImplementation(project(':geode-dunit'))
+  distributedTestImplementation(project(':geode-http-service'))
   distributedTestImplementation('pl.pragmatists:JUnitParams')
 
   distributedTestRuntimeOnly(files(war.destinationDirectory))
+
+  distributedTestJbossModular(project(':geode-core'))
 
   upgradeTestImplementation(project(':geode-dunit')) {
   }

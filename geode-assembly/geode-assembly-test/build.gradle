@@ -16,26 +16,29 @@
  */
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
-
-
-
+apply from: "${rootDir}/${scriptDir}/jboss-modules-extensions.gradle"
 
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
-  compileOnly(project(':extensions:geode-modules-test'))
-  compileOnly(project(':geode-core'))
-  compileOnly(project(':geode-pulse'))
-  compileOnly(project(':geode-junit'))
+  implementation(project(':extensions:geode-modules-test'))
+  implementation(project(':geode-core'))
+  implementation(project(':geode-pulse'))
+  implementation(project(':geode-junit'))
   implementation(project(':geode-logging'))
   implementation(project(':geode-membership'))
   implementation('javax.servlet:javax.servlet-api')
   implementation('org.apache.commons:commons-lang3')
-  compileOnly(project(':geode-tcp-server'))
-  compileOnly(project(':frameworks:jackson'))
-  compileOnly('commons-io:commons-io')
-  compileOnly('junit:junit')
-  compileOnly('org.apache.httpcomponents:httpclient')
-  compileOnly('org.apache.logging.log4j:log4j-api')
-  compileOnly('org.assertj:assertj-core')
-  compileOnly('org.codehaus.cargo:cargo-core-uberjar')
+  implementation(project(':geode-tcp-server'))
+  api('com.fasterxml.jackson.core:jackson-databind')
+  api('commons-io:commons-io')
+  api('org.apache.httpcomponents:httpclient')
+  api('org.codehaus.cargo:cargo-core-uberjar')
+}
+
+jbossModulesExtension {
+  geodeConfigurations {
+    main {
+      parentModule = project.findProject(":geode-assembly")
+    }
+  }
 }

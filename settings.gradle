@@ -14,8 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import org.gradle.util.GradleVersion
+
+pluginManagement {
+  repositories {
+    mavenLocal()
+    gradlePluginPortal()
+  }
+}
 
 rootProject.name = 'geode'
 
@@ -65,24 +71,28 @@ include 'geode-concurrency-test'
 include 'boms:geode-client-bom'
 include 'boms:geode-all-bom'
 include 'static-analysis:pmd-rules'
-include 'geode-deployment'
+include 'geode-deployment:geode-jboss-extensions'
 include 'geode-deployment:geode-deployment-legacy'
+include 'geode-deployment:geode-deployment-jboss-modules'
+include 'geode-deployment:geode-deployment-test'
+include 'geode-deployment:geode-deployment-acceptance'
 
 
-['1.0.0-incubating',
- '1.1.0',
- '1.1.1',
- '1.2.0',
- '1.3.0',
- '1.4.0',
- '1.5.0',
- '1.6.0',
- '1.7.0',
- '1.8.0',
- '1.9.0',
- '1.9.1',
- '1.9.2',
- '1.10.0',
+[
+//    '1.0.0-incubating',
+// '1.1.0',
+// '1.1.1',
+// '1.2.0',
+// '1.3.0',
+// '1.4.0',
+// '1.5.0',
+// '1.6.0',
+// '1.7.0',
+// '1.8.0',
+// '1.9.0',
+// '1.9.1',
+// '1.9.2',
+// '1.10.0',
  '1.11.0',
  '1.12.0',
  '1.12.1',
@@ -108,3 +118,4 @@ buildCache {
     enabled = true
   }
 }
+

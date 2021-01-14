@@ -1227,7 +1227,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   }
 
   @VisibleForTesting
-  int getTmpDroppedEventSize() {
+  public int getTmpDroppedEventSize() {
     return tmpDroppedEvents.size();
   }
 

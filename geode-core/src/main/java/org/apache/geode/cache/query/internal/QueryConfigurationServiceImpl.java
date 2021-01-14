@@ -33,9 +33,9 @@ import org.apache.geode.cache.query.security.MethodInvocationAuthorizer;
 import org.apache.geode.cache.query.security.RegExMethodAuthorizer;
 import org.apache.geode.cache.query.security.RestrictedMethodAuthorizer;
 import org.apache.geode.cache.query.security.UnrestrictedMethodAuthorizer;
+import org.apache.geode.classloader.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
 

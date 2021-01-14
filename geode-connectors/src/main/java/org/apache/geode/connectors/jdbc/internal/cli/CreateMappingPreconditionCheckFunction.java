@@ -42,6 +42,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.geode.SerializationException;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.classloader.internal.ClassPathLoader;
 import org.apache.geode.connectors.jdbc.JdbcConnectorException;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.TableMetaDataManager;
@@ -49,7 +50,6 @@ import org.apache.geode.connectors.jdbc.internal.TableMetaDataView;
 import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
@@ -252,7 +252,8 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<Object[]
 
   // unit test mocks this method
   Class<?> loadClass(String className, URL url) throws ClassNotFoundException {
-    return URLClassLoader.newInstance(new URL[] {url}).loadClass(className);
+    return URLClassLoader.newInstance(new URL[] {url}, ClassPathLoader.getLatestAsClassLoader())
+        .loadClass(className);
   }
 
   // unit test mocks this method

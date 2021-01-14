@@ -158,6 +158,11 @@ configure([integrationTest, distributedTest, performanceTest]) {
   }
 }
 
+tasks.named("distributedTest").configure {
+  dependsOn(':geode-assembly:installDist')
+  dependsOn(':geode-assembly:installDistributedTestDist')
+}
+
 // apply common test configuration
 gradle.taskGraph.whenReady({ graph ->
   tasks.withType(Test).each { test ->
@@ -250,8 +255,24 @@ acceptanceTest {
   if (project.hasProperty('testJVM') && !testJVM.trim().isEmpty()) {
     environment "JAVA_HOME", "${project.testJVM}"
   }
+  environment 'GEODE_HOME', "$buildDir/../../geode-assembly/build/install/apache-geode/"
 }
 
+upgradeTest {
+  environment 'GEODE_HOME', "$buildDir/../../geode-assembly/build/install/apache-geode/"
+  environment 'CLASSLOADER_ISOLATED' , 'false'
+}
+
+distributedTest {
+  environment 'GEODE_HOME', "$buildDir/../../geode-assembly/build/install/apache-geode"
+  environment 'GEODE_DISTRIBUTED_TEST_HOME', "${project(':geode-assembly').buildDir}/install/apache-geode-distributed-testing"
+  environment 'GEODE_DISTRIBUTED_TEST_EXTENSIONS_PATH', "${project(':geode-deployment:geode-deployment-jboss-modules').buildDir}/resources/distributedTest/distributedTestGeodeExtensions.properties"
+  environment 'CLASSLOADER_ISOLATED' , 'true'
+}
+
+integrationTest {
+  environment 'GEODE_HOME', "$buildDir/../../geode-assembly/build/install/apache-geode"
+}
 
 // Make precheckin task run all validation tests for checking in code.
 task precheckin(dependsOn: [build, acceptanceTest, integrationTest, distributedTest, upgradeTest]) {

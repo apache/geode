@@ -20,6 +20,7 @@ import org.apache.geode.gradle.plugins.DependencyConstraints
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 apply from: "${rootDir}/${scriptDir}/warnings.gradle"
 apply from: "${rootDir}/${scriptDir}/publish-java.gradle"
+apply from: "${rootDir}/${scriptDir}/jboss-modules-extensions.gradle"
 
 evaluationDependsOn(":geode-core")
 
@@ -36,9 +37,7 @@ dependencies {
 
   // test
   testImplementation(project(':extensions:geode-modules-test'))
-  testImplementation('junit:junit')
-  testImplementation('org.assertj:assertj-core')
-  testImplementation('org.mockito:mockito-core')
+  testImplementation(project(':geode-junit'))
   testImplementation('org.apache.tomcat:tomcat-catalina:' + DependencyConstraints.get('tomcat8.version'))
 
 
@@ -52,10 +51,18 @@ dependencies {
   distributedTestImplementation(project(':extensions:geode-modules-test'))
   distributedTestImplementation(project(':geode-dunit'))
   distributedTestImplementation(project(':geode-logging'))
-  distributedTestImplementation('org.httpunit:httpunit')
+  distributedTestImplementation('org.httpunit:httpunit') {
+    exclude module: 'xercesImpl'
+    exclude module: 'xmlParserAPIs'
+  }
   distributedTestImplementation('org.apache.tomcat:tomcat-catalina:' + DependencyConstraints.get('tomcat8.version'))
+  distributedTestRuntimeOnly('xerces:xercesImpl')
 }
 
 sonarqube {
   skipProject = true
+}
+
+distributedTest {
+  environment 'CLASSLOADER_ISOLATED' , 'false'
 }

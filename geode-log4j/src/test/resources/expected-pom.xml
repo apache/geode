@@ -47,6 +47,17 @@
   </dependencyManagement>
   <dependencies>
     <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <scope>compile</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j-api</artifactId>
+          <groupId>*</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-core</artifactId>
       <scope>runtime</scope>
@@ -63,16 +74,15 @@
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-core</artifactId>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-slf4j-impl</artifactId>
       <scope>runtime</scope>
       <exclusions>
         <exclusion>
           <artifactId>slf4j-api</artifactId>
+          <groupId>*</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>log4j-api</artifactId>
           <groupId>*</groupId>
         </exclusion>
       </exclusions>
@@ -82,12 +92,24 @@
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-jcl</artifactId>
       <scope>runtime</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j-api</artifactId>
+          <groupId>*</groupId>
+        </exclusion>
+      </exclusions>
       <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-jul</artifactId>
       <scope>runtime</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j-api</artifactId>
+          <groupId>*</groupId>
+        </exclusion>
+      </exclusions>
       <optional>true</optional>
     </dependency>
   </dependencies>

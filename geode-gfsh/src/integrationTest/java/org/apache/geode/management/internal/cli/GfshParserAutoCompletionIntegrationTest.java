@@ -85,7 +85,8 @@ public class GfshParserAutoCompletionIntegrationTest {
     CommandCandidate candidate = gfshParserRule.complete(buffer);
     assertThat(candidate.getCandidates()
         .stream().map(completion -> completion.getValue().trim()).collect(Collectors.toList()))
-            .containsExactlyInAnyOrder("--dir", "--jar", "--jars", "--group", "--groups");
+            .containsExactlyInAnyOrder("--dir", "--jar", "--jars", "--group", "--groups",
+                "--dependencies");
   }
 
   @Test
@@ -94,7 +95,8 @@ public class GfshParserAutoCompletionIntegrationTest {
     CommandCandidate candidate = gfshParserRule.complete(buffer);
     assertThat(candidate.getCandidates()
         .stream().map(completion -> completion.getValue().trim()).collect(Collectors.toList()))
-            .containsExactlyInAnyOrder("--dir", "--jar", "--jars", "--group", "--groups");
+            .containsExactlyInAnyOrder("--dir", "--jar", "--jars", "--group", "--groups",
+                "--dependencies");
   }
 
   @Test

@@ -42,7 +42,8 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.rules.TestName;
-import org.springframework.boot.SpringApplication;
+import org.springframework.boot.WebApplicationType;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -180,7 +181,7 @@ public abstract class SessionDUnitTest {
 
   protected static void startSpringApp(int sessionApp, long sessionTimeout, int... serverPorts) {
     int httpPort = ports.get(sessionApp);
-    VM host = cluster.getVM(sessionApp);
+    VM host = cluster.getVM(sessionApp).initializeAsClientVM();
     host.invoke("Start a Spring app", () -> {
       System.setProperty("server.port", "" + httpPort);
       System.setProperty("server.servlet.session.timeout", "" + sessionTimeout + "s");
@@ -189,7 +190,8 @@ public abstract class SessionDUnitTest {
       for (int i = 0; i < serverPorts.length; i++) {
         args[i] = "localhost:" + serverPorts[i];
       }
-      springApplicationContext = SpringApplication.run(RedisSpringTestApplication.class, args);
+      springApplicationContext = new SpringApplicationBuilder(RedisSpringTestApplication.class)
+          .web(WebApplicationType.SERVLET).build().run(args);
     });
   }
 

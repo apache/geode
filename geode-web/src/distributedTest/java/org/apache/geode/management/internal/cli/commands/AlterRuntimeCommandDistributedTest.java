@@ -131,7 +131,8 @@ public class AlterRuntimeCommandDistributedTest {
     Properties props = new Properties();
     props.setProperty(LOG_LEVEL, "error");
 
-    MemberVM locator = startupRule.startLocatorVM(0, l -> l.withHttpService());
+    MemberVM locator =
+        startupRule.startLocatorVM(0, locatorStarterRule -> locatorStarterRule.withHttpService());
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
     MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
 

@@ -23,6 +23,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Properties;
 
 import junitparams.Parameters;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -49,6 +51,16 @@ public class DescribeConfigCommandDUnitTest {
 
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+  @BeforeClass
+  public static void setup() {
+    System.setProperty("CLASSLOADER_ISOLATED", "false");
+  }
+
+  @AfterClass
+  public static void teardown() {
+    System.clearProperty("CLASSLOADER_ISOLATED");
+  }
 
   @Test
   @Parameters({"true", "false"})

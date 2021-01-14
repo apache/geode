@@ -61,46 +61,6 @@ gradle.taskGraph.whenReady({ graph ->
 // apply default manifest
 gradle.taskGraph.whenReady({ graph ->
   tasks.withType(Jar).each { jar ->
-
-    def projectDependencies = []
-    def runtimeList = []
-    def allProjectDeps = []
-
-    def confList = ['api', 'implementation', 'runtimeOnly']
-    confList.each { conf ->
-      allProjectDeps.addAll(project.configurations.getByName(conf).getDependencies())
-    }
-
-    // Iterate over runtime classpath dependencies and separate project dependencies from library
-    // dependencies.
-    allProjectDeps.each { dependency ->
-      if ( dependency instanceof ProjectDependency )  {
-        def platformAttribute = Attribute.of("org.gradle.category", org.gradle.api.attributes.Category.class)
-        def foundAttribute = dependency.attributes.getAttribute(platformAttribute)
-        if ( foundAttribute == null) {
-          projectDependencies.add(dependency)
-        } else if ('platform'.equals(foundAttribute)) {
-          projectDependencies.add(dependency)
-        }
-      } else {
-        project.configurations.runtimeClasspath.files(dependency).each { depJar ->
-          runtimeList.add(depJar.name)
-        }
-      }
-    }
-
-    // Iterate over project (parent) dependencies and remove its runtime library dependencies from
-    // the current project's runtime library dependencies.
-    // Also removes all parent project's runtime project dependencies from the current project.
-    // This returns a unique set of parent project and library dependencies that are not found
-    // within it's parent's project dependencies.
-    projectDependencies.clone().each { ProjectDependency projectDependency ->
-      Project geodeProject = projectDependency.getDependencyProject()
-      def collect = geodeProject.configurations.runtimeClasspath.collect { it.name }
-      runtimeList.removeAll(collect)
-//      projectDependencies.removeAll(collect.collect {it-".jar"})
-    }
-
     jar.doFirst {
       manifest {
         attributes.put("Manifest-Version", "1.0")
@@ -108,9 +68,6 @@ gradle.taskGraph.whenReady({ graph ->
         attributes.put("Title", rootProject.name)
         attributes.put("Version", archiveVersion)
         attributes.put("Organization", productOrg)
-        attributes.put("Class-Path", runtimeList.join(' '))
-        attributes.put("Dependent-Modules", projectDependencies.collect({ "${it.name}-${it.version}" }).join(' '))
-        attributes.put("Module-Name", project.name)
       }
     }
     jar.metaInf {
@@ -155,5 +112,3 @@ javadoc {
 
   classpath += configurations.compileOnly
 }
-
-

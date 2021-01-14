@@ -67,6 +67,7 @@ import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.classloader.internal.ClassPathLoader;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
@@ -566,6 +567,7 @@ public class InternalDistributedSystem extends DistributedSystem
     alertingService = new InternalAlertingServiceFactory().create();
     LoggingUncaughtExceptionHandler
         .setFailureSetter(error -> SystemFailure.setFailure((VirtualMachineError) error));
+    ClassPathLoader.setLatestToDefault(config.distributionConfig().getDeployWorkingDir());
     loggingSession = LoggingSession.create();
     originalConfig = config.distributionConfig();
     isReconnectingDS = config.isReconnecting();

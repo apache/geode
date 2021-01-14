@@ -20,11 +20,14 @@ import org.gradle.api.internal.DocumentationRegistry
 import org.gradle.api.internal.tasks.testing.JvmTestExecutionSpec
 import org.gradle.api.internal.tasks.testing.TestExecuter
 import org.gradle.api.internal.tasks.testing.filter.DefaultTestFilter
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.testing.Test
 import org.gradle.internal.time.Clock
 import org.gradle.internal.work.WorkerLeaseRegistry
 
 class RepeatTest extends Test {
+
+    @Input
     int times = 1
 
     /**
@@ -55,5 +58,9 @@ class RepeatTest extends Test {
                 getServices().get(Clock.class),
                 getServices().get(DocumentationRegistry.class),
                 (DefaultTestFilter) getFilter())
+    }
+
+    int getTimes() {
+        return times
     }
 }

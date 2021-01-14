@@ -75,7 +75,7 @@ public class AbstractPoolCacheJUnitTest {
   @Test
   public void testGetSimpleDataSource() throws Exception {
     Context ctx = cache.getJNDIContext();
-    GemFireBasicDataSource ds = (GemFireBasicDataSource) ctx.lookup("java:/SimpleDataSource");
+    SimpleDataSource ds = (SimpleDataSource) ctx.lookup("java:/SimpleDataSource");
     Connection conn = ds.getConnection();
     if (conn == null) {
       fail(
@@ -111,16 +111,16 @@ public class AbstractPoolCacheJUnitTest {
     List props = new ArrayList();
     props.add(new ConfigProperty("databaseName", "newDB", "java.lang.String"));
 
-    GemFireBasicDataSource gbds =
-        (GemFireBasicDataSource) new DataSourceFactory().getSimpleDataSource(map);
+    SimpleDataSource simpleDataSource =
+        (SimpleDataSource) new DataSourceFactory().getSimpleDataSource(map);
     map.put("xa-datasource-class", "org.apache.derby.jdbc.EmbeddedXADataSource");
 
     map.put("connection-url", "jdbc:derby:newDB;create=true");
 
-    GemFireTransactionDataSource gtds =
+    GemFireTransactionDataSource tranxDataSourcegtds =
         (GemFireTransactionDataSource) new DataSourceFactory().getTranxDataSource(map, props);
 
-    XAConnection xaconn = (XAConnection) gtds.provider.borrowConnection();
+    XAConnection xaconn = (XAConnection) tranxDataSourcegtds.provider.borrowConnection();
     try {
       Thread.sleep(4);
     } catch (InterruptedException e) {

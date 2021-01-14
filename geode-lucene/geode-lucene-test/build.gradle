@@ -1,3 +1,5 @@
+import org.apache.geode.gradle.plugins.DependencyConstraints
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -16,19 +18,31 @@
  */
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
-
+apply from: "${rootDir}/${scriptDir}/jboss-modules-extensions.gradle"
 
 
 
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
-  implementation('org.apache.lucene:lucene-core')
+  compileOnly(platform(project(':boms:geode-all-bom')))
   implementation(project(':geode-logging'))
   implementation(project(':geode-serialization'))
-  api(project(':geode-core'))
-  compileOnly(project(':geode-lucene'))
+  implementation(project(':geode-core'))
+  implementation(project(':geode-lucene'))
+  compileOnly('org.apache.lucene:lucene-core')
+  api('org.apache.lucene:lucene-codecs')
 
   implementation('junit:junit')
-  implementation('org.apache.lucene:lucene-test-framework')
+  api('org.apache.lucene:lucene-test-framework'){
+    exclude module: 'lucene-core'
+  }
   implementation('org.mockito:mockito-core')
+}
+
+jbossModulesExtension {
+  geodeConfigurations {
+    main {
+      parentModule = project.findProject(":geode-lucene")
+    }
+  }
 }

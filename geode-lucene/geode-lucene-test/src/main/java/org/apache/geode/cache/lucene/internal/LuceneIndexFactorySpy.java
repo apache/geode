@@ -47,7 +47,7 @@ public class LuceneIndexFactorySpy extends LuceneIndexImplFactory {
     this.getRepositoryConsumer = getRepositoryConsumer;
   }
 
-  private static class ExtendedLuceneIndexForPartitionedRegion
+  public static class ExtendedLuceneIndexForPartitionedRegion
       extends LuceneIndexForPartitionedRegion {
     public ExtendedLuceneIndexForPartitionedRegion(final String indexName, final String regionPath,
         final InternalCache cache) {

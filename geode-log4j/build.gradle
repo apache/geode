@@ -16,7 +16,7 @@
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 
-
+apply from: "${rootDir}/${scriptDir}/jboss-modules-extensions.gradle"
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 apply from: "${project.projectDir}/../gradle/warnings.gradle"
 apply from: "${project.projectDir}/../gradle/jmh.gradle"
@@ -28,43 +28,44 @@ dependencies {
   implementation(project(':geode-logging'))
   implementation('org.apache.commons:commons-lang3')
 
-  implementation('org.apache.logging.log4j:log4j-core')
+  api('org.apache.logging.log4j:log4j-core') {
+    exclude module: 'log4j-api'
+    ext.embed = true
+  }
 
   //This routes slf4j logs to log4j. Shiro and micrometer use slf4j
   runtimeOnly('org.apache.logging.log4j:log4j-slf4j-impl') {
     exclude module: 'slf4j-api'
+    exclude module: 'log4j-api'
+    ext.embed =true
     ext.optional = true
   }
   //This routes commons logging logs to log4j. Several apache commons dependencies use commons logging
   runtimeOnly('org.apache.logging.log4j:log4j-jcl') {
+    exclude module: 'log4j-api'
+    ext.embed =true
     ext.optional = true
   }
   //This routes jdk logs to log4j. Several dependencies use JDK logs (jackson, jaxb, ...)
   runtimeOnly('org.apache.logging.log4j:log4j-jul') {
+    exclude module: 'log4j-api'
+    ext.embed =true
     ext.optional = true
   }
 
   jmhImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
-  jmhImplementation('junit:junit')
-  jmhImplementation('org.assertj:assertj-core')
-  jmhImplementation('org.mockito:mockito-core')
 
   testImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
-  testImplementation('junit:junit')
-  testImplementation('org.assertj:assertj-core')
-  testImplementation('org.mockito:mockito-core')
 
   integrationTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
-  integrationTestImplementation('junit:junit')
   integrationTestImplementation('org.apache.logging.log4j:log4j-core::tests')
   integrationTestImplementation('org.apache.logging.log4j:log4j-core::test-sources')
-  integrationTestImplementation('org.assertj:assertj-core')
 
   distributedTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
@@ -72,9 +73,6 @@ dependencies {
   distributedTestImplementation('commons-io:commons-io')
   distributedTestImplementation('junit:junit')
   distributedTestImplementation('org.apache.commons:commons-lang3')
-  distributedTestImplementation('org.assertj:assertj-core')
-  distributedTestImplementation('org.awaitility:awaitility')
   distributedTestImplementation('org.hamcrest:hamcrest')
-  distributedTestImplementation('org.mockito:mockito-core')
   distributedTestImplementation('pl.pragmatists:JUnitParams')
 }

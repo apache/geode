@@ -92,7 +92,7 @@ public class DeployToMultiGroupDUnitTest {
         .containsExactlyInAnyOrder("lib.jar", "lib.jar");
     resultAssert.hasRuntimeInfos().extracting(DeploymentInfo::getJarLocation).extracting(
         FilenameUtils::getName)
-        .containsExactlyInAnyOrder("lib.v1.jar", "lib.v1.jar");
+        .containsExactlyInAnyOrder("lib.jar", "lib.jar");
   }
 
   @Test
@@ -105,7 +105,7 @@ public class DeployToMultiGroupDUnitTest {
     resultAssert.hasConfigurations().extracting(Deployment::getFileName)
         .containsExactlyInAnyOrder("lib.jar");
     resultAssert.hasRuntimeInfos().extracting(DeploymentInfo::getJarLocation).extracting(
-        FilenameUtils::getName).containsExactlyInAnyOrder("lib.v1.jar");
+        FilenameUtils::getName).containsExactlyInAnyOrder("lib.jar");
   }
 
   @Test
@@ -120,7 +120,7 @@ public class DeployToMultiGroupDUnitTest {
     resultAssert.hasRuntimeInfos()
         .extracting(DeploymentInfo::getJarLocation).extracting(
             FilenameUtils::getName)
-        .containsExactlyInAnyOrder("lib.v1.jar", "lib.v1.jar");
+        .containsExactlyInAnyOrder("lib.jar", "lib.jar");
   }
 
   @Test

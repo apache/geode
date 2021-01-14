@@ -18,6 +18,7 @@
 import org.apache.geode.gradle.plugins.DependencyConstraints
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
+apply from: "${rootDir}/${scriptDir}/jboss-modules-extensions.gradle"
 apply from: "${rootDir}/${scriptDir}/publish-java.gradle"
 
 evaluationDependsOn(":geode-core")
@@ -35,15 +36,14 @@ dependencies {
 
   compileOnly(platform(project(':boms:geode-all-bom')))
   compileOnly('javax.servlet:javax.servlet-api')
-  compileOnly('org.apache.tomcat:catalina-ha:' + DependencyConstraints.get('tomcat6.version'))
+  compileOnly('org.apache.tomcat:catalina-ha:' + DependencyConstraints.get('tomcat6.version')) {
+    exclude module: 'javax-servlet-api'
+  }
 
 
   // test
   testImplementation('org.apache.bcel:bcel')
-  testImplementation('junit:junit')
-  testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
-  testImplementation('org.assertj:assertj-core')
-  testImplementation('org.mockito:mockito-core')
+  testImplementation(project(":geode-junit"))
   testImplementation('org.apache.tomcat:catalina-ha:' + DependencyConstraints.get('tomcat6.version'))
 
 
@@ -51,14 +51,26 @@ dependencies {
   integrationTestImplementation(project(':extensions:geode-modules-test'))
   integrationTestImplementation(project(':geode-dunit'))
   integrationTestImplementation('pl.pragmatists:JUnitParams')
+  integrationTestImplementation('org.httpunit:httpunit')
   integrationTestImplementation('org.apache.tomcat:catalina-ha:' + DependencyConstraints.get('tomcat6.version'))
 
 
   // distributedTest
   distributedTestImplementation(project(':geode-dunit'))
   distributedTestImplementation('org.apache.tomcat:catalina-ha:' + DependencyConstraints.get('tomcat6.version'))
+  {
+    exclude group: 'org.apache.tomcat', module: 'javax-servlet-api'
+  }
+  distributedTestImplementation('org.apache.tomcat:coyote:' + DependencyConstraints.get('tomcat6.version'))
+  {
+    exclude group: 'org.apache.tomcat', module: 'javax-servlet-api'
+  }
 }
 
 sonarqube {
   skipProject = true
+}
+
+distributedTest {
+  environment 'GEODE_DISTRIBUTED_TEST_EXTENSIONS_PATH', "${project.buildDir}/resources/distributedTest/distributedTestGeodeModulesExtensions.properties"
 }

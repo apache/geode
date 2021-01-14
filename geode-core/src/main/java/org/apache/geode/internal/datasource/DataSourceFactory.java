@@ -30,10 +30,12 @@ package org.apache.geode.internal.datasource;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.ServiceLoader;
 
 import javax.resource.spi.ConnectionManager;
 import javax.resource.spi.ManagedConnectionFactory;
@@ -43,8 +45,8 @@ import javax.sql.XADataSource;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.internal.MutableForTesting;
+import org.apache.geode.classloader.internal.ClassPathLoader;
 import org.apache.geode.datasource.PooledDataSourceFactory;
-import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.internal.util.PasswordUtil;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -74,7 +76,7 @@ public class DataSourceFactory {
           "DataSourceFactory::getSimpleDataSource:URL String to Database is null");
     }
     try {
-      return new GemFireBasicDataSource(configs);
+      return lookupSimpleDataSource(configs);
     } catch (Exception ex) {
       logger.error(String.format(
           "DataSourceFactory::getSimpleDataSource:Exception while creating GemfireBasicDataSource.Exception String=%s",
@@ -86,6 +88,16 @@ public class DataSourceFactory {
               ex.getLocalizedMessage()),
           ex);
     }
+  }
+
+  private DataSource lookupSimpleDataSource(ConfiguredDataSourceProperties configs)
+      throws SQLException {
+    ServiceLoader<SimpleDataSource> simpleDataSources = ServiceLoader.load(SimpleDataSource.class);
+    for (SimpleDataSource simpleDataSource : simpleDataSources) {
+      simpleDataSource.initialize(configs);
+      return simpleDataSource;
+    }
+    throw new RuntimeException("No implementation found for: " + SimpleDataSource.class.getName());
   }
 
   /**

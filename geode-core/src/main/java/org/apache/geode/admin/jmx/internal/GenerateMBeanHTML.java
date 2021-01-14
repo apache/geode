@@ -33,8 +33,8 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.classloader.internal.ClassPathLoader;
 import org.apache.geode.internal.ExitCode;
-import org.apache.geode.internal.classloader.ClassPathLoader;
 
 /**
  * A tool that reads the XML description of MBeans used with the Jakarta Commons Modeler and

@@ -23,7 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Assert;
 
 public class JSONFormatVerifyUtility {
-  static void verifyJsonWithJavaObject(String json, TestObjectForJSONFormatter testObject)
+  public static void verifyJsonWithJavaObject(String json, TestObjectForJSONFormatter testObject)
       throws IOException {
     JsonNode jsonObject = new ObjectMapper().readTree(json);
 

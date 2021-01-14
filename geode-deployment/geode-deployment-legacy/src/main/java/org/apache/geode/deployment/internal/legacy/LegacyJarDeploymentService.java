@@ -34,8 +34,8 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.internal.execute.FunctionToFileTracker;
 import org.apache.geode.deployment.internal.DeployedJar;
 import org.apache.geode.deployment.internal.JarDeployer;
+import org.apache.geode.deployment.internal.JarDeploymentService;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.deployment.JarDeploymentService;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.internal.utils.JarFileUtils;
@@ -61,6 +61,12 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
 
   @Override
   public synchronized ServiceResult<Deployment> deploy(Deployment deployment) {
+    if (deployment == null) {
+      return Failure.of("Deployment may not be null");
+    }
+    if (deployment.getFile() == null) {
+      return Failure.of("Cannot deploy Deployment without jar file");
+    }
     try {
       DeployedJar deployedJar = jarDeployer.deploy(deployment.getFile());
       // This means that the jars are already deployed, so we call it a Success.
@@ -93,11 +99,14 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
 
   @Override
   public ServiceResult<Deployment> deploy(File file) {
+    if (file == null) {
+      return Failure.of("Jar file may not be null");
+    }
     return deploy(createDeployment(file));
   }
 
   @Override
-  public synchronized ServiceResult<Deployment> undeployByFileName(String fileName) {
+  public synchronized ServiceResult<Deployment> undeploy(String fileName) {
     try {
       logger.debug("Deployments List size before undeploy: {}", deployments.size());
       logger.debug("File being undeployed: {}", fileName);
@@ -132,14 +141,14 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
   }
 
   @Override
-  public ServiceResult<Deployment> getDeployed(String fileName) {
-    logger.debug("Looking up Deployment for name: {}", fileName);
+  public ServiceResult<Deployment> getDeployed(String jarName) {
+    logger.debug("Looking up Deployment for name: {}", jarName);
     logger.debug("Deployments keySet: {}", Arrays.toString(deployments.keySet().toArray()));
-    String artifactId = JarFileUtils.getArtifactId(fileName);
+    String artifactId = JarFileUtils.getArtifactId(jarName);
     if (deployments.containsKey(artifactId)) {
       return Success.of(deployments.get(artifactId));
     } else {
-      return Failure.of(fileName + " is not deployed.");
+      return Failure.of(jarName + " is not deployed.");
     }
   }
 
@@ -147,12 +156,12 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
   public void reinitializeWithWorkingDirectory(File workingDirectory) {
     logger.info("Reinitializing JarDeploymentService with new working directory: {}",
         workingDirectory);
-    if (deployments.isEmpty()) {
-      this.jarDeployer = new JarDeployer(workingDirectory);
-    } else {
-      throw new RuntimeException(
-          "Cannot reinitialize working directory with existing deployments. Please undeploy first.");
-    }
+    // if (deployments.isEmpty()) {
+    this.jarDeployer = new JarDeployer(workingDirectory);
+    // } else {
+    // throw new RuntimeException(
+    // "Cannot reinitialize working directory with existing deployments. Please undeploy first.");
+    // }
   }
 
   @Override
@@ -182,12 +191,8 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
 
   @Override
   public void close() {
-    String[] jarNames = deployments.keySet().toArray(new String[] {});
-    logger.debug(
-        "Closing LegacyJarDeploymentService. The following Deployments will be removed: {}",
-        Arrays.toString(jarNames));
-    for (String jarName : jarNames) {
-      undeployByFileName(jarName);
+    for (Deployment deployment : deployments.values()) {
+      undeploy(deployment.getFileName());
     }
   }
 

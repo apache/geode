@@ -16,7 +16,7 @@
  */
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
-
+apply from: "${rootDir}/${scriptDir}/jboss-modules.gradle"
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 apply from: "${project.projectDir}/../gradle/warnings.gradle"
 
@@ -27,7 +27,12 @@ dependencies {
   implementation(project(':geode-common'))
 
   //FastUtil contains optimized collections that are used in multiple places in core
-  implementation('it.unimi.dsi:fastutil')
+  implementation('it.unimi.dsi:fastutil') {
+    ext.set('embed.children', [
+      'fastutil-core',
+      'fastutil-extra'
+    ])
+  }
 
   //Log4j is used everywhere
   implementation(project(':geode-logging'))
@@ -42,10 +47,6 @@ dependencies {
 
   testImplementation('com.tngtech.archunit:archunit-junit4')
   testImplementation('org.apache.bcel:bcel')
-  testImplementation('org.mockito:mockito-core')
-  testImplementation('junit:junit')
-  testImplementation('org.assertj:assertj-core')
-
 
   integrationTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-serialization'

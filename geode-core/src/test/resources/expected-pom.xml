@@ -67,8 +67,18 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
+      <groupId>org.apache.shiro</groupId>
+      <artifactId>shiro-core</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-common</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.geode</groupId>
+      <artifactId>geode-logging</artifactId>
       <scope>compile</scope>
     </dependency>
     <dependency>
@@ -77,8 +87,23 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-web</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
       <groupId>org.jgroups</groupId>
       <artifactId>jgroups</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
       <scope>runtime</scope>
     </dependency>
     <dependency>
@@ -134,12 +159,6 @@
     </dependency>
     <dependency>
       <groupId>mx4j</groupId>
-      <artifactId>mx4j</artifactId>
-      <scope>runtime</scope>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>mx4j</groupId>
       <artifactId>mx4j-remote</artifactId>
       <scope>runtime</scope>
       <optional>true</optional>
@@ -189,11 +208,6 @@
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
-      <artifactId>geode-logging</artifactId>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.geode</groupId>
       <artifactId>geode-membership</artifactId>
       <scope>runtime</scope>
     </dependency>
@@ -227,37 +241,6 @@
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-deployment-legacy</artifactId>
       <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.geode</groupId>
-      <artifactId>geode-http-service</artifactId>
-      <scope>runtime</scope>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.shiro</groupId>
-      <artifactId>shiro-core</artifactId>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-context</artifactId>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-jcl</artifactId>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-web</artifactId>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-      <scope>compile</scope>
     </dependency>
   </dependencies>
 </project>

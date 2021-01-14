@@ -100,7 +100,7 @@ public class StartServerCommandTest {
         .setSocketBufferSize(1024 * 1024).setMessageTimeToLive(93).build();
 
     String[] commandLineElements = serverCommands.createStartServerCommandLine(serverLauncher, null,
-        null, new Properties(), null, false, new String[0], false, null, null);
+        null, new Properties(), null, false, new String[0], false, null, null, false, null);
 
     assertNotNull(commandLineElements);
     assertTrue(commandLineElements.length > 0);
@@ -141,7 +141,7 @@ public class StartServerCommandTest {
     gemfireProperties.setProperty(HTTP_SERVICE_BIND_ADDRESS, "localhost");
 
     String[] commandLineElements = serverCommands.createStartServerCommandLine(serverLauncher, null,
-        null, gemfireProperties, null, false, new String[0], false, null, null);
+        null, gemfireProperties, null, false, new String[0], false, null, null, false, null);
 
     assertNotNull(commandLineElements);
     assertTrue(commandLineElements.length > 0);
@@ -206,7 +206,7 @@ public class StartServerCommandTest {
 
     String[] commandLineElements = serverCommands.createStartServerCommandLine(serverLauncher,
         gemfirePropertiesFile, gemfireSecurityPropertiesFile, gemfireProperties, customClasspath,
-        Boolean.FALSE, jvmArguments, Boolean.FALSE, heapSize, heapSize);
+        Boolean.FALSE, jvmArguments, Boolean.FALSE, heapSize, heapSize, false, null);
 
     Set<String> expectedCommandLineElements = new HashSet<>();
     expectedCommandLineElements.add(StartMemberUtils.getJavaPath());
