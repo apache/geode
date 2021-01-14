@@ -23,15 +23,6 @@ import org.junit.Test;
 public class KnownVersionJUnitTest {
   @Test
   public void testKnownVersionClass() throws Exception {
-    compare(KnownVersion.GFE_662, KnownVersion.GFE_66);
-    compare(KnownVersion.GFE_6622, KnownVersion.GFE_662);
-    compare(KnownVersion.GFE_71, KnownVersion.GFE_70);
-    compare(KnownVersion.GFE_80, KnownVersion.GFE_70);
-    compare(KnownVersion.GFE_80, KnownVersion.GFE_71);
-    compare(KnownVersion.GFE_81, KnownVersion.GFE_70);
-    compare(KnownVersion.GFE_81, KnownVersion.GFE_71);
-    compare(KnownVersion.GFE_81, KnownVersion.GFE_80);
-    compare(KnownVersion.GFE_82, KnownVersion.GFE_81);
     compare(KnownVersion.GEODE_1_1_0, KnownVersion.GFE_82);
     compare(KnownVersion.GEODE_1_2_0, KnownVersion.GEODE_1_1_1);
     compare(KnownVersion.GEODE_1_3_0, KnownVersion.GEODE_1_2_0);
@@ -81,14 +72,6 @@ public class KnownVersionJUnitTest {
     assertTrue(older.isNotNewerThan(newer));
     assertTrue(newer.isNotNewerThan(newer));
     assertFalse(newer.isNotNewerThan(older));
-  }
-
-  @Test
-  public void testIsPre65() {
-    assertTrue(KnownVersion.GFE_61.isOlderThan(KnownVersion.GFE_65));
-    assertFalse(KnownVersion.GFE_65.isOlderThan(KnownVersion.GFE_65));
-    assertFalse(KnownVersion.GFE_70.isOlderThan(KnownVersion.GFE_65));
-    assertFalse(KnownVersion.GEODE_1_1_0.isOlderThan(KnownVersion.GFE_65));
   }
 
   @Test
