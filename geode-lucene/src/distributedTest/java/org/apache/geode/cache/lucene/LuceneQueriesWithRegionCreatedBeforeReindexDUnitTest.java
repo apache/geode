@@ -25,6 +25,7 @@ import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.junit.categories.LuceneTest;
 import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
+
 /**
  * This test class is intended to contain basic integration tests of the lucene query class that
  * should be executed against a number of different regions types and topologies.
@@ -72,5 +73,4 @@ public class LuceneQueriesWithRegionCreatedBeforeReindexDUnitTest extends Lucene
     ai2.checkException();
     ai3.checkException();
   }
-
 }

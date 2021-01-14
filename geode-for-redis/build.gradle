@@ -1,3 +1,5 @@
+import org.apache.geode.gradle.plugins.DependencyConstraints
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -16,6 +18,7 @@
  */
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
+apply from: "${rootDir}/${scriptDir}/jboss-modules-extensions.gradle"
 
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 apply from: "${rootDir}/${scriptDir}/warnings.gradle"
@@ -39,7 +42,12 @@ dependencies {
   implementation(project(':geode-core'))
   implementation(project(':geode-gfsh'))
   implementation(project(':geode-membership'))
-  implementation('it.unimi.dsi:fastutil')
+  implementation('it.unimi.dsi:fastutil') {
+    ext.set('embed.children',[
+      'fastutil-extra',
+      'fastutil-core'
+    ])
+  }
   implementation('com.github.davidmoten:geo')
   implementation('io.netty:netty-all')
   implementation('commons-codec:commons-codec')
@@ -91,9 +99,10 @@ dependencies {
   acceptanceTestImplementation('io.lettuce:lettuce-core')
   acceptanceTestRuntimeOnly('io.lettuce:lettuce-core')
 
+  distributedTestCompileOnly('org.apache.logging.log4j:log4j-core')
   distributedTestCompileOnly(platform(project(':boms:geode-all-bom')))
-  distributedTestCompileOnly('javax.servlet:javax.servlet-api')
-  distributedTestImplementation('org.apache.logging.log4j:log4j-core')
+  distributedTestImplementation('javax.servlet:javax.servlet-api')
+  distributedTestImplementation(project(':geode-log4j'))
   distributedTestImplementation(project(':geode-dunit'))
   distributedTestImplementation(sourceSets.commonTest.output)
   distributedTestImplementation('redis.clients:jedis')
@@ -104,6 +113,7 @@ dependencies {
     exclude module: 'spring-boot-starter-tomcat'
   }
   distributedTestImplementation('org.springframework.session:spring-session-data-redis')
+  distributedTestImplementation('org.springframework.boot:spring-boot-starter-jetty')
   distributedTestImplementation('org.testcontainers:testcontainers')
 }
 

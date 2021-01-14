@@ -16,33 +16,28 @@
  */
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
-
+apply from: "${rootDir}/${scriptDir}/jboss-modules.gradle"
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 apply from: "${project.projectDir}/../gradle/warnings.gradle"
-
 
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
   api(project(':geode-core'))
   implementation(project(':geode-serialization'))
   implementation(project(':geode-logging'))
-  integrationTestImplementation(project(':geode-junit')) {
-    exclude module: 'geode-core'
-  }
 
-  implementation(project(':frameworks:springframework')){
-    exclude module: 'spring-jcl'
-    exclude module: 'spring-shell'
+  implementation('org.springframework:spring-context') {
+    exclude module: 'spring-beans'
     exclude module: 'spring-expression'
     exclude module: 'spring-aop'
   }
 
-  testImplementation('junit:junit')
-  testImplementation('org.junit.vintage:junit-vintage-engine')
-  testImplementation('org.assertj:assertj-core')
-  testImplementation('org.mockito:mockito-core')
+  testImplementation(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
 
-  integrationTestImplementation('junit:junit')
-  integrationTestImplementation('org.awaitility:awaitility')
+  integrationTestImplementation(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
   integrationTestImplementation('org.hamcrest:hamcrest')
 }

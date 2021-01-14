@@ -18,7 +18,7 @@
 apply from: "${project.projectDir}/../../gradle/standard-subproject-configuration.gradle"
 
 apply from: "${project.projectDir}/../../gradle/publish-java.gradle"
-apply from: "${project.projectDir}/../../gradle/warnings.gradle"
+//apply from: "${project.projectDir}/../../gradle/warnings.gradle"
 
 dependencies {
   implementation(platform(project(':boms:geode-all-bom')))
@@ -26,7 +26,9 @@ dependencies {
 
   implementation(project(':geode-core'))
   implementation(project(':geode-common'))
-  implementation('io.swagger:swagger-annotations')
+  compileOnly('io.swagger:swagger-annotations'){
+    ext.embed = true
+  }
 
   compileOnly(project(':geode-logging'))
   compileOnly('com.fasterxml.jackson.core:jackson-databind')

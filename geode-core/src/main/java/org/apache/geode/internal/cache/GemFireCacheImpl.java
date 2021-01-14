@@ -185,7 +185,7 @@ import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
-import org.apache.geode.deployment.internal.JarDeploymentServiceFactory;
+import org.apache.geode.classloader.internal.ClassPathLoader;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
@@ -241,7 +241,6 @@ import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlParser;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlPropertyResolver;
 import org.apache.geode.internal.cache.xmlcache.PropertyResolver;
-import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.internal.config.ClusterConfigurationNotAvailableException;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.jndi.JNDIInvoker;
@@ -1414,7 +1413,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
 
     // set ClassPathLoader and then deploy cluster config jars
-    ClassPathLoader.setLatestToDefault(system.getConfig().getDeployWorkingDir());
+    // ClassPathLoader.setLatestToDefault(system.getConfig().getDeployWorkingDir());
 
     try {
       clusterConfigurationLoader.deployJarsReceivedFromClusterConfiguration(configurationResponse);
@@ -1503,7 +1502,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * Initialize any services provided as extensions to the cache using service loader.
    */
   private void initializeServices() {
-    ServiceLoader<CacheService> loader = ServiceLoader.load(CacheService.class);
+    ServiceLoader<CacheService> loader =
+        ServiceLoader.load(CacheService.class, this.getClass().getClassLoader());
     for (CacheService service : loader) {
       try {
         if (service.init(this)) {
@@ -2163,7 +2163,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   boolean doClose(String reason, Throwable systemFailureCause, boolean keepAlive,
       boolean keepDS, boolean skipAwait) {
     securityService.close();
-    JarDeploymentServiceFactory.shutdownJarDeploymentService();
 
     if (waitIfClosing(skipAwait)) {
       return false;

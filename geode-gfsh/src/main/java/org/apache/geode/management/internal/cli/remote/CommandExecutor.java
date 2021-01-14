@@ -130,6 +130,7 @@ public class CommandExecutor {
 
     // all other exceptions, log it and build an error result.
     catch (Exception e) {
+      e.printStackTrace();
       logger.error("Could not execute \"" + parseResult + "\".", e);
       return ResultModel.createError(
           "Error while processing command <" + parseResult + "> Reason : " + e.getMessage());

@@ -20,6 +20,8 @@ apply plugin: 'war'
 apply from: "${project.projectDir}/../gradle/publish-war.gradle"
 apply from: "${project.projectDir}/../gradle/warnings.gradle"
 
+apply from: "${rootDir}/${scriptDir}/jboss-modules-extensions.gradle"
+
 jar.enabled = false
 
 apply plugin: 'nebula.facet'
@@ -58,20 +60,17 @@ dependencies {
   compileOnly(project(':geode-logging'))
   compileOnly(project(':geode-serialization'))
   compileOnly(project(':geode-core'))
-  compileOnly(project(':geode-common'))
 
   compileOnly('javax.servlet:javax.servlet-api')
   // jackson-annotations must be accessed from the geode classloader and not the webapp
-  compileOnly(project(':frameworks:jackson')) {
-    exclude module: 'jackson-databind'
-    exclude module: 'jackson-core'
-  }
+  compileOnly('com.fasterxml.jackson.core:jackson-annotations')
 
   implementation('org.apache.commons:commons-lang3')
   implementation('commons-fileupload:commons-fileupload') {
     exclude module: 'commons-io'
   }
-  implementation(project(':frameworks:jackson')){
+  implementation('com.fasterxml.jackson.core:jackson-core')
+  implementation('com.fasterxml.jackson.core:jackson-databind') {
     exclude module: 'jackson-annotations'
   }
 
@@ -86,10 +85,11 @@ dependencies {
     exclude module: 'slf4j-api'
   }
 
-  implementation(project(':frameworks:springframework'))
+  implementation('org.springframework:spring-beans')
   implementation('org.springframework.security:spring-security-core')
   implementation('org.springframework.security:spring-security-web')
   implementation('org.springframework.security:spring-security-config')
+  implementation('org.springframework:spring-web')
   implementation('org.springframework:spring-webmvc')
   implementation('org.springframework.hateoas:spring-hateoas') {
     exclude module: 'aopalliance'
@@ -130,7 +130,6 @@ dependencies {
   integrationTestImplementation(sourceSets.commonTest.output)
 
   integrationTestImplementation(project(':geode-core'))
-  integrationTestImplementation(project(':frameworks:jackson'))
   integrationTestImplementation('org.springframework:spring-test')
   integrationTestImplementation('org.springframework:spring-webmvc')
   integrationTestImplementation('org.springframework.security:spring-security-test')
@@ -149,7 +148,9 @@ dependencies {
 
   distributedTestImplementation('org.springframework:spring-test')
   distributedTestImplementation('org.springframework:spring-webmvc')
+  distributedTestImplementation('javax.servlet:javax.servlet-api')
   distributedTestImplementation('org.springframework.security:spring-security-test')
+  distributedTestImplementation('org.springframework:spring-test')
 
   distributedTestImplementation(project(':geode-core'))
   distributedTestImplementation(project(':geode-junit')) {
@@ -158,10 +159,13 @@ dependencies {
   distributedTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
-
-  distributedTestRuntimeOnly('org.apache.logging.log4j:log4j-slf4j-impl') {
-    exclude module: 'slf4j-api'
+  distributedTestImplementation(project(':geode-http-service')){
+    exclude module: 'geode-core'
   }
+
+  //  distributedTestRuntimeOnly('org.apache.logging.log4j:log4j-slf4j-impl') {
+  //    exclude module: 'slf4j-api'
+  //  }
 }
 
 war {
@@ -175,4 +179,8 @@ war {
 
 artifacts {
   war tasks.war
+}
+
+distributedTest {
+  environment 'GEODE_DISTRIBUTED_TEST_EXTENSIONS_PATH', "${project.buildDir}/resources/distributedTest/distributedTestGeodeWebManagementExtensions.properties"
 }

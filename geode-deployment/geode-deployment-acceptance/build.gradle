@@ -1,0 +1,112 @@
+import org.apache.tools.ant.taskdefs.condition.Os
+
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
+apply from: "${rootDir}/${scriptDir}/warnings.gradle"
+apply plugin: 'com.palantir.docker'
+//apply plugin: 'geode.jboss-modules-plugin'
+
+//jbossModulesExtension {
+//    assemblyProject = true
+//    facetsToAssemble = ["main", "distributedTest"]
+//    geodeConfigurations {
+//        distributedTest {
+//            outputRoot = project.buildDir.toPath().resolve("moduleDescriptors")
+//            assembleFromSource = true
+//            packagesToExport = ["org/apache/geode","org/apache/geode/","META-INF/services/","META-INF/services"]
+//        }
+//    }
+//}
+
+def dependentProjectNames = [
+  ':geode-common',
+  ':geode-connectors',
+  ':geode-core',
+  ':geode-unsafe',
+  ':geode-cq',
+  ':geode-gfsh',
+  ':geode-log4j',
+  ':geode-logging',
+  ':geode-lucene',
+  ':geode-memcached',
+  ':geode-old-client-support',
+  ':geode-rebalancer',
+  ':geode-for-redis',
+  ':geode-serialization',
+  ':geode-tcp-server',
+  ':geode-deployment:geode-deployment-legacy',
+  ':geode-wan'
+]
+
+docker {
+  dependsOn(project(":geode-assembly").tasks.installDist)
+  name "modulargeode:develop"
+  copySpec.from(file("modularDocker/launch.sh")).into("/")
+  copySpec.from(project(":geode-assembly").tasks.installDist.outputs).into('geode')
+}
+
+dependencies {
+  implementation(platform(project(':boms:geode-all-bom')))
+
+  dependentProjectNames.each {
+    implementation(project(it))
+  }
+
+  // geodeArchives is a direct reflection of what is contained in geode-dependencies.jar. To that
+  // end only add _test_ dependencies to acceptanceTestCompile/Runtime. All other product
+  // dependencies should be a part of geodeArchives and should not need to be added as individual
+  // dependencies here.
+  acceptanceTestImplementation(project(':geode-dunit')) {
+    exclude module: 'geode-core'
+  }
+  acceptanceTestImplementation(project(':geode-assembly:geode-assembly-test'))
+
+  // This is used by 'gradle within gradle' tests. No need to bump this version; but if you do,
+  // don't have it be the same version as the outer gradle version.
+  //spotless:off
+  acceptanceTestImplementation('org.gradle:gradle-tooling-api:5.1.1')
+  //spotless:on
+
+  acceptanceTestImplementation('org.testcontainers:testcontainers')
+
+  acceptanceTestImplementation('org.springframework:spring-web')
+  acceptanceTestImplementation('io.lettuce:lettuce-core')
+  acceptanceTestImplementation('net.spy:spymemcached')
+
+  acceptanceTestImplementation(project(':geode-logging'))
+  acceptanceTestImplementation(project(':geode-log4j'))
+
+  acceptanceTestImplementation('org.testcontainers:testcontainers')
+}
+
+acceptanceTest {
+  environment 'GEODE_HOME', project(":geode-assembly").buildDir.toPath().resolve("install").resolve("apache-geode")
+  // This is specifically used by GradleBuildWithGeodeCoreAcceptanceTest
+  systemProperty 'projectGroup', project.group
+  if (!Os.isFamily(Os.FAMILY_WINDOWS)) {
+    dependsOn(tasks.docker)
+  }
+}
+
+repositories {
+  // For gradle tooling dependencies
+  maven {
+    url 'https://repo.gradle.org/gradle/libs-releases'
+  }
+}

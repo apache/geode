@@ -41,10 +41,9 @@ import org.junit.Test;
 
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.deployment.internal.JarDeploymentServiceFactory;
+import org.apache.geode.classloader.internal.ClassPathLoader;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.cluster.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Deployment;
@@ -60,6 +59,9 @@ public class DeploymentManagementRedployDUnitTest {
 
   private static final String JAR_NAME_A = "DeployCommandRedeployDUnitTestA.jar";
   private static final String FUNCTION_A = "DeployCommandRedeployDUnitFunctionA";
+  private static final String PACKAGE_A = "example.org.apache.geode";
+  private static final String FULLY_QUALIFIED_FUNCTION_A = PACKAGE_A + "." + FUNCTION_A;
+
   private File jarAVersion1;
   private File jarAVersion2;
 
@@ -102,26 +104,26 @@ public class DeploymentManagementRedployDUnitTest {
   public void redeployJarsWithNewVersionsOfFunctions() {
     deployment.setFile(jarAVersion1);
     assertManagementResult(client.create(deployment)).isSuccessful();
-    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FUNCTION_A));
+    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FULLY_QUALIFIED_FUNCTION_A));
     server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_A, VERSION1));
 
     deployment.setFile(jarBVersion1);
     assertManagementResult(client.create(deployment)).isSuccessful();
-    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FUNCTION_A));
+    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FULLY_QUALIFIED_FUNCTION_A));
     server.invoke(() -> assertThatCanLoad(JAR_NAME_B, FULLY_QUALIFIED_FUNCTION_B));
     server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_A, VERSION1));
     server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_B, VERSION1));
 
     deployment.setFile(jarBVersion2);
     assertManagementResult(client.create(deployment)).isSuccessful();
-    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FUNCTION_A));
+    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FULLY_QUALIFIED_FUNCTION_A));
     server.invoke(() -> assertThatCanLoad(JAR_NAME_B, FULLY_QUALIFIED_FUNCTION_B));
     server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_A, VERSION1));
     server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_B, VERSION2));
 
     deployment.setFile(jarAVersion2);
     assertManagementResult(client.create(deployment)).isSuccessful();
-    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FUNCTION_A));
+    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FULLY_QUALIFIED_FUNCTION_A));
     server.invoke(() -> assertThatCanLoad(JAR_NAME_B, FULLY_QUALIFIED_FUNCTION_B));
     server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_A, VERSION2));
     server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_B, VERSION2));
@@ -135,13 +137,13 @@ public class DeploymentManagementRedployDUnitTest {
 
     deployment.setFile(jarAVersion1);
     assertManagementResult(client.create(deployment)).isSuccessful();
-    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FUNCTION_A));
+    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FULLY_QUALIFIED_FUNCTION_A));
     server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_A, VERSION1));
 
 
     deployment.setFile(jarAVersion2);
     assertManagementResult(client.create(deployment)).isSuccessful();
-    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FUNCTION_A));
+    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FULLY_QUALIFIED_FUNCTION_A));
     server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_A, VERSION2));
 
     server.stop(false);
@@ -156,7 +158,7 @@ public class DeploymentManagementRedployDUnitTest {
 
     lsRule.startServerVM(1, locator.getPort());
 
-    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FUNCTION_A));
+    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FULLY_QUALIFIED_FUNCTION_A));
     server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_A, VERSION2));
   }
 
@@ -166,7 +168,7 @@ public class DeploymentManagementRedployDUnitTest {
   public void hotDeployShouldNotResultInAnyFailedFunctionExecutions() {
     deployment.setFile(jarAVersion1);
     assertManagementResult(client.create(deployment)).isSuccessful();
-    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FUNCTION_A));
+    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FULLY_QUALIFIED_FUNCTION_A));
     server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_A, VERSION1));
 
     server.invoke(() -> {
@@ -178,7 +180,7 @@ public class DeploymentManagementRedployDUnitTest {
 
     deployment.setFile(jarAVersion2);
     assertManagementResult(client.create(deployment)).isSuccessful();
-    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FUNCTION_A));
+    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FULLY_QUALIFIED_FUNCTION_A));
     server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_A, VERSION2));
 
     server.invoke(() -> {
@@ -196,12 +198,14 @@ public class DeploymentManagementRedployDUnitTest {
     assertThat(classTemplateUrl).isNotNull();
 
     String classContents = FileUtils.readFileToString(new File(classTemplateUrl.toURI()), "UTF-8");
+    classContents = classContents.replaceAll("PACKAGE_A", PACKAGE_A);
     classContents = classContents.replaceAll("FUNCTION_A", FUNCTION_A);
     classContents = classContents.replaceAll("VERSION", version);
 
     File jar = new File(temporaryFolder.newFolder(JAR_NAME_A + version), JAR_NAME_A);
     ClassBuilder functionClassBuilder = new ClassBuilder();
-    functionClassBuilder.writeJarFromContent(FUNCTION_A, classContents, jar);
+    functionClassBuilder.writeJarFromContent("example/org/apache/geode/" + FUNCTION_A,
+        classContents, jar);
 
     return jar;
   }

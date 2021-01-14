@@ -37,10 +37,9 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.deployment.internal.JarDeploymentServiceFactory;
+import org.apache.geode.classloader.internal.ClassPathLoader;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -55,6 +54,8 @@ public class DeployCommandRedeployDUnitTest {
 
   private static final String JAR_NAME_A = "DeployCommandRedeployDUnitTestA.jar";
   private static final String FUNCTION_A = "DeployCommandRedeployDUnitFunctionA";
+  private static final String PACKAGE_A = "example.org.apache.geode";
+  private static final String FULLY_QUALIFIED_FUNCTION_A = PACKAGE_A + "." + FUNCTION_A;
   private File jarAVersion1;
   private File jarAVersion2;
 
@@ -95,26 +96,26 @@ public class DeployCommandRedeployDUnitTest {
   public void redeployJarsWithNewVersionsOfFunctions() throws Exception {
     gfshConnector.executeAndAssertThat("deploy --jar=" + jarAVersion1.getCanonicalPath())
         .statusIsSuccess();
-    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FUNCTION_A));
+    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FULLY_QUALIFIED_FUNCTION_A));
     server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_A, VERSION1));
 
     gfshConnector.executeAndAssertThat("deploy --jar=" + jarBVersion1.getCanonicalPath())
         .statusIsSuccess();
-    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FUNCTION_A));
+    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FULLY_QUALIFIED_FUNCTION_A));
     server.invoke(() -> assertThatCanLoad(JAR_NAME_B, FULLY_QUALIFIED_FUNCTION_B));
     server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_A, VERSION1));
     server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_B, VERSION1));
 
     gfshConnector.executeAndAssertThat("deploy --jar=" + jarBVersion2.getCanonicalPath())
         .statusIsSuccess();
-    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FUNCTION_A));
+    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FULLY_QUALIFIED_FUNCTION_A));
     server.invoke(() -> assertThatCanLoad(JAR_NAME_B, FULLY_QUALIFIED_FUNCTION_B));
     server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_A, VERSION1));
     server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_B, VERSION2));
 
     gfshConnector.executeAndAssertThat("deploy --jar=" + jarAVersion2.getCanonicalPath())
         .statusIsSuccess();
-    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FUNCTION_A));
+    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FULLY_QUALIFIED_FUNCTION_A));
     server.invoke(() -> assertThatCanLoad(JAR_NAME_B, FULLY_QUALIFIED_FUNCTION_B));
     server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_A, VERSION2));
     server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_B, VERSION2));
@@ -129,20 +130,20 @@ public class DeployCommandRedeployDUnitTest {
 
     gfshConnector.executeAndAssertThat("deploy --jar=" + jarAVersion1.getCanonicalPath())
         .statusIsSuccess();
-    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FUNCTION_A));
+    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FULLY_QUALIFIED_FUNCTION_A));
     server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_A, VERSION1));
 
 
     gfshConnector.executeAndAssertThat("deploy --jar=" + jarAVersion2.getCanonicalPath())
         .statusIsSuccess();
-    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FUNCTION_A));
+    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FULLY_QUALIFIED_FUNCTION_A));
     server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_A, VERSION2));
 
     server.stop(false);
 
     lsRule.startServerVM(1, locator.getPort());
 
-    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FUNCTION_A));
+    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FULLY_QUALIFIED_FUNCTION_A));
     server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_A, VERSION2));
   }
 
@@ -152,7 +153,7 @@ public class DeployCommandRedeployDUnitTest {
   public void hotDeployShouldNotResultInAnyFailedFunctionExecutions() throws Exception {
     gfshConnector.executeAndAssertThat("deploy --jar=" + jarAVersion1.getCanonicalPath())
         .statusIsSuccess();
-    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FUNCTION_A));
+    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FULLY_QUALIFIED_FUNCTION_A));
     server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_A, VERSION1));
 
     server.invoke(() -> {
@@ -164,7 +165,7 @@ public class DeployCommandRedeployDUnitTest {
 
     gfshConnector.executeAndAssertThat("deploy --jar=" + jarAVersion2.getCanonicalPath())
         .statusIsSuccess();
-    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FUNCTION_A));
+    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FULLY_QUALIFIED_FUNCTION_A));
     server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_A, VERSION2));
 
     server.invoke(() -> {
@@ -182,12 +183,14 @@ public class DeployCommandRedeployDUnitTest {
     assertThat(classTemplateUrl).isNotNull();
 
     String classContents = FileUtils.readFileToString(new File(classTemplateUrl.toURI()), "UTF-8");
+    classContents = classContents.replaceAll("PACKAGE_A", PACKAGE_A);
     classContents = classContents.replaceAll("FUNCTION_A", FUNCTION_A);
     classContents = classContents.replaceAll("VERSION", version);
 
     File jar = new File(temporaryFolder.newFolder(JAR_NAME_A + version), JAR_NAME_A);
     ClassBuilder functionClassBuilder = new ClassBuilder();
-    functionClassBuilder.writeJarFromContent(FUNCTION_A, classContents, jar);
+    functionClassBuilder.writeJarFromContent("example/org/apache/geode/" + FUNCTION_A,
+        classContents, jar);
 
     return jar;
   }

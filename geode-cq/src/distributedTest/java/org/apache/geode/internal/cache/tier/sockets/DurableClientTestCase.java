@@ -179,10 +179,10 @@ public class DurableClientTestCase extends DurableClientTestBase {
       // Find the proxy
       CacheClientProxy proxy = getClientProxy();
       assertThat(proxy).isNotNull();
-      assertThat(proxy._socket).isNotNull();
+      assertThat(proxy.getSocket()).isNotNull();
 
       await()
-          .untilAsserted(() -> assertThat(proxy._socket.isClosed()).isTrue());
+          .untilAsserted(() -> assertThat(proxy.getSocket().isClosed()).isTrue());
     });
 
     // Re-start the durable client (this is necessary so the
@@ -313,8 +313,7 @@ public class DurableClientTestCase extends DurableClientTestBase {
     server1VM.invoke("wait for client acknowledgement", () -> {
       CacheClientProxy proxy = getClientProxy();
       await().untilAsserted(
-          () -> assertThat(proxy._messageDispatcher._messageQueue.stats.getEventsRemoved())
-              .isGreaterThan(0));
+          () -> assertThat(proxy.getRegionQueueStats().getEventsRemoved()).isGreaterThan(0));
     });
 
     // Stop the durable client

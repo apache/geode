@@ -233,6 +233,8 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
    */
   @Test
   public void testParallelPropagation_withoutRemoteSite() throws Exception {
+    // vm0.initializeAsLocatorVM();
+    // vm1.initializeAsLocatorVM();
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 

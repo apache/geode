@@ -50,6 +50,10 @@ public abstract class AbstractDataSource implements Serializable, DataSource, Au
   protected ConfiguredDataSourceProperties configProps;
   protected boolean isActive = true;
 
+  public AbstractDataSource() {
+    isActive = false;
+  }
+
   /**
    * Constructor for the AbstractDataSource.
    *
@@ -64,6 +68,16 @@ public abstract class AbstractDataSource implements Serializable, DataSource, Au
     url = configs.getURL();
     jdbcDriver = configs.getJDBCDriver();
     dataSourcePW = configs.getPrintWriter();
+    isActive = true;
+  }
+
+  public void init(ConfiguredDataSourceProperties config) {
+    loginTimeOut = config.getLoginTimeOut();
+    user = config.getUser();
+    password = config.getPassword();
+    url = config.getURL();
+    jdbcDriver = config.getJDBCDriver();
+    dataSourcePW = config.getPrintWriter();
     isActive = true;
   }
 

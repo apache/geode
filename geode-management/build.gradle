@@ -16,7 +16,7 @@
  */
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
-
+apply from: "${rootDir}/${scriptDir}/jboss-modules.gradle"
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 apply from: "${project.projectDir}/../gradle/warnings.gradle"
 
@@ -27,16 +27,17 @@ dependencies {
 
   implementation('org.apache.commons:commons-lang3')
   implementation('commons-io:commons-io')
-  implementation(project(':frameworks:jackson'))
-  implementation(project(':frameworks:springframework'))
+  implementation('com.fasterxml.jackson.core:jackson-databind')
+  implementation('com.fasterxml.jackson.core:jackson-core')
+  implementation('com.fasterxml.jackson.core:jackson-annotations')
+  implementation('org.springframework:spring-web')
   implementation('org.apache.httpcomponents:httpclient')
 
-  compileOnly(project(':geode-common')) {
+  implementation(project(':geode-common')) {
     exclude module: 'junit'
   }
-  compileOnly('io.springfox:springfox-swagger2') {
-    exclude module: 'slf4j-api'
-    exclude module: "jackson-annotations"
+  implementation('io.swagger:swagger-annotations'){
+    ext.embed = true
   }
 
   testImplementation(project(':geode-common'))

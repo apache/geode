@@ -18,6 +18,7 @@ import java.rmi.Naming;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.classloader.internal.ClassPathLoader;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.ExitCode;
 import org.apache.geode.logging.internal.OSProcess;
@@ -39,6 +40,7 @@ public class ChildVM {
 
   public static void main(String[] args) throws Throwable {
     try {
+      ClassPathLoader.initialize(null);
       int namingPort = Integer.getInteger(DUnitLauncher.RMI_PORT_PARAM);
       int vmNum = Integer.getInteger(DUnitLauncher.VM_NUM_PARAM);
       int remoteStubPort = Integer.getInteger(DUnitLauncher.REMOTE_STUB_PORT_PARAM, 0);
@@ -65,6 +67,7 @@ public class ChildVM {
         Thread.sleep(1000);
       }
     } catch (Throwable t) {
+      t.printStackTrace(System.err);
       logger.info("VM is exiting with error", t);
       ExitCode.FATAL.doSystemExit();
     } finally {

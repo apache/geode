@@ -36,8 +36,8 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.classloader.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.deployment.FunctionScanner;
 import org.apache.geode.management.internal.utils.JarFileUtils;
@@ -71,10 +71,10 @@ public class FunctionToFileTracker {
             filePath);
         try {
           functions.addAll(loadFunctionFromClassName(functionClass));
-        } catch (ClassNotFoundException | NoClassDefFoundError cnfex) {
+        } catch (ClassNotFoundException | NoClassDefFoundError exception) {
           logger.error("Unable to load all classes from JAR file: {}",
-              filePath, cnfex);
-          throw cnfex;
+              filePath, exception);
+          throw exception;
         }
       }
       registeredFunctions.addAll(registerFunction(filePath, functions));
@@ -83,8 +83,10 @@ public class FunctionToFileTracker {
       throw ioex;
     }
     String artifactId = JarFileUtils.toArtifactId(jarFile.getName());
-    List<Function<?>> previouslyRegisteredFunctions =
-        deploymentToFunctionsMap.remove(artifactId);
+    if (artifactId == null) {
+      artifactId = JarFileUtils.getArtifactId(jarFile.getName());
+    }
+    List<Function<?>> previouslyRegisteredFunctions = deploymentToFunctionsMap.remove(artifactId);
     if (!registeredFunctions.isEmpty()) {
       deploymentToFunctionsMap.put(artifactId, registeredFunctions);
     }
@@ -190,6 +192,10 @@ public class FunctionToFileTracker {
             registerableFunctions.add(function);
           }
         }
+      } else {
+        throw new RuntimeException("Function class:" + clazz.getName() + " Assignable: "
+            + Function.class.isAssignableFrom(clazz) + " Abstract: "
+            + Modifier.isAbstract(clazz.getModifiers()));
       }
     } catch (Exception ex) {
       logger.error("Attempting to register function from class: {}", clazz, ex);
@@ -203,20 +209,20 @@ public class FunctionToFileTracker {
     try {
       final Constructor<Function<?>> constructor = clazz.getConstructor();
       return constructor.newInstance();
-    } catch (NoSuchMethodException nsmex) {
+    } catch (NoSuchMethodException noSuchMethodException) {
       if (errorOnNoSuchMethod) {
         logger.error("Zero-arg constructor is required, but not found for class: {}",
-            clazz.getName(), nsmex);
+            clazz.getName(), noSuchMethodException);
       } else {
         logger.debug(
             "Not registering function because it doesn't have a zero-arg constructor: {}",
             clazz.getName());
       }
+      throw new RuntimeException(noSuchMethodException);
     } catch (Exception ex) {
       logger.error("Error when attempting constructor for function for class: {}", clazz.getName(),
           ex);
+      throw new RuntimeException(ex);
     }
-
-    return null;
   }
 }

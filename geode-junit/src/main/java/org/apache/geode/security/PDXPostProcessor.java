@@ -26,7 +26,7 @@ public class PDXPostProcessor implements PostProcessor {
 
   private static final byte[] BYTES = {1, 0};
 
-  static byte[] bytes() {
+  public static byte[] bytes() {
     return BYTES;
   }
 

@@ -57,6 +57,41 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
+      <groupId>org.springframework.shell</groupId>
+      <artifactId>spring-shell</artifactId>
+      <scope>compile</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>cglib</artifactId>
+          <groupId>*</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>spring-core</artifactId>
+          <groupId>*</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>asm</artifactId>
+          <groupId>*</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>spring-aop</artifactId>
+          <groupId>*</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>guava</artifactId>
+          <groupId>*</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>aopalliance</artifactId>
+          <groupId>*</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>spring-context-support</artifactId>
+          <groupId>*</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-logging</artifactId>
       <scope>runtime</scope>
@@ -77,6 +112,11 @@
       <scope>runtime</scope>
     </dependency>
     <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-web</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
       <scope>runtime</scope>
@@ -84,6 +124,11 @@
     <dependency>
       <groupId>com.healthmarketscience.rmiio</groupId>
       <artifactId>rmiio</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
       <scope>runtime</scope>
     </dependency>
     <dependency>
@@ -97,34 +142,10 @@
       <scope>runtime</scope>
     </dependency>
     <dependency>
-      <groupId>org.springframework.shell</groupId>
-      <artifactId>spring-shell</artifactId>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.geode.frameworks</groupId>
-      <artifactId>springframework</artifactId>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
       <groupId>org.springframework</groupId>
-      <artifactId>spring-context</artifactId>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-jcl</artifactId>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-web</artifactId>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-      <scope>compile</scope>
+      <artifactId>spring-core</artifactId>
+      <scope>runtime</scope>
+      <optional>true</optional>
     </dependency>
   </dependencies>
 </project>

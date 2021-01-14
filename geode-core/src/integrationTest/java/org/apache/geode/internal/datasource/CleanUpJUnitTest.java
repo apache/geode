@@ -66,9 +66,10 @@ public class CleanUpJUnitTest {
   @Test
   public void testGetSimpleDataSource() throws Exception {
     try {
-      Context ctx = cache.getJNDIContext();
-      GemFireBasicDataSource ds = (GemFireBasicDataSource) ctx.lookup("java:/SimpleDataSource");
-      Connection conn = ds.getConnection();
+      Context context = cache.getJNDIContext();
+      SimpleDataSource simpleDataSource =
+          (SimpleDataSource) context.lookup("java:/SimpleDataSource");
+      Connection conn = simpleDataSource.getConnection();
       if (conn == null) {
         fail(
             "DataSourceFactoryTest-testGetSimpleDataSource() Error in creating the GemFireBasicDataSource");

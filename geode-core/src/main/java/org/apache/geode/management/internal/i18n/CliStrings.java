@@ -97,6 +97,9 @@ public class CliStrings {
       "The name of the class implementing CustomExpiry for entry idle time. Append json string for initialization properties.";
   public static final String ENTRY_TTL_CUSTOM_EXPIRY_HELP =
       "The name of the class implementing CustomExpiry for entry time to live. Append json string for initialization properties.";
+  public static final String EXTENSION_PATHS = "extension-paths";
+  public static final String EXTENSION_PATHS_HELP =
+      "One or more paths to a directory containing module descriptors to be loaded by Geode.";
   private static final String LOG_LEVEL_VALUES =
       "Possible values for log-level include: ALL, TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF.";
 
@@ -1121,6 +1124,9 @@ public class CliStrings {
   public static final String DEPLOY__GROUP__HELP =
       "Group(s) to which the specified JARs will be deployed. If not specified, deploy will occur on all members.";
   public static final String DEPLOY__JAR__HELP = "Path of the JAR to deploy.";
+  public static final String DEPENDENCIES = "dependencies";
+  public static final String DEPENDENCIES__HELP =
+      "Names of modules for this deployment to depend on. valid only when server is running classloader-isolated.";
 
   /* describe config command */
   public static final String DESCRIBE_CONFIG = "describe config";
@@ -2685,6 +2691,9 @@ public class CliStrings {
   public static final String START_SERVER__EVICTION_OFF_HEAP_PERCENTAGE__HELP =
       "Set the percentage of off-heap memory at or above which the eviction should begin on Regions configured for off-heap and HeapLRU eviction. Changing this value may cause eviction to begin immediately."
           + " Only one change to this attribute or critical off-heap percentage will be allowed at any given time and its effect will be fully realized before the next change is allowed.";
+  public static final String START_SERVER_EXPERIMENTAL = "experimental";
+  public static final String START_SERVER_EXPERIMENTAL_HELP =
+      "Enables experimental ClassLoader isolation";
   public static final String START_SERVER__HOSTNAME__FOR__CLIENTS = "hostname-for-clients";
   public static final String START_SERVER__HOSTNAME__FOR__CLIENTS__HELP =
       "Sets the ip address or host name that this cache server is to listen on for client connections."

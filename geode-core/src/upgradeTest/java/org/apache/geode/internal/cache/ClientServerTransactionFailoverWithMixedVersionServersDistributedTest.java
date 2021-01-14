@@ -112,7 +112,7 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
     server2 = host.getVM(startingVersion, 1);
     server3 = host.getVM(startingVersion, 2);
     server4 = host.getVM(startingVersion, 3);
-    client = host.getVM(startingVersion, 4);
+    client = host.getVM(startingVersion, 4).initializeAsClientVM();
     locator = host.getVM(startingVersion, 5);
 
     hostName = getHostName();

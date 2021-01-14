@@ -16,11 +16,13 @@
  */
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
+apply from: "${rootDir}/${scriptDir}/jboss-modules.gradle"
 
 dependencies {
   // main
   implementation(platform(project(':boms:geode-all-bom')))
   implementation(project(':extensions:geode-modules'))
+  api('javax.servlet:javax.servlet-api')
 
   compileOnly(platform(project(':boms:geode-all-bom')))
   compileOnly('javax.servlet:javax.servlet-api')

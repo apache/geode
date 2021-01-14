@@ -21,170 +21,175 @@ rat {
   inputDir = rootDir
 
   excludes = [
-    // git
-    '.git/**',
-    '**/.gitignore',
-    '**/.gitkeep',
+      // git
+      '.git/**',
+      '**/.gitignore',
+      '**/.gitkeep',
 
-    // gradle
-    '**/.gradle/**',
-    'gradlew',
-    'gradlew.bat',
-    'gradle/wrapper/gradle-wrapper.properties',
-    'caches/**',
-    'daemon/**',
-    'native/**',
-    'wrapper/**',
-    '**/build/**',
-    '**/build-*/**',
-    '.buildinfo',
-    '**/release-features.rendered', // just for jenkins
+      // gradle
+      '**/.gradle/**',
+      'gradlew',
+      'gradlew.bat',
+      'gradle/wrapper/gradle-wrapper.properties',
+      'caches/**',
+      'daemon/**',
+      'native/**',
+      'wrapper/**',
+      '**/build/**',
+      '**/build-*/**',
+      '.buildinfo',
+      '**/release-features.rendered', // just for jenkins
 
-    // Go
-    '**/go.mod',
-    '**/go.sum',
+      // Go
+      '**/go.mod',
+      '**/go.sum',
 
-    // Geode examples
-    'geode-examples/.idea/**',
-    'geode-examples/gradlew*/**',
-    'geode-examples/gradle/wrapper/**',
+      // Geode examples
+      'geode-examples/.idea/**',
+      'geode-examples/gradlew*/**',
+      'geode-examples/gradle/wrapper/**',
 
-    // IDE
-    'etc/eclipse-java-google-style.xml',
-    'etc/intellij-java-modified-google-style.xml',
-    'etc/eclipseOrganizeImports.importorder',
-    '**/.project',
-    '**/.classpath',
-    '**/.settings/**',
-    '**/build-eclipse/**',
-    '**/*.iml',
-    '**/*.ipr',
-    '**/*.iws',
-    '**/.idea/**',
-    '**/tags',
-    '**/out/**',
+      // IDE
+      'etc/eclipse-java-google-style.xml',
+      'etc/intellij-java-modified-google-style.xml',
+      'etc/eclipseOrganizeImports.importorder',
+      '**/.project',
+      '**/.classpath',
+      '**/.settings/**',
+      '**/build-eclipse/**',
+      '**/*.iml',
+      '**/*.ipr',
+      '**/*.iws',
+      '**/.idea/**',
+      '**/tags',
+      '**/out/**',
 
-    // text files
-    '**/*.fig',
-    '**/*.txt',
-    '**/*.md',
-    '**/*.json',
-    '**/*.tx0',
-    '**/*.txo',
-    '**/*.log',
-    '**/*.patch',
-    '**/*.diff',
-    '**/*.rej',
-    '**/*.orig',
-    '**/*.MF',
+      // text files
+      '**/*.fig',
+      '**/*.txt',
+      '**/*.md',
+      '**/*.json',
+      '**/*.tx0',
+      '**/*.txo',
+      '**/*.log',
+      '**/*.patch',
+      '**/*.diff',
+      '**/*.rej',
+      '**/*.orig',
+      '**/*.MF',
 
-    // binary files
-    '**/*.cer',
-    '**/*.dia',
-    '**/*.gfs',
-    '**/*.gif',
-    '**/*.ico',
-    '**/*.jpg',
-    '**/*.keystore',
-    '**/*.pdf',
-    '**/*.png',
-    '**/*.ser',
-    '**/*.svg',
-    '**/*.truststore',
-    '**/*.xls',
-    '**/publickeyfile',
-    '**/*.dat',
+      // binary files
+      '**/*.cer',
+      '**/*.dia',
+      '**/*.gfs',
+      '**/*.gif',
+      '**/*.ico',
+      '**/*.jpg',
+      '**/*.keystore',
+      '**/*.pdf',
+      '**/*.png',
+      '**/*.ser',
+      '**/*.svg',
+      '**/*.truststore',
+      '**/*.xls',
+      '**/publickeyfile',
+      '**/*.dat',
 
-    // Geode docs
-    'geode-book/Gemfile.lock',
-    'geode-book/output/**',
-    'geode-book/final_app/**',
+      // Geode docs
+      'geode-book/Gemfile.lock',
+      'geode-book/output/**',
+      'geode-book/final_app/**',
 
-    // other text files
-    '**/log4j*.xml',
+      // other text files
+      '**/log4j*.xml',
 
-    // local configuration files that are ignored by git
-    'ci/pipelines/meta/meta.properties.local',
-    '.java-version', // file created by `jenv local`
+      // local configuration files that are ignored by git
+      'ci/pipelines/meta/meta.properties.local',
+      '.java-version', // file created by `jenv local`
 
-    // modules
-    'extensions/**/log4j.properties',
-    'extensions/**/tomcat-users.xml',
-    'extensions/geode-modules-assembly/release/tcserver/**',
-    'extensions/geode-modules-assembly/release/**/setenv.properties',
-    'extensions/geode-modules/src/main/java/org/apache/geode/modules/session/catalina/LocalStrings.properties',
-    'extensions/geode-modules/src/main/resources/modules-version.properties',
-    'extensions/geode-modules/src/test/resources/org/apache/geode/modules/Event.hbm.xml',
-    'extensions/geode-modules/src/test/resources/org/apache/geode/modules/Person.hbm.xml',
+      // modules
+      'extensions/**/log4j.properties',
+      'extensions/**/tomcat-users.xml',
+      'extensions/geode-modules-assembly/release/tcserver/**',
+      'extensions/geode-modules-assembly/release/**/setenv.properties',
+      'extensions/geode-modules/src/main/java/org/apache/geode/modules/session/catalina/LocalStrings.properties',
+      'extensions/geode-modules/src/main/resources/modules-version.properties',
+      'extensions/geode-modules/src/test/resources/org/apache/geode/modules/Event.hbm.xml',
+      'extensions/geode-modules/src/test/resources/org/apache/geode/modules/Person.hbm.xml',
 
-    // cargo log files
-    'geode-assembly/cargo_logs/**',
+      // cargo log files
+      'geode-assembly/cargo_logs/**',
 
-    // these are test files that don't expect the first element to be a comment
-    'geode-core/src/test/resources/org/apache/geode/management/internal/configuration/utils/*.xml',
+      // these are test files that don't expect the first element to be a comment
+      'geode-core/src/test/resources/org/apache/geode/management/internal/configuration/utils/*.xml',
 
-    '**/META-INF/**',
-    'jpf.properties',
+      '**/META-INF/**',
+      'jpf.properties',
 
-    // --- Other Licenses ---
+      // --- Other Licenses ---
 
-    // Public Domain http://meyerweb.com/eric/tools/css/reset/
-    'geode-pulse/src/main/webapp/scripts/lib/tooltip.js',
+      // Public Domain http://meyerweb.com/eric/tools/css/reset/
+      'geode-pulse/src/main/webapp/scripts/lib/tooltip.js',
 
-    // JSON License - permissive, used for Good, not Evil
-    'geode-json/src/main/java/org/json/CDL.java',
-    'geode-json/src/main/java/org/json/Cookie.java',
-    'geode-json/src/main/java/org/json/CookieList.java',
-    'geode-json/src/main/java/org/json/CDL.java',
-    'geode-json/src/main/java/org/json/Cookie.java',
-    'geode-json/src/main/java/org/json/CookieList.java',
-    'geode-json/src/main/java/org/json/HTTP.java',
-    'geode-json/src/main/java/org/json/HTTPTokener.java',
-    'geode-json/src/main/java/org/json/JSONArray.java',
-    'geode-json/src/main/java/org/json/JSONException.java',
-    'geode-json/src/main/java/org/json/JSONML.java',
-    'geode-json/src/main/java/org/json/JSONObject.java',
-    'geode-json/src/main/java/org/json/JSONString.java',
-    'geode-json/src/main/java/org/json/JSONStringer.java',
-    'geode-json/src/main/java/org/json/JSONTokener.java',
-    'geode-json/src/main/java/org/json/JSONWriter.java',
-    'geode-json/src/main/java/org/json/XML.java',
-    'geode-json/src/main/java/org/json/XMLTokener.java',
+      // JSON License - permissive, used for Good, not Evil
+      'geode-json/src/main/java/org/json/CDL.java',
+      'geode-json/src/main/java/org/json/Cookie.java',
+      'geode-json/src/main/java/org/json/CookieList.java',
+      'geode-json/src/main/java/org/json/CDL.java',
+      'geode-json/src/main/java/org/json/Cookie.java',
+      'geode-json/src/main/java/org/json/CookieList.java',
+      'geode-json/src/main/java/org/json/HTTP.java',
+      'geode-json/src/main/java/org/json/HTTPTokener.java',
+      'geode-json/src/main/java/org/json/JSONArray.java',
+      'geode-json/src/main/java/org/json/JSONException.java',
+      'geode-json/src/main/java/org/json/JSONML.java',
+      'geode-json/src/main/java/org/json/JSONObject.java',
+      'geode-json/src/main/java/org/json/JSONString.java',
+      'geode-json/src/main/java/org/json/JSONStringer.java',
+      'geode-json/src/main/java/org/json/JSONTokener.java',
+      'geode-json/src/main/java/org/json/JSONWriter.java',
+      'geode-json/src/main/java/org/json/XML.java',
+      'geode-json/src/main/java/org/json/XMLTokener.java',
 
-    // MIT License
-    'geode-pulse/src/main/webapp/scripts/lib/jquery.jqGrid.src.js',
-    'geode-pulse/src/main/webapp/scripts/lib/grid.locale-en.js',
-    'geode-pulse/src/main/webapp/scripts/lib/html5.js',
-    'geode-pulse/src/main/webapp/scripts/lib/jquery.i18n.properties.js',
-    'geode-pulse/src/main/webapp/scripts/lib/jquery.jscrollpane.js',
-    'geode-pulse/src/main/webapp/scripts/lib/jquery.mousewheel.js',
-    'geode-pulse/src/main/webapp/scripts/lib/jquery.placeholder.js',
-    'geode-pulse/src/main/webapp/scripts/lib/jquery.tablednd.js',
-    'geode-pulse/src/main/webapp/scripts/lib/jquery.timeago.js',
-    'geode-pulse/src/main/webapp/scripts/lib/jquery.ztree.core-3.5.js',
-    'geode-pulse/src/main/webapp/scripts/lib/jquery.ztree.excheck-3.5.js',
-    'geode-pulse/src/main/webapp/scripts/lib/jquery-1.7.2.js',
-    'geode-pulse/src/main/webapp/scripts/multiselect/jquery.multiselect.js',
-    'geode-pulse/src/main/webapp/scripts/multiselect/jquery-ui.js',
+      // MIT License
+      'geode-pulse/src/main/webapp/scripts/lib/jquery.jqGrid.src.js',
+      'geode-pulse/src/main/webapp/scripts/lib/grid.locale-en.js',
+      'geode-pulse/src/main/webapp/scripts/lib/html5.js',
+      'geode-pulse/src/main/webapp/scripts/lib/jquery.i18n.properties.js',
+      'geode-pulse/src/main/webapp/scripts/lib/jquery.jscrollpane.js',
+      'geode-pulse/src/main/webapp/scripts/lib/jquery.mousewheel.js',
+      'geode-pulse/src/main/webapp/scripts/lib/jquery.placeholder.js',
+      'geode-pulse/src/main/webapp/scripts/lib/jquery.tablednd.js',
+      'geode-pulse/src/main/webapp/scripts/lib/jquery.timeago.js',
+      'geode-pulse/src/main/webapp/scripts/lib/jquery.ztree.core-3.5.js',
+      'geode-pulse/src/main/webapp/scripts/lib/jquery.ztree.excheck-3.5.js',
+      'geode-pulse/src/main/webapp/scripts/lib/jquery-1.7.2.js',
+      'geode-pulse/src/main/webapp/scripts/multiselect/jquery.multiselect.js',
+      'geode-pulse/src/main/webapp/scripts/multiselect/jquery-ui.js',
 
-    'geode-pulse/src/main/webapp/css/grid/ui.jqgrid.css',
-    'geode-pulse/src/main/webapp/css/multiselect/jquery.multiselect.css',
-    'geode-pulse/src/main/webapp/css/jquery.jscrollpane.css',
-    'geode-pulse/src/main/webapp/css/jquery.ui.all.css',
-    'geode-pulse/src/main/webapp/css/jquery.ui.core.css',
-    'geode-pulse/src/main/webapp/css/jquery.ui.theme.css',
-    'geode-pulse/src/main/webapp/css/jquery.ztreestyle.css',
-    'geode-pulse/src/main/webapp/css/jquery-ui.css',
+      'geode-pulse/src/main/webapp/css/grid/ui.jqgrid.css',
+      'geode-pulse/src/main/webapp/css/multiselect/jquery.multiselect.css',
+      'geode-pulse/src/main/webapp/css/jquery.jscrollpane.css',
+      'geode-pulse/src/main/webapp/css/jquery.ui.all.css',
+      'geode-pulse/src/main/webapp/css/jquery.ui.core.css',
+      'geode-pulse/src/main/webapp/css/jquery.ui.theme.css',
+      'geode-pulse/src/main/webapp/css/jquery.ztreestyle.css',
+      'geode-pulse/src/main/webapp/css/jquery-ui.css',
 
-    // BSD License
-    'geode-gfsh/src/main/java/org/apache/geode/management/internal/cli/shell/jline/ANSIBuffer.java',
-    'geode-pulse/src/main/webapp/scripts/lib/jquery.sparkline.js',
+      // BSD License
+      'geode-gfsh/src/main/java/org/apache/geode/management/internal/cli/shell/jline/ANSIBuffer.java',
+      'geode-pulse/src/main/webapp/scripts/lib/jquery.sparkline.js',
 
-    // Apache License
-    'geode-pulse/src/main/webapp/scripts/multiselect/prettify.js',
+      // Apache License
+      'geode-pulse/src/main/webapp/scripts/multiselect/prettify.js',
 
-    // MX4J License
-    'geode-core/src/main/java/org/apache/geode/admin/jmx/internal/MX4JModelMBean.java'
+      // MX4J License
+      'geode-core/src/main/java/org/apache/geode/admin/jmx/internal/MX4JModelMBean.java',
+
+      //Geode Extensions
+      'geode-deployment/geode-deployment-jboss-modules/src/main/resources/geodeExtensions.properties',
+      'geode-deployment/geode-jboss-extensions/src/test/resources/geodeExtensions.properties',
+      'geode-deployment/geode-deployment-jboss-modules/src/distributedTest/resources/distributedTestGeodeExtensions.properties'
   ]
 }
 

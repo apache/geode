@@ -18,6 +18,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_H
 import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -54,7 +55,7 @@ public class StartServerCommandIntegrationTest {
 
     ArgumentCaptor<Properties> gemfirePropertiesCaptor = ArgumentCaptor.forClass(Properties.class);
     verify(spy).createStartServerCommandLine(any(), any(), any(), gemfirePropertiesCaptor.capture(),
-        any(), any(), any(), any(), any(), any());
+        any(), any(), any(), any(), any(), any(), anyBoolean(), any());
 
     Properties gemfireProperties = gemfirePropertiesCaptor.getValue();
     assertThat(gemfireProperties).containsKey(USE_CLUSTER_CONFIGURATION);
@@ -70,7 +71,7 @@ public class StartServerCommandIntegrationTest {
 
     ArgumentCaptor<Properties> gemfirePropertiesCaptor = ArgumentCaptor.forClass(Properties.class);
     verify(spy).createStartServerCommandLine(any(), any(), any(), gemfirePropertiesCaptor.capture(),
-        any(), any(), any(), any(), any(), any());
+        any(), any(), any(), any(), any(), any(), anyBoolean(), any());
 
     Properties gemfireProperties = gemfirePropertiesCaptor.getValue();
     assertThat(gemfireProperties).containsKey(JMX_MANAGER_HOSTNAME_FOR_CLIENTS);

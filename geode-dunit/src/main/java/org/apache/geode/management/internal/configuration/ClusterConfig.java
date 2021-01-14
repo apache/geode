@@ -39,11 +39,10 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.deployment.internal.JarDeploymentServiceFactory;
+import org.apache.geode.classloader.internal.ClassPathLoader;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.services.result.ServiceResult;
@@ -146,11 +145,16 @@ public class ClusterConfig implements Serializable {
         .map(jar -> jar.replaceAll("\\.v\\d+\\.jar", ".jar")).collect(toSet());
 
     // We will end up with extra jars on disk if they are deployed and then undeployed
-    assertThat(expectedJarNames).isSubsetOf(actualJarNames);
+    // assertThat(expectedJarNames).isSubsetOf(actualJarNames);
 
     // verify config exists in memory
     serverVM.invoke(() -> {
       Cache cache = GemFireCacheImpl.getInstance();
+      List<String> actualDeployedJars =
+          ClassPathLoader.getLatest().getJarDeploymentService().listDeployed().stream()
+              .map(deployment -> deployment.getFileName()).collect(Collectors.toList());
+
+      assertThat(actualDeployedJars).containsExactlyInAnyOrderElementsOf(expectedJarNames);
 
       // TODO: set compare to fail if there are extra regions
       for (String region : this.getRegions()) {

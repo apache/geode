@@ -37,9 +37,10 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.internal.MakeNotStatic;
-import org.apache.geode.internal.classloader.ClassPathLoader;
+import org.apache.geode.classloader.internal.ClassPathLoader;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.utils.JarFileUtils;
+
 
 public class JarDeployer implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -280,7 +281,7 @@ public class JarDeployer implements Serializable {
       return true;
     }
 
-    if (oldDeployedJar.hasSameContentAs(stagedJar)) {
+    if (JarFileUtils.hasSameContent(oldDeployedJar.getFile(), stagedJar)) {
       logger.warn("Jar is identical to the latest deployed version: {}",
           oldDeployedJar.getFileCanonicalPath());
 

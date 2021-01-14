@@ -35,6 +35,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.client.PoolFactory;
+import org.apache.geode.classloader.internal.ClassPathLoader;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -183,6 +184,8 @@ public class InternalCacheBuilder {
           InternalCache cache =
               existingCache(internalDistributedSystem::getCache, singletonCacheSupplier);
           if (cache == null) {
+            ClassPathLoader
+                .setLatestToDefault(internalDistributedSystem.getConfig().getDeployWorkingDir());
             cache =
                 internalCacheConstructor.construct(isClient, poolFactory, internalDistributedSystem,
                     cacheConfig, useAsyncEventListeners, typeRegistry);

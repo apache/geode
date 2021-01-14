@@ -18,7 +18,7 @@
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
-
+apply from: "${rootDir}/${scriptDir}/jboss-modules-extensions.gradle"
 
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
@@ -32,41 +32,25 @@ dependencies {
   implementation(project(':geode-core'))
   implementation('org.apache.commons:commons-lang3')
 
-  compileOnly('org.apache.logging.log4j:log4j-api')
-
   testImplementation(project(':geode-junit'))
-  testImplementation('org.assertj:assertj-core')
-  testImplementation('junit:junit')
-  testImplementation('org.mockito:mockito-core')
 
   integrationTestImplementation(project(':geode-junit'))
-  integrationTestImplementation('org.assertj:assertj-core')
-  integrationTestImplementation('junit:junit')
-
 
   distributedTestImplementation(project(':geode-gfsh'))
+  distributedTestImplementation(project(':geode-cq'))
   distributedTestImplementation(project(':geode-dunit'))
   distributedTestImplementation(project(':geode-junit'))
 
-  distributedTestImplementation('mx4j:mx4j')
-  distributedTestImplementation('org.awaitility:awaitility')
-  distributedTestImplementation('junit:junit')
-  distributedTestImplementation('org.hamcrest:hamcrest')
-  distributedTestImplementation('org.mockito:mockito-core')
+  distributedTestRuntimeOnly('mx4j:mx4j')
   distributedTestImplementation('org.hamcrest:hamcrest')
   distributedTestImplementation('org.apache.commons:commons-lang3')
   distributedTestImplementation('commons-io:commons-io')
-  distributedTestImplementation('org.assertj:assertj-core')
   distributedTestImplementation('pl.pragmatists:JUnitParams')
-
 
   upgradeTestImplementation(project(':geode-gfsh'))
   upgradeTestImplementation(project(':geode-junit'))
   upgradeTestImplementation(project(':geode-dunit'))
 
-  upgradeTestImplementation('org.awaitility:awaitility')
-  upgradeTestImplementation('org.assertj:assertj-core')
-  upgradeTestImplementation('junit:junit')
   upgradeTestImplementation('xml-apis:xml-apis')
 
   upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))

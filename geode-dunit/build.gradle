@@ -16,19 +16,32 @@
  */
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
-
+apply from: "${rootDir}/${scriptDir}/jboss-modules.gradle"
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
+configurations {
+  jbossModular
+  distributedTestJbossModular
+}
 
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
-  implementation(project(':geode-logging'))
+
+  // this is used only for Dunit tests when run using classloader isolation
+  //  jbossModular(project(':extensions:geode-modules'))
+  jbossModular(project(path: ':geode-web-management', configuration: 'war'))
+  jbossModular(project(path: ':geode-web', configuration: 'war'))
+  jbossModular(project(':geode-web-management'))
+  jbossModular(project(':geode-deployment:geode-deployment-jboss-modules'))
+  jbossModular('org.jboss.modules:jboss-modules')
+
+  api(project(':geode-logging'))
   implementation(project(':geode-serialization'))
   implementation(project(':geode-membership'))
   implementation(project(':geode-tcp-server'))
   implementation(project(':geode-core'))
   implementation(project(':geode-gfsh'))
-  implementation(project(':geode-cq'))
+  compileOnly(project(':geode-cq'))
   implementation(project(':geode-log4j')) {
     exclude module: 'geode-core'
   }
@@ -38,10 +51,16 @@ dependencies {
   }
 
   implementation('com.jayway.jsonpath:json-path')
-  implementation('org.apache.logging.log4j:log4j-core')
   implementation('commons-io:commons-io')
   implementation('org.apache.commons:commons-lang3')
-  api(project(':frameworks:springshell')) {
+  implementation('org.springframework.shell:spring-shell') {
+    exclude module: 'aopalliance'
+    exclude module: 'asm'
+    exclude module: 'cglib'
+    exclude module: 'guava'
+    exclude module: 'spring-aop'
+    exclude module: 'spring-context-support'
+    exclude module: 'spring-core'
     ext.optional = true
   }
   implementation('com.google.guava:guava')
@@ -49,19 +68,29 @@ dependencies {
     exclude module: 'junit-dep'
   }
 
-  implementation('org.assertj:assertj-core')
-  implementation('org.mockito:mockito-core')
-  implementation('org.awaitility:awaitility')
+  api('org.assertj:assertj-core')
   implementation('pl.pragmatists:JUnitParams')
 
-  implementation('junit:junit') {
+  api('junit:junit') {
     exclude module: 'hamcrest'
   }
 
   upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
+  distributedTestJbossModular(project(":geode-assembly"))
+  distributedTestJbossModular(project(":geode-core"))
+
+  upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
 }
 
 distributedTest {
   // Some tests have inner tests that should be ignored
   exclude "**/*\$*.class"
+}
+
+jbossModulesExtension {
+  geodeConfigurations {
+    distributedTest {
+      mainClass = "org.apache.geode.test.dunit.internal.ChildVM"
+    }
+  }
 }

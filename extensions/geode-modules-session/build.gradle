@@ -18,28 +18,29 @@ import org.apache.geode.gradle.plugins.DependencyConstraints
  */
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
-
+apply from: "${rootDir}/${scriptDir}/jboss-modules-extensions.gradle"
 evaluationDependsOn(":geode-core")
 
 
 
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
+  compileOnly(platform(project(':boms:geode-all-bom')))
   api(project(':extensions:geode-modules-session-internal')) {
     exclude module: 'geode-modules'
   }
   api(project(':geode-core'))
   implementation(project(':geode-common'))
 
+  compileOnly('javax.servlet:javax.servlet-api')
+  compileOnly('org.apache.tomcat:servlet-api:' + DependencyConstraints.get('tomcat6.version'))
+  implementation('org.slf4j:slf4j-api')
+
   integrationTestImplementation(project(':extensions:geode-modules'))
   integrationTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
   integrationTestImplementation(project(':geode-logging'))
-
-  implementation('javax.servlet:javax.servlet-api')
-  implementation('org.apache.tomcat:servlet-api:' + DependencyConstraints.get('tomcat6.version'))
-  implementation('org.slf4j:slf4j-api')
 
   integrationTestImplementation('com.mockrunner:mockrunner-servlet') {
     exclude group: 'jboss'

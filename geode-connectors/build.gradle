@@ -16,8 +16,7 @@
  */
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
-apply from: "${project.projectDir}/../gradle/warnings.gradle"
-
+apply from: "${rootDir}/${scriptDir}/jboss-modules-extensions.gradle"
 evaluationDependsOn(":geode-core")
 
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
@@ -35,20 +34,26 @@ sourceSets {
     output.dir(jdbcJarsDir, builtBy: 'downloadJdbcJars')
   }
 }
+
 task downloadJdbcJars(type:Copy) {
   from {configurations.jdbcTestingJars}
   into jdbcJarsDir
 }
 
+distributedTest {
+  environment 'GEODE_DISTRIBUTED_TEST_EXTENSIONS_PATH', "${project.buildDir}/resources/distributedTest/distributedTestGeodeConnectorExtensions.properties"
+}
+
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
+  compileOnly(platform(project(':boms:geode-all-bom')))
 
   implementation(project(':geode-logging'))
   implementation(project(':geode-serialization'))
   implementation(project(':geode-core'))
   implementation(project(':geode-gfsh'))
   implementation('org.apache.httpcomponents:httpcore')
-  implementation(project(':frameworks:jackson'))
+  implementation('com.fasterxml.jackson.core:jackson-databind')
 
   testImplementation(project(':geode-membership'))
   testImplementation(project(':geode-junit')) {
@@ -75,11 +80,16 @@ dependencies {
 
   implementation('com.zaxxer:HikariCP')
   implementation('org.apache.commons:commons-lang3')
-  implementation('javax.xml.bind:jaxb-api')
-  implementation('org.apache.logging.log4j:log4j-jcl') {
-    ext.optional = true
-  }
-  api(project(':frameworks:springshell')) {
+  compileOnly('javax.xml.bind:jaxb-api')
+
+  compileOnly('org.springframework.shell:spring-shell') {
+    exclude module: 'aopalliance'
+    exclude module: 'asm'
+    exclude module: 'cglib'
+    exclude module: 'guava'
+    exclude module: 'spring-aop'
+    exclude module: 'spring-context-support'
+    exclude module: 'spring-core'
     ext.optional = true
   }
   implementation('com.healthmarketscience.rmiio:rmiio')
@@ -87,22 +97,14 @@ dependencies {
   testImplementation('pl.pragmatists:JUnitParams')
 
   integrationTestImplementation('junit:junit')
-  integrationTestImplementation('org.assertj:assertj-core')
   integrationTestImplementation('pl.pragmatists:JUnitParams')
 
-  distributedTestImplementation('junit:junit')
-  distributedTestImplementation('org.assertj:assertj-core')
-  distributedTestImplementation('org.mockito:mockito-core')
   distributedTestImplementation('pl.pragmatists:JUnitParams')
-  distributedTestRuntimeOnly('org.apache.derby:derby')
+  distributedTestImplementation('org.apache.derby:derby')
 
   acceptanceTestImplementation('com.github.stefanbirkner:system-rules') {
     exclude module: 'junit-dep'
   }
-  acceptanceTestImplementation('junit:junit')
-  acceptanceTestImplementation('org.assertj:assertj-core')
-  acceptanceTestImplementation('org.awaitility:awaitility')
-  acceptanceTestImplementation('org.mockito:mockito-core')
   acceptanceTestImplementation('pl.pragmatists:JUnitParams')
   acceptanceTestImplementation('org.testcontainers:testcontainers')
 
@@ -113,4 +115,25 @@ dependencies {
   jdbcTestingJars('mysql:mysql-connector-java:8.0.26')
 }
 
+task printConfigurations {
+  doLast {task ->
+    println "Project Name: $project.name configurations:"
+    configurations.each {
+      println "    $it.name"
+    }
+  }
+}
+
 integrationTest.forkEvery 0
+
+jbossModulesExtension {
+  geodeConfigurations {
+    distributedTest {
+      packagesToExport = [
+        "org/apache/derby/",
+        "org/apache/derby",
+        "META-INF/services"
+      ]
+    }
+  }
+}

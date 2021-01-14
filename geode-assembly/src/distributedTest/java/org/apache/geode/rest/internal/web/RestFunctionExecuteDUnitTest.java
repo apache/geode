@@ -113,7 +113,7 @@ public class RestFunctionExecuteDUnitTest {
   private static File loadClassToFile() {
     String resourcePath =
         createTempFileFromResource(Function.class.getClassLoader(),
-            "org/apache/geode/management/internal/deployment/ImplementsFunction.java")
+            "example/org/apache/geode/management/internal/deployment/ImplementsFunction.java")
                 .getAbsolutePath();
     assertThat(resourcePath).isNotNull();
 

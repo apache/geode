@@ -16,11 +16,6 @@
   See the License for the specific language governing permissions and
   limitations under the License.
   -->
-  <!-- This module was also published with a richer model, Gradle metadata,  -->
-  <!-- which should be used instead. Do not delete the following line which  -->
-  <!-- is to indicate to Gradle or any Gradle module metadata file consumer  -->
-  <!-- that they should prefer consuming it instead. -->
-  <!-- do_not_remove: published-with-gradle-metadata -->
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.apache.geode</groupId>
   <artifactId>geode-all-bom</artifactId>
@@ -61,6 +56,16 @@
         <groupId>com.carrotsearch.randomizedtesting</groupId>
         <artifactId>randomizedtesting-runner</artifactId>
         <version>2.7.8</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.datatype</groupId>
+        <artifactId>jackson-datatype-joda</artifactId>
+        <version>2.9.8</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.datatype</groupId>
+        <artifactId>jackson-datatype-jsr310</artifactId>
+        <version>2.11.4</version>
       </dependency>
       <dependency>
         <groupId>com.github.davidmoten</groupId>
@@ -358,6 +363,11 @@
         <version>4.1.0</version>
       </dependency>
       <dependency>
+        <groupId>org.buildobjects</groupId>
+        <artifactId>jproc</artifactId>
+        <version>2.6.2</version>
+      </dependency>
+      <dependency>
         <groupId>org.codehaus.cargo</groupId>
         <artifactId>cargo-core-uberjar</artifactId>
         <version>1.9.7</version>
@@ -370,6 +380,11 @@
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-webapp</artifactId>
+        <version>9.4.43.v20210629</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-servlet</artifactId>
         <version>9.4.43.v20210629</version>
       </dependency>
       <dependency>
@@ -390,13 +405,12 @@
       <dependency>
         <groupId>org.jboss.modules</groupId>
         <artifactId>jboss-modules</artifactId>
-        <version>1.11.0.Final</version>
+        <version>1.12.0.Final</version>
       </dependency>
       <dependency>
-        <groupId>org.jboss.modules</groupId>
-        <artifactId>jboss-modules</artifactId>
-        <version>1.11.0.Final</version>
-        <scope>compile</scope>
+        <groupId>org.jctools</groupId>
+        <artifactId>jctools-core</artifactId>
+        <version>3.3.0</version>
       </dependency>
       <dependency>
         <groupId>org.jgroups</groupId>
@@ -467,6 +481,11 @@
         <groupId>xerces</groupId>
         <artifactId>xercesImpl</artifactId>
         <version>2.12.0</version>
+      </dependency>
+      <dependency>
+        <groupId>xml-apis</groupId>
+        <artifactId>xml-apis</artifactId>
+        <version>1.4.01</version>
       </dependency>
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
@@ -575,6 +594,11 @@
       </dependency>
       <dependency>
         <groupId>org.apache.lucene</groupId>
+        <artifactId>lucene-codecs</artifactId>
+        <version>6.6.6</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.lucene</groupId>
         <artifactId>lucene-queryparser</artifactId>
         <version>6.6.6</version>
       </dependency>
@@ -587,6 +611,26 @@
         <groupId>org.hamcrest</groupId>
         <artifactId>hamcrest</artifactId>
         <version>2.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-api</artifactId>
+        <version>5.7.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-params</artifactId>
+        <version>5.7.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-engine</artifactId>
+        <version>5.7.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.vintage</groupId>
+        <artifactId>junit-vintage-engine</artifactId>
+        <version>5.7.2</version>
       </dependency>
       <dependency>
         <groupId>org.seleniumhq.selenium</groupId>
@@ -766,12 +810,6 @@
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
-        <artifactId>geode-deployment-legacy</artifactId>
-        <version>${version}</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.geode</groupId>
         <artifactId>geode-dunit</artifactId>
         <version>${version}</version>
         <scope>compile</scope>
@@ -916,7 +954,19 @@
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
+        <artifactId>geode-deployment-jboss-modules</artifactId>
+        <version>${version}</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.geode</groupId>
         <artifactId>geode-deployment-legacy</artifactId>
+        <version>${version}</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.geode</groupId>
+        <artifactId>geode-jboss-extensions</artifactId>
         <version>${version}</version>
         <scope>compile</scope>
       </dependency>

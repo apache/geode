@@ -16,6 +16,7 @@ package org.apache.geode.management;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
@@ -51,6 +52,7 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache30.CacheTestCase;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.offheap.OffHeapStorage;
 import org.apache.geode.internal.offheap.OffHeapStoredObject;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
@@ -177,6 +179,8 @@ public class OffHeapManagementDUnitTest extends CacheTestCase {
     config.setProperty(JMX_MANAGER, "true");
     config.setProperty(JMX_MANAGER_START, "true");
     config.setProperty(JMX_MANAGER_PORT, "0");
+    config.setProperty(HTTP_SERVICE_PORT,
+        String.valueOf(AvailablePortHelper.getRandomAvailableTCPPorts(1)[0]));
 
     return config;
   }

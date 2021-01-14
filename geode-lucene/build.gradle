@@ -16,32 +16,34 @@
  */
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
-
+apply from: "${rootDir}/${scriptDir}/jboss-modules-extensions.gradle"
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
+distributedTest {
+  environment 'GEODE_DISTRIBUTED_TEST_EXTENSIONS_PATH', "${project.buildDir}/resources/distributedTest/distributedTestGeodeLuceneExtensions.properties"
+}
 
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
 
-  api(project(':geode-core'))
+  implementation(project(':geode-core'))
   api('org.apache.lucene:lucene-core')
 
   implementation(project(':geode-gfsh'))
   implementation(project(':geode-logging'))
   implementation(project(':geode-membership'))
   implementation(project(':geode-serialization'))
-  implementation('org.apache.lucene:lucene-analyzers-common')
+  api('org.apache.lucene:lucene-analyzers-common')
   implementation('org.apache.lucene:lucene-queryparser') {
     exclude module: 'lucene-sandbox'
   }
   implementation('org.apache.commons:commons-lang3')
-  implementation('mx4j:mx4j')
+  compileOnly('mx4j:mx4j')
 
   compileOnly(platform(project(':boms:geode-all-bom')))
-  compileOnly(project(':frameworks:jackson'))
+  compileOnly('com.fasterxml.jackson.core:jackson-annotations')
 
   runtimeOnly('org.apache.lucene:lucene-analyzers-phonetic')
-
 
   testImplementation(project(':geode-junit'))
   testImplementation(project(':geode-lucene:geode-lucene-test'))
@@ -51,24 +53,20 @@ dependencies {
   testImplementation('com.pholser:junit-quickcheck-core')
   testImplementation('com.carrotsearch.randomizedtesting:randomizedtesting-runner')
 
-
   distributedTestImplementation(project(':geode-junit'))
   distributedTestImplementation(project(':geode-dunit'))
   distributedTestImplementation(project(':geode-lucene:geode-lucene-test'))
   distributedTestImplementation('pl.pragmatists:JUnitParams')
   distributedTestImplementation('org.hamcrest:hamcrest')
 
-
   integrationTestImplementation(project(':geode-dunit'))
   integrationTestImplementation(project(':geode-lucene:geode-lucene-test'))
   integrationTestImplementation('org.apache.lucene:lucene-analyzers-phonetic')
   integrationTestImplementation('pl.pragmatists:JUnitParams')
 
-
   upgradeTestImplementation(project(':geode-dunit'))
   upgradeTestImplementation('commons-io:commons-io')
   upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
-
 
   performanceTestImplementation(project(':geode-junit'))
   performanceTestImplementation(project(':geode-lucene:geode-lucene-test'))
