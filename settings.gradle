@@ -65,8 +65,13 @@ include 'geode-concurrency-test'
 include 'boms:geode-client-bom'
 include 'boms:geode-all-bom'
 include 'static-analysis:pmd-rules'
+include 'frameworks:geode-extensions'
+include 'frameworks:geode-custom-jar-deployments'
 include 'geode-deployment'
+include 'geode-deployment:geode-jboss-extensions'
 include 'geode-deployment:geode-deployment-legacy'
+include 'geode-deployment:geode-deployment-jboss-modules'
+include 'geode-deployment:geode-deployment-test'
 
 
 ['1.0.0-incubating',

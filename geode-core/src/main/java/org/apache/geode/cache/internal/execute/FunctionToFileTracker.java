@@ -37,8 +37,8 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.classloader.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.deployment.FunctionScanner;
 

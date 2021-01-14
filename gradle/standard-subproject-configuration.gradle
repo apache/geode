@@ -16,6 +16,7 @@
  */
 
 apply from: "${rootDir}/${scriptDir}/java.gradle"
+apply from: "${rootDir}/${scriptDir}/module-descriptors.gradle"
 apply from: "${rootDir}/${scriptDir}/dependency-resolution.gradle"
 apply from: "${rootDir}/${scriptDir}/test.gradle"
 apply from: "${rootDir}/${scriptDir}/code-analysis.gradle"
