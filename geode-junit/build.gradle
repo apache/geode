@@ -23,13 +23,14 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
 
-  testImplementation(project(':geode-common'))
+  implementation(project(':geode-common'))
   compileOnly(project(':geode-core'))
   compileOnly(project(':geode-membership'))
-  compileOnly(project(':geode-logging'))
   compileOnly(project(':geode-serialization'))
   compileOnly(project(':geode-unsafe'))
   compileOnly(project(':geode-gfsh'))
+  implementation(project(':geode-logging'))
+
 
   api('junit:junit') {
     exclude module: 'hamcrest'
@@ -38,7 +39,8 @@ dependencies {
   api('org.mockito:mockito-core')
 
   api('io.github.classgraph:classgraph')
-  api(project(':frameworks:jackson'))
+  api('com.fasterxml.jackson.core:jackson-annotations')
+  api('com.fasterxml.jackson.core:jackson-databind')
   api('com.github.stefanbirkner:system-rules') {
     exclude module: 'junit-dep'
   }
@@ -47,7 +49,6 @@ dependencies {
   api('commons-io:commons-io')
 
   api('org.apache.commons:commons-lang3')
-  api('org.apache.logging.log4j:log4j-api')
 
   api('org.awaitility:awaitility')
   api('org.bouncycastle:bcpkix-jdk15on')

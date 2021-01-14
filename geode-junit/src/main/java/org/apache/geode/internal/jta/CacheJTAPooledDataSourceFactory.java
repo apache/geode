@@ -21,8 +21,8 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
+import org.apache.geode.classloader.internal.ClassPathLoader;
 import org.apache.geode.datasource.PooledDataSourceFactory;
-import org.apache.geode.internal.classloader.ClassPathLoader;
 
 public class CacheJTAPooledDataSourceFactory implements PooledDataSourceFactory {
   @Override

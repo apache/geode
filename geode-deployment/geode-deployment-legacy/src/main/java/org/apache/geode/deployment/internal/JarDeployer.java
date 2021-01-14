@@ -37,7 +37,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.internal.MakeNotStatic;
-import org.apache.geode.internal.classloader.ClassPathLoader;
+import org.apache.geode.classloader.internal.ClassPathLoader;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.utils.JarFileUtils;
 

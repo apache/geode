@@ -2685,6 +2685,9 @@ public class CliStrings {
   public static final String START_SERVER__EVICTION_OFF_HEAP_PERCENTAGE__HELP =
       "Set the percentage of off-heap memory at or above which the eviction should begin on Regions configured for off-heap and HeapLRU eviction. Changing this value may cause eviction to begin immediately."
           + " Only one change to this attribute or critical off-heap percentage will be allowed at any given time and its effect will be fully realized before the next change is allowed.";
+  public static final String START_SERVER_EXPERIMENTAL = "experimental";
+  public static final String START_SERVER_EXPERIMENTAL_HELP =
+      "Enables experimental ClassLoader isolation";
   public static final String START_SERVER__HOSTNAME__FOR__CLIENTS = "hostname-for-clients";
   public static final String START_SERVER__HOSTNAME__FOR__CLIENTS__HELP =
       "Sets the ip address or host name that this cache server is to listen on for client connections."

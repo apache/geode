@@ -34,8 +34,8 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.internal.execute.FunctionToFileTracker;
 import org.apache.geode.deployment.internal.DeployedJar;
 import org.apache.geode.deployment.internal.JarDeployer;
+import org.apache.geode.deployment.internal.JarDeploymentService;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.deployment.JarDeploymentService;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.internal.utils.JarFileUtils;
@@ -61,6 +61,12 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
 
   @Override
   public synchronized ServiceResult<Deployment> deploy(Deployment deployment) {
+    if (deployment == null) {
+      return Failure.of("Deployment may not be null");
+    }
+    if (deployment.getFile() == null) {
+      return Failure.of("Cannot deploy Deployment without jar file");
+    }
     try {
       DeployedJar deployedJar = jarDeployer.deploy(deployment.getFile());
       // This means that the jars are already deployed, so we call it a Success.
@@ -93,6 +99,9 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
 
   @Override
   public ServiceResult<Deployment> deploy(File file) {
+    if (file == null) {
+      return Failure.of("Jar file may not be null");
+    }
     return deploy(createDeployment(file));
   }
 

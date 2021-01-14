@@ -19,9 +19,16 @@ apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
+configurations {
+  jbossModular
+}
+
 
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
+
+  jbossModular(project(':geode-deployment:geode-deployment-jboss-modules'))
+
   implementation(project(':geode-logging'))
   implementation(project(':geode-serialization'))
   implementation(project(':geode-membership'))
@@ -38,10 +45,19 @@ dependencies {
   }
 
   implementation('com.jayway.jsonpath:json-path')
-  implementation('org.apache.logging.log4j:log4j-core')
+//  implementation('org.apache.logging.log4j:log4j-core') {
+//    ext.setProperty('should-not-generate', true)
+//  }
   implementation('commons-io:commons-io')
   implementation('org.apache.commons:commons-lang3')
-  api(project(':frameworks:springshell')) {
+  implementation('org.springframework.shell:spring-shell') {
+    exclude module: 'aopalliance'
+    exclude module: 'asm'
+    exclude module: 'cglib'
+    exclude module: 'guava'
+    exclude module: 'spring-aop'
+    exclude module: 'spring-context-support'
+    exclude module: 'spring-core'
     ext.optional = true
   }
   implementation('com.google.guava:guava')

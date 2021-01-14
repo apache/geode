@@ -49,10 +49,6 @@ class DependencyConstraints implements Plugin<Project> {
     deps.put("springshell.version", "1.2.0.RELEASE")
     deps.put("springframework.version", "5.3.8")
 
-    deps.put("jackson.version", "2.12.1")
-    deps.put("springframework.version", "5.3.3")
-    deps.put("springshell.version", "1.2.0.RELEASE")
-
     // These version numbers are used in testing various versions of tomcat and are consumed explicitly
     // in will be called explicitly in the relevant extensions module, and respective configurations
     // in geode-assembly.gradle.  Moreover, dependencyManagement does not seem to play nicely when
@@ -89,6 +85,8 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'cglib', name: 'cglib', version: get('cglib.version'))
         api(group: 'com.arakelian', name: 'java-jq', version: '1.1.0')
         api(group: 'com.carrotsearch.randomizedtesting', name: 'randomizedtesting-runner', version: '2.7.8')
+        api(group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-joda', version: '2.9.8')
+        api(group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.11.4')
         api(group: 'com.github.davidmoten', name: 'geo', version: '0.7.7')
         api(group: 'com.github.stefanbirkner', name: 'system-rules', version: '1.19.0')
         api(group: 'com.github.stephenc.findbugs', name: 'findbugs-annotations', version: '1.3.9-1')
