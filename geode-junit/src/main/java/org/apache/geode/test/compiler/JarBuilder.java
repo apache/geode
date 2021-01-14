@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
+import java.util.stream.Collectors;
 
 
 /**
@@ -85,6 +86,24 @@ public class JarBuilder {
     List<CompiledSourceCode> compiledSourceCodes = javaCompiler.compile(sourceFileContents);
 
     buildJar(outputJarFile, compiledSourceCodes);
+  }
+
+  /**
+   * Builds jar containing ONLY the class specified by name.
+   *
+   * @param outputJarFile the jar to be built.
+   * @param className the name of the class to bundle into the jar.
+   * @param sourceFile the source to compile. It must contain the specified class.
+   * @throws IOException when files cannot be read/written.
+   */
+  public void buildJar(File outputJarFile, String className, File sourceFile) throws IOException {
+    List<CompiledSourceCode> compiledSourceCodes = javaCompiler.compile(sourceFile);
+
+    List<CompiledSourceCode> sourcesToPutInJar =
+        compiledSourceCodes.stream().filter(it -> it.className.equals(className))
+            .collect(Collectors.toList());
+
+    buildJar(outputJarFile, sourcesToPutInJar);
   }
 
   public void buildJar(File outputJarFile, File... sourceFiles) throws IOException {

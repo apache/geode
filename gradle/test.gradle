@@ -232,8 +232,16 @@ acceptanceTest {
   if (project.hasProperty('testJVM') && !testJVM.trim().isEmpty()) {
     environment "JAVA_HOME", "${project.testJVM}"
   }
+  environment 'GEODE_HOME', "$buildDir/../../geode-assembly/build/install/apache-geode/"
 }
 
+upgradeTest {
+  environment 'GEODE_HOME', "$buildDir/../../geode-assembly/build/install/apache-geode/"
+}
+
+distributedTest {
+  environment 'GEODE_HOME', "$buildDir/../../geode-assembly/build/install/apache-geode"
+}
 
 // Make precheckin task run all validation tests for checking in code.
 task precheckin(dependsOn: [build, acceptanceTest, integrationTest, distributedTest, upgradeTest]) {

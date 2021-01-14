@@ -155,6 +155,7 @@ configurations {
     }
 
     raOutput
+    jbossModular
 }
 
 artifacts {
@@ -320,10 +321,13 @@ dependencies {
     implementation(project(':geode-serialization'))
     implementation(project(':geode-tcp-server'))
 
+    runtimeOnly(project(':geode-deployment:geode-deployment-legacy')) {
+        ext.optional = true
+    }
+
     //geode-management currently has pieces of the public API
     //copied into it, so it is an API dependency
     api(project(':geode-management'))
-
 
     jcaCompile(sourceSets.main.output)
 

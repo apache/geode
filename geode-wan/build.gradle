@@ -30,9 +30,8 @@ dependencies {
   implementation(project(':geode-serialization'))
   implementation(project(':geode-tcp-server'))
   implementation(project(':geode-core'))
+  implementation(project(':geode-common'))
   implementation('org.apache.commons:commons-lang3')
-
-  compileOnly('org.apache.logging.log4j:log4j-api')
 
   testImplementation(project(':geode-junit'))
   testImplementation('org.assertj:assertj-core')
@@ -58,7 +57,6 @@ dependencies {
   distributedTestImplementation('commons-io:commons-io')
   distributedTestImplementation('org.assertj:assertj-core')
   distributedTestImplementation('pl.pragmatists:JUnitParams')
-
 
   upgradeTestImplementation(project(':geode-gfsh'))
   upgradeTestImplementation(project(':geode-junit'))

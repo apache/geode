@@ -22,7 +22,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.internal.classloader.ClassPathLoader;
+import org.apache.geode.classloader.internal.ClassPathLoader;
 import org.apache.geode.internal.size.ObjectTraverser.Visitor;
 import org.apache.geode.util.internal.GeodeGlossary;
 

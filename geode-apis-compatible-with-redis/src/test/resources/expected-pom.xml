@@ -91,6 +91,17 @@
       </exclusions>
     </dependency>
     <dependency>
+      <groupId>org.apache.geode</groupId>
+      <artifactId>geode-common</artifactId>
+      <scope>runtime</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>spring-boot-starter-logging</artifactId>
+          <groupId>org.springframework.boot</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
       <groupId>com.github.davidmoten</groupId>
       <artifactId>geo</artifactId>
       <scope>runtime</scope>

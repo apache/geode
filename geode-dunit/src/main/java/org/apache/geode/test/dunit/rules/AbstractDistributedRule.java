@@ -57,6 +57,8 @@ class AbstractDistributedRule implements SerializableTestRule {
         beforeDistributedTest(description);
         try {
           base.evaluate();
+        } catch (Throwable t) {
+          t.printStackTrace();
         } finally {
           afterDistributedTest(description);
         }

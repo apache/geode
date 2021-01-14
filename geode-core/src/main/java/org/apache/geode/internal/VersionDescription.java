@@ -26,7 +26,6 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.TreeMap;
 
-import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.internal.inet.LocalHostUtil;
 
 public class VersionDescription {
@@ -86,9 +85,8 @@ public class VersionDescription {
    */
   private final Optional<String> error;
 
-  public VersionDescription(String name) {
-    InputStream is = ClassPathLoader.getLatest().getResourceAsStream(getClass(), name);
-    if (is == null) {
+  public VersionDescription(InputStream resource, String name) {
+    if (resource == null) {
       error = Optional
           .of(String.format("<Could not find resource org/apache/geode/internal/%s>",
               name));
@@ -98,7 +96,7 @@ public class VersionDescription {
 
     description = new Properties();
     try {
-      description.load(is);
+      description.load(resource);
     } catch (Exception ex) {
       error = Optional
           .of(String.format(

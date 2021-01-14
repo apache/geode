@@ -31,10 +31,10 @@ import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.FixedPartitionAttributes;
 import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
+import org.apache.geode.classloader.internal.ClassPathLoader;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.BucketServerLocation66;
 import org.apache.geode.internal.cache.FixedPartitionAttributesImpl;
-import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**

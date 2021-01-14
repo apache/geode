@@ -20,49 +20,57 @@ apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 apply from: "${project.projectDir}/../gradle/warnings.gradle"
 
+configurations {
+  jbossModular
+}
+
 dependencies {
-    compile(platform(project(':boms:geode-all-bom')))
+  compile(platform(project(':boms:geode-all-bom')))
 
-    // Geode-common has annotations and other pieces used by geode-logging
-    api(project(':geode-common'))
+  // Geode-common has annotations and other pieces used by geode-logging
+  implementation(project(':geode-common'))
 
-    api('org.apache.logging.log4j:log4j-api')
+  jbossModular(project(':geode-log4j')) {
+    ext.optional = true
+  }
 
-    testImplementation(project(':geode-junit')) {
-        exclude module: 'geode-logging'
-    }
-    testImplementation(project(':geode-concurrency-test'))
+  api('org.apache.logging.log4j:log4j-api') {
+    ext.set("should-not-generate", true)
+  }
 
-    testImplementation('org.mockito:mockito-core')
-    testImplementation('junit:junit')
-    testImplementation('org.assertj:assertj-core')
+  testImplementation(project(':geode-junit')) {
+    exclude module: 'geode-logging'
+  }
+  testImplementation(project(':geode-concurrency-test'))
 
-    testRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
+  testImplementation('org.mockito:mockito-core')
+  testImplementation('junit:junit')
+  testImplementation('org.assertj:assertj-core')
 
-    integrationTestImplementation(project(':geode-junit')) {
-        exclude module: 'geode-logging'
-    }
-    integrationTestImplementation(project(':geode-dunit')) {
-        exclude module: 'geode-logging'
-    }
-    integrationTestImplementation('pl.pragmatists:JUnitParams')
-    distributedTestImplementation(project(':geode-junit')) {
-        exclude module: 'geode-logging'
-    }
-    distributedTestImplementation(project(':geode-dunit')) {
-        exclude module: 'geode-logging'
-    }
-    distributedTestImplementation('pl.pragmatists:JUnitParams')
-    distributedTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
-    upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
+  testRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
-    testImplementation('com.tngtech.archunit:archunit-junit4')
+  integrationTestImplementation(project(':geode-junit')) {
+    exclude module: 'geode-logging'
+  }
+  integrationTestImplementation(project(':geode-dunit')) {
+    exclude module: 'geode-logging'
+  }
+  integrationTestImplementation('pl.pragmatists:JUnitParams')
+  distributedTestImplementation(project(':geode-junit')) {
+    exclude module: 'geode-logging'
+  }
+  distributedTestImplementation(project(':geode-dunit')) {
+    exclude module: 'geode-logging'
+  }
+  distributedTestImplementation('pl.pragmatists:JUnitParams')
+  distributedTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
+  upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
+
+  testImplementation('com.tngtech.archunit:archunit-junit4')
 
 }
 
 distributedTest {
-    // Some tests have inner tests that should be ignored
-    exclude "**/*\$*.class"
+  // Some tests have inner tests that should be ignored
+  exclude "**/*\$*.class"
 }
-
-

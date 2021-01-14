@@ -15,6 +15,7 @@
 package org.apache.geode.test.dunit.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_NETWORK_PARTITION_DETECTION;
+import static org.apache.geode.management.internal.cli.commands.StartMemberUtils.GEODE_HOME;
 import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
 
 import java.io.BufferedReader;
@@ -25,21 +26,31 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.JavaVersion;
 import org.apache.commons.lang3.SystemUtils;
 
+import org.apache.geode.GemFireConfigException;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.version.VersionManager;
 
@@ -57,6 +68,10 @@ class ProcessManager implements ChildVMLauncher {
     this.versionManager = VersionManager.getInstance();
     this.namingPort = namingPort;
     this.registry = registry;
+  }
+
+  public static File getVMDir(String version, int vmNum) {
+    return new File(DUnitLauncher.DUNIT_DIR, VM.getVMName(VersionManager.CURRENT_VERSION, vmNum));
   }
 
   public synchronized void launchVM(int vmNum) throws IOException {
@@ -118,10 +133,6 @@ class ProcessManager implements ChildVMLauncher {
     if (!versionManager.isValidVersion(version)) {
       throw new IllegalArgumentException("Version " + version + " is not configured for use");
     }
-  }
-
-  public static File getVMDir(String version, int vmNum) {
-    return new File(DUnitLauncher.DUNIT_DIR, VM.getVMName(VersionManager.CURRENT_VERSION, vmNum));
   }
 
   public synchronized void killVMs() {
@@ -226,6 +237,33 @@ class ProcessManager implements ChildVMLauncher {
     return classpath;
   }
 
+  private String removeStuffFromClasspath(String classpath) {
+    String[] entries = classpath.split(File.pathSeparator);
+    try {
+      Set<String> runTimeArtifactFileNames =
+          new HashSet<>(
+              Files.readAllLines(Paths.get("/tmp/classpath.txt"), StandardCharsets.UTF_8));
+      Set<String> dunitRunTimeArtifactFileNames =
+          new HashSet<>(
+              Files.readAllLines(Paths.get("/tmp/dunit-classpath.txt"), StandardCharsets.UTF_8));
+      dunitRunTimeArtifactFileNames.removeAll(runTimeArtifactFileNames);
+      List<String> testRuntimeClassPath = Arrays.stream(entries).map(entry -> {
+        String[] split = entry.split(File.separator);
+        return new String[] {split[split.length - 1], entry};
+      }).filter(entry -> !runTimeArtifactFileNames.contains(entry[0]))
+          .filter(entry -> !entry[0].contains(".jar"))
+          // .filter(entry -> !entry[0].contains("geode-"))
+          // .filter(entry -> !entry[0].contains("log4j"))
+          // .filter(entry -> !entry[0].contains("junit"))
+          .map(entry -> entry[1])
+          .collect(Collectors.toList());
+      return String.join(File.pathSeparator, testRuntimeClassPath);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return "";
+  }
+
   private String[] buildJavaCommand(int vmNum, int namingPort, String version, int remoteStubPort) {
     String cmd = System.getProperty("java.home") + File.separator
         + "bin" + File.separator + "java";
@@ -237,10 +275,10 @@ class ProcessManager implements ChildVMLauncher {
     } else {
       // remove current-version product classes and resources from the classpath
       dunitClasspath =
-          dunitClasspath =
-              removeModulesFromPath(dunitClasspath, "geode-common", "geode-core", "geode-cq",
-                  "geode-http-service", "geode-json", "geode-log4j", "geode-lucene",
-                  "geode-serialization", "geode-wan", "geode-gfsh");
+          removeModulesFromPath(dunitClasspath, "geode-common", "geode-core", "geode-cq",
+              "geode-http-service", "geode-json", "geode-log4j", "geode-lucene",
+              "geode-serialization", "geode-wan", "geode-gfsh", "geode-redis",
+              "geode-connectors", "geode-memcached");
       classPath = versionManager.getClasspath(version) + File.pathSeparator + dunitClasspath;
     }
 
@@ -256,10 +294,14 @@ class ProcessManager implements ChildVMLauncher {
     String jdkSuspend = vmNum == suspendVM ? "y" : "n"; // ignore version
     ArrayList<String> cmds = new ArrayList<String>();
     cmds.add(cmd);
-    cmds.add("-classpath");
     String jreLib = separator + "jre" + separator + "lib" + separator;
     classPath = removeFromPath(classPath, jreLib);
-    cmds.add(classPath);
+    if (vmNum < 0) {
+      cmds.add("-classpath");
+      cmds.add(classPath);
+    } else {
+      cmds.add("-Djboss.modules.system.pkgs=javax.management,java.lang.management");
+    }
     cmds.add("-D" + DUnitLauncher.REMOTE_STUB_PORT_PARAM + "=" + remoteStubPort);
     cmds.add("-D" + DUnitLauncher.RMI_PORT_PARAM + "=" + namingPort);
     cmds.add("-D" + DUnitLauncher.VM_NUM_PARAM + "=" + vmNum);
@@ -282,7 +324,7 @@ class ProcessManager implements ChildVMLauncher {
       cmds.add("-Dlog4j.configurationFile=" + DUnitLauncher.LOG4J);
     }
     cmds.add("-Djava.library.path=" + System.getProperty("java.library.path"));
-    cmds.add("-Xrunjdwp:transport=dt_socket,server=y,suspend=" + jdkSuspend + jdkDebug);
+    // cmds.add("-Xrunjdwp:transport=dt_socket,server=y,suspend=" + jdkSuspend + jdkDebug);
     cmds.add("-XX:+HeapDumpOnOutOfMemoryError");
     cmds.add("-Xmx512m");
     cmds.add("-D" + GEMFIRE_PREFIX + "DEFAULT_MAX_OPLOG_SIZE=10");
@@ -294,6 +336,9 @@ class ProcessManager implements ChildVMLauncher {
     cmds.add("-XX:MetaspaceSize=512m");
     cmds.add("-XX:SoftRefLRUPolicyMSPerMB=1");
     cmds.add(agent);
+    if (vmNum >= 0) {
+      // cmds.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=" + 5005 + vmNum);
+    }
     if (SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9)) {
       // needed for client stats gathering, see VMStats50 class, it's using class inspection
       // to call getProcessCpuTime method
@@ -303,11 +348,51 @@ class ProcessManager implements ChildVMLauncher {
       cmds.add("--add-opens=java.base/jdk.internal.module=ALL-UNNAMED");
       cmds.add("--add-opens=java.base/java.lang.module=ALL-UNNAMED");
     }
-    cmds.add(ChildVM.class.getName());
+    if (vmNum >= 0) {
+      cmds.add(
+          "-Dboot.module.loader=org.apache.geode.deployment.internal.modules.loader.GeodeModuleLoader");
+      // classPath = removeModulesFromPath(classPath, "geode-dunit", "");
+      // classPath = removeStuffFromClasspath(classPath);
+      addJBossClassPath(GEODE_HOME, cmds);
+      cmds.add("org.jboss.modules.Main");
+      cmds.add("-mp");
+      cmds.add(GEODE_HOME + File.separator + "moduleDescriptors" + File.separator + "main"
+          + File.pathSeparator + GEODE_HOME
+          + File.separator + "moduleDescriptors" + File.separator + "thirdParty");
+      cmds.add("geode-dunit:" + GemFireVersion.getGemFireVersion());
+    } else {
+      cmds.add(ChildVM.class.getName());
+    }
     String[] rst = new String[cmds.size()];
     cmds.toArray(rst);
 
     return rst;
+  }
+
+  private void addJBossClassPath(String GEODE_HOME, List<String> commandLine) {
+    commandLine.add("-classpath");
+    String libPath = GEODE_HOME + File.separator + "lib";
+    File jbossJar = findJarByArtifactIdAtPath("jboss-modules", libPath).orElseThrow(
+        () -> new GemFireConfigException(
+            "jboss-modules jar not fund in " + GEODE_HOME + File.separator + "lib"));
+    File jbossExtensionsJar = findJarByArtifactIdAtPath("geode-jboss-extensions",
+        libPath).orElseThrow(
+            () -> new GemFireConfigException(
+                "geode-jboss-extensions jar not found in " + libPath));
+
+    commandLine.add(
+        jbossExtensionsJar.getAbsolutePath() + File.pathSeparator + jbossJar.getAbsolutePath());
+  }
+
+  private Optional<File> findJarByArtifactIdAtPath(String artifactId, String path) {
+    File libDir = new File(path);
+    if (libDir.isDirectory()) {
+      File[] files = libDir.listFiles((dir, name) -> name.startsWith(artifactId));
+      if (files.length > 0) {
+        return Optional.of(files[0]);
+      }
+    }
+    return Optional.empty();
   }
 
   private String removeFromPath(String classpath, String partialPath) {

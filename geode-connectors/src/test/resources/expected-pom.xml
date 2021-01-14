@@ -63,6 +63,11 @@
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
+      <artifactId>geode-common</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.geode</groupId>
       <artifactId>geode-gfsh</artifactId>
       <scope>runtime</scope>
     </dependency>
@@ -100,6 +105,12 @@
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-jcl</artifactId>
       <scope>runtime</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j-api</artifactId>
+          <groupId>*</groupId>
+        </exclusion>
+      </exclusions>
       <optional>true</optional>
     </dependency>
     <dependency>

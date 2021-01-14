@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.internal.classloader.ClassPathLoader;
+import org.apache.geode.classloader.internal.ClassPathLoader;
 
 public class ClassLoadUtils {
 

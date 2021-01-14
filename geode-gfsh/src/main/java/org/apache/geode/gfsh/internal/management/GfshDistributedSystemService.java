@@ -18,10 +18,10 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
 
+import org.apache.geode.classloader.internal.ClassPathLoader;
 import org.apache.geode.distributed.internal.DistributedSystemService;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.classloader.ClassPathLoader;
 
 public class GfshDistributedSystemService implements DistributedSystemService {
   @Override
@@ -38,6 +38,10 @@ public class GfshDistributedSystemService implements DistributedSystemService {
   public Collection<String> getSerializationAcceptlist() throws IOException {
     URL sanctionedSerializables = ClassPathLoader.getLatest().getResource(getClass(),
         "sanctioned-geode-gfsh-serializables.txt");
+    // if (sanctionedSerializables == null) {
+    // throw new RuntimeException(
+    // "URL is " + sanctionedSerializables + " from classloader " + getClass().getClassLoader());
+    // }
     return InternalDataSerializer.loadClassNames(sanctionedSerializables);
   }
 }

@@ -49,7 +49,7 @@
     <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-common</artifactId>
-      <scope>compile</scope>
+      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
@@ -84,11 +84,6 @@
     <dependency>
       <groupId>it.unimi.dsi</groupId>
       <artifactId>fastutil</artifactId>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.github.stephenc.findbugs</groupId>
-      <artifactId>findbugs-annotations</artifactId>
       <scope>runtime</scope>
     </dependency>
     <dependency>

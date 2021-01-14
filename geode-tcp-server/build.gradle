@@ -19,8 +19,9 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 apply from: "${rootDir}/${scriptDir}/warnings.gradle"
 
 dependencies {
-    api(platform(project(':boms:geode-all-bom')))
+    implementation(platform(project(':boms:geode-all-bom')))
 
+    implementation(project(':geode-common'))
     implementation(project(':geode-logging'))
     implementation(project(':geode-serialization'))
 
@@ -28,9 +29,7 @@ dependencies {
 
     //Commons validator is used to validate inet addresses
     implementation('commons-validator:commons-validator')
-    testImplementation(project(':geode-junit')) {
-        exclude module: 'geode-core'
-    }
+    testImplementation(project(':geode-junit'))
     testImplementation('org.assertj:assertj-core')
 
     testImplementation('com.tngtech.archunit:archunit-junit4')
@@ -39,6 +38,7 @@ dependencies {
     integrationTestImplementation('org.mockito:mockito-core')
     integrationTestImplementation(project(':geode-junit'))
 
+    distributedTestImplementation(project(':geode-core'))
     distributedTestImplementation(project(':geode-gfsh'))
     distributedTestImplementation(project(':geode-dunit'))
     distributedTestImplementation(project(':geode-membership'))
