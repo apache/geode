@@ -97,6 +97,8 @@ public class DeployCommand extends GfshCommand {
 
     verifyJarContent(jarFullPaths);
 
+    verifyDeploymentNameOrJarNamesDontContainGeodeName(deploymentName, jarFullPaths);
+
     Set<DistributedMember> targetMembers;
     targetMembers = findMembers(groups, null);
 
@@ -119,10 +121,26 @@ public class DeployCommand extends GfshCommand {
       if (sc == null) {
         result.addInfo().addLine(CommandExecutor.SERVICE_NOT_RUNNING_CHANGE_NOT_PERSISTED);
       } else {
+
         sc.addJarsToThisLocator(deploymentName, jarFullPaths, groups);
       }
     }
     return result;
+  }
+
+  private void verifyDeploymentNameOrJarNamesDontContainGeodeName(String deploymentName,
+      List<String> jarFullPaths) {
+    if (!StringUtils.isEmpty(deploymentName) && deploymentName.contains("geode-")) {
+      throw new IllegalArgumentException(
+          "Deployment name may not start with \"geode-\"  : " + deploymentName);
+    }
+
+    for (String jarFullPath : jarFullPaths) {
+      if (jarFullPath.contains("geode-")) {
+        throw new IllegalArgumentException(
+            "Jar names may not start with \"geode-\"  : " + deploymentName);
+      }
+    }
   }
 
   private List<List<Object>> deployJars(String deploymentName, List<String> jarFullPaths,

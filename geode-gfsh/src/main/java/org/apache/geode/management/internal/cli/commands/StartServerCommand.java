@@ -21,7 +21,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -32,10 +34,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.GemFireConfigException;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.AbstractLauncher;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.ServerLauncher;
+import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.internal.process.ProcessStreamReader;
 import org.apache.geode.internal.util.IOUtils;
@@ -51,6 +55,30 @@ import org.apache.geode.management.internal.security.ResourceConstants;
 
 public class StartServerCommand extends OfflineGfshCommand {
   private static final String SERVER_TERM_NAME = "Server";
+
+  static void addJvmOptionsForOutOfMemoryErrors(final List<String> commandLine) {
+    if (SystemUtils.isHotSpotVM()) {
+      if (SystemUtils.isWindows()) {
+        // ProcessBuilder "on Windows" needs every word (space separated) to be
+        // a different element in the array/list. See #47312. Need to study why!
+        commandLine.add("-XX:OnOutOfMemoryError=taskkill /F /PID %p");
+      } else { // All other platforms (Linux, Mac OS X, UNIX, etc)
+        commandLine.add("-XX:OnOutOfMemoryError=kill -KILL %p");
+      }
+    } else if (SystemUtils.isJ9VM()) {
+      // NOTE IBM states the following IBM J9 JVM command-line option/switch has side-effects on
+      // "performance",
+      // as noted in the reference documentation...
+      // http://publib.boulder.ibm.com/infocenter/javasdk/v6r0/index.jsp?topic=/com.ibm.java.doc.diagnostics.60/diag/appendixes/cmdline/commands_jvm.html
+      commandLine.add("-Xcheck:memory");
+    } else if (SystemUtils.isJRockitVM()) {
+      // NOTE the following Oracle JRockit JVM documentation was referenced to identify the
+      // appropriate JVM option to
+      // set when handling OutOfMemoryErrors.
+      // http://docs.oracle.com/cd/E13150_01/jrockit_jvm/jrockit/jrdocs/refman/optionXX.html
+      commandLine.add("-XXexitOnOutOfMemory");
+    }
+  }
 
   @CliCommand(value = CliStrings.START_SERVER, help = CliStrings.START_SERVER__HELP)
   @CliMetaData(shellOnly = true,
@@ -181,7 +209,10 @@ public class StartServerCommand extends OfflineGfshCommand {
           help = CliStrings.START_SERVER__PASSWORD__HELP) String passwordToUse,
       @CliOption(key = CliStrings.START_SERVER__REDIRECT_OUTPUT, unspecifiedDefaultValue = "false",
           specifiedDefaultValue = "true",
-          help = CliStrings.START_SERVER__REDIRECT_OUTPUT__HELP) final Boolean redirectOutput)
+          help = CliStrings.START_SERVER__REDIRECT_OUTPUT__HELP) final Boolean redirectOutput,
+      @CliOption(key = CliStrings.START_SERVER_EXPERIMENTAL,
+          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
+          help = CliStrings.START_SERVER_EXPERIMENTAL_HELP) final Boolean experimental)
       throws Exception {
     // NOTICE: keep the parameters in alphabetical order based on their CliStrings.START_SERVER_*
     // text
@@ -214,26 +245,37 @@ public class StartServerCommand extends OfflineGfshCommand {
         redisPassword, messageTimeToLive, offHeapMemorySize, gemfirePropertiesFile, rebalance,
         gemfireSecurityPropertiesFile, serverBindAddress, serverPort, socketBufferSize,
         springXmlLocation, statisticsArchivePathname, requestSharedConfiguration, startRestApi,
-        httpServicePort, httpServiceBindAddress, userName, passwordToUse, redirectOutput);
+        httpServicePort, httpServiceBindAddress, userName, passwordToUse, redirectOutput,
+        experimental);
   }
 
   ResultModel doStartServer(String memberName, Boolean assignBuckets, String bindAddress,
       String cacheXmlPathname, String classpath, Float criticalHeapPercentage,
-      Float criticalOffHeapPercentage, String workingDirectory, Boolean disableDefaultServer,
+      Float criticalOffHeapPercentage, String workingDirectory,
+      Boolean disableDefaultServer,
       Boolean disableExitWhenOutOfMemory, Boolean enableTimeStatistics,
-      Float evictionHeapPercentage, Float evictionOffHeapPercentage, Boolean force, String group,
+      Float evictionHeapPercentage, Float evictionOffHeapPercentage,
+      Boolean force, String group,
       String hostNameForClients, String jmxManagerHostnameForClients,
-      Boolean includeSystemClasspath, String initialHeap, String[] jvmArgsOpts, String locators,
-      Integer locatorWaitTime, Boolean lockMemory, String logLevel, Integer maxConnections,
-      String maxHeap, Integer maxMessageCount, Integer maxThreads, String mcastBindAddress,
+      Boolean includeSystemClasspath, String initialHeap,
+      String[] jvmArgsOpts, String locators,
+      Integer locatorWaitTime, Boolean lockMemory, String logLevel,
+      Integer maxConnections,
+      String maxHeap, Integer maxMessageCount, Integer maxThreads,
+      String mcastBindAddress,
       Integer mcastPort, Integer memcachedPort, String memcachedProtocol,
-      String memcachedBindAddress, Integer redisPort, String redisBindAddress, String redisPassword,
-      Integer messageTimeToLive, String offHeapMemorySize, File gemfirePropertiesFile,
-      Boolean rebalance, File gemfireSecurityPropertiesFile, String serverBindAddress,
+      String memcachedBindAddress, Integer redisPort, String redisBindAddress,
+      String redisPassword,
+      Integer messageTimeToLive, String offHeapMemorySize,
+      File gemfirePropertiesFile,
+      Boolean rebalance, File gemfireSecurityPropertiesFile,
+      String serverBindAddress,
       Integer serverPort, Integer socketBufferSize, String springXmlLocation,
-      String statisticsArchivePathname, Boolean requestSharedConfiguration, Boolean startRestApi,
-      String httpServicePort, String httpServiceBindAddress, String userName, String passwordToUse,
-      Boolean redirectOutput)
+      String statisticsArchivePathname, Boolean requestSharedConfiguration,
+      Boolean startRestApi,
+      String httpServicePort, String httpServiceBindAddress, String userName,
+      String passwordToUse,
+      Boolean redirectOutput, Boolean experimental)
       throws MalformedObjectNameException, IOException, InterruptedException {
     cacheXmlPathname = CliUtils.resolvePathname(cacheXmlPathname);
 
@@ -346,7 +388,7 @@ public class StartServerCommand extends OfflineGfshCommand {
 
     String[] serverCommandLine = createStartServerCommandLine(serverLauncher, gemfirePropertiesFile,
         gemfireSecurityPropertiesFile, gemfireProperties, classpath, includeSystemClasspath,
-        jvmArgsOpts, disableExitWhenOutOfMemory, initialHeap, maxHeap);
+        jvmArgsOpts, disableExitWhenOutOfMemory, initialHeap, maxHeap, experimental);
 
     if (getGfsh().getDebug()) {
       getGfsh().logInfo(StringUtils.join(serverCommandLine, StringUtils.SPACE), null);
@@ -443,17 +485,25 @@ public class StartServerCommand extends OfflineGfshCommand {
   }
 
   String[] createStartServerCommandLine(final ServerLauncher launcher,
-      final File gemfirePropertiesFile, final File gemfireSecurityPropertiesFile,
-      final Properties gemfireProperties, final String userClasspath,
-      final Boolean includeSystemClasspath, final String[] jvmArgsOpts,
-      final Boolean disableExitWhenOutOfMemory, final String initialHeap, final String maxHeap)
+      final File gemfirePropertiesFile,
+      final File gemfireSecurityPropertiesFile,
+      final Properties gemfireProperties,
+      final String userClasspath,
+      final Boolean includeSystemClasspath,
+      final String[] jvmArgsOpts,
+      final Boolean disableExitWhenOutOfMemory,
+      final String initialHeap, final String maxHeap,
+      final boolean experimental)
       throws MalformedObjectNameException {
     List<String> commandLine = new ArrayList<>();
 
     commandLine.add(StartMemberUtils.getJavaPath());
     commandLine.add("-server");
-    commandLine.add("-classpath");
-    commandLine.add(getServerClasspath(Boolean.TRUE.equals(includeSystemClasspath), userClasspath));
+    if (!experimental) {
+      commandLine.add("-classpath");
+      commandLine
+          .add(getServerClasspath(Boolean.TRUE.equals(includeSystemClasspath), userClasspath));
+    }
 
     StartMemberUtils.addCurrentLocators(this, commandLine, gemfireProperties);
     StartMemberUtils.addGemFirePropertyFile(commandLine, gemfirePropertiesFile);
@@ -471,6 +521,9 @@ public class StartServerCommand extends OfflineGfshCommand {
     StartMemberUtils.addInitialHeap(commandLine, initialHeap);
     StartMemberUtils.addMaxHeap(commandLine, maxHeap);
 
+    if (experimental) {
+      commandLine.add("-Djboss.modules.system.pkgs=javax.management,java.lang.management");
+    }
     commandLine.add(
         "-D".concat(AbstractLauncher.SIGNAL_HANDLER_REGISTRATION_SYSTEM_PROPERTY.concat("=true")));
     commandLine.add("-Djava.awt.headless=true");
@@ -479,7 +532,9 @@ public class StartServerCommand extends OfflineGfshCommand {
     if (launcher.isRedirectingOutput()) {
       addOutputRedirect(commandLine);
     }
-    commandLine.add(ServerLauncher.class.getName());
+
+    commandLine.addAll(resolveLauncherCommand(experimental));
+
     commandLine.add(ServerLauncher.Command.START.getName());
 
     if (StringUtils.isNotBlank(launcher.getMemberName())) {
@@ -576,6 +631,53 @@ public class StartServerCommand extends OfflineGfshCommand {
     return commandLine.toArray(new String[] {});
   }
 
+  private List<String> resolveLauncherCommand(boolean experimental) {
+    final String GEODE_HOME = System.getenv("GEODE_HOME");
+    List<String> commandLine = new LinkedList<>();
+    if (experimental) {
+      commandLine
+          .add(
+              "-Dboot.module.loader=org.apache.geode.deployment.internal.modules.loader.GeodeModuleLoader");
+      addJBossClassPath(GEODE_HOME, commandLine);
+      commandLine.add("org.jboss.modules.Main");
+      commandLine.add("-mp");
+      commandLine.add(GEODE_HOME + File.separator + "moduleDescriptors" + File.separator + "main"
+          + File.pathSeparator + GEODE_HOME
+          + File.separator + "moduleDescriptors" + File.separator + "thirdParty");
+      commandLine.add("geode-core:" + GemFireVersion.getGemFireVersion());
+    } else {
+      commandLine.add(ServerLauncher.class.getName());
+    }
+
+    return commandLine;
+  }
+
+  private void addJBossClassPath(String GEODE_HOME, List<String> commandLine) {
+    commandLine.add("-classpath");
+    String libPath = GEODE_HOME + File.separator + "lib";
+    File jbossJar = findJarByArtifactIdAtPath("jboss-modules", libPath).orElseThrow(
+        () -> new GemFireConfigException(
+            "jboss-modules jar not fund in " + GEODE_HOME + File.separator + "lib"));
+    File jbossExtensionsJar = findJarByArtifactIdAtPath("geode-jboss-extensions",
+        libPath).orElseThrow(
+            () -> new GemFireConfigException(
+                "geode-jboss-extensions jar not fund in " + libPath));
+
+    commandLine.add(
+        jbossExtensionsJar.getAbsolutePath() + File.pathSeparator + jbossJar.getAbsolutePath());
+  }
+
+  private Optional<File> findJarByArtifactIdAtPath(String artifactId, String path) {
+    File libDir = new File(path);
+    if (libDir.isDirectory()) {
+      File[] files = libDir.listFiles((dir, name) -> name.startsWith(artifactId));
+      if (files.length > 0) {
+        return Optional.of(files[0]);
+      }
+    }
+    return Optional.empty();
+  }
+
   @SuppressWarnings("deprecation")
   private void addOutputRedirect(List<String> commandLine) {
     commandLine
@@ -608,30 +710,6 @@ public class StartServerCommand extends OfflineGfshCommand {
           .toArray(String[]::new);
     } else {
       return ArrayUtils.EMPTY_STRING_ARRAY;
-    }
-  }
-
-  static void addJvmOptionsForOutOfMemoryErrors(final List<String> commandLine) {
-    if (SystemUtils.isHotSpotVM()) {
-      if (SystemUtils.isWindows()) {
-        // ProcessBuilder "on Windows" needs every word (space separated) to be
-        // a different element in the array/list. See #47312. Need to study why!
-        commandLine.add("-XX:OnOutOfMemoryError=taskkill /F /PID %p");
-      } else { // All other platforms (Linux, Mac OS X, UNIX, etc)
-        commandLine.add("-XX:OnOutOfMemoryError=kill -KILL %p");
-      }
-    } else if (SystemUtils.isJ9VM()) {
-      // NOTE IBM states the following IBM J9 JVM command-line option/switch has side-effects on
-      // "performance",
-      // as noted in the reference documentation...
-      // http://publib.boulder.ibm.com/infocenter/javasdk/v6r0/index.jsp?topic=/com.ibm.java.doc.diagnostics.60/diag/appendixes/cmdline/commands_jvm.html
-      commandLine.add("-Xcheck:memory");
-    } else if (SystemUtils.isJRockitVM()) {
-      // NOTE the following Oracle JRockit JVM documentation was referenced to identify the
-      // appropriate JVM option to
-      // set when handling OutOfMemoryErrors.
-      // http://docs.oracle.com/cd/E13150_01/jrockit_jvm/jrockit/jrdocs/refman/optionXX.html
-      commandLine.add("-XXexitOnOutOfMemory");
     }
   }
 }

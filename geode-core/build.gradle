@@ -155,6 +155,7 @@ configurations {
     }
 
     raOutput
+    jbossModular
 }
 
 artifacts {
@@ -198,7 +199,7 @@ dependencies {
     testCompileOnly('com.github.stephenc.findbugs:findbugs-annotations')
 
     //Spring web is used for SerializableObjectHttpMessageConverter
-    implementation(project(':frameworks:springframework'))
+    implementation('org.springframework:spring-web')
     // find bugs leaks in from spring, needed to remove warnings.
     compileOnly('com.google.code.findbugs:jsr305')
 
@@ -210,8 +211,11 @@ dependencies {
     //Antlr is used by the query engine.
     implementation('antlr:antlr')
 
-    //Jackson is used in gfsh
-    implementation(project(':frameworks:jackson'))
+    //Jackson annotations is used in gfsh
+    implementation('com.fasterxml.jackson.core:jackson-annotations')
+
+    //Jackson databind is used in gfsh, and also in pdx
+    implementation('com.fasterxml.jackson.core:jackson-databind')
 
     //Commons validator is used to validate inet addresses in membership
     implementation('commons-validator:commons-validator')
@@ -228,8 +232,6 @@ dependencies {
     runtimeOnly('com.sun.istack:istack-commons-runtime') {
         exclude group: '*'
     }
-
-    runtimeOnly(project(':geode-deployment:geode-deployment-legacy'))
 
     //Commons lang is used in many different places in core
     implementation('org.apache.commons:commons-lang3')
@@ -295,7 +297,7 @@ dependencies {
 
     //Shiro is used for security checks throughout geode-core
     //API - Shiro is exposed in geode's ResourcePermission class
-    api(project(':frameworks:shiro'))
+    api('org.apache.shiro:shiro-core')
 
     //Classgraph is used by the gfsh cli, and also for function deployment (which happens in a server
     //in response to a gfsh command)
@@ -312,10 +314,16 @@ dependencies {
     implementation(project(':geode-serialization'))
     implementation(project(':geode-tcp-server'))
 
+    runtimeOnly(project(':geode-deployment:geode-deployment-legacy')) {
+        ext.optional = true
+    }
+
     //geode-management currently has pieces of the public API
     //copied into it, so it is an API dependency
     api(project(':geode-management'))
 
+    jbossModular(project(':frameworks:geode-custom-jar-deployments'))
+    jbossModular(project(':frameworks:geode-extensions'))
 
     jcaImplementation(sourceSets.main.output)
 
