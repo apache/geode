@@ -334,6 +334,12 @@ public class KnownVersion extends AbstractVersion {
   /* NOTE: when adding a new version bump the ordinal by 5. Ordinals can be short ints */
 
   /**
+   * The oldest non-deprecated version supported.
+   */
+  @Immutable
+  public static final KnownVersion OLDEST = GFE_82;
+
+  /**
    * This constant must be set to the most current version of the product. !!! NOTE: update
    * HIGHEST_VERSION when changing CURRENT !!!
    */
