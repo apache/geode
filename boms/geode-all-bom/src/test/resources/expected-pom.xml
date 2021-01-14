@@ -62,6 +62,18 @@
         <scope>compile</scope>
       </dependency>
       <dependency>
+        <groupId>com.fasterxml.jackson.datatype</groupId>
+        <artifactId>jackson-datatype-joda</artifactId>
+        <version>2.9.8</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.datatype</groupId>
+        <artifactId>jackson-datatype-jsr310</artifactId>
+        <version>2.11.4</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
         <groupId>com.github.davidmoten</groupId>
         <artifactId>geo</artifactId>
         <version>0.7.7</version>
