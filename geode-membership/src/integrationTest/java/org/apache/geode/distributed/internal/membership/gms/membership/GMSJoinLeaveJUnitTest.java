@@ -175,7 +175,7 @@ public class GMSJoinLeaveJUnitTest {
     mockOldMember = services.getMemberFactory().create(
         MemberDataBuilder.newBuilderForLocalHost("localhost")
             .setMembershipPort(8700).build());
-    ((MemberIdentifierImpl) mockOldMember).setVersionForTest(KnownVersion.GFE_56);
+    ((MemberIdentifierImpl) mockOldMember).setVersionForTest(KnownVersion.OLDEST);
     locatorClient = mock(TcpClient.class);
 
     if (useTestGMSJoinLeave) {

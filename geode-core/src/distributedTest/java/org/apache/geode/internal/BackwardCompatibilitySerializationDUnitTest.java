@@ -59,11 +59,11 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
   private transient ByteArrayInputStream bais;
 
   public static boolean toDataCalled = false;
-  public static boolean toDataPre66Called = false;
-  public static boolean toDataPre70called = false;
+  public static boolean toDataPre11Called = false;
+  public static boolean toDataPre15called = false;
   public static boolean fromDataCalled = false;
-  public static boolean fromDataPre66Called = false;
-  public static boolean fromDataPre70Called = false;
+  public static boolean fromDataPre11Called = false;
+  public static boolean fromDataPre15Called = false;
 
   public TestMessage msg = new TestMessage();
 
@@ -86,8 +86,8 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
     InternalDataSerializer.getDSFIDSerializer().registerDSFID(
         DataSerializableFixedID.PUTALL_VERSIONS_LIST,
         EntryVersionsList.class);
-    this.baos = null;
-    this.bais = null;
+    baos = null;
+    bais = null;
   }
 
   /**
@@ -98,9 +98,9 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
   @Test
   public void testToDataFromHigherVersionToLower() throws Exception {
     DataOutputStream dos =
-        new VersionedDataOutputStream(new DataOutputStream(baos), KnownVersion.GFE_56);
+        new VersionedDataOutputStream(new DataOutputStream(baos), KnownVersion.GFE_82);
     InternalDataSerializer.writeDSFID(msg, dos);
-    assertTrue(toDataPre66Called);
+    assertTrue(toDataPre11Called);
     assertFalse(toDataCalled);
   }
 
@@ -112,7 +112,7 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
   @Test
   public void testToDataFromLowerVersionToHigher() throws Exception {
     DataOutputStream dos =
-        new VersionedDataOutputStream(new DataOutputStream(baos), KnownVersion.GFE_701);
+        new VersionedDataOutputStream(new DataOutputStream(baos), KnownVersion.GEODE_1_5_0);
     InternalDataSerializer.writeDSFID(msg, dos);
     assertTrue(toDataCalled);
   }
@@ -125,10 +125,10 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
   @Test
   public void testFromDataFromHigherVersionToLower() throws Exception {
     InternalDataSerializer.writeDSFID(msg, new DataOutputStream(baos));
-    this.bais = new ByteArrayInputStream(baos.toByteArray());
+    bais = new ByteArrayInputStream(baos.toByteArray());
 
     DataInputStream dis =
-        new VersionedDataInputStream(new DataInputStream(bais), KnownVersion.GFE_701);
+        new VersionedDataInputStream(new DataInputStream(bais), KnownVersion.GEODE_1_5_0);
     Object o = InternalDataSerializer.basicReadObject(dis);
     assertTrue(o instanceof TestMessage);
     assertTrue(fromDataCalled);
@@ -142,13 +142,13 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
   @Test
   public void testFromDataFromLowerVersionToHigher() throws Exception {
     InternalDataSerializer.writeDSFID(msg, new DataOutputStream(baos));
-    this.bais = new ByteArrayInputStream(baos.toByteArray());
+    bais = new ByteArrayInputStream(baos.toByteArray());
 
     DataInputStream dis =
-        new VersionedDataInputStream(new DataInputStream(bais), KnownVersion.GFE_56);
+        new VersionedDataInputStream(new DataInputStream(bais), KnownVersion.GFE_82);
     Object o = InternalDataSerializer.basicReadObject(dis);
     assertTrue(o instanceof TestMessage);
-    assertTrue(fromDataPre66Called);
+    assertTrue(fromDataPre11Called);
   }
 
   /**
@@ -160,7 +160,7 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
   public void testAllMessages() throws Exception {
     // list of msgs not created using reflection
     // taken from DSFIDFactory.create()
-    ArrayList<Integer> constdsfids = new ArrayList<Integer>();
+    ArrayList<Integer> constdsfids = new ArrayList<>();
     constdsfids.add(new Byte(DataSerializableFixedID.REGION).intValue());
     constdsfids.add(new Byte(DataSerializableFixedID.END_OF_STREAM_TOKEN).intValue());
     constdsfids.add(new Byte(DataSerializableFixedID.DLOCK_REMOTE_TOKEN).intValue());
@@ -204,14 +204,14 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
       versions = ((SerializationVersions) ds).getSerializationVersions();
     }
     if (versions != null && versions.length > 0) {
-      for (int i = 0; i < versions.length; i++) {
+      for (final KnownVersion version : versions) {
         if (ds instanceof DataSerializableFixedID) {
           try {
-            ds.getClass().getMethod("toDataPre_" + versions[i].getMethodSuffix(),
-                new Class[] {DataOutput.class, SerializationContext.class});
+            ds.getClass().getMethod("toDataPre_" + version.getMethodSuffix(),
+                DataOutput.class, SerializationContext.class);
 
-            ds.getClass().getMethod("fromDataPre_" + versions[i].getMethodSuffix(),
-                new Class[] {DataInput.class, DeserializationContext.class});
+            ds.getClass().getMethod("fromDataPre_" + version.getMethodSuffix(),
+                DataInput.class, DeserializationContext.class);
           } catch (NoSuchMethodException e) {
             fail(
                 "toDataPreXXX or fromDataPreXXX for previous versions not found " + e.getMessage());
@@ -219,11 +219,11 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
         }
         if (ds instanceof DataSerializable) {
           try {
-            ds.getClass().getMethod("toDataPre_" + versions[i].getMethodSuffix(),
-                new Class[] {DataOutput.class});
+            ds.getClass().getMethod("toDataPre_" + version.getMethodSuffix(),
+                DataOutput.class);
 
-            ds.getClass().getMethod("fromDataPre_" + versions[i].getMethodSuffix(),
-                new Class[] {DataInput.class});
+            ds.getClass().getMethod("fromDataPre_" + version.getMethodSuffix(),
+                DataInput.class);
           } catch (NoSuchMethodException e) {
             fail(
                 "toDataPreXXX or fromDataPreXXX for previous versions not found " + e.getMessage());
@@ -248,17 +248,17 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
 
   private void resetFlags() {
     toDataCalled = false;
-    toDataPre66Called = false;
-    toDataPre70called = false;
+    toDataPre11Called = false;
+    toDataPre15called = false;
     fromDataCalled = false;
-    fromDataPre66Called = false;
-    fromDataPre70Called = false;
+    fromDataPre11Called = false;
+    fromDataPre15Called = false;
   }
 
   public static class TestMessage implements DataSerializableFixedID {
     /** The versions in which this message was modified */
     private static final KnownVersion[] dsfidVersions =
-        new KnownVersion[] {KnownVersion.GFE_66, KnownVersion.GFE_70};
+        new KnownVersion[] {KnownVersion.GEODE_1_1_0, KnownVersion.GEODE_1_5_0};
 
     public TestMessage() {}
 
@@ -273,14 +273,12 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
       toDataCalled = true;
     }
 
-    public void toDataPre_GFE_6_6_0_0(DataOutput out, SerializationContext context)
-        throws IOException {
-      toDataPre66Called = true;
+    public void toDataPre_GEODE_1_1_0_0(@SuppressWarnings("unused") DataOutput out, @SuppressWarnings("unused") SerializationContext context) {
+      toDataPre11Called = true;
     }
 
-    public void toDataPre_GFE_7_0_0_0(DataOutput out, SerializationContext context)
-        throws IOException {
-      toDataPre70called = true;
+    public void toDataPre_GEODE_1_5_0_0(@SuppressWarnings("unused") DataOutput out, @SuppressWarnings("unused") SerializationContext context) {
+      toDataPre15called = true;
     }
 
     @Override
@@ -289,14 +287,12 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
       fromDataCalled = true;
     }
 
-    public void fromDataPre_GFE_6_6_0_0(DataInput out, DeserializationContext context)
-        throws IOException {
-      fromDataPre66Called = true;
+    public void fromDataPre_GEODE_1_1_0_0(@SuppressWarnings("unused") DataInput out, @SuppressWarnings("unused") DeserializationContext context) {
+      fromDataPre11Called = true;
     }
 
-    public void fromDataPre_GFE_7_0_0_0(DataInput out, DeserializationContext context)
-        throws IOException {
-      fromDataPre70Called = true;
+    public void fromDataPre_GEODE_1_5_0_0(@SuppressWarnings("unused") DataInput out, @SuppressWarnings("unused") DeserializationContext context) {
+      fromDataPre15Called = true;
     }
 
     @Override
