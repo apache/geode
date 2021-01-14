@@ -38,7 +38,7 @@ dependencies {
   implementation('mx4j:mx4j')
 
   compileOnly(platform(project(':boms:geode-all-bom')))
-  compileOnly(project(':frameworks:jackson'))
+  compileOnly('com.fasterxml.jackson.core:jackson-annotations')
 
   runtimeOnly('org.apache.lucene:lucene-analyzers-phonetic')
 

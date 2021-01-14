@@ -27,6 +27,7 @@ import static org.apache.geode.internal.lang.SystemUtils.getBootClassPath;
 import static org.apache.geode.internal.lang.SystemUtils.getClassPath;
 
 import java.io.File;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -48,7 +49,8 @@ public class GemFireVersion {
   private static VersionDescription createDescription() {
     String name =
         GemFireVersion.class.getPackage().getName().replace('.', '/') + "/" + RESOURCE_NAME;
-    return new VersionDescription(name);
+    InputStream resource = GemFireVersion.class.getClassLoader().getResourceAsStream(name);
+    return new VersionDescription(resource, name);
   }
 
   private static VersionDescription getDescription() {

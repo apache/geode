@@ -24,7 +24,7 @@ apply from: "${project.projectDir}/../gradle/jmh.gradle"
 dependencies {
   // main
   implementation(platform(project(':boms:geode-all-bom')))
-  implementation(project(':frameworks:jackson'))
+  implementation('com.fasterxml.jackson.core:jackson-databind')
 
   // test
   testImplementation('junit:junit')

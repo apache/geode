@@ -153,6 +153,10 @@ configure([repeatDistributedTest, repeatIntegrationTest, repeatUpgradeTest, repe
   }
 }
 
+tasks.named("distributedTest").configure {
+  dependsOn(':geode-assembly:installDist')
+}
+
 // apply common test configuration
 gradle.taskGraph.whenReady({ graph ->
   tasks.withType(Test).each { test ->
@@ -245,8 +249,17 @@ acceptanceTest {
   if (project.hasProperty('testJVM') && !testJVM.trim().isEmpty()) {
     environment "JAVA_HOME", "${project.testJVM}"
   }
+  environment 'GEODE_HOME', "$buildDir/../../geode-assembly/build/install/apache-geode/"
 }
 
+upgradeTest {
+  environment 'GEODE_HOME', "$buildDir/../../geode-assembly/build/install/apache-geode/"
+}
+
+distributedTest {
+  environment 'GEODE_HOME', "$buildDir/../../geode-assembly/build/install/apache-geode"
+  environment 'GEODE_DISTRIBUTED_TEST_HOME', "${project(':geode-assembly').buildDir}/distributedTesting"
+}
 
 // Make precheckin task run all validation tests for checking in code.
 task precheckin(dependsOn: [build, acceptanceTest, integrationTest, distributedTest, upgradeTest]) {

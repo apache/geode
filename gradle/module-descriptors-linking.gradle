@@ -1,0 +1,165 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+import groovy.xml.MarkupBuilder
+
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.util.stream.Stream
+
+apply from: "${rootDir}/${scriptDir}/module-descriptors-functions.gradle"
+
+tasks.register('generateThirdPartyModuleXML') {
+  rootProject.subprojects.each { proj ->
+    if (!projectsToExclude.contains(proj.name) || testProjectsToInclude.contains(proj.name)) {
+      proj.getTasksByName('distributedTestClasses', true).each { dependentTask -> it.dependsOn(dependentTask) }
+      proj.getTasksByName('processDistributedTestResources', true).each { dependentTask -> it.dependsOn(dependentTask) }
+    }
+  }
+  inputs.files {
+    rootProject.getTasksByName('generateModuleXml', true).each { it.outputs.files.files }.flatten()
+  }
+
+  outputs.dir {
+    project(':geode-assembly').buildDir.toPath().resolve("moduleDescriptors")
+  }
+
+  doLast {
+    rootProject.subprojects.each { projectToUse ->
+      if (!projectsToExclude.contains(projectToUse.name) || testProjectsToInclude.contains(projectToUse.name)) {
+        try {
+          try {
+            generateModuleXmlForProject(projectToUse.tasks.getByName('war').outputs.files.singleFile, projectToUse, 'distributedTest', [])
+          } catch (Throwable t) {
+            generateModuleXmlForProject(projectToUse.tasks.getByName('jar').outputs.files.singleFile, projectToUse, 'distributedTest', [])
+          }
+        } catch (Throwable t) {
+        }
+      }
+    }
+    def geodeAssemblyProj = project(":geode-assembly")
+    generateThirdPartyModuleXML("${geodeAssemblyProj.buildDir}/moduleDescriptors")
+    generateThirdPartyModuleXML("${geodeAssemblyProj.buildDir}/distributedTesting/moduleDescriptors")
+    copyDistributedTestLibs()
+  }
+}
+
+def copyDistributedTestLibs() {
+  Set<File> filesToCopy = new HashSet<>()
+
+  mkdir("${project(':geode-assembly').buildDir}/distributedTesting/lib")
+  mkdir("${project(':geode-assembly').buildDir}/distributedTesting/tools/Extensions")
+  rootProject.subprojects.each { proj ->
+    proj.configurations.each { conf ->
+      if (conf.name == 'jbossModular' || conf.name == 'distributedTestRuntimeClasspath' || conf.name == 'war') {
+        filesToCopy.addAll(conf.resolvedConfiguration.resolvedArtifacts
+            .stream()
+            .map { it.file }
+            .filter { it -> it.exists() }
+            .collect())
+      }
+    }
+  }
+
+  filesToCopy.each { artifactFile ->
+    def newLibPath = null
+    if (artifactFile.getName().endsWith('.jar')) {
+      newLibPath = Paths.get("${project(':geode-assembly').buildDir}/distributedTesting/lib/${artifactFile.name}")
+    } else if (artifactFile.getName().endsWith('.war')) {
+      newLibPath = Paths.get("${project(':geode-assembly').buildDir}/distributedTesting/tools/Extensions/${artifactFile.name}")
+    }
+    if (newLibPath != null && !file(newLibPath).exists()) {
+      Files.copy(artifactFile.toPath(), newLibPath)
+    }
+  }
+}
+
+def generateThirdPartyModuleXML(String moduleDescriptorsRoot) {
+  def thirdPartyRoot = file(moduleDescriptorsRoot + "/thirdParty")
+  Map<String, String> namesAndVersions = new TreeMap<>(new Comparator<String>() {
+    @Override
+    int compare(String o1, String o2) {
+      if (o1 != null && o2 != null) {
+        return o1.toLowerCase() <=> o2.toLowerCase()
+      }
+      return 0
+    }
+  })
+  listFilesRecursively(thirdPartyRoot, thirdPartyRoot, namesAndVersions)
+
+  mkdir("$moduleDescriptorsRoot/main/thirdParty/main")
+  file("$moduleDescriptorsRoot/main/thirdParty/main/module.xml").withWriter { writer ->
+    // Create MarkupBuilder with 4 space indent
+    def xml = new MarkupBuilder(new IndentPrinter(writer, "    ", true))
+
+    xml.doubleQuotes = true
+    xml.mkp.xmlDeclaration(version: '1.0', encoding: 'utf-8')
+
+    xml.'module-alias'('xmlns': 'urn:jboss:module:1.9', 'name': "thirdParty", 'target-name': "thirdParty:$version")
+  }
+
+  def modulePath = "$moduleDescriptorsRoot/main/thirdParty/$version"
+  mkdir(modulePath)
+  file("$modulePath/module.xml").withWriter { writer ->
+    // Create MarkupBuilder with 4 space indent
+    def xml = new MarkupBuilder(new IndentPrinter(writer, "    ", true))
+
+    xml.doubleQuotes = true
+    xml.mkp.xmlDeclaration(version: '1.0', encoding: 'utf-8')
+
+    xml.'module'('xmlns': 'urn:jboss:module:1.9', 'name': "thirdParty:$version") {
+      xml.'dependencies' {
+        namesAndVersions.each {
+          xml.'module'(['name': "${it.key}:${it.value}", 'services': 'export', 'export': 'true'])
+        }
+      }
+    }
+  }
+}
+
+
+tasks.register('generateExtensionsModuleXML') {
+  inputs.files {
+    rootProject.getTasksByName('generateModuleXml', true).each { it.outputs.files.files }.flatten()
+  }
+
+  outputs.dir {
+    project(':geode-assembly').buildDir.toPath().resolve("moduleDescriptors")
+  }
+  def projectsToGenerate = [project(':frameworks:geode-extensions'), project(':frameworks:geode-custom-jar-deployments')]
+  doLast {
+    for (projectToGenerate in projectsToGenerate) {
+      generateModuleXmlForProject(null, projectToGenerate,'',[])
+    }
+  }
+}
+
+private List listFilesRecursively(File rootDirectory, File currentDirectory, namesAndVersions) {
+  currentDirectory.listFiles().each {
+    if (it.isDirectory()) {
+      listFilesRecursively(rootDirectory, it, namesAndVersions)
+    } else if (it.isFile() && it.name == "module.xml") {
+      String moduleName = it.parentFile.parentFile.name
+      File walkingFile = it.parentFile.parentFile.parentFile
+      while (walkingFile.name != rootDirectory.name) {
+        moduleName = "${walkingFile.name}.$moduleName"
+        walkingFile = walkingFile.parentFile
+      }
+      def moduleVersion = it.parentFile.name
+      namesAndVersions.put(moduleName, moduleVersion)
+    }
+  }
+}

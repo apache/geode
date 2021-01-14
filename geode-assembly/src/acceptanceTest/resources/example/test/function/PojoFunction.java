@@ -24,7 +24,13 @@ import org.apache.geode.cache.execute.FunctionContext;
 public class PojoFunction implements Function<String> {
   @Override
   public void execute(FunctionContext<String> context) {
-    context.getCache().getRegion("/ExampleRegion").put(1L, new ExamplePojo("John", 12));
+    try {
+      context.getCache().getRegion("/ExampleRegion").put(1L, new ExamplePojo("John", 12));
+    } catch (Throwable t) {
+      t.printStackTrace();
+      context.getCache().getLogger().error(t);
+      context.getResultSender().sendException(t);
+    }
     context.getResultSender().lastResult("SUCCESS");
   }
 
@@ -36,5 +42,10 @@ public class PojoFunction implements Function<String> {
   @Override
   public boolean hasResult() {
     return true;
+  }
+
+  @Override
+  public boolean isHA() {
+    return false;
   }
 }

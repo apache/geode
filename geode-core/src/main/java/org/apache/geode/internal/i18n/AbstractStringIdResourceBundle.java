@@ -24,8 +24,8 @@ import java.util.Locale;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
 import org.apache.geode.InternalGemFireException;
+import org.apache.geode.classloader.internal.ClassPathLoader;
 import org.apache.geode.i18n.StringId;
-import org.apache.geode.internal.classloader.ClassPathLoader;
 
 
 /**

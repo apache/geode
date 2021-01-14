@@ -30,9 +30,8 @@ dependencies {
     exclude module: 'geode-core'
   }
 
-  implementation(project(':frameworks:springframework')){
-    exclude module: 'spring-jcl'
-    exclude module: 'spring-shell'
+  implementation('org.springframework:spring-context') {
+    exclude module: 'spring-beans'
     exclude module: 'spring-expression'
     exclude module: 'spring-aop'
   }

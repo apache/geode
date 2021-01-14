@@ -26,7 +26,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.internal.classloader.ClassPathLoader;
+import org.apache.geode.classloader.internal.ClassPathLoader;
 import org.apache.geode.management.internal.utils.JarFileUtils;
 import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;

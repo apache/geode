@@ -20,13 +20,11 @@ import java.util.List;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.classloader.internal.ClassPathLoader;
 import org.apache.geode.deployment.internal.JarDeploymentService;
-import org.apache.geode.deployment.internal.JarDeploymentServiceFactory;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunction;
-import org.apache.geode.internal.classloader.ClassPathLoader;
-import org.apache.geode.internal.deployment.JarDeploymentService;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.internal.cli.domain.DeploymentInfo;

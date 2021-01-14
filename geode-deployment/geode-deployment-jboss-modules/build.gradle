@@ -1,0 +1,45 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
+
+apply from: "${project.projectDir}/../../gradle/publish-java.gradle"
+apply from: "${project.projectDir}/../../gradle/warnings.gradle"
+
+dependencies {
+    api(platform(project(':boms:geode-all-bom')))
+    compileOnly(platform(project(':boms:geode-all-bom')))
+
+    implementation(project(':geode-logging'))
+    compileOnly(project(':geode-deployment:geode-jboss-extensions'))
+    implementation(project(':geode-core'))
+    implementation(project(':geode-common'))
+    implementation('io.swagger:swagger-annotations')
+
+    compileOnly('com.fasterxml.jackson.core:jackson-annotations')
+    compileOnly('org.jboss.modules:jboss-modules')
+
+    testImplementation(project(':geode-junit'))
+    testImplementation(project(':geode-deployment:geode-jboss-extensions'))
+
+    distributedTestImplementation(project(':geode-dunit'))
+    distributedTestImplementation(project(':geode-deployment:geode-jboss-extensions'))
+}
+
+distributedTest {
+    environment 'GEODE_HOME', "$buildDir/../../../geode-assembly/build/install/apache-geode"
+}
