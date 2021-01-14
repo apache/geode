@@ -672,7 +672,8 @@ public class CacheClientNotifier {
     Set<ClientProxyMembershipID> filterClients =
         getFilterClientIDs(event, regionProfile, filterInfo, clientMessage);
 
-    logger.debug("KIRK: filterClients={}, filterInfo={}", filterClients, filterInfo);
+    logger.debug("KIRK: filterClients={}{}, filterInfo={}{}, regionProfile={}", filterClients,
+        System.lineSeparator(), filterInfo, System.lineSeparator(), regionProfile);
 
     Conflatable conflatable;
 
