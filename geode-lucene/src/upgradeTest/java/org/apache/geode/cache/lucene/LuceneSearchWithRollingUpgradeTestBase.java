@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.lucene;
 
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Assert.fail;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -112,6 +113,8 @@ public abstract class LuceneSearchWithRollingUpgradeTestBase extends JUnit4Distr
     props.setProperty(DistributionConfig.LOCATORS_NAME, locatorsString);
     props.setProperty(DistributionConfig.LOG_LEVEL_NAME, DUnitLauncher.logLevel);
     props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
+    // Turn off HTTP service, otherwise second (and subsequent) locators will see a port conflict
+    props.setProperty(HTTP_SERVICE_PORT, String.valueOf(0));
     return props;
   }
 
