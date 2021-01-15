@@ -19,7 +19,7 @@ import org.gradle.api.file.FileTree
 import org.gradle.api.internal.DocumentationRegistry
 import org.gradle.api.internal.tasks.testing.JvmTestExecutionSpec
 import org.gradle.api.internal.tasks.testing.TestExecuter
-import org.gradle.api.internal.tasks.testing.detection.DefaultTestExecuter
+import org.apache.geode.gradle.OverriddenTestExecutor
 import org.gradle.api.internal.tasks.testing.filter.DefaultTestFilter
 import org.gradle.api.tasks.testing.Test
 import org.gradle.internal.operations.BuildOperationExecutor

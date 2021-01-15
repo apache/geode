@@ -106,7 +106,7 @@ public class TestExecuter
     }
 
     new TestMainAction(detector, processor, testResultProcessor, clock, testTaskOperationId,
-        testExecutionSpec.getPath(), "Gradle Test Run " + testExecutionSpec.getIdentityPath())
+        "Gradle Test Run " + testExecutionSpec.getIdentityPath())
         .run();
   }
 

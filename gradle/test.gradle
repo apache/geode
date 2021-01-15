@@ -1,7 +1,6 @@
 import org.apache.geode.gradle.TestPropertiesWriter
 import org.apache.geode.gradle.RepeatTest
 import org.apache.geode.gradle.plugins.DependencyConstraints
-import org.apache.geode.gradle.RunInSubdirectoryTestFramework
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -136,17 +135,6 @@ task repeatUnitTest(type: RepeatTest) {
 configure([integrationTest, distributedTest, performanceTest, acceptanceTest, uiTest, upgradeTest]) {
   if (project.hasProperty('excludeTest')) {
     exclude project.getProperty('excludeTest').split(',')
-  }
-}
-
-configure([acceptanceTest, distributedTest, integrationTest, uiTest, upgradeTest, repeatAcceptanceTest, repeatDistributedTest, repeatIntegrationTest, repeatUnitTest, repeatUpgradeTest]) {
-  doFirst {
-    // Wrap the task's test framework in a wrapper that runs each test worker JVM in a unique
-    // subdirectory.
-    def subdirFramework = new RunInSubdirectoryTestFramework(testFramework)
-    // This call works for now, but the Test class declares useTestFramework() as protected, so
-    // this could become troublesome in a future version of Gradle/Groovy.
-    useTestFramework subdirFramework
   }
 }
 
