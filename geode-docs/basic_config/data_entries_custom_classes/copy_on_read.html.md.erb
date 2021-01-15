@@ -19,38 +19,70 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-When you get an entry value from the cache, by default, the retrieval methods return a direct reference to the cached object. This provides the value as quickly as possible, but also opens the cache to direct, in-place changes.
+Methods that do a get type of operation
+receive as a return value a direct reference to the cached object.
+This provides the value as quickly as possible,
+but it also makes possible code implementations that 
+could incorrectly modify the referenced object,
+bypassing the distribution framework and causing region entries that
+are no longer consistent across cluster members.
 
-**Note:**
-Do not directly modify cached values. Modifying a value in place bypasses the <%=vars.product_name%> distribution framework, including cache writers and listeners, expiration activities, and transaction management, and can produce undesired results.
+The code that has the potential for harming cache consistency by using
+a reference to access and change a region entry
+is code that executes within the servers.
+Examples are cache writers and listeners, transactions, and functions.
+A client invocation of a get type of operation that is handled by
+the servers is not subject to this potential for harm,
+as the clients are in a distinct JVM from the servers,
+and references do not cross JVM boundaries.
+That client cannot receive a return value that is a direct reference
+to a region entry, as the servers hold the region entries and the servers
+do not reside within the client JVM.
 
-Always change your entries using copies of the retrieved objects. Never directly modify the returned objects. You can do this in one of two ways:
+To avoid modification of the referenced object,
+create a copy in one of two ways:
 
-1.  Change the entry retrieval behavior for your cache by setting the cache attribute, `copy-on-read`, to true (the default is false).
+- Change the entry retrieval behavior for your cache by setting
+the `copy-on-read` cache attribute to true;
+its default value is false.
+When `copy-on-read` is true,
+all entry access methods return copies of the entries.
+This protects all server-side code from inadvertently modifying in-place.
+This attribute will negatively impact performance and memory consumption
+when a copy is not needed,
+as it takes time and memory to create the copy.
+Note that the `copy-on-read` attribute is applied at the cache level;
+it cannot be set for individual regions.
+
+    There are two ways to set the `copy-on-read` attribute:
+
+    - Set the attribute in the `cache.xml` file that defines the cache.
+
+        ``` pre
+        <cache copy-on-read="true">
+         ...
+        </cache>
+        ```
+
+    - Use [`gfsh alter runtime`](../../tools_modules/gfsh/command-pages/alter.html#topic_7E6B7E1B972D4F418CB45354D1089C2B) to set the `copy-on-read` attribute
+    once the servers have been started.
+
+
+- Implement server-side code that creates and uses a copy of
+the returned object.
+For objects that are cloneable or serializable, copy the entry value to a new object using `org.apache.geode.CopyHelper.copy`. Example:
 
     ``` pre
-    <cache copy-on-read="true">
-     ...
-    </cache>
+    Object o = region.get(key);
+    StringBuffer s = (StringBuffer) CopyHelper.copy(o);
+    // further operations on the region entry value will use s
+    s.toUpperCase();
     ```
 
-    When `copy-on-read` is true, the entry access methods return copies of the entries. This protects you from inadvertently modifying in-place, but negatively impacts performance and memory consumption when copying is not needed.
-
-    These entry access methods return an entry reference if `copy-on-read` is false and a copy of the entry if `copy-on-read` is true:
-
-    `Region.get`
-    result of `Region.put`
-    `EntryEvent.getNewValue`
-    `Region.values`
-    `Region.Entry.getValue`
-    `EntryEvent.getOldValue`
-    `Query.select`
-
-2.  Create a copy of the returned object and work with that. For objects that are cloneable or serializable, you can copy the entry value to a new object using `org.apache.geode.CopyHelper.copy`. Example:
+    Always use a `Region` method to then change data in the region.
+    Do not use the reference returned from the entry access method.
+    If the upper case string should become the new value for the region entry:
 
     ``` pre
-    Object o = (StringBuffer)region.get("stringBuf");
-    StringBuffer s = (StringBuffer) CopyHelper.copy(o);
-    s.append("Changes to value, added using put.");
-    region.put("stringBuf", s);
+    region.put(key, s);
     ```
