@@ -1713,7 +1713,7 @@ toData,17
 
 org/apache/geode/internal/cache/tier/sockets/ClientDataSerializerMessage,2
 fromData,82
-toData,85
+toData,99
 
 org/apache/geode/internal/cache/tier/sockets/ClientDenylistProcessor$ClientDenylistMessage,2
 fromData,25
@@ -1721,7 +1721,7 @@ toData,25
 
 org/apache/geode/internal/cache/tier/sockets/ClientInstantiatorMessage,2
 fromData,82
-toData,85
+toData,99
 
 org/apache/geode/internal/cache/tier/sockets/ClientInterestMessageImpl,2
 fromData,84
