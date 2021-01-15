@@ -1,6 +1,5 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -27,7 +26,6 @@ import org.apache.geode.internal.cache.tier.sockets.command.ExecuteRegionFunctio
 import org.apache.geode.internal.cache.tier.sockets.command.ExecuteRegionFunctionSingleHop;
 import org.apache.geode.internal.cache.tier.sockets.command.GatewayReceiverCommand;
 import org.apache.geode.internal.cache.tier.sockets.command.Get70;
-import org.apache.geode.internal.cache.tier.sockets.command.GetAll651;
 import org.apache.geode.internal.cache.tier.sockets.command.GetAll70;
 import org.apache.geode.internal.cache.tier.sockets.command.GetAllWithCallback;
 import org.apache.geode.internal.cache.tier.sockets.command.GetClientPRMetadataCommand66;
@@ -77,7 +75,8 @@ public class CommandInitializerTest {
 
     CommandInitializer.initializeGeode18Commands(commands);
 
-    verify(commands).put(MessageType.EXECUTE_REGION_FUNCTION, ExecuteRegionFunctionGeode18.getCommand());
+    verify(commands).put(MessageType.EXECUTE_REGION_FUNCTION,
+        ExecuteRegionFunctionGeode18.getCommand());
 
     verifyNoMoreInteractions(commands);
   }
@@ -89,7 +88,8 @@ public class CommandInitializerTest {
 
     CommandInitializer.initializeGfe90Commands(commands);
 
-    verify(commands).put(MessageType.QUERY_WITH_PARAMETERS, QueryWithParametersGeode10.getCommand());
+    verify(commands).put(MessageType.QUERY_WITH_PARAMETERS,
+        QueryWithParametersGeode10.getCommand());
     verify(commands).put(MessageType.QUERY, QueryGeode10.getCommand());
 
     verifyNoMoreInteractions(commands);
@@ -103,7 +103,8 @@ public class CommandInitializerTest {
     CommandInitializer.initializeGfe82Commands(commands);
 
     verify(commands).put(MessageType.PING, Ping.getCommand());
-    verify(commands).put(MessageType.QUERY, org.apache.geode.internal.cache.tier.sockets.command.Query.getCommand());
+    verify(commands).put(MessageType.QUERY,
+        org.apache.geode.internal.cache.tier.sockets.command.Query.getCommand());
     verify(commands).put(MessageType.CLEAR_REGION, ClearRegion.getCommand());
     verify(commands).put(MessageType.DESTROY_REGION, DestroyRegion.getCommand());
     verify(commands).put(MessageType.UNREGISTER_INTEREST, UnregisterInterest.getCommand());
@@ -113,23 +114,26 @@ public class CommandInitializerTest {
     verify(commands).put(MessageType.MAKE_PRIMARY, MakePrimary.getCommand());
     verify(commands).put(MessageType.PERIODIC_ACK, PeriodicAck.getCommand());
     verify(commands).put(MessageType.REGISTER_INSTANTIATORS, RegisterInstantiators.getCommand());
-    verify(commands).put(MessageType.UPDATE_CLIENT_NOTIFICATION, UpdateClientNotification.getCommand());
+    verify(commands).put(MessageType.UPDATE_CLIENT_NOTIFICATION,
+        UpdateClientNotification.getCommand());
     verify(commands).put(MessageType.CLOSE_CONNECTION, CloseConnection.getCommand());
     verify(commands).put(MessageType.CLIENT_READY, ClientReady.getCommand());
     verify(commands).put(MessageType.INVALID, Invalid.getCommand());
 
     verify(commands).put(MessageType.REGISTER_INTEREST, RegisterInterest61.getCommand());
     verify(commands).put(MessageType.REQUEST_EVENT_VALUE, RequestEventValue.getCommand());
-    verify(commands).put(MessageType.REGISTER_DATASERIALIZERS, RegisterDataSerializers.getCommand());
+    verify(commands).put(MessageType.REGISTER_DATASERIALIZERS,
+        RegisterDataSerializers.getCommand());
 
     verify(commands).put(MessageType.USER_CREDENTIAL_MESSAGE, PutUserCredentials.getCommand());
     verify(commands).put(MessageType.REMOVE_USER_AUTH, RemoveUserAuth.getCommand());
-    verify(commands).put(MessageType.EXECUTE_REGION_FUNCTION_SINGLE_HOP, ExecuteRegionFunctionSingleHop.getCommand());
+    verify(commands).put(MessageType.EXECUTE_REGION_FUNCTION_SINGLE_HOP,
+        ExecuteRegionFunctionSingleHop.getCommand());
 
     verify(commands).put(MessageType.QUERY_WITH_PARAMETERS, Query651.getCommand());
 
-    verify(commands).put(MessageType.GET_ALL, GetAll651.getCommand());
-    verify(commands).put(MessageType.GET_CLIENT_PR_METADATA, GetClientPRMetadataCommand66.getCommand());
+    verify(commands).put(MessageType.GET_CLIENT_PR_METADATA,
+        GetClientPRMetadataCommand66.getCommand());
 
     verify(commands).put(MessageType.ADD_PDX_TYPE, AddPdxType.getCommand());
     verify(commands).put(MessageType.GET_PDX_ID_FOR_TYPE, GetPDXIdForType.getCommand());
@@ -139,7 +143,8 @@ public class CommandInitializerTest {
     verify(commands).put(MessageType.ROLLBACK, RollbackCommand.getCommand());
     verify(commands).put(MessageType.TX_FAILOVER, TXFailoverCommand.getCommand());
     verify(commands).put(MessageType.TX_SYNCHRONIZATION, TXSynchronizationCommand.getCommand());
-    verify(commands).put(MessageType.GET_CLIENT_PARTITION_ATTRIBUTES, GetClientPartitionAttributesCommand66.getCommand());
+    verify(commands).put(MessageType.GET_CLIENT_PARTITION_ATTRIBUTES,
+        GetClientPartitionAttributesCommand66.getCommand());
     verify(commands).put(MessageType.REGISTER_INTEREST_LIST, RegisterInterestList66.getCommand());
     verify(commands).put(MessageType.GET_FUNCTION_ATTRIBUTES, GetFunctionAttribute.getCommand());
     verify(commands).put(MessageType.EXECUTE_REGION_FUNCTION, ExecuteRegionFunction66.getCommand());

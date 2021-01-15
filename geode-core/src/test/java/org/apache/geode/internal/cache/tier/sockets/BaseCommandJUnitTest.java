@@ -27,18 +27,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.internal.cache.execute.ServerToClientFunctionResultSender;
-import org.apache.geode.internal.cache.tier.sockets.command.ExecuteRegionFunction61;
-import org.apache.geode.internal.cache.tier.sockets.command.ExecuteRegionFunction65;
 import org.apache.geode.internal.cache.tier.sockets.command.ExecuteRegionFunction66;
 
 @RunWith(JUnitParamsRunner.class)
 public class BaseCommandJUnitTest {
 
   public BaseCommand[] getCommands() {
-    return new BaseCommand[] {(BaseCommand) ExecuteRegionFunction61.getCommand(),
-        (BaseCommand) ExecuteRegionFunction65
-            .getCommand(),
-        (BaseCommand) ExecuteRegionFunction66.getCommand()};
+    return new BaseCommand[] {(BaseCommand) ExecuteRegionFunction66.getCommand()};
   }
 
   @Test

@@ -280,8 +280,6 @@ public class MessageType {
 
   public static final int PUTALL = 56;
 
-  public static final int GET_ALL = 57;
-
   public static final int GET_ALL_DATA_ERROR = 58;
 
   public static final int EXECUTE_REGION_FUNCTION = 59;
