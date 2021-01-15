@@ -18,6 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -29,10 +30,14 @@ import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import org.apache.geode.CancelCriterion;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.operations.PutOperationContext;
+import org.apache.geode.internal.cache.EventIDHolder;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.TXManagerImpl;
@@ -97,6 +102,12 @@ public class Put65Test {
   private Message errorResponseMessage;
   @Mock
   private Message replyMessage;
+  @Mock
+  private RegionAttributes attributes;
+  @Mock
+  private EventIDHolder clientEvent;
+  @Mock
+  private DataPolicy dataPolicy;
 
   @InjectMocks
   private Put65 put65;
@@ -157,6 +168,9 @@ public class Put65Test {
 
     when(this.valuePart.getSerializedForm()).thenReturn(VALUE);
     when(this.valuePart.isObject()).thenReturn(true);
+
+    when(localRegion.getAttributes()).thenReturn(attributes);
+    when(attributes.getDataPolicy()).thenReturn(dataPolicy);
   }
 
   @Test
@@ -253,6 +267,43 @@ public class Put65Test {
 
     assertThat(argument.getValue()).isExactlyInstanceOf(NotAuthorizedException.class);
     verify(this.errorResponseMessage).send(this.serverConnection);
+  }
+
+  @Test
+  public void shouldSetPossibleDuplicateReturnsTrueIfConcurrencyChecksNotEnabled() {
+
+    when(attributes.getConcurrencyChecksEnabled()).thenReturn(false);
+
+    assertThat(put65.shouldSetPossibleDuplicate(localRegion, clientEvent)).isTrue();
+  }
+
+  @Test
+  public void shouldSetPossibleDuplicateReturnsTrueIfRecoveredVersionTagForRetriedOperation() {
+    Put65 spy = Mockito.spy(put65);
+    when(attributes.getConcurrencyChecksEnabled()).thenReturn(true);
+    doReturn(true).when(spy).recoverVersionTagForRetriedOperation(clientEvent);
+
+    assertThat(spy.shouldSetPossibleDuplicate(localRegion, clientEvent)).isTrue();
+  }
+
+  @Test
+  public void shouldSetPossibleDuplicateReturnsFalseIfNotRecoveredVersionTagAndNoPersistence() {
+    Put65 spy = Mockito.spy(put65);
+    when(attributes.getConcurrencyChecksEnabled()).thenReturn(true);
+    when(dataPolicy.withPersistence()).thenReturn(false);
+    doReturn(false).when(spy).recoverVersionTagForRetriedOperation(clientEvent);
+
+    assertThat(spy.shouldSetPossibleDuplicate(localRegion, clientEvent)).isFalse();
+  }
+
+  @Test
+  public void shouldSetPossibleDuplicateReturnsTrueIfNotRecoveredVersionTagAndWithPersistence() {
+    Put65 spy = Mockito.spy(put65);
+    when(attributes.getConcurrencyChecksEnabled()).thenReturn(true);
+    when(dataPolicy.withPersistence()).thenReturn(true);
+    doReturn(false).when(spy).recoverVersionTagForRetriedOperation(clientEvent);
+
+    assertThat(spy.shouldSetPossibleDuplicate(localRegion, clientEvent)).isTrue();
   }
 
 }

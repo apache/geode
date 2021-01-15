@@ -229,16 +229,8 @@ public class Put65 extends BaseCommand {
 
     // msg.isRetry might be set by v7.0 and later clients
     if (clientMessage.isRetry()) {
-      // if (logger.isDebugEnabled()) {
-      // logger.debug("DEBUG: encountered isRetry in Put65");
-      // }
-      clientEvent.setPossibleDuplicate(true);
-      if (region.getAttributes().getConcurrencyChecksEnabled()) {
-        // recover the version tag from other servers
-        clientEvent.setRegion(region);
-        if (!recoverVersionTagForRetriedOperation(clientEvent)) {
-          clientEvent.setPossibleDuplicate(false); // no-one has seen this event
-        }
+      if (shouldSetPossibleDuplicate(region, clientEvent)) {
+        clientEvent.setPossibleDuplicate(true);
       }
     }
 
@@ -492,6 +484,22 @@ public class Put65 extends BaseCommand {
     stats.incWritePutResponseTime(DistributionStats.getStatTime() - start);
 
 
+  }
+
+  boolean shouldSetPossibleDuplicate(LocalRegion region, EventIDHolder clientEvent) {
+    boolean shouldSetPossibleDuplicate = true;
+    if (region.getAttributes().getConcurrencyChecksEnabled()) {
+      // recover the version tag from other servers
+      clientEvent.setRegion(region);
+      boolean withPersistence = region.getAttributes().getDataPolicy().withPersistence();
+      if (!recoverVersionTagForRetriedOperation(clientEvent) && !withPersistence) {
+        // For persistent region, it is possible that all persistent copies went offline.
+        // Do not reset possible duplicate in this case, as persistent data
+        // can be recovered during the retry after recover of version tag failed.
+        shouldSetPossibleDuplicate = false; // no-one has seen this event
+      }
+    }
+    return shouldSetPossibleDuplicate;
   }
 
   protected void writeReply(Message origMsg, ServerConnection servConn, boolean sendOldValue,
