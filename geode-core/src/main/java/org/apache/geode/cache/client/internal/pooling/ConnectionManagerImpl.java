@@ -224,8 +224,11 @@ public class ConnectionManagerImpl implements ConnectionManager {
    */
   private PooledConnection forceCreateConnection(Set<ServerLocation> excludedServers)
       throws NoAvailableServersException, ServerOperationException {
-    connectionAccounting.create();
-    return createPooledConnection(excludedServers);
+    PooledConnection pooledConnection = createPooledConnection(excludedServers);
+    if (pooledConnection != null) {
+      connectionAccounting.create();
+    }
+    return pooledConnection;
   }
 
   private boolean checkShutdownInterruptedOrTimeout(final long timeout)
