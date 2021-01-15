@@ -98,14 +98,6 @@ public class CommandInitializer implements CommandRegistry {
   // Not truly Immutable given that registerCommand can mutate after initialization.
   final Map<KnownVersion, Map<Integer, Command>> registeredCommands = initializeAllCommands();
 
-  /**
-   * Register a new command with the system.
-   *
-   * @param messageType - An ordinal for this message. This must be something defined in MessageType
-   *        that has not already been allocated to a different command.
-   * @param versionToNewCommand The command to register, for different versions. The key is the
-   *        earliest version for which this command class is valid (starting with GFE_57). The value
-   */
   @Override
   public void register(int messageType,
       Map<KnownVersion, Command> versionToNewCommand) {
@@ -119,7 +111,7 @@ public class CommandInitializer implements CommandRegistry {
     return unmodifiableMap(registeredCommands.get(version));
   }
 
-  /***
+  /**
    * Iterate through all the Geode versions add a command to the map for that version
    *
    * @return returns true if command was registered or same command was already registered,
