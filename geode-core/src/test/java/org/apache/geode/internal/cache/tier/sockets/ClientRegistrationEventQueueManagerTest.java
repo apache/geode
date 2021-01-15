@@ -86,7 +86,7 @@ public class ClientRegistrationEventQueueManagerTest {
     Set<ClientProxyMembershipID> normalPutFilterClientIDs = new HashSet<>();
 
     clientRegistrationEventQueueManager
-        .add(internalCacheEvent, clientUpdateMessage, normalPutFilterClientIDs,
+        .add(internalCacheEvent, clientUpdateMessage, clientUpdateMessage, normalPutFilterClientIDs,
             cacheClientNotifier);
 
     clientRegistrationEventQueueManager.drain(clientRegistrationEventQueue, cacheClientNotifier);
@@ -122,8 +122,8 @@ public class ClientRegistrationEventQueueManagerTest {
 
     CacheClientNotifier cacheClientNotifier = mock(CacheClientNotifier.class);
 
-    clientRegistrationEventQueueManager.add(internalCacheEvent, conflatable, filterClientIDs,
-        cacheClientNotifier);
+    clientRegistrationEventQueueManager.add(internalCacheEvent, mock(ClientUpdateMessageImpl.class),
+        conflatable, filterClientIDs, cacheClientNotifier);
 
     // The client should no longer be in the filter clients since the event was queued in the
     // client's registration queue.
@@ -152,6 +152,7 @@ public class ClientRegistrationEventQueueManagerTest {
       when(internalCacheEvent.getRegion()).thenReturn(mock(LocalRegion.class));
       when(internalCacheEvent.getOperation()).thenReturn(mock(Operation.class));
       clientRegistrationEventQueueManager.add(internalCacheEvent,
+          mock(ClientUpdateMessageImpl.class),
           haEventWrapper, new HashSet<>(), cacheClientNotifier);
       verify(haEventWrapper, times(1)).incrementPutInProgressCounter(anyString());
     }
@@ -200,7 +201,8 @@ public class ClientRegistrationEventQueueManagerTest {
       for (int numAdds = 0; numAdds < 100000; ++numAdds) {
         // In thread one, we add events to the queue
         clientRegistrationEventQueueManager
-            .add(internalCacheEvent, conflatable, filterClientIDs, cacheClientNotifier);
+            .add(internalCacheEvent, mock(ClientUpdateMessageImpl.class), conflatable,
+                filterClientIDs, cacheClientNotifier);
       }
     });
 
@@ -234,7 +236,8 @@ public class ClientRegistrationEventQueueManagerTest {
         new ConcurrentLinkedQueue<>(), new ReentrantReadWriteLock());
 
     clientRegistrationEventQueueManager
-        .add(internalCacheEvent, conflatable, filterClientIDs, cacheClientNotifier);
+        .add(internalCacheEvent, mock(ClientUpdateMessageImpl.class), conflatable, filterClientIDs,
+            cacheClientNotifier);
 
     verify(internalCacheEvent, times(1)).copyOffHeapToHeap();
   }
@@ -261,8 +264,9 @@ public class ClientRegistrationEventQueueManagerTest {
     // Pass a new event to the ClientRegistrationEventQueueManager. This event should not be added
     // to the test client's registration queue, because it should already be removed. We can
     // validate that by asserting that the client's registration queue is empty after the add.
-    clientRegistrationEventQueueManager.add(internalCacheEvent, conflatable, filterClientIDs,
-        cacheClientNotifier);
+    clientRegistrationEventQueueManager.add(internalCacheEvent, mock(ClientUpdateMessageImpl.class),
+        conflatable,
+        filterClientIDs, cacheClientNotifier);
 
     assertThat(clientRegistrationEventQueue.isEmpty()).isTrue();
   }
@@ -292,8 +296,9 @@ public class ClientRegistrationEventQueueManagerTest {
     when(mockOperation.isEntry()).thenReturn(true);
     when(internalCacheEvent.getOperation()).thenReturn(mockOperation);
 
-    clientRegistrationEventQueueManager.add(internalCacheEvent, conflatable, filterClientIDs,
-        cacheClientNotifier);
+    clientRegistrationEventQueueManager.add(internalCacheEvent, mock(ClientUpdateMessageImpl.class),
+        conflatable,
+        filterClientIDs, cacheClientNotifier);
 
     assertThatThrownBy(() -> clientRegistrationEventQueueManager.drain(clientRegistrationEventQueue,
         cacheClientNotifier))
@@ -302,8 +307,9 @@ public class ClientRegistrationEventQueueManagerTest {
     // Pass a new event to the ClientRegistrationEventQueueManager. This event should not be added
     // to the test client's registration queue, because it should already be removed. We can
     // validate that by asserting that the client's registration queue is empty after the add.
-    clientRegistrationEventQueueManager.add(internalCacheEvent, conflatable, filterClientIDs,
-        cacheClientNotifier);
+    clientRegistrationEventQueueManager.add(internalCacheEvent, mock(ClientUpdateMessageImpl.class),
+        conflatable,
+        filterClientIDs, cacheClientNotifier);
 
     assertThat(clientRegistrationEventQueue.isEmpty()).isTrue();
   }
@@ -361,6 +367,7 @@ public class ClientRegistrationEventQueueManagerTest {
     }).when(mockReadLock).lock();
 
     clientRegistrationEventQueueManager.add(internalCacheEvent, clientUpdateMessage,
+        clientUpdateMessage,
         originalFilterIDs, cacheClientNotifier);
 
     verify(cacheClientProxy, times(0)).deliverMessage(clientUpdateMessage);

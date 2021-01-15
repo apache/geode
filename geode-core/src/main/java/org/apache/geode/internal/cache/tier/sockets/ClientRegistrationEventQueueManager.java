@@ -41,11 +41,20 @@ public class ClientRegistrationEventQueueManager {
       ConcurrentHashMap.newKeySet();
 
   void add(final InternalCacheEvent event,
+      final ClientUpdateMessageImpl clientMessage,
       final Conflatable conflatable,
       final Set<ClientProxyMembershipID> originalFilterClientIDs,
       final CacheClientNotifier cacheClientNotifier) {
-    if (registeringProxyEventQueues.isEmpty())
+    if (registeringProxyEventQueues.isEmpty()) {
       return;
+    }
+
+    if (originalFilterClientIDs.isEmpty()) {
+      if (event.getOperation().isEntry() && !(clientMessage instanceof ClientTombstoneMessage)) {
+        EntryEventImpl entryEvent = (EntryEventImpl) event;
+        entryEvent.exportNewValue(clientMessage);
+      }
+    }
 
     ClientRegistrationEvent clientRegistrationEvent =
         new ClientRegistrationEvent(event, conflatable);

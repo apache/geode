@@ -695,17 +695,18 @@ public class CacheClientNotifier {
       wrapper.incrementPutInProgressCounter("notify clients");
       conflatable = wrapper;
       logger.debug("KIRK: Created HAEventWrapper {} for {}", wrapper, clientMessage);
-    }
-    if (!filterClients.isEmpty()) {
-      if (event.getOperation().isEntry()) {
-        EntryEventImpl entryEvent = (EntryEventImpl) event;
-        logger.debug("KIRK: before clientMessage={}", clientMessage);
-        entryEvent.exportNewValue(clientMessage);
-        logger.debug("KIRK: after clientMessage={}", clientMessage);
+      if (!filterClients.isEmpty()) {
+        if (event.getOperation().isEntry()) {
+          EntryEventImpl entryEvent = (EntryEventImpl) event;
+          logger.debug("KIRK: before clientMessage={}", clientMessage);
+          entryEvent.exportNewValue(clientMessage);
+          logger.debug("KIRK: after clientMessage={}", clientMessage);
+        }
       }
     }
-
-    clientRegistrationEventQueueManager.add(event, conflatable, filterClients, this);
+    // KIRK: add to temp queue for clients in process of registering
+    // if there is a new temp queue and if conflatable has null new value we have hit GEM-2928
+    clientRegistrationEventQueueManager.add(event, clientMessage, conflatable, filterClients, this);
 
     singletonRouteClientMessage(conflatable, filterClients);
 
@@ -765,7 +766,7 @@ public class CacheClientNotifier {
     if (filterInfo.getInterestedClients() != null) {
       Set<Object> rawIDs = regionProfile.getRealClientIDs(filterInfo.getInterestedClients());
       Set<ClientProxyMembershipID> ids = getProxyIDs(rawIDs);
-      logger.debug("KIRK: rawIDs={}, ids={}", rawIDs, ids); // KIRK: rawIDs is empty
+      logger.debug("KIRK: rawIDs={}, ids={}", rawIDs, ids);
       incMessagesNotQueuedOriginatorStat(event, ids);
       if (!ids.isEmpty()) {
         if (logger.isTraceEnabled()) {
