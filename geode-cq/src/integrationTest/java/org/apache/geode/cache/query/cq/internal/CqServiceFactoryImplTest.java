@@ -15,30 +15,26 @@
 
 package org.apache.geode.cache.query.cq.internal;
 
-import static java.util.Collections.singletonMap;
+import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+
+import java.util.HashSet;
+import java.util.Set;
 
 import org.junit.Test;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.cache.query.cq.internal.command.CloseCQ;
-import org.apache.geode.cache.query.cq.internal.command.ExecuteCQ61;
-import org.apache.geode.cache.query.cq.internal.command.GetCQStats;
-import org.apache.geode.cache.query.cq.internal.command.GetDurableCQs;
-import org.apache.geode.cache.query.cq.internal.command.MonitorCQ;
-import org.apache.geode.cache.query.cq.internal.command.StopCQ;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.MessageType;
+import org.apache.geode.internal.cache.tier.sockets.CommandInitializer;
 import org.apache.geode.internal.cache.tier.sockets.CommandRegistry;
 import org.apache.geode.internal.serialization.KnownVersion;
 
 public class CqServiceFactoryImplTest {
-
   @Test
   public void initialize() {
     final InternalCache internalCache = mock(InternalCache.class);
@@ -48,28 +44,23 @@ public class CqServiceFactoryImplTest {
     when(internalCache.getCancelCriterion()).thenReturn(cancelCriterion);
     when(internalCache.getDistributedSystem()).thenReturn(distributedSystem);
 
-    final CommandRegistry commandRegistry = mock(CommandRegistry.class);
+    CommandRegistry commandRegistry = new CommandInitializer();
+
+    final Integer[] messageTypes = {
+        MessageType.EXECUTECQ_MSG_TYPE, MessageType.EXECUTECQ_WITH_IR_MSG_TYPE,
+        MessageType.GETCQSTATS_MSG_TYPE, MessageType.MONITORCQ_MSG_TYPE,
+        MessageType.STOPCQ_MSG_TYPE, MessageType.CLOSECQ_MSG_TYPE,
+        MessageType.GETDURABLECQS_MSG_TYPE};
+
+    final Set<Integer> initialKeys = commandRegistry.get(KnownVersion.OLDEST).keySet();
+    assertThat(initialKeys).doesNotContain(messageTypes);
 
     final CqServiceFactoryImpl cqServiceFactory = new CqServiceFactoryImpl();
     cqServiceFactory.initialize();
     cqServiceFactory.create(internalCache, commandRegistry);
 
-    verify(commandRegistry).register(MessageType.EXECUTECQ_MSG_TYPE,
-        singletonMap(KnownVersion.OLDEST, ExecuteCQ61.getCommand()));
-    verify(commandRegistry).register(MessageType.EXECUTECQ_WITH_IR_MSG_TYPE,
-        singletonMap(KnownVersion.OLDEST, ExecuteCQ61.getCommand()));
-    verify(commandRegistry).register(MessageType.GETCQSTATS_MSG_TYPE,
-        singletonMap(KnownVersion.OLDEST, GetCQStats.getCommand()));
-    verify(commandRegistry).register(MessageType.MONITORCQ_MSG_TYPE,
-        singletonMap(KnownVersion.OLDEST, MonitorCQ.getCommand()));
-    verify(commandRegistry).register(MessageType.STOPCQ_MSG_TYPE,
-        singletonMap(KnownVersion.OLDEST, StopCQ.getCommand()));
-    verify(commandRegistry).register(MessageType.CLOSECQ_MSG_TYPE,
-        singletonMap(KnownVersion.OLDEST, CloseCQ.getCommand()));
-    verify(commandRegistry).register(MessageType.GETDURABLECQS_MSG_TYPE,
-        singletonMap(KnownVersion.OLDEST, GetDurableCQs.getCommand()));
-
-    verifyNoMoreInteractions(commandRegistry);
+    final Set<Integer> expectedKeys = new HashSet<>(initialKeys);
+    expectedKeys.addAll(asList(messageTypes));
+    assertThat(commandRegistry.get(KnownVersion.OLDEST)).containsOnlyKeys(expectedKeys);
   }
-
 }

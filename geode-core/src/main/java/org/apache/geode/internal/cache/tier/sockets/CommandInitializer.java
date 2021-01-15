@@ -22,7 +22,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.geode.InternalGemFireError;
-import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.command.AddPdxEnum;
@@ -88,11 +87,16 @@ import org.apache.geode.internal.serialization.KnownVersion;
  * @since GemFire 5.7
  */
 
-public class CommandInitializer {
+public class CommandInitializer implements CommandRegistry {
+
+  static final CommandInitializer instance = new CommandInitializer();
+
+  public static CommandInitializer getDefaultInstance() {
+    return instance;
+  }
 
   // Not truly Immutable given that registerCommand can mutate after initialization.
-  @Immutable
-  static final Map<KnownVersion, Map<Integer, Command>> ALL_COMMANDS = initializeAllCommands();
+  final Map<KnownVersion, Map<Integer, Command>> registeredCommands = initializeAllCommands();
 
   /**
    * Register a new command with the system.
@@ -102,17 +106,27 @@ public class CommandInitializer {
    * @param versionToNewCommand The command to register, for different versions. The key is the
    *        earliest version for which this command class is valid (starting with GFE_57). The value
    */
-  public static void registerCommand(int messageType,
+  @Override
+  public void register(int messageType,
       Map<KnownVersion, Command> versionToNewCommand) {
-    if (!registerCommand(messageType, versionToNewCommand, ALL_COMMANDS)) {
+    if (!registerCommand(messageType, versionToNewCommand, registeredCommands)) {
       throw new InternalGemFireError(String.format("Message %d was not registered.", messageType));
     }
   }
 
+  @Override
+  public Map<Integer, Command> get(final KnownVersion version) {
+    return unmodifiableMap(registeredCommands.get(version));
+  }
+
   /***
    * Iterate through all the Geode versions add a command to the map for that version
+   *
+   * @return returns true if command was registered or same command was already registered,
+   *         otherwise false.
+   * @throw InternalGemFireError if a different command was already registered.
    */
-  static boolean registerCommand(final int messageType,
+  boolean registerCommand(final int messageType,
       final Map<KnownVersion, Command> versionToNewCommand,
       final Map<KnownVersion, Map<Integer, Command>> allCommands) {
     boolean modified = false;
@@ -276,11 +290,4 @@ public class CommandInitializer {
     commands.put(MessageType.REMOVE_ALL, RemoveAll.getCommand());
   }
 
-  public static Map<Integer, Command> getCommands(KnownVersion version) {
-    return unmodifiableMap(ALL_COMMANDS.get(version));
-  }
-
-  public static Map<Integer, Command> getCommands(ServerConnection connection) {
-    return getCommands(connection.getClientVersion());
-  }
 }

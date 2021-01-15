@@ -986,9 +986,9 @@ public abstract class ServerConnection implements Runnable {
   }
 
   void initializeCommands() {
-    // The commands are cached here, but are just referencing the ones
-    // stored in the CommandInitializer
-    commands = CommandInitializer.getCommands(this);
+    // The commands are cached here, but are just referencing the ones stored in the
+    // CommandInitializer
+    commands = CommandInitializer.getDefaultInstance().get(this.getClientVersion());
   }
 
   private Command getCommand(Integer messageType) {

@@ -90,7 +90,7 @@ public class CommandInitializerTest {
       if (version.isNotOlderThan(KnownVersion.OLDEST)) {
         org.junit.Assert.assertNotNull(
             "Please add a command set for " + version + " of Geode to CommandInitializer",
-            CommandInitializer.getCommands(version));
+            CommandInitializer.getDefaultInstance().get(version));
       }
     }
   }

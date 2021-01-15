@@ -15,11 +15,10 @@
 
 package org.apache.geode.cache.query.cq.internal;
 
+import static java.util.Collections.singletonMap;
+
 import java.io.DataInput;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.apache.geode.cache.query.cq.internal.command.CloseCQ;
 import org.apache.geode.cache.query.cq.internal.command.ExecuteCQ61;
@@ -31,34 +30,32 @@ import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.cache.query.internal.cq.ServerCQ;
 import org.apache.geode.cache.query.internal.cq.spi.CqServiceFactory;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
-import org.apache.geode.internal.cache.tier.sockets.CommandInitializer;
+import org.apache.geode.internal.cache.tier.sockets.CommandRegistry;
 import org.apache.geode.internal.serialization.KnownVersion;
 
 public class CqServiceFactoryImpl implements CqServiceFactory {
 
   @Override
-  public void initialize() {
-    Map<KnownVersion, Command> versions = new HashMap<>();
-    CommandInitializer.registerCommand(MessageType.EXECUTECQ_MSG_TYPE,
-        Collections.singletonMap(KnownVersion.OLDEST, ExecuteCQ61.getCommand()));
-    CommandInitializer.registerCommand(MessageType.EXECUTECQ_WITH_IR_MSG_TYPE,
-        Collections.singletonMap(KnownVersion.OLDEST, ExecuteCQ61.getCommand()));
-    CommandInitializer.registerCommand(MessageType.GETCQSTATS_MSG_TYPE,
-        Collections.singletonMap(KnownVersion.OLDEST, GetCQStats.getCommand()));
-    CommandInitializer.registerCommand(MessageType.MONITORCQ_MSG_TYPE,
-        Collections.singletonMap(KnownVersion.OLDEST, MonitorCQ.getCommand()));
-    CommandInitializer.registerCommand(MessageType.STOPCQ_MSG_TYPE,
-        Collections.singletonMap(KnownVersion.OLDEST, StopCQ.getCommand()));
-    CommandInitializer.registerCommand(MessageType.CLOSECQ_MSG_TYPE,
-        Collections.singletonMap(KnownVersion.OLDEST, CloseCQ.getCommand()));
-    CommandInitializer.registerCommand(MessageType.GETDURABLECQS_MSG_TYPE,
-        Collections.singletonMap(KnownVersion.OLDEST, GetDurableCQs.getCommand()));
-  }
+  public void initialize() {}
 
   @Override
-  public CqService create(InternalCache cache) {
+  public CqService create(InternalCache cache, CommandRegistry commandRegistry) {
+    commandRegistry.register(MessageType.EXECUTECQ_MSG_TYPE,
+        singletonMap(KnownVersion.OLDEST, ExecuteCQ61.getCommand()));
+    commandRegistry.register(MessageType.EXECUTECQ_WITH_IR_MSG_TYPE,
+        singletonMap(KnownVersion.OLDEST, ExecuteCQ61.getCommand()));
+    commandRegistry.register(MessageType.GETCQSTATS_MSG_TYPE,
+        singletonMap(KnownVersion.OLDEST, GetCQStats.getCommand()));
+    commandRegistry.register(MessageType.MONITORCQ_MSG_TYPE,
+        singletonMap(KnownVersion.OLDEST, MonitorCQ.getCommand()));
+    commandRegistry.register(MessageType.STOPCQ_MSG_TYPE,
+        singletonMap(KnownVersion.OLDEST, StopCQ.getCommand()));
+    commandRegistry.register(MessageType.CLOSECQ_MSG_TYPE,
+        singletonMap(KnownVersion.OLDEST, CloseCQ.getCommand()));
+    commandRegistry.register(MessageType.GETDURABLECQS_MSG_TYPE,
+        singletonMap(KnownVersion.OLDEST, GetDurableCQs.getCommand()));
+
     return new CqServiceImpl(cache);
   }
 
