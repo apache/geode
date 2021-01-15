@@ -487,6 +487,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       prQ = (PartitionedRegion) cache.getRegion(prQName);
 
       if ((prQ != null) && (this.index == 0) && this.cleanQueues) {
+        cleanOverflowStats(cache);
         prQ.destroyRegion(null);
         prQ = null;
       }
@@ -622,6 +623,19 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       }
     }
   }
+
+  private void cleanOverflowStats(Cache cache) {
+    ManagementService service = ManagementService.getManagementService(cache);
+    if (!this.asyncEvent) {
+      GatewaySenderMBean bean =
+          (GatewaySenderMBean) service.getLocalGatewaySenderMXBean(this.sender.getId());
+      if (bean != null) {
+        bean.getBridge().clearOverflowStatistics();
+      }
+    }
+
+  }
+
 
   /**
    * This will be case when the sender is started again after stop operation.
