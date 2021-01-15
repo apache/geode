@@ -25,7 +25,4 @@ public interface MasterRemote extends Remote {
 
   void ping() throws RemoteException;
 
-  BounceResult bounce(int pid) throws RemoteException;
-
-  BounceResult bounce(String version, int pid, boolean force) throws RemoteException;
 }

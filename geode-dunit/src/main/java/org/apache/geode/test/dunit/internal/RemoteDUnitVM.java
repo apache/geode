@@ -26,8 +26,8 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 class RemoteDUnitVM extends UnicastRemoteObject implements RemoteDUnitVMIF {
   private static final Logger logger = LogService.getLogger();
 
-  RemoteDUnitVM() throws RemoteException {
-    // super
+  RemoteDUnitVM(int port) throws RemoteException {
+    super(port);
   }
 
   /**
