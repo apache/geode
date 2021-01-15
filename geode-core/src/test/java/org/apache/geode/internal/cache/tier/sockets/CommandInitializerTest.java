@@ -80,8 +80,20 @@ import org.apache.geode.internal.cache.tier.sockets.command.TXSynchronizationCom
 import org.apache.geode.internal.cache.tier.sockets.command.UnregisterInterest;
 import org.apache.geode.internal.cache.tier.sockets.command.UnregisterInterestList;
 import org.apache.geode.internal.cache.tier.sockets.command.UpdateClientNotification;
+import org.apache.geode.internal.serialization.KnownVersion;
 
 public class CommandInitializerTest {
+
+  @Test
+  public void testCommandMapContainsAllVersions() {
+    for (KnownVersion version : KnownVersion.getAllVersions()) {
+      if (version.isNotOlderThan(KnownVersion.OLDEST)) {
+        org.junit.Assert.assertNotNull(
+            "Please add a command set for " + version + " of Geode to CommandInitializer",
+            CommandInitializer.getCommands(version));
+      }
+    }
+  }
 
   @Test
   public void initializeGeode18Commands() {
