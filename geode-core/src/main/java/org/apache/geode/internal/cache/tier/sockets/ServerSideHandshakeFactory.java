@@ -51,7 +51,7 @@ class ServerSideHandshakeFactory {
       logger.debug("Client version: {}", clientVersion);
     }
 
-    if (clientVersion.isOlderThan(KnownVersion.GFE_57)) {
+    if (clientVersion.isOlderThan(KnownVersion.OLDEST)) {
       throw new UnsupportedVersionException("Unsupported version " + clientVersion
           + "Server's current version " + currentServerVersion);
     }
