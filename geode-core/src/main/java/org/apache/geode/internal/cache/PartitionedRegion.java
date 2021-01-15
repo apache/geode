@@ -3713,7 +3713,7 @@ public class PartitionedRegion extends LocalRegion
         FunctionRemoteContext context = new FunctionRemoteContext(function,
             execution.getArgumentsForMember(recip.getId()), memKeys,
             FunctionExecutionNodePruner.getBucketSet(this, memKeys, false, isBucketSetAsFilter),
-            execution.isReExecute(), execution.isFnSerializationReqd());
+            execution.isReExecute(), execution.isFnSerializationReqd(), getPrincipal());
         recipMap.put(recip, context);
       }
       if (logger.isDebugEnabled()) {
@@ -3726,6 +3726,10 @@ public class PartitionedRegion extends LocalRegion
       return resultReceiver.getPartitionedDataFrom(recipMap, this, execution);
     }
     return localResultCollector;
+  }
+
+  private Object getPrincipal() {
+    return cache.getSecurityService().getPrincipal();
   }
 
   /**
@@ -3931,7 +3935,7 @@ public class PartitionedRegion extends LocalRegion
     for (InternalDistributedMember recip : dest) {
       FunctionRemoteContext context = new FunctionRemoteContext(function,
           execution.getArgumentsForMember(recip.getId()), null, memberToBuckets.get(recip),
-          execution.isReExecute(), execution.isFnSerializationReqd());
+          execution.isReExecute(), execution.isFnSerializationReqd(), getPrincipal());
       recipMap.put(recip, context);
     }
     final LocalResultCollector<?, ?> localRC = execution.getLocalResultCollector(function, rc);
@@ -4025,7 +4029,7 @@ public class PartitionedRegion extends LocalRegion
     for (InternalDistributedMember recip : memberToBuckets.keySet()) {
       FunctionRemoteContext context = new FunctionRemoteContext(function,
           execution.getArgumentsForMember(recip.getId()), null, memberToBuckets.get(recip),
-          execution.isReExecute(), execution.isFnSerializationReqd());
+          execution.isReExecute(), execution.isFnSerializationReqd(), getPrincipal());
       recipMap.put(recip, context);
     }
     final LocalResultCollector<?, ?> localResultCollector =
@@ -4957,7 +4961,7 @@ public class PartitionedRegion extends LocalRegion
             resultSender);
 
     FunctionRemoteContext context = new FunctionRemoteContext(function, object, routingKeys,
-        bucketArray, execution.isReExecute(), execution.isFnSerializationReqd());
+        bucketArray, execution.isReExecute(), execution.isFnSerializationReqd(), getPrincipal());
 
     HashMap<InternalDistributedMember, FunctionRemoteContext> recipMap =
         new HashMap<InternalDistributedMember, FunctionRemoteContext>();
