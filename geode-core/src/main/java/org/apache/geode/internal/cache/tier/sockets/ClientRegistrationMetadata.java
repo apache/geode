@@ -51,7 +51,7 @@ class ClientRegistrationMetadata {
   ClientRegistrationMetadata(final InternalCache cache, final Socket socket) {
     this.cache = cache;
     this.socket = socket;
-    this.socketMessageWriter = new SocketMessageWriter();
+    socketMessageWriter = new SocketMessageWriter();
   }
 
   boolean initialize() throws IOException {
