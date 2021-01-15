@@ -273,11 +273,13 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
       toDataCalled = true;
     }
 
-    public void toDataPre_GEODE_1_1_0_0(@SuppressWarnings("unused") DataOutput out, @SuppressWarnings("unused") SerializationContext context) {
+    public void toDataPre_GEODE_1_1_0_0(@SuppressWarnings("unused") DataOutput out,
+        @SuppressWarnings("unused") SerializationContext context) {
       toDataPre11Called = true;
     }
 
-    public void toDataPre_GEODE_1_5_0_0(@SuppressWarnings("unused") DataOutput out, @SuppressWarnings("unused") SerializationContext context) {
+    public void toDataPre_GEODE_1_5_0_0(@SuppressWarnings("unused") DataOutput out,
+        @SuppressWarnings("unused") SerializationContext context) {
       toDataPre15called = true;
     }
 
@@ -287,11 +289,13 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
       fromDataCalled = true;
     }
 
-    public void fromDataPre_GEODE_1_1_0_0(@SuppressWarnings("unused") DataInput out, @SuppressWarnings("unused") DeserializationContext context) {
+    public void fromDataPre_GEODE_1_1_0_0(@SuppressWarnings("unused") DataInput out,
+        @SuppressWarnings("unused") DeserializationContext context) {
       fromDataPre11Called = true;
     }
 
-    public void fromDataPre_GEODE_1_5_0_0(@SuppressWarnings("unused") DataInput out, @SuppressWarnings("unused") DeserializationContext context) {
+    public void fromDataPre_GEODE_1_5_0_0(@SuppressWarnings("unused") DataInput out,
+        @SuppressWarnings("unused") DeserializationContext context) {
       fromDataPre15Called = true;
     }
 

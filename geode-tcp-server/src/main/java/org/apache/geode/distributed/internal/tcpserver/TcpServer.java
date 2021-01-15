@@ -68,8 +68,9 @@ public class TcpServer {
    * Geode's Version class to designate the on-wire protocol. Even newer clients use this
    * gossip version for initial server version discovery. We can't remove this until after
    * Geode support 1.14 is removed.
+   *
    * @deprecated Use {@link #GOSSIPVERSION}. Remove after {@link KnownVersion#GEODE_1_14_0} is
-   * removed.
+   *             removed.
    */
   @Deprecated
   public static final int OLDGOSSIPVERSION = 1001;
@@ -398,7 +399,7 @@ public class TcpServer {
   private void processOneConnection(Socket socket, final long startTime, DataInputStream input)
       throws IOException, UnsupportedSerializationVersionException, ClassNotFoundException {
     final int gossipVersion = readGossipVersion(input);
-    if (! (gossipVersion == GOSSIPVERSION || gossipVersion == OLDGOSSIPVERSION)) {
+    if (!(gossipVersion == GOSSIPVERSION || gossipVersion == OLDGOSSIPVERSION)) {
       rejectUnknownProtocolConnection(socket, gossipVersion);
       return;
     }

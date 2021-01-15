@@ -365,7 +365,8 @@ public class KnownVersion extends AbstractVersion {
     this.release = release;
     this.patch = patch;
 
-    methodSuffix = this.productName + "_" + this.major + "_" + this.minor + "_" + this.release + "_" + this.patch;
+    methodSuffix = this.productName + "_" + this.major + "_" + this.minor + "_" + this.release + "_"
+        + this.patch;
 
     if (ordinal != TOKEN_ORDINAL) {
       VALUES[ordinal()] = this;
