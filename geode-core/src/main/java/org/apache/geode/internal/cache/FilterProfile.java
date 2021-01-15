@@ -1012,6 +1012,7 @@ public class FilterProfile implements DataSerializableFixedID {
     msg.setRecipients(recipients);
     ReplyProcessor21 rp = new ReplyProcessor21(this.region.getDistributionManager(), recipients);
     msg.processorId = rp.getProcessorId();
+    logger.debug("KIRK: sending msg={}", msg);
     this.region.getDistributionManager().putOutgoing(msg);
     try {
       rp.waitForReplies();
@@ -1664,12 +1665,14 @@ public class FilterProfile implements DataSerializableFixedID {
     } else {
       clientID = clientMap.getWireID(inputClientID);
     }
+    logger.debug("KIRK: inputClientID={}, clientID={}, clientMap={}", inputClientID, clientID,
+        clientMap);
     return clientID;
   }
 
   @Override
   public String toString() {
-    final boolean isDebugEnabled = logger.isTraceEnabled(LogMarker.BRIDGE_SERVER_VERBOSE);
+    final boolean isDebugEnabled = true;// logger.isTraceEnabled(LogMarker.BRIDGE_SERVER_VERBOSE);
     return "FilterProfile(id=" + (this.isLocalProfile ? "local" : this.memberID) + ";  numCQs: "
         + ((this.cqCount == null) ? 0 : this.cqCount.get())
         + (isDebugEnabled ? (";  " + getClientMappingString()) : "")
@@ -1678,6 +1681,7 @@ public class FilterProfile implements DataSerializableFixedID {
 
   /** for debugging we could sometimes use a dump of the Long->clientID table */
   private String getClientMappingString() {
+    logger.debug("KIRK:getClientMappingString: clientMap={}", clientMap);
     if (clientMap == null) {
       return "";
     }
@@ -2159,6 +2163,16 @@ public class FilterProfile implements DataSerializableFixedID {
       if (mappedId != null) {
         this.wireIDs.remove(mappedId);
       }
+    }
+
+    @Override
+    public String toString() {
+      return "IDMap{" +
+          "nextID=" + nextID +
+          ", realIDs=" + realIDs +
+          ", wireIDs=" + wireIDs +
+          ", hasLongID=" + hasLongID +
+          '}';
     }
   }
 

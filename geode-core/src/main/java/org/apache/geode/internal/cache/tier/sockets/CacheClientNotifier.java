@@ -672,8 +672,8 @@ public class CacheClientNotifier {
     Set<ClientProxyMembershipID> filterClients =
         getFilterClientIDs(event, regionProfile, filterInfo, clientMessage);
 
-    logger.debug("KIRK: filterClients={}{}, filterInfo={}{}, regionProfile={}", filterClients,
-        System.lineSeparator(), filterInfo, System.lineSeparator(), regionProfile);
+    logger.debug("KIRK: filterClients={}, filterInfo={}, regionProfile={}", filterClients,
+        filterInfo, regionProfile);
 
     Conflatable conflatable;
 
@@ -765,6 +765,7 @@ public class CacheClientNotifier {
     if (filterInfo.getInterestedClients() != null) {
       Set<Object> rawIDs = regionProfile.getRealClientIDs(filterInfo.getInterestedClients());
       Set<ClientProxyMembershipID> ids = getProxyIDs(rawIDs);
+      logger.debug("KIRK: rawIDs={}, ids={}", rawIDs, ids); // KIRK: rawIDs is empty
       incMessagesNotQueuedOriginatorStat(event, ids);
       if (!ids.isEmpty()) {
         if (logger.isTraceEnabled()) {
@@ -1248,8 +1249,8 @@ public class CacheClientNotifier {
     }
     CacheClientProxy proxy = null;
     for (CacheClientProxy clientProxy : getClientProxies()) {
-      if (isTraceEnabled) {
-        logger.trace("CacheClientNotifier: Checking client {}", clientProxy);
+      if (isDebugEnabled) {
+        logger.debug("CacheClientNotifier: Checking client {}", clientProxy);
       }
       if (clientProxy.getDurableId().equals(durableClientId)) {
         proxy = clientProxy;
@@ -1263,8 +1264,8 @@ public class CacheClientNotifier {
     if (proxy == null && proxyInInitMode) {
       for (Object o : _initClientProxies.values()) {
         CacheClientProxy clientProxy = (CacheClientProxy) o;
-        if (isTraceEnabled) {
-          logger.trace("CacheClientNotifier: Checking initializing client {}", clientProxy);
+        if (isDebugEnabled) {
+          logger.debug("CacheClientNotifier: Checking initializing client {}", clientProxy);
         }
         if (clientProxy.getDurableId().equals(durableClientId)) {
           proxy = clientProxy;
