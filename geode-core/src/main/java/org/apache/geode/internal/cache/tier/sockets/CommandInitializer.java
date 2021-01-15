@@ -90,6 +90,7 @@ import org.apache.geode.internal.serialization.KnownVersion;
 
 public class CommandInitializer {
 
+  // Not truly Immutable given that registerCommand can mutate after initialization.
   @Immutable
   static final Map<KnownVersion, Map<Integer, Command>> ALL_COMMANDS = initializeAllCommands();
 
@@ -100,25 +101,34 @@ public class CommandInitializer {
    *        that has not already been allocated to a different command.
    * @param versionToNewCommand The command to register, for different versions. The key is the
    *        earliest version for which this command class is valid (starting with GFE_57). The value
-   *        is the command object for clients starting with that version.
    */
   public static void registerCommand(int messageType,
       Map<KnownVersion, Command> versionToNewCommand) {
+    if (!registerCommand(messageType, versionToNewCommand, ALL_COMMANDS)) {
+      throw new InternalGemFireError(String.format("Message %d was not registered.", messageType));
+    }
+  }
+
+  /***
+   * Iterate through all the Geode versions add a command to the map for that version
+   */
+  static boolean registerCommand(final int messageType,
+      final Map<KnownVersion, Command> versionToNewCommand,
+      final Map<KnownVersion, Map<Integer, Command>> allCommands) {
+    boolean modified = false;
     Command command = null;
-    // Iterate through all the gemfire versions, and
-    // add a command to the map for that version
-    for (Map.Entry<KnownVersion, Map<Integer, Command>> entry : ALL_COMMANDS.entrySet()) {
+
+    for (Map.Entry<KnownVersion, Map<Integer, Command>> entry : allCommands.entrySet()) {
       KnownVersion version = entry.getKey();
 
       // Get the current set of commands for this version.
       Map<Integer, Command> commandMap = entry.getValue();
 
       // See if we have a new command to insert into this map. Otherwise, keep using the command we
-      // have
-      // already read
-      Command newerVersion = versionToNewCommand.get(version);
-      if (newerVersion != null) {
-        command = newerVersion;
+      // have already read
+      Command newCommand = versionToNewCommand.get(version);
+      if (newCommand != null) {
+        command = newCommand;
       }
       if (command != null) {
         Command oldCommand = commandMap.get(messageType);
@@ -128,8 +138,10 @@ public class CommandInitializer {
               + ", newValue=" + command + ", version=" + version);
         }
         commandMap.put(messageType, command);
+        modified = true;
       }
     }
+    return modified;
   }
 
   private static Map<KnownVersion, Map<Integer, Command>> initializeAllCommands() {
@@ -169,22 +181,22 @@ public class CommandInitializer {
 
   private static Map<Integer, Command> buildGeode18Commands(
       final Map<Integer, Command> baseCommands) {
-    final Map<Integer, Command> geode18Commands = new HashMap<>(baseCommands);
-    initializeGeode18Commands(geode18Commands);
-    return unmodifiableMap(geode18Commands);
+    final Map<Integer, Command> commands = new HashMap<>(baseCommands);
+    initializeGeode18Commands(commands);
+    return commands;
   }
 
   private static Map<Integer, Command> buildGfe90Commands(
       final Map<Integer, Command> baseCommands) {
-    final Map<Integer, Command> gfe90Commands = new HashMap<>(baseCommands);
-    initializeGfe90Commands(gfe90Commands);
-    return unmodifiableMap(gfe90Commands);
+    final Map<Integer, Command> commands = new HashMap<>(baseCommands);
+    initializeGfe90Commands(commands);
+    return commands;
   }
 
   private static Map<Integer, Command> buildGfe82Commands() {
-    final Map<Integer, Command> gfe82Commands = new HashMap<>();
-    initializeGfe82Commands(gfe82Commands);
-    return unmodifiableMap(gfe82Commands);
+    final Map<Integer, Command> commands = new HashMap<>();
+    initializeGfe82Commands(commands);
+    return commands;
   }
 
   static void initializeGeode18Commands(final Map<Integer, Command> commands) {
@@ -265,7 +277,7 @@ public class CommandInitializer {
   }
 
   public static Map<Integer, Command> getCommands(KnownVersion version) {
-    return ALL_COMMANDS.get(version);
+    return unmodifiableMap(ALL_COMMANDS.get(version));
   }
 
   public static Map<Integer, Command> getCommands(ServerConnection connection) {

@@ -12,6 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.cache.query.cq.internal;
 
 import java.io.DataInput;
@@ -21,7 +22,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.geode.cache.query.cq.internal.command.CloseCQ;
-import org.apache.geode.cache.query.cq.internal.command.ExecuteCQ;
 import org.apache.geode.cache.query.cq.internal.command.ExecuteCQ61;
 import org.apache.geode.cache.query.cq.internal.command.GetCQStats;
 import org.apache.geode.cache.query.cq.internal.command.GetDurableCQs;
@@ -41,21 +41,20 @@ public class CqServiceFactoryImpl implements CqServiceFactory {
   @Override
   public void initialize() {
     Map<KnownVersion, Command> versions = new HashMap<>();
-    versions.put(KnownVersion.GFE_57, ExecuteCQ.getCommand());
-    versions.put(KnownVersion.GFE_61, ExecuteCQ61.getCommand());
-    CommandInitializer.registerCommand(MessageType.EXECUTECQ_MSG_TYPE, versions);
-    CommandInitializer.registerCommand(MessageType.EXECUTECQ_WITH_IR_MSG_TYPE, versions);
-
+    CommandInitializer.registerCommand(MessageType.EXECUTECQ_MSG_TYPE,
+        Collections.singletonMap(KnownVersion.OLDEST, ExecuteCQ61.getCommand()));
+    CommandInitializer.registerCommand(MessageType.EXECUTECQ_WITH_IR_MSG_TYPE,
+        Collections.singletonMap(KnownVersion.OLDEST, ExecuteCQ61.getCommand()));
     CommandInitializer.registerCommand(MessageType.GETCQSTATS_MSG_TYPE,
-        Collections.singletonMap(KnownVersion.GFE_57, GetCQStats.getCommand()));
+        Collections.singletonMap(KnownVersion.OLDEST, GetCQStats.getCommand()));
     CommandInitializer.registerCommand(MessageType.MONITORCQ_MSG_TYPE,
-        Collections.singletonMap(KnownVersion.GFE_57, MonitorCQ.getCommand()));
+        Collections.singletonMap(KnownVersion.OLDEST, MonitorCQ.getCommand()));
     CommandInitializer.registerCommand(MessageType.STOPCQ_MSG_TYPE,
-        Collections.singletonMap(KnownVersion.GFE_57, StopCQ.getCommand()));
+        Collections.singletonMap(KnownVersion.OLDEST, StopCQ.getCommand()));
     CommandInitializer.registerCommand(MessageType.CLOSECQ_MSG_TYPE,
-        Collections.singletonMap(KnownVersion.GFE_57, CloseCQ.getCommand()));
+        Collections.singletonMap(KnownVersion.OLDEST, CloseCQ.getCommand()));
     CommandInitializer.registerCommand(MessageType.GETDURABLECQS_MSG_TYPE,
-        Collections.singletonMap(KnownVersion.GFE_70, GetDurableCQs.getCommand()));
+        Collections.singletonMap(KnownVersion.OLDEST, GetDurableCQs.getCommand()));
   }
 
   @Override
