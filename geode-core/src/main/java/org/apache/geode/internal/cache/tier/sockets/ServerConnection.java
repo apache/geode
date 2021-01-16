@@ -105,7 +105,7 @@ public abstract class ServerConnection implements Runnable {
   public static boolean allowInternalMessagesWithoutCredentials =
       !Boolean.getBoolean(DISALLOW_INTERNAL_MESSAGES_WITHOUT_CREDENTIALS_NAME);
 
-  private Map commands;
+  private Map<Integer, Command> commands;
 
   protected final SecurityService securityService;
 
@@ -442,7 +442,7 @@ public abstract class ServerConnection implements Runnable {
     }
   }
 
-  protected Map getCommands() {
+  protected Map<Integer, Command> getCommands() {
     return commands;
   }
 
@@ -839,7 +839,7 @@ public abstract class ServerConnection implements Runnable {
           } else {
             logger.warn(
                 "Failed to bind the subject of uniqueId {} for message {} with {} : Possible re-authentication required",
-                uniqueId, messageType, this.getName());
+                uniqueId, messageType, getName());
             throw new AuthenticationRequiredException("Failed to find the authenticated user.");
           }
         }
@@ -987,11 +987,11 @@ public abstract class ServerConnection implements Runnable {
   void initializeCommands() {
     // The commands are cached here, but are just referencing the ones stored in the
     // CommandInitializer
-    commands = CommandInitializer.getDefaultInstance().get(this.getClientVersion());
+    commands = CommandInitializer.getDefaultInstance().get(getClientVersion());
   }
 
   private Command getCommand(Integer messageType) {
-    return (Command) commands.get(messageType);
+    return commands.get(messageType);
   }
 
   public void removeUserAuth(Message message, boolean keepAlive) {
@@ -1697,7 +1697,7 @@ public abstract class ServerConnection implements Runnable {
       if (isTerminated()) {
         throw new IOException("Server connection is terminated.");
       }
-      logger.debug("Unexpected exception {}", npe);
+      logger.debug("Unexpected exception {}", npe.toString());
     }
     if (uaa == null) {
       throw new AuthenticationRequiredException("User authorization attributes not found.");
