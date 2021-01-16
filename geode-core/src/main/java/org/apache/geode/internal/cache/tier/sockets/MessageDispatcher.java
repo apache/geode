@@ -14,11 +14,12 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -123,7 +124,7 @@ public class MessageDispatcher extends LoggingThread {
       StatisticsClock statisticsClock) throws CacheException {
     super(name);
 
-    this._proxy = proxy;
+    _proxy = proxy;
 
     // Create the event conflator
     // this._eventConflator = new BridgeEventConflator
@@ -138,24 +139,22 @@ public class MessageDispatcher extends LoggingThread {
       boolean createDurableQueue = proxy.proxyID.isDurable();
       boolean canHandleDelta =
           InternalDistributedSystem.getAnyInstance().getConfig().getDeltaPropagation()
-              && !(this._proxy.clientConflation == Handshake.CONFLATION_ON);
+              && !(_proxy.clientConflation == Handshake.CONFLATION_ON);
       if ((createDurableQueue || canHandleDelta) && logger.isDebugEnabled()) {
         logger.debug("Creating a {} subscription queue for {}",
             createDurableQueue ? "durable" : "non-durable",
             proxy.getProxyID());
       }
-      this._messageQueue = HARegionQueue.getHARegionQueueInstance(getProxy().getHARegionName(),
+      _messageQueue = HARegionQueue.getHARegionQueueInstance(getProxy().getHARegionName(),
           getCache(), harq, HARegionQueue.BLOCKING_HA_QUEUE, createDurableQueue,
           proxy._cacheClientNotifier.getHaContainer(), proxy.getProxyID(),
-          this._proxy.clientConflation, this._proxy.isPrimary(), canHandleDelta, statisticsClock);
+          _proxy.clientConflation, _proxy.isPrimary(), canHandleDelta, statisticsClock);
       // Check if interests were registered during HARegion GII.
-      if (this._proxy.hasRegisteredInterested()) {
-        this._messageQueue.setHasRegisteredInterest(true);
+      if (_proxy.hasRegisteredInterested()) {
+        _messageQueue.setHasRegisteredInterest(true);
       }
-    } catch (CancelException e) {
+    } catch (CancelException | RegionExistsException e) {
       throw e;
-    } catch (RegionExistsException ree) {
-      throw ree;
     } catch (Exception e) {
       getCache().getCancelCriterion().checkCancelInProgress(e);
       throw new CacheException(
@@ -167,7 +166,7 @@ public class MessageDispatcher extends LoggingThread {
   }
 
   private CacheClientProxy getProxy() {
-    return this._proxy;
+    return _proxy;
   }
 
   private InternalCache getCache() {
@@ -190,7 +189,7 @@ public class MessageDispatcher extends LoggingThread {
     if (logger.isDebugEnabled()) {
       logger.debug("{}: notified dispatcher to stop", this);
     }
-    this._isStopped = true;
+    _isStopped = true;
     // this.interrupt(); // don't interrupt here. Let close(boolean) do this.
   }
 
@@ -221,13 +220,12 @@ public class MessageDispatcher extends LoggingThread {
     }
 
     // Stay alive until the queue is empty or a number of peeks is reached.
-    List events = null;
     try {
       for (int numberOfPeeks =
           0; numberOfPeeks < CacheClientProxy.MAXIMUM_SHUTDOWN_PEEKS; ++numberOfPeeks) {
         boolean interrupted = Thread.interrupted();
         try {
-          events = this._messageQueue.peek(1, -1);
+          List<?> events = _messageQueue.peek(1, -1);
           if (events == null || events.size() == 0) {
             break;
           }
@@ -259,7 +257,7 @@ public class MessageDispatcher extends LoggingThread {
    * @return whether the dispatcher is stopped
    */
   protected boolean isStopped() {
-    return this._isStopped;
+    return _isStopped;
   }
 
   /**
@@ -269,7 +267,7 @@ public class MessageDispatcher extends LoggingThread {
    * @return the size of the queue
    */
   protected int getQueueSize() {
-    return this._messageQueue == null ? 0 : this._messageQueue.size();
+    return _messageQueue == null ? 0 : _messageQueue.size();
   }
 
   /**
@@ -279,8 +277,8 @@ public class MessageDispatcher extends LoggingThread {
    * @return the size of the queue
    */
   protected int getQueueSizeStat() {
-    if (this._messageQueue != null) {
-      HARegionQueueStats stats = this._messageQueue.getStatistics();
+    if (_messageQueue != null) {
+      HARegionQueueStats stats = _messageQueue.getStatistics();
       return ((int) (stats.getEventsEnqued() - stats.getEventsRemoved()
           - stats.getEventsConflated() - stats.getMarkerEventsConflated()
           - stats.getEventsExpired() - stats.getEventsRemovedByQrm() - stats.getEventsTaken()
@@ -291,7 +289,7 @@ public class MessageDispatcher extends LoggingThread {
 
   protected void drainClientCqEvents(ClientProxyMembershipID clientId,
       InternalCqQuery cqToClose) {
-    this._messageQueue.closeClientCq(clientId, cqToClose);
+    _messageQueue.closeClientCq(clientId, cqToClose);
   }
 
   @Override
@@ -328,7 +326,7 @@ public class MessageDispatcher extends LoggingThread {
   @VisibleForTesting
   protected void runDispatcher() {
     boolean exceptionOccurred = false;
-    this._isStopped = false;
+    _isStopped = false;
 
     if (logger.isDebugEnabled()) {
       logger.debug("{}: Beginning to process events", this);
@@ -337,7 +335,7 @@ public class MessageDispatcher extends LoggingThread {
     ClientMessage clientMessage = null;
     while (!isStopped()) {
       // SystemFailure.checkFailure(); DM's stopper does this
-      if (this._proxy._cache.getCancelCriterion().isCancelInProgress()) {
+      if (_proxy._cache.getCancelCriterion().isCancelInProgress()) {
         break;
       }
       try {
@@ -348,12 +346,12 @@ public class MessageDispatcher extends LoggingThread {
           // reconnecting.
           synchronized (_pausedLock) {
             try {
-              logger.info("available ids = " + this._messageQueue.size() + " , isEmptyAckList ="
-                  + this._messageQueue.isEmptyAckList() + ", peekInitialized = "
-                  + this._messageQueue.isPeekInitialized());
-              while (!this._messageQueue.isEmptyAckList()
-                  && this._messageQueue.isPeekInitialized()) {
-                this._messageQueue.remove();
+              logger.info("available ids = " + _messageQueue.size() + " , isEmptyAckList ="
+                  + _messageQueue.isEmptyAckList() + ", peekInitialized = "
+                  + _messageQueue.isPeekInitialized());
+              while (!_messageQueue.isEmptyAckList()
+                  && _messageQueue.isPeekInitialized()) {
+                _messageQueue.remove();
               }
             } catch (InterruptedException ex) {
               logger.warn("{}: sleep interrupted.", this);
@@ -362,11 +360,11 @@ public class MessageDispatcher extends LoggingThread {
           waitForResumption();
         }
         try {
-          clientMessage = (ClientMessage) this._messageQueue.peek();
+          clientMessage = (ClientMessage) _messageQueue.peek();
         } catch (RegionDestroyedException skipped) {
           break;
         }
-        getStatistics().setQueueSize(this._messageQueue.size());
+        getStatistics().setQueueSize(_messageQueue.size());
         if (isStopped()) {
           break;
         }
@@ -377,13 +375,13 @@ public class MessageDispatcher extends LoggingThread {
           boolean isDispatched = dispatchMessage(clientMessage);
           getStatistics().endMessage(start);
           if (isDispatched) {
-            this._messageQueue.remove();
+            _messageQueue.remove();
             if (clientMessage instanceof ClientMarkerMessageImpl) {
               getProxy().setMarkerEnqueued(false);
             }
           }
         } else {
-          this._messageQueue.remove();
+          _messageQueue.remove();
         }
         clientMessage = null;
       } catch (MessageTooLargeException e) {
@@ -391,7 +389,7 @@ public class MessageDispatcher extends LoggingThread {
       } catch (IOException e) {
         // Added the synchronization below to ensure that exception handling
         // does not occur while stopping the dispatcher and vice versa.
-        synchronized (this._stopDispatchingLock) {
+        synchronized (_stopDispatchingLock) {
           // An IOException occurred while sending a message to the
           // client. If the processor is not already stopped, assume
           // the client is dead and stop processing.
@@ -467,13 +465,13 @@ public class MessageDispatcher extends LoggingThread {
     }
 
     // Processing gets here if isStopped=true. What is this code below doing?
-    List list = null;
     if (!exceptionOccurred) {
+      List<ClientMessage> list = null;
       try {
         // Clear the interrupt status if any,
         Thread.interrupted();
-        int size = this._messageQueue.size();
-        list = this._messageQueue.peek(size);
+        int size = _messageQueue.size();
+        list = uncheckedCast(_messageQueue.peek(size));
         if (logger.isDebugEnabled()) {
           logger.debug(
               "{}: After flagging the dispatcher to stop , the residual List of messages to be dispatched={} size={}",
@@ -481,31 +479,29 @@ public class MessageDispatcher extends LoggingThread {
         }
         if (list.size() > 0) {
           long start = getStatistics().startTime();
-          Iterator itr = list.iterator();
-          while (itr.hasNext()) {
-            dispatchMessage((ClientMessage) itr.next());
+          for (final ClientMessage o : list) {
+            dispatchMessage(o);
             getStatistics().endMessage(start);
             // @todo asif: shouldn't we call itr.remove() since the current msg
             // has been sent? That way list will be more accurate
             // if we have an exception.
           }
-          this._messageQueue.remove();
+          _messageQueue.remove();
         }
       } catch (CancelException e) {
         if (logger.isDebugEnabled()) {
           logger.debug("CacheClientNotifier stopped due to cancellation");
         }
-      } catch (Exception ignore) {
+      } catch (Exception e) {
         // if (logger.isInfoEnabled()) {
         String extraMsg = null;
 
-        if ("Broken pipe".equals(ignore.getMessage())) {
+        if ("Broken pipe".equals(e.getMessage())) {
           extraMsg = "Problem caused by broken pipe on socket.";
-        } else if (ignore instanceof RegionDestroyedException) {
-          extraMsg =
-              "Problem caused by message queue being closed.";
+        } else if (e instanceof RegionDestroyedException) {
+          extraMsg = "Problem caused by message queue being closed.";
         }
-        final Object[] msgArgs = new Object[] {((!isStopped()) ? this.toString() + ": " : ""),
+        final Object[] msgArgs = new Object[] {((!isStopped()) ? toString() + ": " : ""),
             ((list == null) ? 0 : list.size())};
         if (extraMsg != null) {
           // Dont print exception details, but add on extraMsg
@@ -519,7 +515,7 @@ public class MessageDispatcher extends LoggingThread {
           logger.info(String.format(
               "%s Possibility of not being able to send some or all of the messages to clients. Total messages currently present in the list %s.",
               msgArgs),
-              ignore);
+              e);
         }
       }
 
@@ -547,7 +543,7 @@ public class MessageDispatcher extends LoggingThread {
         }
       }
     } else {
-      this._isStopped = true;
+      _isStopped = true;
     }
 
     // Stop the ServerConnections. This will force the client to
@@ -579,11 +575,8 @@ public class MessageDispatcher extends LoggingThread {
     if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER_VERBOSE)) {
       logger.trace(LogMarker.BRIDGE_SERVER_VERBOSE, "Dispatching {}", clientMessage);
     }
-    Message message = null;
 
-    // byte[] latestValue =
-    // this._eventConflator.getLatestValue(clientMessage);
-
+    final Message message;
     if (clientMessage instanceof ClientUpdateMessage) {
       byte[] latestValue = (byte[]) ((ClientUpdateMessage) clientMessage).getValue();
       if (logger.isTraceEnabled()) {
@@ -608,7 +601,7 @@ public class MessageDispatcher extends LoggingThread {
       message = clientMessage.getMessage(getProxy(), true /* notify */);
     }
 
-    if (!this._proxy.isPaused()) {
+    if (!_proxy.isPaused()) {
       sendMessage(message);
 
       if (logger.isTraceEnabled()) {
@@ -621,7 +614,7 @@ public class MessageDispatcher extends LoggingThread {
       }
     }
     if (isDispatched) {
-      this._messageQueue.getStatistics().incEventsDispatched();
+      _messageQueue.getStatistics().incEventsDispatched();
     }
     return isDispatched;
   }
@@ -630,13 +623,13 @@ public class MessageDispatcher extends LoggingThread {
     if (message == null) {
       return;
     }
-    this.socketWriteLock.lock();
+    socketWriteLock.lock();
     try {
       message.setComms(getSocket(), getCommBuffer(), getStatistics());
       message.send();
       getProxy().resetPingCounter();
     } finally {
-      this.socketWriteLock.unlock();
+      socketWriteLock.unlock();
     }
     if (logger.isTraceEnabled()) {
       logger.trace("{}: Sent {}", this, message);
@@ -650,9 +643,9 @@ public class MessageDispatcher extends LoggingThread {
    */
   protected void enqueueMessage(Conflatable clientMessage) {
     try {
-      this._messageQueue.put(clientMessage);
-      if (this._proxy.isPaused() && this._proxy.isDurable()) {
-        this._proxy._cacheClientNotifier.statistics.incEventEnqueuedWhileClientAwayCount();
+      _messageQueue.put(clientMessage);
+      if (_proxy.isPaused() && _proxy.isDurable()) {
+        _proxy._cacheClientNotifier.statistics.incEventEnqueuedWhileClientAwayCount();
         if (logger.isDebugEnabled()) {
           logger.debug("{}: Queued message while Durable Client is away {}", this, clientMessage);
         }
@@ -661,7 +654,7 @@ public class MessageDispatcher extends LoggingThread {
       throw e;
     } catch (Exception e) {
       if (!isStopped()) {
-        this._proxy._statistics.incMessagesFailedQueued();
+        _proxy._statistics.incMessagesFailedQueued();
         logger.fatal(
             String.format("%s: Exception occurred while attempting to add message to queue",
                 this),
@@ -677,7 +670,7 @@ public class MessageDispatcher extends LoggingThread {
         logger.debug("{}: Queueing marker message. <{}>. The queue contains {} entries.", this,
             message, getQueueSize());
       }
-      this._messageQueue.put(message);
+      _messageQueue.put(message);
       if (logger.isDebugEnabled()) {
         logger.debug("{}: Queued marker message. The queue contains {} entries.", this,
             getQueueSize());
@@ -711,7 +704,7 @@ public class MessageDispatcher extends LoggingThread {
       logger.warn("Message too large to send to client: {}, {}", clientMessage, e.getMessage());
 
     } catch (IOException e) {
-      synchronized (this._stopDispatchingLock) {
+      synchronized (_stopDispatchingLock) {
         // Pause or unregister proxy
         if (!isStopped() && !getProxy().isPaused()) {
           logger.fatal(String.format("%s : An unexpected Exception occurred", this),
@@ -727,13 +720,13 @@ public class MessageDispatcher extends LoggingThread {
   }
 
   protected void waitForResumption() throws InterruptedException {
-    synchronized (this._pausedLock) {
+    synchronized (_pausedLock) {
       logger.info("{} : Pausing processing", this);
       if (!getProxy().isPaused()) {
         return;
       }
       while (getProxy().isPaused()) {
-        this._pausedLock.wait();
+        _pausedLock.wait();
       }
       // Fix for #48571
       _messageQueue.clearPeekedIDs();
@@ -744,7 +737,7 @@ public class MessageDispatcher extends LoggingThread {
     logger.info("{} : Resuming processing", this);
 
     // Notify thread to resume
-    this._pausedLock.notifyAll();
+    _pausedLock.notifyAll();
   }
 
   protected Object deserialize(byte[] serializedBytes) {
@@ -759,13 +752,13 @@ public class MessageDispatcher extends LoggingThread {
   }
 
   protected void initializeTransients() {
-    while (!this._messageQueue.isEmptyAckList() && this._messageQueue.isPeekInitialized()) {
+    while (!_messageQueue.isEmptyAckList() && _messageQueue.isPeekInitialized()) {
       try {
-        this._messageQueue.remove();
+        _messageQueue.remove();
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
     }
-    this._messageQueue.initializeTransients();
+    _messageQueue.initializeTransients();
   }
 }

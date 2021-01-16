@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicIntegerArray;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -47,7 +47,6 @@ import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.lang.JavaWorkarounds;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -66,13 +65,13 @@ public class ClientHealthMonitor {
   /**
    * The map of known clients and last time seen.
    */
-  private ConcurrentMap<ClientProxyMembershipID, AtomicLong> clientHeartbeats =
+  private final ConcurrentMap<ClientProxyMembershipID, AtomicLong> clientHeartbeats =
       new ConcurrentHashMap<>();
 
   /**
    * The map of known clients and maximum time between pings.
    */
-  private ConcurrentMap<ClientProxyMembershipID, Integer> clientMaximumTimeBetweenPings =
+  private final ConcurrentMap<ClientProxyMembershipID, Integer> clientMaximumTimeBetweenPings =
       new ConcurrentHashMap<>();
 
   /**
@@ -84,7 +83,7 @@ public class ClientHealthMonitor {
     return maximumTimeBetweenPings;
   }
 
-  private volatile int maximumTimeBetweenPings;
+  private final int maximumTimeBetweenPings;
 
   /**
    * A thread that validates client connections
@@ -128,22 +127,18 @@ public class ClientHealthMonitor {
       new HashMap<>();
 
   /**
-   * Gives, version-wise, the number of clients connected to the cache servers in this cache, which
+   * Gives the number of clients connected to the cache servers in this cache, which
    * are capable of processing received deltas.
-   *
-   * NOTE: It does not necessarily give the actual number of clients per version connected to the
-   * cache servers in this cache.
    *
    * @see CacheClientNotifier#addClientProxy(CacheClientProxy)
    */
-  AtomicIntegerArray numOfClientsPerVersion =
-      new AtomicIntegerArray(KnownVersion.HIGHEST_VERSION + 1);
+  AtomicInteger numberOfClientsWithConflationOff = new AtomicInteger(0);
 
   public long getMonitorInterval() {
     return monitorInterval;
   }
 
-  private long monitorInterval;
+  private final long monitorInterval;
 
   /**
    * Factory method to construct or return the singleton <code>ClientHealthMonitor</code> instance.
@@ -380,7 +375,7 @@ public class ClientHealthMonitor {
    *        ConnectionProxies may be from same client member or different. If it is null this would
    *        mean to fetch the Connections of all the ConnectionProxy objects.
    */
-  public Map<String, Object[]> getConnectedClients(Set filterProxies) {
+  public Map<String, Object[]> getConnectedClients(Set<ClientProxyMembershipID> filterProxies) {
     Map<String, Object[]> map = new HashMap<>(); // KEY=proxyID, VALUE=connectionCount (Integer)
     synchronized (proxyIdConnections) {
       for (Map.Entry<ClientProxyMembershipID, ServerConnectionCollection> entry : proxyIdConnections
@@ -665,16 +660,8 @@ public class ClientHealthMonitor {
     return cleanupTable;
   }
 
-  private int getNumberOfClientsAtOrAboveVersion(KnownVersion version) {
-    int number = 0;
-    for (int i = version.ordinal(); i < numOfClientsPerVersion.length(); i++) {
-      number += numOfClientsPerVersion.get(i);
-    }
-    return number;
-  }
-
   public boolean hasDeltaClients() {
-    return getNumberOfClientsAtOrAboveVersion(KnownVersion.OLDEST) > 0;
+    return numberOfClientsWithConflationOff.get() > 0;
   }
 
   private int getMaximumTimeBetweenPings(ClientProxyMembershipID proxyID) {

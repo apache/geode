@@ -169,7 +169,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
       // if running in a loner system, use the new port number in the ID to
       // help differentiate from other clients
       DistributionManager dm = ((InternalDistributedSystem) system).getDistributionManager();
-      InternalDistributedMember idm = dm.getDistributionManagerId();
+      final InternalDistributedMember idm = dm.getDistributionManagerId();
       synchronized (idm) {
         if (idm.getMembershipPort() == 0 && dm instanceof LonerDistributionManager) {
           int port = sock.getLocalPort();

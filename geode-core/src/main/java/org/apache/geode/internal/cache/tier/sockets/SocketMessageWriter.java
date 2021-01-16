@@ -19,6 +19,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Instantiator;
@@ -48,10 +50,10 @@ public class SocketMessageWriter {
 
     // get all the instantiators.
     Instantiator[] instantiators = InternalInstantiator.getInstantiators();
-    HashMap instantiatorMap = new HashMap();
+    Map<Integer, List<String>> instantiatorMap = new HashMap<>();
     if (instantiators != null && instantiators.length > 0) {
       for (Instantiator instantiator : instantiators) {
-        ArrayList instantiatorAttributes = new ArrayList();
+        List<String> instantiatorAttributes = new ArrayList<>();
         instantiatorAttributes.add(instantiator.getClass().toString().substring(6));
         instantiatorAttributes.add(instantiator.getInstantiatedClass().toString().substring(6));
         instantiatorMap.put(instantiator.getId(), instantiatorAttributes);
@@ -61,16 +63,15 @@ public class SocketMessageWriter {
 
     // get all the dataserializers.
     DataSerializer[] dataSerializers = InternalDataSerializer.getSerializers();
-    HashMap<Integer, ArrayList<String>> dsToSupportedClasses =
-        new HashMap<Integer, ArrayList<String>>();
-    HashMap<Integer, String> dataSerializersMap = new HashMap<Integer, String>();
+    HashMap<Integer, ArrayList<String>> dsToSupportedClasses = new HashMap<>();
+    HashMap<Integer, String> dataSerializersMap = new HashMap<>();
     if (dataSerializers != null && dataSerializers.length > 0) {
       for (DataSerializer dataSerializer : dataSerializers) {
         dataSerializersMap.put(dataSerializer.getId(),
             dataSerializer.getClass().toString().substring(6));
         if (clientVersion.isNotOlderThan(KnownVersion.GFE_6516)) {
-          ArrayList<String> supportedClassNames = new ArrayList<String>();
-          for (Class clazz : dataSerializer.getSupportedClasses()) {
+          ArrayList<String> supportedClassNames = new ArrayList<>();
+          for (Class<?> clazz : dataSerializer.getSupportedClasses()) {
             supportedClassNames.add(clazz.getName());
           }
           dsToSupportedClasses.put(dataSerializer.getId(), supportedClassNames);
@@ -84,6 +85,7 @@ public class SocketMessageWriter {
     if (clientVersion.isNotOlderThan(KnownVersion.GEODE_1_5_0)) {
       dos.writeInt(CLIENT_PING_TASK_PERIOD);
     }
+
     dos.flush();
   }
 
