@@ -24,7 +24,7 @@ public class CommandInitializerJUnitTest {
   public void testCommandMapContainsAllVersions() {
     for (KnownVersion version : KnownVersion.getAllVersions()) {
       org.junit.Assert.assertNotNull(
-          "Please add a commnd set for " + version + " of Geode to CommandInitializer",
+          "Please add a command set for " + version + " of Geode to CommandInitializer",
           CommandInitializer.getCommands(version));
     }
   }
