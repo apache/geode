@@ -69,19 +69,15 @@ public class SocketMessageWriter {
       for (DataSerializer dataSerializer : dataSerializers) {
         dataSerializersMap.put(dataSerializer.getId(),
             dataSerializer.getClass().toString().substring(6));
-        if (clientVersion.isNotOlderThan(KnownVersion.GFE_6516)) {
-          ArrayList<String> supportedClassNames = new ArrayList<>();
-          for (Class<?> clazz : dataSerializer.getSupportedClasses()) {
-            supportedClassNames.add(clazz.getName());
-          }
-          dsToSupportedClasses.put(dataSerializer.getId(), supportedClassNames);
+        ArrayList<String> supportedClassNames = new ArrayList<>();
+        for (Class<?> clazz : dataSerializer.getSupportedClasses()) {
+          supportedClassNames.add(clazz.getName());
         }
+        dsToSupportedClasses.put(dataSerializer.getId(), supportedClassNames);
       }
     }
     DataSerializer.writeHashMap(dataSerializersMap, dos);
-    if (clientVersion.isNotOlderThan(KnownVersion.GFE_6516)) {
-      DataSerializer.writeHashMap(dsToSupportedClasses, dos);
-    }
+    DataSerializer.writeHashMap(dsToSupportedClasses, dos);
     if (clientVersion.isNotOlderThan(KnownVersion.GEODE_1_5_0)) {
       dos.writeInt(CLIENT_PING_TASK_PERIOD);
     }

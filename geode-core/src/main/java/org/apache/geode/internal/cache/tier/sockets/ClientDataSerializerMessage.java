@@ -25,7 +25,6 @@ import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 public class ClientDataSerializerMessage extends ClientUpdateMessageImpl {
@@ -65,16 +64,6 @@ public class ClientDataSerializerMessage extends ClientUpdateMessageImpl {
    */
   @Override
   protected Message getMessage(CacheClientProxy proxy, byte[] latestValue) throws IOException {
-    if (proxy.getVersion().isNotOlderThan(KnownVersion.GFE_6516)) {
-      return getGFE6516Message(proxy.getVersion());
-    } else {
-      throw new IOException("Unsupported client version for server-to-client message creation: "
-          + proxy.getVersion());
-    }
-  }
-
-  private Message getGFE6516Message(KnownVersion clientVersion) {
-
     // The format:
     // part 0: serializer1 classname
     // part 1: serializer1 id
@@ -103,10 +92,8 @@ public class ClientDataSerializerMessage extends ClientUpdateMessageImpl {
       }
     }
     numOfParts += 1; // one for eventID
-    // this._logger.fine("Number of parts for ClientDataSerializerMessage: "
-    // + numOfParts + ", with eventID: " + this.getEventId());
 
-    final Message message = new Message(numOfParts, clientVersion);
+    final Message message = new Message(numOfParts, proxy.getVersion());
     // Set message type
     message.setMessageType(MessageType.REGISTER_DATASERIALIZERS);
     for (int i = 0; i < dsLength; i = i + 2) {
