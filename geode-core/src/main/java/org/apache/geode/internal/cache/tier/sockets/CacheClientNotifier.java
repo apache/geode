@@ -1870,23 +1870,18 @@ public class CacheClientNotifier {
         // Determine clients to ping
         for (CacheClientProxy proxy : getClientProxies()) {
           logger.debug("Checking whether to ping {}", proxy);
-          // Ping clients whose version is GE 6.6.2.2
-          if (proxy.getVersion().isNotOlderThan(KnownVersion.GFE_6622)) {
-            // Send the ping message directly to the client. Do not qo through
-            // the queue. If the queue were used, the secondary connection would
-            // not be pinged. Instead, pings would just build up in secondary
-            // queue and never be sent. The counter is used to help scalability.
-            // If normal messages are sent by the proxy, then the counter will
-            // be reset and no pings will be sent.
-            if (proxy.incrementAndGetPingCounter() >= CLIENT_PING_TASK_COUNTER) {
-              logger.debug("Pinging {}", proxy);
-              proxy.sendMessageDirectly(message);
-              logger.debug("Done pinging {}", proxy);
-            } else {
-              logger.debug("Not pinging because not idle: {}", proxy);
-            }
+          // Send the ping message directly to the client. Do not qo through
+          // the queue. If the queue were used, the secondary connection would
+          // not be pinged. Instead, pings would just build up in secondary
+          // queue and never be sent. The counter is used to help scalability.
+          // If normal messages are sent by the proxy, then the counter will
+          // be reset and no pings will be sent.
+          if (proxy.incrementAndGetPingCounter() >= CLIENT_PING_TASK_COUNTER) {
+            logger.debug("Pinging {}", proxy);
+            proxy.sendMessageDirectly(message);
+            logger.debug("Done pinging {}", proxy);
           } else {
-            logger.debug("Ignoring because of version: {}", proxy);
+            logger.debug("Not pinging because not idle: {}", proxy);
           }
         }
       }
