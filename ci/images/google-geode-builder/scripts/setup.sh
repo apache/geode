@@ -40,7 +40,9 @@ apt-get install -y --no-install-recommends \
     ca-certificates \
     cgroupfs-mount \
     docker-compose \
-    docker-ce \
+    containerd.io \
+    docker-ce="5:19.03.14~3-0~ubuntu-bionic" \
+    docker-ce-cli="5:19.03.14~3-0~ubuntu-bionic" \
     git \
     google-chrome-stable \
     htop \
