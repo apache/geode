@@ -417,7 +417,7 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
     CqListener[] cqListeners = {new CacheServerTestUtil.ControlCqListener()};
     cqf.initCqListeners(cqListeners);
     CqAttributes cqa = cqf.create();
-    return qs.newCq(cqName, cqQuery, cqa, durable, true);
+    return qs.newCq(cqName, cqQuery, cqa, durable, 2);
   }
 
   Pool getClientPool(String host, int serverPort, boolean establishCallbackConnection) {

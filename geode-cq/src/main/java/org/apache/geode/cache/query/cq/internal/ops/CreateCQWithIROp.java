@@ -37,13 +37,13 @@ public class CreateCQWithIROp {
    * @param cqState int cqState to be set.
    * @param isDurable true if CQ is durable
    * @param regionDataPolicy the data policy ordinal of the region
-   * @param suppressUpdate true if update is suppressed
+   * @param suppressNotification int bitmask of notifications that are suppressed
    */
   public static SelectResults execute(ExecutablePool pool, String cqName, String queryStr,
-      int cqState, boolean isDurable, byte regionDataPolicy, boolean suppressUpdate) {
+      int cqState, boolean isDurable, byte regionDataPolicy, int suppressNotification) {
     AbstractOp op =
         new CreateCQWithIROpImpl(cqName, queryStr, cqState, isDurable, regionDataPolicy,
-            suppressUpdate);
+            suppressNotification);
     return (SelectResults) pool.executeOnQueuesAndReturnPrimaryResult(op);
   }
 
@@ -59,7 +59,7 @@ public class CreateCQWithIROp {
      * @throws org.apache.geode.SerializationException if serialization fails
      */
     public CreateCQWithIROpImpl(String cqName, String queryStr, int cqState, boolean isDurable,
-        byte regionDataPolicy, boolean suppressUpdate) {
+        byte regionDataPolicy, int suppressNotification) {
       super(MessageType.EXECUTECQ_WITH_IR_MSG_TYPE, 6);
       getMessage().addStringPart(cqName);
       getMessage().addStringPart(queryStr);
@@ -69,10 +69,7 @@ public class CreateCQWithIROp {
         getMessage().addBytesPart(new byte[] {durableByte});
       }
       getMessage().addBytesPart(new byte[] {regionDataPolicy});
-      {
-        byte suppressByte = (byte) (suppressUpdate ? 0x01 : 0x00);
-        getMessage().addBytesPart(new byte[] {suppressByte});
-      }
+      getMessage().addIntPart(suppressNotification);
     }
 
     @Override

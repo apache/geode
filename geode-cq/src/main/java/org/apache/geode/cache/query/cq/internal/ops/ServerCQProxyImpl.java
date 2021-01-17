@@ -57,7 +57,7 @@ public class ServerCQProxyImpl extends ServerProxy {
     byte regionDataPolicyOrdinal = cq.getCqBaseRegion() == null ? (byte) 0
         : cq.getCqBaseRegion().getAttributes().getDataPolicy().ordinal;
     return CreateCQOp.execute(this.pool, cq.getName(), cq.getQueryString(), CqStateImpl.RUNNING,
-        cq.isDurable(), regionDataPolicyOrdinal, cq.isUpdateSuppressed());
+        cq.isDurable(), regionDataPolicyOrdinal, cq.getSuppressNotificationBitMask());
   }
 
   /**
@@ -71,10 +71,10 @@ public class ServerCQProxyImpl extends ServerProxy {
    * @param regionDataPolicy the data policy ordinal of the region
    */
   public void createOn(String cqName, Connection conn, String queryStr, int cqState,
-      boolean isDurable, byte regionDataPolicy, boolean suppressUpdate) {
+      boolean isDurable, byte regionDataPolicy, int suppressNotification) {
 
     CreateCQOp.executeOn(this.pool, conn, cqName, queryStr, cqState, isDurable, regionDataPolicy,
-        suppressUpdate);
+        suppressNotification);
   }
 
   /**
@@ -87,7 +87,8 @@ public class ServerCQProxyImpl extends ServerProxy {
     byte regionDataPolicyOrdinal = cq.getCqBaseRegion() == null ? (byte) 0
         : cq.getCqBaseRegion().getAttributes().getDataPolicy().ordinal;
     return CreateCQWithIROp.execute(this.pool, cq.getName(), cq.getQueryString(),
-        CqStateImpl.RUNNING, cq.isDurable(), regionDataPolicyOrdinal, cq.isUpdateSuppressed());
+        CqStateImpl.RUNNING, cq.isDurable(), regionDataPolicyOrdinal,
+        cq.getSuppressNotificationBitMask());
   }
 
   /**

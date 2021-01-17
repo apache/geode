@@ -569,7 +569,11 @@ public interface QueryService {
    * @param queryString the OQL query
    * @param cqAttr the CqAttributes
    * @param isDurable true if the CQ is durable
-   * @param suppressUpdate true if update is suppressed
+   * @param suppressNotification bitmask of notifications that are suppressed:
+   *        b0 - if set to 1 - suppress create notification
+   *        b1 - if set to 1 - suppress update notification
+   *        b2 - if set to 1 - suppress destroy notification
+   *
    * @return the newly created CqQuery object
    * @throws IllegalArgumentException if queryString or cqAttr is null.
    * @throws IllegalStateException if this method is called from a cache server.
@@ -580,7 +584,8 @@ public interface QueryService {
    *         supported, and it must be a region path. Bind parameters in the query are not yet
    *         supported.
    */
-  CqQuery newCq(String queryString, CqAttributes cqAttr, boolean isDurable, boolean suppressUpdate)
+  CqQuery newCq(String queryString, CqAttributes cqAttr, boolean isDurable,
+      int suppressNotification)
       throws QueryInvalidException, CqException;
 
   /**
@@ -644,7 +649,11 @@ public interface QueryService {
    * @param queryString the OQL query
    * @param cqAttr the CqAttributes
    * @param isDurable true if the CQ is durable
-   * @param suppressUpdate true if update is suppressed
+   * @param suppressNotification bitmask of notifications that are suppressed:
+   *        b0 - if set to 1 - suppress create notification
+   *        b1 - if set to 1 - suppress update notification
+   *        b2 - if set to 1 - suppress destroy notification
+   *
    * @return the newly created CqQuery object
    * @throws CqExistsException if a CQ by this name already exists on this client
    * @throws IllegalArgumentException if queryString or cqAttr is null.
@@ -658,7 +667,7 @@ public interface QueryService {
    *
    */
   CqQuery newCq(String name, String queryString, CqAttributes cqAttr, boolean isDurable,
-      boolean suppressUpdate)
+      int suppressNotification)
       throws QueryInvalidException, CqExistsException, CqException;
 
 

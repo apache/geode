@@ -43,7 +43,7 @@ public class MissingCqService implements CqService {
 
   @Override
   public ClientCQ newCq(String cqName, String queryString, CqAttributes cqAttributes,
-      InternalPool serverProxy, boolean isDurable, boolean suppressUpdate)
+      InternalPool serverProxy, boolean isDurable, int suppressNotification)
       throws QueryInvalidException, CqExistsException, CqException {
     throw new IllegalStateException("CqService is not available.");
   }
@@ -177,7 +177,8 @@ public class MissingCqService implements CqService {
   @Override
   public ServerCQ executeCq(String cqName, String queryString, int cqState,
       ClientProxyMembershipID clientProxyId, CacheClientNotifier ccn, boolean isDurable,
-      boolean manageEmptyRegions, int regionDataPolicy, Map emptyRegionsMap, boolean suppressUpdate)
+      boolean manageEmptyRegions, int regionDataPolicy, Map emptyRegionsMap,
+      int suppressNotification)
       throws CqException, RegionNotFoundException, CqClosedException {
     throw new IllegalStateException("CqService is not available.");
   }

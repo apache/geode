@@ -89,11 +89,9 @@ public class ExecuteCQ61 extends BaseCQCommand {
     }
     Part regionDataPolicyPart = clientMessage.getPart(indexOfRegionDataPolicy);
     byte[] regionDataPolicyPartBytes = regionDataPolicyPart.getSerializedForm();
-    boolean suppressUpdate = false;
+    int suppressNotification = 0;
     if (clientMessage.getNumberOfParts() > 5) {
-      Part suppressUpdatePart = clientMessage.getPart(clientMessage.getNumberOfParts() - 1);
-      byte[] suppressUpdateByte = suppressUpdatePart.getSerializedForm();
-      suppressUpdate = !(suppressUpdateByte == null || suppressUpdateByte[0] == 0);
+      suppressNotification = clientMessage.getPart(clientMessage.getNumberOfParts() - 1).getInt();
     }
 
     if (logger.isDebugEnabled()) {
@@ -160,7 +158,7 @@ public class ExecuteCQ61 extends BaseCQCommand {
       // registering cq auth before as possibility that you may get event
       serverConnection.setCq(cqName, isDurable);
       cqQuery = (ServerCQImpl) cqServiceForExec.executeCq(cqName, cqQueryString, cqState, id, ccn,
-          isDurable, true, regionDataPolicyPartBytes[0], null, suppressUpdate);
+          isDurable, true, regionDataPolicyPartBytes[0], null, suppressNotification);
     } catch (CqException cqe) {
       sendCqResponse(MessageType.CQ_EXCEPTION_TYPE, "", clientMessage.getTransactionId(), cqe,
           serverConnection);

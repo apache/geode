@@ -49,7 +49,11 @@ public interface CqService {
    * @param queryString the OQL query
    * @param cqAttributes the CqAttributes
    * @param isDurable true if the CQ is durable
-   * @param suppressUpdate true if the update is suppressed
+   * @param suppressNotification bitmask of notifications that are suppressed:
+   *        b0 - if set to 1 - suppress create notification
+   *        b1 - if set to 1 - suppress update notification
+   *        b2 - if set to 1 - suppress destroy notification
+   *
    * @return the newly created CqQuery object
    * @throws CqExistsException if a CQ by this name already exists on this client
    * @throws IllegalArgumentException if queryString or cqAttr is null
@@ -63,7 +67,7 @@ public interface CqService {
    *
    */
   ClientCQ newCq(String cqName, String queryString, CqAttributes cqAttributes, InternalPool pool,
-      boolean isDurable, boolean suppressUpdate)
+      boolean isDurable, int suppressNotification)
       throws QueryInvalidException, CqExistsException, CqException;
 
   /**
@@ -220,12 +224,13 @@ public interface CqService {
    * @param regionDataPolicy the data policy of the region associated with the query. This is only
    *        needed if manageEmptyRegions is true.
    * @param emptyRegionsMap map of empty regions.
-   * @param suppressUpdate true if the update is suppressed.
+   * @param suppressNotification int bitmask of notifications that are suppressed
    * @throws IllegalStateException if this is called at client side.
    */
   ServerCQ executeCq(String cqName, String queryString, int cqState,
       ClientProxyMembershipID clientProxyId, CacheClientNotifier ccn, boolean isDurable,
-      boolean manageEmptyRegions, int regionDataPolicy, Map emptyRegionsMap, boolean suppressUpdate)
+      boolean manageEmptyRegions, int regionDataPolicy, Map emptyRegionsMap,
+      int suppressNotification)
       throws CqException, RegionNotFoundException, CqClosedException;
 
   /**

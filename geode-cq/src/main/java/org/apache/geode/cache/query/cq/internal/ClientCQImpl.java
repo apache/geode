@@ -61,8 +61,8 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
 
   public ClientCQImpl(CqServiceImpl cqService, String cqName, String queryString,
       CqAttributes cqAttributes, ServerCQProxyImpl serverProxy, boolean isDurable,
-      boolean suppressUpdate) {
-    super(cqService, cqName, queryString, isDurable, suppressUpdate);
+      int suppressNotification) {
+    super(cqService, cqName, queryString, isDurable, suppressNotification);
     this.cqAttributes = cqAttributes;
     this.cqProxy = serverProxy;
   }
@@ -572,6 +572,6 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
 
     int state = this.cqState.getState();
     this.cqProxy.createOn(getName(), conn, getQueryString(), state, isDurable,
-        regionDataPolicyOrdinal, isUpdateSuppressed());
+        regionDataPolicyOrdinal, getSuppressNotificationBitMask());
   }
 }

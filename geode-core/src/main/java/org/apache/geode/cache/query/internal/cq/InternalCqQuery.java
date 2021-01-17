@@ -82,5 +82,13 @@ public interface InternalCqQuery extends CqQuery {
   void stop() throws CqClosedException, CqException;
 
   @Override
+  boolean isCreateSuppressed();
+
+  @Override
   boolean isUpdateSuppressed();
+
+  @Override
+  boolean isDestroySuppressed();
+
+  int getSuppressNotificationBitMask();
 }

@@ -535,7 +535,7 @@ public class DefaultQueryService implements InternalQueryService {
     ClientCQ cq = null;
     try {
       cq = (ClientCQ) getCqService().newCq(null, queryString, cqAttributes, this.pool, false,
-          false);
+          0);
     } catch (CqExistsException cqe) {
       // Should not throw in here.
       if (logger.isDebugEnabled()) {
@@ -568,7 +568,7 @@ public class DefaultQueryService implements InternalQueryService {
     ClientCQ cq = null;
     try {
       cq = (ClientCQ) getCqService().newCq(null, queryString, cqAttributes, this.pool, isDurable,
-          false);
+          0);
     } catch (CqExistsException cqe) {
       // Should not throw in here.
       if (logger.isDebugEnabled()) {
@@ -585,7 +585,11 @@ public class DefaultQueryService implements InternalQueryService {
    * @param queryString the OQL query
    * @param cqAttributes the CqAttributes
    * @param isDurable true if the CQ is durable
-   * @param suppressUpdate true if update is suppressed
+   * @param suppressNotification bitmask of notifications that are suppressed:
+   *        b0 - if set to 1 - suppress create notification
+   *        b1 - if set to 1 - suppress update notification
+   *        b2 - if set to 1 - suppress destroy notification
+   *
    * @return the newly created CqQuery object
    * @throws IllegalArgumentException if queryString or cqAttr is null
    * @throws IllegalStateException if this method is called from a cache server
@@ -598,12 +602,12 @@ public class DefaultQueryService implements InternalQueryService {
    */
   @Override
   public CqQuery newCq(String queryString, CqAttributes cqAttributes, boolean isDurable,
-      boolean suppressUpdate)
+      int suppressNotification)
       throws QueryInvalidException, CqException {
     ClientCQ cq = null;
     try {
       cq = (ClientCQ) getCqService().newCq(null, queryString, cqAttributes, this.pool, isDurable,
-          suppressUpdate);
+          suppressNotification);
     } catch (CqExistsException cqe) {
       // Should not throw in here.
       if (logger.isDebugEnabled()) {
@@ -641,7 +645,7 @@ public class DefaultQueryService implements InternalQueryService {
           "cqName must not be null");
     }
     ClientCQ cq =
-        (ClientCQ) getCqService().newCq(cqName, queryString, cqAttributes, this.pool, false, false);
+        (ClientCQ) getCqService().newCq(cqName, queryString, cqAttributes, this.pool, false, 0);
     return cq;
   }
 
@@ -674,7 +678,7 @@ public class DefaultQueryService implements InternalQueryService {
     }
     ClientCQ cq =
         (ClientCQ) getCqService().newCq(cqName, queryString, cqAttributes, this.pool, isDurable,
-            false);
+            0);
     return cq;
   }
 
@@ -687,7 +691,11 @@ public class DefaultQueryService implements InternalQueryService {
    * @param queryString the OQL query
    * @param cqAttributes the CqAttributes
    * @param isDurable true if the CQ is durable
-   * @param suppressUpdate true if update is suppressed
+   * @param suppressNotification bitmask of notifications that are suppressed:
+   *        b0 - if set to 1 - suppress create notification
+   *        b1 - if set to 1 - suppress update notification
+   *        b2 - if set to 1 - suppress destroy notification
+   *
    * @return the newly created CqQuery object
    * @throws CqExistsException if a CQ by this name already exists on this client
    * @throws IllegalArgumentException if queryString or cqAttr is null
@@ -701,7 +709,7 @@ public class DefaultQueryService implements InternalQueryService {
    */
   @Override
   public CqQuery newCq(String cqName, String queryString, CqAttributes cqAttributes,
-      boolean isDurable, boolean suppressUpdate)
+      boolean isDurable, int suppressNotification)
       throws QueryInvalidException, CqExistsException, CqException {
     if (cqName == null) {
       throw new IllegalArgumentException(
@@ -709,7 +717,7 @@ public class DefaultQueryService implements InternalQueryService {
     }
     ClientCQ cq =
         (ClientCQ) getCqService().newCq(cqName, queryString, cqAttributes, this.pool, isDurable,
-            suppressUpdate);
+            suppressNotification);
     return cq;
   }
 

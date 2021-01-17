@@ -2067,7 +2067,7 @@ public class CacheCreation implements InternalCache {
 
       @Override
       public CqQuery newCq(String queryString, CqAttributes cqAttr, boolean isDurable,
-          boolean suppressUpdate)
+          int suppressNotification)
           throws QueryInvalidException {
         throw new UnsupportedOperationException("Should not be invoked");
       }
@@ -2086,7 +2086,7 @@ public class CacheCreation implements InternalCache {
 
       @Override
       public CqQuery newCq(String name, String queryString, CqAttributes cqAttr, boolean isDurable,
-          boolean suppressUpdate)
+          int suppressNotification)
           throws QueryInvalidException {
         throw new UnsupportedOperationException("Should not be invoked");
       }

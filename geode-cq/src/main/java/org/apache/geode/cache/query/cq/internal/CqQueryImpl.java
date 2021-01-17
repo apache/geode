@@ -68,7 +68,7 @@ public abstract class CqQueryImpl implements InternalCqQuery {
 
   protected boolean isDurable = false;
 
-  protected boolean suppressUpdate = false;
+  protected int suppressNotification = 0;
 
   /** Stats counters */
   private CqStatisticsImpl cqStats;
@@ -87,13 +87,13 @@ public abstract class CqQueryImpl implements InternalCqQuery {
   public CqQueryImpl() {}
 
   public CqQueryImpl(CqServiceImpl cqService, String cqName, String queryString,
-      boolean isDurable, boolean suppressUpdate) {
+      boolean isDurable, int suppressNotification) {
     this.cqName = cqName;
     this.queryString = queryString;
     this.securityLogWriter = (InternalLogWriter) cqService.getCache().getSecurityLoggerI18n();
     this.cqService = cqService;
     this.isDurable = isDurable;
-    this.suppressUpdate = suppressUpdate;
+    this.suppressNotification = suppressNotification;
   }
 
   /**
@@ -364,14 +364,40 @@ public abstract class CqQueryImpl implements InternalCqQuery {
   }
 
   /**
+   * Return true if the CQ use option to suppress CQ create notification.
+   *
+   * @return true if create is suppressed, false otherwise
+   */
+  @Override
+  public boolean isCreateSuppressed() {
+    return ((suppressNotification & 1) != 0);
+  }
+
+  /**
    * Return true if the CQ use option to suppress CQ update notification.
    *
    * @return true if update is suppressed, false otherwise
    */
   @Override
   public boolean isUpdateSuppressed() {
-    return suppressUpdate;
+    return ((suppressNotification & 2) != 0);
   }
+
+  /**
+   * Return true if the CQ use option to suppress CQ destroy notification.
+   *
+   * @return true if destroy is suppressed, false otherwise
+   */
+  @Override
+  public boolean isDestroySuppressed() {
+    return ((suppressNotification & 4) != 0);
+  }
+
+  @Override
+  public int getSuppressNotificationBitMask() {
+    return suppressNotification;
+  };
+
 
   /**
    * Returns a reference to VSD stats of the CQ

@@ -75,8 +75,8 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
   private Long filterID;
 
   public ServerCQImpl(CqServiceImpl cqService, String cqName, String queryString, boolean isDurable,
-      String serverCqName, boolean suppressUpdate) {
-    super(cqService, cqName, queryString, isDurable, suppressUpdate);
+      String serverCqName, int suppressNotification) {
+    super(cqService, cqName, queryString, isDurable, suppressNotification);
     this.serverCqName = serverCqName; // On Client Side serverCqName and cqName will be same.
   }
 
@@ -472,9 +472,9 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
     this.queryString = DataSerializer.readString(in);
     this.filterID = in.readLong();
     if (StaticSerialization.getVersionForDataStream(in).isNotOlderThan(KnownVersion.GEODE_1_14_0)) {
-      this.suppressUpdate = DataSerializer.readBoolean(in);
+      this.suppressNotification = DataSerializer.readInteger(in);
     } else {
-      this.suppressUpdate = false;
+      this.suppressNotification = 0;
     }
   }
 
@@ -484,7 +484,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
     DataSerializer.writeBoolean(this.isDurable, out);
     DataSerializer.writeString(this.queryString, out);
     out.writeLong(this.filterID);
-    DataSerializer.writeBoolean(this.suppressUpdate, out);
+    DataSerializer.writeInteger(this.suppressNotification, out);
   }
 
   @Override

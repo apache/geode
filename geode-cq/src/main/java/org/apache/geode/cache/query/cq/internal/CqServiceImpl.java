@@ -190,7 +190,7 @@ public class CqServiceImpl implements CqService {
 
   @Override
   public synchronized ClientCQ newCq(String cqName, String queryString, CqAttributes cqAttributes,
-      InternalPool pool, boolean isDurable, boolean suppressUpdate)
+      InternalPool pool, boolean isDurable, int suppressNotification)
       throws QueryInvalidException, CqExistsException, CqException {
     if (queryString == null) {
       throw new IllegalArgumentException(
@@ -213,11 +213,16 @@ public class CqServiceImpl implements CqService {
               cqName));
     }
 
+    suppressNotification = suppressNotification & 7;
+
+    if (suppressNotification == 7) {
+      throw new IllegalArgumentException("Not allowed to suppress notifications for all requests.");
+    }
 
     ServerCQProxyImpl serverProxy = pool == null ? null : new ServerCQProxyImpl(pool);
     ClientCQImpl cQuery =
         new ClientCQImpl(this, cqName, queryString, cqAttributes, serverProxy, isDurable,
-            suppressUpdate);
+            suppressNotification);
     cQuery.updateCqCreateStats();
 
     // cQuery.initCq();
@@ -260,12 +265,14 @@ public class CqServiceImpl implements CqService {
    * @param regionDataPolicy the data policy of the region associated with the query. This is only
    *        needed if manageEmptyRegions is true.
    * @param emptyRegionsMap map of empty regions.
+   * @param suppressNotification int bitmask of notifications that are suppressed
    * @throws IllegalStateException if this is called at client side.
    */
   @Override
   public synchronized ServerCQ executeCq(String cqName, String queryString, int cqState,
       ClientProxyMembershipID clientProxyId, CacheClientNotifier ccn, boolean isDurable,
-      boolean manageEmptyRegions, int regionDataPolicy, Map emptyRegionsMap, boolean suppressUpdate)
+      boolean manageEmptyRegions, int regionDataPolicy, Map emptyRegionsMap,
+      int suppressNotification)
       throws CqException, RegionNotFoundException, CqClosedException {
     if (!isServer()) {
       throw new IllegalStateException(
@@ -279,7 +286,7 @@ public class CqServiceImpl implements CqService {
     // If this CQ is not yet registered in Server, register CQ.
     if (!isCqExists(serverCqName)) {
       cQuery = new ServerCQImpl(this, cqName, queryString, isDurable,
-          constructServerCqName(cqName, clientProxyId), suppressUpdate);
+          constructServerCqName(cqName, clientProxyId), suppressNotification);
 
       try {
         cQuery.registerCq(clientProxyId, ccn, cqState);
@@ -1466,7 +1473,17 @@ public class CqServiceImpl implements CqService {
         }
 
         if (cqEvent != null && cQuery.isRunning()) {
-          if (!cQuery.isUpdateSuppressed() || !cqEvent.equals(MESSAGE_TYPE_LOCAL_UPDATE)) {
+
+          boolean notify = true;
+          if (cqEvent.equals(MESSAGE_TYPE_LOCAL_CREATE) && cQuery.isCreateSuppressed()) {
+            notify = false;
+          } else if (cqEvent.equals(MESSAGE_TYPE_LOCAL_UPDATE) && cQuery.isUpdateSuppressed()) {
+            notify = false;
+          } else if (cqEvent.equals(MESSAGE_TYPE_LOCAL_DESTROY) && cQuery.isDestroySuppressed()) {
+            notify = false;
+          }
+
+          if (notify) {
             if (isDebugEnabled) {
               logger.debug("Added event to CQ with client-side name: {} key: {} operation : {}",
                   cQuery.cqName, eventKey, cqEvent);
