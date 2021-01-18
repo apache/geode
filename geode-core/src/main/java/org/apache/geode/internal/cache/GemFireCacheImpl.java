@@ -580,7 +580,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   private final Function<InternalCache, String> typeRegistryGetPdxDiskStoreName;
   private final Consumer<PdxSerializer> typeRegistrySetPdxSerializer;
   private final TypeRegistryFactory typeRegistryFactory;
-  private final Consumer<org.apache.geode.cache.execute.Function> functionServiceRegisterFunction;
+  private final Consumer<org.apache.geode.cache.execute.Function<?>> functionServiceRegisterFunction;
   private final Function<Object, SystemTimer> systemTimerFactory;
   private final ReplyProcessor21Factory replyProcessor21Factory;
 
@@ -725,7 +725,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private List<File> backupFiles = emptyList();
 
-  private ConcurrentMap<String, CountDownLatch> diskStoreLatches = new ConcurrentHashMap();
+  private final ConcurrentMap<String, CountDownLatch> diskStoreLatches = new ConcurrentHashMap<>();
 
   static {
     // this works around jdk bug 6427854
@@ -933,7 +933,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       Consumer<PdxSerializer> typeRegistrySetPdxSerializer,
       TypeRegistryFactory typeRegistryFactory,
       Consumer<Integer> haRegionQueueSetMessageSyncInterval,
-      Consumer<org.apache.geode.cache.execute.Function> functionServiceRegisterFunction,
+      Consumer<org.apache.geode.cache.execute.Function<?>> functionServiceRegisterFunction,
       Function<Object, SystemTimer> systemTimerFactory,
       Function<InternalCache, TombstoneService> tombstoneServiceFactory,
       Function<InternalDistributedSystem, ExpirationScheduler> expirationSchedulerFactory,
@@ -1448,7 +1448,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       initializeDeclarativeCache();
       completedCacheXml = true;
     } catch (Throwable throwable) {
-      logger.error("Cache initialization for " + this.toString() + " failed because:", throwable);
+      logger.error("Cache initialization for " + toString() + " failed because:", throwable);
       throw throwable;
     } finally {
       if (!completedCacheXml) {
@@ -1882,8 +1882,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
           // lock all the primary buckets
           Set<Entry<Integer, BucketRegion>> bucketEntries = dataStore.getAllLocalBuckets();
-          for (Entry e : bucketEntries) {
-            BucketRegion bucket = (BucketRegion) e.getValue();
+          for (Entry<Integer, BucketRegion> e : bucketEntries) {
+            BucketRegion bucket = e.getValue();
             if (bucket == null || bucket.isDestroyed) {
               // bucket region could be destroyed in race condition
               continue;
@@ -1931,8 +1931,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           // bucketMaps and exclude the items whose idm is no longer online
           Set<InternalDistributedMember> membersToPersistOfflineEqual =
               partitionedRegion.getRegionAdvisor().adviseDataStore();
-          for (Entry e : bucketEntries) {
-            BucketRegion bucket = (BucketRegion) e.getValue();
+          for (Entry<Integer, BucketRegion> e : bucketEntries) {
+            BucketRegion bucket = e.getValue();
             if (bucket == null || bucket.isDestroyed) {
               // bucket region could be destroyed in race condition
               continue;
@@ -2755,7 +2755,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   @Override
-  public Set<DistributedMember> getMembers(Region region) {
+  public Set<DistributedMember> getMembers(@SuppressWarnings("rawtypes") Region region) {
     if (region instanceof DistributedRegion) {
       DistributedRegion distributedRegion = (DistributedRegion) region;
       return uncheckedCast(distributedRegion.getDistributionAdvisor().adviseCacheOp());
@@ -2993,7 +2993,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           .setImageTarget(null);
 
       if (attrs instanceof UserSpecifiedRegionAttributes) {
-        ira.setIndexes(((UserSpecifiedRegionAttributes) attrs).getIndexes());
+        ira.setIndexes(((UserSpecifiedRegionAttributes<?, ?>) attrs).getIndexes());
       }
       return createVMRegion(name, attrs, ira);
     } catch (IOException | ClassNotFoundException e) {
@@ -3200,8 +3200,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         if (dataStore != null) {
           Set<Entry<Integer, BucketRegion>> bucketEntries =
               partitionedRegion.getDataStore().getAllLocalBuckets();
-          for (Entry entry : bucketEntries) {
-            result.add((InternalRegion) entry.getValue());
+          for (Entry<Integer, BucketRegion> entry : bucketEntries) {
+            result.add(entry.getValue());
           }
         }
       } else if (region instanceof InternalRegion) {
@@ -3969,7 +3969,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     boolean hasColocatedRegion = false;
     for (PartitionedRegion pr : prMap.values()) {
       List<PartitionedRegion> childList = getColocatedChildRegions(pr);
-      if (childList != null && !childList.isEmpty()) {
+      if (!childList.isEmpty()) {
         hasColocatedRegion = true;
         break;
       }
@@ -4525,43 +4525,43 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     for (RegionShortcut shortcut : RegionShortcut.values()) {
       switch (shortcut) {
         case PARTITION: {
-          AttributesFactory<?, ?> af = new AttributesFactory();
+          AttributesFactory<?, ?> af = new AttributesFactory<>();
           af.setDataPolicy(DataPolicy.PARTITION);
-          PartitionAttributesFactory paf = new PartitionAttributesFactory();
+          PartitionAttributesFactory<?, ?> paf = new PartitionAttributesFactory<>();
           af.setPartitionAttributes(paf.create());
           cache.setRegionAttributes(shortcut.toString(), af.create());
           break;
         }
         case PARTITION_REDUNDANT: {
-          AttributesFactory<?, ?> af = new AttributesFactory();
+          AttributesFactory<?, ?> af = new AttributesFactory<>();
           af.setDataPolicy(DataPolicy.PARTITION);
-          PartitionAttributesFactory paf = new PartitionAttributesFactory();
+          PartitionAttributesFactory<?, ?> paf = new PartitionAttributesFactory<>();
           paf.setRedundantCopies(1);
           af.setPartitionAttributes(paf.create());
           cache.setRegionAttributes(shortcut.toString(), af.create());
           break;
         }
         case PARTITION_PERSISTENT: {
-          AttributesFactory<?, ?> af = new AttributesFactory();
+          AttributesFactory<?, ?> af = new AttributesFactory<>();
           af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
-          PartitionAttributesFactory paf = new PartitionAttributesFactory();
+          PartitionAttributesFactory<?, ?> paf = new PartitionAttributesFactory<>();
           af.setPartitionAttributes(paf.create());
           cache.setRegionAttributes(shortcut.toString(), af.create());
           break;
         }
         case PARTITION_REDUNDANT_PERSISTENT: {
-          AttributesFactory<?, ?> af = new AttributesFactory();
+          AttributesFactory<?, ?> af = new AttributesFactory<>();
           af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
-          PartitionAttributesFactory paf = new PartitionAttributesFactory();
+          PartitionAttributesFactory<?, ?> paf = new PartitionAttributesFactory<>();
           paf.setRedundantCopies(1);
           af.setPartitionAttributes(paf.create());
           cache.setRegionAttributes(shortcut.toString(), af.create());
           break;
         }
         case PARTITION_OVERFLOW: {
-          AttributesFactory<?, ?> af = new AttributesFactory();
+          AttributesFactory<?, ?> af = new AttributesFactory<>();
           af.setDataPolicy(DataPolicy.PARTITION);
-          PartitionAttributesFactory paf = new PartitionAttributesFactory();
+          PartitionAttributesFactory<?, ?> paf = new PartitionAttributesFactory<>();
           af.setPartitionAttributes(paf.create());
           af.setEvictionAttributes(
               EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK));
@@ -4569,9 +4569,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           break;
         }
         case PARTITION_REDUNDANT_OVERFLOW: {
-          AttributesFactory<?, ?> af = new AttributesFactory();
+          AttributesFactory<?, ?> af = new AttributesFactory<>();
           af.setDataPolicy(DataPolicy.PARTITION);
-          PartitionAttributesFactory paf = new PartitionAttributesFactory();
+          PartitionAttributesFactory<?, ?> paf = new PartitionAttributesFactory<>();
           paf.setRedundantCopies(1);
           af.setPartitionAttributes(paf.create());
           af.setEvictionAttributes(
@@ -4580,9 +4580,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           break;
         }
         case PARTITION_PERSISTENT_OVERFLOW: {
-          AttributesFactory<?, ?> af = new AttributesFactory();
+          AttributesFactory<?, ?> af = new AttributesFactory<>();
           af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
-          PartitionAttributesFactory paf = new PartitionAttributesFactory();
+          PartitionAttributesFactory<?, ?> paf = new PartitionAttributesFactory<>();
           af.setPartitionAttributes(paf.create());
           af.setEvictionAttributes(
               EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK));
@@ -4590,9 +4590,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           break;
         }
         case PARTITION_REDUNDANT_PERSISTENT_OVERFLOW: {
-          AttributesFactory<?, ?> af = new AttributesFactory();
+          AttributesFactory<?, ?> af = new AttributesFactory<>();
           af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
-          PartitionAttributesFactory paf = new PartitionAttributesFactory();
+          PartitionAttributesFactory<?, ?> paf = new PartitionAttributesFactory<>();
           paf.setRedundantCopies(1);
           af.setPartitionAttributes(paf.create());
           af.setEvictionAttributes(
@@ -4601,18 +4601,18 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           break;
         }
         case PARTITION_HEAP_LRU: {
-          AttributesFactory<?, ?> af = new AttributesFactory();
+          AttributesFactory<?, ?> af = new AttributesFactory<>();
           af.setDataPolicy(DataPolicy.PARTITION);
-          PartitionAttributesFactory paf = new PartitionAttributesFactory();
+          PartitionAttributesFactory<?, ?> paf = new PartitionAttributesFactory<>();
           af.setPartitionAttributes(paf.create());
           af.setEvictionAttributes(EvictionAttributes.createLRUHeapAttributes());
           cache.setRegionAttributes(shortcut.toString(), af.create());
           break;
         }
         case PARTITION_REDUNDANT_HEAP_LRU: {
-          AttributesFactory<?, ?> af = new AttributesFactory();
+          AttributesFactory<?, ?> af = new AttributesFactory<>();
           af.setDataPolicy(DataPolicy.PARTITION);
-          PartitionAttributesFactory paf = new PartitionAttributesFactory();
+          PartitionAttributesFactory<?, ?> paf = new PartitionAttributesFactory<>();
           paf.setRedundantCopies(1);
           af.setPartitionAttributes(paf.create());
           af.setEvictionAttributes(EvictionAttributes.createLRUHeapAttributes());
@@ -4620,21 +4620,21 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           break;
         }
         case REPLICATE: {
-          AttributesFactory<?, ?> af = new AttributesFactory();
+          AttributesFactory<?, ?> af = new AttributesFactory<>();
           af.setDataPolicy(DataPolicy.REPLICATE);
           af.setScope(Scope.DISTRIBUTED_ACK);
           cache.setRegionAttributes(shortcut.toString(), af.create());
           break;
         }
         case REPLICATE_PERSISTENT: {
-          AttributesFactory<?, ?> af = new AttributesFactory();
+          AttributesFactory<?, ?> af = new AttributesFactory<>();
           af.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
           af.setScope(Scope.DISTRIBUTED_ACK);
           cache.setRegionAttributes(shortcut.toString(), af.create());
           break;
         }
         case REPLICATE_OVERFLOW: {
-          AttributesFactory<?, ?> af = new AttributesFactory();
+          AttributesFactory<?, ?> af = new AttributesFactory<>();
           af.setDataPolicy(DataPolicy.REPLICATE);
           af.setScope(Scope.DISTRIBUTED_ACK);
           af.setEvictionAttributes(
@@ -4643,7 +4643,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           break;
         }
         case REPLICATE_PERSISTENT_OVERFLOW: {
-          AttributesFactory<?, ?> af = new AttributesFactory();
+          AttributesFactory<?, ?> af = new AttributesFactory<>();
           af.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
           af.setScope(Scope.DISTRIBUTED_ACK);
           af.setEvictionAttributes(
@@ -4652,7 +4652,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           break;
         }
         case REPLICATE_HEAP_LRU: {
-          AttributesFactory<?, ?> af = new AttributesFactory();
+          AttributesFactory<?, ?> af = new AttributesFactory<>();
           af.setDataPolicy(DataPolicy.REPLICATE);
           af.setScope(Scope.DISTRIBUTED_ACK);
           af.setEvictionAttributes(EvictionAttributes.createLRUHeapAttributes());
@@ -4660,21 +4660,21 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           break;
         }
         case LOCAL: {
-          AttributesFactory<?, ?> af = new AttributesFactory();
+          AttributesFactory<?, ?> af = new AttributesFactory<>();
           af.setDataPolicy(DataPolicy.NORMAL);
           af.setScope(Scope.LOCAL);
           cache.setRegionAttributes(shortcut.toString(), af.create());
           break;
         }
         case LOCAL_PERSISTENT: {
-          AttributesFactory<?, ?> af = new AttributesFactory();
+          AttributesFactory<?, ?> af = new AttributesFactory<>();
           af.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
           af.setScope(Scope.LOCAL);
           cache.setRegionAttributes(shortcut.toString(), af.create());
           break;
         }
         case LOCAL_HEAP_LRU: {
-          AttributesFactory<?, ?> af = new AttributesFactory();
+          AttributesFactory<?, ?> af = new AttributesFactory<>();
           af.setDataPolicy(DataPolicy.NORMAL);
           af.setScope(Scope.LOCAL);
           af.setEvictionAttributes(EvictionAttributes.createLRUHeapAttributes());
@@ -4682,7 +4682,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           break;
         }
         case LOCAL_OVERFLOW: {
-          AttributesFactory<?, ?> af = new AttributesFactory();
+          AttributesFactory<?, ?> af = new AttributesFactory<>();
           af.setDataPolicy(DataPolicy.NORMAL);
           af.setScope(Scope.LOCAL);
           af.setEvictionAttributes(
@@ -4691,7 +4691,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           break;
         }
         case LOCAL_PERSISTENT_OVERFLOW: {
-          AttributesFactory<?, ?> af = new AttributesFactory();
+          AttributesFactory<?, ?> af = new AttributesFactory<>();
           af.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
           af.setScope(Scope.LOCAL);
           af.setEvictionAttributes(
@@ -4700,18 +4700,18 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           break;
         }
         case PARTITION_PROXY: {
-          AttributesFactory<?, ?> af = new AttributesFactory();
+          AttributesFactory<?, ?> af = new AttributesFactory<>();
           af.setDataPolicy(DataPolicy.PARTITION);
-          PartitionAttributesFactory paf = new PartitionAttributesFactory();
+          PartitionAttributesFactory<?, ?> paf = new PartitionAttributesFactory<>();
           paf.setLocalMaxMemory(0);
           af.setPartitionAttributes(paf.create());
           cache.setRegionAttributes(shortcut.toString(), af.create());
           break;
         }
         case PARTITION_PROXY_REDUNDANT: {
-          AttributesFactory<?, ?> af = new AttributesFactory();
+          AttributesFactory<?, ?> af = new AttributesFactory<>();
           af.setDataPolicy(DataPolicy.PARTITION);
-          PartitionAttributesFactory paf = new PartitionAttributesFactory();
+          PartitionAttributesFactory<?, ?> paf = new PartitionAttributesFactory<>();
           paf.setLocalMaxMemory(0);
           paf.setRedundantCopies(1);
           af.setPartitionAttributes(paf.create());
@@ -4719,7 +4719,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           break;
         }
         case REPLICATE_PROXY: {
-          AttributesFactory<?, ?> af = new AttributesFactory();
+          AttributesFactory<?, ?> af = new AttributesFactory<>();
           af.setDataPolicy(DataPolicy.EMPTY);
           af.setScope(Scope.DISTRIBUTED_ACK);
           cache.setRegionAttributes(shortcut.toString(), af.create());
@@ -4735,26 +4735,26 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     for (ClientRegionShortcut shortcut : ClientRegionShortcut.values()) {
       switch (shortcut) {
         case LOCAL: {
-          AttributesFactory<?, ?> af = new AttributesFactory();
+          AttributesFactory<?, ?> af = new AttributesFactory<>();
           af.setDataPolicy(DataPolicy.NORMAL);
           cache.setRegionAttributes(shortcut.toString(), af.create());
           break;
         }
         case LOCAL_PERSISTENT: {
-          AttributesFactory<?, ?> af = new AttributesFactory();
+          AttributesFactory<?, ?> af = new AttributesFactory<>();
           af.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
           cache.setRegionAttributes(shortcut.toString(), af.create());
           break;
         }
         case LOCAL_HEAP_LRU: {
-          AttributesFactory<?, ?> af = new AttributesFactory();
+          AttributesFactory<?, ?> af = new AttributesFactory<>();
           af.setDataPolicy(DataPolicy.NORMAL);
           af.setEvictionAttributes(EvictionAttributes.createLRUHeapAttributes());
           cache.setRegionAttributes(shortcut.toString(), af.create());
           break;
         }
         case LOCAL_OVERFLOW: {
-          AttributesFactory<?, ?> af = new AttributesFactory();
+          AttributesFactory<?, ?> af = new AttributesFactory<>();
           af.setDataPolicy(DataPolicy.NORMAL);
           af.setEvictionAttributes(
               EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK));
@@ -4762,7 +4762,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           break;
         }
         case LOCAL_PERSISTENT_OVERFLOW: {
-          AttributesFactory<?, ?> af = new AttributesFactory();
+          AttributesFactory<?, ?> af = new AttributesFactory<>();
           af.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
           af.setEvictionAttributes(
               EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK));
@@ -4770,40 +4770,40 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           break;
         }
         case PROXY: {
-          AttributesFactory<?, ?> af = new AttributesFactory();
+          AttributesFactory<?, ?> af = new AttributesFactory<>();
           af.setDataPolicy(DataPolicy.EMPTY);
           UserSpecifiedRegionAttributes<?, ?> attributes =
-              (UserSpecifiedRegionAttributes) af.create();
+              (UserSpecifiedRegionAttributes<?, ?>) af.create();
           attributes.requiresPoolName = true;
           cache.setRegionAttributes(shortcut.toString(), attributes);
           break;
         }
         case CACHING_PROXY: {
-          AttributesFactory<?, ?> af = new AttributesFactory();
+          AttributesFactory<?, ?> af = new AttributesFactory<>();
           af.setDataPolicy(DataPolicy.NORMAL);
           UserSpecifiedRegionAttributes<?, ?> attributes =
-              (UserSpecifiedRegionAttributes) af.create();
+              (UserSpecifiedRegionAttributes<?, ?>) af.create();
           attributes.requiresPoolName = true;
           cache.setRegionAttributes(shortcut.toString(), attributes);
           break;
         }
         case CACHING_PROXY_HEAP_LRU: {
-          AttributesFactory<?, ?> af = new AttributesFactory();
+          AttributesFactory<?, ?> af = new AttributesFactory<>();
           af.setDataPolicy(DataPolicy.NORMAL);
           af.setEvictionAttributes(EvictionAttributes.createLRUHeapAttributes());
           UserSpecifiedRegionAttributes<?, ?> attributes =
-              (UserSpecifiedRegionAttributes) af.create();
+              (UserSpecifiedRegionAttributes<?, ?>) af.create();
           attributes.requiresPoolName = true;
           cache.setRegionAttributes(shortcut.toString(), attributes);
           break;
         }
         case CACHING_PROXY_OVERFLOW: {
-          AttributesFactory<?, ?> af = new AttributesFactory();
+          AttributesFactory<?, ?> af = new AttributesFactory<>();
           af.setDataPolicy(DataPolicy.NORMAL);
           af.setEvictionAttributes(
               EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK));
           UserSpecifiedRegionAttributes<?, ?> attributes =
-              (UserSpecifiedRegionAttributes) af.create();
+              (UserSpecifiedRegionAttributes<?, ?>) af.create();
           attributes.requiresPoolName = true;
           cache.setRegionAttributes(shortcut.toString(), attributes);
           break;
@@ -4994,7 +4994,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
           BiPredicate<Declarable, Declarable> isKeyIdentifiableAndSameIdPredicate =
               (oldKey, newKey) -> newKey instanceof Identifiable
-                  && ((Identifiable) oldKey).getId().equals(((Identifiable) newKey).getId());
+                  && ((Identifiable<?>) oldKey).getId().equals(((Identifiable<?>) newKey).getId());
 
           Supplier<Boolean> isKeyClassSame =
               () -> clazz.getName().equals(oldEntry.getKey().getClass().getName());
