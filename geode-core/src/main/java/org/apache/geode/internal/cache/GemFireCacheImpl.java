@@ -4363,6 +4363,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     QueryMonitor tempQueryMonitor = queryMonitor;
     if (tempQueryMonitor == null) {
       synchronized (queryMonitorLock) {
+        tempQueryMonitor = queryMonitor;
         if (tempQueryMonitor == null) {
           int maxTime = MAX_QUERY_EXECUTION_TIME;
 
