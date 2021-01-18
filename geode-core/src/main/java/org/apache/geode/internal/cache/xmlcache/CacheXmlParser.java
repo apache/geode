@@ -707,6 +707,17 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       gatewaySenderFactory
           .setGroupTransactionEvents(Boolean.parseBoolean(groupTransactionEvents));
     }
+
+    String enforceThreadsConnectSameReceiver = atts.getValue(ENFORCE_THREADS_CONNECT_SAME_RECEIVER);
+    if (enforceThreadsConnectSameReceiver == null) {
+      gatewaySenderFactory
+          .setEnforceThreadsConnectSameReceiver(
+              GatewaySender.DEFAULT_ENFORCE_THREADS_CONNECT_SAME_RECEIVER);
+    } else {
+      gatewaySenderFactory
+          .setEnforceThreadsConnectSameReceiver(
+              Boolean.parseBoolean(enforceThreadsConnectSameReceiver));
+    }
   }
 
   private void startGatewayReceiver(Attributes atts) {

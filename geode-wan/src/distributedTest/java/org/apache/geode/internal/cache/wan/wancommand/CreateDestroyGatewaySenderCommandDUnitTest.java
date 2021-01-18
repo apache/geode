@@ -112,7 +112,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
       String xml = locator.getConfigurationPersistenceService().getConfiguration("cluster")
           .getCacheXmlContent();
       assertThat(xml).contains(
-          "<gateway-sender id=\"ln\" remote-distributed-system-id=\"2\" parallel=\"false\" manual-start=\"false\" enable-batch-conflation=\"false\" enable-persistence=\"false\" disk-synchronous=\"true\" group-transaction-events=\"false\"/>");
+          "<gateway-sender id=\"ln\" remote-distributed-system-id=\"2\" parallel=\"false\" manual-start=\"false\" enable-batch-conflation=\"false\" enable-persistence=\"false\" disk-synchronous=\"true\" group-transaction-events=\"false\" enforce-threads-connect-same-receiver=\"false\"/>");
     });
 
     // destroy gateway sender and verify AEQs cleaned up

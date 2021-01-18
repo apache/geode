@@ -191,6 +191,19 @@ public interface GatewaySenderFactory {
   GatewaySenderFactory setGatewayEventSubstitutionFilter(GatewayEventSubstitutionFilter filter);
 
   /**
+   * If true, receiver member id is checked by all dispatcher threads when the connection is
+   * established to ensure they connect to the same receiver. Instead of starting all dispatcher
+   * threads in parallel, one thread is started first, and after that the rest are started in
+   * parallel. Default is false.
+   *
+   * @param enforceThreadsConnectSameReceiver boolean if true threads will verify if they are
+   *        connected to the same receiver
+   *
+   */
+  GatewaySenderFactory setEnforceThreadsConnectSameReceiver(
+      boolean enforceThreadsConnectSameReceiver);
+
+  /**
    * Creates a <code>GatewaySender</code> to communicate with remote distributed system
    *
    * @param id unique id for this SerialGatewaySender
