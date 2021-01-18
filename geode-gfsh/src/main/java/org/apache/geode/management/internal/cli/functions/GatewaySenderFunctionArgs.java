@@ -46,6 +46,7 @@ public class GatewaySenderFunctionArgs implements Serializable {
   // array of fully qualified class names of the filters
   private final List<String> gatewayEventFilters;
   private final List<String> gatewayTransportFilters;
+  private final Boolean enforceThreadsConnectSameReceiver;
 
   public GatewaySenderFunctionArgs(CacheConfig.GatewaySender sender) {
     this.id = sender.getId();
@@ -77,6 +78,7 @@ public class GatewaySenderFunctionArgs implements Serializable {
                 .stream().map(DeclarableType::getClassName)
                 .collect(Collectors.toList()))
             .orElse(null);
+    this.enforceThreadsConnectSameReceiver = sender.getEnforceThreadsConnectSameReceiver();
   }
 
   private Integer string2int(String x) {
@@ -157,5 +159,9 @@ public class GatewaySenderFunctionArgs implements Serializable {
 
   public List<String> getGatewayTransportFilter() {
     return this.gatewayTransportFilters;
+  }
+
+  public Boolean getEnforceThreadsConnectSameReceiver() {
+    return this.enforceThreadsConnectSameReceiver;
   }
 }

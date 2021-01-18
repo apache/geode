@@ -2267,6 +2267,10 @@ public class CliStrings {
       "GatewaySender \"{0}\" created on \"{1}\"";
   public static final String CREATE_GATEWAYSENDER__MSG__CAN_NOT_CREATE_DIFFERENT_VERSIONS =
       "Gateway Sender cannot be created until all members are the current version";
+  public static final String CREATE_GATEWAYSENDER__ENFORCE_THREADS_CONNECT_SAME_RECEIVER =
+      "enforce-threads-connect-same-receiver";
+  public static final String CREATE_GATEWAYSENDER__ENFORCE_THREADS_CONNECT_SAME_RECEIVER__HELP =
+      "Whether or not the sender threads have to verify the receiver member id to verify if they are connected to the same server.";
 
   /* start gateway-sender */
   public static final String START_GATEWAYSENDER = "start gateway-sender";
