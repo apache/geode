@@ -15,10 +15,13 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Test;
@@ -199,4 +202,26 @@ public class CommandInitializerTest {
 
     verifyNoMoreInteractions(commands);
   }
+
+  @Test
+  public void commandMapUnmodifiable() {
+    final CommandInitializer commandInitializer = new CommandInitializer();
+    final Map<Integer, Command> commands = commandInitializer.get(KnownVersion.CURRENT);
+    assertThatThrownBy(() -> commands.put(1, Put70.getCommand()))
+        .isInstanceOf(UnsupportedOperationException.class);
+  }
+
+  @Test
+  public void newlyRegisteredCommandsVisibleInCommandMap() {
+    final Command command = mock(Command.class);
+    Map<KnownVersion, Command> newCommandMap = new HashMap<>();
+    newCommandMap.put(KnownVersion.CURRENT, command);
+
+    final CommandInitializer commandInitializer = new CommandInitializer();
+    final Map<Integer, Command> commands = commandInitializer.get(KnownVersion.CURRENT);
+    assertThat(commands).doesNotContainKeys(-2);
+    commandInitializer.register(-2, newCommandMap);
+    assertThat(commands).containsEntry(-2, command);
+  }
+
 }

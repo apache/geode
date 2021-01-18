@@ -17,11 +17,13 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 import static java.util.Collections.unmodifiableMap;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.apache.geode.InternalGemFireError;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.command.AddPdxEnum;
@@ -89,26 +91,48 @@ import org.apache.geode.internal.serialization.KnownVersion;
 
 public class CommandInitializer implements CommandRegistry {
 
+  @Deprecated
+  @MakeNotStatic
   static final CommandInitializer instance = new CommandInitializer();
 
+  /**
+   * Gets legacy singleton instance.
+   *
+   * @deprecated Efforts should be made to get and instance from the cache or other object.
+   *
+   * @return legacy singleton instance. Instance is not immutable.
+   */
+  @Deprecated
   public static CommandInitializer getDefaultInstance() {
     return instance;
   }
 
-  // Not truly Immutable given that registerCommand can mutate after initialization.
-  final Map<KnownVersion, Map<Integer, Command>> registeredCommands = initializeAllCommands();
+  final Map<KnownVersion, Map<Integer, Command>> unmodifiableRegisteredCommands;
+  final LinkedHashMap<KnownVersion, ConcurrentMap<Integer, Command>> modifiableRegisteredCommands;
+
+  public CommandInitializer() {
+    modifiableRegisteredCommands = initializeAllCommands();
+    unmodifiableRegisteredCommands = makeUnmodifiable(modifiableRegisteredCommands);
+  }
 
   @Override
   public void register(int messageType,
       Map<KnownVersion, Command> versionToNewCommand) {
-    if (!registerCommand(messageType, versionToNewCommand, registeredCommands)) {
+    if (!registerCommand(messageType, versionToNewCommand, modifiableRegisteredCommands)) {
       throw new InternalGemFireError(String.format("Message %d was not registered.", messageType));
     }
   }
 
+  /**
+   * Gets the command map for a given version.
+   *
+   * @param version of command map to return.
+   *
+   * @return immutable {@link Map} for {@link MessageType} to {@link Command}.
+   */
   @Override
   public Map<Integer, Command> get(final KnownVersion version) {
-    return unmodifiableMap(registeredCommands.get(version));
+    return unmodifiableRegisteredCommands.get(version);
   }
 
   /**
@@ -116,15 +140,15 @@ public class CommandInitializer implements CommandRegistry {
    *
    * @return returns true if command was registered or same command was already registered,
    *         otherwise false.
-   * @throw InternalGemFireError if a different command was already registered.
+   * @throws InternalGemFireError if a different command was already registered.
    */
   boolean registerCommand(final int messageType,
       final Map<KnownVersion, Command> versionToNewCommand,
-      final Map<KnownVersion, Map<Integer, Command>> allCommands) {
+      final LinkedHashMap<KnownVersion, ConcurrentMap<Integer, Command>> allCommands) {
     boolean modified = false;
     Command command = null;
 
-    for (Map.Entry<KnownVersion, Map<Integer, Command>> entry : allCommands.entrySet()) {
+    for (Map.Entry<KnownVersion, ConcurrentMap<Integer, Command>> entry : allCommands.entrySet()) {
       KnownVersion version = entry.getKey();
 
       // Get the current set of commands for this version.
@@ -150,14 +174,14 @@ public class CommandInitializer implements CommandRegistry {
     return modified;
   }
 
-  private static Map<KnownVersion, Map<Integer, Command>> initializeAllCommands() {
-    final LinkedHashMap<KnownVersion, Map<Integer, Command>> allCommands =
+  private static LinkedHashMap<KnownVersion, ConcurrentMap<Integer, Command>> initializeAllCommands() {
+    final LinkedHashMap<KnownVersion, ConcurrentMap<Integer, Command>> allCommands =
         new LinkedHashMap<>();
 
-    final Map<Integer, Command> gfe82Commands = buildGfe82Commands();
+    final ConcurrentMap<Integer, Command> gfe82Commands = buildGfe82Commands();
     allCommands.put(KnownVersion.GFE_82, gfe82Commands);
 
-    final Map<Integer, Command> gfe90Commands =
+    final ConcurrentMap<Integer, Command> gfe90Commands =
         buildGfe90Commands(allCommands.get(KnownVersion.GFE_82));
     allCommands.put(KnownVersion.GFE_90, gfe90Commands);
     allCommands.put(KnownVersion.GEODE_1_1_0, gfe90Commands);
@@ -169,7 +193,7 @@ public class CommandInitializer implements CommandRegistry {
     allCommands.put(KnownVersion.GEODE_1_6_0, gfe90Commands);
     allCommands.put(KnownVersion.GEODE_1_7_0, gfe90Commands);
 
-    final Map<Integer, Command> geode18Commands =
+    final ConcurrentMap<Integer, Command> geode18Commands =
         buildGeode18Commands(allCommands.get(KnownVersion.GEODE_1_7_0));
     allCommands.put(KnownVersion.GEODE_1_8_0, geode18Commands);
     allCommands.put(KnownVersion.GEODE_1_9_0, geode18Commands);
@@ -182,25 +206,25 @@ public class CommandInitializer implements CommandRegistry {
 
     allCommands.put(KnownVersion.GEODE_1_14_0, geode18Commands);
 
-    return unmodifiableMap(allCommands);
+    return allCommands;
   }
 
-  private static Map<Integer, Command> buildGeode18Commands(
-      final Map<Integer, Command> baseCommands) {
-    final Map<Integer, Command> commands = new HashMap<>(baseCommands);
+  private static ConcurrentMap<Integer, Command> buildGeode18Commands(
+      final ConcurrentMap<Integer, Command> baseCommands) {
+    final ConcurrentMap<Integer, Command> commands = new ConcurrentHashMap<>(baseCommands);
     initializeGeode18Commands(commands);
     return commands;
   }
 
-  private static Map<Integer, Command> buildGfe90Commands(
-      final Map<Integer, Command> baseCommands) {
-    final Map<Integer, Command> commands = new HashMap<>(baseCommands);
+  private static ConcurrentMap<Integer, Command> buildGfe90Commands(
+      final ConcurrentMap<Integer, Command> baseCommands) {
+    final ConcurrentMap<Integer, Command> commands = new ConcurrentHashMap<>(baseCommands);
     initializeGfe90Commands(commands);
     return commands;
   }
 
-  private static Map<Integer, Command> buildGfe82Commands() {
-    final Map<Integer, Command> commands = new HashMap<>();
+  private static ConcurrentMap<Integer, Command> buildGfe82Commands() {
+    final ConcurrentMap<Integer, Command> commands = new ConcurrentHashMap<>();
     initializeGfe82Commands(commands);
     return commands;
   }
@@ -280,6 +304,16 @@ public class CommandInitializer implements CommandRegistry {
     commands.put(MessageType.GET_ALL_WITH_CALLBACK, GetAllWithCallback.getCommand());
     commands.put(MessageType.PUT_ALL_WITH_CALLBACK, PutAllWithCallback.getCommand());
     commands.put(MessageType.REMOVE_ALL, RemoveAll.getCommand());
+  }
+
+  static Map<KnownVersion, Map<Integer, Command>> makeUnmodifiable(
+      final Map<KnownVersion, ConcurrentMap<Integer, Command>> modifiableMap) {
+    final Map<KnownVersion, Map<Integer, Command>> unmodifiableMap =
+        new LinkedHashMap<>(modifiableMap.size());
+    for (Map.Entry<KnownVersion, ConcurrentMap<Integer, Command>> e : modifiableMap.entrySet()) {
+      unmodifiableMap.put(e.getKey(), unmodifiableMap(e.getValue()));
+    }
+    return unmodifiableMap(unmodifiableMap);
   }
 
 }
