@@ -179,27 +179,12 @@ public class ConcurrentSerialGatewaySenderEventProcessor
 
   @Override
   public void run() {
-    boolean isDebugEnabled = logger.isDebugEnabled();
-    if (this.sender.getEnforceThreadsConnectSameReceiver()) {
-      this.processors.get(0).start();
-      waitForRunningStatus(this.processors.get(0));
-      String receiverUniqueId = this.processors.get(0).getExpectedReceiverUniqueId();
-      if (isDebugEnabled) {
-        logger.debug("First dispatcher is connected to " + receiverUniqueId);
-      }
-      for (int j = 1; j < this.processors.size(); j++) {
-        this.processors.get(j).setExpectedReceiverUniqueId(receiverUniqueId);
-      }
-    }
-
-    for (int i = this.sender.getEnforceThreadsConnectSameReceiver() ? 1 : 0; i < this.processors
-        .size(); i++) {
-      if (isDebugEnabled) {
+    for (int i = 0; i < this.processors.size(); i++) {
+      if (logger.isDebugEnabled()) {
         logger.debug("Starting the serialProcessor {}", i);
       }
       this.processors.get(i).start();
     }
-
     try {
       waitForRunningStatus();
     } catch (GatewaySenderException e) {
@@ -220,7 +205,7 @@ public class ConcurrentSerialGatewaySenderEventProcessor
       try {
         serialProcessor.join();
       } catch (InterruptedException e) {
-        if (isDebugEnabled) {
+        if (logger.isDebugEnabled()) {
           logger.debug("Got InterruptedException while waiting for child threads to finish.");
           Thread.currentThread().interrupt();
         }
@@ -234,28 +219,24 @@ public class ConcurrentSerialGatewaySenderEventProcessor
     throw new UnsupportedOperationException();
   }
 
-  private void waitForRunningStatus(SerialGatewaySenderEventProcessor serialProcessor) {
-    synchronized (serialProcessor.getRunningStateLock()) {
-      while (serialProcessor.getException() == null && serialProcessor.isStopped()) {
-        try {
-          serialProcessor.getRunningStateLock().wait();
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-        }
-      }
-      Exception ex = serialProcessor.getException();
-      if (ex != null) {
-        throw new GatewaySenderException(
-            String.format("Could not start a gateway sender %s because of exception %s",
-                new Object[] {this.sender.getId(), ex.getMessage()}),
-            ex.getCause());
-      }
-    }
-  }
-
   private void waitForRunningStatus() {
     for (SerialGatewaySenderEventProcessor serialProcessor : this.processors) {
-      waitForRunningStatus(serialProcessor);
+      synchronized (serialProcessor.getRunningStateLock()) {
+        while (serialProcessor.getException() == null && serialProcessor.isStopped()) {
+          try {
+            serialProcessor.getRunningStateLock().wait();
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+          }
+        }
+        Exception ex = serialProcessor.getException();
+        if (ex != null) {
+          throw new GatewaySenderException(
+              String.format("Could not start a gateway sender %s because of exception %s",
+                  new Object[] {this.sender.getId(), ex.getMessage()}),
+              ex.getCause());
+        }
+      }
     }
   }
 

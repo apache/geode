@@ -173,13 +173,6 @@ public class GatewaySenderCreateFunction implements InternalFunction<GatewaySend
             gatewayTransportFilterKlass, CliStrings.CREATE_GATEWAYSENDER__GATEWAYTRANSPORTFILTER));
       }
     }
-
-    Boolean enforceThreadsConnectSameReceiver =
-        gatewaySenderCreateArgs.getEnforceThreadsConnectSameReceiver();
-    if (enforceThreadsConnectSameReceiver != null) {
-      gateway.setEnforceThreadsConnectSameReceiver(enforceThreadsConnectSameReceiver);
-    }
-
     return gateway.create(gatewaySenderCreateArgs.getId(),
         gatewaySenderCreateArgs.getRemoteDistributedSystemId());
   }

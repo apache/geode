@@ -147,8 +147,6 @@ public interface GatewaySender {
 
   boolean DEFAULT_IS_FOR_INTERNAL_USE = false;
 
-  boolean DEFAULT_ENFORCE_THREADS_CONNECT_SAME_RECEIVER = false;
-
   /**
    * Retry a connection from sender to receiver after specified time interval (in milliseconds) in
    * case receiver is not up and running. Default is set to 1000 milliseconds i.e. 1 second.
@@ -491,11 +489,4 @@ public interface GatewaySender {
    */
   void setGatewayEventFilters(List<GatewayEventFilter> filters);
 
-  /**
-   * Returns enforceThreadsConnectSameReceiver boolean property for this GatewaySender.
-   *
-   * @return enforceThreadsConnectSameReceiver boolean property for this GatewaySender
-   *
-   */
-  boolean getEnforceThreadsConnectSameReceiver();
 }

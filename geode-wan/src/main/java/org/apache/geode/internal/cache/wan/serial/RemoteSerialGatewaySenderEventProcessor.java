@@ -35,7 +35,7 @@ public class RemoteSerialGatewaySenderEventProcessor extends SerialGatewaySender
   @Override
   public void initializeEventDispatcher() {
     if (logger.isDebugEnabled()) {
-      logger.debug("Creating the GatewayEventRemoteDispatcher");
+      logger.debug(" Creating the GatewayEventRemoteDispatcher");
     }
     // In case of serial there is a way to create gatewaySender and attach
     // asyncEventListener. Not sure of the use-case but there are dunit tests

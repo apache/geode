@@ -199,13 +199,6 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
   }
 
   @Override
-  public GatewaySenderFactory setEnforceThreadsConnectSameReceiver(
-      boolean enforceThreadsConnectSameReceiver) {
-    this.attrs.enforceThreadsConnectSameReceiver = enforceThreadsConnectSameReceiver;
-    return this;
-  }
-
-  @Override
   public GatewaySender create(String id, int remoteDSId) {
     int myDSId = InternalDistributedSystem.getAnyInstance().getDistributionManager()
         .getDistributedSystemId();
@@ -298,6 +291,7 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
       if (this.cache instanceof GemFireCacheImpl) {
         sender = new SerialGatewaySenderImpl(cache, statisticsClock, attrs);
         this.cache.addGatewaySender(sender);
+
         if (!this.attrs.isManualStart()) {
           sender.start();
         }
@@ -400,7 +394,5 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
     }
     this.attrs.eventSubstitutionFilter = senderCreation.getGatewayEventSubstitutionFilter();
     this.attrs.groupTransactionEvents = senderCreation.mustGroupTransactionEvents();
-    this.attrs.enforceThreadsConnectSameReceiver =
-        senderCreation.getEnforceThreadsConnectSameReceiver();
   }
 }

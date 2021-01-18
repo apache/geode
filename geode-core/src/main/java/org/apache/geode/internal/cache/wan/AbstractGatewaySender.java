@@ -172,8 +172,6 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   private ServerLocation serverLocation;
 
-  private String expectedReceiverUniqueId = "";
-
   protected Object queuedEventsSync = new Object();
 
   protected volatile boolean enqueuedAllTempQueueEvents = false;
@@ -240,8 +238,6 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   private final StatisticsClock statisticsClock;
 
-  protected boolean enforceThreadsConnectSameReceiver;
-
   protected AbstractGatewaySender() {
     statisticsClock = disabledClock();
   }
@@ -280,7 +276,6 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     this.maxMemoryPerDispatcherQueue = this.queueMemory / this.dispatcherThreads;
     this.serialNumber = DistributionAdvisor.createSerialNumber();
     this.isMetaQueue = attrs.isMetaQueue();
-    this.enforceThreadsConnectSameReceiver = attrs.getEnforceThreadsConnectSameReceiver();
     if (!(this.cache instanceof CacheCreation)) {
       this.myDSId = this.cache.getInternalDistributedSystem().getDistributionManager()
           .getDistributedSystemId();
@@ -503,11 +498,6 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   public int getEventIdIndex() {
     return this.eventIdIndex;
-  }
-
-  @Override
-  public boolean getEnforceThreadsConnectSameReceiver() {
-    return this.enforceThreadsConnectSameReceiver;
   }
 
   @Override
@@ -1480,14 +1470,6 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       throw new UnsupportedOperationException(
           "waitUntilFlushed is not currently supported for serial gateway senders");
     }
-  }
-
-  public void setExpectedReceiverUniqueId(String expectedReceiverUniqueId) {
-    this.expectedReceiverUniqueId = expectedReceiverUniqueId;
-  }
-
-  public String getExpectedReceiverUniqueId() {
-    return this.expectedReceiverUniqueId;
   }
 
   /**

@@ -228,7 +228,6 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
     pf.dispatcherThreads = getDispatcherThreads();
     pf.orderPolicy = getOrderPolicy();
     pf.serverLocation = this.getServerLocation();
-    pf.enforceThreadsConnectSameReceiver = getEnforceThreadsConnectSameReceiver();
   }
 
   @Override

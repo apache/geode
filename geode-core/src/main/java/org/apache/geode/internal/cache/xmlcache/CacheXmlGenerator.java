@@ -1394,16 +1394,6 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       }
     }
 
-    // enforce-threads-connect-same-receiver
-    if (version.compareTo(CacheXmlVersion.GEODE_1_0) >= 0) {
-      if (generateDefaults()
-          || sender
-              .getEnforceThreadsConnectSameReceiver() != GatewaySender.DEFAULT_ENFORCE_THREADS_CONNECT_SAME_RECEIVER) {
-        atts.addAttribute("", "", ENFORCE_THREADS_CONNECT_SAME_RECEIVER, "",
-            String.valueOf(sender.getEnforceThreadsConnectSameReceiver()));
-      }
-    }
-
     handler.startElement("", GATEWAY_SENDER, GATEWAY_SENDER, atts);
 
     for (GatewayEventFilter gef : sender.getGatewayEventFilters()) {
