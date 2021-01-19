@@ -657,6 +657,50 @@ public class GMSHealthMonitorJUnitTest {
   }
 
   @Test
+  public void testMemberIsAvailableWhenInFinalCheck() throws Exception {
+    useGMSHealthMonitorTestClass = true;
+    simulateHeartbeatInGMSHealthMonitorTestClass = false;
+
+    GMSMembershipView v = installAView();
+    setFailureDetectionPorts(v);
+
+    MemberIdentifier memberToCheck = gmsHealthMonitor.getNextNeighbor();
+    GMSHealthMonitorTest testMonitor = (GMSHealthMonitorTest) gmsHealthMonitor;
+    testMonitor.addMemberInFinalCheck(memberToCheck);
+    assertThat(testMonitor.checkIfAvailable(memberToCheck,
+        "Member failed to acknowledge a membership view", false)).isTrue();
+  }
+
+  @Test
+  public void testMemberIsNotAvailableWhenCheckIfMemberInFinalCheckIsFalse() throws Exception {
+    useGMSHealthMonitorTestClass = true;
+    simulateHeartbeatInGMSHealthMonitorTestClass = false;
+
+    GMSMembershipView v = installAView();
+    setFailureDetectionPorts(v);
+
+    MemberIdentifier memberToCheck = gmsHealthMonitor.getNextNeighbor();
+    when(joinLeave.isMemberLeaving(memberToCheck)).thenReturn(true);
+    GMSHealthMonitorTest testMonitor = (GMSHealthMonitorTest) gmsHealthMonitor;
+    testMonitor.addMemberInFinalCheck(memberToCheck);
+    assertThat(testMonitor.checkIfAvailable(memberToCheck,
+        "Member failed to acknowledge a membership view", false, false)).isFalse();
+  }
+
+  @Test
+  public void testMemberIsNotAvailableWhenNotInFinalCheck() throws Exception {
+    useGMSHealthMonitorTestClass = true;
+    simulateHeartbeatInGMSHealthMonitorTestClass = false;
+
+    GMSMembershipView v = installAView();
+
+    MemberIdentifier memberToCheck = gmsHealthMonitor.getNextNeighbor();
+    GMSHealthMonitorTest testMonitor = (GMSHealthMonitorTest) gmsHealthMonitor;
+    assertThat(testMonitor.checkIfAvailable(memberToCheck,
+        "Member failed to acknowledge a membership view", false, true)).isFalse();
+  }
+
+  @Test
   public void testFailedSelfCheckRemovesMemberAsSuspect() throws Exception {
     useGMSHealthMonitorTestClass = true;
     simulateHeartbeatInGMSHealthMonitorTestClass = false;

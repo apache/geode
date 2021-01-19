@@ -1792,7 +1792,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
     // return the member id if it fails health checks
     logger.info("checking state of member " + fmbr);
     if (services.getHealthMonitor().checkIfAvailable(fmbr,
-        "Member failed to acknowledge a membership view", false)) {
+        "Member failed to acknowledge a membership view", false, false)) {
       logger.info("member " + fmbr + " passed availability check");
       return true;
     }
