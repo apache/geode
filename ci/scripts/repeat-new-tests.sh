@@ -49,8 +49,9 @@ function changes_for_path() {
 function save_classpath() {
   echo "Building and saving classpath"
   pushd geode >> /dev/null
+    BUILD_LOG=/tmp/classpath-build.log
     # Do this twice since devBuild still dumps a warning string to stdout.
-    ./gradlew --console=plain -q compileTestJava compileIntegrationTestJava compileDistributedTestJava devBuild 2>/dev/null
+    ./gradlew --console=plain -q compileTestJava compileIntegrationTestJava compileDistributedTestJava devBuild >${BUILD_LOG} 2>&1 || (cat ${BUILD_LOG}; false)
     ./gradlew --console=plain -q printTestClasspath 2>/dev/null >/tmp/classpath.txt
   popd >> /dev/null
 }
@@ -69,6 +70,9 @@ CHANGED_FILES_ARRAY=( $UNIT_TEST_CHANGES $INTEGRATION_TEST_CHANGES $DISTRIBUTED_
 NUM_CHANGED_FILES=${#CHANGED_FILES_ARRAY[@]}
 
 echo "${NUM_CHANGED_FILES} changed test files"
+for T in ${CHANGED_FILES_ARRAY[@]}; do
+  echo "  ${T}"
+done
 
 if [[  "${NUM_CHANGED_FILES}" -eq 0 ]]
 then
@@ -83,7 +87,8 @@ TEST_COUNT=$(echo ${TEST_TARGETS} | sed -e 's/.*testCount=\([0-9]*\).*/\1/g')
 
 if [[ "${NUM_CHANGED_FILES}" -ne "${TEST_COUNT}" ]]
 then
-  echo "Changed test files increased to ${TEST_COUNT} after including subclasses"
+  echo ""
+  echo "${TEST_COUNT} test files considered for stress test after pre-processing the initial set"
 fi
 
 if [[ "${TEST_COUNT}" -gt 35 ]]
