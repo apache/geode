@@ -41,7 +41,7 @@ class DependencyConstraints implements Plugin<Project> {
     deps.put("javax.transaction-api.version", "1.3")
     deps.put("jgroups.version", "3.6.14.Final")
     deps.put("log4j.version", "2.14.0")
-    deps.put("micrometer.version", "1.6.2")
+    deps.put("micrometer.version", "1.6.3")
     deps.put("shiro.version", "1.7.0")
     deps.put("slf4j-api.version", "1.7.30")
 
@@ -119,7 +119,7 @@ class DependencyConstraints implements Plugin<Project> {
         // Careful when upgrading this dependency: see GEODE-7370 and GEODE-8150.
         api(group: 'io.github.classgraph', name: 'classgraph', version: '4.8.52')
         api(group: 'io.micrometer', name: 'micrometer-core', version: get('micrometer.version'))
-        api(group: 'io.netty', name: 'netty-all', version: '4.1.56.Final')
+        api(group: 'io.netty', name: 'netty-all', version: '4.1.58.Final')
         api(group: 'io.swagger', name: 'swagger-annotations', version: '1.6.2')
         api(group: 'it.unimi.dsi', name: 'fastutil', version: get('fastutil.version'))
         api(group: 'javax.annotation', name: 'javax.annotation-api', version: '1.3.2')
@@ -157,7 +157,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'org.httpunit', name: 'httpunit', version: '1.7.3')
         api(group: 'org.iq80.snappy', name: 'snappy', version: '0.4')
         api(group: 'org.jgroups', name: 'jgroups', version: get('jgroups.version'))
-        api(group: 'org.mockito', name: 'mockito-core', version: '3.7.0')
+        api(group: 'org.mockito', name: 'mockito-core', version: '3.7.7')
         api(group: 'org.mortbay.jetty', name: 'servlet-api', version: '3.0.20100224')
         api(group: 'org.openjdk.jmh', name: 'jmh-core', version: '1.26')
         api(group: 'org.postgresql', name: 'postgresql', version: '42.2.8')
@@ -169,7 +169,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'org.testcontainers', name: 'testcontainers', version: '1.14.3')
         api(group: 'pl.pragmatists', name: 'JUnitParams', version: '1.1.0')
         api(group: 'redis.clients', name: 'jedis', version: '3.4.1')
-        api(group: 'io.lettuce', name: 'lettuce-core', version: '6.0.1.RELEASE')
+        api(group: 'io.lettuce', name: 'lettuce-core', version: '6.0.2.RELEASE')
         api(group: 'xerces', name: 'xercesImpl', version: '2.12.0')
       }
     }
@@ -249,23 +249,20 @@ class DependencyConstraints implements Plugin<Project> {
       entry('spring-security-oauth2-jose')
     }
 
-    dependencySet(group: 'org.springframework', version: '5.3.2') {
+    dependencySet(group: 'org.springframework', version: '5.3.3') {
       entry('spring-aspects')
       entry('spring-beans')
       entry('spring-context')
       entry('spring-core')
       entry('spring-expression')
       entry('spring-oxm')
+      entry('spring-test')
       entry('spring-tx')
       entry('spring-web')
       entry('spring-webmvc')
     }
 
-    dependencySet(group: 'org.springframework', version: '5.3.1') {
-      entry('spring-test')
-    }
-
-    dependencySet(group: 'org.springframework.boot', version: '2.4.1') {
+    dependencySet(group: 'org.springframework.boot', version: '2.4.2') {
       entry('spring-boot-starter')
       entry('spring-boot-starter-jetty')
       entry('spring-boot-starter-web')
