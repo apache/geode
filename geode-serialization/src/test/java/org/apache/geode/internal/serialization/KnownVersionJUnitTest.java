@@ -21,8 +21,10 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 public class KnownVersionJUnitTest {
+  @SuppressWarnings("deprecation")
   @Test
   public void testKnownVersionClass() throws Exception {
+    compare(KnownVersion.GFE_82, KnownVersion.GFE_81);
     compare(KnownVersion.GEODE_1_1_0, KnownVersion.GFE_82);
     compare(KnownVersion.GEODE_1_2_0, KnownVersion.GEODE_1_1_1);
     compare(KnownVersion.GEODE_1_3_0, KnownVersion.GEODE_1_2_0);

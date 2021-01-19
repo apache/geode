@@ -130,7 +130,7 @@ public class CommandInitializerTest {
     @SuppressWarnings("unchecked")
     final Map<Integer, Command> commands = mock(Map.class);
 
-    CommandInitializer.initializeGfe82Commands(commands);
+    CommandInitializer.initializeGfe81Commands(commands);
 
     verify(commands).put(MessageType.PING, Ping.getCommand());
     verify(commands).put(MessageType.QUERY,

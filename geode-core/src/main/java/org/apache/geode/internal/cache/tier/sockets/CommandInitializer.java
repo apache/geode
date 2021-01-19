@@ -178,8 +178,9 @@ public class CommandInitializer implements CommandRegistry {
     final LinkedHashMap<KnownVersion, ConcurrentMap<Integer, Command>> allCommands =
         new LinkedHashMap<>();
 
-    final ConcurrentMap<Integer, Command> gfe82Commands = buildGfe82Commands();
-    allCommands.put(KnownVersion.GFE_82, gfe82Commands);
+    final ConcurrentMap<Integer, Command> gfe81Commands = buildGfe81Commands();
+    allCommands.put(KnownVersion.GFE_81, gfe81Commands);
+    allCommands.put(KnownVersion.GFE_82, gfe81Commands);
 
     final ConcurrentMap<Integer, Command> gfe90Commands =
         buildGfe90Commands(allCommands.get(KnownVersion.GFE_82));
@@ -223,9 +224,9 @@ public class CommandInitializer implements CommandRegistry {
     return commands;
   }
 
-  private static ConcurrentMap<Integer, Command> buildGfe82Commands() {
+  private static ConcurrentMap<Integer, Command> buildGfe81Commands() {
     final ConcurrentMap<Integer, Command> commands = new ConcurrentHashMap<>();
-    initializeGfe82Commands(commands);
+    initializeGfe81Commands(commands);
     return commands;
   }
 
@@ -238,7 +239,7 @@ public class CommandInitializer implements CommandRegistry {
     commands.put(MessageType.QUERY, QueryGeode10.getCommand());
   }
 
-  static void initializeGfe82Commands(final Map<Integer, Command> commands) {
+  static void initializeGfe81Commands(final Map<Integer, Command> commands) {
     commands.put(MessageType.PING, Ping.getCommand());
     commands.put(MessageType.QUERY,
         org.apache.geode.internal.cache.tier.sockets.command.Query.getCommand());

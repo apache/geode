@@ -181,7 +181,6 @@ public class KnownVersion extends AbstractVersion {
   private static final short GFE_81_ORDINAL = 35;
 
   @Immutable
-  @Deprecated
   public static final KnownVersion GFE_81 =
       new KnownVersion("GFE", "8.1", (byte) 8, (byte) 1, (byte) 0, (byte) 0, GFE_81_ORDINAL);
 
@@ -189,7 +188,11 @@ public class KnownVersion extends AbstractVersion {
 
   private static final short GFE_82_ORDINAL = 40;
 
+  /**
+   * @deprecated No released versions ever announce version GFE_82. Use GFE_81 or GFE_90.
+   */
   @Immutable
+  @Deprecated
   public static final KnownVersion GFE_82 =
       new KnownVersion("GFE", "8.2", (byte) 8, (byte) 2, (byte) 0, (byte) 0, GFE_82_ORDINAL);
 
@@ -330,7 +333,7 @@ public class KnownVersion extends AbstractVersion {
    * The oldest non-deprecated version supported.
    */
   @Immutable
-  public static final KnownVersion OLDEST = GFE_82;
+  public static final KnownVersion OLDEST = GFE_81;
 
   /**
    * This constant must be set to the most current version of the product. !!! NOTE: update
