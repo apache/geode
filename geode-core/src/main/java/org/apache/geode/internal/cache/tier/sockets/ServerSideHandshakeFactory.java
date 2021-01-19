@@ -81,7 +81,7 @@ class ServerSideHandshakeFactory {
         final Map<Integer, Command> commands =
             CommandInitializer.getDefaultInstance().get(clientVersion);
         if (commands == null) {
-          message = "Client version {} is not supported";
+          message = "No commands registered for version " + clientVersion + ".";
         } else {
           return clientVersion;
         }
