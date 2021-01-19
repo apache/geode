@@ -155,6 +155,15 @@ resources:
     password: ((docker-password))
     repository: gcr.io/((gcp-project))/((pipeline-prefix))metric-tools
 
+- name: geode-dependencies
+  type: git
+  source:
+    {{ github_access() | indent(4) }}
+    branch: ((geode-build-branch))
+    depth: 1
+    paths:
+    - "buildSrc/src/main/groovy/org/apache/geode/gradle/plugins/DependencyConstraints.groovy"
+
 - name: gce-instances-resource-dockerfile
   type: git
   source:
@@ -223,6 +232,8 @@ jobs:
       trigger: true
     - get: build-concourse-dockerfile
       trigger: true
+    - get: geode-dependencies
+      trigger: true
   - put: build-concourse-docker-image
     params:
       build: build-concourse-dockerfile/ci/docker
@@ -241,6 +252,8 @@ jobs:
     - get: alpine-tools-docker-image
       passed: [build-alpine-tools-docker-image]
     - get: linux-base-family
+      trigger: true
+    - get: geode-dependencies
       trigger: true
   - task: build-image
     timeout: 1h
