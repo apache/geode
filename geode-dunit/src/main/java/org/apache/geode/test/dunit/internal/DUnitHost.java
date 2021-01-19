@@ -32,7 +32,7 @@ class DUnitHost extends Host {
   DUnitHost(String hostName, ProcessManager processManager, VMEventNotifier vmEventNotifier)
       throws RemoteException {
     super(hostName, vmEventNotifier);
-    this.debuggingVM = new VM(this, VersionManager.CURRENT_VERSION, -1, new RemoteDUnitVM(), null,
+    this.debuggingVM = new VM(this, VersionManager.CURRENT_VERSION, -1, new RemoteDUnitVM(0), null,
         null);
     this.processManager = processManager;
     this.vmEventNotifier = vmEventNotifier;
@@ -104,7 +104,7 @@ class DUnitHost extends Host {
         }
 
         // now create the one we really want
-        processManager.launchVM(version, n, false);
+        processManager.launchVM(version, n, false, 0);
         processManager.waitForVMs(DUnitLauncher.STARTUP_TIMEOUT);
         addVM(n, version, processManager.getStub(n), processManager.getProcessHolder(n),
             processManager);

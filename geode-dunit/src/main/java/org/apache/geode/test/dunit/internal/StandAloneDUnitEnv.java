@@ -15,7 +15,6 @@
 package org.apache.geode.test.dunit.internal;
 
 import java.io.File;
-import java.rmi.RemoteException;
 import java.util.Properties;
 
 import org.apache.geode.test.dunit.DUnitEnv;
@@ -52,11 +51,6 @@ public class StandAloneDUnitEnv extends DUnitEnv {
   @Override
   public int getId() {
     return Integer.getInteger(DUnitLauncher.VM_NUM_PARAM, -1);
-  }
-
-  @Override
-  public BounceResult bounce(String version, int pid, boolean force) throws RemoteException {
-    return master.bounce(version, pid, force);
   }
 
   @Override

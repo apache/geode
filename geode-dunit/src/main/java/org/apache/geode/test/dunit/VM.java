@@ -33,6 +33,7 @@ import java.util.concurrent.Callable;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.internal.ChildVMLauncher;
@@ -584,7 +585,14 @@ public class VM implements Serializable {
         executeMethodOnObject(runnable, "run", new Object[0]);
       }
       processHolder.waitFor();
-      processHolder = childVMLauncher.launchVM(targetVersion, id, true);
+
+      // We typically try and use ephemeral ports everywhere. However, sometimes an ephemeral port
+      // created during a prior start needs to be used as a fixed port on subsequent bounces. In
+      // this case, ephemeral ports that are allocated early may end up conflicting with these
+      // fixed ports. So when we bounce a VM, use an RMI port outside the usual range of ephemeral
+      // ports for MacOS (49152–65535) and Linux (32768-60999).
+      int remoteStubPort = AvailablePortHelper.getRandomAvailableTCPPort();
+      processHolder = childVMLauncher.launchVM(targetVersion, id, true, remoteStubPort);
       version = targetVersion;
       client = childVMLauncher.getStub(id);
       available = true;
