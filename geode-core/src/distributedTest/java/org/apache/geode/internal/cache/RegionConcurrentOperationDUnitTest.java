@@ -89,13 +89,13 @@ public class RegionConcurrentOperationDUnitTest implements Serializable {
           .setCacheLoader(new TestCacheLoader()).create(regionName);
     });
 
-    Future get1 = executorServiceRule.submit(() -> {
-      Region region = cacheRule.getCache().getRegion(regionName);
+    Future<Object> get1 = executorServiceRule.submit(() -> {
+      Region<Object, Object> region = cacheRule.getCache().getRegion(regionName);
       return region.get(key);
     });
 
-    Future get2 = executorServiceRule.submit(() -> {
-      Region region = cacheRule.getCache().getRegion(regionName);
+    Future<Object> get2 = executorServiceRule.submit(() -> {
+      Region<Object, Object> region = cacheRule.getCache().getRegion(regionName);
       getBlackboard().waitForGate("Loader", 60, TimeUnit.SECONDS);
       return region.get(key);
     });
@@ -122,13 +122,13 @@ public class RegionConcurrentOperationDUnitTest implements Serializable {
     });
     assertThat(cacheRule.getCache().getRegion(regionName).size()).isEqualTo(0);
 
-    Future get1 = executorServiceRule.submit(() -> {
-      Region region = cacheRule.getCache().getRegion(regionName);
+    Future<Object> get1 = executorServiceRule.submit(() -> {
+      Region<Object, Object> region = cacheRule.getCache().getRegion(regionName);
       return region.get(key);
     });
 
-    Future get2 = executorServiceRule.submit(() -> {
-      Region region = cacheRule.getCache().getRegion(regionName);
+    Future<Object> get2 = executorServiceRule.submit(() -> {
+      Region<Object, Object> region = cacheRule.getCache().getRegion(regionName);
       getBlackboard().waitForGate("Loader", 60, TimeUnit.SECONDS);
       return region.get(key);
     });
@@ -149,7 +149,7 @@ public class RegionConcurrentOperationDUnitTest implements Serializable {
     cacheRule.createCache(cacheFactory);
     InternalCache cache = cacheRule.getCache();
     cache.setCopyOnRead(true);
-    Region region = cache.createRegionFactory(PARTITION)
+    Region<Object, Object> region = cache.createRegionFactory(PARTITION)
         .create(regionName);
 
     // Keep doing this concurrency test for 30 seconds.
@@ -167,9 +167,9 @@ public class RegionConcurrentOperationDUnitTest implements Serializable {
 
       // In this test, two threads are doing gets. One thread puts the value
       // We expect that the threads will *always* get different PdxInstance values
-      Future get1 = executorServiceRule.submit(getValue);
-      Future get2 = executorServiceRule.submit(getValue);
-      Future put = executorServiceRule.submit(() -> region.put(key, new TestValue()));
+      Future<Object> get1 = executorServiceRule.submit(getValue);
+      Future<Object> get2 = executorServiceRule.submit(getValue);
+      Future<Object> put = executorServiceRule.submit(() -> region.put(key, new TestValue()));
 
       Object get1value = get1.get();
       Object get2value = get2.get();
@@ -183,7 +183,7 @@ public class RegionConcurrentOperationDUnitTest implements Serializable {
     }
   }
 
-  private class TestCacheLoader implements CacheLoader, Serializable {
+  private class TestCacheLoader implements CacheLoader<Object, Object>, Serializable {
 
     @Override
     public synchronized Object load(LoaderHelper helper) {
