@@ -119,6 +119,7 @@ public class TXManagerImplTest {
     TXStateProxy proxy = txManager.beginJTA();
     assertEquals(0, proxy.getTxId().getUniqId());
     assertNotNull(txManager);
+    TXManagerImpl.INITIAL_UNIQUE_ID_VALUE = 0;
   }
 
   @Test
