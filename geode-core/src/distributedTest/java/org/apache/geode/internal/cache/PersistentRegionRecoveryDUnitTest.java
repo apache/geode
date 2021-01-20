@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.stream.IntStream;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
@@ -44,6 +45,7 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.rules.CacheRule;
+import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
@@ -69,6 +71,10 @@ public class PersistentRegionRecoveryDUnitTest extends JUnit4DistributedTestCase
 
   @Rule
   public SerializableTestName testName = new SerializableTestName();
+
+  @Rule
+  public DistributedRestoreSystemProperties restoreSystemProperties =
+      new DistributedRestoreSystemProperties();
 
   @Before
   public void setUp() throws Exception {
@@ -459,6 +465,40 @@ public class PersistentRegionRecoveryDUnitTest extends JUnit4DistributedTestCase
       assertThat(stats.getDeltaGetInitialImagesCompleted()).isEqualTo(0);
       assertThat(stats.getGetInitialImagesCompleted()).isEqualTo(1);
     });
+  }
+
+  @Test
+  public void verifyPersistentRecoveryIncrementsNumOverflowBytesOnDisk() {
+    // Create cache and persistent region
+    vm0.invoke(() -> createSyncDiskRegion());
+
+    // Add entries
+    int numEntries = 10;
+    int entrySize = 10240;
+    vm0.invoke(() -> putEntries(numEntries, entrySize));
+
+    // Close cache
+    vm0.invoke(() -> cacheRule.closeAndNullCache());
+
+    // Recreate cache and persistent region without recovering values
+    vm0.invoke(() -> {
+      System.setProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME, "false");
+      createSyncDiskRegion();
+    });
+
+    // Verify numOverflowBytesOnDisk is set after recovery
+    vm0.invoke(() -> verifyNumOverflowBytesOnDiskSet(numEntries, entrySize));
+  }
+
+  private void putEntries(int numEntries, int entrySize) {
+    Region region = cacheRule.getCache().getRegion(regionName);
+    IntStream.range(0, numEntries).forEach(i -> region.put(i, new byte[entrySize]));
+  }
+
+  private void verifyNumOverflowBytesOnDiskSet(int numEntries, int entrySize) {
+    LocalRegion region = (LocalRegion) cacheRule.getCache().getRegion(regionName);
+    assertThat(region.getDiskRegion().getStats().getNumOverflowBytesOnDisk())
+        .isEqualTo(numEntries * entrySize);
   }
 
   private void flushAsyncDiskRegion() {
