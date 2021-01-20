@@ -453,7 +453,7 @@ public class CopyJUnitTest {
         return false;
       }
     };
-    assertEquals(true, CopyHelper.isWellKnownImmutableInstance(pi));
+    assertEquals(false, CopyHelper.isWellKnownImmutableInstance(pi));
     assertEquals(false, CopyHelper.isWellKnownImmutableInstance(wpi));
     assertEquals(false, CopyHelper.isWellKnownImmutableInstance(new Object()));
   }
