@@ -23,6 +23,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_S
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_REST_API;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.BufferedReader;
@@ -63,7 +65,6 @@ import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
 import org.apache.geode.pdx.PdxInstance;
@@ -168,15 +169,18 @@ public class RestAPIsAndInterOpsDUnitTest
   }
 
   private int startManager(final String locators, final String[] regions) throws IOException {
+    int[] ports = getRandomAvailableTCPPorts(2);
+    int jmxManagerPort = ports[0];
+    int httpPort = ports[1];
+
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, String.valueOf(0));
     props.setProperty(LOCATORS, locators);
 
     props.setProperty(JMX_MANAGER, "true");
     props.setProperty(JMX_MANAGER_START, "true");
-    props.setProperty(JMX_MANAGER_PORT, "0");
+    props.setProperty(JMX_MANAGER_PORT, String.valueOf(jmxManagerPort));
 
-    final int httpPort = AvailablePortHelper.getRandomAvailableTCPPort();
     // Set REST service related configuration
     props.setProperty(START_DEV_REST_API, "true");
     props.setProperty(HTTP_SERVICE_BIND_ADDRESS, "localhost");
@@ -190,7 +194,7 @@ public class RestAPIsAndInterOpsDUnitTest
 
   private String startBridgeServerWithRestService(final String hostName, final String locators,
       final String[] regions) throws IOException {
-    final int serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    final int serverPort = getRandomAvailableTCPPort();
     // create Cache of given VM and start HTTP service with REST APIs service
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, String.valueOf(0));
