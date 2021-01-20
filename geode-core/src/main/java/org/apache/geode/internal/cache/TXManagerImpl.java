@@ -157,6 +157,9 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   public static boolean ALLOW_PERSISTENT_TRANSACTIONS =
       Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "ALLOW_PERSISTENT_TRANSACTIONS");
 
+  @MutableForTesting
+  static int INITIAL_UNIQUE_ID_VALUE = 0;
+
   /**
    * this keeps track of all the transactions that were initiated locally.
    */
@@ -193,7 +196,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     this.cache = cache;
     this.dm = ((InternalDistributedSystem) cache.getDistributedSystem()).getDistributionManager();
     this.distributionMgrId = this.dm.getDistributionManagerId();
-    this.uniqId = new AtomicInteger(0);
+    this.uniqId = new AtomicInteger(INITIAL_UNIQUE_ID_VALUE);
     this.cachePerfStats = cachePerfStats;
     this.hostedTXStates = new HashMap<>();
     this.txContext = new ThreadLocal<>();
@@ -353,7 +356,8 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
             "Current thread has paused its transaction so it can not start a new transaction");
       }
     }
-    TXId id = new TXId(this.distributionMgrId, this.uniqId.incrementAndGet());
+    TXId id = new TXId(this.distributionMgrId,
+        this.uniqId.updateAndGet(i -> i == Integer.MAX_VALUE ? 0 : i + 1));
     TXStateProxyImpl proxy = null;
     if (isDistributed()) {
       proxy = new DistTXStateProxyImplOnCoordinator(cache, this, id, null, statisticsClock);
@@ -375,7 +379,8 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    */
   public TXStateProxy beginJTA() {
     checkClosed();
-    TXId id = new TXId(this.distributionMgrId, this.uniqId.incrementAndGet());
+    TXId id = new TXId(this.distributionMgrId,
+        this.uniqId.updateAndGet(i -> i == Integer.MAX_VALUE ? 0 : i + 1));
     TXStateProxy newState = null;
 
     if (isDistributed()) {
@@ -512,17 +517,6 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
       }
     }
   }
-
-  /**
-   * prepare for transaction replay by assigning a new tx id to the current proxy
-   */
-  private void _incrementTXUniqueIDForReplay() {
-    TXStateProxyImpl tx = (TXStateProxyImpl) getTXState();
-    assert tx != null : "expected a transaction to be in progress";
-    TXId id = new TXId(this.distributionMgrId, this.uniqId.incrementAndGet());
-    tx.setTXIDForReplay(id);
-  }
-
 
   /**
    * Roll back the transaction associated with the current thread. When this method completes, the
@@ -866,12 +860,6 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
       return null;
     }
     return currentInstance.getTXState();
-  }
-
-  public static void incrementTXUniqueIDForReplay() {
-    if (currentInstance != null) {
-      currentInstance._incrementTXUniqueIDForReplay();
-    }
   }
 
   public int getMyTXUniqueId() {
