@@ -376,7 +376,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
     String value = "value";
 
     List<String> list = jedis.hvals(key);
-    assertThat(list == null || list.isEmpty()).isTrue();
+    assertThat(list == null);
 
     Long result = jedis.hset(key, field1, value);
     assertThat(result).isEqualTo(1);
@@ -390,6 +390,17 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
     assertThat(list).hasSize(2);
 
     assertThat(list).contains(value);
+  }
+
+  @Test
+  public void hvalsFailsForNonHash() {
+    jedis.sadd("farm", "chicken");
+    assertThatThrownBy(() -> jedis.hvals("farm"))
+        .hasMessageContaining("WRONGTYPE");
+
+    jedis.set("tractor", "John Deere");
+    assertThatThrownBy(() -> jedis.hvals("tractor"))
+        .hasMessageContaining("WRONGTYPE");
   }
 
   /**
