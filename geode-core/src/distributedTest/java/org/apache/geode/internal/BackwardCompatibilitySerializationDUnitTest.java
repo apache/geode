@@ -47,10 +47,7 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
 /**
- * Test the DSFID serialization framework added for rolling upgrades in 7.1
- *
- *
- *
+ * Test the DSFID serialization framework added for rolling upgrades
  */
 @Category({SerializationTest.class})
 public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTestCase {
@@ -91,23 +88,19 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
   }
 
   /**
-   * Test if correct toData/toDataPreXXX is called when changes are made to the TestMessage in 66
-   * and 70 and version of peer is 56
-   *
+   * Test if correct toData/toDataPreXXX is called when changes are made to the TestMessage
    */
   @Test
   public void testToDataFromHigherVersionToLower() throws Exception {
     DataOutputStream dos =
-        new VersionedDataOutputStream(new DataOutputStream(baos), KnownVersion.GFE_82);
+        new VersionedDataOutputStream(new DataOutputStream(baos), KnownVersion.OLDEST);
     InternalDataSerializer.writeDSFID(msg, dos);
     assertTrue(toDataPre11Called);
     assertFalse(toDataCalled);
   }
 
   /**
-   * Test if correct toData/toDataXXX is called when changes are made to the TestMessage in 66 and
-   * 70 and version of peer is 70
-   *
+   * Test if correct toData/toDataXXX is called when changes are made to the TestMessage
    */
   @Test
   public void testToDataFromLowerVersionToHigher() throws Exception {
@@ -118,9 +111,7 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
   }
 
   /**
-   * Test if correct fromData/fromDataXXX is called when changes are made to the TestMessage in 66
-   * and 70 and version of peer is 70
-   *
+   * Test if correct fromData/fromDataXXX is called when changes are made to the TestMessage
    */
   @Test
   public void testFromDataFromHigherVersionToLower() throws Exception {
@@ -135,9 +126,7 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
   }
 
   /**
-   * Test if correct fromData/fromDataXXX is called when changes are made to the TestMessage in 66
-   * and 70 and version of peer is 56
-   *
+   * Test if correct fromData/fromDataXXX is called when changes are made to the TestMessage
    */
   @Test
   public void testFromDataFromLowerVersionToHigher() throws Exception {
@@ -145,7 +134,7 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
     bais = new ByteArrayInputStream(baos.toByteArray());
 
     DataInputStream dis =
-        new VersionedDataInputStream(new DataInputStream(bais), KnownVersion.GFE_82);
+        new VersionedDataInputStream(new DataInputStream(bais), KnownVersion.OLDEST);
     Object o = InternalDataSerializer.basicReadObject(dis);
     assertTrue(o instanceof TestMessage);
     assertTrue(fromDataPre11Called);
@@ -273,11 +262,13 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
       toDataCalled = true;
     }
 
+    @SuppressWarnings("unused")
     public void toDataPre_GEODE_1_1_0_0(@SuppressWarnings("unused") DataOutput out,
         @SuppressWarnings("unused") SerializationContext context) {
       toDataPre11Called = true;
     }
 
+    @SuppressWarnings("unused")
     public void toDataPre_GEODE_1_5_0_0(@SuppressWarnings("unused") DataOutput out,
         @SuppressWarnings("unused") SerializationContext context) {
       toDataPre15called = true;
@@ -289,11 +280,13 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
       fromDataCalled = true;
     }
 
+    @SuppressWarnings("unused")
     public void fromDataPre_GEODE_1_1_0_0(@SuppressWarnings("unused") DataInput out,
         @SuppressWarnings("unused") DeserializationContext context) {
       fromDataPre11Called = true;
     }
 
+    @SuppressWarnings("unused")
     public void fromDataPre_GEODE_1_5_0_0(@SuppressWarnings("unused") DataInput out,
         @SuppressWarnings("unused") DeserializationContext context) {
       fromDataPre15Called = true;

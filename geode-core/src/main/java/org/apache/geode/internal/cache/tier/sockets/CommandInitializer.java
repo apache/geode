@@ -180,10 +180,9 @@ public class CommandInitializer implements CommandRegistry {
 
     final ConcurrentMap<Integer, Command> gfe81Commands = buildGfe81Commands();
     allCommands.put(KnownVersion.GFE_81, gfe81Commands);
-    allCommands.put(KnownVersion.GFE_82, gfe81Commands);
 
     final ConcurrentMap<Integer, Command> gfe90Commands =
-        buildGfe90Commands(allCommands.get(KnownVersion.GFE_82));
+        buildGfe90Commands(allCommands.get(KnownVersion.GFE_81));
     allCommands.put(KnownVersion.GFE_90, gfe90Commands);
     allCommands.put(KnownVersion.GEODE_1_1_0, gfe90Commands);
     allCommands.put(KnownVersion.GEODE_1_1_1, gfe90Commands);

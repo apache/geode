@@ -186,17 +186,7 @@ public class KnownVersion extends AbstractVersion {
 
   // 36-39 available for 8.1.x variants
 
-  private static final short GFE_82_ORDINAL = 40;
-
-  /**
-   * @deprecated No released versions ever announce version GFE_82. Use GFE_81 or GFE_90.
-   */
-  @Immutable
-  @Deprecated
-  public static final KnownVersion GFE_82 =
-      new KnownVersion("GFE", "8.2", (byte) 8, (byte) 2, (byte) 0, (byte) 0, GFE_82_ORDINAL);
-
-  // 41-44 available for 8.2.x variants
+  // 40-44 was reserved for 8.2.x but was never used in any release.
 
   private static final short GFE_90_ORDINAL = 45; // this is also GEODE 1.0.0-incubating
 

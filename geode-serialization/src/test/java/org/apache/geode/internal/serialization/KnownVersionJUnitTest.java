@@ -15,17 +15,19 @@
 package org.apache.geode.internal.serialization;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
 public class KnownVersionJUnitTest {
-  @SuppressWarnings("deprecation")
+
   @Test
-  public void testKnownVersionClass() throws Exception {
-    compare(KnownVersion.GFE_82, KnownVersion.GFE_81);
-    compare(KnownVersion.GEODE_1_1_0, KnownVersion.GFE_82);
+  public void testKnownVersionClass() {
+    compare(KnownVersion.GFE_90, KnownVersion.GFE_81);
+    compare(KnownVersion.GEODE_1_1_0, KnownVersion.GFE_90);
+    compare(KnownVersion.GEODE_1_1_1, KnownVersion.GEODE_1_1_0);
     compare(KnownVersion.GEODE_1_2_0, KnownVersion.GEODE_1_1_1);
     compare(KnownVersion.GEODE_1_3_0, KnownVersion.GEODE_1_2_0);
     compare(KnownVersion.GEODE_1_4_0, KnownVersion.GEODE_1_3_0);
@@ -37,18 +39,21 @@ public class KnownVersionJUnitTest {
     compare(KnownVersion.GEODE_1_10_0, KnownVersion.GEODE_1_9_0);
     compare(KnownVersion.GEODE_1_11_0, KnownVersion.GEODE_1_10_0);
     compare(KnownVersion.GEODE_1_12_0, KnownVersion.GEODE_1_11_0);
-    compare(KnownVersion.GEODE_1_13_0, KnownVersion.GEODE_1_12_0);
-    compare(KnownVersion.GEODE_1_14_0, KnownVersion.GEODE_1_13_0);
+    compare(KnownVersion.GEODE_1_12_1, KnownVersion.GEODE_1_12_0);
+    compare(KnownVersion.GEODE_1_13_0, KnownVersion.GEODE_1_12_1);
+    compare(KnownVersion.GEODE_1_13_1, KnownVersion.GEODE_1_13_0);
+    compare(KnownVersion.GEODE_1_14_0, KnownVersion.GEODE_1_13_1);
   }
 
   private void compare(KnownVersion later, KnownVersion earlier) {
     assertTrue(later.compareTo(earlier) > 0);
-    assertTrue(later.equals(later));
-    assertTrue(later.compareTo(later) == 0);
+    assertEquals(later, later);
+    // noinspection EqualsWithItself for testing
+    assertEquals(0, later.compareTo(later));
     assertTrue(earlier.compareTo(later) < 0);
 
     assertTrue(later.compareTo(Versioning.getVersion(earlier.ordinal())) > 0);
-    assertTrue(later.compareTo(Versioning.getVersion(later.ordinal())) == 0);
+    assertEquals(0, later.compareTo(Versioning.getVersion(later.ordinal())));
     assertTrue(earlier.compareTo(Versioning.getVersion(later.ordinal())) < 0);
 
     compareNewerVsOlder(later, earlier);
