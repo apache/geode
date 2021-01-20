@@ -1,5 +1,6 @@
 package org.apache.geode.redis.internal.executor.key;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import org.junit.After;
@@ -26,6 +27,12 @@ public abstract class AbstractRenameNXIntegrationTest implements RedisPortSuppli
   public void tearDown() {
     jedis.flushAll();
     jedis.close();
+  }
+
+  @Test
+  public void shouldFail_givenKeyToRenameDoesNotExist() {
+    assertThatThrownBy(() -> jedis.renamenx("nonexistentKey", "pineApple"))
+        .hasMessageContaining("ERR no such key");
   }
 
   @Test

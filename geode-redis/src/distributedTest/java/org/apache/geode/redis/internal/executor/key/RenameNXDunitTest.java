@@ -1,19 +1,12 @@
 package org.apache.geode.redis.internal.executor.key;
 
-import static java.lang.Integer.parseInt;
-import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-import java.time.Duration;
-import java.time.temporal.TemporalUnit;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -25,11 +18,15 @@ import redis.clients.jedis.Jedis;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
+import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 public class RenameNXDunitTest {
 
   @ClassRule
   public static RedisClusterStartupRule clusterStartUp = new RedisClusterStartupRule(3);
+
+  @ClassRule
+  public static ExecutorServiceRule executorService = new ExecutorServiceRule();
 
   AtomicInteger numberOfPassingTests = new AtomicInteger();
   static final String LOCAL_HOST = "127.0.0.1";
@@ -76,16 +73,8 @@ public class RenameNXDunitTest {
   }
 
   @Test
-  public void should_onlyAllowOneRename_givenMultipleThreadsRenamingToSameKeyConcurrently() {
-
-    int index = 10000;
-    do {
-      doConcurrentReNameNX();
-      index--;
-    } while (index > 0);
-  }
-
-  private void doConcurrentReNameNX() {
+  public void should_onlyAllowOneRename_givenMultipleThreadsRenamingToSameKeyConcurrently()
+      throws ExecutionException, InterruptedException {
     String KEY_1 = "key1";
     String KEY_2 = "key2";
     String CONTESTED_KEY = "contested";
@@ -93,32 +82,24 @@ public class RenameNXDunitTest {
     Long server1Value = 0l;
     Long server2Value = 0l;
 
-    jedis.set(KEY_1, VALUE);
-    jedis2.set(KEY_2, VALUE);
+    for (int i = 0; i < 10000; i++) {
+      jedis.set(KEY_1, VALUE);
+      jedis2.set(KEY_2, VALUE);
 
-    Future<Long> server_1_counter = doRenameNX(KEY_1, CONTESTED_KEY);
-    Future<Long> server_2_counter = doRenameNX(KEY_2, CONTESTED_KEY);
+      Future<Long> server_1_counter =
+          executorService.submit(() -> jedis.renamenx(KEY_1, CONTESTED_KEY));
+      Future<Long> server_2_counter =
+          executorService.submit(() -> jedis2.renamenx(KEY_2, CONTESTED_KEY));
 
-    try {
       server1Value = server_1_counter.get();
       server2Value = server_2_counter.get();
-    } catch (Exception e) {
-      e.printStackTrace();
+
+      assertThat(server1Value + server2Value).isEqualTo(1);
+      // TODO: remove this println when race condition is fixed
+      System.out.println(numberOfPassingTests.incrementAndGet() + " times passed");
+
+      jedis.del(CONTESTED_KEY);
     }
-
-    assertThat(server1Value + server2Value).isLessThanOrEqualTo(1);
-    System.out.println(numberOfPassingTests.incrementAndGet() + " times passed");
-
-    GeodeAwaitility.await().atMost(Duration.of(2, SECONDS)).until(() ->
-        jedis.del(CONTESTED_KEY) == 0);
-  }
-
-  private Future<Long> doRenameNX(String oldKey, String newKey) {
-    ExecutorService executor
-        = Executors.newSingleThreadExecutor();
-    return executor.submit(() -> {
-      return jedis.renamenx(oldKey, newKey);
-    });
   }
 
 }
