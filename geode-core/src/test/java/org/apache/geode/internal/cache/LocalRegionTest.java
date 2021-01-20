@@ -222,4 +222,29 @@ public class LocalRegionTest {
     assertThat(result.get("key1")).isNull();
     assertThat(result.get("key2")).isEqualTo("value2");
   }
+
+  @Test
+  public void initializeStatsInvokesDiskRegionStatsMethods() {
+    LocalRegion region =
+        spy(new LocalRegion("region", regionAttributes, null, cache, internalRegionArguments,
+            internalDataView, regionMapConstructor, serverRegionProxyConstructor, entryEventFactory,
+            poolFinder, regionPerfStatsFactory, disabledClock()));
+
+    // Mock DiskRegion and DiskRegionStats
+    DiskRegion dr = mock(DiskRegion.class);
+    when(region.getDiskRegion()).thenReturn(dr);
+    DiskRegionStats drs = mock(DiskRegionStats.class);
+    when(dr.getStats()).thenReturn(drs);
+
+    // Invoke initializeStats
+    int numEntriesInVM = 100;
+    long numOverflowOnDisk = 200l;
+    long numOverflowBytesOnDisk = 300l;
+    region.initializeStats(numEntriesInVM, numOverflowOnDisk, numOverflowBytesOnDisk);
+
+    // Verify the DiskRegionStats methods were invoked
+    verify(drs).incNumEntriesInVM(numEntriesInVM);
+    verify(drs).incNumOverflowOnDisk(numOverflowOnDisk);
+    verify(drs).incNumOverflowBytesOnDisk(numOverflowBytesOnDisk);
+  }
 }

@@ -10207,6 +10207,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       long numOverflowBytesOnDisk) {
     getDiskRegion().getStats().incNumEntriesInVM(numEntriesInVM);
     getDiskRegion().getStats().incNumOverflowOnDisk(numOverflowOnDisk);
+    getDiskRegion().getStats().incNumOverflowBytesOnDisk(numOverflowBytesOnDisk);
   }
 
   /**
