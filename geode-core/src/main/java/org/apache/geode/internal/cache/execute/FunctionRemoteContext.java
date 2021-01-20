@@ -86,7 +86,12 @@ public class FunctionRemoteContext implements DataSerializable {
     }
     this.isReExecute = DataSerializer.readBoolean(in);
 
-    if (StaticSerialization.getVersionForDataStream(in).isNotOlderThan(KnownVersion.GEODE_1_14_0)) {
+    KnownVersion dataStreamVersion = StaticSerialization.getVersionForDataStream(in);
+    if (dataStreamVersion.isNewerThanOrEqualTo(KnownVersion.GEODE_1_14_0)
+        || (dataStreamVersion.isNewerThanOrEqualTo(KnownVersion.GEODE_1_12_1)
+            && dataStreamVersion.isOlderThan(KnownVersion.GEODE_1_13_0))
+        || (dataStreamVersion.isNewerThanOrEqualTo(KnownVersion.GEODE_1_13_1)
+            && dataStreamVersion.isOlderThan(KnownVersion.GEODE_1_14_0))) {
       this.principal = DataSerializer.readObject(in);
     }
   }
@@ -109,8 +114,12 @@ public class FunctionRemoteContext implements DataSerializable {
     }
     DataSerializer.writeBoolean(this.isReExecute, out);
 
-    if (StaticSerialization.getVersionForDataStream(out)
-        .isNotOlderThan(KnownVersion.GEODE_1_14_0)) {
+    KnownVersion dataStreamVersion = StaticSerialization.getVersionForDataStream(out);
+    if (dataStreamVersion.isNewerThanOrEqualTo(KnownVersion.GEODE_1_14_0)
+        || (dataStreamVersion.isNewerThanOrEqualTo(KnownVersion.GEODE_1_12_1)
+            && dataStreamVersion.isOlderThan(KnownVersion.GEODE_1_13_0))
+        || (dataStreamVersion.isNewerThanOrEqualTo(KnownVersion.GEODE_1_13_1)
+            && dataStreamVersion.isOlderThan(KnownVersion.GEODE_1_14_0))) {
       DataSerializer.writeObject(this.principal, out);
     }
   }
