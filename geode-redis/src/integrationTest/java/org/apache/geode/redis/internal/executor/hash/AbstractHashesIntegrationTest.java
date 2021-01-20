@@ -373,23 +373,21 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
     String key = "HVals_key";
     String field1 = "field_1";
     String field2 = "field_2";
-    String value = "value";
+    String value1 = "value_1";
+    String value2 = "value_2";
 
-    List<String> list = jedis.hvals(key);
+    List<String> list = jedis.hvals("non-existent-key");
     assertThat(list == null);
 
-    Long result = jedis.hset(key, field1, value);
+    Long result = jedis.hset(key, field1, value1);
     assertThat(result).isEqualTo(1);
 
-    result = jedis.hset(key, field2, value);
+    result = jedis.hset(key, field2, value2);
     assertThat(result).isEqualTo(1);
     list = jedis.hvals(key);
 
-    assertThat(list).isNotNull();
-    assertThat(list).isNotEmpty();
     assertThat(list).hasSize(2);
-
-    assertThat(list).contains(value);
+    assertThat(list).contains(value1, value2);
   }
 
   @Test

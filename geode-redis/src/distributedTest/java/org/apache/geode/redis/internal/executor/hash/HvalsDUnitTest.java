@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal.executor.hash;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
 import java.util.Random;
 
 import org.junit.Before;
@@ -69,17 +70,26 @@ public class HvalsDUnitTest {
     Random rand = new Random();
 
     for (int i = 0; i < fieldCount; i++) {
-      jedis1.hset(key, "field-" + i, "value-" + i);
+      jedis1.hset(key, "field-" + i, "" + i);
     }
 
     new ConcurrentLoopingThreads(iterations,
         (i) -> {
           int x = rand.nextInt(fieldCount);
-          jedis1.hset(key, "field-" + x, "value-" + i);
+          String field = "field-" + x;
+          String currentValue = jedis1.hget(key, field);
+          jedis1.hset(key, field, "" + (Long.parseLong(currentValue) + i));
         },
         (i) -> assertThat(jedis2.hvals(key)).hasSize(fieldCount),
         (i) -> assertThat(jedis3.hvals(key)).hasSize(fieldCount))
             .run();
+
+    List<String> values = jedis1.hvals(key);
+    long finalTotal = values.stream().mapToLong(Long::valueOf).sum();
+
+    long sumOfBothSequenceSums = (fieldCount / 2) * ((fieldCount - 1) - 0) +
+        (iterations / 2) * ((iterations - 1) - 0);
+    assertThat(finalTotal).isEqualTo(sumOfBothSequenceSums);
   }
 
 }
