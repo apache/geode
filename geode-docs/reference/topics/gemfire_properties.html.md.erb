@@ -568,7 +568,7 @@ Any security-related (properties that begin with <code class="ph codeph">securit
 </tr>
 <tr>
 <td>security-client-auth-init</td>
-<td>Used for authentication. Static creation method returning an <code class="ph codeph">AuthInitialize</code> object, which obtains credentials for peers in a cluster. The obtained credentials should be acceptable to the <code class="ph codeph">Authenticator</code> specified through the security-peer-authenticator property on the peers.</td>
+<td>Used for authentication. Location of the implementation with the static creation method that returns an <code class="ph codeph">AuthInitialize</code> object. The method obtains credentials for clients to a cluster. The obtained credentials should be acceptable to the <code class="ph codeph">SecurityManager</code> specified through the security-manager property on the peers.</td>
 <td>S, L</td>
 <td><em>not set</em></td>
 </tr>
