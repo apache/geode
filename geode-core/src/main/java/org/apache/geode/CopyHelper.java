@@ -105,10 +105,10 @@ public final class CopyHelper {
       if (o.getClass().equals(BigDecimal.class))
         return true;
     }
-    if (o instanceof PdxInstance && !(o instanceof WritablePdxInstance)) {
-      // no need to copy since it is immutable
-      return true;
-    }
+//    if (o instanceof PdxInstance && !(o instanceof WritablePdxInstance)) {
+//      // no need to copy since it is immutable
+//      return true;
+//    }
     if (o instanceof Character)
       return true;
     if (o instanceof UUID)
