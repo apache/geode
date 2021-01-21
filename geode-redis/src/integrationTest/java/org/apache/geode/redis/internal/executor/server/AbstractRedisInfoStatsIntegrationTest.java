@@ -29,6 +29,7 @@ import org.assertj.core.data.Offset;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 
@@ -207,7 +208,6 @@ public abstract class AbstractRedisInfoStatsIntegrationTest implements RedisPort
 
   // ------------------- Clients Section -------------------------- //
 
-  // TODO fails on our redis but not native redis
   @Test
   public void connectedClients_incrAndDecrWhenClientConnectsAndDisconnects() {
     Jedis jedis2 = new Jedis("localhost", getPort(), TIMEOUT);
