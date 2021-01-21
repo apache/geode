@@ -250,6 +250,14 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   }
 
   @Test
+  public void testHStrlen_givenWrongNumberOfArguments() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSTRLEN))
+        .hasMessageContaining("wrong number of arguments");
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSTRLEN, "1"))
+        .hasMessageContaining("wrong number of arguments");
+  }
+
+  @Test
   public void testHkeys() {
     String key = "key";
     Map<String, String> hash = new HashMap<String, String>();
