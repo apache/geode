@@ -75,7 +75,7 @@ public class ClientServerTransactionDistributedTest implements Serializable {
   public void clientTransactionIDAboveIntegerMaxValue() {
     port1 = server1.invoke(() -> createServerRegion());
 
-    // Test that transaction ID overflow to zero
+    // Test that transaction ID overflow to one
     TXManagerImpl.INITIAL_UNIQUE_ID_VALUE = Integer.MAX_VALUE;
     createClientRegion(true, port1);
 
@@ -91,7 +91,7 @@ public class ClientServerTransactionDistributedTest implements Serializable {
     txManager.commit();
 
     server1.invoke(() -> verifyTransactionResult(numOfOperations));
-    assertEquals(0, transactionID);
+    assertEquals(1, transactionID);
   }
 
   private void putData(int numberOfEntries) {

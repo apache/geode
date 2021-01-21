@@ -117,7 +117,7 @@ public class TXManagerImplTest {
     TXManagerImpl txManager = new TXManagerImpl(mock(CachePerfStats.class), cache, disabledClock());
     txManager.setDistributed(false);
     TXStateProxy proxy = txManager.beginJTA();
-    assertEquals(0, proxy.getTxId().getUniqId());
+    assertEquals(1, proxy.getTxId().getUniqId());
     assertNotNull(txManager);
     TXManagerImpl.INITIAL_UNIQUE_ID_VALUE = 0;
   }

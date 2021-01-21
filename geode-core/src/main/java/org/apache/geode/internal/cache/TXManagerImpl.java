@@ -335,6 +335,18 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   }
 
   /**
+   * Get a new {@link TXId}.
+   * This method builds a new {@link TXId} with uniqueID incremented by one.
+   * Special case: If uniqueID has reached Integer.MAX_VALUE, then it is not incremented,
+   * but set to one. This is done to prevent memory overflow of uniqueID to Integer.MIN_VALUE.
+   *
+   */
+  private TXId getNewTXId() {
+    return new TXId(this.distributionMgrId,
+        this.uniqId.updateAndGet(i -> i == Integer.MAX_VALUE ? 1 : i + 1));
+  }
+
+  /**
    * Build a new {@link TXId}, use it as part of the transaction state and associate with the
    * current thread using a {@link ThreadLocal}.
    */
@@ -356,8 +368,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
             "Current thread has paused its transaction so it can not start a new transaction");
       }
     }
-    TXId id = new TXId(this.distributionMgrId,
-        this.uniqId.updateAndGet(i -> i == Integer.MAX_VALUE ? 0 : i + 1));
+    TXId id = getNewTXId();
     TXStateProxyImpl proxy = null;
     if (isDistributed()) {
       proxy = new DistTXStateProxyImplOnCoordinator(cache, this, id, null, statisticsClock);
@@ -379,8 +390,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    */
   public TXStateProxy beginJTA() {
     checkClosed();
-    TXId id = new TXId(this.distributionMgrId,
-        this.uniqId.updateAndGet(i -> i == Integer.MAX_VALUE ? 0 : i + 1));
+    TXId id = getNewTXId();
     TXStateProxy newState = null;
 
     if (isDistributed()) {
