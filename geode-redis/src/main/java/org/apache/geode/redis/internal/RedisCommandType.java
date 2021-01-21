@@ -160,7 +160,6 @@ public enum RedisCommandType {
       new MinimumParameterRequirements(4).and(new EvenParameterRequirements())),
   HSET(new HSetExecutor(), SUPPORTED,
       new MinimumParameterRequirements(4).and(new EvenParameterRequirements())),
-  HSETNX(new HSetNXExecutor(), SUPPORTED, new ExactParameterRequirements(4)),
 
   /************* Sets *****************/
 
@@ -241,6 +240,7 @@ public enum RedisCommandType {
   HMGET(new HMGetExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3)),
   HSCAN(new HScanExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3),
       new OddParameterRequirements(ERROR_SYNTAX)),
+  HSETNX(new HSetNXExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
   HSTRLEN(new HStrLenExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
   HVALS(new HValsExecutor(), UNSUPPORTED, new ExactParameterRequirements(2)),
 
