@@ -261,8 +261,8 @@ geode-core/**/org/apache/geode/internal/datasource/**             @agingade @Ben
 #-----------------------------------------------------------------
 # Resource manager
 #-----------------------------------------------------------------
-#geode-core/**/org/apache/geode/cache/control/**                   @kirklund
-#geode-core/**/org/apache/geode/internal/cache/control/**          @kirklund
+geode-core/**/org/apache/geode/cache/control/**                   @kirklund @DonalEvans
+geode-core/**/org/apache/geode/internal/cache/control/**          @kirklund @DonalEvans
 
 #-----------------------------------------------------------------
 # Testing utilities
