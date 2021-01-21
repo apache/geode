@@ -179,7 +179,7 @@ public class RestAPIsAndInterOpsDUnitTest
 
     props.setProperty(JMX_MANAGER, "true");
     props.setProperty(JMX_MANAGER_START, "true");
-    props.setProperty(JMX_MANAGER_PORT, String.valueOf(jmxManagerPort));
+    props.setProperty(JMX_MANAGER_PORT, "0");
 
     // Set REST service related configuration
     props.setProperty(START_DEV_REST_API, "true");
