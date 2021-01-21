@@ -156,12 +156,11 @@ public enum RedisCommandType {
   /************* Hashes *****************/
 
   HGETALL(new HGetAllExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
-  HMGET(new HMGetExecutor(), SUPPORTED, new MinimumParameterRequirements(3)),
   HMSET(new HMSetExecutor(), SUPPORTED,
       new MinimumParameterRequirements(4).and(new EvenParameterRequirements())),
   HSET(new HSetExecutor(), SUPPORTED,
       new MinimumParameterRequirements(4).and(new EvenParameterRequirements())),
-  HVALS(new HValsExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
+  HSETNX(new HSetNXExecutor(), SUPPORTED, new ExactParameterRequirements(4)),
 
   /************* Sets *****************/
 
@@ -239,10 +238,11 @@ public enum RedisCommandType {
   HINCRBYFLOAT(new HIncrByFloatExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
   HKEYS(new HKeysExecutor(), UNSUPPORTED, new ExactParameterRequirements(2)),
   HLEN(new HLenExecutor(), UNSUPPORTED, new ExactParameterRequirements(2)),
+  HMGET(new HMGetExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3)),
   HSCAN(new HScanExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3),
       new OddParameterRequirements(ERROR_SYNTAX)),
-  HSETNX(new HSetNXExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
   HSTRLEN(new HStrLenExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
+  HVALS(new HValsExecutor(), UNSUPPORTED, new ExactParameterRequirements(2)),
 
   /***************************************
    **************** Sets *****************
