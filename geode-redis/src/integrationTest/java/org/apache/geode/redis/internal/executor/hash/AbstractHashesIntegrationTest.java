@@ -387,6 +387,18 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
     jedis.del(set_key);
   }
 
+  @Test
+  public void hsetnx_shouldThrowError_givenWrongNumberOfArguments() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSETNX))
+        .hasMessageContaining("wrong number of arguments");
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSETNX, "1"))
+        .hasMessageContaining("wrong number of arguments");
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSETNX, "1", "2"))
+        .hasMessageContaining("wrong number of arguments");
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSETNX, "1", "2", "3", "4"))
+        .hasMessageContaining("wrong number of arguments");
+  }
+
   /**
    * Test the HVALS command
    */
