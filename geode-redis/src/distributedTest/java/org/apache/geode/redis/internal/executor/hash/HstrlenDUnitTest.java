@@ -62,7 +62,7 @@ public class HstrlenDUnitTest {
   }
 
   @Test
-  public void hstrlenWorks_whileAlsoUpdatingHash() {
+  public void hstrlenDoesNotCorruptData_whileHashIsConcurrentlyUpdated() {
     String key = "key";
     String field = "field";
     int iterations = 10000;
@@ -81,7 +81,8 @@ public class HstrlenDUnitTest {
             .run();
 
     String value = jedis1.hget(key, field);
-    int expectedLength = Integer.parseInt(Character.toString(value.charAt(0)));
+    String encodedStringLength = Character.toString(value.charAt(0));
+    int expectedLength = Integer.parseInt(encodedStringLength);
     assertThat(jedis2.hstrlen(key, field)).isEqualTo(expectedLength);
   }
 
