@@ -255,6 +255,8 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
         .hasMessageContaining("wrong number of arguments");
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSTRLEN, "1"))
         .hasMessageContaining("wrong number of arguments");
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSTRLEN, "1", "2", "3"))
+        .hasMessageContaining("wrong number of arguments");
   }
 
   @Test
