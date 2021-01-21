@@ -76,10 +76,9 @@ public class HstrlenDUnitTest {
           String newVal = makeStringOfRepeatedDigits(newLength);
           jedis1.hset(key, field, newVal);
         },
-        (i) -> assertThat(jedis2.hstrlen(key, field)).isBetween(1L, 9L)
-        ,
+        (i) -> assertThat(jedis2.hstrlen(key, field)).isBetween(1L, 9L),
         (i) -> assertThat(jedis3.hstrlen(key, field)).isBetween(1L, 9L))
-        .run();
+            .run();
 
     String value = jedis1.hget(key, field);
     int expectedLength = Integer.parseInt(Character.toString(value.charAt(0)));
