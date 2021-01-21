@@ -115,6 +115,22 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   }
 
   @Test
+  public void testHMSetErrorMessage_givenIncorrectDataType() {
+    Map<String, String> animalMap = new HashMap<>();
+    animalMap.put("chicken", "eggs");
+
+    jedis.set("farm", "chicken");
+    assertThatThrownBy(() -> jedis.hmset("farm", animalMap))
+        .isInstanceOf(JedisDataException.class)
+        .hasMessageContaining("WRONGTYPE Operation against a key holding the wrong kind of value");
+
+    jedis.sadd("zoo", "elephant");
+    assertThatThrownBy(() -> jedis.hmset("zoo", animalMap))
+        .isInstanceOf(JedisDataException.class)
+        .hasMessageContaining("WRONGTYPE Operation against a key holding the wrong kind of value");
+  }
+
+  @Test
   public void testHSet() {
     String key = "key";
     Map<String, String> hash = new HashMap<String, String>();
@@ -136,32 +152,52 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   }
 
   @Test
-  public void testHMGetHDelHGetAllHVals() {
+  public void testHMGet_HDel_HGetAll_HVals() {
     String key = "key";
-    Map<String, String> hash = new HashMap<String, String>();
+    Map<String, String> hash = new HashMap<>();
     for (int i = 0; i < 10; i++) {
       hash.put("field_" + i, "member_" + i);
     }
     jedis.hmset(key, hash);
+
     Set<String> keys = hash.keySet();
     String[] keyArray = keys.toArray(new String[keys.size()]);
     List<String> retList = jedis.hmget(key, keyArray);
 
-    for (int i = 0; i < keys.size(); i++) {
-      assertThat(hash.get(keyArray[i])).isEqualTo(retList.get(i));
-    }
+    assertThat(retList).containsExactlyInAnyOrderElementsOf(hash.values());
 
     Map<String, String> retMap = jedis.hgetAll(key);
 
     assertThat(retMap).containsExactlyInAnyOrderEntriesOf(hash);
 
     List<String> retVals = jedis.hvals(key);
-    Set<String> retSet = new HashSet<String>(retVals);
+    Set<String> retSet = new HashSet<>(retVals);
 
     assertThat(retSet.containsAll(hash.values())).isTrue();
 
     jedis.hdel(key, keyArray);
     assertThat(jedis.hlen(key)).isEqualTo(0);
+  }
+
+  @Test
+  public void testHMGet_givenWrongNumberOfArguments() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HMGET))
+        .hasMessageContaining("wrong number of arguments");
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HMGET, "1"))
+        .hasMessageContaining("wrong number of arguments");
+  }
+
+  @Test
+  public void testHMGetErrorMessage_givenIncorrectDataType() {
+    jedis.set("farm", "chicken");
+    assertThatThrownBy(() -> jedis.hmget("farm", "chicken"))
+        .isInstanceOf(JedisDataException.class)
+        .hasMessageContaining("WRONGTYPE Operation against a key holding the wrong kind of value");
+
+    jedis.sadd("zoo", "elephant");
+    assertThatThrownBy(() -> jedis.hmget("zoo", "chicken"))
+        .isInstanceOf(JedisDataException.class)
+        .hasMessageContaining("WRONGTYPE Operation against a key holding the wrong kind of value");
   }
 
   @Test
