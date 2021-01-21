@@ -376,11 +376,12 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
     jedis.sadd(set_key, field);
 
     assertThatThrownBy(
-        () -> jedis.hsetnx(string_key, field, "something else")).isInstanceOf(JedisDataException.class)
-        .hasMessageContaining("WRONGTYPE");
+        () -> jedis.hsetnx(string_key, field, "something else"))
+            .isInstanceOf(JedisDataException.class)
+            .hasMessageContaining("WRONGTYPE");
     assertThatThrownBy(
         () -> jedis.hsetnx(set_key, field, "something else")).isInstanceOf(JedisDataException.class)
-        .hasMessageContaining("WRONGTYPE");
+            .hasMessageContaining("WRONGTYPE");
 
     jedis.del(string_key);
     jedis.del(set_key);
