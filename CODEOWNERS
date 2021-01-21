@@ -308,5 +308,5 @@ BUILDING.md                                                       @rhoughton-piv
 CODE_OF_CONDUCT.md                                                @upthewaterspout @pivotal-amurmann @nonbinaryprogrammer
 LICENSE                                                           @onichols-pivotal @dickcav @metatype
 NOTICE                                                            @onichols-pivotal @dickcav @metatype
-README.md                                                         @upthewaterspout @pivotal-amurmann
+/README.md                                                         @upthewaterspout @pivotal-amurmann
 #TESTING.md
