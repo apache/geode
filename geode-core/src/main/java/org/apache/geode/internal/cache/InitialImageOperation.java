@@ -846,6 +846,11 @@ public class InitialImageOperation {
       }
       List<Entry> entriesToSynchronize = new ArrayList<>();
 
+      if (this.region.getFullPath().contains(
+          "_B__ln__for__testParallelGatewaySenderOverflowMBeanAttributesAfterServerRestart__PARALLEL__GATEWAY__SENDER__QUEUE")) {
+        logger.warn("XXX InitialImageOperation.processChunk about to process region={}; entries={}",
+            this.region.getFullPath(), entryCount);
+      }
       for (int i = 0; i < entryCount; i++) {
         // stream is null-terminated
         if (internalDuringApplyDelta != null && !internalDuringApplyDelta.isRunning
@@ -938,8 +943,20 @@ public class InitialImageOperation {
                     record = (tmpValue != Token.TOMBSTONE);
                   }
                   if (record) {
+                    if (this.region.getFullPath().contains(
+                        "_B__ln__for__testParallelGatewaySenderOverflowMBeanAttributesAfterServerRestart__PARALLEL__GATEWAY__SENDER__QUEUE")) {
+                      logger.warn(
+                          "XXX InitialImageOperation.processChunk about to initialImagePut key={}",
+                          entry.key);
+                    }
                     this.entries.initialImagePut(entry.key, lastModified, tmpValue, wasRecovered,
                         true, tag, sender, this.isSynchronizing);
+                    if (this.region.getFullPath().contains(
+                        "_B__ln__for__testParallelGatewaySenderOverflowMBeanAttributesAfterServerRestart__PARALLEL__GATEWAY__SENDER__QUEUE")) {
+                      logger.warn(
+                          "XXX InitialImageOperation.processChunk done initialImagePut key={}",
+                          entry.key);
+                    }
                     if (this.isSynchronizing) {
                       entriesToSynchronize.add(entry);
                     }
@@ -951,7 +968,15 @@ public class InitialImageOperation {
               }
             }
             // fix for 41814, java level deadlock
+            if (this.region.getFullPath().contains(
+                "_B__ln__for__testParallelGatewaySenderOverflowMBeanAttributesAfterServerRestart__PARALLEL__GATEWAY__SENDER__QUEUE")) {
+              logger.warn("XXX InitialImageOperation.processChunk about to lruUpdateCallback");
+            }
             this.entries.lruUpdateCallback();
+            if (this.region.getFullPath().contains(
+                "_B__ln__for__testParallelGatewaySenderOverflowMBeanAttributesAfterServerRestart__PARALLEL__GATEWAY__SENDER__QUEUE")) {
+              logger.warn("XXX InitialImageOperation.processChunk done lruUpdateCallback");
+            }
           }
         }
 
@@ -991,6 +1016,11 @@ public class InitialImageOperation {
             return false;
           }
         }
+      }
+      if (this.region.getFullPath().contains(
+          "_B__ln__for__testParallelGatewaySenderOverflowMBeanAttributesAfterServerRestart__PARALLEL__GATEWAY__SENDER__QUEUE")) {
+        logger.warn("XXX InitialImageOperation.processChunk done processing region={}; entries={}",
+            this.region.getFullPath(), entryCount);
       }
       if (this.isSynchronizing && !entriesToSynchronize.isEmpty()) {
         LocalRegion owner = ((AbstractRegionMap) this.entries)._getOwner();
