@@ -15,10 +15,10 @@
 # limitations under the License.
 
 #-----------------------------------------------------------------
-# CODEOWNERS and .asf.yml - owned by everyone
+# CODEOWNERS and .asf.yml
 #-----------------------------------------------------------------
-CODEOWNERS @apache/geode-committers
-.asf.yml @apache/geode-committers
+CODEOWNERS                                                        @upthewaterspout @rhoughton-pivot @onichols-pivotal
+.asf.yml                                                          @upthewaterspout @rhoughton-pivot
 
 #-----------------------------------------------------------------
 # Serialization
