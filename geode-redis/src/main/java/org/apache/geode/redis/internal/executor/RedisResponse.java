@@ -130,7 +130,9 @@ public class RedisResponse {
   }
 
   public static RedisResponse scan(BigInteger cursor, List<Object> scanResult) {
-    return new RedisResponse((bba) -> Coder.getScanResponse(bba, cursor, scanResult));
+
+    return new RedisResponse(
+        (bba) -> Coder.getScanResponse(bba, cursor, scanResult));
   }
 
   public static RedisResponse emptyScan() {

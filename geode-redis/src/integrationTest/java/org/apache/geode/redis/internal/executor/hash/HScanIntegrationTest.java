@@ -14,16 +14,15 @@
  */
 package org.apache.geode.redis.internal.executor.hash;
 
-import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_CURSOR;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.math.BigInteger;
 
 import org.junit.ClassRule;
 import org.junit.Test;
-import redis.clients.jedis.ScanParams;
-import redis.clients.jedis.ScanResult;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
 
@@ -37,22 +36,28 @@ public class HScanIntegrationTest extends AbstractHScanIntegrationTest {
     return server.getPort();
   }
 
+
+  // Note: these tests will not pass native redis, so included here in concrete test class
   @Test
-  public void givenDifferentCursorThanSpecifiedByPreviousHscan_returnsAllEntries() {
-    Map<String, String> entryMap = new HashMap<>();
-    for (int i = 0; i < 10; i++) {
-      entryMap.put(String.valueOf(i), String.valueOf(i));
-    }
-    jedis.hmset("a", entryMap);
+  public void givenCursorGreaterThanIntMaxValue_returnsCursorError() {
+    int largestCursorValue = Integer.MAX_VALUE;
 
-    ScanParams scanParams = new ScanParams();
-    scanParams.count(5);
-    ScanResult<Map.Entry<String, String>> result = jedis.hscan("a", "0", scanParams);
-    assertThat(result.isCompleteIteration()).isFalse();
+    BigInteger tooBigCursor =
+        new BigInteger(String.valueOf(largestCursorValue)).add(BigInteger.valueOf(1));
 
-    result = jedis.hscan("a", "100");
-
-    assertThat(result.getResult()).hasSize(10);
-    assertThat(new HashSet<>(result.getResult())).isEqualTo(entryMap.entrySet());
+    assertThatThrownBy(() -> jedis.hscan("a", tooBigCursor.toString()))
+        .hasMessageContaining(ERROR_CURSOR);
   }
+
+  @Test
+  public void givenCursorLessThanIntMinValue_returnsCursorError() {
+    int smallestCursorValue = Integer.MIN_VALUE;
+
+    BigInteger tooSmallCursor =
+        new BigInteger(String.valueOf(smallestCursorValue)).subtract(BigInteger.valueOf(1));
+
+    assertThatThrownBy(() -> jedis.hscan("a", tooSmallCursor.toString()))
+        .hasMessageContaining(ERROR_CURSOR);
+  }
+
 }
