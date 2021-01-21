@@ -392,7 +392,7 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
     runDiffStoreCommandAndAssertNoStatUpdates("set", (k, v, s) -> jedis.sunionstore(k, v, s));
   }
 
-  // TODO our implementation updates the stats when it shouldn't
+  // TODO GEODE-8857: our implementation updates the stats when it shouldn't
   @Ignore
   @Test
   public void testSmove() {

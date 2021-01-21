@@ -28,4 +28,9 @@ public class InfoNativeRedisAcceptanceTest extends AbstractInfoIntegrationTest {
   public int getPort() {
     return redis.getPort();
   }
+
+  @Override
+  public int getExposedPort() {
+    return redis.getExposedPort();
+  }
 }

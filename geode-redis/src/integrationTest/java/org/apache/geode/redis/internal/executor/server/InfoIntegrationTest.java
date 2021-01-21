@@ -31,4 +31,9 @@ public class InfoIntegrationTest extends AbstractInfoIntegrationTest {
   public int getPort() {
     return server.getPort();
   }
+
+  @Override
+  public int getExposedPort() {
+    return getPort();
+  }
 }

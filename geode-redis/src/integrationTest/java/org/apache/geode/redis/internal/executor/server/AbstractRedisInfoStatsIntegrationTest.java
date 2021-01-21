@@ -83,6 +83,9 @@ public abstract class AbstractRedisInfoStatsIntegrationTest implements RedisPort
     jedis.sadd(EXISTING_SET_KEY_1, "m1", "m2", "m3");
     jedis.sadd(EXISTING_SET_KEY_2, "m4", "m5", "m6");
 
+    // the info command increments command processed so we need to account for that.
+    // the +1 is needed because info returns the number of commands processed before that call to
+    // info
     await().atMost(Duration.ofSeconds(2))
         .untilAsserted(() -> assertThat(
             Long.valueOf(getInfo(jedis).get(COMMANDS_PROCESSED)) - numInfoCalled.get() + 1)
