@@ -691,15 +691,16 @@ public class CacheClientNotifier {
       HAEventWrapper wrapper = new HAEventWrapper(clientMessage);
       wrapper.incrementPutInProgressCounter("notify clients");
       conflatable = wrapper;
-    }
-    if (!filterClients.isEmpty()) {
-      if (event.getOperation().isEntry()) {
+
+      // include new value in event if the entry is not a tombstone and there are clients
+      if (!filterClients.isEmpty() && event.getOperation().isEntry()) {
         EntryEventImpl entryEvent = (EntryEventImpl) event;
         entryEvent.exportNewValue(clientMessage);
       }
     }
 
-    clientRegistrationEventQueueManager.add(event, conflatable, filterClients, this);
+    // add event to temporary queue for clients in process of registering (if any)
+    clientRegistrationEventQueueManager.add(event, clientMessage, conflatable, filterClients, this);
 
     singletonRouteClientMessage(conflatable, filterClients);
 

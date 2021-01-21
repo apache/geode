@@ -2160,6 +2160,16 @@ public class FilterProfile implements DataSerializableFixedID {
         this.wireIDs.remove(mappedId);
       }
     }
+
+    @Override
+    public String toString() {
+      return "IDMap{" +
+          "nextID=" + nextID +
+          ", realIDs=" + realIDs +
+          ", wireIDs=" + wireIDs +
+          ", hasLongID=" + hasLongID +
+          '}';
+    }
   }
 
   /**
