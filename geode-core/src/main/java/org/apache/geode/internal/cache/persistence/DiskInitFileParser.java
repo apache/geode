@@ -65,7 +65,7 @@ public class DiskInitFileParser {
   private transient boolean gotEOF;
 
   public DiskStoreID parse() throws IOException, ClassNotFoundException {
-    KnownVersion gfversion = KnownVersion.GFE_662;
+    KnownVersion gfversion = KnownVersion.GFE_6622;
     DiskStoreID result = null;
     boolean endOfFile = false;
     while (!endOfFile) {
