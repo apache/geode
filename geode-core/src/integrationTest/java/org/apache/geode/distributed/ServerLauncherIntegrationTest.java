@@ -112,7 +112,8 @@ public class ServerLauncherIntegrationTest {
     builder.parseArguments("start", "memberOne", "--server-bind-address",
         getLocalHost().getHostAddress(), "--dir", getWorkingDirectoryPath(),
         "--hostname-for-clients", "Tucows", "--pid", "1234", "--server-port", "11235",
-        "--redirect-output", "--force", "--debug");
+        "--redirect-output", "--force", "--debug", "--membership-bind-address",
+        getLocalHost().getHostAddress());
 
     // then: the getters should return properly parsed values
     assertThat(builder.getCommand()).isEqualTo(Command.START);
@@ -124,6 +125,7 @@ public class ServerLauncherIntegrationTest {
     assertThat(builder.getServerBindAddress()).isEqualTo(getLocalHost());
     assertThat(builder.getServerPort().intValue()).isEqualTo(11235);
     assertThat(builder.getWorkingDirectory()).isEqualTo(getWorkingDirectoryPath());
+    assertThat(builder.getMembershipBindAddress()).isEqualTo(getLocalHost().getHostAddress());
   }
 
   @Test
@@ -146,6 +148,7 @@ public class ServerLauncherIntegrationTest {
     assertThat(builder.getServerBindAddress()).isNull();
     assertThat(builder.getServerPort().intValue()).isEqualTo(12345);
     assertThat(builder.getWorkingDirectory()).isEqualTo(getWorkingDirectoryPath());
+    assertThat(builder.getMembershipBindAddress()).isNull();
   }
 
   @Test
