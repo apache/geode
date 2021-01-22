@@ -124,15 +124,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
 
   private void setOverrides() {
     clientConflation = determineClientConflation();
-
-    // As of May 2009 ( GFE 6.0 ):
-    // Note that this.clientVersion is used by server side for accepting
-    // handshakes.
-    // Client side handshake code uses this.currentClientVersion which can be
-    // set via tests.
-    if (currentClientVersion.isNotOlderThan(KnownVersion.GFE_603)) {
-      overrides = new byte[] {clientConflation};
-    }
+    overrides = new byte[] {clientConflation};
   }
 
   // used by the client side
@@ -393,18 +385,9 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
       DataOutput idOut = new VersionedDataOutputStream(hdos, KnownVersion.GFE_81);
       DataSerializer.writeObject(id, idOut);
 
-      if (currentClientVersion.isNotOlderThan(KnownVersion.GFE_603)) {
-        byte[] overrides = getOverrides();
-        for (final byte override : overrides) {
-          hdos.writeByte(override);
-        }
-      } else {
-        // write the client conflation setting byte
-        if (setClientConflationForTesting) {
-          hdos.writeByte(clientConflationForTesting);
-        } else {
-          hdos.writeByte(clientConflation);
-        }
+      byte[] overrides = getOverrides();
+      for (final byte override : overrides) {
+        hdos.writeByte(override);
       }
 
       if (isCallbackConnection || communicationMode.isWAN()) {
