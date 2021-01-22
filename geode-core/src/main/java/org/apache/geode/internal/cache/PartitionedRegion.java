@@ -4534,7 +4534,7 @@ public class PartitionedRegion extends LocalRegion
   /**
    * Fetches entries from local and remote nodes and appends these to register-interest response.
    */
-  public void fetchEntries(HashMap<Integer, HashSet> bucketKeys, VersionedObjectList values,
+  public void fetchEntries(HashMap<Integer, HashSet<Object>> bucketKeys, VersionedObjectList values,
       ServerConnection servConn) throws IOException {
     int retryAttempts = calcRetry();
     RetryTimeKeeper retryTime = null;
