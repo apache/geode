@@ -234,10 +234,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
       }
 
       // validate that the remote side has a different distributed system id.
-      if (communicationMode.isWAN()
-          && KnownVersion.GFE_66
-              .compareTo(Versioning.getVersion(conn.getWanSiteVersion())) <= 0
-          && currentClientVersion.isNotOlderThan(KnownVersion.GFE_66)) {
+      if (communicationMode.isWAN()) {
         int remoteDistributedSystemId = in.read();
         int localDistributedSystemId =
             ((InternalDistributedSystem) system).getDistributionManager().getDistributedSystemId();
