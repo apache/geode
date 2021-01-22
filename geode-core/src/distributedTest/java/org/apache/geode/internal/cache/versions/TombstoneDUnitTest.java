@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.versions;
 
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE_PERSISTENT;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.internal.cache.InitialImageOperation.GIITestHookType.DuringApplyDelta;
 import static org.apache.geode.internal.cache.InitialImageOperation.resetAllGIITestHooks;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
@@ -38,6 +39,7 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
@@ -147,10 +149,14 @@ public class TombstoneDUnitTest implements Serializable {
     VM client = VM.getVM(0);
     VM server = VM.getVM(1);
 
+
     // Fire up the server and put in some data that is deletable
     server.invoke(() -> {
       createCacheAndRegion(REPLICATE);
-      cache.addCacheServer().start();
+      int serverPort = getRandomAvailableTCPPort();
+      CacheServer cacheServer = cache.addCacheServer();
+      cacheServer.setPort(serverPort);
+      cacheServer.start();
       for (int i = 0; i < 1000; i++) {
         region.put("K" + i, "V" + i);
       }
@@ -222,7 +228,10 @@ public class TombstoneDUnitTest implements Serializable {
     // Fire up the server and put in some data that is deletable
     server.invoke(() -> {
       createCacheAndRegion(REPLICATE);
-      cache.addCacheServer().start();
+      int serverPort = getRandomAvailableTCPPort();
+      CacheServer cacheServer = cache.addCacheServer();
+      cacheServer.setPort(serverPort);
+      cacheServer.start();
       for (int i = 0; i < 1000; i++) {
         region.put("K" + i, "V" + i);
       }
