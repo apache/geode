@@ -111,7 +111,8 @@ public class LocatorLauncherIntegrationTest {
     builder.parseArguments("start", "memberOne", "--bind-address",
         InetAddress.getLocalHost().getHostAddress(), "--dir", getWorkingDirectoryPath(),
         "--hostname-for-clients", "Tucows", "--pid", "1234", "--port", "11235", "--redirect-output",
-        "--force", "--debug");
+        "--force", "--debug", "--membership-bind-address",
+        InetAddress.getLocalHost().getHostAddress());
 
     // then: the getters should return properly parsed values
     assertThat(builder.getCommand()).isEqualTo(Command.START);
@@ -123,6 +124,8 @@ public class LocatorLauncherIntegrationTest {
     assertThat(builder.getPort().intValue()).isEqualTo(11235);
     assertThat(builder.getRedirectOutput()).isTrue();
     assertThat(builder.getWorkingDirectory()).isEqualTo(getWorkingDirectoryPath());
+    assertThat(builder.getMembershipBindAddress())
+        .isEqualTo(InetAddress.getLocalHost().getHostAddress());
   }
 
   @Test
@@ -145,6 +148,7 @@ public class LocatorLauncherIntegrationTest {
     assertThat(builder.getPid()).isNull();
     assertThat(builder.getPort().intValue()).isEqualTo(12345);
     assertThat(builder.getWorkingDirectory()).isEqualTo(getWorkingDirectoryPath());
+    assertThat(builder.getMembershipBindAddress()).isNull();
   }
 
   @Test

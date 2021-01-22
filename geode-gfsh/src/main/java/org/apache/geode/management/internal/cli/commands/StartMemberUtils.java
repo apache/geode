@@ -46,8 +46,8 @@ import org.apache.geode.util.internal.GeodeGlossary;
  * @see StartLocatorCommand
  * @see StartServerCommand
  */
-public class StartMemberUtils {
-  public static final String GEODE_HOME = System.getenv("GEODE_HOME");
+class StartMemberUtils {
+  static final String GEODE_HOME = System.getenv("GEODE_HOME");
 
   private static final String JAVA_HOME = System.getProperty("java.home");
   static final int CMS_INITIAL_OCCUPANCY_FRACTION = 60;
@@ -72,7 +72,17 @@ public class StartMemberUtils {
     }
   }
 
-  static String resolveWorkingDir(File userSpecifiedDir, File memberNameDir) {
+  static String resolveWorkingDirectory(String userSpecifiedDir, String memberNameDir) {
+    String resolvedDir;
+    if (StringUtils.isBlank(userSpecifiedDir)) {
+      resolvedDir = resolveWorkingDirectory(null, new File(memberNameDir));
+    } else {
+      resolvedDir = resolveWorkingDirectory(new File(userSpecifiedDir), new File(memberNameDir));
+    }
+    return resolvedDir;
+  }
+
+  static String resolveWorkingDirectory(File userSpecifiedDir, File memberNameDir) {
     File workingDir =
         (userSpecifiedDir == null || userSpecifiedDir.equals(new File(""))) ? memberNameDir
             : userSpecifiedDir;

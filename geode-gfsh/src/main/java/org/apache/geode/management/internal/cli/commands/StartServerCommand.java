@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.management.internal.cli.commands.StartMemberUtils.resolveWorkingDirectory;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -123,6 +125,8 @@ public class StartServerCommand extends OfflineGfshCommand {
           help = CliStrings.START_SERVER__MCAST_ADDRESS__HELP) final String mcastBindAddress,
       @CliOption(key = CliStrings.START_SERVER__MCAST_PORT,
           help = CliStrings.START_SERVER__MCAST_PORT__HELP) final Integer mcastPort,
+      @CliOption(key = CliStrings.START_SERVER__MEMBERSHIP_BIND_ADDRESS,
+          help = CliStrings.START_SERVER__MEMBERSHIP_BIND_ADDRESS__HELP) final String membershipBindAddress,
       @CliOption(key = CliStrings.START_SERVER__MEMCACHED_PORT,
           help = CliStrings.START_SERVER__MEMCACHED_PORT__HELP) final Integer memcachedPort,
       @CliOption(key = CliStrings.START_SERVER__MEMCACHED_PROTOCOL,
@@ -196,16 +200,17 @@ public class StartServerCommand extends OfflineGfshCommand {
       }
     }
 
-    workingDirectory = StartMemberUtils.resolveWorkingDir(
-        workingDirectory == null ? null : new File(workingDirectory), new File(memberName));
+    String resolvedWorkingDirectory = resolveWorkingDirectory(workingDirectory, memberName);
 
     return doStartServer(memberName, assignBuckets, bindAddress, cacheXmlPathname, classpath,
-        criticalHeapPercentage, criticalOffHeapPercentage, workingDirectory, disableDefaultServer,
+        criticalHeapPercentage, criticalOffHeapPercentage, resolvedWorkingDirectory,
+        disableDefaultServer,
         disableExitWhenOutOfMemory, enableTimeStatistics, evictionHeapPercentage,
         evictionOffHeapPercentage, force, group, hostNameForClients, jmxManagerHostnameForClients,
         includeSystemClasspath, initialHeap, jvmArgsOpts, locators, locatorWaitTime, lockMemory,
         logLevel, maxConnections, maxHeap, maxMessageCount, maxThreads, mcastBindAddress, mcastPort,
-        memcachedPort, memcachedProtocol, memcachedBindAddress, redisPort, redisBindAddress,
+        membershipBindAddress, memcachedPort, memcachedProtocol, memcachedBindAddress, redisPort,
+        redisBindAddress,
         redisPassword, messageTimeToLive, offHeapMemorySize, gemfirePropertiesFile, rebalance,
         gemfireSecurityPropertiesFile, serverBindAddress, serverPort, socketBufferSize,
         springXmlLocation, statisticsArchivePathname, requestSharedConfiguration, startRestApi,
@@ -221,7 +226,8 @@ public class StartServerCommand extends OfflineGfshCommand {
       Boolean includeSystemClasspath, String initialHeap, String[] jvmArgsOpts, String locators,
       Integer locatorWaitTime, Boolean lockMemory, String logLevel, Integer maxConnections,
       String maxHeap, Integer maxMessageCount, Integer maxThreads, String mcastBindAddress,
-      Integer mcastPort, Integer memcachedPort, String memcachedProtocol,
+      Integer mcastPort, String membershipBindAddress, Integer memcachedPort,
+      String memcachedProtocol,
       String memcachedBindAddress, Integer redisPort, String redisBindAddress, String redisPassword,
       Integer messageTimeToLive, String offHeapMemorySize, File gemfirePropertiesFile,
       Boolean rebalance, File gemfireSecurityPropertiesFile, String serverBindAddress,
@@ -336,6 +342,7 @@ public class StartServerCommand extends OfflineGfshCommand {
     if (memberName != null) {
       serverLauncherBuilder.setMemberName(memberName);
     }
+    serverLauncherBuilder.setMembershipBindAddress(membershipBindAddress);
     ServerLauncher serverLauncher = serverLauncherBuilder.build();
 
     String[] serverCommandLine = createStartServerCommandLine(serverLauncher, gemfirePropertiesFile,
@@ -565,6 +572,11 @@ public class StartServerCommand extends OfflineGfshCommand {
     if (launcher.getHostNameForClients() != null) {
       commandLine.add("--" + CliStrings.START_SERVER__HOSTNAME__FOR__CLIENTS + "="
           + launcher.getHostNameForClients());
+    }
+
+    if (launcher.membershipBindAddressSpecified()) {
+      commandLine.add("--" + CliStrings.START_SERVER__MEMBERSHIP_BIND_ADDRESS + "="
+          + launcher.getMembershipBindAddress());
     }
 
     return commandLine.toArray(new String[] {});

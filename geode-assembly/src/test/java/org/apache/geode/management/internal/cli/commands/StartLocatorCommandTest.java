@@ -192,4 +192,6 @@ public class StartLocatorCommandTest {
 
     assertThat(commandLineElements).containsAll(expectedCommandLineElements);
   }
+
+
 }

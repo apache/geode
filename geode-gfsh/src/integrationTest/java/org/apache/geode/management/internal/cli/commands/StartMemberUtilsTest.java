@@ -55,14 +55,14 @@ public class StartMemberUtilsTest {
     when(userSpecifiedDir.exists()).thenReturn(false);
     when(userSpecifiedDir.mkdirs()).thenReturn(false);
     assertThatThrownBy(
-        () -> StartMemberUtils.resolveWorkingDir(userSpecifiedDir, new File("server1")))
+        () -> StartMemberUtils.resolveWorkingDirectory(userSpecifiedDir, new File("server1")))
             .isInstanceOf(IllegalStateException.class)
             .hasMessageContaining("Could not create directory");
   }
 
   @Test
   public void workingDirDefaultsToMemberName() {
-    String workingDir = StartMemberUtils.resolveWorkingDir(null, new File("server1"));
+    String workingDir = StartMemberUtils.resolveWorkingDirectory(null, new File("server1"));
     assertThat(new File(workingDir)).exists();
     assertThat(workingDir).endsWith("server1");
   }
@@ -73,7 +73,7 @@ public class StartMemberUtilsTest {
     FileUtils.deleteQuietly(workingDir);
     String workingDirString = workingDir.getAbsolutePath();
     String resolvedWorkingDir =
-        StartMemberUtils.resolveWorkingDir(new File(workingDirString), new File("server1"));
+        StartMemberUtils.resolveWorkingDirectory(new File(workingDirString), new File("server1"));
     assertThat(new File(resolvedWorkingDir)).exists();
     assertThat(workingDirString).endsWith("foo");
   }
@@ -83,7 +83,8 @@ public class StartMemberUtilsTest {
     Path relativePath = Paths.get("some").resolve("relative").resolve("path");
     assertThat(relativePath.isAbsolute()).isFalse();
     String resolvedWorkingDir =
-        StartMemberUtils.resolveWorkingDir(new File(relativePath.toString()), new File("server1"));
+        StartMemberUtils.resolveWorkingDirectory(new File(relativePath.toString()),
+            new File("server1"));
     assertThat(resolvedWorkingDir).isEqualTo(relativePath.toAbsolutePath().toString());
   }
 
@@ -191,5 +192,50 @@ public class StartMemberUtilsTest {
     fileWriter.write("\n");
     fileWriter.flush();
     IOUtils.close(fileWriter);
+  }
+
+  @Test
+  public void startLocatorWithRelativeWorkingDirectory() throws Exception {
+    String workingDirectory = "locator1Directory";
+    String memberName = "member1";
+
+    assertThat(StartMemberUtils.resolveWorkingDirectory(workingDirectory, memberName))
+        .isEqualTo(new File(workingDirectory).getAbsolutePath());
+  }
+
+  @Test
+  public void startLocatorWithNullWorkingDirectory() throws Exception {
+    String memberName = "member1";
+
+    assertThat(StartMemberUtils.resolveWorkingDirectory(null, memberName))
+        .isEqualTo(new File(memberName).getAbsolutePath());
+  }
+
+  @Test
+  public void startLocatorWithEmptyWorkingDirectory() throws Exception {
+    String workingDirectory = "";
+    String memberName = "member1";
+
+    assertThat(StartMemberUtils.resolveWorkingDirectory(workingDirectory, memberName))
+        .isEqualTo(new File(memberName).getAbsolutePath());
+  }
+
+  @Test
+  public void startLocatorWithDotWorkingDirectory() throws Exception {
+    String workingDirectory = ".";
+    String memberName = "member1";
+
+    assertThat(StartMemberUtils.resolveWorkingDirectory(workingDirectory, memberName))
+        .isEqualTo(
+            StartMemberUtils.resolveWorkingDirectory(new File(workingDirectory),
+                new File(memberName)));
+  }
+
+  @Test
+  public void startLocatorWithAbsoluteWorkingDirectory() throws Exception {
+    String workingDirectory = new File(System.getProperty("user.dir")).getAbsolutePath();
+    String memberName = "member1";
+    assertThat(StartMemberUtils.resolveWorkingDirectory(workingDirectory, memberName))
+        .isEqualTo(workingDirectory);
   }
 }
