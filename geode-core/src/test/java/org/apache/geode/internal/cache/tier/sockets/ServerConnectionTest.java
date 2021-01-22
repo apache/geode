@@ -17,7 +17,7 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doThrow;
@@ -42,7 +42,6 @@ import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.Encryptor;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
@@ -91,11 +90,10 @@ public class ServerConnectionTest {
   }
 
   @Test
-  public void post65SecureShouldUseUniqueIdFromMessage() {
+  public void shouldUseUniqueIdFromMessage() {
     long uniqueIdFromMessage = 23456L;
     MessageIdExtractor messageIdExtractor = mock(MessageIdExtractor.class);
     when(handshake.getEncryptor()).thenReturn(mock(Encryptor.class));
-    when(handshake.getVersion()).thenReturn(KnownVersion.GFE_81);
     when(messageIdExtractor.getUniqueIdFromMessage(any(Message.class), any(Encryptor.class),
         anyLong())).thenReturn(uniqueIdFromMessage);
     when(requestMessage.isSecureMode()).thenReturn(true);
@@ -108,12 +106,8 @@ public class ServerConnectionTest {
   }
 
   @Test
-  public void post65NonSecureShouldThrow() {
-    when(handshake.getVersion()).thenReturn(KnownVersion.GFE_81);
-
-    Throwable thrown = catchThrowable(() -> serverConnection.getUniqueId());
-
-    assertThat(thrown)
+  public void nonSecureShouldThrow() {
+    assertThatThrownBy(() -> serverConnection.getUniqueId())
         .isExactlyInstanceOf(AuthenticationRequiredException.class)
         .hasMessage("No security credentials are provided");
   }

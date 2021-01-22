@@ -309,11 +309,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
   }
 
   private boolean sendCqResultsWithKey(ServerConnection servConn) {
-    KnownVersion clientVersion = servConn.getClientVersion();
-    if (clientVersion.isNotOlderThan(KnownVersion.GFE_65)) {
-      return true;
-    }
-    return false;
+    return true;
   }
 
   protected void sendCqResponse(int msgType, String msgStr, int txId, Throwable e,
