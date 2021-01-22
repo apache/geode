@@ -191,6 +191,11 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   private int startLocatorPort;
 
   /**
+   * TBD
+   */
+  protected String membershipBindAddress = DEFAULT_MEMBERSHIP_BIND_ADDRESS;
+
+  /**
    * Is statistic sampling enabled?
    */
   protected boolean statisticSamplingEnabled = DEFAULT_STATISTIC_SAMPLING_ENABLED;
@@ -694,6 +699,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     locatorWaitTime = other.getLocatorWaitTime();
     remoteLocators = other.getRemoteLocators();
     startLocator = other.getStartLocator();
+    membershipBindAddress = other.getMembershipBindAddress();
     startLocatorPort = ((DistributionConfigImpl) other).startLocatorPort;
     deployWorkingDir = other.getDeployWorkingDir();
     logFile = other.getLogFile();
@@ -1834,6 +1840,11 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   }
 
   @Override
+  public String getMembershipBindAddress() {
+    return membershipBindAddress;
+  }
+
+  @Override
   public File getDeployWorkingDir() {
     return deployWorkingDir;
   }
@@ -2127,6 +2138,11 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
       }
     }
     startLocator = value;
+  }
+
+  @Override
+  public void setMembershipBindAddress(String value) {
+    membershipBindAddress = value;
   }
 
   @Override
