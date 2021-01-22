@@ -173,24 +173,19 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
       dos.writeBoolean(((InternalDistributedSystem) system).getConfig().getDeltaPropagation());
     }
 
-    // Neeraj: Now if the communication mode is GATEWAY_TO_GATEWAY
-    // and principal not equal to null then send the credentials also
-    if (communicationMode.isWAN() && principal != null) {
-      sendCredentialsForWan(dos, dis);
-    }
+    if (communicationMode.isWAN()) {
+      if (principal != null) {
+        sendCredentialsForWan(dos, dis);
+      }
 
-    // Write the distributed system id if this is a 6.6 or greater client
-    // on the remote side of the gateway
-    if (communicationMode.isWAN() && clientVersion.isNotOlderThan(KnownVersion.GFE_66)
-        && currentServerVersion.isNotOlderThan(KnownVersion.GFE_66)) {
-      dos.writeByte(((InternalDistributedSystem) system).getDistributionManager()
-          .getDistributedSystemId());
-    }
+      dos.writeByte(
+          ((InternalDistributedSystem) system).getDistributionManager().getDistributedSystemId());
 
-    if ((communicationMode.isWAN()) && clientVersion.isNotOlderThan(KnownVersion.GFE_80)
-        && currentServerVersion.isNotOlderThan(KnownVersion.GFE_80)) {
-      int pdxSize = PeerTypeRegistration.getPdxRegistrySize();
-      dos.writeInt(pdxSize);
+      if (clientVersion.isNotOlderThan(KnownVersion.GFE_80)
+          && currentServerVersion.isNotOlderThan(KnownVersion.GFE_80)) {
+        int pdxSize = PeerTypeRegistration.getPdxRegistrySize();
+        dos.writeInt(pdxSize);
+      }
     }
 
     // Flush

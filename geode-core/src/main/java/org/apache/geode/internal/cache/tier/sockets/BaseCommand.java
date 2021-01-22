@@ -164,7 +164,7 @@ public abstract class BaseCommand implements Command {
     if (EntryLogger.isEnabled() && serverConnection != null) {
       EntryLogger.setSource(serverConnection.getMembershipID(), "c2s");
     }
-    boolean shouldMasquerade = shouldMasqueradeForTx(clientMessage, serverConnection);
+    boolean shouldMasquerade = shouldMasqueradeForTx(clientMessage);
     try {
       if (shouldMasquerade) {
         InternalCache cache = serverConnection.getCache();
@@ -208,15 +208,12 @@ public abstract class BaseCommand implements Command {
   }
 
   /**
-   * checks to see if this thread needs to masquerade as a transactional thread. clients after
-   * GFE_66 should be able to start a transaction.
+   * checks to see if this thread needs to masquerade as a transactional thread.
    *
    * @return true if thread should masquerade as a transactional thread.
    */
-  protected boolean shouldMasqueradeForTx(Message clientMessage,
-      ServerConnection serverConnection) {
-    return serverConnection.getClientVersion().isNotOlderThan(KnownVersion.GFE_66)
-        && clientMessage.getTransactionId() > TXManagerImpl.NOTX;
+  protected boolean shouldMasqueradeForTx(Message clientMessage) {
+    return clientMessage.getTransactionId() > TXManagerImpl.NOTX;
   }
 
   /**
