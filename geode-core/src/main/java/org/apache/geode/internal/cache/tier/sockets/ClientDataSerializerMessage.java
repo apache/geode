@@ -67,8 +67,6 @@ public class ClientDataSerializerMessage extends ClientUpdateMessageImpl {
   protected Message getMessage(CacheClientProxy proxy, byte[] latestValue) throws IOException {
     if (proxy.getVersion().isNotOlderThan(KnownVersion.GFE_6516)) {
       return getGFE6516Message(proxy.getVersion());
-    } else if (proxy.getVersion().isNotOlderThan(KnownVersion.GFE_57)) {
-      return getGFEMessage(proxy.getVersion());
     } else {
       throw new IOException("Unsupported client version for server-to-client message creation: "
           + proxy.getVersion());

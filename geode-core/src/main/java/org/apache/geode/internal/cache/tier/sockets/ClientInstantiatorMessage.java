@@ -26,7 +26,6 @@ import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
@@ -106,24 +105,9 @@ public class ClientInstantiatorMessage extends ClientUpdateMessageImpl {
 
   @Override
   protected Message getMessage(CacheClientProxy proxy, byte[] latestValue) throws IOException {
-    KnownVersion clientVersion = proxy.getVersion();
-    Message message = null;
-    if (clientVersion.isNotOlderThan(KnownVersion.GFE_57)) {
-      message = getGFEMessage(proxy.getProxyID(), null, clientVersion);
-    } else {
-      throw new IOException(
-          "Unsupported client version for server-to-client message creation: " + clientVersion);
-    }
-
-    return message;
-  }
-
-  @Override
-  protected Message getGFEMessage(ClientProxyMembershipID proxy, byte[] latestValue,
-      KnownVersion clientVersion) throws IOException {
-    Message message = null;
-    int instantiatorsLength = this.serializedInstantiators.length;
-    message = new Message(instantiatorsLength + 1, clientVersion); // one for eventID
+    final int instantiatorsLength = serializedInstantiators.length;
+    // one for eventID
+    final Message message = new Message(instantiatorsLength + 1, proxy.getVersion());
     // Set message type
     message.setMessageType(MessageType.REGISTER_INSTANTIATORS);
     for (int i = 0; i < instantiatorsLength - 2; i += 3) {
