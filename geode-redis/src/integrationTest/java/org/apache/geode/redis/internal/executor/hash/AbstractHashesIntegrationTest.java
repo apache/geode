@@ -527,9 +527,9 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
     String field2 = "field_2";
     String value = "value";
 
-    Long result = jedis.hlen(key); // check error handling when key does not exist
+    assertThat(jedis.hlen(key)).isEqualTo(0);
 
-    result = jedis.hset(key, field1, value);
+    Long result = jedis.hset(key, field1, value);
     assertThat(result).isEqualTo(1);
 
     result = jedis.hset(key, field2, value);
@@ -538,6 +538,22 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
     result = jedis.hlen(key);
     assertThat(result).isEqualTo(2);
 
+  }
+
+  @Test
+  public void testHLenErrorMessage_givenIncorrectDataType() {
+    jedis.set("farm", "chicken");
+    assertThatThrownBy(() -> jedis.hlen("farm"))
+        .isInstanceOf(JedisDataException.class)
+        .hasMessageContaining("WRONGTYPE Operation against a key holding the wrong kind of value");
+  }
+
+  @Test
+  public void testHLen_givenWrongNumberOfArguments() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HLEN))
+        .hasMessageContaining("wrong number of arguments");
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HLEN, "1", "2"))
+        .hasMessageContaining("wrong number of arguments");
   }
 
   /**

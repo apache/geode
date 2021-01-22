@@ -158,9 +158,13 @@ public enum RedisCommandType {
   HGETALL(new HGetAllExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
   HMSET(new HMSetExecutor(), SUPPORTED,
       new MinimumParameterRequirements(4).and(new EvenParameterRequirements())),
+  HMGET(new HMGetExecutor(), SUPPORTED, new MinimumParameterRequirements(3)),
   HSET(new HSetExecutor(), SUPPORTED,
       new MinimumParameterRequirements(4).and(new EvenParameterRequirements())),
   HSETNX(new HSetNXExecutor(), SUPPORTED, new ExactParameterRequirements(4)),
+  HLEN(new HLenExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
+  HSTRLEN(new HStrLenExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
+  HVALS(new HValsExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
 
   /************* Sets *****************/
 
@@ -237,12 +241,8 @@ public enum RedisCommandType {
   HINCRBY(new HIncrByExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
   HINCRBYFLOAT(new HIncrByFloatExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
   HKEYS(new HKeysExecutor(), UNSUPPORTED, new ExactParameterRequirements(2)),
-  HLEN(new HLenExecutor(), UNSUPPORTED, new ExactParameterRequirements(2)),
-  HMGET(new HMGetExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3)),
   HSCAN(new HScanExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3),
       new OddParameterRequirements(ERROR_SYNTAX)),
-  HSTRLEN(new HStrLenExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
-  HVALS(new HValsExecutor(), UNSUPPORTED, new ExactParameterRequirements(2)),
 
   /***************************************
    **************** Sets *****************
