@@ -180,6 +180,17 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   }
 
   @Test
+  public void testHMGet_returnNull_forUnknownFields() {
+    String key = "key";
+    jedis.hset(key, "rooster", "crows");
+    jedis.hset(key, "duck", "quacks");
+
+    List<String> result =
+        jedis.hmget(key, "unknown-1", "rooster", "unknown-2", "duck", "unknown-3");
+    assertThat(result).containsExactly(null, "crows", null, "quacks", null);
+  }
+
+  @Test
   public void testHMGet_givenWrongNumberOfArguments() {
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HMGET))
         .hasMessageContaining("wrong number of arguments");
