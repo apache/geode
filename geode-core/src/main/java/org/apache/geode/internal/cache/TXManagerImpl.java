@@ -339,7 +339,6 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    * This method builds a new {@link TXId} with uniqueID incremented by one.
    * Special case: If uniqueID has reached Integer.MAX_VALUE, then it is not incremented,
    * but set to one. This is done to prevent memory overflow of uniqueID to Integer.MIN_VALUE.
-   *
    */
   private TXId getNewTXId() {
     return new TXId(this.distributionMgrId,

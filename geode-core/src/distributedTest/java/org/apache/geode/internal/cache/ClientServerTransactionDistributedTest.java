@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache;
 import static org.apache.geode.test.dunit.VM.getHostName;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.io.Serializable;
 
@@ -42,7 +43,6 @@ import org.apache.geode.test.dunit.rules.ClientCacheRule;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
-@SuppressWarnings("serial")
 public class ClientServerTransactionDistributedTest implements Serializable {
 
   private String hostName;
@@ -72,19 +72,18 @@ public class ClientServerTransactionDistributedTest implements Serializable {
   }
 
   @Test
-  public void clientTransactionIDAboveIntegerMaxValue() {
-    port1 = server1.invoke(() -> createServerRegion());
+  public void clientTransactionIDAboveIntegerMaxValueCommitTest() {
+    port1 = server1.invoke(this::createServerRegion);
 
     // Test that transaction ID overflow to one
     TXManagerImpl.INITIAL_UNIQUE_ID_VALUE = Integer.MAX_VALUE;
-    createClientRegion(true, port1);
+    createClientRegion(port1);
 
     TXManagerImpl txManager =
         (TXManagerImpl) clientCacheRule.getClientCache().getCacheTransactionManager();
 
     txManager.begin();
-    TXStateProxyImpl txStateProxy = (TXStateProxyImpl) txManager.getTXState();
-    int transactionID = ((TXId) txStateProxy.getTransactionId()).getUniqId();
+    int transactionID = getTransactionID(txManager);
 
     int numOfOperations = 5;
     putData(numOfOperations);
@@ -94,16 +93,43 @@ public class ClientServerTransactionDistributedTest implements Serializable {
     assertEquals(1, transactionID);
   }
 
+  @Test
+  public void clientTransactionIDAboveIntegerMaxValueRollbackTest() {
+    port1 = server1.invoke(this::createServerRegion);
+
+    // Test that transaction ID overflow to one
+    TXManagerImpl.INITIAL_UNIQUE_ID_VALUE = Integer.MAX_VALUE;
+    createClientRegion(port1);
+
+    TXManagerImpl txManager =
+        (TXManagerImpl) clientCacheRule.getClientCache().getCacheTransactionManager();
+
+    txManager.begin();
+    int transactionID = getTransactionID(txManager);
+
+    int numOfOperations = 5;
+    putData(numOfOperations);
+    txManager.rollback();
+
+    server1.invoke(() -> verifyThatRollbackSuccessfullyExecuted(numOfOperations));
+    assertEquals(1, transactionID);
+  }
+
+  private int getTransactionID(final TXManagerImpl txManager) {
+    TXStateProxyImpl txStateProxy = (TXStateProxyImpl) txManager.getTXState();
+    return ((TXId) txStateProxy.getTransactionId()).getUniqId();
+  }
+
   private void putData(int numberOfEntries) {
-    Region region = clientCacheRule.getClientCache().getRegion(regionName);
+    Region<Object, Object> region = clientCacheRule.getClientCache().getRegion(regionName);
     for (int key = 0; key < numberOfEntries; key++) {
-      String value = getValue(key);
+      String value = "value" + key;
       region.put(key, value);
     }
   }
 
   private void verifyTransactionResult(int numberOfEntries) {
-    Region region = cacheRule.getCache().getRegion(regionName);
+    Region<Object, Object> region = cacheRule.getCache().getRegion(regionName);
     for (int i = 0; i < numberOfEntries; i++) {
       LogService.getLogger().info("region get key {} value {} ", i, region.get(i));
     }
@@ -112,9 +138,16 @@ public class ClientServerTransactionDistributedTest implements Serializable {
     }
   }
 
+  private void verifyThatRollbackSuccessfullyExecuted(int numberOfEntries) {
+    Region<Object, Object> region = cacheRule.getCache().getRegion(regionName);
+    for (int i = 0; i < numberOfEntries; i++) {
+      assertNull(region.get(i));
+    }
+  }
+
   private int createServerRegion() throws Exception {
-    PartitionAttributesFactory factory = new PartitionAttributesFactory();
-    PartitionAttributes partitionAttributes = factory.create();
+    PartitionAttributesFactory<Object, Object> factory = new PartitionAttributesFactory<>();
+    PartitionAttributes<Object, Object> partitionAttributes = factory.create();
     cacheRule.getOrCreateCache().createRegionFactory(RegionShortcut.PARTITION)
         .setPartitionAttributes(partitionAttributes).create(regionName);
     CacheServer server = cacheRule.getCache().addCacheServer();
@@ -123,30 +156,19 @@ public class ClientServerTransactionDistributedTest implements Serializable {
     return server.getPort();
   }
 
-  private void createClientRegion(boolean connectToFirstPort, int... ports) {
+  private void createClientRegion(int port) {
     clientCacheRule.createClientCache();
-
-    PoolImpl pool = getPool(ports);
-    ClientRegionFactory crf =
+    PoolImpl pool = getPool(port);
+    ClientRegionFactory<Object, Object> crf =
         clientCacheRule.getClientCache().createClientRegionFactory(ClientRegionShortcut.LOCAL);
     crf.setPoolName(pool.getName());
     crf.create(regionName);
-
-    if (ports.length > 1 && connectToFirstPort) {
-      // first connection to the first port in the list
-      pool.acquireConnection(new ServerLocation(hostName, ports[0]));
-    }
+    pool.acquireConnection(new ServerLocation(hostName, port));
   }
 
-  private PoolImpl getPool(int... ports) {
+  private PoolImpl getPool(int port) {
     PoolFactory factory = PoolManager.createFactory();
-    for (int port : ports) {
-      factory.addServer(hostName, port);
-    }
+    factory.addServer(hostName, port);
     return (PoolImpl) factory.create(uniqueName);
-  }
-
-  private String getValue(int key) {
-    return "value" + key;
   }
 }
