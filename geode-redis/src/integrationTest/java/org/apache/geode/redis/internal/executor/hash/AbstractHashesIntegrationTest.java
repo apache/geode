@@ -39,6 +39,7 @@ import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
+import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
 public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier {
@@ -167,7 +168,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
     assertThatThrownBy(() -> {
       jedis.hdel("farm", "chicken");
     }).isInstanceOf(JedisDataException.class)
-        .hasMessageContaining("WRONGTYPE Operation against a key holding the wrong kind of value");
+        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -192,11 +193,11 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   public void testHStrLen_failsForNonHashes() {
     jedis.sadd("farm", "chicken");
     assertThatThrownBy(() -> jedis.hstrlen("farm", "chicken"))
-        .hasMessageContaining("WRONGTYPE");
+        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
 
     jedis.set("tractor", "John Deere");
     assertThatThrownBy(() -> jedis.hstrlen("tractor", "chicken"))
-        .hasMessageContaining("WRONGTYPE");
+        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -377,7 +378,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
     String value2 = "value_2";
 
     List<String> list = jedis.hvals("non-existent-key");
-    assertThat(list == null);
+    assertThat(list).isEmpty();
 
     Long result = jedis.hset(key, field1, value1);
     assertThat(result).isEqualTo(1);
@@ -394,11 +395,20 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   public void hvalsFailsForNonHash() {
     jedis.sadd("farm", "chicken");
     assertThatThrownBy(() -> jedis.hvals("farm"))
-        .hasMessageContaining("WRONGTYPE");
+        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
 
     jedis.set("tractor", "John Deere");
     assertThatThrownBy(() -> jedis.hvals("tractor"))
-        .hasMessageContaining("WRONGTYPE");
+        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+  }
+
+  @Test
+  public void hvalsFails_withIncorrectParameters() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HVALS))
+        .hasMessageContaining("wrong number of arguments");
+
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HVALS, "1", "too-many"))
+        .hasMessageContaining("wrong number of arguments");
   }
 
   /**
@@ -646,7 +656,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
 
     assertThatThrownBy(
         () -> jedis.hset("key", "field", "something else")).isInstanceOf(JedisDataException.class)
-            .hasMessageContaining("WRONGTYPE");
+            .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
   }
 
   @Test

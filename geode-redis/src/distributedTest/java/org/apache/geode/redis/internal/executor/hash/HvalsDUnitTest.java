@@ -87,8 +87,9 @@ public class HvalsDUnitTest {
     List<String> values = jedis1.hvals(key);
     long finalTotal = values.stream().mapToLong(Long::valueOf).sum();
 
-    long sumOfBothSequenceSums = (fieldCount / 2) * ((fieldCount - 1) - 0) +
-        (iterations / 2) * ((iterations - 1) - 0);
+    // Spell out the formula for a sum of an arithmetic sequence which is: (n / 2) * (start + end)
+    long sumOfBothSequenceSums = (fieldCount / 2) * ((fieldCount - 1) + 0) +
+        (iterations / 2) * ((iterations - 1) + 0);
     assertThat(finalTotal).isEqualTo(sumOfBothSequenceSums);
   }
 
