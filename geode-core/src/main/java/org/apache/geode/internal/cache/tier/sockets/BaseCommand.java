@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InterruptedIOException;
@@ -161,7 +163,7 @@ public abstract class BaseCommand implements Command {
       SecurityService securityService) {
     // Read the request and update the statistics
     long start = DistributionStats.getStatTime();
-    if (EntryLogger.isEnabled() && serverConnection != null) {
+    if (EntryLogger.isEnabled()) {
       EntryLogger.setSource(serverConnection.getMembershipID(), "c2s");
     }
     boolean shouldMasquerade = shouldMasqueradeForTx(clientMessage);
@@ -227,7 +229,7 @@ public abstract class BaseCommand implements Command {
    */
   public boolean recoverVersionTagForRetriedOperation(EntryEventImpl clientEvent) {
     InternalRegion r = clientEvent.getRegion();
-    VersionTag tag = r.findVersionTagForEvent(clientEvent.getEventId());
+    VersionTag<?> tag = r.findVersionTagForEvent(clientEvent.getEventId());
     if (tag == null) {
       if (r instanceof DistributedRegion || r instanceof PartitionedRegion) {
         // TODO this could be optimized for partitioned regions by sending the key
@@ -254,8 +256,8 @@ public abstract class BaseCommand implements Command {
    * The client event should have the event identifier from the client and the region affected by
    * the operation.
    */
-  protected VersionTag findVersionTagsForRetriedBulkOp(LocalRegion region, EventID eventID) {
-    VersionTag tag = region.findVersionTagForClientBulkOp(eventID);
+  protected VersionTag<?> findVersionTagsForRetriedBulkOp(LocalRegion region, EventID eventID) {
+    VersionTag<?> tag = region.findVersionTagForClientBulkOp(eventID);
     if (tag != null) {
       if (logger.isDebugEnabled()) {
         logger.debug("recovered version tag {} for replayed bulk operation {}", tag, eventID);
@@ -289,22 +291,6 @@ public abstract class BaseCommand implements Command {
     replyMsg.send(serverConnection);
     if (logger.isTraceEnabled()) {
       logger.trace("{}: rpl tx: {}", serverConnection.getName(), origMsg.getTransactionId());
-    }
-  }
-
-  protected void writeReplyWithRefreshMetadata(Message origMsg, ServerConnection serverConnection,
-      PartitionedRegion pr, byte nwHop) throws IOException {
-    Message replyMsg = serverConnection.getReplyMessage();
-    serverConnection.getCache().getCancelCriterion().checkCancelInProgress(null);
-    replyMsg.setMessageType(MessageType.REPLY);
-    replyMsg.setNumberOfParts(1);
-    replyMsg.setTransactionId(origMsg.getTransactionId());
-    replyMsg.addBytesPart(new byte[] {pr.getMetadataVersion(), nwHop});
-    replyMsg.send(serverConnection);
-    pr.getPrStats().incPRMetaDataSentCount();
-    if (logger.isTraceEnabled()) {
-      logger.trace("{}: rpl with REFRESH_METADATA tx: {}", serverConnection.getName(),
-          origMsg.getTransactionId());
     }
   }
 
@@ -360,8 +346,8 @@ public abstract class BaseCommand implements Command {
           int transId = msg != null ? msg.getTransactionId() : Integer.MIN_VALUE;
           logger.warn(String.format(
               "%s: Unexpected IOException during operation for region: %s key: %s messId: %s",
-              new Object[] {serverConnection.getName(), serverConnection.getModRegion(),
-                  serverConnection.getModKey(), transId}),
+              serverConnection.getName(), serverConnection.getModRegion(),
+              serverConnection.getModKey(), transId),
               e);
         } else {
           logger.warn(String.format("%s: Unexpected IOException: ",
@@ -383,8 +369,8 @@ public abstract class BaseCommand implements Command {
         int transId = msg != null ? msg.getTransactionId() : Integer.MIN_VALUE;
         logger.warn(String.format(
             "%s: Unexpected ShutdownException during operation on region: %s key: %s messageId: %s",
-            new Object[] {serverConnection.getName(), serverConnection.getModRegion(),
-                serverConnection.getModKey(), transId}),
+            serverConnection.getName(), serverConnection.getModRegion(),
+            serverConnection.getModKey(), transId),
             e);
       } else {
         logger.warn(String.format("%s: Unexpected ShutdownException: ",
@@ -421,8 +407,8 @@ public abstract class BaseCommand implements Command {
           if (!wroteExceptionResponse) {
             logger.warn(String.format(
                 "%s: Unexpected Exception during operation on region: %s key: %s messageId: %s",
-                new Object[] {serverConnection.getName(), serverConnection.getModRegion(),
-                    serverConnection.getModKey(), transId}),
+                serverConnection.getName(), serverConnection.getModRegion(),
+                serverConnection.getModKey(), transId),
                 e);
           } else {
             if (logger.isDebugEnabled()) {
@@ -478,8 +464,8 @@ public abstract class BaseCommand implements Command {
             int transId = msg != null ? msg.getTransactionId() : Integer.MIN_VALUE;
             logger.warn(String.format(
                 "%s: Unexpected Exception during operation on region: %s key: %s messageId: %s",
-                new Object[] {serverConnection.getName(), serverConnection.getModRegion(),
-                    serverConnection.getModKey(), transId}),
+                serverConnection.getName(), serverConnection.getModRegion(),
+                serverConnection.getModKey(), transId),
                 th);
           } else {
             logger.warn(String.format("%s: Unexpected Exception",
@@ -647,34 +633,6 @@ public abstract class BaseCommand implements Command {
     if (callbackArg != null) {
       responseMsg.addObjPart(callbackArg);
     }
-    serverConnection.getCache().getCancelCriterion().checkCancelInProgress(null);
-    responseMsg.send(serverConnection);
-    origMsg.clearParts();
-  }
-
-  protected static void writeResponseWithRefreshMetadata(Object data, Object callbackArg,
-      Message origMsg, boolean isObject, ServerConnection serverConnection, PartitionedRegion pr,
-      byte nwHop) throws IOException {
-    Message responseMsg = serverConnection.getResponseMessage();
-    responseMsg.setMessageType(MessageType.RESPONSE);
-    responseMsg.setTransactionId(origMsg.getTransactionId());
-
-    if (callbackArg == null) {
-      responseMsg.setNumberOfParts(2);
-    } else {
-      responseMsg.setNumberOfParts(3);
-    }
-
-    if (data instanceof byte[]) {
-      responseMsg.addRawPart((byte[]) data, isObject);
-    } else {
-      Assert.assertTrue(isObject, "isObject should be true when value is not a byte[]");
-      responseMsg.addObjPart(data, false);
-    }
-    if (callbackArg != null) {
-      responseMsg.addObjPart(callbackArg);
-    }
-    responseMsg.addBytesPart(new byte[] {pr.getMetadataVersion(), nwHop});
     serverConnection.getCache().getCancelCriterion().checkCancelInProgress(null);
     responseMsg.send(serverConnection);
     origMsg.clearParts();
@@ -895,7 +853,7 @@ public abstract class BaseCommand implements Command {
       ServerConnection servConn) throws IOException {
     // Client is not interested.
     if (policy.isNone()) {
-      sendRegisterInterestResponseChunk(region, riKey, new ArrayList(), true, servConn);
+      sendRegisterInterestResponseChunk(region, riKey, new ArrayList<>(), true, servConn);
       return;
     }
     if (policy.isKeysValues() && servConn.getClientVersion().isNotOlderThan(KnownVersion.GFE_80)) {
@@ -903,7 +861,7 @@ public abstract class BaseCommand implements Command {
       return;
     }
     if (riKey instanceof List) {
-      handleList(region, (List) riKey, policy, servConn);
+      handleList(region, (List<?>) riKey, policy, servConn);
       return;
     }
     if (!(riKey instanceof String)) {
@@ -947,7 +905,7 @@ public abstract class BaseCommand implements Command {
   private static void handleKeysValuesPolicy(LocalRegion region, Object riKey, int interestType,
       boolean serializeValues, ServerConnection servConn) throws IOException {
     if (riKey instanceof List) {
-      handleKVList(region, (List) riKey, serializeValues, servConn);
+      handleKVList(region, (List<?>) riKey, serializeValues, servConn);
       return;
     }
     if (!(riKey instanceof String)) {
@@ -990,7 +948,8 @@ public abstract class BaseCommand implements Command {
   /**
    * @param list is a List of entry keys
    */
-  private static void sendRegisterInterestResponseChunk(Region region, Object riKey, List list,
+  private static void sendRegisterInterestResponseChunk(Region<?, ?> region, Object riKey,
+      List<?> list,
       boolean lastChunk, ServerConnection servConn) throws IOException {
     ChunkedMessage chunkedResponseMsg = servConn.getRegisterInterestResponseMessage();
     chunkedResponseMsg.setNumberOfParts(1);
@@ -1025,14 +984,14 @@ public abstract class BaseCommand implements Command {
    * @param keyList the list of keys
    * @param policy the policy
    */
-  private static void handleList(LocalRegion region, List keyList, InterestResultPolicy policy,
+  private static void handleList(LocalRegion region, List<?> keyList, InterestResultPolicy policy,
       ServerConnection servConn) throws IOException {
     if (region instanceof PartitionedRegion) {
       // too bad java doesn't provide another way to do this...
       handleListPR((PartitionedRegion) region, keyList, policy, servConn);
       return;
     }
-    List newKeyList = new ArrayList(MAXIMUM_CHUNK_SIZE);
+    List<Object> newKeyList = new ArrayList<>(MAXIMUM_CHUNK_SIZE);
     // Handle list of keys
     if (region != null) {
       for (Object entryKey : keyList) {
@@ -1064,7 +1023,7 @@ public abstract class BaseCommand implements Command {
         ClientProxyMembershipID id = servConn == null ? null : servConn.getProxyID();
         // From Get70.getValueAndIsObject()
         Object data = region.get(entryKey, null, true, true, true, id, versionHolder, true);
-        VersionTag vt = versionHolder.getVersionTag();
+        VersionTag<?> vt = versionHolder.getVersionTag();
 
         updateValues(values, entryKey, data, vt);
       }
@@ -1083,7 +1042,7 @@ public abstract class BaseCommand implements Command {
    */
   private static void handleSingleton(LocalRegion region, Object entryKey,
       InterestResultPolicy policy, ServerConnection servConn) throws IOException {
-    List keyList = new ArrayList(1);
+    List<Object> keyList = new ArrayList<>(1);
     if (region != null) {
       if (region.containsKey(entryKey)
           || sendTombstonesInRIResults(servConn, policy) && region.containsTombstone(entryKey)) {
@@ -1103,7 +1062,7 @@ public abstract class BaseCommand implements Command {
    */
   private static void handleAllKeys(LocalRegion region, InterestResultPolicy policy,
       ServerConnection servConn) throws IOException {
-    List keyList = new ArrayList(MAXIMUM_CHUNK_SIZE);
+    List<Object> keyList = new ArrayList<>(MAXIMUM_CHUNK_SIZE);
     if (region != null) {
       for (Object entryKey : region.keySet(sendTombstonesInRIResults(servConn, policy))) {
         appendInterestResponseKey(region, "ALL_KEYS", entryKey, keyList, servConn);
@@ -1148,7 +1107,7 @@ public abstract class BaseCommand implements Command {
 
         ClientProxyMembershipID id = servConn == null ? null : servConn.getProxyID();
         Object data = region.get(key, null, true, true, true, id, versionHolder, true);
-        VersionTag versionTag = versionHolder.getVersionTag();
+        VersionTag<?> versionTag = versionHolder.getVersionTag();
         updateValues(values, key, data, versionTag);
 
         if (values.size() == MAXIMUM_CHUNK_SIZE) {
@@ -1172,8 +1131,8 @@ public abstract class BaseCommand implements Command {
         region.getConcurrencyChecksEnabled(), serializeValues);
 
     if (keyInfo instanceof List) {
-      HashMap<Integer, HashSet> bucketKeys = new HashMap<>();
-      for (Object key : (List) keyInfo) {
+      HashMap<Integer, HashSet<Object>> bucketKeys = new HashMap<>();
+      for (Object key : (List<?>) keyInfo) {
         int id = PartitionedRegionHelper.getHashKey(region, null, key, null, null);
         if (bucketKeys.containsKey(id)) {
           bucketKeys.get(id).add(key);
@@ -1199,7 +1158,7 @@ public abstract class BaseCommand implements Command {
    * of copying it here?)
    */
   private static void updateValues(VersionedObjectList values, Object key, Object value,
-      VersionTag versionTag) {
+      VersionTag<?> versionTag) {
     boolean isObject = true;
 
     // If the value in the VM is a CachedDeserializable,
@@ -1233,7 +1192,7 @@ public abstract class BaseCommand implements Command {
   }
 
   public static void appendNewRegisterInterestResponseChunkFromLocal(LocalRegion region,
-      VersionedObjectList values, Object riKeys, Set keySet, ServerConnection servConn)
+      VersionedObjectList values, Object riKeys, Set<?> keySet, ServerConnection servConn)
       throws IOException {
     ClientProxyMembershipID requestingClient = servConn == null ? null : servConn.getProxyID();
     for (Object key : keySet) {
@@ -1254,11 +1213,12 @@ public abstract class BaseCommand implements Command {
   }
 
   public static void appendNewRegisterInterestResponseChunk(LocalRegion region,
-      VersionedObjectList values, Object riKeys, Set<Map.Entry> set, ServerConnection servConn)
+      VersionedObjectList values, Object riKeys, Set<Map.Entry<?, ?>> set,
+      ServerConnection servConn)
       throws IOException {
-    for (Entry entry : set) {
+    for (Entry<?, ?> entry : set) {
       if (entry instanceof Region.Entry) { // local entries
-        VersionTag vt;
+        VersionTag<?> vt;
         Object key;
         Object value;
         if (entry instanceof EntrySnapshot) {
@@ -1267,7 +1227,7 @@ public abstract class BaseCommand implements Command {
           value = ((EntrySnapshot) entry).getRegionEntry().getValue(null);
           updateValues(values, key, value, vt);
         } else {
-          VersionStamp vs = ((NonTXEntry) entry).getRegionEntry().getVersionStamp();
+          VersionStamp<?> vs = ((NonTXEntry) entry).getRegionEntry().getVersionStamp();
           vt = vs == null ? null : vs.asVersionTag();
           key = entry.getKey();
           value = ((NonTXEntry) entry).getRegionEntry().getValueRetain(region, true);
@@ -1278,9 +1238,9 @@ public abstract class BaseCommand implements Command {
           }
         }
       } else { // Map.Entry (remote entries)
-        List list = (List) entry.getValue();
+        List<?> list = (List<?>) entry.getValue();
         Object value = list.get(0);
-        VersionTag tag = (VersionTag) list.get(1);
+        VersionTag<?> tag = (VersionTag<?>) list.get(1);
         updateValues(values, entry.getKey(), value, tag);
       }
       if (values.size() == MAXIMUM_CHUNK_SIZE) {
@@ -1317,7 +1277,7 @@ public abstract class BaseCommand implements Command {
       handleRegExPR((PartitionedRegion) region, regex, policy, servConn);
       return;
     }
-    List keyList = new ArrayList(MAXIMUM_CHUNK_SIZE);
+    List<Object> keyList = new ArrayList<>(MAXIMUM_CHUNK_SIZE);
     // Handle the regex pattern
     if (region != null) {
       Pattern keyPattern = Pattern.compile(regex);
@@ -1344,14 +1304,10 @@ public abstract class BaseCommand implements Command {
    */
   private static void handleRegExPR(final PartitionedRegion region, final String regex,
       final InterestResultPolicy policy, final ServerConnection servConn) throws IOException {
-    final List keyList = new ArrayList(MAXIMUM_CHUNK_SIZE);
+    final List<Object> keyList = new ArrayList<>(MAXIMUM_CHUNK_SIZE);
     region.getKeysWithRegEx(regex, sendTombstonesInRIResults(servConn, policy),
-        new PartitionedRegion.SetCollector() {
-          @Override
-          public void receiveSet(Set theSet) throws IOException {
-            appendInterestResponseKeys(region, regex, theSet, keyList, servConn);
-          }
-        });
+        theSet -> appendInterestResponseKeys(region, regex, uncheckedCast(theSet), keyList,
+            servConn));
     // Send the last chunk (the only chunk for individual and list keys)
     // always send it back, even if the list is of zero size.
     sendRegisterInterestResponseChunk(region, regex, keyList, true, servConn);
@@ -1360,22 +1316,18 @@ public abstract class BaseCommand implements Command {
   /**
    * Process an interest request involving a list of keys
    */
-  private static void handleListPR(final PartitionedRegion region, final List keyList,
+  private static void handleListPR(final PartitionedRegion region, final List<?> keyList,
       final InterestResultPolicy policy, final ServerConnection servConn) throws IOException {
-    final List newKeyList = new ArrayList(MAXIMUM_CHUNK_SIZE);
+    final List<Object> newKeyList = new ArrayList<>(MAXIMUM_CHUNK_SIZE);
     region.getKeysWithList(keyList, sendTombstonesInRIResults(servConn, policy),
-        new PartitionedRegion.SetCollector() {
-          @Override
-          public void receiveSet(Set theSet) throws IOException {
-            appendInterestResponseKeys(region, keyList, theSet, newKeyList, servConn);
-          }
-        });
+        theSet -> appendInterestResponseKeys(region, keyList, uncheckedCast(theSet), newKeyList,
+            servConn));
     // Send the last chunk (the only chunk for individual and list keys)
     // always send it back, even if the list is of zero size.
     sendRegisterInterestResponseChunk(region, keyList, newKeyList, true, servConn);
   }
 
-  private static void handleKVList(final LocalRegion region, final List keyList,
+  private static void handleKVList(final LocalRegion region, final List<?> keyList,
       boolean serializeValues, final ServerConnection servConn) throws IOException {
 
     if (region instanceof PartitionedRegion) {
@@ -1394,7 +1346,7 @@ public abstract class BaseCommand implements Command {
 
           ClientProxyMembershipID id = servConn == null ? null : servConn.getProxyID();
           Object data = region.get(key, null, true, true, true, id, versionHolder, true);
-          VersionTag versionTag = versionHolder.getVersionTag();
+          VersionTag<?> versionTag = versionHolder.getVersionTag();
           updateValues(values, key, data, versionTag);
 
           if (values.size() == MAXIMUM_CHUNK_SIZE) {
@@ -1426,7 +1378,7 @@ public abstract class BaseCommand implements Command {
    * @param list list to append to
    */
   private static void appendInterestResponseKey(LocalRegion region, Object riKey, Object entryKey,
-      List list, ServerConnection servConn) throws IOException {
+      List<Object> list, ServerConnection servConn) throws IOException {
     list.add(entryKey);
     if (logger.isDebugEnabled()) {
       logger.debug("{}: appendInterestResponseKey <{}>; list size was {}; region: {}",
@@ -1440,7 +1392,8 @@ public abstract class BaseCommand implements Command {
   }
 
   private static void appendInterestResponseKeys(LocalRegion region, Object riKey,
-      Collection entryKeys, List collector, ServerConnection servConn) throws IOException {
+      Collection<Object> entryKeys, List<Object> collector, ServerConnection servConn)
+      throws IOException {
     for (final Object entryKey : entryKeys) {
       appendInterestResponseKey(region, riKey, entryKey, collector, servConn);
     }
