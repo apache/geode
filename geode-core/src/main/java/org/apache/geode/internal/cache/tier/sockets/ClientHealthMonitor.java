@@ -674,7 +674,7 @@ public class ClientHealthMonitor {
   }
 
   public boolean hasDeltaClients() {
-    return getNumberOfClientsAtOrAboveVersion(KnownVersion.GFE_61) > 0;
+    return getNumberOfClientsAtOrAboveVersion(KnownVersion.OLDEST) > 0;
   }
 
   private int getMaximumTimeBetweenPings(ClientProxyMembershipID proxyID) {

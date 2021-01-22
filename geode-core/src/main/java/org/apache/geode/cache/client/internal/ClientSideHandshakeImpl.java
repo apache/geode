@@ -229,9 +229,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
       readMessage(dis, dos, acceptanceCode, member);
 
       // Read delta-propagation property value from server.
-      // [sumedh] Static variable below? Client can connect to different
-      // DSes with different values of this. It shoule be a member variable.
-      if (!communicationMode.isWAN() && currentClientVersion.isNotOlderThan(KnownVersion.GFE_61)) {
+      if (!communicationMode.isWAN()) {
         ((InternalDistributedSystem) system).setDeltaEnabledOnServer(dis.readBoolean());
       }
 
@@ -318,13 +316,6 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
 
       // Read the message (if any)
       readMessage(dis, dos, acceptanceCode, member);
-
-      // nothing more to be done for older clients used in tests
-      // there is a difference in serializer map registration for >= 6.5.1.6
-      // clients but that is not used in tests
-      if (currentClientVersion.isOlderThan(KnownVersion.GFE_61)) {
-        return new ServerQueueStatus(endpointType, queueSize, member);
-      }
 
       final Map<Integer, List<String>> instantiatorMap = DataSerializer.readHashMap(dis);
       for (final Map.Entry<Integer, List<String>> entry : instantiatorMap.entrySet()) {

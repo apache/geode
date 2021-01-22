@@ -45,45 +45,44 @@ public class SocketMessageWriter {
       msg = "";
     }
     dos.writeUTF(msg);
-    if (clientVersion != null && clientVersion.isNotOlderThan(KnownVersion.GFE_61)) {
-      // get all the instantiators.
-      Instantiator[] instantiators = InternalInstantiator.getInstantiators();
-      HashMap instantiatorMap = new HashMap();
-      if (instantiators != null && instantiators.length > 0) {
-        for (Instantiator instantiator : instantiators) {
-          ArrayList instantiatorAttributes = new ArrayList();
-          instantiatorAttributes.add(instantiator.getClass().toString().substring(6));
-          instantiatorAttributes.add(instantiator.getInstantiatedClass().toString().substring(6));
-          instantiatorMap.put(instantiator.getId(), instantiatorAttributes);
-        }
-      }
-      DataSerializer.writeHashMap(instantiatorMap, dos);
 
-      // get all the dataserializers.
-      DataSerializer[] dataSerializers = InternalDataSerializer.getSerializers();
-      HashMap<Integer, ArrayList<String>> dsToSupportedClasses =
-          new HashMap<Integer, ArrayList<String>>();
-      HashMap<Integer, String> dataSerializersMap = new HashMap<Integer, String>();
-      if (dataSerializers != null && dataSerializers.length > 0) {
-        for (DataSerializer dataSerializer : dataSerializers) {
-          dataSerializersMap.put(dataSerializer.getId(),
-              dataSerializer.getClass().toString().substring(6));
-          if (clientVersion.isNotOlderThan(KnownVersion.GFE_6516)) {
-            ArrayList<String> supportedClassNames = new ArrayList<String>();
-            for (Class clazz : dataSerializer.getSupportedClasses()) {
-              supportedClassNames.add(clazz.getName());
-            }
-            dsToSupportedClasses.put(dataSerializer.getId(), supportedClassNames);
+    // get all the instantiators.
+    Instantiator[] instantiators = InternalInstantiator.getInstantiators();
+    HashMap instantiatorMap = new HashMap();
+    if (instantiators != null && instantiators.length > 0) {
+      for (Instantiator instantiator : instantiators) {
+        ArrayList instantiatorAttributes = new ArrayList();
+        instantiatorAttributes.add(instantiator.getClass().toString().substring(6));
+        instantiatorAttributes.add(instantiator.getInstantiatedClass().toString().substring(6));
+        instantiatorMap.put(instantiator.getId(), instantiatorAttributes);
+      }
+    }
+    DataSerializer.writeHashMap(instantiatorMap, dos);
+
+    // get all the dataserializers.
+    DataSerializer[] dataSerializers = InternalDataSerializer.getSerializers();
+    HashMap<Integer, ArrayList<String>> dsToSupportedClasses =
+        new HashMap<Integer, ArrayList<String>>();
+    HashMap<Integer, String> dataSerializersMap = new HashMap<Integer, String>();
+    if (dataSerializers != null && dataSerializers.length > 0) {
+      for (DataSerializer dataSerializer : dataSerializers) {
+        dataSerializersMap.put(dataSerializer.getId(),
+            dataSerializer.getClass().toString().substring(6));
+        if (clientVersion.isNotOlderThan(KnownVersion.GFE_6516)) {
+          ArrayList<String> supportedClassNames = new ArrayList<String>();
+          for (Class clazz : dataSerializer.getSupportedClasses()) {
+            supportedClassNames.add(clazz.getName());
           }
+          dsToSupportedClasses.put(dataSerializer.getId(), supportedClassNames);
         }
       }
-      DataSerializer.writeHashMap(dataSerializersMap, dos);
-      if (clientVersion.isNotOlderThan(KnownVersion.GFE_6516)) {
-        DataSerializer.writeHashMap(dsToSupportedClasses, dos);
-      }
-      if (clientVersion.isNotOlderThan(KnownVersion.GEODE_1_5_0)) {
-        dos.writeInt(CLIENT_PING_TASK_PERIOD);
-      }
+    }
+    DataSerializer.writeHashMap(dataSerializersMap, dos);
+    if (clientVersion.isNotOlderThan(KnownVersion.GFE_6516)) {
+      DataSerializer.writeHashMap(dsToSupportedClasses, dos);
+    }
+    if (clientVersion.isNotOlderThan(KnownVersion.GEODE_1_5_0)) {
+      dos.writeInt(CLIENT_PING_TASK_PERIOD);
     }
     dos.flush();
   }
