@@ -91,28 +91,6 @@ public class ServerConnectionTest {
   }
 
   @Test
-  public void pre65SecureShouldReturnUserAuthId() {
-    long userAuthId = 12345L;
-    when(handshake.getVersion()).thenReturn(KnownVersion.GFE_61);
-    serverConnection.setUserAuthId(userAuthId);
-
-    long value = serverConnection.getUniqueId();
-
-    assertThat(value).isEqualTo(userAuthId);
-  }
-
-  @Test
-  public void pre65NonSecureShouldReturnUserAuthId() {
-    when(handshake.getVersion()).thenReturn(KnownVersion.GFE_61);
-    long userAuthId = 12345L;
-    serverConnection.setUserAuthId(userAuthId);
-
-    long value = serverConnection.getUniqueId();
-
-    assertThat(value).isEqualTo(userAuthId);
-  }
-
-  @Test
   public void post65SecureShouldUseUniqueIdFromMessage() {
     long uniqueIdFromMessage = 23456L;
     MessageIdExtractor messageIdExtractor = mock(MessageIdExtractor.class);

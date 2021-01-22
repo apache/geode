@@ -169,7 +169,7 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
     dos.writeUTF("");
 
     // Write delta-propagation property value if this is not WAN.
-    if (!communicationMode.isWAN() && clientVersion.isNotOlderThan(KnownVersion.GFE_61)) {
+    if (!communicationMode.isWAN()) {
       dos.writeBoolean(((InternalDistributedSystem) system).getConfig().getDeltaPropagation());
     }
 
