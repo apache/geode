@@ -94,13 +94,9 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
               new VersionedDataOutputStream(dataOutputStream, clientVersion);
         }
         this.id = ClientProxyMembershipID.readCanonicalized(dataInputStream);
+        setOverrides(new byte[] {dataInputStream.readByte()});
         // Note: credentials should always be the last piece in handshake for
         // Diffie-Hellman key exchange to work
-        if (clientVersion.isNotOlderThan(KnownVersion.GFE_603)) {
-          setOverrides(new byte[] {dataInputStream.readByte()});
-        } else {
-          setClientConflation(dataInputStream.readByte());
-        }
         if (this.clientVersion.isOlderThan(KnownVersion.GFE_65) || communicationMode.isWAN()) {
           this.credentials =
               readCredentials(dataInputStream, dataOutputStream, sys, this.securityService);

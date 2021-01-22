@@ -158,10 +158,6 @@ class ClientRegistrationMetadata {
     return false;
   }
 
-  private boolean doesClientSupportExtractOverrides() {
-    return clientVersion.isNotOlderThan(KnownVersion.GFE_603);
-  }
-
   private boolean oldClientRequiresVersionedStreams(final KnownVersion clientVersion) {
     return KnownVersion.CURRENT.compareTo(clientVersion) > 0;
   }
@@ -177,13 +173,8 @@ class ClientRegistrationMetadata {
 
   private boolean getAndValidateClientConflation()
       throws IOException {
-    if (doesClientSupportExtractOverrides()) {
-      byte[] overrides =
-          Handshake.extractOverrides(new byte[] {(byte) dataInputStream.read()});
-      clientConflation = overrides[0];
-    } else {
-      clientConflation = (byte) dataInputStream.read();
-    }
+    final byte[] overrides = Handshake.extractOverrides(new byte[] {(byte) dataInputStream.read()});
+    clientConflation = overrides[0];
 
     switch (clientConflation) {
       case Handshake.CONFLATION_DEFAULT:
