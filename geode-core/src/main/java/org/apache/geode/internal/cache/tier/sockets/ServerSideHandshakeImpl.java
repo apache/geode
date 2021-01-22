@@ -97,7 +97,7 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
         setOverrides(new byte[] {dataInputStream.readByte()});
         // Note: credentials should always be the last piece in handshake for
         // Diffie-Hellman key exchange to work
-        if (this.clientVersion.isOlderThan(KnownVersion.GFE_65) || communicationMode.isWAN()) {
+        if (communicationMode.isWAN()) {
           credentials =
               readCredentials(dataInputStream, dataOutputStream, sys, this.securityService);
         } else {

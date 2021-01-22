@@ -14,8 +14,6 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
-import java.io.DataOutput;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
@@ -28,15 +26,12 @@ import org.apache.geode.cache.ResourceException;
 import org.apache.geode.cache.client.internal.PutOp;
 import org.apache.geode.cache.operations.PutOperationContext;
 import org.apache.geode.distributed.internal.DistributionStats;
-import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.EventIDHolder;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.TXManagerImpl;
-import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
@@ -47,7 +42,6 @@ import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.util.Breadcrumbs;
 import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.ResourcePermission;
@@ -297,20 +291,10 @@ public class Put70 extends BaseCommand {
         }
         sendOldValue = true;
         oldValueIsObject = true;
-        KnownVersion clientVersion = serverConnection.getClientVersion();
         if (oldValue instanceof CachedDeserializable) {
           oldValue = ((CachedDeserializable) oldValue).getSerializedValue();
         } else if (oldValue instanceof byte[]) {
           oldValueIsObject = false;
-        } else if ((oldValue instanceof Token)
-            && clientVersion.isNotNewerThan(KnownVersion.GFE_651)) {
-          // older clients don't know that Token is now a DSFID class, so we
-          // put the token in a serialized form they can consume
-          try (HeapDataOutputStream str = new HeapDataOutputStream(KnownVersion.CURRENT)) {
-            DataOutput dstr = new DataOutputStream(str);
-            InternalDataSerializer.writeSerializableObject(oldValue, dstr);
-            oldValue = str.toByteArray();
-          }
         }
         result = true;
         // } catch (Exception e) {
@@ -333,20 +317,10 @@ public class Put70 extends BaseCommand {
               serverConnection.getProxyID(), true, clientEvent);
           sendOldValue = !clientEvent.isConcurrencyConflict();
           oldValueIsObject = true;
-          KnownVersion clientVersion = serverConnection.getClientVersion();
           if (oldValue instanceof CachedDeserializable) {
             oldValue = ((CachedDeserializable) oldValue).getSerializedValue();
           } else if (oldValue instanceof byte[]) {
             oldValueIsObject = false;
-          } else if ((oldValue instanceof Token)
-              && clientVersion.isNotNewerThan(KnownVersion.GFE_651)) {
-            // older clients don't know that Token is now a DSFID class, so we
-            // put the token in a serialized form they can consume
-            try (HeapDataOutputStream str = new HeapDataOutputStream(KnownVersion.CURRENT)) {
-              DataOutput dstr = new DataOutputStream(str);
-              InternalDataSerializer.writeSerializableObject(oldValue, dstr);
-              oldValue = str.toByteArray();
-            }
           }
           if (isDebugEnabled) {
             logger.debug("returning {} from replace(K,V)", oldValue);
