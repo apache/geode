@@ -193,9 +193,9 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   @Test
   public void testHMGet_givenWrongNumberOfArguments() {
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HMGET))
-        .hasMessageContaining("wrong number of arguments");
+        .hasMessage("ERR wrong number of arguments for 'hmget' command");
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HMGET, "1"))
-        .hasMessageContaining("wrong number of arguments");
+        .hasMessage("ERR wrong number of arguments for 'hmget' command");
   }
 
   @Test
@@ -203,12 +203,12 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
     jedis.set("farm", "chicken");
     assertThatThrownBy(() -> jedis.hmget("farm", "chicken"))
         .isInstanceOf(JedisDataException.class)
-        .hasMessageContaining("WRONGTYPE Operation against a key holding the wrong kind of value");
+        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
 
     jedis.sadd("zoo", "elephant");
     assertThatThrownBy(() -> jedis.hmget("zoo", "chicken"))
         .isInstanceOf(JedisDataException.class)
-        .hasMessageContaining("WRONGTYPE Operation against a key holding the wrong kind of value");
+        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
   }
 
   @Test

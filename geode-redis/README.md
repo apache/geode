@@ -165,52 +165,52 @@ start server \
 | EXPIREAT           	| DECRBY                                             	| ACL LIST                      	|
 | GET                	| ECHO                                               	| ACL LOAD                      	|
 | HGETALL            	| FLUSHALL                                           	| ACL LOG                       	|
-| HMSET              	| FLUSHDB                                            	| ACL SAVE                      	|
-| HSET               	| GETBIT                                             	| ACL SETUSER                   	|
-| HVALS          	| GETRANGE                                           	| ACL USERS                     	|
-| KEYS               	| GETSET                                             	| ACL WHOAMI                    	|
-| PERSIST            	| HDEL                                               	| BGREWRITEAOF                  	|
-| PEXPIRE            	| HEXISTS                                            	| BGSAVE                        	|
-| PEXPIREAT          	| HGET                                               	| BITFIELD                      	|
-| PING               	| HINCRBY                                            	| BLPOP                         	|
-| PSUBSCRIBE         	| HINCRBYFLOAT                                       	| BRPOP                         	|
-| PTTL               	| HKEYS                                              	| BRPOPLPUSH                    	|
-| PUBLISH            	| HLEN                                               	| BZPOPMAX                      	|
-| PUNSUBSCRIBE       	| HMGET                                              	| BZPOPMIN                      	|
-| QUIT               	| HSCAN                                              	| CLIENT CACHING                	|
-| RENAME             	| HSETNX                                             	| CLIENT GETNAME                	|
-| SADD               	| HSTRLEN                                           	| CLIENT GETREDIR               	|
-| SET                	| INCR                                                 	| CLIENT ID                     	|
-| SMEMBERS           	| INCRBY                                             	| CLIENT KILL                   	|
-| SREM               	| INCRBYFLOAT                                        	| CLIENT LIST                   	|
-| SUBSCRIBE          	| INFO                                               	| CLIENT PAUSE                  	|
-| TTL                	| MGET                                                  | CLIENT REPLY                  	|
-| TYPE              	| MSET                                               	| CLIENT SETNAME                	|
-| UNSUBSCRIBE           | MSETNX                                             	| CLIENT TRACKING               	|
-|                    	| PSETEX                                             	| CLIENT UNBLOCK                	|
-|                    	| SCAN                                               	| CLUSTER ADDSLOTS              	|
-|                    	| SCARD                                              	| CLUSTER BUMPEPOCH             	|
-|                    	| SDIFF                                              	| CLUSTER COUNT-FAILURE-REPORTS 	|
-|                    	| SDIFFSTORE                                         	| CLUSTER COUNTKEYSINSLOT       	|
-|                    	| SELECT                                             	| CLUSTER DELSLOTS     	            |
-|                    	| SETBIT                                             	| CLUSTER FAILOVER              	|
-|                    	| SETEX                                              	| CLUSTER FLUSHSLOTS                |
-|                    	| SETNX                                              	| CLUSTER FORGET                    |
-|                    	| SETRANGE                                           	| CLUSTER GETKEYSINSLOT             |
-|                    	| SHUTDOWN                                           	| CLUSTER INFO                  	|
-|                    	| SINTER                                             	| CLUSTER KEYSLOT                   |
-|                    	| SINTERSTORE                                        	| CLUSTER MEET                      |
-|                    	| SISMEMBER                                          	| CLUSTER MYID                   	|
-|                    	| SLOWLOG                                            	| CLUSTER NODES                 	|
-|                    	| SMOVE                                              	| CLUSTER REPLICAS                  |
-|                    	| SPOP                                               	| CLUSTER REPLICATE              	|
-|                    	| SRANDMEMBER                                        	| CLUSTER RESET                  	|
-|                    	| SSCAN                                              	| CLUSTER SAVECONFIG                |
-|                    	| STRLEN                                             	| CLUSTER SET-CONFIG-EPOCH          |
-|                    	| SUNION                                             	| CLUSTER SETSLOT                   |
-|                    	| SUNIONSTORE                                        	| CLUSTER SLAVES                    |
-|                    	| TIME                                               	| CLUSTER SLOTS                 	|
-|                    	| UNLINK [1]                                            | COMMAND                       	|
+| HMGET       	        | FLUSHDB                                            	| ACL SAVE                      	|
+| HMSET              	| GETBIT                                             	| ACL SETUSER                   	|
+| HSET           	| GETRANGE                                           	| ACL USERS                     	|
+| HVALS              	| GETSET                                             	| ACL WHOAMI                    	|
+| KEYS               	| HDEL                                               	| BGREWRITEAOF                  	|
+| PERSIST            	| HEXISTS                                            	| BGSAVE                        	|
+| PEXPIRE            	| HGET                                               	| BITFIELD                      	|
+| PEXPIREAT          	| HINCRBY                                            	| BLPOP                         	|
+| PING               	| HINCRBYFLOAT                                       	| BRPOP                         	|
+| PSUBSCRIBE         	| HKEYS                                              	| BRPOPLPUSH                    	|
+| PTTL               	| HLEN                                               	| BZPOPMAX                      	|
+| PUBLISH            	| HSCAN                                                 | BZPOPMIN                      	|
+| PUNSUBSCRIBE       	| HSETNX                                             	| CLIENT CACHING                	|
+| QUIT               	| HSTRLEN                                            	| CLIENT GETNAME                	|
+| RENAME             	| INCR                                              	| CLIENT GETREDIR               	|
+| SADD               	| INCRBY                                               	| CLIENT ID                     	|
+| SET                	| INCRBYFLOAT                                        	| CLIENT KILL                   	|
+| SMEMBERS           	| INFO                                               	| CLIENT LIST                   	|
+| SREM               	| MGET                                               	| CLIENT PAUSE                  	|
+| SUBSCRIBE          	| MSET                                                  | CLIENT REPLY                  	|
+| TTL               	| MSETNX                                             	| CLIENT SETNAME                	|
+| TYPE                  | PSETEX                                             	| CLIENT TRACKING               	|
+| UNSUBSCRIBE           | SCAN                                               	| CLIENT UNBLOCK                	|
+|                    	| SCARD                                              	| CLUSTER ADDSLOTS              	|
+|                    	| SDIFF                                              	| CLUSTER BUMPEPOCH             	|
+|                    	| SDIFFSTORE                                         	| CLUSTER COUNT-FAILURE-REPORTS 	|
+|                    	| SELECT                                             	| CLUSTER COUNTKEYSINSLOT       	|
+|                    	| SETBIT                                             	| CLUSTER DELSLOTS     	            |
+|                    	| SETEX                                              	| CLUSTER FAILOVER              	|
+|                    	| SETNX                                              	| CLUSTER FLUSHSLOTS                |
+|                    	| SETRANGE                                           	| CLUSTER FORGET                    |
+|                    	| SHUTDOWN                                           	| CLUSTER GETKEYSINSLOT             |
+|                    	| SINTER                                             	| CLUSTER INFO                  	|
+|                    	| SINTERSTORE                                        	| CLUSTER KEYSLOT                   |
+|                    	| SISMEMBER                                          	| CLUSTER MEET                      |
+|                    	| SLOWLOG                                            	| CLUSTER MYID                   	|
+|                    	| SMOVE                                              	| CLUSTER NODES                 	|
+|                    	| SPOP                                               	| CLUSTER REPLICAS                  |
+|                    	| SRANDMEMBER                                        	| CLUSTER REPLICATE              	|
+|                    	| SSCAN                                              	| CLUSTER RESET                  	|
+|                    	| STRLEN                                             	| CLUSTER SAVECONFIG                |
+|                    	| SUNION                                             	| CLUSTER SET-CONFIG-EPOCH          |
+|                    	| SUNIONSTORE                                        	| CLUSTER SETSLOT                   |
+|                    	| TIME                                               	| CLUSTER SLAVES                    |
+|                    	| UNLINK [1]                                         	| CLUSTER SLOTS                 	|
+|                    	|                                                       | COMMAND                       	|
 |                    	|                                             	        | COMMAND COUNT                 	|
 |                    	|                                                    	| COMMAND GETKEYS               	|
 |                    	|                                                    	| COMMAND INFO                  	|
