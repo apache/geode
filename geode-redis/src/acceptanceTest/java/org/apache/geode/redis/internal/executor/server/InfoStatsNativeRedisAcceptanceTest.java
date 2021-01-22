@@ -19,18 +19,12 @@ import org.junit.ClassRule;
 
 import org.apache.geode.NativeRedisTestRule;
 
-public class InfoNativeRedisAcceptanceTest extends AbstractInfoIntegrationTest {
-
+public class InfoStatsNativeRedisAcceptanceTest extends AbstractRedisInfoStatsIntegrationTest {
   @ClassRule
   public static NativeRedisTestRule redis = new NativeRedisTestRule();
 
   @Override
   public int getPort() {
     return redis.getPort();
-  }
-
-  @Override
-  public int getExposedPort() {
-    return redis.getExposedPort();
   }
 }

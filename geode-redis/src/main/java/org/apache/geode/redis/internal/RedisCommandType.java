@@ -176,8 +176,7 @@ public enum RedisCommandType {
   UNSUBSCRIBE(new UnsubscribeExecutor(), SUPPORTED, new MinimumParameterRequirements(1)),
 
   /***************************************
-   ********** Internal Commands **********
-   * /
+   ********* Internal Commands ***********
    ***************************************/
   // do not call these directly, only to be used in other commands
   INTERNALPTTL(null, INTERNAL, new ExactParameterRequirements(2)),

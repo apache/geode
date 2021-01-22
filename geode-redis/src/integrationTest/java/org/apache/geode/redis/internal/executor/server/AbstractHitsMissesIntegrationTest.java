@@ -26,6 +26,7 @@ import java.util.function.Consumer;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import redis.clients.jedis.BitOP;
 import redis.clients.jedis.Jedis;
@@ -47,8 +48,10 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
     jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
 
     jedis.set("string", "yarn");
+    jedis.set("int", "5");
     jedis.sadd("set", "cotton");
     jedis.hset("hash", "green", "eggs");
+    jedis.mset("mapKey1", "fox", "mapKey2", "box");
   }
 
   @After
@@ -57,6 +60,9 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
     jedis.close();
   }
 
+  /***********************************************
+   ************* Supported Commands **************
+   **********************************************/
   // ------------ Key related commands -----------
 
   @Test
@@ -89,6 +95,11 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
     runCommandAndAssertNoStatUpdates("string", (k, v) -> jedis.rename(k, v));
   }
 
+  @Test
+  public void testDel() {
+    runCommandAndAssertNoStatUpdates("string", k -> jedis.del(k));
+  }
+
   // ------------ String related commands -----------
 
   @Test
@@ -96,6 +107,107 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
     runCommandAndAssertHitsAndMisses("string", k -> jedis.get(k));
   }
 
+  @Test
+  public void testAppend() {
+    runCommandAndAssertNoStatUpdates("string", (k, v) -> jedis.append(k, v));
+  }
+
+  @Test
+  public void testSet() {
+    runCommandAndAssertNoStatUpdates("string", (k, v) -> jedis.set(k, v));
+  }
+
+  @Test
+  public void testSet_wrongType() {
+    runCommandAndAssertNoStatUpdates("set", (k, v) -> jedis.set(k, v));
+  }
+
+  // ------------ Set related commands -----------
+  @Test
+  public void testSadd() {
+    runCommandAndAssertNoStatUpdates("set", (k, v) -> jedis.sadd(k, v));
+  }
+
+  @Test
+  public void testSrem() {
+    runCommandAndAssertNoStatUpdates("set", (k, v) -> jedis.srem(k, v));
+  }
+
+  @Test
+  public void testSmembers() {
+    runCommandAndAssertHitsAndMisses("set", k -> jedis.smembers(k));
+  }
+
+  // ------------ Hash related commands -----------
+  @Test
+  public void testHset() {
+    runCommandAndAssertNoStatUpdates("hash", (k, v, s) -> jedis.hset(k, v, s));
+  }
+
+  @Test
+  public void testHgetall() {
+    runCommandAndAssertHitsAndMisses("hash", k -> jedis.hgetAll(k));
+  }
+
+  @Test
+  public void testHMSet() {
+    Map<String, String> map = new HashMap<>();
+    map.put("key1", "value1");
+    map.put("key2", "value2");
+
+    runCommandAndAssertNoStatUpdates("key", (k) -> jedis.hmset(k, map));
+  }
+
+  // ------------ Key related commands -----------
+
+  @Test
+  public void testExpire() {
+    runCommandAndAssertNoStatUpdates("hash", (k) -> jedis.expire(k, 5));
+  }
+
+  @Test
+  public void testPassiveExpiration() {
+    runCommandAndAssertNoStatUpdates("hash", (k) -> {
+      jedis.expire(k, 1);
+      GeodeAwaitility.await().during(Duration.ofSeconds(3)).until(() -> true);
+    });
+  }
+
+  @Test
+  public void testExpireAt() {
+    runCommandAndAssertNoStatUpdates("hash", (k) -> jedis.expireAt(k, 2145916800));
+  }
+
+  @Test
+  public void testPExpire() {
+    runCommandAndAssertNoStatUpdates("hash", (k) -> jedis.pexpire(k, 1024));
+  }
+
+  @Test
+  public void testPExpireAt() {
+    runCommandAndAssertNoStatUpdates("hash", (k) -> jedis.pexpireAt(k, 1608247597));
+  }
+
+  @Test
+  public void testPersist() {
+    runCommandAndAssertNoStatUpdates("hash", (k) -> jedis.persist(k));
+  }
+
+  /**********************************************
+   ********** Unsupported Commands **************
+   *********************************************/
+  // ---------- Key related commands -----------
+  @Test
+  public void testScan() {
+    runCommandAndAssertNoStatUpdates("0", k -> jedis.scan(k));
+  }
+
+  @Test
+  public void testUnlink() {
+    runCommandAndAssertNoStatUpdates("string", k -> jedis.unlink(k));
+  }
+
+  // ------------ String related commands -----------
   @Test
   public void testGetset() {
     runCommandAndAssertHitsAndMisses("string", (k, v) -> jedis.getSet(k, v));
@@ -107,27 +219,68 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
   }
 
   @Test
-  public void testDel() {
-    runCommandAndAssertNoStatUpdates("string", k -> jedis.del(k));
+  public void testDecr() {
+    runCommandAndAssertNoStatUpdates("int", k -> jedis.decr(k));
   }
 
   @Test
-  public void testSet() {
-    runCommandAndAssertNoStatUpdates("string", (k, v) -> jedis.set(k, v));
+  public void testDecrby() {
+    runCommandAndAssertNoStatUpdates("int", k -> jedis.decrBy(k, 1));
   }
 
   @Test
-  public void testAppend() {
-    runCommandAndAssertNoStatUpdates("string", (k, v) -> jedis.append(k, v));
+  public void testGetrange() {
+    runCommandAndAssertHitsAndMisses("string", k -> jedis.getrange(k, 1l, 2l));
   }
 
   @Test
-  public void testSetWrongType() {
-    runCommandAndAssertNoStatUpdates("set", (k, v) -> jedis.set(k, v));
+  public void testIncr() {
+    runCommandAndAssertNoStatUpdates("int", k -> jedis.incr(k));
+  }
+
+  @Test
+  public void testIncrby() {
+    runCommandAndAssertNoStatUpdates("int", k -> jedis.incrBy(k, 1l));
+  }
+
+  @Test
+  public void testIncrbyfloat() {
+    runCommandAndAssertNoStatUpdates("int", k -> jedis.incrByFloat(k, 1.0));
+  }
+
+  @Test
+  public void testMget() {
+    runCommandAndAssertHitsAndMisses("mapKey1", "mapKey2", (k1, k2) -> jedis.mget(k1, k2));
+  }
+
+  @Test
+  public void testMset() {
+    runCommandAndAssertNoStatUpdates("mapKey1", (k, v) -> jedis.mset(k, v));
+  }
+
+  // todo updates stats when it shouldn't. not implemented in the function executor
+  @Ignore
+  @Test
+  public void testMsetnx() {
+    runCommandAndAssertNoStatUpdates("mapKey1", (k, v) -> jedis.msetnx(k, v));
+  }
+
+  @Test
+  public void testSetex() {
+    runCommandAndAssertNoStatUpdates("string", (k, v) -> jedis.setex(k, 200, v));
+  }
+
+  @Test
+  public void testSetnx() {
+    runCommandAndAssertNoStatUpdates("string", (k, v) -> jedis.setnx(k, v));
+  }
+
+  @Test
+  public void testSetrange() {
+    runCommandAndAssertNoStatUpdates("string", (k, v) -> jedis.setrange(k, 1l, v));
   }
 
   // ------------ Bit related commands -----------
-
   @Test
   public void testBitcount() {
     runCommandAndAssertHitsAndMisses("string", k -> jedis.bitcount(k));
@@ -171,27 +324,22 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
     assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses + 1 + 1));
   }
 
+  @Test
+  public void testGetbit() {
+    runCommandAndAssertHitsAndMisses("string", k -> jedis.getbit(k, 1));
+  }
+
+  @Test
+  public void testSetbit() {
+    runCommandAndAssertNoStatUpdates("int", (k, v) -> jedis.setbit(k, 0l, "1"));
+  }
+
   // ------------ Set related commands -----------
   // FYI - In Redis 5.x SPOP produces inconsistent results depending on whether a count was given
   // or not. In Redis 6.x SPOP does not update any stats.
   @Test
   public void testSpop() {
     runCommandAndAssertNoStatUpdates("set", k -> jedis.spop(k));
-  }
-
-  @Test
-  public void testSadd() {
-    runCommandAndAssertNoStatUpdates("set", (k, v) -> jedis.sadd(k, v));
-  }
-
-  @Test
-  public void testSrem() {
-    runCommandAndAssertNoStatUpdates("set", (k, v) -> jedis.srem(k, v));
-  }
-
-  @Test
-  public void testSmembers() {
-    runCommandAndAssertHitsAndMisses("set", k -> jedis.smembers(k));
   }
 
   @Test
@@ -244,26 +392,22 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
     runDiffStoreCommandAndAssertNoStatUpdates("set", (k, v, s) -> jedis.sunionstore(k, v, s));
   }
 
-  // ------------ Hash related commands -----------
+  // TODO GEODE-8857: our implementation updates the stats when it shouldn't
+  @Ignore
+  @Test
+  public void testSmove() {
+    runCommandAndAssertNoStatUpdates("set", (k, d, m) -> jedis.smove(k, d, m));
+  }
 
+  // ------------ Hash related commands -----------
   @Test
   public void testHdel() {
     runCommandAndAssertNoStatUpdates("hash", (k, v) -> jedis.hdel(k, v));
   }
 
   @Test
-  public void testHset() {
-    runCommandAndAssertNoStatUpdates("hash", (k, v, s) -> jedis.hset(k, v, s));
-  }
-
-  @Test
   public void testHget() {
     runCommandAndAssertHitsAndMisses("hash", (k, v) -> jedis.hget(k, v));
-  }
-
-  @Test
-  public void testHgetall() {
-    runCommandAndAssertHitsAndMisses("hash", k -> jedis.hgetAll(k));
   }
 
   @Test
@@ -302,47 +446,18 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
   }
 
   @Test
-  public void testHMSet() {
-    Map<String, String> map = new HashMap<>();
-    map.put("key1", "value1");
-    map.put("key2", "value2");
-
-    runCommandAndAssertNoStatUpdates("key", (k) -> jedis.hmset(k, map));
-  }
-
-  // ------------ Key related commands -----------
-
-  @Test
-  public void testExpire() {
-    runCommandAndAssertNoStatUpdates("hash", (k) -> jedis.expire(k, 5));
+  public void testHincrby() {
+    runCommandAndAssertNoStatUpdates("hash", (k, f) -> jedis.hincrBy(k, f, 1l));
   }
 
   @Test
-  public void testPassiveExpiration() {
-    runCommandAndAssertNoStatUpdates("hash", (k) -> {
-      jedis.expire(k, 1);
-      GeodeAwaitility.await().during(Duration.ofSeconds(3)).until(() -> true);
-    });
+  public void testHincrbyfloat() {
+    runCommandAndAssertNoStatUpdates("hash", (k, f) -> jedis.hincrByFloat(k, f, 1.0));
   }
 
   @Test
-  public void testExpireAt() {
-    runCommandAndAssertNoStatUpdates("hash", (k) -> jedis.expireAt(k, 2145916800));
-  }
-
-  @Test
-  public void testPExpire() {
-    runCommandAndAssertNoStatUpdates("hash", (k) -> jedis.pexpire(k, 1024));
-  }
-
-  @Test
-  public void testPExpireAt() {
-    runCommandAndAssertNoStatUpdates("hash", (k) -> jedis.pexpireAt(k, 1608247597));
-  }
-
-  @Test
-  public void testPersist() {
-    runCommandAndAssertNoStatUpdates("hash", (k) -> jedis.persist(k));
+  public void testHsetnx() {
+    runCommandAndAssertNoStatUpdates("hash", (k, f, v) -> jedis.hsetnx(k, f, v));
   }
 
   // ------------ Helper Methods -----------
@@ -381,6 +496,19 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
 
     assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits + 1));
     assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses + 1));
+  }
+
+  private void runCommandAndAssertHitsAndMisses(String key1, String key2,
+      BiConsumer<String, String> command) {
+    Map<String, String> info = getInfo(jedis);
+    Long currentHits = Long.parseLong(info.get(HITS));
+    Long currentMisses = Long.parseLong(info.get(MISSES));
+
+    command.accept(key1, key2);
+    info = getInfo(jedis);
+
+    assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits + 2));
+    assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses));
   }
 
   private void runDiffCommandAndAssertHitsAndMisses(String key,

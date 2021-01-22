@@ -34,6 +34,7 @@ public class NativeRedisTestRule extends ExternalResource implements Serializabl
   private GenericContainer<?> redisContainer;
   private final RuleChain delegate;
   private final int PORT_TO_EXPOSE = 6379;
+  private int max_clients = 10000;
 
   public NativeRedisTestRule() {
     delegate = RuleChain
@@ -50,6 +51,12 @@ public class NativeRedisTestRule extends ExternalResource implements Serializabl
     return redisContainer.getExposedPorts().get(0);
   }
 
+  public NativeRedisTestRule withMaxConnections(int max_connections) {
+    this.max_clients = max_connections;
+
+    return this;
+  }
+
   @Override
   public Statement apply(Statement base, Description description) {
     Statement containerStatement = new Statement() {
@@ -58,7 +65,8 @@ public class NativeRedisTestRule extends ExternalResource implements Serializabl
 
         redisContainer =
             new GenericContainer<>("redis:5.0.6")
-                .withExposedPorts(PORT_TO_EXPOSE);
+                .withExposedPorts(PORT_TO_EXPOSE)
+                .withCommand("redis-server --maxclients " + max_clients);
 
         redisContainer.start();
         logger.info("Started redis container with exposed port {} -> {}", PORT_TO_EXPOSE,

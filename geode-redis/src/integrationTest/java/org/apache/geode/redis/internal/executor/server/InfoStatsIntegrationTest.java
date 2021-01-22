@@ -17,20 +17,14 @@ package org.apache.geode.redis.internal.executor.server;
 
 import org.junit.ClassRule;
 
-import org.apache.geode.NativeRedisTestRule;
+import org.apache.geode.redis.GeodeRedisServerRule;
 
-public class InfoNativeRedisAcceptanceTest extends AbstractInfoIntegrationTest {
-
+public class InfoStatsIntegrationTest extends AbstractRedisInfoStatsIntegrationTest {
   @ClassRule
-  public static NativeRedisTestRule redis = new NativeRedisTestRule();
+  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
   @Override
   public int getPort() {
-    return redis.getPort();
-  }
-
-  @Override
-  public int getExposedPort() {
-    return redis.getExposedPort();
+    return server.getPort();
   }
 }
