@@ -24,7 +24,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_REST_API;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.BufferedReader;
@@ -169,9 +168,7 @@ public class RestAPIsAndInterOpsDUnitTest
   }
 
   private int startManager(final String locators, final String[] regions) throws IOException {
-    int[] ports = getRandomAvailableTCPPorts(2);
-    int jmxManagerPort = ports[0];
-    int httpPort = ports[1];
+    int httpPort = getRandomAvailableTCPPort();
 
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, String.valueOf(0));
