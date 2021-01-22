@@ -39,6 +39,7 @@ import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
+import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
 public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier {
@@ -69,11 +70,12 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   @Test
   public void testHMSet_givenWrongNumberOfArguments() {
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HMSET))
-        .hasMessageContaining("wrong number of arguments");
+        .hasMessage("ERR wrong number of arguments for 'hmset' command");
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HMSET, "1"))
-        .hasMessageContaining("wrong number of arguments");
+        .hasMessage("ERR wrong number of arguments for 'hmset' command");
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HMSET, "1", "2"))
-        .hasMessageContaining("wrong number of arguments");
+        .hasMessage("ERR wrong number of arguments for 'hmset' command");
+    // Redis is somewhat inconsistent with the error response here
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HMSET, "1", "2", "3", "4"))
         .hasMessageContaining("wrong number of arguments");
   }
@@ -81,11 +83,12 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   @Test
   public void testHSet_givenWrongNumberOfArguments() {
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSET))
-        .hasMessageContaining("wrong number of arguments");
+        .hasMessage("ERR wrong number of arguments for 'hset' command");
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSET, "1"))
-        .hasMessageContaining("wrong number of arguments");
+        .hasMessage("ERR wrong number of arguments for 'hset' command");
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSET, "1", "2"))
-        .hasMessageContaining("wrong number of arguments");
+        .hasMessage("ERR wrong number of arguments for 'hset' command");
+    // Redis is somewhat inconsistent with the error response here
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSET, "1", "2", "3", "4"))
         .hasMessageContaining("wrong number of arguments");
   }
@@ -93,9 +96,9 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   @Test
   public void testHGetall_givenWrongNumberOfArguments() {
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HGETALL))
-        .hasMessageContaining("wrong number of arguments");
+        .hasMessage("ERR wrong number of arguments for 'hgetall' command");
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HMSET, "1", "2"))
-        .hasMessageContaining("wrong number of arguments");
+        .hasMessage("ERR wrong number of arguments for 'hmset' command");
   }
 
   @Test
@@ -167,7 +170,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
     assertThatThrownBy(() -> {
       jedis.hdel("farm", "chicken");
     }).isInstanceOf(JedisDataException.class)
-        .hasMessageContaining("WRONGTYPE Operation against a key holding the wrong kind of value");
+        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -192,11 +195,11 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   public void testHStrLen_failsForNonHashes() {
     jedis.sadd("farm", "chicken");
     assertThatThrownBy(() -> jedis.hstrlen("farm", "chicken"))
-        .hasMessageContaining("WRONGTYPE");
+        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
 
     jedis.set("tractor", "John Deere");
     assertThatThrownBy(() -> jedis.hstrlen("tractor", "chicken"))
-        .hasMessageContaining("WRONGTYPE");
+        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -373,23 +376,41 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
     String key = "HVals_key";
     String field1 = "field_1";
     String field2 = "field_2";
-    String value = "value";
+    String value1 = "value_1";
+    String value2 = "value_2";
 
-    List<String> list = jedis.hvals(key);
-    assertThat(list == null || list.isEmpty()).isTrue();
+    List<String> list = jedis.hvals("non-existent-key");
+    assertThat(list).isEmpty();
 
-    Long result = jedis.hset(key, field1, value);
+    Long result = jedis.hset(key, field1, value1);
     assertThat(result).isEqualTo(1);
 
-    result = jedis.hset(key, field2, value);
+    result = jedis.hset(key, field2, value2);
     assertThat(result).isEqualTo(1);
     list = jedis.hvals(key);
 
-    assertThat(list).isNotNull();
-    assertThat(list).isNotEmpty();
     assertThat(list).hasSize(2);
+    assertThat(list).contains(value1, value2);
+  }
 
-    assertThat(list).contains(value);
+  @Test
+  public void hvalsFailsForNonHash() {
+    jedis.sadd("farm", "chicken");
+    assertThatThrownBy(() -> jedis.hvals("farm"))
+        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+
+    jedis.set("tractor", "John Deere");
+    assertThatThrownBy(() -> jedis.hvals("tractor"))
+        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+  }
+
+  @Test
+  public void hvalsFails_withIncorrectParameters() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HVALS))
+        .hasMessage("ERR wrong number of arguments for 'hvals' command");
+
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HVALS, "1", "too-many"))
+        .hasMessage("ERR wrong number of arguments for 'hvals' command");
   }
 
   /**
@@ -637,7 +658,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
 
     assertThatThrownBy(
         () -> jedis.hset("key", "field", "something else")).isInstanceOf(JedisDataException.class)
-            .hasMessageContaining("WRONGTYPE");
+            .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
   }
 
   @Test
