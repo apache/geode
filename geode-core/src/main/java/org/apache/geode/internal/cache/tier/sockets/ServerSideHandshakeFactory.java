@@ -51,7 +51,7 @@ class ServerSideHandshakeFactory {
       logger.debug("Client version: {}", clientVersion);
     }
 
-    if (clientVersion.isOlderThan(KnownVersion.GFE_57)) {
+    if (clientVersion.isOlderThan(KnownVersion.OLDEST)) {
       throw new UnsupportedVersionException("Unsupported version " + clientVersion
           + "Server's current version " + currentServerVersion);
     }
@@ -78,9 +78,10 @@ class ServerSideHandshakeFactory {
       if (clientVersion == null) {
         message = KnownVersion.unsupportedVersionMessage(clientVersionOrdinal);
       } else {
-        final Map<Integer, Command> commands = CommandInitializer.getCommands(clientVersion);
+        final Map<Integer, Command> commands =
+            CommandInitializer.getDefaultInstance().get(clientVersion);
         if (commands == null) {
-          message = "Client version {} is not supported";
+          message = "No commands registered for version " + clientVersion + ".";
         } else {
           return clientVersion;
         }

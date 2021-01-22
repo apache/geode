@@ -14,16 +14,18 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isA;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -55,7 +57,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category({ClientServerTest.class})
-public class Put65Test {
+public class Put70Test {
 
   private static final String REGION_NAME = "region1";
   private static final String KEY = "key1";
@@ -97,176 +99,181 @@ public class Put65Test {
   @Mock
   private PutOperationContext putOperationContext;
   @Mock
-  private Object object;
-  @Mock
   private Message errorResponseMessage;
   @Mock
   private Message replyMessage;
   @Mock
-  private RegionAttributes attributes;
+  private RegionAttributes<?, ?> attributes;
   @Mock
   private EventIDHolder clientEvent;
   @Mock
   private DataPolicy dataPolicy;
 
   @InjectMocks
-  private Put65 put65;
+  private Put70 put70;
+
+  private AutoCloseable mockitoMocks;
 
   @Before
   public void setUp() throws Exception {
-    this.put65 = new Put65();
-    MockitoAnnotations.initMocks(this);
+    put70 = (Put70) Put70.getCommand();
+    mockitoMocks = MockitoAnnotations.openMocks(this);
 
     when(
-        this.authzRequest.putAuthorize(eq(REGION_NAME), eq(KEY), any(), eq(true), eq(CALLBACK_ARG)))
-            .thenReturn(this.putOperationContext);
+        authzRequest.putAuthorize(eq(REGION_NAME), eq(KEY), any(), eq(true), eq(CALLBACK_ARG)))
+            .thenReturn(putOperationContext);
 
-    when(this.cache.getRegion(isA(String.class))).thenReturn(this.localRegion);
-    when(this.cache.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
-    when(this.cache.getCacheTransactionManager()).thenReturn(mock(TXManagerImpl.class));
+    when(cache.getRegion(isA(String.class))).thenReturn(uncheckedCast(localRegion));
+    when(cache.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
+    when(cache.getCacheTransactionManager()).thenReturn(mock(TXManagerImpl.class));
 
-    when(this.callbackArgsPart.getObject()).thenReturn(CALLBACK_ARG);
+    when(callbackArgsPart.getObject()).thenReturn(CALLBACK_ARG);
 
-    when(this.deltaPart.getObject()).thenReturn(Boolean.FALSE);
+    when(deltaPart.getObject()).thenReturn(Boolean.FALSE);
 
-    when(this.eventPart.getSerializedForm()).thenReturn(EVENT);
+    when(eventPart.getSerializedForm()).thenReturn(EVENT);
 
-    when(this.flagsPart.getInt()).thenReturn(1);
+    when(flagsPart.getInt()).thenReturn(1);
 
-    when(this.keyPart.getStringOrObject()).thenReturn(KEY);
+    when(keyPart.getStringOrObject()).thenReturn(KEY);
 
-    when(this.localRegion.basicBridgePut(eq(KEY), eq(VALUE), eq(null), eq(true), eq(CALLBACK_ARG),
+    when(localRegion.basicBridgePut(eq(KEY), eq(VALUE), eq(null), eq(true), eq(CALLBACK_ARG),
         any(), eq(true), any())).thenReturn(true);
 
-    when(this.message.getNumberOfParts()).thenReturn(8);
-    when(this.message.getPart(eq(0))).thenReturn(this.regionNamePart);
-    when(this.message.getPart(eq(1))).thenReturn(operationPart);
-    when(this.message.getPart(eq(2))).thenReturn(this.flagsPart);
-    when(this.message.getPart(eq(3))).thenReturn(this.keyPart);
-    when(this.message.getPart(eq(4))).thenReturn(this.deltaPart);
-    when(this.message.getPart(eq(5))).thenReturn(this.valuePart);
-    when(this.message.getPart(eq(6))).thenReturn(this.eventPart);
-    when(this.message.getPart(eq(7))).thenReturn(this.callbackArgsPart);
+    when(message.getNumberOfParts()).thenReturn(8);
+    when(message.getPart(eq(0))).thenReturn(regionNamePart);
+    when(message.getPart(eq(1))).thenReturn(operationPart);
+    when(message.getPart(eq(2))).thenReturn(flagsPart);
+    when(message.getPart(eq(3))).thenReturn(keyPart);
+    when(message.getPart(eq(4))).thenReturn(deltaPart);
+    when(message.getPart(eq(5))).thenReturn(valuePart);
+    when(message.getPart(eq(6))).thenReturn(eventPart);
+    when(message.getPart(eq(7))).thenReturn(callbackArgsPart);
 
-    when(this.operationPart.getObject()).thenReturn(null);
+    when(operationPart.getObject()).thenReturn(null);
 
-    when(this.oldValuePart.getObject()).thenReturn(mock(Object.class));
+    when(oldValuePart.getObject()).thenReturn(mock(Object.class));
 
-    when(this.putOperationContext.getCallbackArg()).thenReturn(CALLBACK_ARG);
-    when(this.putOperationContext.getValue()).thenReturn(VALUE);
-    when(this.putOperationContext.isObject()).thenReturn(true);
+    when(putOperationContext.getCallbackArg()).thenReturn(CALLBACK_ARG);
+    when(putOperationContext.getValue()).thenReturn(VALUE);
+    when(putOperationContext.isObject()).thenReturn(true);
 
-    when(this.regionNamePart.getCachedString()).thenReturn(REGION_NAME);
+    when(regionNamePart.getCachedString()).thenReturn(REGION_NAME);
 
-    when(this.serverConnection.getCache()).thenReturn(this.cache);
-    when(this.serverConnection.getCacheServerStats()).thenReturn(mock(CacheServerStats.class));
-    when(this.serverConnection.getAuthzRequest()).thenReturn(this.authzRequest);
-    when(this.serverConnection.getCachedRegionHelper()).thenReturn(mock(CachedRegionHelper.class));
-    when(this.serverConnection.getReplyMessage()).thenReturn(this.replyMessage);
-    when(this.serverConnection.getErrorResponseMessage()).thenReturn(this.errorResponseMessage);
-    when(this.serverConnection.getClientVersion()).thenReturn(KnownVersion.CURRENT);
+    when(serverConnection.getCache()).thenReturn(cache);
+    when(serverConnection.getCacheServerStats()).thenReturn(mock(CacheServerStats.class));
+    when(serverConnection.getAuthzRequest()).thenReturn(authzRequest);
+    when(serverConnection.getCachedRegionHelper()).thenReturn(mock(CachedRegionHelper.class));
+    when(serverConnection.getReplyMessage()).thenReturn(replyMessage);
+    when(serverConnection.getErrorResponseMessage()).thenReturn(errorResponseMessage);
+    when(serverConnection.getClientVersion()).thenReturn(KnownVersion.CURRENT);
 
-    when(this.valuePart.getSerializedForm()).thenReturn(VALUE);
-    when(this.valuePart.isObject()).thenReturn(true);
+    when(valuePart.getSerializedForm()).thenReturn(VALUE);
+    when(valuePart.isObject()).thenReturn(true);
 
     when(localRegion.getAttributes()).thenReturn(attributes);
     when(attributes.getDataPolicy()).thenReturn(dataPolicy);
   }
 
+  @After
+  public void after() throws Exception {
+    mockitoMocks.close();
+  }
+
   @Test
   public void noSecurityShouldSucceed() throws Exception {
-    when(this.securityService.isClientSecurityRequired()).thenReturn(false);
+    when(securityService.isClientSecurityRequired()).thenReturn(false);
 
-    this.put65.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+    put70.cmdExecute(message, serverConnection, securityService, 0);
 
-    verify(this.replyMessage).send(this.serverConnection);
+    verify(replyMessage).send(serverConnection);
   }
 
   @Test
   public void noRegionNameShouldFail() throws Exception {
-    when(this.securityService.isClientSecurityRequired()).thenReturn(false);
-    when(this.regionNamePart.getCachedString()).thenReturn(null);
+    when(securityService.isClientSecurityRequired()).thenReturn(false);
+    when(regionNamePart.getCachedString()).thenReturn(null);
 
-    this.put65.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+    put70.cmdExecute(message, serverConnection, securityService, 0);
 
     ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
-    verify(this.errorResponseMessage).addStringPart(argument.capture());
+    verify(errorResponseMessage).addStringPart(argument.capture());
     assertThat(argument.getValue()).contains("The input region name for the put request is null");
-    verify(this.errorResponseMessage).send(this.serverConnection);
+    verify(errorResponseMessage).send(serverConnection);
   }
 
   @Test
   public void noKeyShouldFail() throws Exception {
-    when(this.securityService.isClientSecurityRequired()).thenReturn(false);
-    when(this.keyPart.getStringOrObject()).thenReturn(null);
+    when(securityService.isClientSecurityRequired()).thenReturn(false);
+    when(keyPart.getStringOrObject()).thenReturn(null);
 
-    this.put65.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+    put70.cmdExecute(message, serverConnection, securityService, 0);
 
     ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
-    verify(this.errorResponseMessage).addStringPart(argument.capture());
+    verify(errorResponseMessage).addStringPart(argument.capture());
     assertThat(argument.getValue()).contains("The input key for the put request is null");
-    verify(this.errorResponseMessage).send(this.serverConnection);
+    verify(errorResponseMessage).send(serverConnection);
   }
 
   @Test
   public void integratedSecurityShouldSucceedIfAuthorized() throws Exception {
-    when(this.securityService.isClientSecurityRequired()).thenReturn(true);
-    when(this.securityService.isIntegratedSecurity()).thenReturn(true);
+    when(securityService.isClientSecurityRequired()).thenReturn(true);
+    when(securityService.isIntegratedSecurity()).thenReturn(true);
 
-    this.put65.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+    put70.cmdExecute(message, serverConnection, securityService, 0);
 
-    verify(this.securityService).authorize(Resource.DATA, Operation.WRITE, REGION_NAME, KEY);
-    verify(this.replyMessage).send(this.serverConnection);
+    verify(securityService).authorize(Resource.DATA, Operation.WRITE, REGION_NAME, KEY);
+    verify(replyMessage).send(serverConnection);
   }
 
   @Test
   public void integratedSecurityShouldFailIfNotAuthorized() throws Exception {
-    when(this.securityService.isClientSecurityRequired()).thenReturn(true);
-    when(this.securityService.isIntegratedSecurity()).thenReturn(true);
-    doThrow(new NotAuthorizedException("")).when(this.securityService).authorize(Resource.DATA,
+    when(securityService.isClientSecurityRequired()).thenReturn(true);
+    when(securityService.isIntegratedSecurity()).thenReturn(true);
+    doThrow(new NotAuthorizedException("")).when(securityService).authorize(Resource.DATA,
         Operation.WRITE, REGION_NAME, KEY);
 
-    this.put65.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+    put70.cmdExecute(message, serverConnection, securityService, 0);
 
-    verify(this.securityService).authorize(Resource.DATA, Operation.WRITE, REGION_NAME, KEY);
-    verify(this.errorResponseMessage).send(this.serverConnection);
+    verify(securityService).authorize(Resource.DATA, Operation.WRITE, REGION_NAME, KEY);
+    verify(errorResponseMessage).send(serverConnection);
   }
 
   @Test
   public void oldSecurityShouldSucceedIfAuthorized() throws Exception {
-    when(this.securityService.isClientSecurityRequired()).thenReturn(true);
-    when(this.securityService.isIntegratedSecurity()).thenReturn(false);
+    when(securityService.isClientSecurityRequired()).thenReturn(true);
+    when(securityService.isIntegratedSecurity()).thenReturn(false);
 
-    this.put65.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+    put70.cmdExecute(message, serverConnection, securityService, 0);
 
     ArgumentCaptor<byte[]> argument = ArgumentCaptor.forClass(byte[].class);
-    verify(this.replyMessage).addBytesPart(argument.capture());
+    verify(replyMessage).addBytesPart(argument.capture());
 
     assertThat(argument.getValue()).isEqualTo(OK_BYTES);
 
-    verify(this.authzRequest).putAuthorize(eq(REGION_NAME), eq(KEY), eq(VALUE), eq(true),
+    verify(authzRequest).putAuthorize(eq(REGION_NAME), eq(KEY), eq(VALUE), eq(true),
         eq(CALLBACK_ARG));
-    verify(this.replyMessage).send(this.serverConnection);
+    verify(replyMessage).send(serverConnection);
   }
 
   @Test
   public void oldSecurityShouldFailIfNotAuthorized() throws Exception {
-    when(this.securityService.isClientSecurityRequired()).thenReturn(true);
-    when(this.securityService.isIntegratedSecurity()).thenReturn(false);
-    doThrow(new NotAuthorizedException("")).when(this.authzRequest).putAuthorize(eq(REGION_NAME),
+    when(securityService.isClientSecurityRequired()).thenReturn(true);
+    when(securityService.isIntegratedSecurity()).thenReturn(false);
+    doThrow(new NotAuthorizedException("")).when(authzRequest).putAuthorize(eq(REGION_NAME),
         eq(KEY), eq(VALUE), eq(true), eq(CALLBACK_ARG));
 
-    this.put65.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+    put70.cmdExecute(message, serverConnection, securityService, 0);
 
-    verify(this.authzRequest).putAuthorize(eq(REGION_NAME), eq(KEY), eq(VALUE), eq(true),
+    verify(authzRequest).putAuthorize(eq(REGION_NAME), eq(KEY), eq(VALUE), eq(true),
         eq(CALLBACK_ARG));
 
     ArgumentCaptor<NotAuthorizedException> argument =
         ArgumentCaptor.forClass(NotAuthorizedException.class);
-    verify(this.errorResponseMessage).addObjPart(argument.capture());
+    verify(errorResponseMessage).addObjPart(argument.capture());
 
     assertThat(argument.getValue()).isExactlyInstanceOf(NotAuthorizedException.class);
-    verify(this.errorResponseMessage).send(this.serverConnection);
+    verify(errorResponseMessage).send(serverConnection);
   }
 
   @Test
@@ -274,12 +281,12 @@ public class Put65Test {
 
     when(attributes.getConcurrencyChecksEnabled()).thenReturn(false);
 
-    assertThat(put65.shouldSetPossibleDuplicate(localRegion, clientEvent)).isTrue();
+    assertThat(put70.shouldSetPossibleDuplicate(localRegion, clientEvent)).isTrue();
   }
 
   @Test
   public void shouldSetPossibleDuplicateReturnsTrueIfRecoveredVersionTagForRetriedOperation() {
-    Put65 spy = Mockito.spy(put65);
+    Put70 spy = Mockito.spy(put70);
     when(attributes.getConcurrencyChecksEnabled()).thenReturn(true);
     doReturn(true).when(spy).recoverVersionTagForRetriedOperation(clientEvent);
 
@@ -288,7 +295,7 @@ public class Put65Test {
 
   @Test
   public void shouldSetPossibleDuplicateReturnsFalseIfNotRecoveredVersionTagAndNoPersistence() {
-    Put65 spy = Mockito.spy(put65);
+    Put70 spy = Mockito.spy(put70);
     when(attributes.getConcurrencyChecksEnabled()).thenReturn(true);
     when(dataPolicy.withPersistence()).thenReturn(false);
     doReturn(false).when(spy).recoverVersionTagForRetriedOperation(clientEvent);
@@ -298,7 +305,7 @@ public class Put65Test {
 
   @Test
   public void shouldSetPossibleDuplicateReturnsTrueIfNotRecoveredVersionTagAndWithPersistence() {
-    Put65 spy = Mockito.spy(put65);
+    Put70 spy = Mockito.spy(put70);
     when(attributes.getConcurrencyChecksEnabled()).thenReturn(true);
     when(dataPolicy.withPersistence()).thenReturn(true);
     doReturn(false).when(spy).recoverVersionTagForRetriedOperation(clientEvent);

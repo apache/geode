@@ -18,9 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -34,7 +32,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.cache.operations.PutOperationContext;
+import org.apache.geode.cache.operations.InvalidateOperationContext;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
@@ -51,14 +49,12 @@ import org.apache.geode.security.ResourcePermission.Resource;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category({ClientServerTest.class})
-public class PutTest {
+public class Invalidate70Test {
 
   private static final String REGION_NAME = "region1";
-  private static final String KEY = "key1";
-  private static final Object CALLBACK_ARG = "arg";
+  private static final String KEY_STRING = "key1";
   private static final byte[] EVENT = new byte[8];
-  private static final byte[] VALUE = new byte[8];
-  private static final byte[] OK_BYTES = new byte[] {0};
+  private static final Object CALLBACK_ARG = "arg";
 
   @Mock
   private SecurityService securityService;
@@ -71,56 +67,44 @@ public class PutTest {
   @Mock
   private InternalCache cache;
   @Mock
-  private LocalRegion localRegion;
+  private Message errorResponseMessage;
   @Mock
   private Part regionNamePart;
   @Mock
   private Part keyPart;
   @Mock
-  private Part valuePart;
-  @Mock
   private Part eventPart;
   @Mock
-  private Part callbackArgsPart;
+  private Part callbackArgPart;
   @Mock
-  private PutOperationContext putOperationContext;
-  @Mock
-  private Message errorResponseMessage;
-  @Mock
-  private Message replyMessage;
+  private Message responseMessage;
 
   @InjectMocks
-  private Put put;
+  private Invalidate70 invalidate;
 
   @Before
   public void setUp() throws Exception {
-    this.put = new Put();
+    this.invalidate = (Invalidate70) Invalidate70.getCommand();
+
     MockitoAnnotations.initMocks(this);
 
-    when(this.authzRequest.putAuthorize(eq(REGION_NAME), eq(KEY), eq(VALUE), eq(true),
-        eq(CALLBACK_ARG))).thenReturn(this.putOperationContext);
+    when(this.authzRequest.invalidateAuthorize(any(), any(), any()))
+        .thenReturn(mock(InvalidateOperationContext.class));
 
-    when(this.putOperationContext.getCallbackArg()).thenReturn(CALLBACK_ARG);
-    when(this.putOperationContext.getSerializedValue()).thenReturn(VALUE);
-    when(this.putOperationContext.isObject()).thenReturn(true);
-
-    when(this.cache.getRegion(isA(String.class))).thenReturn(this.localRegion);
+    when(this.cache.getRegion(isA(String.class))).thenReturn(mock(LocalRegion.class));
     when(this.cache.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
 
-    when(this.callbackArgsPart.getObject()).thenReturn(CALLBACK_ARG);
+    when(this.callbackArgPart.getObject()).thenReturn(CALLBACK_ARG);
 
     when(this.eventPart.getSerializedForm()).thenReturn(EVENT);
 
-    when(this.valuePart.getSerializedForm()).thenReturn(VALUE);
-    when(this.valuePart.isObject()).thenReturn(true);
-    when(this.keyPart.getStringOrObject()).thenReturn(KEY);
+    when(this.keyPart.getStringOrObject()).thenReturn(KEY_STRING);
 
-    when(this.message.getNumberOfParts()).thenReturn(5);
+    when(this.message.getNumberOfParts()).thenReturn(4);
     when(this.message.getPart(eq(0))).thenReturn(this.regionNamePart);
     when(this.message.getPart(eq(1))).thenReturn(this.keyPart);
-    when(this.message.getPart(eq(2))).thenReturn(this.valuePart);
-    when(this.message.getPart(eq(3))).thenReturn(this.eventPart);
-    when(this.message.getPart(eq(4))).thenReturn(this.callbackArgsPart);
+    when(this.message.getPart(eq(2))).thenReturn(this.eventPart);
+    when(this.message.getPart(eq(3))).thenReturn(this.callbackArgPart);
 
     when(this.regionNamePart.getCachedString()).thenReturn(REGION_NAME);
 
@@ -128,21 +112,18 @@ public class PutTest {
     when(this.serverConnection.getCacheServerStats()).thenReturn(mock(CacheServerStats.class));
     when(this.serverConnection.getAuthzRequest()).thenReturn(this.authzRequest);
     when(this.serverConnection.getCachedRegionHelper()).thenReturn(mock(CachedRegionHelper.class));
-    when(this.serverConnection.getReplyMessage()).thenReturn(this.replyMessage);
+    when(this.serverConnection.getReplyMessage()).thenReturn(this.responseMessage);
     when(this.serverConnection.getErrorResponseMessage()).thenReturn(this.errorResponseMessage);
     when(this.serverConnection.getClientVersion()).thenReturn(KnownVersion.CURRENT);
-
-    when(this.localRegion.basicBridgePut(eq(KEY), eq(VALUE), isNull(), eq(true), eq(CALLBACK_ARG),
-        any(), anyBoolean(), any())).thenReturn(true);
   }
 
   @Test
   public void noSecurityShouldSucceed() throws Exception {
     when(this.securityService.isClientSecurityRequired()).thenReturn(false);
 
-    this.put.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+    this.invalidate.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
-    verify(this.replyMessage).send(this.serverConnection);
+    verify(this.responseMessage).send(this.serverConnection);
   }
 
   @Test
@@ -150,22 +131,22 @@ public class PutTest {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(true);
 
-    this.put.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+    this.invalidate.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
-    verify(this.securityService).authorize(Resource.DATA, Operation.WRITE, REGION_NAME, KEY);
-    verify(this.replyMessage).send(this.serverConnection);
+    verify(this.securityService).authorize(Resource.DATA, Operation.WRITE, REGION_NAME, KEY_STRING);
+    verify(this.responseMessage).send(this.serverConnection);
   }
 
   @Test
-  public void integratedSecurityShouldThrowIfNotAuthorized() throws Exception {
+  public void integratedSecurityShouldFailIfNotAuthorized() throws Exception {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(true);
     doThrow(new NotAuthorizedException("")).when(this.securityService).authorize(Resource.DATA,
-        Operation.WRITE, REGION_NAME, KEY);
+        Operation.WRITE, REGION_NAME, KEY_STRING);
 
-    this.put.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+    this.invalidate.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
-    verify(this.securityService).authorize(Resource.DATA, Operation.WRITE, REGION_NAME, KEY);
+    verify(this.securityService).authorize(Resource.DATA, Operation.WRITE, REGION_NAME, KEY_STRING);
     verify(this.errorResponseMessage).send(this.serverConnection);
   }
 
@@ -174,34 +155,28 @@ public class PutTest {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(false);
 
-    this.put.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+    this.invalidate.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
-    ArgumentCaptor<byte[]> argument = ArgumentCaptor.forClass(byte[].class);
-    verify(this.replyMessage).addBytesPart(argument.capture());
-
-    assertThat(argument.getValue()).isEqualTo(OK_BYTES);
-
-    verify(this.authzRequest).putAuthorize(eq(REGION_NAME), eq(KEY), eq(VALUE), eq(true),
+    verify(this.authzRequest).invalidateAuthorize(eq(REGION_NAME), eq(KEY_STRING),
         eq(CALLBACK_ARG));
-    verify(this.replyMessage).send(this.serverConnection);
+    verify(this.responseMessage).send(this.serverConnection);
   }
 
   @Test
   public void oldSecurityShouldFailIfNotAuthorized() throws Exception {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(false);
-    doThrow(new NotAuthorizedException("")).when(this.authzRequest).putAuthorize(eq(REGION_NAME),
-        eq(KEY), eq(VALUE), eq(true), eq(CALLBACK_ARG));
+    doThrow(new NotAuthorizedException("")).when(this.authzRequest)
+        .invalidateAuthorize(eq(REGION_NAME), eq(KEY_STRING), eq(CALLBACK_ARG));
 
-    this.put.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+    this.invalidate.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
-    verify(this.authzRequest).putAuthorize(eq(REGION_NAME), eq(KEY), eq(VALUE), eq(true),
+    verify(this.authzRequest).invalidateAuthorize(eq(REGION_NAME), eq(KEY_STRING),
         eq(CALLBACK_ARG));
 
     ArgumentCaptor<NotAuthorizedException> argument =
         ArgumentCaptor.forClass(NotAuthorizedException.class);
     verify(this.errorResponseMessage).addObjPart(argument.capture());
-
     assertThat(argument.getValue()).isExactlyInstanceOf(NotAuthorizedException.class);
     verify(this.errorResponseMessage).send(this.serverConnection);
   }

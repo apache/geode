@@ -16,54 +16,60 @@
 package org.apache.geode.cache.query.cq.internal;
 
 import static java.util.Collections.singletonMap;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
-import java.io.DataInput;
-import java.io.IOException;
+import org.junit.Test;
 
+import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.query.cq.internal.command.CloseCQ;
 import org.apache.geode.cache.query.cq.internal.command.ExecuteCQ61;
 import org.apache.geode.cache.query.cq.internal.command.GetCQStats;
 import org.apache.geode.cache.query.cq.internal.command.GetDurableCQs;
 import org.apache.geode.cache.query.cq.internal.command.MonitorCQ;
 import org.apache.geode.cache.query.cq.internal.command.StopCQ;
-import org.apache.geode.cache.query.internal.cq.CqService;
-import org.apache.geode.cache.query.internal.cq.ServerCQ;
-import org.apache.geode.cache.query.internal.cq.spi.CqServiceFactory;
+import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.CommandRegistry;
 import org.apache.geode.internal.serialization.KnownVersion;
 
-public class CqServiceFactoryImpl implements CqServiceFactory {
+public class CqServiceFactoryImplTest {
 
-  @Override
-  public void initialize() {}
+  @Test
+  public void registersCommandsOnCreate() {
+    final InternalCache internalCache = mock(InternalCache.class);
+    final CancelCriterion cancelCriterion = mock(CancelCriterion.class);
+    final DistributedSystem distributedSystem = mock(DistributedSystem.class);
+    doNothing().when(cancelCriterion).checkCancelInProgress(null);
+    when(internalCache.getCancelCriterion()).thenReturn(cancelCriterion);
+    when(internalCache.getDistributedSystem()).thenReturn(distributedSystem);
 
-  @Override
-  public CqService create(InternalCache cache, CommandRegistry commandRegistry) {
-    commandRegistry.register(MessageType.EXECUTECQ_MSG_TYPE,
+    final CommandRegistry commandRegistry = mock(CommandRegistry.class);
+
+    final CqServiceFactoryImpl cqServiceFactory = new CqServiceFactoryImpl();
+    cqServiceFactory.initialize();
+    cqServiceFactory.create(internalCache, commandRegistry);
+
+    verify(commandRegistry).register(MessageType.EXECUTECQ_MSG_TYPE,
         singletonMap(KnownVersion.OLDEST, ExecuteCQ61.getCommand()));
-    commandRegistry.register(MessageType.EXECUTECQ_WITH_IR_MSG_TYPE,
+    verify(commandRegistry).register(MessageType.EXECUTECQ_WITH_IR_MSG_TYPE,
         singletonMap(KnownVersion.OLDEST, ExecuteCQ61.getCommand()));
-    commandRegistry.register(MessageType.GETCQSTATS_MSG_TYPE,
+    verify(commandRegistry).register(MessageType.GETCQSTATS_MSG_TYPE,
         singletonMap(KnownVersion.OLDEST, GetCQStats.getCommand()));
-    commandRegistry.register(MessageType.MONITORCQ_MSG_TYPE,
+    verify(commandRegistry).register(MessageType.MONITORCQ_MSG_TYPE,
         singletonMap(KnownVersion.OLDEST, MonitorCQ.getCommand()));
-    commandRegistry.register(MessageType.STOPCQ_MSG_TYPE,
+    verify(commandRegistry).register(MessageType.STOPCQ_MSG_TYPE,
         singletonMap(KnownVersion.OLDEST, StopCQ.getCommand()));
-    commandRegistry.register(MessageType.CLOSECQ_MSG_TYPE,
+    verify(commandRegistry).register(MessageType.CLOSECQ_MSG_TYPE,
         singletonMap(KnownVersion.OLDEST, CloseCQ.getCommand()));
-    commandRegistry.register(MessageType.GETDURABLECQS_MSG_TYPE,
+    verify(commandRegistry).register(MessageType.GETDURABLECQS_MSG_TYPE,
         singletonMap(KnownVersion.OLDEST, GetDurableCQs.getCommand()));
 
-    return new CqServiceImpl(cache);
-  }
-
-  @Override
-  public ServerCQ readCqQuery(DataInput in) throws ClassNotFoundException, IOException {
-    ServerCQImpl cq = new ServerCQImpl();
-    cq.fromData(in);
-    return cq;
+    verifyNoMoreInteractions(commandRegistry);
   }
 
 }

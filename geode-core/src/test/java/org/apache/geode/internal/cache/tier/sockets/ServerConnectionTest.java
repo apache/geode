@@ -117,7 +117,7 @@ public class ServerConnectionTest {
     long uniqueIdFromMessage = 23456L;
     MessageIdExtractor messageIdExtractor = mock(MessageIdExtractor.class);
     when(handshake.getEncryptor()).thenReturn(mock(Encryptor.class));
-    when(handshake.getVersion()).thenReturn(KnownVersion.GFE_82);
+    when(handshake.getVersion()).thenReturn(KnownVersion.GFE_81);
     when(messageIdExtractor.getUniqueIdFromMessage(any(Message.class), any(Encryptor.class),
         anyLong())).thenReturn(uniqueIdFromMessage);
     when(requestMessage.isSecureMode()).thenReturn(true);
@@ -131,7 +131,7 @@ public class ServerConnectionTest {
 
   @Test
   public void post65NonSecureShouldThrow() {
-    when(handshake.getVersion()).thenReturn(KnownVersion.GFE_82);
+    when(handshake.getVersion()).thenReturn(KnownVersion.GFE_81);
 
     Throwable thrown = catchThrowable(() -> serverConnection.getUniqueId());
 

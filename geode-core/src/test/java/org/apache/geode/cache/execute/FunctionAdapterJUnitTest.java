@@ -16,6 +16,7 @@
 package org.apache.geode.cache.execute;
 
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -30,9 +31,9 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 
+@SuppressWarnings("deprecation") // Intentionally testing deprecated class.
 public class FunctionAdapterJUnitTest {
 
-  private static final long serialVersionUID = 1L;
   private FunctionAdapter adapter;
 
   @Before
@@ -64,7 +65,7 @@ public class FunctionAdapterJUnitTest {
   private static class MyFunctionAdapter extends FunctionAdapter {
 
     @Override
-    public void execute(final FunctionContext context) {}
+    public void execute(@SuppressWarnings("rawtypes") final FunctionContext context) {}
 
   }
 
@@ -77,18 +78,20 @@ public class FunctionAdapterJUnitTest {
                 + "serializedFunctionAdapterWithDifferentSerialVersionUID.ser").getAbsolutePath());
 
     DataInputStream dis =
-        new VersionedDataInputStream(new DataInputStream(fis), KnownVersion.GFE_82);
+        new VersionedDataInputStream(new DataInputStream(fis), KnownVersion.GFE_81);
     Object o = InternalDataSerializer.basicReadObject(dis);
     assertTrue(o instanceof FunctionAdapter);
   }
 
+  @SuppressWarnings("unused") // Used via deserialization
   private static class SomeFunction extends FunctionAdapter {
 
     private static final long serialVersionUID = -6417837315839543937L;
 
     @Override
-    public void execute(FunctionContext context) {
-      context.getResultSender().lastResult("S");
+    public void execute(@SuppressWarnings("rawtypes") FunctionContext context) {
+      final ResultSender<String> stringResultSender = uncheckedCast(context.getResultSender());
+      stringResultSender.lastResult("S");
     }
 
     @Override

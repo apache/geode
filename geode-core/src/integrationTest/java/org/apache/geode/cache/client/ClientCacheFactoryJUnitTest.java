@@ -57,7 +57,6 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -353,12 +352,11 @@ public class ClientCacheFactoryJUnitTest {
     clientCache = new ClientCacheFactory().create();
     InternalDistributedMember memberID =
         (InternalDistributedMember) clientCache.getDistributedSystem().getDistributedMember();
-    MemberIdentifier gmsID = memberID;
-    memberID.setVersionForTest(KnownVersion.GFE_82);
-    assertThat(memberID.getVersion()).isEqualTo(KnownVersion.GFE_82);
+    memberID.setVersionForTest(KnownVersion.GFE_81);
+    assertThat(memberID.getVersion()).isEqualTo(KnownVersion.GFE_81);
 
     ClientProxyMembershipID clientID = ClientProxyMembershipID.getClientId(memberID);
-    HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.GFE_82);
+    HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.GFE_81);
     DataSerializer.writeObject(clientID, out);
 
     DataInputStream in =
@@ -367,13 +365,13 @@ public class ClientCacheFactoryJUnitTest {
     ClientProxyMembershipID newID = DataSerializer.readObject(in);
     InternalDistributedMember newMemberID =
         (InternalDistributedMember) newID.getDistributedMember();
-    assertThat(newMemberID.getVersion()).isEqualTo(KnownVersion.GFE_82);
-    assertThat(newID.getClientVersion()).isEqualTo(KnownVersion.GFE_82);
+    assertThat(newMemberID.getVersion()).isEqualTo(KnownVersion.GFE_81);
+    assertThat(newID.getClientVersion()).isEqualTo(KnownVersion.GFE_81);
 
     assertThat(newMemberID.getUuidLeastSignificantBits()).isEqualTo(0);
     assertThat(newMemberID.getUuidMostSignificantBits()).isEqualTo(0);
 
-    gmsID.setUUID(new UUID(1234L, 5678L));
+    memberID.setUUID(new UUID(1234L, 5678L));
     memberID.setVersionForTest(KnownVersion.CURRENT);
     clientID = ClientProxyMembershipID.getClientId(memberID);
     out = new HeapDataOutputStream(KnownVersion.CURRENT);
@@ -387,9 +385,9 @@ public class ClientCacheFactoryJUnitTest {
     assertThat(newID.getClientVersion()).isEqualTo(KnownVersion.CURRENT);
 
     assertThat(newMemberID.getUuidLeastSignificantBits())
-        .isEqualTo(gmsID.getUuidLeastSignificantBits());
+        .isEqualTo(memberID.getUuidLeastSignificantBits());
     assertThat(newMemberID.getUuidMostSignificantBits())
-        .isEqualTo(gmsID.getUuidMostSignificantBits());
+        .isEqualTo(memberID.getUuidMostSignificantBits());
   }
 
   @Test

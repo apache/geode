@@ -126,9 +126,10 @@ class ClientRegistrationMetadata {
     if (clientVersion == null) {
       message = KnownVersion.unsupportedVersionMessage(clientVersionOrdinal);
     } else {
-      final Map<Integer, Command> commands = CommandInitializer.getCommands(clientVersion);
+      final Map<Integer, Command> commands =
+          CommandInitializer.getDefaultInstance().get(clientVersion);
       if (commands == null) {
-        message = "Client version {} is not supported";
+        message = "No commands registered for version " + clientVersion + ".";
       } else {
         if (isVersionOlderThan57(clientVersion)) {
           throw new IOException(new UnsupportedVersionException(clientVersionOrdinal));
