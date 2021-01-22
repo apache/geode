@@ -1781,6 +1781,12 @@ public interface ConfigurationProperties {
    * <U>Default</U>: "" (doesn't start a locator)
    */
   String START_LOCATOR = MembershipConfig.START_LOCATOR;
+
+  /**
+   * TBD
+   */
+  String MEMBERSHIP_BIND_ADDRESS = "membership-bind-address";
+
   /**
    * The static String definition of the <i>"statistic-archive-file"</i> property <a
    * name="statistic-archive-file"/a>

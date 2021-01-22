@@ -2449,6 +2449,9 @@ public class CliStrings {
   public static final String START_LOCATOR__REDIRECT_OUTPUT = "redirect-output";
   public static final String START_LOCATOR__REDIRECT_OUTPUT__HELP =
       "Causes the member to redirect standard out and standard error to its own log file";
+  public static final String START_LOCATOR__MEMBERSHIP_BIND_ADDRESS =
+      "membership-bind-address";
+  public static final String START_LOCATOR__MEMBERSHIP_BIND_ADDRESS__HELP = "TBD";
 
   /* 'start manager' command */
   public static final String START_MANAGER = "start manager";
