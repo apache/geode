@@ -368,6 +368,40 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
 
   }
 
+  @Test
+  public void hsetNX_shouldThrowErrorIfKeyIsWrongType() {
+    String string_key = "String_Key";
+    String set_key = "Set_Key";
+    String field = "field";
+    String value = "value";
+
+    jedis.set(string_key, value);
+    jedis.sadd(set_key, field);
+
+    assertThatThrownBy(
+        () -> jedis.hsetnx(string_key, field, "something else"))
+            .isInstanceOf(JedisDataException.class)
+            .hasMessageContaining("WRONGTYPE");
+    assertThatThrownBy(
+        () -> jedis.hsetnx(set_key, field, "something else")).isInstanceOf(JedisDataException.class)
+            .hasMessageContaining("WRONGTYPE");
+
+    jedis.del(string_key);
+    jedis.del(set_key);
+  }
+
+  @Test
+  public void hsetnx_shouldThrowError_givenWrongNumberOfArguments() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSETNX))
+        .hasMessageContaining("wrong number of arguments");
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSETNX, "1"))
+        .hasMessageContaining("wrong number of arguments");
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSETNX, "1", "2"))
+        .hasMessageContaining("wrong number of arguments");
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSETNX, "1", "2", "3", "4"))
+        .hasMessageContaining("wrong number of arguments");
+  }
+
   /**
    * Test the HVALS command
    */
