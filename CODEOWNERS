@@ -15,10 +15,10 @@
 # limitations under the License.
 
 #-----------------------------------------------------------------
-# CODEOWNERS and .asf.yml
+# CODEOWNERS and .asf.yml - ownerless so everyone "owns" it
 #-----------------------------------------------------------------
-CODEOWNERS                                                        @upthewaterspout @rhoughton-pivot @onichols-pivotal
-.asf.yml                                                          @upthewaterspout @rhoughton-pivot
+#CODEOWNERS
+#.asf.yml
 
 #-----------------------------------------------------------------
 # Serialization
