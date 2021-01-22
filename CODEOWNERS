@@ -15,10 +15,10 @@
 # limitations under the License.
 
 #-----------------------------------------------------------------
-# CODEOWNERS and .asf.yml - owned by everyone
+# CODEOWNERS and .asf.yml - ownerless so everyone "owns" it
 #-----------------------------------------------------------------
-CODEOWNERS @apache/geode-committers
-.asf.yml @apache/geode-committers
+#CODEOWNERS
+#.asf.yml
 
 #-----------------------------------------------------------------
 # Serialization
@@ -187,7 +187,6 @@ geode-core/**/org/apache/geode/internal/cache/backup/**           @dschneider-pi
 #-----------------------------------------------------------------
 geode-core/**/org/apache/geode/internal/cache/versions/**         @dschneider-pivotal @gesterzhou @bschuchardt
 
-
 #-----------------------------------------------------------------
 # WAN messaging and queues
 #-----------------------------------------------------------------
@@ -229,10 +228,10 @@ geode-core/**/org/apache/geode/internal/cache/operations/**       @jdeppe-pivota
 #-----------------------------------------------------------------
 # Logging
 #-----------------------------------------------------------------
-geode-log4j/**							  @mhansonp @kirklund
-geode-logging/**						  @mhansonp @kirklund
-geode-core/**/org/apache/geode/logging/**			  @mhansonp @kirklund
-geode-core/**/org/apache/geode/internal/logging/**		  @mhansonp @kirklund
+geode-log4j/**                                                    @mhansonp @kirklund
+geode-logging/**                                                  @mhansonp @kirklund
+geode-core/**/org/apache/geode/logging/**                         @mhansonp @kirklund
+geode-core/**/org/apache/geode/internal/logging/**                @mhansonp @kirklund
 geode-core/**/org/apache/geode/i18n/**                            @agingade @kirklund
 geode-core/**/org/apache/geode/internal/i18n/**                   @agingade @kirklund
 geode-core/**/org/apache/geode/internal/io/**                     @agingade @kirklund
@@ -241,8 +240,8 @@ geode-core/**/org/apache/geode/internal/io/**                     @agingade @kir
 # Metrics & Statistics
 #-----------------------------------------------------------------
 geode-core/**/org/apache/geode/internal/statistics/**             @mhansonp @kirklund
-geode-core/**/org/apache/geode/internal/stats50/**		  @mhansonp @kirklund
-geode-core/**/org/apache/geode/metrics/**			  @mhansonp @kirklund
+geode-core/**/org/apache/geode/internal/stats50/**                @mhansonp @kirklund
+geode-core/**/org/apache/geode/metrics/**                         @mhansonp @kirklund
 
 #-----------------------------------------------------------------
 # Region Snapshots
@@ -257,7 +256,6 @@ geode-connectors/**                                               @agingade @jch
 geode-core/**/org/apache/geode/datasource/**                      @agingade @BenjaminPerryRoss @jchen21
 geode-core/**/org/apache/geode/internal/datasource/**             @agingade @BenjaminPerryRoss @jchen21
 
-
 #-----------------------------------------------------------------
 # Resource manager
 #-----------------------------------------------------------------
@@ -268,8 +266,8 @@ geode-core/**/org/apache/geode/internal/cache/control/**          @kirklund @Don
 # Testing utilities
 #-----------------------------------------------------------------
 #geode-concurrency-test/**
-geode-dunit/**							  @mhansonp @kirklund
-geode-junit/**							  @mhansonp @kirklund
+geode-dunit/**                                                    @mhansonp @kirklund
+geode-junit/**                                                    @mhansonp @kirklund
 #geode-jmh/**
 geode-junit/**/org/apache/geode/test/util                         @jdeppe-pivotal @onichols-pivotal
 
@@ -281,9 +279,8 @@ geode-redis/**                                                    @sabbey37 @jde
 #-----------------------------------------------------------------
 # Build and tooling
 #-----------------------------------------------------------------
-*.gradle                                                          @rhoughton-pivot
 #etc/**
-build.gradle                                                      @rhoughton-pivot
+*gradle*                                                          @rhoughton-pivot @onichols-pivotal
 buildSrc/**                                                       @rhoughton-pivot @jdeppe-pivotal
 buildSrc/**/DependencyConstraints.groovy                          @onichols-pivotal @dickcav
 ci/**                                                             @onichols-pivotal @dickcav
@@ -293,11 +290,10 @@ dev-tools/**                                                      @onichols-pivo
 docker/**                                                         @onichols-pivotal @dickcav
 geode-management/src/test/script/update-management-wiki.sh        @onichols-pivotal @dickcav
 #boms/**
-*gradle*                                                          @rhoughton-pivot
-static-analysis/**                                                @rhoughton-pivot
+static-analysis/**                                                @rhoughton-pivot @onichols-pivotal
 geode-old-versions/**                                             @onichols-pivotal @dickcav
 KEYS                                                              @onichols-pivotal @dickcav
-geode-assembly/**                                                 @rhoughton-pivot
+geode-assembly/**                                                 @rhoughton-pivot @onichols-pivotal
 
 #-----------------------------------------------------------------
 # Documentation
@@ -308,5 +304,5 @@ BUILDING.md                                                       @rhoughton-piv
 CODE_OF_CONDUCT.md                                                @upthewaterspout @pivotal-amurmann @nonbinaryprogrammer
 LICENSE                                                           @onichols-pivotal @dickcav @metatype
 NOTICE                                                            @onichols-pivotal @dickcav @metatype
-README.md                                                         @upthewaterspout @pivotal-amurmann
+/README.md                                                        @upthewaterspout @pivotal-amurmann
 #TESTING.md
