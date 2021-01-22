@@ -131,9 +131,6 @@ class ClientRegistrationMetadata {
       if (commands == null) {
         message = "No commands registered for version " + clientVersion + ".";
       } else {
-        if (isVersionOlderThan57(clientVersion)) {
-          throw new IOException(new UnsupportedVersionException(clientVersionOrdinal));
-        }
         if (logger.isDebugEnabled()) {
           logger.debug("{}: Registering client with version: {}", this, clientVersion);
         }
@@ -167,10 +164,6 @@ class ClientRegistrationMetadata {
 
   private boolean oldClientRequiresVersionedStreams(final KnownVersion clientVersion) {
     return KnownVersion.CURRENT.compareTo(clientVersion) > 0;
-  }
-
-  private boolean isVersionOlderThan57(final KnownVersion clientVersion) {
-    return KnownVersion.GFE_57.compareTo(clientVersion) > 0;
   }
 
   private void getAndValidateClientProxyMembershipID()
