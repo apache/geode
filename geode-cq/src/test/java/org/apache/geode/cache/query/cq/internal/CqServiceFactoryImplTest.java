@@ -40,7 +40,7 @@ import org.apache.geode.internal.serialization.KnownVersion;
 public class CqServiceFactoryImplTest {
 
   @Test
-  public void initialize() {
+  public void registersCommandsOnCreate() {
     final InternalCache internalCache = mock(InternalCache.class);
     final CancelCriterion cancelCriterion = mock(CancelCriterion.class);
     final DistributedSystem distributedSystem = mock(DistributedSystem.class);

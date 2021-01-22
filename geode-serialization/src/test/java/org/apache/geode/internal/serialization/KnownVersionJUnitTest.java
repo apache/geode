@@ -15,7 +15,6 @@
 package org.apache.geode.internal.serialization;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -46,15 +45,16 @@ public class KnownVersionJUnitTest {
   }
 
   private void compare(KnownVersion later, KnownVersion earlier) {
-    assertTrue(later.compareTo(earlier) > 0);
-    assertEquals(later, later);
-    // noinspection EqualsWithItself for testing
-    assertEquals(0, later.compareTo(later));
-    assertTrue(earlier.compareTo(later) < 0);
+    assertThat(later).isEqualTo(later);
+    assertThat(later).isNotEqualTo(earlier);
 
-    assertTrue(later.compareTo(Versioning.getVersion(earlier.ordinal())) > 0);
-    assertEquals(0, later.compareTo(Versioning.getVersion(later.ordinal())));
-    assertTrue(earlier.compareTo(Versioning.getVersion(later.ordinal())) < 0);
+    assertThat(later).isGreaterThan(earlier);
+    assertThat(later).isEqualByComparingTo(later);
+    assertThat(earlier).isLessThan(later);
+
+    assertThat((Version) later).isGreaterThan(Versioning.getVersion(earlier.ordinal()));
+    assertThat((Version) later).isEqualByComparingTo(Versioning.getVersion(later.ordinal()));
+    assertThat((Version) earlier).isLessThan(Versioning.getVersion(later.ordinal()));
 
     compareNewerVsOlder(later, earlier);
   }

@@ -57,7 +57,6 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -372,7 +371,7 @@ public class ClientCacheFactoryJUnitTest {
     assertThat(newMemberID.getUuidLeastSignificantBits()).isEqualTo(0);
     assertThat(newMemberID.getUuidMostSignificantBits()).isEqualTo(0);
 
-    ((MemberIdentifier) memberID).setUUID(new UUID(1234L, 5678L));
+    memberID.setUUID(new UUID(1234L, 5678L));
     memberID.setVersionForTest(KnownVersion.CURRENT);
     clientID = ClientProxyMembershipID.getClientId(memberID);
     out = new HeapDataOutputStream(KnownVersion.CURRENT);
@@ -386,9 +385,9 @@ public class ClientCacheFactoryJUnitTest {
     assertThat(newID.getClientVersion()).isEqualTo(KnownVersion.CURRENT);
 
     assertThat(newMemberID.getUuidLeastSignificantBits())
-        .isEqualTo(((MemberIdentifier) memberID).getUuidLeastSignificantBits());
+        .isEqualTo(memberID.getUuidLeastSignificantBits());
     assertThat(newMemberID.getUuidMostSignificantBits())
-        .isEqualTo(((MemberIdentifier) memberID).getUuidMostSignificantBits());
+        .isEqualTo(memberID.getUuidMostSignificantBits());
   }
 
   @Test

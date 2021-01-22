@@ -225,12 +225,13 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
 
       // No need to check for return value since DataInputStream already throws
       // EOFException in case of EOF
-      byte endpointType = dis.readByte();
-      int queueSize = dis.readInt();
+      final byte endpointType = dis.readByte();
+      final int queueSize = dis.readInt();
 
       member = readServerMember(dis);
 
-      ServerQueueStatus serverQStatus = new ServerQueueStatus(endpointType, queueSize, member);
+      final ServerQueueStatus serverQStatus =
+          new ServerQueueStatus(endpointType, queueSize, member);
 
       // Read the message (if any)
       readMessage(dis, dos, acceptanceCode, member);
@@ -298,22 +299,21 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
   public ServerQueueStatus handshakeWithSubscriptionFeed(Socket sock, boolean isPrimary)
       throws IOException, AuthenticationRequiredException, AuthenticationFailedException,
       ServerRefusedConnectionException, ClassNotFoundException {
-    final ServerQueueStatus serverQueueStatus;
     try {
-      DataOutputStream dos = new DataOutputStream(sock.getOutputStream());
+      final DataOutputStream dos = new DataOutputStream(sock.getOutputStream());
       final InputStream in = sock.getInputStream();
-      DataInputStream dis = new DataInputStream(in);
-      DistributedMember member = getIDForSocket(sock);
+      final DataInputStream dis = new DataInputStream(in);
+      final DistributedMember member = getIDForSocket(sock);
       if (!multiuserSecureMode) {
         credentials = getCredentials(member);
       }
-      CommunicationMode mode = isPrimary ? CommunicationMode.PrimaryServerToClient
+      final CommunicationMode mode = isPrimary ? CommunicationMode.PrimaryServerToClient
           : CommunicationMode.SecondaryServerToClient;
       write(dos, dis, mode, REPLY_OK, 0, new ArrayList<>(), credentials, member, true);
 
       // Wait here for a reply before continuing. This ensures that the client
       // updater is registered with the server before continuing.
-      byte acceptanceCode = dis.readByte();
+      final byte acceptanceCode = dis.readByte();
       if (acceptanceCode == (byte) 21 && !(sock instanceof SSLSocket)) {
         // This is likely the case of server setup with SSL and client not using
         // SSL
@@ -321,18 +321,19 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
             "Server expecting SSL connection");
       }
 
-      byte endpointType = dis.readByte();
-      int queueSize = dis.readInt();
+      final byte endpointType = dis.readByte();
+      final int queueSize = dis.readInt();
 
       // Read the message (if any)
       readMessage(dis, dos, acceptanceCode, member);
 
-      // [sumedh] nothing more to be done for older clients used in tests
+      // nothing more to be done for older clients used in tests
       // there is a difference in serializer map registration for >= 6.5.1.6
       // clients but that is not used in tests
       if (currentClientVersion.isOlderThan(KnownVersion.GFE_61)) {
         return new ServerQueueStatus(endpointType, queueSize, member);
       }
+
       final Map<Integer, List<String>> instantiatorMap = DataSerializer.readHashMap(dis);
       for (final Map.Entry<Integer, List<String>> entry : instantiatorMap.entrySet()) {
         final Integer id = entry.getKey();
@@ -345,20 +346,19 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
       for (final Map.Entry<Integer, String> entry : dataSerializersMap.entrySet()) {
         InternalDataSerializer.register(entry.getValue(), false, null, null, entry.getKey());
       }
-      Map<Integer, List<String>> dsToSupportedClassNames = DataSerializer.readHashMap(dis);
+      final Map<Integer, List<String>> dsToSupportedClassNames = DataSerializer.readHashMap(dis);
       InternalDataSerializer.updateSupportedClassesMap(dsToSupportedClassNames);
 
       // the server's ping interval is only sent to subscription feeds so we can't read it as
       // part of a "standard" server response along with the other status data.
-      int pingInterval = dis.readInt();
-      serverQueueStatus = new ServerQueueStatus(endpointType, queueSize, member, pingInterval);
+      final int pingInterval = dis.readInt();
+      return new ServerQueueStatus(endpointType, queueSize, member, pingInterval);
 
     } catch (IOException | ClassNotFoundException ex) {
       CancelCriterion stopper = system.getCancelCriterion();
       stopper.checkCancelInProgress(null);
       throw ex;
     }
-    return serverQueueStatus;
   }
 
   /**
