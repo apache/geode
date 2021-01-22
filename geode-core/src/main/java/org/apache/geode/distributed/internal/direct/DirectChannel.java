@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.NotSerializableException;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -136,8 +137,13 @@ public class DirectChannel {
       int[] range = dc.getMembershipPortRange();
       props.setProperty("membership_port_range_start", "" + range[0]);
       props.setProperty("membership_port_range_end", "" + range[1]);
-
-      this.conduit = new TCPConduit(mgr, port, address, isBindAddress, this, props);
+      InetAddress conduitAddress = address;
+      try {
+        conduitAddress = InetAddress.getByName("0.0.0.0");
+      } catch (UnknownHostException e) {
+        logger.info(e.getMessage());
+      }
+      this.conduit = new TCPConduit(mgr, port, conduitAddress, isBindAddress, this, props);
       disconnected = false;
       disconnectCompleted = false;
       logger.info("GemFire P2P Listener started on {}",

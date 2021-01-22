@@ -24,6 +24,7 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -947,7 +948,13 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
   public void started() throws MemberStartupException {
     setLocalAddress(services.getMessenger().getMemberID());
     try {
-      serverSocket = createServerSocket(localAddress.getInetAddress(),
+      InetAddress address = localAddress.getInetAddress();
+      try {
+        address = InetAddress.getByName("0.0.0.0");
+      } catch (UnknownHostException e) {
+        logger.info(e.getMessage());
+      }
+      serverSocket = createServerSocket(address,
           services.getConfig().getMembershipPortRange());
     } catch (IOException e) {
       throw new MemberStartupException("Problem creating HealthMonitor socket", e);
