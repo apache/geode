@@ -57,8 +57,12 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   }
 
   @After
-  public void tearDown() {
+  public void flushAll() {
     jedis.flushAll();
+  }
+
+  @After
+  public void tearDown() {
     jedis.close();
     jedis2.close();
   }
@@ -145,23 +149,19 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   }
 
   @Test
-  public void testHMGet() {
+  public void testHMGet_HDel_HGetAll_HVals() {
     String key = "key";
-    Map<String, String> hash = setupHash(10);
+    Map<String, String> hash = new HashMap<>();
+    for (int i = 0; i < 10; i++) {
+      hash.put("field_" + i, "member_" + i);
+    }
     jedis.hmset(key, hash);
 
     Set<String> keys = hash.keySet();
-    String[] keyArray = keys.toArray(new String[0]);
+    String[] keyArray = keys.toArray(new String[keys.size()]);
     List<String> retList = jedis.hmget(key, keyArray);
 
     assertThat(retList).containsExactlyInAnyOrderElementsOf(hash.values());
-  }
-
-  @Test
-  public void testHgetall() {
-    String key = "key";
-    Map<String, String> hash = setupHash(10);
-    jedis.hmset(key, hash);
 
     Map<String, String> retMap = jedis.hgetAll(key);
 
@@ -190,14 +190,6 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
     assertThat(jedis.hlen(key)).isEqualTo(0);
   }
 
-  private Map<String, String> setupHash(int entries) {
-    Map<String, String> hash = new HashMap<>();
-    for (int i = 0; i < entries; i++) {
-      hash.put("field-" + i, "member-" + i);
-    }
-    return hash;
-  }
-
   @Test
   public void testHMGet_returnNull_forUnknownFields() {
     String key = "key";
@@ -210,7 +202,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   }
 
   @Test
-  public void testHMGet_givenTooFewArguments() {
+  public void testHMGet_givenWrongNumberOfArguments() {
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HMGET))
         .hasMessage("ERR wrong number of arguments for 'hmget' command");
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HMGET, "1"))
@@ -966,5 +958,13 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
     }
 
     return args;
+  }
+
+  private Map<String, String> setupHash(int entries) {
+    Map<String, String> hash = new HashMap<>();
+    for (int i = 0; i < entries; i++) {
+      hash.put("field-" + i, "member-" + i);
+    }
+    return hash;
   }
 }
