@@ -77,6 +77,7 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
   private Map<ServerLocation, DistributedMember> ownerMap =
       new HashMap<ServerLocation, DistributedMember>();
   private volatile List<ServerLocation> cachedLocators;
+  private volatile boolean cachedRequestInternalLocators;
   private final Object cachedLocatorsLock = new Object();
 
   @MakeNotStatic
@@ -234,7 +235,7 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
   }
 
   private Object getLocatorListResponse(LocatorListRequest request) {
-    List<ServerLocation> controllers = getLocators();
+    List<ServerLocation> controllers = getLocators(request.getRequestInternalAddress());
     boolean balanced = loadSnapshot.hasBalancedConnections(request.getServerGroup());
     return new LocatorListResponse(controllers, balanced);
   }
@@ -354,10 +355,10 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
     ControllerProfile cp = (ControllerProfile) profile;
     cp.setHost(this.hostNameForClients);
     cp.setPort(this.port);
+    cp.setInternalHost(this.hostName);
     cp.serialNumber = getSerialNumber();
     cp.finishInit();
   }
-
 
   public void setLocatorCount(int count) {
     this.stats.setLocatorCount(count);
@@ -378,32 +379,45 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
   }
 
 
-
-  private List<ServerLocation> getLocators() {
-    if (cachedLocators != null) {
+  private List<ServerLocation> getLocators(boolean requestInternal) {
+    if (cachedLocators != null && cachedRequestInternalLocators == requestInternal) {
       return cachedLocators;
     } else {
       synchronized (cachedLocatorsLock) {
         List<ControllerProfile> profiles = advisor.fetchControllers();
         List<ServerLocation> result = new ArrayList<>(profiles.size() + 1);
         for (ControllerProfile profile : profiles) {
-          result.add(buildServerLocation(profile));
+          result.add(buildServerLocation(profile, requestInternal));
         }
-        result.add(new ServerLocation(hostNameForClients, port));
+        String host;
+        if (requestInternal) {
+          host = hostName;
+        } else {
+          host = hostNameForClients;
+        }
+        result.add(new ServerLocation(host, port));
+        cachedRequestInternalLocators = requestInternal;
         cachedLocators = result;
         return result;
       }
     }
   }
 
-  protected static ServerLocation buildServerLocation(GridProfile p) {
-    return new ServerLocation(p.getHost(), p.getPort());
+  protected static ServerLocation buildServerLocation(GridProfile p,
+      boolean requestInternal) {
+    String host;
+    if (requestInternal) {
+      host = p.getInternalHost();
+    } else {
+      host = p.getHost();
+    }
+    return new ServerLocation(host, p.getPort());
   }
 
   public void profileCreated(Profile profile) {
     if (profile instanceof CacheServerProfile) {
       CacheServerProfile bp = (CacheServerProfile) profile;
-      ServerLocation location = buildServerLocation(bp);
+      ServerLocation location = buildServerLocation(bp, false);
       String[] groups = bp.getGroups();
       loadSnapshot.addServer(
           location, bp.getDistributedMember().getUniqueId(), groups,
@@ -424,7 +438,7 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
     if (profile instanceof CacheServerProfile) {
       CacheServerProfile bp = (CacheServerProfile) profile;
       // InternalDistributedMember id = bp.getDistributedMember();
-      ServerLocation location = buildServerLocation(bp);
+      ServerLocation location = buildServerLocation(bp, false);
       loadSnapshot.removeServer(location, bp.getDistributedMember().getUniqueId());
       if (logger.isDebugEnabled()) {
         logger.debug("ServerLocator: server departed {}", location);

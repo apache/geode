@@ -46,6 +46,10 @@ org/apache/geode/cache/client/internal/locator/GetAllServersResponse,2
 fromData,31
 toData,9
 
+org/apache/geode/cache/client/internal/locator/LocatorListRequest,2
+fromData,36
+toData,15
+
 org/apache/geode/cache/client/internal/locator/LocatorListResponse,2
 fromData,43
 toData,19
@@ -775,7 +779,7 @@ fromData,114
 toData,102
 
 org/apache/geode/internal/cache/CacheServerAdvisor$CacheServerProfile,2
-fromData,54
+fromData,59
 toData,43
 
 org/apache/geode/internal/cache/ClientRegionEventImpl,2
@@ -787,8 +791,8 @@ fromData,17
 toData,17
 
 org/apache/geode/internal/cache/ControllerAdvisor$ControllerProfile,2
-fromData,7
-toData,7
+fromData,39
+toData,15
 
 org/apache/geode/internal/cache/CreateRegionProcessor$CreateRegionMessage,2
 fromData,46
@@ -1076,8 +1080,8 @@ fromData,207
 toData,178
 
 org/apache/geode/internal/cache/PoolFactoryImpl$PoolAttributes,2
-fromData,161
-toData,161
+fromData,190
+toData,169
 
 org/apache/geode/internal/cache/PreferBytesCachedDeserializable,2
 fromData,9

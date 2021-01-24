@@ -220,6 +220,14 @@ public interface PoolFactory {
    * @since GemFire 6.5
    */
   boolean DEFAULT_MULTIUSER_AUTHENTICATION = false;
+  /**
+   * The default value for whether to request locator internal address.
+   * <p>
+   * Current value: <code>false</code>.
+   *
+   * @since Geode 1.14
+   */
+  boolean DEFAULT_REQUEST_LOCATOR_INTERNAL_ADDRESS = false;
 
   /**
    * The default value for the socket factory
@@ -578,5 +586,14 @@ public interface PoolFactory {
    * @since Geode 1.13
    */
   PoolFactory setSocketFactory(SocketFactory socketFactory);
+
+  /**
+   * If set to <code>true</code> then the created pool will request locator list with internal
+   * addresses.
+   *
+   * @return a reference to <code>this</code>
+   * @since Geode 1.14
+   */
+  PoolFactory setRequestLocatorInternalAddress(boolean requestInternal);
 
 }

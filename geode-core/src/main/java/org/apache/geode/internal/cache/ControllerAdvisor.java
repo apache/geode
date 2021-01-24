@@ -20,12 +20,15 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionAdvisee;
 import org.apache.geode.distributed.internal.ServerLocator;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.StaticSerialization;
 
 
 /**
@@ -123,12 +126,19 @@ public class ControllerAdvisor extends GridAdvisor {
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
+      DataSerializer.writeString(getInternalHost(), out);
     }
 
     @Override
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
+      if (StaticSerialization.getVersionForDataStream(in)
+          .isNotOlderThan(KnownVersion.GEODE_1_14_0)) {
+        setInternalHost(DataSerializer.readString(in));
+      } else {
+        setInternalHost(getHost());
+      }
     }
 
     @Override
