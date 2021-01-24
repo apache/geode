@@ -491,6 +491,11 @@ public class QueueManagerJUnitTest {
     }
 
     @Override
+    public boolean getRequestLocatorInternalAddress() {
+      return false;
+    }
+
+    @Override
     public List<InetSocketAddress> getServers() {
       return null;
     }

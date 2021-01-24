@@ -692,6 +692,19 @@ public class ClientCacheFactory {
     return this;
   }
 
+
+  /**
+   * If set to <code>true</code> then the created pool will request locator list with internal
+   * addresses. <br>
+   * <br>
+   *
+   * @return a reference to <code>this</code>
+   */
+  public ClientCacheFactory setPoolRequestLocatorInternalAddress(boolean requestInternal) {
+    getPoolFactory().setRequestLocatorInternalAddress(requestInternal);
+    return this;
+  }
+
   /**
    * Returns the version of the cache implementation.
    *
