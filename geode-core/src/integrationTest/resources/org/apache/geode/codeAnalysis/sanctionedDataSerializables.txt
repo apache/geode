@@ -46,6 +46,10 @@ org/apache/geode/cache/client/internal/locator/GetAllServersResponse,2
 fromData,31
 toData,9
 
+org/apache/geode/cache/client/internal/locator/LocatorListRequest,2
+fromData,36
+toData,15
+
 org/apache/geode/cache/client/internal/locator/LocatorListResponse,2
 fromData,43
 toData,19
@@ -966,8 +970,8 @@ fromData,68
 toData,94
 
 org/apache/geode/internal/cache/GridAdvisor$GridProfile,2
-fromData,27
-toData,23
+fromData,59
+toData,31
 
 org/apache/geode/internal/cache/HARegion$HARegionAdvisor$HAProfile,2
 fromData,44
@@ -1076,8 +1080,8 @@ fromData,207
 toData,178
 
 org/apache/geode/internal/cache/PoolFactoryImpl$PoolAttributes,2
-fromData,161
-toData,161
+fromData,190
+toData,169
 
 org/apache/geode/internal/cache/PreferBytesCachedDeserializable,2
 fromData,9
