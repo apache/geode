@@ -481,6 +481,7 @@ public interface GatewaySender {
    */
   boolean getEnforceThreadsConnectSameReceiver();
 
+
   /**
    * Set AlertThreshold for this GatewaySender.
    *
