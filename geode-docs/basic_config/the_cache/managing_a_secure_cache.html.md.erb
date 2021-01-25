@@ -19,49 +19,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-To create a cache in a secured system,
-authentication at connection time will require credentials.
-Authorization permits operations as configured.
+A secured system does both authentication at connection time
+and authorization prior to cache operations.
+Client apps and cluster members (servers and locators) require
+configuration and setup when the `SecurityManager` is enabled.
 
-<a id="managing_a_secure_cache__section_11BF0F3F64504B74B39CD4C1CF58E6FC"></a>
-These steps demonstrate a programmatic cache creation.
-
-1.  To create the cache:
-    1.  Add necessary security properties to the `gemfire.properties` or `gfsecurity.properties` file, to configure for your particular security implementation. Examples:
-
-        ``` pre
-        security-client-auth-init=mySecurity.UserPasswordAuthInit.create
-        ```
-
-        ``` pre
-        security-peer-auth-init=myAuthPkg.myAuthInitImpl.create
-        ```
-
-    2.  When you create your cache, pass any properties required by your security implementation to the cache factory create call by using one of these methods:
-        -   `ClientCacheFactory` or `CacheFactory` `set` methods. Example:
-
-            ``` pre
-            ClientCache clientCache = new ClientCacheFactory()
-                .set("security-username", username)
-                .set("security-password", password)
-                .create();
-            ```
-        -   Properties object passed to the `ClientCacheFactory` or `CacheFactory` `create` method. These are usually properties of a sensitive nature that you do not want to put inside the `gfsecurity.properties` file. Example:
-
-            ``` pre
-            Properties properties = new Properties();
-            properties.setProperty("security-username", username);
-            properties.setProperty("security-password", password);
-            Cache cache = new CacheFactory(properties).create();
-            ```
-
-            **Note:**
-            Properties passed to a cache creation method override any settings in either the `gemfire.properties` file or `gfsecurity.properties`.
-
-2.  Close your cache when you are done, using the `close` method of the `ClientCache` instance or the inherited `close` method of the `Cache` instance. Example:
-
-    ``` pre
-    cache.close();
-    ```
-
-
+See the section on  [Security](../../managing/security/chapter_overview.html)
+for details.
+For authentication, see 
+[Implementing Authentication](../../managing/security/implementing_authentication.html).
