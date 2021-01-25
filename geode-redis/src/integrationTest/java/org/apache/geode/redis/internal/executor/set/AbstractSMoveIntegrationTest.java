@@ -32,6 +32,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
 
 import org.apache.geode.management.internal.cli.util.ThreePhraseGenerator;
+import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
@@ -78,6 +79,17 @@ public abstract class AbstractSMoveIntegrationTest implements RedisPortSupplier 
     assertThatThrownBy(
         () -> jedis.sendCommand(Protocol.Command.SMOVE, "key", "destination", "member", "extraArg"))
             .hasMessageContaining("ERR wrong number of arguments for 'smove' command");
+  }
+
+  @Test
+  public void testSmove_returnsWrongType_whenWrongTypeIsUsed() {
+    jedis.set("not-a-set", "value");
+    assertThatThrownBy(() -> jedis.smove("not-a-set", "some-set", "foo"))
+        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+
+    jedis.hset("not-another-set", "field", "value");
+    assertThatThrownBy(() -> jedis.smove("not-another-set", "some-set", "foo"))
+        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
   }
 
   @Test
