@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache.tier.sockets;
 
 import java.io.DataInput;
@@ -38,7 +37,7 @@ import org.apache.geode.internal.cache.CachedDeserializableFactory;
 import org.apache.geode.internal.cache.EntryEventImpl.NewValueImporter;
 import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.EventID;
-import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.WrappedCallbackArgument;
 import org.apache.geode.internal.cache.ha.HAContainerRegion;
 import org.apache.geode.internal.cache.tier.MessageType;
@@ -51,11 +50,9 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.size.Sizeable;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
-
 /**
- * Class <code>ClientUpdateMessageImpl</code> is a message representing a cache operation that is
+ * Class {@code ClientUpdateMessageImpl} is a message representing a cache operation that is
  * sent from a server to an interested client.
- *
  *
  * @since GemFire 4.2
  */
@@ -161,14 +158,14 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
    * @param callbackArgument The callback argument
    * @param memberId membership id of the originator of the event
    */
-  public ClientUpdateMessageImpl(EnumListenerEvent operation, LocalRegion region,
+  public ClientUpdateMessageImpl(EnumListenerEvent operation, InternalRegion region,
       Object keyOfInterest, Object value, byte valueIsObject, Object callbackArgument,
       ClientProxyMembershipID memberId, EventID eventIdentifier) {
     this(operation, region, keyOfInterest, value, null, valueIsObject, callbackArgument, memberId,
         eventIdentifier, null);
   }
 
-  public ClientUpdateMessageImpl(EnumListenerEvent operation, LocalRegion region,
+  public ClientUpdateMessageImpl(EnumListenerEvent operation, InternalRegion region,
       Object keyOfInterest, Object value, byte[] delta, byte valueIsObject, Object callbackArgument,
       ClientProxyMembershipID memberId, EventID eventIdentifier, VersionTag versionTag) {
     this._operation = operation;
@@ -179,7 +176,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     this._callbackArgument = callbackArgument;
     this._membershipId = memberId;
     this._eventIdentifier = eventIdentifier;
-    this._shouldConflate = (isUpdate() && region.getEnableConflation());
+    this._shouldConflate = isUpdate() && region.getEnableConflation();
     this.deltaBytes = delta;
     this.versionTag = versionTag;
   }

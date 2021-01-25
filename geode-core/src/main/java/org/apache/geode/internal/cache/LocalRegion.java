@@ -8619,6 +8619,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     cmnClearRegion(rEvent, false/* cacheWrite */, false/* useRVV */);
   }
 
+  @Override
   public void handleInterestEvent(InterestRegistrationEvent event) {
     throw new UnsupportedOperationException(
         "Region interest registration is only supported for PartitionedRegions");
