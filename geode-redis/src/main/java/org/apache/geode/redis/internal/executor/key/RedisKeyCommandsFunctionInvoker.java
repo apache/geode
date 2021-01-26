@@ -18,6 +18,7 @@ package org.apache.geode.redis.internal.executor.key;
 import static org.apache.geode.redis.internal.RedisCommandType.DEL;
 import static org.apache.geode.redis.internal.RedisCommandType.EXISTS;
 import static org.apache.geode.redis.internal.RedisCommandType.INTERNALPTTL;
+import static org.apache.geode.redis.internal.RedisCommandType.INTERNALTYPE;
 import static org.apache.geode.redis.internal.RedisCommandType.PERSIST;
 import static org.apache.geode.redis.internal.RedisCommandType.PEXPIREAT;
 import static org.apache.geode.redis.internal.RedisCommandType.PTTL;
@@ -77,6 +78,10 @@ public class RedisKeyCommandsFunctionInvoker extends RedisCommandsFunctionInvoke
     return invokeCommandFunction(key, TYPE);
   }
 
+  @Override
+  public String internalType(ByteArrayWrapper key) {
+    return invokeCommandFunction(key, INTERNALTYPE);
+  }
 
   @Override
   public boolean rename(ByteArrayWrapper oldKey, ByteArrayWrapper newKey) {

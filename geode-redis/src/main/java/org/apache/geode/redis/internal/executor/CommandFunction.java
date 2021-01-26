@@ -90,6 +90,8 @@ public class CommandFunction extends SingleResultRedisFunction {
         return keyCommands.exists(key);
       case TYPE:
         return keyCommands.type(key);
+      case INTERNALTYPE:
+        return keyCommands.internalType(key);
       case PEXPIREAT: {
         long timestamp = (long) args[1];
         return keyCommands.pexpireat(key, timestamp);
