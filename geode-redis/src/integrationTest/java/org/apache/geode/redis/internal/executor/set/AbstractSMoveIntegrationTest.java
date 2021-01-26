@@ -17,13 +17,11 @@ package org.apache.geode.redis.internal.executor.set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.After;
 import org.junit.Before;
@@ -31,14 +29,14 @@ import org.junit.Test;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
 
-import org.apache.geode.management.internal.cli.util.ThreePhraseGenerator;
+import org.apache.geode.redis.ConcurrentLoopingThreads;
+import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
 public abstract class AbstractSMoveIntegrationTest implements RedisPortSupplier {
   private Jedis jedis;
   private Jedis jedis2;
-  private static final ThreePhraseGenerator generator = new ThreePhraseGenerator();
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
@@ -81,12 +79,36 @@ public abstract class AbstractSMoveIntegrationTest implements RedisPortSupplier 
   }
 
   @Test
+  public void testSmove_returnsWrongType_whenWrongSourceIsUsed() {
+    jedis.set("a-string", "value");
+    assertThatThrownBy(() -> jedis.smove("a-string", "some-set", "foo"))
+        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+
+    jedis.hset("a-hash", "field", "value");
+    assertThatThrownBy(() -> jedis.smove("a-hash", "some-set", "foo"))
+        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+  }
+
+  @Test
+  public void testSmove_returnsWrongType_whenWrongDestinationIsUsed() {
+    jedis.sadd("a-set", "foobaz");
+
+    jedis.set("a-string", "value");
+    assertThatThrownBy(() -> jedis.smove("a-set", "a-string", "foo"))
+        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+
+    jedis.hset("a-hash", "field", "value");
+    assertThatThrownBy(() -> jedis.smove("a-set", "a-hash", "foo"))
+        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+  }
+
+  @Test
   public void testSMove() {
-    String source = generator.generate('x');
-    String dest = generator.generate('x');
-    String test = generator.generate('x');
+    String source = "source";
+    String dest = "dest";
+    String test = "test";
     int elements = 10;
-    String[] strings = generateStrings(elements, 'x');
+    String[] strings = generateStrings(elements, "value-");
     jedis.sadd(source, strings);
 
     long i = 1;
@@ -101,7 +123,7 @@ public abstract class AbstractSMoveIntegrationTest implements RedisPortSupplier 
       i++;
     }
 
-    assertThat(jedis.smove(test, dest, generator.generate('x'))).isEqualTo(0);
+    assertThat(jedis.smove(test, dest, "unknown-value")).isEqualTo(0);
   }
 
   @Test
@@ -119,23 +141,46 @@ public abstract class AbstractSMoveIntegrationTest implements RedisPortSupplier 
   }
 
   @Test
-  public void testConcurrentSMove() throws ExecutionException, InterruptedException {
-    String source = generator.generate('x');
-    String dest = generator.generate('y');
-    int elements = 1000;
-    String[] strings = generateStrings(elements, 'x');
+  public void testConcurrentSMove() {
+    String source = "source";
+    String dest = "dest";
+    int elements = 10000;
+    String[] strings = generateStrings(elements, "value-");
     jedis.sadd(source, strings);
 
-    ExecutorService pool = Executors.newFixedThreadPool(2);
-    Callable<Long> callable1 = () -> moveSetElements(source, dest, strings, jedis);
-    Callable<Long> callable2 = () -> moveSetElements(source, dest, strings, jedis2);
-    Future<Long> future1 = pool.submit(callable1);
-    Future<Long> future2 = pool.submit(callable2);
+    AtomicLong counter = new AtomicLong(0);
+    new ConcurrentLoopingThreads(elements,
+        (i) -> counter.getAndAdd(jedis.smove(source, dest, strings[i])),
+        (i) -> counter.getAndAdd(jedis2.smove(source, dest, strings[i]))).run();
 
-    assertThat(future1.get() + future2.get()).isEqualTo(new Long(strings.length));
+    assertThat(counter.get()).isEqualTo(new Long(strings.length));
     assertThat(jedis.smembers(dest)).containsExactlyInAnyOrder(strings);
     assertThat(jedis.scard(source)).isEqualTo(0L);
   }
+
+  @Test
+  public void testConcurrentSMove_withDifferentDestination() {
+    String source = "source";
+    String dest1 = "dest1";
+    String dest2 = "dest2";
+    int elements = 10000;
+    String[] strings = generateStrings(elements, "value-");
+    jedis.sadd(source, strings);
+
+    AtomicLong counter = new AtomicLong(0);
+    new ConcurrentLoopingThreads(elements,
+        (i) -> counter.getAndAdd(jedis.smove(source, dest1, strings[i])),
+        (i) -> counter.getAndAdd(jedis2.smove(source, dest2, strings[i]))).run();
+
+    List<String> result = new ArrayList<>();
+    result.addAll(jedis.smembers(dest1));
+    result.addAll(jedis.smembers(dest2));
+
+    assertThat(counter.get()).isEqualTo(new Long(strings.length));
+    assertThat(result).containsExactlyInAnyOrder(strings);
+    assertThat(jedis.scard(source)).isEqualTo(0L);
+  }
+
 
   private long moveSetElements(String source, String dest, String[] strings,
       Jedis jedis) {
@@ -147,11 +192,10 @@ public abstract class AbstractSMoveIntegrationTest implements RedisPortSupplier 
     return results;
   }
 
-  private String[] generateStrings(int elements, char uniqueElement) {
+  private String[] generateStrings(int elements, String prefix) {
     Set<String> strings = new HashSet<>();
     for (int i = 0; i < elements; i++) {
-      String elem = generator.generate(uniqueElement);
-      strings.add(elem);
+      strings.add(prefix + i);
     }
     return strings.toArray(new String[strings.size()]);
   }

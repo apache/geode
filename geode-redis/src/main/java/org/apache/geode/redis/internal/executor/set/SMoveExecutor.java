@@ -40,7 +40,7 @@ public class SMoveExecutor extends SetExecutor {
     ByteArrayWrapper destination = new ByteArrayWrapper(commandElems.get(2));
     ByteArrayWrapper member = new ByteArrayWrapper(commandElems.get(3));
 
-    String destinationType = getRedisKeyCommands(context).type(destination);
+    String destinationType = getRedisKeyCommands(context).internalType(destination);
     if (!destinationType.equals(RedisDataType.REDIS_SET.toString())
         && !destinationType.equals("none")) {
       return RedisResponse.wrongType(RedisConstants.ERROR_WRONG_TYPE);
