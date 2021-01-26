@@ -36,114 +36,83 @@
  *                       launched. The default is 8.
  *  dunitDockerUser    - The user used within the docker container to run tests.
  *                       The default is 'root'.
+ *  dunitDockerVolumes - Docker volumes to mount in the docker container in addition to the
+ *                       ones mounted by the plugin. The plugin always mounts the directory of the
+ *                       top-level Geode project and the current user's Gradle home directory.
  */
 
-apply plugin: 'com.github.pedjak.dockerized-test'
+apply plugin: 'geode-dockerized-test'
 
-
-if (project.hasProperty('parallelDunit')) {
-  def pwd = System.getenv('PWD')
-  def geodeDir = new File(pwd).getCanonicalPath()
-  project.ext.dunitDockerVolumes = ["${geodeDir}":geodeDir]
-}
-
+// TODO: Move all of this into the plugin?
 project.ext.dockerConfig = {
-  maxParallelForks = dunitParallelForks.toInteger()
-
-  docker {
-    // base image for creating docker containers that execute the tests
-    image = dunitDockerImage
-
-    // volumes mounted to the containers
-    // in a form: host_dir : container_dir
-    def gradleHome = System.getenv('GRADLE_USER_HOME') ?: "${System.getenv('HOME')}/.gradle"
-    volumes = ["${gradleHome}":gradleHome]
-
-    // Add volumes configured by top-level build script
-    volumes << project.dunitDockerVolumes
-
-    // specify the user for starting Gradle test worker within the container.
-    user = dunitDockerUser
-
-    beforeContainerCreate = { cmd, client ->
-      def javaHomeIdx = -1
-      def pathIdx = -1
-      def tmpEnv = []
-      cmd.getEnv().each { tmpEnv << it }
-
-      tmpEnv.eachWithIndex { x, j ->
-        if (x.startsWith('JAVA_HOME')) {
-          javaHomeIdx = j
-        }
-        if (x.startsWith('PATH')) {
-          pathIdx = j
-        }
-      }
-
-      // Remove JAVA_HOME and PATH env variables - they might not be the same as the container needs
-      if (javaHomeIdx >= 0) {
-        tmpEnv[javaHomeIdx] = 'JAVA_HOME_REMOVED='
-      }
-      if (pathIdx >= 0) {
-        tmpEnv[pathIdx] = 'PATH_REMOVED='
-      }
-
-      if (project.hasProperty('testJVM') && !testJVM.trim().isEmpty()) {
-        // Docker command is just 'java' so set to full path
-        tmpEnv << ("JAVA_HOME=${project.testJVM}" as String)
-      }
-
-
-      // Unfortunately this snippet of code is here and is required by dev-tools/docker/base/entrypoint.sh.
-      // This allows preserving the outer user inside the running container. Required for Jenkins
-      // and other environments. There doesn't seem to be a way to pass this environment variable
-      // in from a Jenkins Gradle job.
-      if (System.env['LOCAL_USER_ID'] == null) {
-        def username = System.getProperty("user.name")
-        def uid = ['id', '-u', username].execute().text.trim()
-        tmpEnv << ("LOCAL_USER_ID=${uid}" as String)
-      }
-
-      cmd.withEnv(tmpEnv)
-
-      // Infer the index of this invocation
-      def cmdList = cmd.getCmd()
-
-      if (project.hasProperty('testJVM') && !testJVM.trim().isEmpty()) {
-        // Docker command is just 'java' so set to full path
-        cmdList[0] = ("${project.testJVM}/bin/java" as String)
-      }
-
-      // copy the classpath file to the working dir
-      def classPathFileIndex = cmdList.findIndexOf { it =~ /^@.*gradle-worker-classpath.*txt$/ }
-      if (classPathFileIndex > 0) {
-        def dst = new File(cmd.getWorkingDir(), "gradle-worker-classpath.txt")
-        if (!dst.exists()) {
-          def src = new File(cmdList[classPathFileIndex].substring(1))
-          dst.write(src.text)
-        }
-        cmdList[classPathFileIndex] = '@'+dst.toString()
-      }
-
-      //println cmd
+    maxParallelForks = dunitParallelForks.toInteger()
+    // If containerJVM is not set, try to use testJVM instead
+    if (!project.hasProperty('containerJVM') && project.hasProperty('testJVM')) {
+        project.ext.containerJVM = project.testJVM
     }
-  }
+
+    dockerizedTest {
+        prepareJavaCommand = { processBuilder ->
+            def command = processBuilder.command()
+            def environment = processBuilder.environment()
+
+            if (environment['JAVA_HOME']) {
+                environment['JAVA_HOME_REMOVED'] = environment['JAVA_HOME']
+                environment.remove 'JAVA_HOME'
+            }
+            if (environment['PATH']) {
+                environment['PATH_REMOVED'] = environment['PATH']
+                environment.remove 'PATH'
+            }
+
+            if (project.hasProperty('containerJVM') && !project.containerJVM.trim().isEmpty()) {
+                // Process builder command is just 'java'. Set it to the full path instead.
+                environment['JAVA_HOME'] = project.containerJVM as String
+                command.set(0, "${project.containerJVM}/bin/java" as String)
+            }
+
+            // Unfortunately this snippet of code is here and is required by dev-tools/docker/base/entrypoint.sh.
+            // This allows preserving the outer user inside the running container. Required for Jenkins
+            // and other environments. There doesn't seem to be a way to pass this environment variable
+            // in from a Jenkins Gradle job.
+            if (System.env['LOCAL_USER_ID'] == null) {
+                def username = System.getProperty("user.name")
+                def userID = ['id', '-u', username].execute().text.trim()
+                environment['LOCAL_USER_ID'] = userID as String
+            }
+
+            def workerName = command.last()
+            def workerID = (workerName =~ /\d+/).findAll().last()
+            def workerDir = new File(processBuilder.directory(), "test-worker-$workerID").getAbsoluteFile()
+            workerDir.mkdirs()
+
+            def classPathFileIndex = command.findIndexOf { it =~ /^@.*gradle-worker-classpath.*txt$/ }
+            if (classPathFileIndex > 0) {
+                def workerClasspathFile = new File(workerDir, "gradle-worker-classpath.txt")
+                if (!workerClasspathFile.exists()) {
+                    def originalClasspathFile = new File(command[classPathFileIndex].substring(1))
+                    workerClasspathFile.write(originalClasspathFile.text)
+                }
+                command[classPathFileIndex] = '@' + workerClasspathFile.toString()
+            }
+            processBuilder.directory(workerDir)
+        }
+    }
 }
 
-
 if (project.hasProperty('parallelDunit')) {
-  uiTest.configure(project.ext.dockerConfig)
-  repeatUnitTest.configure(project.ext.dockerConfig)
+    uiTest.configure(project.ext.dockerConfig)
+    repeatUnitTest.configure(project.ext.dockerConfig)
 
-  integrationTest.configure(project.ext.dockerConfig)
-  repeatIntegrationTest.configure(project.ext.dockerConfig)
+    integrationTest.configure(project.ext.dockerConfig)
+    repeatIntegrationTest.configure(project.ext.dockerConfig)
 
-  distributedTest.configure(project.ext.dockerConfig)
-  repeatDistributedTest.configure(project.ext.dockerConfig)
+    distributedTest.configure(project.ext.dockerConfig)
+    repeatDistributedTest.configure(project.ext.dockerConfig)
 
-  upgradeTest.configure(project.ext.dockerConfig)
-  repeatUpgradeTest.configure(project.ext.dockerConfig)
+    upgradeTest.configure(project.ext.dockerConfig)
+    repeatUpgradeTest.configure(project.ext.dockerConfig)
 
-  acceptanceTest.configure(project.ext.dockerConfig)
-  repeatAcceptanceTest.configure(project.ext.dockerConfig)
+    acceptanceTest.configure(project.ext.dockerConfig)
+    repeatAcceptanceTest.configure(project.ext.dockerConfig)
 }

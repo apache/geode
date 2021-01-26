@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.pedjak.gradle.plugins.dockerizedtest;
+package com.pedjak.gradle.plugins.test.dockerized;
 
 import static java.lang.String.format;
 
@@ -81,6 +81,7 @@ import org.gradle.process.internal.shutdown.ShutdownHooks;
  * <li>{@link #start()} allowed when state is INIT</li>
  * <li>{@link #abort()} allowed when state is STARTED or DETACHED</li>
  * </ul>
+ *
  */
 public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
 
@@ -110,8 +111,8 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
   private final StreamsHandler outputHandler;
   private final StreamsHandler inputHandler;
   private final boolean redirectErrorStream;
-  private int timeoutMillis;
-  private boolean daemon;
+  private final int timeoutMillis;
+  private final boolean daemon;
 
   /**
    * Lock to guard all mutable state
@@ -455,11 +456,7 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
         throw new RuntimeException("Container " + containerId + " not running!");
       }
 
-      Process
-          proc =
-          new DockerizedProcess(client, containerId, testExtension.getAfterContainerStop());
-
-      return proc;
+      return new DockerizedProcess(client, containerId, testExtension.getAfterContainerStop());
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException(e);
@@ -505,12 +502,10 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
   private static class ExecResultImpl implements ExecResult {
     private final int exitValue;
     private final ExecException failure;
-    private final String displayName;
 
     ExecResultImpl(int exitValue, ExecException failure, String displayName) {
       this.exitValue = exitValue;
       this.failure = failure;
-      this.displayName = displayName;
     }
 
     @Override
@@ -581,7 +576,7 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
     private final PipedOutputStream stdErrWriteStream = new PipedOutputStream(stdErrReadStream);
 
     private final CountDownLatch finished = new CountDownLatch(1);
-    private AtomicInteger exitCode = new AtomicInteger();
+    private final AtomicInteger exitCode = new AtomicInteger();
     private final AttachContainerResultCallback
         attachContainerResultCallback =
         new AttachContainerResultCallback() {

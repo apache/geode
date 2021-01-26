@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-package com.pedjak.gradle.plugins.dockerizedtest
+package com.pedjak.gradle.plugins.test.dockerized
 
-import com.pedjak.gradle.plugins.dockerizedtest.DockerizedTestExtension
-import com.pedjak.gradle.plugins.dockerizedtest.ExitCodeTolerantExecHandle
-import com.pedjak.gradle.plugins.dockerizedtest.WorkerSemaphore
+
 import org.gradle.api.internal.file.FileCollectionFactory
 import org.gradle.api.internal.file.FileResolver
 import org.gradle.initialization.BuildCancellationToken
@@ -35,20 +33,16 @@ class DockerizedJavaExecHandleBuilder extends JavaExecHandleBuilder {
     def buildCancellationToken
     private final DockerizedTestExtension extension
 
-    private final WorkerSemaphore workersSemaphore
-
     DockerizedJavaExecHandleBuilder(DockerizedTestExtension extension,
                                     FileResolver fileResolver,
                                     FileCollectionFactory fileCollectionFactory,
                                     Executor executor,
-                                    BuildCancellationToken buildCancellationToken,
-                                    WorkerSemaphore workersSemaphore) {
+                                    BuildCancellationToken buildCancellationToken) {
         super(fileResolver, fileCollectionFactory, executor, buildCancellationToken)
         this.fileCollectionFactory = fileCollectionFactory
         this.extension = extension
         this.executor = executor
         this.buildCancellationToken = buildCancellationToken
-        this.workersSemaphore = workersSemaphore
     }
 
     def StreamsHandler getStreamsHandler() {
@@ -63,8 +57,9 @@ class DockerizedJavaExecHandleBuilder extends JavaExecHandleBuilder {
     }
 
     ExecHandle build() {
-
-        return new ExitCodeTolerantExecHandle(new DockerizedExecHandle(extension, getDisplayName(),
+        return new DockerizedExecHandle(
+                extension,
+                getDisplayName(),
                 getWorkingDir(),
                 'java',
                 allArguments,
@@ -76,9 +71,8 @@ class DockerizedJavaExecHandleBuilder extends JavaExecHandleBuilder {
                 timeoutMillis,
                 daemon,
                 executor,
-                buildCancellationToken),
-                workersSemaphore)
-
+                buildCancellationToken
+        )
     }
 
     def timeoutMillis = Integer.MAX_VALUE

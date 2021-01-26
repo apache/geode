@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.pedjak.gradle.plugins.dockerizedtest
+package com.pedjak.gradle.plugins.test.dockerized
 
 import com.github.dockerjava.api.DockerClient
 import com.github.dockerjava.core.DefaultDockerClientConfig
@@ -22,42 +22,35 @@ import com.github.dockerjava.core.DockerClientBuilder
 import com.github.dockerjava.netty.NettyDockerCmdExecFactory
 import org.apache.commons.lang3.SystemUtils
 import org.apache.maven.artifact.versioning.ComparableVersion
-import org.gradle.api.Action
+import org.gradle.StartParameter
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.internal.DocumentationRegistry
 import org.gradle.api.internal.file.DefaultFileCollectionFactory
+import org.gradle.api.internal.tasks.testing.detection.DefaultTestExecuter
 import org.gradle.api.tasks.testing.Test
 import org.gradle.initialization.DefaultBuildCancellationToken
 import org.gradle.internal.concurrent.DefaultExecutorFactory
-import org.gradle.internal.concurrent.ExecutorFactory
 import org.gradle.internal.operations.BuildOperationExecutor
-import org.gradle.internal.remote.Address
-import org.gradle.internal.remote.ConnectionAcceptor
 import org.gradle.internal.remote.MessagingServer
-import org.gradle.internal.remote.ObjectConnection
-import org.gradle.internal.remote.internal.ConnectCompletion
-import org.gradle.internal.remote.internal.IncomingConnector
-import org.gradle.internal.remote.internal.hub.MessageHubBackedObjectConnection
-import org.gradle.internal.remote.internal.inet.MultiChoiceAddress
 import org.gradle.internal.time.Clock
+import org.gradle.internal.work.WorkerLeaseRegistry
 import org.gradle.process.internal.JavaExecHandleFactory
 import org.gradle.process.internal.worker.DefaultWorkerProcessFactory
 
 import javax.inject.Inject
 
 class DockerizedTestPlugin implements Plugin<Project> {
-
-    def supportedVersion = '4.8'
+    def supportedVersion = '6.8'
     def currentUser
     def messagingServer
-    def static workerSemaphore = new DefaultWorkerSemaphore()
-    def memoryManager = new com.pedjak.gradle.plugins.dockerizedtest.NoMemoryManager()
+    def memoryManager = new NoMemoryManager()
 
     @Inject
     DockerizedTestPlugin(MessagingServer messagingServer) {
         this.currentUser = SystemUtils.IS_OS_WINDOWS ? "0" : "id -u".execute().text.trim()
-        this.messagingServer = new MessageServer(messagingServer.connector, messagingServer.executorFactory)
+        this.messagingServer = new DockerizedMessagingServer(messagingServer.connector, messagingServer.executorFactory)
     }
 
     void configureTest(project, test) {
@@ -70,15 +63,22 @@ class DockerizedTestPlugin implements Plugin<Project> {
             def extension = test.extensions.docker
 
             if (extension?.image) {
-
-                workerSemaphore.applyTo(test.project)
-                test.testExecuter = new com.pedjak.gradle.plugins.dockerizedtest.TestExecuter(newProcessBuilderFactory(project, extension, test.processBuilderFactory), actorFactory, moduleRegistry, services.get(BuildOperationExecutor), services.get(Clock));
+                def processBuilderFactory = newProcessBuilderFactory(project, extension, test.processBuilderFactory)
+                test.testExecuter = new DefaultTestExecuter(
+                        processBuilderFactory,
+                        actorFactory,
+                        moduleRegistry,
+                        services.get(WorkerLeaseRegistry),
+                        services.get(BuildOperationExecutor),
+                        getServices().get(StartParameter).getMaxWorkerCount(),
+                        services.get(Clock),
+                        services.get(DocumentationRegistry),
+                        getFilter());
 
                 if (!extension.client) {
                     extension.client = createDefaultClient()
                 }
             }
-
         }
     }
 
@@ -94,6 +94,7 @@ class DockerizedTestPlugin implements Plugin<Project> {
         if (unsupportedVersion) throw new GradleException("dockerized-test plugin requires Gradle ${supportedVersion}+")
 
         project.tasks.withType(Test).each { test -> configureTest(project, test) }
+
         project.tasks.whenTaskAdded { task ->
             if (task instanceof Test) configureTest(project, task)
         }
@@ -106,11 +107,12 @@ class DockerizedTestPlugin implements Plugin<Project> {
         def buildCancellationToken = new DefaultBuildCancellationToken()
 
         def defaultfilecollectionFactory = new DefaultFileCollectionFactory(project.fileResolver, null)
+
         def execHandleFactory = [newJavaExec: { ->
-            new DockerizedJavaExecHandleBuilder(
-              extension, project.fileResolver, defaultfilecollectionFactory,
-              executor, buildCancellationToken, workerSemaphore)
+            new DockerizedJavaExecHandleBuilder(extension, project.fileResolver,
+                    defaultfilecollectionFactory, executor, buildCancellationToken)
         }] as JavaExecHandleFactory
+
         new DefaultWorkerProcessFactory(defaultProcessBuilderFactory.loggingManager,
                 messagingServer,
                 defaultProcessBuilderFactory.workerImplementationFactory.classPathRegistry,
@@ -123,66 +125,4 @@ class DockerizedTestPlugin implements Plugin<Project> {
                 memoryManager
         )
     }
-
-    class MessageServer implements MessagingServer {
-        def IncomingConnector connector;
-        def ExecutorFactory executorFactory;
-
-        public MessageServer(IncomingConnector connector, ExecutorFactory executorFactory) {
-            this.connector = connector;
-            this.executorFactory = executorFactory;
-        }
-
-        public ConnectionAcceptor accept(Action<ObjectConnection> action) {
-            return new ConnectionAcceptorDelegate(connector.accept(new ConnectEventAction(action, executorFactory), true))
-        }
-
-
-    }
-
-    class ConnectEventAction implements Action<ConnectCompletion> {
-        def action;
-        def executorFactory;
-
-        public ConnectEventAction(Action<ObjectConnection> action, executorFactory) {
-            this.executorFactory = executorFactory
-            this.action = action
-        }
-
-        public void execute(ConnectCompletion completion) {
-            action.execute(new MessageHubBackedObjectConnection(executorFactory, completion));
-        }
-    }
-
-    class ConnectionAcceptorDelegate implements ConnectionAcceptor {
-
-        MultiChoiceAddress address
-
-        @Delegate
-        ConnectionAcceptor delegate
-
-        ConnectionAcceptorDelegate(ConnectionAcceptor delegate) {
-            this.delegate = delegate
-        }
-
-        Address getAddress() {
-            synchronized (delegate)
-            {
-                if (address == null) {
-                    def remoteAddresses = NetworkInterface.networkInterfaces.findAll {
-                        try {
-                            return it.up && !it.loopback
-                        } catch (SocketException ex) {
-                            logger.warn("Unable to inspect interface " + it)
-                            return false
-                        }
-                    }*.inetAddresses*.collect { it }.flatten()
-                    def original = delegate.address
-                    address = new MultiChoiceAddress(original.canonicalAddress, original.port, remoteAddresses)
-                }
-            }
-            address
-        }
-    }
-
 }

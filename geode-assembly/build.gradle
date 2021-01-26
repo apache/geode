@@ -127,14 +127,16 @@ artifacts {
   compositeTarget distTar
 }
 
-//This "repository" only exists to download tomcat-6, because the zip for tomcat 6 is
-//not in a maven repo. Later versions of tomcat are.
 repositories {
+  //This "repository" only exists to download tomcat-6, because the zip for tomcat 6 is
+  //not in a maven repo. Later versions of tomcat are.
   ivy {
     url 'https://archive.apache.org/'
     patternLayout {
       artifact '/dist/tomcat/tomcat-6/v6.0.37/bin/[organisation]-[module]-[revision].[ext]'
     }
+    // Infer the metadata from the presence of the artifact
+    metadataSources { artifact() }
   }
   // For gradle tooling dependencies
   maven {

@@ -14,13 +14,17 @@
  * limitations under the License.
  */
 
-package com.pedjak.gradle.plugins.dockerizedtest;
+package com.pedjak.gradle.plugins.test.dockerized;
 
 import org.gradle.process.internal.health.memory.JvmMemoryStatusListener;
 import org.gradle.process.internal.health.memory.MemoryHolder;
 import org.gradle.process.internal.health.memory.MemoryManager;
 import org.gradle.process.internal.health.memory.OsMemoryStatusListener;
 
+/**
+ * A no-op implementation of Memory Manager
+ * TODO: For what purpose?
+ */
 public class NoMemoryManager implements MemoryManager {
   @Override
   public void addListener(JvmMemoryStatusListener jvmMemoryStatusListener) {

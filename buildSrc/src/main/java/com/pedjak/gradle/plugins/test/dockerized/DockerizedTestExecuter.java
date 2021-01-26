@@ -1,22 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
- * agreements. See the NOTICE file distributed with this work for additional information regarding
- * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance with the License. You may obtain a
- * copy of the License at
+ * Copyright 2015 the original author or authors.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * Unless required by applicable law or agreed to in writing, software distributed under the License
- * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions and limitations under
- * the License.
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-package org.apache.geode.gradle;
 
-import java.io.File;
-import java.util.List;
-import java.util.Set;
+package com.pedjak.gradle.plugins.test.dockerized;
 
 import com.google.common.collect.ImmutableSet;
 import org.gradle.api.file.FileTree;
@@ -46,13 +44,16 @@ import org.gradle.internal.time.Clock;
 import org.gradle.internal.work.WorkerLeaseRegistry;
 import org.gradle.process.internal.worker.WorkerProcessFactory;
 
+import java.io.File;
+import java.util.List;
+import java.util.Set;
+
 /**
- * Test executor that is used to replace gradles DefaultTestExecutor and does
- * not include a {@link RunPreviousFailedFirstTestClassProcessor} in the processor
- * chain.  This is used by the RepeatTest task.
+ * The default test class scanner factory.
  */
-class OverriddenTestExecutor implements TestExecuter<JvmTestExecutionSpec> {
-  private static final Logger LOGGER = Logging.getLogger(OverriddenTestExecutor.class);
+public class DockerizedTestExecuter implements TestExecuter<JvmTestExecutionSpec> {
+
+  private static final Logger LOGGER = Logging.getLogger(DockerizedTestExecuter.class);
 
   private final WorkerProcessFactory workerFactory;
   private final ActorFactory actorFactory;
@@ -65,9 +66,9 @@ class OverriddenTestExecutor implements TestExecuter<JvmTestExecutionSpec> {
   private final DefaultTestFilter testFilter;
   private TestClassProcessor processor;
 
-  public OverriddenTestExecutor(WorkerProcessFactory workerFactory, ActorFactory actorFactory, ModuleRegistry moduleRegistry,
-                                WorkerLeaseRegistry workerLeaseRegistry, BuildOperationExecutor buildOperationExecutor, int maxWorkerCount,
-                                Clock clock, DocumentationRegistry documentationRegistry, DefaultTestFilter testFilter) {
+  public DockerizedTestExecuter(WorkerProcessFactory workerFactory, ActorFactory actorFactory, ModuleRegistry moduleRegistry,
+      WorkerLeaseRegistry workerLeaseRegistry, BuildOperationExecutor buildOperationExecutor, int maxWorkerCount,
+      Clock clock, DocumentationRegistry documentationRegistry, DefaultTestFilter testFilter) {
     this.workerFactory = workerFactory;
     this.actorFactory = actorFactory;
     this.moduleRegistry = moduleRegistry;
@@ -89,7 +90,6 @@ class OverriddenTestExecutor implements TestExecuter<JvmTestExecutionSpec> {
     final List<String> testWorkerImplementationModules =
         testFramework.getTestWorkerImplementationModules();
     final Factory<TestClassProcessor> forkingProcessorFactory = new Factory<TestClassProcessor>() {
-      @Override
       public TestClassProcessor create() {
         return new ForkingTestClassProcessor(currentWorkerLease, workerFactory, testInstanceFactory,
             testExecutionSpec.getJavaForkOptions(), classpath, modulePath,
@@ -98,14 +98,14 @@ class OverriddenTestExecutor implements TestExecuter<JvmTestExecutionSpec> {
       }
     };
     final Factory<TestClassProcessor> reforkingProcessorFactory = new Factory<TestClassProcessor>() {
-      @Override
       public TestClassProcessor create() {
         return new RestartEveryNTestClassProcessor(forkingProcessorFactory, testExecutionSpec.getForkEvery());
       }
     };
     processor =
         new PatternMatchTestClassProcessor(testFilter,
-                new MaxNParallelTestClassProcessor(getMaxParallelForks(testExecutionSpec), reforkingProcessorFactory, actorFactory));
+            new RunPreviousFailedFirstTestClassProcessor(testExecutionSpec.getPreviousFailedTestClasses(),
+                new MaxNParallelTestClassProcessor(getMaxParallelForks(testExecutionSpec), reforkingProcessorFactory, actorFactory)));
 
     final FileTree testClassFiles = testExecutionSpec.getCandidateClassFiles();
 
@@ -119,7 +119,9 @@ class OverriddenTestExecutor implements TestExecuter<JvmTestExecutionSpec> {
       detector = new DefaultTestClassScanner(testClassFiles, null, processor);
     }
 
-    new TestMainAction(detector, processor, testResultProcessor, clock, testExecutionSpec.getPath(),
+    final Object testTaskOperationId = buildOperationExecutor.getCurrentOperation().getParentId();
+
+    new TestMainAction(detector, processor, testResultProcessor, clock, testTaskOperationId,
         "Gradle Test Run " + testExecutionSpec.getIdentityPath()).run();
   }
 

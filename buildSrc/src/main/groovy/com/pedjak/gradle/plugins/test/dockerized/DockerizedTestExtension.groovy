@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.pedjak.gradle.plugins.dockerizedtest
+package com.pedjak.gradle.plugins.test.dockerized
 
 import com.github.dockerjava.api.DockerClient
 

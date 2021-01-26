@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.pedjak.gradle.plugins.dockerizedtest;
+package com.pedjak.gradle.plugins.test.dockerized;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.locks.Lock;
@@ -25,8 +25,7 @@ import org.gradle.api.logging.Logging;
 import org.gradle.process.internal.StreamsHandler;
 
 public class DockerizedExecHandleRunner implements Runnable {
-  private static final Logger
-      LOGGER =
+  private static final Logger LOGGER =
       Logging.getLogger(org.gradle.process.internal.ExecHandleRunner.class);
 
   private final DockerizedExecHandle execHandle;
