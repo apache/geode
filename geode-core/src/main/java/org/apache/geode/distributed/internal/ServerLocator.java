@@ -397,7 +397,7 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
     }
   }
 
-  protected static ServerLocation buildServerLocation(ControllerProfile p,
+  protected static ServerLocation buildServerLocation(GridProfile p,
       boolean requestInternal) {
     String host;
     if (requestInternal) {
@@ -408,14 +408,10 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
     return new ServerLocation(host, p.getPort());
   }
 
-  protected static ServerLocation buildServerLocation(GridProfile p) {
-    return new ServerLocation(p.getHost(), p.getPort());
-  }
-
   public void profileCreated(Profile profile) {
     if (profile instanceof CacheServerProfile) {
       CacheServerProfile bp = (CacheServerProfile) profile;
-      ServerLocation location = buildServerLocation(bp);
+      ServerLocation location = buildServerLocation(bp, false);
       String[] groups = bp.getGroups();
       loadSnapshot.addServer(
           location, bp.getDistributedMember().getUniqueId(), groups,
@@ -436,7 +432,7 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
     if (profile instanceof CacheServerProfile) {
       CacheServerProfile bp = (CacheServerProfile) profile;
       // InternalDistributedMember id = bp.getDistributedMember();
-      ServerLocation location = buildServerLocation(bp);
+      ServerLocation location = buildServerLocation(bp, false);
       loadSnapshot.removeServer(location, bp.getDistributedMember().getUniqueId());
       if (logger.isDebugEnabled()) {
         logger.debug("ServerLocator: server departed {}", location);

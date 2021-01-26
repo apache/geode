@@ -779,8 +779,7 @@ public class PoolImpl implements InternalPool {
           String.format("Pool %s are different", "servers"));
     }
     if (getRequestLocatorInternalAddress() != other.getRequestLocatorInternalAddress()) {
-      throw new RuntimeException(
-          String.format("Pool %s is different", "requestLocatorInternalAddress"));
+      throw new RuntimeException("Pool requestLocatorInternalAddress is different");
     }
     // ignore startDisabled
   }
