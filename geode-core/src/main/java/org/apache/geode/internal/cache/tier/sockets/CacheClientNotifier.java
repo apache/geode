@@ -89,7 +89,6 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheEvent;
 import org.apache.geode.internal.cache.InternalRegion;
-import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionEventImpl;
 import org.apache.geode.internal.cache.ha.HAContainerMap;
 import org.apache.geode.internal.cache.ha.HAContainerRegion;
@@ -691,15 +690,16 @@ public class CacheClientNotifier {
       HAEventWrapper wrapper = new HAEventWrapper(clientMessage);
       wrapper.incrementPutInProgressCounter("notify clients");
       conflatable = wrapper;
-    }
-    if (!filterClients.isEmpty()) {
-      if (event.getOperation().isEntry()) {
+
+      // include new value in event if the entry is not a tombstone and there are clients
+      if (!filterClients.isEmpty() && event.getOperation().isEntry()) {
         EntryEventImpl entryEvent = (EntryEventImpl) event;
         entryEvent.exportNewValue(clientMessage);
       }
     }
 
-    clientRegistrationEventQueueManager.add(event, conflatable, filterClients, this);
+    // add event to temporary queue for clients in process of registering (if any)
+    clientRegistrationEventQueueManager.add(event, clientMessage, conflatable, filterClients, this);
 
     singletonRouteClientMessage(conflatable, filterClients);
 
@@ -1029,7 +1029,8 @@ public class CacheClientNotifier {
 
     // NOTE: If delta is non-null, value MUST be in Object form of type Delta.
     ClientUpdateMessageImpl clientUpdateMsg =
-        new ClientUpdateMessageImpl(operation, (LocalRegion) event.getRegion(), keyOfInterest, null,
+        new ClientUpdateMessageImpl(operation, (InternalRegion) event.getRegion(), keyOfInterest,
+            null,
             delta, (byte) 0x01, callbackArgument, membershipID, eventIdentifier, versionTag);
 
     if (isNetLoad) {
@@ -1692,7 +1693,7 @@ public class CacheClientNotifier {
   }
 
   protected void handleInterestEvent(InterestRegistrationEvent event) {
-    LocalRegion region = (LocalRegion) event.getRegion();
+    InternalRegion region = (InternalRegion) event.getRegion();
     region.handleInterestEvent(event);
   }
 
