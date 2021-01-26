@@ -397,7 +397,8 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
     }
   }
 
-  protected static ServerLocation buildServerLocation(GridProfile p, boolean requestInternal) {
+  protected static ServerLocation buildServerLocation(ControllerProfile p,
+      boolean requestInternal) {
     String host;
     if (requestInternal) {
       host = p.getInternalHost();

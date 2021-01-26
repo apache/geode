@@ -31,9 +31,7 @@ import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.StaticSerialization;
 
 /**
  * Used to share code with BridgeServerAdvisor and ControllerAdvisor
@@ -259,6 +257,7 @@ public abstract class GridAdvisor extends DistributionAdvisor {
 
     private String host;
 
+    /** valid only for ControllerProfile */
     private String internalHost;
 
     /**
@@ -376,7 +375,6 @@ public abstract class GridAdvisor extends DistributionAdvisor {
       super.toData(out, context);
       DataSerializer.writeString(this.host, out);
       DataSerializer.writePrimitiveInt(this.port, out);
-      DataSerializer.writeString(this.internalHost, out);
     }
 
     @Override
@@ -385,12 +383,6 @@ public abstract class GridAdvisor extends DistributionAdvisor {
       super.fromData(in, context);
       this.host = DataSerializer.readString(in);
       this.port = DataSerializer.readPrimitiveInt(in);
-      if (StaticSerialization.getVersionForDataStream(in)
-          .isNotOlderThan(KnownVersion.GEODE_1_14_0)) {
-        this.internalHost = DataSerializer.readString(in);
-      } else {
-        this.internalHost = this.host;
-      }
       finishInit();
     }
 

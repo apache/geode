@@ -779,7 +779,7 @@ fromData,114
 toData,102
 
 org/apache/geode/internal/cache/CacheServerAdvisor$CacheServerProfile,2
-fromData,54
+fromData,59
 toData,43
 
 org/apache/geode/internal/cache/ClientRegionEventImpl,2
@@ -791,8 +791,8 @@ fromData,17
 toData,17
 
 org/apache/geode/internal/cache/ControllerAdvisor$ControllerProfile,2
-fromData,7
-toData,7
+fromData,39
+toData,15
 
 org/apache/geode/internal/cache/CreateRegionProcessor$CreateRegionMessage,2
 fromData,46
@@ -970,8 +970,8 @@ fromData,68
 toData,94
 
 org/apache/geode/internal/cache/GridAdvisor$GridProfile,2
-fromData,59
-toData,31
+fromData,27
+toData,23
 
 org/apache/geode/internal/cache/HARegion$HARegionAdvisor$HAProfile,2
 fromData,44
