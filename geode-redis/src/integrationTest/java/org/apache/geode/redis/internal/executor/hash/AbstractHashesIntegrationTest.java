@@ -97,8 +97,8 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   public void testHGetall_givenWrongNumberOfArguments() {
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HGETALL))
         .hasMessage("ERR wrong number of arguments for 'hgetall' command");
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HMSET, "1", "2"))
-        .hasMessage("ERR wrong number of arguments for 'hmset' command");
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HGETALL, "1", "2"))
+        .hasMessage("ERR wrong number of arguments for 'hgetall' command");
   }
 
   @Test
@@ -247,6 +247,16 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
     jedis.set("tractor", "John Deere");
     assertThatThrownBy(() -> jedis.hstrlen("tractor", "chicken"))
         .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+  }
+
+  @Test
+  public void testHStrlen_givenWrongNumberOfArguments() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSTRLEN))
+        .hasMessageContaining("ERR wrong number of arguments for 'hstrlen' command");
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSTRLEN, "1"))
+        .hasMessageContaining("ERR wrong number of arguments for 'hstrlen' command");
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSTRLEN, "1", "2", "3"))
+        .hasMessageContaining("ERR wrong number of arguments for 'hstrlen' command");
   }
 
   @Test
@@ -440,13 +450,13 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   @Test
   public void hsetnx_shouldThrowError_givenWrongNumberOfArguments() {
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSETNX))
-        .hasMessageContaining("wrong number of arguments");
+        .hasMessageContaining("ERR wrong number of arguments for 'hsetnx' command");
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSETNX, "1"))
-        .hasMessageContaining("wrong number of arguments");
+        .hasMessageContaining("ERR wrong number of arguments for 'hsetnx' command");
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSETNX, "1", "2"))
-        .hasMessageContaining("wrong number of arguments");
+        .hasMessageContaining("ERR wrong number of arguments for 'hsetnx' command");
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSETNX, "1", "2", "3", "4"))
-        .hasMessageContaining("wrong number of arguments");
+        .hasMessageContaining("ERR wrong number of arguments for 'hsetnx' command");
   }
 
   /**
