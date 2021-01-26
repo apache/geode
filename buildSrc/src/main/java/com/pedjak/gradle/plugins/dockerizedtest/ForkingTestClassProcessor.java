@@ -35,6 +35,10 @@ import org.gradle.process.internal.worker.WorkerProcessBuilder;
 import org.gradle.process.internal.worker.WorkerProcessFactory;
 import org.gradle.util.CollectionUtils;
 
+/**
+ * DHE:
+ * - A modified copy of Gradle's ForkingTestClassProcessor.
+ */
 public class ForkingTestClassProcessor implements TestClassProcessor {
   private final WorkerProcessFactory workerFactory;
   private final WorkerTestClassProcessorFactory processorFactory;
@@ -68,6 +72,7 @@ public class ForkingTestClassProcessor implements TestClassProcessor {
   public void processTestClass(TestClassRunInfo testClass) {
     int i = 0;
     RuntimeException exception = null;
+    // DHE: Why the loop? Does Gradle's lease mechanism make this redundant?
     while (remoteProcessor == null && i < 10) {
       try {
         remoteProcessor = forkProcess();
@@ -85,6 +90,9 @@ public class ForkingTestClassProcessor implements TestClassProcessor {
     remoteProcessor.processTestClass(testClass);
   }
 
+  // DHE: Differences from Gradle v5.5:
+  // - Creates a (custom) ForciblyStoppableTestWorker instead of a standard TestWorker
+  // - Does not manage the lease.
   RemoteTestClassProcessor forkProcess() {
     WorkerProcessBuilder
         builder =
@@ -133,6 +141,8 @@ public class ForkingTestClassProcessor implements TestClassProcessor {
     );
   }
 
+  // DHE: Differences from Gradle v5.5
+  // - This stop() does not manage the lease.
   @Override
   public void stop() {
     if (remoteProcessor != null) {
@@ -145,6 +155,9 @@ public class ForkingTestClassProcessor implements TestClassProcessor {
     }
   }
 
+  // DHE: Differences from Gradle v5.5
+  // - This stop() does not stop the worker process.
+  // Stopping the worker process may eliminate the need for ForciblyStoppableTestWorker.
   @Override
   public void stopNow() {
     stop(); // TODO need anything else ??

@@ -18,6 +18,11 @@ package com.pedjak.gradle.plugins.dockerizedtest
 
 import com.github.dockerjava.api.DockerClient
 
+/**
+ * DHE:
+ * - Configuration for a dockerized process.
+ * - Instantiated by DockerizedTestPlugin for each appropriate test task
+ */
 class DockerizedTestExtension {
 
     String image
@@ -37,10 +42,12 @@ class DockerizedTestExtension {
             client.removeContainerCmd(containerId).exec();
         } catch (Exception e) {
             // ignore any error
+            // DHE: Why ignore it?
         }
     }
 
     // could be a DockerClient instance or a closure that returns a DockerClient instance
+    // DHE: Delete this if we don't use it directly
     private def clientOrClosure
 
     void setClient(clientOrClosure) {

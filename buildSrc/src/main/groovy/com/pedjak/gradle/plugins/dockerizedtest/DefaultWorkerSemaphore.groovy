@@ -21,6 +21,9 @@ import org.gradle.api.tasks.testing.Test
 
 import java.util.concurrent.Semaphore
 
+// DHE:
+// - Why not use Gradle's lease mechanism? Answer: Gradle's WorkerLeaseRegistry was added in 2017,
+//   after this class was created.
 class DefaultWorkerSemaphore implements WorkerSemaphore {
     private int maxWorkers = Integer.MAX_VALUE
     private Semaphore semaphore
@@ -45,6 +48,7 @@ class DefaultWorkerSemaphore implements WorkerSemaphore {
             logger = project.logger
         }
 
+        // DHE: Set maxWorkers to the smallest maxParallelForks in any dockerized test task
         maxWorkers = project.tasks.withType(Test).findAll {
             it.extensions.docker?.image != null
         }.collect {

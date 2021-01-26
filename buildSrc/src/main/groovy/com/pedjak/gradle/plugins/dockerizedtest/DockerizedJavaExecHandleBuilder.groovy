@@ -43,6 +43,7 @@ class DockerizedJavaExecHandleBuilder extends JavaExecHandleBuilder {
                                     Executor executor,
                                     BuildCancellationToken buildCancellationToken,
                                     WorkerSemaphore workersSemaphore) {
+        // DHE: v6.8 JavaExecHandleBuilder constructor has multiple additional parameters.
         super(fileResolver, fileCollectionFactory, executor, buildCancellationToken)
         this.fileCollectionFactory = fileCollectionFactory
         this.extension = extension

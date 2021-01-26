@@ -23,6 +23,11 @@ import java.util.concurrent.TimeUnit;
 import org.gradle.api.internal.tasks.testing.WorkerTestClassProcessorFactory;
 import org.gradle.api.internal.tasks.testing.worker.TestWorker;
 
+// DHE:
+// - Overrides TestWorker.stop() to call Runtime.halt() if it doesn't shut down within 60 seconds.
+// - What makes this necessary?
+// - Instantiated by custom ForkingTestClassProcessor
+// - I think this gets serialized and sent to the test JVM
 public class ForciblyStoppableTestWorker extends TestWorker {
   private static final int SHUTDOWN_TIMEOUT = 60; // secs
 

@@ -21,6 +21,10 @@ import org.gradle.process.internal.health.memory.MemoryHolder;
 import org.gradle.process.internal.health.memory.MemoryManager;
 import org.gradle.process.internal.health.memory.OsMemoryStatusListener;
 
+/**
+ * DHE: A no-op implementation of Memory Manager
+ * - For what purpose?
+ */
 public class NoMemoryManager implements MemoryManager {
   @Override
   public void addListener(JvmMemoryStatusListener jvmMemoryStatusListener) {

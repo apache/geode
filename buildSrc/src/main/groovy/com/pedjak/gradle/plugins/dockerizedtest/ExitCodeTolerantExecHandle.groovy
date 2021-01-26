@@ -25,6 +25,9 @@ import org.gradle.process.internal.ExecHandleListener
 /**
  * All exit codes are normal
  */
+// DHE:
+// - Entire effect seems to be to wrap the given exec handle in a custom lease mechanism.
+// - Now that Gradle has a worker lease registry, perhaps this class can be deleted.
 class ExitCodeTolerantExecHandle implements ExecHandle {
 
     private final WorkerSemaphore testWorkerSemaphore
@@ -59,6 +62,7 @@ class ExitCodeTolerantExecHandle implements ExecHandle {
         }
     }
 
+    // DHE: Unused except by the (unused) ExecHandleListenerFacade
     private static class ExitCodeTolerantExecResult implements ExecResult {
 
         @Delegate
@@ -76,6 +80,7 @@ class ExitCodeTolerantExecHandle implements ExecHandle {
         }
     }
 
+    // DHE: Unused
     private static class ExecHandleListenerFacade implements ExecHandleListener {
 
         @Delegate

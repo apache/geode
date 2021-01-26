@@ -39,6 +39,13 @@ import org.gradle.internal.operations.BuildOperationExecutor;
 import org.gradle.internal.time.Clock;
 import org.gradle.process.internal.worker.WorkerProcessFactory;
 
+/**
+ * DHE: A modified copy of Gradle's DefaultTestExecuter.
+ * Modifications:
+ * - Does not manage the worker lease.
+ * - Omits some processors from the processor chain.
+ *
+ */
 public class TestExecuter
     implements org.gradle.api.internal.tasks.testing.TestExecuter<JvmTestExecutionSpec> {
   private final WorkerProcessFactory workerFactory;
@@ -58,6 +65,11 @@ public class TestExecuter
     this.clock = clock;
   }
 
+  // DHE: Differences from Gradle v5.5
+  // - Does not manage the worker lease.
+  // - Omits the PatternMatchTestClassProcessor and RunPreviousFailedFirstTestClassProcessor
+  //   from the processor chain.
+  // - Does not honor max-workers.
   @Override
   public void execute(final JvmTestExecutionSpec testExecutionSpec,
                       TestResultProcessor testResultProcessor) {
