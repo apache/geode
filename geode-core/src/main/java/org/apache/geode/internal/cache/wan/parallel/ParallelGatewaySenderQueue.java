@@ -1552,6 +1552,11 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       return object;// this will be null
     }
     if (logger.isDebugEnabled()) {
+      try {
+        Thread.sleep(100);
+      } catch(InterruptedException e) {
+        ; // #LRJ spend some more time in peek for reasons
+      }
       logger.debug("{}: Peeked object from bucket {} object: {}", this, bucketId, object);
     }
 

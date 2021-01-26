@@ -15,6 +15,8 @@
 package org.apache.geode.internal.cache.wan;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -1021,8 +1023,14 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
   public void handleSuccessBatchAck(int batchId) {
     // this is to acknowledge PDX related events
     List<GatewaySenderEventImpl> pdxEvents = this.batchIdToPDXEventsMap.remove(batchId);
+    StringWriter sw = new StringWriter();
+    PrintWriter pw = new PrintWriter(sw);
+    new Exception().printStackTrace(pw);
+    logger.debug("#LRJ handleSuccessBatchAck stacktrace: {}", sw);
+
     if (pdxEvents != null) {
       for (GatewaySenderEventImpl senderEvent : pdxEvents) {
+        logger.debug("#LRJ handleSuccessBatchAck senderEvent: {}", senderEvent.toString());
         senderEvent.isAcked = true;
       }
     }
