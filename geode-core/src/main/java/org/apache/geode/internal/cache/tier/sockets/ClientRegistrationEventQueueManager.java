@@ -52,11 +52,11 @@ public class ClientRegistrationEventQueueManager {
       return;
     }
 
-    if (originalFilterClientIDs.isEmpty()) {
-      if (event.getOperation().isEntry() && !(clientMessage instanceof ClientTombstoneMessage)) {
-        EntryEventImpl entryEvent = (EntryEventImpl) event;
-        entryEvent.exportNewValue(clientMessage);
-      }
+    if (originalFilterClientIDs.isEmpty()
+        && event.getOperation().isEntry()
+        && !(clientMessage instanceof ClientTombstoneMessage)) {
+      EntryEventImpl entryEvent = (EntryEventImpl) event;
+      entryEvent.exportNewValue(clientMessage);
     }
 
     ClientRegistrationEvent clientRegistrationEvent =
