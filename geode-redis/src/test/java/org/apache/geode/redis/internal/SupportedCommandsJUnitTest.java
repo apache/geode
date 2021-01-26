@@ -235,8 +235,9 @@ public class SupportedCommandsJUnitTest {
   };
 
   private final String[] internalCommands = new String[] {
+      "INTERNALPTTL",
       "INTERNALSMEMBERS",
-      "INTERNALPTTL"
+      "INTERNALTYPE"
   };
 
   @Test
