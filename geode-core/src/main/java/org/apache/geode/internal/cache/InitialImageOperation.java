@@ -847,7 +847,7 @@ public class InitialImageOperation {
       List<Entry> entriesToSynchronize = new ArrayList<>();
 
       if (this.region.getFullPath().contains(
-          "_B__ln__for__testParallelGatewaySenderOverflowMBeanAttributesAfterServerRestart__PARALLEL__GATEWAY__SENDER__QUEUE")) {
+          "ln__for__testParallelGatewaySenderOverflowMBeanAttributesAfterServerRestart")) {
         logger.warn("XXX InitialImageOperation.processChunk about to process region={}; entries={}",
             this.region.getFullPath(), entryCount);
       }
@@ -944,18 +944,18 @@ public class InitialImageOperation {
                   }
                   if (record) {
                     if (this.region.getFullPath().contains(
-                        "_B__ln__for__testParallelGatewaySenderOverflowMBeanAttributesAfterServerRestart__PARALLEL__GATEWAY__SENDER__QUEUE")) {
+                        "ln__for__testParallelGatewaySenderOverflowMBeanAttributesAfterServerRestart")) {
                       logger.warn(
-                          "XXX InitialImageOperation.processChunk about to initialImagePut key={}",
-                          entry.key);
+                          "XXX InitialImageOperation.processChunk about to initialImagePut region={}; key={}",
+                          this.region.getFullPath(), entry.key);
                     }
                     this.entries.initialImagePut(entry.key, lastModified, tmpValue, wasRecovered,
                         true, tag, sender, this.isSynchronizing);
                     if (this.region.getFullPath().contains(
-                        "_B__ln__for__testParallelGatewaySenderOverflowMBeanAttributesAfterServerRestart__PARALLEL__GATEWAY__SENDER__QUEUE")) {
+                        "ln__for__testParallelGatewaySenderOverflowMBeanAttributesAfterServerRestart")) {
                       logger.warn(
-                          "XXX InitialImageOperation.processChunk done initialImagePut key={}",
-                          entry.key);
+                          "XXX InitialImageOperation.processChunk done initialImagePut region={}; key={}",
+                          this.region.getFullPath(), entry.key);
                     }
                     if (this.isSynchronizing) {
                       entriesToSynchronize.add(entry);
@@ -969,13 +969,16 @@ public class InitialImageOperation {
             }
             // fix for 41814, java level deadlock
             if (this.region.getFullPath().contains(
-                "_B__ln__for__testParallelGatewaySenderOverflowMBeanAttributesAfterServerRestart__PARALLEL__GATEWAY__SENDER__QUEUE")) {
-              logger.warn("XXX InitialImageOperation.processChunk about to lruUpdateCallback");
+                "ln__for__testParallelGatewaySenderOverflowMBeanAttributesAfterServerRestart")) {
+              logger.warn(
+                  "XXX InitialImageOperation.processChunk about to lruUpdateCallback region={}",
+                  this.region.getFullPath());
             }
             this.entries.lruUpdateCallback();
             if (this.region.getFullPath().contains(
-                "_B__ln__for__testParallelGatewaySenderOverflowMBeanAttributesAfterServerRestart__PARALLEL__GATEWAY__SENDER__QUEUE")) {
-              logger.warn("XXX InitialImageOperation.processChunk done lruUpdateCallback");
+                "ln__for__testParallelGatewaySenderOverflowMBeanAttributesAfterServerRestart")) {
+              logger.warn("XXX InitialImageOperation.processChunk done lruUpdateCallback region={}",
+                  this.region.getFullPath());
             }
           }
         }
@@ -1018,7 +1021,7 @@ public class InitialImageOperation {
         }
       }
       if (this.region.getFullPath().contains(
-          "_B__ln__for__testParallelGatewaySenderOverflowMBeanAttributesAfterServerRestart__PARALLEL__GATEWAY__SENDER__QUEUE")) {
+          "ln__for__testParallelGatewaySenderOverflowMBeanAttributesAfterServerRestart")) {
         logger.warn("XXX InitialImageOperation.processChunk done processing region={}; entries={}",
             this.region.getFullPath(), entryCount);
       }

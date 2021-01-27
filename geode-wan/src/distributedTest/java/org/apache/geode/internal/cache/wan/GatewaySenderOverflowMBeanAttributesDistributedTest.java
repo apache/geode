@@ -33,6 +33,7 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.GatewaySenderMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.test.junit.categories.WanTest;
@@ -98,7 +99,7 @@ public class GatewaySenderOverflowMBeanAttributesDistributedTest extends WANTest
   }
 
   @Test
-  @Parameters({"true", "false"})
+  @Parameters({"true"})
   public void testParallelGatewaySenderOverflowMBeanAttributesAfterServerRestart(
       boolean createSenderFirst) {
     Integer lnPort = vm0.invoke(() -> createFirstLocatorWithDSId(1));
@@ -106,7 +107,8 @@ public class GatewaySenderOverflowMBeanAttributesDistributedTest extends WANTest
 
     createCacheInVMs(lnPort, vm4, vm5);
 
-    String senderId = "ln_for_testParallelGatewaySenderOverflowMBeanAttributesAfterServerRestart";
+    String senderId = "ln_for_testParallelGatewaySenderOverflowMBeanAttributesAfterServerRestart_"
+        + System.currentTimeMillis();
     vm4.invoke(() -> createPartitionedRegionWithPersistence(getTestMethodName(), senderId, 1, 100));
     vm5.invoke(() -> createPartitionedRegionWithPersistence(getTestMethodName(), senderId, 1, 100));
     vm4.invoke(() -> createSender(senderId, 2, true, 1, 10, false, true, null, false));
@@ -315,9 +317,15 @@ public class GatewaySenderOverflowMBeanAttributesDistributedTest extends WANTest
 
   private void checkEntriesOverflowedToDisk(String senderId, long entriesOverflowedToDisk) {
     GatewaySenderMXBean bean = getGatewaySenderMXBean(senderId);
+    LogService.getLogger().warn(
+        "XXX GatewaySenderOverflowMBeanAttributesDistributedTest.checkEntriesOverflowedToDisk about to assert overflowed entries senderId="
+            + senderId);
     await().untilAsserted(() -> {
       assertEquals(entriesOverflowedToDisk, bean.getEntriesOverflowedToDisk());
     });
+    LogService.getLogger().warn(
+        "XXX GatewaySenderOverflowMBeanAttributesDistributedTest.checkEntriesOverflowedToDisk done assert overflowed entries senderId="
+            + senderId);
   }
 
   private void checkBytesOverflowedToDisk(String senderId, long bytesOverflowedToDisk) {
