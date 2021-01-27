@@ -1023,11 +1023,6 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
   public void handleSuccessBatchAck(int batchId) {
     // this is to acknowledge PDX related events
     List<GatewaySenderEventImpl> pdxEvents = this.batchIdToPDXEventsMap.remove(batchId);
-    StringWriter sw = new StringWriter();
-    PrintWriter pw = new PrintWriter(sw);
-    new Exception().printStackTrace(pw);
-    logger.debug("#LRJ handleSuccessBatchAck stacktrace: {}", sw);
-
     if (pdxEvents != null) {
       for (GatewaySenderEventImpl senderEvent : pdxEvents) {
         logger.debug("#LRJ handleSuccessBatchAck senderEvent: {}", senderEvent.toString());
