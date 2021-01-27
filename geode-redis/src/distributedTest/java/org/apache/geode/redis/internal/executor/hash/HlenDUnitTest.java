@@ -137,6 +137,7 @@ public class HlenDUnitTest {
     Map<String, String> setUpData =
         makeInitialHashMap(HASH_SIZE, "filler-", String.valueOf(HASH_SIZE));
     lettuce.hset(key, setUpData);
+    lettuce.set(storeKey, String.valueOf(HASH_SIZE));
 
     new ConcurrentLoopingThreads(NUM_ITERATIONS,
         (i) -> {

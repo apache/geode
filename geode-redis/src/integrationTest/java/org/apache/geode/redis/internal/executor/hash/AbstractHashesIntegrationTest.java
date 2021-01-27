@@ -551,9 +551,9 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   @Test
   public void testHLen_givenWrongNumberOfArguments() {
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HLEN))
-        .hasMessageContaining("wrong number of arguments");
+        .hasMessageContaining("ERR wrong number of arguments for 'hlen' command");
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HLEN, "1", "2"))
-        .hasMessageContaining("wrong number of arguments");
+        .hasMessageContaining("ERR wrong number of arguments for 'hlen' command");
   }
 
   /**

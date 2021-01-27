@@ -41,7 +41,6 @@ public class SupportedCommandsJUnitTest {
       "HMSET",
       "HSET",
       "HSETNX",
-      "HVALS",
       "HLEN",
       "HMGET",
       "HSTRLEN",
