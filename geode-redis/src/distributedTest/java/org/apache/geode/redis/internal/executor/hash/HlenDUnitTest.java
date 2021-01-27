@@ -49,6 +49,7 @@ public class HlenDUnitTest {
   public static ExecutorServiceRule executor = new ExecutorServiceRule();
 
   private static final int HASH_SIZE = 5000;
+  private static final int BIG_HASH_SIZE = 50000;
   private static final int NUM_ITERATIONS = 50000;
   private static MemberVM locator;
   private static MemberVM server1;
@@ -157,6 +158,33 @@ public class HlenDUnitTest {
     long finalActualLength = lettuce.hlen(key);
     long finalExpectedLength = Long.parseLong(lettuce.get(storeKey));
     assertThat(finalActualLength).isEqualTo(finalExpectedLength);
+  }
+
+  @Test
+  public void testConcurrentHLen_whileDeletingFields() {
+    String key = "HLEN";
+    String storeKey = "storedLength";
+
+    Map<String, String> setUpData =
+        makeInitialHashMap(BIG_HASH_SIZE, "field-", String.valueOf(BIG_HASH_SIZE));
+    lettuce.hset(key, setUpData);
+    lettuce.set(storeKey, String.valueOf(BIG_HASH_SIZE));
+
+    new ConcurrentLoopingThreads(NUM_ITERATIONS,
+        (i) -> {
+          int newLength = BIG_HASH_SIZE - i - 1;
+
+          lettuce.hdel(key, "field-" + newLength);
+          lettuce.set(storeKey, String.valueOf(newLength));
+        },
+        (i) -> {
+          long expectedLength = Long.parseLong(lettuce.get(storeKey));
+          long actualLength = lettuce.hlen(key);
+
+          assertThat(actualLength).isLessThanOrEqualTo(expectedLength);
+        }).run();
+
+    assertThat(lettuce.hlen(key)).isEqualTo(0L);
   }
 
   private Map<String, String> makeInitialHashMap(int hashSize, String baseFieldName,
