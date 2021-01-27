@@ -15,13 +15,11 @@
 package org.apache.geode.internal.cache.wan.misc;
 
 import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
 import org.junit.Before;
@@ -35,6 +33,7 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.version.VersionManager;
 
 public class WanLocatorDiscoveryDUnitTest {
 
@@ -65,25 +64,29 @@ public class WanLocatorDiscoveryDUnitTest {
   }
 
   private int setupWanSite1() throws IOException {
-    Properties locator_ln_props = new Properties();
-    // create a cluster
-    locator_ln_props.setProperty(MCAST_PORT, "0");
-    locator_ln_props.setProperty(DISTRIBUTED_SYSTEM_ID, "1");
+    locator_ln1 = cluster.startLocatorVM(0, ports[0], VersionManager.CURRENT_VERSION,
+        i -> i.withProperty(DISTRIBUTED_SYSTEM_ID, "1"));
 
-    locator_ln1 = cluster.startLocatorVM(0, ports[0], locator_ln_props);
-    locator_ln2 = cluster.startLocatorVM(1, ports[1], locator_ln_props, locator_ln1.getPort());
-    return locator_ln1.getPort();
+    int locator_ln1_port = locator_ln1.getPort();
+
+    locator_ln2 = cluster.startLocatorVM(1, ports[1], VersionManager.CURRENT_VERSION,
+        i -> i.withProperty(DISTRIBUTED_SYSTEM_ID, "1")
+            .withConnectionToLocator(locator_ln1_port));
+
+    return locator_ln1_port;
   }
 
   private void setupWanSite2(int site1Port) throws IOException {
-    Properties locator_ny_props = new Properties();
-    // create a cluster
-    locator_ny_props.setProperty(MCAST_PORT, "0");
-    locator_ny_props.setProperty(DISTRIBUTED_SYSTEM_ID, "2");
-    locator_ny_props.setProperty(REMOTE_LOCATORS, "localhost[" + site1Port + "]");
+    locator_ny1 = cluster.startLocatorVM(2, ports[2], VersionManager.CURRENT_VERSION,
+        i -> i.withProperty(DISTRIBUTED_SYSTEM_ID, "2")
+            .withProperty(REMOTE_LOCATORS, "localhost[" + site1Port + "]"));
 
-    locator_ny1 = cluster.startLocatorVM(2, ports[2], locator_ny_props);
-    locator_ny2 = cluster.startLocatorVM(3, ports[3], locator_ny_props, locator_ny1.getPort());
+    int locator_ny1_port = locator_ny1.getPort();
+
+    locator_ny2 = cluster.startLocatorVM(3, ports[3], VersionManager.CURRENT_VERSION,
+        i -> i.withProperty(DISTRIBUTED_SYSTEM_ID, "2")
+            .withProperty(REMOTE_LOCATORS, "localhost[" + site1Port + "]")
+            .withConnectionToLocator(locator_ny1_port));
   }
 
   @Test
@@ -104,15 +107,11 @@ public class WanLocatorDiscoveryDUnitTest {
 
     locator_ln2.stop();
 
-    Properties locator_ln_props = new Properties();
+    int locator_ln1_port = locator_ln1.getPort();
 
-    // create a cluster
-    locator_ln_props.setProperty(MCAST_PORT, "0");
-    locator_ln_props.setProperty(DISTRIBUTED_SYSTEM_ID, "1");
-
-    // Starting locator with different port, is to simulate change of IP address, when POD is
-    // restarted in kubernetes
-    locator_ln2 = cluster.startLocatorVM(1, ports[4], locator_ln_props, locator_ln1.getPort());
+    locator_ln2 = cluster.startLocatorVM(1, ports[4], VersionManager.CURRENT_VERSION,
+        i -> i.withProperty(DISTRIBUTED_SYSTEM_ID, "1")
+            .withConnectionToLocator(locator_ln1_port));
 
     locator_ny2.invoke(() -> {
       LocatorMembershipListener listener =
