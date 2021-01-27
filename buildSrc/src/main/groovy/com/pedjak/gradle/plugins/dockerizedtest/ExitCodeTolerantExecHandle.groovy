@@ -30,14 +30,11 @@ import org.gradle.process.internal.ExecHandleListener
 // - Now that Gradle has a worker lease registry, perhaps this class can be deleted.
 class ExitCodeTolerantExecHandle implements ExecHandle {
 
-    private final WorkerSemaphore testWorkerSemaphore
-
     @Delegate
     private final ExecHandle delegate
 
-    ExitCodeTolerantExecHandle(ExecHandle delegate, WorkerSemaphore testWorkerSemaphore) {
+    ExitCodeTolerantExecHandle(ExecHandle delegate, WorkerSemaphore ignored) {
         this.delegate = delegate
-        this.testWorkerSemaphore = testWorkerSemaphore
         delegate.addListener(new ExecHandleListener() {
 
             @Override
@@ -47,19 +44,12 @@ class ExitCodeTolerantExecHandle implements ExecHandle {
 
             @Override
             void executionFinished(ExecHandle execHandle, ExecResult execResult) {
-                testWorkerSemaphore.release()
             }
         })
     }
 
     ExecHandle start() {
-        testWorkerSemaphore.acquire()
-        try {
-            delegate.start()
-        } catch (Exception e) {
-            testWorkerSemaphore.release()
-            throw e
-        }
+        delegate.start()
     }
 
     // DHE: Unused except by the (unused) ExecHandleListenerFacade
