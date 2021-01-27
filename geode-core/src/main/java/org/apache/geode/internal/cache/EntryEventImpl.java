@@ -165,6 +165,9 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    */
   private byte[] deltaBytes = null;
 
+  /* Is this special about recalculating size? */
+  private boolean forceRecalculateSize = false;
+
   /** routing information for cache clients for this event */
   private FilterInfo filterInfo;
 
@@ -1716,7 +1719,8 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     if (v instanceof org.apache.geode.Delta && getRegion().isUsedForPartitionedRegionBucket()) {
       int vSize;
       Object ov = basicGetOldValue();
-      if (ov instanceof CachedDeserializable && !GemFireCacheImpl.DELTAS_RECALCULATE_SIZE) {
+      if (ov instanceof CachedDeserializable && !GemFireCacheImpl.DELTAS_RECALCULATE_SIZE
+          && !this.forceRecalculateSize) {
         vSize = ((CachedDeserializable) ov).getValueSizeInBytes();
       } else {
         vSize = CachedDeserializableFactory.calcMemSize(v, getRegion().getObjectSizer(), false);
@@ -1858,7 +1862,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       if (wasCD) {
         CachedDeserializable old = (CachedDeserializable) oldValueInVM;
         int valueSize;
-        if (GemFireCacheImpl.DELTAS_RECALCULATE_SIZE) {
+        if (GemFireCacheImpl.DELTAS_RECALCULATE_SIZE || this.forceRecalculateSize) {
           valueSize =
               CachedDeserializableFactory.calcMemSize(value, getRegion().getObjectSizer(), false);
         } else {
@@ -2569,6 +2573,10 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    */
   public void setDeltaBytes(byte[] deltaBytes) {
     this.deltaBytes = deltaBytes;
+  }
+
+  public void setForceRecalculateSize(boolean forceRecalculateSize) {
+    this.forceRecalculateSize = forceRecalculateSize;
   }
 
   // TODO (ashetkar) Can this.op.isCreate() be used instead?
