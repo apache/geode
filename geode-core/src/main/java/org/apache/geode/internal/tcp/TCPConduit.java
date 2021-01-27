@@ -112,6 +112,8 @@ public class TCPConduit implements Runnable {
    */
   private final boolean useSSL;
 
+  private final BufferPool bufferPool;
+
   /**
    * The socket producer used by the cluster
    */
@@ -217,8 +219,8 @@ public class TCPConduit implements Runnable {
    * </pre>
    */
   public TCPConduit(Membership mgr, int port, InetAddress address, boolean isBindAddress,
-      DirectChannel receiver, Properties props) throws ConnectionException {
-    this(mgr, port, address, isBindAddress, receiver, props, ConnectionTable::create,
+      DirectChannel receiver, BufferPool bufferPool, Properties props) throws ConnectionException {
+    this(mgr, port, address, isBindAddress, receiver, bufferPool, props, ConnectionTable::create,
         SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER),
         () -> {
           try {
@@ -232,7 +234,7 @@ public class TCPConduit implements Runnable {
 
   @VisibleForTesting
   TCPConduit(Membership mgr, int port, InetAddress address, boolean isBindAddress,
-      DirectChannel receiver, Properties props,
+      DirectChannel receiver, BufferPool bufferPool, Properties props,
       Function<TCPConduit, ConnectionTable> connectionTableFactory, SocketCreator socketCreator,
       Runnable localHostValidation, boolean startAcceptor) throws ConnectionException {
     parseProperties(props);
@@ -241,6 +243,7 @@ public class TCPConduit implements Runnable {
     this.isBindAddress = isBindAddress;
     this.port = port;
     directChannel = receiver;
+    this.bufferPool = bufferPool;
     stats = null;
     config = null;
     membership = mgr;
@@ -946,7 +949,7 @@ public class TCPConduit implements Runnable {
   }
 
   public BufferPool getBufferPool() {
-    return conTable.getBufferPool();
+    return bufferPool;
   }
 
   public CancelCriterion getCancelCriterion() {
