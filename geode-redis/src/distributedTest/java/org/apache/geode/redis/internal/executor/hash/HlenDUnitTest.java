@@ -149,8 +149,8 @@ public class HlenDUnitTest {
           lettuce.set(storeKey, String.valueOf(currentLength));
         },
         (i) -> {
-          long actualLength = lettuce.hlen(key);
           long expectedLength = Long.parseLong(lettuce.get(storeKey));
+          long actualLength = lettuce.hlen(key);
 
           assertThat(actualLength).isGreaterThanOrEqualTo(expectedLength);
         }).run();
