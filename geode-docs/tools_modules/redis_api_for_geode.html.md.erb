@@ -68,7 +68,7 @@ The Redis API for <%=vars.product_name%> currently supports the following comman
 **Note**: These commands are supported for Redis 5.
 
 -   **Connection**: AUTH, PING, QUIT
--   **Hashes**: HGETALL, HMGET, HMSET, HSET, HSETNX, HSTRLEN, HVALS
+-   **Hashes**: HGETALL, HMGET, HMSET, HSET, HSETNX, HSTRLEN, HLEN, HVALS
 -   **Keys**: DEL, EXISTS, EXPIRE, EXPIREAT, KEYS, PERSIST, PEXPIRE, PEXPIREAT, PTTL, RENAME, TTL,
   TYPE
 -   **Publish/Subscribe**: PUBLISH, PSUBSCRIBE, PUNSUBSCRIBE, SUBSCRIBE, UNSUBSCRIBE
@@ -80,7 +80,7 @@ commands are available to use, but have not been fully tested. There is no guara
 exactly as expected.
 
 -   **Connection**: ECHO, SELECT
--   **Hashes**: HDEL, HEXISTS, HGET, HINCRBY, HINCRBYFLOAT, HKEYS, HLEN, HSCAN
+-   **Hashes**: HDEL, HEXISTS, HGET, HINCRBY, HINCRBYFLOAT, HKEYS, HSCAN
 -   **Keys**: SCAN, UNLINK
 -   **Server**: DBSIZE, FLUSHALL (no async option), FLUSHDB (no async option), INFO, SHUTDOWN,
   SLOWLOG, TIME
