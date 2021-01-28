@@ -19,27 +19,27 @@ import javax.management.ObjectName;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
- * This listener is attached to the Monitoring Region to receive any addition or deletion of MBEans
- *
- * It updates the last refreshed time of proxy once it gets the update request from the Managed Node
- *
- *
+ * This listener is attached to the Monitoring Region to receive any addition or deletion of MBeans.
+ * It updates the last refreshed time of proxy once it gets the update request from the Managed
+ * Node
  */
-public class ManagementCacheListener extends CacheListenerAdapter<String, Object> {
+class ManagementCacheListener extends CacheListenerAdapter<String, Object> {
 
   private static final Logger logger = LogService.getLogger();
 
-  private MBeanProxyFactory proxyHelper;
+  private final MBeanProxyFactory proxyHelper;
 
   private volatile boolean readyForEvents;
 
-  public ManagementCacheListener(MBeanProxyFactory proxyHelper) {
+  ManagementCacheListener(MBeanProxyFactory proxyHelper) {
     this.proxyHelper = proxyHelper;
-    this.readyForEvents = false;
+    readyForEvents = false;
   }
 
   @Override
@@ -50,16 +50,17 @@ public class ManagementCacheListener extends CacheListenerAdapter<String, Object
     ObjectName objectName = null;
 
     try {
+      DistributedMember distributedMember = event.getDistributedMember();
       objectName = ObjectName.getInstance(event.getKey());
-      Object newObject = event.getNewValue();
-      proxyHelper.createProxy(event.getDistributedMember(), objectName, event.getRegion(),
-          newObject);
+      Region<String, Object> region = event.getRegion();
+      Object newValue = event.getNewValue();
+
+      proxyHelper.createProxy(distributedMember, objectName, region, newValue);
     } catch (Exception e) {
       if (logger.isDebugEnabled()) {
         logger.debug("Proxy Create failed for {} with exception {}", objectName, e.getMessage(), e);
       }
     }
-
   }
 
   @Override
@@ -67,16 +68,17 @@ public class ManagementCacheListener extends CacheListenerAdapter<String, Object
     ObjectName objectName = null;
 
     try {
+      DistributedMember distributedMember = event.getDistributedMember();
       objectName = ObjectName.getInstance(event.getKey());
-      Object oldObject = event.getOldValue();
-      proxyHelper.removeProxy(event.getDistributedMember(), objectName, oldObject);
+      Object oldValue = event.getOldValue();
+
+      proxyHelper.removeProxy(distributedMember, objectName, oldValue);
     } catch (Exception e) {
       if (logger.isDebugEnabled()) {
         logger.debug("Proxy Destroy failed for {} with exception {}", objectName, e.getMessage(),
             e);
       }
     }
-
   }
 
   @Override
@@ -86,31 +88,29 @@ public class ManagementCacheListener extends CacheListenerAdapter<String, Object
       if (!readyForEvents) {
         return;
       }
-      objectName = ObjectName.getInstance(event.getKey());
 
+      objectName = ObjectName.getInstance(event.getKey());
       ProxyInfo proxyInfo = proxyHelper.findProxyInfo(objectName);
-      if (proxyInfo != null) {
-        ProxyInterface proxyObj = (ProxyInterface) proxyInfo.getProxyInstance();
-        // Will return null if proxy is filtered out
-        if (proxyObj != null) {
-          proxyObj.setLastRefreshedTime(System.currentTimeMillis());
-        }
-        Object oldObject = event.getOldValue();
-        Object newObject = event.getNewValue();
-        proxyHelper.updateProxy(objectName, proxyInfo, newObject, oldObject);
+      if (proxyInfo == null) {
+        return;
       }
+
+      ProxyInterface proxy = (ProxyInterface) proxyInfo.getProxyInstance();
+      // Will return null if proxy is filtered out
+      if (proxy != null) {
+        proxy.setLastRefreshedTime(System.currentTimeMillis());
+      }
+
+      proxyHelper.updateProxy(objectName, proxyInfo, event.getNewValue(), event.getOldValue());
 
     } catch (Exception e) {
       if (logger.isDebugEnabled()) {
         logger.debug("Proxy Update failed for {} with exception {}", objectName, e.getMessage(), e);
       }
-
     }
-
   }
 
   void markReady() {
     readyForEvents = true;
   }
-
 }
