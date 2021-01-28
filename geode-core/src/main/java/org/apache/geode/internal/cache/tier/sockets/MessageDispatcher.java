@@ -19,6 +19,7 @@ import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -467,18 +468,18 @@ public class MessageDispatcher extends LoggingThread {
 
     // Processing gets here if isStopped=true. What is this code below doing?
     if (!exceptionOccurred) {
-      List<ClientMessage> list = null;
+      List<ClientMessage> list = new ArrayList<>();
       try {
         // Clear the interrupt status if any,
         Thread.interrupted();
         int size = _messageQueue.size();
-        list = uncheckedCast(_messageQueue.peek(size));
+        list.addAll(uncheckedCast(_messageQueue.peek(size)));
         if (logger.isDebugEnabled()) {
           logger.debug(
               "{}: After flagging the dispatcher to stop , the residual List of messages to be dispatched={} size={}",
-              this, list, (list == null) ? 0 : list.size());
+              this, list, list.size());
         }
-        if (list != null && list.size() > 0) {
+        if (list.size() > 0) {
           long start = getStatistics().startTime();
           Iterator<ClientMessage> itr = list.iterator();
           while (itr.hasNext()) {
@@ -505,11 +506,11 @@ public class MessageDispatcher extends LoggingThread {
         }
         logger.info(String.format(
             "%s Possibility of not being able to send some or all of the messages to clients. Total messages currently present in the list %s.",
-            (!isStopped()) ? toString() + ": " : "", (list == null) ? 0 : list.size()));
+            (!isStopped()) ? toString() + ": " : "", list.size()));
         logger.info(extraMsg);
       }
 
-      if (list != null && !list.isEmpty() && logger.isTraceEnabled()) {
+      if (!list.isEmpty() && logger.isTraceEnabled()) {
         logger.trace("Messages remaining in the list are: {}", list);
       }
     }
