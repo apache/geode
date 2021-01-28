@@ -22,6 +22,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jetbrains.annotations.NotNull;
+
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Instantiator;
 import org.apache.geode.internal.InternalDataSerializer;
@@ -34,7 +36,8 @@ public class SocketMessageWriter {
       Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "serverToClientPingPeriod", 60000);
 
   public void writeHandshakeMessage(DataOutputStream dos, byte type, String p_msg,
-      KnownVersion clientVersion, byte endpointType, int queueSize) throws IOException {
+      @NotNull final KnownVersion clientVersion, byte endpointType, int queueSize)
+      throws IOException {
     String msg = p_msg;
 
     // write the message type

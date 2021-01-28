@@ -272,5 +272,10 @@ class DependencyConstraints implements Plugin<Project> {
     dependencySet(group: 'org.springframework.session', version: '2.4.1') {
       entry('spring-session-data-redis')
     }
+
+    dependencySet(group: 'org.jetbrains', version: '20.1.0') {
+      entry('annotations')
+    }
+
   }
 }
