@@ -702,44 +702,16 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     boolean isDREvent = isDREvent(sender.getCache(), value);
 
     String regionPath = value.getRegionPath();
-    if (!isDREvent) {
-      Region region = sender.getCache().getRegion(regionPath, true);
-      regionPath = ColocationHelper.getLeaderRegion((PartitionedRegion) region).getFullPath();
-    }
-    if (isDebugEnabled) {
-      logger.debug("Put is for the region {}", regionPath);
-    }
-    if (!this.userRegionNameToShadowPRMap.containsKey(regionPath)) {
-      if (isDebugEnabled) {
-        logger.debug("The userRegionNameToshadowPRMap is {}", userRegionNameToShadowPRMap);
-      }
-      logger.warn(
-          "GatewaySender: Not queuing the event {}, as the region for which this event originated is not yet configured in the GatewaySender",
-          value);
-      // does not put into queue
+    regionPath = getRegionPath(value, isDREvent, regionPath);
+    if (regionPath == null)
       return false;
-    }
 
     PartitionedRegion prQ = this.userRegionNameToShadowPRMap.get(regionPath);
     int bucketId = value.getBucketId();
-    Object key = null;
-    if (!isDREvent) {
-      key = value.getShadowKey();
-
-      if ((Long) key == -1) {
-        // In case of parallel we don't expect
-        // the key to be not set. If it is the case then the event must be coming
-        // through listener, so return.
-        if (isDebugEnabled) {
-          logger.debug("ParallelGatewaySenderOrderedQueue not putting key {} : Value : {}", key,
-              value);
-        }
-        // does not put into queue
-        return false;
-      }
-    } else {
-      key = value.getEventId();
-    }
+    Object key;
+    key = getKeyFromObject(isDebugEnabled, value, isDREvent);
+    if (key == null)
+      return false;
 
     if (isDebugEnabled) {
       logger.debug("ParallelGatewaySenderOrderedQueue putting key {} : Value : {}", key, value);
@@ -868,6 +840,51 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     }
 
     return putDone;
+  }
+
+  private String getRegionPath(GatewaySenderEventImpl value, boolean isDREvent, String regionPath) {
+    boolean isDebugEnabled = logger.isDebugEnabled();
+    if (!isDREvent) {
+      Region region = sender.getCache().getRegion(regionPath, true);
+      regionPath = ColocationHelper.getLeaderRegion((PartitionedRegion) region).getFullPath();
+    }
+    if (isDebugEnabled) {
+      logger.debug("Put is for the region {}", regionPath);
+    }
+    if (!this.userRegionNameToShadowPRMap.containsKey(regionPath)) {
+      if (isDebugEnabled) {
+        logger.debug("The userRegionNameToshadowPRMap is {}", userRegionNameToShadowPRMap);
+      }
+      logger.warn(
+          "GatewaySender: Not queuing the event {}, as the region for which this event originated is not yet configured in the GatewaySender",
+          value);
+      // does not put into queue
+      return null;
+    }
+    return regionPath;
+  }
+
+  private Object getKeyFromObject(boolean isDebugEnabled, GatewaySenderEventImpl value,
+      boolean isDREvent) {
+    Object key;
+    if (!isDREvent) {
+      key = value.getShadowKey();
+
+      if ((Long) key == -1) {
+        // In case of parallel we don't expect
+        // the key to be not set. If it is the case then the event must be coming
+        // through listener, so return.
+        if (isDebugEnabled) {
+          logger.debug("ParallelGatewaySenderOrderedQueue not putting key {} : Value : {}", key,
+              value);
+        }
+        // does not put into queue
+        return null;
+      }
+    } else {
+      key = value.getEventId();
+    }
+    return key;
   }
 
   public void notifyEventProcessorIfRequired() {
@@ -1795,6 +1812,22 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     int queueStringStart = regionName.indexOf(QSTRING);
     // The queue id is everything after the leading / and before the QSTRING
     return regionName.substring(1, queueStringStart);
+  }
+
+  public boolean isThereEventsMatching(Object object, Predicate condition) {
+    GatewaySenderEventImpl value = (GatewaySenderEventImpl) object;
+    boolean isDREvent = isDREvent(sender.getCache(), value);
+
+    String regionPath = value.getRegionPath();
+    regionPath = getRegionPath(value, isDREvent, regionPath);
+    if (regionPath == null) {
+      return true;
+    }
+    PartitionedRegion prQ = this.userRegionNameToShadowPRMap.get(regionPath);
+    int bucketId = value.getBucketId();
+    BucketRegionQueue brq = getBucketRegionQueueByBucketId(prQ, bucketId);
+
+    return brq.isThereEventsMatching(condition);
   }
 
   // TODO:REF: Name for this class should be appropriate?

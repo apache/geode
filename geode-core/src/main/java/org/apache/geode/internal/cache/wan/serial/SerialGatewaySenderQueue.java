@@ -847,6 +847,12 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     }
   }
 
+  /**
+   * This method returns a list of objects that fulfill the matchingPredicate
+   * together with the key of the last object that fullfilled the pattern.
+   * If a matching object also fulfills the endPredicate then the method
+   * stops looking for more matching objects.
+   */
   EventsAndLastKey getElementsMatching(Predicate condition, Predicate stopCondition, long lastKey) {
     Object object;
     List elementsMatching = new ArrayList<>();
@@ -875,6 +881,21 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     }
 
     return new EventsAndLastKey(elementsMatching, lastKey);
+  }
+
+  public boolean isThereEventsMatching(Predicate condition) {
+    Object object;
+    long currentKey = getCurrentKey();
+    while ((currentKey = inc(currentKey)) != getTailKey()) {
+      object = optimalGet(currentKey);
+      if (object == null) {
+        continue;
+      }
+      if (condition.test(object)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**

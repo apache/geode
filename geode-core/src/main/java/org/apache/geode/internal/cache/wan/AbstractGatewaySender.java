@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Predicate;
 
 import org.apache.logging.log4j.Logger;
 
@@ -1041,14 +1042,11 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
         clonedEvent.setCallbackArgument(geCallbackArg);
       }
 
-      // If this gateway is not running, return
-      if (!isRunning()) {
-        if (this.isPrimary()) {
-          recordDroppedEvent(clonedEvent);
-        }
-        if (isDebugEnabled) {
-          logger.debug("Returning back without putting into the gateway sender queue:" + event);
-        }
+      boolean mustGroupTransactionsAndEventHasTId =
+          mustGroupTransactionEvents() && event.getTransactionId() != null;
+      if (this.eventProcessor == null ||
+          (!isRunning() && !mustGroupTransactionsAndEventHasTId)) {
+        recordDroppedEvent(clonedEvent);
         return;
       }
 
@@ -1074,13 +1072,9 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       try {
         // If this gateway is not running, return
         // The sender may have stopped, after we have checked the status in the beginning.
-        if (!isRunning()) {
-          if (isDebugEnabled) {
-            logger.debug("Returning back without putting into the gateway sender queue:" + event);
-          }
-          if (this.isPrimary()) {
-            recordDroppedEvent(clonedEvent);
-          }
+        if (this.eventProcessor == null ||
+            (!isRunning() && !mustGroupTransactionsAndEventHasTId)) {
+          recordDroppedEvent(clonedEvent);
           return;
         }
 
@@ -1100,7 +1094,20 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
           // Get substitution value to enqueue if necessary
           Object substituteValue = getSubstituteValue(clonedEvent, operation);
 
-          ev.enqueueEvent(operation, clonedEvent, substituteValue, isLastEventInTransaction);
+          Predicate hasSameTransactionId = null;
+          // In case the sender is not running, the event will be queued if
+          // there is any event in the queue with the same transactionId as the
+          // one of this event
+          if (!isRunning()) {
+            hasSameTransactionId =
+                x -> x instanceof GatewaySenderEventImpl && clonedEvent.getTransactionId() != null
+                    && clonedEvent.getTransactionId()
+                        .equals(((GatewaySenderEventImpl) x).getTransactionId());
+          }
+          if (!ev.enqueueEvent(operation, clonedEvent, substituteValue, isLastEventInTransaction,
+              hasSameTransactionId)) {
+            recordDroppedEvent(event);
+          }
         } catch (CancelException e) {
           logger.debug("caught cancel exception", e);
           throw e;
@@ -1126,6 +1133,9 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   }
 
   private void recordDroppedEvent(EntryEventImpl event) {
+    if (!this.isPrimary()) {
+      return;
+    }
     if (this.eventProcessor != null) {
       this.eventProcessor.registerEventDroppedInPrimaryQueue(event);
     } else {
@@ -1133,6 +1143,9 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       if (logger.isDebugEnabled()) {
         logger.debug("added to tmpDroppedEvents event: {}", event);
       }
+    }
+    if (logger.isDebugEnabled()) {
+      logger.debug("Returning back without putting into the gateway sender queue:" + event);
     }
   }
 
@@ -1530,7 +1543,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       try {
         logger.info("{}: Enqueueing synchronization event: {}",
             this, event);
-        this.eventProcessor.enqueueEvent(event);
+        this.eventProcessor.enqueueEvent(event, null);
         this.statistics.incSynchronizationEventsEnqueued();
       } catch (Throwable t) {
         logger.warn(String.format(

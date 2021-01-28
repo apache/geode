@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.function.Predicate;
 
 import org.apache.logging.log4j.Logger;
 
@@ -132,22 +133,24 @@ public class ConcurrentParallelGatewaySenderEventProcessor
   }
 
   @Override
-  public void enqueueEvent(EnumListenerEvent operation, EntryEvent event, Object substituteValue)
+  public boolean enqueueEvent(EnumListenerEvent operation, EntryEvent event, Object substituteValue)
       throws IOException, CacheException {
-    enqueueEvent(operation, event, substituteValue, false);
+    return enqueueEvent(operation, event, substituteValue, false, null);
   }
 
   @Override
-  public void enqueueEvent(EnumListenerEvent operation, EntryEvent event, Object substituteValue,
-      boolean isLastEventInTransaction) throws IOException, CacheException {
+  public boolean enqueueEvent(EnumListenerEvent operation, EntryEvent event, Object substituteValue,
+      boolean isLastEventInTransaction, Predicate condition)
+      throws IOException, CacheException {
     Region region = event.getRegion();
     // int bucketId = PartitionedRegionHelper.getHashKey((EntryOperation)event);
     int bucketId = ((EntryEventImpl) event).getEventId().getBucketID();
     if (bucketId < 0) {
-      return;
+      return true;
     }
     int pId = bucketId % this.nDispatcher;
-    this.processors[pId].enqueueEvent(operation, event, substituteValue, isLastEventInTransaction);
+    return this.processors[pId].enqueueEvent(operation, event, substituteValue,
+        isLastEventInTransaction, condition);
   }
 
   @Override
@@ -349,9 +352,9 @@ public class ConcurrentParallelGatewaySenderEventProcessor
   }
 
   @Override
-  protected void enqueueEvent(GatewayQueueEvent event) {
+  protected boolean enqueueEvent(GatewayQueueEvent event, Predicate condition) {
     int pId = ((GatewaySenderEventImpl) event).getBucketId() % this.nDispatcher;
-    this.processors[pId].enqueueEvent(event);
+    return this.processors[pId].enqueueEvent(event, condition);
   }
 
   private ThreadsMonitoring getThreadMonitorObj() {
