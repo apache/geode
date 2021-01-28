@@ -15,11 +15,11 @@ github:
     - datagrid
     - apache
   features:
-    # Enable wiki for documentation
+    # To enable wiki for documentation
     wiki: false
-    # Enable issue management
+    # To enable issue management
     issues: false
-    # Enable projects for project management boards
+    # To enable projects for project management boards
     projects: true
 
   enabled_merge_buttons:
@@ -27,7 +27,7 @@ github:
     squash:  true
     # enable merge button:
     merge:  true
-    # disable rebase button:
+    # enable rebase button:
     rebase:  true
 
   protected_branches:
