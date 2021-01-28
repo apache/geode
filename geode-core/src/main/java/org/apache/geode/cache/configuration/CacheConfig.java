@@ -2613,6 +2613,7 @@ public class CacheConfig {
   @XmlType(name = "", propOrder = {"gatewayEventFilters", "gatewayEventSubstitutionFilter",
       "gatewayTransportFilters"})
   public static class GatewaySender extends CacheElement {
+    private static final long serialVersionUID = 1L;
 
     @XmlElement(name = "gateway-event-filter", namespace = "http://geode.apache.org/schema/cache")
     protected List<DeclarableType> gatewayEventFilters;
