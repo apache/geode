@@ -203,11 +203,11 @@ public class MBeanFederationErrorHandlingDistributedTest implements Serializable
 
     @Override
     public FederatingManager create(ManagementResourceRepo repo, InternalDistributedSystem system,
-        SystemManagementService service, InternalCache cache, StatisticsFactory statisticsFactory,
-        StatisticsClock statisticsClock, MBeanProxyFactory proxyFactory, MemberMessenger messenger,
-        Supplier<ExecutorService> executorServiceSupplier) {
-      return new FederatingManager(repo, system, service, cache, statisticsFactory,
-          statisticsClock, spy(proxyFactory), messenger, executorServiceSupplier);
+        SystemManagementService service, InternalCache cache, MBeanProxyFactory proxyFactory,
+        MemberMessenger messenger, StatisticsFactory statisticsFactory,
+        StatisticsClock statisticsClock, Supplier<ExecutorService> executorServiceSupplier) {
+      return new FederatingManager(repo, system, service, cache, spy(proxyFactory), messenger,
+          statisticsFactory, statisticsClock, executorServiceSupplier);
     }
   }
 }

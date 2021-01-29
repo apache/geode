@@ -14,15 +14,19 @@
  */
 package org.apache.geode.management.internal;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.geode.logging.internal.executors.LoggingExecutors.newSingleThreadScheduledExecutor;
+import static org.apache.geode.management.internal.MBeanJMXAdapter.getUniqueIDForMember;
+import static org.apache.geode.management.internal.ManagementConstants.MONITORING_REGION;
+import static org.apache.geode.management.internal.ManagementConstants.NOTIFICATION_REGION;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.Notification;
@@ -35,13 +39,12 @@ import org.apache.geode.GemFireException;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.HasCachePerfStats;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionFactory;
@@ -69,72 +72,117 @@ public class LocalManager extends Manager {
    * This service will be responsible for executing ManagementTasks and periodically push data to
    * localMonitoringRegion
    */
-  private final AtomicReference<ScheduledExecutorService> singleThreadFederationScheduler =
+  private final AtomicReference<ScheduledExecutorService> federationScheduler =
       new AtomicReference<>();
 
   /**
    * This map holds all the components which are eligible for federation. Although filters might
    * prevent any of the component from getting federated.
    */
-  private final Map<ObjectName, FederationComponent> federatedComponentMap;
-
-  private final Object lock = new Object();
+  private final Map<ObjectName, FederationComponent> federatedComponents;
 
   private final SystemManagementService service;
+  private final Object lock;
+  private final int updateRate;
+  private final Supplier<HasCachePerfStats> managementRegionStatsFactory;
+  private final Supplier<ScheduledExecutorService> federationSchedulerFactory;
 
-  /**
-   * @param repo management resource repo
-   * @param system internal distributed system
-   */
-  LocalManager(ManagementResourceRepo repo, InternalDistributedSystem system,
-      SystemManagementService service, InternalCache cache, StatisticsFactory statisticsFactory,
+  LocalManager(ManagementResourceRepo repo, InternalDistributedSystem system, InternalCache cache,
+      SystemManagementService service, int updateRate, StatisticsFactory statisticsFactory,
       StatisticsClock statisticsClock) {
-    super(repo, system, cache, statisticsFactory, statisticsClock);
+    this(repo,
+        system,
+        cache,
+        service,
+        new Object(),
+        updateRate,
+        new ConcurrentHashMap<>(),
+        defaultManagementRegionStatsFactory(statisticsFactory, statisticsClock),
+        () -> newSingleThreadScheduledExecutor("Management Task"));
+  }
+
+  private LocalManager(ManagementResourceRepo repo, InternalDistributedSystem system,
+      InternalCache cache, SystemManagementService service, Object lock, int updateRate,
+      Map<ObjectName, FederationComponent> federatedComponents,
+      Supplier<HasCachePerfStats> managementRegionStatsFactory,
+      Supplier<ScheduledExecutorService> federationSchedulerFactory) {
+    super(repo, system, cache);
     this.service = service;
-    federatedComponentMap = new ConcurrentHashMap<>();
+    this.lock = lock;
+    this.updateRate = updateRate;
+    this.federatedComponents = federatedComponents;
+    this.managementRegionStatsFactory = managementRegionStatsFactory;
+    this.federationSchedulerFactory = federationSchedulerFactory;
+  }
+
+  @Override
+  public boolean isRunning() {
+    return running;
+  }
+
+  @Override
+  public void startManager() {
+    startLocalManagement();
+    running = true;
+  }
+
+  @Override
+  public void stopManager() {
+    // Shutting down the GII executor as this node wont require it anymore
+    shutdownTasks();
+    // Clean up management Resources
+    cleanUpResources();
+    running = false;
+  }
+
+  public Map<ObjectName, FederationComponent> getFederatedComponents() {
+    return federatedComponents;
+  }
+
+  void markForFederation(ObjectName objectName, FederationComponent federationComponent) {
+    federatedComponents.put(objectName, federationComponent);
+  }
+
+  void unMarkForFederation(ObjectName objectName) {
+    synchronized (lock) {
+      federatedComponents.remove(objectName);
+      if (repo.getLocalMonitoringRegion() != null
+          && repo.getLocalMonitoringRegion().get(objectName.toString()) != null) {
+        // To delete an entry from the region
+        repo.getLocalMonitoringRegion().remove(objectName.toString());
+      }
+    }
   }
 
   /**
    * Managed Node side resources are created
    *
-   * <p>
-   * Management Region : its a Replicated NO_ACK region Notification Region : its a Replicated Proxy
-   * NO_ACK region
+   * <pre>
+   * Management Region: its a Replicated NO_ACK region
+   * Notification Region: its a Replicated Proxy NO_ACK region
+   * </pre>
    */
   private void startLocalManagement() {
     synchronized (this) {
       if (repo.getLocalMonitoringRegion() != null) {
         return;
       }
-      singleThreadFederationScheduler.set(newSingleThreadScheduledExecutor("Management Task"));
+      federationScheduler.set(federationSchedulerFactory.get());
 
       if (logger.isDebugEnabled()) {
         logger.debug("Creating  Management Region :");
       }
 
       // Create anonymous stats holder for Management Regions
-      HasCachePerfStats monitoringRegionStats = new HasCachePerfStats() {
-
-        @Override
-        public CachePerfStats getCachePerfStats() {
-          return new CachePerfStats(cache.getDistributedSystem(),
-              "RegionStats-managementRegionStats", statisticsClock);
-        }
-
-        @Override
-        public boolean hasOwnStats() {
-          return true;
-        }
-      };
+      HasCachePerfStats managementRegionStats = managementRegionStatsFactory.get();
 
       InternalRegionFactory<String, Object> monitorFactory = cache.createInternalRegionFactory();
       monitorFactory.setScope(Scope.DISTRIBUTED_NO_ACK);
       monitorFactory.setDataPolicy(DataPolicy.REPLICATE);
       monitorFactory.setConcurrencyChecksEnabled(false);
-      CacheListener<String, Object> localListener = new MonitoringRegionCacheListener(service);
-      monitorFactory.addCacheListener(localListener);
+      monitorFactory.addCacheListener(new MonitoringRegionCacheListener(service));
       monitorFactory.setIsUsedForMetaRegion(true);
-      monitorFactory.setCachePerfStatsHolder(monitoringRegionStats);
+      monitorFactory.setCachePerfStatsHolder(managementRegionStats);
 
       InternalRegionFactory<NotificationKey, Notification> notificationFactory =
           cache.createInternalRegionFactory();
@@ -142,28 +190,29 @@ public class LocalManager extends Manager {
       notificationFactory.setDataPolicy(DataPolicy.EMPTY);
       notificationFactory.setConcurrencyChecksEnabled(false);
       notificationFactory.setIsUsedForMetaRegion(true);
-      notificationFactory.setCachePerfStatsHolder(monitoringRegionStats);
+      notificationFactory.setCachePerfStatsHolder(managementRegionStats);
 
-      String appender = MBeanJMXAdapter.getUniqueIDForMember(system.getDistributedMember());
+      String uniqueIdForMember = getUniqueIDForMember(system.getDistributedMember());
 
       try {
-        repo.setLocalMonitoringRegion(
-            monitorFactory.create(ManagementConstants.MONITORING_REGION + "_" + appender));
+        Region<String, Object> monitoringRegion =
+            monitorFactory.create(MONITORING_REGION + "_" + uniqueIdForMember);
+        repo.setLocalMonitoringRegion(monitoringRegion);
       } catch (TimeoutException | RegionExistsException e) {
         throw new ManagementException(e);
       }
 
-      boolean notifRegionCreated = false;
+      boolean notificationRegionCreated = false;
       try {
-        repo.setLocalNotificationRegion(
-            notificationFactory.create(ManagementConstants.NOTIFICATION_REGION + "_" + appender));
-        notifRegionCreated = true;
+        Region<NotificationKey, Notification> notificationRegion =
+            notificationFactory.create(NOTIFICATION_REGION + "_" + uniqueIdForMember);
+        repo.setLocalNotificationRegion(notificationRegion);
+        notificationRegionCreated = true;
       } catch (TimeoutException | RegionExistsException e) {
         throw new ManagementException(e);
       } finally {
-        if (!notifRegionCreated) {
+        if (!notificationRegionCreated) {
           repo.getLocalMonitoringRegion().localDestroyRegion();
-
         }
       }
 
@@ -172,9 +221,9 @@ public class LocalManager extends Manager {
       managementTask.get().run();
       // All local resources are created for the ManagementTask
       // Now Management tasks can proceed.
-      int updateRate = system.getConfig().getJmxManagerUpdateRate();
-      singleThreadFederationScheduler.get().scheduleAtFixedRate(managementTask.get(), updateRate,
-          updateRate, TimeUnit.MILLISECONDS);
+
+      federationScheduler.get()
+          .scheduleAtFixedRate(managementTask.get(), updateRate, updateRate, MILLISECONDS);
 
       if (logger.isDebugEnabled()) {
         logger.debug("Management Region created with Name : {}",
@@ -185,30 +234,11 @@ public class LocalManager extends Manager {
     }
   }
 
-  void markForFederation(ObjectName objName, FederationComponent fedComp) {
-    federatedComponentMap.put(objName, fedComp);
-  }
-
-  void unMarkForFederation(ObjectName objName) {
-    synchronized (lock) {
-      if (federatedComponentMap.get(objName) != null) {
-        federatedComponentMap.remove(objName);
-      }
-      if (repo.getLocalMonitoringRegion() != null
-          && repo.getLocalMonitoringRegion().get(objName.toString()) != null) {
-        // To delete an entry from the region
-        repo.getLocalMonitoringRegion().remove(objName.toString());
-      }
-    }
-  }
-
   /**
    * This method will shutdown various tasks running for management
    */
   private void shutdownTasks() {
-    // No need of pooledGIIExecutor as this node wont do GII again
-    // so better to release resources
-    ScheduledExecutorService executor = singleThreadFederationScheduler.get();
+    ScheduledExecutorService executor = federationScheduler.get();
     if (executor != null) {
       executor.shutdownNow();
     }
@@ -244,87 +274,41 @@ public class LocalManager extends Manager {
     }
   }
 
-  /**
-   * For internal Use only
-   */
-  @VisibleForTesting
-  public ScheduledExecutorService getFederationScheduler() {
-    return singleThreadFederationScheduler.get();
-  }
-
-  /**
-   * Internal testing hook.Not to be used from any where else. As soon as a mbean is created we can
-   * push the data into local region which will make the data available at managing node site.
-   */
-  @VisibleForTesting
-  public void runManagementTaskAdhoc() {
-    managementTask.get().run();
-  }
-
-  @Override
-  public boolean isRunning() {
-    return running;
-  }
-
-  @Override
-  public void startManager() {
-    startLocalManagement();
-    running = true;
-  }
-
-  @Override
-  public void stopManager() {
-    // Shutting down the GII executor as this node wont require it anymore
-    shutdownTasks();
-    // Clean up management Resources
-    cleanUpResources();
-    running = false;
-  }
-
-  public Map<ObjectName, FederationComponent> getFedComponents() {
-    return federatedComponentMap;
-  }
-
-  private void doManagementTask(Map<String, FederationComponent> replicaMap) {
+  private void doManagementTask(Map<String, FederationComponent> namedFederationComponents) {
     if (logger.isTraceEnabled()) {
       logger.trace("Federation started at managed node : ");
     }
 
     try {
       synchronized (lock) {
-        replicaMap.clear();
-        Set<ObjectName> keySet = federatedComponentMap.keySet();
-        if (keySet.isEmpty()) {
+        namedFederationComponents.clear();
+
+        if (federatedComponents.isEmpty()) {
           return;
         }
 
-        for (ObjectName objectName : keySet) {
-          FederationComponent fedCompInstance = federatedComponentMap.get(objectName);
+        for (Entry<ObjectName, FederationComponent> entry : federatedComponents.entrySet()) {
+          FederationComponent federationComponent = entry.getValue();
 
           if (Thread.interrupted()) {
-            replicaMap.clear();
+            namedFederationComponents.clear();
             return;
           }
 
-          if (fedCompInstance != null) {
-            boolean stateChanged = fedCompInstance.refreshObjectState(service.isManager());
-            if (!stopCacheOps) {
-              String key = objectName.toString();
-              if (stateChanged || !repo.keyExistsInLocalMonitoringRegion(key)) {
-                replicaMap.put(key, fedCompInstance);
-              }
+          if (federationComponent != null) {
+            boolean stateChanged = federationComponent.refreshObjectState(service.isManager());
+            String key = entry.getKey().toString();
+            if (stateChanged || !repo.keyExistsInLocalMonitoringRegion(key)) {
+              namedFederationComponents.put(key, federationComponent);
             }
           }
         }
 
-        if (stopCacheOps) {
-          return;
-        }
         if (Thread.interrupted()) {
-          replicaMap.clear();
+          namedFederationComponents.clear();
           return;
         }
-        repo.putAllInLocalMonitoringRegion(replicaMap);
+        repo.putAllInLocalMonitoringRegion(namedFederationComponents);
       }
     } catch (CancelException ex) {
       if (logger.isDebugEnabled()) {
@@ -350,10 +334,31 @@ public class LocalManager extends Manager {
   }
 
   /**
+   * For testing only.
+   */
+  @VisibleForTesting
+  public ScheduledExecutorService getFederationScheduler() {
+    return federationScheduler.get();
+  }
+
+  /**
+   * For testing only.
+   *
+   * <p>
+   * Not to be used from any where else. As soon as a mbean is created we can
+   * push the data into local region which will make the data available at managing node site.
+   */
+  @VisibleForTesting
+  public void runManagementTaskAdhoc() {
+    managementTask.get().run();
+  }
+
+  /**
    * This task is responsible for pushing data to the hidden region. It is executed in a single
    * thread from newSingleThreadScheduledExecutor; Only one thread will be responsible
    * for pushing the data to the hidden region.
    *
+   * <p>
    * (Note however that if this single thread terminates due to a failure during execution prior to
    * shutdown, a new one will take its place if needed to execute subsequent tasks.) Tasks are
    * guaranteed to execute sequentially, and no more than one task will be active at any given time.

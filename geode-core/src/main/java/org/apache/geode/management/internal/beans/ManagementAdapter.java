@@ -238,7 +238,7 @@ public class ManagementAdapter {
         InternalDistributedSystem.getConnectedInstance().getDistributedMember());
 
     FederationComponent memberFederation =
-        service.getLocalManager().getFedComponents().get(memberObjectName);
+        service.getLocalManager().getFederatedComponents().get(memberObjectName);
 
     service.afterCreateProxy(memberObjectName, MemberMXBean.class, localMemberMXBean,
         memberFederation);
@@ -258,7 +258,7 @@ public class ManagementAdapter {
         Type[] interfaceTypes = clazz.getGenericInterfaces();
 
         FederationComponent federation =
-            service.getLocalManager().getFedComponents().get(objectName);
+            service.getLocalManager().getFederatedComponents().get(objectName);
 
         for (Type interfaceType : interfaceTypes) {
           Class interfaceTypeAsClass = (Class) interfaceType;
@@ -294,7 +294,7 @@ public class ManagementAdapter {
         InternalDistributedSystem.getConnectedInstance().getDistributedMember());
 
     FederationComponent memberFederation =
-        service.getLocalManager().getFedComponents().get(memberObjectName);
+        service.getLocalManager().getFederatedComponents().get(memberObjectName);
 
     service.afterRemoveProxy(memberObjectName, MemberMXBean.class, localMemberMXBean,
         memberFederation);
@@ -317,7 +317,7 @@ public class ManagementAdapter {
         Type[] interfaceTypes = clazz.getGenericInterfaces();
 
         FederationComponent federation =
-            service.getLocalManager().getFedComponents().get(objectName);
+            service.getLocalManager().getFederatedComponents().get(objectName);
 
         for (Type interfaceType : interfaceTypes) {
           Class interfaceTypeClass = (Class) interfaceType;

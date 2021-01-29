@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal;
 
+import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_JMX_MANAGER_UPDATE_RATE;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
@@ -42,52 +44,58 @@ import org.apache.geode.management.DistributedSystemMXBean;
 
 public class LocalManagerTest {
 
-  private ManagementResourceRepo repo;
+  private ArgumentCaptor<HasCachePerfStats> managementRegionStatsCaptor;
+
   private InternalDistributedSystem system;
-  private SystemManagementService service;
-  private InternalCache cache;
   private InternalRegionFactory regionFactory1;
   private InternalRegionFactory regionFactory2;
-  private StatisticsFactory statisticsFactory;
-  private StatisticsClock statisticsClock;
-  private InternalCacheForClientAccess cacheForClientAccess;
+
+  private LocalManager localManager;
 
   @Before
-  public void setUp() throws Exception {
-    repo = mock(ManagementResourceRepo.class);
+  public void setUp() {
+    managementRegionStatsCaptor = ArgumentCaptor.forClass(HasCachePerfStats.class);
+
     system = mock(InternalDistributedSystem.class);
-    service = mock(SystemManagementService.class);
-    cache = mock(InternalCache.class);
     regionFactory1 = mock(InternalRegionFactory.class);
     regionFactory2 = mock(InternalRegionFactory.class);
-    statisticsFactory = mock(StatisticsFactory.class);
-    statisticsClock = mock(StatisticsClock.class);
-    cacheForClientAccess = mock(InternalCacheForClientAccess.class);
+
+    ManagementResourceRepo repo = mock(ManagementResourceRepo.class);
+    SystemManagementService service = mock(SystemManagementService.class);
+    InternalCache cache = mock(InternalCache.class);
+    StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
+    StatisticsClock statisticsClock = mock(StatisticsClock.class);
+    InternalCacheForClientAccess cacheForClientAccess = mock(InternalCacheForClientAccess.class);
     DistributedSystemMXBean distributedSystemMXBean = mock(DistributedSystemMXBean.class);
     DistributionConfig config = mock(DistributionConfig.class);
 
     when(cache.getCacheForProcessingClientRequests())
         .thenReturn(cacheForClientAccess);
     when(cacheForClientAccess.createInternalRegionFactory())
-        .thenReturn(regionFactory1).thenReturn(regionFactory2);
-    when(regionFactory1.create(any())).thenReturn(mock(Region.class));
-    when(regionFactory2.create(any())).thenReturn(mock(Region.class));
+        .thenReturn(uncheckedCast(regionFactory1))
+        .thenReturn(uncheckedCast(regionFactory2));
     when(config.getJmxManagerUpdateRate())
         .thenReturn(Integer.MAX_VALUE);
     when(distributedSystemMXBean.getAlertLevel())
         .thenReturn(AlertLevel.WARNING.name());
+    when(regionFactory1.create(any()))
+        .thenReturn(mock(Region.class));
+    when(regionFactory2.create(any()))
+        .thenReturn(mock(Region.class));
     when(system.getConfig())
         .thenReturn(config);
     when(system.getDistributionManager())
         .thenReturn(mock(DistributionManager.class));
+
+    localManager = new LocalManager(repo, system, cache, service, DEFAULT_JMX_MANAGER_UPDATE_RATE,
+        statisticsFactory, statisticsClock);
   }
 
   @Test
-  public void startLocalManagementCreatesMonitoringRegion() throws Exception {
+  public void startLocalManagementCreatesMonitoringRegion() {
     InternalDistributedMember member = member(1, 20);
-    when(system.getDistributedMember()).thenReturn(member);
-    LocalManager localManager =
-        new LocalManager(repo, system, service, cache, statisticsFactory, statisticsClock);
+    when(system.getDistributedMember())
+        .thenReturn(member);
 
     localManager.startManager();
 
@@ -95,26 +103,22 @@ public class LocalManagerTest {
   }
 
   @Test
-  public void addMemberArtifactsCreatesMonitoringRegionWithHasOwnStats() throws Exception {
+  public void addMemberArtifactsCreatesMonitoringRegionWithHasOwnStats() {
     InternalDistributedMember member = member(2, 40);
-    when(system.getDistributedMember()).thenReturn(member);
-    LocalManager localManager =
-        new LocalManager(repo, system, service, cache, statisticsFactory, statisticsClock);
+    when(system.getDistributedMember())
+        .thenReturn(member);
 
     localManager.startManager();
 
-    ArgumentCaptor<HasCachePerfStats> captor =
-        ArgumentCaptor.forClass(HasCachePerfStats.class);
-    verify(regionFactory1).setCachePerfStatsHolder(captor.capture());
-    assertThat(captor.getValue().hasOwnStats()).isTrue();
+    verify(regionFactory1).setCachePerfStatsHolder(managementRegionStatsCaptor.capture());
+    assertThat(managementRegionStatsCaptor.getValue().hasOwnStats()).isTrue();
   }
 
   @Test
-  public void addMemberArtifactsCreatesNotificationRegion() throws Exception {
+  public void addMemberArtifactsCreatesNotificationRegion() {
     InternalDistributedMember member = member(3, 60);
-    when(system.getDistributedMember()).thenReturn(member);
-    LocalManager localManager =
-        new LocalManager(repo, system, service, cache, statisticsFactory, statisticsClock);
+    when(system.getDistributedMember())
+        .thenReturn(member);
 
     localManager.startManager();
 
@@ -122,18 +126,15 @@ public class LocalManagerTest {
   }
 
   @Test
-  public void addMemberArtifactsCreatesNotificationRegionWithHasOwnStats() throws Exception {
+  public void addMemberArtifactsCreatesNotificationRegionWithHasOwnStats() {
     InternalDistributedMember member = member(4, 80);
-    when(system.getDistributedMember()).thenReturn(member);
-    LocalManager localManager =
-        new LocalManager(repo, system, service, cache, statisticsFactory, statisticsClock);
+    when(system.getDistributedMember())
+        .thenReturn(member);
 
     localManager.startManager();
 
-    ArgumentCaptor<HasCachePerfStats> captor =
-        ArgumentCaptor.forClass(HasCachePerfStats.class);
-    verify(regionFactory2).setCachePerfStatsHolder(captor.capture());
-    assertThat(captor.getValue().hasOwnStats()).isTrue();
+    verify(regionFactory2).setCachePerfStatsHolder(managementRegionStatsCaptor.capture());
+    assertThat(managementRegionStatsCaptor.getValue().hasOwnStats()).isTrue();
   }
 
   private InternalDistributedMember member(int viewId, int port) {

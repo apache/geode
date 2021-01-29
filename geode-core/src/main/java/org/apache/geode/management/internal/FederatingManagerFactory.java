@@ -28,7 +28,7 @@ import org.apache.geode.internal.statistics.StatisticsClock;
 interface FederatingManagerFactory {
 
   FederatingManager create(ManagementResourceRepo repo, InternalDistributedSystem system,
-      SystemManagementService service, InternalCache cache, StatisticsFactory statisticsFactory,
-      StatisticsClock statisticsClock, MBeanProxyFactory proxyFactory, MemberMessenger messenger,
-      Supplier<ExecutorService> executorServiceSupplier);
+      SystemManagementService service, InternalCache cache, MBeanProxyFactory proxyFactory,
+      MemberMessenger messenger, StatisticsFactory statisticsFactory,
+      StatisticsClock statisticsClock, Supplier<ExecutorService> executorServiceSupplier);
 }

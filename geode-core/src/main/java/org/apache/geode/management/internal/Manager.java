@@ -14,9 +14,13 @@
  */
 package org.apache.geode.management.internal;
 
+import java.util.function.Supplier;
+
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.cache.CachePerfStats;
+import org.apache.geode.internal.cache.HasCachePerfStats;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.statistics.StatisticsClock;
@@ -42,28 +46,36 @@ public abstract class Manager implements ManagerLifecycle {
    */
   protected final InternalDistributedSystem system;
 
-  protected final StatisticsFactory statisticsFactory;
-
-  protected final StatisticsClock statisticsClock;
-
   /**
    * True if this node is a Geode JMX manager.
    */
   protected volatile boolean running;
 
-  protected volatile boolean stopCacheOps;
-
-  Manager(ManagementResourceRepo repo, InternalDistributedSystem system, InternalCache cache,
-      StatisticsFactory statisticsFactory, StatisticsClock statisticsClock) {
+  Manager(ManagementResourceRepo repo, InternalDistributedSystem system, InternalCache cache) {
     this.repo = repo;
     this.cache = cache.getCacheForProcessingClientRequests();
     this.system = system;
-    this.statisticsFactory = statisticsFactory;
-    this.statisticsClock = statisticsClock;
   }
 
   @VisibleForTesting
   public ManagementResourceRepo getManagementResourceRepo() {
     return repo;
+  }
+
+  protected static Supplier<HasCachePerfStats> defaultManagementRegionStatsFactory(
+      StatisticsFactory statisticsFactory, StatisticsClock statisticsClock) {
+    return () -> new HasCachePerfStats() {
+
+      @Override
+      public CachePerfStats getCachePerfStats() {
+        return new CachePerfStats(
+            statisticsFactory, "RegionStats-managementRegionStats", statisticsClock);
+      }
+
+      @Override
+      public boolean hasOwnStats() {
+        return true;
+      }
+    };
   }
 }

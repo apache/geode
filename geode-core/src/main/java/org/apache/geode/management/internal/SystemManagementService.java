@@ -331,7 +331,7 @@ public class SystemManagementService extends BaseManagementService {
     verifyManagementService();
 
     if (isManager()) {
-      FederationComponent removed = localManager.getFedComponents().get(objectName);
+      FederationComponent removed = localManager.getFederatedComponents().get(objectName);
       if (removed != null) {
         // only for MBeans local to Manager, not proxies
         afterRemoveProxy(objectName, removed.getInterfaceClass(), removed.getMBeanObject(),
@@ -585,8 +585,8 @@ public class SystemManagementService extends BaseManagementService {
       system.handleResourceEvent(ResourceEvent.MANAGER_CREATE, null);
       // An initialised copy of federating manager
       federatingManager = federatingManagerFactory.create(repo, system, this, cache,
-          statisticsFactory, statisticsClock, new MBeanProxyFactory(jmxAdapter, this),
-          new MemberMessenger(jmxAdapter, system),
+          new MBeanProxyFactory(jmxAdapter, this), new MemberMessenger(jmxAdapter, system),
+          statisticsFactory, statisticsClock,
           () -> LoggingExecutors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(),
               "FederatingManager", true));
       cache.getJmxManagerAdvisor().broadcastChange();
@@ -710,7 +710,8 @@ public class SystemManagementService extends BaseManagementService {
   }
 
   private LocalManager newLocalManager() {
-    return new LocalManager(repo, system, this, cache, statisticsFactory, statisticsClock);
+    return new LocalManager(repo, system, cache, this, system.getConfig().getJmxManagerUpdateRate(),
+        statisticsFactory, statisticsClock);
   }
 
   private static FederatingManagerFactory createFederatingManagerFactory() {
@@ -743,11 +744,11 @@ public class SystemManagementService extends BaseManagementService {
 
     @Override
     public FederatingManager create(ManagementResourceRepo repo, InternalDistributedSystem system,
-        SystemManagementService service, InternalCache cache, StatisticsFactory statisticsFactory,
-        StatisticsClock statisticsClock, MBeanProxyFactory proxyFactory, MemberMessenger messenger,
-        Supplier<ExecutorService> executorServiceSupplier) {
-      return new FederatingManager(repo, system, service, cache, statisticsFactory,
-          statisticsClock, proxyFactory, messenger, executorServiceSupplier);
+        SystemManagementService service, InternalCache cache, MBeanProxyFactory proxyFactory,
+        MemberMessenger messenger, StatisticsFactory statisticsFactory,
+        StatisticsClock statisticsClock, Supplier<ExecutorService> executorServiceSupplier) {
+      return new FederatingManager(repo, system, service, cache, proxyFactory, messenger,
+          statisticsFactory, statisticsClock, executorServiceSupplier);
     }
   }
 

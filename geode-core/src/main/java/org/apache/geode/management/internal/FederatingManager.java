@@ -48,7 +48,6 @@ import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.HasCachePerfStats;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionFactory;
@@ -79,32 +78,70 @@ public class FederatingManager extends Manager implements ManagerMembership {
   private final List<Runnable> pendingTasks = new CopyOnWriteArrayList<>();
 
   private final SystemManagementService service;
-  private final Supplier<ExecutorService> executorServiceSupplier;
   private final MBeanProxyFactory proxyFactory;
   private final MemberMessenger messenger;
   private final ReentrantLock lifecycleLock;
 
+  private final Supplier<ExecutorService> executorServiceSupplier;
+  private final Supplier<HasCachePerfStats> managementRegionStatsSupplier;
+
   private volatile boolean starting;
 
   @VisibleForTesting
-  FederatingManager(ManagementResourceRepo repo, InternalDistributedSystem system,
-      SystemManagementService service, InternalCache cache, StatisticsFactory statisticsFactory,
-      StatisticsClock statisticsClock, MBeanProxyFactory proxyFactory, MemberMessenger messenger,
+  FederatingManager(ManagementResourceRepo repo,
+      InternalDistributedSystem system,
+      SystemManagementService service,
+      InternalCache cache,
+      MBeanProxyFactory proxyFactory,
+      MemberMessenger messenger,
+      HasCachePerfStats managementRegionStats,
       ExecutorService executorService) {
-    this(repo, system, service, cache, statisticsFactory, statisticsClock, proxyFactory, messenger,
+    this(repo, system, service, cache, proxyFactory, messenger, () -> managementRegionStats,
         () -> executorService);
   }
 
-  FederatingManager(ManagementResourceRepo repo, InternalDistributedSystem system,
-      SystemManagementService service, InternalCache cache, StatisticsFactory statisticsFactory,
-      StatisticsClock statisticsClock, MBeanProxyFactory proxyFactory, MemberMessenger messenger,
+  FederatingManager(ManagementResourceRepo repo,
+      InternalDistributedSystem system,
+      SystemManagementService service,
+      InternalCache cache,
+      MBeanProxyFactory proxyFactory,
+      MemberMessenger messenger,
+      StatisticsFactory statisticsFactory,
+      StatisticsClock statisticsClock,
       Supplier<ExecutorService> executorServiceSupplier) {
-    super(repo, system, cache, statisticsFactory, statisticsClock);
+    this(repo, system, service, cache, proxyFactory, messenger,
+        defaultManagementRegionStatsFactory(statisticsFactory, statisticsClock),
+        executorServiceSupplier, new ReentrantLock());
+  }
+
+  private FederatingManager(ManagementResourceRepo repo,
+      InternalDistributedSystem system,
+      SystemManagementService service,
+      InternalCache cache,
+      MBeanProxyFactory proxyFactory,
+      MemberMessenger messenger,
+      Supplier<HasCachePerfStats> managementRegionStatsSupplier,
+      Supplier<ExecutorService> executorServiceSupplier) {
+    this(repo, system, service, cache, proxyFactory, messenger, managementRegionStatsSupplier,
+        executorServiceSupplier, new ReentrantLock());
+  }
+
+  private FederatingManager(ManagementResourceRepo repo,
+      InternalDistributedSystem system,
+      SystemManagementService service,
+      InternalCache cache,
+      MBeanProxyFactory proxyFactory,
+      MemberMessenger messenger,
+      Supplier<HasCachePerfStats> managementRegionStatsSupplier,
+      Supplier<ExecutorService> executorServiceSupplier,
+      ReentrantLock lifecycleLock) {
+    super(repo, system, cache);
     this.service = service;
     this.proxyFactory = proxyFactory;
     this.messenger = messenger;
     this.executorServiceSupplier = executorServiceSupplier;
-    lifecycleLock = new ReentrantLock();
+    this.managementRegionStatsSupplier = managementRegionStatsSupplier;
+    this.lifecycleLock = lifecycleLock;
   }
 
   /**
@@ -378,19 +415,7 @@ public class FederatingManager extends Manager implements ManagerMembership {
         if (!Thread.currentThread().isInterrupted()) {
 
           // Create anonymous stats holder for Management Regions
-          HasCachePerfStats monitoringRegionStats = new HasCachePerfStats() {
-
-            @Override
-            public CachePerfStats getCachePerfStats() {
-              return new CachePerfStats(cache.getDistributedSystem(),
-                  "RegionStats-managementRegionStats", statisticsClock);
-            }
-
-            @Override
-            public boolean hasOwnStats() {
-              return true;
-            }
-          };
+          HasCachePerfStats monitoringRegionStats = managementRegionStatsSupplier.get();
 
           // Monitoring region for member is created
           InternalRegionFactory<String, Object> monitorFactory =

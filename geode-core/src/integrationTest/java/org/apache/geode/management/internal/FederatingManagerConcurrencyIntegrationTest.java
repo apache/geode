@@ -100,12 +100,17 @@ public class FederatingManagerConcurrencyIntegrationTest {
     }
 
     @Override
-    public FederatingManager create(ManagementResourceRepo repo, InternalDistributedSystem system,
-        SystemManagementService service, InternalCache cache, StatisticsFactory statisticsFactory,
-        StatisticsClock statisticsClock, MBeanProxyFactory proxyFactory, MemberMessenger messenger,
+    public FederatingManager create(ManagementResourceRepo repo,
+        InternalDistributedSystem system,
+        SystemManagementService service,
+        InternalCache cache,
+        MBeanProxyFactory proxyFactory,
+        MemberMessenger messenger,
+        StatisticsFactory statisticsFactory,
+        StatisticsClock statisticsClock,
         Supplier<ExecutorService> executorServiceSupplier) {
-      return new FederatingManager(repo, system, service, cache, statisticsFactory,
-          statisticsClock, proxyFactory, mock(MemberMessenger.class), executorServiceSupplier);
+      return new FederatingManager(repo, system, service, cache, proxyFactory,
+          mock(MemberMessenger.class), statisticsFactory, statisticsClock, executorServiceSupplier);
     }
   }
 }
