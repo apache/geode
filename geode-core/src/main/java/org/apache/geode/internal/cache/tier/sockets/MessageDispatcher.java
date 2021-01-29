@@ -14,9 +14,12 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -468,13 +471,13 @@ public class MessageDispatcher extends LoggingThread {
     }
 
     // Processing gets here if isStopped=true. What is this code below doing?
-    List list = null;
     if (!exceptionOccurred) {
+      List<ClientMessage> list = new ArrayList<>();
       try {
         // Clear the interrupt status if any,
         Thread.interrupted();
-        int size = this._messageQueue.size();
-        list = this._messageQueue.peek(size);
+        int size = _messageQueue.size();
+        list.addAll(uncheckedCast(_messageQueue.peek(size)));
         if (logger.isDebugEnabled()) {
           logger.debug(
               "{}: After flagging the dispatcher to stop , the residual List of messages to be dispatched={} size={}",
@@ -482,13 +485,11 @@ public class MessageDispatcher extends LoggingThread {
         }
         if (list.size() > 0) {
           long start = getStatistics().startTime();
-          Iterator itr = list.iterator();
+          Iterator<ClientMessage> itr = list.iterator();
           while (itr.hasNext()) {
-            dispatchMessage((ClientMessage) itr.next());
+            dispatchMessage(itr.next());
             getStatistics().endMessage(start);
-            // @todo asif: shouldn't we call itr.remove() since the current msg
-            // has been sent? That way list will be more accurate
-            // if we have an exception.
+            itr.remove();
           }
           this._messageQueue.remove();
         }
@@ -496,39 +497,27 @@ public class MessageDispatcher extends LoggingThread {
         if (logger.isDebugEnabled()) {
           logger.debug("CacheClientNotifier stopped due to cancellation");
         }
-      } catch (Exception ignore) {
-        // if (logger.isInfoEnabled()) {
+      } catch (Exception e) {
         String extraMsg = null;
 
-        if ("Broken pipe".equals(ignore.getMessage())) {
+        if ("Broken pipe".equals(e.getMessage())) {
           extraMsg = "Problem caused by broken pipe on socket.";
-        } else if (ignore instanceof RegionDestroyedException) {
+        } else if (e instanceof RegionDestroyedException) {
           extraMsg =
               "Problem caused by message queue being closed.";
         }
-        final Object[] msgArgs = new Object[] {((!isStopped()) ? this.toString() + ": " : ""),
-            ((list == null) ? 0 : list.size())};
-        if (extraMsg != null) {
-          // Dont print exception details, but add on extraMsg
-          logger.info(
-              String.format(
-                  "%s Possibility of not being able to send some or all of the messages to clients. Total messages currently present in the list %s.",
-                  msgArgs));
-          logger.info(extraMsg);
-        } else {
-          // Print full stacktrace
-          logger.info(String.format(
-              "%s Possibility of not being able to send some or all of the messages to clients. Total messages currently present in the list %s.",
-              msgArgs),
-              ignore);
+        if (extraMsg == null) {
+          extraMsg = "Problem caused by: " + e.getMessage();
         }
+        logger.info(String.format(
+            "%s Possibility of not being able to send some or all of the messages to clients. Total messages currently present in the list %s.",
+            (!isStopped()) ? toString() + ": " : "", list.size()));
+        logger.info(extraMsg);
       }
 
-      if (list != null && logger.isTraceEnabled()) {
+      if (!list.isEmpty() && logger.isTraceEnabled()) {
         logger.trace("Messages remaining in the list are: {}", list);
       }
-
-      // }
     }
     if (logger.isTraceEnabled()) {
       logger.trace("{}: Dispatcher thread is ending", this);
