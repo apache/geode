@@ -18,7 +18,7 @@ import java.util.function.Supplier;
 
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.HasCachePerfStats;
 import org.apache.geode.internal.cache.InternalCache;
@@ -42,19 +42,20 @@ public abstract class Manager implements ManagerLifecycle {
   protected final ManagementResourceRepo repo;
 
   /**
-   * The concrete implementation of DistributedSystem that provides internal-only functionality.
+   * The local member hosting this Manager instance.
    */
-  protected final InternalDistributedSystem system;
+  protected final InternalDistributedMember distributedMember;
 
   /**
    * True if this node is a Geode JMX manager.
    */
   protected volatile boolean running;
 
-  Manager(ManagementResourceRepo repo, InternalDistributedSystem system, InternalCache cache) {
+  Manager(ManagementResourceRepo repo, InternalCache cache,
+      InternalDistributedMember distributedMember) {
     this.repo = repo;
     this.cache = cache.getCacheForProcessingClientRequests();
-    this.system = system;
+    this.distributedMember = distributedMember;
   }
 
   @VisibleForTesting

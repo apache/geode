@@ -84,7 +84,7 @@ public class SystemManagementServiceTest {
     when(cache.getJmxManagerAdvisor()).thenReturn(jmxManagerAdvisor);
 
     when(federatingManagerFactory
-        .create(any(), any(), any(), any(), any(), any(), any(), any(), any()))
+        .create(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
             .thenReturn(federatingManager);
 
     when(managementAgentFactory.apply(any(), any())).thenReturn(managementAgent);
@@ -163,7 +163,7 @@ public class SystemManagementServiceTest {
     service.startManager();
 
     verify(federatingManagerFactory)
-        .create(any(), any(), any(), any(), any(), any(), any(), any(), any());
+        .create(any(), any(), any(), any(), any(), any(), any(), any(), any(), any());
     verify(federatingManager).startManager();
   }
 

@@ -20,15 +20,22 @@ import java.util.concurrent.ExecutorService;
 import java.util.function.Supplier;
 
 import org.apache.geode.StatisticsFactory;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.statistics.StatisticsClock;
 
 @FunctionalInterface
 interface FederatingManagerFactory {
 
-  FederatingManager create(ManagementResourceRepo repo, InternalDistributedSystem system,
-      SystemManagementService service, InternalCache cache, MBeanProxyFactory proxyFactory,
-      MemberMessenger messenger, StatisticsFactory statisticsFactory,
-      StatisticsClock statisticsClock, Supplier<ExecutorService> executorServiceSupplier);
+  FederatingManager create(ManagementResourceRepo repo,
+      InternalDistributedMember distributedMember,
+      DistributionManager distributionManager,
+      SystemManagementService service,
+      InternalCache cache,
+      MBeanProxyFactory proxyFactory,
+      MemberMessenger messenger,
+      StatisticsFactory statisticsFactory,
+      StatisticsClock statisticsClock,
+      Supplier<ExecutorService> executorServiceSupplier);
 }

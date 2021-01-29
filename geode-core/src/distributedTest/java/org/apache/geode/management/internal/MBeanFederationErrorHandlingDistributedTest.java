@@ -49,25 +49,24 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.ServerLauncher;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedErrorCollector;
+import org.apache.geode.test.dunit.rules.DistributedReference;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.JMXTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 @Category(JMXTest.class)
+@SuppressWarnings("serial")
 public class MBeanFederationErrorHandlingDistributedTest implements Serializable {
 
   private static final String REGION_NAME = "test-region-1";
-
-  private static LocatorLauncher locatorLauncher;
-  private static ServerLauncher serverLauncher;
-  private static MBeanProxyFactory proxyFactory;
 
   private ObjectName regionMXBeanName;
   private String locatorName;
@@ -78,16 +77,19 @@ public class MBeanFederationErrorHandlingDistributedTest implements Serializable
 
   @Rule
   public DistributedRule distributedRule = new DistributedRule();
-
   @Rule
   public DistributedErrorCollector errorCollector = new DistributedErrorCollector();
-
   @Rule
-  public DistributedRestoreSystemProperties restoreSystemProperties =
-      new DistributedRestoreSystemProperties();
-
+  public DistributedRestoreSystemProperties restoreProps = new DistributedRestoreSystemProperties();
   @Rule
   public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
+
+  @Rule
+  public DistributedReference<LocatorLauncher> locatorLauncher = new DistributedReference<>();
+  @Rule
+  public DistributedReference<ServerLauncher> serverLauncher = new DistributedReference<>();
+  @Rule
+  public DistributedReference<MBeanProxyFactory> proxyFactory = new DistributedReference<>();
 
   @Before
   public void setUp() throws Exception {
@@ -108,18 +110,7 @@ public class MBeanFederationErrorHandlingDistributedTest implements Serializable
   @After
   public void tearDown() {
     locatorVM.invoke(() -> {
-      if (locatorLauncher != null) {
-        locatorLauncher.stop();
-        locatorLauncher = null;
-        proxyFactory = null;
-      }
-    });
-
-    serverVM.invoke(() -> {
-      if (serverLauncher != null) {
-        serverLauncher.stop();
-        serverLauncher = null;
-      }
+      proxyFactory = null;
     });
   }
 
@@ -127,7 +118,7 @@ public class MBeanFederationErrorHandlingDistributedTest implements Serializable
   public void destroyMBeanBeforeFederationCompletes() {
     locatorVM.invoke(() -> doAnswer((Answer<Void>) invocation -> {
       serverVM.invoke(() -> {
-        Region region = serverLauncher.getCache().getRegion(REGION_NAME);
+        Region region = serverLauncher.get().getCache().getRegion(REGION_NAME);
         region.destroyRegion();
       });
 
@@ -139,22 +130,22 @@ public class MBeanFederationErrorHandlingDistributedTest implements Serializable
       try {
         invocation.callRealMethod();
       } catch (Exception e) {
-        if (!locatorLauncher.getCache().isClosed()) {
+        if (!locatorLauncher.get().getCache().isClosed()) {
           errorCollector.addError(e);
         }
       }
 
       return null;
     })
-        .when(proxyFactory).createProxy(any(), eq(regionMXBeanName), any(), any()));
+        .when(proxyFactory.get()).createProxy(any(), eq(regionMXBeanName), any(), any()));
 
     serverVM.invoke(() -> {
-      serverLauncher.getCache().createRegionFactory(REPLICATE).create(REGION_NAME);
+      serverLauncher.get().getCache().createRegionFactory(REPLICATE).create(REGION_NAME);
     });
 
     locatorVM.invoke(() -> {
       await().untilAsserted(
-          () -> verify(proxyFactory).createProxy(any(), eq(regionMXBeanName), any(), any()));
+          () -> verify(proxyFactory.get()).createProxy(any(), eq(regionMXBeanName), any(), any()));
     });
   }
 
@@ -162,37 +153,37 @@ public class MBeanFederationErrorHandlingDistributedTest implements Serializable
     System.setProperty(FEDERATING_MANAGER_FACTORY_PROPERTY,
         FederatingManagerFactoryWithSpy.class.getName());
 
-    locatorLauncher = new LocatorLauncher.Builder()
+    locatorLauncher.set(new LocatorLauncher.Builder()
         .setMemberName(locatorName)
         .setPort(0)
         .setWorkingDirectory(temporaryFolder.newFolder(locatorName).getAbsolutePath())
         .set(HTTP_SERVICE_PORT, "0")
         .set(JMX_MANAGER_PORT, "0")
-        .build();
+        .build())
+        .get()
+        .start();
 
-    locatorLauncher.start();
-
-    Cache cache = locatorLauncher.getCache();
+    Cache cache = locatorLauncher.get().getCache();
 
     SystemManagementService service =
         (SystemManagementService) ManagementService.getManagementService(cache);
     service.startManager();
     FederatingManager federatingManager = service.getFederatingManager();
-    proxyFactory = federatingManager.proxyFactory();
+    proxyFactory.set(federatingManager.proxyFactory());
 
-    return locatorLauncher.getPort();
+    return locatorLauncher.get().getPort();
   }
 
   private void startServer() throws IOException {
-    serverLauncher = new ServerLauncher.Builder()
+    serverLauncher.set(new ServerLauncher.Builder()
         .setDisableDefaultServer(true)
         .setMemberName(serverName)
         .setWorkingDirectory(temporaryFolder.newFolder(serverName).getAbsolutePath())
         .set(HTTP_SERVICE_PORT, "0")
         .set(LOCATORS, "localHost[" + locatorPort + "]")
-        .build();
-
-    serverLauncher.start();
+        .build())
+        .get()
+        .start();
   }
 
   private static class FederatingManagerFactoryWithSpy implements FederatingManagerFactory {
@@ -202,12 +193,19 @@ public class MBeanFederationErrorHandlingDistributedTest implements Serializable
     }
 
     @Override
-    public FederatingManager create(ManagementResourceRepo repo, InternalDistributedSystem system,
-        SystemManagementService service, InternalCache cache, MBeanProxyFactory proxyFactory,
-        MemberMessenger messenger, StatisticsFactory statisticsFactory,
-        StatisticsClock statisticsClock, Supplier<ExecutorService> executorServiceSupplier) {
-      return new FederatingManager(repo, system, service, cache, spy(proxyFactory), messenger,
-          statisticsFactory, statisticsClock, executorServiceSupplier);
+    public FederatingManager create(ManagementResourceRepo repo,
+        InternalDistributedMember distributedMember,
+        DistributionManager distributionManager,
+        SystemManagementService service,
+        InternalCache cache,
+        MBeanProxyFactory proxyFactory,
+        MemberMessenger messenger,
+        StatisticsFactory statisticsFactory,
+        StatisticsClock statisticsClock,
+        Supplier<ExecutorService> executorServiceSupplier) {
+      return new FederatingManager(repo, distributedMember, distributionManager, service, cache,
+          spy(proxyFactory), messenger, statisticsFactory, statisticsClock,
+          executorServiceSupplier);
     }
   }
 }

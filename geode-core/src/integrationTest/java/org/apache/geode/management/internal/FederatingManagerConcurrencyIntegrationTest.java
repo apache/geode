@@ -35,7 +35,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.statistics.StatisticsClock;
@@ -101,7 +101,8 @@ public class FederatingManagerConcurrencyIntegrationTest {
 
     @Override
     public FederatingManager create(ManagementResourceRepo repo,
-        InternalDistributedSystem system,
+        InternalDistributedMember distributedMember,
+        DistributionManager distributionManager,
         SystemManagementService service,
         InternalCache cache,
         MBeanProxyFactory proxyFactory,
@@ -109,8 +110,9 @@ public class FederatingManagerConcurrencyIntegrationTest {
         StatisticsFactory statisticsFactory,
         StatisticsClock statisticsClock,
         Supplier<ExecutorService> executorServiceSupplier) {
-      return new FederatingManager(repo, system, service, cache, proxyFactory,
-          mock(MemberMessenger.class), statisticsFactory, statisticsClock, executorServiceSupplier);
+      return new FederatingManager(repo, distributedMember, distributionManager, service, cache,
+          proxyFactory, mock(MemberMessenger.class), statisticsFactory, statisticsClock,
+          executorServiceSupplier);
     }
   }
 }

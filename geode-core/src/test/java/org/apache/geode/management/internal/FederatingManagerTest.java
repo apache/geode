@@ -49,18 +49,19 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.ErrorCollector;
 import org.mockito.ArgumentCaptor;
 
+import org.apache.geode.StatisticsFactory;
 import org.apache.geode.alerting.internal.spi.AlertLevel;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.HasCachePerfStats;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.cache.InternalRegionFactory;
+import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementException;
 import org.apache.geode.test.junit.categories.JMXTest;
@@ -70,15 +71,18 @@ import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 public class FederatingManagerTest {
 
   private InternalCache cache;
+  private InternalDistributedMember member;
+  private DistributionManager distributionManager;
   private ExecutorService executorService;
   private MemberMessenger messenger;
   private MBeanProxyFactory proxyFactory;
   private HasCachePerfStats regionManagementStats;
   private ManagementResourceRepo repo;
   private SystemManagementService service;
-  private InternalDistributedSystem system;
   private InternalRegionFactory regionFactory1;
   private InternalRegionFactory regionFactory2;
+  private StatisticsFactory statisticsFactory;
+  private StatisticsClock statisticsClock;
 
   @Rule
   public ErrorCollector errorCollector = new ErrorCollector();
@@ -88,15 +92,18 @@ public class FederatingManagerTest {
   @Before
   public void setUp() {
     cache = mock(InternalCache.class);
+    distributionManager = mock(DistributionManager.class);
     executorService = mock(ExecutorService.class);
+    member = mock(InternalDistributedMember.class);
     messenger = mock(MemberMessenger.class);
     proxyFactory = mock(MBeanProxyFactory.class);
-    repo = mock(ManagementResourceRepo.class);
-    regionManagementStats = mock(HasCachePerfStats.class);
-    service = mock(SystemManagementService.class);
-    system = mock(InternalDistributedSystem.class);
     regionFactory1 = mock(InternalRegionFactory.class);
     regionFactory2 = mock(InternalRegionFactory.class);
+    regionManagementStats = mock(HasCachePerfStats.class);
+    repo = mock(ManagementResourceRepo.class);
+    service = mock(SystemManagementService.class);
+    statisticsFactory = mock(StatisticsFactory.class);
+    statisticsClock = mock(StatisticsClock.class);
 
     InternalCacheForClientAccess cacheForClientAccess = mock(InternalCacheForClientAccess.class);
     DistributedSystemMXBean distributedSystemMXBean = mock(DistributedSystemMXBean.class);
@@ -115,15 +122,12 @@ public class FederatingManagerTest {
         .thenReturn(AlertLevel.WARNING.name());
     when(jmxAdapter.getDistributedSystemMXBean())
         .thenReturn(distributedSystemMXBean);
-    when(system.getDistributionManager())
-        .thenReturn(mock(DistributionManager.class));
   }
 
   @Test
   public void addMemberArtifactsCreatesMonitoringRegion() {
-    FederatingManager federatingManager =
-        new FederatingManager(repo, system, service, cache, proxyFactory, messenger,
-            regionManagementStats, executorService);
+    FederatingManager federatingManager = new FederatingManager(repo, member, distributionManager,
+        service, cache, proxyFactory, messenger, regionManagementStats, executorService);
     federatingManager.startManager();
 
     federatingManager.addMemberArtifacts(member(1, 20));
@@ -133,9 +137,10 @@ public class FederatingManagerTest {
 
   @Test
   public void addMemberArtifactsCreatesMonitoringRegionWithHasOwnStats() {
-    FederatingManager federatingManager =
-        new FederatingManager(repo, system, service, cache, proxyFactory, messenger,
-            regionManagementStats, executorService);
+    when(regionManagementStats.hasOwnStats())
+        .thenReturn(true);
+    FederatingManager federatingManager = new FederatingManager(repo, member, distributionManager,
+        service, cache, proxyFactory, messenger, regionManagementStats, executorService);
     federatingManager.startManager();
 
     federatingManager.addMemberArtifacts(member(2, 40));
@@ -147,9 +152,8 @@ public class FederatingManagerTest {
 
   @Test
   public void addMemberArtifactsCreatesNotificationRegion() {
-    FederatingManager federatingManager =
-        new FederatingManager(repo, system, service, cache, proxyFactory, messenger,
-            regionManagementStats, executorService);
+    FederatingManager federatingManager = new FederatingManager(repo, member, distributionManager,
+        service, cache, proxyFactory, messenger, regionManagementStats, executorService);
     federatingManager.startManager();
 
     federatingManager.addMemberArtifacts(member(3, 60));
@@ -159,9 +163,10 @@ public class FederatingManagerTest {
 
   @Test
   public void addMemberArtifactsCreatesNotificationRegionWithHasOwnStats() {
-    FederatingManager federatingManager =
-        new FederatingManager(repo, system, service, cache, proxyFactory, messenger,
-            regionManagementStats, executorService);
+    when(regionManagementStats.hasOwnStats())
+        .thenReturn(true);
+    FederatingManager federatingManager = new FederatingManager(repo, member, distributionManager,
+        service, cache, proxyFactory, messenger, regionManagementStats, executorService);
     federatingManager.startManager();
 
     federatingManager.addMemberArtifacts(member(4, 80));
@@ -179,11 +184,8 @@ public class FederatingManagerTest {
         .thenReturn(monitoringRegion);
     when(repo.getEntryFromNotifRegionMap(eq(member)))
         .thenReturn(uncheckedCast(mock(Region.class)));
-    when(system.getDistributedMember())
-        .thenReturn(member);
-    FederatingManager federatingManager =
-        new FederatingManager(repo, system, service, cache, proxyFactory, messenger,
-            regionManagementStats, executorService);
+    FederatingManager federatingManager = new FederatingManager(repo, member, distributionManager,
+        service, cache, proxyFactory, messenger, regionManagementStats, executorService);
 
     federatingManager.removeMemberArtifacts(member, false);
 
@@ -198,11 +200,8 @@ public class FederatingManagerTest {
         .thenReturn(uncheckedCast(mock(Region.class)));
     when(repo.getEntryFromNotifRegionMap(eq(member)))
         .thenReturn(notificationRegion);
-    when(system.getDistributedMember())
-        .thenReturn(member);
-    FederatingManager federatingManager =
-        new FederatingManager(repo, system, service, cache, proxyFactory, messenger,
-            regionManagementStats, executorService);
+    FederatingManager federatingManager = new FederatingManager(repo, member, distributionManager,
+        service, cache, proxyFactory, messenger, regionManagementStats, executorService);
 
     federatingManager.removeMemberArtifacts(member, false);
 
@@ -219,11 +218,8 @@ public class FederatingManagerTest {
         .thenReturn(monitoringRegion);
     when(repo.getEntryFromNotifRegionMap(eq(member)))
         .thenReturn(uncheckedCast(mock(Region.class)));
-    when(system.getDistributedMember())
-        .thenReturn(member);
-    FederatingManager federatingManager =
-        new FederatingManager(repo, system, service, cache, proxyFactory, messenger,
-            regionManagementStats, executorService);
+    FederatingManager federatingManager = new FederatingManager(repo, member, distributionManager,
+        service, cache, proxyFactory, messenger, regionManagementStats, executorService);
 
     federatingManager.removeMemberArtifacts(member, false);
 
@@ -240,11 +236,8 @@ public class FederatingManagerTest {
         .thenReturn(uncheckedCast(mock(Region.class)));
     when(repo.getEntryFromNotifRegionMap(eq(member)))
         .thenReturn(notificationRegion);
-    when(system.getDistributedMember())
-        .thenReturn(member);
-    FederatingManager federatingManager =
-        new FederatingManager(repo, system, service, cache, proxyFactory, messenger,
-            regionManagementStats, executorService);
+    FederatingManager federatingManager = new FederatingManager(repo, member, distributionManager,
+        service, cache, proxyFactory, messenger, regionManagementStats, executorService);
 
     federatingManager.removeMemberArtifacts(member, false);
 
@@ -262,11 +255,8 @@ public class FederatingManagerTest {
         .thenReturn(monitoringRegion);
     when(repo.getEntryFromNotifRegionMap(eq(member)))
         .thenReturn(uncheckedCast(mock(Region.class)));
-    when(system.getDistributedMember())
-        .thenReturn(member);
-    FederatingManager federatingManager =
-        new FederatingManager(repo, system, service, cache, proxyFactory, messenger,
-            regionManagementStats, executorService);
+    FederatingManager federatingManager = new FederatingManager(repo, member, distributionManager,
+        service, cache, proxyFactory, messenger, regionManagementStats, executorService);
 
     federatingManager.removeMemberArtifacts(member, false);
 
@@ -284,11 +274,8 @@ public class FederatingManagerTest {
         .thenReturn(monitoringRegion);
     when(repo.getEntryFromNotifRegionMap(eq(member)))
         .thenReturn(uncheckedCast(mock(Region.class)));
-    when(system.getDistributedMember())
-        .thenReturn(member);
-    FederatingManager federatingManager =
-        new FederatingManager(repo, system, service, cache, proxyFactory, messenger,
-            regionManagementStats, executorService);
+    FederatingManager federatingManager = new FederatingManager(repo, member, distributionManager,
+        service, cache, proxyFactory, messenger, regionManagementStats, executorService);
 
     federatingManager.removeMemberArtifacts(member, false);
 
@@ -305,11 +292,8 @@ public class FederatingManagerTest {
         .thenReturn(uncheckedCast(mock(Region.class)));
     when(repo.getEntryFromNotifRegionMap(eq(member)))
         .thenReturn(notificationRegion);
-    when(system.getDistributedMember())
-        .thenReturn(member);
-    FederatingManager federatingManager =
-        new FederatingManager(repo, system, service, cache, proxyFactory, messenger,
-            regionManagementStats, executorService);
+    FederatingManager federatingManager = new FederatingManager(repo, member, distributionManager,
+        service, cache, proxyFactory, messenger, regionManagementStats, executorService);
 
     federatingManager.removeMemberArtifacts(member, false);
 
@@ -326,11 +310,8 @@ public class FederatingManagerTest {
         .thenReturn(monitoringRegion);
     when(repo.getEntryFromNotifRegionMap(eq(member)))
         .thenReturn(uncheckedCast(mock(Region.class)));
-    when(system.getDistributedMember())
-        .thenReturn(member);
-    FederatingManager federatingManager =
-        new FederatingManager(repo, system, service, cache, proxyFactory, messenger,
-            regionManagementStats, executorService);
+    FederatingManager federatingManager = new FederatingManager(repo, member, distributionManager,
+        service, cache, proxyFactory, messenger, regionManagementStats, executorService);
 
     federatingManager.removeMemberArtifacts(member, false);
 
@@ -348,11 +329,8 @@ public class FederatingManagerTest {
         .thenReturn(monitoringRegion);
     when(repo.getEntryFromNotifRegionMap(eq(member)))
         .thenReturn(uncheckedCast(mock(Region.class)));
-    when(system.getDistributedMember())
-        .thenReturn(member);
-    FederatingManager federatingManager =
-        new FederatingManager(repo, system, service, cache, proxyFactory, messenger,
-            regionManagementStats, executorService);
+    FederatingManager federatingManager = new FederatingManager(repo, member, distributionManager,
+        service, cache, proxyFactory, messenger, regionManagementStats, executorService);
 
     federatingManager.removeMemberArtifacts(member, false);
 
@@ -369,11 +347,8 @@ public class FederatingManagerTest {
         .thenReturn(uncheckedCast(mock(Region.class)));
     when(repo.getEntryFromNotifRegionMap(eq(member)))
         .thenReturn(notificationRegion);
-    when(system.getDistributedMember())
-        .thenReturn(member);
-    FederatingManager federatingManager =
-        new FederatingManager(repo, system, service, cache, proxyFactory, messenger,
-            regionManagementStats, executorService);
+    FederatingManager federatingManager = new FederatingManager(repo, member, distributionManager,
+        service, cache, proxyFactory, messenger, regionManagementStats, executorService);
 
     federatingManager.removeMemberArtifacts(member, false);
 
@@ -390,11 +365,8 @@ public class FederatingManagerTest {
         .thenReturn(monitoringRegion);
     when(repo.getEntryFromNotifRegionMap(eq(member)))
         .thenReturn(uncheckedCast(mock(Region.class)));
-    when(system.getDistributedMember())
-        .thenReturn(member);
-    FederatingManager federatingManager =
-        new FederatingManager(repo, system, service, cache, proxyFactory, messenger,
-            regionManagementStats, executorService);
+    FederatingManager federatingManager = new FederatingManager(repo, member, distributionManager,
+        service, cache, proxyFactory, messenger, regionManagementStats, executorService);
 
     federatingManager.removeMemberArtifacts(member, false);
 
@@ -408,11 +380,8 @@ public class FederatingManagerTest {
         .thenReturn(uncheckedCast(mock(Region.class)));
     when(repo.getEntryFromNotifRegionMap(eq(member)))
         .thenReturn(null);
-    when(system.getDistributedMember())
-        .thenReturn(member);
-    FederatingManager federatingManager =
-        new FederatingManager(repo, system, service, cache, proxyFactory, messenger,
-            regionManagementStats, executorService);
+    FederatingManager federatingManager = new FederatingManager(repo, member, distributionManager,
+        service, cache, proxyFactory, messenger, regionManagementStats, executorService);
 
     Throwable thrown = catchThrowable(() -> federatingManager.removeMemberArtifacts(member, false));
 
@@ -426,11 +395,8 @@ public class FederatingManagerTest {
         .thenReturn(null);
     when(repo.getEntryFromNotifRegionMap(eq(member)))
         .thenReturn(uncheckedCast(mock(Region.class)));
-    when(system.getDistributedMember())
-        .thenReturn(member);
-    FederatingManager federatingManager =
-        new FederatingManager(repo, system, service, cache, proxyFactory, messenger,
-            regionManagementStats, executorService);
+    FederatingManager federatingManager = new FederatingManager(repo, member, distributionManager,
+        service, cache, proxyFactory, messenger, regionManagementStats, executorService);
 
     Throwable thrown = catchThrowable(() -> federatingManager.removeMemberArtifacts(member, false));
 
@@ -443,8 +409,8 @@ public class FederatingManagerTest {
     when(executorServiceSupplier.get())
         .thenReturn(mock(ExecutorService.class));
     FederatingManager federatingManager =
-        new FederatingManager(repo, system, service, cache, proxyFactory, messenger,
-            regionManagementStats, executorService);
+        new FederatingManager(repo, member, distributionManager, service, cache, proxyFactory,
+            messenger, statisticsFactory, statisticsClock, executorServiceSupplier);
 
     federatingManager.startManager();
 
@@ -458,11 +424,8 @@ public class FederatingManagerTest {
         .thenReturn(null);
     when(repo.getEntryFromNotifRegionMap(eq(member)))
         .thenReturn(uncheckedCast(mock(Region.class)));
-    when(system.getDistributedMember())
-        .thenReturn(member);
-    FederatingManager federatingManager =
-        new FederatingManager(repo, system, service, cache, proxyFactory, messenger,
-            regionManagementStats, executorService);
+    FederatingManager federatingManager = new FederatingManager(repo, member, distributionManager,
+        service, cache, proxyFactory, messenger, regionManagementStats, executorService);
 
     federatingManager.removeMemberArtifacts(member, false);
 
@@ -482,9 +445,8 @@ public class FederatingManagerTest {
       return futureTaskList;
     });
 
-    FederatingManager federatingManager =
-        new FederatingManager(repo, system, service, cache, proxyFactory, messenger,
-            regionManagementStats, executorService);
+    FederatingManager federatingManager = new FederatingManager(repo, member, distributionManager,
+        service, cache, proxyFactory, messenger, regionManagementStats, executorService);
 
     executorServiceRule.submit(() -> {
       federatingManager.startManager();
@@ -508,9 +470,8 @@ public class FederatingManagerTest {
 
   @Test
   public void pendingTasksIsEmptyByDefault() {
-    FederatingManager federatingManager =
-        new FederatingManager(repo, system, service, cache, proxyFactory, messenger,
-            regionManagementStats, executorService);
+    FederatingManager federatingManager = new FederatingManager(repo, member, distributionManager,
+        service, cache, proxyFactory, messenger, regionManagementStats, executorService);
 
     assertThat(federatingManager.pendingTasks()).isEmpty();
   }
@@ -520,12 +481,8 @@ public class FederatingManagerTest {
     DistributionManager distributionManager = mock(DistributionManager.class);
     when(distributionManager.getOtherDistributionManagerIds())
         .thenReturn(singleton(mock(InternalDistributedMember.class)));
-    when(system.getDistributionManager())
-        .thenReturn(distributionManager);
-
-    FederatingManager federatingManager =
-        new FederatingManager(repo, system, service, cache, proxyFactory, messenger,
-            regionManagementStats, executorService);
+    FederatingManager federatingManager = new FederatingManager(repo, member, distributionManager,
+        service, cache, proxyFactory, messenger, regionManagementStats, executorService);
 
     federatingManager.startManager();
     federatingManager.stopManager();
@@ -536,12 +493,11 @@ public class FederatingManagerTest {
 
   @Test
   public void startManagerThrowsManagementExceptionWithNestedCauseOfFailure() {
-    FederatingManager federatingManager =
-        new FederatingManager(repo, system, service, cache, proxyFactory, messenger,
-            regionManagementStats, executorService);
     RuntimeException exception = new RuntimeException("startManager failed");
     doThrow(exception)
         .when(messenger).broadcastManagerInfo();
+    FederatingManager federatingManager = new FederatingManager(repo, member, distributionManager,
+        service, cache, proxyFactory, messenger, regionManagementStats, executorService);
 
     Throwable thrown = catchThrowable(() -> federatingManager.startManager());
 
@@ -552,12 +508,11 @@ public class FederatingManagerTest {
 
   @Test
   public void pendingTasksIsClearIfStartManagerFails() {
-    FederatingManager federatingManager =
-        new FederatingManager(repo, system, service, cache, proxyFactory, messenger,
-            regionManagementStats, executorService);
     RuntimeException exception = new RuntimeException("startManager failed");
     doThrow(exception)
         .when(messenger).broadcastManagerInfo();
+    FederatingManager federatingManager = new FederatingManager(repo, member, distributionManager,
+        service, cache, proxyFactory, messenger, regionManagementStats, executorService);
 
     Throwable thrown = catchThrowable(() -> federatingManager.startManager());
     assertThat(thrown).isNotNull();
@@ -567,12 +522,11 @@ public class FederatingManagerTest {
 
   @Test
   public void startingIsFalseIfStartManagerFails() {
-    FederatingManager federatingManager =
-        new FederatingManager(repo, system, service, cache, proxyFactory, messenger,
-            regionManagementStats, executorService);
     RuntimeException exception = new RuntimeException("startManager failed");
     doThrow(exception)
         .when(messenger).broadcastManagerInfo();
+    FederatingManager federatingManager = new FederatingManager(repo, member, distributionManager,
+        service, cache, proxyFactory, messenger, regionManagementStats, executorService);
 
     Throwable thrown = catchThrowable(() -> federatingManager.startManager());
     assertThat(thrown).isNotNull();
@@ -582,12 +536,11 @@ public class FederatingManagerTest {
 
   @Test
   public void runningIsFalseIfStartManagerFails() {
-    FederatingManager federatingManager =
-        new FederatingManager(repo, system, service, cache, proxyFactory, messenger,
-            regionManagementStats, executorService);
     RuntimeException exception = new RuntimeException("startManager failed");
     doThrow(exception)
         .when(messenger).broadcastManagerInfo();
+    FederatingManager federatingManager = new FederatingManager(repo, member, distributionManager,
+        service, cache, proxyFactory, messenger, regionManagementStats, executorService);
 
     Throwable thrown = catchThrowable(() -> federatingManager.startManager());
     assertThat(thrown).isNotNull();

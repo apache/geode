@@ -106,7 +106,7 @@ public class LocalManager extends Manager {
       Map<ObjectName, FederationComponent> federatedComponents,
       Supplier<HasCachePerfStats> managementRegionStatsFactory,
       Supplier<ScheduledExecutorService> federationSchedulerFactory) {
-    super(repo, system, cache);
+    super(repo, cache, system.getDistributedMember());
     this.service = service;
     this.lock = lock;
     this.updateRate = updateRate;
@@ -192,7 +192,7 @@ public class LocalManager extends Manager {
       notificationFactory.setIsUsedForMetaRegion(true);
       notificationFactory.setCachePerfStatsHolder(managementRegionStats);
 
-      String uniqueIdForMember = getUniqueIDForMember(system.getDistributedMember());
+      String uniqueIdForMember = getUniqueIDForMember(distributedMember);
 
       try {
         Region<String, Object> monitoringRegion =

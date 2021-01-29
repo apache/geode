@@ -42,6 +42,7 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -584,9 +585,9 @@ public class SystemManagementService extends BaseManagementService {
       }
       system.handleResourceEvent(ResourceEvent.MANAGER_CREATE, null);
       // An initialised copy of federating manager
-      federatingManager = federatingManagerFactory.create(repo, system, this, cache,
-          new MBeanProxyFactory(jmxAdapter, this), new MemberMessenger(jmxAdapter, system),
-          statisticsFactory, statisticsClock,
+      federatingManager = federatingManagerFactory.create(repo, system.getDistributedMember(),
+          system.getDistributionManager(), this, cache, new MBeanProxyFactory(jmxAdapter, this),
+          new MemberMessenger(jmxAdapter, system), statisticsFactory, statisticsClock,
           () -> LoggingExecutors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(),
               "FederatingManager", true));
       cache.getJmxManagerAdvisor().broadcastChange();
@@ -743,12 +744,18 @@ public class SystemManagementService extends BaseManagementService {
     }
 
     @Override
-    public FederatingManager create(ManagementResourceRepo repo, InternalDistributedSystem system,
-        SystemManagementService service, InternalCache cache, MBeanProxyFactory proxyFactory,
-        MemberMessenger messenger, StatisticsFactory statisticsFactory,
-        StatisticsClock statisticsClock, Supplier<ExecutorService> executorServiceSupplier) {
-      return new FederatingManager(repo, system, service, cache, proxyFactory, messenger,
-          statisticsFactory, statisticsClock, executorServiceSupplier);
+    public FederatingManager create(ManagementResourceRepo repo,
+        InternalDistributedMember distributedMember,
+        DistributionManager distributionManager,
+        SystemManagementService service,
+        InternalCache cache,
+        MBeanProxyFactory proxyFactory,
+        MemberMessenger messenger,
+        StatisticsFactory statisticsFactory,
+        StatisticsClock statisticsClock,
+        Supplier<ExecutorService> executorServiceSupplier) {
+      return new FederatingManager(repo, distributedMember, distributionManager, service, cache,
+          proxyFactory, messenger, statisticsFactory, statisticsClock, executorServiceSupplier);
     }
   }
 

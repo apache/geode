@@ -46,7 +46,7 @@ import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.HasCachePerfStats;
 import org.apache.geode.internal.cache.InternalCache;
@@ -77,6 +77,7 @@ public class FederatingManager extends Manager implements ManagerMembership {
   private final AtomicReference<Exception> latestException = new AtomicReference<>();
   private final List<Runnable> pendingTasks = new CopyOnWriteArrayList<>();
 
+  private final DistributionManager distributionManager;
   private final SystemManagementService service;
   private final MBeanProxyFactory proxyFactory;
   private final MemberMessenger messenger;
@@ -89,19 +90,23 @@ public class FederatingManager extends Manager implements ManagerMembership {
 
   @VisibleForTesting
   FederatingManager(ManagementResourceRepo repo,
-      InternalDistributedSystem system,
+      InternalDistributedMember distributedMember,
+      DistributionManager distributionManager,
       SystemManagementService service,
       InternalCache cache,
       MBeanProxyFactory proxyFactory,
       MemberMessenger messenger,
       HasCachePerfStats managementRegionStats,
       ExecutorService executorService) {
-    this(repo, system, service, cache, proxyFactory, messenger, () -> managementRegionStats,
-        () -> executorService);
+    this(repo, distributedMember, distributionManager, service, cache, proxyFactory, messenger,
+        () -> managementRegionStats,
+        () -> executorService,
+        new ReentrantLock());
   }
 
   FederatingManager(ManagementResourceRepo repo,
-      InternalDistributedSystem system,
+      InternalDistributedMember distributedMember,
+      DistributionManager distributionManager,
       SystemManagementService service,
       InternalCache cache,
       MBeanProxyFactory proxyFactory,
@@ -109,25 +114,15 @@ public class FederatingManager extends Manager implements ManagerMembership {
       StatisticsFactory statisticsFactory,
       StatisticsClock statisticsClock,
       Supplier<ExecutorService> executorServiceSupplier) {
-    this(repo, system, service, cache, proxyFactory, messenger,
+    this(repo, distributedMember, distributionManager, service, cache, proxyFactory, messenger,
         defaultManagementRegionStatsFactory(statisticsFactory, statisticsClock),
-        executorServiceSupplier, new ReentrantLock());
+        executorServiceSupplier,
+        new ReentrantLock());
   }
 
   private FederatingManager(ManagementResourceRepo repo,
-      InternalDistributedSystem system,
-      SystemManagementService service,
-      InternalCache cache,
-      MBeanProxyFactory proxyFactory,
-      MemberMessenger messenger,
-      Supplier<HasCachePerfStats> managementRegionStatsSupplier,
-      Supplier<ExecutorService> executorServiceSupplier) {
-    this(repo, system, service, cache, proxyFactory, messenger, managementRegionStatsSupplier,
-        executorServiceSupplier, new ReentrantLock());
-  }
-
-  private FederatingManager(ManagementResourceRepo repo,
-      InternalDistributedSystem system,
+      InternalDistributedMember distributedMember,
+      DistributionManager distributionManager,
       SystemManagementService service,
       InternalCache cache,
       MBeanProxyFactory proxyFactory,
@@ -135,7 +130,8 @@ public class FederatingManager extends Manager implements ManagerMembership {
       Supplier<HasCachePerfStats> managementRegionStatsSupplier,
       Supplier<ExecutorService> executorServiceSupplier,
       ReentrantLock lifecycleLock) {
-    super(repo, system, cache);
+    super(repo, cache, distributedMember);
+    this.distributionManager = distributionManager;
     this.service = service;
     this.proxyFactory = proxyFactory;
     this.messenger = messenger;
@@ -318,8 +314,7 @@ public class FederatingManager extends Manager implements ManagerMembership {
 
     Collection<Callable<InternalDistributedMember>> giiTaskList = new ArrayList<>();
 
-    for (InternalDistributedMember member : system.getDistributionManager()
-        .getOtherDistributionManagerIds()) {
+    for (InternalDistributedMember member : distributionManager.getOtherDistributionManagerIds()) {
       giiTaskList.add(new AddMemberTask(member));
     }
 
@@ -553,7 +548,7 @@ public class FederatingManager extends Manager implements ManagerMembership {
       }
     }
 
-    if (!system.getDistributedMember().equals(member)) {
+    if (!distributedMember.equals(member)) {
       try {
         service.memberDeparted((InternalDistributedMember) member, crashed);
       } catch (CancelException | RegionDestroyedException ignore) {
