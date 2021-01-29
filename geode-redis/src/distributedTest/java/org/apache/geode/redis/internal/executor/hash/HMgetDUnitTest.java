@@ -96,9 +96,12 @@ public class HMgetDUnitTest {
     jedis1.hset(key, testMap);
 
     new ConcurrentLoopingThreads(HASH_SIZE,
-        (i) -> jedis1.hset(key, "field-" + i, "value-" + i),
+        (i) -> jedis1.hset(key, "field-" + i, "changedValue-" + i),
         (i) -> assertThat(jedis2.hmget(key, "field-" + i)).isNotNull(),
-        (i) -> assertThat(jedis3.hmget(key, "field-" + i)).isNotNull());
+        (i) -> assertThat(jedis3.hmget(key, "field-" + i)).isNotNull()).run();
+
+    Map<String, String> expectedResult = makeHashMap(HASH_SIZE, "field-", "changedValue-");
+    assertThat(jedis1.hgetAll(key)).containsExactlyInAnyOrderEntriesOf(expectedResult);
   }
 
   private Map<String, String> makeHashMap(int hashSize, String baseFieldName,
