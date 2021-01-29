@@ -33,6 +33,7 @@ import static org.apache.geode.redis.internal.RedisCommandType.SETBIT;
 import static org.apache.geode.redis.internal.RedisCommandType.SETRANGE;
 import static org.apache.geode.redis.internal.RedisCommandType.STRLEN;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.apache.geode.cache.Region;
@@ -123,7 +124,7 @@ public class RedisStringCommandsFunctionInvoker extends RedisCommandsFunctionInv
   }
 
   @Override
-  public double incrbyfloat(ByteArrayWrapper key, double increment) {
+  public BigDecimal incrbyfloat(ByteArrayWrapper key, BigDecimal increment) {
     return invokeCommandFunction(key, INCRBYFLOAT, increment);
   }
 

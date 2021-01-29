@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
@@ -47,7 +48,7 @@ public interface RedisStringCommands {
 
   int setbit(ByteArrayWrapper key, long offset, int value);
 
-  double incrbyfloat(ByteArrayWrapper key, double increment);
+  BigDecimal incrbyfloat(ByteArrayWrapper key, BigDecimal increment);
 
   int bitop(String operation, ByteArrayWrapper destKey, List<ByteArrayWrapper> sources);
 

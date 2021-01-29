@@ -16,6 +16,7 @@
 
 package org.apache.geode.redis.internal.data;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -109,9 +110,9 @@ public class NullRedisString extends RedisString {
   }
 
   @Override
-  public double incrbyfloat(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
-      double increment) throws NumberFormatException, ArithmeticException {
-    byte[] newValue = Coder.doubleToBytes(increment);
+  public BigDecimal incrbyfloat(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
+      BigDecimal increment) throws NumberFormatException, ArithmeticException {
+    byte[] newValue = Coder.bigDecimalToBytes(increment);
     region.put(key, new RedisString(new ByteArrayWrapper(newValue)));
     return increment;
   }

@@ -15,6 +15,7 @@
  */
 package org.apache.geode.redis.internal.netty;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.DecimalFormat;
 import java.util.Collection;
@@ -312,9 +313,9 @@ public class Coder {
     return response;
   }
 
-  public static ByteBuf getDoubleResponse(ByteBufAllocator alloc, double d) {
+  public static ByteBuf getBigDecimalResponse(ByteBufAllocator alloc, BigDecimal b) {
     ByteBuf response = alloc.buffer();
-    writeStringResponse(response, doubleToBytes(d));
+    writeStringResponse(response, bigDecimalToBytes(b));
     return response;
   }
 
@@ -368,6 +369,14 @@ public class Coder {
 
   public static byte[] doubleToBytes(double d) {
     return stringToBytes(doubleToString(d));
+  }
+
+  public static byte[] bigDecimalToBytes(BigDecimal b) {
+    return stringToBytes(b.toPlainString());
+  }
+
+  public static BigDecimal bytesToBigDecimal(byte[] bytes) {
+    return new BigDecimal(bytesToString(bytes));
   }
 
   public static int bytesToInt(byte[] bytes) {

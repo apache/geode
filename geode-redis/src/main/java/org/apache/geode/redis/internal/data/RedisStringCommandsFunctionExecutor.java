@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal.data;
 
 import static org.apache.geode.redis.internal.data.RedisString.NULL_REDIS_STRING;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.apache.geode.redis.internal.executor.string.RedisStringCommands;
@@ -85,7 +86,7 @@ public class RedisStringCommandsFunctionExecutor extends RedisDataCommandsFuncti
   }
 
   @Override
-  public double incrbyfloat(ByteArrayWrapper key, double increment) {
+  public BigDecimal incrbyfloat(ByteArrayWrapper key, BigDecimal increment) {
     return stripedExecute(key,
         () -> getRedisString(key, false)
             .incrbyfloat(getRegion(), key, increment));

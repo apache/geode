@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -193,7 +194,7 @@ public class RedisStringTest {
     Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
     ByteArrayWrapper byteArrayWrapper = new ByteArrayWrapper(new byte[] {'1', '0', ' ', '1'});
     RedisString string = new RedisString(byteArrayWrapper);
-    assertThatThrownBy(() -> string.incrbyfloat(region, byteArrayWrapper, 1.1))
+    assertThatThrownBy(() -> string.incrbyfloat(region, byteArrayWrapper, new BigDecimal("1.1")))
         .isInstanceOf(NumberFormatException.class);
   }
 
@@ -204,8 +205,8 @@ public class RedisStringTest {
     Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
     ByteArrayWrapper byteArrayWrapper = new ByteArrayWrapper(new byte[] {'1', '0'});
     RedisString string = new RedisString(byteArrayWrapper);
-    string.incrbyfloat(region, byteArrayWrapper, 2.20);
-    assertThat(string.get().toString()).isEqualTo("12.2");
+    string.incrbyfloat(region, byteArrayWrapper, new BigDecimal("2.20"));
+    assertThat(string.get().toString()).isEqualTo("12.20");
   }
 
   @Test

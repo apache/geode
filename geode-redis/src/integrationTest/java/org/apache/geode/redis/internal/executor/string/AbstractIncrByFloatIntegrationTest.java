@@ -18,14 +18,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigDecimal;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
 
+import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
@@ -150,17 +152,6 @@ public abstract class AbstractIncrByFloatIntegrationTest implements RedisPortSup
   }
 
   @Test
-  public void testIncrByFloat_whenIncrWillOverflowProducesCorrectError() {
-    BigDecimal longDouble = new BigDecimal("1.1E+4932");
-    jedis.set("number", longDouble.toPlainString());
-
-    assertThatThrownBy(
-        () -> jedis.sendCommand(Protocol.Command.INCRBYFLOAT, "number", longDouble.toString()))
-            .hasMessage("ERR increment would produce NaN or Infinity");
-  }
-
-  @Test
-  @Ignore("GEODE-8624: Improve INCRBYFLOAT accuracy for very large values")
   public void testIncrByFloat_withReallyBigNumbers() {
     // max unsigned long long - 1
     BigDecimal biggy = new BigDecimal("18446744073709551614");
@@ -171,5 +162,36 @@ public abstract class AbstractIncrByFloatIntegrationTest implements RedisPortSup
     BigDecimal result = new BigDecimal(new String((byte[]) rawResult));
 
     assertThat(result.toPlainString()).isEqualTo(biggy.add(BigDecimal.ONE).toPlainString());
+  }
+
+  @Test
+  public void testConcurrentIncrByFloat_performsAllIncrByFloats() {
+    String key = "key";
+    Random random = new Random();
+    Jedis jedis2 = new Jedis("localhost", getPort(), JEDIS_TIMEOUT);
+
+    AtomicReference<BigDecimal> expectedValue1 = new AtomicReference<>();
+    expectedValue1.set(new BigDecimal(0));
+    AtomicReference<BigDecimal> expectedValue2 = new AtomicReference<>();
+    expectedValue2.set(new BigDecimal(0));
+
+    jedis.set(key, "0");
+
+    new ConcurrentLoopingThreads(100,
+        (i) -> {
+          BigDecimal increment = BigDecimal.valueOf(random.nextInt(37));
+          expectedValue1.set(expectedValue1.get().add(increment));
+          jedis.sendCommand(Protocol.Command.INCRBYFLOAT, key, increment.toPlainString());
+        },
+        (i) -> {
+          BigDecimal increment = BigDecimal.valueOf(random.nextInt(37));
+          expectedValue2.set(expectedValue2.get().add(increment));
+          jedis2.sendCommand(Protocol.Command.INCRBYFLOAT, key, increment.toPlainString());
+        }).run();
+
+    assertThat(new BigDecimal(jedis.get(key)))
+        .isEqualTo(expectedValue1.get().add(expectedValue2.get()));
+
+    jedis2.close();
   }
 }

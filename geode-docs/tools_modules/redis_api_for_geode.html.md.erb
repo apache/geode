@@ -73,7 +73,7 @@ The Redis API for <%=vars.product_name%> currently supports the following comman
   TYPE
 -   **Publish/Subscribe**: PUBLISH, PSUBSCRIBE, PUNSUBSCRIBE, SUBSCRIBE, UNSUBSCRIBE
 -   **Sets**: SADD, SMEMBERS, SREM
--   **Strings**: APPEND, GET, SET
+-   **Strings**: APPEND, GET, INCRBYFLOAT, SET
 
 The following Redis API for <%=vars.product_name%> commands are **unsupported**. Unsupported
 commands are available to use, but have not been fully tested. There is no guarantee they will work
@@ -87,7 +87,7 @@ exactly as expected.
 -   **Sets**: SCARD, SDIFF, SDIFFSTORE, SINTER, SINTERSTORE, SISMEMBER, SMOVE, SPOP, SRANDMEMBER,
   SSCAN, SUNION, SUNIONSTORE
 -   **Strings**: BITCOUNT, BITOP, BITPOS, DECR, DECRBY, GETBIT, GETRANGE, GETSET, INCR, INCRBY,
-  INCRBYFLOAT, MGET, MSET, MSETNX, PSETEX, SETBIT, SETEX, SETNX, SETRANGE, STRLEN
+  MGET, MSET, MSETNX, PSETEX, SETBIT, SETEX, SETNX, SETRANGE, STRLEN
 
 
 If you already have some Geode servers running with Redis enabled, you can execute the following

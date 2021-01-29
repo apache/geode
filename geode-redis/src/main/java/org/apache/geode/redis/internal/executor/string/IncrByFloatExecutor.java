@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -43,15 +44,15 @@ public class IncrByFloatExecutor extends StringExecutor {
       return RedisResponse.error(RedisConstants.ERROR_NAN_OR_INFINITY);
     }
 
-    double increment;
+    BigDecimal increment;
     try {
-      increment = Coder.bytesToDouble(incrArray);
+      increment = Coder.bytesToBigDecimal(incrArray);
     } catch (NumberFormatException e) {
       return RedisResponse.error(RedisConstants.ERROR_NOT_A_VALID_FLOAT);
     }
 
-    double result = stringCommands.incrbyfloat(key, increment);
+    BigDecimal result = stringCommands.incrbyfloat(key, increment);
 
-    return RedisResponse.doubleValue(result);
+    return RedisResponse.bigDecimal(result);
   }
 }
