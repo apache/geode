@@ -33,12 +33,28 @@ public class TestDelta implements Delta, DataSerializable, Cloneable {
   public int deserializations;
   public int deltas;
   public int clones;
+  public boolean forceRecalculateSize;
 
   public TestDelta() {}
 
   public TestDelta(boolean hasDelta, String info) {
     this.hasDelta = hasDelta;
     this.info = info;
+    this.forceRecalculateSize = false;
+  }
+
+  public TestDelta(boolean hasDelta, String info, boolean forceRecalculateSize) {
+    this.hasDelta = hasDelta;
+    this.info = info;
+    this.forceRecalculateSize = forceRecalculateSize;
+  }
+
+  @Override
+  public String toString() {
+    return "TestDelta{" +
+        "info='" + info + '\'' +
+        "forceRecalculateSize='" + forceRecalculateSize + '\'' +
+        '}';
   }
 
   public synchronized void checkFields(final int serializations, final int deserializations,
@@ -54,6 +70,7 @@ public class TestDelta implements Delta, DataSerializable, Cloneable {
     // new Exception("DAN - From Delta Called").printStackTrace();
     this.hasDelta = true;
     info = DataSerializer.readString(in);
+    forceRecalculateSize = DataSerializer.readBoolean(in);
     deltas++;
   }
 
@@ -63,9 +80,17 @@ public class TestDelta implements Delta, DataSerializable, Cloneable {
   }
 
   @Override
+  public boolean getForceRecalculateSize() {
+    // new Exception("RINGLES - getForceRecalculateSize Called: " +
+    // forceRecalculateSize).printStackTrace();
+    return forceRecalculateSize;
+  }
+
+  @Override
   public synchronized void toDelta(DataOutput out) throws IOException {
     // new Exception("DAN - To Delta Called").printStackTrace();
     DataSerializer.writeString(info, out);
+    DataSerializer.writeBoolean(forceRecalculateSize, out);
   }
 
   @Override

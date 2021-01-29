@@ -265,7 +265,6 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   protected EntryEventImpl(final InternalRegion region, Operation op, Object key,
       @Retained(ENTRY_EVENT_NEW_VALUE) Object newVal, Object callbackArgument, boolean originRemote,
       DistributedMember distributedMember, boolean generateCallbacks, boolean initializeId) {
-
     this.region = region;
     InternalDistributedSystem ds =
         (InternalDistributedSystem) region.getCache().getDistributedSystem();
@@ -1719,8 +1718,8 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     if (v instanceof org.apache.geode.Delta && getRegion().isUsedForPartitionedRegionBucket()) {
       int vSize;
       Object ov = basicGetOldValue();
-      if (ov instanceof CachedDeserializable && !GemFireCacheImpl.DELTAS_RECALCULATE_SIZE
-          && !this.forceRecalculateSize) {
+      if (ov instanceof CachedDeserializable && !(GemFireCacheImpl.DELTAS_RECALCULATE_SIZE
+          || this.forceRecalculateSize)) {
         vSize = ((CachedDeserializable) ov).getValueSizeInBytes();
       } else {
         vSize = CachedDeserializableFactory.calcMemSize(v, getRegion().getObjectSizer(), false);
@@ -1840,6 +1839,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       try (ByteArrayDataInput in = new ByteArrayDataInput(getDeltaBytes())) {
         long start = getRegion().getCachePerfStats().getTime();
         ((org.apache.geode.Delta) value).fromDelta(in);
+        forceRecalculateSize = ((org.apache.geode.Delta) value).getForceRecalculateSize();
         getRegion().getCachePerfStats().endDeltaUpdate(start);
         deltaBytesApplied = true;
       } catch (RuntimeException rte) {

@@ -1864,6 +1864,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
         return;
       }
       Object instance = cd.getValue();
+
       if (instance instanceof org.apache.geode.Delta
           && ((org.apache.geode.Delta) instance).hasDelta()) {
         try (HeapDataOutputStream hdos = new HeapDataOutputStream(KnownVersion.CURRENT)) {
