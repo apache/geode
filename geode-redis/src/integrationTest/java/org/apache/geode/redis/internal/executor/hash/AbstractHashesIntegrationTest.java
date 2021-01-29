@@ -25,6 +25,8 @@ import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.assertj.core.util.Maps;
@@ -321,32 +323,72 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   }
 
   @Test
-  public void testHIncrBy() {
+  public void testHIncrBy_returnsErrorMessageForWrongNumberOfParameters() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HINCRBY))
+        .hasMessageContaining("ERR wrong number of arguments for 'hincrby' command");
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HINCRBY, "1"))
+        .hasMessageContaining("ERR wrong number of arguments for 'hincrby' command");
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HINCRBY, "1", "2"))
+        .hasMessageContaining("ERR wrong number of arguments for 'hincrby' command");
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HINCRBY, "1", "2", "3", "4"))
+        .hasMessageContaining("ERR wrong number of arguments for 'hincrby' command");
+  }
+
+  @Test
+  public void testHIncrBy_failsWhenPerformedOnNonIntegerValue() {
+    jedis.sadd("key", "member");
+    assertThatThrownBy(() -> jedis.hincrBy("key", "somefield", 1))
+        .hasMessageContaining("WRONGTYPE Operation against a key holding the wrong kind of value");
+  }
+
+  @Test
+  public void testHIncrBy_createsAndIncrementsNonExistentField() {
+    jedis.hset("key", "field", "value");
+
+    assertThat(jedis.hincrBy("key", "nonexistentfield", 1)).isEqualTo(1);
+    assertThat(jedis.hincrBy("key", "othernonexistentfield", -1)).isEqualTo(-1);
+  }
+
+  @Test
+  public void testHIncrBy_createsAndIncrementsFieldForNonExistentKey() {
+    assertThat(jedis.hincrBy("key1", "field", 1)).isEqualTo(1);
+    assertThat(jedis.hincrBy("key2", "field", -1)).isEqualTo(-1);
+  }
+
+  @Test
+  public void testHIncrBy_incrementsValueByGivenIncrementAtGivenKeyAndField() {
     String key = "key";
     String field = "field";
+    jedis.hset(key, field, "10");
 
-    Long incr = (long) rand.nextInt(50);
-    if (incr == 0) {
-      incr++;
-    }
+    hincrbyAndAssertValueEqualToPreviousValuePlusIncrement(key, field, 10);
 
-    long response1 = jedis.hincrBy(key, field, incr);
-    assertThat(response1).isEqualTo(incr);
+    hincrbyAndAssertValueEqualToPreviousValuePlusIncrement(key, field, -5);
 
-    long response2 = jedis.hincrBy("newHash", "newField", incr);
-    assertThat(response2).isEqualTo(incr);
+    hincrbyAndAssertValueEqualToPreviousValuePlusIncrement(key, field, -20);
+  }
 
-    long response3 = jedis.hincrBy(key, field, incr);
-    assertThat(response3).as(response3 + "=" + 2 * incr)
-        .isEqualTo(2 * incr);
+  @Test
+  public void testConcurrentHIncrBy_performsAllIncrBys() {
+    String key = "key";
+    String field = "field";
+    AtomicInteger expectedValue = new AtomicInteger(0);
 
-    String field1 = "field1";
-    long myincr = incr;
-    assertThatThrownBy(() -> {
-      jedis.hincrBy(key, field1, Long.MAX_VALUE);
-      jedis.hincrBy(key, field1, myincr);
-    }).isInstanceOf(JedisDataException.class)
-        .hasMessageContaining("ERR increment or decrement would overflow");
+    jedis.hset(key, field, "0");
+
+    new ConcurrentLoopingThreads(1000,
+        (i) -> {
+          int increment = ThreadLocalRandom.current().nextInt(-50, 50);
+          expectedValue.addAndGet(increment);
+          jedis.hincrBy(key, field, increment);
+        },
+        (i) -> {
+          int increment = ThreadLocalRandom.current().nextInt(-50, 50);
+          expectedValue.addAndGet(increment);
+          jedis2.hincrBy(key, field, increment);
+        }).run();
+
+    assertThat(Integer.parseInt(jedis.hget(key, field))).isEqualTo(expectedValue.get());
   }
 
   @Test
@@ -785,6 +827,21 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   }
 
   @Test
+  public void testConcurrentHIncrByFloat_sameKeyPerClient() throws InterruptedException {
+    String key = "HSET_KEY";
+    String field = "HSET_FIELD";
+
+    jedis.hset(key, field, "0");
+
+    new ConcurrentLoopingThreads(ITERATION_COUNT,
+        (i) -> jedis.hincrByFloat(key, field, 0.5),
+        (i) -> jedis2.hincrByFloat(key, field, 1.0)).run();
+
+    String value = jedis.hget(key, field);
+    assertThat(Double.valueOf(value)).isEqualTo(ITERATION_COUNT * 1.5);
+  }
+
+  @Test
   public void testHSet_keyExistsWithDifferentDataType() {
     jedis.set("key", "value");
 
@@ -876,6 +933,12 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
       record.put(field, fieldValue);
       jedis.hset(key, field, fieldValue);
     }
+  }
+
+  private void hincrbyAndAssertValueEqualToPreviousValuePlusIncrement(String key, String field,
+      int increment) {
+    int expectedValue = Integer.parseInt(jedis.hget(key, field)) + increment;
+    assertThat(jedis.hincrBy(key, field, increment)).isEqualTo(expectedValue);
   }
 
   private void assertExactNumberOfArgs(Protocol.Command command, int numArgs) {
