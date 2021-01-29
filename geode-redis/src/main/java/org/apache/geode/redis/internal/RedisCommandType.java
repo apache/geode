@@ -183,9 +183,9 @@ public enum RedisCommandType {
    ********* Internal Commands ***********
    ***************************************/
   // do not call these directly, only to be used in other commands
-  INTERNALPTTL(null, INTERNAL, new ExactParameterRequirements(2)),
-  INTERNALTYPE(null, INTERNAL, new ExactParameterRequirements(2)),
-  INTERNALSMEMBERS(null, INTERNAL, new ExactParameterRequirements(3)),
+  INTERNALPTTL(new UnknownExecutor(), INTERNAL, new ExactParameterRequirements(2)),
+  INTERNALTYPE(new UnknownExecutor(), INTERNAL, new ExactParameterRequirements(2)),
+  INTERNALSMEMBERS(new UnknownExecutor(), INTERNAL, new ExactParameterRequirements(3)),
 
   /***************************************
    *** Unsupported Commands ***
