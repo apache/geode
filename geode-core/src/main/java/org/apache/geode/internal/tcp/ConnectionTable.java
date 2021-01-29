@@ -207,7 +207,7 @@ public class ConnectionTable {
     threadConnectionMap = new ConcurrentHashMap();
     p2pReaderThreadPool = createThreadPoolForIO(conduit.getDM().getSystem().isShareSockets());
     socketCloser = new SocketCloser();
-    bufferPool = new BufferPool(owner.getStats());
+    bufferPool = conduit.getBufferPool();
   }
 
   private Executor createThreadPoolForIO(boolean conserveSockets) {
