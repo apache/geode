@@ -170,27 +170,24 @@ public abstract class AbstractIncrByFloatIntegrationTest implements RedisPortSup
     Random random = new Random();
     Jedis jedis2 = new Jedis("localhost", getPort(), JEDIS_TIMEOUT);
 
-    AtomicReference<BigDecimal> expectedValue1 = new AtomicReference<>();
-    expectedValue1.set(new BigDecimal(0));
-    AtomicReference<BigDecimal> expectedValue2 = new AtomicReference<>();
-    expectedValue2.set(new BigDecimal(0));
+    AtomicReference<BigDecimal> expectedValue = new AtomicReference<>();
+    expectedValue.set(new BigDecimal(0));
 
     jedis.set(key, "0");
 
-    new ConcurrentLoopingThreads(100,
+    new ConcurrentLoopingThreads(1000,
         (i) -> {
           BigDecimal increment = BigDecimal.valueOf(random.nextInt(37));
-          expectedValue1.set(expectedValue1.get().add(increment));
+          expectedValue.getAndUpdate(x -> x.add(increment));
           jedis.sendCommand(Protocol.Command.INCRBYFLOAT, key, increment.toPlainString());
         },
         (i) -> {
           BigDecimal increment = BigDecimal.valueOf(random.nextInt(37));
-          expectedValue2.set(expectedValue2.get().add(increment));
+          expectedValue.getAndUpdate(x -> x.add(increment));
           jedis2.sendCommand(Protocol.Command.INCRBYFLOAT, key, increment.toPlainString());
         }).run();
 
-    assertThat(new BigDecimal(jedis.get(key)))
-        .isEqualTo(expectedValue1.get().add(expectedValue2.get()));
+    assertThat(new BigDecimal(jedis.get(key))).isEqualTo(expectedValue.get());
 
     jedis2.close();
   }
