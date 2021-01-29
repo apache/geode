@@ -75,6 +75,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -1923,8 +1924,10 @@ public class WANTestBase extends DistributedTestCase {
       GatewayEventFilter filter, String dsStore, boolean isManualStart) {
     File persistentDirectory = null;
     if (dsStore == null) {
+      double random = ThreadLocalRandom.current().nextDouble();
       persistentDirectory =
-          new File(dsName + "_disk_" + System.currentTimeMillis() + "_" + VM.getCurrentVMNum());
+          new File(dsName + "_disk_" + System.currentTimeMillis() + "_" + random + "_"
+              + VM.getCurrentVMNum());
     } else {
       persistentDirectory = new File(dsStore);
     }
