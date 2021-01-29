@@ -18,6 +18,8 @@ package org.apache.geode.internal.cache.tier.sockets;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
 
@@ -250,7 +252,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
   public String toString() {
     if (this.clientUpdateMessage != null) {
       return "HAEventWrapper[refCount=" + getReferenceCount() + "; putInProgress="
-          + putInProgressCountUpdater.get(this) + "; msg=" + this.clientUpdateMessage + "]";
+          + putInProgressCountUpdater.get(this) + " msg=" + this.clientUpdateMessage + "]";
     } else {
       return "HAEventWrapper[region=" + this.regionName + "; key=" + this.keyOfInterest
           + "; refCount=" + getReferenceCount()
@@ -413,7 +415,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
     long putInProgressCounter = putInProgressCountUpdater.incrementAndGet(this);
 
     if (logger.isDebugEnabled()) {
-      logger.debug("Incremented PutInProgressCounter from " + location
+      logger.warn("Incremented PutInProgressCounter from " + location
           + " on HAEventWrapper with Event ID hash code: " + hashCode() + "; System ID hash code: "
           + System.identityHashCode(this) + "; Wrapper details: " + toString());
     }

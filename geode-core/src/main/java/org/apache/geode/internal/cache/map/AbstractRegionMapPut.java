@@ -16,6 +16,9 @@
  */
 package org.apache.geode.internal.cache.map;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.DiskAccessException;
@@ -224,6 +227,7 @@ public abstract class AbstractRegionMapPut {
    */
   private boolean findAndSaveExistingEntry() {
     RegionEntry re = getRegionMap().getEntry(getEvent());
+    //logger.warn("#LRJ findAndSaveExistingEntry key-value: " + (regionEntry == null ? "null" : regionEntry.getKey() + " " + regionEntry.getValue()));
     if (isOnlyExisting() && !entryExists(re)) {
       setRegionEntry(null);
       return false;
@@ -236,8 +240,10 @@ public abstract class AbstractRegionMapPut {
     setCreate(getRegionEntry() == null);
     if (isCreate()) {
       final Object key = getEvent().getKey();
+
       RegionEntry newEntry =
           getRegionMap().getEntryFactory().createEntry(getOwner(), key, Token.REMOVED_PHASE1);
+      //logger.warn("#LRJ createNewEntryIfNeeded newEntry: " + (newEntry == null ? "null" : newEntry.getKey() + " " + newEntry.getValue()));
       setRegionEntry(newEntry);
     }
   }

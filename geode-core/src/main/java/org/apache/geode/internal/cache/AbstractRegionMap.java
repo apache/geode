@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -272,6 +274,7 @@ public abstract class AbstractRegionMap extends BaseRegionMap
 
   @Override
   public RegionEntry putEntryIfAbsent(Object key, RegionEntry regionEntry) {
+    logger.warn("#LRJ in putEntryIfAbsent, putting k-v: {} {}", key, regionEntry.getValue());
     RegionEntry oldRe = (RegionEntry) getEntryMap().putIfAbsent(key, regionEntry);
     if (oldRe == null && (regionEntry instanceof OffHeapRegionEntry) && _isOwnerALocalRegion()
         && _getOwner().isThisRegionBeingClosedOrDestroyed()) {
@@ -2033,6 +2036,11 @@ public abstract class AbstractRegionMap extends BaseRegionMap
     final RegionMapPut regionMapPut =
         new RegionMapPut(this, _getOwner(), this, entryEventSerialization, event, ifNew, ifOld,
             overwriteDestroyed, requireOldValue, expectedOldValue);
+    //logger.warn("#LRJ basicPut in ARM key-value: " + event.getKey() + event.getNewValue());
+    StringWriter sw = new StringWriter();
+    PrintWriter pw = new PrintWriter(sw);
+    new Throwable().printStackTrace(pw);
+    logger.warn("basicPut stacktrace: " + sw.toString());
 
     return regionMapPut.put();
   }

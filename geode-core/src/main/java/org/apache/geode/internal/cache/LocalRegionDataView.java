@@ -26,6 +26,7 @@ import org.apache.geode.internal.cache.entries.AbstractRegionEntry;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  *
@@ -168,6 +169,7 @@ public class LocalRegionDataView implements InternalDataView {
   public boolean putEntry(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,
       boolean overwriteDestroyed, boolean invokeCallbacks, boolean throwsConcurrentModification) {
+    LogService.getLogger().warn("#LRJ LocalRegionDataView k-v : " + event.getKey() + " " + event.getNewValue());
     return event.getRegion().virtualPut(event, ifNew, ifOld, expectedOldValue, requireOldValue,
         lastModified, overwriteDestroyed, invokeCallbacks, throwsConcurrentModification);
   }

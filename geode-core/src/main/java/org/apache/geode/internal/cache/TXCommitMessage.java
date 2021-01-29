@@ -19,6 +19,8 @@ import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.BE
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -609,9 +611,11 @@ public class TXCommitMessage extends PooledDistributionMessage
       }
     }
 
-    if (logger.isDebugEnabled()) {
-      logger.debug("begin processing TXCommitMessage for {}", this.txIdent);
-    }
+    //if (logger.isDebugEnabled()) {
+
+      //logger.warn("#LRJ begin processing TXCommitMessage for {}", this.txIdent);
+
+    //}
     final InitializationLevel oldLevel =
         LocalRegion.setThreadInitLevelRequirement(BEFORE_INITIAL_IMAGE);
     boolean forceListener = false; // this gets flipped if we need to fire tx listener
@@ -743,6 +747,7 @@ public class TXCommitMessage extends PooledDistributionMessage
       if (filterInfo != null) {
         filterInfo.setChangeAppliedToCache(true);
       }
+      //logger.warn("#LRJ firePendingCallbacks event: {}", ee.toString());
       try {
         if (ee.getOperation().isDestroy()) {
           ee.getRegion().invokeTXCallbacks(EnumListenerEvent.AFTER_DESTROY, ee, true,
@@ -1317,8 +1322,8 @@ public class TXCommitMessage extends PooledDistributionMessage
           eei.setPossibleDuplicate(true);
         }
         if (logger.isDebugEnabled()) {
-          logger.debug("invoking transactional callbacks for {} key={} needsUnlock={} event={}",
-              entryOp.op, entryOp.key, this.needsUnlock, eei);
+          logger.info("#LRJ invoking transactional callbacks for {} key={} value={} needsUnlock={} event={}",
+              entryOp.op, entryOp.key, entryOp.value, this.needsUnlock, eei);
         }
         // we reach this spot because the event is either delivered to this member
         // as an "adjunct" message or because the bucket was being created when

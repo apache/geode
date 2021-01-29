@@ -49,7 +49,7 @@ public class TXId extends ExternalizableDSFID implements TransactionId {
   public TXId() {}
 
   /**
-   * Constructor for the Transation Manager, the birth place of TXId objects. The object is
+   * Constructor for the Transaction Manager, the birth place of TXId objects. The object is
    * Serializable mainly because of the identifier type provided by JGroups.
    */
   public TXId(InternalDistributedMember memberId, int uniqId) {

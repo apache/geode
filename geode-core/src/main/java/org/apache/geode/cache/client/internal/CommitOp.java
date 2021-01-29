@@ -14,6 +14,9 @@
  */
 package org.apache.geode.cache.client.internal;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.apache.geode.internal.cache.TXCommitMessage;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;

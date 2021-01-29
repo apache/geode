@@ -682,6 +682,7 @@ public class TXStateProxyImpl implements TXStateProxy {
       this.operationCount++;
       boolean retVal = getRealDeal(event.getKeyInfo(), event.getRegion()).putEntry(event, ifNew,
           ifOld, expectedOldValue, requireOldValue, lastModified, overwriteDestroyed);
+      //logger.warn("#LRJ TXStateProxyImpl k-v: {}-{}; retVal: {}", event.getKey(), event.getNewValue(), retVal);
       trackBucketForTx(event.getKeyInfo());
       return retVal;
     } catch (TransactionDataRebalancedException transactionDataRebalancedException) {

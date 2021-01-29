@@ -16,6 +16,8 @@
  */
 package org.apache.geode.internal.cache.map;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;

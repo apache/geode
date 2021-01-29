@@ -242,6 +242,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
   }
 
   public TXCommitMessage commit(int txId) {
+    //logger.warn("#LRJ commiting txid: {}", txId);
     return CommitOp.execute(pool, txId);
   }
 

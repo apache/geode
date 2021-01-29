@@ -114,6 +114,7 @@ public class ClientTXStateStub extends TXStateStub {
       TXCommitMessage txcm = null;
       try {
         txcm = firstProxy.commit(proxy.getTxId().getUniqId());
+        //logger.warn("#LRJ ClientTXStateStub commit txcm: {}", txcm.toString());
       } finally {
         this.firstProxy.getPool().releaseServerAffinity();
       }

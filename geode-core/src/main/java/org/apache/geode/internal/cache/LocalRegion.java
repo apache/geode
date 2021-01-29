@@ -27,6 +27,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -2002,6 +2004,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       if (regionEntry == null || regionEntry.isDestroyedOrRemoved()) {
         contains = false;
       }
+      //logger.warn("#LRJ validating on key " + keyInfo.getKey() + " returned regionEntry value: " + regionEntry.getValue());
     }
     return contains;
   }
@@ -2020,21 +2023,37 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
     try {
       RegionEntry entry = entries.getEntry(keyInfo.getKey());
+
+        //logger.warn("#LRJ nontxcvfk entry: " + (entry != null ? entry.getKey() + " " + entry.getValue() : "null"));
+
       boolean result = entry != null;
+
+        //logger.warn("#LRJ nontxcvfk result: " + result == null ? "null" : result );
+
       if (result) {
         ReferenceCountHelper.skipRefCountTracking();
         // no need to decompress since we only want to know if we have an existing value
         Object val = entry.getTransformedValue();
+
+
+          //logger.warn("#LRJ nontxcvfk result value: " + val);
+
         if (val instanceof StoredObject) {
           OffHeapHelper.release(val);
           ReferenceCountHelper.unskipRefCountTracking();
+
+            //logger.warn("#LRJ nontxcvfk val instance of StoredObject");
+
           return true;
         }
         ReferenceCountHelper.unskipRefCountTracking();
         // No need to to check CachedDeserializable because INVALID and LOCAL_INVALID will never be
         // faulted out of mem If val is NOT_AVAILABLE that means we have a valid value on disk.
+
+          //logger.warn("#LRJ nontxcvfk result invalid or removed token?: " + Token.isInvalidOrRemoved(val));
         result = !Token.isInvalidOrRemoved(val);
       }
+
       return result;
     } finally {
       if (diskRegion != null) {
@@ -5011,6 +5030,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    */
   @Override
   public void txApplyPutHandleDidDestroy(Object key) {
+    //logger.warn("#LRJ txApplyPutHandleDidDestroy on key: " + key);
     entryUserAttributes.remove(key);
   }
 
@@ -5074,6 +5094,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   @Override
   public void txApplyPutPart2(RegionEntry regionEntry, Object key, long lastModified,
       boolean isCreate, boolean didDestroy, boolean clearConflict) {
+    //logger.warn("#LRJ txApplyPutPart2 k-v: {}-{} ", key, regionEntry.getValue());
     if (testCallable != null) {
       Operation op = isCreate ? Operation.CREATE : Operation.UPDATE;
       testCallable.call(this, op, regionEntry);
@@ -5567,6 +5588,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
 
     validateValue(event.basicGetNewValue());
+
+    //logger.warn("#LRJ basicUpdate key-val: {} - {}", event.getKey(), event.getNewValue());
 
     return getDataView().putEntry(event, ifNew, ifOld, null, false, lastModified,
         overwriteDestroyed, invokeCallbacks, throwConcurrentModificationException);
@@ -6063,7 +6086,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     if (shouldNotifyBridgeClients()) {
       if (logger.isDebugEnabled()) {
-        logger.debug("{}: notifying {} cache servers of event: {}", getName(), numBS,
+        logger.debug("{}: notifying {} cache servers of event: {} ", getName(), numBS,
             event);
       }
 
@@ -6792,9 +6815,10 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     Operation operation = event.getOperation();
 
-    if (logger.isDebugEnabled()) {
-      logger.debug("invokeTXCallbacks for event {}", event);
-    }
+    //if (logger.isDebugEnabled()) {
+    //if(operation == Operation.UPDATE)
+      //logger.warn("#LRJ invokeTXCallbacks for event {} with newValue {}", event, event.getNewValue());
+    //}
 
     if (operation == Operation.REMOVE) {
       event.setOperation(Operation.DESTROY);

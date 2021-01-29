@@ -19,6 +19,8 @@ import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.TX
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -1727,10 +1729,10 @@ public class TXEntryState implements Releasable {
 
 
   void applyChanges(InternalRegion r, Object key, TXState txState) {
-    if (logger.isDebugEnabled()) {
-      logger.debug("applyChanges txState=" + txState + " ,key=" + key + " ,r=" + r.getDisplayName()
+    //if (logger.isDebugEnabled()) {
+      logger.warn("applyChanges txState=" + txState + " ,key=" + key + " ,r=" + r.getDisplayName()
           + " ,op=" + this.op + " ,isDirty=" + isDirty());
-    }
+    //}
     if (!isDirty()) {
       // all we did was read so just return
       return;

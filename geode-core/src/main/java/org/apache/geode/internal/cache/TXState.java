@@ -1409,6 +1409,7 @@ public class TXState implements TXStateInterface {
     TXEntryState tx;
     boolean result = false;
     try {
+      //logger.warn("#LRJ TXState.txPutEntry k-v: {} - {}, ", event.getKey(), event.getNewValue());
       tx = txWriteEntry(region, event, ifNew, requireOldValue, expectedOldValue);
       if (tx == TXState.ENTRY_EXISTS) {
         result = false;
@@ -1581,8 +1582,10 @@ public class TXState implements TXStateInterface {
     InternalRegion dataReg = internalRegion.getDataRegionForWrite(keyInfo);
     TXRegionState txr = txReadRegion(dataReg);
     TXEntryState result = null;
+    //logger.warn("#LRJ TXState.txReadEntry k-v: {}-{}", keyInfo.getKey(), keyInfo.getValue());
     if (txr != null) {
       result = txr.readEntry(keyInfo.getKey());
+      //logger.warn("#LRJ TXState.txReadEntry result: {}", result);
     }
     if (result == null && rememberRead) {
       // to support repeatable read create an tx entry that reflects current committed state

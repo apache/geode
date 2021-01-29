@@ -45,6 +45,7 @@ import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.util.concurrent.ConcurrentMapWithReusableEntries;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Internal implementation of {@link RegionMap}for regions whose DataPolicy is proxy. Proxy maps are
@@ -289,6 +290,7 @@ class ProxyRegionMap extends BaseRegionMap {
       Object aCallbackArgument, List<EntryEventImpl> pendingCallbacks,
       FilterRoutingInfo filterRoutingInfo, ClientProxyMembershipID bridgeContext,
       TXEntryState txEntryState, VersionTag versionTag, long tailKey) {
+    //LogService.getLogger().warn("#LRJ txApplyInvalidation for k-v: {}-{}", key, newValue != null ? newValue.toString() : "null");
     this.owner.txApplyInvalidatePart2(markerEntry, key, didDestroy, true);
     if (this.owner.isInitialized()) {
       if (event != null) {
@@ -313,6 +315,7 @@ class ProxyRegionMap extends BaseRegionMap {
       List<EntryEventImpl> pendingCallbacks, FilterRoutingInfo filterRoutingInfo,
       ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag,
       long tailKey) {
+    //LogService.getLogger().warn("#LRJ txApplyPut for k-v: {}-{}", key, newValue != null ? newValue.toString() : "null");
     Operation putOperation = putOp.getCorrespondingCreateOp();
     long lastMod = owner.cacheTimeMillis();
     this.owner.txApplyPutPart2(markerEntry, key, lastMod, true, didDestroy, false);

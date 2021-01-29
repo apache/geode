@@ -18,6 +18,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.ConnectException;
 import java.net.Socket;
 import java.net.SocketException;
@@ -736,7 +738,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
         }
 
         if (isDebugEnabled) {
-          logger.debug("Put entry for region: {} key: {} callbackArgument: {}", regionName, key,
+          logger.warn("Put entry for region: {} key: {} callbackArgument: {}", regionName, key,
               callbackArgument);
         }
       }
