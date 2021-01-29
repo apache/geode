@@ -15,6 +15,7 @@
 
 package org.apache.geode.cache.client.internal;
 
+import java.io.IOException;
 import java.net.SocketTimeoutException;
 
 import org.apache.logging.log4j.Logger;
@@ -346,7 +347,7 @@ public abstract class AbstractOp implements Op {
         Part part = msg.getPart(0);
         throw new ServerOperationException(part.getString());
       } else {
-        throw new InternalGemFireError("Unexpected message type " + MessageType.getString(msgType));
+        throw new IOException("Unexpected message type " + MessageType.getString(msgType));
       }
     }
   }
