@@ -141,6 +141,34 @@ public abstract class LocatorTestBase extends JUnit4DistributedTestCase {
     return locator.getPort();
   }
 
+  protected int startLocator(final String hostName, final String otherLocators,
+      final String hostNameForClient) throws Exception {
+    disconnectFromDS();
+    int[] ports = getRandomAvailableTCPPorts(2);
+    int httpPort = ports[0];
+    int jmxManagerPort = ports[1];
+    Properties props = new Properties();
+    props.put(MCAST_PORT, String.valueOf(0));
+    props.put(LOCATORS, otherLocators);
+    props.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
+    props.put(ENABLE_CLUSTER_CONFIGURATION, "false");
+    props.put(HTTP_SERVICE_PORT, String.valueOf(httpPort));
+    props.put(JMX_MANAGER_PORT, String.valueOf(jmxManagerPort));
+    File logFile = new File("");
+    InetAddress bindAddr = null;
+    try {
+      bindAddr = InetAddress.getByName(hostName);
+    } catch (UnknownHostException uhe) {
+      Assert.fail("While resolving bind address ", uhe);
+    }
+    Locator locator =
+        Locator.startLocatorAndDS(0, logFile, bindAddr, props, true, true, hostNameForClient);
+
+    remoteObjects.put(LOCATOR_KEY, locator);
+    return locator.getPort();
+  }
+
+
   protected int startLocatorInVM(final VM vm, final String hostName, final String otherLocators) {
     return vm.invoke("create locator", () -> startLocator(hostName, otherLocators));
   }

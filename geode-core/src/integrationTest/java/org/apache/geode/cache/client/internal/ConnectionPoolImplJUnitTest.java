@@ -117,6 +117,8 @@ public class ConnectionPoolImplJUnitTest {
         pool.getSubscriptionMessageTrackingTimeout());
     assertEquals(PoolFactory.DEFAULT_SUBSCRIPTION_ACK_INTERVAL, pool.getSubscriptionAckInterval());
     assertEquals(PoolFactory.DEFAULT_SERVER_GROUP, pool.getServerGroup());
+    assertEquals(PoolFactory.DEFAULT_REQUEST_LOCATOR_INTERNAL_ADDRESS,
+        pool.getRequestLocatorInternalAddress());
     // check non default
     assertEquals("myfriendlypool", pool.getName());
     assertEquals(1, pool.getServers().size());

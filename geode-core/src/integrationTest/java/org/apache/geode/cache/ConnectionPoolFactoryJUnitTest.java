@@ -140,6 +140,9 @@ public class ConnectionPoolFactoryJUnitTest {
       assertEquals(PoolFactory.DEFAULT_IDLE_TIMEOUT, defaultAttr.getIdleTimeout());
       assertEquals(PoolFactory.DEFAULT_PING_INTERVAL, defaultAttr.getPingInterval());
       assertEquals(PoolFactory.DEFAULT_SOCKET_BUFFER_SIZE, defaultAttr.getSocketBufferSize());
+      assertEquals(PoolFactory.DEFAULT_REQUEST_LOCATOR_INTERNAL_ADDRESS,
+          defaultAttr.getRequestLocatorInternalAddress());
+
     } finally {
       defaultAttr.destroy();
     }
@@ -318,6 +321,7 @@ public class ConnectionPoolFactoryJUnitTest {
     cpf.setPingInterval(pingInterval);
     cpf.setIdleTimeout(idleTimeout);
     cpf.setSocketBufferSize(bufferSize);
+    cpf.setRequestLocatorInternalAddress(true);
 
     Pool cpa = cpf.create("mypool");
     try {
@@ -338,6 +342,8 @@ public class ConnectionPoolFactoryJUnitTest {
       assertEquals(pingInterval, cpa.getPingInterval());
 
       assertEquals(bufferSize, cpa.getSocketBufferSize());
+      assertEquals(true, cpa.getRequestLocatorInternalAddress());
+
       // validate contacts
       assertEquals(1, cpa.getServers().size());
       assertEquals(0, cpa.getLocators().size());
