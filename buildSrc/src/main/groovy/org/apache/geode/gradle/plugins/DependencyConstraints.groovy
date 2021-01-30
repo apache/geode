@@ -168,7 +168,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'org.springframework.shell', name: 'spring-shell', version: '1.2.0.RELEASE')
         api(group: 'org.testcontainers', name: 'testcontainers', version: '1.14.3')
         api(group: 'pl.pragmatists', name: 'JUnitParams', version: '1.1.0')
-        api(group: 'redis.clients', name: 'jedis', version: '3.4.1')
+        api(group: 'redis.clients', name: 'jedis', version: '3.5.1')
         api(group: 'io.lettuce', name: 'lettuce-core', version: '6.0.2.RELEASE')
         api(group: 'xerces', name: 'xercesImpl', version: '2.12.0')
       }
