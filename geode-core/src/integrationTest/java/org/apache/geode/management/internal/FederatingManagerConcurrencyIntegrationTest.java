@@ -85,10 +85,12 @@ public class FederatingManagerConcurrencyIntegrationTest {
     assertThat(federatingManager.latestException()).isNull();
   }
 
-  private InternalDistributedMember member() throws UnknownHostException {
+  private static InternalDistributedMember member() throws UnknownHostException {
     InternalDistributedMember member = mock(InternalDistributedMember.class);
-    when(member.getInetAddress()).thenReturn(getLocalHost());
-    when(member.getId()).thenReturn("member-1");
+    when(member.getInetAddress())
+        .thenReturn(getLocalHost());
+    when(member.getId())
+        .thenReturn("member-1");
     return member;
   }
 

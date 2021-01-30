@@ -33,7 +33,6 @@ import static org.mockito.Mockito.when;
 
 import java.net.InetAddress;
 import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
@@ -48,9 +47,11 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ErrorCollector;
 import org.mockito.ArgumentCaptor;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
+import org.mockito.quality.Strictness;
 
 import org.apache.geode.StatisticsFactory;
-import org.apache.geode.alerting.internal.spi.AlertLevel;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
@@ -62,7 +63,6 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.statistics.StatisticsClock;
-import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementException;
 import org.apache.geode.test.junit.categories.JMXTest;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
@@ -75,6 +75,8 @@ public class FederatingManagerTest {
   private DistributionManager distributionManager;
   private ExecutorService executorService;
   private MemberMessenger messenger;
+  private Region<String, Object> monitoringRegion;
+  private Region<NotificationKey, Notification> notificationRegion;
   private MBeanProxyFactory proxyFactory;
   private HasCachePerfStats regionManagementStats;
   private ManagementResourceRepo repo;
@@ -84,18 +86,27 @@ public class FederatingManagerTest {
   private StatisticsFactory statisticsFactory;
   private StatisticsClock statisticsClock;
 
+  private ArgumentCaptor<HasCachePerfStats> managementRegionStatsCaptor;
+
+  private InternalCacheForClientAccess cacheForClientAccess;
+
   @Rule
   public ErrorCollector errorCollector = new ErrorCollector();
   @Rule
   public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
+  @Rule
+  public MockitoRule rule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);
 
   @Before
   public void setUp() {
     cache = mock(InternalCache.class);
+    cacheForClientAccess = mock(InternalCacheForClientAccess.class);
     distributionManager = mock(DistributionManager.class);
     executorService = mock(ExecutorService.class);
     member = mock(InternalDistributedMember.class);
     messenger = mock(MemberMessenger.class);
+    monitoringRegion = uncheckedCast(mock(Region.class));
+    notificationRegion = uncheckedCast(mock(Region.class));
     proxyFactory = mock(MBeanProxyFactory.class);
     regionFactory1 = mock(InternalRegionFactory.class);
     regionFactory2 = mock(InternalRegionFactory.class);
@@ -105,81 +116,122 @@ public class FederatingManagerTest {
     statisticsFactory = mock(StatisticsFactory.class);
     statisticsClock = mock(StatisticsClock.class);
 
-    InternalCacheForClientAccess cacheForClientAccess = mock(InternalCacheForClientAccess.class);
-    DistributedSystemMXBean distributedSystemMXBean = mock(DistributedSystemMXBean.class);
-    MBeanJMXAdapter jmxAdapter = mock(MBeanJMXAdapter.class);
+    managementRegionStatsCaptor = forClass(HasCachePerfStats.class);
 
     when(cache.getCacheForProcessingClientRequests())
         .thenReturn(cacheForClientAccess);
-    when(cacheForClientAccess.createInternalRegionFactory())
-        .thenReturn(uncheckedCast(regionFactory1))
-        .thenReturn(uncheckedCast(regionFactory2));
-    when(regionFactory1.create(any()))
-        .thenReturn(mock(Region.class));
-    when(regionFactory2.create(any()))
-        .thenReturn(mock(Region.class));
-    when(distributedSystemMXBean.getAlertLevel())
-        .thenReturn(AlertLevel.WARNING.name());
-    when(jmxAdapter.getDistributedSystemMXBean())
-        .thenReturn(distributedSystemMXBean);
   }
 
   @Test
   public void addMemberArtifactsCreatesMonitoringRegion() {
+    when(cacheForClientAccess.createInternalRegionFactory())
+        .thenReturn(uncheckedCast(regionFactory1))
+        .thenReturn(uncheckedCast(regionFactory2));
+    when(member.getInetAddress())
+        .thenReturn(mock(InetAddress.class));
+    when(member.getVmViewId())
+        .thenReturn(1);
+    when(member.getMembershipPort())
+        .thenReturn(20);
+    when(regionFactory1.create(any()))
+        .thenReturn(mock(Region.class));
+    when(regionFactory2.create(any()))
+        .thenReturn(mock(Region.class));
     FederatingManager federatingManager = new FederatingManager(repo, member, distributionManager,
         service, cache, proxyFactory, messenger, regionManagementStats, executorService);
     federatingManager.startManager();
 
-    federatingManager.addMemberArtifacts(member(1, 20));
+    federatingManager.addMemberArtifacts(member);
 
-    verify(regionFactory1).create(eq("_monitoringRegion_null<v1>20"));
+    verify(regionFactory1)
+        .create(eq("_monitoringRegion_null<v1>20"));
   }
 
   @Test
   public void addMemberArtifactsCreatesMonitoringRegionWithHasOwnStats() {
+    when(cacheForClientAccess.createInternalRegionFactory())
+        .thenReturn(uncheckedCast(regionFactory1))
+        .thenReturn(uncheckedCast(regionFactory2));
+    when(member.getInetAddress())
+        .thenReturn(mock(InetAddress.class));
+    when(member.getVmViewId())
+        .thenReturn(2);
+    when(member.getMembershipPort())
+        .thenReturn(40);
+    when(regionFactory1.create(any()))
+        .thenReturn(mock(Region.class));
+    when(regionFactory2.create(any()))
+        .thenReturn(mock(Region.class));
     when(regionManagementStats.hasOwnStats())
         .thenReturn(true);
     FederatingManager federatingManager = new FederatingManager(repo, member, distributionManager,
         service, cache, proxyFactory, messenger, regionManagementStats, executorService);
     federatingManager.startManager();
 
-    federatingManager.addMemberArtifacts(member(2, 40));
+    federatingManager.addMemberArtifacts(member);
 
-    ArgumentCaptor<HasCachePerfStats> captor = forClass(HasCachePerfStats.class);
-    verify(regionFactory1).setCachePerfStatsHolder(captor.capture());
-    assertThat(captor.getValue().hasOwnStats()).isTrue();
+    verify(regionFactory1)
+        .setCachePerfStatsHolder(managementRegionStatsCaptor.capture());
+    assertThat(managementRegionStatsCaptor.getValue().hasOwnStats())
+        .isTrue();
   }
 
   @Test
   public void addMemberArtifactsCreatesNotificationRegion() {
+    when(cacheForClientAccess.createInternalRegionFactory())
+        .thenReturn(uncheckedCast(regionFactory1))
+        .thenReturn(uncheckedCast(regionFactory2));
+    when(member.getInetAddress())
+        .thenReturn(mock(InetAddress.class));
+    when(member.getVmViewId())
+        .thenReturn(3);
+    when(member.getMembershipPort())
+        .thenReturn(60);
+    when(regionFactory1.create(any()))
+        .thenReturn(mock(Region.class));
+    when(regionFactory2.create(any()))
+        .thenReturn(mock(Region.class));
     FederatingManager federatingManager = new FederatingManager(repo, member, distributionManager,
         service, cache, proxyFactory, messenger, regionManagementStats, executorService);
     federatingManager.startManager();
 
-    federatingManager.addMemberArtifacts(member(3, 60));
+    federatingManager.addMemberArtifacts(member);
 
-    verify(regionFactory2).create(eq("_notificationRegion_null<v3>60"));
+    verify(regionFactory2)
+        .create(eq("_notificationRegion_null<v3>60"));
   }
 
   @Test
   public void addMemberArtifactsCreatesNotificationRegionWithHasOwnStats() {
+    when(cacheForClientAccess.createInternalRegionFactory())
+        .thenReturn(uncheckedCast(regionFactory1))
+        .thenReturn(uncheckedCast(regionFactory2));
+    when(member.getInetAddress())
+        .thenReturn(mock(InetAddress.class));
+    when(member.getVmViewId())
+        .thenReturn(4);
+    when(member.getMembershipPort())
+        .thenReturn(80);
+    when(regionFactory1.create(any()))
+        .thenReturn(mock(Region.class));
+    when(regionFactory2.create(any()))
+        .thenReturn(mock(Region.class));
     when(regionManagementStats.hasOwnStats())
         .thenReturn(true);
     FederatingManager federatingManager = new FederatingManager(repo, member, distributionManager,
         service, cache, proxyFactory, messenger, regionManagementStats, executorService);
     federatingManager.startManager();
 
-    federatingManager.addMemberArtifacts(member(4, 80));
+    federatingManager.addMemberArtifacts(member);
 
-    ArgumentCaptor<HasCachePerfStats> captor = forClass(HasCachePerfStats.class);
-    verify(regionFactory2).setCachePerfStatsHolder(captor.capture());
-    assertThat(captor.getValue().hasOwnStats()).isTrue();
+    verify(regionFactory2)
+        .setCachePerfStatsHolder(managementRegionStatsCaptor.capture());
+    assertThat(managementRegionStatsCaptor.getValue().hasOwnStats())
+        .isTrue();
   }
 
   @Test
   public void removeMemberArtifactsLocallyDestroysMonitoringRegion() {
-    InternalDistributedMember member = member();
-    Region<String, Object> monitoringRegion = uncheckedCast(mock(Region.class));
     when(repo.getEntryFromMonitoringRegionMap(eq(member)))
         .thenReturn(monitoringRegion);
     when(repo.getEntryFromNotifRegionMap(eq(member)))
@@ -189,13 +241,12 @@ public class FederatingManagerTest {
 
     federatingManager.removeMemberArtifacts(member, false);
 
-    verify(monitoringRegion).localDestroyRegion();
+    verify(monitoringRegion)
+        .localDestroyRegion();
   }
 
   @Test
   public void removeMemberArtifactsLocallyDestroysNotificationRegion() {
-    InternalDistributedMember member = member();
-    Region<NotificationKey, Notification> notificationRegion = uncheckedCast(mock(Region.class));
     when(repo.getEntryFromMonitoringRegionMap(eq(member)))
         .thenReturn(uncheckedCast(mock(Region.class)));
     when(repo.getEntryFromNotifRegionMap(eq(member)))
@@ -205,15 +256,15 @@ public class FederatingManagerTest {
 
     federatingManager.removeMemberArtifacts(member, false);
 
-    verify(notificationRegion).localDestroyRegion();
+    verify(notificationRegion)
+        .localDestroyRegion();
   }
 
   @Test
   public void removeMemberArtifactsDoesNotThrowIfMonitoringRegionIsAlreadyDestroyed() {
-    InternalDistributedMember member = member();
-    Region<String, Object> monitoringRegion = uncheckedCast(mock(Region.class));
     doThrow(new RegionDestroyedException("test", "monitoringRegion"))
-        .when(monitoringRegion).localDestroyRegion();
+        .when(monitoringRegion)
+        .localDestroyRegion();
     when(repo.getEntryFromMonitoringRegionMap(eq(member)))
         .thenReturn(monitoringRegion);
     when(repo.getEntryFromNotifRegionMap(eq(member)))
@@ -223,15 +274,15 @@ public class FederatingManagerTest {
 
     federatingManager.removeMemberArtifacts(member, false);
 
-    verify(monitoringRegion).localDestroyRegion();
+    verify(monitoringRegion)
+        .localDestroyRegion();
   }
 
   @Test
   public void removeMemberArtifactsDoesNotThrowIfNotificationRegionIsAlreadyDestroyed() {
-    InternalDistributedMember member = member();
-    Region<NotificationKey, Notification> notificationRegion = uncheckedCast(mock(Region.class));
     doThrow(new RegionDestroyedException("test", "notificationRegion"))
-        .when(notificationRegion).localDestroyRegion();
+        .when(notificationRegion)
+        .localDestroyRegion();
     when(repo.getEntryFromMonitoringRegionMap(eq(member)))
         .thenReturn(uncheckedCast(mock(Region.class)));
     when(repo.getEntryFromNotifRegionMap(eq(member)))
@@ -241,16 +292,15 @@ public class FederatingManagerTest {
 
     federatingManager.removeMemberArtifacts(member, false);
 
-    verify(notificationRegion).localDestroyRegion();
+    verify(notificationRegion)
+        .localDestroyRegion();
   }
 
   @Test
   public void removeMemberArtifactsDoesNotThrowIfMBeanProxyFactoryThrowsRegionDestroyedException() {
-    InternalDistributedMember member = member();
-    Region<String, Object> monitoringRegion = uncheckedCast(mock(Region.class));
-    MBeanProxyFactory proxyFactory = mock(MBeanProxyFactory.class);
     doThrow(new RegionDestroyedException("test", "monitoringRegion"))
-        .when(proxyFactory).removeAllProxies(member, monitoringRegion);
+        .when(proxyFactory)
+        .removeAllProxies(member, monitoringRegion);
     when(repo.getEntryFromMonitoringRegionMap(eq(member)))
         .thenReturn(monitoringRegion);
     when(repo.getEntryFromNotifRegionMap(eq(member)))
@@ -260,16 +310,15 @@ public class FederatingManagerTest {
 
     federatingManager.removeMemberArtifacts(member, false);
 
-    verify(proxyFactory).removeAllProxies(member, monitoringRegion);
+    verify(proxyFactory)
+        .removeAllProxies(member, monitoringRegion);
   }
 
   @Test
   public void removeMemberArtifactsProxyFactoryDoesNotThrowIfCacheClosed() {
-    InternalDistributedMember member = member();
-    Region<String, Object> monitoringRegion = uncheckedCast(mock(Region.class));
-    MBeanProxyFactory proxyFactory = mock(MBeanProxyFactory.class);
     doThrow(new CacheClosedException("test"))
-        .when(proxyFactory).removeAllProxies(member, monitoringRegion);
+        .when(proxyFactory)
+        .removeAllProxies(member, monitoringRegion);
     when(repo.getEntryFromMonitoringRegionMap(eq(member)))
         .thenReturn(monitoringRegion);
     when(repo.getEntryFromNotifRegionMap(eq(member)))
@@ -279,15 +328,15 @@ public class FederatingManagerTest {
 
     federatingManager.removeMemberArtifacts(member, false);
 
-    verify(proxyFactory).removeAllProxies(member, monitoringRegion);
+    verify(proxyFactory)
+        .removeAllProxies(member, monitoringRegion);
   }
 
   @Test
   public void removeMemberArtifactsNotificationRegionDoesNotThrowIfCacheClosed() {
-    InternalDistributedMember member = member();
-    Region<NotificationKey, Notification> notificationRegion = uncheckedCast(mock(Region.class));
     doThrow(new CacheClosedException("test"))
-        .when(notificationRegion).localDestroyRegion();
+        .when(notificationRegion)
+        .localDestroyRegion();
     when(repo.getEntryFromMonitoringRegionMap(eq(member)))
         .thenReturn(uncheckedCast(mock(Region.class)));
     when(repo.getEntryFromNotifRegionMap(eq(member)))
@@ -297,15 +346,15 @@ public class FederatingManagerTest {
 
     federatingManager.removeMemberArtifacts(member, false);
 
-    verify(notificationRegion).localDestroyRegion();
+    verify(notificationRegion)
+        .localDestroyRegion();
   }
 
   @Test
   public void removeMemberArtifactsMonitoringRegionDoesNotThrowIfCacheClosed() {
-    InternalDistributedMember member = member();
-    Region<String, Object> monitoringRegion = uncheckedCast(mock(Region.class));
     doThrow(new CacheClosedException("test"))
-        .when(monitoringRegion).localDestroyRegion();
+        .when(monitoringRegion)
+        .localDestroyRegion();
     when(repo.getEntryFromMonitoringRegionMap(eq(member)))
         .thenReturn(monitoringRegion);
     when(repo.getEntryFromNotifRegionMap(eq(member)))
@@ -315,16 +364,15 @@ public class FederatingManagerTest {
 
     federatingManager.removeMemberArtifacts(member, false);
 
-    verify(monitoringRegion).localDestroyRegion();
+    verify(monitoringRegion)
+        .localDestroyRegion();
   }
 
   @Test
   public void removeMemberArtifactsProxyFactoryDoesNotThrowIfSystemDisconnected() {
-    InternalDistributedMember member = member();
-    Region<String, Object> monitoringRegion = uncheckedCast(mock(Region.class));
-    MBeanProxyFactory proxyFactory = mock(MBeanProxyFactory.class);
     doThrow(new DistributedSystemDisconnectedException("test"))
-        .when(proxyFactory).removeAllProxies(member, monitoringRegion);
+        .when(proxyFactory)
+        .removeAllProxies(member, monitoringRegion);
     when(repo.getEntryFromMonitoringRegionMap(eq(member)))
         .thenReturn(monitoringRegion);
     when(repo.getEntryFromNotifRegionMap(eq(member)))
@@ -334,15 +382,15 @@ public class FederatingManagerTest {
 
     federatingManager.removeMemberArtifacts(member, false);
 
-    verify(proxyFactory).removeAllProxies(member, monitoringRegion);
+    verify(proxyFactory)
+        .removeAllProxies(member, monitoringRegion);
   }
 
   @Test
   public void removeMemberArtifactsNotificationRegionDoesNotThrowIfSystemDisconnected() {
-    InternalDistributedMember member = member();
-    Region<NotificationKey, Notification> notificationRegion = uncheckedCast(mock(Region.class));
     doThrow(new DistributedSystemDisconnectedException("test"))
-        .when(notificationRegion).localDestroyRegion();
+        .when(notificationRegion)
+        .localDestroyRegion();
     when(repo.getEntryFromMonitoringRegionMap(eq(member)))
         .thenReturn(uncheckedCast(mock(Region.class)));
     when(repo.getEntryFromNotifRegionMap(eq(member)))
@@ -352,15 +400,15 @@ public class FederatingManagerTest {
 
     federatingManager.removeMemberArtifacts(member, false);
 
-    verify(notificationRegion).localDestroyRegion();
+    verify(notificationRegion)
+        .localDestroyRegion();
   }
 
   @Test
   public void removeMemberArtifactsMonitoringRegionDoesNotThrowIfSystemDisconnected() {
-    InternalDistributedMember member = member();
-    Region<String, Object> monitoringRegion = uncheckedCast(mock(Region.class));
     doThrow(new DistributedSystemDisconnectedException("test"))
-        .when(monitoringRegion).localDestroyRegion();
+        .when(monitoringRegion)
+        .localDestroyRegion();
     when(repo.getEntryFromMonitoringRegionMap(eq(member)))
         .thenReturn(monitoringRegion);
     when(repo.getEntryFromNotifRegionMap(eq(member)))
@@ -370,12 +418,12 @@ public class FederatingManagerTest {
 
     federatingManager.removeMemberArtifacts(member, false);
 
-    verify(monitoringRegion).localDestroyRegion();
+    verify(monitoringRegion)
+        .localDestroyRegion();
   }
 
   @Test
   public void removeMemberArtifactsDoesNotThrowIfNotificationRegionIsNull() {
-    InternalDistributedMember member = member();
     when(repo.getEntryFromMonitoringRegionMap(eq(member)))
         .thenReturn(uncheckedCast(mock(Region.class)));
     when(repo.getEntryFromNotifRegionMap(eq(member)))
@@ -385,12 +433,12 @@ public class FederatingManagerTest {
 
     Throwable thrown = catchThrowable(() -> federatingManager.removeMemberArtifacts(member, false));
 
-    assertThat(thrown).isNull();
+    assertThat(thrown)
+        .isNull();
   }
 
   @Test
   public void removeMemberArtifactsDoesNotThrowIfMonitoringRegionIsNull() {
-    InternalDistributedMember member = member();
     when(repo.getEntryFromMonitoringRegionMap(eq(member)))
         .thenReturn(null);
     when(repo.getEntryFromNotifRegionMap(eq(member)))
@@ -400,7 +448,8 @@ public class FederatingManagerTest {
 
     Throwable thrown = catchThrowable(() -> federatingManager.removeMemberArtifacts(member, false));
 
-    assertThat(thrown).isNull();
+    assertThat(thrown)
+        .isNull();
   }
 
   @Test
@@ -414,12 +463,12 @@ public class FederatingManagerTest {
 
     federatingManager.startManager();
 
-    verify(executorServiceSupplier).get();
+    verify(executorServiceSupplier)
+        .get();
   }
 
   @Test
   public void removeMemberArtifactsDoesNotRemoveAllProxiesIfMonitoringRegionIsNull() {
-    InternalDistributedMember member = member();
     when(repo.getEntryFromMonitoringRegionMap(eq(member)))
         .thenReturn(null);
     when(repo.getEntryFromNotifRegionMap(eq(member)))
@@ -436,13 +485,11 @@ public class FederatingManagerTest {
   public void removeMemberWaitsForStartManager() throws Exception {
     CountDownLatch latch = new CountDownLatch(1);
     CyclicBarrier barrier = new CyclicBarrier(2);
-    ExecutorService executorService = mock(ExecutorService.class);
-    List<Future<InternalDistributedMember>> futureTaskList = Collections.emptyList();
 
     when(executorService.invokeAll(any())).thenAnswer(invocation -> {
       awaitCyclicBarrier(barrier);
       awaitCountDownLatch(latch);
-      return futureTaskList;
+      return Collections.<Future<InternalDistributedMember>>emptyList();
     });
 
     FederatingManager federatingManager = new FederatingManager(repo, member, distributionManager,
@@ -454,17 +501,19 @@ public class FederatingManagerTest {
 
     executorServiceRule.submit(() -> {
       awaitCyclicBarrier(barrier);
-      federatingManager.removeMember(member(), true);
+      federatingManager.removeMember(member, true);
     });
 
     await().untilAsserted(() -> {
-      assertThat(federatingManager.pendingTasks()).hasSize(1);
+      assertThat(federatingManager.pendingTasks())
+          .hasSize(1);
     });
 
     latch.countDown();
 
     await().untilAsserted(() -> {
-      assertThat(federatingManager.pendingTasks()).isEmpty();
+      assertThat(federatingManager.pendingTasks())
+          .isEmpty();
     });
   }
 
@@ -473,12 +522,12 @@ public class FederatingManagerTest {
     FederatingManager federatingManager = new FederatingManager(repo, member, distributionManager,
         service, cache, proxyFactory, messenger, regionManagementStats, executorService);
 
-    assertThat(federatingManager.pendingTasks()).isEmpty();
+    assertThat(federatingManager.pendingTasks())
+        .isEmpty();
   }
 
   @Test
   public void restartDoesNotThrowIfOtherMembersExist() {
-    DistributionManager distributionManager = mock(DistributionManager.class);
     when(distributionManager.getOtherDistributionManagerIds())
         .thenReturn(singleton(mock(InternalDistributedMember.class)));
     FederatingManager federatingManager = new FederatingManager(repo, member, distributionManager,
@@ -487,7 +536,7 @@ public class FederatingManagerTest {
     federatingManager.startManager();
     federatingManager.stopManager();
 
-    assertThatCode(federatingManager::startManager)
+    assertThatCode(() -> federatingManager.startManager())
         .doesNotThrowAnyException();
   }
 
@@ -495,7 +544,8 @@ public class FederatingManagerTest {
   public void startManagerThrowsManagementExceptionWithNestedCauseOfFailure() {
     RuntimeException exception = new RuntimeException("startManager failed");
     doThrow(exception)
-        .when(messenger).broadcastManagerInfo();
+        .when(messenger)
+        .broadcastManagerInfo();
     FederatingManager federatingManager = new FederatingManager(repo, member, distributionManager,
         service, cache, proxyFactory, messenger, regionManagementStats, executorService);
 
@@ -510,42 +560,51 @@ public class FederatingManagerTest {
   public void pendingTasksIsClearIfStartManagerFails() {
     RuntimeException exception = new RuntimeException("startManager failed");
     doThrow(exception)
-        .when(messenger).broadcastManagerInfo();
+        .when(messenger)
+        .broadcastManagerInfo();
     FederatingManager federatingManager = new FederatingManager(repo, member, distributionManager,
         service, cache, proxyFactory, messenger, regionManagementStats, executorService);
 
     Throwable thrown = catchThrowable(() -> federatingManager.startManager());
-    assertThat(thrown).isNotNull();
 
-    assertThat(federatingManager.pendingTasks()).isEmpty();
+    assertThat(thrown)
+        .isNotNull();
+    assertThat(federatingManager.pendingTasks())
+        .isEmpty();
   }
 
   @Test
   public void startingIsFalseIfStartManagerFails() {
     RuntimeException exception = new RuntimeException("startManager failed");
     doThrow(exception)
-        .when(messenger).broadcastManagerInfo();
+        .when(messenger)
+        .broadcastManagerInfo();
     FederatingManager federatingManager = new FederatingManager(repo, member, distributionManager,
         service, cache, proxyFactory, messenger, regionManagementStats, executorService);
 
     Throwable thrown = catchThrowable(() -> federatingManager.startManager());
-    assertThat(thrown).isNotNull();
 
-    assertThat(federatingManager.isStarting()).isFalse();
+    assertThat(thrown)
+        .isNotNull();
+    assertThat(federatingManager.isStarting())
+        .isFalse();
   }
 
   @Test
   public void runningIsFalseIfStartManagerFails() {
     RuntimeException exception = new RuntimeException("startManager failed");
     doThrow(exception)
-        .when(messenger).broadcastManagerInfo();
+        .when(messenger)
+        .broadcastManagerInfo();
     FederatingManager federatingManager = new FederatingManager(repo, member, distributionManager,
         service, cache, proxyFactory, messenger, regionManagementStats, executorService);
 
     Throwable thrown = catchThrowable(() -> federatingManager.startManager());
-    assertThat(thrown).isNotNull();
 
-    assertThat(federatingManager.isRunning()).isFalse();
+    assertThat(thrown)
+        .isNotNull();
+    assertThat(federatingManager.isRunning())
+        .isFalse();
   }
 
   private void awaitCyclicBarrier(CyclicBarrier barrier) {
@@ -564,20 +623,5 @@ public class FederatingManagerTest {
       errorCollector.addError(e);
       throw new RuntimeException(e);
     }
-  }
-
-  private InternalDistributedMember member() {
-    return member(1, 1);
-  }
-
-  private InternalDistributedMember member(int viewId, int port) {
-    InternalDistributedMember member = mock(InternalDistributedMember.class);
-    when(member.getInetAddress())
-        .thenReturn(mock(InetAddress.class));
-    when(member.getVmViewId())
-        .thenReturn(viewId);
-    when(member.getMembershipPort())
-        .thenReturn(port);
-    return member;
   }
 }
