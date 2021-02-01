@@ -37,7 +37,7 @@ class DependencyConstraints implements Plugin<Project> {
     deps.put("commons-io.version", "2.8.0")
     deps.put("commons-lang3.version", "3.11")
     deps.put("commons-validator.version", "1.7")
-    deps.put("fastutil.version", "8.4.4")
+    deps.put("fastutil.version", "8.5.1")
     deps.put("javax.transaction-api.version", "1.3")
     deps.put("jgroups.version", "3.6.14.Final")
     deps.put("log4j.version", "2.14.0")
@@ -57,7 +57,7 @@ class DependencyConstraints implements Plugin<Project> {
 
     // The jetty version is also hard-coded in geode-assembly:test
     // at o.a.g.sessions.tests.GenericAppServerInstall.java
-    deps.put("jetty.version", "9.4.35.v20201120")
+    deps.put("jetty.version", "9.4.36.v20210114")
 
     // These version numbers are consumed by protobuf configurations that are plugin-specific and not
     // part of the typical Gradle dependency configurations.
@@ -105,7 +105,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'com.sun.mail', name: 'javax.mail', version: '1.6.2')
         api(group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '2.3.2')
         api(group: 'com.tngtech.archunit', name:'archunit-junit4', version: '0.15.0')
-        api(group: 'com.zaxxer', name: 'HikariCP', version: '3.4.5')
+        api(group: 'com.zaxxer', name: 'HikariCP', version: '4.0.1')
         api(group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4')
         api(group: 'commons-codec', name: 'commons-codec', version: '1.15')
         api(group: 'commons-collections', name: 'commons-collections', version: '3.2.2')
@@ -147,10 +147,10 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13')
         api(group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.4.14')
         api(group: 'org.apache.shiro', name: 'shiro-core', version: get('shiro.version'))
-        api(group: 'org.assertj', name: 'assertj-core', version: '3.18.1')
+        api(group: 'org.assertj', name: 'assertj-core', version: '3.19.0')
         api(group: 'org.awaitility', name: 'awaitility', version: '4.0.3')
         api(group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.68')
-        api(group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.8.4')
+        api(group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.9.0')
         api(group: 'org.eclipse.jetty', name: 'jetty-server', version: get('jetty.version'))
         api(group: 'org.eclipse.jetty', name: 'jetty-webapp', version: get('jetty.version'))
         api(group: 'org.eclipse.persistence', name: 'javax.persistence', version: '2.2.1')
@@ -163,12 +163,12 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'org.postgresql', name: 'postgresql', version: '42.2.8')
         api(group: 'org.skyscreamer', name: 'jsonassert', version: '1.5.0')
         api(group: 'org.slf4j', name: 'slf4j-api', version: get('slf4j-api.version'))
-        api(group: 'org.springframework.hateoas', name: 'spring-hateoas', version: '1.2.2')
+        api(group: 'org.springframework.hateoas', name: 'spring-hateoas', version: '1.2.3')
         api(group: 'org.springframework.ldap', name: 'spring-ldap-core', version: '2.3.2.RELEASE')
         api(group: 'org.springframework.shell', name: 'spring-shell', version: '1.2.0.RELEASE')
         api(group: 'org.testcontainers', name: 'testcontainers', version: '1.14.3')
         api(group: 'pl.pragmatists', name: 'JUnitParams', version: '1.1.0')
-        api(group: 'redis.clients', name: 'jedis', version: '3.4.1')
+        api(group: 'redis.clients', name: 'jedis', version: '3.5.1')
         api(group: 'io.lettuce', name: 'lettuce-core', version: '6.0.2.RELEASE')
         api(group: 'xerces', name: 'xercesImpl', version: '2.12.0')
       }
@@ -269,7 +269,7 @@ class DependencyConstraints implements Plugin<Project> {
       entry('spring-boot-starter-data-redis')
     }
 
-    dependencySet(group: 'org.springframework.session', version: '2.4.1') {
+    dependencySet(group: 'org.springframework.session', version: '2.4.2') {
       entry('spring-session-data-redis')
     }
 
