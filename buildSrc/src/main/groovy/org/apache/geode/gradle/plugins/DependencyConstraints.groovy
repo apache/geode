@@ -87,8 +87,6 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'cglib', name: 'cglib', version: get('cglib.version'))
         api(group: 'com.arakelian', name: 'java-jq', version: '1.1.0')
         api(group: 'com.carrotsearch.randomizedtesting', name: 'randomizedtesting-runner', version: '2.7.8')
-        api(group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-joda', version: '2.9.8')
-        api(group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.11.3')
         api(group: 'com.github.davidmoten', name: 'geo', version: '0.7.7')
         api(group: 'com.github.stefanbirkner', name: 'system-rules', version: '1.19.0')
         api(group: 'com.github.stephenc.findbugs', name: 'findbugs-annotations', version: '1.3.9-1')
@@ -129,7 +127,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'javax.resource', name: 'javax.resource-api', version: '1.7.1')
         api(group: 'javax.servlet', name: 'javax.servlet-api', version: '3.1.0')
         api(group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1')
-        api(group: 'joda-time', name: 'joda-time', version: '2.9.8')
+        api(group: 'joda-time', name: 'joda-time', version: '2.10.9')
         api(group: 'junit', name: 'junit', version: get('junit.version'))
         api(group: 'mx4j', name: 'mx4j-tools', version: '3.0.1')
         api(group: 'mysql', name: 'mysql-connector-java', version: '5.1.46')
@@ -174,10 +172,15 @@ class DependencyConstraints implements Plugin<Project> {
       }
     }
 
-    dependencySet(group: 'com.fasterxml.jackson.core', version: '2.11.3') {
+    dependencySet(group: 'com.fasterxml.jackson.core', version: '2.12.1') {
       entry('jackson-annotations')
       entry('jackson-core')
       entry('jackson-databind')
+    }
+
+    dependencySet(group: 'com.fasterxml.jackson.datatype', version: '2.12.1') {
+      entry('jackson-datatype-joda')
+      entry('jackson-datatype-jsr310')
     }
 
     dependencySet(group: 'com.jayway.jsonpath', version: '2.5.0') {
