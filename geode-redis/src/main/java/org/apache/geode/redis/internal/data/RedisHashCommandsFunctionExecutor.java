@@ -16,6 +16,7 @@
 
 package org.apache.geode.redis.internal.data;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
 import java.util.List;
@@ -107,7 +108,8 @@ public class RedisHashCommandsFunctionExecutor extends RedisDataCommandsFunction
   }
 
   @Override
-  public double hincrbyfloat(ByteArrayWrapper key, ByteArrayWrapper field, double increment) {
+  public BigDecimal hincrbyfloat(ByteArrayWrapper key, ByteArrayWrapper field,
+      BigDecimal increment) {
     return stripedExecute(key,
         () -> getRedisHash(key, false)
             .hincrbyfloat(getRegion(), key, field, increment));

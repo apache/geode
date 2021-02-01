@@ -18,6 +18,7 @@ package org.apache.geode.redis.internal.data;
 
 import static java.util.Collections.emptyList;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
@@ -51,11 +52,11 @@ public class NullRedisHash extends RedisHash {
   }
 
   @Override
-  public double hincrbyfloat(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
-      ByteArrayWrapper field, double increment) throws NumberFormatException {
+  public BigDecimal hincrbyfloat(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
+      ByteArrayWrapper field, BigDecimal increment) throws NumberFormatException {
     region.put(key,
         new RedisHash(
-            Arrays.asList(field, new ByteArrayWrapper(Coder.doubleToBytes(increment)))));
+            Arrays.asList(field, new ByteArrayWrapper(Coder.bigDecimalToBytes(increment)))));
     return increment;
   }
 }

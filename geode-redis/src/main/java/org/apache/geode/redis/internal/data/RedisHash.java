@@ -22,6 +22,7 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_OVERFLOW;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -278,39 +279,40 @@ public class RedisHash extends AbstractRedisData {
     return value;
   }
 
-  public double hincrbyfloat(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
-      ByteArrayWrapper field, double increment) throws NumberFormatException {
+  public BigDecimal hincrbyfloat(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
+      ByteArrayWrapper field, BigDecimal increment) throws NumberFormatException {
     ByteArrayWrapper oldValue = hash.get(field);
     if (oldValue == null) {
-      ByteArrayWrapper newValue = new ByteArrayWrapper(Coder.doubleToBytes(increment));
+      ByteArrayWrapper newValue = new ByteArrayWrapper(Coder.bigDecimalToBytes(increment));
       hashPut(field, newValue);
       AddsDeltaInfo deltaInfo = new AddsDeltaInfo();
       deltaInfo.add(field);
       deltaInfo.add(newValue);
       storeChanges(region, key, deltaInfo);
-      return increment;
+      return increment.stripTrailingZeros();
     }
 
     String valueS = oldValue.toString();
     if (valueS.contains(" ")) {
       throw new NumberFormatException("hash value is not a float");
     }
-    double value;
+
+    BigDecimal value;
     try {
-      value = Coder.stringToDouble(valueS);
+      value = new BigDecimal(valueS);
     } catch (NumberFormatException ex) {
       throw new NumberFormatException("hash value is not a float");
     }
 
-    value += increment;
+    value = value.add(increment);
 
-    ByteArrayWrapper modifiedValue = new ByteArrayWrapper(Coder.doubleToBytes(value));
+    ByteArrayWrapper modifiedValue = new ByteArrayWrapper(Coder.bigDecimalToBytes(value));
     hashPut(field, modifiedValue);
     AddsDeltaInfo deltaInfo = new AddsDeltaInfo();
     deltaInfo.add(field);
     deltaInfo.add(modifiedValue);
     storeChanges(region, key, deltaInfo);
-    return value;
+    return value.stripTrailingZeros();
   }
 
   @Override

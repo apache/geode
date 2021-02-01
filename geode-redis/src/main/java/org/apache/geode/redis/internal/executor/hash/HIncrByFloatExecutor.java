@@ -14,11 +14,15 @@
  */
 package org.apache.geode.redis.internal.executor.hash;
 
+
+import java.math.BigDecimal;
 import java.util.List;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.RedisResponse;
-import org.apache.geode.redis.internal.netty.Coder;
+import org.apache.geode.redis.internal.executor.string.IncrByFloatExecutor;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
@@ -46,31 +50,27 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
  */
 public class HIncrByFloatExecutor extends HashExecutor {
 
-  private static final String ERROR_INCREMENT_NOT_USABLE =
-      "The increment on this key must be floating point numeric";
-
   private static final int INCREMENT_INDEX = FIELD_INDEX + 1;
 
   @Override
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
-    byte[] byteField = commandElems.get(FIELD_INDEX);
-    ByteArrayWrapper field = new ByteArrayWrapper(byteField);
 
-    byte[] incrArray = commandElems.get(INCREMENT_INDEX);
-    double increment;
-    try {
-      increment = Coder.bytesToDouble(incrArray);
-    } catch (NumberFormatException e) {
-      return RedisResponse.error(ERROR_INCREMENT_NOT_USABLE);
+    Pair<BigDecimal, RedisResponse> validated =
+        IncrByFloatExecutor.validateIncrByFloatArgument(commandElems.get(INCREMENT_INDEX));
+    if (validated.getRight() != null) {
+      return validated.getRight();
     }
 
     ByteArrayWrapper key = command.getKey();
     RedisHashCommands redisHashCommands = createRedisHashCommands(context);
+    byte[] byteField = commandElems.get(FIELD_INDEX);
+    ByteArrayWrapper field = new ByteArrayWrapper(byteField);
 
-    double value = redisHashCommands.hincrbyfloat(key, field, increment);
-    return RedisResponse.bulkString(value);
+    BigDecimal value = redisHashCommands.hincrbyfloat(key, field, validated.getLeft());
+
+    return RedisResponse.bigDecimal(value);
   }
 
 }

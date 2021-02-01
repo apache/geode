@@ -16,9 +16,7 @@ package org.apache.geode.redis.internal.executor.hash;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Assertions.offset;
 
-import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -293,46 +291,6 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
       jedis.hincrBy(key, field1, myincr);
     }).isInstanceOf(JedisDataException.class)
         .hasMessageContaining("ERR increment or decrement would overflow");
-  }
-
-  @Test
-  public void testHIncrFloatBy() {
-    String key = "key";
-    String field = "field";
-
-    DecimalFormat decimalFormat = new DecimalFormat("#.#####");
-    double incr = rand.nextDouble();
-    String incrAsString = decimalFormat.format(incr);
-    incr = Double.valueOf(incrAsString);
-    if (incr == 0) {
-      incr = incr + 1;
-    }
-
-    Double response1 = jedis.hincrByFloat(key, field, incr);
-    assertThat(response1).isEqualTo(incr, offset(.00001));
-
-    assertThat(response1).isEqualTo(Double.valueOf(jedis.hget(key, field)), offset(.00001));
-
-    double response2 = jedis.hincrByFloat("new", "newField", incr);
-
-    assertThat(response2).isEqualTo(incr, offset(.00001));
-
-    Double response3 = jedis.hincrByFloat(key, field, incr);
-    assertThat(response3).isEqualTo(2 * incr, offset(.00001));
-
-    assertThat(response3).isEqualTo(Double.valueOf(jedis.hget(key, field)), offset(.00001));
-
-  }
-
-  @Test
-  public void incrByFloatFailsWithNonFloatFieldValue() {
-    String key = "key";
-    String field = "field";
-    jedis.hset(key, field, "foobar");
-    assertThatThrownBy(() -> {
-      jedis.hincrByFloat(key, field, 1.5);
-    }).isInstanceOf(JedisDataException.class)
-        .hasMessageContaining("ERR hash value is not a float");
   }
 
   @Test
@@ -773,21 +731,6 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
 
     String value = jedis.hget(key, field);
     assertThat(value).isEqualTo(Integer.toString(ITERATION_COUNT * 2));
-  }
-
-  @Test
-  public void testConcurrentHIncrByFloat_sameKeyPerClient() {
-    String key = "HSET_KEY";
-    String field = "HSET_FIELD";
-
-    jedis.hset(key, field, "0");
-
-    new ConcurrentLoopingThreads(ITERATION_COUNT,
-        (i) -> jedis.hincrByFloat(key, field, 0.5),
-        (i) -> jedis2.hincrByFloat(key, field, 1.0)).run();
-
-    String value = jedis.hget(key, field);
-    assertThat(value).isEqualTo(String.format("%.0f", ITERATION_COUNT * 1.5));
   }
 
   @Test

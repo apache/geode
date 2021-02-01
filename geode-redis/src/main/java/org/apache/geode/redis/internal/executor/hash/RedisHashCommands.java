@@ -15,6 +15,7 @@
 
 package org.apache.geode.redis.internal.executor.hash;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
 import java.util.List;
@@ -50,5 +51,5 @@ public interface RedisHashCommands {
 
   long hincrby(ByteArrayWrapper key, ByteArrayWrapper field, long increment);
 
-  double hincrbyfloat(ByteArrayWrapper key, ByteArrayWrapper field, double increment);
+  BigDecimal hincrbyfloat(ByteArrayWrapper key, ByteArrayWrapper field, BigDecimal increment);
 }
