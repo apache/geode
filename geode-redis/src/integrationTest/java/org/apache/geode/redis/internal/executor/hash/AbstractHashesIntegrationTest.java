@@ -537,7 +537,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   }
 
   @Test
-  public void hgetReturnsNewValue_whileUpdatingValue() {
+  public void hgetReturnsNewValue_whenValueIsUpdated() {
     String key = "key";
     String field = "field";
 
