@@ -172,41 +172,41 @@ start server \
 | HSTRLEN            	| HDEL                                               	| BGREWRITEAOF                  	|
 | HLEN                 	| HEXISTS                                            	| BGSAVE                        	|
 | HVALS              	| HGET                                               	| BITFIELD                      	|
-| INCRBYFLOAT       	| HINCRBY                                            	| BLPOP                         	|
-| KEYS               	| HINCRBYFLOAT                                       	| BRPOP                         	|
-| PERSIST            	| HKEYS                                              	| BRPOPLPUSH                    	|
-| PEXPIRE            	| HSCAN                                                 | BZPOPMAX                      	|
-| PEXPIREAT          	| INCR                                                  | BZPOPMIN                      	|
-| PING               	| INCRBY                                                | CLIENT CACHING                	|
-| PSUBSCRIBE         	| INFO                                                  | CLIENT GETNAME                	|
-| PTTL               	| MGET                                              	| CLIENT GETREDIR               	|
-| PUBLISH            	| MSET                                                 	| CLIENT ID                     	|
-| PUNSUBSCRIBE       	| MSETNX                                             	| CLIENT KILL                   	|
-| QUIT               	| PSETEX                                             	| CLIENT LIST                   	|
-| RENAME             	| SCAN                                               	| CLIENT PAUSE                  	|
-| SADD               	| SCARD                                                 | CLIENT REPLY                  	|
-| SET               	| SDIFF                                              	| CLIENT SETNAME                	|
-| SMEMBERS              | SDIFFSTORE                                         	| CLIENT TRACKING               	|
-| SREM                  | SELECT                                             	| CLIENT UNBLOCK                	|
-| SUBSCRIBE             | SETBIT                                             	| CLUSTER ADDSLOTS              	|
-| TTL                   | SETEX                                              	| CLUSTER BUMPEPOCH             	|
-| TYPE                  | SETNX                                              	| CLUSTER COUNT-FAILURE-REPORTS 	|
-| UNSUBSCRIBE          	| SETRANGE                                           	| CLUSTER COUNTKEYSINSLOT       	|
-|                    	| SHUTDOWN                                           	| CLUSTER DELSLOTS     	            |
-|                    	| SINTER                                             	| CLUSTER FAILOVER              	|
-|                    	| SINTERSTORE                                        	| CLUSTER FLUSHSLOTS                |
-|                    	| SISMEMBER                                          	| CLUSTER FORGET                    |
-|                    	| SLOWLOG                                            	| CLUSTER GETKEYSINSLOT             |
-|                    	| SMOVE                                              	| CLUSTER INFO                  	|
-|                    	| SPOP                                               	| CLUSTER KEYSLOT                   |
-|                    	| SRANDMEMBER                                        	| CLUSTER MEET                      |
-|                    	| SSCAN                                              	| CLUSTER MYID                   	|
-|                    	| STRLEN                                             	| CLUSTER NODES                 	|
-|                    	| SUNION                                             	| CLUSTER REPLICAS                  |
-|                    	| SUNIONSTORE                                        	| CLUSTER REPLICATE              	|
-|                    	| TIME                                               	| CLUSTER RESET                  	|
-|                    	| UNLINK [1]                                         	| CLUSTER SAVECONFIG                |
-|                    	|                                         	| CLUSTER SET-CONFIG-EPOCH          |
+| KEYS               	| HINCRBY                                            	| BLPOP                         	|
+| PERSIST            	| HINCRBYFLOAT                                       	| BRPOP                         	|
+| PEXPIRE            	| HKEYS                                              	| BRPOPLPUSH                    	|
+| PEXPIREAT          	| HSCAN                                                 | BZPOPMAX                      	|
+| PING               	| INCR                                                  | BZPOPMIN                      	|
+| PSUBSCRIBE         	| INCRBY                                                | CLIENT CACHING                	|
+| PTTL               	| INCRBYFLOAT                                           | CLIENT GETNAME                	|
+| PUBLISH            	| INFO                                              	| CLIENT GETREDIR               	|
+| PUNSUBSCRIBE       	| MGET                                                 	| CLIENT ID                     	|
+| QUIT               	| MSET                                               	| CLIENT KILL                   	|
+| RENAME             	| MSETNX                                             	| CLIENT LIST                   	|
+| SADD               	| PSETEX                                             	| CLIENT PAUSE                  	|
+| SET                	| SCAN                                                  | CLIENT REPLY                  	|
+| SMEMBERS          	| SCARD                                              	| CLIENT SETNAME                	|
+| SREM                  | SDIFF                                              	| CLIENT TRACKING               	|
+| SUBSCRIBE             | SDIFFSTORE                                         	| CLIENT UNBLOCK                	|
+| TTL                   | SELECT                                             	| CLUSTER ADDSLOTS              	|
+| TYPE                  | SETBIT                                             	| CLUSTER BUMPEPOCH             	|
+| UNSUBSCRIBE           | SETEX                                              	| CLUSTER COUNT-FAILURE-REPORTS 	|
+|                    	| SETNX                                              	| CLUSTER COUNTKEYSINSLOT       	|
+|                    	| SETRANGE                                           	| CLUSTER DELSLOTS     	            |
+|                    	| SHUTDOWN                                           	| CLUSTER FAILOVER              	|
+|                    	| SINTER                                             	| CLUSTER FLUSHSLOTS                |
+|                    	| SINTERSTORE                                        	| CLUSTER FORGET                    |
+|                    	| SISMEMBER                                          	| CLUSTER GETKEYSINSLOT             |
+|                    	| SLOWLOG                                            	| CLUSTER INFO                  	|
+|                    	| SMOVE                                              	| CLUSTER KEYSLOT                   |
+|                    	| SPOP                                               	| CLUSTER MEET                      |
+|                    	| SRANDMEMBER                                        	| CLUSTER MYID                   	|
+|                    	| SSCAN                                              	| CLUSTER NODES                 	|
+|                    	| STRLEN                                             	| CLUSTER REPLICAS                  |
+|                    	| SUNION                                             	| CLUSTER REPLICATE              	|
+|                    	| SUNIONSTORE                                        	| CLUSTER RESET                  	|
+|                    	| TIME                                               	| CLUSTER SAVECONFIG                |
+|                    	| UNLINK [1]                                         	| CLUSTER SET-CONFIG-EPOCH          |
 |                    	|                                       	            | CLUSTER SETSLOT                   |
 |                    	|                                      	                | CLUSTER SLAVES                    |
 |                    	|                                      	                | CLUSTER SLOTS                 	|
