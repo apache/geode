@@ -16,6 +16,7 @@
 
 package org.apache.geode.redis.internal.executor;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -169,7 +170,7 @@ public class CommandFunction extends SingleResultRedisFunction {
         return stringCommands.incrby(key, increment);
       }
       case INCRBYFLOAT: {
-        double increment = (double) args[1];
+        BigDecimal increment = (BigDecimal) args[1];
         return stringCommands.incrbyfloat(key, increment);
       }
       case DECRBY: {

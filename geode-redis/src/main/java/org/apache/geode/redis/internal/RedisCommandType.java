@@ -151,6 +151,7 @@ public enum RedisCommandType {
 
   APPEND(new AppendExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
   GET(new GetExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
+  INCRBYFLOAT(new IncrByFloatExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
   SET(new SetExecutor(), SUPPORTED, new MinimumParameterRequirements(3)),
 
   /************* Hashes *****************/
@@ -219,7 +220,6 @@ public enum RedisCommandType {
   GETSET(new GetSetExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
   INCR(new IncrExecutor(), UNSUPPORTED, new ExactParameterRequirements(2)),
   INCRBY(new IncrByExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
-  INCRBYFLOAT(new IncrByFloatExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
   MGET(new MGetExecutor(), UNSUPPORTED, new MinimumParameterRequirements(2)),
   MSET(new MSetExecutor(), UNSUPPORTED,
       new MinimumParameterRequirements(3).and(new OddParameterRequirements())),
