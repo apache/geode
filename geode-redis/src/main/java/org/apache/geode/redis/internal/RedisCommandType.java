@@ -150,21 +150,37 @@ public enum RedisCommandType {
   /************* Strings *****************/
 
   APPEND(new AppendExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
+  DECR(new DecrExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
   GET(new GetExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
+  INCRBY(new IncrByExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
+  INCR(new IncrExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
+  GETRANGE(new GetRangeExecutor(), SUPPORTED, new ExactParameterRequirements(4)),
+  INCRBYFLOAT(new IncrByFloatExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
+  MGET(new MGetExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
   SET(new SetExecutor(), SUPPORTED, new MinimumParameterRequirements(3)),
+  SETNX(new SetNXExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
+  STRLEN(new StrlenExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
 
   /************* Hashes *****************/
 
+  HDEL(new HDelExecutor(), SUPPORTED, new MinimumParameterRequirements(3)),
+  HGET(new HGetExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
   HGETALL(new HGetAllExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
+  HINCRBYFLOAT(new HIncrByFloatExecutor(), SUPPORTED, new ExactParameterRequirements(4)),
+  HLEN(new HLenExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
+  HMGET(new HMGetExecutor(), SUPPORTED, new MinimumParameterRequirements(3)),
   HMSET(new HMSetExecutor(), SUPPORTED,
       new MinimumParameterRequirements(4).and(new EvenParameterRequirements())),
-  HMGET(new HMGetExecutor(), SUPPORTED, new MinimumParameterRequirements(3)),
   HSET(new HSetExecutor(), SUPPORTED,
       new MinimumParameterRequirements(4).and(new EvenParameterRequirements())),
   HSETNX(new HSetNXExecutor(), SUPPORTED, new ExactParameterRequirements(4)),
-  HLEN(new HLenExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
   HSTRLEN(new HStrLenExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
+  HINCRBY(new HIncrByExecutor(), SUPPORTED, new ExactParameterRequirements(4)),
   HVALS(new HValsExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
+  HSCAN(new HScanExecutor(), SUPPORTED, new MinimumParameterRequirements(3),
+      new OddParameterRequirements(ERROR_SYNTAX)),
+  HEXISTS(new HExistsExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
+  HKEYS(new HKeysExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
 
   /************* Sets *****************/
 
@@ -212,15 +228,9 @@ public enum RedisCommandType {
   BITCOUNT(new BitCountExecutor(), UNSUPPORTED, new MinimumParameterRequirements(2)),
   BITOP(new BitOpExecutor(), UNSUPPORTED, new MinimumParameterRequirements(4)),
   BITPOS(new BitPosExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3)),
-  DECR(new DecrExecutor(), UNSUPPORTED, new ExactParameterRequirements(2)),
   DECRBY(new DecrByExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
   GETBIT(new GetBitExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
-  GETRANGE(new GetRangeExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
   GETSET(new GetSetExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
-  INCR(new IncrExecutor(), UNSUPPORTED, new ExactParameterRequirements(2)),
-  INCRBY(new IncrByExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
-  INCRBYFLOAT(new IncrByFloatExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
-  MGET(new MGetExecutor(), UNSUPPORTED, new MinimumParameterRequirements(2)),
   MSET(new MSetExecutor(), UNSUPPORTED,
       new MinimumParameterRequirements(3).and(new OddParameterRequirements())),
   MSETNX(new MSetNXExecutor(), UNSUPPORTED,
@@ -228,22 +238,7 @@ public enum RedisCommandType {
   PSETEX(new PSetEXExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
   SETBIT(new SetBitExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
   SETEX(new SetEXExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
-  SETNX(new SetNXExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
   SETRANGE(new SetRangeExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
-  STRLEN(new StrlenExecutor(), UNSUPPORTED, new ExactParameterRequirements(2)),
-
-  /***************************************
-   **************** Hashes ***************
-   ***************************************/
-
-  HDEL(new HDelExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3)),
-  HEXISTS(new HExistsExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
-  HGET(new HGetExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
-  HINCRBY(new HIncrByExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
-  HINCRBYFLOAT(new HIncrByFloatExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
-  HKEYS(new HKeysExecutor(), UNSUPPORTED, new ExactParameterRequirements(2)),
-  HSCAN(new HScanExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3),
-      new OddParameterRequirements(ERROR_SYNTAX)),
 
   /***************************************
    **************** Sets *****************
