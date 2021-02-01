@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.Map;
@@ -1149,9 +1150,17 @@ public class Message {
    */
   public void receive() throws IOException {
     if (this.socket != null) {
-      synchronized (getCommBuffer()) {
-        readHeaderAndBody(false, -1);
-      }
+      do {
+        // loop with a timeout in case other threads are trying to shut down and close the socket
+        try {
+          synchronized (getCommBuffer()) {
+            readHeaderAndBody(true, 1000);
+          }
+          return;
+        } catch (SocketTimeoutException e) {
+          continue;
+        }
+      } while (true);
     } else {
       throw new IOException("Dead Connection");
     }
