@@ -51,19 +51,13 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.cache.CacheTestCase;
 
 /**
- * A test of the when we will use the object sizer to determine the actual size of objects wrapped
- * in CacheDeserializables.
- * <p>
- * <p>
- * <p>
- * TODO - I was intending to add tests that have an index and object sizer, but it appears we don't
- * support indexes on regions with overflow to disk.
+ * Tests the use of the per-delta "forceRecalculateSize" flag.
  */
 
-public class DeltaForceSizingFlagDUnitTest extends JUnit4CacheTestCase {
+public class DeltaForceSizingFlagDUnitTest extends CacheTestCase {
 
   public DeltaForceSizingFlagDUnitTest() {
     super();

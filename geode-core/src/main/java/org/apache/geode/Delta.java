@@ -40,7 +40,7 @@ public interface Delta {
    * This method is invoked on an application object at the delta sender, if GemFire determines the
    * presence of a delta by calling {@link Delta#hasDelta()} on the object. The delta is written to
    * the {@link DataOutput} object provided by GemFire.
-   * <p>
+   *
    * Any delta state should be reset in this method.
    */
   void toDelta(DataOutput out) throws IOException;

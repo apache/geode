@@ -165,7 +165,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    */
   private byte[] deltaBytes = null;
 
-  /* Is this special about recalculating size? */
+  /** If true, causes deltas to trigger recalculation of bucket size **/
   private boolean forceRecalculateSize = false;
 
   /** routing information for cache clients for this event */
