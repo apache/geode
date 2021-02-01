@@ -504,6 +504,50 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
         .hasMessage("ERR wrong number of arguments for 'hvals' command");
   }
 
+  @Test
+  public void hget_shouldThrowError_givenWrongNumberOfArguments() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HGET))
+        .hasMessageContaining("ERR wrong number of arguments for 'hget' command");
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HGET, "1"))
+        .hasMessageContaining("ERR wrong number of arguments for 'hget' command");
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HGET, "1", "2", "3"))
+        .hasMessageContaining("ERR wrong number of arguments for 'hget' command");
+  }
+
+  @Test
+  public void hgetFailsForNonHash() {
+    jedis.sadd("farm", "chicken");
+    assertThatThrownBy(() -> jedis.hget("farm", "chicken"))
+        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+
+    jedis.set("tractor", "John Deere");
+    assertThatThrownBy(() -> jedis.hget("tractor", "John Deere"))
+        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+  }
+
+  @Test
+  public void hgetReturnsExpectedValue() {
+    String key = "key";
+    String field = "field";
+    String value = "value";
+
+    jedis.hset(key, field, value);
+
+    assertThat(jedis.hget(key, field)).isEqualTo(value);
+  }
+
+  @Test
+  public void hgetReturnsNewValue_whileUpdatingValue() {
+    String key = "key";
+    String field = "field";
+
+    jedis.hset(key, field, "value");
+    assertThat(jedis.hget(key, field)).isEqualTo("value");
+
+    jedis.hset(key, field, "updatedValue");
+    assertThat(jedis.hget(key, field)).isEqualTo("updatedValue");
+  }
+
   /**
    * <pre>
    * Test HLEN
