@@ -25,6 +25,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.mock;
@@ -881,16 +882,41 @@ public class GMSJoinLeaveJUnitTest {
     verify(manager).quorumLost(crashes, newView);
   }
 
-  // Possibly modify test to check for network partition message in the force disconnect
   @Test
-  public void testNetworkPartitionMessageReceived() throws Exception {
+  public void testNetworkPartitionFromViewMemberReceived() throws Exception {
     initMocks();
     becomeCoordinatorForTest(gmsJoinLeave);
     NetworkPartitionMessage message = new NetworkPartitionMessage();
+    message.setSender(gmsJoinLeaveMemberId);
     gmsJoinLeave.processMessage(message);
-    verify(manager).forceDisconnect(isA(String.class));
+    verify(manager).forceDisconnect(contains(gmsJoinLeaveMemberId.toString()));
   }
 
+  @Test
+  public void testNetworkPartitionMessageFromNonMemberWithSameViewIdReceived() throws Exception {
+    initMocks();
+    becomeCoordinatorForTest(gmsJoinLeave);
+    gmsJoinLeave.getView().setViewId(1);
+
+    mockMembers[0].setVmViewId(1);
+    NetworkPartitionMessage message = new NetworkPartitionMessage();
+    message.setSender(mockMembers[0]);
+    gmsJoinLeave.processMessage(message);
+    verify(manager).forceDisconnect(contains(mockMembers[0].toString()));
+  }
+
+  @Test
+  public void testNetworkPartitionMessageFromNonMemberWithOlderViewIdIgnored() throws Exception {
+    initMocks();
+    becomeCoordinatorForTest(gmsJoinLeave);
+    gmsJoinLeave.getView().setViewId(1);
+
+    mockMembers[0].setVmViewId(0);
+    NetworkPartitionMessage message = new NetworkPartitionMessage();
+    message.setSender(mockMembers[0]);
+    gmsJoinLeave.processMessage(message);
+    verify(manager, never()).forceDisconnect(isA(String.class));
+  }
 
   @Test
   public void testQuorumLossNotificationWithNetworkPartitionDetectionDisabled() throws Exception {
