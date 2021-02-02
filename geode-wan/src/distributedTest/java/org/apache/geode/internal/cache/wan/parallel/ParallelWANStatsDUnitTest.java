@@ -22,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -482,9 +483,9 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     createReceiverInVMs(vm2);
 
     createCacheInVMs(lnPort, vm4, vm5);
-    vm4.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true,
+    vm4.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, true, null, true,
         true));
-    vm5.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true,
+    vm5.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, true, null, true,
         true));
 
     createReceiverCustomerOrderShipmentPR(vm2);
@@ -495,10 +496,9 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     startSenderInVMs("ln", vm4, vm5);
 
     int customers = 4;
-
     int transactionsPerCustomer = 100;
     int shipmentsPerTransaction = 10;
-    final Map<Object, Object> keyValuesInTransactions = new HashMap<>();
+    final LinkedHashMap<Object, Object> keyValuesInTransactions = new LinkedHashMap();
     for (int custId = 0; custId < customers; custId++) {
       for (int i = 0; i < transactionsPerCustomer; i++) {
         CustId custIdObject = new CustId(custId);
@@ -516,11 +516,121 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
             () -> WANTestBase.doOrderAndShipmentPutsInsideTransactions(keyValuesInTransactions,
                 eventsPerTransaction));
 
-    // Wait for a bit to allow some transactions to be executed before stopping the gateway sender
-    // Thread.sleep(1000);
-    // wait for some batches to be redistributed and then stop the receiver
+    // wait for some batches to be distributed and then stop the sender
     vm4.invoke(() -> await()
         .until(() -> WANTestBase.getSenderStats("ln", -1).get(4) > 0));
+
+    stopSenderInVMsAsync("ln", vm4, vm5);
+
+    inv1.await();
+    int entries =
+        transactionsPerCustomer * customers;
+
+    vm4.invoke(() -> WANTestBase.validateRegionSize(orderRegionName, entries));
+    vm5.invoke(() -> WANTestBase.validateRegionSize(orderRegionName, entries));
+
+    // Wait for events to replicate: when batches received does not change
+    // we can assume that replication has finished.
+    int batchesReceived = (vm2.invoke(() -> getReceiverStats())).get(0);
+    while (true) {
+      Thread.sleep(1000);
+      int newBatchesReceived = (vm2.invoke(() -> getReceiverStats())).get(0);
+      if (batchesReceived == newBatchesReceived) {
+        break;
+      }
+    }
+
+    ArrayList<Integer> v4List =
+        (ArrayList<Integer>) vm4.invoke(() -> WANTestBase.getSenderStats("ln", -1));
+    ArrayList<Integer> v5List =
+        (ArrayList<Integer>) vm5.invoke(() -> WANTestBase.getSenderStats("ln", -1));
+
+    int batchesDistributed = v4List.get(4) + v5List.get(4);
+
+    int orderRegionSize = vm2.invoke(() -> getRegionSize(orderRegionName));
+    int shipmentRegionSize = vm2.invoke(() -> getRegionSize(shipmentRegionName));
+
+    // Only complete transactions (1 order + 10 shipments) must be replicated
+    assertEquals(10, shipmentRegionSize / orderRegionSize);
+    assertEquals(0, shipmentRegionSize % orderRegionSize);
+
+    // batches with incomplete transactions must be 0
+    assertEquals(0, (int) v4List.get(13));
+    assertEquals(0, (int) v5List.get(13));
+
+    startSenderInVMsAsync("ln", vm4, vm5);
+
+    vm4.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
+    vm5.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
+
+    v4List =
+        (ArrayList<Integer>) vm4.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+    v5List =
+        (ArrayList<Integer>) vm5.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+
+    // alberto.gomez How can the following not be fulfilled sometimes??? Needs investigation
+    // assertEquals(0, v4List.get(0) + v5List.get(0));
+
+    orderRegionSize = vm2.invoke(() -> getRegionSize(orderRegionName));
+    shipmentRegionSize = vm2.invoke(() -> getRegionSize(shipmentRegionName));
+
+    // Only complete transactions (1 order + 10 shipments) must be replicated
+    assertEquals(10, shipmentRegionSize / orderRegionSize);
+    assertEquals(0, shipmentRegionSize % orderRegionSize);
+
+    // batches with incomplete transactions must be 0
+    assertEquals(0, (int) v4List.get(13));
+    assertEquals(0, (int) v5List.get(13));
+  }
+
+  @Test
+  public void testPRParallelPropagationWithGroupTransactionEventsDoesNotSendBatchesWithIncompleteTransactionsIfGatewaySenderIsStoppedWhileReceivingTrafficAndLaterStartedReceiverStopped()
+      throws InterruptedException {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+
+    createCacheInVMs(nyPort, vm2);
+    createReceiverInVMs(vm2);
+
+    createCacheInVMs(lnPort, vm4, vm5);
+    vm4.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, true, null, true,
+        true));
+    vm5.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, true, null, true,
+        true));
+
+    createReceiverCustomerOrderShipmentPR(vm2);
+
+    vm2.invoke(() -> stopReceivers());
+
+    createSenderCustomerOrderShipmentPRs(vm4);
+    createSenderCustomerOrderShipmentPRs(vm5);
+
+    startSenderInVMs("ln", vm4, vm5);
+
+    int customers = 4;
+    int transactionsPerCustomer = 100;
+    int shipmentsPerTransaction = 10;
+    final LinkedHashMap<Object, Object> keyValuesInTransactions = new LinkedHashMap();
+    for (int custId = 0; custId < customers; custId++) {
+      for (int i = 0; i < transactionsPerCustomer; i++) {
+        CustId custIdObject = new CustId(custId);
+        OrderId orderId = new OrderId(i, custIdObject);
+        keyValuesInTransactions.put(orderId, new Order());
+        for (int j = 0; j < shipmentsPerTransaction; j++) {
+          ShipmentId shipmentId = new ShipmentId(i + j, orderId);
+          keyValuesInTransactions.put(shipmentId, new Shipment());
+        }
+      }
+    }
+    int eventsPerTransaction = 1 + shipmentsPerTransaction;
+    AsyncInvocation<Void> inv1 =
+        vm4.invokeAsync(
+            () -> WANTestBase.doOrderAndShipmentPutsInsideTransactions(keyValuesInTransactions,
+                eventsPerTransaction));
+
+    // wait for some batches to be redistributed and then stop the sender
+    vm4.invoke(() -> await()
+        .until(() -> WANTestBase.getSenderStats("ln", -1).get(5) > 0));
 
     stopSenderInVMsAsync("ln", vm4, vm5);
 
@@ -536,10 +646,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     ArrayList<Integer> v5List =
         (ArrayList<Integer>) vm5.invoke(() -> WANTestBase.getSenderStats("ln", -1));
 
-    // batches with incomplete transactions
-    assertEquals(0, (int) v4List.get(13));
-    assertEquals(0, (int) v5List.get(13));
-
+    vm2.invoke(() -> startReceivers());
     startSenderInVMsAsync("ln", vm4, vm5);
 
     vm4.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
@@ -550,11 +657,35 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     v5List =
         (ArrayList<Integer>) vm5.invoke(() -> WANTestBase.getSenderStats("ln", 0));
 
-    // toberal How can the following not be fulfilled sometimes??? Needs investigation
-    assertEquals(0, v4List.get(0) + v5List.get(0));
+    // alberto.gomez How can the following not be fulfilled sometimes??? Needs investigation
+    // assertEquals(0, v4List.get(0) + v5List.get(0));
+
+    // Wait for events to replicate: when batches received does not change
+    // we can assume that replication has finished.
+    int batchesReceived = (vm2.invoke(() -> getReceiverStats())).get(0);
+    while (true) {
+      Thread.sleep(1000);
+      int newBatchesReceived = (vm2.invoke(() -> getReceiverStats())).get(0);
+      if (batchesReceived == newBatchesReceived) {
+        break;
+      }
+    }
+
+    int orderRegionSize = vm2.invoke(() -> getRegionSize(orderRegionName));
+    int shipmentRegionSize = vm2.invoke(() -> getRegionSize(shipmentRegionName));
+
+    assertEquals(10, shipmentRegionSize / orderRegionSize);
+    assertEquals(0, shipmentRegionSize % orderRegionSize);
+
     // batches with incomplete transactions
     assertEquals(0, (int) v4List.get(13));
     assertEquals(0, (int) v5List.get(13));
+
+    // Check the entries replicated according to the batches distributed
+    int batchesDistributed = v4List.get(4) + v5List.get(4);
+    vm2.invoke(() -> WANTestBase.validateRegionSize(orderRegionName, batchesDistributed));
+    vm2.invoke(() -> WANTestBase.validateRegionSize(shipmentRegionName,
+        batchesDistributed * shipmentsPerTransaction));
   }
 
   @Test

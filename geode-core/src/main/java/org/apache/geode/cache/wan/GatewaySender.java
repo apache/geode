@@ -181,7 +181,6 @@ public interface GatewaySender {
           GeodeGlossary.GEMFIRE_PREFIX + "get-transaction-events-from-queue-wait-time-ms",
           2);
 
-
   /**
    * The order policy. This enum is applicable only when concurrency-level is > 1.
    *

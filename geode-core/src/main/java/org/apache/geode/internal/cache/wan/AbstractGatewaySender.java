@@ -1098,7 +1098,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
           // In case the sender is not running, the event will be queued if
           // there is any event in the queue with the same transactionId as the
           // one of this event
-          if (!isRunning()) {
+          if (!isRunning() && mustGroupTransactionsAndEventHasTId) {
             hasSameTransactionId =
                 x -> x instanceof GatewaySenderEventImpl && clonedEvent.getTransactionId() != null
                     && clonedEvent.getTransactionId()
