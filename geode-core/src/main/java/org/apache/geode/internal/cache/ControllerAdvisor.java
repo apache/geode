@@ -26,9 +26,9 @@ import org.apache.geode.distributed.internal.DistributionAdvisee;
 import org.apache.geode.distributed.internal.ServerLocator;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
+import org.apache.geode.internal.serialization.Version;
 
 
 /**
@@ -134,7 +134,7 @@ public class ControllerAdvisor extends GridAdvisor {
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
       if (StaticSerialization.getVersionForDataStream(in)
-          .isNotOlderThan(KnownVersion.GEODE_1_14_0)) {
+          .isNotOlderThan(Version.ERICSSONGEODE_1_13_0_1)) {
         setInternalHost(DataSerializer.readString(in));
       } else {
         setInternalHost(getHost());

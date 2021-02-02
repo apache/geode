@@ -21,9 +21,9 @@ import java.io.IOException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
+import org.apache.geode.internal.serialization.Version;
 
 
 public class LocatorListRequest extends ServerLocationRequest {
@@ -59,7 +59,8 @@ public class LocatorListRequest extends ServerLocationRequest {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    if (StaticSerialization.getVersionForDataStream(in).isNotOlderThan(KnownVersion.GEODE_1_14_0)) {
+    if (StaticSerialization.getVersionForDataStream(in)
+        .isNotOlderThan(Version.ERICSSONGEODE_1_13_0_1)) {
       requestInternalAddress = DataSerializer.readPrimitiveBoolean(in);
     } else {
       requestInternalAddress = false;
@@ -74,7 +75,7 @@ public class LocatorListRequest extends ServerLocationRequest {
   }
 
   @Override
-  public KnownVersion[] getSerializationVersions() {
+  public Version[] getSerializationVersions() {
     return null;
   }
 }

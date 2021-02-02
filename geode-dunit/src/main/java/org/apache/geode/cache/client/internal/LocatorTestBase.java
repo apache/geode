@@ -17,6 +17,7 @@ package org.apache.geode.cache.client.internal;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
@@ -140,7 +141,7 @@ public abstract class LocatorTestBase extends JUnit4DistributedTestCase {
   protected int startLocator(final String hostName, final String otherLocators,
       final String hostNameForClient) throws Exception {
     disconnectFromDS();
-    int[] ports = getRandomAvailableTCPPorts(2);
+    int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
     int httpPort = ports[0];
     int jmxManagerPort = ports[1];
     Properties props = new Properties();

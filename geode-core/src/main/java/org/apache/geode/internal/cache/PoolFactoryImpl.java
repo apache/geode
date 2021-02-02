@@ -43,8 +43,8 @@ import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.StaticSerialization;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.internal.TypeRegistry;
 
@@ -696,7 +696,7 @@ public class PoolFactoryImpl implements InternalPoolFactory {
       multiuserSecureModeEnabled = DataSerializer.readPrimitiveBoolean(in);
       socketConnectTimeout = DataSerializer.readPrimitiveInt(in);
       if (StaticSerialization.getVersionForDataStream(in)
-          .isNotOlderThan(KnownVersion.GEODE_1_14_0)) {
+          .isNotOlderThan(Version.ERICSSONGEODE_1_13_0_1)) {
         requestLocatorInternalAddress = DataSerializer.readPrimitiveBoolean(in);
       } else {
         requestLocatorInternalAddress = false;
