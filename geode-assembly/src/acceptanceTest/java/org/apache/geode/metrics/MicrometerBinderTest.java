@@ -84,7 +84,7 @@ public class MicrometerBinderTest {
         "--J=-Dgemfire.jmx-manager-start=true",
         "--J=-Dgemfire.jmx-manager-port=" + jmxRmiPort);
 
-    gfshRule.execute(startServerCommand);
+    gfshRule.execute(startServerCommand, "sleep --time=1");
 
     Path functionJarPath = serverFolder.resolve("function.jar").toAbsolutePath();
     writeJarFromClasses(functionJarPath.toFile(), CheckIfMeterExistsFunction.class);
