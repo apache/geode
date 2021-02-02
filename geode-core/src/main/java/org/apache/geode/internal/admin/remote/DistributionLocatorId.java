@@ -20,6 +20,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -138,6 +139,9 @@ public class DistributionLocatorId implements java.io.Serializable {
    * <p>
    * Use bindaddress[port] or hostname[port]. This object doesn't need to differentiate between the
    * two.
+   * <p>
+   * Membername example: locator1 or locator-ny1.
+   * <p>
    */
   public DistributionLocatorId(String marshalled, String membername) {
     this.membername = membername;
@@ -372,7 +376,7 @@ public class DistributionLocatorId implements java.io.Serializable {
 
     if (!StringUtils.equals(this.hostnameForClients, that.hostnameForClients))
       return false;
-    if (this.host != that.host && !(this.host != null && this.host.equals(that.host)))
+    if (!Objects.equals(this.host, that.host))
       return false;
     if (this.port != that.port)
       return false;
@@ -400,7 +404,7 @@ public class DistributionLocatorId implements java.io.Serializable {
 
     if (!StringUtils.equals(this.hostnameForClients, that.hostnameForClients))
       return false;
-    if (this.host != that.host && !(this.host != null && this.host.equals(that.host)))
+    if (!Objects.equals(this.host, that.host))
       return false;
     if (this.port != that.port)
       return false;
