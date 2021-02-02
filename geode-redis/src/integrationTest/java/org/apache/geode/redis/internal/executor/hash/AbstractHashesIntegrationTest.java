@@ -887,8 +887,8 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   private void assertExactNumberOfArgs(Protocol.Command command, int numArgs) {
     final int MAX_NUM_ARGS = 5; // currently enough for all implemented commands
 
-    for(int i = 0; i <= MAX_NUM_ARGS; i++) {
-      if(i != numArgs) {
+    for (int i = 0; i <= MAX_NUM_ARGS; i++) {
+      if (i != numArgs) {
         byte[][] args = buildArgs(i);
         assertThatThrownBy(() -> jedis.sendCommand(command, args))
             .hasMessageContaining("ERR wrong number of arguments for '"
@@ -900,11 +900,11 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   private byte[][] buildArgs(int numArgs) {
     byte[][] args = new byte[numArgs][];
 
-    if(numArgs == 0) {
+    if (numArgs == 0) {
       return args;
     }
 
-    for(int i=0; i<numArgs; i++) {
+    for (int i = 0; i < numArgs; i++) {
       args[i] = String.valueOf(i).getBytes();
     }
 
