@@ -45,8 +45,7 @@ public class StringsDUnitTest {
 
   private static final String LOCAL_HOST = "127.0.0.1";
   private static final int LIST_SIZE = 1000;
-  private static final int JEDIS_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
+  private static final int JEDIS_TIMEOUT = Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
   private static Jedis jedis1;
   private static Jedis jedis2;
   private static Jedis jedis3;
@@ -133,18 +132,6 @@ public class StringsDUnitTest {
     assertThat(successes1.get() + successes2.get()).isEqualTo(LIST_SIZE);
   }
 
-  private Consumer<Integer> makeSetNXConsumer(List<String> keys, List<String> values,
-      AtomicInteger counter, Jedis jedis) {
-    return (i) -> {
-      SetParams setParams = new SetParams();
-      setParams.nx();
-      String result = jedis.set(keys.get(i), values.get(i), setParams);
-      if (result != null) {
-        counter.getAndIncrement();
-      }
-    };
-  }
-
   @Test
   public void setxx_shouldAlwaysSucceed_givenMultipleClientsSettingSameKeyThatAlreadyExists() {
     List<String> keys = makeStringList(LIST_SIZE, "key1-");
@@ -162,18 +149,6 @@ public class StringsDUnitTest {
         makeSetXXConsumer(keys, values, successes2, jedis2)).run();
 
     assertThat(successes2.get() + successes1.get()).isEqualTo(LIST_SIZE * 2);
-  }
-
-  private Consumer<Integer> makeSetXXConsumer(List<String> keys, List<String> values,
-      AtomicLong counter, Jedis jedis) {
-    return (i) -> {
-      SetParams setParams = new SetParams();
-      setParams.xx();
-      String result = jedis.set(keys.get(i), values.get(i), setParams);
-      if (result != null) {
-        counter.getAndIncrement();
-      }
-    };
   }
 
   @Test
@@ -243,11 +218,59 @@ public class StringsDUnitTest {
     }
   }
 
+  @Test
+  public void strLen_returnsStringLengthWhileUpdatingValues() {
+    for (int i = 0; i < LIST_SIZE; i++) {
+      jedis1.set("key-" + i, "value-" + i);
+    }
+
+    new ConcurrentLoopingThreads(LIST_SIZE,
+        (i) -> jedis1.set("key-" + i, "changedValue-" + i),
+        (i) -> {
+          long stringLength = jedis2.strlen("key-" + i);
+          assertThat(stringLength == ("changedValue-" + i).length()
+              || stringLength == ("value-" + i).length()).isTrue();
+        }).run();
+
+    for (int i = 0; i < LIST_SIZE; i++) {
+      String key = "key-" + i;
+      String value = jedis1.get(key);
+      String expectedValue = "changedValue-" + i;
+
+      assertThat(value.length()).isEqualTo(expectedValue.length());
+      assertThat(value).isEqualTo(expectedValue);
+    }
+  }
+
   private List<String> makeStringList(int setSize, String baseString) {
     List<String> strings = new ArrayList<>();
     for (int i = 0; i < setSize; i++) {
       strings.add(baseString + i);
     }
     return strings;
+  }
+
+  private Consumer<Integer> makeSetXXConsumer(List<String> keys, List<String> values,
+      AtomicLong counter, Jedis jedis) {
+    return (i) -> {
+      SetParams setParams = new SetParams();
+      setParams.xx();
+      String result = jedis.set(keys.get(i), values.get(i), setParams);
+      if (result != null) {
+        counter.getAndIncrement();
+      }
+    };
+  }
+
+  private Consumer<Integer> makeSetNXConsumer(List<String> keys, List<String> values,
+      AtomicInteger counter, Jedis jedis) {
+    return (i) -> {
+      SetParams setParams = new SetParams();
+      setParams.nx();
+      String result = jedis.set(keys.get(i), values.get(i), setParams);
+      if (result != null) {
+        counter.getAndIncrement();
+      }
+    };
   }
 }
