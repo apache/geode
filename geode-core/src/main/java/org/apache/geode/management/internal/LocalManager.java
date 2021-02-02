@@ -45,6 +45,7 @@ import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.HasCachePerfStats;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionFactory;
@@ -87,12 +88,16 @@ public class LocalManager extends Manager {
   private final Supplier<HasCachePerfStats> managementRegionStatsFactory;
   private final Supplier<ScheduledExecutorService> federationSchedulerFactory;
 
-  LocalManager(ManagementResourceRepo repo, InternalDistributedSystem system, InternalCache cache,
-      SystemManagementService service, int updateRate, StatisticsFactory statisticsFactory,
+  LocalManager(ManagementResourceRepo repo,
+      InternalDistributedSystem system,
+      InternalCache cache,
+      SystemManagementService service,
+      int updateRate,
+      StatisticsFactory statisticsFactory,
       StatisticsClock statisticsClock) {
     this(repo,
-        system,
         cache,
+        system.getDistributedMember(),
         service,
         new Object(),
         updateRate,
@@ -101,12 +106,17 @@ public class LocalManager extends Manager {
         () -> newSingleThreadScheduledExecutor("Management Task"));
   }
 
-  private LocalManager(ManagementResourceRepo repo, InternalDistributedSystem system,
-      InternalCache cache, SystemManagementService service, Object lock, int updateRate,
+  @VisibleForTesting
+  LocalManager(ManagementResourceRepo repo,
+      InternalCache cache,
+      InternalDistributedMember member,
+      SystemManagementService service,
+      Object lock,
+      int updateRate,
       Map<ObjectName, FederationComponent> federatedComponents,
       Supplier<HasCachePerfStats> managementRegionStatsFactory,
       Supplier<ScheduledExecutorService> federationSchedulerFactory) {
-    super(repo, cache, system.getDistributedMember());
+    super(repo, cache, member);
     this.service = service;
     this.lock = lock;
     this.updateRate = updateRate;

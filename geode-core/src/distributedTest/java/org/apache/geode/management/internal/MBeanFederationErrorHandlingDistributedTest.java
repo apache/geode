@@ -37,7 +37,6 @@ import java.util.function.Supplier;
 
 import javax.management.ObjectName;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -83,7 +82,6 @@ public class MBeanFederationErrorHandlingDistributedTest implements Serializable
   public DistributedRestoreSystemProperties restoreProps = new DistributedRestoreSystemProperties();
   @Rule
   public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
-
   @Rule
   public DistributedReference<LocatorLauncher> locatorLauncher = new DistributedReference<>();
   @Rule
@@ -107,45 +105,43 @@ public class MBeanFederationErrorHandlingDistributedTest implements Serializable
     serverVM.invoke(this::startServer);
   }
 
-  @After
-  public void tearDown() {
-    locatorVM.invoke(() -> {
-      proxyFactory = null;
-    });
-  }
-
   @Test
   public void destroyMBeanBeforeFederationCompletes() {
-    locatorVM.invoke(() -> doAnswer((Answer<Void>) invocation -> {
-      serverVM.invoke(() -> {
-        Region region = serverLauncher.get().getCache().getRegion(REGION_NAME);
-        region.destroyRegion();
-      });
+    locatorVM.invoke(() -> {
+      doAnswer((Answer<Void>) invocation -> {
+        serverVM.invoke(() -> {
+          Region region = serverLauncher.get().getCache().getRegion(REGION_NAME);
+          region.destroyRegion();
+        });
 
-      Region<String, Object> monitoringRegion = invocation.getArgument(2);
-      monitoringRegion.destroy(regionMXBeanName.toString());
+        Region<String, Object> monitoringRegion = invocation.getArgument(2);
+        monitoringRegion.destroy(regionMXBeanName.toString());
 
-      assertThat(monitoringRegion.get(regionMXBeanName.toString())).isNull();
+        assertThat(monitoringRegion.get(regionMXBeanName.toString())).isNull();
 
-      try {
-        invocation.callRealMethod();
-      } catch (Exception e) {
-        if (!locatorLauncher.get().getCache().isClosed()) {
-          errorCollector.addError(e);
+        try {
+          invocation.callRealMethod();
+        } catch (Exception e) {
+          if (!locatorLauncher.get().getCache().isClosed()) {
+            errorCollector.addError(e);
+          }
         }
-      }
 
-      return null;
-    })
-        .when(proxyFactory.get()).createProxy(any(), eq(regionMXBeanName), any(), any()));
+        return null;
+      })
+          .when(proxyFactory.get())
+          .createProxy(any(), eq(regionMXBeanName), any(), any());
+    });
 
     serverVM.invoke(() -> {
       serverLauncher.get().getCache().createRegionFactory(REPLICATE).create(REGION_NAME);
     });
 
     locatorVM.invoke(() -> {
-      await().untilAsserted(
-          () -> verify(proxyFactory.get()).createProxy(any(), eq(regionMXBeanName), any(), any()));
+      await().untilAsserted(() -> {
+        verify(proxyFactory.get())
+            .createProxy(any(), eq(regionMXBeanName), any(), any());
+      });
     });
   }
 

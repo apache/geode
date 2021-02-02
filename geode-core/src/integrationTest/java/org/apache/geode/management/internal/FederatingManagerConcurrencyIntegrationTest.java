@@ -26,7 +26,6 @@ import java.net.UnknownHostException;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Supplier;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -41,35 +40,32 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.test.junit.categories.JMXTest;
+import org.apache.geode.test.junit.rules.CloseableReference;
 
 @Category(JMXTest.class)
 public class FederatingManagerConcurrencyIntegrationTest {
 
-  private InternalCache cache;
   private FederatingManager federatingManager;
 
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+  @Rule
+  public CloseableReference<InternalCache> cache = new CloseableReference<>();
 
   @Before
   public void setUp() {
     System.setProperty(FEDERATING_MANAGER_FACTORY_PROPERTY,
         FederatingManagerFactoryWithMockMessenger.class.getName());
 
-    cache = (InternalCache) new CacheFactory()
+    cache.set((InternalCache) new CacheFactory()
         .set(LOCATORS, "")
-        .create();
+        .create());
 
     SystemManagementService managementService =
-        (SystemManagementService) ManagementService.getExistingManagementService(cache);
+        (SystemManagementService) ManagementService.getExistingManagementService(cache.get());
     managementService.createManager();
     federatingManager = managementService.getFederatingManager();
     federatingManager.startManager();
-  }
-
-  @After
-  public void tearDown() {
-    cache.close();
   }
 
   @Test
@@ -80,7 +76,7 @@ public class FederatingManagerConcurrencyIntegrationTest {
       federatingManager.addMember(member);
     }
 
-    await().until(() -> !cache.getAllRegions().isEmpty());
+    await().until(() -> !cache.get().getAllRegions().isEmpty());
 
     assertThat(federatingManager.latestException()).isNull();
   }
