@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.DataSerializable;
@@ -47,20 +49,31 @@ import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.test.dunit.Assert;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.SerializableCallable;
-import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.cache.CacheTestCase;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
 
 /**
  * Tests the use of the per-delta "forceRecalculateSize" flag.
  */
 
-public class DeltaForceSizingFlagDUnitTest extends CacheTestCase {
+public class DeltaForceSizingFlagDUnitTest {
 
-  public DeltaForceSizingFlagDUnitTest() {
-    super();
+  @Rule
+  public ClusterStartupRule cluster = new ClusterStartupRule();
+
+  protected MemberVM locator;
+  protected MemberVM server1;
+  protected MemberVM server2;
+
+  @Before
+  public void setup() {
+    int locatorPort;
+    locator = cluster.startLocatorVM(0);
+    locatorPort = locator.getPort();
+
+    server1 = cluster.startServerVM(1, locatorPort);
+    server2 = cluster.startServerVM(2, locatorPort);
   }
 
   @Test
@@ -80,17 +93,13 @@ public class DeltaForceSizingFlagDUnitTest extends CacheTestCase {
 
   @Test
   public void testRRListener() {
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
+    createRR(server1);
+    createRR(server2);
 
-    createRR(vm0);
-    createRR(vm1);
+    addListener(server1);
+    addListener(server2);
 
-    addListener(vm0);
-    addListener(vm1);
-
-    doListenerTestRR(vm0, vm1);
+    doListenerTestRR(server1.getVM(), server2.getVM());
   }
 
   @Test
@@ -130,75 +139,67 @@ public class DeltaForceSizingFlagDUnitTest extends CacheTestCase {
 
   @Test
   public void testPRListener() {
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
+    createPR(server1, true);
+    createPR(server2, true);
 
-    createPR(vm0, true);
-    createPR(vm1, true);
+    addListener(server1);
+    addListener(server2);
 
-    addListener(vm0);
-    addListener(vm1);
-
-    doListenerTestPR(vm0, vm1);
+    doListenerTestPR(server1.getVM(), server2.getVM());
   }
 
   @Test
   public void testPRHeapLRU() {
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
+    VM vm1 = server1.getVM();
+    VM vm2 = server2.getVM();
 
-    createPRHeapLRU(vm0);
-    createPRHeapLRU(vm1);
+    createPRHeapLRU(server1);
+    createPRHeapLRU(server2);
 
-    put(vm0, new TestKey("a"), new TestObject(100, 1000));
+    put(vm1, new TestKey("a"), new TestObject(100, 1000));
 
-    assertValueType(vm0, new TestKey("a"), ValueType.CD_SERIALIZED);
     assertValueType(vm1, new TestKey("a"), ValueType.CD_SERIALIZED);
+    assertValueType(vm2, new TestKey("a"), ValueType.CD_SERIALIZED);
 
-    assertEquals(1, getObjectSizerInvocations(vm0));
-    long origSize0 = getSizeFromPRStats(vm0);
-    assertTrue("Size was " + origSize0, 1000 > origSize0);
     assertEquals(1, getObjectSizerInvocations(vm1));
-    long origSize1 = getSizeFromPRStats(vm1);
+    long origSize0 = getSizeFromPRStats(vm1);
+    assertTrue("Size was " + origSize0, 1000 > origSize0);
+    assertEquals(1, getObjectSizerInvocations(vm2));
+    long origSize1 = getSizeFromPRStats(vm2);
     assertTrue("Size was " + origSize1, 1000 > origSize1);
 
-    get(vm0, new TestKey("a"), new TestObject(100, 1000));
+    get(vm1, new TestKey("a"), new TestObject(100, 1000));
 
-    assertValueType(vm0, new TestKey("a"), ValueType.CD_DESERIALIZED);
-    assertValueType(vm1, new TestKey("a"), ValueType.CD_SERIALIZED);
-    // assertTrue(1000 < getSizeFromPRStats(vm0));
-    assertEquals(3, getObjectSizerInvocations(vm0));
-    // assertTrue(1000 > getSizeFromPRStats(vm1));
-    assertEquals(1, getObjectSizerInvocations(vm1));
+    assertValueType(vm1, new TestKey("a"), ValueType.CD_DESERIALIZED);
+    assertValueType(vm2, new TestKey("a"), ValueType.CD_SERIALIZED);
+    assertEquals(3, getObjectSizerInvocations(vm1));
+    assertEquals(1, getObjectSizerInvocations(vm2));
 
     // Test what happens when we reach the heap threshold??
   }
 
   @Test
   public void testRRHeapLRU() {
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
+    VM vm1 = server1.getVM();
+    VM vm2 = server2.getVM();
 
-    createRRHeapLRU(vm0);
-    createRRHeapLRU(vm1);
+    createRRHeapLRU(server1);
+    createRRHeapLRU(server2);
 
-    put(vm0, "a", new TestObject(100, 1000));
+    put(vm1, "a", new TestObject(100, 1000));
 
-    assertValueType(vm0, "a", ValueType.RAW_VALUE);
-    assertValueType(vm1, "a", ValueType.CD_SERIALIZED);
+    assertValueType(vm1, "a", ValueType.RAW_VALUE);
+    assertValueType(vm2, "a", ValueType.CD_SERIALIZED);
 
-    assertEquals(1, getObjectSizerInvocations(vm0));
-    assertEquals(0, getObjectSizerInvocations(vm1));
-
-    get(vm1, "a", new TestObject(100, 1000));
-
-    assertValueType(vm0, "a", ValueType.RAW_VALUE);
-    assertValueType(vm1, "a", ValueType.CD_DESERIALIZED);
-    assertEquals(1, getObjectSizerInvocations(vm0));
     assertEquals(1, getObjectSizerInvocations(vm1));
+    assertEquals(0, getObjectSizerInvocations(vm2));
+
+    get(vm2, "a", new TestObject(100, 1000));
+
+    assertValueType(vm1, "a", ValueType.RAW_VALUE);
+    assertValueType(vm2, "a", ValueType.CD_DESERIALIZED);
+    assertEquals(1, getObjectSizerInvocations(vm1));
+    assertEquals(1, getObjectSizerInvocations(vm2));
 
     // Test what happens when we reach the heap threshold??
   }
@@ -226,12 +227,11 @@ public class DeltaForceSizingFlagDUnitTest extends CacheTestCase {
   // test to cover bug41916
   @Test
   public void testLargeDelta() {
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
+    VM vm1 = server1.getVM();
+    VM vm2 = server2.getVM();
 
-    createPR(vm0, false);
-    createPR(vm1, false);
+    createPR(server1, false);
+    createPR(server2, false);
     // make a string bigger than socket-buffer-size which defaults to 32k
     int BIG_DELTA_SIZE = 32 * 1024 * 2;
     StringBuilder sb = new StringBuilder(BIG_DELTA_SIZE);
@@ -240,19 +240,16 @@ public class DeltaForceSizingFlagDUnitTest extends CacheTestCase {
     }
     TestDelta delta1 = new TestDelta(true, sb.toString());
 
-    assignPRBuckets(vm0);
-    boolean vm0isPrimary = prHostsBucketForKey(vm0, 0);
+    assignPRBuckets(server1);
+    boolean vm0isPrimary = prHostsBucketForKey(server1, 0);
     if (!vm0isPrimary) {
-      assertEquals(true, prHostsBucketForKey(vm1, 0));
+      assertEquals(true, prHostsBucketForKey(server2, 0));
     }
-    VM primaryVm;
     VM secondaryVm;
     if (vm0isPrimary) {
-      primaryVm = vm0;
-      secondaryVm = vm1;
+      secondaryVm = vm2;
     } else {
-      primaryVm = vm1;
-      secondaryVm = vm0;
+      secondaryVm = vm1;
     }
 
     put(secondaryVm, 0, delta1);
@@ -260,30 +257,29 @@ public class DeltaForceSizingFlagDUnitTest extends CacheTestCase {
 
   void doPRDeltaTestLRU(boolean shouldSizeChange, boolean heapLRU, boolean putOnPrimary,
       boolean wasDelta) {
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
+    VM vm1 = server1.getVM();
+    VM vm2 = server2.getVM();
 
     if (heapLRU) {
-      createPRHeapLRU(vm0);
-      createPRHeapLRU(vm1);
+      createPRHeapLRU(server1);
+      createPRHeapLRU(server2);
     } else {// memLRU
-      createPR(vm0, true);
-      createPR(vm1, true);
+      createPR(server1, true);
+      createPR(server2, true);
     }
-    assignPRBuckets(vm0);
-    boolean vm0isPrimary = prHostsBucketForKey(vm0, 0);
+    assignPRBuckets(server1);
+    boolean vm0isPrimary = prHostsBucketForKey(server1, 0);
     if (!vm0isPrimary) {
-      assertEquals(true, prHostsBucketForKey(vm1, 0));
+      assertEquals(true, prHostsBucketForKey(server2, 0));
     }
     VM primaryVm;
     VM secondaryVm;
     if (vm0isPrimary) {
-      primaryVm = vm0;
-      secondaryVm = vm1;
-    } else {
       primaryVm = vm1;
-      secondaryVm = vm0;
+      secondaryVm = vm2;
+    } else {
+      primaryVm = vm2;
+      secondaryVm = vm1;
     }
 
     TestDelta delta1 = new TestDelta(false, "12345", shouldSizeChange);
@@ -354,17 +350,14 @@ public class DeltaForceSizingFlagDUnitTest extends CacheTestCase {
     }
   }
 
-  private void addListener(VM vm) {
-    vm.invoke(new SerializableRunnable("Add listener") {
-      @Override
-      public void run() {
-        Cache cache = getCache();
-        Region region = cache.getRegion("region");
-        try {
-          region.getAttributesMutator().addCacheListener(new TestCacheListener());
-        } catch (Exception e) {
-          Assert.fail("couldn't create index", e);
-        }
+  private void addListener(MemberVM memberVM) {
+    memberVM.invoke("Add listener", () -> {
+      Cache cache = ClusterStartupRule.getCache();
+      Region region = cache.getRegion("region");
+      try {
+        region.getAttributesMutator().addCacheListener(new TestCacheListener());
+      } catch (Exception e) {
+        Assert.fail("couldn't create index", e);
       }
     });
   }
@@ -436,185 +429,180 @@ public class DeltaForceSizingFlagDUnitTest extends CacheTestCase {
 
 
   private void doRRMemLRUTest() {
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
+    VM vm1 = server1.getVM();
+    VM vm2 = server2.getVM();
 
-    createRR(vm0);
-    createRR(vm1);
-    put(vm0, "a", new TestObject(100, 100000));
-    long origEvictionSize0 = getSizeFromEvictionStats(vm0);
-    long origEvictionSize1 = getSizeFromEvictionStats(vm1);
-    put(vm0, "a", new TestObject(200, 200000));
+    createRR(server1);
+    createRR(server2);
+    put(vm1, "a", new TestObject(100, 100000));
+    long origEvictionSize0 = getSizeFromEvictionStats(vm1);
+    long origEvictionSize1 = getSizeFromEvictionStats(vm2);
+    put(vm1, "a", new TestObject(200, 200000));
 
-    assertValueType(vm0, "a", ValueType.RAW_VALUE);
-    assertValueType(vm1, "a", ValueType.CD_SERIALIZED);
-    assertEquals(2, getObjectSizerInvocations(vm0));
+    assertValueType(vm1, "a", ValueType.RAW_VALUE);
+    assertValueType(vm2, "a", ValueType.CD_SERIALIZED);
+    assertEquals(2, getObjectSizerInvocations(vm1));
 
-    long finalEvictionSize0 = getSizeFromEvictionStats(vm0);
-    long finalEvictionSize1 = getSizeFromEvictionStats(vm1);
+    long finalEvictionSize0 = getSizeFromEvictionStats(vm1);
+    long finalEvictionSize1 = getSizeFromEvictionStats(vm2);
     assertEquals(100000, finalEvictionSize0 - origEvictionSize0);
     assertEquals(100, finalEvictionSize1 - origEvictionSize1);
 
-    assertEquals(0, getObjectSizerInvocations(vm1));
+    assertEquals(0, getObjectSizerInvocations(vm2));
 
     // Do a get to make sure we deserialize the object and calculate
     // the size adjustment
     Object v = new TestObject(200, 200000);
-    get(vm1, "a", v);
+    get(vm2, "a", v);
     int vSize = CachedDeserializableFactory.calcSerializedMemSize(v);
 
-    assertValueType(vm1, "a", ValueType.CD_DESERIALIZED);
-    long evictionSizeAfterGet = getSizeFromEvictionStats(vm1);
-    assertEquals(1, getObjectSizerInvocations(vm1));
+    assertValueType(vm2, "a", ValueType.CD_DESERIALIZED);
+    long evictionSizeAfterGet = getSizeFromEvictionStats(vm2);
+    assertEquals(1, getObjectSizerInvocations(vm2));
     assertEquals(200000 + CachedDeserializableFactory.overhead() - vSize,
         evictionSizeAfterGet - finalEvictionSize1);
 
     // Do a put that will trigger an eviction if it is deserialized
-    put(vm0, "b", new TestObject(100, 1000000));
+    put(vm1, "b", new TestObject(100, 1000000));
 
-    assertEquals(1, getEvictions(vm0));
-    assertEquals(0, getEvictions(vm1));
+    assertEquals(1, getEvictions(vm1));
+    assertEquals(0, getEvictions(vm2));
 
     // Do a get to make sure we deserialize the object and calculate
     // the size adjustment
-    get(vm1, "b", new TestObject(100, 1000000));
-    assertEquals(1, getEvictions(vm1));
+    get(vm2, "b", new TestObject(100, 1000000));
+    assertEquals(1, getEvictions(vm2));
   }
 
   private void doPRMemLRUTest() {
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
+    VM vm1 = server1.getVM();
+    VM vm2 = server2.getVM();
 
-    createPR(vm0, true);
-    createPR(vm1, true);
-    put(vm0, 0, new TestObject(100, 100000));
-    assertValueType(vm0, 0, ValueType.CD_SERIALIZED);
+    createPR(server1, true);
+    createPR(server2, true);
+
+    put(vm1, 0, new TestObject(100, 100000));
     assertValueType(vm1, 0, ValueType.CD_SERIALIZED);
-    long origEvictionSize0 = getSizeFromEvictionStats(vm0);
-    long origEvictionSize1 = getSizeFromEvictionStats(vm1);
-    long origPRSize0 = getSizeFromPRStats(vm0);
-    long origPRSize1 = getSizeFromPRStats(vm1);
-    put(vm0, 0, new TestObject(200, 200000));
+    assertValueType(vm2, 0, ValueType.CD_SERIALIZED);
+    long origEvictionSize0 = getSizeFromEvictionStats(vm1);
+    long origEvictionSize1 = getSizeFromEvictionStats(vm2);
+    long origPRSize0 = getSizeFromPRStats(vm1);
+    long origPRSize1 = getSizeFromPRStats(vm2);
+    put(vm1, 0, new TestObject(200, 200000));
 
-    assertEquals(0, getObjectSizerInvocations(vm0));
+    assertEquals(0, getObjectSizerInvocations(vm1));
 
-    long finalEvictionSize0 = getSizeFromEvictionStats(vm0);
-    long finalPRSize0 = getSizeFromPRStats(vm0);
-    long finalEvictionSize1 = getSizeFromEvictionStats(vm1);
-    long finalPRSize1 = getSizeFromPRStats(vm1);
+    long finalEvictionSize0 = getSizeFromEvictionStats(vm1);
+    long finalPRSize0 = getSizeFromPRStats(vm1);
+    long finalEvictionSize1 = getSizeFromEvictionStats(vm2);
+    long finalPRSize1 = getSizeFromPRStats(vm2);
     assertEquals(100, finalEvictionSize0 - origEvictionSize0);
     assertEquals(100, finalEvictionSize1 - origEvictionSize1);
     assertEquals(100, finalPRSize0 - origPRSize0);
     assertEquals(100, finalPRSize1 - origPRSize1);
 
-    assertEquals(0, getObjectSizerInvocations(vm1));
+    assertEquals(0, getObjectSizerInvocations(vm2));
 
     // Do a get to see if we deserialize the object and calculate
     // the size adjustment
     Object v = new TestObject(200, 200000);
-    get(vm0, 0, v);
+    get(vm1, 0, v);
     int vSize = CachedDeserializableFactory.calcSerializedMemSize(v);
-    assertValueType(vm0, 0, ValueType.CD_DESERIALIZED);
-    assertValueType(vm1, 0, ValueType.CD_SERIALIZED);
-    long evictionSizeAfterGet = getSizeFromEvictionStats(vm0);
-    long prSizeAfterGet = getSizeFromPRStats(vm0);
-    assertEquals(1, getObjectSizerInvocations(vm0));
-    assertEquals(0, getObjectSizerInvocations(vm1));
+    assertValueType(vm1, 0, ValueType.CD_DESERIALIZED);
+    assertValueType(vm2, 0, ValueType.CD_SERIALIZED);
+    long evictionSizeAfterGet = getSizeFromEvictionStats(vm1);
+    long prSizeAfterGet = getSizeFromPRStats(vm1);
+    assertEquals(1, getObjectSizerInvocations(vm1));
+    assertEquals(0, getObjectSizerInvocations(vm2));
     assertEquals(200000 + CachedDeserializableFactory.overhead() - vSize,
         evictionSizeAfterGet - finalEvictionSize0);
     assertEquals(0, prSizeAfterGet - finalPRSize0);
 
     // Do a put that will trigger an eviction if it is deserialized
     // It should not be deserialized.
-    put(vm0, 113, new TestObject(100, 1024 * 1024));
-    assertValueType(vm0, 113, ValueType.CD_SERIALIZED);
+    put(vm1, 113, new TestObject(100, 1024 * 1024));
     assertValueType(vm1, 113, ValueType.CD_SERIALIZED);
-    long evictionSizeAfterPutVm1 = getSizeFromEvictionStats(vm1);
+    assertValueType(vm2, 113, ValueType.CD_SERIALIZED);
+    long evictionSizeAfterPutVm1 = getSizeFromEvictionStats(vm2);
 
-    assertEquals(0, getEvictions(vm0));
     assertEquals(0, getEvictions(vm1));
+    assertEquals(0, getEvictions(vm2));
 
     // Do a get to make sure we deserialize the object and calculate
     // the size adjustment which should force an eviction
-    get(vm1, 113, new TestObject(100, 1024 * 1024));
-    long evictionSizeAfterGetVm1 = getSizeFromEvictionStats(vm1);
-    assertValueType(vm0, 113, ValueType.CD_SERIALIZED);
-    assertValueType(vm1, 113, ValueType.EVICTED);
-    assertEquals(1, getObjectSizerInvocations(vm0)); // from the get of key 0 on vm0
-    assertEquals(0, getEvictions(vm0));
-    assertEquals(1, getObjectSizerInvocations(vm1));
-    assertEquals(2, getEvictions(vm1));
+    get(vm2, 113, new TestObject(100, 1024 * 1024));
+    long evictionSizeAfterGetVm1 = getSizeFromEvictionStats(vm2);
+    assertValueType(vm1, 113, ValueType.CD_SERIALIZED);
+    assertValueType(vm2, 113, ValueType.EVICTED);
+    assertEquals(1, getObjectSizerInvocations(vm1)); // from the get of key 0 on vm0
+    assertEquals(0, getEvictions(vm1));
+    assertEquals(1, getObjectSizerInvocations(vm2));
+    assertEquals(2, getEvictions(vm2));
   }
 
   private void doRRMemLRUDeltaTest(boolean shouldSizeChange) {
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
+    VM vm1 = server1.getVM();
+    VM vm2 = server2.getVM();
 
-    createRR(vm0);
-    createRR(vm1);
+    createRR(server1);
+    createRR(server2);
     TestDelta delta1 = new TestDelta(false, "12345", shouldSizeChange);
-    put(vm0, "a", delta1);
+    put(vm1, "a", delta1);
 
-    assertValueType(vm0, "a", ValueType.RAW_VALUE);
-    assertValueType(vm1, "a", ValueType.CD_SERIALIZED);
-    assertEquals(1, getObjectSizerInvocations(vm0));
-    assertEquals(0, getObjectSizerInvocations(vm1));
+    assertValueType(vm1, "a", ValueType.RAW_VALUE);
+    assertValueType(vm2, "a", ValueType.CD_SERIALIZED);
+    assertEquals(1, getObjectSizerInvocations(vm1));
+    assertEquals(0, getObjectSizerInvocations(vm2));
 
-    long origEvictionSize0 = getSizeFromEvictionStats(vm0);
-    long origEvictionSize1 = getSizeFromEvictionStats(vm1);
+    long origEvictionSize0 = getSizeFromEvictionStats(vm1);
+    long origEvictionSize1 = getSizeFromEvictionStats(vm2);
     delta1.info = "1234567890";
     delta1.hasDelta = true;
     // Update the delta
-    put(vm0, "a", delta1);
+    put(vm1, "a", delta1);
 
-    assertValueType(vm0, "a", ValueType.RAW_VALUE);
-    assertValueType(vm1, "a", ValueType.CD_DESERIALIZED);
+    assertValueType(vm1, "a", ValueType.RAW_VALUE);
+    assertValueType(vm2, "a", ValueType.CD_DESERIALIZED);
 
-    assertEquals(2, getObjectSizerInvocations(vm0));
+    assertEquals(2, getObjectSizerInvocations(vm1));
 
-    long finalEvictionSize0 = getSizeFromEvictionStats(vm0);
-    long finalEvictionSize1 = getSizeFromEvictionStats(vm1);
+    long finalEvictionSize0 = getSizeFromEvictionStats(vm1);
+    long finalEvictionSize1 = getSizeFromEvictionStats(vm2);
     assertEquals(5, finalEvictionSize0 - origEvictionSize0);
     if (shouldSizeChange) {
-      assertEquals(1, getObjectSizerInvocations(vm1));
+      assertEquals(1, getObjectSizerInvocations(vm2));
       // I'm not sure what the change in size should be, because we went
       // from serialized to deserialized
       assertTrue(finalEvictionSize1 - origEvictionSize1 != 0);
     } else {
       // we invoke the sizer once when we deserialize the original to apply the delta to it
-      assertEquals(0, getObjectSizerInvocations(vm1));
+      assertEquals(0, getObjectSizerInvocations(vm2));
       assertEquals(0, finalEvictionSize1 - origEvictionSize1);
     }
   }
 
   private void doPRNoLRUDeltaTest(boolean shouldSizeChange) {
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
+    VM vm1 = server1.getVM();
+    VM vm2 = server2.getVM();
 
-    createPR(vm0, false);
-    createPR(vm1, false);
+    createPR(server1, false);
+    createPR(server2, false);
 
     TestDelta delta1 = new TestDelta(false, "12345", shouldSizeChange);
-    put(vm0, "a", delta1);
-    long origPRSize0 = getSizeFromPRStats(vm0);
-    long origPRSize1 = getSizeFromPRStats(vm1);
+    put(vm1, "a", delta1);
+    long origPRSize0 = getSizeFromPRStats(vm1);
+    long origPRSize1 = getSizeFromPRStats(vm2);
 
     // Update the delta
     delta1.info = "1234567890";
     delta1.hasDelta = true;
-    put(vm0, "a", delta1);
-    long finalPRSize0 = getSizeFromPRStats(vm0);
-    long finalPRSize1 = getSizeFromPRStats(vm1);
+    put(vm1, "a", delta1);
+    long finalPRSize0 = getSizeFromPRStats(vm1);
+    long finalPRSize1 = getSizeFromPRStats(vm2);
 
     if (shouldSizeChange) {
       // I'm not sure what the change in size should be, because we went
       // from serialized to deserialized
-      logger.info("finalPRSize0:" + finalPRSize0 + " origPRSize0: " + origPRSize0);
-      logger.info("finalPRSize1:" + finalPRSize1 + " origPRSize1: " + origPRSize1);
       assertTrue(finalPRSize0 - origPRSize0 != 0);
       assertTrue(finalPRSize1 - origPRSize1 != 0);
     } else {
@@ -624,259 +612,210 @@ public class DeltaForceSizingFlagDUnitTest extends CacheTestCase {
   }
 
   private long getSizeFromPRStats(VM vm0) {
-    return (Long) vm0.invoke(new SerializableCallable() {
-
-      @Override
-      public Object call() {
-        Cache cache = getCache();
-        LocalRegion region = (LocalRegion) cache.getRegion("region");
-        if (region instanceof PartitionedRegion) {
-          long total = 0;
-          PartitionedRegion pr = ((PartitionedRegion) region);
-          for (int i = 0; i < pr.getPartitionAttributes().getTotalNumBuckets(); i++) {
-            total += pr.getDataStore().getBucketSize(i);
-          }
-          return total;
-        } else {
-          return 0L;
+    return (Long) vm0.invoke("getSizeFromPRStats", () -> {
+      Cache cache = ClusterStartupRule.getCache();
+      LocalRegion region = (LocalRegion) cache.getRegion("region");
+      if (region instanceof PartitionedRegion) {
+        long total = 0;
+        PartitionedRegion pr = ((PartitionedRegion) region);
+        for (int i = 0; i < pr.getPartitionAttributes().getTotalNumBuckets(); i++) {
+          total += pr.getDataStore().getBucketSize(i);
         }
+        return total;
+      } else {
+        return 0L;
       }
     });
   }
 
-
   private long getSizeFromEvictionStats(VM vm0) {
-    return (Long) vm0.invoke(new SerializableCallable() {
+    return (Long) vm0.invoke("getSizeFromEvictionStats", () -> {
 
-      @Override
-      public Object call() {
-        Cache cache = getCache();
-        LocalRegion region = (LocalRegion) cache.getRegion("region");
-        return getSizeFromEvictionStats(region);
-      }
+      Cache cache = ClusterStartupRule.getCache();
+      LocalRegion region = (LocalRegion) cache.getRegion("region");
+      return getSizeFromEvictionStats(region);
     });
   }
 
   private long getEvictions(VM vm0) {
-    return (Long) vm0.invoke(new SerializableCallable() {
-
-      @Override
-      public Object call() {
-        Cache cache = getCache();
-        LocalRegion region = (LocalRegion) cache.getRegion("region");
-        return getEvictions(region);
-      }
+    return (Long) vm0.invoke("getEvictions", () -> {
+      Cache cache = ClusterStartupRule.getCache();
+      LocalRegion region = (LocalRegion) cache.getRegion("region");
+      return getEvictions(region);
     });
   }
 
   private int getObjectSizerInvocations(VM vm0) {
-    return (Integer) vm0.invoke(new SerializableCallable() {
-
-      @Override
-      public Object call() {
-        Cache cache = getCache();
-        LocalRegion region = (LocalRegion) cache.getRegion("region");
-        return getObjectSizerInvocations(region);
-      }
+    return (Integer) vm0.invoke("getObjectSizerInvocations", () -> {
+      Cache cache = ClusterStartupRule.getCache();
+      LocalRegion region = (LocalRegion) cache.getRegion("region");
+      return getObjectSizerInvocations(region);
     });
   }
 
-  private void assignPRBuckets(VM vm) {
-    vm.invoke(new SerializableRunnable("assignPRBuckets") {
-      @Override
-      public void run() {
-        Cache cache = getCache();
-        PartitionRegionHelper.assignBucketsToPartitions(cache.getRegion("region"));
-      }
+  private void assignPRBuckets(MemberVM memberVM) {
+    memberVM.invoke("assignPRBuckets", () -> {
+      Cache cache = ClusterStartupRule.getCache();
+      PartitionRegionHelper.assignBucketsToPartitions(cache.getRegion("region"));
     });
   }
 
-  private boolean prHostsBucketForKey(VM vm, final Object key) {
-    Boolean result = (Boolean) vm.invoke(new SerializableCallable("prHostsBucketForKey") {
-      @Override
-      public Object call() {
-        Cache cache = getCache();
-        DistributedMember myId = cache.getDistributedSystem().getDistributedMember();
-        Region region = cache.getRegion("region");
-        DistributedMember hostMember = PartitionRegionHelper.getPrimaryMemberForKey(region, key);
-        if (hostMember == null) {
-          throw new IllegalStateException("bucket for key " + key + " is not hosted!");
-        }
-        boolean res = Boolean.valueOf(myId.equals(hostMember));
-        // cache.getLogger().info("DEBUG prHostsBucketForKey=" + res);
-        return res;
+  private boolean prHostsBucketForKey(MemberVM memberVM, final Object key) {
+    Boolean result = (Boolean) memberVM.invoke("prHostsBucketForKey", () -> {
+      Cache cache = ClusterStartupRule.getCache();
+      DistributedMember myId = cache.getDistributedSystem().getDistributedMember();
+      Region region = cache.getRegion("region");
+      DistributedMember hostMember = PartitionRegionHelper.getPrimaryMemberForKey(region, key);
+      if (hostMember == null) {
+        throw new IllegalStateException("bucket for key " + key + " is not hosted!");
       }
+      boolean res = Boolean.valueOf(myId.equals(hostMember));
+      return res;
     });
     return result.booleanValue();
   }
 
   private void put(VM vm0, final Object key, final Object value) {
-    vm0.invoke(new SerializableRunnable("Put data") {
-
-      @Override
-      public void run() {
-        Cache cache = getCache();
-        LocalRegion region = (LocalRegion) cache.getRegion("region");
-        // cache.getLogger().info("DEBUG about to put(" + key + ", " + value + ")");
-        region.put(key, value);
-      }
+    vm0.invoke("Put data", () -> {
+      Cache cache = ClusterStartupRule.getCache();
+      LocalRegion region = (LocalRegion) cache.getRegion("region");
+      region.put(key, value);
     });
   }
 
   private void get(VM vm0, final Object key, final Object value) {
-    vm0.invoke(new SerializableRunnable("Put data") {
-
-      @Override
-      public void run() {
-        Cache cache = getCache();
-        LocalRegion region = (LocalRegion) cache.getRegion("region");
-        assertEquals(value, region.get(key));
-      }
+    vm0.invoke("Get data", () -> {
+      Cache cache = ClusterStartupRule.getCache();
+      LocalRegion region = (LocalRegion) cache.getRegion("region");
+      assertEquals(value, region.get(key));
     });
   }
 
-  protected int getObjectSizerInvocations(LocalRegion region) {
+  protected static int getObjectSizerInvocations(LocalRegion region) {
     TestObjectSizer sizer = (TestObjectSizer) region.getEvictionAttributes().getObjectSizer();
     int result = sizer.invocations.get();
     region.getCache().getLogger().info("objectSizerInvocations=" + result);
     return result;
   }
 
-  private long getSizeFromEvictionStats(LocalRegion region) {
+  private static long getSizeFromEvictionStats(LocalRegion region) {
     long result = region.getEvictionCounter();
-    // region.getCache().getLogger().info("DEBUG evictionSize=" + result);
     return result;
   }
 
-  private long getEvictions(LocalRegion region) {
+  private static long getEvictions(LocalRegion region) {
     return region.getTotalEvictions();
   }
 
-  private void createRR(VM vm) {
-    vm.invoke(new SerializableRunnable("Create rr") {
-      @Override
-      public void run() {
-        Cache cache = getCache();
-        AttributesFactory<Integer, TestDelta> attr = new AttributesFactory<Integer, TestDelta>();
-        attr.setDiskSynchronous(true);
-        attr.setDataPolicy(DataPolicy.REPLICATE);
-        attr.setScope(Scope.DISTRIBUTED_ACK);
-        attr.setEvictionAttributes(EvictionAttributes.createLRUMemoryAttributes(1,
-            new TestObjectSizer(), EvictionAction.OVERFLOW_TO_DISK));
-        attr.setDiskDirs(getMyDiskDirs());
-        Region region = cache.createRegion("region", attr.create());
-      }
+  private void createRR(MemberVM memberVM) {
+    memberVM.invoke("Create replicateRegion", () -> {
+      Cache cache = ClusterStartupRule.getCache();
+      AttributesFactory<Integer, TestDelta> attr = new AttributesFactory<Integer, TestDelta>();
+      attr.setDiskSynchronous(true);
+      attr.setDataPolicy(DataPolicy.REPLICATE);
+      attr.setScope(Scope.DISTRIBUTED_ACK);
+      attr.setEvictionAttributes(EvictionAttributes.createLRUMemoryAttributes(1,
+          new TestObjectSizer(), EvictionAction.OVERFLOW_TO_DISK));
+      attr.setDiskDirs(getMyDiskDirs());
+      Region region = cache.createRegion("region", attr.create());
     });
-
   }
 
   private void assertValueType(VM vm, final Object key, final ValueType expectedType) {
-    vm.invoke(new SerializableRunnable("Create rr") {
-      @Override
-      public void run() {
-        Cache cache = getCache();
-        LocalRegion region = (LocalRegion) cache.getRegion("region");
-        Object value = region.getValueInVM(key);
-        switch (expectedType) {
-          case RAW_VALUE:
-            assertTrue("Value was " + value + " type " + value.getClass(),
-                !(value instanceof CachedDeserializable));
-            break;
-          case CD_SERIALIZED:
-            assertTrue("Value was " + value + " type " + value.getClass(),
-                value instanceof CachedDeserializable);
-            assertTrue("Value not serialized",
-                ((CachedDeserializable) value).getValue() instanceof byte[]);
-            break;
-          case CD_DESERIALIZED:
-            assertTrue("Value was " + value + " type " + value.getClass(),
-                value instanceof CachedDeserializable);
-            assertTrue("Value was serialized",
-                !(((CachedDeserializable) value).getValue() instanceof byte[]));
-            break;
-          case EVICTED:
-            assertEquals(null, value);
-            break;
-        }
+    vm.invoke("assertValueType", () -> {
+      Cache cache = ClusterStartupRule.getCache();
+      LocalRegion region = (LocalRegion) cache.getRegion("region");
+      Object value = region.getValueInVM(key);
+      switch (expectedType) {
+        case RAW_VALUE:
+          assertTrue("Value was " + value + " type " + value.getClass(),
+              !(value instanceof CachedDeserializable));
+          break;
+        case CD_SERIALIZED:
+          assertTrue("Value was " + value + " type " + value.getClass(),
+              value instanceof CachedDeserializable);
+          assertTrue("Value not serialized",
+              ((CachedDeserializable) value).getValue() instanceof byte[]);
+          break;
+        case CD_DESERIALIZED:
+          assertTrue("Value was " + value + " type " + value.getClass(),
+              value instanceof CachedDeserializable);
+          assertTrue("Value was serialized",
+              !(((CachedDeserializable) value).getValue() instanceof byte[]));
+          break;
+        case EVICTED:
+          assertEquals(null, value);
+          break;
       }
     });
   }
 
-  private File[] getMyDiskDirs() {
+  private static File[] getMyDiskDirs() {
     long random = new Random().nextLong();
     File file = new File(Long.toString(random));
     file.mkdirs();
     return new File[] {file};
   }
 
-  private void createPR(VM vm, final boolean enableLRU) {
-    vm.invoke(new SerializableRunnable("Create pr") {
-      @Override
-      public void run() {
-        Cache cache = getCache();
-        AttributesFactory<Integer, TestDelta> attr = new AttributesFactory<Integer, TestDelta>();
-        attr.setDiskSynchronous(true);
-        PartitionAttributesFactory<Integer, TestDelta> paf =
-            new PartitionAttributesFactory<Integer, TestDelta>();
-        paf.setRedundantCopies(1);
-        if (enableLRU) {
-          paf.setLocalMaxMemory(1); // memlru limit is 1 megabyte
-          attr.setEvictionAttributes(EvictionAttributes
-              .createLRUMemoryAttributes(new TestObjectSizer(), EvictionAction.OVERFLOW_TO_DISK));
-          attr.setDiskDirs(getMyDiskDirs());
-        }
-        PartitionAttributes<Integer, TestDelta> prAttr = paf.create();
-        attr.setPartitionAttributes(prAttr);
-        attr.setDataPolicy(DataPolicy.PARTITION);
-        attr.setSubscriptionAttributes(new SubscriptionAttributes(InterestPolicy.ALL));
-        Region<Integer, TestDelta> region = cache.createRegion("region", attr.create());
+  private void createPR(MemberVM memberVM, final boolean enableLRU) {
+    memberVM.invoke("Create partitioned region", () -> {
+      Cache cache = ClusterStartupRule.getCache();
+      AttributesFactory<Integer, TestDelta> attr = new AttributesFactory<Integer, TestDelta>();
+      attr.setDiskSynchronous(true);
+      PartitionAttributesFactory<Integer, TestDelta> paf =
+          new PartitionAttributesFactory<Integer, TestDelta>();
+      paf.setRedundantCopies(1);
+      if (enableLRU) {
+        paf.setLocalMaxMemory(1); // memlru limit is 1 megabyte
+        attr.setEvictionAttributes(EvictionAttributes
+            .createLRUMemoryAttributes(new TestObjectSizer(), EvictionAction.OVERFLOW_TO_DISK));
+        attr.setDiskDirs(getMyDiskDirs());
       }
+      PartitionAttributes<Integer, TestDelta> prAttr = paf.create();
+      attr.setPartitionAttributes(prAttr);
+      attr.setDataPolicy(DataPolicy.PARTITION);
+      attr.setSubscriptionAttributes(new SubscriptionAttributes(InterestPolicy.ALL));
+      Region<Integer, TestDelta> region = cache.createRegion("region", attr.create());
     });
 
   }
 
-  private void createRRHeapLRU(VM vm) {
-    vm.invoke(new SerializableRunnable("Create rr") {
-      @Override
-      public void run() {
-        Cache cache = getCache();
-        ResourceManager manager = cache.getResourceManager();
-        manager.setCriticalHeapPercentage(95);
-        manager.setEvictionHeapPercentage(90);
-        AttributesFactory<Integer, TestDelta> attr = new AttributesFactory<Integer, TestDelta>();
-        attr.setEvictionAttributes(EvictionAttributes.createLRUHeapAttributes(new TestObjectSizer(),
-            EvictionAction.OVERFLOW_TO_DISK));
-        attr.setDiskDirs(getMyDiskDirs());
-        attr.setDataPolicy(DataPolicy.REPLICATE);
-        attr.setScope(Scope.DISTRIBUTED_ACK);
-        attr.setDiskDirs(getMyDiskDirs());
-        Region region = cache.createRegion("region", attr.create());
-      }
+  private void createRRHeapLRU(MemberVM memberVM) {
+    memberVM.invoke("Create rr-heap-lru", () -> {
+      Cache cache = ClusterStartupRule.getCache();
+      ResourceManager manager = cache.getResourceManager();
+      manager.setCriticalHeapPercentage(95);
+      manager.setEvictionHeapPercentage(90);
+      AttributesFactory<Integer, TestDelta> attr = new AttributesFactory<Integer, TestDelta>();
+      attr.setEvictionAttributes(EvictionAttributes.createLRUHeapAttributes(new TestObjectSizer(),
+          EvictionAction.OVERFLOW_TO_DISK));
+      attr.setDiskDirs(getMyDiskDirs());
+      attr.setDataPolicy(DataPolicy.REPLICATE);
+      attr.setScope(Scope.DISTRIBUTED_ACK);
+      attr.setDiskDirs(getMyDiskDirs());
+      Region region = cache.createRegion("region", attr.create());
     });
 
   }
 
-  private void createPRHeapLRU(VM vm) {
-    vm.invoke(new SerializableRunnable("Create pr") {
-      @Override
-      public void run() {
-        Cache cache = getCache();
-        ResourceManager manager = cache.getResourceManager();
-        manager.setCriticalHeapPercentage(95);
-        manager.setEvictionHeapPercentage(90);
+  private void createPRHeapLRU(MemberVM memberVM) {
+    memberVM.invoke("Create pr-heap-lru", () -> {
+      Cache cache = ClusterStartupRule.getCache();
+      ResourceManager manager = cache.getResourceManager();
+      manager.setCriticalHeapPercentage(95);
+      manager.setEvictionHeapPercentage(90);
 
-        AttributesFactory<Integer, TestDelta> attr = new AttributesFactory<Integer, TestDelta>();
-        PartitionAttributesFactory<Integer, TestDelta> paf =
-            new PartitionAttributesFactory<Integer, TestDelta>();
-        paf.setRedundantCopies(1);
-        attr.setEvictionAttributes(EvictionAttributes.createLRUHeapAttributes(new TestObjectSizer(),
-            EvictionAction.LOCAL_DESTROY));
-        PartitionAttributes<Integer, TestDelta> prAttr = paf.create();
-        attr.setPartitionAttributes(prAttr);
-        attr.setDataPolicy(DataPolicy.PARTITION);
-        attr.setSubscriptionAttributes(new SubscriptionAttributes(InterestPolicy.ALL));
-        Region<Integer, TestDelta> region = cache.createRegion("region", attr.create());
-      }
+      AttributesFactory<Integer, TestDelta> attr = new AttributesFactory<Integer, TestDelta>();
+      PartitionAttributesFactory<Integer, TestDelta> paf =
+          new PartitionAttributesFactory<Integer, TestDelta>();
+      paf.setRedundantCopies(1);
+      attr.setEvictionAttributes(EvictionAttributes.createLRUHeapAttributes(new TestObjectSizer(),
+          EvictionAction.LOCAL_DESTROY));
+      PartitionAttributes<Integer, TestDelta> prAttr = paf.create();
+      attr.setPartitionAttributes(prAttr);
+      attr.setDataPolicy(DataPolicy.PARTITION);
+      attr.setSubscriptionAttributes(new SubscriptionAttributes(InterestPolicy.ALL));
+      Region<Integer, TestDelta> region = cache.createRegion("region", attr.create());
     });
 
   }
@@ -891,24 +830,17 @@ public class DeltaForceSizingFlagDUnitTest extends CacheTestCase {
             .fine("TestObjectSizer invoked"/* , new Exception("stack trace") */);
       }
       if (o instanceof TestObject) {
-        // org.apache.geode.internal.cache.GemFireCache.getInstance().getLogger().info("DEBUG
-        // TestObjectSizer: sizeof o=" + o, new RuntimeException("STACK"));
         invocations.incrementAndGet();
         return ((TestObject) o).sizeForSizer;
       }
       if (o instanceof TestDelta) {
-        // org.apache.geode.internal.cache.GemFireCache.getInstance().getLogger().info("DEBUG
-        // TestObjectSizer: sizeof delta o=" + o, new RuntimeException("STACK"));
         invocations.incrementAndGet();
         return ((TestDelta) o).info.length();
       }
-      // This is the key. Why don't we handle Integers internally?
       if (o instanceof Integer) {
         return 0;
       }
       if (o instanceof TestKey) {
-        // org.apache.geode.internal.cache.GemFireCache.getInstance().getLogger().info("DEBUG
-        // TestObjectSizer: sizeof TestKey o=" + o, new RuntimeException("STACK"));
         invocations.incrementAndGet();
         return ((TestKey) o).value.length();
       }
@@ -1060,5 +992,4 @@ public class DeltaForceSizingFlagDUnitTest extends CacheTestCase {
   enum ValueType {
     RAW_VALUE, CD_SERIALIZED, CD_DESERIALIZED, EVICTED
   }
-
 }
