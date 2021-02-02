@@ -157,16 +157,17 @@ public enum RedisCommandType {
 
   /************* Hashes *****************/
 
+  HDEL(new HDelExecutor(), SUPPORTED, new MinimumParameterRequirements(3)),
+  HGET(new HGetExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
   HGETALL(new HGetAllExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
   HINCRBYFLOAT(new HIncrByFloatExecutor(), SUPPORTED, new ExactParameterRequirements(4)),
+  HLEN(new HLenExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
+  HMGET(new HMGetExecutor(), SUPPORTED, new MinimumParameterRequirements(3)),
   HMSET(new HMSetExecutor(), SUPPORTED,
       new MinimumParameterRequirements(4).and(new EvenParameterRequirements())),
-  HGET(new HGetExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
-  HMGET(new HMGetExecutor(), SUPPORTED, new MinimumParameterRequirements(3)),
   HSET(new HSetExecutor(), SUPPORTED,
       new MinimumParameterRequirements(4).and(new EvenParameterRequirements())),
   HSETNX(new HSetNXExecutor(), SUPPORTED, new ExactParameterRequirements(4)),
-  HLEN(new HLenExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
   HSTRLEN(new HStrLenExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
   HVALS(new HValsExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
   HEXISTS(new HExistsExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
@@ -239,7 +240,6 @@ public enum RedisCommandType {
    **************** Hashes ***************
    ***************************************/
 
-  HDEL(new HDelExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3)),
   HINCRBY(new HIncrByExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
   HKEYS(new HKeysExecutor(), UNSUPPORTED, new ExactParameterRequirements(2)),
   HSCAN(new HScanExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3),
