@@ -38,10 +38,12 @@ resource_types:
 - name: gci
   type: registry-image
   source:
+    registry_mirror: mirror.gcr.io
     repository: smgoller/gci-resource
 - name: maven-resource
   type: registry-image
   source:
+    registry_mirror: mirror.gcr.io
     repository: nulldriver/maven-resource
     tag: latest
 - name: concourse-metadata-resource
@@ -54,6 +56,7 @@ resource_types:
 - name: gcs-resource
   type: registry-image
   source:
+    registry_mirror: mirror.gcr.io
     repository: frodenas/gcs-resource
 - name: json-gcs-resource
   type: docker-image

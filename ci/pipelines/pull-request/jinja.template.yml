@@ -87,10 +87,12 @@ resource_types:
 - name: gci
   type: registry-image
   source:
+    registry_mirror: mirror.gcr.io
     repository: smgoller/gci-resource
 - name: gcs-resource
-  type: docker-image
+  type: registry-image
   source:
+    registry_mirror: mirror.gcr.io
     repository: frodenas/gcs-resource
 - name: pull-request
   type: docker-image

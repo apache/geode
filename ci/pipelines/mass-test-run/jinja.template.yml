@@ -143,6 +143,7 @@ resource_types:
 - name: gci
   type: registry-image
   source:
+    registry_mirror: mirror.gcr.io
     repository: smgoller/gci-resource
 - name: concourse-metadata-resource
   type: docker-image
@@ -154,6 +155,7 @@ resource_types:
 - name: gcs-resource
   type: docker-image
   source:
+    registry_mirror: mirror.gcr.io
     repository: frodenas/gcs-resource
 
 jobs:
