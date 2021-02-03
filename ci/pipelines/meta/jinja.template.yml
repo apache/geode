@@ -130,7 +130,7 @@ jobs:
         path: geode-images-pipeline/ci/pipelines/images/deploy_images_pipeline.sh
   - set_pipeline: ((pipeline-prefix))images
     file: results/generated-pipeline.yml
-    vars_files:
+    var_files:
       - results/pipeline-vars.yml
 - name: set-pipeline
   serial: true
@@ -167,14 +167,10 @@ jobs:
         SEMVER_PRERELEASE_TOKEN: ((semver-prerelease-token))
       run:
         path: geode-pipeline/ci/pipelines/geode-build/deploy_pipeline.sh
-  - put: concourse
-    params:
-      pipelines:
-      - name: ((pipeline-prefix))main
-        team: ((concourse-team))
-        config_file: results/generated-pipeline.yml
-        vars_files:
-        - results/pipeline-vars.yml
+  - set_pipeline: ((pipeline-prefix))main
+    file: results/generated-pipeline.yml
+    var_files:
+    - results/pipeline-vars.yml
 
 
 {% if repository.fork == repository.upstream_fork %}
@@ -212,14 +208,10 @@ jobs:
         SEMVER_PRERELEASE_TOKEN: ((semver-prerelease-token))
       run:
         path: geode-examples-pipeline/ci/pipelines/examples/deploy_pipeline.sh
-  - put: concourse
-    params:
-      pipelines:
-      - name: ((pipeline-prefix))examples
-        team: ((concourse-team))
-        config_file: results/generated-pipeline.yml
-        vars_files:
-        - results/pipeline-vars.yml
+  - set_pipeline: ((pipeline-prefix))examples
+    file: results/generated-pipeline.yml
+    var_files:
+    - results/pipeline-vars.yml
 
 - name: set-pr-pipeline
   serial: true
@@ -252,14 +244,10 @@ jobs:
         GRADLE_GLOBAL_ARGS: ((gradle-global-args))
       run:
         path: geode-pr-pipeline/ci/pipelines/pull-request/deploy_pr_pipeline.sh
-  - put: concourse
-    params:
-      pipelines:
-      - name: ((pipeline-prefix))pr
-        team: ((concourse-team))
-        config_file: results/generated-pipeline.yml
-        vars_files:
-        - results/pipeline-vars.yml
+  - set_pipeline: ((pipeline-prefix))pr
+    file: results/generated-pipeline.yml
+    var_files:
+    - results/pipeline-vars.yml
 
 {% endif %}
 
@@ -294,14 +282,10 @@ jobs:
           PUBLIC_PIPELINES: ((public-pipelines))
         run:
           path: geode-reaper-pipeline/ci/pipelines/reaper/deploy_reaper_pipeline.sh
-    - put: concourse
-      params:
-        pipelines:
-          - name: ((pipeline-prefix))reaper
-            team: ((concourse-team))
-            config_file: results/generated-pipeline.yml
-            vars_files:
-              - results/pipeline-vars.yml
+    - set_pipeline: ((pipeline-prefix))reaper
+      file: results/generated-pipeline.yml
+      var_files:
+      - results/pipeline-vars.yml
 
 - name: set-mass-test-run-pipeline
   serial: true
@@ -340,14 +324,10 @@ jobs:
         SEMVER_PRERELEASE_TOKEN: ((semver-prerelease-token))
       run:
         path: geode-mass-test-run-pipeline/ci/pipelines/mass-test-run/deploy_pipeline.sh
-  - put: concourse
-    params:
-      pipelines:
-      - name: ((pipeline-prefix))mass-test-run
-        team: ((concourse-team))
-        config_file: results/generated-pipeline.yml
-        vars_files:
-        - results/pipeline-vars.yml
+  - set_pipeline: ((pipeline-prefix))mass-test-run
+    file: results/generated-pipeline.yml
+    var_files:
+    - results/pipeline-vars.yml
 
 - name: build-meta-mini-docker-image
   public: ((public-pipelines))
