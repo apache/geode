@@ -221,8 +221,6 @@ resource_types:
   type: registry-image
   source:
     repository: smgoller/gci-resource
-    username: ((dockerhub-username))
-    password: ((dockerhub-password))
 - name: concourse-metadata-resource
   type: docker-image
   source:
