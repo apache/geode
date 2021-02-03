@@ -165,9 +165,6 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    */
   private byte[] deltaBytes = null;
 
-  /** If true, causes deltas to trigger recalculation of bucket size **/
-  private boolean forceRecalculateSize = false;
-
   /** routing information for cache clients for this event */
   private FilterInfo filterInfo;
 
@@ -1719,7 +1716,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       int vSize;
       Object ov = basicGetOldValue();
       if (ov instanceof CachedDeserializable && !(GemFireCacheImpl.DELTAS_RECALCULATE_SIZE
-          || this.forceRecalculateSize)) {
+          || ((org.apache.geode.Delta) v).getForceRecalculateSize())) {
         vSize = ((CachedDeserializable) ov).getValueSizeInBytes();
       } else {
         vSize = CachedDeserializableFactory.calcMemSize(v, getRegion().getObjectSizer(), false);
@@ -1839,7 +1836,6 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       try (ByteArrayDataInput in = new ByteArrayDataInput(getDeltaBytes())) {
         long start = getRegion().getCachePerfStats().getTime();
         ((org.apache.geode.Delta) value).fromDelta(in);
-        forceRecalculateSize = ((org.apache.geode.Delta) value).getForceRecalculateSize();
         getRegion().getCachePerfStats().endDeltaUpdate(start);
         deltaBytesApplied = true;
       } catch (RuntimeException rte) {
@@ -1862,7 +1858,8 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       if (wasCD) {
         CachedDeserializable old = (CachedDeserializable) oldValueInVM;
         int valueSize;
-        if (GemFireCacheImpl.DELTAS_RECALCULATE_SIZE || this.forceRecalculateSize) {
+        if (GemFireCacheImpl.DELTAS_RECALCULATE_SIZE
+            || ((org.apache.geode.Delta) value).getForceRecalculateSize()) {
           valueSize =
               CachedDeserializableFactory.calcMemSize(value, getRegion().getObjectSizer(), false);
         } else {
@@ -2573,10 +2570,6 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    */
   public void setDeltaBytes(byte[] deltaBytes) {
     this.deltaBytes = deltaBytes;
-  }
-
-  public void setForceRecalculateSize(boolean forceRecalculateSize) {
-    this.forceRecalculateSize = forceRecalculateSize;
   }
 
   // TODO (ashetkar) Can this.op.isCreate() be used instead?

@@ -1737,9 +1737,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
               throw new DeltaSerializationException("Caught exception while sending delta", e);
             }
             event.setDeltaBytes(hdos.toByteArray());
-            event.setForceRecalculateSize(
-                ((org.apache.geode.Delta) value).getForceRecalculateSize());
-            getCachePerfStats().endDeltaPrepared(start);
           }
         }
       }

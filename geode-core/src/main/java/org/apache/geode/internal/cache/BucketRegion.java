@@ -1871,8 +1871,6 @@ public class BucketRegion extends DistributedRegion implements Bucket {
           long start = DistributionStats.getStatTime();
           ((org.apache.geode.Delta) instance).toDelta(hdos);
           event.setDeltaBytes(hdos.toByteArray());
-          event.setForceRecalculateSize(
-              ((org.apache.geode.Delta) instance).getForceRecalculateSize());
           partitionedRegion.getCachePerfStats().endDeltaPrepared(start);
         } catch (RuntimeException re) {
           throw re;
