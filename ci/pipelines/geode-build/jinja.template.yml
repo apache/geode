@@ -220,6 +220,8 @@ resource_types:
 - name: gci
   type: registry-image
   source:
+    registry_mirror:
+      host: mirror.gcr.io
     repository: smgoller/gci-resource
 - name: concourse-metadata-resource
   type: docker-image
