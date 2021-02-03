@@ -893,25 +893,9 @@ public class GMSJoinLeaveJUnitTest {
   }
 
   @Test
-  public void testNetworkPartitionMessageFromNonMemberWithSameViewIdReceived() throws Exception {
+  public void testNetworkPartitionMessageFromNonMemberIgnored() throws Exception {
     initMocks();
     becomeCoordinatorForTest(gmsJoinLeave);
-    gmsJoinLeave.getView().setViewId(1);
-
-    mockMembers[0].setVmViewId(1);
-    NetworkPartitionMessage message = new NetworkPartitionMessage();
-    message.setSender(mockMembers[0]);
-    gmsJoinLeave.processMessage(message);
-    verify(manager).forceDisconnect(contains(mockMembers[0].toString()));
-  }
-
-  @Test
-  public void testNetworkPartitionMessageFromNonMemberWithOlderViewIdIgnored() throws Exception {
-    initMocks();
-    becomeCoordinatorForTest(gmsJoinLeave);
-    gmsJoinLeave.getView().setViewId(1);
-
-    mockMembers[0].setVmViewId(0);
     NetworkPartitionMessage message = new NetworkPartitionMessage();
     message.setSender(mockMembers[0]);
     gmsJoinLeave.processMessage(message);

@@ -1455,7 +1455,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
       return;
     }
     ID sender = msg.getSender();
-    if (getView().getMembers().contains(sender) || getView().getViewId() == sender.getVmViewId()) {
+    if (getView().getMembers().contains(sender)) {
       String str = "Membership coordinator " + msg.getSender()
           + " has declared that a network partition has occurred";
       forceDisconnect(str);
