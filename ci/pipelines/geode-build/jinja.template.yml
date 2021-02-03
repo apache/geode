@@ -218,7 +218,7 @@ resources:
 
 resource_types:
 - name: gci
-  type: registry-image
+  type: docker-image
   source:
     repository: smgoller/gci-resource
     username: ((dockerhub-username))
