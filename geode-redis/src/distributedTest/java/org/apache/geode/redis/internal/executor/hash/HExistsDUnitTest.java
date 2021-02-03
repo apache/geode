@@ -118,7 +118,7 @@ public class HExistsDUnitTest {
         },
         (i) -> GeodeAwaitility.await().atMost(Duration.ofSeconds(1))
             .untilAsserted(() -> assertThat(jedis2.hexists(key, "field-" + i)).isTrue()))
-                .run();
+                .runInLockstep();
 
     assertThat(jedis1.hgetAll(key)).containsExactlyInAnyOrderEntriesOf(expectedValues);
   }
@@ -135,7 +135,7 @@ public class HExistsDUnitTest {
         (i) -> jedis1.hdel(key, "field-" + i),
         (i) -> GeodeAwaitility.await().atMost(Duration.ofSeconds(1))
             .untilAsserted(() -> assertThat(jedis2.hexists(key, "field-" + i)).isFalse()))
-                .run();
+                .runInLockstep();
 
     assertThat(jedis1.hgetAll(key)).isEmpty();
   }
