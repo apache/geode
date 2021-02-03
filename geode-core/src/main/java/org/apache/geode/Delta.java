@@ -67,6 +67,8 @@ public interface Delta {
    * uses deltas heavily, and many commands (e.g. APPEND) cause the size of the entry to change.
    * By overriding this method to return 'true', Redis memory usage statistics can be kept accurate
    * without impacting the performance of other Geode operations.
+   *
+   * @since 1.14
    */
   default boolean getForceRecalculateSize() {
     return false;
