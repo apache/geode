@@ -344,22 +344,38 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
     int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(4);
 
     final Set<String> site1LocatorsPort = new HashSet<String>();
+    final Set<String> site11LocatorsPort = new HashSet<String>();
+
     site1LocatorsPort.add("localhost[" + ports[0] + "]");
+    site11LocatorsPort
+        .add("localhost[" + ports[0] + "],server=true,peer=true,hostname-for-clients=localhost");
 
     final Set<String> site2LocatorsPort = new HashSet<String>();
+    final Set<String> site22LocatorsPort = new HashSet<String>();
+
     site2LocatorsPort.add("localhost[" + ports[1] + "]");
+    site22LocatorsPort
+        .add("localhost[" + ports[1] + "],server=true,peer=true,hostname-for-clients=localhost");
 
     final Set<String> site3LocatorsPort = new HashSet<String>();
+    final Set<String> site33LocatorsPort = new HashSet<String>();
+
     site3LocatorsPort.add("localhost[" + ports[2] + "]");
+    site33LocatorsPort
+        .add("localhost[" + ports[2] + "],server=true,peer=true,hostname-for-clients=localhost");
 
     final Set<String> site4LocatorsPort = new HashSet<String>();
+    final Set<String> site44LocatorsPort = new HashSet<String>();
+
     site4LocatorsPort.add("localhost[" + ports[3] + "]");
+    site44LocatorsPort
+        .add("localhost[" + ports[3] + "],server=true,peer=true,hostname-for-clients=localhost");
 
     Map<Integer, Set<String>> dsVsPort = new HashMap<Integer, Set<String>>();
-    dsVsPort.put(1, site1LocatorsPort);
-    dsVsPort.put(2, site2LocatorsPort);
-    dsVsPort.put(3, site3LocatorsPort);
-    dsVsPort.put(4, site4LocatorsPort);
+    dsVsPort.put(1, site11LocatorsPort);
+    dsVsPort.put(2, site22LocatorsPort);
+    dsVsPort.put(3, site33LocatorsPort);
+    dsVsPort.put(4, site44LocatorsPort);
 
     int AsyncInvocationArrSize = 9;
     AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];

@@ -21,6 +21,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.WanLocatorDiscoverer;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
@@ -65,11 +66,19 @@ public class WanLocatorDiscovererImpl implements WanLocatorDiscoverer {
       LocatorMembershipListener locatorListener, final String hostnameForClients) {
     String localLocator = config.getStartLocator();
     DistributionLocatorId locatorId = null;
-    if (localLocator.equals(DistributionConfig.DEFAULT_START_LOCATOR)) {
-      locatorId = new DistributionLocatorId(port, config.getBindAddress(), hostnameForClients);
-    } else {
-      locatorId = new DistributionLocatorId(localLocator);
+
+    InternalDistributedSystem system = InternalDistributedSystem.getConnectedInstance();
+    String memberName = null;
+    if (system != null) {
+      memberName = system.getDistributedMember().getName();
     }
+    if (localLocator.equals(DistributionConfig.DEFAULT_START_LOCATOR)) {
+      locatorId = new DistributionLocatorId(port, config.getBindAddress(), hostnameForClients,
+          memberName);
+    } else {
+      locatorId = new DistributionLocatorId(localLocator, memberName);
+    }
+
     LocatorHelper.addLocator(config.getDistributedSystemId(), locatorId, locatorListener, null);
 
     RemoteLocatorJoinRequest request = buildRemoteDSJoinRequest(port, config, hostnameForClients);
@@ -113,10 +122,17 @@ public class WanLocatorDiscovererImpl implements WanLocatorDiscoverer {
       final String hostnameForClients) {
     String localLocator = config.getStartLocator();
     DistributionLocatorId locatorId = null;
+
+    InternalDistributedSystem system = InternalDistributedSystem.getConnectedInstance();
+    String memberName = null;
+    if (system != null) {
+      memberName = system.getDistributedMember().getName();
+    }
     if (localLocator.equals(DistributionConfig.DEFAULT_START_LOCATOR)) {
-      locatorId = new DistributionLocatorId(port, config.getBindAddress(), hostnameForClients);
+      locatorId = new DistributionLocatorId(port, config.getBindAddress(), hostnameForClients,
+          memberName);
     } else {
-      locatorId = new DistributionLocatorId(localLocator);
+      locatorId = new DistributionLocatorId(localLocator, memberName);
     }
     RemoteLocatorJoinRequest request =
         new RemoteLocatorJoinRequest(config.getDistributedSystemId(), locatorId, "");
