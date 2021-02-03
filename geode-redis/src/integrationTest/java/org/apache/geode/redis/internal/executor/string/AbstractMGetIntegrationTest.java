@@ -70,6 +70,16 @@ public abstract class AbstractMGetIntegrationTest implements RedisPortSupplier {
   }
 
   @Test
+  public void testMget_returnsNil_forNonStringKey() {
+    jedis.sadd("set", "a");
+    jedis.hset("hash", "a", "b");
+    jedis.set("string", "ok");
+
+    assertThat(jedis.mget("set", "hash", "string"))
+        .containsExactly(null, null, "ok");
+  }
+
+  @Test
   public void testMget_whileConcurrentUpdates() {
     Jedis jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
     String[] keys = IntStream.range(0, 10)
