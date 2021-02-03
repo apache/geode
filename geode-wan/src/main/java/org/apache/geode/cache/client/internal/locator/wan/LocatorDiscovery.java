@@ -153,19 +153,16 @@ public class LocatorDiscovery {
     }
   }
 
-  private WanLocatorDiscoverer getDiscoverer() {
-    return discoverer;
-  }
-
   private void exchangeLocalLocators() {
     int retryAttempt = 1;
-    while (!getDiscoverer().isStopped()) {
+    while (!discoverer.isStopped()) {
       try {
         RemoteLocatorJoinResponse response = (RemoteLocatorJoinResponse) locatorClient
             .requestToServer(locatorId.getHost(), request, WAN_LOCATOR_CONNECTION_TIMEOUT, true);
         if (response != null) {
           addExchangedLocators(response);
-          logger.info("Locator discovery task exchanged locator information {} with {}: {}.",
+          logger.info(
+              "Locator discovery task for locator {} exchanged locator information with {}: {}.",
               request.getLocator(), locatorId, response.getLocators());
           break;
         }
@@ -175,13 +172,13 @@ public class LocatorDiscovery {
               new ConnectionException("Not able to connect to local locator after "
                   + WAN_LOCATOR_CONNECTION_RETRY_ATTEMPT + " retry attempts", ioe);
           logger.fatal(
-              "Locator discovery task could not exchange locator information {} with {} after {} retry attempts.",
+              "Locator discovery task for locator {} could not exchange locator information with {} after {} retry attempts.",
               request.getLocator(), locatorId, retryAttempt, coe);
           break;
         }
         if (skipFailureLogging(locatorId)) {
           logger.warn(
-              "Locator discovery task could not exchange locator information {} with {} after {} retry attempts. Retrying in {} ms.",
+              "Locator discovery task for locator {} could not exchange locator information with {} after {} retry attempts. Retrying in {} ms.",
               request.getLocator(), locatorId, retryAttempt, WAN_LOCATOR_CONNECTION_INTERVAL);
         }
         try {
@@ -201,13 +198,14 @@ public class LocatorDiscovery {
 
   public void exchangeRemoteLocators() {
     int retryAttempt = 1;
-    while (!getDiscoverer().isStopped()) {
+    while (!discoverer.isStopped()) {
       try {
         RemoteLocatorJoinResponse response = (RemoteLocatorJoinResponse) locatorClient
             .requestToServer(locatorId.getHost(), request, WAN_LOCATOR_CONNECTION_TIMEOUT, true);
         if (response != null) {
           addExchangedLocators(response);
-          logger.info("Locator discovery task exchanged locator information {} with {}: {}.",
+          logger.info(
+              "Locator discovery task for locator {} exchanged locator information with {}: {}.",
               request.getLocator(), locatorId, response.getLocators());
           RemoteLocatorPingRequest pingRequest = new RemoteLocatorPingRequest("");
           while (true) {
@@ -226,13 +224,13 @@ public class LocatorDiscovery {
       } catch (IOException ioe) {
         if (retryAttempt == WAN_LOCATOR_CONNECTION_RETRY_ATTEMPT) {
           logger.fatal(
-              "Locator discovery task could not exchange locator information {} with {} after {} retry attempts.",
+              "Locator discovery task for locator {} could not exchange locator information with {} after {} retry attempts.",
               request.getLocator(), locatorId, retryAttempt, ioe);
           break;
         }
         if (skipFailureLogging(locatorId)) {
           logger.warn(
-              "Locator discovery task could not exchange locator information {} with {} after {} retry attempts. Retrying in {} ms.",
+              "Locator discovery task for locator {} could not exchange locator information with {} after {} retry attempts. Retrying in {} ms.",
               new Object[] {request.getLocator(), locatorId, retryAttempt,
                   WAN_LOCATOR_CONNECTION_INTERVAL});
         }
