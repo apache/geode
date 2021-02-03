@@ -52,8 +52,8 @@ public class TestDelta implements Delta, DataSerializable, Cloneable {
   @Override
   public String toString() {
     return "TestDelta{" +
-        "info='" + info + '\'' +
-        "forceRecalculateSize='" + forceRecalculateSize + '\'' +
+        "info='" + info + "'" +
+        "forceRecalculateSize='" + forceRecalculateSize + "'" +
         '}';
   }
 
