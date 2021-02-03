@@ -72,10 +72,12 @@ resource_types:
 - name: gci
   type: registry-image
   source:
+    registry_mirror: mirror.gcr.io
     repository: smgoller/gci-resource
 - name: gcs-resource
-  type: docker-image
+  type: registry-image
   source:
+    registry_mirror: mirror.gcr.io
     repository: frodenas/gcs-resource
 - name: pull-request
   type: docker-image
@@ -84,10 +86,10 @@ resource_types:
 - name: concourse-metadata-resource
   type: docker-image
   source:
-    password: ((!docker-password))
-    repository: gcr.io/apachegeode-ci/((pipeline-prefix))concourse-metadata-resource
+    password: ((docker-password))
+    repository: gcr.io/((gcp-project))/((pipeline-prefix))concourse-metadata-resource
     tag: latest
-    username: ((!docker-username))
+    username: ((docker-username))
 jobs:
 - name: {{build_test.name}}
   public: true
@@ -217,7 +219,7 @@ jobs:
               GRADLE_TASK: {{build_test.GRADLE_TASK}}
               MAINTENANCE_VERSION: {{repository.branch}}
               ARTIFACT_BUCKET: ((artifact-bucket))
-              SERVICE_ACCOUNT: ((!concourse-gcp-account))
+              SERVICE_ACCOUNT: ((concourse-gcp-account))
             run:
               path: geode-ci/ci/scripts/archive_results.sh
             inputs:
@@ -385,7 +387,7 @@ jobs:
               GRADLE_TASK: {{test.GRADLE_TASK}}
               MAINTENANCE_VERSION: {{repository.branch}}
               ARTIFACT_BUCKET: ((artifact-bucket))
-              SERVICE_ACCOUNT: ((!concourse-gcp-account))
+              SERVICE_ACCOUNT: ((concourse-gcp-account))
             run:
               path: geode-ci/ci/scripts/archive_results.sh
             inputs:

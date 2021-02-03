@@ -23,6 +23,8 @@ resource_types:
 - name: gci
   type: registry-image
   source:
+    registry_mirror:
+      host: mirror.gcr.io
     repository: smgoller/gci-resource
 
 resources:
