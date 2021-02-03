@@ -185,7 +185,7 @@ resources:
     bucket: ((artifact-bucket))
     driver: gcs
     initial_version: {{ metadata.initial_version }}
-    json_key: ((!concourse-gcp-key))
+    json_key: ((concourse-gcp-key))
     key: semvers/((pipeline-prefix))((geode-build-branch))/number
 - name: geode-passing-tokens
   type: json-gcs-resource
@@ -381,7 +381,7 @@ jobs:
                 GRADLE_TASK: {{build_test.GRADLE_TASK}}
                 MAINTENANCE_VERSION: ((geode-build-branch))
                 ARTIFACT_BUCKET: ((artifact-bucket))
-                SERVICE_ACCOUNT: ((!concourse-gcp-account))
+                SERVICE_ACCOUNT: ((concourse-gcp-account))
                 TAR_GEODE_BUILD_ARTIFACTS: true
               run:
                 path: geode-ci/ci/scripts/archive_results.sh
@@ -598,7 +598,7 @@ jobs:
       params:
         MAINTENANCE_VERSION: ((geode-build-branch))
         ARTIFACT_BUCKET: ((artifact-bucket))
-        SERVICE_ACCOUNT: ((!concourse-gcp-account))
+        SERVICE_ACCOUNT: ((concourse-gcp-account))
         JAVA_BUILD_VERSION: {{ java_build_version.version }}
         MAVEN_SNAPSHOT_BUCKET: ((maven-snapshot-bucket))
         GRADLE_GLOBAL_ARGS: ((gradle-global-args))
@@ -736,7 +736,7 @@ jobs:
                     GRADLE_TASK: {{test.GRADLE_TASK}}
                     MAINTENANCE_VERSION: ((geode-build-branch))
                     ARTIFACT_BUCKET: ((artifact-bucket))
-                    SERVICE_ACCOUNT: ((!concourse-gcp-account))
+                    SERVICE_ACCOUNT: ((concourse-gcp-account))
                   run:
                     path: geode-ci/ci/scripts/archive_results.sh
                   inputs:

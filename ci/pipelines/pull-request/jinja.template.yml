@@ -102,10 +102,10 @@ resource_types:
 - name: concourse-metadata-resource
   type: docker-image
   source:
-    password: ((!docker-password))
+    password: ((docker-password))
     repository: gcr.io/((gcp-project))/((pipeline-prefix))concourse-metadata-resource
     tag: latest
-    username: ((!docker-username))
+    username: ((docker-username))
 jobs:
 - name: {{build_test.name}}
   public: true
@@ -239,7 +239,7 @@ jobs:
               GRADLE_TASK: {{build_test.GRADLE_TASK}}
               MAINTENANCE_VERSION: {{repository.branch}}
               ARTIFACT_BUCKET: ((artifact-bucket))
-              SERVICE_ACCOUNT: ((!concourse-gcp-account))
+              SERVICE_ACCOUNT: ((concourse-gcp-account))
             run:
               path: geode-ci/ci/scripts/archive_results.sh
             inputs:
@@ -422,7 +422,7 @@ jobs:
               GRADLE_TASK: {{test.GRADLE_TASK}}
               MAINTENANCE_VERSION: {{repository.branch}}
               ARTIFACT_BUCKET: ((artifact-bucket))
-              SERVICE_ACCOUNT: ((!concourse-gcp-account))
+              SERVICE_ACCOUNT: ((concourse-gcp-account))
             run:
               path: geode-ci/ci/scripts/archive_results.sh
             inputs:

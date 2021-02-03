@@ -29,7 +29,7 @@ RAM: {{ test.RAM }}
 GRADLE_TASK_OPTIONS: {{ test.GRADLE_TASK_OPTIONS }}
   {%- endif %}
 MAINTENANCE_VERSION: ((geode-build-branch ))
-SERVICE_ACCOUNT: ((!concourse-gcp-account))
+SERVICE_ACCOUNT: ((concourse-gcp-account))
 {%- endmacro %}
 
 ---
@@ -47,10 +47,10 @@ resource_types:
 - name: concourse-metadata-resource
   type: registry-image
   source:
-    password: ((!docker-password))
+    password: ((docker-password))
     repository: gcr.io/((gcp-project))/((pipeline-prefix))concourse-metadata-resource
     tag: latest
-    username: ((!docker-username))
+    username: ((docker-username))
 - name: gcs-resource
   type: registry-image
   source:
