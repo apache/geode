@@ -55,12 +55,8 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   }
 
   @After
-  public void flushAll() {
-    jedis.flushAll();
-  }
-
-  @After
   public void tearDown() {
+    jedis.flushAll();
     jedis.close();
     jedis2.close();
   }
@@ -147,31 +143,57 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   }
 
   @Test
-  public void testHMGet_HDel_HGetAll_HVals() {
+  public void testHMGet() {
     String key = "key";
-    Map<String, String> hash = new HashMap<>();
-    for (int i = 0; i < 10; i++) {
-      hash.put("field_" + i, "member_" + i);
-    }
+    Map<String, String> hash = setupHash(10);
     jedis.hmset(key, hash);
 
     Set<String> keys = hash.keySet();
-    String[] keyArray = keys.toArray(new String[keys.size()]);
+    String[] keyArray = keys.toArray(new String[0]);
     List<String> retList = jedis.hmget(key, keyArray);
 
     assertThat(retList).containsExactlyInAnyOrderElementsOf(hash.values());
+  }
+
+  @Test
+  public void testHgetall() {
+    String key = "key";
+    Map<String, String> hash = setupHash(10);
+    jedis.hmset(key, hash);
 
     Map<String, String> retMap = jedis.hgetAll(key);
 
     assertThat(retMap).containsExactlyInAnyOrderEntriesOf(hash);
+  }
+
+  @Test
+  public void testHvals() {
+    String key = "key";
+    Map<String, String> hash = setupHash(10);
+    jedis.hmset(key, hash);
 
     List<String> retVals = jedis.hvals(key);
     Set<String> retSet = new HashSet<>(retVals);
 
     assertThat(retSet.containsAll(hash.values())).isTrue();
+  }
 
-    jedis.hdel(key, keyArray);
+  @Test
+  public void testHdel_allFields() {
+    String key = "key";
+    Map<String, String> hash = setupHash(10);
+    jedis.hmset(key, hash);
+
+    jedis.hdel(key, hash.keySet().toArray(new String[0]));
     assertThat(jedis.hlen(key)).isEqualTo(0);
+  }
+
+  private Map<String, String> setupHash(int entries) {
+    Map<String, String> hash = new HashMap<>();
+    for (int i = 0; i < entries; i++) {
+      hash.put("field-" + i, "member-" + i);
+    }
+    return hash;
   }
 
   @Test
@@ -209,10 +231,17 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   @Test
   public void testHDelErrorMessage_givenIncorrectDataType() {
     jedis.set("farm", "chicken");
-    assertThatThrownBy(() -> {
-      jedis.hdel("farm", "chicken");
-    }).isInstanceOf(JedisDataException.class)
+    assertThatThrownBy(() -> jedis.hdel("farm", "chicken"))
+        .isInstanceOf(JedisDataException.class)
         .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+  }
+
+  @Test
+  public void testHdelErrorMessage_givenIncorrectArguments() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HDEL))
+        .hasMessage("ERR wrong number of arguments for 'hdel' command");
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HDEL, "a"))
+        .hasMessage("ERR wrong number of arguments for 'hdel' command");
   }
 
   @Test
@@ -377,11 +406,6 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
     assertThat(result).isEqualTo(0);
 
     assertThat(jedis.hget(key, field)).isEqualTo(value);
-
-    jedis.hdel(key, field);
-
-    assertThat(jedis.hexists(key, field)).isFalse();
-
   }
 
   @Test
