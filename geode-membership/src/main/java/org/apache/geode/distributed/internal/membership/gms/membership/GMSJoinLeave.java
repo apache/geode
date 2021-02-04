@@ -1867,9 +1867,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
     } else if (ackCollectionTimeout > 12437) {
       ackCollectionTimeout = 12437;
     }
-    ackCollectionTimeout = Long
-        .getLong(GeodeGlossary.GEMFIRE_PREFIX + "VIEW_ACK_TIMEOUT", ackCollectionTimeout)
-        .longValue();
+
     this.viewAckTimeout = ackCollectionTimeout;
 
     this.quorumRequired =
