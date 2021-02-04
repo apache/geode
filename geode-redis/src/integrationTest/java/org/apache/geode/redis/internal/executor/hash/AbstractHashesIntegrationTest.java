@@ -202,7 +202,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   }
 
   @Test
-  public void testHMGet_givenWrongNumberOfArguments() {
+  public void testHMGet_givenTooFewArguments() {
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HMGET))
         .hasMessage("ERR wrong number of arguments for 'hmget' command");
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HMGET, "1"))
@@ -819,7 +819,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   }
 
   @Test
-  public void testConcurrentHIncrByFloat_sameKeyPerClient() throws InterruptedException {
+  public void testConcurrentHIncrByFloat_sameKeyPerClient() {
     String key = "HSET_KEY";
     String field = "HSET_FIELD";
 
