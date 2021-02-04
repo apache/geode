@@ -18,7 +18,7 @@ import org.junit.ClassRule;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
 
-public class StrLenIntegrationTest extends AbstractStrLenIntegrationTest {
+public class StringIntegrationTest extends AbstractStringIntegrationTest {
 
   @ClassRule
   public static GeodeRedisServerRule server = new GeodeRedisServerRule();

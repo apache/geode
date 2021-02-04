@@ -19,7 +19,7 @@ import org.junit.ClassRule;
 
 import org.apache.geode.NativeRedisTestRule;
 
-public class StrLenNativeRedisAcceptanceTest extends AbstractStrLenIntegrationTest {
+public class StringNativeRedisAcceptanceTest extends AbstractStringIntegrationTest {
 
   @ClassRule
   public static NativeRedisTestRule redis = new NativeRedisTestRule();
