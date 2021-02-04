@@ -110,7 +110,7 @@ public class MemoryMonitorJUnitTest {
       ResourceListener listener = new TestMemoryThresholdListener();
       internalManager.addResourceListener(ResourceType.HEAP_MEMORY, listener);
     }
-    Set<ResourceListener> heapListeners =
+    Set<ResourceListener<?>> heapListeners =
         internalManager.getResourceListeners(ResourceType.HEAP_MEMORY);
     assertEquals(10 + SYSTEM_LISTENERS, heapListeners.size());
 
