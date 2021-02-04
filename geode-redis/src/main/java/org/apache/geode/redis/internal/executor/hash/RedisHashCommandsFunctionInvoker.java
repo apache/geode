@@ -29,6 +29,7 @@ import static org.apache.geode.redis.internal.RedisCommandType.HSET;
 import static org.apache.geode.redis.internal.RedisCommandType.HSTRLEN;
 import static org.apache.geode.redis.internal.RedisCommandType.HVALS;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
 import java.util.List;
@@ -116,7 +117,8 @@ public class RedisHashCommandsFunctionInvoker extends RedisCommandsFunctionInvok
   }
 
   @Override
-  public double hincrbyfloat(ByteArrayWrapper key, ByteArrayWrapper field, double increment) {
+  public BigDecimal hincrbyfloat(ByteArrayWrapper key, ByteArrayWrapper field,
+      BigDecimal increment) {
     return invokeCommandFunction(key, HINCRBYFLOAT, field, increment);
   }
 }

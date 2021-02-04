@@ -267,7 +267,7 @@ public class CommandFunction extends SingleResultRedisFunction {
       }
       case HINCRBYFLOAT: {
         ByteArrayWrapper field = (ByteArrayWrapper) args[1];
-        double increment = (double) args[2];
+        BigDecimal increment = (BigDecimal) args[2];
         return hashCommands.hincrbyfloat(key, field, increment);
       }
       default:
