@@ -17,12 +17,15 @@ package org.apache.geode.redis.internal.executor.string;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.stream.IntStream;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
 
+import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
@@ -64,5 +67,30 @@ public abstract class AbstractMGetIntegrationTest implements RedisPortSupplier {
     jedis.set(key1, value1);
 
     assertThat(jedis.mget(keys)).containsExactly(expectedVals);
+  }
+
+  @Test
+  public void testMget_returnsNil_forNonStringKey() {
+    jedis.sadd("set", "a");
+    jedis.hset("hash", "a", "b");
+    jedis.set("string", "ok");
+
+    assertThat(jedis.mget("set", "hash", "string"))
+        .containsExactly(null, null, "ok");
+  }
+
+  @Test
+  public void testMget_whileConcurrentUpdates() {
+    Jedis jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    String[] keys = IntStream.range(0, 10)
+        .mapToObj(x -> "key-" + x)
+        .toArray(String[]::new);
+
+    // Should not result in any exceptions
+    new ConcurrentLoopingThreads(1000,
+        (i) -> jedis.set(keys[i % 10], "value-" + i),
+        (i) -> jedis2.mget(keys)).run();
+
+    jedis2.close();
   }
 }
