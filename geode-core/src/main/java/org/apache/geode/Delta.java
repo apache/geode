@@ -55,18 +55,19 @@ public interface Delta {
   void fromDelta(DataInput in) throws IOException, InvalidDeltaException;
 
   /**
-   * By default, buckets do not recalculate their size when deltas are applied. This optimizes for
-   * the case where the sie of an entry does not change. However, if the size does increase or
+   * By default, entry sizes are not recalculated when deltas are applied. This optimizes for the
+   * case where the size of an entry does not change. However, if an entry size does increase or
    * decrease, this default behavior can result in the memory usage statistics becoming inaccurate.
+   * These are used to monitor the health of Geode instances, and for balancing memory usage across
+   * partitioned regions.
    *
-   * There is a global Geode property, DELTAS_RECALCULATE_SIZE, which can be used to cause all
-   * deltas to trigger bucket size recalculation when deltas are applied. By default, this is set
+   * There is a system property, gemfire.DELTAS_RECALCULATE_SIZE, which can be used to cause all
+   * deltas to trigger entry size recalculation when deltas are applied. By default, this is set
    * to 'false' because of potential performance impacts when every delta triggers a recalculation.
    *
-   * This method allows bucket size recalculation on a per-delta basis. For example, geode-redis
-   * uses deltas heavily, and many commands (e.g. APPEND) cause the size of the entry to change.
-   * By overriding this method to return 'true', Redis memory usage statistics can be kept accurate
-   * without impacting the performance of other Geode operations.
+   * To allow entry size recalculation on a per-delta basis, classes that extend the Delta interface
+   * should override this method to return 'true'. This may impact performance of specific delta
+   * types, but will not globally affect the performance of other Geode delta operations.
    *
    * @since 1.14
    */

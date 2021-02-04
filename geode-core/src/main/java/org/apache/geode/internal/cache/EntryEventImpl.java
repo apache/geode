@@ -26,6 +26,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CopyHelper;
 import org.apache.geode.DataSerializer;
+import org.apache.geode.Delta;
 import org.apache.geode.DeltaSerializationException;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.InvalidDeltaException;
@@ -1520,7 +1521,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     if (obj instanceof byte[] || obj == null || obj instanceof CachedDeserializable
         || obj == Token.NOT_AVAILABLE || Token.isInvalidOrRemoved(obj)
         // don't serialize delta object already serialized
-        || obj instanceof org.apache.geode.Delta) { // internal delta
+        || obj instanceof Delta) { // internal delta
       return obj;
     }
     final CachedDeserializable cd;
@@ -1712,11 +1713,11 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     // This is a horrible hack, but we need to get the size of the object
     // When we store an entry. This code is only used when we do a put
     // in the primary.
-    if (v instanceof org.apache.geode.Delta && getRegion().isUsedForPartitionedRegionBucket()) {
+    if (v instanceof Delta && getRegion().isUsedForPartitionedRegionBucket()) {
       int vSize;
       Object ov = basicGetOldValue();
       if (ov instanceof CachedDeserializable && !(GemFireCacheImpl.DELTAS_RECALCULATE_SIZE
-          || ((org.apache.geode.Delta) v).getForceRecalculateSize())) {
+          || ((Delta) v).getForceRecalculateSize())) {
         vSize = ((CachedDeserializable) ov).getValueSizeInBytes();
       } else {
         vSize = CachedDeserializableFactory.calcMemSize(v, getRegion().getObjectSizer(), false);
@@ -1835,7 +1836,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       boolean deltaBytesApplied = false;
       try (ByteArrayDataInput in = new ByteArrayDataInput(getDeltaBytes())) {
         long start = getRegion().getCachePerfStats().getTime();
-        ((org.apache.geode.Delta) value).fromDelta(in);
+        ((Delta) value).fromDelta(in);
         getRegion().getCachePerfStats().endDeltaUpdate(start);
         deltaBytesApplied = true;
       } catch (RuntimeException rte) {
@@ -1859,7 +1860,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
         CachedDeserializable old = (CachedDeserializable) oldValueInVM;
         int valueSize;
         if (GemFireCacheImpl.DELTAS_RECALCULATE_SIZE
-            || ((org.apache.geode.Delta) value).getForceRecalculateSize()) {
+            || ((Delta) value).getForceRecalculateSize()) {
           valueSize =
               CachedDeserializableFactory.calcMemSize(value, getRegion().getObjectSizer(), false);
         } else {
