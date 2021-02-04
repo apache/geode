@@ -58,7 +58,7 @@ public class PRClearCreateIndexDUnitTest implements Serializable {
       DistributionMessageObserver.setInstance(new MessageObserver());
       Region<Object, Object> region =
           ClusterStartupRule.memberStarter.createPartitionRegion("regionA",
-              f -> f.setTotalNumBuckets(1).setRedundantCopies(2));
+              f -> f.setTotalNumBuckets(1).setRedundantCopies(1));
       IntStream.range(0, 100).forEach(i -> region.put(i, "value" + i));
     });
 
@@ -66,7 +66,7 @@ public class PRClearCreateIndexDUnitTest implements Serializable {
     secondary.invoke(() -> {
       DistributionMessageObserver.setInstance(new MessageObserver());
       ClusterStartupRule.memberStarter.createPartitionRegion("regionA",
-          f -> f.setTotalNumBuckets(1).setRedundantCopies(2));
+          f -> f.setTotalNumBuckets(1).setRedundantCopies(1));
     });
   }
 
