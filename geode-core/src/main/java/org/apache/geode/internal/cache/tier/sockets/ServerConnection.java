@@ -1412,11 +1412,16 @@ public abstract class ServerConnection implements Runnable {
       getAcceptor().decClientServerConnectionCount();
     }
 
-    try {
-      theSocket.close();
-    } catch (Exception ignored) {
+    if (!theSocket.isClosed()) {
+      acceptor.getSocketCloser().asyncClose(theSocket, theSocket.getInetAddress().toString(),
+          () -> cleanupAfterSocketClose());
+      return true;
     }
+    cleanupAfterSocketClose();
+    return true;
+  }
 
+  protected void cleanupAfterSocketClose() {
     try {
       if (postAuthzRequest != null) {
         postAuthzRequest.close();
@@ -1437,7 +1442,6 @@ public abstract class ServerConnection implements Runnable {
     }
     releaseCommBuffer();
     processMessages = false;
-    return true;
   }
 
   private void releaseCommBuffer() {

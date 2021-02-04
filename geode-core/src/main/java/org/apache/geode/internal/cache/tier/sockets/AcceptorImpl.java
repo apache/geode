@@ -93,6 +93,7 @@ import org.apache.geode.internal.cache.wan.GatewayReceiverStats;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.logging.CoreLoggingExecutors;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.internal.net.SocketCloser;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.serialization.KnownVersion;
@@ -348,6 +349,8 @@ public class AcceptorImpl implements Acceptor, Runnable {
   private final SecurityService securityService;
 
   private final ServerConnectionFactory serverConnectionFactory;
+
+  private final SocketCloser socketCloser = new SocketCloser();
 
   /**
    * Constructs an AcceptorImpl for use within a CacheServer.
@@ -1707,6 +1710,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
       for (ServerConnection serverConnection : snap) {
         serverConnection.cleanup();
       }
+      socketCloser.close();
     }
   }
 
@@ -1870,6 +1874,11 @@ public class AcceptorImpl implements Acceptor, Runnable {
   @Override
   public int getMaximumTimeBetweenPings() {
     return maximumTimeBetweenPings;
+  }
+
+  @Override
+  public SocketCloser getSocketCloser() {
+    return socketCloser;
   }
 
   private static class ClientQueueInitializerTask implements Runnable {
