@@ -237,6 +237,14 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   }
 
   @Test
+  public void testHdelErrorMessage_givenIncorrectArguments() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HDEL))
+        .hasMessage("ERR wrong number of arguments for 'hdel' command");
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HDEL, "a"))
+        .hasMessage("ERR wrong number of arguments for 'hdel' command");
+  }
+
+  @Test
   public void testHDelDeletesKeyWhenHashIsEmpty() {
     jedis.hset("farm", "chicken", "little");
 
