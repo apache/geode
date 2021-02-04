@@ -247,6 +247,18 @@ public abstract class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
     return csb.toString();
   }
 
+  String getCreateGatewaySenderCommandWithOptions(String id, int remoteDsId) {
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_GATEWAYSENDER);
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__ID, id);
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID,
+        String.valueOf(remoteDsId));
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__BATCHSIZE, "100");
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__ALERTTHRESHOLD, "200");
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__GROUPTRANSACTIONEVENTS, "true");
+
+    return csb.toString();
+  }
+
   public void createCache(String locators) {
     createCache(locators, false, false);
   }
