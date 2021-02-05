@@ -19,6 +19,7 @@ import java.util.List;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.internal.CqSuppressNotification;
 import org.apache.geode.cache.query.internal.Undefined;
 
 /**
@@ -569,7 +570,7 @@ public interface QueryService {
    * @param queryString the OQL query
    * @param cqAttr the CqAttributes
    * @param isDurable true if the CQ is durable
-   * @param suppressNotification bitmask of notifications that are suppressed:
+   * @param suppressNotification CqSuppressNotification of notifications that are suppressed:
    *        b0 - if set to 1 - suppress create notification
    *        b1 - if set to 1 - suppress update notification
    *        b2 - if set to 1 - suppress destroy notification
@@ -585,7 +586,7 @@ public interface QueryService {
    *         supported.
    */
   CqQuery newCq(String queryString, CqAttributes cqAttr, boolean isDurable,
-      int suppressNotification)
+      CqSuppressNotification suppressNotification)
       throws QueryInvalidException, CqException;
 
   /**
@@ -649,7 +650,7 @@ public interface QueryService {
    * @param queryString the OQL query
    * @param cqAttr the CqAttributes
    * @param isDurable true if the CQ is durable
-   * @param suppressNotification bitmask of notifications that are suppressed:
+   * @param suppressNotification CqSuppressNotification of notifications that are suppressed:
    *        b0 - if set to 1 - suppress create notification
    *        b1 - if set to 1 - suppress update notification
    *        b2 - if set to 1 - suppress destroy notification
@@ -667,7 +668,7 @@ public interface QueryService {
    *
    */
   CqQuery newCq(String name, String queryString, CqAttributes cqAttr, boolean isDurable,
-      int suppressNotification)
+      CqSuppressNotification suppressNotification)
       throws QueryInvalidException, CqExistsException, CqException;
 
 

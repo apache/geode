@@ -535,7 +535,7 @@ public class DefaultQueryService implements InternalQueryService {
     ClientCQ cq = null;
     try {
       cq = (ClientCQ) getCqService().newCq(null, queryString, cqAttributes, this.pool, false,
-          0);
+          null);
     } catch (CqExistsException cqe) {
       // Should not throw in here.
       if (logger.isDebugEnabled()) {
@@ -568,7 +568,7 @@ public class DefaultQueryService implements InternalQueryService {
     ClientCQ cq = null;
     try {
       cq = (ClientCQ) getCqService().newCq(null, queryString, cqAttributes, this.pool, isDurable,
-          0);
+          null);
     } catch (CqExistsException cqe) {
       // Should not throw in here.
       if (logger.isDebugEnabled()) {
@@ -585,7 +585,7 @@ public class DefaultQueryService implements InternalQueryService {
    * @param queryString the OQL query
    * @param cqAttributes the CqAttributes
    * @param isDurable true if the CQ is durable
-   * @param suppressNotification bitmask of notifications that are suppressed:
+   * @param suppressNotification CqSuppressNotification of notifications that are suppressed:
    *        b0 - if set to 1 - suppress create notification
    *        b1 - if set to 1 - suppress update notification
    *        b2 - if set to 1 - suppress destroy notification
@@ -602,7 +602,7 @@ public class DefaultQueryService implements InternalQueryService {
    */
   @Override
   public CqQuery newCq(String queryString, CqAttributes cqAttributes, boolean isDurable,
-      int suppressNotification)
+      CqSuppressNotification suppressNotification)
       throws QueryInvalidException, CqException {
     ClientCQ cq = null;
     try {
@@ -645,7 +645,7 @@ public class DefaultQueryService implements InternalQueryService {
           "cqName must not be null");
     }
     ClientCQ cq =
-        (ClientCQ) getCqService().newCq(cqName, queryString, cqAttributes, this.pool, false, 0);
+        (ClientCQ) getCqService().newCq(cqName, queryString, cqAttributes, this.pool, false, null);
     return cq;
   }
 
@@ -678,7 +678,7 @@ public class DefaultQueryService implements InternalQueryService {
     }
     ClientCQ cq =
         (ClientCQ) getCqService().newCq(cqName, queryString, cqAttributes, this.pool, isDurable,
-            0);
+            null);
     return cq;
   }
 
@@ -691,7 +691,7 @@ public class DefaultQueryService implements InternalQueryService {
    * @param queryString the OQL query
    * @param cqAttributes the CqAttributes
    * @param isDurable true if the CQ is durable
-   * @param suppressNotification bitmask of notifications that are suppressed:
+   * @param suppressNotification CqSuppressNotification of notifications that are suppressed:
    *        b0 - if set to 1 - suppress create notification
    *        b1 - if set to 1 - suppress update notification
    *        b2 - if set to 1 - suppress destroy notification
@@ -709,7 +709,7 @@ public class DefaultQueryService implements InternalQueryService {
    */
   @Override
   public CqQuery newCq(String cqName, String queryString, CqAttributes cqAttributes,
-      boolean isDurable, int suppressNotification)
+      boolean isDurable, CqSuppressNotification suppressNotification)
       throws QueryInvalidException, CqExistsException, CqException {
     if (cqName == null) {
       throw new IllegalArgumentException(

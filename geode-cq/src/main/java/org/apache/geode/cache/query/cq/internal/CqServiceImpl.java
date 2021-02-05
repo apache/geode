@@ -59,6 +59,7 @@ import org.apache.geode.cache.query.cq.internal.ops.ServerCQProxyImpl;
 import org.apache.geode.cache.query.internal.CompiledSelect;
 import org.apache.geode.cache.query.internal.CqQueryVsdStats;
 import org.apache.geode.cache.query.internal.CqStateImpl;
+import org.apache.geode.cache.query.internal.CqSuppressNotification;
 import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.ExecutionContext;
 import org.apache.geode.cache.query.internal.cq.ClientCQ;
@@ -190,7 +191,7 @@ public class CqServiceImpl implements CqService {
 
   @Override
   public synchronized ClientCQ newCq(String cqName, String queryString, CqAttributes cqAttributes,
-      InternalPool pool, boolean isDurable, int suppressNotification)
+      InternalPool pool, boolean isDurable, CqSuppressNotification suppressNotification)
       throws QueryInvalidException, CqExistsException, CqException {
     if (queryString == null) {
       throw new IllegalArgumentException(
@@ -213,16 +214,20 @@ public class CqServiceImpl implements CqService {
               cqName));
     }
 
-    suppressNotification = suppressNotification & 7;
+    int suppressNotificationInteger = 0;
 
-    if (suppressNotification == 7) {
+    if (suppressNotification != null) {
+      suppressNotificationInteger = suppressNotification.getSuppressNotificationBitMask();
+    }
+
+    if (suppressNotificationInteger == 7) {
       throw new IllegalArgumentException("Not allowed to suppress notifications for all requests.");
     }
 
     ServerCQProxyImpl serverProxy = pool == null ? null : new ServerCQProxyImpl(pool);
     ClientCQImpl cQuery =
         new ClientCQImpl(this, cqName, queryString, cqAttributes, serverProxy, isDurable,
-            suppressNotification);
+            suppressNotificationInteger);
     cQuery.updateCqCreateStats();
 
     // cQuery.initCq();

@@ -33,6 +33,7 @@ import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.CqServiceStatistics;
 import org.apache.geode.cache.query.QueryInvalidException;
 import org.apache.geode.cache.query.RegionNotFoundException;
+import org.apache.geode.cache.query.internal.CqSuppressNotification;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.FilterRoutingInfo;
@@ -43,7 +44,7 @@ public class MissingCqService implements CqService {
 
   @Override
   public ClientCQ newCq(String cqName, String queryString, CqAttributes cqAttributes,
-      InternalPool serverProxy, boolean isDurable, int suppressNotification)
+      InternalPool serverProxy, boolean isDurable, CqSuppressNotification suppressNotification)
       throws QueryInvalidException, CqExistsException, CqException {
     throw new IllegalStateException("CqService is not available.");
   }

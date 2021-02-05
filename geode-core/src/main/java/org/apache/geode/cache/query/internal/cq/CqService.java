@@ -32,6 +32,7 @@ import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.CqServiceStatistics;
 import org.apache.geode.cache.query.QueryInvalidException;
 import org.apache.geode.cache.query.RegionNotFoundException;
+import org.apache.geode.cache.query.internal.CqSuppressNotification;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.FilterRoutingInfo;
@@ -49,7 +50,7 @@ public interface CqService {
    * @param queryString the OQL query
    * @param cqAttributes the CqAttributes
    * @param isDurable true if the CQ is durable
-   * @param suppressNotification bitmask of notifications that are suppressed:
+   * @param suppressNotification CqSuppressNotification of notifications that are suppressed:
    *        b0 - if set to 1 - suppress create notification
    *        b1 - if set to 1 - suppress update notification
    *        b2 - if set to 1 - suppress destroy notification
@@ -67,7 +68,7 @@ public interface CqService {
    *
    */
   ClientCQ newCq(String cqName, String queryString, CqAttributes cqAttributes, InternalPool pool,
-      boolean isDurable, int suppressNotification)
+      boolean isDurable, CqSuppressNotification suppressNotification)
       throws QueryInvalidException, CqExistsException, CqException;
 
   /**

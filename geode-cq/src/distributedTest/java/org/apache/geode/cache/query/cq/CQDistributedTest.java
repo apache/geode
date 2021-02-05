@@ -16,6 +16,7 @@ package org.apache.geode.cache.query.cq;
 
 import static junit.framework.TestCase.assertEquals;
 import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.internal.Assert.assertTrue;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -41,6 +42,7 @@ import org.apache.geode.cache.query.CqListener;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.data.Portfolio;
+import org.apache.geode.cache.query.internal.CqSuppressNotification;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
@@ -270,8 +272,8 @@ public class CQDistributedTest implements Serializable {
   }
 
   @Test
-  public void cqEventsCreatUpdate_suppressUpdate_false() throws Exception {
-    qs.newCq("Select * from " + SEPARATOR + "region r where r.ID > 1", cqa, false, 0).execute();
+  public void cqEventsCreatUpdateDestroy() throws Exception {
+    qs.newCq("Select * from " + SEPARATOR + "region r where r.ID > 1", cqa, false, null).execute();
 
     server.invoke(() -> {
       Region regionOnServer = ClusterStartupRule.getCache().getRegion("region");
@@ -286,6 +288,45 @@ public class CQDistributedTest implements Serializable {
       regionOnServer.put(2, new Portfolio(2));
       regionOnServer.put(3, new Portfolio(3));
       regionOnServer.put(4, new Portfolio(4));
+
+      regionOnServer.put(0, new Portfolio(0));
+      regionOnServer.put(1, new Portfolio(0));
+      regionOnServer.put(2, new Portfolio(0));
+      regionOnServer.put(3, new Portfolio(0));
+      regionOnServer.put(4, new Portfolio(0));
+    });
+
+    await()
+        .untilAsserted(() -> assertEquals(9, testListener.onEventCalls));
+  }
+
+  @Test
+  public void cqEventsCreatUpdateDestroy_suppressCreate() throws Exception {
+    CqSuppressNotification supressNotify = new CqSuppressNotification();
+    supressNotify.setSuppressCreateNotification(true);
+
+    qs.newCq("Select * from " + SEPARATOR + "region r where r.ID > 1", cqa, false, supressNotify)
+        .execute();
+
+    server.invoke(() -> {
+      Region regionOnServer = ClusterStartupRule.getCache().getRegion("region");
+      regionOnServer.put(0, new Portfolio(0));
+      regionOnServer.put(1, new Portfolio(1));
+      regionOnServer.put(2, new Portfolio(2));
+      regionOnServer.put(3, new Portfolio(3));
+      regionOnServer.put(4, new Portfolio(4));
+
+      regionOnServer.put(0, new Portfolio(0));
+      regionOnServer.put(1, new Portfolio(1));
+      regionOnServer.put(2, new Portfolio(2));
+      regionOnServer.put(3, new Portfolio(3));
+      regionOnServer.put(4, new Portfolio(4));
+
+      regionOnServer.put(0, new Portfolio(0));
+      regionOnServer.put(1, new Portfolio(0));
+      regionOnServer.put(2, new Portfolio(0));
+      regionOnServer.put(3, new Portfolio(0));
+      regionOnServer.put(4, new Portfolio(0));
     });
 
     await()
@@ -293,8 +334,12 @@ public class CQDistributedTest implements Serializable {
   }
 
   @Test
-  public void cqEventsCreatUpdate_suppressUpdate_true() throws Exception {
-    qs.newCq("Select * from " + SEPARATOR + "region r where r.ID > 1", cqa, false, 2).execute();
+  public void cqEventsCreatUpdateDestroy_suppressUpdate() throws Exception {
+    CqSuppressNotification supressNotify = new CqSuppressNotification();
+    supressNotify.setSuppressUpdateNotification(true);
+
+    qs.newCq("Select * from " + SEPARATOR + "region r where r.ID > 1", cqa, false, supressNotify)
+        .execute();
 
     server.invoke(() -> {
       Region regionOnServer = ClusterStartupRule.getCache().getRegion("region");
@@ -309,14 +354,110 @@ public class CQDistributedTest implements Serializable {
       regionOnServer.put(2, new Portfolio(2));
       regionOnServer.put(3, new Portfolio(3));
       regionOnServer.put(4, new Portfolio(4));
+
+      regionOnServer.put(0, new Portfolio(0));
+      regionOnServer.put(1, new Portfolio(0));
+      regionOnServer.put(2, new Portfolio(0));
+      regionOnServer.put(3, new Portfolio(0));
+      regionOnServer.put(4, new Portfolio(0));
+    });
+
+    await()
+        .untilAsserted(() -> assertEquals(6, testListener.onEventCalls));
+  }
+
+
+  @Test
+  public void cqEventsCreatUpdateDestroy_suppressDestroy() throws Exception {
+    CqSuppressNotification supressNotify = new CqSuppressNotification();
+    supressNotify.setSuppressDestroyNotification(true);
+
+    qs.newCq("Select * from " + SEPARATOR + "region r where r.ID > 1", cqa, false, supressNotify)
+        .execute();
+
+    server.invoke(() -> {
+      Region regionOnServer = ClusterStartupRule.getCache().getRegion("region");
+      regionOnServer.put(0, new Portfolio(0));
+      regionOnServer.put(1, new Portfolio(1));
+      regionOnServer.put(2, new Portfolio(2));
+      regionOnServer.put(3, new Portfolio(3));
+      regionOnServer.put(4, new Portfolio(4));
+
+      regionOnServer.put(0, new Portfolio(0));
+      regionOnServer.put(1, new Portfolio(1));
+      regionOnServer.put(2, new Portfolio(2));
+      regionOnServer.put(3, new Portfolio(3));
+      regionOnServer.put(4, new Portfolio(4));
+
+      regionOnServer.put(0, new Portfolio(0));
+      regionOnServer.put(1, new Portfolio(0));
+      regionOnServer.put(2, new Portfolio(0));
+      regionOnServer.put(3, new Portfolio(0));
+      regionOnServer.put(4, new Portfolio(0));
+    });
+
+    await()
+        .untilAsserted(() -> assertEquals(6, testListener.onEventCalls));
+  }
+
+  @Test
+  public void cqEventsCreatUpdateDestroy_suppressUpdate_Destroy() throws Exception {
+    CqSuppressNotification supressNotify = new CqSuppressNotification();
+    supressNotify.setSuppressUpdateNotification(true);
+    supressNotify.setSuppressDestroyNotification(true);
+
+    qs.newCq("Select * from " + SEPARATOR + "region r where r.ID > 1", cqa, false, supressNotify)
+        .execute();
+
+    server.invoke(() -> {
+      Region regionOnServer = ClusterStartupRule.getCache().getRegion("region");
+      regionOnServer.put(0, new Portfolio(0));
+      regionOnServer.put(1, new Portfolio(1));
+      regionOnServer.put(2, new Portfolio(2));
+      regionOnServer.put(3, new Portfolio(3));
+      regionOnServer.put(4, new Portfolio(4));
+
+      regionOnServer.put(0, new Portfolio(0));
+      regionOnServer.put(1, new Portfolio(1));
+      regionOnServer.put(2, new Portfolio(2));
+      regionOnServer.put(3, new Portfolio(3));
+      regionOnServer.put(4, new Portfolio(4));
+
+      regionOnServer.put(0, new Portfolio(0));
+      regionOnServer.put(1, new Portfolio(0));
+      regionOnServer.put(2, new Portfolio(0));
+      regionOnServer.put(3, new Portfolio(0));
+      regionOnServer.put(4, new Portfolio(0));
     });
 
     await()
         .untilAsserted(() -> assertEquals(3, testListener.onEventCalls));
   }
 
+
   @Test
-  public void cqExecuteWithInitialResultsWithValuesMatchingPrimaryKey_suppressUpdate_false()
+  public void cqEventsCreatUpdateDestroy_suppress_Create_Update_Destroy() throws Exception {
+    CqSuppressNotification supressNotify = new CqSuppressNotification();
+    supressNotify.setSuppressCreateNotification(true);
+    supressNotify.setSuppressUpdateNotification(true);
+    supressNotify.setSuppressDestroyNotification(true);
+
+    boolean catchException = false;
+    try {
+      qs.newCq("Select * from " + SEPARATOR + "region r where r.ID > 1", cqa, false, supressNotify)
+          .execute();
+    } catch (IllegalArgumentException ex) {
+      if (ex.getMessage().contains("Not allowed to suppress notifications for all requests.")) {
+        catchException = true;
+      }
+    }
+
+    assertTrue(catchException);
+
+  }
+
+  @Test
+  public void cqExecuteWithInitialResultsWithValuesMatchingPrimaryKey()
       throws Exception {
     server.invoke(() -> {
       Region regionOnServer = ClusterStartupRule.getCache().getRegion("region");
@@ -331,7 +472,7 @@ public class CQDistributedTest implements Serializable {
     });
 
     SelectResults results =
-        qs.newCq("Select * from " + SEPARATOR + "region where ID = 1", cqa, false, 0)
+        qs.newCq("Select * from " + SEPARATOR + "region where ID = 1", cqa, false, null)
             .executeWithInitialResults();
     assertEquals(1, results.size());
 
@@ -355,7 +496,7 @@ public class CQDistributedTest implements Serializable {
   }
 
   @Test
-  public void cqExecuteWithInitialResultsWithValuesMatchingPrimaryKey_suppressUpdate_true()
+  public void cqExecuteWithInitialResultsWithValuesMatchingPrimaryKey_suppressUpdate()
       throws Exception {
     server.invoke(() -> {
       Region regionOnServer = ClusterStartupRule.getCache().getRegion("region");
@@ -368,8 +509,11 @@ public class CQDistributedTest implements Serializable {
       regionOnServer.put(4, new Portfolio(4));
     });
 
+    CqSuppressNotification supressNotify = new CqSuppressNotification();
+    supressNotify.setSuppressUpdateNotification(true);
+
     SelectResults results =
-        qs.newCq("Select * from " + SEPARATOR + "region where ID = 1", cqa, false, 2)
+        qs.newCq("Select * from " + SEPARATOR + "region where ID = 1", cqa, false, supressNotify)
             .executeWithInitialResults();
     assertEquals(1, results.size());
 

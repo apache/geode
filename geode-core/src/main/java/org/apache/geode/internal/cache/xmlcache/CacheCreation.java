@@ -90,6 +90,7 @@ import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryInvalidException;
 import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.internal.CqSuppressNotification;
 import org.apache.geode.cache.query.internal.InternalQueryService;
 import org.apache.geode.cache.query.internal.QueryConfigurationService;
 import org.apache.geode.cache.query.internal.QueryConfigurationServiceException;
@@ -2067,7 +2068,7 @@ public class CacheCreation implements InternalCache {
 
       @Override
       public CqQuery newCq(String queryString, CqAttributes cqAttr, boolean isDurable,
-          int suppressNotification)
+          CqSuppressNotification suppressNotification)
           throws QueryInvalidException {
         throw new UnsupportedOperationException("Should not be invoked");
       }
@@ -2086,7 +2087,7 @@ public class CacheCreation implements InternalCache {
 
       @Override
       public CqQuery newCq(String name, String queryString, CqAttributes cqAttr, boolean isDurable,
-          int suppressNotification)
+          CqSuppressNotification suppressNotification)
           throws QueryInvalidException {
         throw new UnsupportedOperationException("Should not be invoked");
       }
@@ -2140,7 +2141,6 @@ public class CacheCreation implements InternalCache {
       public CqServiceStatistics getCqStatistics() {
         throw new UnsupportedOperationException("Should not be invoked");
       }
-
 
       @Override
       public void defineKeyIndex(String indexName, String indexedExpression, String regionPath) {
