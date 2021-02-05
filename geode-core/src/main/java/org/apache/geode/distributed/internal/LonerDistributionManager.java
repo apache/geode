@@ -53,6 +53,7 @@ import org.apache.geode.internal.monitoring.ThreadsMonitoringImpl;
 import org.apache.geode.internal.monitoring.ThreadsMonitoringImplDummy;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.util.CompletedFuture;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 
 /**
@@ -1054,14 +1055,12 @@ public class LonerDistributionManager implements DistributionManager {
 
     @Override
     public <T> Future<T> submit(final Callable<T> task) {
-      Exception ex = null;
-      T result = null;
       try {
-        result = task.call();
+        T result = task.call();
+        return new CompletedFuture<T>(result);
       } catch (Exception e) {
-        ex = e;
+        return new CompletedFuture<T>(e);
       }
-      return new CompletedFuture<T>(result, ex);
     }
 
     @Override
@@ -1115,45 +1114,6 @@ public class LonerDistributionManager implements DistributionManager {
     public <T> T invokeAny(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit)
         throws InterruptedException, ExecutionException, TimeoutException {
       return invokeAny(tasks);
-    }
-  }
-
-  private static class CompletedFuture<T> implements Future<T> {
-    private final T result;
-    private final Exception ex;
-
-    public CompletedFuture(T result, Exception ex) {
-      this.result = result;
-      this.ex = ex;
-    }
-
-    @Override
-    public boolean cancel(boolean mayInterruptIfRunning) {
-      return false;
-    }
-
-    @Override
-    public boolean isCancelled() {
-      return false;
-    }
-
-    @Override
-    public boolean isDone() {
-      return true;
-    }
-
-    @Override
-    public T get() throws InterruptedException, ExecutionException {
-      if (ex != null) {
-        throw new ExecutionException(ex);
-      }
-      return result;
-    }
-
-    @Override
-    public T get(long timeout, TimeUnit unit)
-        throws InterruptedException, ExecutionException, TimeoutException {
-      return get();
     }
   }
 

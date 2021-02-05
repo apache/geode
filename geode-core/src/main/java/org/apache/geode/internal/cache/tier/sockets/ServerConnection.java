@@ -1413,7 +1413,9 @@ public abstract class ServerConnection implements Runnable {
     }
 
     if (!theSocket.isClosed()) {
-      acceptor.getSocketCloser().asyncClose(theSocket, theSocket.getInetAddress().toString(),
+      final String closerName =
+          communicationMode.isWAN() ? "WANSocketCloser" : "CacheServerSocketCloser";
+      acceptor.getSocketCloser().asyncClose(theSocket, closerName,
           () -> cleanupAfterSocketClose());
       return true;
     }
