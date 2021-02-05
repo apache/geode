@@ -150,6 +150,7 @@ public enum RedisCommandType {
   /************* Strings *****************/
 
   APPEND(new AppendExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
+  DECR(new DecrExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
   GET(new GetExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
   INCRBYFLOAT(new IncrByFloatExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
   MGET(new MGetExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
@@ -219,7 +220,6 @@ public enum RedisCommandType {
   BITCOUNT(new BitCountExecutor(), UNSUPPORTED, new MinimumParameterRequirements(2)),
   BITOP(new BitOpExecutor(), UNSUPPORTED, new MinimumParameterRequirements(4)),
   BITPOS(new BitPosExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3)),
-  DECR(new DecrExecutor(), UNSUPPORTED, new ExactParameterRequirements(2)),
   DECRBY(new DecrByExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
   GETBIT(new GetBitExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
   GETRANGE(new GetRangeExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),

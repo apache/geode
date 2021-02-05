@@ -30,7 +30,7 @@ import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
-public abstract class AbstractStrLenIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractStringIntegrationTest implements RedisPortSupplier {
 
   private Jedis jedis;
   private static final int REDIS_CLIENT_TIMEOUT =
@@ -128,4 +128,39 @@ public abstract class AbstractStrLenIntegrationTest implements RedisPortSupplier
     assertThat(jedis.strlen(key)).isEqualTo(value.length);
   }
 
+  @Test
+  public void testDecr_ErrorsWithWrongNumberOfArguments() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.DECR))
+        .hasMessageContaining("ERR wrong number of arguments for 'decr' command");
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.DECR, "1", "2"))
+        .hasMessageContaining("ERR wrong number of arguments for 'decr' command");
+  }
+
+  @Test
+  public void testDecr_withWrongType_shouldError() {
+    String key = "hashKey";
+    jedis.hset(key, "field", "non-int value");
+
+    assertThatThrownBy(() -> jedis.decr(key))
+        .isInstanceOf(JedisDataException.class)
+        .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
+  }
+
+  @Test
+  public void testDecr_decrementsPositiveIntegerValues() {
+    String key = "key";
+    jedis.set(key, "10");
+
+    assertThat(jedis.decr(key)).isEqualTo(9L);
+    assertThat(jedis.get(key)).isEqualTo("9");
+  }
+
+  @Test
+  public void testDecr_returnsValueWhenDecrementingResultsInNegativeNumber() {
+    String key = "key";
+    jedis.set(key, "0");
+
+    assertThat(jedis.decr(key)).isEqualTo(-1L);
+    assertThat(jedis.get(key)).isEqualTo("-1");
+  }
 }

@@ -45,6 +45,7 @@ public class StringsDUnitTest {
 
   private static final String LOCAL_HOST = "127.0.0.1";
   private static final int LIST_SIZE = 1000;
+  private static final int NUM_ITERATIONS = 1000;
   private static final int JEDIS_TIMEOUT = Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
   private static Jedis jedis1;
   private static Jedis jedis2;
@@ -216,6 +217,20 @@ public class StringsDUnitTest {
       assertThat(jedis3.get(keys.get(i))).contains(values1.get(i));
       assertThat(jedis3.get(keys.get(i))).contains(values2.get(i));
     }
+  }
+
+  @Test
+  public void decr_shouldDecrementWhileDoingConcurrentDecrs() {
+    String key = "key";
+    int initialValue = NUM_ITERATIONS * 2;
+    jedis1.set(key, String.valueOf(initialValue));
+
+    new ConcurrentLoopingThreads(NUM_ITERATIONS,
+        (i) -> jedis1.decr(key),
+        (i) -> jedis2.decr(key))
+            .run();
+
+    assertThat(jedis1.get(key)).isEqualTo("0");
   }
 
   @Test

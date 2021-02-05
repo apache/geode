@@ -32,6 +32,7 @@ public class SupportedCommandsJUnitTest {
   private final String[] supportedCommands = new String[] {
       "APPEND",
       "AUTH",
+      "DECR",
       "DEL",
       "EXISTS",
       "EXPIRE",
@@ -78,7 +79,6 @@ public class SupportedCommandsJUnitTest {
       "BITOP",
       "BITPOS",
       "DBSIZE",
-      "DECR",
       "DECRBY",
       "ECHO",
       "FLUSHALL",
