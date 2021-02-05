@@ -99,7 +99,7 @@ public class HGetDUnitTest {
         },
         (i) -> GeodeAwaitility.await().atMost(Duration.ofSeconds(1)).untilAsserted(
             () -> assertThat(jedis2.hget(key, "field-" + i)).isEqualTo("value-" + (i))))
-                .run();
+                .runInLockstep();
 
     assertThat(jedis1.hgetAll(key)).containsExactlyInAnyOrderEntriesOf(expectedMap);
   }
