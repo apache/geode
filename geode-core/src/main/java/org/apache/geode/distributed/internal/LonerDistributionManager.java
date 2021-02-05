@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
@@ -53,7 +54,6 @@ import org.apache.geode.internal.monitoring.ThreadsMonitoringImpl;
 import org.apache.geode.internal.monitoring.ThreadsMonitoringImplDummy;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.serialization.KnownVersion;
-import org.apache.geode.internal.util.CompletedFuture;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 
 /**
@@ -1055,12 +1055,14 @@ public class LonerDistributionManager implements DistributionManager {
 
     @Override
     public <T> Future<T> submit(final Callable<T> task) {
+      CompletableFuture future = new CompletableFuture<>();
       try {
         T result = task.call();
-        return new CompletedFuture<T>(result);
+        future.complete(result);
       } catch (Exception e) {
-        return new CompletedFuture<T>(e);
+        future.completeExceptionally(e);
       }
+      return future;
     }
 
     @Override

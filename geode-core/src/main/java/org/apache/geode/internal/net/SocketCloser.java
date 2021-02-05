@@ -16,6 +16,7 @@ package org.apache.geode.internal.net;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -28,7 +29,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.SystemFailure;
-import org.apache.geode.internal.util.CompletedFuture;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 
 /**
@@ -198,7 +198,7 @@ public class SocketCloser {
     }
     boolean doItInline = false;
     try {
-      Future submittedTask = new CompletedFuture(this);
+      Future submittedTask = CompletableFuture.completedFuture(this);
       closedLock.lock();
       try {
         if (closed) {
