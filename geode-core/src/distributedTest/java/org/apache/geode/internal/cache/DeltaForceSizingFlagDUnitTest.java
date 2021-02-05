@@ -15,6 +15,9 @@
 package org.apache.geode.internal.cache;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.DataInput;
@@ -60,7 +63,6 @@ public class DeltaForceSizingFlagDUnitTest {
   public static final String LARGER_DELTA_DATA = "1234567890";
   public static final String DELTA_KEY = "a_key";
   public static final String RR_DISK_STORE_NAME = "_forceRecalculateSize_replicate_store";
-  public static final String PR_DISK_STORE_NAME = "_forceRecalculateSize_partition_store";
   private static final Logger logger = LogService.getLogger();
 
   @Rule
@@ -107,10 +109,10 @@ public class DeltaForceSizingFlagDUnitTest {
     createRR(server1);
     createRR(server2);
     TestDelta delta1 = new TestDelta(false, SMALLER_DELTA_DATA, shouldSizeChange);
-    put(vm1, DELTA_KEY, delta1);
+    put(vm1, delta1);
 
-    assertValueType(vm1, DELTA_KEY, ValueType.RAW_VALUE);
-    assertValueType(vm2, DELTA_KEY, ValueType.CD_SERIALIZED);
+    assertValueType(vm1, ValueType.RAW_VALUE);
+    assertValueType(vm2, ValueType.CD_SERIALIZED);
     assertEquals(1, getObjectSizerInvocations(vm1));
     assertEquals(0, getObjectSizerInvocations(vm2));
 
@@ -119,10 +121,10 @@ public class DeltaForceSizingFlagDUnitTest {
     delta1.info = LARGER_DELTA_DATA;
     delta1.hasDelta = true;
     // Update the delta
-    put(vm1, DELTA_KEY, delta1);
+    put(vm1, delta1);
 
-    assertValueType(vm1, DELTA_KEY, ValueType.RAW_VALUE);
-    assertValueType(vm2, DELTA_KEY, ValueType.CD_DESERIALIZED);
+    assertValueType(vm1, ValueType.RAW_VALUE);
+    assertValueType(vm2, ValueType.CD_DESERIALIZED);
 
     assertEquals(2, getObjectSizerInvocations(vm1));
 
@@ -145,18 +147,18 @@ public class DeltaForceSizingFlagDUnitTest {
     VM vm1 = server1.getVM();
     VM vm2 = server2.getVM();
 
-    createPR(server1, false);
-    createPR(server2, false);
+    createPR(server1);
+    createPR(server2);
 
     TestDelta delta1 = new TestDelta(false, SMALLER_DELTA_DATA, shouldSizeChange);
-    put(vm1, DELTA_KEY, delta1);
+    put(vm1, delta1);
     long origPRSize0 = getSizeFromPRStats(vm1);
     long origPRSize1 = getSizeFromPRStats(vm2);
 
     // Update the delta
     delta1.info = LARGER_DELTA_DATA;
     delta1.hasDelta = true;
-    put(vm1, DELTA_KEY, delta1);
+    put(vm1, delta1);
     long finalPRSize0 = getSizeFromPRStats(vm1);
     long finalPRSize1 = getSizeFromPRStats(vm2);
 
@@ -174,11 +176,13 @@ public class DeltaForceSizingFlagDUnitTest {
   private long getSizeFromPRStats(VM vm0) {
     return vm0.invoke("getSizeFromPRStats", () -> {
       Cache cache = ClusterStartupRule.getCache();
+      assertNotNull(cache);
       LocalRegion region = (LocalRegion) cache.getRegion(TEST_REGION_NAME);
       if (region instanceof PartitionedRegion) {
         long total = 0;
-        PartitionedRegion pr = ((PartitionedRegion) region);
-        for (int i = 0; i < pr.getPartitionAttributes().getTotalNumBuckets(); i++) {
+        PartitionedRegion pr = (PartitionedRegion) region;
+        int totalNumBuckets = pr.getPartitionAttributes().getTotalNumBuckets();
+        for (int i = 0; i < totalNumBuckets; i++) {
           total += pr.getDataStore().getBucketSize(i);
         }
         return total;
@@ -192,24 +196,27 @@ public class DeltaForceSizingFlagDUnitTest {
     return vm0.invoke("getSizeFromEvictionStats", () -> {
 
       Cache cache = ClusterStartupRule.getCache();
+      assertNotNull(cache);
       LocalRegion region = (LocalRegion) cache.getRegion(TEST_REGION_NAME);
-      return getSizeFromEvictionStats(region);
+      return region.getEvictionCounter();
     });
   }
 
   private int getObjectSizerInvocations(VM vm0) {
     return vm0.invoke("getObjectSizerInvocations", () -> {
       Cache cache = ClusterStartupRule.getCache();
+      assertNotNull(cache);
       LocalRegion region = (LocalRegion) cache.getRegion(TEST_REGION_NAME);
       return getObjectSizerInvocations(region);
     });
   }
 
-  private void put(VM vm0, final Object key, final Object value) {
+  private void put(VM vm0, final Object value) {
     vm0.invoke("Put data", () -> {
       Cache cache = ClusterStartupRule.getCache();
+      assertNotNull(cache);
       LocalRegion region = (LocalRegion) cache.getRegion(TEST_REGION_NAME);
-      region.put(key, value);
+      region.put(DeltaForceSizingFlagDUnitTest.DELTA_KEY, value);
     });
   }
 
@@ -220,15 +227,11 @@ public class DeltaForceSizingFlagDUnitTest {
     return result;
   }
 
-  private static long getSizeFromEvictionStats(LocalRegion region) {
-    long result = region.getEvictionCounter();
-    return result;
-  }
-
   private void createRR(MemberVM memberVM) {
     memberVM.invoke("Create replicateRegion", () -> {
       Cache cache = ClusterStartupRule.getCache();
-      RegionFactory regionFactory = cache.createRegionFactory();
+      assertNotNull(cache);
+      RegionFactory<Integer, TestDelta> regionFactory = cache.createRegionFactory();
       regionFactory.setDiskSynchronous(true);
       regionFactory.setDataPolicy(DataPolicy.REPLICATE);
       regionFactory.setScope(Scope.DISTRIBUTED_ACK);
@@ -244,15 +247,16 @@ public class DeltaForceSizingFlagDUnitTest {
     });
   }
 
-  private void assertValueType(VM vm, final Object key, final ValueType expectedType) {
+  private void assertValueType(VM vm, final ValueType expectedType) {
     vm.invoke("assertValueType", () -> {
       Cache cache = ClusterStartupRule.getCache();
+      assertNotNull(cache);
       LocalRegion region = (LocalRegion) cache.getRegion(TEST_REGION_NAME);
-      Object value = region.getValueInVM(key);
+      Object value = region.getValueInVM(DeltaForceSizingFlagDUnitTest.DELTA_KEY);
       switch (expectedType) {
         case RAW_VALUE:
-          assertTrue("Value was " + value + " type " + value.getClass(),
-              !(value instanceof CachedDeserializable));
+          assertFalse("Value was " + value + " type " + value.getClass(),
+              (value instanceof CachedDeserializable));
           break;
         case CD_SERIALIZED:
           assertTrue("Value was " + value + " type " + value.getClass(),
@@ -263,11 +267,11 @@ public class DeltaForceSizingFlagDUnitTest {
         case CD_DESERIALIZED:
           assertTrue("Value was " + value + " type " + value.getClass(),
               value instanceof CachedDeserializable);
-          assertTrue("Value was serialized",
-              !(((CachedDeserializable) value).getValue() instanceof byte[]));
+          assertFalse("Value was serialized",
+              (((CachedDeserializable) value).getValue() instanceof byte[]));
           break;
         case EVICTED:
-          assertEquals(null, value);
+          assertNull(value);
           break;
       }
     });
@@ -276,29 +280,21 @@ public class DeltaForceSizingFlagDUnitTest {
   private static File[] getMyDiskDirs() {
     long random = new Random().nextLong();
     File file = new File(Long.toString(random));
-    file.mkdirs();
+    assertTrue(file.mkdirs());
     return new File[] {file};
   }
 
-  private void createPR(MemberVM memberVM, final boolean enableLRU) {
+  private void createPR(MemberVM memberVM) {
     memberVM.invoke("Create partitioned region", () -> {
       Cache cache = ClusterStartupRule.getCache();
+      assertNotNull(cache);
 
       RegionFactory<Integer, TestDelta> regionFactory = cache.createRegionFactory();
 
       regionFactory.setDiskSynchronous(true);
       PartitionAttributesFactory<Integer, TestDelta> paf =
-          new PartitionAttributesFactory<Integer, TestDelta>();
+          new PartitionAttributesFactory<>();
       paf.setRedundantCopies(1);
-      if (enableLRU) {
-        paf.setLocalMaxMemory(1); // memlru limit is 1 megabyte
-        regionFactory.setEvictionAttributes(EvictionAttributes
-            .createLRUMemoryAttributes(new TestObjectSizer(), EvictionAction.OVERFLOW_TO_DISK));
-        DiskStoreFactory diskStoreFactory = cache.createDiskStoreFactory();
-        diskStoreFactory.setDiskDirs(getMyDiskDirs());
-        diskStoreFactory.create(PR_DISK_STORE_NAME);
-        regionFactory.setDiskStoreName(PR_DISK_STORE_NAME);
-      }
       PartitionAttributes<Integer, TestDelta> prAttr = paf.create();
       regionFactory.setPartitionAttributes(prAttr);
       regionFactory.setDataPolicy(DataPolicy.PARTITION);
@@ -308,7 +304,7 @@ public class DeltaForceSizingFlagDUnitTest {
   }
 
   private static class TestObjectSizer implements ObjectSizer {
-    private AtomicInteger invocations = new AtomicInteger();
+    private final AtomicInteger invocations = new AtomicInteger();
 
     @Override
     public int sizeof(Object o) {
@@ -328,16 +324,12 @@ public class DeltaForceSizingFlagDUnitTest {
         invocations.incrementAndGet();
         return ((TestKey) o).value.length();
       }
-      throw new RuntimeException("Unpected type to be sized " + o.getClass() + ", object=" + o);
+      throw new RuntimeException("Unexpected type to be sized " + o.getClass() + ", object=" + o);
     }
   }
 
   private static class TestKey implements DataSerializable {
     String value;
-
-    public TestKey() {
-
-    }
 
     public TestKey(String value) {
       this.value = value;
@@ -386,11 +378,6 @@ public class DeltaForceSizingFlagDUnitTest {
     public int sizeForSizer;
     public int sizeForSerialization;
 
-    public TestObject() {
-
-    }
-
-
     public TestObject(int sizeForSerialization, int sizeForSizer) {
       super();
       this.sizeForSizer = sizeForSizer;
@@ -437,10 +424,7 @@ public class DeltaForceSizingFlagDUnitTest {
       if (sizeForSerialization != other.sizeForSerialization) {
         return false;
       }
-      if (sizeForSizer != other.sizeForSizer) {
-        return false;
-      }
-      return true;
+      return sizeForSizer == other.sizeForSizer;
     }
 
     @Override
