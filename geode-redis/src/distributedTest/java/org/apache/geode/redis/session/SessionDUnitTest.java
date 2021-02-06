@@ -15,6 +15,7 @@
 
 package org.apache.geode.redis.session;
 
+
 import java.net.HttpCookie;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -72,7 +73,7 @@ public abstract class SessionDUnitTest {
   protected static final int APP2 = 4;
 
   protected static final Map<Integer, Integer> ports = new HashMap<>();
-  public static ConfigurableApplicationContext springApplicationContext;
+  private static ConfigurableApplicationContext springApplicationContext;
 
   private static RedisClient redisClient;
   private static StatefulRedisConnection<String, String> connection;
