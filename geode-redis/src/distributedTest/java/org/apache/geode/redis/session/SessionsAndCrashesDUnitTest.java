@@ -181,7 +181,7 @@ public class SessionsAndCrashesDUnitTest {
   private void saveSession(Session session) {
     Throwable latestException = null;
 
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 10; i++) {
       try {
         sessionRepository.save(session);
         return;
@@ -195,7 +195,7 @@ public class SessionsAndCrashesDUnitTest {
       }
     }
 
-    throw new RuntimeException(latestException);
+    throw new RuntimeException("Failed saving session after 10 attempts", latestException);
   }
 
   private void createSessions() {
