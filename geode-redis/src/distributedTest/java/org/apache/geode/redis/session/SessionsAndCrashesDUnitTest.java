@@ -67,7 +67,7 @@ public class SessionsAndCrashesDUnitTest {
   private static int[] redisPorts;
   private static Jedis jedis;
 
-  private SessionRepository sessionRepository;
+  private SessionRepository<Session> sessionRepository;
   private ConfigurableApplicationContext springContext;
 
   @BeforeClass
@@ -98,6 +98,7 @@ public class SessionsAndCrashesDUnitTest {
   }
 
   @Before
+  @SuppressWarnings("unchecked")
   public void setup() {
     String[] args = new String[] {
         "" + redisPorts[2],
