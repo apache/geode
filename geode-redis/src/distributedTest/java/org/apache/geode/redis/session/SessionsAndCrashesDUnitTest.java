@@ -67,7 +67,7 @@ public class SessionsAndCrashesDUnitTest {
   private static int[] redisPorts;
   private static Jedis jedis;
 
-  private SessionRepository<Session> sessionRepository;
+  private SessionRepository sessionRepository;
   private ConfigurableApplicationContext springContext;
 
   @BeforeClass
