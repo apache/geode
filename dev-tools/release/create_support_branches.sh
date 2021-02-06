@@ -97,6 +97,7 @@ echo "Cloning repositories..."
 echo "============================================================"
 set -x
 git clone --single-branch --branch develop git@github.com:apache/geode.git
+#(cd geode; git reset --hard $desired_sha) #uncomment if latest commit is not the one desired
 git clone --single-branch --branch develop git@github.com:apache/geode.git geode-develop
 git clone --single-branch --branch develop git@github.com:apache/geode-examples.git
 git clone --single-branch --branch develop git@github.com:apache/geode-examples.git geode-examples-develop
@@ -108,7 +109,7 @@ set +x
 function failMsg2 {
   errln=$1
   echo "ERROR: script did NOT complete successfully"
-  echo "Comment out any steps that already succeeded (approximately lines 70-$(( errln - 1 ))) and try again"
+  echo "Comment out any steps that already succeeded (approximately lines 83-$(( errln - 1 ))) and try again"
 }
 trap 'failMsg2 $LINENO' ERR
 
