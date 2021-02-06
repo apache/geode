@@ -241,6 +241,23 @@ set +x
 
 echo ""
 echo "============================================================"
+echo "Removing duplicate scripts from support/${VERSION_MM}"
+echo "============================================================"
+set -x
+cd ${GEODE}/dev_tools/release
+git pull -r
+git rm *.sh
+cat << EOF > README.md
+See [Releasing Apache Geode](https://cwiki.apache.org/confluence/display/GEODE/Releasing+Apache+Geode)
+EOF
+git add README.md
+git commit -m "remove outdated copies of release scripts to ensure they are not run by accident"
+git push -u origin
+set +x
+
+
+echo ""
+echo "============================================================"
 echo "Setting version on support/${VERSION_MM}"
 echo "============================================================"
 cd ${GEODE}/../..
