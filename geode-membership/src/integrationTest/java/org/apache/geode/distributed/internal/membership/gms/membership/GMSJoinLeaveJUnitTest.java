@@ -25,6 +25,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.mock;
@@ -552,7 +553,8 @@ public class GMSJoinLeaveJUnitTest {
   public void testDuplicateJoinRequestDoesNotCauseNewView() throws Exception {
     initMocks();
     when(healthMonitor.checkIfAvailable(isA(MemberIdentifier.class), isA(String.class),
-        isA(Boolean.class))).thenReturn(true);
+        isA(Boolean.class), isA(Boolean.class))).thenReturn(true);
+
     gmsJoinLeave.unitTesting.add("noRandomViewChange");
     prepareAndInstallView(gmsJoinLeaveMemberId,
         createMemberList(gmsJoinLeaveMemberId, mockMembers[0]));
@@ -581,7 +583,7 @@ public class GMSJoinLeaveJUnitTest {
     assertTrue("expected member to only be in the view once: " + mockMembers[2] + "; view: " + view,
         occurrences == 1);
     verify(healthMonitor, times(5)).checkIfAvailable(isA(MemberIdentifier.class),
-        isA(String.class), isA(Boolean.class));
+        isA(String.class), isA(Boolean.class), isA(Boolean.class));
   }
 
 
@@ -880,16 +882,25 @@ public class GMSJoinLeaveJUnitTest {
     verify(manager).quorumLost(crashes, newView);
   }
 
-  // Possibly modify test to check for network partition message in the force disconnect
   @Test
-  public void testNetworkPartitionMessageReceived() throws Exception {
+  public void testNetworkPartitionFromViewMemberReceived() throws Exception {
     initMocks();
     becomeCoordinatorForTest(gmsJoinLeave);
     NetworkPartitionMessage message = new NetworkPartitionMessage();
+    message.setSender(gmsJoinLeaveMemberId);
     gmsJoinLeave.processMessage(message);
-    verify(manager).forceDisconnect(isA(String.class));
+    verify(manager).forceDisconnect(contains(gmsJoinLeaveMemberId.toString()));
   }
 
+  @Test
+  public void testNetworkPartitionMessageFromNonMemberIgnored() throws Exception {
+    initMocks();
+    becomeCoordinatorForTest(gmsJoinLeave);
+    NetworkPartitionMessage message = new NetworkPartitionMessage();
+    message.setSender(mockMembers[0]);
+    gmsJoinLeave.processMessage(message);
+    verify(manager, never()).forceDisconnect(isA(String.class));
+  }
 
   @Test
   public void testQuorumLossNotificationWithNetworkPartitionDetectionDisabled() throws Exception {
@@ -951,7 +962,7 @@ public class GMSJoinLeaveJUnitTest {
   public void testNoViewAckCausesRemovalMessage() throws Exception {
     initMocks(true);
     when(healthMonitor.checkIfAvailable(isA(MemberIdentifier.class), isA(String.class),
-        isA(Boolean.class))).thenReturn(false);
+        isA(Boolean.class), isA(Boolean.class))).thenReturn(false);
     prepareAndInstallView(mockMembers[0], createMemberList(mockMembers[0], gmsJoinLeaveMemberId));
     GMSMembershipView oldView = gmsJoinLeave.getView();
     GMSMembershipView newView = new GMSMembershipView(oldView, oldView.getViewId() + 1);
@@ -973,7 +984,7 @@ public class GMSJoinLeaveJUnitTest {
 
     verify(healthMonitor, timeout(10000).atLeast(1)).checkIfAvailable(
         isA(MemberIdentifier.class),
-        isA(String.class), isA(Boolean.class));
+        isA(String.class), isA(Boolean.class), isA(Boolean.class));
     // verify(messenger, atLeast(1)).send(isA(RemoveMemberMessage.class));
   }
 
