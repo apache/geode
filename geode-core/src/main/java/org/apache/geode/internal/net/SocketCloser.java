@@ -191,7 +191,6 @@ public class SocketCloser {
    * @param runBeforeClose a Runnable with stuff to execute before the socket is closed
    * @param runAfterClose a Runnable with stuff to execute after the socket is closed
    */
-  @NotNull
   public void asyncClose(@NotNull final Socket socket, @NotNull final String address,
       @NotNull final Runnable runBeforeClose,
       @NotNull final Runnable runAfterClose) {
