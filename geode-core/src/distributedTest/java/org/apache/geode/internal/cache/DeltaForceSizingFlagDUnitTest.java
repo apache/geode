@@ -308,7 +308,7 @@ public class DeltaForceSizingFlagDUnitTest {
 
     @Override
     public int sizeof(Object o) {
-      logger.debug("TestObjectSizer invoked"/* , new Exception("stack trace") */);
+      logger.info("TestObjectSizer invoked");
       if (o instanceof TestObject) {
         invocations.incrementAndGet();
         return ((TestObject) o).sizeForSizer;
@@ -439,17 +439,15 @@ public class DeltaForceSizingFlagDUnitTest {
     @Override
     public void afterCreate(EntryEvent<K, V> event) {
       // Make sure we deserialize the new value
-      logger.debug("invoked afterCreate with " + event);
-      logger.info(String.format("%s",
-          "value is " + event.getNewValue()));
+      logger.info("invoked afterCreate with " + event);
+      logger.info("value is " + event.getNewValue());
     }
 
     @Override
     public void afterUpdate(EntryEvent<K, V> event) {
       // Make sure we deserialize the new value
-      logger.debug("invoked afterUpdate with ");
-      logger.info(String.format("%s",
-          "value is " + event.getNewValue()));
+      logger.info("invoked afterUpdate with ");
+      logger.info("value is " + event.getNewValue());
     }
 
   }
