@@ -171,6 +171,7 @@ public enum RedisCommandType {
       new MinimumParameterRequirements(4).and(new EvenParameterRequirements())),
   HSETNX(new HSetNXExecutor(), SUPPORTED, new ExactParameterRequirements(4)),
   HSTRLEN(new HStrLenExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
+  HINCRBY(new HIncrByExecutor(), SUPPORTED, new ExactParameterRequirements(4)),
   HVALS(new HValsExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
   HEXISTS(new HExistsExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
   HKEYS(new HKeysExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
@@ -241,7 +242,6 @@ public enum RedisCommandType {
    **************** Hashes ***************
    ***************************************/
 
-  HINCRBY(new HIncrByExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
   HSCAN(new HScanExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3),
       new OddParameterRequirements(ERROR_SYNTAX)),
 
