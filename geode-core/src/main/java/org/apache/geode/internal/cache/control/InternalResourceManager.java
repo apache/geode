@@ -160,8 +160,6 @@ public class InternalResourceManager implements ResourceManager {
       Set<ResourceListener<?>> emptySet = new CopyOnWriteArraySet<>();
       listeners.put(resourceType, emptySet);
     }
-
-    closed = false;
   }
 
   public void close() {
