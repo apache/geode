@@ -166,7 +166,7 @@ public class SessionsAndCrashesDUnitTest {
     while (running.get()) {
       int modCount = count % NUM_SESSIONS;
       String sessionId = sessionIds.get(modCount);
-      Session session = sessionRepository.findById(sessionId);
+      Session session = findSession(sessionId);
       assertThat(session).as("Session " + sessionId + " not found during phase " + phase.get())
           .isNotNull();
 
@@ -178,12 +178,14 @@ public class SessionsAndCrashesDUnitTest {
     return count;
   }
 
-  private void saveSession(Session session) {
-    while (true) {
+  private Session findSession(String sessionId) {
+    Throwable latestException = null;
+
+    for (int i = 0; i < 10; i++) {
       try {
-        sessionRepository.save(session);
-        return;
+        return sessionRepository.findById(sessionId);
       } catch (RedisSystemException rex) {
+        latestException = rex;
         try {
           Thread.sleep(2000);
         } catch (InterruptedException e) {
@@ -191,6 +193,28 @@ public class SessionsAndCrashesDUnitTest {
         }
       }
     }
+
+    throw new RuntimeException("Failed to find session after 10 attempts", latestException);
+  }
+
+  private void saveSession(Session session) {
+    Throwable latestException = null;
+
+    for (int i = 0; i < 10; i++) {
+      try {
+        sessionRepository.save(session);
+        return;
+      } catch (RedisSystemException rex) {
+        latestException = rex;
+        try {
+          Thread.sleep(2000);
+        } catch (InterruptedException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    }
+
+    throw new RuntimeException("Failed saving session after 10 attempts", latestException);
   }
 
   private void createSessions() {
