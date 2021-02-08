@@ -672,7 +672,8 @@ public class GMSHealthMonitorJUnitTest {
   }
 
   @Test
-  public void testMemberIsNotAvailableWhenNotAssumingMembersInFinalCheckAreAvailable() throws Exception {
+  public void testMemberIsNotAvailableWhenNotAssumingMembersInFinalCheckAreAvailable()
+      throws Exception {
     useGMSHealthMonitorTestClass = true;
     simulateHeartbeatInGMSHealthMonitorTestClass = false;
 
