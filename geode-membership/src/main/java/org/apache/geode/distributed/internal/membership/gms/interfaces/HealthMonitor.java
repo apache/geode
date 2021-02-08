@@ -50,10 +50,10 @@ public interface HealthMonitor<ID extends MemberIdentifier> extends Service<ID> 
    *
    * @param reason the reason this check is being performed
    * @param initiateRemoval if the member should be removed if it is not available
-   * @param checkIfMemberInFinalCheck if true, check if the member is undergoing a final check
+   * @param assumeMembersInFinalCheckAreAvailable if true, assume that the members in final check are available
    */
   boolean checkIfAvailable(ID mbr, String reason, boolean initiateRemoval,
-      boolean checkIfMemberInFinalCheck);
+      boolean assumeMembersInFinalCheckAreAvailable);
 
   /**
    * Invoked by the Manager, this notifies the HealthMonitor that a ShutdownMessage has been

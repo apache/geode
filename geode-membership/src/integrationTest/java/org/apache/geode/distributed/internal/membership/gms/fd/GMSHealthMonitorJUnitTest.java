@@ -661,27 +661,27 @@ public class GMSHealthMonitorJUnitTest {
     useGMSHealthMonitorTestClass = true;
     simulateHeartbeatInGMSHealthMonitorTestClass = false;
 
-    GMSMembershipView v = installAView();
+    final GMSMembershipView v = installAView();
     setFailureDetectionPorts(v);
 
-    MemberIdentifier memberToCheck = gmsHealthMonitor.getNextNeighbor();
-    GMSHealthMonitorTest testMonitor = (GMSHealthMonitorTest) gmsHealthMonitor;
+    final MemberIdentifier memberToCheck = gmsHealthMonitor.getNextNeighbor();
+    final GMSHealthMonitorTest testMonitor = (GMSHealthMonitorTest) gmsHealthMonitor;
     testMonitor.addMemberInFinalCheck(memberToCheck);
     assertThat(testMonitor.checkIfAvailable(memberToCheck,
         "Member failed to acknowledge a membership view", false)).isTrue();
   }
 
   @Test
-  public void testMemberIsNotAvailableWhenCheckIfMemberInFinalCheckIsFalse() throws Exception {
+  public void testMemberIsNotAvailableWhenNotAssumingMembersInFinalCheckAreAvailable() throws Exception {
     useGMSHealthMonitorTestClass = true;
     simulateHeartbeatInGMSHealthMonitorTestClass = false;
 
-    GMSMembershipView v = installAView();
+    final GMSMembershipView v = installAView();
     setFailureDetectionPorts(v);
 
-    MemberIdentifier memberToCheck = gmsHealthMonitor.getNextNeighbor();
+    final MemberIdentifier memberToCheck = gmsHealthMonitor.getNextNeighbor();
     when(joinLeave.isMemberLeaving(memberToCheck)).thenReturn(true);
-    GMSHealthMonitorTest testMonitor = (GMSHealthMonitorTest) gmsHealthMonitor;
+    final GMSHealthMonitorTest testMonitor = (GMSHealthMonitorTest) gmsHealthMonitor;
     testMonitor.addMemberInFinalCheck(memberToCheck);
     assertThat(testMonitor.checkIfAvailable(memberToCheck,
         "Member failed to acknowledge a membership view", false, false)).isFalse();
@@ -691,11 +691,10 @@ public class GMSHealthMonitorJUnitTest {
   public void testMemberIsNotAvailableWhenNotInFinalCheck() throws Exception {
     useGMSHealthMonitorTestClass = true;
     simulateHeartbeatInGMSHealthMonitorTestClass = false;
+    installAView();
 
-    GMSMembershipView v = installAView();
-
-    MemberIdentifier memberToCheck = gmsHealthMonitor.getNextNeighbor();
-    GMSHealthMonitorTest testMonitor = (GMSHealthMonitorTest) gmsHealthMonitor;
+    final MemberIdentifier memberToCheck = gmsHealthMonitor.getNextNeighbor();
+    final GMSHealthMonitorTest testMonitor = (GMSHealthMonitorTest) gmsHealthMonitor;
     assertThat(testMonitor.checkIfAvailable(memberToCheck,
         "Member failed to acknowledge a membership view", false, true)).isFalse();
   }

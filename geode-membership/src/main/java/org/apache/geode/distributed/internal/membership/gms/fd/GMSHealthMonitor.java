@@ -675,8 +675,8 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
 
   @Override
   public boolean checkIfAvailable(ID mbr, String reason,
-      boolean initiateRemoval, boolean checkIfMemberInFinalCheck) {
-    if (checkIfMemberInFinalCheck && membersInFinalCheck.contains(mbr)) {
+      boolean initiateRemoval, boolean assumeMembersInFinalCheckAreAvailable) {
+    if (assumeMembersInFinalCheckAreAvailable && membersInFinalCheck.contains(mbr)) {
       return true; // status unknown for now but someone is checking
     }
     return inlineCheckIfAvailable(localAddress, currentView, initiateRemoval,
