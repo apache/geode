@@ -267,34 +267,36 @@ export offline-disk-store --name=value --disk-dirs=value(,value)* --dir=value
 
 ## <a id="topic_195D27B8B2B64A4E84CF2256636D54BD" class="no-quick-link"></a>export stack-traces
 
-Export the stack trace for a member or members.
+Export the stack trace for one or more servers.
 
 **Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
 
 **Syntax:**
 
 ``` pre
-export stack-traces --file=value [--members=value(,value)*] [--groups=value(,value)*]
+export stack-traces [--members=value(,value)*] [--groups=value(,value)*]
+[--file=value] [--abort-if-file-exists(=value)?]
 ```
 
 **Export Stack-Traces Parameters:**
 
 | Name                                           | Description                                                     |
 |------------------------------------------------|-----------------------------------------------------------------|
-| <span class="keyword parmname">\\-\\-file</span>   | *Required.* Filename to which the stack-traces will be written. |
-| <span class="keyword parmname">\\-\\-members</span> | Name or ID of the member(s) whose log files will be exported.      |
-| <span class="keyword parmname">\\-\\-groups</span>  | Group(s) of members whose log files will be exported.          |
+| <span class="keyword parmname">\\-\\-members</span> | Name or ID of the server(s) whose stack traces will be exported.      |
+| <span class="keyword parmname">\\-\\-groups</span>  | Group(s) of servers whose stack traces will be exported.          |
+| <span class="keyword parmname">\\-\\-file</span>    | File name to which the stack traces will be written. When not specified, the file name will be the string "stacktrace_" followed by the current time in milliseconds. |
+| <span class="keyword parmname">\\-\\-abort-if-file-exists</span>   | When true, abort the command if the file already exists in the locator's directory. If this option is not specified, the default value is false. |
 
 **Example Commands:**
 
 ``` pre
-export stack-traces --file=stack.txt
+export stack-traces --file=stack.txt --abort-if-file-exists=true
 ```
 
 **Sample Output:**
 
 ``` pre
-gfsh>export stack-traces --file=stack.txt
-stack-trace(s) exported to file: C:\PivotalGemFire\Latest\locator1\stack.txt
-On host : GemFireStymon
+gfsh>export stack-traces
+stack-trace(s) exported to file: /data/stacktrace_1612316330340
+On host : cluster-locator-0.cluster-locator.system.svc.cluster.local
 ```
