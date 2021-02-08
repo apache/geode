@@ -179,14 +179,11 @@ public class SessionsAndCrashesDUnitTest {
   }
 
   private void saveSession(Session session) {
-    Throwable latestException = null;
-
-    for (int i = 0; i < 10; i++) {
+    while (true) {
       try {
         sessionRepository.save(session);
         return;
       } catch (RedisSystemException rex) {
-        latestException = rex;
         try {
           Thread.sleep(2000);
         } catch (InterruptedException e) {
@@ -194,8 +191,6 @@ public class SessionsAndCrashesDUnitTest {
         }
       }
     }
-
-    throw new RuntimeException("Failed saving session after 10 attempts", latestException);
   }
 
   private void createSessions() {
