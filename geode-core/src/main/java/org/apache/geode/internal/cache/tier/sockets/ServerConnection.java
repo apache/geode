@@ -1413,6 +1413,9 @@ public abstract class ServerConnection implements Runnable {
     }
 
     if (!theSocket.isClosed()) {
+      // Here we direct closing of sockets to one of two executors. Use of an executor
+      // keeps us from causing an explosion of new threads when a server is shut down.
+      // Background threads are used in case the close() operation on the socket hangs.
       final String closerName =
           communicationMode.isWAN() ? "WANSocketCloser" : "CacheServerSocketCloser";
       acceptor.getSocketCloser().asyncClose(theSocket, closerName, () -> {

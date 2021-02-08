@@ -23,15 +23,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.InternalGemFireError;
@@ -1022,100 +1017,6 @@ public class LonerDistributionManager implements DistributionManager {
     @Override
     public long getUDPMsgDecryptionTime() {
       return 0;
-    }
-  }
-  protected static class DummyExecutor implements ExecutorService {
-    @Override
-    public void execute(Runnable command) {
-      command.run();
-    }
-
-    @Override
-    public void shutdown() {}
-
-    @Override
-    public List<Runnable> shutdownNow() {
-      return Collections.emptyList();
-    }
-
-    @Override
-    public boolean isShutdown() {
-      return false;
-    }
-
-    @Override
-    public boolean isTerminated() {
-      return false;
-    }
-
-    @Override
-    public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
-      return true;
-    }
-
-    @Override
-    public <T> Future<T> submit(final Callable<T> task) {
-      CompletableFuture future = new CompletableFuture<>();
-      try {
-        T result = task.call();
-        future.complete(result);
-      } catch (Exception e) {
-        future.completeExceptionally(e);
-      }
-      return future;
-    }
-
-    @Override
-    public <T> Future<T> submit(final Runnable task, final T result) {
-      return submit(new Callable<T>() {
-        @Override
-        public T call() throws Exception {
-          task.run();
-          return result;
-        }
-      });
-    }
-
-    @Override
-    public Future<?> submit(Runnable task) {
-      return submit(task, null);
-    }
-
-    @Override
-    public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks)
-        throws InterruptedException {
-      List<Future<T>> results = new ArrayList<Future<T>>();
-      for (Callable<T> task : tasks) {
-        results.add(submit(task));
-      }
-      return results;
-    }
-
-    @Override
-    public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks, long timeout,
-        TimeUnit unit) throws InterruptedException {
-      return invokeAll(tasks);
-    }
-
-    @Override
-    public <T> T invokeAny(Collection<? extends Callable<T>> tasks)
-        throws InterruptedException, ExecutionException {
-
-      ExecutionException ex = null;
-      for (Callable<T> task : tasks) {
-        try {
-          return submit(task).get();
-        } catch (ExecutionException e) {
-          ex = e;
-        }
-      }
-      throw (ExecutionException) ex.fillInStackTrace();
-    }
-
-    @Override
-    public <T> T invokeAny(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit)
-        throws InterruptedException, ExecutionException, TimeoutException {
-      return invokeAny(tasks);
     }
   }
 

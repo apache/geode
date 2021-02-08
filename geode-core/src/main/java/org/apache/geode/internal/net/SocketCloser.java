@@ -170,10 +170,10 @@ public class SocketCloser {
    * closed then a normal synchronous close is done.
    *
    * @param socket the socket to close
-   * @param address identifies who the socket is connected to
+   * @param address key used to determine which executor to use. Usually the address of a peer or
+   *        client
    * @param runBeforeClose a Runnable with stuff to execute before the socket is closed
    */
-  @NotNull
   public void asyncClose(final Socket socket, final String address, final Runnable runBeforeClose) {
     asyncClose(socket, address, runBeforeClose, () -> {
     });
@@ -186,13 +186,15 @@ public class SocketCloser {
    * closed then a normal synchronous close is done.
    *
    * @param socket the socket to close
-   * @param address identifies who the socket is connected to
+   * @param address key used to determine which executor to use. Usually the address of a peer or
+   *        client
    * @param runBeforeClose a Runnable with stuff to execute before the socket is closed
    * @param runAfterClose a Runnable with stuff to execute after the socket is closed
    */
   @NotNull
-  public void asyncClose(final Socket socket, final String address, final Runnable runBeforeClose,
-      final Runnable runAfterClose) {
+  public void asyncClose(@NotNull final Socket socket, @NotNull final String address,
+      @NotNull final Runnable runBeforeClose,
+      @NotNull final Runnable runAfterClose) {
     if (socket.isClosed()) {
       return;
     }
