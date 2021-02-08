@@ -279,7 +279,26 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   }
 
   @Test
-  public void testHkeys() {
+  public void testHKeys_givenWrongNumberOfArguments() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HKEYS))
+        .hasMessageContaining("ERR wrong number of arguments for 'hkeys' command");
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HKEYS, "1", "2"))
+        .hasMessageContaining("ERR wrong number of arguments for 'hkeys' command");
+  }
+
+  @Test
+  public void testHKeys_failsGivenWrongType() {
+    jedis.sadd("farm", "chicken");
+    assertThatThrownBy(() -> jedis.hkeys("farm"))
+        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+
+    jedis.set("tractor", "John Deere");
+    assertThatThrownBy(() -> jedis.hkeys("tractor"))
+        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+  }
+
+  @Test
+  public void testHkeys_returnsAllValuesForGivenField() {
     String key = "key";
     Map<String, String> hash = new HashMap<String, String>();
     for (int i = 0; i < 10; i++) {
@@ -291,6 +310,14 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
     Set<String> retSet = jedis.hkeys(key);
 
     assertThat(retSet.containsAll(keys)).isTrue();
+  }
+
+  @Test
+  public void testHkeys_returnsEmptyForNonExistentField() {
+    String key = "nonexistent";
+
+    Set<String> retSet = jedis.hkeys(key);
+    assertThat(retSet).isEmpty();
   }
 
   @Test
@@ -584,7 +611,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
    * </pre>
    */
   @Test
-  public void testHKeys() {
+  public void testHKeys_returnsFieldsForGivenKey() {
     String key = "HKeys_key";
     String field1 = "field_1";
     String field2 = "field_2";
