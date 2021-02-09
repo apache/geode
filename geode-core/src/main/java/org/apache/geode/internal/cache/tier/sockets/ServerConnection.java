@@ -1412,11 +1412,22 @@ public abstract class ServerConnection implements Runnable {
       getAcceptor().decClientServerConnectionCount();
     }
 
-    try {
-      theSocket.close();
-    } catch (Exception ignored) {
+    if (!theSocket.isClosed()) {
+      // Here we direct closing of sockets to one of two executors. Use of an executor
+      // keeps us from causing an explosion of new threads when a server is shut down.
+      // Background threads are used in case the close() operation on the socket hangs.
+      final String closerName =
+          communicationMode.isWAN() ? "WANSocketCloser" : "CacheServerSocketCloser";
+      acceptor.getSocketCloser().asyncClose(theSocket, closerName, () -> {
+      },
+          () -> cleanupAfterSocketClose());
+      return true;
     }
+    cleanupAfterSocketClose();
+    return true;
+  }
 
+  protected void cleanupAfterSocketClose() {
     try {
       if (postAuthzRequest != null) {
         postAuthzRequest.close();
@@ -1437,7 +1448,6 @@ public abstract class ServerConnection implements Runnable {
     }
     releaseCommBuffer();
     processMessages = false;
-    return true;
   }
 
   private void releaseCommBuffer() {
