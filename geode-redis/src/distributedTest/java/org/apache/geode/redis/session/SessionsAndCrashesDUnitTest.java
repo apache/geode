@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.assertj.core.api.SoftAssertions;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -100,10 +101,11 @@ public class SessionsAndCrashesDUnitTest {
   @Before
   @SuppressWarnings("unchecked")
   public void setup() {
+    // Focus our connections on server2 and server3 since these are the ones going to be
+    // restarted.
     String[] args = new String[] {
-        "" + redisPorts[2],
         "" + redisPorts[1],
-        "" + redisPorts[0]};
+        "" + redisPorts[2]};
 
     springContext = SpringApplication.run(RedisSpringTestApplication.class, args);
     sessionRepository = springContext.getBean(SessionRepository.class);
@@ -124,8 +126,8 @@ public class SessionsAndCrashesDUnitTest {
     AtomicBoolean running = new AtomicBoolean(true);
     AtomicReference<String> phase = new AtomicReference<>("STARTUP");
 
-    Future<Integer> future1 = executor.submit(() -> sessionUpdater(0, running, phase));
-    Future<Integer> future2 = executor.submit(() -> sessionUpdater(1, running, phase));
+    Future<Integer> future1 = executor.submit(() -> sessionUpdater(1, running, phase));
+    Future<Integer> future2 = executor.submit(() -> sessionUpdater(2, running, phase));
 
     GeodeAwaitility.await().during(1, TimeUnit.SECONDS).until(() -> true);
 
@@ -154,11 +156,29 @@ public class SessionsAndCrashesDUnitTest {
     rebalanceAllRegions(server3);
 
     phase.set("FINISHING");
-    GeodeAwaitility.await().during(10, TimeUnit.SECONDS).until(() -> true);
+    GeodeAwaitility.await().during(20, TimeUnit.SECONDS).until(() -> true);
 
     running.set(false);
-    future1.get();
-    future2.get();
+    int updatesThread1 = future1.get();
+    int updatesThread2 = future2.get();
+
+    validateSessionAttributes(1, updatesThread1);
+    validateSessionAttributes(2, updatesThread2);
+  }
+
+  private void validateSessionAttributes(int index, int totalUpdates) {
+    SoftAssertions softly = new SoftAssertions();
+
+    for (int i = totalUpdates - NUM_SESSIONS; i < totalUpdates; i++) {
+      int sessionIdx = i % NUM_SESSIONS;
+      String sessionId = sessionIds.get(sessionIdx);
+      Session session = sessionRepository.findById(sessionId);
+      String attr = session.getAttribute(String.format("attr-%d-%d", index, sessionIdx));
+
+      softly.assertThat(attr).isEqualTo("value-" + i);
+    }
+
+    softly.assertAll();
   }
 
   private Integer sessionUpdater(int index, AtomicBoolean running, AtomicReference<String> phase) {
