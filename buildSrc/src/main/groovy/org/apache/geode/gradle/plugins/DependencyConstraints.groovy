@@ -102,7 +102,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'com.sun.istack', name: 'istack-commons-runtime', version: '4.0.0')
         api(group: 'com.sun.mail', name: 'javax.mail', version: '1.6.2')
         api(group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '2.3.2')
-        api(group: 'com.tngtech.archunit', name:'archunit-junit4', version: '0.15.0')
+        api(group: 'com.tngtech.archunit', name:'archunit-junit4', version: '0.16.0')
         api(group: 'com.zaxxer', name: 'HikariCP', version: '4.0.1')
         api(group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4')
         api(group: 'commons-codec', name: 'commons-codec', version: '1.15')
