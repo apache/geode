@@ -156,7 +156,7 @@ public class SessionsAndCrashesDUnitTest {
     rebalanceAllRegions(server3);
 
     phase.set("FINISHING");
-    GeodeAwaitility.await().during(20, TimeUnit.SECONDS).until(() -> true);
+    GeodeAwaitility.await().during(10, TimeUnit.SECONDS).until(() -> true);
 
     running.set(false);
     int updatesThread1 = future1.get();
@@ -199,42 +199,19 @@ public class SessionsAndCrashesDUnitTest {
   }
 
   private Session findSession(String sessionId) {
-    Throwable latestException = null;
-
-    for (int i = 0; i < 10; i++) {
-      try {
-        return sessionRepository.findById(sessionId);
-      } catch (RedisSystemException rex) {
-        latestException = rex;
-        try {
-          Thread.sleep(2000);
-        } catch (InterruptedException e) {
-          throw new RuntimeException(e);
-        }
-      }
+    try {
+      return sessionRepository.findById(sessionId);
+    } catch (RedisSystemException rex) {
+      return sessionRepository.findById(sessionId);
     }
-
-    throw new RuntimeException("Failed to find session after 10 attempts", latestException);
   }
 
   private void saveSession(Session session) {
-    Throwable latestException = null;
-
-    for (int i = 0; i < 10; i++) {
-      try {
-        sessionRepository.save(session);
-        return;
-      } catch (RedisSystemException rex) {
-        latestException = rex;
-        try {
-          Thread.sleep(2000);
-        } catch (InterruptedException e) {
-          throw new RuntimeException(e);
-        }
-      }
+    try {
+      sessionRepository.save(session);
+    } catch (RedisSystemException rex) {
+      sessionRepository.save(session);
     }
-
-    throw new RuntimeException("Failed saving session after 10 attempts", latestException);
   }
 
   private void createSessions() {
