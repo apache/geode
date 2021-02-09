@@ -545,8 +545,6 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     ArrayList<Integer> v5List =
         (ArrayList<Integer>) vm5.invoke(() -> WANTestBase.getSenderStats("ln", -1));
 
-    int batchesDistributed = v4List.get(4) + v5List.get(4);
-
     int orderRegionSize = vm2.invoke(() -> getRegionSize(orderRegionName));
     int shipmentRegionSize = vm2.invoke(() -> getRegionSize(shipmentRegionName));
 
@@ -558,6 +556,9 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     assertEquals(0, (int) v4List.get(13));
     assertEquals(0, (int) v5List.get(13));
 
+    System.out.println("v4List.get(0): " + v4List.get(0));
+    System.out.println("v5List.get(0): " + v5List.get(0));
+
     startSenderInVMsAsync("ln", vm4, vm5);
 
     vm4.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
@@ -568,8 +569,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     v5List =
         (ArrayList<Integer>) vm5.invoke(() -> WANTestBase.getSenderStats("ln", 0));
 
-    // alberto.gomez How can the following not be fulfilled sometimes??? Needs investigation
-    // assertEquals(0, v4List.get(0) + v5List.get(0));
+    assertEquals(0, v4List.get(0) + v5List.get(0));
 
     orderRegionSize = vm2.invoke(() -> getRegionSize(orderRegionName));
     shipmentRegionSize = vm2.invoke(() -> getRegionSize(shipmentRegionName));
@@ -581,6 +581,9 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     // batches with incomplete transactions must be 0
     assertEquals(0, (int) v4List.get(13));
     assertEquals(0, (int) v5List.get(13));
+
+    System.out.println("v4List.get(0): " + v4List.get(0));
+    System.out.println("v5List.get(0): " + v5List.get(0));
   }
 
   @Test
@@ -592,6 +595,16 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     createCacheInVMs(nyPort, vm2);
     createReceiverInVMs(vm2);
 
+    // Map<String, String> systemProperties = new HashMap<>();
+    // systemProperties.put(GeodeGlossary.GEMFIRE_PREFIX +
+    // "get-transaction-events-from-queue-wait-time-ms",
+    // "2");
+    // systemProperties.put(GeodeGlossary.GEMFIRE_PREFIX +
+    // "get-transaction-events-from-queue-retries",
+    // "10");
+    //
+    // vm4 = getHost(0).getVM(VersionManager.CURRENT_VERSION, 4, systemProperties);
+    // vm5 = getHost(0).getVM(VersionManager.CURRENT_VERSION, 5, systemProperties);
     createCacheInVMs(lnPort, vm4, vm5);
     vm4.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, true, null, true,
         true));
@@ -610,7 +623,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     int customers = 4;
     int transactionsPerCustomer = 100;
     int shipmentsPerTransaction = 10;
-    final LinkedHashMap<Object, Object> keyValuesInTransactions = new LinkedHashMap();
+    final Map<Object, Object> keyValuesInTransactions = new LinkedHashMap<>();
     for (int custId = 0; custId < customers; custId++) {
       for (int i = 0; i < transactionsPerCustomer; i++) {
         CustId custIdObject = new CustId(custId);
@@ -632,6 +645,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     vm4.invoke(() -> await()
         .until(() -> WANTestBase.getSenderStats("ln", -1).get(5) > 0));
 
+    System.out.println("Stopping sender");
     stopSenderInVMsAsync("ln", vm4, vm5);
 
     inv1.await();
@@ -646,7 +660,12 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     ArrayList<Integer> v5List =
         (ArrayList<Integer>) vm5.invoke(() -> WANTestBase.getSenderStats("ln", -1));
 
+    System.out.println("v4List.get(0): " + v4List.get(0));
+    System.out.println("v5List.get(0): " + v5List.get(0));
+
+    System.out.println("Starting receiver");
     vm2.invoke(() -> startReceivers());
+    System.out.println("Starting sender");
     startSenderInVMsAsync("ln", vm4, vm5);
 
     vm4.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
@@ -657,8 +676,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     v5List =
         (ArrayList<Integer>) vm5.invoke(() -> WANTestBase.getSenderStats("ln", 0));
 
-    // alberto.gomez How can the following not be fulfilled sometimes??? Needs investigation
-    // assertEquals(0, v4List.get(0) + v5List.get(0));
+    assertEquals(0, v4List.get(0) + v5List.get(0));
 
     // Wait for events to replicate: when batches received does not change
     // we can assume that replication has finished.
@@ -680,6 +698,9 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     // batches with incomplete transactions
     assertEquals(0, (int) v4List.get(13));
     assertEquals(0, (int) v5List.get(13));
+
+    System.out.println("v4List.get(0): " + v4List.get(0));
+    System.out.println("v5List.get(0): " + v5List.get(0));
 
     // Check the entries replicated according to the batches distributed
     int batchesDistributed = v4List.get(4) + v5List.get(4);

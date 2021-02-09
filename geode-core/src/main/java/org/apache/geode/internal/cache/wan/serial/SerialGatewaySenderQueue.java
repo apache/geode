@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.wan.serial;
 
 import static org.apache.geode.cache.wan.GatewaySender.DEFAULT_BATCH_SIZE;
 import static org.apache.geode.cache.wan.GatewaySender.GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES;
+import static org.apache.geode.cache.wan.GatewaySender.GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS;
 
 import java.util.ArrayList;
 import java.util.Deque;
@@ -469,13 +470,12 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       return;
     }
 
-    boolean batchHasIncompleteTransactions = true;
+    boolean batchHasIncompleteTransactions = false;
     for (TransactionId transactionId : incompleteTransactionIdsInBatch) {
       boolean areAllEventsForTransactionInBatch = false;
       int retries = 0;
       long lastKeyForTransaction = lastKey;
-      while (!areAllEventsForTransactionInBatch
-          && retries++ < GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES) {
+      while (true) {
         EventsAndLastKey eventsAndKey =
             peekEventsWithTransactionId(transactionId, lastKeyForTransaction);
 
@@ -491,11 +491,20 @@ public class SerialGatewaySenderQueue implements RegionQueue {
           }
         }
         lastKeyForTransaction = eventsAndKey.lastKey;
+        if (areAllEventsForTransactionInBatch
+            || retries++ >= GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES) {
+          break;
+        }
+        try {
+          Thread.sleep(GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS);
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+        }
       }
       if (!areAllEventsForTransactionInBatch) {
         batchHasIncompleteTransactions = true;
-        logger.warn("Not able to retrieve all events for transaction {} after {} tries",
-            transactionId, retries);
+        logger.warn("Not able to retrieve all events for transaction {} after {} tries of {}ms",
+            transactionId, retries, GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS);
       }
     }
     if (batchHasIncompleteTransactions) {
@@ -885,9 +894,13 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
   public boolean isThereEventsMatching(Predicate condition) {
     Object object;
-    long currentKey = getCurrentKey();
+    long currentKey = getHeadKey();
+    if (currentKey == getTailKey()) {
+      return false;
+    }
     while ((currentKey = inc(currentKey)) != getTailKey()) {
       object = optimalGet(currentKey);
+
       if (object == null) {
         continue;
       }

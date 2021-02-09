@@ -859,7 +859,6 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       logger.warn(
           "GatewaySender: Not queuing the event {}, as the region for which this event originated is not yet configured in the GatewaySender",
           value);
-      // does not put into queue
       return null;
     }
     return regionPath;
@@ -872,8 +871,8 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       key = value.getShadowKey();
 
       if ((Long) key == -1) {
-        // In case of parallel we don't expect
-        // the key to be not set. If it is the case then the event must be coming
+        // In the case of parallel we expect the key to be set.
+        // If the key is not set, then the event must be coming
         // through listener, so return.
         if (isDebugEnabled) {
           logger.debug("ParallelGatewaySenderOrderedQueue not putting key {} : Value : {}", key,

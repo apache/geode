@@ -186,8 +186,8 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
    * @param substituteValue The substitute value
    * @param isLastEventInTransaction True if this event is the last one in the
    *        transaction it belongs to
-   * @param condition If not null, the event will be enqueued only if the predicate
-   *        matches at least with one elements in the queue
+   * @param condition If not null, the event will be enqueued only if at least
+   *        one element in the queue matches the predicate
    * @return False only if the condition is not null and no element in the queue matches it
    */
   public abstract boolean enqueueEvent(EnumListenerEvent operation, EntryEvent event,

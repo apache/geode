@@ -181,6 +181,11 @@ public interface GatewaySender {
           GeodeGlossary.GEMFIRE_PREFIX + "get-transaction-events-from-queue-wait-time-ms",
           2);
 
+  int TIME_TO_COMPLETE_TRANSACTIONS_BEFORE_STOP_MS =
+      Integer.getInteger(
+          GeodeGlossary.GEMFIRE_PREFIX + "time-to-complete-transactions-before-stop-ms",
+          1000);
+
   /**
    * The order policy. This enum is applicable only when concurrency-level is > 1.
    *

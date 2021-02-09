@@ -127,6 +127,8 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   protected boolean groupTransactionEvents;
 
+  protected volatile boolean isPreStopping = false;
+
   protected boolean isForInternalUse;
 
   protected boolean isDiskSynchronous;
@@ -687,6 +689,19 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     return enqueue;
   }
 
+  protected void preStop() {
+    if (!mustGroupTransactionEvents() || isPreStopping) {
+      return;
+    }
+    isPreStopping = true;
+    try {
+      Thread.sleep(TIME_TO_COMPLETE_TRANSACTIONS_BEFORE_STOP_MS);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+    }
+    isPreStopping = false;
+  }
+
   protected void stopProcessing() {
     // Stop the dispatcher
     AbstractGatewaySenderEventProcessor ev = this.eventProcessor;
@@ -1042,10 +1057,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
         clonedEvent.setCallbackArgument(geCallbackArg);
       }
 
-      boolean mustGroupTransactionsAndEventHasTId =
-          mustGroupTransactionEvents() && event.getTransactionId() != null;
-      if (this.eventProcessor == null ||
-          (!isRunning() && !mustGroupTransactionsAndEventHasTId)) {
+      if (!isRunning()) {
         recordDroppedEvent(clonedEvent);
         return;
       }
@@ -1072,8 +1084,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       try {
         // If this gateway is not running, return
         // The sender may have stopped, after we have checked the status in the beginning.
-        if (this.eventProcessor == null ||
-            (!isRunning() && !mustGroupTransactionsAndEventHasTId)) {
+        if (!isRunning()) {
           recordDroppedEvent(clonedEvent);
           return;
         }
@@ -1095,10 +1106,10 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
           Object substituteValue = getSubstituteValue(clonedEvent, operation);
 
           Predicate hasSameTransactionId = null;
-          // In case the sender is not running, the event will be queued if
-          // there is any event in the queue with the same transactionId as the
-          // one of this event
-          if (!isRunning() && mustGroupTransactionsAndEventHasTId) {
+          // In case the sender is about to be stopped, the event will only
+          // be queued if there is any event in the queue with the same
+          // transactionId as the one of this event
+          if (isPreStopping && mustGroupTransactionEvents() && event.getTransactionId() != null) {
             hasSameTransactionId =
                 x -> x instanceof GatewaySenderEventImpl && clonedEvent.getTransactionId() != null
                     && clonedEvent.getTransactionId()
@@ -1145,7 +1156,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       }
     }
     if (logger.isDebugEnabled()) {
-      logger.debug("Returning back without putting into the gateway sender queue:" + event);
+      logger.debug("Returning without putting into the gateway sender queue:" + event);
     }
   }
 

@@ -408,8 +408,10 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
     // for details.
     GatewaySenderEventImpl senderEvent;
 
-    if (condition != null && !((SerialGatewaySenderQueue) queue).isThereEventsMatching(condition)) {
-      return false;
+    if (condition != null) {
+      if (!((SerialGatewaySenderQueue) queue).isThereEventsMatching(condition)) {
+        return false;
+      }
     }
 
     boolean isPrimary = sender.isPrimary();
