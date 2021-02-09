@@ -29,7 +29,6 @@ import java.util.concurrent.ThreadFactory;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketFactory;
 import org.apache.geode.internal.CopyOnWriteHashSet;
@@ -110,11 +109,8 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
     // DistributionLocatorId for local locator.
     DistributionLocatorId localLocatorId;
 
-    InternalDistributedSystem system = InternalDistributedSystem.getConnectedInstance();
-    String memberName = null;
-    if (system != null) {
-      memberName = system.getDistributedMember().getName();
-    }
+    String memberName = config.getName();
+
     String localLocator = config.getStartLocator();
     if (localLocator.equals(DistributionConfig.DEFAULT_START_LOCATOR)) {
       localLocatorId =
