@@ -187,12 +187,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
     long startTime = 0;
     try {
       if (checkCacheClosing(cache) || checkDSClosing(dm)) {
-        String message = getCacheClosedMessage(dm);
-        if (cache == null) {
-          thr = new CacheClosedException(message);
-        } else {
-          thr = cache.getCacheClosedException(message);
-        }
+        thr = cache.getCacheClosedException(getCacheClosedMessage(dm));
         return;
       }
       r = getRegionByPath(cache);
