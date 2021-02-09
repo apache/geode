@@ -317,6 +317,7 @@ public class DistributionLocatorId implements java.io.Serializable {
       return false;
     final DistributionLocatorId that = (DistributionLocatorId) other;
 
+
     if (this.host != that.host && !(this.host != null && this.host.equals(that.host)))
       return false;
     if (this.port != that.port)
