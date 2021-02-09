@@ -50,28 +50,6 @@ public class LocatorHelper {
         existingValue.add(locator);
         addServerLocator(distributedSystemId, locatorListener, locator);
         locatorListener.locatorJoined(distributedSystemId, locator, sourceLocator);
-      } else if (locator.getMemberName() != null) {
-        DistributionLocatorId tempLocator = null;
-        for (DistributionLocatorId locElement : existingValue) {
-          if (locator.equals(locElement) && locElement.getMemberName() != null) {
-            tempLocator = locElement;
-            break;
-          }
-        }
-        if (tempLocator != null) {
-          if (!locator.detailCompare(tempLocator)) {
-            existingValue.remove(tempLocator);
-            ConcurrentHashMap<Integer, Set<String>> allServerLocatorsInfo =
-                (ConcurrentHashMap<Integer, Set<String>>) locatorListener
-                    .getAllServerLocatorsInfo();
-            Set<String> alllocators = allServerLocatorsInfo.get(distributedSystemId);
-            alllocators.remove(tempLocator.toString());
-            addServerLocator(distributedSystemId, locatorListener, locator);
-            locatorListener.locatorJoined(distributedSystemId, locator, sourceLocator);
-            return true;
-          }
-        }
-        return false;
       } else {
         return false;
       }
@@ -122,17 +100,6 @@ public class LocatorHelper {
           if (!localLocators.equals(entry.getValue())) {
             entry.getValue().removeAll(localLocators);
             for (DistributionLocatorId locator : entry.getValue()) {
-              if (locator.getMemberName() == null && !localLocators.isEmpty()) {
-                boolean locatorExist = false;
-                for (DistributionLocatorId locId : localLocators) {
-                  if (locId.equals(locator)) {
-                    locatorExist = true;
-                    break;
-                  }
-                }
-                if (locatorExist)
-                  continue;
-              }
               localLocators.add(locator);
               addServerLocator(entry.getKey(), locatorListener, locator);
               locatorListener.locatorJoined(entry.getKey(), locator, null);
