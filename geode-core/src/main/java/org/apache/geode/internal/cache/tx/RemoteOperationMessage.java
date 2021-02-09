@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
@@ -169,14 +170,24 @@ public abstract class RemoteOperationMessage extends DistributionMessage
    */
   @Override
   public void process(final ClusterDistributionManager dm) {
+    InternalCache cache = getCache(dm);
+    if (cache == null) {
+      String message = getCacheClosedMessage(dm);
+      ReplyException replyException = new ReplyException(new CacheClosedException(message));
+      sendReply(getSender(), this.processorId, dm, replyException, null, 0);
+      return;
+    }
+    dm.getExecutors().getWaitingThreadPool().execute(() -> doRemoteOperation(dm, cache));
+  }
+
+  void doRemoteOperation(ClusterDistributionManager dm, InternalCache cache) {
     Throwable thr = null;
     boolean sendReply = true;
     LocalRegion r = null;
     long startTime = 0;
     try {
-      InternalCache cache = getCache(dm);
       if (checkCacheClosing(cache) || checkDSClosing(dm)) {
-        String message = "Remote cache is closed: " + dm.getId();
+        String message = getCacheClosedMessage(dm);
         if (cache == null) {
           thr = new CacheClosedException(message);
         } else {
@@ -271,6 +282,11 @@ public abstract class RemoteOperationMessage extends DistributionMessage
         sendReply(getSender(), this.processorId, dm, rex, r, startTime);
       }
     }
+  }
+
+  @NotNull
+  private String getCacheClosedMessage(ClusterDistributionManager dm) {
+    return "Remote cache is closed: " + dm.getId();
   }
 
   protected void checkForSystemFailure() {
