@@ -37,7 +37,7 @@ class DependencyConstraints implements Plugin<Project> {
     deps.put("commons-io.version", "2.8.0")
     deps.put("commons-lang3.version", "3.11")
     deps.put("commons-validator.version", "1.7")
-    deps.put("fastutil.version", "8.5.1")
+    deps.put("fastutil.version", "8.5.2")
     deps.put("javax.transaction-api.version", "1.3")
     deps.put("jgroups.version", "3.6.14.Final")
     deps.put("log4j.version", "2.14.0")
@@ -51,9 +51,9 @@ class DependencyConstraints implements Plugin<Project> {
     // specifying @zip in a dependency, the manner in which we consume them in custom configurations.
     // This would possibly be corrected if they were proper source sets.
     deps.put("tomcat6.version", "6.0.37")
-    deps.put("tomcat7.version", "7.0.107")
-    deps.put("tomcat8.version", "8.5.61")
-    deps.put("tomcat9.version", "9.0.41")
+    deps.put("tomcat7.version", "7.0.108")
+    deps.put("tomcat8.version", "8.5.63")
+    deps.put("tomcat9.version", "9.0.43")
 
     // The jetty version is also hard-coded in geode-assembly:test
     // at o.a.g.sessions.tests.GenericAppServerInstall.java
@@ -117,7 +117,7 @@ class DependencyConstraints implements Plugin<Project> {
         // Careful when upgrading this dependency: see GEODE-7370 and GEODE-8150.
         api(group: 'io.github.classgraph', name: 'classgraph', version: '4.8.52')
         api(group: 'io.micrometer', name: 'micrometer-core', version: get('micrometer.version'))
-        api(group: 'io.netty', name: 'netty-all', version: '4.1.58.Final')
+        api(group: 'io.netty', name: 'netty-all', version: '4.1.59.Final')
         api(group: 'io.swagger', name: 'swagger-annotations', version: '1.6.2')
         api(group: 'it.unimi.dsi', name: 'fastutil', version: get('fastutil.version'))
         api(group: 'javax.annotation', name: 'javax.annotation-api', version: '1.3.2')
@@ -135,8 +135,8 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'net.java.dev.jna', name: 'jna-platform', version: '5.6.0')
         api(group: 'net.openhft', name: 'compiler', version: '2.4.1')
         api(group: 'net.sf.jopt-simple', name: 'jopt-simple', version: '5.0.4')
-        api(group: 'net.sourceforge.pmd', name: 'pmd-java', version: '6.30.0')
-        api(group: 'net.sourceforge.pmd', name: 'pmd-test', version: '6.30.0')
+        api(group: 'net.sourceforge.pmd', name: 'pmd-java', version: '6.31.0')
+        api(group: 'net.sourceforge.pmd', name: 'pmd-test', version: '6.31.0')
         api(group: 'net.spy', name: 'spymemcached', version: '2.12.3')
         api(group: 'org.apache.bcel', name: 'bcel', version: '6.5.0')
         api(group: 'org.apache.commons', name: 'commons-lang3', version: get('commons-lang3.version'))
@@ -148,7 +148,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'org.assertj', name: 'assertj-core', version: '3.19.0')
         api(group: 'org.awaitility', name: 'awaitility', version: '4.0.3')
         api(group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.68')
-        api(group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.9.0')
+        api(group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.9.1')
         api(group: 'org.eclipse.jetty', name: 'jetty-server', version: get('jetty.version'))
         api(group: 'org.eclipse.jetty', name: 'jetty-webapp', version: get('jetty.version'))
         api(group: 'org.eclipse.persistence', name: 'javax.persistence', version: '2.2.1')

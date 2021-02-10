@@ -232,7 +232,7 @@
       <dependency>
         <groupId>io.netty</groupId>
         <artifactId>netty-all</artifactId>
-        <version>4.1.58.Final</version>
+        <version>4.1.59.Final</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
@@ -244,7 +244,7 @@
       <dependency>
         <groupId>it.unimi.dsi</groupId>
         <artifactId>fastutil</artifactId>
-        <version>8.5.1</version>
+        <version>8.5.2</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
@@ -340,13 +340,13 @@
       <dependency>
         <groupId>net.sourceforge.pmd</groupId>
         <artifactId>pmd-java</artifactId>
-        <version>6.30.0</version>
+        <version>6.31.0</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>net.sourceforge.pmd</groupId>
         <artifactId>pmd-test</artifactId>
-        <version>6.30.0</version>
+        <version>6.31.0</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
@@ -418,7 +418,7 @@
       <dependency>
         <groupId>org.codehaus.cargo</groupId>
         <artifactId>cargo-core-uberjar</artifactId>
-        <version>1.9.0</version>
+        <version>1.9.1</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
