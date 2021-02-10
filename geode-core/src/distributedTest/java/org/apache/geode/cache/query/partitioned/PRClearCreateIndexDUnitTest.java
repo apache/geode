@@ -146,7 +146,7 @@ public class PRClearCreateIndexDUnitTest implements Serializable {
     createIndex.get();
     clear.get();
     primary.invoke(() -> verifyEvents(true, true, false, false));
-    secondary.invoke(() -> verifyEvents(false, false, false, true));
+    secondary.invoke(() -> verifyEvents(false, false, true, true));
   }
 
   @Test
@@ -175,7 +175,7 @@ public class PRClearCreateIndexDUnitTest implements Serializable {
     createIndex.get();
     clear.get();
     primary.invoke(() -> verifyEvents(false, false, false, false));
-    secondary.invoke(() -> verifyEvents(true, true, false, true));
+    secondary.invoke(() -> verifyEvents(true, true, true, true));
   }
 
   private static void clear() throws InterruptedException {

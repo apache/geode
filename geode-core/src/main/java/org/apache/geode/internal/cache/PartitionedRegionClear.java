@@ -241,7 +241,7 @@ public class PartitionedRegionClear {
       lockForListenerAndClientNotification.setLocked(requester);
       if (partitionedRegion.getDataStore() != null) {
         for (BucketRegion localPrimaryBucketRegion : partitionedRegion.getDataStore()
-            .getAllLocalBucketRegions()) {
+            .getAllLocalPrimaryBucketRegions()) {
           try {
             localPrimaryBucketRegion.lockLocallyForClear(partitionedRegion.getDistributionManager(),
                 partitionedRegion.getMyId(), null);
@@ -263,7 +263,7 @@ public class PartitionedRegionClear {
         if (partitionedRegion.getDataStore() != null) {
 
           for (BucketRegion localPrimaryBucketRegion : partitionedRegion.getDataStore()
-              .getAllLocalBucketRegions()) {
+              .getAllLocalPrimaryBucketRegions()) {
             try {
               localPrimaryBucketRegion.releaseLockLocallyForClear(null);
             } catch (Exception ex) {
