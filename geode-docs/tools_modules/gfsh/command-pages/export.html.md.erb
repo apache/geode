@@ -267,7 +267,7 @@ export offline-disk-store --name=value --disk-dirs=value(,value)* --dir=value
 
 ## <a id="topic_195D27B8B2B64A4E84CF2256636D54BD" class="no-quick-link"></a>export stack-traces
 
-Export the stack trace for one or more servers.
+Export the stack trace for one or more cluster members (locators and servers).
 
 **Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
 
@@ -282,8 +282,8 @@ export stack-traces [--members=value(,value)*] [--groups=value(,value)*]
 
 | Name                                           | Description                                                     |
 |------------------------------------------------|-----------------------------------------------------------------|
-| <span class="keyword parmname">\\-\\-members</span> | Name or ID of the server(s) whose stack traces will be exported.      |
-| <span class="keyword parmname">\\-\\-groups</span>  | Group(s) of servers whose stack traces will be exported.          |
+| <span class="keyword parmname">\\-\\-members</span> | Name or ID of the member(s) whose stack traces will be exported.      |
+| <span class="keyword parmname">\\-\\-groups</span>  | Group(s) of members whose stack traces will be exported.          |
 | <span class="keyword parmname">\\-\\-file</span>    | File name to which the stack traces will be written. When not specified, the file name will be the string "stacktrace_" followed by the current time in milliseconds. |
 | <span class="keyword parmname">\\-\\-abort-if-file-exists</span>   | When true, abort the command if the file already exists in the locator's directory. If this option is not specified, the default value is false. |
 
