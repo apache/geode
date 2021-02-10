@@ -25,7 +25,6 @@ find-here-test-reports() {
   find . -name "*-progress*txt" >> ${output_directories_file}
   find . -name "*.hprof" -o -name "hs_err*.log" -o -name "replay*.log" >> ${output_directories_file}
   find . -type d -name "callstacks" >> ${output_directories_file}
-  mv ${HOME}/.gradle .gradle_logs
   find .gradle_logs -name '*.log' >> ${output_directories_file}
   echo "Collecting the following artifacts..."
   cat ${output_directories_file}
