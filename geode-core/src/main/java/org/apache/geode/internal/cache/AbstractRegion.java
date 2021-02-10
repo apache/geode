@@ -1901,4 +1901,9 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   ConcurrentHashMap<RegionEntry, EntryExpiryTask> getEntryExpiryTasks() {
     return entryExpiryTasks;
   }
+
+  @VisibleForTesting
+  static boolean hasRunningGatewaySender(Set<GatewaySender> senders, GatewaySender sender) {
+    return senders.contains(sender) && sender.isRunning();
+  }
 }
