@@ -46,14 +46,10 @@ public class LocatorHelper {
     Set<DistributionLocatorId> existingValue =
         allLocatorsInfo.putIfAbsent(distributedSystemId, locatorsSet);
     if (existingValue != null) {
-      if (!existingValue.contains(locator)) {
-        existingValue.add(locator);
-        addServerLocator(distributedSystemId, locatorListener, locator);
-        locatorListener.locatorJoined(distributedSystemId, locator, sourceLocator);
-      } else if (locator.getMemberName() != null) {
+      if (locator.getMemberName() != null) {
         DistributionLocatorId tempLocator = null;
         for (DistributionLocatorId locElement : existingValue) {
-          if (locator.equals(locElement) && locElement.getMemberName() != null) {
+          if (locator.getMemberName().equals(locElement.getMemberName())) {
             tempLocator = locElement;
             break;
           }
@@ -70,11 +66,22 @@ public class LocatorHelper {
             locatorListener.locatorJoined(distributedSystemId, locator, sourceLocator);
             return true;
           }
+          return false;
         }
-        return false;
+        existingValue.add(locator);
+        addServerLocator(distributedSystemId, locatorListener, locator);
+        locatorListener.locatorJoined(distributedSystemId, locator, sourceLocator);
+
+      } else if (!existingValue.contains(locator)) {
+        existingValue.add(locator);
+        addServerLocator(distributedSystemId, locatorListener, locator);
+        locatorListener.locatorJoined(distributedSystemId, locator, sourceLocator);
+
       } else {
         return false;
+
       }
+
     } else {
       addServerLocator(distributedSystemId, locatorListener, locator);
       locatorListener.locatorJoined(distributedSystemId, locator, sourceLocator);
@@ -122,10 +129,10 @@ public class LocatorHelper {
           if (!localLocators.equals(entry.getValue())) {
             entry.getValue().removeAll(localLocators);
             for (DistributionLocatorId locator : entry.getValue()) {
-              if (locator.getMemberName() == null && !localLocators.isEmpty()) {
+              if (locator.getMemberName() != null && !localLocators.isEmpty()) {
                 boolean locatorExist = false;
                 for (DistributionLocatorId locId : localLocators) {
-                  if (locId.equals(locator)) {
+                  if (locator.getMemberName().equals(locId.getMemberName())) {
                     locatorExist = true;
                     break;
                   }

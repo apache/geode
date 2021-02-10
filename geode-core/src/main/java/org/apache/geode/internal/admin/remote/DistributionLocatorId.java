@@ -301,6 +301,9 @@ public class DistributionLocatorId implements java.io.Serializable {
   }
 
   public String getMemberName() {
+    if (this.membername != null && this.membername == "")
+      return null;
+
     return this.membername;
   }
 
@@ -367,15 +370,6 @@ public class DistributionLocatorId implements java.io.Serializable {
       return false;
     final DistributionLocatorId that = (DistributionLocatorId) other;
 
-    if (this.membername != null && that.membername != null) {
-      if (this.membername.equals(that.membername))
-        return true;
-
-      return false;
-    }
-
-    if (!StringUtils.equals(this.hostnameForClients, that.hostnameForClients))
-      return false;
     if (!Objects.equals(this.host, that.host))
       return false;
     if (this.port != that.port)
@@ -424,11 +418,6 @@ public class DistributionLocatorId implements java.io.Serializable {
   public int hashCode() {
     int result = 17;
     final int mult = 37;
-
-    if (this.membername != null) {
-      result = mult * result + this.membername.hashCode();
-      return result;
-    }
 
     result = mult * result + (this.host == null ? 0 : this.host.hashCode());
     result = mult * result + this.port;
