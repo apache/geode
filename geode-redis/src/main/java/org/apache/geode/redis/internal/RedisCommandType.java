@@ -152,6 +152,7 @@ public enum RedisCommandType {
   APPEND(new AppendExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
   DECR(new DecrExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
   GET(new GetExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
+  INCR(new IncrExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
   GETRANGE(new GetRangeExecutor(), SUPPORTED, new ExactParameterRequirements(4)),
   INCRBYFLOAT(new IncrByFloatExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
   MGET(new MGetExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
