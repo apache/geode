@@ -32,6 +32,7 @@ import org.apache.geode.GemFireIOException;
 import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.SerializationException;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.EntryOperation;
 import org.apache.geode.cache.Operation;
@@ -1716,8 +1717,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     if (v instanceof Delta && getRegion().isUsedForPartitionedRegionBucket()) {
       int vSize;
       Object ov = basicGetOldValue();
-      if (ov instanceof CachedDeserializable && !(GemFireCacheImpl.DELTAS_RECALCULATE_SIZE
-          || ((Delta) v).getForceRecalculateSize())) {
+      if (ov instanceof CachedDeserializable && !(shouldRecalculateSize((Delta) v))) {
         vSize = ((CachedDeserializable) ov).getValueSizeInBytes();
       } else {
         vSize = CachedDeserializableFactory.calcMemSize(v, getRegion().getObjectSizer(), false);
@@ -1859,8 +1859,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       if (wasCD) {
         CachedDeserializable old = (CachedDeserializable) oldValueInVM;
         int valueSize;
-        if (GemFireCacheImpl.DELTAS_RECALCULATE_SIZE
-            || ((Delta) value).getForceRecalculateSize()) {
+        if (shouldRecalculateSize((Delta) value)) {
           valueSize =
               CachedDeserializableFactory.calcMemSize(value, getRegion().getObjectSizer(), false);
         } else {
@@ -1878,6 +1877,12 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
           "Cache encountered replay of event containing delta bytes for key "
               + this.keyInfo.getKey());
     }
+  }
+
+  @VisibleForTesting
+  protected static boolean shouldRecalculateSize(Delta value) {
+    return GemFireCacheImpl.DELTAS_RECALCULATE_SIZE
+        || value.getForceRecalculateSize();
   }
 
   void setTXEntryOldValue(Object oldVal, boolean mustBeAvailable) {
