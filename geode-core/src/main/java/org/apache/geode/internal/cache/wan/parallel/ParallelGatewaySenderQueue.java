@@ -1386,43 +1386,40 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       return;
     }
 
-    boolean batchHasIncompleteTransactions = false;
-    for (Map.Entry<TransactionId, Integer> pendingTransaction : incompleteTransactionIdsInBatch
-        .entrySet()) {
-      TransactionId transactionId = pendingTransaction.getKey();
-      int bucketId = pendingTransaction.getValue();
-      boolean areAllEventsForTransactionInBatch = false;
-      int retries = 0;
-      while (true) {
+    int retries = 0;
+    while (true) {
+      for (Map.Entry<TransactionId, Integer> pendingTransaction : incompleteTransactionIdsInBatch
+          .entrySet()) {
+        TransactionId transactionId = pendingTransaction.getKey();
+        int bucketId = pendingTransaction.getValue();
         List<Object> events = peekEventsWithTransactionId(prQ, bucketId, transactionId);
         for (Object object : events) {
           GatewaySenderEventImpl event = (GatewaySenderEventImpl) object;
           batch.add(event);
           peekedEvents.add(event);
-          areAllEventsForTransactionInBatch = event.isLastEventInTransaction();
           if (logger.isDebugEnabled()) {
             logger.debug(
                 "Peeking extra event: {}, bucketId: {}, isLastEventInTransaction: {}, batch size: {}",
                 event.getKey(), bucketId, event.isLastEventInTransaction(), batch.size());
           }
-        }
-        if (areAllEventsForTransactionInBatch
-            || retries++ >= GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES) {
-          break;
-        }
-        try {
-          Thread.sleep(GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS);
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
+          if (event.isLastEventInTransaction()) {
+            incompleteTransactionIdsInBatch.remove(transactionId);
+          }
         }
       }
-      if (!areAllEventsForTransactionInBatch) {
-        batchHasIncompleteTransactions = true;
-        logger.warn("Not able to retrieve all events for transaction {} after {} tries",
-            transactionId, retries);
+      if (incompleteTransactionIdsInBatch.size() == 0 ||
+          retries++ == GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES) {
+        break;
+      }
+      try {
+        Thread.sleep(GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
       }
     }
-    if (batchHasIncompleteTransactions) {
+    if (incompleteTransactionIdsInBatch.size() > 0) {
+      logger.warn("Not able to retrieve all events for transactions: {} after {} tries of {}ms",
+          incompleteTransactionIdsInBatch, retries, GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS);
       stats.incBatchesWithIncompleteTransactions();
     }
   }

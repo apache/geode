@@ -179,7 +179,7 @@ public interface GatewaySender {
   int GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS =
       Integer.getInteger(
           GeodeGlossary.GEMFIRE_PREFIX + "get-transaction-events-from-queue-wait-time-ms",
-          2);
+          4);
 
   int TIME_TO_COMPLETE_TRANSACTIONS_BEFORE_STOP_MS =
       Integer.getInteger(

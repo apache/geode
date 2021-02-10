@@ -470,44 +470,41 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       return;
     }
 
-    boolean batchHasIncompleteTransactions = false;
-    for (TransactionId transactionId : incompleteTransactionIdsInBatch) {
-      boolean areAllEventsForTransactionInBatch = false;
-      int retries = 0;
-      long lastKeyForTransaction = lastKey;
-      while (true) {
-        EventsAndLastKey eventsAndKey =
-            peekEventsWithTransactionId(transactionId, lastKeyForTransaction);
-
-        for (Object object : eventsAndKey.events) {
-          GatewaySenderEventImpl event = (GatewaySenderEventImpl) object;
-          batch.add(event);
-          areAllEventsForTransactionInBatch = event.isLastEventInTransaction();
-
-          if (logger.isDebugEnabled()) {
-            logger.debug(
-                "Peeking extra event: {}, isLastEventInTransaction: {}, batch size: {}",
-                event.getKey(), event.isLastEventInTransaction(), batch.size());
+    int retries = 0;
+    while (true) {
+      for (TransactionId transactionId : incompleteTransactionIdsInBatch) {
+        List<KeyAndEventPair> keyAndEventPairs =
+            peekEventsWithTransactionId(transactionId, lastKey);
+        if (keyAndEventPairs.size() > 0
+            && ((GatewaySenderEventImpl) (keyAndEventPairs.get(keyAndEventPairs.size() - 1)).event)
+                .isLastEventInTransaction()) {
+          for (KeyAndEventPair object : keyAndEventPairs) {
+            GatewaySenderEventImpl event = (GatewaySenderEventImpl) object.event;
+            batch.add(event);
+            peekedIds.add(object.key);
+            extraPeekedIds.add(object.key);
+            if (logger.isDebugEnabled()) {
+              logger.debug(
+                  "Peeking extra event: {}, isLastEventInTransaction: {}, batch size: {}",
+                  event.getKey(), event.isLastEventInTransaction(), batch.size());
+            }
           }
-        }
-        lastKeyForTransaction = eventsAndKey.lastKey;
-        if (areAllEventsForTransactionInBatch
-            || retries++ >= GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES) {
-          break;
-        }
-        try {
-          Thread.sleep(GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS);
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
+          incompleteTransactionIdsInBatch.remove(transactionId);
         }
       }
-      if (!areAllEventsForTransactionInBatch) {
-        batchHasIncompleteTransactions = true;
-        logger.warn("Not able to retrieve all events for transaction {} after {} tries of {}ms",
-            transactionId, retries, GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS);
+      if (incompleteTransactionIdsInBatch.size() == 0 ||
+          retries++ == GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES) {
+        break;
+      }
+      try {
+        Thread.sleep(GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
       }
     }
-    if (batchHasIncompleteTransactions) {
+    if (incompleteTransactionIdsInBatch.size() > 0) {
+      logger.warn("Not able to retrieve all events for transactions: {} after {} tries of {}ms",
+          incompleteTransactionIdsInBatch, retries, GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS);
       stats.incBatchesWithIncompleteTransactions();
     }
   }
@@ -836,7 +833,8 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     return null;
   }
 
-  private EventsAndLastKey peekEventsWithTransactionId(TransactionId transactionId, long lastKey) {
+  private List<KeyAndEventPair> peekEventsWithTransactionId(TransactionId transactionId,
+      long lastKey) {
     Predicate<GatewaySenderEventImpl> hasTransactionIdPredicate =
         x -> transactionId.equals(x.getTransactionId());
     Predicate<GatewaySenderEventImpl> isLastEventInTransactionPredicate =
@@ -858,11 +856,11 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
   /**
    * This method returns a list of objects that fulfill the matchingPredicate
-   * together with the key of the last object that fullfilled the pattern.
    * If a matching object also fulfills the endPredicate then the method
    * stops looking for more matching objects.
    */
-  EventsAndLastKey getElementsMatching(Predicate condition, Predicate stopCondition, long lastKey) {
+  List<KeyAndEventPair> getElementsMatching(Predicate condition, Predicate stopCondition,
+      long lastKey) {
     Object object;
     List elementsMatching = new ArrayList<>();
 
@@ -878,10 +876,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       }
 
       if (condition.test(object)) {
-        elementsMatching.add(object);
-        peekedIds.add(currentKey);
-        extraPeekedIds.add(currentKey);
-        lastKey = currentKey;
+        elementsMatching.add(new KeyAndEventPair(currentKey, (GatewaySenderEventImpl) object));
 
         if (stopCondition.test(object)) {
           break;
@@ -889,7 +884,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       }
     }
 
-    return new EventsAndLastKey(elementsMatching, lastKey);
+    return elementsMatching;
   }
 
   public boolean isThereEventsMatching(Predicate condition) {
