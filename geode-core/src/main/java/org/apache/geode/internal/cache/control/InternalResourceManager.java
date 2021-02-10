@@ -224,9 +224,9 @@ public class InternalResourceManager implements ResourceManager {
   public void deliverEventFromRemote(final ResourceEvent event) {
     assert !event.isLocal();
 
-    if (cache.getLogger().fineEnabled()) {
-      cache.getLogger()
-          .fine("New remote event to deliver for member " + event.getMember() + ": event=" + event);
+    if (logger.isTraceEnabled()) {
+      logger.trace(
+          "New remote event to deliver for member " + event.getMember() + ": event=" + event);
     }
 
     runWithNotifyExecutor(() -> deliverLocalEvent(event));
@@ -267,8 +267,7 @@ public class InternalResourceManager implements ResourceManager {
       notifyExecutor.execute(runnable);
     } catch (RejectedExecutionException ignore) {
       if (!closed) {
-        cache.getLogger()
-            .warning("No memory events will be delivered because of RejectedExecutionException");
+        logger.warn("No memory events will be delivered because of RejectedExecutionException");
       }
     }
   }
