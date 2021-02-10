@@ -99,6 +99,8 @@ public abstract class AbstractSetNXIntegrationTest implements RedisPortSupplier 
             .runInLockstep();
 
     assertThat(iterations).isEqualTo(updateCount.get());
+
+    jedis2.close();
   }
 
 }
