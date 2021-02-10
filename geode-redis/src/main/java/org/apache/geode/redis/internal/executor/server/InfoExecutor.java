@@ -28,7 +28,7 @@ import org.apache.geode.redis.internal.statistics.RedisStats;
 
 public class InfoExecutor extends AbstractExecutor {
 
-  private static final Long ONE_MEGABYTE = 1024 * 1024 * 1024L;
+  private static final Long ONE_MEGABYTE = 1024 * 1024L;
 
   private DecimalFormat decimalFormat = new DecimalFormat("0.00");
 
