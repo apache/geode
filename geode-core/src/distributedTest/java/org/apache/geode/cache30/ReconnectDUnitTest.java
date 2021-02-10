@@ -551,12 +551,6 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
 
     final String xmlFileLoc = (new File(".")).getAbsolutePath();
 
-    // This locator was started in setUp.
-    File locatorViewLog =
-        new File(locatorVm.getWorkingDirectory(), "locator" + locatorPort + "views.log");
-    assertTrue("Expected to find " + locatorViewLog.getPath() + " file", locatorViewLog.exists());
-    long logSize = locatorViewLog.length();
-
     vm0.invoke("Create a second locator", () -> {
       locatorPort = locPort;
       Properties props = getDistributedSystemProperties();
@@ -572,11 +566,6 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
         Assert.fail("exception starting locator", e);
       }
     });
-
-    File locator2ViewLog =
-        new File(vm0.getWorkingDirectory(), "locator" + secondLocPort + "views.log");
-    assertTrue("Expected to find " + locator2ViewLog.getPath() + " file", locator2ViewLog.exists());
-    long log2Size = locator2ViewLog.length();
 
     // create a cache in vm1 so there is more weight in the system
     vm1.invoke("Create Cache and Regions from cache.xml", () -> {
@@ -610,14 +599,6 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
           }));
 
       assertNotSame("expected a reconnect to occur in the locator", dm, newdm);
-
-      // the log should have been opened and appended with a new view
-      assertTrue("expected " + locator2ViewLog.getPath() + " to grow in size",
-          locator2ViewLog.length() > log2Size);
-      // the other locator should have logged a new view
-      assertTrue("expected " + locatorViewLog.getPath() + " to grow in size",
-          locatorViewLog.length() > logSize);
-
     } finally {
       vm0.invoke(new SerializableRunnable("stop locator") {
         @Override
