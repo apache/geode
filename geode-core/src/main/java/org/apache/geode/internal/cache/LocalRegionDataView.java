@@ -169,7 +169,7 @@ public class LocalRegionDataView implements InternalDataView {
   public boolean putEntry(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,
       boolean overwriteDestroyed, boolean invokeCallbacks, boolean throwsConcurrentModification) {
-    LogService.getLogger().warn("#LRJ LocalRegionDataView k-v : " + event.getKey() + " " + event.getNewValue());
+    //LogService.getLogger().warn("#LRJ LocalRegionDataView k-v : " + event.getKey() + " " + event.getNewValue());
     return event.getRegion().virtualPut(event, ifNew, ifOld, expectedOldValue, requireOldValue,
         lastModified, overwriteDestroyed, invokeCallbacks, throwsConcurrentModification);
   }
