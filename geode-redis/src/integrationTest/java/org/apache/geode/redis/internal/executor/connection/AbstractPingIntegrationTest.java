@@ -16,14 +16,14 @@
 
 package org.apache.geode.redis.internal.executor.connection;
 
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtMostNArgs;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static redis.clients.jedis.Protocol.Command.PING;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
 
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
@@ -68,8 +68,7 @@ public abstract class AbstractPingIntegrationTest implements RedisPortSupplier {
   }
 
   @Test
-  public void ping_withTwoArgs_fails() {
-    assertThatThrownBy(() -> jedis.sendCommand(PING, "one", "two"))
-        .hasMessageContaining("ERR wrong number of arguments for 'ping' command");
+  public void errors_GivenTooManyArguments() {
+    assertAtMostNArgs(jedis, Protocol.Command.PING, 1);
   }
 }

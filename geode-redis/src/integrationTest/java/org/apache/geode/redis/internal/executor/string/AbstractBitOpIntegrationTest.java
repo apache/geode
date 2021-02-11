@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
 import static org.apache.geode.redis.internal.executor.string.BitOpExecutor.ERROR_BITOP_NOT;
@@ -45,21 +46,8 @@ public abstract class AbstractBitOpIntegrationTest implements RedisPortSupplier 
   }
 
   @Test
-  public void bitop_givenOperationNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.BITOP))
-        .hasMessageContaining("ERR wrong number of arguments for 'bitop' command");
-  }
-
-  @Test
-  public void bitop_givenDestinationKeyNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.BITOP, "AND"))
-        .hasMessageContaining("ERR wrong number of arguments for 'bitop' command");
-  }
-
-  @Test
-  public void bitop_givenSourceKeyNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.BITOP, "AND", "destKey"))
-        .hasMessageContaining("ERR wrong number of arguments for 'bitop' command");
+  public void bitOp_errors_givenTooFewArguments() {
+    assertAtLeastNArgs(jedis, Protocol.Command.BITOP, 3);
   }
 
   @Test

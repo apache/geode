@@ -14,8 +14,8 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Random;
 
@@ -48,21 +48,8 @@ public abstract class AbstractIncrByIntegrationTest implements RedisPortSupplier
   }
 
   @Test
-  public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.INCRBY))
-        .hasMessageContaining("ERR wrong number of arguments for 'incrby' command");
-  }
-
-  @Test
-  public void givenIncrementNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.INCRBY, "key"))
-        .hasMessageContaining("ERR wrong number of arguments for 'incrby' command");
-  }
-
-  @Test
-  public void givenMoreThanThreeArgumentsProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.INCRBY, "key", "5", "extraArg"))
-        .hasMessageContaining("ERR wrong number of arguments for 'incrby' command");
+  public void errors_givenWrongNumberOfArguments() {
+    assertExactNumberOfArgs(jedis, Protocol.Command.INCRBY, 2);
   }
 
   @Test

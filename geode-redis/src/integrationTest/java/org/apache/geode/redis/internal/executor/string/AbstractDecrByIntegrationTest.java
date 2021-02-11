@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -49,21 +50,8 @@ public abstract class AbstractDecrByIntegrationTest implements RedisPortSupplier
   }
 
   @Test
-  public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.DECRBY))
-        .hasMessageContaining("ERR wrong number of arguments for 'decrby' command");
-  }
-
-  @Test
-  public void givenDecrementNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.DECRBY, "key"))
-        .hasMessageContaining("ERR wrong number of arguments for 'decrby' command");
-  }
-
-  @Test
-  public void givenMoreThanThreeArgumentsProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.DECRBY, "key", "3", "extraArg"))
-        .hasMessageContaining("ERR wrong number of arguments for 'decrby' command");
+  public void decrBy_errors_givenWrongNumberOfArguments() {
+    assertExactNumberOfArgs(jedis, Protocol.Command.DECRBY, 2);
   }
 
   @Test

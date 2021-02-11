@@ -15,8 +15,8 @@
 
 package org.apache.geode.redis.internal.executor.key;
 
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.After;
 import org.junit.Before;
@@ -45,20 +45,8 @@ public abstract class AbstractPTTLIntegrationTest implements RedisPortSupplier {
   }
 
   @Test
-  public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.PTTL))
-        .hasMessageContaining("ERR wrong number of arguments for 'pttl' command");
-  }
-
-  @Test
-  public void givenMoreThanTwoArguments_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.PTTL, "key", "extraArg"))
-        .hasMessageContaining("ERR wrong number of arguments for 'pttl' command");
-  }
-
-  @Test
-  public void shouldReturnNegativeTwo_givenKeyDoesNotExist() {
-    assertThat(jedis.pttl("doesNotExist")).isEqualTo(-2);
+  public void errors_GivenWrongNumberOfArguments() {
+    assertExactNumberOfArgs(jedis, Protocol.Command.PTTL, 1);
   }
 
   @Test

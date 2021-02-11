@@ -16,8 +16,8 @@
 
 package org.apache.geode.redis.internal.executor.connection;
 
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.After;
 import org.junit.Before;
@@ -45,15 +45,8 @@ public abstract class AbstractSelectIntegrationTest implements RedisPortSupplier
   }
 
   @Test
-  public void givenLessThanTwoArguments_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SELECT))
-        .hasMessage("ERR wrong number of arguments for 'select' command");
-  }
-
-  @Test
-  public void givenMoreThanTwoArguments_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SELECT, "notALong", "extraArg"))
-        .hasMessage("ERR wrong number of arguments for 'select' command");
+  public void errors_GivenWrongNumberOfArguments() {
+    assertExactNumberOfArgs(jedis, Protocol.Command.SELECT, 1);
   }
 
   @Test

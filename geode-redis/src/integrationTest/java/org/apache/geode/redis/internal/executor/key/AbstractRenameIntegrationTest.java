@@ -15,8 +15,8 @@
 
 package org.apache.geode.redis.internal.executor.key;
 
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -71,15 +71,8 @@ public abstract class AbstractRenameIntegrationTest implements RedisPortSupplier
   }
 
   @Test
-  public void testTooFewArgs() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.RENAME, "foo"))
-        .hasMessageContaining("wrong number of arguments");
-  }
-
-  @Test
-  public void testTooManyArgs() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.RENAME, "foo", "newfoo", "bluefoo"))
-        .hasMessageContaining("wrong number of arguments");
+  public void errors_GivenWrongNumberOfArguments() {
+    assertExactNumberOfArgs(jedis, Protocol.Command.RENAME, 2);
   }
 
   @Test

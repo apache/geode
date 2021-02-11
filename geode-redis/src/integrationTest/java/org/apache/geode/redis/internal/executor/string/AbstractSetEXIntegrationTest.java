@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -51,21 +52,8 @@ public abstract class AbstractSetEXIntegrationTest implements RedisPortSupplier 
   }
 
   @Test
-  public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SETEX))
-        .hasMessageContaining("ERR wrong number of arguments for 'setex' command");
-  }
-
-  @Test
-  public void givenTimeNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SETEX, "key"))
-        .hasMessageContaining("ERR wrong number of arguments for 'setex' command");
-  }
-
-  @Test
-  public void givenValueNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SETEX, "key", "10"))
-        .hasMessageContaining("ERR wrong number of arguments for 'setex' command");
+  public void errors_givenWrongNumberOfArguments() {
+    assertExactNumberOfArgs(jedis, Protocol.Command.SETEX, 3);
   }
 
   @Test

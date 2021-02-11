@@ -15,9 +15,9 @@
 
 package org.apache.geode.redis.internal.executor.key;
 
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.concurrent.TimeUnit;
 
@@ -48,15 +48,8 @@ public abstract class AbstractTTLIntegrationTest implements RedisPortSupplier {
   }
 
   @Test
-  public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.TTL))
-        .hasMessageContaining("ERR wrong number of arguments for 'ttl' command");
-  }
-
-  @Test
-  public void givenMoreThanTwoArguments_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.TTL, "key", "extraArg"))
-        .hasMessageContaining("ERR wrong number of arguments for 'ttl' command");
+  public void errors_GivenWrongNumberOfArguments() {
+    assertExactNumberOfArgs(jedis, Protocol.Command.TTL, 1);
   }
 
   @Test
