@@ -107,14 +107,10 @@ public class RangeIndexAPIJUnitTest {
     }
     results.clear();
     i2.query(new String("active"), OQLLexerTokenTypes.TOK_NE, results, context);
-    assertEquals(7, results.size());
-    for (int i = 1; i < 12;) {
+    assertEquals(5, results.size());
+    for (int i = 1; i < 10;) {
       assertTrue(results.contains(region.get(new Integer(i))));
-      if (i >= 9) {
-        ++i;
-      } else {
-        i += 2;
-      }
+      i += 2;
     }
 
     results.clear();
@@ -376,11 +372,7 @@ public class RangeIndexAPIJUnitTest {
     keysToRemove.add("active");
     keysToRemove.add("inactive");
     i2.query(results, keysToRemove, context);
-    assertEquals(2, results.size());
-    for (int i = 10; i < 12;) {
-      assertTrue(results.contains(region.get(new Integer(i))));
-      ++i;
-    }
+    assertEquals(0, results.size());
   }
 
   @Test

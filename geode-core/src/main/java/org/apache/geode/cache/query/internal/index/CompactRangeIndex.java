@@ -1506,7 +1506,8 @@ public class CompactRangeIndex extends AbstractIndex {
           : modifiedIndexExpr.evaluate(this.initContext);
 
       if (indexKey == null) {
-        indexKey = IndexManager.NULL;
+        // indexKey = IndexManager.NULL;
+        return;
       }
       // if the first key is PdxString set the flag so that rest of the keys
       // would be converted to PdxString
