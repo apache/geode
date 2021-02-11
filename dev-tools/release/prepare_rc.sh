@@ -343,5 +343,5 @@ echo "1. Go to https://repository.apache.org, login as ${APACHE_USERNAME}, and c
 echo "2. If there is a prior ${VERSION} RC, select it and click Drop."
 echo '3. Make a note of the 4-digit ID of the current ("implicitly created") staging repo.'
 echo '4. Select the current staging repo and click Close.'
-echo '5. Wait ~15 minutes for status to become "Closed"'
+echo '5. Wait ~10 seconds and then refresh the page to confirm that status has become "Closed"'
 echo "6. Run ${0%/*}/commit_rc.sh -v ${FULL_VERSION} -m <4-DIGIT-ID-NOTED-ABOVE>"
