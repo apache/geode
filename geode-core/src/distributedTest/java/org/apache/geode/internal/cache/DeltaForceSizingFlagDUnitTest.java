@@ -37,7 +37,6 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DiskStoreFactory;
-import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.InterestPolicy;
@@ -46,7 +45,6 @@ import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.SubscriptionAttributes;
-import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.VM;
@@ -309,10 +307,6 @@ public class DeltaForceSizingFlagDUnitTest {
     @Override
     public int sizeof(Object o) {
       logger.info("TestObjectSizer invoked");
-      if (o instanceof TestObject) {
-        invocations.incrementAndGet();
-        return ((TestObject) o).sizeForSizer;
-      }
       if (o instanceof TestDelta) {
         invocations.incrementAndGet();
         return ((TestDelta) o).info.length();
@@ -370,84 +364,6 @@ public class DeltaForceSizingFlagDUnitTest {
       } else {
         return value.equals(other.value);
       }
-    }
-
-  }
-
-  private static class TestObject implements DataSerializable {
-    public int sizeForSizer;
-    public int sizeForSerialization;
-
-    public TestObject(int sizeForSerialization, int sizeForSizer) {
-      super();
-      this.sizeForSizer = sizeForSizer;
-      this.sizeForSerialization = sizeForSerialization;
-    }
-
-    @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      sizeForSizer = in.readInt();
-      sizeForSerialization = in.readInt();
-      // We don't actually need these things.
-      in.skipBytes(sizeForSerialization);
-    }
-
-    @Override
-    public void toData(DataOutput out) throws IOException {
-      out.writeInt(sizeForSizer);
-      out.writeInt(sizeForSerialization);
-      out.write(new byte[sizeForSerialization]);
-
-    }
-
-    @Override
-    public int hashCode() {
-      final int prime = 31;
-      int result = 1;
-      result = prime * result + sizeForSerialization;
-      result = prime * result + sizeForSizer;
-      return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if (this == obj) {
-        return true;
-      }
-      if (obj == null) {
-        return false;
-      }
-      if (!(obj instanceof TestObject)) {
-        return false;
-      }
-      TestObject other = (TestObject) obj;
-      if (sizeForSerialization != other.sizeForSerialization) {
-        return false;
-      }
-      return sizeForSizer == other.sizeForSizer;
-    }
-
-    @Override
-    public String toString() {
-      return "TestObject [sizeForSerialization=" + sizeForSerialization + ", sizeForSizer="
-          + sizeForSizer + "]";
-    }
-  }
-
-  public static class TestCacheListener<K, V> extends CacheListenerAdapter<K, V> {
-
-    @Override
-    public void afterCreate(EntryEvent<K, V> event) {
-      // Make sure we deserialize the new value
-      logger.info("invoked afterCreate with " + event);
-      logger.info("value is " + event.getNewValue());
-    }
-
-    @Override
-    public void afterUpdate(EntryEvent<K, V> event) {
-      // Make sure we deserialize the new value
-      logger.info("invoked afterUpdate with ");
-      logger.info("value is " + event.getNewValue());
     }
 
   }
