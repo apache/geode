@@ -314,58 +314,8 @@ public class DeltaForceSizingFlagDUnitTest {
       if (o instanceof Integer) {
         return 0;
       }
-      if (o instanceof TestKey) {
-        invocations.incrementAndGet();
-        return ((TestKey) o).value.length();
-      }
       throw new RuntimeException("Unexpected type to be sized " + o.getClass() + ", object=" + o);
     }
-  }
-
-  private static class TestKey implements DataSerializable {
-    String value;
-
-    public TestKey(String value) {
-      this.value = value;
-    }
-
-    @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      value = DataSerializer.readString(in);
-    }
-
-    @Override
-    public void toData(DataOutput out) throws IOException {
-      DataSerializer.writeString(value, out);
-    }
-
-    @Override
-    public int hashCode() {
-      final int prime = 31;
-      int result = 1;
-      result = prime * result + ((value == null) ? 0 : value.hashCode());
-      return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if (this == obj) {
-        return true;
-      }
-      if (obj == null) {
-        return false;
-      }
-      if (!(obj instanceof TestKey)) {
-        return false;
-      }
-      TestKey other = (TestKey) obj;
-      if (value == null) {
-        return other.value == null;
-      } else {
-        return value.equals(other.value);
-      }
-    }
-
   }
 
   enum ValueType {
