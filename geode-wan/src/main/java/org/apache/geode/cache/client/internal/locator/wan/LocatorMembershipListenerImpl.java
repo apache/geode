@@ -111,10 +111,7 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
     DistributionLocatorId localLocatorId;
 
     InternalDistributedSystem system = InternalDistributedSystem.getConnectedInstance();
-    String memberName = null;
-    if (system != null) {
-      memberName = system.getDistributedMember().getName();
-    }
+    String memberName = config.getName();
     String localLocator = config.getStartLocator();
     if (localLocator.equals(DistributionConfig.DEFAULT_START_LOCATOR)) {
       localLocatorId =

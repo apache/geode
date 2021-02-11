@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.CopyOnWriteHashSet;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 
@@ -46,22 +47,21 @@ public class LocatorHelper {
     Set<DistributionLocatorId> existingValue =
         allLocatorsInfo.putIfAbsent(distributedSystemId, locatorsSet);
     if (existingValue != null) {
-      if (locator.getMemberName() != null) {
-        DistributionLocatorId tempLocator = null;
-        for (DistributionLocatorId locElement : existingValue) {
-          if (locator.getMemberName().equals(locElement.getMemberName())) {
-            tempLocator = locElement;
-            break;
-          }
-        }
-        if (tempLocator != null) {
-          if (!locator.detailCompare(tempLocator)) {
-            existingValue.remove(tempLocator);
+      if (!locator.getMemberName().equals(DistributionConfig.DEFAULT_NAME)) {
+        DistributionLocatorId existingLocator =
+            getLocatorWithSameMemberName(existingValue, locator);
+
+        if (existingLocator != null) {
+          // if locator with same name exist, check did all parameters are same
+          if (!locator.detailCompare(existingLocator)) {
+            // some parameters had changed for existing locator
+            // replace it
+            existingValue.remove(existingLocator);
             ConcurrentHashMap<Integer, Set<String>> allServerLocatorsInfo =
                 (ConcurrentHashMap<Integer, Set<String>>) locatorListener
                     .getAllServerLocatorsInfo();
             Set<String> alllocators = allServerLocatorsInfo.get(distributedSystemId);
-            alllocators.remove(tempLocator.toString());
+            alllocators.remove(existingLocator.toString());
             addServerLocator(distributedSystemId, locatorListener, locator);
             locatorListener.locatorJoined(distributedSystemId, locator, sourceLocator);
             return true;
@@ -129,15 +129,12 @@ public class LocatorHelper {
           if (!localLocators.equals(entry.getValue())) {
             entry.getValue().removeAll(localLocators);
             for (DistributionLocatorId locator : entry.getValue()) {
-              if (locator.getMemberName() != null && !localLocators.isEmpty()) {
-                boolean locatorExist = false;
-                for (DistributionLocatorId locId : localLocators) {
-                  if (locator.getMemberName().equals(locId.getMemberName())) {
-                    locatorExist = true;
-                    break;
-                  }
-                }
-                if (locatorExist)
+              if (!locator.getMemberName().equals(DistributionConfig.DEFAULT_NAME)
+                  && !localLocators.isEmpty()) {
+                DistributionLocatorId existingLocator =
+                    getLocatorWithSameMemberName(localLocators, locator);
+
+                if (existingLocator != null)
                   continue;
               }
               localLocators.add(locator);
@@ -156,6 +153,20 @@ public class LocatorHelper {
       return true;
     }
     return false;
+  }
+
+  /**
+   * This method gets locator with specific member name from collection of locators
+   *
+   */
+  private static DistributionLocatorId getLocatorWithSameMemberName(
+      Set<DistributionLocatorId> locatorSet, DistributionLocatorId locator) {
+    for (DistributionLocatorId locElement : locatorSet) {
+      if (locator.getMemberName().equals(locElement.getMemberName())) {
+        return locElement;
+      }
+    }
+    return null;
   }
 
 }

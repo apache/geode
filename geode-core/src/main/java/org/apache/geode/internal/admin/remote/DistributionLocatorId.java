@@ -53,7 +53,7 @@ public class DistributionLocatorId implements java.io.Serializable {
   private String hostnameForClients;
   private String hostname;
   // added due to improvement for cloud native environment
-  private final String membername;
+  private String membername;
 
 
   /**
@@ -67,7 +67,7 @@ public class DistributionLocatorId implements java.io.Serializable {
     this.port = port;
     this.bindAddress = validateBindAddress(bindAddress);
     this.sslConfig = validateSSLConfig(sslConfig);
-    this.membername = null;
+    this.membername = DistributionConfig.DEFAULT_NAME;
   }
 
   public DistributionLocatorId(int port, String bindAddress) {
@@ -75,7 +75,7 @@ public class DistributionLocatorId implements java.io.Serializable {
   }
 
   public DistributionLocatorId(int port, String bindAddress, String hostnameForClients) {
-    this(port, bindAddress, hostnameForClients, null);
+    this(port, bindAddress, hostnameForClients, DistributionConfig.DEFAULT_NAME);
   }
 
   /**
@@ -95,6 +95,9 @@ public class DistributionLocatorId implements java.io.Serializable {
     this.bindAddress = validateBindAddress(bindAddress);
     this.sslConfig = validateSSLConfig(null);
     this.hostnameForClients = hostnameForClients;
+    if (membername == null) {
+      membername = DistributionConfig.DEFAULT_NAME;
+    }
     this.membername = membername;
   }
 
@@ -105,7 +108,7 @@ public class DistributionLocatorId implements java.io.Serializable {
     this.bindAddress = validateBindAddress(bindAddress);
     this.sslConfig = validateSSLConfig(sslConfig);
     this.hostnameForClients = hostnameForClients;
-    this.membername = null;
+    this.membername = DistributionConfig.DEFAULT_NAME;
   }
 
 
@@ -123,7 +126,7 @@ public class DistributionLocatorId implements java.io.Serializable {
    * two.
    */
   public DistributionLocatorId(String marshalled) {
-    this(marshalled, null);
+    this(marshalled, DistributionConfig.DEFAULT_NAME);
   }
 
   /**
@@ -144,6 +147,9 @@ public class DistributionLocatorId implements java.io.Serializable {
    * <p>
    */
   public DistributionLocatorId(String marshalled, String membername) {
+    if (membername == null) {
+      membername = DistributionConfig.DEFAULT_NAME;
+    }
     this.membername = membername;
 
     final int portStartIdx = marshalled.indexOf('[');
@@ -301,9 +307,9 @@ public class DistributionLocatorId implements java.io.Serializable {
   }
 
   public String getMemberName() {
-    if (this.membername != null && this.membername == "")
-      return null;
-
+    if (this.membername == null) {
+      this.membername = DistributionConfig.DEFAULT_NAME;
+    }
     return this.membername;
   }
 
@@ -354,11 +360,8 @@ public class DistributionLocatorId implements java.io.Serializable {
    * Indicates whether some other object is "equal to" this one.
    *
    * @param other the reference object with which to compare.
+   * @return true if this object is the same as the obj argument; false otherwise.
    *
-   *        If member name is defined in both objects, and both objects have same member name,
-   *        or if member name is not defined, and all other parameters are the same;
-   *
-   *        false otherwise.
    */
   @Override
   public boolean equals(Object other) {
