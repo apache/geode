@@ -96,9 +96,10 @@ public class DistributionLocatorId implements java.io.Serializable {
     this.sslConfig = validateSSLConfig(null);
     this.hostnameForClients = hostnameForClients;
     if (membername == null) {
-      membername = DistributionConfig.DEFAULT_NAME;
+      this.membername = DistributionConfig.DEFAULT_NAME;
+    } else {
+      this.membername = membername;
     }
-    this.membername = membername;
   }
 
   public DistributionLocatorId(InetAddress host, int port, String bindAddress, SSLConfig sslConfig,
@@ -148,9 +149,10 @@ public class DistributionLocatorId implements java.io.Serializable {
    */
   public DistributionLocatorId(String marshalled, String membername) {
     if (membername == null) {
-      membername = DistributionConfig.DEFAULT_NAME;
+      this.membername = DistributionConfig.DEFAULT_NAME;
+    } else {
+      this.membername = membername;
     }
-    this.membername = membername;
 
     final int portStartIdx = marshalled.indexOf('[');
     final int portEndIdx = marshalled.indexOf(']');

@@ -134,6 +134,8 @@ public class LocatorHelper {
                 DistributionLocatorId existingLocator =
                     getLocatorWithSameMemberName(localLocators, locator);
 
+                // if locator received in response, is already stored in local collection,
+                // ignore this info
                 if (existingLocator != null)
                   continue;
               }
