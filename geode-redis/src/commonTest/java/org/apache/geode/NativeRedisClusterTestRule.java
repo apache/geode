@@ -77,7 +77,7 @@ public class NativeRedisClusterTestRule extends ExternalResource implements Seri
 
         redisCluster.start();
 
-        int port = redisCluster.getServicePort("redis-node-0", 6379);
+        int port = redisCluster.getServicePort("redis-node-0", REDIS_PORT);
         Jedis jedis = new Jedis("localhost", port);
         List<ClusterNode> nodes = parseClusterNodes(jedis.clusterNodes());
 
