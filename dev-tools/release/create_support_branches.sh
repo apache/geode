@@ -97,7 +97,7 @@ echo "Cloning repositories..."
 echo "============================================================"
 set -x
 git clone --single-branch --branch develop git@github.com:apache/geode.git
-#(cd geode; git reset --hard $desired_sha) #uncomment if latest commit is not the one desired
+#(cd geode; git reset --hard $desired_sha) #uncomment if latest commit is not the desired branchpoint
 git clone --single-branch --branch develop git@github.com:apache/geode.git geode-develop
 git clone --single-branch --branch develop git@github.com:apache/geode-examples.git
 git clone --single-branch --branch develop git@github.com:apache/geode-examples.git geode-examples-develop
