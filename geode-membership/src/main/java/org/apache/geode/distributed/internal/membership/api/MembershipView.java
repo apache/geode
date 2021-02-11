@@ -39,17 +39,15 @@ public class MembershipView<ID extends MemberIdentifier> {
   private final Set<ID> hashedMembers;
 
   public MembershipView() {
-    this(null, -1, Collections.emptyList(), Collections.emptySet(), Collections.emptySet());
+    this(null, -1, Collections.emptyList());
   }
 
-  public MembershipView(final ID creator, final int viewId,
-      final List<ID> members) {
+  public MembershipView(final ID creator, final int viewId, final List<ID> members) {
     this(creator, viewId, members, Collections.emptySet(), Collections.emptySet());
   }
 
-  public MembershipView(final ID creator, final int viewId,
-      final List<ID> members, final Set<ID> shutdowns,
-      final Set<ID> crashes) {
+  public MembershipView(final ID creator, final int viewId, final List<ID> members,
+      final Set<ID> shutdowns, final Set<ID> crashes) {
     this.creator = creator;
     this.viewId = viewId;
 
