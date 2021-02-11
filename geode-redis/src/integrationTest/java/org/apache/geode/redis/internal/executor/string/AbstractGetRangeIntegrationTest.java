@@ -90,6 +90,17 @@ public abstract class AbstractGetRangeIntegrationTest implements RedisPortSuppli
   }
 
   @Test
+  public void givenRangeIsBiggerThanMinOrMax_returnsNotIntegerError() {
+    assertThatThrownBy(
+        () -> jedis.sendCommand(Protocol.Command.GETRANGE, "key", "0", "9223372036854775808"))
+            .hasMessage("ERR " + ERROR_NOT_INTEGER);
+
+    assertThatThrownBy(
+        () -> jedis.sendCommand(Protocol.Command.GETRANGE, "key", "0", "-9223372036854775809"))
+            .hasMessage("ERR " + ERROR_NOT_INTEGER);
+  }
+
+  @Test
   public void givenWrongType_returnsWrongTypeError() {
     jedis.sadd("set", "value");
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.GETRANGE, "set", "0", "1"))
