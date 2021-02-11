@@ -123,7 +123,7 @@ public class PRClearCreateIndexDUnitTest implements Serializable {
 
   /**
    * For interested client connecting to secondary member
-   * 1. locks all local region
+   * 1. locks all local primary region
    * 2. send OP_LOCK_FOR_PR_CLEAR to lock all other members
    * 3. send OP_PR_CLEAR to primary to clear
    * 4. primary will send a OP_CLEAR message back to the secondary to clear
@@ -153,10 +153,10 @@ public class PRClearCreateIndexDUnitTest implements Serializable {
   /**
    * For interested client connecting to primary member, behaves like starting from primary member
    * except it locks first
-   * 1. locks local region
-   * 2. send OP_LOCK_FOR_PR_CLEAR to lock all other members
-   * 3. then since it already locked the current member, won't send a OP_LOCK_FOR_CLEAR message
-   * to secondaries, only OP_CLEAR will be sent
+   * 1. locks local primary regions
+   * 2. send OP_LOCK_FOR_PR_CLEAR to lock all other members' primary buckets
+   * 3. send a OP_LOCK_FOR_CLEAR message to lock all secondary buckets
+   * 4. send OP_CLEAR to clear all secondary buckets
    */
   public void clearFromInterestedClientConnectingToPrimaryMember() throws Exception {
     int port = primary.getPort();
@@ -179,8 +179,9 @@ public class PRClearCreateIndexDUnitTest implements Serializable {
   }
 
   private static void clear() throws InterruptedException {
-    // start the clear a bit later that the createIndex operation
-    Thread.sleep(200);
+    // start the clear a bit later that the createIndex operation， to reveal the race condition
+    // comment it out since the test does not need the race condition to happen anymore
+    // Thread.sleep(200);
     Region region = ClusterStartupRule.getCache().getRegion("/regionA");
     region.clear();
   }
