@@ -362,7 +362,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   /**
    * Analyze a given view object, generate events as appropriate
    */
-  public void processView(MembershipView<ID> newView) {
+  public void processView(final MembershipView<ID> newView) {
     // Sanity check...
     if (logger.isDebugEnabled()) {
       StringBuilder msg = new StringBuilder(200);
@@ -391,7 +391,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
 
       // update the view to reflect our changes, so that
       // callbacks will see the new (updated) view.
-      MembershipView<ID> newlatestView = new MembershipView<>(newView, newView.getViewId());
+      MembershipView<ID> newlatestView = newView;
 
       // look for additions
       for (int i = 0; i < newView.getMembers().size(); i++) { // additions
@@ -491,7 +491,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
               "not seen in membership view in " + this.surpriseMemberTimeout + "ms");
         } else {
           if (!newlatestView.contains(entry.getKey())) {
-            newlatestView.add(entry.getKey());
+            newlatestView = newlatestView.newViewWithMember(entry.getKey());
           }
         }
       }
@@ -508,7 +508,6 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
       }
 
       // the view is complete - let's install it
-      newlatestView.makeUnmodifiable();
       latestView = newlatestView;
       listener.viewInstalled(latestView);
     } finally {
@@ -581,28 +580,9 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   }
 
   private MembershipView<ID> createGeodeView(GMSMembershipView<ID> view) {
-    MembershipView<ID> result =
-        createGeodeView(view.getCreator(), view.getViewId(), view.getMembers(),
-            view.getShutdownMembers(),
-            view.getCrashedMembers());
-    result.makeUnmodifiable();
-    return result;
-  }
-
-  private MembershipView<ID> createGeodeView(ID gmsCreator, int viewId,
-      List<ID> gmsMembers,
-      Set<ID> gmsShutdowns, Set<ID> gmsCrashes) {
-    ID geodeCreator = gmsCreator;
-    List<ID> geodeMembers = new ArrayList<>(gmsMembers.size());
-    for (ID member : gmsMembers) {
-      geodeMembers.add(member);
-    }
-    Set<ID> geodeShutdownMembers =
-        gmsMemberCollectionToIDSet(gmsShutdowns);
-    Set<ID> geodeCrashedMembers =
-        gmsMemberCollectionToIDSet(gmsCrashes);
-    return new MembershipView<>(geodeCreator, viewId, geodeMembers, geodeShutdownMembers,
-        geodeCrashedMembers);
+    return new MembershipView<>(view.getCreator(), view.getViewId(), view.getMembers(),
+        view.getShutdownMembers(),
+        view.getCrashedMembers());
   }
 
   private Set<ID> gmsMemberCollectionToIDSet(
@@ -789,10 +769,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
         // should ensure it is not chosen as an elder.
         // This will get corrected when the member finally shows up in the
         // view.
-        MembershipView<ID> newMembers = new MembershipView<>(latestView, latestView.getViewId());
-        newMembers.add(member);
-        newMembers.makeUnmodifiable();
-        latestView = newMembers;
+        latestView = latestView.newViewWithMember(member);
       }
     } finally {
       latestViewWriteLock.unlock();
@@ -1148,10 +1125,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
    */
   @Override
   public MembershipView<ID> getView() {
-    // Grab the latest view under a mutex...
-    MembershipView<ID> v = latestView;
-    MembershipView<ID> result = new MembershipView<>(v, v.getViewId());
-    return result;
+    return latestView;
   }
 
   public boolean isJoining() {
@@ -1458,10 +1432,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
     latestViewWriteLock.lock();
     try {
       if (latestView.contains(member)) {
-        MembershipView<ID> newView = new MembershipView<>(latestView, latestView.getViewId());
-        newView.remove(member);
-        newView.makeUnmodifiable();
-        latestView = newView;
+        latestView = latestView.newViewWithoutMember(member);
       }
     } finally {
       latestViewWriteLock.unlock();
