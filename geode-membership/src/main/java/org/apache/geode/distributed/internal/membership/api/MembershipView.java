@@ -14,17 +14,20 @@
  */
 package org.apache.geode.distributed.internal.membership.api;
 
+import static java.util.stream.Collectors.toList;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /**
- * The MembershipView class represents a membership view. A MembershipView
- * defines who is in the cluster and knows which node created the view. It also knows which
- * members left or were removed when the view was created. MemberIdentifiers in the view
- * are marked with the viewId of the MembershipView in which they joined the cluster.
+ * The MembershipView class represents a membership view. A MembershipView defines who is in the
+ * cluster and knows which node created the view. It also knows which members left or were removed
+ * when the view was created. MemberIdentifiers in the view are marked with the viewId of the
+ * MembershipView in which they joined the cluster.
  */
 public class MembershipView<ID extends MemberIdentifier> {
 
@@ -41,28 +44,25 @@ public class MembershipView<ID extends MemberIdentifier> {
 
   public MembershipView(final ID creator, final int viewId,
       final List<ID> members) {
-    this(creator, viewId, Collections.unmodifiableList(members), Collections.emptySet(),
-        Collections.emptySet());
-  }
-
-  /**
-   * Create a new view with the contents of the given view and the specified view ID
-   */
-  public MembershipView(final MembershipView<ID> other, final int viewId) {
-    this(other.creator, viewId, Collections.unmodifiableList(other.members),
-        Collections.unmodifiableSet(other.shutdownMembers),
-        Collections.unmodifiableSet(other.crashedMembers));
+    this(creator, viewId, members, Collections.emptySet(), Collections.emptySet());
   }
 
   public MembershipView(final ID creator, final int viewId,
-      final List<ID> mbrs, final Set<ID> shutdowns,
+      final List<ID> members, final Set<ID> shutdowns,
       final Set<ID> crashes) {
     this.creator = creator;
     this.viewId = viewId;
-    this.members = mbrs;
-    this.hashedMembers = new HashSet<>(mbrs);
-    this.shutdownMembers = shutdowns;
-    this.crashedMembers = crashes;
+
+    /*
+     * Copy each collection, then store the ref to the unmodifiable
+     * wrapper so we can expose it.
+     */
+    this.members = Collections.unmodifiableList(new ArrayList<>(members));
+    this.shutdownMembers = Collections.unmodifiableSet(new HashSet<>(shutdowns));
+    this.crashedMembers = Collections.unmodifiableSet(new HashSet<>(crashes));
+
+    // make this unmodifiable for good measure (even though we don't expose it)
+    this.hashedMembers = Collections.unmodifiableSet(new HashSet<>(members));
   }
 
   public int getViewId() {
@@ -90,18 +90,16 @@ public class MembershipView<ID extends MemberIdentifier> {
     return this.members.get(i);
   }
 
-  public MembershipView<ID> add(ID mbr) {
-    final ArrayList<ID> updatedMemberList = new ArrayList<>(members);
-    updatedMemberList.add(mbr);
-    return new MembershipView<ID>(creator, viewId,
-        updatedMemberList, shutdownMembers, crashedMembers);
+  public MembershipView<ID> newViewWithMember(ID member) {
+    return new MembershipView<>(creator, viewId,
+        Stream.concat(members.stream(), Stream.of(member)).collect(toList()), shutdownMembers,
+        crashedMembers);
   }
 
-  public MembershipView<ID> remove(ID mbr) {
-    final ArrayList<ID> updatedMemberList = new ArrayList<>(members);
-    updatedMemberList.remove(mbr);
+  public MembershipView<ID> newViewWithoutMember(final ID member) {
     return new MembershipView<ID>(creator, viewId,
-        updatedMemberList, shutdownMembers, crashedMembers);
+        members.stream().filter(m -> !m.equals(member)).collect(toList()), shutdownMembers,
+        crashedMembers);
   }
 
   public boolean contains(MemberIdentifier mbr) {
@@ -138,7 +136,6 @@ public class MembershipView<ID extends MemberIdentifier> {
   }
 
 
-
   public ID getCoordinator() {
     for (ID addr : members) {
       if (addr.preferredForCoordinator()) {
@@ -166,8 +163,9 @@ public class MembershipView<ID extends MemberIdentifier> {
     sb.append("View[").append(creator).append('|').append(viewId).append("] members: [");
     boolean first = true;
     for (ID mbr : this.members) {
-      if (!first)
+      if (!first) {
         sb.append(", ");
+      }
       sb.append(mbr);
       if (mbr == lead) {
         sb.append("{lead}");
@@ -178,8 +176,9 @@ public class MembershipView<ID extends MemberIdentifier> {
       sb.append("]  shutdown: [");
       first = true;
       for (ID mbr : this.shutdownMembers) {
-        if (!first)
+        if (!first) {
           sb.append(", ");
+        }
         sb.append(mbr);
         first = false;
       }
@@ -188,8 +187,9 @@ public class MembershipView<ID extends MemberIdentifier> {
       sb.append("]  crashed: [");
       first = true;
       for (ID mbr : this.crashedMembers) {
-        if (!first)
+        if (!first) {
           sb.append(", ");
+        }
         sb.append(mbr);
         first = false;
       }

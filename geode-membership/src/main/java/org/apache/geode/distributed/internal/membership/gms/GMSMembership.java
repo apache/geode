@@ -359,7 +359,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   /**
    * Analyze a given view object, generate events as appropriate
    */
-  public void processView(MembershipView<ID> newView) {
+  public void processView(final MembershipView<ID> newView) {
     // Sanity check...
     if (logger.isDebugEnabled()) {
       StringBuilder msg = new StringBuilder(200);
@@ -388,7 +388,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
 
       // update the view to reflect our changes, so that
       // callbacks will see the new (updated) view.
-      MembershipView<ID> newlatestView = new MembershipView<>(newView, newView.getViewId());
+      MembershipView<ID> newlatestView = newView;
 
       // look for additions
       for (int i = 0; i < newView.getMembers().size(); i++) { // additions
@@ -488,7 +488,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
               "not seen in membership view in " + this.surpriseMemberTimeout + "ms");
         } else {
           if (!newlatestView.contains(entry.getKey())) {
-            newlatestView = newlatestView.add(entry.getKey());
+            newlatestView = newlatestView.newViewWithMember(entry.getKey());
           }
         }
       }
@@ -577,7 +577,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   }
 
   private MembershipView<ID> createGeodeView(GMSMembershipView<ID> view) {
-    return new MembershipView<ID>(view.getCreator(), view.getViewId(), view.getMembers(),
+    return new MembershipView<>(view.getCreator(), view.getViewId(), view.getMembers(),
         view.getShutdownMembers(),
         view.getCrashedMembers());
   }
@@ -764,7 +764,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
         // should ensure it is not chosen as an elder.
         // This will get corrected when the member finally shows up in the
         // view.
-        latestView = latestView.add(member);
+        latestView = latestView.newViewWithMember(member);
       }
     } finally {
       latestViewWriteLock.unlock();
@@ -1120,10 +1120,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
    */
   @Override
   public MembershipView<ID> getView() {
-    // Grab the latest view under a mutex...
-    MembershipView<ID> v = latestView;
-    MembershipView<ID> result = new MembershipView<>(v, v.getViewId());
-    return result;
+    return latestView;
   }
 
   public boolean isJoining() {
@@ -1441,7 +1438,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
     latestViewWriteLock.lock();
     try {
       if (latestView.contains(member)) {
-        latestView = latestView.remove(member);
+        latestView = latestView.newViewWithoutMember(member);
       }
     } finally {
       latestViewWriteLock.unlock();
