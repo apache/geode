@@ -60,8 +60,10 @@ public abstract class AbstractIncrIntegrationTest implements RedisPortSupplier {
     String oneHundredKey = randString();
     String negativeOneHundredKey = randString();
     String unsetKey = randString();
+
     final int oneHundredValue = 100;
     final int negativeOneHundredValue = -100;
+
     jedis.set(oneHundredKey, Integer.toString(oneHundredValue));
     jedis.set(negativeOneHundredKey, Integer.toString(negativeOneHundredValue));
 

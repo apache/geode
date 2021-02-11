@@ -27,7 +27,6 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.JedisDataException;
 
-import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
@@ -122,62 +121,6 @@ public abstract class AbstractStringIntegrationTest implements RedisPortSupplier
     jedis.set(key, value);
 
     assertThat(jedis.strlen(key)).isEqualTo(value.length);
-  }
-
-  @Test
-  public void testIncr_ErrorsWithWrongNumberOfArguments() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.INCR))
-        .hasMessageContaining("ERR wrong number of arguments for 'incr' command");
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.INCR, "1", "2"))
-        .hasMessageContaining("ERR wrong number of arguments for 'incr' command");
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.INCR, "1", "2", "3"))
-        .hasMessageContaining("ERR wrong number of arguments for 'incr' command");
-  }
-
-  @Test
-  public void testIncr_errorsGivenWrongType() {
-    String key1 = "hashKey";
-    String key2 = "key";
-
-    jedis.hset(key1, "field", "non-int value");
-    jedis.set(key2, "non-int value");
-
-    assertThatThrownBy(() -> jedis.incr(key1))
-        .isInstanceOf(JedisDataException.class)
-        .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
-    assertThatThrownBy(() -> jedis.incr(key2))
-        .isInstanceOf(JedisDataException.class)
-        .hasMessageContaining(RedisConstants.ERROR_NOT_INTEGER);
-  }
-
-  @Test
-  public void testIncr_incrementsPositiveAndNegativeIntegerValues() {
-    String key1 = "positiveKey";
-    String key2 = "negativeKey";
-
-    jedis.set(key1, "10");
-    jedis.set(key2, "-10");
-
-    jedis.incr(key1);
-    jedis.incr(key2);
-
-    assertThat(Long.parseLong(jedis.get(key1))).isEqualTo(11L);
-    assertThat(Long.parseLong(jedis.get(key2))).isEqualTo(-9L);
-  }
-
-  @Test
-  public void testConcurrentIncr_performsAllIncrs() {
-    Jedis jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
-    String key = "key";
-    int expectedValue = NUM_ITERATIONS * 2;
-
-    jedis.set(key, "0");
-
-    new ConcurrentLoopingThreads(NUM_ITERATIONS,
-        (i) -> jedis.incr(key),
-        (i) -> jedis2.incr(key)).run();
-
-    assertThat(Integer.parseInt(jedis.get(key))).isEqualTo(expectedValue);
   }
 
   @Test
