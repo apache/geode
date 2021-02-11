@@ -488,7 +488,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
               "not seen in membership view in " + this.surpriseMemberTimeout + "ms");
         } else {
           if (!newlatestView.contains(entry.getKey())) {
-            newlatestView.add(entry.getKey());
+            newlatestView = newlatestView.add(entry.getKey());
           }
         }
       }
@@ -505,7 +505,6 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
       }
 
       // the view is complete - let's install it
-      newlatestView.makeUnmodifiable();
       latestView = newlatestView;
       listener.viewInstalled(latestView);
     } finally {
@@ -567,9 +566,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
         // connect
         services.getJoinLeave().join();
 
-        MembershipView<ID> initialView = createGeodeView(services.getJoinLeave().getView());
-        latestView = new MembershipView<>(initialView, initialView.getViewId());
-        latestView.makeUnmodifiable();
+        latestView = createGeodeView(services.getJoinLeave().getView());
         listener.viewInstalled(latestView);
       } finally {
         this.isJoining = false;
@@ -580,28 +577,9 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   }
 
   private MembershipView<ID> createGeodeView(GMSMembershipView<ID> view) {
-    MembershipView<ID> result =
-        createGeodeView(view.getCreator(), view.getViewId(), view.getMembers(),
-            view.getShutdownMembers(),
-            view.getCrashedMembers());
-    result.makeUnmodifiable();
-    return result;
-  }
-
-  private MembershipView<ID> createGeodeView(ID gmsCreator, int viewId,
-      List<ID> gmsMembers,
-      Set<ID> gmsShutdowns, Set<ID> gmsCrashes) {
-    ID geodeCreator = gmsCreator;
-    List<ID> geodeMembers = new ArrayList<>(gmsMembers.size());
-    for (ID member : gmsMembers) {
-      geodeMembers.add(member);
-    }
-    Set<ID> geodeShutdownMembers =
-        gmsMemberCollectionToIDSet(gmsShutdowns);
-    Set<ID> geodeCrashedMembers =
-        gmsMemberCollectionToIDSet(gmsCrashes);
-    return new MembershipView<>(geodeCreator, viewId, geodeMembers, geodeShutdownMembers,
-        geodeCrashedMembers);
+    return new MembershipView<ID>(view.getCreator(), view.getViewId(), view.getMembers(),
+        view.getShutdownMembers(),
+        view.getCrashedMembers());
   }
 
   private Set<ID> gmsMemberCollectionToIDSet(
@@ -786,10 +764,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
         // should ensure it is not chosen as an elder.
         // This will get corrected when the member finally shows up in the
         // view.
-        MembershipView<ID> newMembers = new MembershipView<>(latestView, latestView.getViewId());
-        newMembers.add(member);
-        newMembers.makeUnmodifiable();
-        latestView = newMembers;
+        latestView = latestView.add(member);
       }
     } finally {
       latestViewWriteLock.unlock();
@@ -1466,10 +1441,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
     latestViewWriteLock.lock();
     try {
       if (latestView.contains(member)) {
-        MembershipView<ID> newView = new MembershipView<>(latestView, latestView.getViewId());
-        newView.remove(member);
-        newView.makeUnmodifiable();
-        latestView = newView;
+        latestView = latestView.remove(member);
       }
     } finally {
       latestViewWriteLock.unlock();
