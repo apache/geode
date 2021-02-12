@@ -168,18 +168,18 @@ sed -e "s/^  initial_version:[^-]*\(-[^.0-9]*\)[.0-9]*/  initial_version: ${NEWV
 
 VER=geode-serialization/src/main/java/org/apache/geode/internal/serialization/KnownVersion.java
 [ -r $VER ] || VER=geode-serialization/src/main/java/org/apache/geode/internal/serialization/Version.java
-#add the new ordinal and Version constants and set them as current&highest
+#add the new ordinal and KnownVersion constants and set them as current&highest
 CURORD=$(cat $VER | awk '/private static final short GEODE_.*_ORDINAL/{print $NF}' | tr -d ';' | sort -n | tail -1)
 NEWORD=$(( CURORD + 5 ))
 sed -e "s#/. NOTE: when adding a new version#private static final short GEODE_${NEWMAJOR}_${NEWMINOR}_0_ORDINAL = ${NEWORD};\\
 \\
   @Immutable\\
-  public static final Version GEODE_${NEWMAJOR}_${NEWMINOR}_0 =\\
+  public static final KnownVersion GEODE_${NEWMAJOR}_${NEWMINOR}_0 =\\
       new KnownVersion("'"'"GEODE"'"'", "'"'"${NEWMAJOR}.${NEWMINOR}.0"'"'", (byte) ${NEWMAJOR}, (byte) ${NEWMINOR}, (byte) 0, (byte) 0,\\
           GEODE_${NEWMAJOR}_${NEWMINOR}_0_ORDINAL);\\
 \\
   /* NOTE: when adding a new version#" \
-  -e "/public static final Version CURRENT/s#GEODE[0-9_]*#GEODE_${NEWMAJOR}_${NEWMINOR}_0#" \
+  -e "/public static final KnownVersion CURRENT/s#GEODE[0-9_]*#GEODE_${NEWMAJOR}_${NEWMINOR}_0#" \
   -e "/public static final int HIGHEST_VERSION/s# = [0-9]*# = ${NEWORD}#" \
   -i.bak $VER
 
