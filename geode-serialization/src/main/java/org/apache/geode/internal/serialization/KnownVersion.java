@@ -251,7 +251,8 @@ public class KnownVersion extends AbstractVersion {
 
   @Immutable
   public static final Version GEODE_1_15_0 =
-      new Version("GEODE", "1.15.0", (byte) 1, (byte) 15, (byte) 0, (byte) 0, GEODE_1_15_0_ORDINAL);
+      new KnownVersion("GEODE", "1.15.0", (byte) 1, (byte) 15, (byte) 0, (byte) 0,
+          GEODE_1_15_0_ORDINAL);
 
   /* NOTE: when adding a new version bump the ordinal by 5. Ordinals can be short ints */
 
