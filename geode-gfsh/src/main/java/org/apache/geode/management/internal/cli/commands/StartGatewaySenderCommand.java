@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -30,12 +31,15 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.wan.GatewaySenderState;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.management.GatewaySenderMXBean;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.GfshCommand;
+import org.apache.geode.management.cli.SingleGfshCommand;
+import org.apache.geode.management.cli.UpdateAllConfigurationGroupsMarker;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
@@ -43,7 +47,8 @@ import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class StartGatewaySenderCommand extends GfshCommand {
+public class StartGatewaySenderCommand extends SingleGfshCommand implements
+    UpdateAllConfigurationGroupsMarker {
 
   @CliCommand(value = CliStrings.START_GATEWAYSENDER, help = CliStrings.START_GATEWAYSENDER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
@@ -135,6 +140,7 @@ public class StartGatewaySenderCommand extends GfshCommand {
       execService.shutdown();
     }
 
+    boolean isGatewaySenderStarted = false;
     ResultModel resultModel = new ResultModel();
     TabularResultModel resultData = resultModel.addTable(CliStrings.START_GATEWAYSENDER);
     for (Future<List<String>> future : futures) {
@@ -144,6 +150,9 @@ public class StartGatewaySenderCommand extends GfshCommand {
         memberStatus = future.get();
         resultData.addMemberStatusResultRow(memberStatus.get(0),
             memberStatus.get(1), memberStatus.get(2));
+        if (memberStatus.get(1).equals(CliStrings.GATEWAY_OK)) {
+          isGatewaySenderStarted = true;
+        }
       } catch (InterruptedException | ExecutionException ite) {
         resultData.addMemberStatusResultRow(member.getId(),
             CliStrings.GATEWAY_ERROR,
@@ -153,6 +162,33 @@ public class StartGatewaySenderCommand extends GfshCommand {
     }
     execService.shutdown();
 
+    // Persist new state to Cluster Configuration
+    if (onMember == null && isGatewaySenderStarted) {
+      CacheConfig.GatewaySender gatewaySenderConfig = new CacheConfig.GatewaySender();
+      gatewaySenderConfig.setState(GatewaySenderState.RUNNING.getState());
+      gatewaySenderConfig.setId(senderId);
+      resultModel.setConfigObject(gatewaySenderConfig);
+    }
+
     return resultModel;
+  }
+
+  @Override
+  public boolean updateConfigForGroup(String group, CacheConfig config, Object configObject) {
+    boolean gatewaySenderConfigUpdated = false;
+    List<CacheConfig.GatewaySender> gatewaySenders = config.getGatewaySenders();
+    if (gatewaySenders.isEmpty() || configObject == null) {
+      return false;
+    }
+
+    CacheConfig.GatewaySender gatewaySenderConfig = ((CacheConfig.GatewaySender) configObject);
+    String gatewaySenderId = gatewaySenderConfig.getId();
+    for (CacheConfig.GatewaySender gatewaySender : gatewaySenders) {
+      if (gatewaySender.getId().equals(gatewaySenderId)) {
+        gatewaySender.setState(gatewaySenderConfig.getState());
+        gatewaySenderConfigUpdated = true;
+      }
+    }
+    return gatewaySenderConfigUpdated;
   }
 }

@@ -31,10 +31,13 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.wan.GatewaySenderState;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.GfshCommand;
+import org.apache.geode.management.cli.SingleGfshCommand;
+import org.apache.geode.management.cli.UpdateAllConfigurationGroupsMarker;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
@@ -42,7 +45,8 @@ import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class StopGatewaySenderCommand extends GfshCommand {
+public class StopGatewaySenderCommand extends SingleGfshCommand implements
+    UpdateAllConfigurationGroupsMarker {
   private final ExecutorService executorService;
   private final StopGatewaySenderOnMember stopperOnMember;
 
@@ -83,11 +87,11 @@ public class StopGatewaySenderCommand extends GfshCommand {
       return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
 
-    return executeStopGatewaySender(senderId.trim(), getCache(), dsMembers);
+    return executeStopGatewaySender(senderId.trim(), getCache(), dsMembers, onMember);
   }
 
   public ResultModel executeStopGatewaySender(String id, Cache cache,
-      Set<DistributedMember> dsMembers) {
+      Set<DistributedMember> dsMembers, String[] onMember) {
     List<DistributedMember> dsMembersList = new ArrayList<>(dsMembers);
     List<Callable<List<String>>> callables = new ArrayList<>();
 
@@ -109,13 +113,14 @@ public class StopGatewaySenderCommand extends GfshCommand {
       executorService.shutdown();
     }
 
-    return buildResultModelFromMembersResponses(id, dsMembersList, futures);
+    return buildResultModelFromMembersResponses(id, dsMembersList, futures, onMember);
   }
 
   private ResultModel buildResultModelFromMembersResponses(String id,
-      List<DistributedMember> dsMembers, List<Future<List<String>>> futures) {
+      List<DistributedMember> dsMembers, List<Future<List<String>>> futures, String[] onMember) {
     ResultModel resultModel = new ResultModel();
     TabularResultModel resultData = resultModel.addTable(CliStrings.STOP_GATEWAYSENDER);
+    boolean isGatewaySenderStopped = false;
     Iterator<DistributedMember> memberIterator = dsMembers.iterator();
     for (Future<List<String>> future : futures) {
       DistributedMember member = memberIterator.next();
@@ -124,12 +129,22 @@ public class StopGatewaySenderCommand extends GfshCommand {
         memberStatus = future.get();
         resultData.addMemberStatusResultRow(memberStatus.get(0),
             memberStatus.get(1), memberStatus.get(2));
+        if (memberStatus.get(1).equals(CliStrings.GATEWAY_OK)) {
+          isGatewaySenderStopped = true;
+        }
       } catch (InterruptedException | ExecutionException ite) {
         resultData.addMemberStatusResultRow(member.getId(),
             CliStrings.GATEWAY_ERROR,
             CliStrings.format(CliStrings.GATEWAY_SENDER_0_COULD_NOT_BE_STOPPED_ON_MEMBER_DUE_TO_1,
                 id, ite.getMessage()));
       }
+    }
+    // Persist new state to Cluster Configuration
+    if (isGatewaySenderStopped && onMember == null) {
+      CacheConfig.GatewaySender gatewaySenderConfig = new CacheConfig.GatewaySender();
+      gatewaySenderConfig.setState(GatewaySenderState.STOPPED.getState());
+      gatewaySenderConfig.setId(id);
+      resultModel.setConfigObject(gatewaySenderConfig);
     }
     return resultModel;
   }
@@ -138,5 +153,24 @@ public class StopGatewaySenderCommand extends GfshCommand {
   interface StopGatewaySenderOnMember {
     List<String> executeStopGatewaySenderOnMember(String id, Cache cache,
         SystemManagementService managementService, DistributedMember member);
+  }
+
+  @Override
+  public boolean updateConfigForGroup(String group, CacheConfig config, Object configObject) {
+    boolean gatewaySenderConfigUpdated = false;
+    List<CacheConfig.GatewaySender> gatewaySenders = config.getGatewaySenders();
+    if (gatewaySenders.isEmpty() || configObject == null) {
+      return false;
+    }
+
+    CacheConfig.GatewaySender gatewaySenderConfig = ((CacheConfig.GatewaySender) configObject);
+    String gatewaySenderId = gatewaySenderConfig.getId();
+    for (CacheConfig.GatewaySender gatewaySender : gatewaySenders) {
+      if (gatewaySender.getId().equals(gatewaySenderId)) {
+        gatewaySender.setState(gatewaySenderConfig.getState());
+        gatewaySenderConfigUpdated = true;
+      }
+    }
+    return gatewaySenderConfigUpdated;
   }
 }

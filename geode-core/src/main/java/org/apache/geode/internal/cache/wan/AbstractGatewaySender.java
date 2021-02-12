@@ -48,6 +48,7 @@ import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayEventSubstitutionFilter;
 import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.cache.wan.GatewaySenderState;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.GatewayCancelledException;
 import org.apache.geode.distributed.internal.DistributionAdvisee;
@@ -152,6 +153,8 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   protected GatewaySenderAdvisor senderAdvisor;
 
   private int serialNumber;
+
+  protected GatewaySenderState state;
 
   protected GatewaySenderStats statistics;
 
@@ -289,8 +292,10 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       }
       initializeEventIdIndex();
     }
+
     isBucketSorted = attrs.isBucketSorted();
     forwardExpirationDestroy = attrs.isForwardExpirationDestroy();
+    state = attrs.getState();
   }
 
   public GatewaySenderAdvisor getSenderAdvisor() {
@@ -409,6 +414,11 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   @Override
   public int getSocketReadTimeout() {
     return socketReadTimeout;
+  }
+
+  @Override
+  public GatewaySenderState getState() {
+    return state;
   }
 
   @Override
