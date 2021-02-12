@@ -1506,8 +1506,7 @@ public class CompactRangeIndex extends AbstractIndex {
           : modifiedIndexExpr.evaluate(this.initContext);
 
       if (indexKey == null) {
-        // indexKey = IndexManager.NULL;
-        return;
+        indexKey = IndexManager.NULL;
       }
       // if the first key is PdxString set the flag so that rest of the keys
       // would be converted to PdxString
@@ -1555,7 +1554,12 @@ public class CompactRangeIndex extends AbstractIndex {
     private void applyProjection(boolean add, ExecutionContext context)
         throws FunctionDomainException, TypeMismatchException, NameResolutionException,
         QueryInvocationTargetException, IMQException {
-      Object indexKey = indexedExpr.evaluate(context);
+      Object indexKey = null;
+      try {
+        indexKey = indexedExpr.evaluate(context);
+      } catch (UnsupportedOperationException e) {
+        return;
+      }
       if (indexKey == null) {
         indexKey = IndexManager.NULL;
       }
