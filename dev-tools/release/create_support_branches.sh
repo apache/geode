@@ -185,7 +185,7 @@ sed -e "s#/. NOTE: when adding a new version#private static final short GEODE_${
 
 COM=geode-core/src/main/java/org/apache/geode/internal/cache/tier/sockets/CommandInitializer.java
 #add to list of all commands
-sed -e "s#return Collections.unmodifiableMap(allCommands#allCommands.put(Version.GEODE_${NEWMAJOR}_${NEWMINOR}_0, geode18Commands);\\
+sed -e "s#return Collections.unmodifiableMap(allCommands#allCommands.put(KnownVersion.GEODE_${NEWMAJOR}_${NEWMINOR}_0, geode18Commands);\\
     return Collections.unmodifiableMap(allCommands#" \
   -i.bak $COM
 
