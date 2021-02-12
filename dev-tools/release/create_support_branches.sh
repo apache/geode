@@ -175,7 +175,8 @@ sed -e "s#/. NOTE: when adding a new version#private static final short GEODE_${
 \\
   @Immutable\\
   public static final Version GEODE_${NEWMAJOR}_${NEWMINOR}_0 =\\
-      new KnownVersion("'"'"GEODE"'"'", "'"'"${NEWMAJOR}.${NEWMINOR}.0"'"'", (byte) ${NEWMAJOR}, (byte) ${NEWMINOR}, (byte) 0, (byte) 0, GEODE_${NEWMAJOR}_${NEWMINOR}_0_ORDINAL);\\
+      new KnownVersion("'"'"GEODE"'"'", "'"'"${NEWMAJOR}.${NEWMINOR}.0"'"'", (byte) ${NEWMAJOR}, (byte) ${NEWMINOR}, (byte) 0, (byte) 0,\\
+          GEODE_${NEWMAJOR}_${NEWMINOR}_0_ORDINAL);\\
 \\
   /* NOTE: when adding a new version#" \
   -e "/public static final Version CURRENT/s#GEODE[0-9_]*#GEODE_${NEWMAJOR}_${NEWMINOR}_0#" \
