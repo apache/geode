@@ -129,7 +129,7 @@ echo "============================================================"
 for DIR in ${GEODE_NATIVE} ${GEODE_BENCHMARKS} ; do
     set -x
     cd ${DIR}
-    if ! [ git push --dry-run 2>&1 | grep -q 'Everything up-to-date' ] ; then
+    if ! git push --dry-run 2>&1 | grep -q 'Everything up-to-date' ; then
       git push -u origin
     fi
     set +x
