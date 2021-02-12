@@ -25,6 +25,7 @@ import org.apache.geode.cache.wan.GatewayEventSubstitutionFilter;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
+import org.apache.geode.cache.wan.GatewaySenderState;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.cache.wan.internal.parallel.ParallelGatewaySenderImpl;
 import org.apache.geode.cache.wan.internal.serial.SerialGatewaySenderImpl;
@@ -135,6 +136,12 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
   @Override
   public GatewaySenderFactory setBatchSize(int batchSize) {
     attrs.setBatchSize(batchSize);
+    return this;
+  }
+
+  @Override
+  public GatewaySenderFactory setState(GatewaySenderState state) {
+    this.attrs.state = state;
     return this;
   }
 
@@ -280,12 +287,9 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
       }
       if (cache instanceof GemFireCacheImpl) {
         sender = new ParallelGatewaySenderImpl(cache, statisticsClock, attrs);
-        cache.addGatewaySender(sender);
-
-        if (!attrs.isManualStart()) {
-          sender.start();
-        }
-      } else if (cache instanceof CacheCreation) {
+        this.cache.addGatewaySender(sender);
+        bringGatewaySenderToConfiguredState(sender);
+      } else if (this.cache instanceof CacheCreation) {
         sender = new ParallelGatewaySenderCreation(cache, attrs);
         cache.addGatewaySender(sender);
       }
@@ -307,16 +311,53 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
       }
       if (cache instanceof GemFireCacheImpl) {
         sender = new SerialGatewaySenderImpl(cache, statisticsClock, attrs);
-        cache.addGatewaySender(sender);
-        if (!attrs.isManualStart()) {
-          sender.start();
-        }
-      } else if (cache instanceof CacheCreation) {
+        this.cache.addGatewaySender(sender);
+        bringGatewaySenderToConfiguredState(sender);
+      } else if (this.cache instanceof CacheCreation) {
         sender = new SerialGatewaySenderCreation(cache, attrs);
         cache.addGatewaySender(sender);
       }
     }
     return sender;
+  }
+
+  /**
+   * This method returns desired state of gateway-sender. The desired state is calculated
+   * based on the state (please check <code>{@link GatewaySenderState}</code>) and manual-start
+   * parameters. If set, then state parameter has advantage over the manual-start parameter.
+   *
+   * @see GatewaySenderState
+   */
+  private GatewaySenderState getGatewaySenderDesiredState() {
+    // If state parameter is not available, then use manual-start parameter
+    // to determine initial state of gateway-sender
+    if (this.attrs.getState() == null) {
+      if (!this.attrs.isManualStart()) {
+        return GatewaySenderState.RUNNING;
+      }
+      return GatewaySenderState.STOPPED;
+    }
+    return this.attrs.getState();
+  }
+
+  /**
+   * This method brings geode sender to desired state.
+   *
+   * @see GatewaySenderState
+   */
+  private void bringGatewaySenderToConfiguredState(GatewaySender sender) {
+    GatewaySenderState state = getGatewaySenderDesiredState();
+    switch (state) {
+      case RUNNING:
+        sender.start();
+        break;
+      case PAUSED:
+        sender.setStartEventProcessorInPausedState();
+        sender.start();
+        break;
+      default:
+        // do nothing for STOPPED state, since gateway-sender is already not running
+    }
   }
 
   @Override
@@ -412,5 +453,6 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
     attrs.setGroupTransactionEvents(senderCreation.mustGroupTransactionEvents());
     attrs.setEnforceThreadsConnectSameReceiver(
         senderCreation.getEnforceThreadsConnectSameReceiver());
+    attrs.state = senderCreation.getState();
   }
 }

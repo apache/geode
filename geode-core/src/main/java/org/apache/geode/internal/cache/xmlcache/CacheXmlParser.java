@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
@@ -103,6 +104,7 @@ import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
+import org.apache.geode.cache.wan.GatewaySenderState;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.internal.Assert;
@@ -640,6 +642,16 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       gatewaySenderFactory.setPersistenceEnabled(GatewaySender.DEFAULT_PERSISTENCE_ENABLED);
     } else {
       gatewaySenderFactory.setPersistenceEnabled(Boolean.parseBoolean(enablePersistence));
+    }
+
+    // Gateway-sender state
+    String state = atts.getValue(STATE);
+    if (Objects.equals(state, GatewaySenderState.RUNNING.getState()) ||
+        Objects.equals(state, GatewaySenderState.STOPPED.getState()) ||
+        Objects.equals(state, GatewaySenderState.PAUSED.getState())) {
+      gatewaySenderFactory.setState(GatewaySenderState.valueOf(state.toUpperCase()));
+    } else {
+      gatewaySenderFactory.setState(null);
     }
 
     String diskStoreName = atts.getValue(DISK_STORE_NAME);

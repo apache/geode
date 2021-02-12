@@ -2612,7 +2612,7 @@ public class CacheConfig {
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "", propOrder = {"gatewayEventFilters", "gatewayEventSubstitutionFilter",
       "gatewayTransportFilters"})
-  public static class GatewaySender {
+  public static class GatewaySender implements Identifiable<String> {
 
     @XmlElement(name = "gateway-event-filter", namespace = "http://geode.apache.org/schema/cache")
     protected List<DeclarableType> gatewayEventFilters;
@@ -2642,6 +2642,8 @@ public class CacheConfig {
     protected String batchTimeInterval;
     @XmlAttribute(name = "enable-persistence")
     protected Boolean enablePersistence;
+    @XmlAttribute(name = "state")
+    protected String state;
     @XmlAttribute(name = "disk-store-name")
     protected String diskStoreName;
     @XmlAttribute(name = "disk-synchronous")
@@ -2757,6 +2759,28 @@ public class CacheConfig {
     }
 
     /**
+     * Gets the value of the state property.
+     *
+     * possible object is
+     * {@link String }
+     *
+     */
+    public String getState() {
+      return state;
+    }
+
+    /**
+     * Sets the value of the state property.
+     *
+     * allowed object is
+     * {@link String }
+     *
+     */
+    public void setState(String value) {
+      this.state = value;
+    }
+
+    /**
      * Sets the value of the id property.
      *
      * allowed object is
@@ -2792,7 +2816,6 @@ public class CacheConfig {
     public Boolean mustGroupTransactionEvents() {
       return groupTransactionEvents;
     }
-
 
     public void setGroupTransactionEvents(Boolean value) {
       groupTransactionEvents = value;

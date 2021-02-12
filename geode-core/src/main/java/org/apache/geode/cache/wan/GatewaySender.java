@@ -204,6 +204,11 @@ public interface GatewaySender {
   }
 
   /**
+   * When this flag is set then GatewaySender will be started in paused state.
+   */
+  void setStartEventProcessorInPausedState();
+
+  /**
    * Starts this GatewaySender. Once the GatewaySender is running, its configuration cannot be
    * changed.
    */
@@ -320,6 +325,22 @@ public interface GatewaySender {
    *         and its receiving <code>GatewayReceiver</code> will block
    */
   int getSocketReadTimeout();
+
+  /**
+   * Returns the state of the <code>GatewaySender</code>. This state is set after start,
+   * stop, pause and resume gateway-sender gfsh commands.
+   * Possible values are:
+   * - running (start or resume gateway-sender)
+   * - stopped (stop gateway-sender)
+   * - paused (pause gateway-sender)
+   *
+   * There is no default state, since state is set only after above gfsh commands are successfully
+   * executed.
+   * If it is not set then null will be returned.
+   *
+   * @return state Gateway-sender state
+   */
+  GatewaySenderState getState();
 
   /**
    * Gets the disk store name for overflow or persistence.

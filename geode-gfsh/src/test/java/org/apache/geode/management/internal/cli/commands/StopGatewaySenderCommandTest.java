@@ -113,7 +113,7 @@ public class StopGatewaySenderCommandTest {
     doReturn(managementService).when(command).getManagementService();
 
     // act
-    ResultModel result = command.executeStopGatewaySender(senderId, cache, members);
+    ResultModel result = command.executeStopGatewaySender(senderId, cache, members, null);
 
     // assert
     assertThat(result.isSuccessful()).isTrue();
@@ -145,7 +145,7 @@ public class StopGatewaySenderCommandTest {
     doReturn(managementService).when(command).getManagementService();
 
     // act
-    ResultModel result = command.executeStopGatewaySender(senderId, cache, members);
+    ResultModel result = command.executeStopGatewaySender(senderId, cache, members, null);
 
     // assert
     assertThat(result.isSuccessful()).isFalse();
