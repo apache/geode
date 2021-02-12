@@ -267,7 +267,7 @@ public class KnownVersion extends AbstractVersion {
    * HIGHEST_VERSION when changing CURRENT !!!
    */
   @Immutable
-  public static final KnownVersion CURRENT = GEODE_1_14_0;
+  public static final KnownVersion CURRENT = GEODE_1_15_0;
 
   /**
    * A lot of versioning code needs access to the current version's ordinal
