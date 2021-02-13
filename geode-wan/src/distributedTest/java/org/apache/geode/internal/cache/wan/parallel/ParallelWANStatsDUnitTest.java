@@ -484,9 +484,9 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
 
     createCacheInVMs(lnPort, vm4, vm5);
     vm4.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, true, null, true,
-        true));
+        true, 40));
     vm5.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, true, null, true,
-        true));
+        true, 40));
 
     createReceiverCustomerOrderShipmentPR(vm2);
 
@@ -595,21 +595,11 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     createCacheInVMs(nyPort, vm2);
     createReceiverInVMs(vm2);
 
-    // Map<String, String> systemProperties = new HashMap<>();
-    // systemProperties.put(GeodeGlossary.GEMFIRE_PREFIX +
-    // "get-transaction-events-from-queue-wait-time-ms",
-    // "2");
-    // systemProperties.put(GeodeGlossary.GEMFIRE_PREFIX +
-    // "get-transaction-events-from-queue-retries",
-    // "10");
-    //
-    // vm4 = getHost(0).getVM(VersionManager.CURRENT_VERSION, 4, systemProperties);
-    // vm5 = getHost(0).getVM(VersionManager.CURRENT_VERSION, 5, systemProperties);
     createCacheInVMs(lnPort, vm4, vm5);
     vm4.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, true, null, true,
-        true));
+        true, 40));
     vm5.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, true, null, true,
-        true));
+        true, 40));
 
     createReceiverCustomerOrderShipmentPR(vm2);
 
@@ -1092,16 +1082,16 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     boolean groupTransactionEvents = true;
     vm4.invoke(
         () -> WANTestBase.createSender("ln", 2, true, 100, batchSize, false, false, null, true,
-            groupTransactionEvents));
+            groupTransactionEvents, -1));
     vm5.invoke(
         () -> WANTestBase.createSender("ln", 2, true, 100, batchSize, false, false, null, true,
-            groupTransactionEvents));
+            groupTransactionEvents, -1));
     vm6.invoke(
         () -> WANTestBase.createSender("ln", 2, true, 100, batchSize, false, false, null, true,
-            groupTransactionEvents));
+            groupTransactionEvents, -1));
     vm7.invoke(
         () -> WANTestBase.createSender("ln", 2, true, 100, batchSize, false, false, null, true,
-            groupTransactionEvents));
+            groupTransactionEvents, -1));
 
     startSenderInVMs("ln", vm4, vm5, vm6, vm7);
 
@@ -1522,7 +1512,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     createCacheInVMs(lnPort, vm);
     vm.invoke(() -> WANTestBase.setNumDispatcherThreadsForTheRun(dispatcherThreads));
     vm.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true,
-        true));
+        true, -1));
   }
 
   protected void createSenderInVm(Integer lnPort, VM vm) {
@@ -1534,13 +1524,13 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
     vm4.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true,
-        groupTransactionEvents));
+        groupTransactionEvents, -1));
     vm5.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true,
-        groupTransactionEvents));
+        groupTransactionEvents, -1));
     vm6.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true,
-        groupTransactionEvents));
+        groupTransactionEvents, -1));
     vm7.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true,
-        groupTransactionEvents));
+        groupTransactionEvents, -1));
   }
 
   protected void createSenders(Integer lnPort) {

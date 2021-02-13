@@ -1759,12 +1759,13 @@ public class WANTestBase extends DistributedTestCase {
       Integer maxMemory, Integer batchSize, boolean isConflation, boolean isPersistent,
       GatewayEventFilter filter, boolean isManualStart) {
     createSender(dsName, remoteDsId, isParallel, maxMemory, batchSize, isConflation, isPersistent,
-        filter, isManualStart, false);
+        filter, isManualStart, false, -1);
   }
 
   public static void createSender(String dsName, int remoteDsId, boolean isParallel,
       Integer maxMemory, Integer batchSize, boolean isConflation, boolean isPersistent,
-      GatewayEventFilter filter, boolean isManualStart, boolean groupTransactionEvents) {
+      GatewayEventFilter filter, boolean isManualStart, boolean groupTransactionEvents,
+      int getTransactionEventsFromQueueRetries) {
     final IgnoredException exln = IgnoredException.addIgnoredException("Could not connect");
     try {
       File persistentDirectory =
@@ -1777,6 +1778,9 @@ public class WANTestBase extends DistributedTestCase {
           numDispatcherThreadsForTheRun, GatewaySender.DEFAULT_ORDER_POLICY,
           GatewaySender.DEFAULT_SOCKET_BUFFER_SIZE);
       gateway.setGroupTransactionEvents(groupTransactionEvents);
+      if (getTransactionEventsFromQueueRetries >= 0) {
+        gateway.setGetTransactionEventsFromQueueRetries(getTransactionEventsFromQueueRetries);
+      }
       gateway.create(dsName, remoteDsId);
     } finally {
       exln.remove();

@@ -1258,13 +1258,13 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
     vm7.invoke(() -> setNumDispatcherThreadsForTheRun(2));
 
     vm4.invoke(
-        () -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true, true));
+        () -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true, true, -1));
     vm5.invoke(
-        () -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true, true));
+        () -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true, true, -1));
     vm6.invoke(
-        () -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true, true));
+        () -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true, true, -1));
     vm7.invoke(
-        () -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true, true));
+        () -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true, true, -1));
 
     vm4.invoke(
         () -> WANTestBase.createCustomerOrderShipmentPartitionedRegion("ln", 2, 10,

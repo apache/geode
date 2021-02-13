@@ -77,6 +77,9 @@ public class GatewaySenderAttributes {
 
   public boolean groupTransactionEvents = GatewaySender.DEFAULT_MUST_GROUP_TRANSACTION_EVENTS;
 
+  public int getTransactionEventsFromQueueRetries =
+      GatewaySender.GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES;
+
   public boolean isForInternalUse = GatewaySender.DEFAULT_IS_FOR_INTERNAL_USE;
 
   public boolean isBucketSorted = GatewaySenderAttributes.DEFAULT_IS_BUCKETSORTED;

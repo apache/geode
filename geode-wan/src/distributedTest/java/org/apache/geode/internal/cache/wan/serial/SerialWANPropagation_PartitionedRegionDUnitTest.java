@@ -396,13 +396,17 @@ public class SerialWANPropagation_PartitionedRegionDUnitTest extends WANTestBase
     vm7.invoke(() -> setNumDispatcherThreadsForTheRun(1));
 
     vm4.invoke(
-        () -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true, true));
+        () -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true, true,
+            -1));
     vm5.invoke(
-        () -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true, true));
+        () -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true, true,
+            -1));
     vm6.invoke(
-        () -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true, true));
+        () -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true, true,
+            -1));
     vm7.invoke(
-        () -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true, true));
+        () -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true, true,
+            -1));
 
 
     vm4.invoke(

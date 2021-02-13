@@ -50,6 +50,27 @@ public interface GatewaySenderFactory {
   GatewaySenderFactory setGroupTransactionEvents(boolean groupTransactionEvents);
 
   /**
+   * Sets the number of times to retry to get events for a transaction from the gateway sender
+   * queue when group-transaction-events is set to true.
+   * When group-transaction-events is set to true and a batch ready to be sent does not contain
+   * all the events for all the transactions to which the events belong, the gateway sender will try
+   * to get the missing events of the transactions from the queue to add them to the batch
+   * before sending it.
+   * If the missing events are not in the queue when the gateway sender tries to get them
+   * it will retry for a maximum of times equal to the value set in this parameter before
+   * delivering the batch without the missing events and logging an error.
+   * Setting this parameter to a very low value could cause that under heavy load and
+   * group-transaction-events set to true, batches are sent with incomplete transactions. Setting it
+   * to a high value could cause that under heavy load and group-transaction-events set to true,
+   * batches are held for some time before being sent.
+   *
+   * @param retries integer to indicate the number of times
+   *        to retry to get events from the gateway sender queue
+   *        in order not to send a batch with incomplete transactions.
+   */
+  GatewaySenderFactory setGetTransactionEventsFromQueueRetries(int retries);
+
+  /**
    * Adds a <code>GatewayEventFilter</code>
    *
    * @param filter GatewayEventFilter

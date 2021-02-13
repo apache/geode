@@ -102,16 +102,16 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     boolean groupTransactionEvents = false;
     vm4.invoke(
         () -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true,
-            groupTransactionEvents));
+            groupTransactionEvents, -1));
     vm5.invoke(
         () -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true,
-            groupTransactionEvents));
+            groupTransactionEvents, -1));
     vm6.invoke(
         () -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true,
-            groupTransactionEvents));
+            groupTransactionEvents, -1));
     vm7.invoke(
         () -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true,
-            groupTransactionEvents));
+            groupTransactionEvents, -1));
 
     vm2.invoke(() -> WANTestBase.createReplicatedRegion(testName + "_RR", null, isOffHeap()));
 
@@ -159,16 +159,16 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     boolean groupTransactionEvents = true;
     vm4.invoke(
         () -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true,
-            groupTransactionEvents));
+            groupTransactionEvents, -1));
     vm5.invoke(
         () -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true,
-            groupTransactionEvents));
+            groupTransactionEvents, -1));
     vm6.invoke(
         () -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true,
-            groupTransactionEvents));
+            groupTransactionEvents, -1));
     vm7.invoke(
         () -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true,
-            groupTransactionEvents));
+            groupTransactionEvents, -1));
 
     vm2.invoke(() -> WANTestBase.createReplicatedRegion(testName + "_RR", null, isOffHeap()));
 
@@ -225,16 +225,16 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     boolean groupTransactionEvents = false;
     vm4.invoke(
         () -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true,
-            groupTransactionEvents));
+            groupTransactionEvents, -1));
     vm5.invoke(
         () -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true,
-            groupTransactionEvents));
+            groupTransactionEvents, -1));
     vm6.invoke(
         () -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true,
-            groupTransactionEvents));
+            groupTransactionEvents, -1));
     vm7.invoke(
         () -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true,
-            groupTransactionEvents));
+            groupTransactionEvents, -1));
 
     vm2.invoke(() -> WANTestBase.createReplicatedRegion(testName + "_RR", null, isOffHeap()));
 
@@ -289,16 +289,16 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     int batchSize = 10;
     vm4.invoke(
         () -> WANTestBase.createSender("ln", 2, false, 100, batchSize, false, false, null, true,
-            groupTransactionEvents));
+            groupTransactionEvents, -1));
     vm5.invoke(
         () -> WANTestBase.createSender("ln", 2, false, 100, batchSize, false, false, null, true,
-            groupTransactionEvents));
+            groupTransactionEvents, -1));
     vm6.invoke(
         () -> WANTestBase.createSender("ln", 2, false, 100, batchSize, false, false, null, true,
-            groupTransactionEvents));
+            groupTransactionEvents, -1));
     vm7.invoke(
         () -> WANTestBase.createSender("ln", 2, false, 100, batchSize, false, false, null, true,
-            groupTransactionEvents));
+            groupTransactionEvents, -1));
 
     vm2.invoke(() -> WANTestBase.createReplicatedRegion(testName + "_RR", null, isOffHeap()));
 
@@ -360,25 +360,15 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     createCacheInVMs(nyPort, vm2);
     createReceiverInVMs(vm2);
 
-    // Map<String, String> systemProperties = new HashMap<>();
-    // systemProperties.put(GeodeGlossary.GEMFIRE_PREFIX +
-    // "get-transaction-events-from-queue-wait-time-ms",
-    // "20");
-    // systemProperties.put(GeodeGlossary.GEMFIRE_PREFIX +
-    // "get-transaction-events-from-queue-retries",
-    // "10");
-    //
-    // vm4.bounce(VersionManager.CURRENT_VERSION, systemProperties);
-    // vm5.bounce(VersionManager.CURRENT_VERSION, systemProperties);
     createCacheInVMs(lnPort, vm4, vm5);
     boolean groupTransactionEvents = true;
     int batchSize = 10;
     vm4.invoke(
         () -> WANTestBase.createSender("ln", 2, false, 100, batchSize, false, true, null, true,
-            groupTransactionEvents));
+            groupTransactionEvents, 40));
     vm5.invoke(
         () -> WANTestBase.createSender("ln", 2, false, 100, batchSize, false, true, null, true,
-            groupTransactionEvents));
+            groupTransactionEvents, 40));
 
 
     vm2.invoke(() -> WANTestBase.createReplicatedRegion(regionName, null, isOffHeap()));
@@ -433,8 +423,6 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     System.out.println("v4List.get(0):" + v4List.get(0));
     System.out.println("v5List.get(0):" + v5List.get(0));
 
-    int batchesDistributed = v4List.get(4) + v5List.get(4);
-
     int regionSize = vm2.invoke(() -> getRegionSize(regionName));
 
     // Only complete transactions (11 entries each) must be replicated
@@ -482,26 +470,15 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     createCacheInVMs(nyPort, vm2);
     createReceiverInVMs(vm2);
 
-    // Map<String, String> systemProperties = new HashMap<>();
-    // systemProperties.put(GeodeGlossary.GEMFIRE_PREFIX +
-    // "get-transaction-events-from-queue-wait-time-ms",
-    // "20");
-    // systemProperties.put(GeodeGlossary.GEMFIRE_PREFIX +
-    // "get-transaction-events-from-queue-retries",
-    // "10");
-    //
-    // vm4.bounce(VersionManager.CURRENT_VERSION, systemProperties);
-    // vm5.bounce(VersionManager.CURRENT_VERSION, systemProperties);
-
     createCacheInVMs(lnPort, vm4, vm5);
     boolean groupTransactionEvents = true;
     int batchSize = 10;
     vm4.invoke(
         () -> WANTestBase.createSender("ln", 2, false, 100, batchSize, false, true, null, true,
-            groupTransactionEvents));
+            groupTransactionEvents, 40));
     vm5.invoke(
         () -> WANTestBase.createSender("ln", 2, false, 100, batchSize, false, true, null, true,
-            groupTransactionEvents));
+            groupTransactionEvents, 40));
 
 
     vm2.invoke(() -> stopReceivers());
@@ -762,16 +739,16 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     boolean groupTransactionEvents = true;
     vm4.invoke(
         () -> WANTestBase.createSender("ln", 2, false, 100, batchSize, false, false, null, true,
-            groupTransactionEvents));
+            groupTransactionEvents, -1));
     vm5.invoke(
         () -> WANTestBase.createSender("ln", 2, false, 100, batchSize, false, false, null, true,
-            groupTransactionEvents));
+            groupTransactionEvents, -1));
     vm6.invoke(
         () -> WANTestBase.createSender("ln", 2, false, 100, batchSize, false, false, null, true,
-            groupTransactionEvents));
+            groupTransactionEvents, -1));
     vm7.invoke(
         () -> WANTestBase.createSender("ln", 2, false, 100, batchSize, false, false, null, true,
-            groupTransactionEvents));
+            groupTransactionEvents, -1));
 
     vm2.invoke(() -> WANTestBase.createReplicatedRegion(testName + "_RR", null, isOffHeap()));
 

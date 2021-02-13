@@ -127,6 +127,8 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   protected boolean groupTransactionEvents;
 
+  protected int getTransactionEventsFromQueueRetries;
+
   protected volatile boolean isPreStopping = false;
 
   protected boolean isForInternalUse;
@@ -264,6 +266,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     this.manualStart = attrs.isManualStart();
     this.isParallel = attrs.isParallel();
     this.groupTransactionEvents = attrs.mustGroupTransactionEvents();
+    this.getTransactionEventsFromQueueRetries = attrs.getTransactionEventsFromQueueRetries;
     this.isForInternalUse = attrs.isForInternalUse();
     this.diskStoreName = attrs.getDiskStoreName();
     this.remoteDSId = attrs.getRemoteDSId();
@@ -564,6 +567,11 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   @Override
   public boolean mustGroupTransactionEvents() {
     return this.groupTransactionEvents;
+  }
+
+  @Override
+  public int getGetTransactionEventsFromQueueRetries() {
+    return this.getTransactionEventsFromQueueRetries;
   }
 
   public boolean isForInternalUse() {

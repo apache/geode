@@ -160,27 +160,33 @@ public interface GatewaySender {
   /**
    * Number of times to retry to get events for a transaction from the gateway sender queue when
    * group-transaction-events is set to true.
-   * When group-transaction-events is set to true and a batch ready to be sent does not contain
-   * all the events for all the transactions to which the events belong, the gateway sender will try
-   * to get the missing events of the transactions from the queue to add them to the batch
-   * before sending it.
-   * If the missing events are not in the queue when the gateway sender tries to get them
-   * it will retry for a maximum of times equal to the value set in this parameter before
-   * delivering the batch without the missing events and logging an error.
-   * Setting this parameter to a very low value could cause that under heavy load and
-   * group-transaction-events set to true, batches are sent with incomplete transactions. Setting it
-   * to a high value could cause that under heavy load and group-transaction-events set to true,
-   * batches are held for some time before being sent.
+   *
+   * @see GatewaySenderFactory#setGetTransactionEventsFromQueueRetries(int) for more details.
    */
   int GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES =
       Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "get-transaction-events-from-queue-retries",
           4);
-
+  /**
+   * Milliseconds to wait before retrying to get events for a transaction from the
+   * gateway sender queue when group-transaction-events is true.
+   */
   int GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS =
       Integer.getInteger(
           GeodeGlossary.GEMFIRE_PREFIX + "get-transaction-events-from-queue-wait-time-ms",
           1);
 
+  /**
+   * When group-transaction-events is set to true and the gateway sender is stopped,
+   * there is a possibility that the stopping occurs such that for a transaction,
+   * not all events belonging to it reach the queue. The reason would be that
+   * some reach the queue right before the sender is stopped and the rest do not make
+   * it to the queue because the sender is just stopped.
+   * In order to prevent that the queue contains incomplete transactions
+   * due to the above circumstance, this parameter allows for a grace period
+   * of the number of milliseconds set in it before the gateway sender is
+   * actually stopped, in which only events to complete transactions are put in the queue.
+   * Other events received in this period would be dropped.
+   */
   int TIME_TO_COMPLETE_TRANSACTIONS_BEFORE_STOP_MS =
       Integer.getInteger(
           GeodeGlossary.GEMFIRE_PREFIX + "time-to-complete-transactions-before-stop-ms",
@@ -430,6 +436,14 @@ public interface GatewaySender {
    *
    */
   boolean mustGroupTransactionEvents();
+
+  /**
+   * Returns getTransactionEventsFromQueueRetries int property for this GatewaySender.
+   *
+   * @return getTransactionEventsFromQueueRetries int property for this GatewaySender
+   *
+   */
+  int getGetTransactionEventsFromQueueRetries();
 
   /**
    * Returns the number of dispatcher threads working for this <code>GatewaySender</code>. Default
