@@ -28,6 +28,7 @@ import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.TypeMismatchException;
+import org.apache.geode.cache.query.internal.index.IndexManager;
 
 /**
  * Class Description
@@ -110,7 +111,7 @@ public class CompiledIndexOperation extends AbstractCompiledValue implements Map
       if (((Map<?, ?>) rcvr).containsKey(index)) {
         return ((Map) rcvr).get(index);
       }
-      throw new UnsupportedOperationException("Map does not contain the key");
+      return IndexManager.NULL;
     }
     if ((rcvr instanceof List) || rcvr.getClass().isArray() || (rcvr instanceof String)) {
       if (!(index instanceof Integer)) {

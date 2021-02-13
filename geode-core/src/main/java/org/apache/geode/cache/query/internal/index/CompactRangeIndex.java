@@ -1554,10 +1554,8 @@ public class CompactRangeIndex extends AbstractIndex {
     private void applyProjection(boolean add, ExecutionContext context)
         throws FunctionDomainException, TypeMismatchException, NameResolutionException,
         QueryInvocationTargetException, IMQException {
-      Object indexKey = null;
-      try {
-        indexKey = indexedExpr.evaluate(context);
-      } catch (UnsupportedOperationException e) {
+      Object indexKey = indexedExpr.evaluate(context);
+      if (IndexManager.NULL.equals(indexKey)) {
         return;
       }
       if (indexKey == null) {
