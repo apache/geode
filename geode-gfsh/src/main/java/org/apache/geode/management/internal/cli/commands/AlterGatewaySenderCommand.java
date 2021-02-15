@@ -29,7 +29,6 @@ import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
-import org.apache.geode.lang.Identifiable;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
@@ -223,13 +222,19 @@ public class AlterGatewaySenderCommand extends SingleGfshCommand {
     }
 
     Set<String> groups = ccService.getGroups();
+    gwsender = null;
 
     for (String group : groups) {
-      gwsender =
-          Identifiable.find(ccService.getCacheConfig(group).getGatewaySenders(), gwId);
-      if (gwsender != null) {
-        return gwsender;
+      List<CacheConfig.GatewaySender> gwSendersList =
+          ccService.getCacheConfig(group).getGatewaySenders();
+      if (gwSendersList.isEmpty())
+        continue;
+
+      for (CacheConfig.GatewaySender sender : gwSendersList) {
+        if (sender.getId().equals(gwId))
+          return sender;
       }
+
     }
     return gwsender;
   }

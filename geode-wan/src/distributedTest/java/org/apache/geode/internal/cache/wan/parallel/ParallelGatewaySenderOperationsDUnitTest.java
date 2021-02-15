@@ -95,6 +95,9 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
   @Before
   public void setUp() throws Exception {
     addIgnoredException("Broken pipe||Unexpected IOException");
+    addIgnoredException("Connection reset");
+    addIgnoredException("Connection refused");
+    addIgnoredException("could not get remote locator information");
   }
 
   @Test(timeout = 300_000)

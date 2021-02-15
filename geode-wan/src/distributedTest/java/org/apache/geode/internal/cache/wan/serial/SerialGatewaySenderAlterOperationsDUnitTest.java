@@ -119,6 +119,13 @@ public class SerialGatewaySenderAlterOperationsDUnitTest extends CacheTestCase {
 
   @Before
   public void setUp() {
+    addIgnoredException("Broken pipe");
+    addIgnoredException("Connection refused");
+    addIgnoredException("Connection reset");
+    addIgnoredException("could not get remote locator information");
+    addIgnoredException("Software caused connection abort");
+    addIgnoredException("Unexpected IOException");
+
     className = getClass().getSimpleName();
 
     vm0 = getVM(0);
@@ -129,13 +136,6 @@ public class SerialGatewaySenderAlterOperationsDUnitTest extends CacheTestCase {
     vm5 = getVM(5);
     vm6 = getVM(6);
     vm7 = getVM(7);
-
-    addIgnoredException("Broken pipe");
-    addIgnoredException("Connection refused");
-    addIgnoredException("Connection reset");
-    addIgnoredException("could not get remote locator information");
-    addIgnoredException("Software caused connection abort");
-    addIgnoredException("Unexpected IOException");
 
     // Stopping the gateway closed the region, which causes this exception to get logged
     addIgnoredException(RegionDestroyedException.class);

@@ -62,6 +62,14 @@ public class AlterGatewaySenderCommandDUnitTest {
   private static MemberVM server2;
   private final IgnoredException exln = IgnoredException
       .addIgnoredException("could not get remote locator information for remote site");
+  private final IgnoredException exln1 = IgnoredException
+      .addIgnoredException("Connection reset");
+  private final IgnoredException exln2 = IgnoredException
+      .addIgnoredException("Broken pipe");
+  private final IgnoredException exln3 = IgnoredException
+      .addIgnoredException("Connection refused");
+  private final IgnoredException exln4 = IgnoredException
+      .addIgnoredException("Unexpected IOException");
 
   @BeforeClass
   public static void beforeClass() throws Exception {
@@ -92,6 +100,10 @@ public class AlterGatewaySenderCommandDUnitTest {
     gfsh.executeAndAssertThat(DESTROY + " --if-exists").statusIsSuccess();
     gfsh.executeAndAssertThat(DESTROY_PARALLEL + " --if-exists").statusIsSuccess();
     exln.remove();
+    exln1.remove();
+    exln2.remove();
+    exln3.remove();
+    exln4.remove();
   }
 
   @Test
