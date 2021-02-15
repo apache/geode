@@ -62,6 +62,7 @@ public class LocatorHelper {
                     .getAllServerLocatorsInfo();
             Set<String> alllocators = allServerLocatorsInfo.get(distributedSystemId);
             alllocators.remove(existingLocator.toString());
+            existingValue.add(locator);
             addServerLocator(distributedSystemId, locatorListener, locator);
             locatorListener.locatorJoined(distributedSystemId, locator, sourceLocator);
             return true;
