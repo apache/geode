@@ -484,9 +484,9 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
 
     createCacheInVMs(lnPort, vm4, vm5);
     vm4.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, true, null, true,
-        true, 40));
+        true, -1));
     vm5.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, true, null, true,
-        true, 40));
+        true, -1));
 
     createReceiverCustomerOrderShipmentPR(vm2);
 
@@ -597,9 +597,9 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
 
     createCacheInVMs(lnPort, vm4, vm5);
     vm4.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, true, null, true,
-        true, 40));
+        true, -1));
     vm5.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, true, null, true,
-        true, 40));
+        true, -1));
 
     createReceiverCustomerOrderShipmentPR(vm2);
 

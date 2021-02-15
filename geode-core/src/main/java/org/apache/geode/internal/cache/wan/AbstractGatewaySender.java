@@ -571,7 +571,18 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   @Override
   public int getGetTransactionEventsFromQueueRetries() {
-    return this.getTransactionEventsFromQueueRetries;
+    int retries = this.getTransactionEventsFromQueueRetries;
+    // In case we are prestopping allow for some extra retries given that
+    // the last batches are about to be sent and there is no
+    // risk of filling up the queues with a lot of batches unsent.
+    if (isPreStopping) {
+      if (retries == 0) {
+        retries = 20;
+      } else {
+        retries = retries * 10;
+      }
+    }
+    return retries;
   }
 
   public boolean isForInternalUse() {

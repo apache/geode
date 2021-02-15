@@ -365,10 +365,10 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     int batchSize = 10;
     vm4.invoke(
         () -> WANTestBase.createSender("ln", 2, false, 100, batchSize, false, true, null, true,
-            groupTransactionEvents, 40));
+            groupTransactionEvents, -1));
     vm5.invoke(
         () -> WANTestBase.createSender("ln", 2, false, 100, batchSize, false, true, null, true,
-            groupTransactionEvents, 40));
+            groupTransactionEvents, -1));
 
 
     vm2.invoke(() -> WANTestBase.createReplicatedRegion(regionName, null, isOffHeap()));
@@ -475,10 +475,10 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     int batchSize = 10;
     vm4.invoke(
         () -> WANTestBase.createSender("ln", 2, false, 100, batchSize, false, true, null, true,
-            groupTransactionEvents, 40));
+            groupTransactionEvents, -1));
     vm5.invoke(
         () -> WANTestBase.createSender("ln", 2, false, 100, batchSize, false, true, null, true,
-            groupTransactionEvents, 40));
+            groupTransactionEvents, -1));
 
 
     vm2.invoke(() -> stopReceivers());
