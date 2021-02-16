@@ -223,7 +223,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   /**
    * This is the latest view (ordered list of IDs) that has been installed
    *
-   * All accesses to this object are protected via {@link #latestViewLock}
+   * Writing to this object is protected via {@link #latestViewLock}
    */
   private volatile MembershipView<ID> latestView = new MembershipView<>();
 
@@ -263,7 +263,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
    *
    * Members are removed after {@link #SHUNNED_SUNSET} seconds have passed.
    *
-   * Accesses to this list needs to be under the read or write lock of {@link #latestViewLock}
+   * Writing to this list needs to be under the write lock of {@link #latestViewLock}
    *
    * @see System#currentTimeMillis()
    */
@@ -273,6 +273,9 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   /**
    * Members that have sent a shutdown message. This is used to suppress suspect processing that
    * otherwise becomes pretty aggressive when a member is shutting down.
+   *
+   * Accesses to this map should be synchronized on the map to avoid concurrent
+   * modification exceptions
    */
   private final Map<ID, Object> shutdownMembers = new BoundedLinkedHashMap<>();
 
@@ -281,7 +284,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
    * printed. Contents of this list are cleared at the same time they are removed from
    * {@link #shunnedMembers}.
    *
-   * Accesses to this list needs to be under the read or write lock of {@link #latestViewLock}
+   * Writing to this list needs to be under the write lock of {@link #latestViewLock}
    */
   private final HashSet<ID> shunnedAndWarnedMembers = new HashSet<>();
   /**
@@ -295,7 +298,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
    * {@link #surpriseMemberTimeout} milliseconds have passed, a view containing the member has not
    * arrived, the member is removed from membership and member-left notification is performed.
    * <p>
-   * > Accesses to this list needs to be under the read or write lock of {@link #latestViewLock}
+   * > Writing to this list needs to be under the write lock of {@link #latestViewLock}
    *
    * @see System#currentTimeMillis()
    */
