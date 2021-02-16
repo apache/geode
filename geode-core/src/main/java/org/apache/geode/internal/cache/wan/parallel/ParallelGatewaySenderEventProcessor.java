@@ -138,6 +138,7 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
         long start = getSender().getStatistics().startTime();
         try {
           if (condition != null) {
+            logger.info("Checking if isThereEventsMatching for event: {}", gatewayQueueEvent);
             if (!((ParallelGatewaySenderQueue) this.queue).isThereEventsMatching(gatewayQueueEvent,
                 condition)) {
               return false;

@@ -365,11 +365,10 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     int batchSize = 10;
     vm4.invoke(
         () -> WANTestBase.createSender("ln", 2, false, 100, batchSize, false, true, null, true,
-            groupTransactionEvents, -1));
+            groupTransactionEvents, 40));
     vm5.invoke(
         () -> WANTestBase.createSender("ln", 2, false, 100, batchSize, false, true, null, true,
-            groupTransactionEvents, -1));
-
+            groupTransactionEvents, 40));
 
     vm2.invoke(() -> WANTestBase.createReplicatedRegion(regionName, null, isOffHeap()));
 
@@ -397,6 +396,12 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
 
     System.out.println("Stopping sender");
     stopSenderInVMsAsync("ln", vm4, vm5);
+    // Senders must be stopped sequentially. Otherwise, we could have incomplete transactions
+    // in the queue because there could be events stored in tmpQueuedEvents while the
+    // sender is being stopped. Those will not have been dropped and therefore not
+    // sent to the other sender to remove them from the queue.
+    // vm4.invoke(() -> stopSender("ln"));
+    // vm5.invoke(() -> stopSender("ln"));
     System.out.println("Stopped sender");
 
     inv1.await();
@@ -408,9 +413,10 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     // we can assume that replication has finished.
     int batchesReceived = (vm2.invoke(() -> getReceiverStats())).get(0);
     while (true) {
+      int oldBatchesReceived = batchesReceived;
       Thread.sleep(1000);
-      int newBatchesReceived = (vm2.invoke(() -> getReceiverStats())).get(0);
-      if (batchesReceived == newBatchesReceived) {
+      batchesReceived = (vm2.invoke(() -> getReceiverStats())).get(0);
+      if (batchesReceived == oldBatchesReceived) {
         break;
       }
     }
@@ -423,7 +429,17 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     System.out.println("v4List.get(0):" + v4List.get(0));
     System.out.println("v5List.get(0):" + v5List.get(0));
 
+    // Wait for events to replicate: when region size does not change
+    // we can assume that replication has finished.
     int regionSize = vm2.invoke(() -> getRegionSize(regionName));
+    while (true) {
+      int oldRegionSize = regionSize;
+      Thread.sleep(1000);
+      regionSize = vm2.invoke(() -> getRegionSize(regionName));
+      if (regionSize == oldRegionSize) {
+        break;
+      }
+    }
 
     // Only complete transactions (11 entries each) must be replicated
     assertEquals(0, regionSize % eventsPerTransaction);
@@ -444,19 +460,43 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
 
     assertEquals(0, v4List.get(0) + v5List.get(0));
 
+    // Wait for events to replicate: when batches received does not change
+    // we can assume that replication has finished.
+    batchesReceived = (vm2.invoke(() -> getReceiverStats())).get(0);
+    while (true) {
+      int oldBatchesReceived = batchesReceived;
+      Thread.sleep(1000);
+      batchesReceived = (vm2.invoke(() -> getReceiverStats())).get(0);
+      if (batchesReceived == oldBatchesReceived) {
+        break;
+      }
+    }
+
+    System.out.println("batchesReceived: " + batchesReceived);
+
+    // Wait for events to replicate: when region size does not change
+    // we can assume that replication has finished.
     regionSize = vm2.invoke(() -> getRegionSize(regionName));
+    while (true) {
+      int oldRegionSize = regionSize;
+      Thread.sleep(1000);
+      regionSize = vm2.invoke(() -> getRegionSize(regionName));
+      if (regionSize == oldRegionSize) {
+        break;
+      }
+    }
 
     System.out.println("regionSize: " + regionSize);
 
-    // Only complete transactions (11 events) must be replicated
-    assertEquals(0, regionSize % eventsPerTransaction);
+    System.out.println("v4List.get(0):" + v4List.get(0));
+    System.out.println("v5List.get(0):" + v5List.get(0));
 
     // batches with incomplete transactions must be 0
     assertEquals(0, (int) v4List.get(13));
     assertEquals(0, (int) v5List.get(13));
 
-    System.out.println("v4List.get(0):" + v4List.get(0));
-    System.out.println("v5List.get(0):" + v5List.get(0));
+    // Only complete transactions (11 events) must be replicated
+    assertEquals(0, regionSize % eventsPerTransaction);
   }
 
   @Test
@@ -475,10 +515,10 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     int batchSize = 10;
     vm4.invoke(
         () -> WANTestBase.createSender("ln", 2, false, 100, batchSize, false, true, null, true,
-            groupTransactionEvents, -1));
+            groupTransactionEvents, 40));
     vm5.invoke(
         () -> WANTestBase.createSender("ln", 2, false, 100, batchSize, false, true, null, true,
-            groupTransactionEvents, -1));
+            groupTransactionEvents, 20));
 
 
     vm2.invoke(() -> stopReceivers());
@@ -509,6 +549,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
 
     System.out.println("Stopping sender");
     stopSenderInVMsAsync("ln", vm4, vm5);
+    System.out.println("Stopped sender");
 
     inv1.await();
 
@@ -522,17 +563,6 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
 
     System.out.println("v4List.get(0):" + v4List.get(0));
     System.out.println("v5List.get(0):" + v5List.get(0));
-
-    int regionSize = vm2.invoke(() -> getRegionSize(regionName));
-
-    // Only complete transactions (11 entries each) must be replicated
-    assertEquals(0, regionSize % eventsPerTransaction);
-
-    // batches with incomplete transactions must be 0
-    assertEquals(0, (int) v4List.get(13));
-    assertEquals(0, (int) v5List.get(13));
-
-    System.out.println("regionSize: " + regionSize);
 
     System.out.println("Starting receiver");
     vm2.invoke(() -> startReceivers());
@@ -550,9 +580,24 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     // we can assume that replication has finished.
     int batchesReceived = (vm2.invoke(() -> getReceiverStats())).get(0);
     while (true) {
+      int oldBatchesReceived = batchesReceived;
       Thread.sleep(1000);
-      int newBatchesReceived = (vm2.invoke(() -> getReceiverStats())).get(0);
-      if (batchesReceived == newBatchesReceived) {
+      batchesReceived = (vm2.invoke(() -> getReceiverStats())).get(0);
+      if (batchesReceived == oldBatchesReceived) {
+        break;
+      }
+    }
+
+    System.out.println("batchesReceived: " + batchesReceived);
+
+    // Wait for events to replicate: when region size does not change
+    // we can assume that replication has finished.
+    int regionSize = vm2.invoke(() -> getRegionSize(regionName));
+    while (true) {
+      int oldRegionSize = regionSize;
+      Thread.sleep(1000);
+      regionSize = vm2.invoke(() -> getRegionSize(regionName));
+      if (regionSize == oldRegionSize) {
         break;
       }
     }
@@ -561,15 +606,15 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
 
     System.out.println("regionSize: " + regionSize);
 
-    // Only complete transactions (11 events) must be replicated
-    assertEquals(0, regionSize % eventsPerTransaction);
+    System.out.println("v4List.get(0):" + v4List.get(0));
+    System.out.println("v5List.get(0):" + v5List.get(0));
 
     // batches with incomplete transactions must be 0
     assertEquals(0, (int) v4List.get(13));
     assertEquals(0, (int) v5List.get(13));
 
-    System.out.println("v4List.get(0):" + v4List.get(0));
-    System.out.println("v5List.get(0):" + v5List.get(0));
+    // Only complete transactions (11 events) must be replicated
+    assertEquals(0, regionSize % eventsPerTransaction);
   }
 
 

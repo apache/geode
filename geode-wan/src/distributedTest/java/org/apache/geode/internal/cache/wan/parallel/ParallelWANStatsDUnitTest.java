@@ -484,9 +484,9 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
 
     createCacheInVMs(lnPort, vm4, vm5);
     vm4.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, true, null, true,
-        true, -1));
+        true, 40));
     vm5.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, true, null, true,
-        true, -1));
+        true, 40));
 
     createReceiverCustomerOrderShipmentPR(vm2);
 
@@ -520,7 +520,9 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     vm4.invoke(() -> await()
         .until(() -> WANTestBase.getSenderStats("ln", -1).get(4) > 0));
 
+    System.out.println("Stopping sender");
     stopSenderInVMsAsync("ln", vm4, vm5);
+    System.out.println("Stopped sender");
 
     inv1.await();
     int entries =
@@ -533,32 +535,58 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     // we can assume that replication has finished.
     int batchesReceived = (vm2.invoke(() -> getReceiverStats())).get(0);
     while (true) {
+      int oldBatchesReceived = batchesReceived;
       Thread.sleep(1000);
-      int newBatchesReceived = (vm2.invoke(() -> getReceiverStats())).get(0);
-      if (batchesReceived == newBatchesReceived) {
+      batchesReceived = (vm2.invoke(() -> getReceiverStats())).get(0);
+      if (batchesReceived == oldBatchesReceived) {
         break;
       }
     }
+
+    System.out.println("batchesReceived after stop: " + batchesReceived);
 
     ArrayList<Integer> v4List =
         (ArrayList<Integer>) vm4.invoke(() -> WANTestBase.getSenderStats("ln", -1));
     ArrayList<Integer> v5List =
         (ArrayList<Integer>) vm5.invoke(() -> WANTestBase.getSenderStats("ln", -1));
 
+    // Wait for events to replicate: when region size does not change
+    // we can assume that replication has finished.
     int orderRegionSize = vm2.invoke(() -> getRegionSize(orderRegionName));
-    int shipmentRegionSize = vm2.invoke(() -> getRegionSize(shipmentRegionName));
+    while (true) {
+      Thread.sleep(1000);
+      int newRegionSize = vm2.invoke(() -> getRegionSize(orderRegionName));
+      if (orderRegionSize == newRegionSize) {
+        break;
+      }
+    }
 
-    // Only complete transactions (1 order + 10 shipments) must be replicated
-    assertEquals(10, shipmentRegionSize / orderRegionSize);
-    assertEquals(0, shipmentRegionSize % orderRegionSize);
+    // Wait for events to replicate: when region size does not change
+    // we can assume that replication has finished.
+    int shipmentRegionSize = vm2.invoke(() -> getRegionSize(shipmentRegionName));
+    while (true) {
+      Thread.sleep(1000);
+      int newRegionSize = vm2.invoke(() -> getRegionSize(shipmentRegionName));
+      if (shipmentRegionSize == newRegionSize) {
+        break;
+      }
+    }
+
+    System.out.println("orderRegionSize: " + shipmentRegionSize);
+    System.out.println("shipmentRegionSize: " + shipmentRegionSize);
+
+    System.out.println("v4List.get(0): " + v4List.get(0));
+    System.out.println("v5List.get(0): " + v5List.get(0));
 
     // batches with incomplete transactions must be 0
     assertEquals(0, (int) v4List.get(13));
     assertEquals(0, (int) v5List.get(13));
 
-    System.out.println("v4List.get(0): " + v4List.get(0));
-    System.out.println("v5List.get(0): " + v5List.get(0));
+    // Only complete transactions (1 order + 10 shipments) must be replicated
+    assertEquals(10, shipmentRegionSize / orderRegionSize);
+    assertEquals(0, shipmentRegionSize % orderRegionSize);
 
+    System.out.println("Starting sender");
     startSenderInVMsAsync("ln", vm4, vm5);
 
     vm4.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
@@ -571,19 +599,55 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
 
     assertEquals(0, v4List.get(0) + v5List.get(0));
 
-    orderRegionSize = vm2.invoke(() -> getRegionSize(orderRegionName));
-    shipmentRegionSize = vm2.invoke(() -> getRegionSize(shipmentRegionName));
+    // Wait for events to replicate: when batches received does not change
+    // we can assume that replication has finished.
+    batchesReceived = (vm2.invoke(() -> getReceiverStats())).get(0);
+    while (true) {
+      int oldBatchesReceived = batchesReceived;
+      Thread.sleep(1000);
+      batchesReceived = (vm2.invoke(() -> getReceiverStats())).get(0);
+      if (batchesReceived == oldBatchesReceived) {
+        break;
+      }
+    }
 
-    // Only complete transactions (1 order + 10 shipments) must be replicated
-    assertEquals(10, shipmentRegionSize / orderRegionSize);
-    assertEquals(0, shipmentRegionSize % orderRegionSize);
+    System.out.println("batchesReceived after restart: " + batchesReceived);
+
+    // Wait for events to replicate: when region size does not change
+    // we can assume that replication has finished.
+    orderRegionSize = vm2.invoke(() -> getRegionSize(orderRegionName));
+    while (true) {
+      Thread.sleep(1000);
+      int newRegionSize = vm2.invoke(() -> getRegionSize(orderRegionName));
+      if (orderRegionSize == newRegionSize) {
+        break;
+      }
+    }
+
+    // Wait for events to replicate: when region size does not change
+    // we can assume that replication has finished.
+    shipmentRegionSize = vm2.invoke(() -> getRegionSize(shipmentRegionName));
+    while (true) {
+      Thread.sleep(1000);
+      int newRegionSize = vm2.invoke(() -> getRegionSize(shipmentRegionName));
+      if (shipmentRegionSize == newRegionSize) {
+        break;
+      }
+    }
+
+    System.out.println("orderRegionSize after restart: " + shipmentRegionSize);
+    System.out.println("shipmentRegionSize after restart: " + shipmentRegionSize);
+
+    System.out.println("v4List.get(0): " + v4List.get(0));
+    System.out.println("v5List.get(0): " + v5List.get(0));
 
     // batches with incomplete transactions must be 0
     assertEquals(0, (int) v4List.get(13));
     assertEquals(0, (int) v5List.get(13));
 
-    System.out.println("v4List.get(0): " + v4List.get(0));
-    System.out.println("v5List.get(0): " + v5List.get(0));
+    // Only complete transactions (1 order + 10 shipments) must be replicated
+    assertEquals(10, shipmentRegionSize / orderRegionSize);
+    assertEquals(0, shipmentRegionSize % orderRegionSize);
   }
 
   @Test
@@ -597,9 +661,9 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
 
     createCacheInVMs(lnPort, vm4, vm5);
     vm4.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, true, null, true,
-        true, -1));
+        true, 40));
     vm5.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, true, null, true,
-        true, -1));
+        true, 20));
 
     createReceiverCustomerOrderShipmentPR(vm2);
 
@@ -637,6 +701,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
 
     System.out.println("Stopping sender");
     stopSenderInVMsAsync("ln", vm4, vm5);
+    System.out.println("Stopped sender");
 
     inv1.await();
     int entries =
@@ -672,25 +737,50 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     // we can assume that replication has finished.
     int batchesReceived = (vm2.invoke(() -> getReceiverStats())).get(0);
     while (true) {
+      int oldBatchesReceived = batchesReceived;
       Thread.sleep(1000);
-      int newBatchesReceived = (vm2.invoke(() -> getReceiverStats())).get(0);
-      if (batchesReceived == newBatchesReceived) {
+      batchesReceived = (vm2.invoke(() -> getReceiverStats())).get(0);
+      if (batchesReceived == oldBatchesReceived) {
         break;
       }
     }
 
-    int orderRegionSize = vm2.invoke(() -> getRegionSize(orderRegionName));
-    int shipmentRegionSize = vm2.invoke(() -> getRegionSize(shipmentRegionName));
+    System.out.println("batchesReceived: " + batchesReceived);
 
-    assertEquals(10, shipmentRegionSize / orderRegionSize);
-    assertEquals(0, shipmentRegionSize % orderRegionSize);
+    // Wait for events to replicate: when region size does not change
+    // we can assume that replication has finished.
+    int orderRegionSize = vm2.invoke(() -> getRegionSize(orderRegionName));
+    while (true) {
+      Thread.sleep(1000);
+      int newRegionSize = vm2.invoke(() -> getRegionSize(orderRegionName));
+      if (orderRegionSize == newRegionSize) {
+        break;
+      }
+    }
+
+    // Wait for events to replicate: when region size does not change
+    // we can assume that replication has finished.
+    int shipmentRegionSize = vm2.invoke(() -> getRegionSize(shipmentRegionName));
+    while (true) {
+      Thread.sleep(1000);
+      int newRegionSize = vm2.invoke(() -> getRegionSize(shipmentRegionName));
+      if (shipmentRegionSize == newRegionSize) {
+        break;
+      }
+    }
+
+    System.out.println("orderRegionSize after restart: " + shipmentRegionSize);
+    System.out.println("shipmentRegionSize after restart: " + shipmentRegionSize);
+
+    System.out.println("v4List.get(0): " + v4List.get(0));
+    System.out.println("v5List.get(0): " + v5List.get(0));
 
     // batches with incomplete transactions
     assertEquals(0, (int) v4List.get(13));
     assertEquals(0, (int) v5List.get(13));
 
-    System.out.println("v4List.get(0): " + v4List.get(0));
-    System.out.println("v5List.get(0): " + v5List.get(0));
+    assertEquals(10, shipmentRegionSize / orderRegionSize);
+    assertEquals(0, shipmentRegionSize % orderRegionSize);
 
     // Check the entries replicated according to the batches distributed
     int batchesDistributed = v4List.get(4) + v5List.get(4);

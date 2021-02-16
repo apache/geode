@@ -1339,6 +1339,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
     if (batch.size() > 0) {
       peekEventsFromIncompleteTransactions(batch, prQ);
+      logger.info("Sending batch of size: {}, {}", batch.size(), batch);
     }
 
 
@@ -1420,6 +1421,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       logger.warn("Not able to retrieve all events for transactions: {} after {} tries of {}ms",
           incompleteTransactionIdsInBatch, retries, GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS);
       stats.incBatchesWithIncompleteTransactions();
+      logger.info("Incomplete batch: {}", batch);
     }
   }
 

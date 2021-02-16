@@ -995,6 +995,9 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     @Released
     EntryEventImpl clonedEvent = new EntryEventImpl(event, false);
     boolean freeClonedEvent = true;
+    // logger.info("In AbstractGatewaySender::distribute(). event: {}, isLast: {}",
+    // clonedEvent.getEventId(),
+    // isLastEventInTransaction);
     try {
 
       final GatewaySenderStats stats = getStatistics();
@@ -1092,6 +1095,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
               if (isDebugEnabled) {
                 logger.debug("Event : {} is added to TempQueue", clonedEvent);
               }
+              logger.info("Event : {} is added to TempQueue", clonedEvent);
               return;
             }
           }
@@ -1128,15 +1132,26 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
           // In case the sender is about to be stopped, the event will only
           // be queued if there is any event in the queue with the same
           // transactionId as the one of this event
-          if (isPreStopping && mustGroupTransactionEvents() && event.getTransactionId() != null) {
+          if (isPreStopping && mustGroupTransactionEvents()
+              && clonedEvent.getTransactionId() != null) {
             hasSameTransactionId =
                 x -> x instanceof GatewaySenderEventImpl && clonedEvent.getTransactionId() != null
                     && clonedEvent.getTransactionId()
                         .equals(((GatewaySenderEventImpl) x).getTransactionId());
-          }
-          if (!ev.enqueueEvent(operation, clonedEvent, substituteValue, isLastEventInTransaction,
-              hasSameTransactionId)) {
-            recordDroppedEvent(event);
+            if (!ev.enqueueEvent(operation, clonedEvent, substituteValue, isLastEventInTransaction,
+                hasSameTransactionId)) {
+              recordDroppedEvent(event);
+              logger.info("Dropping event {} during preStopping. isLast: {}", clonedEvent,
+                  isLastEventInTransaction);
+            } else {
+              logger.info("Queueing event {} during preStopping. isLast: {}", clonedEvent,
+                  isLastEventInTransaction);
+            }
+          } else {
+            ev.enqueueEvent(operation, clonedEvent, substituteValue, isLastEventInTransaction,
+                null);
+            logger.info("Queueing event {} while started. isLast: {}", clonedEvent,
+                isLastEventInTransaction);
           }
         } catch (CancelException e) {
           logger.debug("caught cancel exception", e);
@@ -1168,8 +1183,10 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     }
     if (this.eventProcessor != null) {
       this.eventProcessor.registerEventDroppedInPrimaryQueue(event);
+      logger.info("Recording dropped event: {}", event);
     } else {
       tmpDroppedEvents.add(event);
+      logger.info("Adding event to tmpDroppedEvents: {}", event);
       if (logger.isDebugEnabled()) {
         logger.debug("added to tmpDroppedEvents event: {}", event);
       }

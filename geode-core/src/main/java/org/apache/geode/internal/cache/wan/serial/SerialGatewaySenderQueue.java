@@ -449,6 +449,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     }
     if (batch.size() > 0) {
       peekEventsFromIncompleteTransactions(batch, lastKey);
+      logger.info("Sending batch of size: {}, {}", batch.size(), batch);
     }
 
     if (isTraceEnabled) {
@@ -505,6 +506,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       logger.warn("Not able to retrieve all events for transactions: {} after {} tries of {}ms",
           incompleteTransactionIdsInBatch, retries, GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS);
       stats.incBatchesWithIncompleteTransactions();
+      logger.info("Incomplete batch: {}", batch);
     }
   }
 
