@@ -109,7 +109,6 @@ import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayEventSubstitutionFilter;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewaySender;
-import org.apache.geode.cache.wan.GatewaySenderState;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.Role;
 import org.apache.geode.internal.Assert;
@@ -1437,7 +1436,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     }
 
     // gateway-sender state
-    if (generateDefaults() || sender.getState() != GatewaySenderState.RUNNING) {
+    if (generateDefaults() || sender.getState() != null) {
       atts.addAttribute("", "", STATE, "", sender.getState().getState());
     }
 

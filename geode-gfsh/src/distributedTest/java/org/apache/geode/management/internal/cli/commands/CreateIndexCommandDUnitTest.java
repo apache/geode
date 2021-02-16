@@ -87,6 +87,7 @@ public class CreateIndexCommandDUnitTest {
         .containsExactly("Index successfully created");
     commandResultAssert.hasInfoSection("groupStatus")
         .hasOutput().isEqualTo("Cluster configuration for group 'group2' is updated.");
+
     // make sure cluster config is updated correctly
     locator.invoke(() -> {
       InternalConfigurationPersistenceService configurationService =
