@@ -47,14 +47,14 @@
   </dependencyManagement>
   <dependencies>
     <dependency>
-      <groupId>org.apache.geode</groupId>
-      <artifactId>geode-common</artifactId>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-api</artifactId>
       <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.geode</groupId>
+      <artifactId>geode-common</artifactId>
+      <scope>runtime</scope>
     </dependency>
   </dependencies>
 </project>

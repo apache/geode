@@ -18,7 +18,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -29,10 +31,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.GemFireConfigException;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.AbstractLauncher;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.ServerLauncher;
+import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.internal.process.ProcessStreamReader;
 import org.apache.geode.internal.util.IOUtils;
@@ -176,7 +180,10 @@ public class StartServerCommand extends OfflineGfshCommand {
           help = CliStrings.START_SERVER__PASSWORD__HELP) String passwordToUse,
       @CliOption(key = CliStrings.START_SERVER__REDIRECT_OUTPUT, unspecifiedDefaultValue = "false",
           specifiedDefaultValue = "true",
-          help = CliStrings.START_SERVER__REDIRECT_OUTPUT__HELP) final Boolean redirectOutput)
+          help = CliStrings.START_SERVER__REDIRECT_OUTPUT__HELP) final Boolean redirectOutput,
+      @CliOption(key = CliStrings.START_SERVER_EXPERIMENTAL,
+          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
+          help = CliStrings.START_SERVER_EXPERIMENTAL_HELP) final Boolean experimental)
       throws Exception {
     // NOTICE: keep the parameters in alphabetical order based on their CliStrings.START_SERVER_*
     // text
@@ -209,7 +216,8 @@ public class StartServerCommand extends OfflineGfshCommand {
         redisPassword, messageTimeToLive, offHeapMemorySize, gemfirePropertiesFile, rebalance,
         gemfireSecurityPropertiesFile, serverBindAddress, serverPort, socketBufferSize,
         springXmlLocation, statisticsArchivePathname, requestSharedConfiguration, startRestApi,
-        httpServicePort, httpServiceBindAddress, userName, passwordToUse, redirectOutput);
+        httpServicePort, httpServiceBindAddress, userName, passwordToUse, redirectOutput,
+        experimental);
   }
 
   ResultModel doStartServer(String memberName, Boolean assignBuckets, String bindAddress,
@@ -228,7 +236,7 @@ public class StartServerCommand extends OfflineGfshCommand {
       Integer serverPort, Integer socketBufferSize, String springXmlLocation,
       String statisticsArchivePathname, Boolean requestSharedConfiguration, Boolean startRestApi,
       String httpServicePort, String httpServiceBindAddress, String userName, String passwordToUse,
-      Boolean redirectOutput)
+      Boolean redirectOutput, Boolean experimental)
       throws MalformedObjectNameException, IOException, InterruptedException {
     cacheXmlPathname = CliUtils.resolvePathname(cacheXmlPathname);
 
@@ -340,7 +348,7 @@ public class StartServerCommand extends OfflineGfshCommand {
 
     String[] serverCommandLine = createStartServerCommandLine(serverLauncher, gemfirePropertiesFile,
         gemfireSecurityPropertiesFile, gemfireProperties, classpath, includeSystemClasspath,
-        jvmArgsOpts, disableExitWhenOutOfMemory, initialHeap, maxHeap);
+        jvmArgsOpts, disableExitWhenOutOfMemory, initialHeap, maxHeap, experimental);
 
     if (getGfsh().getDebug()) {
       getGfsh().logInfo(StringUtils.join(serverCommandLine, StringUtils.SPACE), null);
@@ -440,14 +448,17 @@ public class StartServerCommand extends OfflineGfshCommand {
       final File gemfirePropertiesFile, final File gemfireSecurityPropertiesFile,
       final Properties gemfireProperties, final String userClasspath,
       final Boolean includeSystemClasspath, final String[] jvmArgsOpts,
-      final Boolean disableExitWhenOutOfMemory, final String initialHeap, final String maxHeap)
-      throws MalformedObjectNameException {
+      final Boolean disableExitWhenOutOfMemory, final String initialHeap, final String maxHeap,
+      final boolean experimental) throws MalformedObjectNameException {
     List<String> commandLine = new ArrayList<>();
 
     commandLine.add(StartMemberUtils.getJavaPath());
     commandLine.add("-server");
-    commandLine.add("-classpath");
-    commandLine.add(getServerClasspath(Boolean.TRUE.equals(includeSystemClasspath), userClasspath));
+    if (!experimental) {
+      commandLine.add("-classpath");
+      commandLine
+          .add(getServerClasspath(Boolean.TRUE.equals(includeSystemClasspath), userClasspath));
+    }
 
     StartMemberUtils.addCurrentLocators(this, commandLine, gemfireProperties);
     StartMemberUtils.addGemFirePropertyFile(commandLine, gemfirePropertiesFile);
@@ -465,6 +476,9 @@ public class StartServerCommand extends OfflineGfshCommand {
     StartMemberUtils.addInitialHeap(commandLine, initialHeap);
     StartMemberUtils.addMaxHeap(commandLine, maxHeap);
 
+    if (experimental) {
+      commandLine.add("-Djboss.modules.system.pkgs=javax.management,java.lang.management");
+    }
     commandLine.add(
         "-D".concat(AbstractLauncher.SIGNAL_HANDLER_REGISTRATION_SYSTEM_PROPERTY.concat("=true")));
     commandLine.add("-Djava.awt.headless=true");
@@ -473,7 +487,9 @@ public class StartServerCommand extends OfflineGfshCommand {
     if (launcher.isRedirectingOutput()) {
       addOutputRedirect(commandLine);
     }
-    commandLine.add(ServerLauncher.class.getName());
+
+    commandLine.addAll(resolveLauncherCommand(experimental));
+
     commandLine.add(ServerLauncher.Command.START.getName());
 
     if (StringUtils.isNotBlank(launcher.getMemberName())) {
@@ -568,6 +584,35 @@ public class StartServerCommand extends OfflineGfshCommand {
     }
 
     return commandLine.toArray(new String[] {});
+  }
+
+  private List<String> resolveLauncherCommand(boolean experimental) {
+    List<String> commandLine = new LinkedList<>();
+    if (experimental) {
+      commandLine.add("-jar");
+      final String GEODE_HOME = System.getenv("GEODE_HOME");
+      File jbossJar = findJbossJar(GEODE_HOME + "/lib").orElseThrow(
+          () -> new GemFireConfigException("jboss-modules jar not fund in " + GEODE_HOME + "/lib"));
+      commandLine.add(jbossJar.getAbsolutePath());
+      commandLine.add("-mp");
+      commandLine.add(GEODE_HOME + "/moduleDescriptors");
+      commandLine.add("geode-core:" + GemFireVersion.getGemFireVersion());
+    } else {
+      commandLine.add(ServerLauncher.class.getName());
+    }
+
+    return commandLine;
+  }
+
+  private Optional<File> findJbossJar(String path) {
+    File libDir = new File(path);
+    if (libDir.isDirectory()) {
+      File[] files = libDir.listFiles((dir, name) -> name.startsWith("jboss-modules"));
+      if (files.length > 0) {
+        return Optional.of(files[0]);
+      }
+    }
+    return Optional.empty();
   }
 
   @SuppressWarnings("deprecation")

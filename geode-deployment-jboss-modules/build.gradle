@@ -21,8 +21,14 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 apply from: "${project.projectDir}/../gradle/warnings.gradle"
 
 dependencies {
+    api(platform(project(':boms:geode-all-bom')))
+    compileOnly(platform(project(':boms:geode-all-bom')))
+
+    implementation(project(':geode-logging'))
+    implementation(project(':geode-jboss-extensions'))
     implementation(project(':geode-core'))
-    implementation('io.swagger:swagger-annotations') {
-        ext.optional = true
-    }
+    implementation(project(':geode-common'))
+    implementation('io.swagger:swagger-annotations')
+
+    compileOnly('com.fasterxml.jackson.core:jackson-annotations')
 }

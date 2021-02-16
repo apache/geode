@@ -23,8 +23,8 @@ apply from: "${project.projectDir}/../gradle/warnings.gradle"
 dependencies {
     api(platform(project(':boms:geode-all-bom')))
 
-    api(project(':geode-core'))
-    api(project(':geode-common'))
+    implementation(project(':geode-core'))
+    implementation(project(':geode-common'))
 
     implementation(project(':geode-logging'))
     implementation(project(':geode-membership'))
@@ -33,8 +33,8 @@ dependencies {
     implementation(project(':frameworks:springframework'))
     implementation('org.apache.commons:commons-lang3')
     implementation('com.healthmarketscience.rmiio:rmiio')
-    implementation(project(':frameworks:jackson'))
     implementation('io.swagger:swagger-annotations')
+    implementation(project(':frameworks:jackson'))
 
 //    //Find bugs is used in multiple places in the code to suppress findbugs warnings
     testImplementation('com.github.stephenc.findbugs:findbugs-annotations')
@@ -48,11 +48,11 @@ dependencies {
     integrationTestRuntimeOnly('org.apache.derby:derby')
 
     distributedTestImplementation(project(':geode-dunit'))
+    distributedTestImplementation(project(':geode-management'))
     distributedTestImplementation('pl.pragmatists:JUnitParams')
     distributedTestRuntimeOnly('org.apache.derby:derby')
 
     testCompileOnly(platform(project(':boms:geode-all-bom')))
-    testCompileOnly('io.swagger:swagger-annotations')
 
     upgradeTestImplementation(project(':geode-junit'))
     upgradeTestImplementation(project(':geode-dunit'))

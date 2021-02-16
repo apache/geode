@@ -23,6 +23,7 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 dependencies {
   implementation(platform(project(':boms:geode-all-bom')))
   implementation(project(':geode-core'))
+  implementation(project(':geode-common'))
   implementation(project(':geode-logging'))
   implementation(project(':geode-membership'))
   implementation(project(':geode-serialization'))
@@ -37,6 +38,7 @@ dependencies {
 
 
   distributedTestImplementation(project(':geode-gfsh'))
+  distributedTestImplementation(project(':frameworks:springframework'))
   distributedTestImplementation(project(':geode-junit'))
   distributedTestImplementation(project(':geode-dunit'))
   distributedTestImplementation('org.apache.commons:commons-lang3')

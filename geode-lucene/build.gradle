@@ -23,7 +23,8 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
 
-  api(project(':geode-core'))
+  implementation(project(':geode-core'))
+  implementation(project(':geode-common'))
   api('org.apache.lucene:lucene-core')
 
   implementation(project(':geode-gfsh'))

@@ -54,6 +54,10 @@ public class Deployment extends GroupableConfiguration<DeploymentInfo> implement
 
   public Deployment() {}
 
+  public Deployment(Deployment deployment) {
+    this(deployment, deployment.file);
+  }
+
   public Deployment(Deployment deployment, File file) {
     this(deployment.deploymentName, deployment.jarFileName, deployment.deployedBy,
         deployment.deployedTime, deployment.deploymentsToDependOn);

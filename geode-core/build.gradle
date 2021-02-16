@@ -229,8 +229,6 @@ dependencies {
         exclude group: '*'
     }
 
-    runtimeOnly(project(':geode-deployment-legacy'))
-
     //Commons lang is used in many different places in core
     implementation('org.apache.commons:commons-lang3')
 
@@ -312,12 +310,20 @@ dependencies {
     implementation(project(':geode-serialization'))
     implementation(project(':geode-tcp-server'))
 
+    runtimeOnly(project(':geode-deployment-legacy')) {
+        ext.optional = true
+    }
+
     //geode-management currently has pieces of the public API
     //copied into it, so it is an API dependency
     api(project(':geode-management'))
 
 
     jcaCompile(sourceSets.main.output)
+
+    configurations.testRuntime {
+        exclude module: 'geode-log4j'
+    }
 
     testImplementation(project(':geode-junit')) {
         exclude module: 'geode-core'

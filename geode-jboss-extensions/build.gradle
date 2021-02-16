@@ -20,9 +20,12 @@ import org.apache.geode.gradle.plugins.DependencyConstraints
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
-
+apply from: "${project.projectDir}/../gradle/warnings.gradle"
 
 dependencies {
-    implementation(platform(project(':boms:geode-all-bom')))
-    compileOnly('org.jboss.modules:jboss-modules:' + DependencyConstraints.get("jboss-modules.version"))
+    api(platform(project(':boms:geode-all-bom')))
+
+    implementation(project(':geode-core'))
+
+    implementation('org.jboss.modules:jboss-modules')
 }

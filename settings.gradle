@@ -69,11 +69,14 @@ include 'geode-concurrency-test'
 include 'boms:geode-client-bom'
 include 'boms:geode-all-bom'
 include 'static-analysis:pmd-rules'
-include 'geode-deployment-legacy'
 include 'frameworks:springframework'
 include 'frameworks:jackson'
 include 'frameworks:shiro'
 include 'frameworks:springshell'
+include 'frameworks:linking'
+include 'geode-deployment-legacy'
+include 'geode-deployment-jboss-modules'
+include 'geode-jboss-extensions'
 
 
 ['1.0.0-incubating',

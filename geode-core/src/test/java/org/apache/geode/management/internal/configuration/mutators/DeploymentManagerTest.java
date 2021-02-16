@@ -79,8 +79,7 @@ public class DeploymentManagerTest {
 
     DeploymentManager manager = new DeploymentManager(persistenceService);
 
-    Deployment filter = new Deployment();
-    filter.setFileName(requestedJarFile);
+    Deployment filter = new Deployment(requestedJarFile, "test", "time");
 
     List<Deployment> result = manager.list(filter, "some-group");
 

@@ -45,7 +45,8 @@ public class JarDeploymentServiceFactory {
     ServiceLoader<JarDeploymentService> jarDeploymentServices =
         ServiceLoader.load(JarDeploymentService.class);
     if (jarDeploymentServices.iterator().hasNext()) {
-      return jarDeploymentServices.iterator().next();
+      JarDeploymentService jarDeploymentService = jarDeploymentServices.iterator().next();
+      return jarDeploymentService;
     } else {
       throw new ServiceLoadingFailureException(
           "No implementation of JarDeploymentService could be loaded.");

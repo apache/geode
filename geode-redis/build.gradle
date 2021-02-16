@@ -38,6 +38,8 @@ dependencies {
   implementation('io.netty:netty-all')
   implementation('commons-codec:commons-codec')
   implementation('org.apache.commons:commons-lang3')
+  implementation(project(':frameworks:springframework'))
+  implementation(project(':geode-common'))
 
   testImplementation(project(':geode-junit'))
   testImplementation('org.mockito:mockito-core')
@@ -64,9 +66,40 @@ dependencies {
   acceptanceTestImplementation(project(':geode-junit'))
   acceptanceTestImplementation('redis.clients:jedis')
   acceptanceTestImplementation('org.testcontainers:testcontainers')
-  acceptanceTestRuntime(project(':geode-log4j'))
   acceptanceTestImplementation('org.springframework.boot:spring-boot-starter-web') {
+    exclude module: 'spring-web'
+    exclude module: 'spring-core'
+    exclude module: 'spring-jcl'
+    exclude module: 'spring-aop'
+    exclude module: 'spring-aspects'
+    exclude module: 'spring-beans'
+    exclude module: 'spring-context'
+    exclude module: 'spring-expression'
     exclude module: 'spring-boot-starter-tomcat'
+  }
+  acceptanceTestImplementation('org.springframework.boot:spring-boot-starter-data-redis') {
+    exclude module: 'spring-web'
+    exclude module: 'spring-core'
+    exclude module: 'spring-jcl'
+    exclude module: 'spring-aop'
+    exclude module: 'spring-aspects'
+    exclude module: 'spring-beans'
+    exclude module: 'spring-context'
+    exclude module: 'spring-expression'
+  }
+  acceptanceTestImplementation('org.springframework.session:spring-session-data-redis') {
+    exclude module: 'spring-web'
+    exclude module: 'spring-core'
+    exclude module: 'spring-jcl'
+    exclude module: 'spring-aop'
+    exclude module: 'spring-aspects'
+    exclude module: 'spring-beans'
+    exclude module: 'spring-context'
+    exclude module: 'spring-expression'
+  }
+
+  acceptanceTestRuntimeOnly(project(':geode-log4j')) {
+    ext.optional = true
   }
   acceptanceTestImplementation('org.springframework.boot:spring-boot-starter-data-redis')
   acceptanceTestImplementation('org.springframework.session:spring-session-data-redis')
@@ -80,14 +113,58 @@ dependencies {
   distributedTestImplementation('redis.clients:jedis')
   distributedTestImplementation('io.lettuce:lettuce-core')
 
+  distributedTestImplementation('org.springframework.boot:spring-boot-starter-jetty') {
+    exclude module: 'spring-web'
+    exclude module: 'spring-core'
+    exclude module: 'spring-jcl'
+    exclude module: 'spring-aop'
+    exclude module: 'spring-aspects'
+    exclude module: 'spring-beans'
+    exclude module: 'spring-context'
+    exclude module: 'spring-expression'
+  }
   distributedTestImplementation('javax.servlet:javax.servlet-api')
   distributedTestImplementation('org.springframework.boot:spring-boot-starter-jetty')
   distributedTestImplementation('org.springframework.boot:spring-boot-starter-web') {
-    exclude module: 'spring-boot-starter-tomcat'
+    exclude module: 'spring-web'
+    exclude module: 'spring-core'
+    exclude module: 'spring-jcl'
+    exclude module: 'spring-aop'
+    exclude module: 'spring-aspects'
+    exclude module: 'spring-beans'
+    exclude module: 'spring-context'
+    exclude module: 'spring-expression'
   }
-  distributedTestImplementation('org.springframework.boot:spring-boot-starter')
-  distributedTestImplementation('org.springframework.boot:spring-boot-starter-data-redis')
-  distributedTestImplementation('org.springframework.session:spring-session-data-redis')
+  distributedTestImplementation('org.springframework.boot:spring-boot-starter') {
+    exclude module: 'spring-web'
+    exclude module: 'spring-core'
+    exclude module: 'spring-jcl'
+    exclude module: 'spring-aop'
+    exclude module: 'spring-aspects'
+    exclude module: 'spring-beans'
+    exclude module: 'spring-context'
+    exclude module: 'spring-expression'
+  }
+  distributedTestImplementation('org.springframework.boot:spring-boot-starter-data-redis') {
+    exclude module: 'spring-web'
+    exclude module: 'spring-core'
+    exclude module: 'spring-jcl'
+    exclude module: 'spring-aop'
+    exclude module: 'spring-aspects'
+    exclude module: 'spring-beans'
+    exclude module: 'spring-context'
+    exclude module: 'spring-expression'
+  }
+  distributedTestImplementation('org.springframework.session:spring-session-data-redis') {
+    exclude module: 'spring-web'
+    exclude module: 'spring-core'
+    exclude module: 'spring-jcl'
+    exclude module: 'spring-aop'
+    exclude module: 'spring-aspects'
+    exclude module: 'spring-beans'
+    exclude module: 'spring-context'
+    exclude module: 'spring-expression'
+  }
 }
 
 configurations{

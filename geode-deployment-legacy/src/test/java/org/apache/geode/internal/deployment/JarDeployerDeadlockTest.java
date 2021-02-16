@@ -53,14 +53,13 @@ public class JarDeployerDeadlockTest {
   @Before
   public void setup() throws Exception {
     File workingDir = temporaryFolder.newFolder();
-    // ClassPathLoader.setLatestToDefault(workingDir);
     JarDeploymentServiceFactory.getJarDeploymentServiceInstance()
         .reinitializeWithWorkingDirectory(workingDir);
     classBuilder = new ClassBuilder();
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown() {
     for (String functionName : FunctionService.getRegisteredFunctions().keySet()) {
       FunctionService.unregisterFunction(functionName);
     }

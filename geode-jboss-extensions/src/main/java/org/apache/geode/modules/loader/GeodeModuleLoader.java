@@ -16,39 +16,27 @@
  */
 package org.apache.geode.modules.loader;
 
+import java.util.List;
+
 import org.jboss.modules.DelegatingModuleLoader;
-import org.jboss.modules.JDKModuleFinder;
-import org.jboss.modules.LocalModuleFinder;
 import org.jboss.modules.ModuleFinder;
 import org.jboss.modules.ModuleLoader;
 
-import org.apache.geode.modules.finder.GeodeCompositeModuleFinder;
-
-public class GeodeDelegatingModuleLoader extends DelegatingModuleLoader implements AutoCloseable {
-
-  private static final GeodeCompositeModuleFinder compositeModuleFinder =
-      new GeodeCompositeModuleFinder("default", new LocalModuleFinder());
-
-  public GeodeDelegatingModuleLoader() {
-    super(new ModuleLoader(JDKModuleFinder.getInstance()), compositeModuleFinder);
+public class GeodeModuleLoader extends DelegatingModuleLoader {
+  public GeodeModuleLoader(ModuleLoader delegate, ModuleFinder[] finders) {
+    super(delegate, finders);
   }
 
-  public void registerModule(String moduleName, String path, String... modulesToDependOn) {
-
+  public GeodeModuleLoader(ModuleLoader delegate, ModuleFinder finder) {
+    super(delegate, finder);
   }
 
   public void unregisterModule(String moduleName) {
 
   }
 
-  public void reloadLinkingModule() {
+  public void registerModule(String moduleName, String filePath,
+      List<String> moduleDependencyNames) {
 
-  }
-
-  @Override
-  public void close() {
-    final ModuleFinder[] finders = getFinders();
-    assert finders.length == 1 && finders[0] instanceof LocalModuleFinder;
-    ((LocalModuleFinder) finders[0]).close();
   }
 }

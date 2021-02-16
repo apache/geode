@@ -148,7 +148,7 @@ public class GfshParserAutoCompletionIntegrationTest {
     String buffer = "start server --name=name1 --";
     CommandCandidate candidate = gfshParserRule.complete(buffer);
     assertThat(candidate.getCursor()).isEqualTo(buffer.length() - 2);
-    assertThat(candidate.getCandidates()).hasSize(53);
+    assertThat(candidate.getCandidates()).hasSize(54);
     assertThat(candidate.getCandidates()).contains(new Completion("--properties-file"));
     assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "J");
   }
@@ -158,7 +158,7 @@ public class GfshParserAutoCompletionIntegrationTest {
     String buffer = "start server --name=name1 ";
     CommandCandidate candidate = gfshParserRule.complete(buffer);
     assertThat(candidate.getCursor()).isEqualTo(buffer.length() - 1);
-    assertThat(candidate.getCandidates()).hasSize(53);
+    assertThat(candidate.getCandidates()).hasSize(54);
     assertThat(candidate.getCandidates()).contains(new Completion(" --properties-file"));
     assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "--J");
   }
@@ -168,7 +168,7 @@ public class GfshParserAutoCompletionIntegrationTest {
     String buffer = "start server --name=name1";
     CommandCandidate candidate = gfshParserRule.complete(buffer);
     assertThat(candidate.getCursor()).isEqualTo(buffer.length());
-    assertThat(candidate.getCandidates()).hasSize(53);
+    assertThat(candidate.getCandidates()).hasSize(54);
     assertThat(candidate.getCandidates()).contains(new Completion(" --properties-file"));
     assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + " --J");
   }
@@ -193,7 +193,7 @@ public class GfshParserAutoCompletionIntegrationTest {
   public void testCompleteWithDash() {
     String buffer = "start server --name=name1 --J=-Dfoo.bar --";
     CommandCandidate candidate = gfshParserRule.complete(buffer);
-    assertThat(candidate.getCandidates()).hasSize(52);
+    assertThat(candidate.getCandidates()).hasSize(53);
   }
 
   @Test
@@ -211,7 +211,7 @@ public class GfshParserAutoCompletionIntegrationTest {
     String buffer = "start server --name=name1 --J=-Dtest=test1 --J=-Dfoo=bar";
     CommandCandidate candidate = gfshParserRule.complete(buffer);
     assertThat(candidate.getCursor()).isEqualTo(buffer.length());
-    assertThat(candidate.getCandidates()).hasSize(52);
+    assertThat(candidate.getCandidates()).hasSize(53);
     assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + " --assign-buckets");
   }
 
@@ -220,7 +220,7 @@ public class GfshParserAutoCompletionIntegrationTest {
     String buffer = "start server --J=-Dtest=test1 --J=-Dfoo=bar --name=name1";
     CommandCandidate candidate = gfshParserRule.complete(buffer);
     assertThat(candidate.getCursor()).isEqualTo(buffer.length());
-    assertThat(candidate.getCandidates()).hasSize(52);
+    assertThat(candidate.getCandidates()).hasSize(53);
     assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + " --assign-buckets");
   }
 
@@ -229,7 +229,7 @@ public class GfshParserAutoCompletionIntegrationTest {
     String buffer = "start server --name=name1 --locators=localhost --J=-Dfoo=bar";
     CommandCandidate candidate = gfshParserRule.complete(buffer);
     assertThat(candidate.getCursor()).isEqualTo(buffer.length());
-    assertThat(candidate.getCandidates()).hasSize(51);
+    assertThat(candidate.getCandidates()).hasSize(52);
     assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + " --assign-buckets");
   }
 
@@ -238,7 +238,7 @@ public class GfshParserAutoCompletionIntegrationTest {
     String buffer = "start server --name=name1 --locators=localhost  --J=-Dfoo=bar --";
     CommandCandidate candidate = gfshParserRule.complete(buffer);
     assertThat(candidate.getCursor()).isEqualTo(buffer.length() - 2);
-    assertThat(candidate.getCandidates()).hasSize(51);
+    assertThat(candidate.getCandidates()).hasSize(52);
     assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "assign-buckets");
   }
 

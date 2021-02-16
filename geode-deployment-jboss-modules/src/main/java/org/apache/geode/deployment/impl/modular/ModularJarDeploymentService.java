@@ -17,58 +17,149 @@
 package org.apache.geode.deployment.impl.modular;
 
 import java.io.File;
-import java.nio.file.Path;
+import java.time.Instant;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.cache.internal.execute.FunctionServiceUtils;
 import org.apache.geode.deployment.JarDeploymentService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.configuration.Deployment;
+import org.apache.geode.modules.service.GeodeJBossDeploymentService;
 import org.apache.geode.services.result.ServiceResult;
+import org.apache.geode.services.result.impl.Failure;
+import org.apache.geode.services.result.impl.Success;
 
 public class ModularJarDeploymentService implements JarDeploymentService {
 
-  @Override
-  public ServiceResult<Map<String, String>> deploy(Deployment deployment) {
-    return null;
+  private final Logger logger = LogService.getLogger();
+
+  private final GeodeJBossDeploymentService geodeJBossDeploymentService;
+
+  private final Map<String, Deployment> deployments = new ConcurrentHashMap<>();
+
+  private File workingDirectory = new File(System.getProperty("user.dir"));
+
+  public ModularJarDeploymentService() {
+    geodeJBossDeploymentService = new GeodeJBossDeploymentService();
   }
 
   @Override
-  public ServiceResult<Map<String, String>> deploy(File file) {
-    return null;
+  public synchronized ServiceResult<Deployment> deploy(Deployment deployment) {
+    ServiceResult<Boolean> serviceResult =
+        geodeJBossDeploymentService
+            .registerModule(deployment.getDeploymentName(), deployment.getFilePath(),
+                deployment.getModuleDependencyNames());
+
+    if (serviceResult.isSuccessful()) {
+      Deployment deploymentCopy = new Deployment(deployment);
+      deploymentCopy.setDeployedTime(Instant.now().toString());
+      Deployment oldDeployment =
+          deployments.put(deploymentCopy.getDeploymentName(), deploymentCopy);
+      if (oldDeployment != null) {
+        FunctionServiceUtils.unregisterRemovedFunctions(oldDeployment.getFile(),
+            deploymentCopy.getFile());
+      }
+      return Success.of(deploymentCopy);
+    } else {
+      return Failure.of(serviceResult.getErrorMessage());
+    }
   }
 
   @Override
-  public ServiceResult<String> undeployByDeploymentName(String deploymentName) {
-    return null;
+  public synchronized ServiceResult<Deployment> deploy(File file) {
+    Deployment deployment = new Deployment(file.getName(), "", Instant.now().toString());
+    deployment.setFile(file);
+    return deploy(deployment);
   }
 
   @Override
-  public ServiceResult<String> undeployByFileName(String fileName) {
-    return null;
+  public synchronized ServiceResult<Deployment> undeployByDeploymentName(String deploymentName) {
+    if (!deployments.containsKey(deploymentName)) {
+      return Failure.of("No deployment found for name: " + deploymentName);
+    }
+
+    ServiceResult<Boolean> serviceResult =
+        geodeJBossDeploymentService.unregisterModule(deploymentName);
+    if (serviceResult.isSuccessful()) {
+      Deployment removedDeployment = deployments.remove(deploymentName);
+      FunctionServiceUtils.unregisterRemovedFunctions(removedDeployment.getFile(), null);
+      return Success.of(removedDeployment);
+    } else {
+      return Failure.of(serviceResult.getErrorMessage());
+    }
   }
 
   @Override
   public List<Deployment> listDeployed() {
-    return null;
+    return Collections.unmodifiableList(new LinkedList<>(deployments.values()));
   }
 
   @Override
   public ServiceResult<Deployment> getDeployed(String deploymentName) {
-    return null;
+    if (!deployments.containsKey(deploymentName)) {
+      return Failure.of("No deployment found for name: " + deploymentName);
+    }
+
+    return Success.of(deployments.get(deploymentName));
   }
 
   @Override
-  public void setWorkingDirectory(File workingDirectory) {
-
+  public void reinitializeWithWorkingDirectory(File workingDirectory) {
+    if (deployments.isEmpty()) {
+      this.workingDirectory = workingDirectory;
+    } else {
+      throw new RuntimeException(
+          "Cannot reinitialize working directory with existing deployments. Please undeploy first.");
+    }
   }
 
   @Override
-  public Map<Path, File> backupJars(Path backupDirectory) {
-    return null;
+  public void loadJarsFromWorkingDirectory() {
+    File[] files = workingDirectory.listFiles(
+        pathname -> pathname.getAbsolutePath().endsWith(".jar"));
+
+    for (File file : files) {
+      ServiceResult<Deployment> serviceResult = deploy(file);
+      if (serviceResult.isSuccessful()) {
+        Deployment deployment = serviceResult.getMessage();
+        logger.info("Registering new version of jar: {}", deployment.getDeploymentName());
+      } else {
+        logger.error(serviceResult.getErrorMessage());
+      }
+    }
   }
 
   @Override
-  public void loadPreviouslyDeployedJarsFromDisk() {
+  public void close() {
+    deployments.keySet().forEach(this::undeployByDeploymentName);
+  }
 
+  /**
+   * Removes jars from the system by their file name.
+   *
+   * @param fileName the name of a jar that has previously been deployed.
+   * @return a {@link ServiceResult} containing a {@link Deployment} representing the removed jar
+   *         when successful and an error message if the file could not be found or undeployed.
+   */
+  public ServiceResult<Deployment> undeployByFileName(String fileName) {
+    List<String> deploymentNamesFromFileName =
+        listDeployed().stream()
+            .filter(deployment -> deployment.getFileName().equals(fileName))
+            .map(Deployment::getDeploymentName)
+            .collect(Collectors.toList());
+    if (deploymentNamesFromFileName.size() > 1) {
+      return Failure.of("There are multiple deployments with file: " + fileName);
+    } else if (deploymentNamesFromFileName.isEmpty()) {
+      return Failure.of(fileName + " not deployed");
+    } else {
+      return undeployByDeploymentName(deploymentNamesFromFileName.get(0));
+    }
   }
 }

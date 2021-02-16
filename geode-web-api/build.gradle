@@ -34,6 +34,7 @@ dependencies {
   }
 
   compileOnly(project(':geode-core'))
+  compileOnly(project(':geode-common'))
   compileOnly(project(':geode-logging'))
   compileOnly(project(':geode-membership'))
   compileOnly(project(':geode-serialization'))

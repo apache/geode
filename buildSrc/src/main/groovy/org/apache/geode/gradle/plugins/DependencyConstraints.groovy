@@ -49,10 +49,6 @@ class DependencyConstraints implements Plugin<Project> {
     deps.put("springshell.version", "1.2.0.RELEASE")
     deps.put("springframework.version", "5.3.3")
 
-    deps.put("jackson.version", "2.12.1")
-    deps.put("springframework.version", "5.3.3")
-    deps.put("springshell.version", "1.2.0.RELEASE")
-
     // These version numbers are used in testing various versions of tomcat and are consumed explicitly
     // in will be called explicitly in the relevant extensions module, and respective configurations
     // in geode-assembly.gradle.  Moreover, dependencyManagement does not seem to play nicely when
@@ -175,7 +171,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'org.springframework.hateoas', name: 'spring-hateoas', version: '1.2.3')
         api(group: 'org.springframework.ldap', name: 'spring-ldap-core', version: '2.3.2.RELEASE')
         api(group: 'org.springframework.shell', name: 'spring-shell', version: get('springshell.version'))
-        api(group: 'org.testcontainers', name: 'testcontainers', version: '1.14.3')
+        api(group: 'org.testcontainers', name: 'testcontainers', version: '1.15.1')
         api(group: 'pl.pragmatists', name: 'JUnitParams', version: '1.1.0')
         api(group: 'redis.clients', name: 'jedis', version: '3.5.1')
         api(group: 'io.lettuce', name: 'lettuce-core', version: '6.0.2.RELEASE')

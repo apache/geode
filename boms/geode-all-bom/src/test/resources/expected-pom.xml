@@ -532,7 +532,7 @@
       <dependency>
         <groupId>org.testcontainers</groupId>
         <artifactId>testcontainers</artifactId>
-        <version>1.14.3</version>
+        <version>1.15.1</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
@@ -933,6 +933,12 @@
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
+        <artifactId>geode-deployment-jboss-modules</artifactId>
+        <version>${version}</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.geode</groupId>
         <artifactId>geode-deployment-legacy</artifactId>
         <version>${version}</version>
         <scope>compile</scope>
@@ -958,6 +964,12 @@
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-http-service</artifactId>
+        <version>${version}</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.geode</groupId>
+        <artifactId>geode-jboss-extensions</artifactId>
         <version>${version}</version>
         <scope>compile</scope>
       </dependency>

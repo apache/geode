@@ -15,7 +15,26 @@
 # limitations under the License.
 
 # FROM openjdk:11
-FROM bellsoft/liberica-openjdk-debian:11
+#FROM bellsoft/liberica-openjdk-debian:11
+FROM bellsoft/liberica-openjdk-alpine:8
+
+# runtime dependencies
+RUN apk add --no-cache \
+		bash \
+		ncurses
+
+ENV GEODE_HOME /geode
+ENV PATH $PATH:$GEODE_HOME/bin
+
+RUN set -eux; \
+	apk add --no-cache --virtual .fetch-deps \
+		libressl \
+		gnupg \
+	;
 COPY geode /geode
-ENV GEODE_HOME="/geode"
-ENV PATH="${GEODE_HOME}/bin:${PATH}"
+COPY "launch.sh" .
+COPY "launchExperimental.sh" .
+RUN chmod +x launch.sh
+RUN chmod +x launchExperimental.sh
+EXPOSE  8080 10334 40404 1099 7070 6379 5678
+#CMD ["./launch.sh"]
