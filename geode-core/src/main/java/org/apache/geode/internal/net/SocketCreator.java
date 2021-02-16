@@ -848,7 +848,7 @@ public class SocketCreator extends TcpSocketCreatorImpl {
     try {
       serverNames.add(new SNIHostName(hostName));
     } catch (Exception ex) {
-      logger.warn("SSL SNIHostName exception {}", ex);
+      logger.debug("SSL SNIHostName exception {}", ex);
       return false;
     }
     modifiedParams.setServerNames(serverNames);
