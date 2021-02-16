@@ -216,10 +216,10 @@ public class PRClearCreateIndexDUnitTest implements Serializable {
   }
 
   private static class MessageObserver extends DistributionMessageObserver {
-    private boolean lock_secondary = false;
-    private boolean clear_secondary = false;
-    private boolean clear_others = false;
-    private boolean lock_others = false;
+    private volatile boolean lock_secondary = false;
+    private volatile boolean clear_secondary = false;
+    private volatile boolean clear_others = false;
+    private volatile boolean lock_others = false;
 
     @Override
     public void beforeProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
