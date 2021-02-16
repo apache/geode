@@ -505,6 +505,18 @@ public class ResumeGatewaySenderCommandDUnitTest implements Serializable {
     server4.invoke(() -> verifySenderState("ln", true, false));
     server5.invoke(() -> verifySenderState("ln", true, false));
 
+    locatorSite1.invoke(
+        () -> validateGatewaySenderMXBeanProxy(getMember(server1.getVM()), "ln", true, false));
+    locatorSite1.invoke(
+        () -> validateGatewaySenderMXBeanProxy(getMember(server2.getVM()), "ln", true, false));
+    locatorSite1.invoke(
+        () -> validateGatewaySenderMXBeanProxy(getMember(server3.getVM()), "ln", true, false));
+    locatorSite1.invoke(
+        () -> validateGatewaySenderMXBeanProxy(getMember(server4.getVM()), "ln", true, false));
+    locatorSite1.invoke(
+        () -> validateGatewaySenderMXBeanProxy(getMember(server5.getVM()), "ln", true, false));
+
+
     command = new CommandStringBuilder(CliStrings.PAUSE_GATEWAYSENDER)
         .addOption(CliStrings.PAUSE_GATEWAYSENDER__ID, "ln")
         .addOption(CliStrings.GROUP, "SenderGroup1,SenderGroup2")
@@ -580,7 +592,6 @@ public class ResumeGatewaySenderCommandDUnitTest implements Serializable {
         () -> validateGatewaySenderMXBeanProxy(getMember(server3.getVM()), "ln", true, false));
     locatorSite1.invoke(
         () -> validateGatewaySenderMXBeanProxy(getMember(server5.getVM()), "ln", true, false));
-
   }
 
   private MemberVM startServerWithGroups(int index, String groups, int locPort) {
