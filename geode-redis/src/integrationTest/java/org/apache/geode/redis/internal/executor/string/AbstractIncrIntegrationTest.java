@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_OVERFLOW;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -50,15 +51,8 @@ public abstract class AbstractIncrIntegrationTest implements RedisPortSupplier {
   }
 
   @Test
-  public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.INCR))
-        .hasMessageContaining("ERR wrong number of arguments for 'incr' command");
-  }
-
-  @Test
-  public void givenMoreThanTwoArgumentsProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.INCR, "key", "extraArg"))
-        .hasMessageContaining("ERR wrong number of arguments for 'incr' command");
+  public void errors_givenWrongNumberOfArguments() {
+    assertExactNumberOfArgs(jedis, Protocol.Command.INCR, 1);
   }
 
   @Test

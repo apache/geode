@@ -14,6 +14,8 @@
  */
 package org.apache.geode.redis.internal.executor.set;
 
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -59,27 +61,13 @@ public abstract class AbstractSetsIntegrationTest implements RedisPortSupplier {
   }
 
   @Test
-  public void sadd_givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SADD))
-        .hasMessageContaining("ERR wrong number of arguments for 'sadd' command");
+  public void saddErrors_givenTooFewArguments() {
+    assertAtLeastNArgs(jedis, Protocol.Command.SADD, 2);
   }
 
   @Test
-  public void sadd_givenMemberNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SADD, "key"))
-        .hasMessageContaining("ERR wrong number of arguments for 'sadd' command");
-  }
-
-  @Test
-  public void scard_givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SCARD))
-        .hasMessageContaining("ERR wrong number of arguments for 'scard' command");
-  }
-
-  @Test
-  public void scard_givenMoreThanTwoArguments_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SCARD, "key", "extraArg"))
-        .hasMessageContaining("ERR wrong number of arguments for 'scard' command");
+  public void scardErrors_givenWrongNumberOfArguments() {
+    assertExactNumberOfArgs(jedis, Protocol.Command.SCARD, 1);
   }
 
   @Test

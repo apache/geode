@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -51,28 +52,8 @@ public abstract class AbstractGetRangeIntegrationTest implements RedisPortSuppli
   }
 
   @Test
-  public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.GETRANGE))
-        .hasMessageContaining("ERR wrong number of arguments for 'getrange' command");
-  }
-
-  @Test
-  public void givenStartNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.GETRANGE, "key"))
-        .hasMessageContaining("ERR wrong number of arguments for 'getrange' command");
-  }
-
-  @Test
-  public void givenEndNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.GETRANGE, "key", "1"))
-        .hasMessageContaining("ERR wrong number of arguments for 'getrange' command");
-  }
-
-  @Test
-  public void givenMoreThanFourArgumentsProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(
-        () -> jedis.sendCommand(Protocol.Command.GETRANGE, "key", "1", "5", "extraArg"))
-            .hasMessageContaining("ERR wrong number of arguments for 'getrange' command");
+  public void errors_givenWrongNumberOfArguments() {
+    assertExactNumberOfArgs(jedis, Protocol.Command.GETRANGE, 3);
   }
 
   @Test

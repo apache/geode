@@ -15,6 +15,7 @@
 
 package org.apache.geode.redis.internal.executor.key;
 
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -50,21 +51,8 @@ public abstract class AbstractPExpireAtIntegrationTest implements RedisPortSuppl
   }
 
   @Test
-  public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.PEXPIREAT))
-        .hasMessageContaining("ERR wrong number of arguments for 'pexpireat' command");
-  }
-
-  @Test
-  public void givenTimestampNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.PEXPIREAT, "key"))
-        .hasMessageContaining("ERR wrong number of arguments for 'pexpireat' command");
-  }
-
-  @Test
-  public void givenMoreThanThreeArgumentsProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.PEXPIREAT, "key", "10", "extraArg"))
-        .hasMessageContaining("ERR wrong number of arguments for 'pexpireat' command");
+  public void errors_GivenWrongNumberOfArguments() {
+    assertExactNumberOfArgs(jedis, Protocol.Command.PEXPIREAT, 2);
   }
 
   @Test

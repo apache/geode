@@ -14,6 +14,8 @@
  */
 package org.apache.geode.redis.internal.executor.hash;
 
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -91,7 +93,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
 
   @Test
   public void testHGetall_givenWrongNumberOfArguments() {
-    assertExactNumberOfArgs(Protocol.Command.HGETALL, 1);
+    assertExactNumberOfArgs(jedis, Protocol.Command.HGETALL, 1);
   }
 
   @Test
@@ -211,10 +213,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
 
   @Test
   public void testHMGet_givenTooFewArguments() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HMGET))
-        .hasMessage("ERR wrong number of arguments for 'hmget' command");
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HMGET, "1"))
-        .hasMessage("ERR wrong number of arguments for 'hmget' command");
+    assertAtLeastNArgs(jedis, Protocol.Command.HMGET, 2);
   }
 
   @Test
@@ -239,11 +238,8 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   }
 
   @Test
-  public void testHdelErrorMessage_givenIncorrectArguments() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HDEL))
-        .hasMessage("ERR wrong number of arguments for 'hdel' command");
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HDEL, "a"))
-        .hasMessage("ERR wrong number of arguments for 'hdel' command");
+  public void testHdelErrorMessage_givenTooFewArguments() {
+    assertAtLeastNArgs(jedis, Protocol.Command.HDEL, 2);
   }
 
   @Test
@@ -277,15 +273,12 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
 
   @Test
   public void testHStrlen_givenWrongNumberOfArguments() {
-    assertExactNumberOfArgs(Protocol.Command.HSTRLEN, 2);
+    assertExactNumberOfArgs(jedis, Protocol.Command.HSTRLEN, 2);
   }
 
   @Test
   public void testHKeys_givenWrongNumberOfArguments() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HKEYS))
-        .hasMessageContaining("ERR wrong number of arguments for 'hkeys' command");
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HKEYS, "1", "2"))
-        .hasMessageContaining("ERR wrong number of arguments for 'hkeys' command");
+    assertExactNumberOfArgs(jedis, Protocol.Command.HKEYS, 1);
   }
 
   @Test
@@ -324,14 +317,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
 
   @Test
   public void testHIncrBy_returnsErrorMessageForWrongNumberOfParameters() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HINCRBY))
-        .hasMessageContaining("ERR wrong number of arguments for 'hincrby' command");
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HINCRBY, "1"))
-        .hasMessageContaining("ERR wrong number of arguments for 'hincrby' command");
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HINCRBY, "1", "2"))
-        .hasMessageContaining("ERR wrong number of arguments for 'hincrby' command");
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HINCRBY, "1", "2", "3", "4"))
-        .hasMessageContaining("ERR wrong number of arguments for 'hincrby' command");
+    assertExactNumberOfArgs(jedis, Protocol.Command.HINCRBY, 3);
   }
 
   @Test
@@ -395,7 +381,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   public void testHExists_isFalseForNonexistentKeyOrField() {
     jedis.hset("key", "field", "value");
 
-    assertThat(jedis.hexists("nonexitentKey", "someField")).isFalse();
+    assertThat(jedis.hexists("nonexistentKey", "someField")).isFalse();
     assertThat(jedis.hexists("key", "nonexistentField")).isFalse();
   }
 
@@ -414,7 +400,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
 
   @Test
   public void testHExists_givenWrongNumberOfArguments() {
-    assertExactNumberOfArgs(Protocol.Command.HEXISTS, 2);
+    assertExactNumberOfArgs(jedis, Protocol.Command.HEXISTS, 2);
   }
 
   @Test
@@ -501,7 +487,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
 
   @Test
   public void hsetnx_shouldThrowError_givenWrongNumberOfArguments() {
-    assertExactNumberOfArgs(Protocol.Command.HSETNX, 3);
+    assertExactNumberOfArgs(jedis, Protocol.Command.HSETNX, 3);
   }
 
   /**
@@ -541,18 +527,13 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   }
 
   @Test
-  public void hvalsFails_withIncorrectParameters() {
-    assertExactNumberOfArgs(Protocol.Command.HVALS, 1);
+  public void hvals_shouldError_givenWrongNumberOfArguments() {
+    assertExactNumberOfArgs(jedis, Protocol.Command.HVALS, 1);
   }
 
   @Test
   public void hget_shouldThrowError_givenWrongNumberOfArguments() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HGET))
-        .hasMessageContaining("ERR wrong number of arguments for 'hget' command");
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HGET, "1"))
-        .hasMessageContaining("ERR wrong number of arguments for 'hget' command");
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HGET, "1", "2", "3"))
-        .hasMessageContaining("ERR wrong number of arguments for 'hget' command");
+    assertExactNumberOfArgs(jedis, Protocol.Command.HGET, 2);
   }
 
   @Test
@@ -635,7 +616,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
 
   @Test
   public void testHLen_givenWrongNumberOfArguments() {
-    assertExactNumberOfArgs(Protocol.Command.HLEN, 1);
+    assertExactNumberOfArgs(jedis, Protocol.Command.HLEN, 1);
   }
 
   /**
@@ -827,7 +808,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   }
 
   @Test
-  public void testConcurrentHIncrByFloat_sameKeyPerClient() throws InterruptedException {
+  public void testConcurrentHIncrByFloat_sameKeyPerClient() {
     String key = "HSET_KEY";
     String field = "HSET_FIELD";
 
@@ -939,32 +920,5 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
       int increment) {
     int expectedValue = Integer.parseInt(jedis.hget(key, field)) + increment;
     assertThat(jedis.hincrBy(key, field, increment)).isEqualTo(expectedValue);
-  }
-
-  private void assertExactNumberOfArgs(Protocol.Command command, int numArgs) {
-    final int MAX_NUM_ARGS = 5; // currently enough for all implemented commands
-
-    for (int i = 0; i <= MAX_NUM_ARGS; i++) {
-      if (i != numArgs) {
-        byte[][] args = buildArgs(i);
-        assertThatThrownBy(() -> jedis.sendCommand(command, args))
-            .hasMessageContaining("ERR wrong number of arguments for '"
-                + command.toString().toLowerCase() + "' command");
-      }
-    }
-  }
-
-  private byte[][] buildArgs(int numArgs) {
-    byte[][] args = new byte[numArgs][];
-
-    if (numArgs == 0) {
-      return args;
-    }
-
-    for (int i = 0; i < numArgs; i++) {
-      args[i] = String.valueOf(i).getBytes();
-    }
-
-    return args;
   }
 }

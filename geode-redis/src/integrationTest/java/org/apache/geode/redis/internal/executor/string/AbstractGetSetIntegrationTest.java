@@ -15,6 +15,7 @@
 package org.apache.geode.redis.internal.executor.string;
 
 import static java.lang.Integer.parseInt;
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -58,21 +59,8 @@ public abstract class AbstractGetSetIntegrationTest implements RedisPortSupplier
   }
 
   @Test
-  public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.GETSET))
-        .hasMessageContaining("ERR wrong number of arguments for 'getset' command");
-  }
-
-  @Test
-  public void givenValueNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.GETSET, "key"))
-        .hasMessageContaining("ERR wrong number of arguments for 'getset' command");
-  }
-
-  @Test
-  public void givenMoreThanThreeArgumentsProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.GETSET, "key", "value", "extraArg"))
-        .hasMessageContaining("ERR wrong number of arguments for 'getset' command");
+  public void errors_givenWrongNumberOfParameters() {
+    assertExactNumberOfArgs(jedis, Protocol.Command.GETSET, 2);
   }
 
   @Test

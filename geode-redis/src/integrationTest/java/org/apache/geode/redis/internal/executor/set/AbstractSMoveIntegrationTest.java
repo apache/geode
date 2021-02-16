@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor.set;
 
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -54,28 +55,8 @@ public abstract class AbstractSMoveIntegrationTest implements RedisPortSupplier 
   }
 
   @Test
-  public void givenSourceNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SMOVE))
-        .hasMessageContaining("ERR wrong number of arguments for 'smove' command");
-  }
-
-  @Test
-  public void givenDestinationNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SMOVE, "source"))
-        .hasMessageContaining("ERR wrong number of arguments for 'smove' command");
-  }
-
-  @Test
-  public void givenMemberNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SMOVE, "source", "destination"))
-        .hasMessageContaining("ERR wrong number of arguments for 'smove' command");
-  }
-
-  @Test
-  public void givenMoreThanFourArguments_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(
-        () -> jedis.sendCommand(Protocol.Command.SMOVE, "key", "destination", "member", "extraArg"))
-            .hasMessageContaining("ERR wrong number of arguments for 'smove' command");
+  public void errors_GivenWrongNumberOfArguments() {
+    assertExactNumberOfArgs(jedis, Protocol.Command.SMOVE, 3);
   }
 
   @Test

@@ -14,8 +14,8 @@
  */
 package org.apache.geode.redis.internal.executor.set;
 
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -48,22 +48,8 @@ public abstract class AbstractSIsMemberIntegrationTest implements RedisPortSuppl
   }
 
   @Test
-  public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SISMEMBER))
-        .hasMessageContaining("ERR wrong number of arguments for 'sismember' command");
-  }
-
-  @Test
-  public void givenMemberNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SISMEMBER, "key"))
-        .hasMessageContaining("ERR wrong number of arguments for 'sismember' command");
-  }
-
-  @Test
-  public void givenMoreThanThreeArguments_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(
-        () -> jedis.sendCommand(Protocol.Command.SISMEMBER, "key", "member", "extraArg"))
-            .hasMessageContaining("ERR wrong number of arguments for 'sismember' command");
+  public void errors_givenWrongNumberOfArguments() {
+    assertExactNumberOfArgs(jedis, Protocol.Command.SISMEMBER, 2);
   }
 
   @Test
