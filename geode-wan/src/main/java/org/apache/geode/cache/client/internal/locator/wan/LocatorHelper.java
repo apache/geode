@@ -68,7 +68,21 @@ public class LocatorHelper {
             return true;
           }
           return false;
+        } else if (!existingValue.contains(locator)) {
+          existingValue.add(locator);
+          addServerLocator(distributedSystemId, locatorListener, locator);
+          locatorListener.locatorJoined(distributedSystemId, locator, sourceLocator);
+        } else {
+          // for new member name, existing host[port] received
+          // replace it, to contain latest info
+          existingValue.remove(locator);
+          // member name is not used in equals(), so this is the way to replace old locator
+          existingValue.add(locator);
+          locatorListener.locatorJoined(distributedSystemId, locator, sourceLocator);
+          return true;
         }
+
+
         existingValue.add(locator);
         addServerLocator(distributedSystemId, locatorListener, locator);
         locatorListener.locatorJoined(distributedSystemId, locator, sourceLocator);
