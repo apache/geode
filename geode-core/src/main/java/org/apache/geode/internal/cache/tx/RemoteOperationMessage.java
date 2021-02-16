@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.tx;
 
-import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCKETS;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -180,9 +179,8 @@ public abstract class RemoteOperationMessage extends DistributionMessage
       return;
     }
 
-    String conserveSockets = getConserveSocketsSetting(dm);
-    if (conserveSockets != null && conserveSockets.equals("false")) {
-      // reply inline for CONSERVE_SOCKETS == false case.
+    if (dm.getSystem().threadOwnsResources()) {
+      // reply inline if thread owns socket.
       doRemoteOperation(dm, cache);
       return;
     }
@@ -193,10 +191,6 @@ public abstract class RemoteOperationMessage extends DistributionMessage
       // reply inline for non-transactional case.
       doRemoteOperation(dm, cache);
     }
-  }
-
-  String getConserveSocketsSetting(ClusterDistributionManager dm) {
-    return dm.getSystem().getProperties().getProperty(CONSERVE_SOCKETS);
   }
 
   boolean isTransactional() {

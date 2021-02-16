@@ -305,8 +305,8 @@ public class RemoteOperationMessageTest {
 
 
   @Test
-  public void processInvokesDoRemoteOperationIfConserveSocketsIsFalse() {
-    doReturn("false").when(msg).getConserveSocketsSetting(dm);
+  public void processInvokesDoRemoteOperationIfThreadOwnsResources() {
+    when(system.threadOwnsResources()).thenReturn(true);
     doNothing().when(msg).doRemoteOperation(dm, cache);
 
     msg.process(dm);
@@ -316,8 +316,8 @@ public class RemoteOperationMessageTest {
   }
 
   @Test
-  public void processInvokesDoRemoteOperationIfConserveSocketsIsTrueAndNotTransactional() {
-    doReturn("true").when(msg).getConserveSocketsSetting(dm);
+  public void processInvokesDoRemoteOperationIfThreadDoesNotOwnResourcesAndNotTransactional() {
+    when(system.threadOwnsResources()).thenReturn(false);
     doReturn(false).when(msg).isTransactional();
     doNothing().when(msg).doRemoteOperation(dm, cache);
 
@@ -334,7 +334,7 @@ public class RemoteOperationMessageTest {
   }
 
   @Test
-  public void isTransactionalReturnsTrueIfCannotParticipateInTransaction() {
+  public void isTransactionalReturnsFalseIfCannotParticipateInTransaction() {
     doReturn(1).when(msg).getTXUniqId();
     doReturn(false).when(msg).canParticipateInTransaction();
 
@@ -342,7 +342,7 @@ public class RemoteOperationMessageTest {
   }
 
   @Test
-  public void isTransactionalReturnsFalseIfHasTXUniqueIdAndCanParticipateInTransaction() {
+  public void isTransactionalReturnsTrueIfHasTXUniqueIdAndCanParticipateInTransaction() {
     doReturn(1).when(msg).getTXUniqId();
 
     assertThat(msg.canParticipateInTransaction()).isTrue();
