@@ -400,7 +400,7 @@
       <dependency>
         <groupId>org.apache.httpcomponents</groupId>
         <artifactId>httpclient</artifactId>
-        <version>4.5.12</version>
+        <version>4.5.13</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
@@ -442,13 +442,13 @@
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-server</artifactId>
-        <version>9.4.33.v20201020</version>
+        <version>9.4.36.v20210114</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-webapp</artifactId>
-        <version>9.4.33.v20201020</version>
+        <version>9.4.36.v20210114</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
