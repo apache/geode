@@ -17,12 +17,15 @@ package org.apache.geode.redis.internal.executor.string;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
 
+import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
@@ -62,12 +65,18 @@ public abstract class AbstractSetNXIntegrationTest implements RedisPortSupplier 
   }
 
   @Test
+  public void testSetNXonNonString_doesNotThrowError() {
+    jedis.sadd("set", "a");
+    assertThat(jedis.setnx("set", "b")).isEqualTo(0);
+
+    jedis.hset("hash", "a", "b");
+    assertThat(jedis.setnx("hash", "b")).isEqualTo(0);
+  }
+
+  @Test
   public void testSetNX() {
-    String key1 = randString();
-    String key2;
-    do {
-      key2 = randString();
-    } while (key2.equals(key1));
+    String key1 = "some-random-string";
+    String key2 = "some-other-random-string";
 
     long response1 = jedis.setnx(key1, key1);
     long response2 = jedis.setnx(key2, key2);
@@ -78,7 +87,20 @@ public abstract class AbstractSetNXIntegrationTest implements RedisPortSupplier 
     assertThat(response3).isEqualTo(0);
   }
 
-  private String randString() {
-    return Long.toHexString(Double.doubleToLongBits(Math.random()));
+  @Test
+  public void testSetNX_whenCalledConcurrently() {
+    Jedis jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    AtomicLong updateCount = new AtomicLong(0);
+    int iterations = 10000;
+
+    new ConcurrentLoopingThreads(iterations,
+        (i) -> updateCount.getAndAdd(jedis.setnx("key-" + i, "value-" + i)),
+        (i) -> updateCount.getAndAdd(jedis2.setnx("key-" + i, "value-" + i)))
+            .runInLockstep();
+
+    assertThat(iterations).isEqualTo(updateCount.get());
+
+    jedis2.close();
   }
+
 }
