@@ -611,11 +611,9 @@ public class TXCommitMessage extends PooledDistributionMessage
       }
     }
 
-    //if (logger.isDebugEnabled()) {
-
-      //logger.warn("#LRJ begin processing TXCommitMessage for {}", this.txIdent);
-
-    //}
+    if (logger.isDebugEnabled()) {
+      logger.info("#LRJ begin processing TXCommitMessage for {}", this.txIdent);
+    }
     final InitializationLevel oldLevel =
         LocalRegion.setThreadInitLevelRequirement(BEFORE_INITIAL_IMAGE);
     boolean forceListener = false; // this gets flipped if we need to fire tx listener
