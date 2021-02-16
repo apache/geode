@@ -114,16 +114,10 @@ project.ext.dockerConfig = {
         cmdList[0] = ("${project.testJVM}/bin/java" as String)
       }
 
-      def matcher = (cmdList[cmdList.length - 1] =~ /.*Executor (\d*).*/)
-
-      def workdir = new File(cmd.getWorkingDir() + matcher[0][1])
-      workdir.mkdirs()
-      cmd.withWorkingDir(workdir.toString())
-
       // copy the classpath file to the working dir
       def classPathFileIndex = cmdList.findIndexOf { it =~ /^@.*gradle-worker-classpath.*txt$/ }
       if (classPathFileIndex > 0) {
-        def dst = new File(workdir, "gradle-worker-classpath.txt")
+        def dst = new File(cmd.getWorkingDir(), "gradle-worker-classpath.txt")
         if (!dst.exists()) {
           def src = new File(cmdList[classPathFileIndex].substring(1))
           dst.write(src.text)
