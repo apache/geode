@@ -114,7 +114,7 @@ public abstract class AbstractIncrIntegrationTest implements RedisPortSupplier {
   public void testIncr_shouldError_onValueGreaterThanMax() {
     jedis.set("key", "9223372036854775808");
 
-    assertThatThrownBy(() -> jedis.incrBy("key", 1)).hasMessageContaining(ERROR_NOT_INTEGER);
+    assertThatThrownBy(() -> jedis.incr("key")).hasMessageContaining(ERROR_NOT_INTEGER);
   }
 
   private String randString() {
