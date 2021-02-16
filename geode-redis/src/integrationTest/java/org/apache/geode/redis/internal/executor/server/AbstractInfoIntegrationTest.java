@@ -80,6 +80,7 @@ public abstract class AbstractInfoIntegrationTest implements RedisPortSupplier {
   final List<String> MEMORY_PROPERTIES =
       Arrays.asList(
           "# Memory",
+          "maxmemory:",
           "used_memory:",
           "mem_fragmentation_ratio:");
 
