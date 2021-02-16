@@ -16,10 +16,12 @@ package org.apache.geode.redis.internal.executor.string;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Random;
 
 import org.junit.After;
 import org.junit.Before;
@@ -27,11 +29,13 @@ import org.junit.Test;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
 
+import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
 public abstract class AbstractGetRangeIntegrationTest implements RedisPortSupplier {
 
+  private Random random = new Random();
   private Jedis jedis;
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
@@ -64,6 +68,28 @@ public abstract class AbstractGetRangeIntegrationTest implements RedisPortSuppli
     assertThatThrownBy(
         () -> jedis.sendCommand(Protocol.Command.GETRANGE, "key", "0", "NaN"))
             .hasMessageContaining(ERROR_NOT_INTEGER);
+  }
+
+  @Test
+  public void givenRangeIsBiggerThanMinOrMax_returnsNotIntegerError() {
+    assertThatThrownBy(
+        () -> jedis.sendCommand(Protocol.Command.GETRANGE, "key", "0", "9223372036854775808"))
+            .hasMessage("ERR " + ERROR_NOT_INTEGER);
+
+    assertThatThrownBy(
+        () -> jedis.sendCommand(Protocol.Command.GETRANGE, "key", "0", "-9223372036854775809"))
+            .hasMessage("ERR " + ERROR_NOT_INTEGER);
+  }
+
+  @Test
+  public void givenWrongType_returnsWrongTypeError() {
+    jedis.sadd("set", "value");
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.GETRANGE, "set", "0", "1"))
+        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
+
+    jedis.hset("hash", "field", "value");
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.GETRANGE, "hash", "0", "1"))
+        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -229,4 +255,16 @@ public abstract class AbstractGetRangeIntegrationTest implements RedisPortSuppli
     String range = jedis.getrange(key, 7, 14);
     assertThat(range).isEqualTo("");
   }
+
+  @Test
+  public void testConcurrentGetrange_whileUpdating() {
+    Jedis jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis.set("key", "1");
+
+    new ConcurrentLoopingThreads(10000,
+        (i) -> jedis.set("key", Integer.toString(random.nextInt(10000))),
+        (i) -> Integer.parseInt(jedis2.getrange("key", 0, 5)))
+            .run();
+  }
+
 }
