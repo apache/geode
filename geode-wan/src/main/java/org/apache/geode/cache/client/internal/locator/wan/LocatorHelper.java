@@ -59,7 +59,7 @@ public class LocatorHelper {
           }
         }
         if (tempLocator != null) {
-          if (!locator.detailCompare(tempLocator)) {
+          if (!locator.additionalCheckEqual(tempLocator)) {
             existingValue.remove(tempLocator);
             ConcurrentHashMap<Integer, Set<String>> allServerLocatorsInfo =
                 (ConcurrentHashMap<Integer, Set<String>>) locatorListener
