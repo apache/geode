@@ -560,6 +560,11 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     }
   }
 
+  /**
+   * this starts with a primary bucket, clears it, and distribute a DistributedClearOperation
+   * .OperationType.OP_CLEAR operation to other members.
+   * If this member is not locked yet, lock it and send OP_LOCK_FOR_CLEAR to others first.
+   */
   @Override
   public void cmnClearRegion(RegionEventImpl regionEvent, boolean cacheWrite, boolean useRVV) {
     if (!getBucketAdvisor().isPrimary()) {
@@ -576,9 +581,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
         .isLockedForListenerAndClientNotification();
 
     try {
-      if (!isLockedAlready) {
-        obtainWriteLocksForClear(regionEvent, participants);
-      }
+      obtainWriteLocksForClear(regionEvent, participants, isLockedAlready);
       // no need to dominate my own rvv.
       // Clear is on going here, there won't be GII for this member
       clearRegionLocally(regionEvent, cacheWrite, null);
@@ -586,9 +589,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
 
       // TODO: call reindexUserDataRegion if there're lucene indexes
     } finally {
-      if (!isLockedAlready) {
-        releaseWriteLocksForClear(regionEvent, participants);
-      }
+      releaseWriteLocksForClear(regionEvent, participants, isLockedAlready);
     }
   }
 

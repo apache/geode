@@ -41,6 +41,10 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
+/**
+ * this message is for operations no the partition region level, could be sent by any originating
+ * member to the other members hosting this partition region
+ */
 public class PartitionedRegionClearMessage extends PartitionMessage {
 
   public enum OperationType {

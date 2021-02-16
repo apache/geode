@@ -163,6 +163,10 @@ public class DistributedClearOperation extends DistributedCacheOperation {
   }
 
 
+  /**
+   * this message is to operate on the BucketRegion level, used by the primary member to distribute
+   * clear message to secondary buckets
+   */
   public static class ClearRegionMessage extends CacheOperationMessage {
 
     protected EventID eventID;
@@ -184,6 +188,10 @@ public class DistributedClearOperation extends DistributedCacheOperation {
        * information.
        */
       return OperationExecutors.HIGH_PRIORITY_EXECUTOR;
+    }
+
+    public OperationType getOperationType() {
+      return clearOp;
     }
 
     @Override
@@ -211,7 +219,7 @@ public class DistributedClearOperation extends DistributedCacheOperation {
       switch (this.clearOp) {
         case OP_CLEAR:
           region.clearRegionLocally((RegionEventImpl) event, false, this.rvv);
-          region.notifyBridgeClients((RegionEventImpl) event);
+          region.notifyBridgeClients(event);
           this.appliedOperation = true;
           break;
         case OP_LOCK_FOR_CLEAR:
