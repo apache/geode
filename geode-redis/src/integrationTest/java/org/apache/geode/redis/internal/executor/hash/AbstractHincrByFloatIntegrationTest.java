@@ -15,6 +15,7 @@
 
 package org.apache.geode.redis.internal.executor.hash;
 
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.offset;
@@ -55,28 +56,8 @@ public abstract class AbstractHincrByFloatIntegrationTest implements RedisPortSu
   }
 
   @Test
-  public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HINCRBYFLOAT))
-        .hasMessageContaining("ERR wrong number of arguments for 'hincrbyfloat' command");
-  }
-
-  @Test
-  public void givenHashNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HINCRBYFLOAT, "key"))
-        .hasMessageContaining("ERR wrong number of arguments for 'hincrbyfloat' command");
-  }
-
-  @Test
-  public void givenIncrementNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HINCRBYFLOAT, "key", "hash"))
-        .hasMessageContaining("ERR wrong number of arguments for 'hincrbyfloat' command");
-  }
-
-  @Test
-  public void givenMoreThanFourArgumentsProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(
-        () -> jedis.sendCommand(Protocol.Command.HINCRBYFLOAT, "key", "hash", "5", "extraArg"))
-            .hasMessageContaining("ERR wrong number of arguments for 'hincrbyfloat' command");
+  public void errors_GivenWrongNumberOfArguments() {
+    assertExactNumberOfArgs(jedis, Protocol.Command.HINCRBYFLOAT, 3);
   }
 
   @Test

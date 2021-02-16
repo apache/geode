@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -48,15 +49,8 @@ public abstract class AbstractStringIntegrationTest implements RedisPortSupplier
   }
 
   @Test
-  public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.STRLEN))
-        .hasMessageContaining("ERR wrong number of arguments for 'strlen' command");
-  }
-
-  @Test
-  public void givenMoreThanTwoArgumentsProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.STRLEN, "key", "extraArg"))
-        .hasMessageContaining("ERR wrong number of arguments for 'strlen' command");
+  public void strlen_errorsGivenWrongNumberOfArguments() {
+    assertExactNumberOfArgs(jedis, Protocol.Command.STRLEN, 1);
   }
 
   @Test
@@ -130,10 +124,7 @@ public abstract class AbstractStringIntegrationTest implements RedisPortSupplier
 
   @Test
   public void testDecr_ErrorsWithWrongNumberOfArguments() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.DECR))
-        .hasMessageContaining("ERR wrong number of arguments for 'decr' command");
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.DECR, "1", "2"))
-        .hasMessageContaining("ERR wrong number of arguments for 'decr' command");
+    assertExactNumberOfArgs(jedis, Protocol.Command.DECR, 1);
   }
 
   @Test

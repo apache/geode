@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -45,15 +46,8 @@ public abstract class AbstractBitPosIntegrationTest implements RedisPortSupplier
   }
 
   @Test
-  public void bitpos_givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.BITPOS))
-        .hasMessageContaining("ERR wrong number of arguments for 'bitpos' command");
-  }
-
-  @Test
-  public void bitpos_givenBitNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.BITPOS, "key"))
-        .hasMessageContaining("ERR wrong number of arguments for 'bitpos' command");
+  public void bitpos_errors_givenTooFewArguments() {
+    assertAtLeastNArgs(jedis, Protocol.Command.BITPOS, 2);
   }
 
   @Test

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor.set;
 
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -51,15 +52,8 @@ public abstract class AbstractSRemIntegrationTest implements RedisPortSupplier {
   }
 
   @Test
-  public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SREM))
-        .hasMessageContaining("ERR wrong number of arguments for 'srem' command");
-  }
-
-  @Test
-  public void givenMemberNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SREM, "key"))
-        .hasMessageContaining("ERR wrong number of arguments for 'srem' command");
+  public void errors_givenTooFewArguments() {
+    assertAtLeastNArgs(jedis, Protocol.Command.SREM, 2);
   }
 
   @Test

@@ -16,7 +16,7 @@
 
 package org.apache.geode.redis.internal.executor.connection;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
 
 import org.junit.After;
 import org.junit.Before;
@@ -44,14 +44,7 @@ public abstract class AbstractEchoIntegrationTest implements RedisPortSupplier {
   }
 
   @Test
-  public void givenLessThanTwoArguments_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.ECHO))
-        .hasMessageContaining("ERR wrong number of arguments for 'echo' command");
-  }
-
-  @Test
-  public void givenMoreThanTwoArguments_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.ECHO, "hello!", "extraArg"))
-        .hasMessageContaining("ERR wrong number of arguments for 'echo' command");
+  public void errors_GivenWrongNumberOfArguments() {
+    assertExactNumberOfArgs(jedis, Protocol.Command.ECHO, 1);
   }
 }

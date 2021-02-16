@@ -14,8 +14,8 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.After;
 import org.junit.Before;
@@ -44,28 +44,8 @@ public abstract class AbstractPSetEXIntegrationTest implements RedisPortSupplier
   }
 
   @Test
-  public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.PSETEX))
-        .hasMessageContaining("ERR wrong number of arguments for 'psetex' command");
-  }
-
-  @Test
-  public void givenTimeNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.PSETEX, "key"))
-        .hasMessageContaining("ERR wrong number of arguments for 'psetex' command");
-  }
-
-  @Test
-  public void givenValueNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.PSETEX, "key", "1000"))
-        .hasMessageContaining("ERR wrong number of arguments for 'psetex' command");
-  }
-
-  @Test
-  public void givenMoreThanFourArgumentsProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(
-        () -> jedis.sendCommand(Protocol.Command.PSETEX, "key", "1000", "value", "extraArg"))
-            .hasMessageContaining("ERR wrong number of arguments for 'psetex' command");
+  public void errors_givenWrongNumberOfArguments() {
+    assertExactNumberOfArgs(jedis, Protocol.Command.PSETEX, 3);
   }
 
   @Test

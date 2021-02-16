@@ -16,8 +16,8 @@
 
 package org.apache.geode.redis.internal.executor.server;
 
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.List;
 
@@ -48,8 +48,7 @@ public abstract class AbstractTimeIntegrationTest implements RedisPortSupplier {
 
   @Test
   public void givenMoreThanOneArgument_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.TIME, "extraArg"))
-        .hasMessageContaining("ERR wrong number of arguments for 'time' command");
+    assertExactNumberOfArgs(jedis, Protocol.Command.TIME, 0);
   }
 
   @Test

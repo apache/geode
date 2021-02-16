@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -44,9 +45,8 @@ public abstract class AbstractBitCountIntegrationTest implements RedisPortSuppli
   }
 
   @Test
-  public void bitcount_givenLessThanTwoArguments_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.BITCOUNT))
-        .hasMessageContaining("ERR wrong number of arguments for 'bitcount' command");
+  public void bitcount_errors_givenTooFewArguments() {
+    assertAtLeastNArgs(jedis, Protocol.Command.BITCOUNT, 1);
   }
 
   @Test
