@@ -76,5 +76,7 @@ public interface PartitionResolver<K, V> extends CacheCallback {
    *
    * @return String name
    */
-  String getName();
+  default String getName() {
+    return getClass().getName();
+  }
 }

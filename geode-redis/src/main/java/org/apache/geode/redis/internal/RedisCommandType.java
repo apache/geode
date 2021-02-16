@@ -33,6 +33,7 @@ import org.apache.geode.redis.internal.ParameterRequirements.UnspecifiedParamete
 import org.apache.geode.redis.internal.executor.Executor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.executor.UnknownExecutor;
+import org.apache.geode.redis.internal.executor.cluster.ClusterExecutor;
 import org.apache.geode.redis.internal.executor.connection.AuthExecutor;
 import org.apache.geode.redis.internal.executor.connection.EchoExecutor;
 import org.apache.geode.redis.internal.executor.connection.PingExecutor;
@@ -276,6 +277,9 @@ public enum RedisCommandType {
   SLOWLOG(new SlowlogExecutor(), UNSUPPORTED, new SlowlogParameterRequirements()),
   TIME(new TimeExecutor(), UNSUPPORTED, new ExactParameterRequirements(1)),
 
+  /***********  CLUSTER  **********/
+  CLUSTER(new ClusterExecutor(), UNSUPPORTED, new MinimumParameterRequirements(1)),
+
   /////////// UNIMPLEMENTED /////////////////////
 
   ACL(null, UNIMPLEMENTED),
@@ -288,7 +292,6 @@ public enum RedisCommandType {
   BZPOPMIN(null, UNIMPLEMENTED),
   BZPOPMAX(null, UNIMPLEMENTED),
   CLIENT(null, UNIMPLEMENTED),
-  CLUSTER(null, UNIMPLEMENTED),
   COMMAND(null, UNIMPLEMENTED),
   CONFIG(null, UNIMPLEMENTED),
   DEBUG(null, UNIMPLEMENTED),
