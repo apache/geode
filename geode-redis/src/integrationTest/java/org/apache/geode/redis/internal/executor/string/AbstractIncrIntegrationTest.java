@@ -110,6 +110,13 @@ public abstract class AbstractIncrIntegrationTest implements RedisPortSupplier {
     assertThat(jedis.get("contestedKey")).isEqualTo(Integer.toString(2 * ITERATION_COUNT));
   }
 
+  @Test
+  public void testIncr_shouldError_onValueGreaterThanMax() {
+    jedis.set("key", "9223372036854775808");
+
+    assertThatThrownBy(() -> jedis.incrBy("key", 1)).hasMessageContaining(ERROR_NOT_INTEGER);
+  }
+
   private String randString() {
     return Long.toHexString(Double.doubleToLongBits(Math.random()));
   }

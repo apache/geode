@@ -36,7 +36,6 @@ public abstract class AbstractStringIntegrationTest implements RedisPortSupplier
   private Jedis jedis;
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
-  private static final int NUM_ITERATIONS = 1000;
 
   @Before
   public void setUp() {
