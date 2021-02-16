@@ -1436,7 +1436,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     }
 
     // gateway-sender state
-    if (generateDefaults() || sender.getState() != null) {
+    if (sender.getState() != null) {
       atts.addAttribute("", "", STATE, "", sender.getState().getState());
     }
 
