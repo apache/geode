@@ -21,6 +21,7 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.anyLong;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
@@ -300,6 +301,52 @@ public class RemoteOperationMessageTest {
         eq(startTime));
     assertThat(captor.getValue().getCause()).isInstanceOf(RemoteOperationException.class)
         .hasMessageContaining("system failure");
+  }
+
+
+  @Test
+  public void processInvokesDoRemoteOperationIfConserveSocketsIsFalse() {
+    doReturn("false").when(msg).getConserveSocketsSetting(dm);
+    doNothing().when(msg).doRemoteOperation(dm, cache);
+
+    msg.process(dm);
+
+    verify(msg).doRemoteOperation(dm, cache);
+    verify(msg, never()).isTransactional();
+  }
+
+  @Test
+  public void processInvokesDoRemoteOperationIfConserveSocketsIsTrueAndNotTransactional() {
+    doReturn("true").when(msg).getConserveSocketsSetting(dm);
+    doReturn(false).when(msg).isTransactional();
+    doNothing().when(msg).doRemoteOperation(dm, cache);
+
+    msg.process(dm);
+
+    verify(msg).doRemoteOperation(dm, cache);
+    verify(msg).isTransactional();
+  }
+
+  @Test
+  public void isTransactionalReturnsFalseIfTXUniqueIdIsNOTX() {
+    assertThat(msg.getTXUniqId()).isEqualTo(TXManagerImpl.NOTX);
+    assertThat(msg.isTransactional()).isFalse();
+  }
+
+  @Test
+  public void isTransactionalReturnsTrueIfCannotParticipateInTransaction() {
+    doReturn(1).when(msg).getTXUniqId();
+    doReturn(false).when(msg).canParticipateInTransaction();
+
+    assertThat(msg.isTransactional()).isFalse();
+  }
+
+  @Test
+  public void isTransactionalReturnsFalseIfHasTXUniqueIdAndCanParticipateInTransaction() {
+    doReturn(1).when(msg).getTXUniqId();
+
+    assertThat(msg.canParticipateInTransaction()).isTrue();
+    assertThat(msg.isTransactional()).isTrue();
   }
 
   private static class TestableRemoteOperationMessage extends RemoteOperationMessage {

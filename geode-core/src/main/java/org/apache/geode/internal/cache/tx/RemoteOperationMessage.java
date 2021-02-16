@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.tx;
 
+import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCKETS;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -177,7 +179,28 @@ public abstract class RemoteOperationMessage extends DistributionMessage
       sendReply(getSender(), this.processorId, dm, replyException, null, 0);
       return;
     }
-    dm.getExecutors().getWaitingThreadPool().execute(() -> doRemoteOperation(dm, cache));
+
+    String conserveSockets = getConserveSocketsSetting(dm);
+    if (conserveSockets != null && conserveSockets.equals("false")) {
+      // reply inline for CONSERVE_SOCKETS == false case.
+      doRemoteOperation(dm, cache);
+      return;
+    }
+
+    if (isTransactional()) {
+      dm.getExecutors().getWaitingThreadPool().execute(() -> doRemoteOperation(dm, cache));
+    } else {
+      // reply inline for non-transactional case.
+      doRemoteOperation(dm, cache);
+    }
+  }
+
+  String getConserveSocketsSetting(ClusterDistributionManager dm) {
+    return dm.getSystem().getProperties().getProperty(CONSERVE_SOCKETS);
+  }
+
+  boolean isTransactional() {
+    return getTXUniqId() != TXManagerImpl.NOTX && canParticipateInTransaction();
   }
 
   void doRemoteOperation(ClusterDistributionManager dm, InternalCache cache) {
