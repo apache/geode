@@ -228,7 +228,6 @@ public enum RedisCommandType {
   DECRBY(new DecrByExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
   GETBIT(new GetBitExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
   GETSET(new GetSetExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
-  INCR(new IncrExecutor(), UNSUPPORTED, new ExactParameterRequirements(2)),
   INCRBY(new IncrByExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
   MSET(new MSetExecutor(), UNSUPPORTED,
       new MinimumParameterRequirements(3).and(new OddParameterRequirements())),
