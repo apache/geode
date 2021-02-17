@@ -220,17 +220,18 @@ public class DeltaForceSizingFlagDUnitTest {
     memberVM.invoke("Create replicateRegion", () -> {
       Cache cache = ClusterStartupRule.getCache();
       assertThat(cache).isNotNull();
-      RegionFactory<Integer, TestDelta> regionFactory = cache.createRegionFactory();
-      regionFactory.setDiskSynchronous(true);
-      regionFactory.setDataPolicy(DataPolicy.REPLICATE);
-      regionFactory.setScope(Scope.DISTRIBUTED_ACK);
-      regionFactory.setEvictionAttributes(EvictionAttributes.createLRUMemoryAttributes(1,
-          new TestObjectSizer(), EvictionAction.OVERFLOW_TO_DISK));
 
       DiskStoreFactory diskStoreFactory = cache.createDiskStoreFactory();
       diskStoreFactory.setDiskDirs(getMyDiskDirs());
       diskStoreFactory.create(RR_DISK_STORE_NAME);
+
+      RegionFactory<Integer, TestDelta> regionFactory = cache.createRegionFactory();
+      regionFactory.setDataPolicy(DataPolicy.REPLICATE);
       regionFactory.setDiskStoreName(RR_DISK_STORE_NAME);
+      regionFactory.setDiskSynchronous(true);
+      regionFactory.setEvictionAttributes(EvictionAttributes.createLRUMemoryAttributes(1,
+          new TestObjectSizer(), EvictionAction.OVERFLOW_TO_DISK));
+      regionFactory.setScope(Scope.DISTRIBUTED_ACK);
 
       regionFactory.create(TEST_REGION_NAME);
     });
@@ -277,15 +278,15 @@ public class DeltaForceSizingFlagDUnitTest {
       Cache cache = ClusterStartupRule.getCache();
       assertThat(cache).isNotNull();
 
-      RegionFactory<Integer, TestDelta> regionFactory = cache.createRegionFactory();
-
-      regionFactory.setDiskSynchronous(true);
       PartitionAttributesFactory<Integer, TestDelta> paf =
           new PartitionAttributesFactory<>();
       paf.setRedundantCopies(1);
       PartitionAttributes<Integer, TestDelta> prAttr = paf.create();
-      regionFactory.setPartitionAttributes(prAttr);
+
+      RegionFactory<Integer, TestDelta> regionFactory = cache.createRegionFactory();
       regionFactory.setDataPolicy(DataPolicy.PARTITION);
+      regionFactory.setDiskSynchronous(true);
+      regionFactory.setPartitionAttributes(prAttr);
       regionFactory.setSubscriptionAttributes(new SubscriptionAttributes(InterestPolicy.ALL));
       regionFactory.create(TEST_REGION_NAME);
     });
