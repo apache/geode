@@ -60,8 +60,10 @@ public abstract class AbstractIncrIntegrationTest implements RedisPortSupplier {
     String oneHundredKey = randString();
     String negativeOneHundredKey = randString();
     String unsetKey = randString();
+
     final int oneHundredValue = 100;
     final int negativeOneHundredValue = -100;
+
     jedis.set(oneHundredKey, Integer.toString(oneHundredValue));
     jedis.set(negativeOneHundredKey, Integer.toString(negativeOneHundredValue));
 
@@ -106,6 +108,13 @@ public abstract class AbstractIncrIntegrationTest implements RedisPortSupplier {
             .run();
 
     assertThat(jedis.get("contestedKey")).isEqualTo(Integer.toString(2 * ITERATION_COUNT));
+  }
+
+  @Test
+  public void testIncr_shouldError_onValueGreaterThanMax() {
+    jedis.set("key", "9223372036854775808");
+
+    assertThatThrownBy(() -> jedis.incr("key")).hasMessageContaining(ERROR_NOT_INTEGER);
   }
 
   private String randString() {
