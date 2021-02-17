@@ -76,6 +76,7 @@ spring-jcl-5.3.0.jar
 jetty-http-9.4.36.v20210114.jar
 jetty-io-9.4.36.v20210114.jar
 jetty-xml-9.4.36.v20210114.jar
+jetty-util-ajax-9.4.36.v20210114.jar
 jetty-util-9.4.36.v20210114.jar
 log4j-slf4j-impl-2.13.3.jar
 log4j-core-2.13.3.jar
