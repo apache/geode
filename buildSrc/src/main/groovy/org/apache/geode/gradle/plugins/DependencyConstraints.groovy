@@ -91,8 +91,6 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'cglib', name: 'cglib', version: get('cglib.version'))
         api(group: 'com.arakelian', name: 'java-jq', version: '1.1.0')
         api(group: 'com.carrotsearch.randomizedtesting', name: 'randomizedtesting-runner', version: '2.7.8')
-        api(group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-joda', version: get('jackson.version'))
-        api(group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: get('jackson.version'))
         api(group: 'com.github.davidmoten', name: 'geo', version: '0.7.7')
         api(group: 'com.github.stefanbirkner', name: 'system-rules', version: '1.19.0')
         api(group: 'com.github.stephenc.findbugs', name: 'findbugs-annotations', version: '1.3.9-1')
@@ -183,6 +181,11 @@ class DependencyConstraints implements Plugin<Project> {
       entry('jackson-annotations')
       entry('jackson-core')
       entry('jackson-databind')
+    }
+
+    dependencySet(group: 'com.fasterxml.jackson.datatype', version: get('jackson.version')) {
+      entry('jackson-datatype-joda')
+      entry('jackson-datatype-jsr310')
     }
 
     dependencySet(group: 'com.jayway.jsonpath', version: '2.5.0') {
