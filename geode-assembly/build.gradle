@@ -355,15 +355,14 @@ tasks.register('defaultCacheConfig', JavaExec) {
 def cp = {
   // first add all the dependent project jars
   def jars = configurations.geodeArchives.dependencies.collect { it.dependencyProject }
-    .findAll { !(it.name.contains('geode-web') || it.name.contains('geode-pulse')
-            || it.name.contains('geode-modular-deployment')) }
+    .findAll { !(it.name.contains('geode-web') || it.name.contains('geode-pulse')) }
     .collect { it.jar.archiveName }
 
   // then add all the dependencies of the dependent jars
   def depJars = configurations.geodeArchives.dependencies.collect {
     it.dependencyProject.findAll {
-      !(it.name.contains('geode-web') || it.name.contains('geode-pulse')
-              || it.name.contains('geode-modular-deployment'))
+      !(it.name.contains('geode-web') ||
+        it.name.contains('geode-pulse'))
     }.collect {
       it.configurations.runtimeClasspath.collect { it.getName() }.findAll { !(
           it.contains('geode-all-bom') ||
