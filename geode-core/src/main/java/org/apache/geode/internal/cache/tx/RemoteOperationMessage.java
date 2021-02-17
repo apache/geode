@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.tx;
 
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -176,7 +177,23 @@ public abstract class RemoteOperationMessage extends DistributionMessage
       sendReply(getSender(), this.processorId, dm, replyException, null, 0);
       return;
     }
-    dm.getExecutors().getWaitingThreadPool().execute(() -> doRemoteOperation(dm, cache));
+
+    if (dm.getSystem().threadOwnsResources()) {
+      // reply inline if thread owns socket.
+      doRemoteOperation(dm, cache);
+      return;
+    }
+
+    if (isTransactional()) {
+      dm.getExecutors().getWaitingThreadPool().execute(() -> doRemoteOperation(dm, cache));
+    } else {
+      // reply inline for non-transactional case.
+      doRemoteOperation(dm, cache);
+    }
+  }
+
+  boolean isTransactional() {
+    return getTXUniqId() != TXManagerImpl.NOTX && canParticipateInTransaction();
   }
 
   void doRemoteOperation(ClusterDistributionManager dm, InternalCache cache) {
