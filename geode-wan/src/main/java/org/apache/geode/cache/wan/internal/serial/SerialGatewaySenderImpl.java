@@ -108,8 +108,7 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
       InternalDistributedSystem system = cache.getInternalDistributedSystem();
       system.handleResourceEvent(ResourceEvent.GATEWAYSENDER_START, this);
 
-      logger
-          .info("Started  {}", this);
+      logger.info("Started  {}", this);
 
       enqueueTempEvents();
     } finally {
