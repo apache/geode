@@ -313,7 +313,7 @@ dependencies {
     implementation('com.healthmarketscience.rmiio:rmiio')
 
     //Geode-common has annotations and other pieces used geode-core
-    implementation(project(':geode-common'))
+    api(project(':geode-common'))
     implementation(project(':geode-logging'))
     implementation(project(':geode-membership'))
     implementation(project(':geode-unsafe'))
