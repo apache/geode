@@ -19,16 +19,21 @@ import java.io.Serializable;
 import java.net.InetAddress;
 import java.util.Set;
 
-import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.cache.execute.RegionFunctionContext;
+import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.internal.cache.LocalDataSet;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.inet.LocalHostUtil;
+import org.apache.geode.redis.internal.RegionProvider;
+import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 
-public class BucketRetrievalFunction implements Function<Void> {
+public class BucketRetrievalFunction implements InternalFunction<Void> {
 
+  public static final String ID = "REDIS_BUCKET_SLOT_FUNCTION";
   private static final String hostAddress;
+  private final int redisPort;
 
   static {
     InetAddress localhost = null;
@@ -40,26 +45,54 @@ public class BucketRetrievalFunction implements Function<Void> {
     hostAddress = localhost == null ? "localhost" : localhost.getHostAddress();
   }
 
+  public BucketRetrievalFunction(int redisPort) {
+    this.redisPort = redisPort;
+  }
+
+  public static void register(int redisPort) {
+    FunctionService.registerFunction(new BucketRetrievalFunction(redisPort));
+  }
+
   @Override
   public void execute(FunctionContext<Void> context) {
-    LocalDataSet local = (LocalDataSet) PartitionRegionHelper
-        .getLocalDataForContext((RegionFunctionContext) context);
+    Region<ByteArrayWrapper, ByteArrayWrapper> region =
+        context.getCache().getRegion(RegionProvider.REDIS_DATA_REGION);
 
-    MemberBuckets mb = new MemberBuckets(hostAddress, local.getBucketSet());
+    LocalDataSet local = (LocalDataSet) PartitionRegionHelper.getLocalPrimaryData(region);
+
+    MemberBuckets mb =
+        new MemberBuckets(context.getMemberName(), hostAddress, redisPort, local.getBucketSet());
     context.getResultSender().lastResult(mb);
   }
 
+  @Override
+  public String getId() {
+    return ID;
+  }
+
   public static class MemberBuckets implements Serializable {
+    private final String memberId;
     private final String hostAddress;
+    private final int port;
     private final Set<Integer> bucketIds;
 
-    public MemberBuckets(String hostAddress, Set<Integer> bucketIds) {
+    public MemberBuckets(String memberId, String hostAddress, int port, Set<Integer> bucketIds) {
+      this.memberId = memberId;
       this.hostAddress = hostAddress;
+      this.port = port;
       this.bucketIds = bucketIds;
+    }
+
+    public String getMemberId() {
+      return memberId;
     }
 
     public String getHostAddress() {
       return hostAddress;
+    }
+
+    public int getPort() {
+      return port;
     }
 
     public Set<Integer> getBucketIds() {

@@ -17,7 +17,6 @@ package org.apache.geode.redis.internal.cluster;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -58,6 +57,7 @@ public class RedisPartitionResolverDUnitTest {
 
   private static int redisServerPort1;
   private static int redisServerPort2;
+  private static int redisServerPort3;
 
   @BeforeClass
   public static void classSetup() {
@@ -68,6 +68,7 @@ public class RedisPartitionResolverDUnitTest {
 
     redisServerPort1 = cluster.getRedisPort(1);
     redisServerPort2 = cluster.getRedisPort(2);
+    redisServerPort3 = cluster.getRedisPort(3);
 
     jedis1 = new Jedis(LOCAL_HOST, redisServerPort1, JEDIS_TIMEOUT);
   }
@@ -99,8 +100,28 @@ public class RedisPartitionResolverDUnitTest {
 
     assertThat(buckets1.size() + buckets2.size() + buckets3.size())
         .isEqualTo(RegionProvider.REDIS_REGION_BUCKETS);
+  }
 
+  @Test
+  public void testClusterSlotsReferencesAllServers() {
+    int numKeys = 1000;
+    for (int i = 0; i < numKeys; i++) {
+      String key = "key-" + i;
+      jedis1.set(key, "value-" + i);
+    }
 
+    List<Object> clusterSlots = jedis1.clusterSlots();
+
+    assertThat(clusterSlots).hasSize(RegionProvider.REDIS_REGION_BUCKETS);
+
+    // Gather all unique ports
+    Set<Long> ports = new HashSet<>();
+    for (Object slotObj : clusterSlots) {
+      ports.add((Long) (((List<Object>) ((List<Object>) slotObj).get(2))).get(1));
+    }
+
+    assertThat(ports).containsExactlyInAnyOrder((long) redisServerPort1, (long) redisServerPort2,
+        (long) redisServerPort3);
   }
 
   private Map<ByteArrayWrapper, Integer> getKeyToBucketMap(MemberVM vm) {

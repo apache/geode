@@ -277,7 +277,7 @@ public enum RedisCommandType {
   SLOWLOG(new SlowlogExecutor(), UNSUPPORTED, new SlowlogParameterRequirements()),
   TIME(new TimeExecutor(), UNSUPPORTED, new ExactParameterRequirements(1)),
 
-  /***********  CLUSTER  **********/
+  /*********** CLUSTER **********/
   CLUSTER(new ClusterExecutor(), UNSUPPORTED, new MinimumParameterRequirements(1)),
 
   /////////// UNIMPLEMENTED /////////////////////

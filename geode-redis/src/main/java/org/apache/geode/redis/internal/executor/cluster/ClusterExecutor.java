@@ -22,18 +22,27 @@ import static org.apache.geode.redis.internal.cluster.BucketRetrievalFunction.Me
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.cache.partition.PartitionMemberInfo;
+import org.apache.geode.cache.partition.PartitionRegionHelper;
+import org.apache.geode.cache.partition.PartitionRegionInfo;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.cluster.BucketRetrievalFunction;
+import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
@@ -68,20 +77,25 @@ public class ClusterExecutor extends AbstractExecutor {
     return response;
   }
 
-  // @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked")
   private RedisResponse getSlots(ExecutionHandlerContext ctx) {
-    Region<?, ?> region = ctx.getRegionProvider().getDataRegion();
+    Region<ByteArrayWrapper, RedisData> dataRegion = ctx.getRegionProvider().getDataRegion();
+    PartitionRegionInfo info = PartitionRegionHelper.getPartitionRegionInfo(dataRegion);
+    Set<DistributedMember> membersWithDataRegion = new HashSet<>();
+    for (PartitionMemberInfo memberInfo : info.getPartitionMemberInfo()) {
+      membersWithDataRegion.add(memberInfo.getDistributedMember());
+    }
 
-    Execution<Void, MemberBuckets, List<MemberBuckets>> execution =
-        FunctionService.onRegion(region);
     ResultCollector<MemberBuckets, List<MemberBuckets>> resultCollector =
-        execution.execute(new BucketRetrievalFunction());
+        FunctionService.onMembers(membersWithDataRegion).execute(BucketRetrievalFunction.ID);
 
     SortedMap<Integer, String> bucketToMemberMap = new TreeMap<>();
+    Map<String, Pair<String, Integer>> memberToHostPortMap = new TreeMap<>();
     int retrievedBucketCount = 0;
     for (MemberBuckets m : resultCollector.getResult()) {
+      memberToHostPortMap.put(m.getMemberId(), Pair.of(m.getHostAddress(), m.getPort()));
       for (Integer id : m.getBucketIds()) {
-        bucketToMemberMap.put(id, m.getHostAddress());
+        bucketToMemberMap.put(id, m.getMemberId());
         retrievedBucketCount++;
       }
     }
@@ -96,10 +110,11 @@ public class ClusterExecutor extends AbstractExecutor {
     List<Object> slots = new ArrayList<>();
 
     for (String member : bucketToMemberMap.values()) {
+      Pair<String, Integer> hostAndPort = memberToHostPortMap.get(member);
       List<?> entry = Arrays.asList(
           index * slotsPerBucket,
           ((index + 1) * slotsPerBucket) - 1,
-          Arrays.asList(member, ctx.getServerPort()));
+          Arrays.asList(hostAndPort.getLeft(), hostAndPort.getRight()));
 
       slots.add(entry);
       index++;
