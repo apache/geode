@@ -166,7 +166,7 @@ public class DeltaForceSizingFlagDUnitTest {
     return vm0.invoke("getSizeFromPRStats", () -> {
       Cache cache = ClusterStartupRule.getCache();
       assertThat(cache).isNotNull();
-      LocalRegion region = (LocalRegion) cache.getRegion(TEST_REGION_NAME);
+      InternalRegion region = (InternalRegion) cache.getRegion(TEST_REGION_NAME);
       if (region instanceof PartitionedRegion) {
         long total = 0;
         PartitionedRegion pr = (PartitionedRegion) region;
@@ -186,7 +186,7 @@ public class DeltaForceSizingFlagDUnitTest {
 
       Cache cache = ClusterStartupRule.getCache();
       assertThat(cache).isNotNull();
-      LocalRegion region = (LocalRegion) cache.getRegion(TEST_REGION_NAME);
+      InternalRegion region = (InternalRegion) cache.getRegion(TEST_REGION_NAME);
       return region.getEvictionCounter();
     });
   }
@@ -195,7 +195,7 @@ public class DeltaForceSizingFlagDUnitTest {
     return vm0.invoke("getObjectSizerInvocations", () -> {
       Cache cache = ClusterStartupRule.getCache();
       assertThat(cache).isNotNull();
-      LocalRegion region = (LocalRegion) cache.getRegion(TEST_REGION_NAME);
+      InternalRegion region = (InternalRegion) cache.getRegion(TEST_REGION_NAME);
       return getObjectSizerInvocations(region);
     });
   }
@@ -204,12 +204,12 @@ public class DeltaForceSizingFlagDUnitTest {
     vm0.invoke("Put data", () -> {
       Cache cache = ClusterStartupRule.getCache();
       assertThat(cache).isNotNull();
-      LocalRegion region = (LocalRegion) cache.getRegion(TEST_REGION_NAME);
+      InternalRegion region = (InternalRegion) cache.getRegion(TEST_REGION_NAME);
       region.put(DeltaForceSizingFlagDUnitTest.DELTA_KEY, value);
     });
   }
 
-  protected static int getObjectSizerInvocations(LocalRegion region) {
+  protected static int getObjectSizerInvocations(InternalRegion region) {
     TestObjectSizer sizer = (TestObjectSizer) region.getEvictionAttributes().getObjectSizer();
     int result = sizer.invocations.get();
     logger.info("objectSizerInvocations=" + result);
@@ -240,7 +240,7 @@ public class DeltaForceSizingFlagDUnitTest {
     vm.invoke("assertValueType", () -> {
       Cache cache = ClusterStartupRule.getCache();
       assertThat(cache).isNotNull();
-      LocalRegion region = (LocalRegion) cache.getRegion(TEST_REGION_NAME);
+      InternalRegion region = (InternalRegion) cache.getRegion(TEST_REGION_NAME);
       Object value = region.getValueInVM(DeltaForceSizingFlagDUnitTest.DELTA_KEY);
       switch (expectedType) {
         case RAW_VALUE:
