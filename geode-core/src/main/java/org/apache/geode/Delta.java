@@ -41,6 +41,7 @@ public interface Delta {
    * presence of a delta by calling {@link Delta#hasDelta()} on the object. The delta is written to
    * the {@link DataOutput} object provided by GemFire.
    *
+   * <p>
    * Any delta state should be reset in this method.
    */
   void toDelta(DataOutput out) throws IOException;
@@ -61,10 +62,12 @@ public interface Delta {
    * These are used to monitor the health of Geode instances, and for balancing memory usage across
    * partitioned regions.
    *
+   * <p>
    * There is a system property, gemfire.DELTAS_RECALCULATE_SIZE, which can be used to cause all
    * deltas to trigger entry size recalculation when deltas are applied. By default, this is set
    * to 'false' because of potential performance impacts when every delta triggers a recalculation.
    *
+   * <p>
    * To allow entry size recalculation on a per-delta basis, classes that extend the Delta interface
    * should override this method to return 'true'. This may impact performance of specific delta
    * types, but will not globally affect the performance of other Geode delta operations.
