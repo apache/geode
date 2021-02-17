@@ -14,11 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.util.Random;
@@ -106,8 +102,8 @@ public class DeltaForceSizingFlagDUnitTest {
 
     assertValueType(vm1, ValueType.RAW_VALUE);
     assertValueType(vm2, ValueType.CD_SERIALIZED);
-    assertEquals(1, getObjectSizerInvocations(vm1));
-    assertEquals(0, getObjectSizerInvocations(vm2));
+    assertThat(getObjectSizerInvocations(vm1)).isEqualTo(1);
+    assertThat(getObjectSizerInvocations(vm2)).isEqualTo(0);
 
     long origEvictionSize0 = getSizeFromEvictionStats(vm1);
     long origEvictionSize1 = getSizeFromEvictionStats(vm2);
@@ -119,20 +115,20 @@ public class DeltaForceSizingFlagDUnitTest {
     assertValueType(vm1, ValueType.RAW_VALUE);
     assertValueType(vm2, ValueType.CD_DESERIALIZED);
 
-    assertEquals(2, getObjectSizerInvocations(vm1));
+    assertThat(getObjectSizerInvocations(vm1)).isEqualTo(2);
 
     long finalEvictionSize0 = getSizeFromEvictionStats(vm1);
     long finalEvictionSize1 = getSizeFromEvictionStats(vm2);
-    assertEquals(5, finalEvictionSize0 - origEvictionSize0);
+    assertThat(finalEvictionSize0 - origEvictionSize0).isEqualTo(5);
     if (shouldSizeChange) {
-      assertEquals(1, getObjectSizerInvocations(vm2));
+      assertThat(getObjectSizerInvocations(vm2)).isEqualTo(1);
       // I'm not sure what the change in size should be, because we went
       // from serialized to deserialized
-      assertTrue(finalEvictionSize1 - origEvictionSize1 != 0);
+      assertThat(finalEvictionSize1 - origEvictionSize1).isNotEqualTo(0);
     } else {
       // we invoke the sizer once when we deserialize the original to apply the delta to it
-      assertEquals(0, getObjectSizerInvocations(vm2));
-      assertEquals(0, finalEvictionSize1 - origEvictionSize1);
+      assertThat(getObjectSizerInvocations(vm2)).isEqualTo(0);
+      assertThat(finalEvictionSize1 - origEvictionSize1).isEqualTo(0);
     }
   }
 
@@ -158,18 +154,18 @@ public class DeltaForceSizingFlagDUnitTest {
     if (shouldSizeChange) {
       // I'm not sure what the change in size should be, because we went
       // from serialized to deserialized
-      assertTrue(finalPRSize0 - origPRSize0 != 0);
-      assertTrue(finalPRSize1 - origPRSize1 != 0);
+      assertThat(finalPRSize0 - origPRSize0).isNotEqualTo(0);
+      assertThat(finalPRSize1 - origPRSize1).isNotEqualTo(0);
     } else {
-      assertEquals(0, finalPRSize0 - origPRSize0);
-      assertEquals(0, finalPRSize1 - origPRSize1);
+      assertThat(finalPRSize0 - origPRSize0).isEqualTo(0);
+      assertThat(finalPRSize1 - origPRSize1).isEqualTo(0);
     }
   }
 
   private long getSizeFromPRStats(VM vm0) {
     return vm0.invoke("getSizeFromPRStats", () -> {
       Cache cache = ClusterStartupRule.getCache();
-      assertNotNull(cache);
+      assertThat(cache).isNotNull();
       LocalRegion region = (LocalRegion) cache.getRegion(TEST_REGION_NAME);
       if (region instanceof PartitionedRegion) {
         long total = 0;
@@ -189,7 +185,7 @@ public class DeltaForceSizingFlagDUnitTest {
     return vm0.invoke("getSizeFromEvictionStats", () -> {
 
       Cache cache = ClusterStartupRule.getCache();
-      assertNotNull(cache);
+      assertThat(cache).isNotNull();
       LocalRegion region = (LocalRegion) cache.getRegion(TEST_REGION_NAME);
       return region.getEvictionCounter();
     });
@@ -198,7 +194,7 @@ public class DeltaForceSizingFlagDUnitTest {
   private int getObjectSizerInvocations(VM vm0) {
     return vm0.invoke("getObjectSizerInvocations", () -> {
       Cache cache = ClusterStartupRule.getCache();
-      assertNotNull(cache);
+      assertThat(cache).isNotNull();
       LocalRegion region = (LocalRegion) cache.getRegion(TEST_REGION_NAME);
       return getObjectSizerInvocations(region);
     });
@@ -207,7 +203,7 @@ public class DeltaForceSizingFlagDUnitTest {
   private void put(VM vm0, final Object value) {
     vm0.invoke("Put data", () -> {
       Cache cache = ClusterStartupRule.getCache();
-      assertNotNull(cache);
+      assertThat(cache).isNotNull();
       LocalRegion region = (LocalRegion) cache.getRegion(TEST_REGION_NAME);
       region.put(DeltaForceSizingFlagDUnitTest.DELTA_KEY, value);
     });
@@ -223,7 +219,7 @@ public class DeltaForceSizingFlagDUnitTest {
   private void createRR(MemberVM memberVM) {
     memberVM.invoke("Create replicateRegion", () -> {
       Cache cache = ClusterStartupRule.getCache();
-      assertNotNull(cache);
+      assertThat(cache).isNotNull();
       RegionFactory<Integer, TestDelta> regionFactory = cache.createRegionFactory();
       regionFactory.setDiskSynchronous(true);
       regionFactory.setDataPolicy(DataPolicy.REPLICATE);
@@ -243,28 +239,27 @@ public class DeltaForceSizingFlagDUnitTest {
   private void assertValueType(VM vm, final ValueType expectedType) {
     vm.invoke("assertValueType", () -> {
       Cache cache = ClusterStartupRule.getCache();
-      assertNotNull(cache);
+      assertThat(cache).isNotNull();
       LocalRegion region = (LocalRegion) cache.getRegion(TEST_REGION_NAME);
       Object value = region.getValueInVM(DeltaForceSizingFlagDUnitTest.DELTA_KEY);
       switch (expectedType) {
         case RAW_VALUE:
-          assertFalse("Value was " + value + " type " + value.getClass(),
-              (value instanceof CachedDeserializable));
+          assertThat(value).isNotInstanceOf(CachedDeserializable.class);
           break;
         case CD_SERIALIZED:
-          assertTrue("Value was " + value + " type " + value.getClass(),
-              value instanceof CachedDeserializable);
-          assertTrue("Value not serialized",
-              ((CachedDeserializable) value).getValue() instanceof byte[]);
+          assertThat(value).isInstanceOf(CachedDeserializable.class);
+
+          Object serializedValue = ((CachedDeserializable) value).getValue();
+          assertThat(serializedValue).isInstanceOf(byte[].class);
           break;
         case CD_DESERIALIZED:
-          assertTrue("Value was " + value + " type " + value.getClass(),
-              value instanceof CachedDeserializable);
-          assertFalse("Value was serialized",
-              (((CachedDeserializable) value).getValue() instanceof byte[]));
+          assertThat(value).isInstanceOf(CachedDeserializable.class);
+
+          Object deserializedValue = ((CachedDeserializable) value).getValue();
+          assertThat(deserializedValue).isNotInstanceOf(byte[].class);
           break;
         case EVICTED:
-          assertNull(value);
+          assertThat(value).isNull();
           break;
       }
     });
@@ -273,14 +268,14 @@ public class DeltaForceSizingFlagDUnitTest {
   private static File[] getMyDiskDirs() {
     long random = new Random().nextLong();
     File file = new File(Long.toString(random));
-    assertTrue(file.mkdirs());
+    assertThat(file.mkdirs()).isTrue();
     return new File[] {file};
   }
 
   private void createPR(MemberVM memberVM) {
     memberVM.invoke("Create partitioned region", () -> {
       Cache cache = ClusterStartupRule.getCache();
-      assertNotNull(cache);
+      assertThat(cache).isNotNull();
 
       RegionFactory<Integer, TestDelta> regionFactory = cache.createRegionFactory();
 
