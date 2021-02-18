@@ -2036,12 +2036,6 @@ public abstract class AbstractRegionMap extends BaseRegionMap
     final RegionMapPut regionMapPut =
         new RegionMapPut(this, _getOwner(), this, entryEventSerialization, event, ifNew, ifOld,
             overwriteDestroyed, requireOldValue, expectedOldValue);
-    //logger.warn("#LRJ basicPut in ARM key-value: " + event.getKey() + event.getNewValue());
-    StringWriter sw = new StringWriter();
-    PrintWriter pw = new PrintWriter(sw);
-    new Throwable().printStackTrace(pw);
-    logger.warn("basicPut stacktrace: " + sw.toString());
-
     return regionMapPut.put();
   }
 

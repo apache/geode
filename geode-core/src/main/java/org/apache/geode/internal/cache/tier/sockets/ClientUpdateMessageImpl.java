@@ -430,10 +430,14 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
           } else {
             message.addObjPart(Boolean.FALSE);
             if (latestValue == null) {
+              logger.warn("#LRJ getGFE70Message latestValue is null");
               if (!(_value instanceof byte[])) {
+                logger.warn("#LRJ getGFE70Message _value is: " + (_value == null ? "null" : _value.toString()));
                 _value = CacheServerHelper.serialize(_value);
+                logger.warn("#LRJ getGFE70Message serialized _value is: " + (_value == null ? "null" : _value.toString()));
               }
               latestValue = (byte[]) _value;
+              logger.warn("#LRJ getGFE70Message latestValue is now: " + (latestValue == null ? "null" : latestValue.toString()));
             }
             // Add the value (which has already been serialized)
             message.addRawPart(latestValue, (_valueIsObject == 0x01));
@@ -746,10 +750,10 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     StringBuilder buffer = new StringBuilder();
     buffer.append("ClientUpdateMessageImpl[").append("op=").append(_operation)
         .append(";region=").append(_regionName).append(";key=").append(_keyOfInterest);
-    if (logger.isTraceEnabled()) {
+    //if (logger.isTraceEnabled()) {
       buffer.append(";value=").append(
-          (_value instanceof byte[]) ? deserialize((byte[]) _value) : _value);
-    }
+          (_value instanceof byte[]) ? deserialize((byte[]) _value) + " : " + _value : _value);
+    //}
     buffer.append(";isObject=").append(_valueIsObject).append(";cbArg=")
         .append(_callbackArgument).append(";memberId=").append(_membershipId)
         .append(";eventId=").append(_eventIdentifier).append(";shouldConflate=")
