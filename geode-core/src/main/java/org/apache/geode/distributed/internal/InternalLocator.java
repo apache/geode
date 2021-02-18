@@ -203,10 +203,6 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
    */
   private InternalCache internalCache;
 
-  /**
-   * product use logging
-   */
-  private ProductUseLog productUseLog;
   private boolean peerLocator;
   private ServerLocator serverLocator;
   private Properties env;
@@ -636,13 +632,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     logger.info("Starting peer location for {}", this);
 
     peerLocator = true;
-    int boundPort =
-        membershipLocator
-            .start();
-    File productUseFile = workingDirectory.resolve("locator" + boundPort + "views.log").toFile();
-    productUseLog = new ProductUseLog(productUseFile);
-
-    return boundPort;
+    return membershipLocator.start();
   }
 
   private boolean shouldLocatorsBeCoordinators() {
@@ -892,7 +882,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     }
 
     ServerLocator serverLocator = new ServerLocator(getPort(), bindAddress, hostnameForClients,
-        logFile, productUseLog, getConfig().getName(), distributedSystem, locatorStats);
+        logFile, getConfig().getName(), distributedSystem, locatorStats);
     restartHandlers.add(serverLocator);
     membershipLocator.addHandler(LocatorListRequest.class, serverLocator);
     membershipLocator.addHandler(ClientConnectionRequest.class, serverLocator);
@@ -905,9 +895,6 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     if (!membershipLocator.isAlive()) {
       startTcpServer();
     }
-    // the product use is not guaranteed to be initialized until the server is started, so
-    // the last thing we do is tell it to start logging
-    productUseLog.monitorUse(distributedSystem);
   }
 
   /**
@@ -992,9 +979,6 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     if (!shutdownHandled.compareAndSet(false, true)) {
       // already shutdown
       return;
-    }
-    if (productUseLog != null) {
-      productUseLog.close();
     }
     if (internalCache != null && !stoppedForReconnect && !forcedDisconnect) {
       logger.info("Closing locator's cache");
@@ -1195,10 +1179,6 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       logger.info("Locator restart: initializing TcpServer peer location services");
       membershipLocator.restarting();
 
-      if (productUseLog.isClosed()) {
-        productUseLog.reopen();
-      }
-
       if (!membershipLocator.isAlive()) {
         logger.info("Locator restart: starting TcpServer");
         startTcpServer();
@@ -1228,11 +1208,6 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       logger.info("Locator restart: attempt to restart location services failed", e);
       throw e;
     }
-
-    if (productUseLog.isClosed()) {
-      productUseLog.reopen();
-    }
-    productUseLog.monitorUse(newSystem);
 
     if (isSharedConfigurationEnabled()) {
       configurationPersistenceService =
