@@ -1295,7 +1295,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     final boolean prefersSerialized = importer.prefersNewSerialized();
     if (prefersSerialized) {
       byte[] serializedNewValue = getCachedSerializedNewValue();
-      logger.warn("#LRJ exportNewValue serializedNewValue: " + serializedNewValue == null ? "null" : serializedNewValue);
+      //logger.warn("#LRJ exportNewValue serializedNewValue: " + serializedNewValue == null ? "null" : serializedNewValue);
       if (serializedNewValue == null) {
         serializedNewValue = this.newValueBytes;
       }

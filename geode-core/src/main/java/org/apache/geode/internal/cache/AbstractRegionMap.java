@@ -274,7 +274,7 @@ public abstract class AbstractRegionMap extends BaseRegionMap
 
   @Override
   public RegionEntry putEntryIfAbsent(Object key, RegionEntry regionEntry) {
-    logger.warn("#LRJ in putEntryIfAbsent, putting k-v: {} {}", key, regionEntry.getValue());
+    //logger.warn("#LRJ in putEntryIfAbsent, putting k-v: {} {}", key, regionEntry.getValue());
     RegionEntry oldRe = (RegionEntry) getEntryMap().putIfAbsent(key, regionEntry);
     if (oldRe == null && (regionEntry instanceof OffHeapRegionEntry) && _isOwnerALocalRegion()
         && _getOwner().isThisRegionBeingClosedOrDestroyed()) {

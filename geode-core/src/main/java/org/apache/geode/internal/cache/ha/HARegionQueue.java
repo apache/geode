@@ -3463,7 +3463,7 @@ public class HARegionQueue implements RegionQueue {
       }
 
       if (logger.isDebugEnabled()) {
-        logger.info("#LRJ value: " + event.getValueToConflate() +" adding haContainerKey to HARegion at " + position + ":"
+        logger.info("adding haContainerKey to HARegion at " + position + ":"
             + haContainerKey + " for " + this.regionName);
       }
       this.region.put(position, haContainerKey);

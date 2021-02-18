@@ -747,7 +747,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     buffer.append("ClientUpdateMessageImpl[").append("op=").append(_operation)
         .append(";region=").append(_regionName).append(";key=").append(_keyOfInterest);
     //if (logger.isTraceEnabled()) {
-      buffer.append(";value=").append(
+      buffer.append(";#LRJ value=").append(
           (_value instanceof byte[]) ? deserialize((byte[]) _value) + " : " + _value : _value);
     //}
     buffer.append(";isObject=").append(_valueIsObject).append(";cbArg=")
