@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.management.internal.cli.commands.StartMemberUtils.resolveWorkingDirectory;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -29,7 +31,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.AbstractLauncher;
 import org.apache.geode.distributed.ConfigurationProperties;
@@ -199,10 +200,11 @@ public class StartServerCommand extends OfflineGfshCommand {
       }
     }
 
-    workingDirectory = resolveWorkingDirectory(workingDirectory, memberName);
+    String resolvedWorkingDirectory = resolveWorkingDirectory(workingDirectory, memberName);
 
     return doStartServer(memberName, assignBuckets, bindAddress, cacheXmlPathname, classpath,
-        criticalHeapPercentage, criticalOffHeapPercentage, workingDirectory, disableDefaultServer,
+        criticalHeapPercentage, criticalOffHeapPercentage, resolvedWorkingDirectory,
+        disableDefaultServer,
         disableExitWhenOutOfMemory, enableTimeStatistics, evictionHeapPercentage,
         evictionOffHeapPercentage, force, group, hostNameForClients, jmxManagerHostnameForClients,
         includeSystemClasspath, initialHeap, jvmArgsOpts, locators, locatorWaitTime, lockMemory,
@@ -213,12 +215,6 @@ public class StartServerCommand extends OfflineGfshCommand {
         gemfireSecurityPropertiesFile, serverBindAddress, serverPort, socketBufferSize,
         springXmlLocation, statisticsArchivePathname, requestSharedConfiguration, startRestApi,
         httpServicePort, httpServiceBindAddress, userName, passwordToUse, redirectOutput);
-  }
-
-  @VisibleForTesting
-  protected static String resolveWorkingDirectory(String workDirValue, String memberName) {
-    return StartMemberUtils.resolveWorkingDir(
-        workDirValue == null ? null : new File(workDirValue), new File(memberName));
   }
 
   ResultModel doStartServer(String memberName, Boolean assignBuckets, String bindAddress,

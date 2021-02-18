@@ -965,10 +965,9 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
             address = InetAddress.getByName(services.getConfig().getMembershipBindAddress());
           }
         } catch (UnknownHostException e) {
-          logger
-              .error("Exception when configuring " + services.getConfig().getMembershipBindAddress()
-                  + " as bind address in GMSHealthMonitor, default address will be used: "
-                  + e.getMessage());
+          logger.error(
+              "Error when configuring {} as bind address in membership, default address will be used. Exception: {}",
+              services.getConfig().getMembershipBindAddress(), e.getMessage());
         }
       }
       serverSocket = createServerSocket(address, services.getConfig().getMembershipPortRange());

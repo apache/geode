@@ -152,9 +152,9 @@ public class DirectChannel {
             conduitAddress = InetAddress.getByName(dc.getMembershipBindAddress());
           }
         } catch (UnknownHostException e) {
-          logger.error("Exception when configuring " + dc.getMembershipBindAddress()
-              + " as bind address in DirectChannel, default address will be used: "
-              + e.getMessage());
+          logger.error(
+              "Error when configuring {} as bind address in membership, default address will be used. Exception: {}",
+              dc.getMembershipBindAddress(), e.getMessage());
         }
       }
 

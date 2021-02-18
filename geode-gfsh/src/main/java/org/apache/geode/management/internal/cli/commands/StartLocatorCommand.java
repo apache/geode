@@ -15,6 +15,8 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.management.internal.cli.commands.StartMemberUtils.resolveWorkingDirectory;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -32,7 +34,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.AbstractLauncher;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.LocatorLauncher;
@@ -130,21 +131,16 @@ public class StartLocatorCommand extends OfflineGfshCommand {
       memberName = StartMemberUtils.getNameGenerator().generate('-');
     }
 
-    workingDirectory = resolveWorkingDirectory(workingDirectory, memberName);
+    String resolvedWorkingDirectory = resolveWorkingDirectory(workingDirectory, memberName);
 
     return doStartLocator(memberName, bindAddress, classpath, force, group, hostnameForClients,
         jmxManagerHostnameForClients, includeSystemClasspath, locators, logLevel, mcastBindAddress,
-        mcastPort, port, workingDirectory, gemfirePropertiesFile, gemfireSecurityPropertiesFile,
+        mcastPort, port, resolvedWorkingDirectory, gemfirePropertiesFile,
+        gemfireSecurityPropertiesFile,
         initialHeap, maxHeap, jvmArgsOpts, connect, enableSharedConfiguration,
         loadSharedConfigurationFromDirectory, clusterConfigDir, httpServicePort,
         httpServiceBindAddress, redirectOutput, membershipBindAddress);
 
-  }
-
-  @VisibleForTesting
-  protected static String resolveWorkingDirectory(String workDirValue, String memberName) {
-    return StartMemberUtils.resolveWorkingDir(
-        workDirValue == null ? null : new File(workDirValue), new File(memberName));
   }
 
   ResultModel doStartLocator(

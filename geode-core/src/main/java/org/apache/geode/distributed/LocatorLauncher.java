@@ -289,7 +289,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
         return statusInProcess();
       }
     };
-    if (builder.membershipBindAddressSpecified()) {
+    if (builder.isMembershipBindAddressSpecified()) {
       this.distributedSystemProperties.setProperty(MEMBERSHIP_BIND_ADDRESS,
           builder.getMembershipBindAddress());
     }
@@ -1796,7 +1796,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      *
      * @return a boolean value indicating if the membership-bind-address property is defined or not.
      */
-    public boolean membershipBindAddressSpecified() {
+    public boolean isMembershipBindAddressSpecified() {
       return this.membershipBindAddress != null;
     }
 
