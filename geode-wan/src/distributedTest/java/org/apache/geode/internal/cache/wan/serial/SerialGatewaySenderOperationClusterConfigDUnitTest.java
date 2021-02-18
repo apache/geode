@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.wan.parallel;
+package org.apache.geode.internal.cache.wan.serial;
 
 import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
@@ -24,7 +24,7 @@ import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.ver
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -52,7 +52,7 @@ import org.apache.geode.test.junit.categories.WanTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category({WanTest.class})
-public class ParallelGatewaySenderOperationClusterConfigDUnitTest implements Serializable {
+public class SerialGatewaySenderOperationClusterConfigDUnitTest implements Serializable {
 
   @Rule
   public ClusterStartupRule clusterStartupRule = new ClusterStartupRule(8);
@@ -124,12 +124,12 @@ public class ParallelGatewaySenderOperationClusterConfigDUnitTest implements Ser
     server1Site2 = clusterStartupRule.startServerVM(5, locatorSite2.getPort());
     server2Site2 = clusterStartupRule.startServerVM(6, locatorSite2.getPort());
 
-    // create parallel gateway-sender on site #2
+    // create serial gateway-sender on site #2
     connectGfshToSite(locatorSite2);
     String command = new CommandStringBuilder(CliStrings.CREATE_GATEWAYSENDER)
         .addOption(CliStrings.CREATE_GATEWAYSENDER__ID, "ln")
         .addOption(CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID, "1")
-        .addOption(CliStrings.CREATE_GATEWAYSENDER__PARALLEL, "true")
+        .addOption(CliStrings.CREATE_GATEWAYSENDER__PARALLEL, "false")
         .getCommandString();
     gfsh.executeAndAssertThat(command).statusIsSuccess();
 
@@ -162,12 +162,12 @@ public class ParallelGatewaySenderOperationClusterConfigDUnitTest implements Ser
   }
 
   /**
-   * Verify that parallel gateway-sender state is persisted after pause and resume gateway-sender
+   * Verify that serial gateway-sender state is persisted after pause and resume gateway-sender
    * commands are executed, and that gateway-sender works as expected after member restart:
    *
    * 1. Pause gateway-sender
    * 2. Restart servers that host gateway-sender
-   * 3. Run some traffic and verify that data is enqueued in parallel gateway-sender queues
+   * 3. Run some traffic and verify that data is enqueued in serial gateway-sender queues
    * 4. Resume gateway-sender
    * 5. Verify that traffic is sent over the gateway-sender to remote site
    * 6. Restart servers that host gateway-sender
@@ -216,12 +216,12 @@ public class ParallelGatewaySenderOperationClusterConfigDUnitTest implements Ser
   }
 
   /**
-   * Verify that parallel gateway-sender state is persisted after start and stop gateway-sender
+   * Verify that serial gateway-sender state is persisted after start and stop gateway-sender
    * commands are executed, and that gateway-sender works as expected after member restart:
    *
    * 1. Stop gateway-sender
    * 2. Restart servers that host gateway-sender
-   * 3. Run some traffic and check that data is not enqueued in parallel gateway-sender queues
+   * 3. Run some traffic and check that data is not enqueued in serial gateway-sender queues
    * 4. Start gateway-sender
    * 5. Restart servers that host gateway-sender
    * 3. Run some traffic and verify that traffic is sent over the gateway-sender to remote site
@@ -328,15 +328,14 @@ public class ParallelGatewaySenderOperationClusterConfigDUnitTest implements Ser
     assertThat(ClusterStartupRule.getCache()).isNotNull();
     InternalCache internalCache = ClusterStartupRule.getCache();
     GatewaySender sender = internalCache.getGatewaySender(senderId);
-    assertTrue(sender.isParallel());
-    int totalSize = 0;
     Set<RegionQueue> queues = ((AbstractGatewaySender) sender).getQueues();
+    assertFalse(sender.isParallel());
+    int size = 0;
     if (queues != null) {
       for (RegionQueue q : queues) {
-        ConcurrentParallelGatewaySenderQueue prQ = (ConcurrentParallelGatewaySenderQueue) q;
-        totalSize += prQ.size();
+        size += q.size();
       }
     }
-    assertEquals(numQueueEntries, totalSize);
+    assertEquals(numQueueEntries, size);
   }
 }
