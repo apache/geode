@@ -1307,7 +1307,6 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     @Unretained(ENTRY_EVENT_NEW_VALUE)
     final Object nv = getRawNewValue();
     if (nv instanceof StoredObject) {
-      logger.warn("#LRJ exportNewValue newValue is off-heap: " + nv);
       @Unretained(ENTRY_EVENT_NEW_VALUE)
       final StoredObject so = (StoredObject) nv;
       final boolean isSerialized = so.isSerialized();

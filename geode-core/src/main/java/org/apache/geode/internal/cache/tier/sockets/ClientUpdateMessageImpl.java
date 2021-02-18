@@ -430,14 +430,10 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
           } else {
             message.addObjPart(Boolean.FALSE);
             if (latestValue == null) {
-              logger.warn("#LRJ getGFE70Message latestValue is null");
               if (!(_value instanceof byte[])) {
-                logger.warn("#LRJ getGFE70Message _value is: " + (_value == null ? "null" : _value.toString()));
                 _value = CacheServerHelper.serialize(_value);
-                logger.warn("#LRJ getGFE70Message serialized _value is: " + (_value == null ? "null" : _value.toString()));
               }
               latestValue = (byte[]) _value;
-              logger.warn("#LRJ getGFE70Message latestValue is now: " + (latestValue == null ? "null" : latestValue.toString()));
             }
             // Add the value (which has already been serialized)
             message.addRawPart(latestValue, (_valueIsObject == 0x01));

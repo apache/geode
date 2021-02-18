@@ -1011,7 +1011,6 @@ public class CacheClientNotifier {
     VersionTag<?> versionTag = null;
 
     if (event.getOperation().isEntry()) {
-      logger.warn("#LRJinitializeMessage is entry op");
       EntryEventImpl entryEvent = (EntryEventImpl) event;
       versionTag = entryEvent.getVersionTag();
       delta = entryEvent.getDeltaBytes();
@@ -1023,7 +1022,6 @@ public class CacheClientNotifier {
       eventIdentifier = entryEvent.getEventId();
       isNetLoad = entryEvent.isNetLoad();
     } else {
-      logger.warn("#LRJinitializeMessage is not entry op");
       RegionEventImpl regionEvent = (RegionEventImpl) event;
       callbackArgument = regionEvent.getRawCallbackArgument();
       eventIdentifier = regionEvent.getEventId();
