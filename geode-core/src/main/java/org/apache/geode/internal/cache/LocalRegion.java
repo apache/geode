@@ -2024,7 +2024,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     try {
       RegionEntry entry = entries.getEntry(keyInfo.getKey());
 
-        //logger.warn("#LRJ nontxcvfk entry: " + (entry != null ? entry.getKey() + " " + entry.getValue() : "null"));
+      logger.warn("#LRJ nontxcvfk entry: " + (entry != null ? entry.getKey() + " " + entry.getValue() : "null"));
 
       boolean result = entry != null;
 
@@ -6823,7 +6823,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     if (operation == Operation.REMOVE) {
       event.setOperation(Operation.DESTROY);
     } else if (operation == Operation.PUT_IF_ABSENT) {
-      event.setOperation(Operation.CREATE);
+      event.setOperation(Operation.UPDATE); // #LRJ GEM-1661 testing
     } else if (operation == Operation.REPLACE) {
       event.setOperation(Operation.UPDATE);
     }
