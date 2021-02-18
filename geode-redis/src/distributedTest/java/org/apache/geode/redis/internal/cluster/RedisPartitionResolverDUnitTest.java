@@ -103,13 +103,8 @@ public class RedisPartitionResolverDUnitTest {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   public void testClusterSlotsReferencesAllServers() {
-    int numKeys = 1000;
-    for (int i = 0; i < numKeys; i++) {
-      String key = "key-" + i;
-      jedis1.set(key, "value-" + i);
-    }
-
     List<Object> clusterSlots = jedis1.clusterSlots();
 
     assertThat(clusterSlots).hasSize(RegionProvider.REDIS_REGION_BUCKETS);

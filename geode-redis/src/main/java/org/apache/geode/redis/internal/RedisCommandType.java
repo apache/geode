@@ -72,6 +72,7 @@ import org.apache.geode.redis.internal.executor.pubsub.PublishExecutor;
 import org.apache.geode.redis.internal.executor.pubsub.PunsubscribeExecutor;
 import org.apache.geode.redis.internal.executor.pubsub.SubscribeExecutor;
 import org.apache.geode.redis.internal.executor.pubsub.UnsubscribeExecutor;
+import org.apache.geode.redis.internal.executor.server.CommandExecutor;
 import org.apache.geode.redis.internal.executor.server.DBSizeExecutor;
 import org.apache.geode.redis.internal.executor.server.FlushAllExecutor;
 import org.apache.geode.redis.internal.executor.server.InfoExecutor;
@@ -269,6 +270,7 @@ public enum RedisCommandType {
    *************** Server ****************
    ***************************************/
 
+  COMMAND(new CommandExecutor(), UNSUPPORTED, new ExactParameterRequirements(1)),
   DBSIZE(new DBSizeExecutor(), UNSUPPORTED, new ExactParameterRequirements(1)),
   FLUSHALL(new FlushAllExecutor(), UNSUPPORTED, new MaximumParameterRequirements(2, ERROR_SYNTAX)),
   FLUSHDB(new FlushAllExecutor(), UNSUPPORTED, new MaximumParameterRequirements(2, ERROR_SYNTAX)),
@@ -292,7 +294,6 @@ public enum RedisCommandType {
   BZPOPMIN(null, UNIMPLEMENTED),
   BZPOPMAX(null, UNIMPLEMENTED),
   CLIENT(null, UNIMPLEMENTED),
-  COMMAND(null, UNIMPLEMENTED),
   CONFIG(null, UNIMPLEMENTED),
   DEBUG(null, UNIMPLEMENTED),
   DISCARD(null, UNIMPLEMENTED),
