@@ -54,6 +54,7 @@ public class DistributionLocatorId implements java.io.Serializable {
   private String hostname;
   // added due to improvement for cloud native environment
   private String membername;
+  private long timestamp;
 
 
   /**
@@ -68,6 +69,8 @@ public class DistributionLocatorId implements java.io.Serializable {
     this.bindAddress = validateBindAddress(bindAddress);
     this.sslConfig = validateSSLConfig(sslConfig);
     this.membername = DistributionConfig.DEFAULT_NAME;
+    this.timestamp = 0;
+
   }
 
   public DistributionLocatorId(int port, String bindAddress) {
@@ -100,6 +103,7 @@ public class DistributionLocatorId implements java.io.Serializable {
     } else {
       this.membername = membername;
     }
+    this.timestamp = System.currentTimeMillis();
   }
 
   public DistributionLocatorId(InetAddress host, int port, String bindAddress, SSLConfig sslConfig,
@@ -110,6 +114,8 @@ public class DistributionLocatorId implements java.io.Serializable {
     this.sslConfig = validateSSLConfig(sslConfig);
     this.hostnameForClients = hostnameForClients;
     this.membername = DistributionConfig.DEFAULT_NAME;
+    this.timestamp = 0;
+
   }
 
 
@@ -153,6 +159,7 @@ public class DistributionLocatorId implements java.io.Serializable {
     } else {
       this.membername = membername;
     }
+    this.timestamp = System.currentTimeMillis();
 
     final int portStartIdx = marshalled.indexOf('[');
     final int portEndIdx = marshalled.indexOf(']');
@@ -313,6 +320,10 @@ public class DistributionLocatorId implements java.io.Serializable {
       this.membername = DistributionConfig.DEFAULT_NAME;
     }
     return this.membername;
+  }
+
+  public long getTimeStamp() {
+    return timestamp;
   }
 
   // private String hostNameToString() {

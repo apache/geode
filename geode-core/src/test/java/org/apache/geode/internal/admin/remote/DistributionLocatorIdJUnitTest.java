@@ -22,6 +22,8 @@ import java.net.UnknownHostException;
 
 import org.junit.Test;
 
+import org.apache.geode.distributed.internal.DistributionConfig;
+
 
 /**
  * DistributionLocatorId Tester.
@@ -46,4 +48,25 @@ public class DistributionLocatorIdJUnitTest {
 
   }
 
+  @Test
+  public void testEquals_and_DetailCompare() throws UnknownHostException {
+    DistributionLocatorId dLI1 = new DistributionLocatorId(40404, "127.0.0.1", null);
+    DistributionLocatorId dLI2 =
+        new DistributionLocatorId(40404, "127.0.0.1", "127.0.1.0", "member2");;
+    DistributionLocatorId dLI3 = new DistributionLocatorId(40404, "127.0.0.1", null, "member3");
+    DistributionLocatorId dLI4 = new DistributionLocatorId(dLI3.marshal());
+
+    assertTrue(dLI1.equals(dLI2));
+    assertTrue(dLI1.equals(dLI3));
+    assertTrue(dLI1.equals(dLI4));
+
+    assertTrue(dLI1.getMemberName().equals(DistributionConfig.DEFAULT_NAME));
+    assertTrue(dLI2.getMemberName().equals("member2"));
+    assertTrue(dLI3.getMemberName().equals("member3"));
+    assertTrue(dLI4.getMemberName().equals(DistributionConfig.DEFAULT_NAME));
+
+    assertTrue(dLI1.detailCompare(dLI3));
+    assertFalse(dLI2.detailCompare(dLI4));
+
+  }
 }

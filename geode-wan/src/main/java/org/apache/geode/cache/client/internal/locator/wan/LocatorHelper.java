@@ -56,6 +56,9 @@ public class LocatorHelper {
           if (!locator.detailCompare(existingLocator)) {
             // some parameters had changed for existing locator
             // replace it
+            if (existingLocator.getTimeStamp() > locator.getTimeStamp())
+              return false;
+
             existingValue.remove(existingLocator);
             ConcurrentHashMap<Integer, Set<String>> allServerLocatorsInfo =
                 (ConcurrentHashMap<Integer, Set<String>>) locatorListener
@@ -72,20 +75,27 @@ public class LocatorHelper {
           existingValue.add(locator);
           addServerLocator(distributedSystemId, locatorListener, locator);
           locatorListener.locatorJoined(distributedSystemId, locator, sourceLocator);
+          return true;
+
         } else {
+          DistributionLocatorId oldLocator =
+              getLocatorFromCollection(existingValue, locator);
+
+          if (oldLocator == null)
+            return false;
+
+          if (oldLocator.getTimeStamp() > locator.getTimeStamp())
+            return false;
+
           // for new member name, existing host[port] received
           // replace it, to contain latest info
-          existingValue.remove(locator);
+          existingValue.remove(oldLocator);
           // member name is not used in equals(), so this is the way to replace old locator
           existingValue.add(locator);
           locatorListener.locatorJoined(distributedSystemId, locator, sourceLocator);
           return true;
+
         }
-
-
-        existingValue.add(locator);
-        addServerLocator(distributedSystemId, locatorListener, locator);
-        locatorListener.locatorJoined(distributedSystemId, locator, sourceLocator);
 
       } else if (!existingValue.contains(locator)) {
         existingValue.add(locator);
@@ -153,6 +163,7 @@ public class LocatorHelper {
                 // ignore this info
                 if (existingLocator != null)
                   continue;
+
               }
               localLocators.add(locator);
               addServerLocator(entry.getKey(), locatorListener, locator);
@@ -180,6 +191,20 @@ public class LocatorHelper {
       Set<DistributionLocatorId> locatorSet, DistributionLocatorId locator) {
     for (DistributionLocatorId locElement : locatorSet) {
       if (locator.getMemberName().equals(locElement.getMemberName())) {
+        return locElement;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * This method gets locator equal to specified from collection of locators
+   *
+   */
+  private static DistributionLocatorId getLocatorFromCollection(
+      Set<DistributionLocatorId> locatorSet, DistributionLocatorId locator) {
+    for (DistributionLocatorId locElement : locatorSet) {
+      if (locator.equals(locElement)) {
         return locElement;
       }
     }
