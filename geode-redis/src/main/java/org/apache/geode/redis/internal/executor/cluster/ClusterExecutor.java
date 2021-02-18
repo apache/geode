@@ -80,6 +80,11 @@ public class ClusterExecutor extends AbstractExecutor {
   @SuppressWarnings("unchecked")
   private RedisResponse getSlots(ExecutionHandlerContext ctx) {
     Region<ByteArrayWrapper, RedisData> dataRegion = ctx.getRegionProvider().getDataRegion();
+
+    // Really only need this in situations where the cluster is empty and no data has been
+    // added yet.
+    PartitionRegionHelper.assignBucketsToPartitions(dataRegion);
+
     PartitionRegionInfo info = PartitionRegionHelper.getPartitionRegionInfo(dataRegion);
     Set<DistributedMember> membersWithDataRegion = new HashSet<>();
     for (PartitionMemberInfo memberInfo : info.getPartitionMemberInfo()) {
