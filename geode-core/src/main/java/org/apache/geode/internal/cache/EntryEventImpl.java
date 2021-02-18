@@ -1295,6 +1295,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     final boolean prefersSerialized = importer.prefersNewSerialized();
     if (prefersSerialized) {
       byte[] serializedNewValue = getCachedSerializedNewValue();
+      logger.warn("#LRJ exportNewValue serializedNewValue: " + serializedNewValue == null ? "null" : serializedNewValue);
       if (serializedNewValue == null) {
         serializedNewValue = this.newValueBytes;
       }
@@ -1306,6 +1307,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     @Unretained(ENTRY_EVENT_NEW_VALUE)
     final Object nv = getRawNewValue();
     if (nv instanceof StoredObject) {
+      logger.warn("#LRJ exportNewValue newValue is off-heap: " + nv);
       @Unretained(ENTRY_EVENT_NEW_VALUE)
       final StoredObject so = (StoredObject) nv;
       final boolean isSerialized = so.isSerialized();

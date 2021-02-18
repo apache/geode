@@ -6817,7 +6817,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     if (logger.isDebugEnabled()) {
     if(operation == Operation.UPDATE)
-      logger.info("#LRJ invokeTXCallbacks for event {} with newValue {}", event, event.getNewValue());
+      logger.info("#LRJ invokeTXCallbacks newValue {} for event {}", event, event.getNewValue());
     }
 
     if (operation == Operation.REMOVE) {
