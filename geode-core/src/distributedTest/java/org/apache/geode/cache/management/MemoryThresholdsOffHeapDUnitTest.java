@@ -125,10 +125,10 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     @Override
     public Object call() throws Exception {
       InternalResourceManager irm = ((GemFireCacheImpl) getCache()).getInternalResourceManager();
-      Set<ResourceListener> listeners = irm.getResourceListeners(ResourceType.OFFHEAP_MEMORY);
-      Iterator<ResourceListener> it = listeners.iterator();
+      Set<ResourceListener<?>> listeners = irm.getResourceListeners(ResourceType.OFFHEAP_MEMORY);
+      Iterator<ResourceListener<?>> it = listeners.iterator();
       while (it.hasNext()) {
-        ResourceListener<MemoryEvent> l = it.next();
+        ResourceListener<?> l = it.next();
         if (l instanceof TestMemoryThresholdListener) {
           ((TestMemoryThresholdListener) l).resetThresholdCalls();
         }
@@ -1803,12 +1803,12 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
       @Override
       public Object call() throws Exception {
         WaitCriterion wc = null;
-        Set<ResourceListener> listeners = getGemfireCache().getInternalResourceManager()
+        Set<ResourceListener<?>> listeners = getGemfireCache().getInternalResourceManager()
             .getResourceListeners(ResourceType.OFFHEAP_MEMORY);
         TestMemoryThresholdListener tmp_listener = null;
-        Iterator<ResourceListener> it = listeners.iterator();
+        Iterator<ResourceListener<?>> it = listeners.iterator();
         while (it.hasNext()) {
-          ResourceListener<MemoryEvent> l = it.next();
+          ResourceListener<?> l = it.next();
           if (l instanceof TestMemoryThresholdListener) {
             tmp_listener = (TestMemoryThresholdListener) l;
             break;

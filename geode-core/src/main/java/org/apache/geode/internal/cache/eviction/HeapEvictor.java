@@ -144,7 +144,7 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
     List<LocalRegion> allRegionsList = new ArrayList<>();
     InternalResourceManager resourceManager = (InternalResourceManager) cache.getResourceManager();
 
-    for (ResourceListener<MemoryEvent> listener : resourceManager
+    for (ResourceListener<?> listener : resourceManager
         .getResourceListeners(getResourceType())) {
       if (listener instanceof PartitionedRegion) {
         PartitionedRegion partitionedRegion = (PartitionedRegion) listener;
