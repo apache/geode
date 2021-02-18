@@ -75,27 +75,18 @@ public class MembershipView<ID extends MemberIdentifier> {
     return members;
   }
 
-  /**
-   * return members that are i this view but not the given old view
-   */
-  public List<ID> getNewMembers(MembershipView<ID> olderView) {
-    List<ID> result = new ArrayList<>(members);
-    result.removeAll(olderView.getMembers());
-    return result;
-  }
-
   public Object get(int i) {
     return this.members.get(i);
   }
 
-  public MembershipView<ID> newViewWithMember(ID member) {
+  public MembershipView<ID> createNewViewWithMember(ID member) {
     return new MembershipView<>(creator, viewId,
         Stream.concat(members.stream(), Stream.of(member)).collect(toList()), shutdownMembers,
         crashedMembers);
   }
 
-  public MembershipView<ID> newViewWithoutMember(final ID member) {
-    return new MembershipView<ID>(creator, viewId,
+  public MembershipView<ID> createNewViewWithoutMember(final ID member) {
+    return new MembershipView<>(creator, viewId,
         members.stream().filter(m -> !m.equals(member)).collect(toList()), shutdownMembers,
         crashedMembers);
   }
@@ -144,10 +135,6 @@ public class MembershipView<ID extends MemberIdentifier> {
       return members.get(0);
     }
     return null;
-  }
-
-  public Set<ID> getShutdownMembers() {
-    return this.shutdownMembers;
   }
 
   public Set<ID> getCrashedMembers() {

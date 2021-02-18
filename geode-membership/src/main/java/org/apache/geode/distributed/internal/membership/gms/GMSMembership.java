@@ -491,7 +491,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
               "not seen in membership view in " + this.surpriseMemberTimeout + "ms");
         } else {
           if (!newlatestView.contains(entry.getKey())) {
-            newlatestView = newlatestView.newViewWithMember(entry.getKey());
+            newlatestView = newlatestView.createNewViewWithMember(entry.getKey());
           }
         }
       }
@@ -769,7 +769,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
         // should ensure it is not chosen as an elder.
         // This will get corrected when the member finally shows up in the
         // view.
-        latestView = latestView.newViewWithMember(member);
+        latestView = latestView.createNewViewWithMember(member);
       }
     } finally {
       latestViewWriteLock.unlock();
@@ -1432,7 +1432,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
     latestViewWriteLock.lock();
     try {
       if (latestView.contains(member)) {
-        latestView = latestView.newViewWithoutMember(member);
+        latestView = latestView.createNewViewWithoutMember(member);
       }
     } finally {
       latestViewWriteLock.unlock();
