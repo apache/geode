@@ -6823,7 +6823,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     if (operation == Operation.REMOVE) {
       event.setOperation(Operation.DESTROY);
     } else if (operation == Operation.PUT_IF_ABSENT) {
-      event.setOperation(Operation.UPDATE); // #LRJ GEM-1661 testing
+      event.setOperation(Operation.CREATE);
     } else if (operation == Operation.REPLACE) {
       event.setOperation(Operation.UPDATE);
     }
