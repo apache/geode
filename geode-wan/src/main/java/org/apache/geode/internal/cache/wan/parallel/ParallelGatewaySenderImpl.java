@@ -110,6 +110,8 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
   @Override
   public void stop() {
     preStop();
+    // race condition here between these two calls. Ih the middle, there could be events
+    // queued!!!
     this.getLifeCycleLock().writeLock().lock();
     try {
       if (!this.isRunning()) {

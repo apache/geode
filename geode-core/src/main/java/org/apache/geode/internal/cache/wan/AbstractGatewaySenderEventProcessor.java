@@ -207,6 +207,9 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
     } else {
       this.isStopped = isStopped;
     }
+    if (isStopped) {
+      sender.postStop();
+    }
   }
 
   public boolean isPaused() {

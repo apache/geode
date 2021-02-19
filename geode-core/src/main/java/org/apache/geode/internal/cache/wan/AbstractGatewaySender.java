@@ -129,7 +129,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   protected int getTransactionEventsFromQueueRetries;
 
-  protected volatile boolean isPreStopping = false;
+  protected volatile boolean isStopping = false;
 
   protected boolean isForInternalUse;
 
@@ -572,12 +572,12 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   @Override
   public int getGetTransactionEventsFromQueueRetries() {
     int retries = this.getTransactionEventsFromQueueRetries;
-    // In case we are prestopping allow for some extra retries given that
+    // In case we are stopping allow for some extra retries given that
     // the last batches are about to be sent and there is no
     // risk of filling up the queues with a lot of batches unsent.
-    if (isPreStopping) {
+    if (isStopping) {
       if (retries == 0) {
-        retries = 20;
+        retries = 30;
       } else {
         retries = retries * 10;
       }
@@ -709,16 +709,19 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   }
 
   protected void preStop() {
-    if (!mustGroupTransactionEvents() || isPreStopping) {
+    if (!mustGroupTransactionEvents() || isStopping) {
       return;
     }
-    isPreStopping = true;
+    isStopping = true;
     try {
       Thread.sleep(TIME_TO_COMPLETE_TRANSACTIONS_BEFORE_STOP_MS);
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
     }
-    isPreStopping = false;
+  }
+
+  protected void postStop() {
+    isStopping = false;
   }
 
   protected void stopProcessing() {
@@ -1132,7 +1135,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
           // In case the sender is about to be stopped, the event will only
           // be queued if there is any event in the queue with the same
           // transactionId as the one of this event
-          if (isPreStopping && mustGroupTransactionEvents()
+          if (isStopping && mustGroupTransactionEvents()
               && clonedEvent.getTransactionId() != null) {
             hasSameTransactionId =
                 x -> x instanceof GatewaySenderEventImpl && clonedEvent.getTransactionId() != null
