@@ -169,7 +169,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
       Object keyOfInterest, Object value, byte[] delta, byte valueIsObject, Object callbackArgument,
       ClientProxyMembershipID memberId, EventID eventIdentifier, VersionTag<?> versionTag) {
     //#LRJ GEM-1661 test
-    if(value == null) {
+    if(value == null && operation == EnumListenerEvent.AFTER_CREATE) {
       _operation = EnumListenerEvent.AFTER_UPDATE;
     }
     else {
