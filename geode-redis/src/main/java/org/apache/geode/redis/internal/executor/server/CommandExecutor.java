@@ -29,6 +29,12 @@ public class CommandExecutor extends AbstractExecutor {
 
     List<Object> response = Arrays.asList(
         Arrays.asList(
+            "flushall",
+            -1,
+            Arrays.asList("write"),
+            0, 0, 0
+        ),
+        Arrays.asList(
             "get",
             2,
             Arrays.asList("readonly"),
