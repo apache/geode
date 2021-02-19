@@ -2024,7 +2024,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     try {
       RegionEntry entry = entries.getEntry(keyInfo.getKey());
 
-      logger.warn("#LRJ nontxcvfk entry: " + (entry == null ? "null" : entry.getKey() + " " + entry.getValue()));
+      //logger.warn("#LRJ nontxcvfk entry: " + (entry == null ? "null" : entry.getKey() + " " + entry.getValue()));
 
       boolean result = entry != null;
 

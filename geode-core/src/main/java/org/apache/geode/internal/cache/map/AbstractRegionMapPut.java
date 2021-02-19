@@ -244,7 +244,7 @@ public abstract class AbstractRegionMapPut {
 
       RegionEntry newEntry =
           getRegionMap().getEntryFactory().createEntry(getOwner(), key, Token.REMOVED_PHASE1);
-      logger.warn("#LRJ createNewEntryIfNeeded newEntry: " + (newEntry == null ? "null" : newEntry.getKey() + " " + newEntry.getValue()));
+      logger.warn("#LRJ createNewEntryIfNeeded newEntry: " + (newEntry == null ? "null" : newEntry));
       setRegionEntry(newEntry);
     }
   }
