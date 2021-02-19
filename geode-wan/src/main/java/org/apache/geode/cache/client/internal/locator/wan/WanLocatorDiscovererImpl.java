@@ -21,6 +21,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.WanLocatorDiscoverer;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
@@ -66,8 +67,11 @@ public class WanLocatorDiscovererImpl implements WanLocatorDiscoverer {
     String localLocator = config.getStartLocator();
     DistributionLocatorId locatorId = null;
 
-    String memberName = config.getName();
-
+    InternalDistributedSystem system = InternalDistributedSystem.getConnectedInstance();
+    String memberName = null;
+    if (system != null) {
+      memberName = system.getDistributedMember().getName();
+    }
     if (localLocator.equals(DistributionConfig.DEFAULT_START_LOCATOR)) {
       locatorId = new DistributionLocatorId(port, config.getBindAddress(), hostnameForClients,
           memberName);
@@ -119,8 +123,11 @@ public class WanLocatorDiscovererImpl implements WanLocatorDiscoverer {
     String localLocator = config.getStartLocator();
     DistributionLocatorId locatorId = null;
 
-    String memberName = config.getName();
-
+    InternalDistributedSystem system = InternalDistributedSystem.getConnectedInstance();
+    String memberName = null;
+    if (system != null) {
+      memberName = system.getDistributedMember().getName();
+    }
     if (localLocator.equals(DistributionConfig.DEFAULT_START_LOCATOR)) {
       locatorId = new DistributionLocatorId(port, config.getBindAddress(), hostnameForClients,
           memberName);
