@@ -228,10 +228,6 @@ public abstract class AbstractRegionMapPut {
   private boolean findAndSaveExistingEntry() {
     RegionEntry re = getRegionMap().getEntry(getEvent());
     logger.warn("#LRJ findAndSaveExistingEntry key-value: " + (regionEntry == null ? "null" : regionEntry.getKey() + " " + regionEntry.getValue()));
-    StringWriter sw = new StringWriter();
-    PrintWriter pw = new PrintWriter(sw);
-    new Throwable().printStackTrace(pw);
-    logger.warn("#LRJ findAndSaveExistingEntry stacktrace: " + sw);
     if (isOnlyExisting() && !entryExists(re)) {
       setRegionEntry(null);
       return false;
@@ -247,7 +243,7 @@ public abstract class AbstractRegionMapPut {
 
       RegionEntry newEntry =
           getRegionMap().getEntryFactory().createEntry(getOwner(), key, Token.REMOVED_PHASE1);
-      //logger.warn("#LRJ createNewEntryIfNeeded newEntry: " + (newEntry == null ? "null" : newEntry.getKey() + " " + newEntry.getValue()));
+      logger.warn("#LRJ createNewEntryIfNeeded newEntry: " + (newEntry == null ? "null" : newEntry.getKey() + " " + newEntry.getValue()));
       setRegionEntry(newEntry);
     }
   }
