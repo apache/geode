@@ -171,7 +171,6 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     //#LRJ GEM-1661 test
     if(value == null && operation == EnumListenerEvent.AFTER_CREATE) {
       _operation = EnumListenerEvent.AFTER_UPDATE;
-      numInstances++;
     }
     else {
       _operation = operation;
