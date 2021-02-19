@@ -226,8 +226,9 @@ public abstract class AbstractRegionMapPut {
    *         an existing one; otherwise returns true.
    */
   private boolean findAndSaveExistingEntry() {
+    logger.warn("#LRJ findAndSaveExistingEntry getEvent(): " + (getEvent() == null ? "null" : getEvent()));
     RegionEntry re = getRegionMap().getEntry(getEvent());
-    logger.warn("#LRJ findAndSaveExistingEntry key-value: " + (regionEntry == null ? "null" : regionEntry.getKey() + " " + regionEntry.getValue()));
+    logger.warn("#LRJ findAndSaveExistingEntry regionEntry (key-value): " + (regionEntry == null ? "null" : regionEntry.getKey() + " " + regionEntry.getValue()));
     if (isOnlyExisting() && !entryExists(re)) {
       setRegionEntry(null);
       return false;

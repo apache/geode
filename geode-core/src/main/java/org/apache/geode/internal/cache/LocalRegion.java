@@ -2024,11 +2024,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     try {
       RegionEntry entry = entries.getEntry(keyInfo.getKey());
 
-      logger.warn("#LRJ nontxcvfk entry: " + (entry != null ? entry.getKey() + " " + entry.getValue() : "null"));
+      logger.warn("#LRJ nontxcvfk entry: " + (entry == null ? "null" : entry.getKey() + " " + entry.getValue()));
 
       boolean result = entry != null;
-
-        //logger.warn("#LRJ nontxcvfk result: " + result == null ? "null" : result );
 
       if (result) {
         ReferenceCountHelper.skipRefCountTracking();
@@ -2036,13 +2034,11 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         Object val = entry.getTransformedValue();
 
 
-          //logger.warn("#LRJ nontxcvfk result value: " + val);
+        logger.warn("#LRJ nontxcvfk result transformed value: " + val);
 
         if (val instanceof StoredObject) {
           OffHeapHelper.release(val);
           ReferenceCountHelper.unskipRefCountTracking();
-
-            //logger.warn("#LRJ nontxcvfk val instance of StoredObject");
 
           return true;
         }
@@ -2050,7 +2046,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         // No need to to check CachedDeserializable because INVALID and LOCAL_INVALID will never be
         // faulted out of mem If val is NOT_AVAILABLE that means we have a valid value on disk.
 
-          //logger.warn("#LRJ nontxcvfk result invalid or removed token?: " + Token.isInvalidOrRemoved(val));
+        logger.warn("#LRJ nontxcvfk result invalid or removed token?: " + Token.isInvalidOrRemoved(val));
         result = !Token.isInvalidOrRemoved(val);
       }
 

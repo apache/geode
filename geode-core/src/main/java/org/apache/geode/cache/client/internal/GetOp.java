@@ -14,6 +14,9 @@
  */
 package org.apache.geode.cache.client.internal;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.CacheClosedException;
@@ -119,6 +122,10 @@ public class GetOp {
         EntryEventImpl clientEvent) {
       super(MessageType.REQUEST, callbackArg != null ? 3 : 2);
       if (logger.isDebugEnabled()) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        new Throwable().printStackTrace(pw);
+        logger.warn("#LRJ GetOpImpl stacktrace: " + sw);
         logger.debug("constructing a GetOp for key {}", key/* , new Exception("stack trace") */);
       }
       this.region = region;
