@@ -1480,6 +1480,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
               disableCopyOnRead, preferCD, requestingClient, clientEvent, returnTombstones);
     }
 
+    logger.warn("#LRJ getObject got result from loader: " + (result == null ? "null" : result));
+
     if (result == null && localValue != null) {
       if (localValue != Token.TOMBSTONE || returnTombstones) {
         result = localValue;
@@ -2024,7 +2026,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     try {
       RegionEntry entry = entries.getEntry(keyInfo.getKey());
 
-      //logger.warn("#LRJ nontxcvfk entry: " + (entry == null ? "null" : entry.getKey() + " " + entry.getValue()));
+      logger.warn("#LRJ nontxcvfk entry: " + (entry == null ? "null" : entry.getKey() + " " + entry.getValue()));
 
       boolean result = entry != null;
 
@@ -2032,7 +2034,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         ReferenceCountHelper.skipRefCountTracking();
         // no need to decompress since we only want to know if we have an existing value
         Object val = entry.getTransformedValue();
-
 
         logger.warn("#LRJ nontxcvfk result transformed value: " + val);
 
@@ -2913,7 +2914,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     LoaderHelper loaderHelper = loaderHelperFactory.createLoaderHelper(key, aCallbackArgument,
         false /* netSearchAllowed */, true /* netloadAllowed */, null /* searcher */);
     Object result = loader.load(loaderHelper);
+    logger.warn("#LRJ callCacheLoader result: " + (result == null ? "null" : result));
     result = getCache().convertPdxInstanceIfNeeded(result, preferCD);
+    logger.warn("#LRJ callCacheLoader convert result if needed: " + (result == null ? "null" : result));
     return result;
   }
 
@@ -5284,7 +5287,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
     event.setDeltaBytes(deltaBytes);
 
-    logger.warn("#LRJ basicBridgeClientUpdate value: " + value == null ? "null" : value);
+    logger.warn("#LRJ basicBridgeClientUpdate value: " + (value == null ? "null" : value));
     // Set the new value to the input byte[] if it isn't null
     if (value != null) {
       // If the byte[] represents an object, then store it
@@ -5298,7 +5301,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         event.setNewValue(value);
       }
     }
-    logger.warn("#LRJ basicBridgeClientUpdate after value: " + value == null ? "null" : value);
+    logger.warn("#LRJ basicBridgeClientUpdate event new value: " + event.getNewValue());
     // If the marker has been processed, process this put event normally;
     // otherwise, this event occurred in the past and has been stored for a
     // durable client. In this case, just invoke the put callbacks.
@@ -5584,11 +5587,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       }
     }
     validateValue(event.basicGetNewValue());
-
-    StringWriter sw = new StringWriter();
-    PrintWriter pw = new PrintWriter(sw);
-    new Throwable().printStackTrace(pw);
-    logger.warn("#LRJ basicUpdate stacktrace: " + sw);
 
     return getDataView().putEntry(event, ifNew, ifOld, null, false, lastModified,
         overwriteDestroyed, invokeCallbacks, throwConcurrentModificationException);
