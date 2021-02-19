@@ -5288,6 +5288,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
     event.setDeltaBytes(deltaBytes);
 
+    logger.warn("#LRJ basicBridgeClientUpdate value: " + value == null ? "null" : value);
     // Set the new value to the input byte[] if it isn't null
     if (value != null) {
       // If the byte[] represents an object, then store it
@@ -5301,7 +5302,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         event.setNewValue(value);
       }
     }
-
+    logger.warn("#LRJ basicBridgeClientUpdate after value: " + value == null ? "null" : value);
     // If the marker has been processed, process this put event normally;
     // otherwise, this event occurred in the past and has been stored for a
     // durable client. In this case, just invoke the put callbacks.
@@ -5586,10 +5587,12 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
                 event.getKey().getClass().getName(), keyConstraint.getName()));
       }
     }
-
     validateValue(event.basicGetNewValue());
 
-    //logger.warn("#LRJ basicUpdate key-val: {} - {}", event.getKey(), event.getNewValue());
+    StringWriter sw = new StringWriter();
+    PrintWriter pw = new PrintWriter(sw);
+    new Throwable().printStackTrace(pw);
+    logger.warn("#LRJ basicUpdate stacktrace: " + sw);
 
     return getDataView().putEntry(event, ifNew, ifOld, null, false, lastModified,
         overwriteDestroyed, invokeCallbacks, throwConcurrentModificationException);

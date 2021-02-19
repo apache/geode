@@ -66,6 +66,8 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
    */
   EnumListenerEvent _operation;
 
+  private static int numInstances = 0;
+
   /**
    * The name of the <code>Region</code> that was updated
    */
@@ -169,8 +171,9 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
       Object keyOfInterest, Object value, byte[] delta, byte valueIsObject, Object callbackArgument,
       ClientProxyMembershipID memberId, EventID eventIdentifier, VersionTag<?> versionTag) {
     //#LRJ GEM-1661 test
-    if(value == null && operation == EnumListenerEvent.AFTER_CREATE) {
+    if(value == null && operation == EnumListenerEvent.AFTER_CREATE && numInstances < 8) {
       _operation = EnumListenerEvent.AFTER_UPDATE;
+      numInstances++;
     }
     else {
       _operation = operation;
