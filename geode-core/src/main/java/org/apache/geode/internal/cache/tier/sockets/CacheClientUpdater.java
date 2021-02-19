@@ -665,14 +665,14 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
       byte[] deltaBytes = null;
       Object objectValue = null;
       boolean isValueObject;
-      logger.warn("#LRJ handleUpdate valuePart: " + valuePart == null ? "null" : valuePart);
+      logger.warn("#LRJ handleUpdate valuePart: " + (valuePart == null ? "null" : valuePart));
       if (!isDeltaSent) {
         byte[] serializedForm = valuePart.getSerializedForm();
 
         if (!isCreate || !InternalDataSerializer.isSerializedNull(serializedForm)) {
-          logger.warn("#LRJ handleUpdate valuePart before serialized form: " + valuePart == null ? "null" : valuePart);
+          logger.warn("#LRJ handleUpdate valuePart before serialized form: " + (valuePart == null ? "null" : valuePart));
           objectValue = valuePart.getSerializedForm();
-          logger.warn("#LRJ handleUpdate objectValue after valuePart serialized form: " + objectValue == null ? "null" : objectValue);
+          logger.warn("#LRJ handleUpdate objectValue after valuePart serialized form: " + (objectValue == null ? "null" : objectValue));
         }
 
         if (withCQs) {

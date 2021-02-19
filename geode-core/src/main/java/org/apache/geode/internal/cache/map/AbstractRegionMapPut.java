@@ -227,7 +227,11 @@ public abstract class AbstractRegionMapPut {
    */
   private boolean findAndSaveExistingEntry() {
     RegionEntry re = getRegionMap().getEntry(getEvent());
-    //logger.warn("#LRJ findAndSaveExistingEntry key-value: " + (regionEntry == null ? "null" : regionEntry.getKey() + " " + regionEntry.getValue()));
+    logger.warn("#LRJ findAndSaveExistingEntry key-value: " + (regionEntry == null ? "null" : regionEntry.getKey() + " " + regionEntry.getValue()));
+    StringWriter sw = new StringWriter();
+    PrintWriter pw = new PrintWriter(sw);
+    new Throwable().printStackTrace(pw);
+    logger.warn("#LRJ findAndSaveExistingEntry stacktrace: " + sw);
     if (isOnlyExisting() && !entryExists(re)) {
       setRegionEntry(null);
       return false;
