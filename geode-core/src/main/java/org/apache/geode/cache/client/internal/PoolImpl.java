@@ -161,9 +161,6 @@ public class PoolImpl implements InternalPool {
   private final ThreadsMonitoring threadMonitoring;
   private final SocketFactory socketFactory;
 
-  private final boolean requestLocatorInternalAddress;
-
-
   public static PoolImpl create(PoolManagerImpl pm, String name, Pool attributes,
       List<HostAndPort> locatorAddresses, InternalDistributedSystem distributedSystem,
       InternalCache cache, ThreadsMonitoring tMonitoring) {
@@ -234,8 +231,6 @@ public class PoolImpl implements InternalPool {
     }
     serverGroup = attributes.getServerGroup();
     multiuserSecureModeEnabled = attributes.getMultiuserAuthentication();
-    requestLocatorInternalAddress = attributes.getRequestLocatorInternalAddress();
-
     locators = attributes.getLocators().stream()
         .map(x -> new HostAndPort(x.getHostString(), x.getPort())).collect(Collectors.toList());
     servers = attributes.getServers().stream()
@@ -323,7 +318,6 @@ public class PoolImpl implements InternalPool {
         && getSubscriptionAckInterval() == p.getSubscriptionAckInterval()
         && getServerGroup().equals(p.getServerGroup())
         && getMultiuserAuthentication() == p.getMultiuserAuthentication()
-        && getRequestLocatorInternalAddress() == p.getRequestLocatorInternalAddress()
         && getLocators().equals(p.getLocators()) && getServers().equals(p.getServers());
   }
 
@@ -500,11 +494,6 @@ public class PoolImpl implements InternalPool {
   }
 
   @Override
-  public boolean getRequestLocatorInternalAddress() {
-    return requestLocatorInternalAddress;
-  }
-
-  @Override
   public List<InetSocketAddress> getLocators() {
     return locators.stream().map(x -> x.getSocketInetAddress()).collect(Collectors.toList());
   }
@@ -677,7 +666,7 @@ public class PoolImpl implements InternalPool {
       return new ExplicitConnectionSourceImpl(getServers());
     } else {
       AutoConnectionSourceImpl source = new AutoConnectionSourceImpl(locatorAddresses,
-          getServerGroup(), socketConnectTimeout, socketFactory, requestLocatorInternalAddress);
+          getServerGroup(), socketConnectTimeout, socketFactory);
       if (locatorDiscoveryCallback != null) {
         source.setLocatorDiscoveryCallback(locatorDiscoveryCallback);
       }
@@ -777,9 +766,6 @@ public class PoolImpl implements InternalPool {
     if (!getServers().equals(other.getServers())) {
       throw new RuntimeException(
           String.format("Pool %s are different", "servers"));
-    }
-    if (getRequestLocatorInternalAddress() != other.getRequestLocatorInternalAddress()) {
-      throw new RuntimeException("Pool requestLocatorInternalAddress is different");
     }
     // ignore startDisabled
   }

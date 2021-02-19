@@ -207,13 +207,6 @@ public interface Pool {
    */
   boolean getMultiuserAuthentication();
 
-  /**
-   * Returns true ir request locator internal address is enabled on this pool.
-   *
-   * @see PoolFactory#setRequestLocatorInternalAddress(boolean)
-   * @since Geode 1.14
-   */
-  boolean getRequestLocatorInternalAddress();
 
   /**
    * Returns an unmodifiable list of {@link java.net.InetSocketAddress} of the locators this pool is

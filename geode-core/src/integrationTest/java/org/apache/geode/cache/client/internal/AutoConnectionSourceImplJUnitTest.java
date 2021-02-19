@@ -126,7 +126,7 @@ public class AutoConnectionSourceImplJUnitTest {
     locators.add(isa);
     List<HostAndPort> la = new ArrayList<>();
     la.add(new HostAndPort(ia.getHostName(), port));
-    source = new AutoConnectionSourceImpl(la, "", 60 * 1000, SocketFactory.DEFAULT, false);
+    source = new AutoConnectionSourceImpl(la, "", 60 * 1000, SocketFactory.DEFAULT);
     source.start(pool);
   }
 
@@ -185,7 +185,7 @@ public class AutoConnectionSourceImplJUnitTest {
     la.add(new HostAndPort(floc1.getHostName(), floc1.getPort()));
     la.add(new HostAndPort(floc2.getHostName(), floc2.getPort()));
     AutoConnectionSourceImpl src =
-        new AutoConnectionSourceImpl(la, "", 60 * 1000, SocketFactory.DEFAULT, false);
+        new AutoConnectionSourceImpl(la, "", 60 * 1000, SocketFactory.DEFAULT);
 
 
     InetSocketAddress b1 = new InetSocketAddress("fakeLocalHost1", port);
@@ -687,11 +687,6 @@ public class AutoConnectionSourceImplJUnitTest {
     @Override
     public int getSubscriptionTimeoutMultiplier() {
       return 0;
-    }
-
-    @Override
-    public boolean getRequestLocatorInternalAddress() {
-      return false;
     }
 
     @Override

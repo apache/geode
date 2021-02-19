@@ -43,8 +43,6 @@ import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
-import org.apache.geode.internal.serialization.KnownVersion;
-import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.internal.TypeRegistry;
 
@@ -278,12 +276,6 @@ public class PoolFactoryImpl implements InternalPoolFactory {
   }
 
   @Override
-  public PoolFactory setRequestLocatorInternalAddress(boolean requestInternal) {
-    attributes.requestLocatorInternalAddress = requestInternal;
-    return this;
-  }
-
-  @Override
   public PoolFactory addLocator(String host, int port) {
     if (attributes.servers.size() > 0) {
       throw new IllegalStateException(
@@ -348,7 +340,6 @@ public class PoolFactoryImpl implements InternalPoolFactory {
     for (InetSocketAddress address : cp.getLocators()) {
       addLocator(address.getHostString(), address.getPort());
     }
-    setRequestLocatorInternalAddress(cp.getRequestLocatorInternalAddress());
     attributes.servers.addAll(cp.getServers().stream()
         .map(x -> new HostAndPort(x.getHostString(), x.getPort())).collect(Collectors.toList()));
   }
@@ -447,8 +438,6 @@ public class PoolFactoryImpl implements InternalPoolFactory {
     int subscriptionTimeoutMultipler = DEFAULT_SUBSCRIPTION_TIMEOUT_MULTIPLIER;
     public String serverGroup = DEFAULT_SERVER_GROUP;
     boolean multiuserSecureModeEnabled = DEFAULT_MULTIUSER_AUTHENTICATION;
-    boolean requestLocatorInternalAddress = DEFAULT_REQUEST_LOCATOR_INTERNAL_ADDRESS;
-
     public ArrayList<HostAndPort> locators = new ArrayList<>();
     public ArrayList<HostAndPort> servers = new ArrayList<>();
     public transient boolean startDisabled = false; // only used by junit tests
@@ -591,11 +580,6 @@ public class PoolFactoryImpl implements InternalPoolFactory {
     }
 
     @Override
-    public boolean getRequestLocatorInternalAddress() {
-      return requestLocatorInternalAddress;
-    }
-
-    @Override
     public List<InetSocketAddress> getLocators() {
       if (locators.size() == 0 && servers.size() == 0) {
         throw new IllegalStateException(
@@ -671,7 +655,6 @@ public class PoolFactoryImpl implements InternalPoolFactory {
       DataSerializer.writePrimitiveInt(statisticInterval, out);
       DataSerializer.writePrimitiveBoolean(multiuserSecureModeEnabled, out);
       DataSerializer.writePrimitiveInt(socketConnectTimeout, out);
-      DataSerializer.writePrimitiveBoolean(requestLocatorInternalAddress, out);
     }
 
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
@@ -695,12 +678,6 @@ public class PoolFactoryImpl implements InternalPoolFactory {
       statisticInterval = DataSerializer.readPrimitiveInt(in);
       multiuserSecureModeEnabled = DataSerializer.readPrimitiveBoolean(in);
       socketConnectTimeout = DataSerializer.readPrimitiveInt(in);
-      if (StaticSerialization.getVersionForDataStream(in)
-          .isNotOlderThan(KnownVersion.GEODE_1_14_0)) {
-        requestLocatorInternalAddress = DataSerializer.readPrimitiveBoolean(in);
-      } else {
-        requestLocatorInternalAddress = false;
-      }
     }
 
     @Override
@@ -712,8 +689,7 @@ public class PoolFactoryImpl implements InternalPoolFactory {
               retryAttempts, pingInterval, statisticInterval, queueEnabled, prSingleHopEnabled,
               queueRedundancyLevel, queueMessageTrackingTimeout, queueAckInterval,
               subscriptionTimeoutMultipler, serverGroup, multiuserSecureModeEnabled, locators,
-              servers, startDisabled, locatorCallback, gatewaySender, gateway, socketFactory,
-              requestLocatorInternalAddress);
+              servers, startDisabled, locatorCallback, gatewaySender, gateway, socketFactory);
     }
 
     @Override
@@ -741,7 +717,6 @@ public class PoolFactoryImpl implements InternalPoolFactory {
           && queueAckInterval == that.queueAckInterval
           && multiuserSecureModeEnabled == that.multiuserSecureModeEnabled
           && startDisabled == that.startDisabled && gateway == that.gateway
-          && requestLocatorInternalAddress == that.requestLocatorInternalAddress
           && Objects.equals(serverGroup, that.serverGroup)
           && Objects.equals(new HashSet<>(locators), new HashSet<>(that.locators))
           && Objects.equals(new HashSet<>(servers), new HashSet<>(that.servers))

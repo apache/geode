@@ -71,6 +71,9 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
 
   private TcpClient tcpClient;
 
+  @Immutable
+  private static final LocatorListRequest LOCATOR_LIST_REQUEST = new LocatorListRequest();
+
   /**
    * A Comparator used to sort a list of locator addresses. This should not be
    * used in other ways as it can return zero when two addresses aren't actually equal.
@@ -104,7 +107,6 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
   private long locatorUpdateInterval;
   private volatile LocatorDiscoveryCallback locatorCallback = new LocatorDiscoveryCallbackAdapter();
   private volatile boolean isBalanced = true;
-  protected final boolean requestLocatorInternalAddress;
   /**
    * key is the InetSocketAddress of the locator. value will be an exception if we have already
    * found the locator to be dead. value will be null if we last saw it alive.
@@ -113,13 +115,12 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
 
   public AutoConnectionSourceImpl(List<HostAndPort> contacts, String serverGroup,
       int handshakeTimeout,
-      SocketFactory socketFactory, boolean requestInternal) {
+      SocketFactory socketFactory) {
     this.locators.set(new LocatorList(new ArrayList<>(contacts)));
     this.onlineLocators.set(new LocatorList(Collections.emptyList()));
     this.initialLocators = Collections.unmodifiableList(this.locators.get().getLocatorAddresses());
     this.connectionTimeout = handshakeTimeout;
     this.serverGroup = serverGroup;
-    this.requestLocatorInternalAddress = requestInternal;
     this.tcpClient = new TcpClient(SocketCreatorFactory
         .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
@@ -453,8 +454,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
       if (pool.getCancelCriterion().isCancelInProgress()) {
         return;
       }
-      LocatorListResponse response = (LocatorListResponse) queryLocators(
-          new LocatorListRequest(requestLocatorInternalAddress));
+      LocatorListResponse response = (LocatorListResponse) queryLocators(LOCATOR_LIST_REQUEST);
       updateLocatorList(response);
     }
   }

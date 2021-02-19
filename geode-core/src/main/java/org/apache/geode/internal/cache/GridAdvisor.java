@@ -257,9 +257,6 @@ public abstract class GridAdvisor extends DistributionAdvisor {
 
     private String host;
 
-    /** valid only for ControllerProfile */
-    private String internalHost;
-
     /**
      * a negative port value is used when creating a fake profile meant to only gather information
      * about all available locators.
@@ -279,7 +276,6 @@ public abstract class GridAdvisor extends DistributionAdvisor {
       super(toCopy.getDistributedMember(), toCopy.version);
       this.host = toCopy.host;
       this.port = toCopy.port;
-      this.internalHost = toCopy.internalHost;
       finishInit();
     }
 
@@ -291,20 +287,12 @@ public abstract class GridAdvisor extends DistributionAdvisor {
       this.port = port;
     }
 
-    public void setInternalHost(String internalHost) {
-      this.internalHost = internalHost;
-    }
-
     public String getHost() {
       return this.host;
     }
 
     public int getPort() {
       return this.port;
-    }
-
-    public String getInternalHost() {
-      return this.internalHost;
     }
 
     @Override
@@ -395,8 +383,6 @@ public abstract class GridAdvisor extends DistributionAdvisor {
       super.fillInToString(sb);
       sb.append("; host=").append(this.host);
       sb.append("; port=").append(this.port);
-      sb.append("; internalHost=").append(this.internalHost);
-
     }
   }
 
@@ -425,8 +411,7 @@ public abstract class GridAdvisor extends DistributionAdvisor {
 
     @Override
     public String toString() {
-      return "GridProfile[host=" + this.gp.getHost() + ",port=" + gp.getPort() + ",internalHost="
-          + gp.getInternalHost() + ']';
+      return "GridProfile[host=" + this.gp.getHost() + ",port=" + gp.getPort() + ']';
     }
 
     @Override
@@ -447,17 +432,6 @@ public abstract class GridAdvisor extends DistributionAdvisor {
         if (this.gp.getPort() == other.gp.getPort()) {
           final String thisHost = this.gp.getHost();
           final String otherHost = other.gp.getHost();
-          final String thisInternalHost = this.gp.getInternalHost();
-          final String otherInternalHost = other.gp.getInternalHost();
-          if (thisInternalHost != null) {
-            if (!thisInternalHost.equals(otherInternalHost)) {
-              return false;
-            }
-          } else {
-            if (otherInternalHost != null) {
-              return false;
-            }
-          }
           if (thisHost != null) {
             if (thisHost.equals(otherHost)) {
               if (this.getMemberId() != null) {
