@@ -280,7 +280,7 @@ public abstract class AbstractRegionMap extends BaseRegionMap
     new Throwable().printStackTrace(pw);
     logger.warn("#LRJ putEntryIfAbsent stacktrace: " + sw);
     RegionEntry oldRe = (RegionEntry) getEntryMap().putIfAbsent(key, regionEntry);
-    logger.warn("#LRJ in putEntryIfAbsent, oldRe k-v: {} {}", key, oldRe.getValue());
+    logger.warn("#LRJ in putEntryIfAbsent, oldRe v:" + (oldRe == null ? "null" : oldRe.getValue()));
     if (oldRe == null && (regionEntry instanceof OffHeapRegionEntry) && _isOwnerALocalRegion()
         && _getOwner().isThisRegionBeingClosedOrDestroyed()) {
       // prevent orphan during concurrent destroy (#48068)
