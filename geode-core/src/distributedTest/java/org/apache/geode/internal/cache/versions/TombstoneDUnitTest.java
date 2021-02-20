@@ -48,6 +48,7 @@ import org.apache.geode.internal.cache.DistributedTombstoneOperation;
 import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.TombstoneService;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -140,6 +141,77 @@ public class TombstoneDUnitTest implements Serializable {
       assertThat(tombstoneSweeper.getOldestTombstoneTime()).isGreaterThan(0)
           .isLessThan(((InternalCache) cache).cacheTimeMillis());
       performGC(1);
+      assertThat(tombstoneSweeper.getOldestTombstoneTime()).isEqualTo(0);
+    });
+  }
+
+  @Test
+  public void testRewriteBadOldestTombstoneTimeReplicateForTimestamp() {
+    VM server1 = VM.getVM(-1);
+    VM server2 = VM.getVM(1);
+
+    final int count = 10;
+
+    server1.invoke(() -> {
+      createCacheAndRegion(RegionShortcut.REPLICATE_PERSISTENT);
+      for (int i = 0; i < count; i++) {
+        region.put("K" + i, "V" + i);
+      }
+    });
+
+    server2.invoke(() -> createCacheAndRegion(RegionShortcut.REPLICATE));
+
+    server1.invoke(() -> {
+      TombstoneService.TombstoneSweeper tombstoneSweeper =
+          ((InternalCache) cache).getTombstoneService().getSweeper((LocalRegion) region);
+
+      RegionEntry regionEntry = ((LocalRegion) region).getRegionEntry("K0");
+      VersionTag<?> versionTag = regionEntry.getVersionStamp()
+          .asVersionTag();
+      versionTag.setVersionTimeStamp(System.currentTimeMillis() + 100000);
+      TombstoneService.Tombstone
+          modifiedTombstone =
+          new TombstoneService.Tombstone(regionEntry, (LocalRegion) region,
+              versionTag);
+      tombstoneSweeper.tombstones.add(modifiedTombstone);
+      if (tombstoneSweeper.getOldestTombstoneTime() > 0) {
+        System.out.println("We have a problem");
+      }
+      else {
+        System.out.println("It works.");
+      }
+      tombstoneSweeper.checkOldestUnexpired(System.currentTimeMillis());
+      // Send tombstone gc message to vm1.
+      assertThat(tombstoneSweeper.getOldestTombstoneTime()).isEqualTo(0);
+    });
+  }
+
+
+  @Test
+  public void testGetOldestTombstoneTimeReplicateForTimestamp() {
+    VM server1 = VM.getVM(0);
+    VM server2 = VM.getVM(1);
+    final int count = 10;
+    server1.invoke(() -> {
+      createCacheAndRegion(RegionShortcut.REPLICATE_PERSISTENT);
+      for (int i = 0; i < count; i++) {
+        region.put("K" + i, "V" + i);
+      }
+    });
+
+    server2.invoke(() -> createCacheAndRegion(RegionShortcut.REPLICATE));
+
+    server1.invoke(() -> {
+      TombstoneService.TombstoneSweeper tombstoneSweeper =
+          ((InternalCache) cache).getTombstoneService().getSweeper((LocalRegion) region);
+      // Send tombstone gc message to vm1.
+      for (int i = 0; i < count; i++) {
+        region.destroy("K" + i);
+        assertThat(tombstoneSweeper.getOldestTombstoneTime() + 30000 - System.currentTimeMillis())
+            .isGreaterThan(0);
+        performGC(1);
+      }
+
       assertThat(tombstoneSweeper.getOldestTombstoneTime()).isEqualTo(0);
     });
   }
