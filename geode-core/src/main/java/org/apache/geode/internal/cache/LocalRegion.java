@@ -1480,8 +1480,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
               disableCopyOnRead, preferCD, requestingClient, clientEvent, returnTombstones);
     }
 
-    logger.warn("#LRJ getObject got result from loader: " + (result == null ? "null" : result));
-
     if (result == null && localValue != null) {
       if (localValue != Token.TOMBSTONE || returnTombstones) {
         result = localValue;
@@ -2801,6 +2799,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     boolean fromServer = false;
     VersionTagHolder holder = null;
 
+    logger.warn("#LRJ trying to findObjectInSystem");
     /*
      * First lets try the server
      */
@@ -2810,6 +2809,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       value = mySRP.get(key, aCallbackArgument, holder);
       fromServer = value != null;
     }
+    logger.warn("#LRJ value from server: " + fromServer + " " +  value);
 
     /*
      * If we didn't get anything from the server, try the loader
@@ -2817,19 +2817,18 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     if (!fromServer || value == Token.TOMBSTONE) {
       // copy into local var to prevent race condition
       CacheLoader loader = basicGetLoader();
-      logger.warn("CacheLoader type: " + (loader == null ? "null" : loader));
       if (loader != null) {
         fromServer = false;
         CachePerfStats stats = getCachePerfStats();
         long statStart = stats.startLoad();
         try {
-          logger.warn("#LRJ Calling CacheLoader");
           value = callCacheLoader(loader, key, aCallbackArgument, preferCD);
         } finally {
           stats.endLoad(statStart);
         }
       }
     }
+    logger.warn("#LRJ object found from cache loader?: " + (value != null ? "true" : "false"));
 
     // don't allow tombstones into a client cache if it doesn't
     // have concurrency checks enabled
@@ -2840,7 +2839,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     /*
      * If we got a value back, let's put it in the cache.
      */
-    logger.warn("#LRJ findObjectInSystem get value: " + (value == null ? "null" : value));
     RegionEntry re = null;
     if (value != null && !isMemoryThresholdReachedForLoad()) {
 
@@ -2863,7 +2861,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         // already one there with the same version
         if (fromServer) {
           if (alreadyInvalid(key, event)) {
-            logger.warn("#LRJ already invalid entry in cache");
+            logger.warn("#LRJ already invalid entry in cache, returning");
             return null;
           }
           event.setFromServer(fromServer);
@@ -2879,6 +2877,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         }
         try {
           try {
+            logger.warn("#LRJ calling basicPutEntry with event: " + (event == null ? "null" : event));
             re = basicPutEntry(event, 0L);
             logger.warn("#LRJ performed basicPutEntry with re: " + (re == null ? "null" : re));
             if (!fromServer && clientEvent != null) {
@@ -2919,9 +2918,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     LoaderHelper loaderHelper = loaderHelperFactory.createLoaderHelper(key, aCallbackArgument,
         false /* netSearchAllowed */, true /* netloadAllowed */, null /* searcher */);
     Object result = loader.load(loaderHelper);
-    logger.warn("#LRJ callCacheLoader result: " + (result == null ? "null" : result));
     result = getCache().convertPdxInstanceIfNeeded(result, preferCD);
-    logger.warn("#LRJ callCacheLoader convert result if needed: " + (result == null ? "null" : result));
     return result;
   }
 
