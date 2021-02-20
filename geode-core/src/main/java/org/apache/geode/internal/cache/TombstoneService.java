@@ -385,6 +385,7 @@ public class TombstoneService {
 
     RegionEntry entry;
     LocalRegion region;
+
     @VisibleForTesting
     public Tombstone(RegionEntry entry, LocalRegion region, VersionTag destroyedVersion) {
       super(destroyedVersion);

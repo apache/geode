@@ -169,15 +169,13 @@ public class TombstoneDUnitTest implements Serializable {
       VersionTag<?> versionTag = regionEntry.getVersionStamp()
           .asVersionTag();
       versionTag.setVersionTimeStamp(System.currentTimeMillis() + 100000);
-      TombstoneService.Tombstone
-          modifiedTombstone =
+      TombstoneService.Tombstone modifiedTombstone =
           new TombstoneService.Tombstone(regionEntry, (LocalRegion) region,
               versionTag);
       tombstoneSweeper.tombstones.add(modifiedTombstone);
       if (tombstoneSweeper.getOldestTombstoneTime() > 0) {
         System.out.println("We have a problem");
-      }
-      else {
+      } else {
         System.out.println("It works.");
       }
       tombstoneSweeper.checkOldestUnexpired(System.currentTimeMillis());
