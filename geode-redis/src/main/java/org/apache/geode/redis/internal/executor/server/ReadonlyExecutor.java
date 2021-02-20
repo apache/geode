@@ -15,35 +15,14 @@
 
 package org.apache.geode.redis.internal.executor.server;
 
-import java.util.Arrays;
-import java.util.List;
-
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class CommandExecutor extends AbstractExecutor {
+public class ReadonlyExecutor extends AbstractExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
-
-    List<Object> response = Arrays.asList(
-        Arrays.asList(
-            "flushall",
-            -1,
-            Arrays.asList("write"),
-            0, 0, 0),
-        Arrays.asList(
-            "get",
-            2,
-            Arrays.asList("readonly"),
-            1, 1, 1),
-        Arrays.asList(
-            "set",
-            -3,
-            Arrays.asList("write"),
-            1, 1, 1));
-
-    return RedisResponse.array(response);
+    return RedisResponse.ok();
   }
 }

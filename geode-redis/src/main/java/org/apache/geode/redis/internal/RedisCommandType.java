@@ -76,6 +76,7 @@ import org.apache.geode.redis.internal.executor.server.CommandExecutor;
 import org.apache.geode.redis.internal.executor.server.DBSizeExecutor;
 import org.apache.geode.redis.internal.executor.server.FlushAllExecutor;
 import org.apache.geode.redis.internal.executor.server.InfoExecutor;
+import org.apache.geode.redis.internal.executor.server.ReadonlyExecutor;
 import org.apache.geode.redis.internal.executor.server.ShutDownExecutor;
 import org.apache.geode.redis.internal.executor.server.SlowlogExecutor;
 import org.apache.geode.redis.internal.executor.server.TimeExecutor;
@@ -281,6 +282,7 @@ public enum RedisCommandType {
 
   /*********** CLUSTER **********/
   CLUSTER(new ClusterExecutor(), UNSUPPORTED, new MinimumParameterRequirements(1)),
+  READONLY(new ReadonlyExecutor(), UNSUPPORTED, new MinimumParameterRequirements(1)),
 
   /////////// UNIMPLEMENTED /////////////////////
 
@@ -333,7 +335,6 @@ public enum RedisCommandType {
   PSYNC(null, UNIMPLEMENTED),
   PUBSUB(null, UNIMPLEMENTED),
   RANDOMKEY(null, UNIMPLEMENTED),
-  READONLY(null, UNIMPLEMENTED),
   READWRITE(null, UNIMPLEMENTED),
   RENAMENX(null, UNIMPLEMENTED),
   RESTORE(null, UNIMPLEMENTED),
