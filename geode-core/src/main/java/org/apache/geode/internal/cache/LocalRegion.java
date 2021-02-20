@@ -2817,11 +2817,13 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     if (!fromServer || value == Token.TOMBSTONE) {
       // copy into local var to prevent race condition
       CacheLoader loader = basicGetLoader();
+      logger.warn("CacheLoader type: " + (loader == null ? "null" : loader));
       if (loader != null) {
         fromServer = false;
         CachePerfStats stats = getCachePerfStats();
         long statStart = stats.startLoad();
         try {
+          logger.warn("#LRJ Calling CacheLoader");
           value = callCacheLoader(loader, key, aCallbackArgument, preferCD);
         } finally {
           stats.endLoad(statStart);
@@ -2838,6 +2840,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     /*
      * If we got a value back, let's put it in the cache.
      */
+    logger.warn("#LRJ findObjectInSystem get value: " + (value == null ? "null" : value));
     RegionEntry re = null;
     if (value != null && !isMemoryThresholdReachedForLoad()) {
 
@@ -2860,6 +2863,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         // already one there with the same version
         if (fromServer) {
           if (alreadyInvalid(key, event)) {
+            logger.warn("#LRJ already invalid entry in cache");
             return null;
           }
           event.setFromServer(fromServer);
@@ -2876,6 +2880,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         try {
           try {
             re = basicPutEntry(event, 0L);
+            logger.warn("#LRJ performed basicPutEntry with re: " + (re == null ? "null" : re));
             if (!fromServer && clientEvent != null) {
               clientEvent.setVersionTag(event.getVersionTag());
               clientEvent.isConcurrencyConflict(event.isConcurrencyConflict());
@@ -2934,6 +2939,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   private boolean alreadyInvalid(Object key, EntryEventImpl event) {
     @Unretained(ENTRY_EVENT_NEW_VALUE)
     Object newValue = event.getRawNewValue();
+    logger.warn("#LRJ alreadyInvalid newValue: " + (newValue == null ? "null" : newValue));
     if (newValue == null || Token.isInvalid(newValue)) {
       RegionEntry entry = entries.getEntry(key);
       if (entry != null) {
@@ -6065,6 +6071,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   protected void notifyBridgeClients(CacheEvent event) {
+    logger.warn("#LRJ notifyBridgeClients of event " + event);
     int numBS = getCache().getCacheServers().size();
 
     // In case of localOperations no need to notify clients.
