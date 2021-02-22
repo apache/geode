@@ -15,9 +15,13 @@
 package org.apache.geode.redis.internal.executor.string;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.After;
 import org.junit.Before;
@@ -25,12 +29,14 @@ import org.junit.Test;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
 
+import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
 public abstract class AbstractIncrByIntegrationTest implements RedisPortSupplier {
 
-  private Jedis jedis;
+  private Jedis jedis1;
+  private Jedis jedis2;
   private Random rand;
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
@@ -38,49 +44,96 @@ public abstract class AbstractIncrByIntegrationTest implements RedisPortSupplier
   @Before
   public void setUp() {
     rand = new Random();
-    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+
+    jedis1 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
-    jedis.flushAll();
-    jedis.close();
+    jedis1.flushAll();
+    jedis1.close();
+    jedis2.flushAll();
+    jedis2.close();
   }
 
   @Test
   public void errors_givenWrongNumberOfArguments() {
-    assertExactNumberOfArgs(jedis, Protocol.Command.INCRBY, 2);
+    assertExactNumberOfArgs(jedis1, Protocol.Command.INCRBY, 2);
   }
 
   @Test
-  public void testIncrBy() {
-    String key1 = randString();
-    String key2 = randString();
-    String key3 = randString();
-    int incr1 = rand.nextInt(100);
-    int incr2 = rand.nextInt(100);
-    Long incr3 = Long.MAX_VALUE / 2;
-    int num1 = 100;
-    int num2 = -100;
-    jedis.set(key1, "" + num1);
-    jedis.set(key2, "" + num2);
-    jedis.set(key3, "" + Long.MAX_VALUE);
-
-    jedis.incrBy(key1, incr1);
-    jedis.incrBy(key2, incr2);
-    assertThat(jedis.get(key1)).isEqualTo("" + (num1 + incr1 * 1));
-    assertThat(jedis.get(key2)).isEqualTo("" + (num2 + incr2 * 1));
-
-    Exception ex = null;
-    try {
-      jedis.incrBy(key3, incr3);
-    } catch (Exception e) {
-      ex = e;
-    }
-    assertThat(ex).isNotNull();
+  public void testIncrBy_failsWhenPerformedOnNonIntegerValue() {
+    jedis1.sadd("key", "member");
+    assertThatThrownBy(() -> jedis1.incrBy("key", 1))
+        .hasMessageContaining("WRONGTYPE Operation against a key holding the wrong kind of value");
   }
 
-  private String randString() {
-    return Long.toHexString(Double.doubleToLongBits(Math.random()));
+  @Test
+  public void testIncrBy_createsAndIncrementsNonExistentKey() {
+    assertThat(jedis1.incrBy("nonexistentkey", 1)).isEqualTo(1);
+    assertThat(jedis1.incrBy("otherNonexistentKey", -1)).isEqualTo(-1);
   }
+
+  @Test
+  public void incrBy_incrementsPositiveIntegerValue() {
+    String key = "key";
+    int num = 100;
+    int increment = rand.nextInt(100);
+
+    jedis1.set(key, String.valueOf(num));
+    jedis1.incrBy(key, increment);
+    assertThat(jedis1.get(key)).isEqualTo(String.valueOf(num + increment));
+  }
+
+  @Test
+  public void incrBy_incrementsNegativeValue() {
+    String key = "key";
+    int num = -100;
+    int increment = rand.nextInt(100);
+
+    jedis1.set(key, "" + num);
+    jedis1.incrBy(key, increment);
+    assertThat(jedis1.get(key)).isEqualTo(String.valueOf(num + increment));
+  }
+
+  @Test
+  public void testIncrBy_IncrementingMaxValueThrowsError() {
+    String key = "key";
+    Long increment = Long.MAX_VALUE / 2;
+
+    jedis1.set(key, String.valueOf(Long.MAX_VALUE));
+    assertThatThrownBy(() -> jedis1.incrBy(key, increment))
+        .hasMessageContaining("ERR increment or decrement would overflow");
+  }
+
+  @Test
+  public void testConcurrentIncrBy_performsAllIncrBys() {
+    String key = "key";
+    AtomicInteger expectedValue = new AtomicInteger(0);
+
+    jedis1.set(key, "0");
+
+    new ConcurrentLoopingThreads(1000,
+        (i) -> {
+          int increment = ThreadLocalRandom.current().nextInt(-50, 50);
+          expectedValue.addAndGet(increment);
+          jedis1.incrBy(key, increment);
+        },
+        (i) -> {
+          int increment = ThreadLocalRandom.current().nextInt(-50, 50);
+          expectedValue.addAndGet(increment);
+          jedis2.incrBy(key, increment);
+        }).run();
+
+    assertThat(Integer.parseInt(jedis1.get(key))).isEqualTo(expectedValue.get());
+  }
+
+  @Test
+  public void testIncrByErrorsForValuesGreaterThatMaxInt() {
+    jedis1.set("key", "9223372036854775808");
+
+    assertThatThrownBy(() -> jedis1.incrBy("key", 1)).hasMessageContaining(ERROR_NOT_INTEGER);
+  }
+
 }
