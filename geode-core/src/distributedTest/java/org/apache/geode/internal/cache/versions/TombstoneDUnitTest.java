@@ -147,11 +147,10 @@ public class TombstoneDUnitTest implements Serializable {
 
   @Test
   public void testRewriteBadOldestTombstoneTimeReplicateForTimestamp() {
-    VM server1 = VM.getVM(-1);
+    VM server1 = VM.getVM(0);
     VM server2 = VM.getVM(1);
 
     final int count = 10;
-
     server1.invoke(() -> {
       createCacheAndRegion(RegionShortcut.REPLICATE_PERSISTENT);
       for (int i = 0; i < count; i++) {
@@ -166,18 +165,13 @@ public class TombstoneDUnitTest implements Serializable {
           ((InternalCache) cache).getTombstoneService().getSweeper((LocalRegion) region);
 
       RegionEntry regionEntry = ((LocalRegion) region).getRegionEntry("K0");
-      VersionTag<?> versionTag = regionEntry.getVersionStamp()
-          .asVersionTag();
-      versionTag.setVersionTimeStamp(System.currentTimeMillis() + 100000);
+      VersionTag<?> versionTag = regionEntry.getVersionStamp().asVersionTag();
+      versionTag.setVersionTimeStamp(System.currentTimeMillis() + 1000000);
+
       TombstoneService.Tombstone modifiedTombstone =
           new TombstoneService.Tombstone(regionEntry, (LocalRegion) region,
               versionTag);
       tombstoneSweeper.tombstones.add(modifiedTombstone);
-      if (tombstoneSweeper.getOldestTombstoneTime() > 0) {
-        System.out.println("We have a problem");
-      } else {
-        System.out.println("It works.");
-      }
       tombstoneSweeper.checkOldestUnexpired(System.currentTimeMillis());
       // Send tombstone gc message to vm1.
       assertThat(tombstoneSweeper.getOldestTombstoneTime()).isEqualTo(0);
