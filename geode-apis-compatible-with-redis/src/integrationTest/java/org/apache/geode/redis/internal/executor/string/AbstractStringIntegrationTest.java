@@ -33,29 +33,32 @@ import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
 public abstract class AbstractStringIntegrationTest implements RedisPortSupplier {
 
-  private Jedis jedis;
+  private Jedis jedis1;
+  private Jedis jedis2;
+
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis1 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
-    jedis.flushAll();
-    jedis.close();
+    jedis1.flushAll();
+    jedis1.close();
   }
 
   @Test
   public void strlen_errorsGivenWrongNumberOfArguments() {
-    assertExactNumberOfArgs(jedis, Protocol.Command.STRLEN, 1);
+    assertExactNumberOfArgs(jedis1, Protocol.Command.STRLEN, 1);
   }
 
   @Test
   public void testStrlen_requestNonexistentKey_returnsZero() {
-    Long result = jedis.strlen("Nohbdy");
+    Long result = jedis1.strlen("Nohbdy");
     assertThat(result).isEqualTo(0);
   }
 
@@ -63,18 +66,18 @@ public abstract class AbstractStringIntegrationTest implements RedisPortSupplier
   public void testStrlen_requestKey_returnsLengthOfStringValue() {
     String value = "byGoogle";
 
-    jedis.set("golang", value);
+    jedis1.set("golang", value);
 
-    Long result = jedis.strlen("golang");
+    Long result = jedis1.strlen("golang");
     assertThat(result).isEqualTo(value.length());
   }
 
   @Test
   public void testStrlen_requestWrongType_shouldReturnError() {
     String key = "hashKey";
-    jedis.hset(key, "field", "this value doesn't matter");
+    jedis1.hset(key, "field", "this value doesn't matter");
 
-    assertThatThrownBy(() -> jedis.strlen(key))
+    assertThatThrownBy(() -> jedis1.strlen(key))
         .isInstanceOf(JedisDataException.class)
         .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
   }
@@ -82,57 +85,57 @@ public abstract class AbstractStringIntegrationTest implements RedisPortSupplier
   @Test
   public void testStrlen_withEmptyByte() {
     byte[] key = new byte[] {0};
-    jedis.set(key, new byte[] {});
+    jedis1.set(key, new byte[] {});
 
-    assertThat(jedis.strlen(key)).isEqualTo(0);
+    assertThat(jedis1.strlen(key)).isEqualTo(0);
   }
 
   @Test
   public void testStrlen_withBinaryData() {
     byte[] zero = new byte[] {0};
-    jedis.set(zero, zero);
+    jedis1.set(zero, zero);
 
-    assertThat(jedis.strlen(zero)).isEqualTo(1);
+    assertThat(jedis1.strlen(zero)).isEqualTo(1);
   }
 
   @Test
   public void testStrlen_withUTF16BinaryData() {
     String test_utf16_string = "最𐐷𤭢";
     byte[] testBytes = test_utf16_string.getBytes(StandardCharsets.UTF_16);
-    jedis.set(testBytes, testBytes);
+    jedis1.set(testBytes, testBytes);
 
-    assertThat(jedis.strlen(testBytes)).isEqualTo(12);
+    assertThat(jedis1.strlen(testBytes)).isEqualTo(12);
   }
 
   @Test
   public void testStrlen_withIntData() {
     byte[] key = new byte[] {0};
     byte[] value = new byte[] {1, 0, 0};
-    jedis.set(key, value);
+    jedis1.set(key, value);
 
-    assertThat(jedis.strlen(key)).isEqualTo(value.length);
+    assertThat(jedis1.strlen(key)).isEqualTo(value.length);
   }
 
   @Test
   public void testStrlen_withFloatData() {
     byte[] key = new byte[] {0};
     byte[] value = new byte[] {'0', '.', '9'};
-    jedis.set(key, value);
+    jedis1.set(key, value);
 
-    assertThat(jedis.strlen(key)).isEqualTo(value.length);
+    assertThat(jedis1.strlen(key)).isEqualTo(value.length);
   }
 
   @Test
   public void testDecr_ErrorsWithWrongNumberOfArguments() {
-    assertExactNumberOfArgs(jedis, Protocol.Command.DECR, 1);
+    assertExactNumberOfArgs(jedis1, Protocol.Command.DECR, 1);
   }
 
   @Test
   public void testDecr_withWrongType_shouldError() {
     String key = "hashKey";
-    jedis.hset(key, "field", "non-int value");
+    jedis1.hset(key, "field", "non-int value");
 
-    assertThatThrownBy(() -> jedis.decr(key))
+    assertThatThrownBy(() -> jedis1.decr(key))
         .isInstanceOf(JedisDataException.class)
         .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
   }
@@ -140,18 +143,18 @@ public abstract class AbstractStringIntegrationTest implements RedisPortSupplier
   @Test
   public void testDecr_decrementsPositiveIntegerValues() {
     String key = "key";
-    jedis.set(key, "10");
+    jedis1.set(key, "10");
 
-    assertThat(jedis.decr(key)).isEqualTo(9L);
-    assertThat(jedis.get(key)).isEqualTo("9");
+    assertThat(jedis1.decr(key)).isEqualTo(9L);
+    assertThat(jedis1.get(key)).isEqualTo("9");
   }
 
   @Test
   public void testDecr_returnsValueWhenDecrementingResultsInNegativeNumber() {
     String key = "key";
-    jedis.set(key, "0");
+    jedis1.set(key, "0");
 
-    assertThat(jedis.decr(key)).isEqualTo(-1L);
-    assertThat(jedis.get(key)).isEqualTo("-1");
+    assertThat(jedis1.decr(key)).isEqualTo(-1L);
+    assertThat(jedis1.get(key)).isEqualTo("-1");
   }
 }
