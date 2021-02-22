@@ -751,7 +751,11 @@ public class TombstoneService {
         testHook_forceExpirationCount--;
         return true;
       }
-      // In case
+      /*
+       * In case the tombstone expiration time would be too far out lets cap it. This is just
+       * making the system fault tolerant in the case that there are large clock jumps or
+       * unrealistically large timestamps.
+       */
       return msTillHeadTombstoneExpires <= 0 || msTillHeadTombstoneExpires > EXPIRY_TIME;
     }
 

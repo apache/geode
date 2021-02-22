@@ -61,6 +61,7 @@ public class TombstoneDUnitTest implements Serializable {
   private static Cache cache;
   private static Region<String, String> region;
   final String REGION_NAME = "TestRegion";
+  final int EXPIRY_TIME=600000;
 
   @Rule
   public DistributedRule distributedRule = new DistributedRule();
@@ -118,37 +119,13 @@ public class TombstoneDUnitTest implements Serializable {
     });
   }
 
-  @Test
-  public void testGetOldestTombstoneTimeReplicate() {
-    VM server1 = VM.getVM(0);
-    VM server2 = VM.getVM(1);
-
-    server1.invoke(() -> {
-      createCacheAndRegion(REPLICATE_PERSISTENT);
-      region.put("K1", "V1");
-      region.put("K2", "V2");
-    });
-
-    server2.invoke(() -> createCacheAndRegion(REPLICATE));
-
-    server1.invoke(() -> {
-      // Send tombstone gc message to vm1.
-      region.destroy("K1");
-
-      TombstoneService.TombstoneSweeper tombstoneSweeper =
-          ((InternalCache) cache).getTombstoneService().getSweeper((LocalRegion) region);
-
-      assertThat(tombstoneSweeper.getOldestTombstoneTime()).isGreaterThan(0)
-          .isLessThan(((InternalCache) cache).cacheTimeMillis());
-      performGC(1);
-      assertThat(tombstoneSweeper.getOldestTombstoneTime()).isEqualTo(0);
-    });
-  }
 
   @Test
-  public void testRewriteBadOldestTombstoneTimeReplicateForTimestamp() {
+  public void testWhenAnOutOfRangeTimeStampIsSeenWeExpireItInReplicateTombstoneSweeper() {
     VM server1 = VM.getVM(0);
     VM server2 = VM.getVM(1);
+    final int FAR_INTO_THE_FUTURE = 1000000; // 1 million millis into the future
+
 
     final int count = 10;
     server1.invoke(() -> {
@@ -166,7 +143,7 @@ public class TombstoneDUnitTest implements Serializable {
 
       RegionEntry regionEntry = ((LocalRegion) region).getRegionEntry("K0");
       VersionTag<?> versionTag = regionEntry.getVersionStamp().asVersionTag();
-      versionTag.setVersionTimeStamp(System.currentTimeMillis() + 1000000);
+      versionTag.setVersionTimeStamp(System.currentTimeMillis() + FAR_INTO_THE_FUTURE);
 
       TombstoneService.Tombstone modifiedTombstone =
           new TombstoneService.Tombstone(regionEntry, (LocalRegion) region,
@@ -178,9 +155,8 @@ public class TombstoneDUnitTest implements Serializable {
     });
   }
 
-
   @Test
-  public void testGetOldestTombstoneTimeReplicateForTimestamp() {
+  public void testGetOldestTombstoneTimeForReplicateTombstoneSweeper() {
     VM server1 = VM.getVM(0);
     VM server2 = VM.getVM(1);
     final int count = 10;
@@ -199,7 +175,7 @@ public class TombstoneDUnitTest implements Serializable {
       // Send tombstone gc message to vm1.
       for (int i = 0; i < count; i++) {
         region.destroy("K" + i);
-        assertThat(tombstoneSweeper.getOldestTombstoneTime() + 30000 - System.currentTimeMillis())
+        assertThat(tombstoneSweeper.getOldestTombstoneTime() + EXPIRY_TIME - System.currentTimeMillis())
             .isGreaterThan(0);
         performGC(1);
       }
@@ -209,7 +185,7 @@ public class TombstoneDUnitTest implements Serializable {
   }
 
   @Test
-  public void testGetOldestTombstoneTimeNonReplicate() {
+  public void testGetOldestTombstoneTimeForNonReplicateTombstoneSweeper() {
     VM client = VM.getVM(0);
     VM server = VM.getVM(1);
 
@@ -252,7 +228,7 @@ public class TombstoneDUnitTest implements Serializable {
    * and validate that it matches the tombstone of the entry we removed.
    */
   @Test
-  public void testGetOldestTombstoneReplicate() {
+  public void testGetOldestTombstoneForReplicateTombstoneSweeper() {
     VM server1 = VM.getVM(0);
     VM server2 = VM.getVM(1);
 
@@ -285,7 +261,7 @@ public class TombstoneDUnitTest implements Serializable {
    * as a client is required to have this non-replicate tombstone.
    */
   @Test
-  public void testGetOldestTombstoneNonReplicate() {
+  public void testGetOldestTombstoneForNonReplicateTombstoneSweeper() {
     VM client = VM.getVM(0);
     VM server = VM.getVM(1);
 
