@@ -211,7 +211,7 @@ public class DirectChannel {
       InternalDistributedMember[] p_destinations,
       final DistributionMessage msg, long ackWaitThreshold, long ackSAThreshold)
       throws ConnectExceptions, NotSerializableException {
-    InternalDistributedMember destinations[] = p_destinations;
+    InternalDistributedMember[] destinations = p_destinations;
 
     // Collects connect exceptions that happened during previous attempts to send.
     // These represent members we are not able to distribute to.
@@ -276,7 +276,7 @@ public class DirectChannel {
           retryInfo = null;
           retry = true;
         }
-        final List cons = new ArrayList(destinations.length);
+        final List<Connection> cons = new ArrayList<>(destinations.length);
         ConnectExceptions ce = getConnections(mgr, msg, destinations, orderedMsg, retry, ackTimeout,
             ackSDTimeout, cons);
 
@@ -299,9 +299,9 @@ public class DirectChannel {
           return bytesWritten;
         }
 
-        if (retry && logger.isDebugEnabled()) {
-          logger.debug("Retrying send ({}{}) to {} peers ({}) via tcp/ip",
-              msg, cons.size(), cons);
+        if (logger.isDebugEnabled()) {
+          logger.debug("{} on these {} connections: {}",
+              (retry ? "Retrying send" : "Sending"), cons.size(), cons);
         }
         DMStats stats = getDMStats();
         List<?> sentCons; // used for cons we sent to this time
