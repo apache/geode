@@ -41,7 +41,7 @@ geode-core/**/org/apache/geode/distributed/internal/membership/** @bschuchardt @
 geode-core/**/org/apache/geode/internal/tcp/**                    @bschuchardt @Bill
 geode-core/**/org/apache/geode/distributed/internal/direct/**     @bschuchardt @Bill
 geode-core/**/org/apache/geode/internal/net/**                    @bschuchardt @Bill
-geode-core/**/org/apache/geode/net/**                             @bschuchardt @Bill
+geode-core/**/org/apache/geode/net/**                             @Bill @mivanac
 geode-core/**/org/apache/geode/distributed/*                      @bschuchardt @Bill @kirklund
 geode-core/**/org/apache/geode/distributed/internal/*             @bschuchardt @Bill @kirklund
 
@@ -86,9 +86,9 @@ geode-core/**/org/apache/geode/internal/cache/*                   @nabarunnag @D
 #-----------------------------------------------------------------
 # Region entry management
 #-----------------------------------------------------------------
-geode-core/**/org/apache/geode/internal/cache/entries/**          @dschneider-pivotal @sabbey37 @bschuchardt @upthewaterspout @kirklund @mhansonp
-geode-core/**/org/apache/geode/internal/cache/region/entry/**     @dschneider-pivotal @sabbey37 @bschuchardt @upthewaterspout @kirklund @mhansonp
-geode-core/**/org/apache/geode/internal/cache/map/**              @dschneider-pivotal @sabbey37 @bschuchardt @upthewaterspout @kirklund @mhansonp
+geode-core/**/org/apache/geode/internal/cache/entries/**          @dschneider-pivotal @sabbey37 @upthewaterspout @kirklund @mhansonp
+geode-core/**/org/apache/geode/internal/cache/region/entry/**     @dschneider-pivotal @sabbey37 @upthewaterspout @kirklund @mhansonp
+geode-core/**/org/apache/geode/internal/cache/map/**              @dschneider-pivotal @sabbey37 @upthewaterspout @kirklund @mhansonp
 geode-core/**/org/apache/geode/compression/**                     @dschneider-pivotal @sabbey37 @kirklund
 geode-core/**/org/apache/geode/internal/cache/compression/**      @dschneider-pivotal @sabbey37 @kirklund
 
@@ -185,7 +185,7 @@ geode-core/**/org/apache/geode/internal/cache/backup/**           @dschneider-pi
 # Region Version Vectors - used for sychronization on
 # member failures and persistent recovery
 #-----------------------------------------------------------------
-geode-core/**/org/apache/geode/internal/cache/versions/**         @dschneider-pivotal @gesterzhou @bschuchardt
+geode-core/**/org/apache/geode/internal/cache/versions/**         @dschneider-pivotal @gesterzhou
 
 #-----------------------------------------------------------------
 # WAN messaging and queues
