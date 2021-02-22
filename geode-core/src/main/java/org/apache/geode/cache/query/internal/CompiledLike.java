@@ -314,30 +314,6 @@ public class CompiledLike extends CompiledComparison {
           sb.append(ch);
           break;
         case '_': // replace with .
-        case '$': // replace with [$]
-          if (prevMetaChar) {
-            sb.append('\\');
-            sb.append('E');
-            prevMetaChar = false;
-          }
-
-          int numConsecutiveBackSlash = 0;
-          for (int j = i - 1; j > -1; --j) {
-            if (pattern.charAt(j) == '\\') {
-              ++numConsecutiveBackSlash;
-            } else {
-              break;
-            }
-          }
-
-          // Check if the $ has a valid escape. Backtrack to check for \.
-          // If the number of \ on back track is odd, then $ is escaped.
-          if ((numConsecutiveBackSlash % 2) != 0) {
-            sb.append("[$]");
-          } else {
-            sb.append(ch);
-          }
-          break;
         case '%': // replace with .*
           if (prevMetaChar) {
             sb.append('\\');
@@ -347,7 +323,7 @@ public class CompiledLike extends CompiledComparison {
 
           // Check if the % has a valid escape. Backtrack to check for \.
           // If the number of \ on back track is odd, then % is escaped.
-          numConsecutiveBackSlash = 0;
+          int numConsecutiveBackSlash = 0;
           for (int j = i - 1; j > -1; --j) {
             if (pattern.charAt(j) == '\\') {
               ++numConsecutiveBackSlash;
@@ -370,6 +346,30 @@ public class CompiledLike extends CompiledComparison {
             // The percentage or underscore sign is escaped. Hence it is to be un-escaped now
             // So remove the backslash
             // sb.deleteCharAt(sb.length() - 1);
+            sb.append(ch);
+          }
+          break;
+        case '$': // replace with [$]
+          if (prevMetaChar) {
+            sb.append('\\');
+            sb.append('E');
+            prevMetaChar = false;
+          }
+
+          numConsecutiveBackSlash = 0;
+          for (int j = i - 1; j > -1; --j) {
+            if (pattern.charAt(j) == '\\') {
+              ++numConsecutiveBackSlash;
+            } else {
+              break;
+            }
+          }
+
+          // Check if the $ has a valid escape. Backtrack to check for \.
+          // If the number of \ on back track is odd, then $ is escaped.
+          if ((numConsecutiveBackSlash % 2) != 0) {
+            sb.append("[$]");
+          } else {
             sb.append(ch);
           }
           break;
