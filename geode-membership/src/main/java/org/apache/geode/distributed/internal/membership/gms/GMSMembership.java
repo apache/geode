@@ -275,7 +275,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
    * otherwise becomes pretty aggressive when a member is shutting down.
    */
   private final Set<ID> shutdownMembers =
-      Collections.synchronizedSet(new BoundedLinkedHashMap<ID, Object>().keySet());
+      Collections.synchronizedSet(Collections.newSetFromMap(new BoundedLinkedHashMap<>()));
 
   /**
    * per bug 39552, keep a list of members that have been shunned and for which a message is
@@ -1198,6 +1198,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
       logger.debug("Membership: recording shutdown status of {}", id);
     }
     this.shutdownMembers.add(id);
+    services.getHealthMonitor().memberShutdown(id, reason);
     services.getJoinLeave().memberShutdown(id, reason);
   }
 
