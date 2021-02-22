@@ -42,6 +42,7 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
@@ -127,6 +128,10 @@ public class StopGatewaySenderCommandTest {
     assertThat(message).containsExactlyInAnyOrder(gatewaySenderIsStoppedMsg,
         gatewaySenderIsStoppedMsg, gatewaySenderIsStoppedMsg);
 
+    // check that cluster configuration is updated
+    CacheConfig.GatewaySender config = (CacheConfig.GatewaySender) result.getConfigObject();
+    assertThat(config.getState()).isEqualTo("stopped");
+
     ArgumentCaptor<Collection> callablesCaptor =
         ArgumentCaptor.forClass(Collection.class);
     verify(executorService, times(1)).invokeAll((callablesCaptor.capture()));
@@ -152,5 +157,4 @@ public class StopGatewaySenderCommandTest {
     assertThat(result.getInfoSection("info").getContent().get(0)).isEqualTo(
         "Could not invoke stop gateway sender sender1 operation on members due to interruption2");
   }
-
 }

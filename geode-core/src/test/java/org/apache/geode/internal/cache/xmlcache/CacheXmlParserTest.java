@@ -1,0 +1,175 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package org.apache.geode.internal.cache.xmlcache;
+
+import static org.apache.geode.internal.cache.GemFireCacheImpl.DEFAULT_LOCK_LEASE;
+import static org.apache.geode.internal.cache.GemFireCacheImpl.DEFAULT_LOCK_TIMEOUT;
+import static org.apache.geode.internal.cache.GemFireCacheImpl.DEFAULT_SEARCH_TIMEOUT;
+import static org.apache.geode.internal.cache.xmlcache.CacheXml.COPY_ON_READ;
+import static org.apache.geode.internal.cache.xmlcache.CacheXml.IS_SERVER;
+import static org.apache.geode.internal.cache.xmlcache.CacheXml.LOCK_LEASE;
+import static org.apache.geode.internal.cache.xmlcache.CacheXml.LOCK_TIMEOUT;
+import static org.apache.geode.internal.cache.xmlcache.CacheXml.MESSAGE_SYNC_INTERVAL;
+import static org.apache.geode.internal.cache.xmlcache.CacheXml.REMOTE_DISTRIBUTED_SYSTEM_ID;
+import static org.apache.geode.internal.cache.xmlcache.CacheXml.SEARCH_TIMEOUT;
+import static org.apache.geode.internal.cache.xmlcache.CacheXml.STATE;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
+
+import org.apache.geode.cache.wan.GatewaySenderFactory;
+import org.apache.geode.cache.wan.GatewaySenderState;
+import org.apache.geode.internal.cache.ha.HARegionQueue;
+import org.apache.geode.internal.cache.wan.WANServiceProvider;
+
+@RunWith(PowerMockRunner.class)
+@PrepareForTest(WANServiceProvider.class)
+public class CacheXmlParserTest {
+
+  @Mock
+  private GatewaySenderFactory gatewaySenderFactory;
+
+  @Before
+  public void setUp() {
+    PowerMockito.mockStatic(WANServiceProvider.class);
+    gatewaySenderFactory = mock(GatewaySenderFactory.class);
+    when(WANServiceProvider.createGatewaySenderFactory(any())).thenReturn(gatewaySenderFactory);
+  }
+
+  @Test
+  public void testStartCacheParametersSet() throws SAXException {
+    AttributesImpl attrs = new AttributesImpl();
+    XmlGeneratorUtils.addAttribute(attrs, LOCK_LEASE, "10");
+    XmlGeneratorUtils.addAttribute(attrs, LOCK_TIMEOUT, "15");
+    XmlGeneratorUtils.addAttribute(attrs, SEARCH_TIMEOUT, "20");
+    XmlGeneratorUtils.addAttribute(attrs, MESSAGE_SYNC_INTERVAL, "20");
+    XmlGeneratorUtils.addAttribute(attrs, IS_SERVER, "true");
+    XmlGeneratorUtils.addAttribute(attrs, COPY_ON_READ, "true");
+
+    CacheXmlParser parser = new CacheXmlParser();
+    parser.startElement("http://geode.apache.org/schema/cache", "cache", "cache", attrs);
+
+    // Check that parameters are set
+    CacheCreation cache = parser.getCacheCreation();
+    assertThat(cache.getLockLease()).isEqualTo(10);
+    assertThat(cache.getLockTimeout()).isEqualTo(15);
+    assertThat(cache.getSearchTimeout()).isEqualTo(20);
+    assertThat(cache.getMessageSyncInterval()).isEqualTo(20);
+    assertThat(cache.isServer()).isTrue();
+    assertThat(cache.getCopyOnRead()).isTrue();
+    // Reset MessageSyncInterval to default value, because it is static variable
+    HARegionQueue.setMessageSyncInterval(HARegionQueue.DEFAULT_MESSAGE_SYNC_INTERVAL);
+  }
+
+  @Test
+  public void testStartCacheParametersDefaultValues() throws SAXException {
+    AttributesImpl attrs = new AttributesImpl();
+
+    CacheXmlParser parser = new CacheXmlParser();
+    parser.startElement("http://geode.apache.org/schema/cache", "cache", "cache", attrs);
+
+    // Check that parameters are set to default values
+    CacheCreation cache = parser.getCacheCreation();
+    assertThat(cache.getLockLease()).isEqualTo(DEFAULT_LOCK_LEASE);
+    assertThat(cache.getLockTimeout()).isEqualTo(DEFAULT_LOCK_TIMEOUT);
+    assertThat(cache.getSearchTimeout()).isEqualTo(DEFAULT_SEARCH_TIMEOUT);
+    assertThat(cache.getMessageSyncInterval())
+        .isEqualTo(HARegionQueue.DEFAULT_MESSAGE_SYNC_INTERVAL);
+    assertThat(cache.isServer()).isFalse();
+    assertThat(cache.getCopyOnRead()).isFalse();
+  }
+
+  @Test
+  public void testStartAndEndGatewaySender() throws SAXException {
+    AttributesImpl attrs = new AttributesImpl();
+
+    XmlGeneratorUtils.addAttribute(attrs, REMOTE_DISTRIBUTED_SYSTEM_ID, "1");
+    XmlGeneratorUtils.addAttribute(attrs, CacheXml.ID, "gateway-sender");
+
+    CacheXmlParser parser = new CacheXmlParser();
+    parser.startElement("http://geode.apache.org/schema/cache", "cache", "cache", attrs);
+    parser.startElement("http://geode.apache.org/schema/cache", "gateway-sender", "gateway-sender",
+        attrs);
+
+    parser.endElement("http://geode.apache.org/schema/cache", "gateway-sender", "gateway-sender");
+    verify(gatewaySenderFactory).create("gateway-sender", 1);
+  }
+
+  @Test
+  public void testStartEndGatewaySenderStateParameter() throws SAXException {
+    AttributesImpl attrs = new AttributesImpl();
+
+    XmlGeneratorUtils.addAttribute(attrs, STATE, "running");
+    XmlGeneratorUtils.addAttribute(attrs, REMOTE_DISTRIBUTED_SYSTEM_ID, "1");
+    XmlGeneratorUtils.addAttribute(attrs, CacheXml.ID, "gateway-sender");
+
+    CacheXmlParser parser = new CacheXmlParser();
+    parser.startElement("http://geode.apache.org/schema/cache", "cache", "cache", attrs);
+    parser.startElement("http://geode.apache.org/schema/cache", "gateway-sender", "gateway-sender",
+        attrs);
+
+    verify(gatewaySenderFactory).setState(GatewaySenderState.RUNNING);
+  }
+
+  @Test
+  public void testStartGatewaySenderStateStoppedParameter() throws SAXException {
+    AttributesImpl attrs = new AttributesImpl();
+
+    XmlGeneratorUtils.addAttribute(attrs, STATE, "stopped");
+    CacheXmlParser parser = new CacheXmlParser();
+    parser.startElement("http://geode.apache.org/schema/cache", "cache", "cache", attrs);
+    parser.startElement("http://geode.apache.org/schema/cache", "gateway-sender", "gateway-sender",
+        attrs);
+
+    verify(gatewaySenderFactory).setState(GatewaySenderState.STOPPED);
+  }
+
+  @Test
+  public void testStartGatewaySenderStatePausedParameter() throws SAXException {
+    AttributesImpl attrs = new AttributesImpl();
+
+    XmlGeneratorUtils.addAttribute(attrs, STATE, "paused");
+    CacheXmlParser parser = new CacheXmlParser();
+    parser.startElement("http://geode.apache.org/schema/cache", "cache", "cache", attrs);
+    parser.startElement("http://geode.apache.org/schema/cache", "gateway-sender", "gateway-sender",
+        attrs);
+
+    verify(gatewaySenderFactory).setState(GatewaySenderState.PAUSED);
+  }
+
+  @Test
+  public void testStartGatewaySenderStateParameterNotSet() throws SAXException {
+    AttributesImpl attrs = new AttributesImpl();
+
+    CacheXmlParser parser = new CacheXmlParser();
+    parser.startElement("http://geode.apache.org/schema/cache", "cache", "cache", attrs);
+    parser.startElement("http://geode.apache.org/schema/cache", "gateway-sender", "gateway-sender",
+        attrs);
+
+    verify(gatewaySenderFactory).setState(null);
+  }
+}

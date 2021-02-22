@@ -71,7 +71,7 @@ public class ResumeGatewaySenderCommand extends SingleGfshCommand implements
 
     GatewaySenderMXBean bean;
     ResultModel resultModel = new ResultModel();
-    boolean isGatewaySenderResumed = true;
+    boolean isGatewaySenderResumed = false;
     TabularResultModel resultData = resultModel.addTable(CliStrings.RESUME_GATEWAYSENDER);
     for (DistributedMember member : dsMembers) {
       if (cache.getDistributedSystem().getDistributedMember().getId().equals(member.getId())) {
