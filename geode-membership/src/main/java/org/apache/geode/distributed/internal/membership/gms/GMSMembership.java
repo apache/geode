@@ -273,11 +273,9 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   /**
    * Members that have sent a shutdown message. This is used to suppress suspect processing that
    * otherwise becomes pretty aggressive when a member is shutting down.
-   *
-   * Accesses to this map should be synchronized on the map to avoid concurrent
-   * modification exceptions
    */
-  private final Map<ID, Object> shutdownMembers = new BoundedLinkedHashMap<>();
+  private final Set<ID> shutdownMembers =
+      Collections.synchronizedSet(new BoundedLinkedHashMap<ID, Object>().keySet());
 
   /**
    * per bug 39552, keep a list of members that have been shunned and for which a message is
@@ -658,12 +656,10 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
       return; // Explicit deletion, no upcall.
     }
 
-    synchronized (shutdownMembers) {
-      if (!shutdownMembers.containsKey(dm)) {
-        // if we've received a shutdown message then DistributionManager will already have
-        // notified listeners
-        listener.memberDeparted(dm, crashed, reason);
-      }
+    if (!shutdownMembers.contains(dm)) {
+      // if we've received a shutdown message then DistributionManager will already have
+      // notified listeners
+      listener.memberDeparted(dm, crashed, reason);
     }
   }
 
@@ -1201,18 +1197,14 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
     if (logger.isDebugEnabled()) {
       logger.debug("Membership: recording shutdown status of {}", id);
     }
-    synchronized (this.shutdownMembers) {
-      this.shutdownMembers.put(id, id);
-      services.getHealthMonitor()
-          .memberShutdown(id, reason);
-      services.getJoinLeave().memberShutdown(id, reason);
-    }
+    this.shutdownMembers.add(id);
+    services.getJoinLeave().memberShutdown(id, reason);
   }
 
   @Override
   public Set<ID> getMembersNotShuttingDown() {
     synchronized (shutdownMembers) {
-      return latestView.getMembers().stream().filter(id -> !shutdownMembers.containsKey(id))
+      return latestView.getMembers().stream().filter(id -> !shutdownMembers.contains(id))
           .collect(
               Collectors.toSet());
     }
@@ -1302,11 +1294,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
 
   @Override
   public void suspectMember(ID mbr, String reason) {
-    final boolean isMemberShuttingDown;
-    synchronized (shutdownMembers) {
-      isMemberShuttingDown = this.shutdownMembers.containsKey(mbr);
-    }
-    if (!this.shutdownInProgress && !isMemberShuttingDown) {
+    if (!this.shutdownInProgress && !shutdownMembers.contains(mbr)) {
       verifyMember(mbr, reason);
     }
   }
@@ -1487,9 +1475,15 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   }
 
   private boolean isShunnedOrNew(final ID m) {
-    return shunnedMembers.containsKey(m) || isNew(m);
+    latestViewReadLock.lock();
+    try {
+      return shunnedMembers.containsKey(m) || isNew(m);
+    } finally { // synchronized
+      latestViewReadLock.unlock();
+    }
   }
 
+  // must be invoked under view read or write lock
   private boolean isNew(final ID m) {
     return !latestView.contains(m) && !surpriseMembers.containsKey(m);
   }
@@ -1502,17 +1496,24 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
    * <p>
    * Like isShunned, this method holds the view lock while executing
    *
+   * Concurrency: protected by {@link #latestViewLock} ReentrantReadWriteLock
+   *
    * @param m the member in question
    * @return true if the given member is a surprise member
    */
   @Override
   public boolean isSurpriseMember(ID m) {
-    final Long birthTime = surpriseMembers.get(m);
-    if (birthTime != null) {
-      final long now = System.currentTimeMillis();
-      return (birthTime >= (now - this.surpriseMemberTimeout));
+    latestViewReadLock.lock();
+    try {
+      if (surpriseMembers.containsKey(m)) {
+        final long birthTime = surpriseMembers.get(m);
+        final long now = System.currentTimeMillis();
+        return (birthTime >= (now - this.surpriseMemberTimeout));
+      }
+      return false;
+    } finally {
+      latestViewReadLock.unlock();
     }
-    return false;
   }
 
   /**
