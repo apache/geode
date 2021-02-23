@@ -6098,6 +6098,10 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           if (op.isCreate()) {
             e.setEventType(EnumListenerEvent.AFTER_CREATE);
           } else if (op.isUpdate()) {
+            if(e.getNewValue() == null)
+            {
+              e.setEventType(EnumListenerEvent.AFTER_CREATE);
+            }
             e.setEventType(EnumListenerEvent.AFTER_UPDATE);
           } else if (op.isDestroy()) {
             e.setEventType(EnumListenerEvent.AFTER_DESTROY);
