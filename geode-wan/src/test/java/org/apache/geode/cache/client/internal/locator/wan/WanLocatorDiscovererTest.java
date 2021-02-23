@@ -69,7 +69,6 @@ public class WanLocatorDiscovererTest {
     allServerLocatorsInfo.put(1, serverLocatorSet);
     config = mock(DistributionConfigImpl.class);
     locators = loc1.marshal();
-
   }
 
   @Test
@@ -86,10 +85,9 @@ public class WanLocatorDiscovererTest {
     WanLocatorDiscovererImpl test_wan = new WanLocatorDiscovererImpl();
     test_wan.discover(40401, config, locatorMembershipListener, null);
 
-    assertThat(allLocatorsInfo.get(1).size()).isEqualTo(4);
-    assertThat(allServerLocatorsInfo.get(1).size()).isEqualTo(4);
+    assertThat(allLocatorsInfo.get(1)).hasSize(4);
+    assertThat(allServerLocatorsInfo.get(1)).hasSize(4);
     verify(locatorMembershipListener, times(1)).getAllLocatorsInfo();
-
   }
 
 }

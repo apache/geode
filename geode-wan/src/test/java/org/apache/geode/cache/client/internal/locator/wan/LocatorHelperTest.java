@@ -14,9 +14,7 @@
  */
 package org.apache.geode.cache.client.internal.locator.wan;
 
-import static org.apache.geode.internal.Assert.assertTrue;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -76,11 +74,10 @@ public class LocatorHelperTest {
 
     DistributionLocatorId locator = new DistributionLocatorId(40405, "127.0.0.5", null, "loc5");
 
-    assertTrue(LocatorHelper.addLocator(1, locator, locatorMembershipListener, null));
-    assertThat(allLocatorsInfo.get(1).size()).isEqualTo(5);
-    assertThat(allServerLocatorsInfo.get(1).size()).isEqualTo(5);
+    assertThat(LocatorHelper.addLocator(1, locator, locatorMembershipListener, null)).isTrue();
+    assertThat(allLocatorsInfo.get(1)).hasSize(5);
+    assertThat(allServerLocatorsInfo.get(1)).hasSize(5);
     verify(locatorMembershipListener, times(1)).locatorJoined(1, locator, null);
-
   }
 
   @Test
@@ -90,11 +87,10 @@ public class LocatorHelperTest {
 
     DistributionLocatorId locator = new DistributionLocatorId(40405, "127.0.0.5", null, "loc4");
 
-    assertTrue(LocatorHelper.addLocator(1, locator, locatorMembershipListener, null));
-    assertThat(allLocatorsInfo.get(1).size()).isEqualTo(4);
-    assertThat(allServerLocatorsInfo.get(1).size()).isEqualTo(4);
+    assertThat(LocatorHelper.addLocator(1, locator, locatorMembershipListener, null)).isTrue();
+    assertThat(allLocatorsInfo.get(1)).hasSize(4);
+    assertThat(allServerLocatorsInfo.get(1)).hasSize(4);
     verify(locatorMembershipListener, times(1)).locatorJoined(1, locator, null);
-
   }
 
   @Test
@@ -103,11 +99,10 @@ public class LocatorHelperTest {
 
     DistributionLocatorId locator = new DistributionLocatorId(40404, "127.0.0.4", null, "loc4");
 
-    assertFalse(LocatorHelper.addLocator(1, locator, locatorMembershipListener, null));
-    assertThat(allLocatorsInfo.get(1).size()).isEqualTo(4);
-    assertThat(allServerLocatorsInfo.get(1).size()).isEqualTo(4);
+    assertThat(LocatorHelper.addLocator(1, locator, locatorMembershipListener, null)).isFalse();
+    assertThat(allLocatorsInfo.get(1)).hasSize(4);
+    assertThat(allServerLocatorsInfo.get(1)).hasSize(4);
     verify(locatorMembershipListener, times(0)).locatorJoined(1, locator, null);
-
   }
 
   @Test
@@ -116,11 +111,10 @@ public class LocatorHelperTest {
 
     DistributionLocatorId locator = new DistributionLocatorId(40404, "127.0.0.4", null, "loc5");
 
-    assertTrue(LocatorHelper.addLocator(1, locator, locatorMembershipListener, null));
-    assertThat(allLocatorsInfo.get(1).size()).isEqualTo(4);
-    assertThat(allServerLocatorsInfo.get(1).size()).isEqualTo(4);
+    assertThat(LocatorHelper.addLocator(1, locator, locatorMembershipListener, null)).isTrue();
+    assertThat(allLocatorsInfo.get(1)).hasSize(4);
+    assertThat(allServerLocatorsInfo.get(1)).hasSize(4);
     verify(locatorMembershipListener, times(1)).locatorJoined(1, locator, null);
-
   }
 
   @Test
@@ -140,11 +134,11 @@ public class LocatorHelperTest {
     responseLocatorsInfo.put(1, responseSet);
     when(locatorMembershipListener.getAllLocatorsInfo()).thenReturn(allLocatorsInfo);
 
-    assertFalse(
-        LocatorHelper.addExchangedLocators(responseLocatorsInfo, locatorMembershipListener));
-    assertThat(allLocatorsInfo.get(1).size()).isEqualTo(4);
-    assertThat(allServerLocatorsInfo.get(1).size()).isEqualTo(4);
-
+    assertThat(
+        LocatorHelper.addExchangedLocators(responseLocatorsInfo, locatorMembershipListener))
+            .isFalse();
+    assertThat(allLocatorsInfo.get(1)).hasSize(4);
+    assertThat(allServerLocatorsInfo.get(1)).hasSize(4);
   }
 
   @Test
@@ -170,15 +164,15 @@ public class LocatorHelperTest {
     when(locatorMembershipListener.getAllLocatorsInfo()).thenReturn(emptyLocatorList);
     when(locatorMembershipListener.getAllServerLocatorsInfo()).thenReturn(emptyServerLocatorList);
 
-    assertTrue(
-        LocatorHelper.addExchangedLocators(responseLocatorsInfo, locatorMembershipListener));
-    assertThat(allLocatorsInfo.get(1).size()).isEqualTo(4);
-    assertThat(allServerLocatorsInfo.get(1).size()).isEqualTo(4);
+    assertThat(
+        LocatorHelper.addExchangedLocators(responseLocatorsInfo, locatorMembershipListener))
+            .isTrue();
+    assertThat(allLocatorsInfo.get(1)).hasSize(4);
+    assertThat(allServerLocatorsInfo.get(1)).hasSize(4);
     verify(locatorMembershipListener, times(1)).locatorJoined(1, loc1, null);
     verify(locatorMembershipListener, times(1)).locatorJoined(1, loc2, null);
     verify(locatorMembershipListener, times(1)).locatorJoined(1, loc3, null);
     verify(locatorMembershipListener, times(1)).locatorJoined(1, loc4, null);
-
   }
 
 }

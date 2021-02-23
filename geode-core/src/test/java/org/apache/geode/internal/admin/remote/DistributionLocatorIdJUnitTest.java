@@ -14,8 +14,7 @@
  */
 package org.apache.geode.internal.admin.remote;
 
-import static org.apache.geode.internal.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -33,40 +32,43 @@ public class DistributionLocatorIdJUnitTest {
   @Test
   public void testEquals() throws UnknownHostException {
     InetAddress address = InetAddress.getLocalHost();
-    DistributionLocatorId dLI1 = new DistributionLocatorId(address, 40404, "127.0.0.1", null);
-    DistributionLocatorId dLI2 = dLI1;
+    DistributionLocatorId distributionLocatorId1 =
+        new DistributionLocatorId(address, 40404, "127.0.0.1", null);
+    DistributionLocatorId distributionLocatorId2 = distributionLocatorId1;
     @SuppressWarnings("RedundantStringConstructorCall")
-    DistributionLocatorId dLI3 =
+    DistributionLocatorId distributionLocatorId3 =
         new DistributionLocatorId(address, 40404, new String("127.0.0.1"), null);
     @SuppressWarnings("RedundantStringConstructorCall")
-    DistributionLocatorId dLI4 = new DistributionLocatorId(InetAddress.getByName("localhost"),
-        50505, new String("128.0.0.1"), null);
+    DistributionLocatorId distributionLocatorId4 =
+        new DistributionLocatorId(InetAddress.getByName("localhost"),
+            50505, new String("128.0.0.1"), null);
 
-    assertTrue(dLI1.equals(dLI2));
-    assertTrue(dLI1.equals(dLI3));
-    assertFalse(dLI1.equals(dLI4));
-
+    assertThat(distributionLocatorId1).isEqualTo(distributionLocatorId2);
+    assertThat(distributionLocatorId1).isEqualTo(distributionLocatorId3);
+    assertThat(distributionLocatorId1.equals(distributionLocatorId4)).isFalse();
   }
 
   @Test
   public void testEquals_and_DetailCompare() throws UnknownHostException {
-    DistributionLocatorId dLI1 = new DistributionLocatorId(40404, "127.0.0.1", null);
-    DistributionLocatorId dLI2 =
-        new DistributionLocatorId(40404, "127.0.0.1", "127.0.1.0", "member2");;
-    DistributionLocatorId dLI3 = new DistributionLocatorId(40404, "127.0.0.1", null, "member3");
-    DistributionLocatorId dLI4 = new DistributionLocatorId(dLI3.marshal());
+    DistributionLocatorId distributionLocatorId1 =
+        new DistributionLocatorId(40404, "127.0.0.1", null);
+    DistributionLocatorId distributionLocatorId2 =
+        new DistributionLocatorId(40404, "127.0.0.1", "127.0.1.0", "member2");
+    DistributionLocatorId distributionLocatorId3 =
+        new DistributionLocatorId(40404, "127.0.0.1", null, "member3");
+    DistributionLocatorId distributionLocatorId4 =
+        new DistributionLocatorId(distributionLocatorId3.marshal());
 
-    assertTrue(dLI1.equals(dLI2));
-    assertTrue(dLI1.equals(dLI3));
-    assertTrue(dLI1.equals(dLI4));
+    assertThat(distributionLocatorId1).isEqualTo(distributionLocatorId2);
+    assertThat(distributionLocatorId1).isEqualTo(distributionLocatorId3);
+    assertThat(distributionLocatorId1).isEqualTo(distributionLocatorId4);
 
-    assertTrue(dLI1.getMemberName().equals(DistributionConfig.DEFAULT_NAME));
-    assertTrue(dLI2.getMemberName().equals("member2"));
-    assertTrue(dLI3.getMemberName().equals("member3"));
-    assertTrue(dLI4.getMemberName().equals(DistributionConfig.DEFAULT_NAME));
+    assertThat(distributionLocatorId1.getMemberName()).isEqualTo(DistributionConfig.DEFAULT_NAME);
+    assertThat(distributionLocatorId2.getMemberName()).isEqualTo("member2");
+    assertThat(distributionLocatorId3.getMemberName()).isEqualTo("member3");
+    assertThat(distributionLocatorId4.getMemberName()).isEqualTo(DistributionConfig.DEFAULT_NAME);
 
-    assertTrue(dLI1.detailCompare(dLI3));
-    assertFalse(dLI2.detailCompare(dLI4));
-
+    assertThat(distributionLocatorId1.detailCompare(distributionLocatorId3)).isTrue();
+    assertThat(distributionLocatorId2.detailCompare(distributionLocatorId4)).isFalse();
   }
 }
