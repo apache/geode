@@ -15,6 +15,8 @@
 package org.apache.geode.cache.client.internal.locator.wan;
 
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,19 +26,22 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketFactory;
 import org.apache.geode.internal.CopyOnWriteHashSet;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
+import org.apache.geode.internal.logging.CoreLoggingExecutors;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.logging.internal.executors.LoggingThreadFactory;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -54,6 +59,11 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
   private static final String LISTENER_FINAL_FAILURE_MESSAGE =
       "Locator Membership listener permanently failed to exchange locator information {}:{} with {}:{} after {} retry attempts";
 
+  /**
+   * The minimum value of max-pool size
+   */
+  private static final int MINIMUM_MAX_POOL_SIZE = 16;
+
   private int port;
   private DistributionConfig config;
   private final TcpClient tcpClient;
@@ -62,16 +72,21 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
   private final ConcurrentMap<Integer, Set<DistributionLocatorId>> allLocatorsInfo =
       new ConcurrentHashMap<>();
 
+  private ExecutorService notifyLocatorJoinPool;
+
+
   LocatorMembershipListenerImpl() {
     this.tcpClient = new TcpClient(SocketCreatorFactory
         .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
         InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
         TcpSocketFactory.DEFAULT);
+    this.notifyLocatorJoinPool = null;
   }
 
   LocatorMembershipListenerImpl(TcpClient tcpClient) {
     this.tcpClient = tcpClient;
+    this.notifyLocatorJoinPool = null;
   }
 
   @Override
@@ -84,15 +99,40 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
     this.config = config;
   }
 
-  Thread buildLocatorsDistributorThread(DistributionLocatorId localLocatorId,
+  @Override
+  public void start() {
+    // Launch Locators Distributor thread.
+    if (notifyLocatorJoinPool == null) {
+      notifyLocatorJoinPool = createThreadPool();
+    }
+  }
+
+  @Override
+  public void stop() {
+    if (notifyLocatorJoinPool != null) {
+      notifyLocatorJoinPool.shutdown();
+    }
+  }
+
+  @VisibleForTesting
+  ExecutorService getNotifyLocatorJoinPool() {
+    return notifyLocatorJoinPool;
+  }
+
+  void buildLocatorsDistributorThread(DistributionLocatorId localLocatorId,
       Map<Integer, Set<DistributionLocatorId>> remoteLocators, DistributionLocatorId joiningLocator,
       int joiningLocatorDistributedSystemId) {
     Runnable distributeLocatorsRunnable =
         new DistributeLocatorsRunnable(config.getMemberTimeout(), tcpClient, localLocatorId,
             remoteLocators, joiningLocator, joiningLocatorDistributedSystemId);
-    ThreadFactory threadFactory = new LoggingThreadFactory(LOCATORS_DISTRIBUTOR_THREAD_NAME, true);
+    try {
+      notifyLocatorJoinPool.execute(distributeLocatorsRunnable);
+    } catch (RejectedExecutionException rejected) {
+      logger.warn(
+          "Locator {} joining notification was rejected by pool possibly due to thread exhaustion",
+          joiningLocator);
+    }
 
-    return threadFactory.newThread(distributeLocatorsRunnable);
   }
 
   /**
@@ -132,10 +172,7 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
       }
     }
 
-    // Launch Locators Distributor thread.
-    Thread locatorsDistributorThread =
-        buildLocatorsDistributorThread(localLocatorId, localCopy, locator, distributedSystemId);
-    locatorsDistributorThread.start();
+    buildLocatorsDistributorThread(localLocatorId, localCopy, locator, distributedSystemId);
   }
 
   @Override
@@ -168,6 +205,28 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
 
     LocatorHelper.addLocator(distributedSystemId, locator, this, null);
     return new RemoteLocatorJoinResponse(this.getAllLocatorsInfo());
+  }
+
+  private ExecutorService createThreadPool() {
+    int numLocalLocs = 1;
+    String localLocators = config.getLocators();
+    if (localLocators != null) {
+      numLocalLocs += StringUtils.countMatches(localLocators, ",");
+    }
+    String remoteLocators = config.getRemoteLocators();
+    int numRemoteLocs = 0;
+    if (remoteLocators != null) {
+      numRemoteLocs = 1;
+      numRemoteLocs += StringUtils.countMatches(remoteLocators, ",");
+    }
+
+    int maxPoolsize = numLocalLocs + numRemoteLocs;
+    if (maxPoolsize < MINIMUM_MAX_POOL_SIZE) {
+      maxPoolsize = MINIMUM_MAX_POOL_SIZE;
+    }
+
+    return CoreLoggingExecutors.newThreadPoolWithSynchronousFeed(0, maxPoolsize,
+        0, SECONDS, LOCATORS_DISTRIBUTOR_THREAD_NAME);
   }
 
   @SuppressWarnings("unused")
