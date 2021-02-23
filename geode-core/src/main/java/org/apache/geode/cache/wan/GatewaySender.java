@@ -174,7 +174,32 @@ public interface GatewaySender {
    */
   int GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES =
       Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "get-transaction-events-from-queue-retries",
-          10);
+          2);
+  /**
+   * Milliseconds to wait before retrying to get events for a transaction from the
+   * gateway sender queue when group-transaction-events is true.
+   */
+  int GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS =
+      Integer.getInteger(
+          GeodeGlossary.GEMFIRE_PREFIX + "get-transaction-events-from-queue-wait-time-ms",
+          1);
+
+  /**
+   * When group-transaction-events is set to true and the gateway sender is stopped,
+   * there is a possibility that the stopping occurs such that for a transaction,
+   * not all events belonging to it reach the queue. The reason would be that
+   * some reach the queue right before the sender is stopped and the rest do not make
+   * it to the queue because the sender is just stopped.
+   * In order to prevent that the queue contains incomplete transactions
+   * due to the above circumstance, this parameter allows for a grace period
+   * of the number of milliseconds set in it before the gateway sender is
+   * actually stopped, in which only events to complete transactions are put in the queue.
+   * Other events received in this period would be dropped.
+   */
+  int TIME_TO_COMPLETE_TRANSACTIONS_BEFORE_STOP_MS =
+      Integer.getInteger(
+          GeodeGlossary.GEMFIRE_PREFIX + "time-to-complete-transactions-before-stop-ms",
+          1000);
 
   /**
    * The order policy. This enum is applicable only when concurrency-level is > 1.

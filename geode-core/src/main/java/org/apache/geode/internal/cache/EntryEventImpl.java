@@ -2231,6 +2231,9 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     if (this.tailKey != -1) {
       buf.append(";tailKey=" + tailKey);
     }
+    if (this.isTransactional()) {
+      buf.append(";transactionId=" + getTransactionId());
+    }
     buf.append("]");
     return buf.toString();
   }

@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.wan.serial;
 
 import static org.apache.geode.cache.wan.GatewaySender.DEFAULT_BATCH_SIZE;
 import static org.apache.geode.cache.wan.GatewaySender.GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES;
+import static org.apache.geode.cache.wan.GatewaySender.GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS;
 
 import java.util.ArrayList;
 import java.util.Deque;
@@ -469,36 +470,41 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       return;
     }
 
-    boolean batchHasIncompleteTransactions = true;
-    for (TransactionId transactionId : incompleteTransactionIdsInBatch) {
-      boolean areAllEventsForTransactionInBatch = false;
-      int retries = 0;
-      long lastKeyForTransaction = lastKey;
-      while (!areAllEventsForTransactionInBatch
-          && retries++ < GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES) {
-        EventsAndLastKey eventsAndKey =
-            peekEventsWithTransactionId(transactionId, lastKeyForTransaction);
-
-        for (Object object : eventsAndKey.events) {
-          GatewaySenderEventImpl event = (GatewaySenderEventImpl) object;
-          batch.add(event);
-          areAllEventsForTransactionInBatch = event.isLastEventInTransaction();
-
-          if (logger.isDebugEnabled()) {
-            logger.debug(
-                "Peeking extra event: {}, isLastEventInTransaction: {}, batch size: {}",
-                event.getKey(), event.isLastEventInTransaction(), batch.size());
+    int retries = 0;
+    while (true) {
+      for (TransactionId transactionId : incompleteTransactionIdsInBatch) {
+        List<KeyAndEventPair> keyAndEventPairs =
+            peekEventsWithTransactionId(transactionId, lastKey);
+        if (keyAndEventPairs.size() > 0
+            && ((GatewaySenderEventImpl) (keyAndEventPairs.get(keyAndEventPairs.size() - 1)).event)
+                .isLastEventInTransaction()) {
+          for (KeyAndEventPair object : keyAndEventPairs) {
+            GatewaySenderEventImpl event = (GatewaySenderEventImpl) object.event;
+            batch.add(event);
+            peekedIds.add(object.key);
+            extraPeekedIds.add(object.key);
+            if (logger.isDebugEnabled()) {
+              logger.debug(
+                  "Peeking extra event: {}, isLastEventInTransaction: {}, batch size: {}",
+                  event.getKey(), event.isLastEventInTransaction(), batch.size());
+            }
           }
+          incompleteTransactionIdsInBatch.remove(transactionId);
         }
-        lastKeyForTransaction = eventsAndKey.lastKey;
       }
-      if (!areAllEventsForTransactionInBatch) {
-        batchHasIncompleteTransactions = true;
-        logger.warn("Not able to retrieve all events for transaction {} after {} tries",
-            transactionId, retries);
+      if (incompleteTransactionIdsInBatch.size() == 0 ||
+          retries++ == GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES) {
+        break;
+      }
+      try {
+        Thread.sleep(GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
       }
     }
-    if (batchHasIncompleteTransactions) {
+    if (incompleteTransactionIdsInBatch.size() > 0) {
+      logger.warn("Not able to retrieve all events for transactions: {} after {} retries of {}ms",
+          incompleteTransactionIdsInBatch, retries, GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS);
       stats.incBatchesWithIncompleteTransactions();
     }
   }
@@ -827,7 +833,8 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     return null;
   }
 
-  private EventsAndLastKey peekEventsWithTransactionId(TransactionId transactionId, long lastKey) {
+  private List<KeyAndEventPair> peekEventsWithTransactionId(TransactionId transactionId,
+      long lastKey) {
     Predicate<GatewaySenderEventImpl> hasTransactionIdPredicate =
         x -> transactionId.equals(x.getTransactionId());
     Predicate<GatewaySenderEventImpl> isLastEventInTransactionPredicate =
@@ -847,7 +854,13 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     }
   }
 
-  EventsAndLastKey getElementsMatching(Predicate condition, Predicate stopCondition, long lastKey) {
+  /**
+   * This method returns a list of objects that fulfill the matchingPredicate
+   * If a matching object also fulfills the endPredicate then the method
+   * stops looking for more matching objects.
+   */
+  List<KeyAndEventPair> getElementsMatching(Predicate condition, Predicate stopCondition,
+      long lastKey) {
     Object object;
     List elementsMatching = new ArrayList<>();
 
@@ -863,10 +876,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       }
 
       if (condition.test(object)) {
-        elementsMatching.add(object);
-        peekedIds.add(currentKey);
-        extraPeekedIds.add(currentKey);
-        lastKey = currentKey;
+        elementsMatching.add(new KeyAndEventPair(currentKey, (GatewaySenderEventImpl) object));
 
         if (stopCondition.test(object)) {
           break;
@@ -874,7 +884,26 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       }
     }
 
-    return new EventsAndLastKey(elementsMatching, lastKey);
+    return elementsMatching;
+  }
+
+  public boolean isThereEventsMatching(Predicate condition) {
+    Object object;
+    long currentKey = getHeadKey();
+    if (currentKey == getTailKey()) {
+      return false;
+    }
+    while ((currentKey = inc(currentKey)) != getTailKey()) {
+      object = optimalGet(currentKey);
+
+      if (object == null) {
+        continue;
+      }
+      if (condition.test(object)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
