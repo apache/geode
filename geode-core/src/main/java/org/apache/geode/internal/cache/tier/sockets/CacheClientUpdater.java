@@ -696,6 +696,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
         EntryEventImpl newEvent = null;
 
         try {
+
           // Create an event and put the entry
           newEvent = EntryEventImpl.create(region,
               clientMessage.getMessageType() == MessageType.LOCAL_CREATE ? Operation.CREATE

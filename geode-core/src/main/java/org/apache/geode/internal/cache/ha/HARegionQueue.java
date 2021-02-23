@@ -22,7 +22,9 @@ import static org.apache.geode.internal.lang.SystemPropertyHelper.getProductInte
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.Serializable;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -3461,6 +3463,11 @@ public class HARegionQueue implements RegionQueue {
       } else {
         haContainerKey = inputHaEventWrapper;
       }
+
+      StringWriter sw = new StringWriter();
+      PrintWriter pw = new PrintWriter(sw);
+      new Throwable().printStackTrace(pw);
+      logger.warn("#LRJ putEventInHARegion stacktrace: " + sw);
 
       if (logger.isDebugEnabled()) {
         logger.info("adding haContainerKey to HARegion at " + position + ":"
