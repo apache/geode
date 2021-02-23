@@ -41,6 +41,11 @@ public class KnownVersion extends AbstractVersion {
   /** The suffix to use in toDataPre / fromDataPre method names */
   private final transient String methodSuffix;
 
+  /**
+   * The version used for client/server communications.
+   */
+  private final transient KnownVersion clientServerProtocolVersion;
+
   // the major, minor and release bits of the release
   private final byte major;
   private final byte minor;
@@ -252,7 +257,7 @@ public class KnownVersion extends AbstractVersion {
   @Immutable
   public static final KnownVersion GEODE_1_15_0 =
       new KnownVersion("GEODE", "1.15.0", (byte) 1, (byte) 15, (byte) 0, (byte) 0,
-          GEODE_1_15_0_ORDINAL);
+          GEODE_1_15_0_ORDINAL, GEODE_1_14_0);
 
   /* NOTE: when adding a new version bump the ordinal by 5. Ordinals can be short ints */
 
@@ -294,6 +299,26 @@ public class KnownVersion extends AbstractVersion {
     this.minor = minor;
     this.release = release;
     this.patch = patch;
+    this.clientServerProtocolVersion = this;
+
+    methodSuffix = this.productName + "_" + this.major + "_" + this.minor + "_" + this.release + "_"
+        + this.patch;
+
+    if (ordinal != TOKEN_ORDINAL) {
+      VALUES[ordinal()] = this;
+    }
+  }
+
+  private KnownVersion(String productName, String name, byte major, byte minor, byte release,
+      byte patch, short ordinal, KnownVersion clientServerProtocolVersion) {
+    super(ordinal);
+    this.productName = productName;
+    this.name = name;
+    this.major = major;
+    this.minor = minor;
+    this.release = release;
+    this.patch = patch;
+    this.clientServerProtocolVersion = clientServerProtocolVersion;
 
     methodSuffix = this.productName + "_" + this.major + "_" + this.minor + "_" + this.release + "_"
         + this.patch;
@@ -335,6 +360,10 @@ public class KnownVersion extends AbstractVersion {
 
   public short getPatch() {
     return patch;
+  }
+
+  public KnownVersion getClientServerProtocolVersion() {
+    return clientServerProtocolVersion;
   }
 
   @Override
