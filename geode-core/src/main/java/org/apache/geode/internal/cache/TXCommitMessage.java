@@ -754,8 +754,13 @@ public class TXCommitMessage extends PooledDistributionMessage
           ee.getRegion().invokeTXCallbacks(EnumListenerEvent.AFTER_CREATE, ee, true,
               isLastTransactionEvent);
         } else {
-          ee.getRegion().invokeTXCallbacks(EnumListenerEvent.AFTER_UPDATE, ee, true,
-              isLastTransactionEvent);
+          if (ee.getNewValue() == null) {
+            ee.getRegion().invokeTXCallbacks(EnumListenerEvent.AFTER_CREATE, ee, true,
+                isLastTransactionEvent);
+          } else {
+            ee.getRegion().invokeTXCallbacks(EnumListenerEvent.AFTER_UPDATE, ee, true,
+                isLastTransactionEvent);
+          }
         }
       } finally {
         ee.release();
