@@ -1106,7 +1106,18 @@ public abstract class DistributedCacheOperation {
         }
 
         final LocalRegion lclRgn = getLocalRegionForProcessing(dm);
+        if (lclRgn == null) {
+          this.closed = true;
+          if (logger.isDebugEnabled()) {
+            logger.debug("{} region not found, nothing to do", this);
+          }
+          return;
+        }
         sendReply = false;
+        if (lclRgn.getScope().isDistributedNoAck()) {
+          dm.getExecutors().getWaitingThreadPool().execute(() -> basicProcess(dm, lclRgn));
+          return;
+        }
         basicProcess(dm, lclRgn);
       } catch (CancelException ignore) {
         this.closed = true;
@@ -1151,16 +1162,12 @@ public abstract class DistributedCacheOperation {
       if (logger.isTraceEnabled()) {
         logger.trace("DistributedCacheOperation.basicProcess: {}", this);
       }
+
+      InitializationLevel oldLevel = ANY_INIT;
+      if (lclRgn.getScope().isDistributedNoAck()) {
+        oldLevel = LocalRegion.setThreadInitLevelRequirement(BEFORE_INITIAL_IMAGE);
+      }
       try {
-        // LocalRegion lclRgn = getRegionFromPath(dm.getSystem(),
-        // this.regionPath);
-        if (lclRgn == null) {
-          this.closed = true;
-          if (logger.isDebugEnabled()) {
-            logger.debug("{} region not found, nothing to do", this);
-          }
-          return;
-        }
         // Could this cause a deadlock, because this can block a P2P reader
         // thread which might be needed to read the create region reply??
         // DAN - I don't think this does anything because process called
@@ -1250,6 +1257,9 @@ public abstract class DistributedCacheOperation {
         SystemFailure.checkFailure();
         thr = t;
       } finally {
+        if (lclRgn.getScope().isDistributedNoAck()) {
+          LocalRegion.setThreadInitLevelRequirement(oldLevel);
+        }
         checkVersionIsRecorded(this.versionTag, lclRgn);
         if (sendReply) {
           ReplyException rex = null;
