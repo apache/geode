@@ -33,12 +33,28 @@ public class TestDelta implements Delta, DataSerializable, Cloneable {
   public int deserializations;
   public int deltas;
   public int clones;
+  public boolean forceRecalculateSize;
 
   public TestDelta() {}
 
   public TestDelta(boolean hasDelta, String info) {
     this.hasDelta = hasDelta;
     this.info = info;
+    this.forceRecalculateSize = false;
+  }
+
+  public TestDelta(boolean hasDelta, String info, boolean forceRecalculateSize) {
+    this.hasDelta = hasDelta;
+    this.info = info;
+    this.forceRecalculateSize = forceRecalculateSize;
+  }
+
+  @Override
+  public String toString() {
+    return "TestDelta{" +
+        "info='" + info + "'" +
+        "forceRecalculateSize='" + forceRecalculateSize + "'" +
+        '}';
   }
 
   public synchronized void checkFields(final int serializations, final int deserializations,
@@ -51,9 +67,9 @@ public class TestDelta implements Delta, DataSerializable, Cloneable {
 
   @Override
   public synchronized void fromDelta(DataInput in) throws IOException, InvalidDeltaException {
-    // new Exception("DAN - From Delta Called").printStackTrace();
     this.hasDelta = true;
     info = DataSerializer.readString(in);
+    forceRecalculateSize = DataSerializer.readBoolean(in);
     deltas++;
   }
 
@@ -63,14 +79,18 @@ public class TestDelta implements Delta, DataSerializable, Cloneable {
   }
 
   @Override
+  public boolean getForceRecalculateSize() {
+    return forceRecalculateSize;
+  }
+
+  @Override
   public synchronized void toDelta(DataOutput out) throws IOException {
-    // new Exception("DAN - To Delta Called").printStackTrace();
     DataSerializer.writeString(info, out);
+    DataSerializer.writeBoolean(forceRecalculateSize, out);
   }
 
   @Override
   public synchronized void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    // new Exception("DAN - From Data Called").printStackTrace();
     info = DataSerializer.readString(in);
     serializations = in.readInt();
     deserializations = in.readInt();
@@ -81,7 +101,6 @@ public class TestDelta implements Delta, DataSerializable, Cloneable {
 
   @Override
   public synchronized void toData(DataOutput out) throws IOException {
-    // new Exception("DAN - To Data Called").printStackTrace();
     serializations++;
     DataSerializer.writeString(info, out);
     out.writeInt(serializations);
@@ -92,7 +111,6 @@ public class TestDelta implements Delta, DataSerializable, Cloneable {
 
   @Override
   public synchronized Object clone() throws CloneNotSupportedException {
-    // new Exception("DAN - Clone Called").printStackTrace();
     clones++;
     return super.clone();
   }
