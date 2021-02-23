@@ -61,7 +61,7 @@ public class TombstoneDUnitTest implements Serializable {
   private static Cache cache;
   private static Region<String, String> region;
   final String REGION_NAME = "TestRegion";
-  final int EXPIRY_TIME=600000;
+  final int EXPIRY_TIME = 600000;
 
   @Rule
   public DistributedRule distributedRule = new DistributedRule();
@@ -126,7 +126,6 @@ public class TombstoneDUnitTest implements Serializable {
     VM server2 = VM.getVM(1);
     final int FAR_INTO_THE_FUTURE = 1000000; // 1 million millis into the future
 
-
     final int count = 10;
     server1.invoke(() -> {
       createCacheAndRegion(RegionShortcut.REPLICATE_PERSISTENT);
@@ -175,8 +174,9 @@ public class TombstoneDUnitTest implements Serializable {
       // Send tombstone gc message to vm1.
       for (int i = 0; i < count; i++) {
         region.destroy("K" + i);
-        assertThat(tombstoneSweeper.getOldestTombstoneTime() + EXPIRY_TIME - System.currentTimeMillis())
-            .isGreaterThan(0);
+        assertThat(
+            tombstoneSweeper.getOldestTombstoneTime() + EXPIRY_TIME - System.currentTimeMillis())
+                .isGreaterThan(0);
         performGC(1);
       }
 
