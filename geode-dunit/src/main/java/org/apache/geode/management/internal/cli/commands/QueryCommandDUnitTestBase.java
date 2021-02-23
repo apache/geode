@@ -148,10 +148,9 @@ public class QueryCommandDUnitTestBase {
         + " e where e LIKE 'value\\$'\"";
     String query1 = "query --query=\"select * from " + DATA_PAR_REGION_NAME_PATH
         + " e where e LIKE 'value\\%'\"";
-    CommandResult commandResult = gfsh.executeCommand(query);
-    CommandResult commandResult1 = gfsh.executeCommand(query1);
-    validateSelectResult(commandResult, true, 1, null);
-    validateSelectResult(commandResult1, true, 1, null);
+
+    gfsh.executeAndAssertThat(query).statusIsSuccess().containsOutput("value$");
+    gfsh.executeAndAssertThat(query1).statusIsSuccess().containsOutput("value%");
   }
 
   @Test
