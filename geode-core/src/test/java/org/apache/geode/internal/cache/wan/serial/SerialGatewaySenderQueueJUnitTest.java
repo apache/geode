@@ -137,8 +137,8 @@ public class SerialGatewaySenderQueueJUnitTest {
         .doAnswer(invocation -> null)
         .when(queue).peekAhead();
 
-    doAnswer(invocation -> new SerialGatewaySenderQueue.EventsAndLastKey(
-        Arrays.asList(new Object[] {event4}), 2L))
+    doAnswer(invocation -> Arrays
+        .asList(new Object[] {new SerialGatewaySenderQueue.KeyAndEventPair(1L, event4)}))
             .when(queue).getElementsMatching(any(), any(), anyLong());
 
     List peeked = queue.peek(-1, 1);

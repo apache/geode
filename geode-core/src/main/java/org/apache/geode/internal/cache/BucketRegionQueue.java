@@ -478,6 +478,25 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     }
   }
 
+  public boolean isThereEventsMatching(Predicate matchingPredicate) {
+    getInitializationLock().readLock().lock();
+    try {
+      if (this.getPartitionedRegion().isDestroyed()) {
+        throw new BucketRegionQueueUnavailableException();
+      }
+      Iterator<Object> it = this.eventSeqNumDeque.iterator();
+      while (it.hasNext()) {
+        Object object = optimalGet(it.next());
+        if (matchingPredicate.test(object)) {
+          return true;
+        }
+      }
+      return false;
+    } finally {
+      getInitializationLock().readLock().unlock();
+    }
+  }
+
   @Override
   protected void addToEventQueue(Object key, boolean didPut, EntryEventImpl event) {
     if (didPut) {

@@ -20,8 +20,11 @@ import static org.apache.geode.test.dunit.Wait.pause;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.RejectedExecutionException;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -346,6 +349,275 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     vm5.invoke(() -> WANTestBase.checkBatchStats("ln", 0, true));
     vm5.invoke(() -> WANTestBase.checkConflatedStats("ln", 0));
   }
+
+  @Test
+  public void testReplicatedSerialPropagationWithGroupTransactionEventsDoesNotSendBatchesWithIncompleteTransactionsIfGatewaySenderIsStoppedWhileReceivingTrafficAndLaterStarted()
+      throws InterruptedException {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+
+    String regionName = testName + "_RR";
+
+    createCacheInVMs(nyPort, vm2);
+    createReceiverInVMs(vm2);
+
+    createCacheInVMs(lnPort, vm4, vm5);
+    boolean groupTransactionEvents = true;
+    int batchSize = 10;
+    vm4.invoke(
+        () -> WANTestBase.createSender("ln", 2, false, 100, batchSize, false, true, null, true,
+            groupTransactionEvents));
+    vm5.invoke(
+        () -> WANTestBase.createSender("ln", 2, false, 100, batchSize, false, true, null, true,
+            groupTransactionEvents));
+
+    vm2.invoke(() -> WANTestBase.createReplicatedRegion(regionName, null, isOffHeap()));
+
+    vm4.invoke(() -> WANTestBase.createReplicatedRegion(regionName, "ln", isOffHeap()));
+    vm5.invoke(() -> WANTestBase.createReplicatedRegion(regionName, "ln", isOffHeap()));
+
+    startSenderInVMs("ln", vm4, vm5);
+
+    final Map<Object, Object> keyValues = new LinkedHashMap<>();
+    int entries = 2200;
+    for (int i = 0; i < entries; i++) {
+      keyValues.put(i, i + "_Value");
+    }
+
+    int eventsPerTransaction = 11;
+    System.out.println("Starting puts");
+    AsyncInvocation<Void> inv1 =
+        vm4.invokeAsync(
+            () -> WANTestBase.doPutsInsideTransactions(regionName, keyValues,
+                eventsPerTransaction));
+
+    // wait for batches to be distributed and then stop the sender
+    System.out.println("Waiting for some batches to be distributed");
+    vm4.invoke(() -> await()
+        .until(() -> WANTestBase.getSenderStats("ln", -1).get(4) > 0));
+    System.out
+        .println("Some batches distributed: " + vm4.invoke(() -> getSenderStats("ln", -1).get(4)));
+
+    addIgnoredException("Exception occurred in CacheListener");
+    addIgnoredException(RejectedExecutionException.class);
+
+    System.out.println("Stopping sender");
+    stopSenderInVMsAsync("ln", vm4, vm5);
+    System.out.println("Stopped sender");
+
+    inv1.await();
+    System.out.println("Puts completed");
+
+    vm4.invoke(() -> WANTestBase.validateRegionSize(regionName, entries));
+    vm5.invoke(() -> WANTestBase.validateRegionSize(regionName, entries));
+
+    // Wait for events to replicate: when batches received does not change
+    // we can assume that replication has finished.
+    int batchesReceived = (vm2.invoke(() -> getReceiverStats())).get(0);
+    while (true) {
+      int oldBatchesReceived = batchesReceived;
+      Thread.sleep(1000);
+      batchesReceived = (vm2.invoke(() -> getReceiverStats())).get(0);
+      if (batchesReceived == oldBatchesReceived) {
+        break;
+      }
+    }
+
+    ArrayList<Integer> v4List =
+        (ArrayList<Integer>) vm4.invoke(() -> WANTestBase.getSenderStats("ln", -1));
+    ArrayList<Integer> v5List =
+        (ArrayList<Integer>) vm5.invoke(() -> WANTestBase.getSenderStats("ln", -1));
+
+    System.out.println("v4List.get(0):" + v4List.get(0));
+    System.out.println("v5List.get(0):" + v5List.get(0));
+
+    // Wait for events to replicate: when region size does not change
+    // we can assume that replication has finished.
+    int regionSize = vm2.invoke(() -> getRegionSize(regionName));
+    while (true) {
+      int oldRegionSize = regionSize;
+      Thread.sleep(1000);
+      regionSize = vm2.invoke(() -> getRegionSize(regionName));
+      if (regionSize == oldRegionSize) {
+        break;
+      }
+    }
+
+    // Only complete transactions (11 entries each) must be replicated
+    assertEquals(0, regionSize % eventsPerTransaction);
+
+    // batches with incomplete transactions must be 0
+    assertEquals(0, (int) v4List.get(13));
+    assertEquals(0, (int) v5List.get(13));
+
+    System.out.println("regionSize: " + regionSize);
+
+    System.out.println("Starting sender");
+    startSenderInVMsAsync("ln", vm4, vm5);
+
+    v4List =
+        (ArrayList<Integer>) vm4.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+    v5List =
+        (ArrayList<Integer>) vm5.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+
+    assertEquals(0, v4List.get(0) + v5List.get(0));
+
+    // Wait for events to replicate: when batches received does not change
+    // we can assume that replication has finished.
+    batchesReceived = (vm2.invoke(() -> getReceiverStats())).get(0);
+    while (true) {
+      int oldBatchesReceived = batchesReceived;
+      Thread.sleep(1000);
+      batchesReceived = (vm2.invoke(() -> getReceiverStats())).get(0);
+      if (batchesReceived == oldBatchesReceived) {
+        break;
+      }
+    }
+
+    System.out.println("batchesReceived: " + batchesReceived);
+
+    // Wait for events to replicate: when region size does not change
+    // we can assume that replication has finished.
+    regionSize = vm2.invoke(() -> getRegionSize(regionName));
+    while (true) {
+      int oldRegionSize = regionSize;
+      Thread.sleep(1000);
+      regionSize = vm2.invoke(() -> getRegionSize(regionName));
+      if (regionSize == oldRegionSize) {
+        break;
+      }
+    }
+
+    System.out.println("regionSize: " + regionSize);
+
+    System.out.println("v4List.get(0):" + v4List.get(0));
+    System.out.println("v5List.get(0):" + v5List.get(0));
+
+    // batches with incomplete transactions must be 0
+    assertEquals(0, (int) v4List.get(13));
+    assertEquals(0, (int) v5List.get(13));
+
+    // Only complete transactions (11 events) must be replicated
+    assertEquals(0, regionSize % eventsPerTransaction);
+  }
+
+  @Test
+  public void testReplicatedSerialPropagationWithGroupTransactionEventsDoesNotSendBatchesWithIncompleteTransactionsIfGatewaySenderIsStoppedWhileReceivingTrafficAndLaterStartedReceiverStopped()
+      throws InterruptedException {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+
+    String regionName = testName + "_RR";
+
+    createCacheInVMs(nyPort, vm2);
+    createReceiverInVMs(vm2);
+
+    createCacheInVMs(lnPort, vm4, vm5);
+    boolean groupTransactionEvents = true;
+    int batchSize = 10;
+    vm4.invoke(
+        () -> WANTestBase.createSender("ln", 2, false, 100, batchSize, false, true, null, true,
+            groupTransactionEvents));
+    vm5.invoke(
+        () -> WANTestBase.createSender("ln", 2, false, 100, batchSize, false, true, null, true,
+            groupTransactionEvents));
+
+
+    vm2.invoke(() -> stopReceivers());
+
+    vm2.invoke(() -> WANTestBase.createReplicatedRegion(regionName, null, isOffHeap()));
+
+    vm4.invoke(() -> WANTestBase.createReplicatedRegion(regionName, "ln", isOffHeap()));
+    vm5.invoke(() -> WANTestBase.createReplicatedRegion(regionName, "ln", isOffHeap()));
+
+    startSenderInVMs("ln", vm4, vm5);
+
+    final Map<Object, Object> keyValues = new LinkedHashMap<>();
+    int entries = 2200;
+    for (int i = 0; i < entries; i++) {
+      keyValues.put(i, i + "_Value");
+    }
+
+    int eventsPerTransaction = 11;
+    AsyncInvocation<Void> inv1 =
+        vm4.invokeAsync(
+            () -> WANTestBase.doPutsInsideTransactions(regionName, keyValues,
+                eventsPerTransaction));
+
+    // wait for batches to be redistributed and then stop the sender
+    vm4.invoke(() -> await()
+        .until(() -> WANTestBase.getSenderStats("ln", -1).get(5) > 0));
+
+    System.out.println("Stopping sender");
+    stopSenderInVMsAsync("ln", vm4, vm5);
+    System.out.println("Stopped sender");
+
+    inv1.await();
+
+    vm4.invoke(() -> WANTestBase.validateRegionSize(regionName, entries));
+    vm5.invoke(() -> WANTestBase.validateRegionSize(regionName, entries));
+
+    ArrayList<Integer> v4List =
+        (ArrayList<Integer>) vm4.invoke(() -> WANTestBase.getSenderStats("ln", -1));
+    ArrayList<Integer> v5List =
+        (ArrayList<Integer>) vm5.invoke(() -> WANTestBase.getSenderStats("ln", -1));
+
+    System.out.println("v4List.get(0):" + v4List.get(0));
+    System.out.println("v5List.get(0):" + v5List.get(0));
+
+    System.out.println("Starting receiver");
+    vm2.invoke(() -> startReceivers());
+    System.out.println("Starting sender");
+    startSenderInVMsAsync("ln", vm4, vm5);
+
+    v4List =
+        (ArrayList<Integer>) vm4.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+    v5List =
+        (ArrayList<Integer>) vm5.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+
+    assertEquals(0, v4List.get(0) + v5List.get(0));
+
+    // Wait for events to replicate: when batches received does not change
+    // we can assume that replication has finished.
+    int batchesReceived = (vm2.invoke(() -> getReceiverStats())).get(0);
+    while (true) {
+      int oldBatchesReceived = batchesReceived;
+      Thread.sleep(1000);
+      batchesReceived = (vm2.invoke(() -> getReceiverStats())).get(0);
+      if (batchesReceived == oldBatchesReceived) {
+        break;
+      }
+    }
+
+    System.out.println("batchesReceived: " + batchesReceived);
+
+    // Wait for events to replicate: when region size does not change
+    // we can assume that replication has finished.
+    int regionSize = vm2.invoke(() -> getRegionSize(regionName));
+    while (true) {
+      int oldRegionSize = regionSize;
+      Thread.sleep(1000);
+      regionSize = vm2.invoke(() -> getRegionSize(regionName));
+      if (regionSize == oldRegionSize) {
+        break;
+      }
+    }
+
+    regionSize = vm2.invoke(() -> getRegionSize(regionName));
+
+    System.out.println("regionSize: " + regionSize);
+
+    System.out.println("v4List.get(0):" + v4List.get(0));
+    System.out.println("v5List.get(0):" + v5List.get(0));
+
+    // batches with incomplete transactions must be 0
+    assertEquals(0, (int) v4List.get(13));
+    assertEquals(0, (int) v5List.get(13));
+
+    // Only complete transactions (11 events) must be replicated
+    assertEquals(0, regionSize % eventsPerTransaction);
+  }
+
 
   @Test
   public void testReplicatedSerialPropagationWithMultipleDispatchers() throws Exception {
