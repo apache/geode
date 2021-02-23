@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.internal;
+package org.apache.geode.internal.classloader;
 
 import java.io.IOException;
 import java.net.URL;

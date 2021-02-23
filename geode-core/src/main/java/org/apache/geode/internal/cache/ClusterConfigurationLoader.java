@@ -93,15 +93,17 @@ public class ClusterConfigurationLoader {
             .collect(Collectors.toList());
 
     if (!jarFileNames.isEmpty()) {
-      logger.info("Got response with jars: {}", jarFileNames.stream().collect(joining(",")));
+      logger.info("Got response with jars: {}", String.join(",", jarFileNames));
       JarDeploymentService jarDeploymentService =
           JarDeploymentServiceFactory.getJarDeploymentServiceInstance();
 
       Set<File> stagedJarFiles =
           getJarsFromLocator(response.getMember(), response.getJarNames());
       for (File file : stagedJarFiles) {
+        logger.info("Removing old versions of {} in cluster configuration.", file.getName());
         jarDeploymentService.undeployByFileName(file.getName());
         jarDeploymentService.deploy(file);
+        logger.info("Deployed: {}", file.getAbsolutePath());
       }
     }
   }

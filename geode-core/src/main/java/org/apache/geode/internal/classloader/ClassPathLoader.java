@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal;
+package org.apache.geode.internal.classloader;
 
 import static java.util.stream.Collectors.joining;
 
@@ -137,7 +137,7 @@ public class ClassPathLoader {
     return leafLoader;
   }
 
-  synchronized void chainClassloader(File jar, String deploymentName) {
+  public synchronized void chainClassloader(File jar, String deploymentName) {
     try {
       leafLoader = new DeployJarChildFirstClassLoader(artifactIdsToClassLoader,
           new URL[] {jar.toURI().toURL()}, deploymentName, getLeafLoader());
@@ -146,7 +146,7 @@ public class ClassPathLoader {
     }
   }
 
-  synchronized void unloadClassloaderForArtifact(String artifactId) {
+  public synchronized void unloadClassloaderForArtifact(String artifactId) {
     artifactIdsToClassLoader.put(artifactId, null);
   }
 
@@ -219,7 +219,7 @@ public class ClassPathLoader {
   /**
    * See {@link Proxy#getProxyClass(ClassLoader, Class...)}
    */
-  Class<?> getProxyClass(final Class<?>... classObjs) {
+  public Class<?> getProxyClass(final Class<?>... classObjs) {
     IllegalArgumentException ex = null;
 
     for (ClassLoader classLoader : getClassLoaders()) {

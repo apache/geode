@@ -33,8 +33,8 @@ import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.Result;

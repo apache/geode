@@ -20,6 +20,7 @@ import java.util.Collection;
 
 import org.apache.geode.distributed.internal.DistributedSystemService;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.classloader.ClassPathLoader;
 
 public class LuceneDistributedSystemService implements DistributedSystemService {
   @Override
