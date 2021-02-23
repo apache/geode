@@ -29,13 +29,13 @@ import java.util.Enumeration;
 import org.junit.Before;
 import org.junit.Test;
 
-public class DriverJarUtilTest {
+public class DriverJarUtilsTest {
 
-  private DriverJarUtil util;
+  private DriverJarUtils util;
 
   @Before
   public void setup() {
-    util = spy(new DriverJarUtil());
+    util = spy(new DriverJarUtils());
   }
 
   @Test

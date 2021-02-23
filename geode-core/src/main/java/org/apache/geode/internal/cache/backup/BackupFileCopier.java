@@ -24,7 +24,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
@@ -39,6 +38,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.Oplog;
 import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.management.configuration.Deployment;
 
 class BackupFileCopier {
   private static final Logger logger = LogService.getLogger();
@@ -120,10 +120,17 @@ class BackupFileCopier {
 
   Set<File> copyDeployedJars() throws IOException {
     ensureExistence(userDirectory);
-    Map<Path, File> backedUpFilesMap = jarDeploymentService.backupJars(userDirectory);
-    backedUpFilesMap.forEach((destination, source) -> backupDefinition
-        .addDeployedJarToBackup(destination, source.toPath()));
-    return new HashSet<>(backedUpFilesMap.values());
+    Set<File> userJars = new HashSet<>();
+    List<Deployment> deployments = jarDeploymentService.listDeployed();
+    for (Deployment deployment : deployments) {
+      File source = deployment.getFile();
+      String sourceFileName = source.getName();
+      Path destination = userDirectory.resolve(sourceFileName);
+      Files.copy(source.toPath(), destination, StandardCopyOption.COPY_ATTRIBUTES);
+      backupDefinition.addDeployedJarToBackup(destination, source.toPath());
+      userJars.add(source);
+    }
+    return userJars;
   }
 
   void copyDiskInitFile(DiskStoreImpl diskStore) throws IOException {

@@ -50,7 +50,7 @@ import org.apache.geode.management.internal.util.ManagementUtils;
  *
  * @since GemFire 7.0
  */
-public class CliUtil {
+public class CliUtils {
 
   public static String cliDependenciesExist(boolean includeGfshDependencies) {
     // "Validate" each dependency by attempting to load an associated class

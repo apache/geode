@@ -54,4 +54,14 @@ public class DeploymentInfo implements Serializable {
   public String getAdditionalDeploymentInfo() {
     return additionalDeploymentInfo;
   }
+
+  @Override
+  public String toString() {
+    return "DeploymentInfo{" +
+        "memberName='" + memberName + '\'' +
+        ", deploymentName='" + deploymentName + '\'' +
+        ", fileName='" + fileName + '\'' +
+        ", additionalDeploymentInfo='" + additionalDeploymentInfo + '\'' +
+        '}';
+  }
 }

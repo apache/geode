@@ -53,7 +53,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * @since GemFire 3.5
  *
  */
-public class MBeanUtil {
+public class MBeanUtils {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -168,7 +168,7 @@ public class MBeanUtil {
 
         String mbeansResource = getOSPath("/org/apache/geode/admin/jmx/mbeans-descriptors.xml");
 
-        URL url = ClassPathLoader.getLatest().getResource(MBeanUtil.class, mbeansResource);
+        URL url = ClassPathLoader.getLatest().getResource(MBeanUtils.class, mbeansResource);
         raiseOnFailure(url != null, String.format("Failed to find %s",
             new Object[] {mbeansResource}));
         registry.loadMetadata(url);
@@ -224,7 +224,7 @@ public class MBeanUtil {
             new Object[] {e.getMessage(), resource.getMBeanName()}));
       }
 
-      synchronized (MBeanUtil.class) {
+      synchronized (MBeanUtils.class) {
         // Only register a bean once. Otherwise, you risk race
         // conditions with things like the RMI connector accessing it.
 
@@ -259,7 +259,7 @@ public class MBeanUtil {
   static ObjectName ensureMBeanIsRegistered(ManagedResource resource) {
     try {
       ObjectName objName = ObjectName.getInstance(resource.getMBeanName());
-      synchronized (MBeanUtil.class) {
+      synchronized (MBeanUtils.class) {
         if (mbeanServer != null && !mbeanServer.isRegistered(objName)) {
           return createMBean(resource);
         }
@@ -552,8 +552,8 @@ public class MBeanUtil {
      * See #42391. Cleaning up the static maps which might be still holding references to
      * ManagedResources
      */
-    synchronized (MBeanUtil.managedResources) {
-      MBeanUtil.managedResources.clear();
+    synchronized (MBeanUtils.managedResources) {
+      MBeanUtils.managedResources.clear();
     }
     synchronized (refreshClients) {
       refreshClients.clear();
@@ -562,8 +562,8 @@ public class MBeanUtil {
      * See #42391. Cleaning up the static maps which might be still holding references to
      * ManagedResources
      */
-    synchronized (MBeanUtil.managedResources) {
-      MBeanUtil.managedResources.clear();
+    synchronized (MBeanUtils.managedResources) {
+      MBeanUtils.managedResources.clear();
     }
     synchronized (refreshClients) {
       refreshClients.clear();
@@ -618,8 +618,8 @@ public class MBeanUtil {
 
   // cleanup resource
   private static void cleanupResource(ManagedResource resource) {
-    synchronized (MBeanUtil.managedResources) {
-      MBeanUtil.managedResources.remove(resource.getObjectName());
+    synchronized (MBeanUtils.managedResources) {
+      MBeanUtils.managedResources.remove(resource.getObjectName());
     }
     resource.cleanupResource();
 
@@ -702,8 +702,8 @@ public class MBeanUtil {
           if (MBeanServerNotification.UNREGISTRATION_NOTIFICATION
               .equals(serverNotification.getType())) {
             ObjectName objectName = serverNotification.getMBeanName();
-            synchronized (MBeanUtil.managedResources) {
-              Object entry = MBeanUtil.managedResources.get(objectName);
+            synchronized (MBeanUtils.managedResources) {
+              Object entry = MBeanUtils.managedResources.get(objectName);
               if (entry == null)
                 return;
               if (!(entry instanceof ManagedResource)) {

@@ -93,11 +93,14 @@ public class UndeployFunction implements InternalFunction<Object[]> {
         JarDeploymentServiceFactory.getJarDeploymentServiceInstance();
     List<DeploymentInfo> undeployedJars = new LinkedList<>();
     for (String deploymentName : deploymentNames) {
+      logger.debug("Undeploying jar for deploymentName: {}", deploymentName);
       ServiceResult<Deployment> serviceResult =
           jarDeploymentService.undeployByDeploymentName(deploymentName);
       if (serviceResult.isSuccessful()) {
+        logger.debug("Undeployed jar: {}", serviceResult.getMessage());
         undeployedJars.add(new DeploymentInfo(memberId, serviceResult.getMessage()));
       } else {
+        logger.debug("Failed to undeploy jar: {}", serviceResult.getMessage());
         undeployedJars
             .add(new DeploymentInfo(memberId, deploymentName, null,
                 serviceResult.getErrorMessage()));
@@ -111,14 +114,19 @@ public class UndeployFunction implements InternalFunction<Object[]> {
         JarDeploymentServiceFactory.getJarDeploymentServiceInstance();
     List<DeploymentInfo> undeployedJars = new LinkedList<>();
     for (String fileName : filesToUndeploy) {
-      ServiceResult<Deployment> serviceResult =
-          jarDeploymentService.undeployByFileName(fileName);
+      logger.debug("Undeploying jar for fileName: {}", fileName);
+      ServiceResult<Deployment> serviceResult = jarDeploymentService.undeployByFileName(fileName);
+      DeploymentInfo deploymentInfo;
       if (serviceResult.isSuccessful()) {
-        undeployedJars.add(new DeploymentInfo(memberId, serviceResult.getMessage()));
+        logger.debug("Undeployed jar: {}", serviceResult.getMessage());
+        deploymentInfo = new DeploymentInfo(memberId, serviceResult.getMessage());
       } else {
-        undeployedJars
-            .add(new DeploymentInfo(memberId, null, fileName, serviceResult.getErrorMessage()));
+        logger.debug("Failed to undeploy jar: {}", serviceResult.getMessage());
+        deploymentInfo =
+            new DeploymentInfo(memberId, null, fileName, serviceResult.getErrorMessage());
       }
+      logger.debug("DeploymentInfo after undeployByFileNames {}", deploymentInfo);
+      undeployedJars.add(deploymentInfo);
     }
     return undeployedJars;
   }

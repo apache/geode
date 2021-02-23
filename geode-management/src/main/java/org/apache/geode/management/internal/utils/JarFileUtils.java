@@ -32,7 +32,7 @@ import org.apache.commons.io.FilenameUtils;
  *
  * Most methods apply a regex to a file name to extract some part of it (artifactId, version, etc.)
  */
-public class JarFileUtil {
+public class JarFileUtils {
 
   // Every deployed file will use this scheme to signify the sequence it's been deployed
   public static final Pattern DEPLOYED_FILE_PATTERN =

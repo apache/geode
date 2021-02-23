@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.internal;
+package org.apache.geode.internal.deployment;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -188,7 +188,8 @@ public class JarDeployerIntegrationTest {
     // deploy def-1.0.jar
     jarDeployer.deploy(Collections.singleton(semanticJarVersion1));
 
-    jarDeployer.undeploy(new Deployment("def", "def.jar", "test", Instant.now().toString()));
+    Deployment deployment = new Deployment("def", "def-1.0.jar", "test", Instant.now().toString());
+    jarDeployer.undeploy(deployment);
 
     // do not verify this on window's machine since it can not remove a file that a process has
     // open

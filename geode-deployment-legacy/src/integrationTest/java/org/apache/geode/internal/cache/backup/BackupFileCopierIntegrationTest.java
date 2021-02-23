@@ -46,7 +46,6 @@ import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.deployment.JarDeploymentService;
-import org.apache.geode.deployment.impl.legacy.LegacyJarDeploymentService;
 import org.apache.geode.deployment.internal.JarDeploymentServiceFactory;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.DirectoryHolder;
@@ -54,6 +53,7 @@ import org.apache.geode.internal.cache.DiskInitFile;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.Oplog;
+import org.apache.geode.internal.deployment.impl.legacy.LegacyJarDeploymentService;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.test.compiler.JarBuilder;
 

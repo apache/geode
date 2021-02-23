@@ -54,41 +54,26 @@ public class Success<SuccessType> implements ServiceResult<SuccessType> {
     return new Success<>(result);
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public <T> T map(Function<SuccessType, T> successFunction, Function<String, T> errorFunction) {
     return successFunction.apply(result);
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public SuccessType getMessage() {
     return result;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public String getErrorMessage() {
     throw new RuntimeException("This Result is not of type Failure.");
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public boolean isSuccessful() {
     return true;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public ServiceResult<SuccessType> ifSuccessful(
       Consumer<? super SuccessType> consumer) {

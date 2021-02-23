@@ -29,7 +29,7 @@ import java.util.List;
 import org.apache.geode.internal.classloader.ClassPathLoader;
 
 
-public class DriverJarUtil {
+public class DriverJarUtils {
 
   public void registerDriver(String driverClassName)
       throws ClassNotFoundException, IllegalAccessException,

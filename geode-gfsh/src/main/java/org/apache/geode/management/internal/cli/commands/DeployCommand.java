@@ -19,6 +19,7 @@ import static org.apache.commons.io.FileUtils.ONE_MB;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -46,6 +47,7 @@ import org.apache.geode.management.internal.ManagementAgent;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
+import org.apache.geode.management.internal.cli.domain.DeploymentInfo;
 import org.apache.geode.management.internal.cli.functions.DeployFunction;
 import org.apache.geode.management.internal.cli.remote.CommandExecutionContext;
 import org.apache.geode.management.internal.cli.remote.CommandExecutor;
@@ -57,7 +59,7 @@ import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.management.internal.util.ManagementUtils;
-import org.apache.geode.management.internal.utils.JarFileUtil;
+import org.apache.geode.management.internal.utils.JarFileUtils;
 import org.apache.geode.security.ResourcePermission;
 
 public class DeployCommand extends GfshCommand {
@@ -102,6 +104,31 @@ public class DeployCommand extends GfshCommand {
     ManagementAgent agent = ((SystemManagementService) getManagementService()).getManagementAgent();
     RemoteStreamExporter exporter = agent.getRemoteStreamExporter();
 
+    results = deployJars(deploymentName, jarFullPaths, targetMembers, results, exporter);
+
+    List<CliFunctionResult> cleanedResults = CliFunctionResult.cleanResults(results);
+
+    List<DeploymentInfo> deploymentInfos =
+        DeploymentInfoTableUtil.getDeploymentInfoFromFunctionResults(cleanedResults);
+    DeploymentInfoTableUtil.writeDeploymentInfoToTable(
+        new String[] {"Member", "Deployment Name", "JAR", "JAR Location"}, deployResult,
+        deploymentInfos);
+
+    if (result.getStatus() == Result.Status.OK) {
+      InternalConfigurationPersistenceService sc = getConfigurationPersistenceService();
+      if (sc == null) {
+        result.addInfo().addLine(CommandExecutor.SERVICE_NOT_RUNNING_CHANGE_NOT_PERSISTED);
+      } else {
+        sc.addJarsToThisLocator(deploymentName, jarFullPaths, groups);
+      }
+    }
+    return result;
+  }
+
+  private List<List<Object>> deployJars(String deploymentName, List<String> jarFullPaths,
+      Set<DistributedMember> targetMembers, List<List<Object>> results,
+      RemoteStreamExporter exporter)
+      throws FileNotFoundException, java.rmi.RemoteException {
     for (DistributedMember member : targetMembers) {
       List<RemoteInputStream> remoteStreams = new ArrayList<>();
       List<String> jarNames = new ArrayList<>();
@@ -142,28 +169,13 @@ public class DeployCommand extends GfshCommand {
         }
       }
     }
-
-    List<CliFunctionResult> cleanedResults = CliFunctionResult.cleanResults(results);
-
-    DeploymentInfoTableUtil.writeDeploymentInfoToTable(
-        new String[] {"Member", "Deployment Name", "JAR", "JAR Location"}, deployResult,
-        DeploymentInfoTableUtil.getDeploymentInfoFromFunctionResults(cleanedResults));
-
-    if (result.getStatus() == Result.Status.OK) {
-      InternalConfigurationPersistenceService sc = getConfigurationPersistenceService();
-      if (sc == null) {
-        result.addInfo().addLine(CommandExecutor.SERVICE_NOT_RUNNING_CHANGE_NOT_PERSISTED);
-      } else {
-        sc.addJarsToThisLocator(jarFullPaths, groups);
-      }
-    }
-    return result;
+    return results;
   }
 
   private void verifyJarContent(List<String> jarNames) {
     for (String jarName : jarNames) {
       File jar = new File(jarName);
-      if (!JarFileUtil.hasValidJarContent(jar)) {
+      if (!JarFileUtils.hasValidJarContent(jar)) {
         throw new IllegalArgumentException(
             "File does not contain valid JAR content: " + jar.getName());
       }

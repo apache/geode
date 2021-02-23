@@ -93,7 +93,21 @@ Here's a quick run-down of the Admin and JMX pkgs in GemFire...
 <p>
 3) Our MBeans currently have some return types of Admin interfaces and GemFire MBean types.  This is not recommended.  The correct approach is to return javax.management.ObjectName or an array of ObjectName so that remotability is not broken.  We have a bug filed to correct this in GemFire.
 <p>
-4) Commons-Modeler provides a simple, incomplete implementation of ModelMBean called org.apache.commons.modeler.BaseModelMBean. We decided to use the standard RequiredModelMBean which all JMX implementations are required to supply.  The JMX spec details several "managed resource types" that a ModelMBean can support.  ObjectReference is the type that both MX4J's RequiredModelMBean and Modeler's BaseModelMBean support.  However, MX4J is more strict in it's interpretation of the spec which spells it out as "ObjectReference".  Modeler's BaseModelMBean performs no enforcement and simply assumes it is managing type ObjectReference.  Modeler has a bug in org.apache.commons.modeler.ManagedBean because it specifies "objectReference" which is the incorrect case in comparison to the specification.  I intend to work with the Jakarta-Commons folks to change this to comply with the spec.  The Modeler will use BaseModelMBean by default even though it is actually depending on a JMX implementation such as MX4J or XMOJO.  org.apache.geode.admin.jmx.internal.MBeanUtil tells Modeler to use RequiredModelMBean instead and also uses org.apache.geode.admin.jmx.internal.SpecManagedBean as a workaround to the whole "objectReference" issue.  You could feasibly use org.apache.commons.modeler.BaseModelMBean or RequiredModelMBean.
+    4) Commons-Modeler provides a simple, incomplete implementation of ModelMBean called
+    org.apache.commons.modeler.BaseModelMBean. We decided to use the standard RequiredModelMBean
+    which all JMX implementations are required to supply. The JMX spec details several "managed
+    resource types" that a ModelMBean can support. ObjectReference is the type that both MX4J's
+    RequiredModelMBean and Modeler's BaseModelMBean support. However, MX4J is more strict in it's
+    interpretation of the spec which spells it out as "ObjectReference". Modeler's BaseModelMBean
+    performs no enforcement and simply assumes it is managing type ObjectReference. Modeler has a
+    bug in org.apache.commons.modeler.ManagedBean because it specifies "objectReference" which is
+    the incorrect case in comparison to the specification. I intend to work with the Jakarta-Commons
+    folks to change this to comply with the spec. The Modeler will use BaseModelMBean by default
+    even though it is actually depending on a JMX implementation such as MX4J or XMOJO.
+    org.apache.geode.admin.jmx.internal.MBeanUtils tells Modeler to use RequiredModelMBean instead
+    and also uses org.apache.geode.admin.jmx.internal.SpecManagedBean as a workaround to the whole
+    "objectReference" issue. You could feasibly use org.apache.commons.modeler.BaseModelMBean or
+    RequiredModelMBean.
 <p>
 
 <h3>Capabilities currently supported in GemFire via JMX:</h3>

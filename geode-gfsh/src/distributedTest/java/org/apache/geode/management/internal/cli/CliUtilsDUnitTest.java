@@ -34,7 +34,7 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 
-public class CliUtilDUnitTest {
+public class CliUtilsDUnitTest {
 
   @ClassRule
   public static ClusterStartupRule lsRule = new ClusterStartupRule(5);
@@ -95,13 +95,13 @@ public class CliUtilDUnitTest {
     locator.waitUntilAsyncEventQueuesAreReadyOnExactlyThisManyServers("queue", 4);
 
     locator.invoke(() -> {
-      members = CliUtil.getMembersWithAsyncEventQueue(ClusterStartupRule.getCache(), "queue1");
+      members = CliUtils.getMembersWithAsyncEventQueue(ClusterStartupRule.getCache(), "queue1");
       assertThat(getNames(members)).containsExactlyInAnyOrder("member1", "member2");
 
-      members = CliUtil.getMembersWithAsyncEventQueue(ClusterStartupRule.getCache(), "queue2");
+      members = CliUtils.getMembersWithAsyncEventQueue(ClusterStartupRule.getCache(), "queue2");
       assertThat(getNames(members)).containsExactlyInAnyOrder("member3", "member4");
 
-      members = CliUtil.getMembersWithAsyncEventQueue(ClusterStartupRule.getCache(), "queue");
+      members = CliUtils.getMembersWithAsyncEventQueue(ClusterStartupRule.getCache(), "queue");
       assertThat(getNames(members)).containsExactlyInAnyOrder("member1", "member2", "member3",
           "member4");
     });

@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache;
 
-import static java.util.stream.Collectors.joining;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;

@@ -36,7 +36,7 @@ public class DeploymentManager implements ConfigurationManager<Deployment> {
 
   @Override
   public void add(Deployment config, String groupName) throws Exception {
-    persistenceService.addJarsToThisLocator(
+    persistenceService.addJarsToThisLocator(config.getDeploymentName(),
         Collections.singletonList(config.getFile().getAbsolutePath()),
         new String[] {AbstractConfiguration.getGroupName(config.getGroup())});
   }

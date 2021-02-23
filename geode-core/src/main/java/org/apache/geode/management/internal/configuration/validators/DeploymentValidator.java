@@ -21,7 +21,7 @@ import java.util.List;
 
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.internal.CacheElementOperation;
-import org.apache.geode.management.internal.utils.JarFileUtil;
+import org.apache.geode.management.internal.utils.JarFileUtils;
 
 public class DeploymentValidator implements ConfigurationValidator<Deployment> {
   @Override
@@ -41,7 +41,7 @@ public class DeploymentValidator implements ConfigurationValidator<Deployment> {
     // verify jar content
     List<String> invalidFileNames = new ArrayList<>();
     File file = config.getFile();
-    if (!JarFileUtil.hasValidJarContent(file)) {
+    if (!JarFileUtils.hasValidJarContent(file)) {
       invalidFileNames.add(file.getName());
     }
 

@@ -29,21 +29,13 @@ import java.util.function.Function;
  * @since 1.14.0
  */
 public interface ServiceResult<SuccessType> extends Result<SuccessType, String> {
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   <T> T map(Function<SuccessType, T> successFunction, Function<String, T> errorFunction);
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   SuccessType getMessage();
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   String getErrorMessage();
 

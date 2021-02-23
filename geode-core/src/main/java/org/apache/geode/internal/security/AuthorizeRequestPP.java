@@ -30,7 +30,7 @@ import org.apache.geode.cache.operations.KeySetOperationContext;
 import org.apache.geode.cache.operations.OperationContext;
 import org.apache.geode.cache.operations.QueryOperationContext;
 import org.apache.geode.cache.operations.internal.GetOperationContextImpl;
-import org.apache.geode.internal.ClassLoadUtil;
+import org.apache.geode.internal.ClassLoadUtils;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.security.AccessControl;
 import org.apache.geode.security.NotAuthorizedException;
@@ -68,7 +68,7 @@ public class AuthorizeRequestPP {
       this.isPrincipalSerializable = false;
     }
     this.logger = cache.getSecurityLogger();
-    Method postAuthzMethod = ClassLoadUtil.methodFromName(postAuthzFactoryName);
+    Method postAuthzMethod = ClassLoadUtils.methodFromName(postAuthzFactoryName);
     this.postAuthzCallback = (AccessControl) postAuthzMethod.invoke(null, (Object[]) null);
     this.postAuthzCallback.init(principal, id.getDistributedMember(), cache);
     if (this.logger.infoEnabled()) {

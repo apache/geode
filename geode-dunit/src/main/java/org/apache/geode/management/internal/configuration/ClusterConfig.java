@@ -45,7 +45,7 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
-import org.apache.geode.management.internal.utils.JarFileUtil;
+import org.apache.geode.management.internal.utils.JarFileUtils;
 import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -61,7 +61,7 @@ public class ClusterConfig implements Serializable {
 
   private static Set<String> toSetIgnoringHiddenFiles(String[] array) {
     if (array == null) {
-      return new HashSet<>();
+      return Collections.emptySet();
     }
     return Arrays.stream(array).filter((String name) -> !name.startsWith(".")).collect(toSet());
   }
@@ -153,7 +153,7 @@ public class ClusterConfig implements Serializable {
     for (ConfigGroup configGroup : this.getGroups()) {
       Set<String> actualFiles =
           toSetIgnoringHiddenFiles(new File(clusterConfigDir, configGroup.name).list()).stream()
-              .map(JarFileUtil::getArtifactId).collect(toSet());
+              .map(JarFileUtils::getArtifactId).collect(toSet());
 
       Set<String> expectedDeployments = configGroup.getDeploymentNames();
       assertThat(actualFiles).isEqualTo(expectedDeployments);
@@ -167,7 +167,7 @@ public class ClusterConfig implements Serializable {
     String[] actualJarFiles =
         serverVM.getWorkingDir().list((dir, filename) -> filename.contains(".jar"));
     Set<String> actualJarNames = Stream.of(actualJarFiles)
-        .map(jar -> JarFileUtil.getArtifactId(jar.replaceAll("\\.v\\d+\\.jar", ".jar")))
+        .map(jar -> JarFileUtils.getArtifactId(jar.replaceAll("\\.v\\d+\\.jar", ".jar")))
         .collect(toSet());
 
     // We will end up with extra jars on disk if they are deployed and then undeployed

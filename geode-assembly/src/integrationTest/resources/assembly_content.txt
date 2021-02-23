@@ -370,6 +370,7 @@ javadoc/org/apache/geode/cache/execute/FunctionContext.html
 javadoc/org/apache/geode/cache/execute/FunctionException.html
 javadoc/org/apache/geode/cache/execute/FunctionInvocationTargetException.html
 javadoc/org/apache/geode/cache/execute/FunctionService.html
+javadoc/org/apache/geode/cache/execute/FunctionServiceUtil.html
 javadoc/org/apache/geode/cache/execute/RegionFunctionContext.html
 javadoc/org/apache/geode/cache/execute/ResultCollector.html
 javadoc/org/apache/geode/cache/execute/ResultSender.html

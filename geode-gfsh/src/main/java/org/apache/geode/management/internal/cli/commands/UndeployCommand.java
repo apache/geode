@@ -103,6 +103,7 @@ public class UndeployCommand extends GfshCommand {
         deploymentNamesToFileNames
             .put(deploymentInfo.getDeploymentName(), deploymentInfo.getFileName());
       }
+
       ((InternalConfigurationPersistenceService) getConfigurationPersistenceService())
           .removeDeployments(deploymentNamesToFileNames, groups);
     }

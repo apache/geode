@@ -28,7 +28,7 @@ import org.junit.Test;
 
 import org.apache.geode.deployment.internal.JarDeploymentServiceFactory;
 import org.apache.geode.internal.classloader.ClassPathLoader;
-import org.apache.geode.management.internal.utils.JarFileUtil;
+import org.apache.geode.management.internal.utils.JarFileUtils;
 import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -324,7 +324,7 @@ public class DeployWithGroupsDUnitTest implements Serializable {
   }
 
   private void assertThatCanLoad(String jarName, String className) throws ClassNotFoundException {
-    String deploymentName = JarFileUtil.getArtifactId(jarName);
+    String deploymentName = JarFileUtils.getArtifactId(jarName);
     assertThat(
         JarDeploymentServiceFactory.getJarDeploymentServiceInstance().getDeployed(deploymentName)
             .isSuccessful())
@@ -333,7 +333,7 @@ public class DeployWithGroupsDUnitTest implements Serializable {
   }
 
   private void assertThatCannotLoad(String jarName, String className) {
-    String deploymentName = JarFileUtil.getArtifactId(jarName);
+    String deploymentName = JarFileUtils.getArtifactId(jarName);
     assertThat(
         JarDeploymentServiceFactory.getJarDeploymentServiceInstance().getDeployed(deploymentName)
             .isSuccessful())

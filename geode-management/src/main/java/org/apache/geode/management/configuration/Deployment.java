@@ -28,7 +28,7 @@ import io.swagger.annotations.ApiModelProperty;
 
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.CommandType;
-import org.apache.geode.management.internal.utils.JarFileUtil;
+import org.apache.geode.management.internal.utils.JarFileUtils;
 import org.apache.geode.management.runtime.DeploymentInfo;
 
 /**
@@ -61,7 +61,7 @@ public class Deployment extends GroupableConfiguration<DeploymentInfo> implement
   }
 
   public Deployment(String jarFileName, String deployedBy, String deployedTime) {
-    this(JarFileUtil.getArtifactId(jarFileName), jarFileName, deployedBy, deployedTime);
+    this(JarFileUtils.getArtifactId(jarFileName), jarFileName, deployedBy, deployedTime);
   }
 
   public Deployment(String deploymentName, String jarFileName, String deployedBy,
@@ -123,7 +123,7 @@ public class Deployment extends GroupableConfiguration<DeploymentInfo> implement
     if (deploymentName != null) {
       return deploymentName;
     } else if (getFileName() != null) {
-      return JarFileUtil.getArtifactId(getFileName());
+      return JarFileUtils.getArtifactId(getFileName());
     }
     return null;
   }

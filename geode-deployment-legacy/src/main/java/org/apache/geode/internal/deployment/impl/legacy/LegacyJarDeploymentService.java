@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.geode.deployment.impl.legacy;
+package org.apache.geode.internal.deployment.impl.legacy;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -31,8 +31,8 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.deployment.JarDeploymentService;
-import org.apache.geode.internal.DeployedJar;
-import org.apache.geode.internal.JarDeployer;
+import org.apache.geode.internal.deployment.DeployedJar;
+import org.apache.geode.internal.deployment.JarDeployer;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.services.result.ServiceResult;
@@ -50,13 +50,9 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
 
   private static final Logger logger = LogService.getLogger();
 
-  private final Map<String, Deployment> deployments;
-  private JarDeployer jarDeployer;
+  private final Map<String, Deployment> deployments = new ConcurrentHashMap<>();
+  private JarDeployer jarDeployer = new JarDeployer();
 
-  public LegacyJarDeploymentService() {
-    this.jarDeployer = new JarDeployer();
-    this.deployments = new ConcurrentHashMap<>();
-  }
 
   @Override
   public synchronized ServiceResult<Deployment> deploy(Deployment deployment) {
@@ -65,6 +61,7 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
           jarDeployer.deploy(Collections.singleton(deployment.getFile()));
       // This means that the jars are already deployed, so we call it a Success.
       if (deployedJars == null || deployedJars.isEmpty()) {
+        logger.info("Jar already been deployed: {}", deployment);
         // null is returned when already deployed to satisfy existing public API constraints
         return Success.of(null);
       } else {
@@ -75,9 +72,12 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
             // null is returned when already deployed to satisfy existing public API constraints
             return Success.of(null);
           }
+          logger.debug("Adding Deployment: {} with DeployedJar: {}", deployment, deployedJar);
           Deployment deploymentCopy = new Deployment(deployment, deployedJar.getFile());
           deploymentCopy.setDeployedTime(Instant.now().toString());
           deployments.put(deploymentCopy.getDeploymentName(), deploymentCopy);
+          logger.debug("Deployments List size after add: {}", deployments.size());
+          logger.debug("Deployment copy to return: {}", deploymentCopy);
           return Success.of(deploymentCopy);
         }
         // null is returned when already deployed to satisfy existing public API constraints
@@ -96,27 +96,48 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
   @Override
   public synchronized ServiceResult<Deployment> undeployByDeploymentName(String deploymentName) {
     try {
+      logger.debug("Deployments List size before undeploy: {}", deployments.size());
+      logger.debug("Deployment name being undeployed: {}", deploymentName);
+
       Deployment deployment = deployments.get(deploymentName);
+      logger.debug("Found deployment to remove: {}", deployment);
 
       if (deployment == null) {
         return Failure.of("No deployment found for name: " + deploymentName);
       }
 
       Deployment removedDeployment = deployments.remove(deploymentName);
-      jarDeployer.undeploy(deployment);
+      logger.debug("Deployments List size after remove: {}", deployments.size());
+      String undeployedPath = jarDeployer.undeploy(deployment);
+      logger.debug("Jar at path: {} removed by JarDeployer", undeployedPath);
       return Success.of(removedDeployment);
     } catch (IOException e) {
       return Failure.of(e);
     }
   }
 
+  /**
+   * Removes jars from the system by their file name.
+   *
+   * @param fileName the name of a jar that has previously been deployed.
+   * @return a {@link ServiceResult} containing a {@link Deployment} representing the removed jar
+   *         when successful and an error message if the file could not be found or undeployed.
+   */
   @Override
-  public ServiceResult<Deployment> undeployByFileName(String fileName) {
+  public synchronized ServiceResult<Deployment> undeployByFileName(String fileName) {
+    logger.debug("Undeploying file: {}", fileName);
+    for (Deployment deployment : listDeployed()) {
+      logger.debug("Checking deployment for file: {}", deployment);
+      logger.debug("Deployment: {} contains file: {}", deployment.getDeploymentName(),
+          deployment.getFileName().equals(fileName));
+    }
     List<String> deploymentNamesFromFileName =
         listDeployed().stream()
             .filter(deployment -> deployment.getFileName().equals(fileName))
             .map(Deployment::getDeploymentName)
             .collect(Collectors.toList());
+    logger.debug("Deployments found for file: {}",
+        Arrays.toString(deploymentNamesFromFileName.toArray()));
     if (deploymentNamesFromFileName.size() > 1) {
       return Failure.of("There are multiple deployments with file: " + fileName);
     } else if (deploymentNamesFromFileName.isEmpty()) {
@@ -128,11 +149,13 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
 
   @Override
   public List<Deployment> listDeployed() {
-    return new LinkedList<>(deployments.values());
+    return Collections.unmodifiableList(new LinkedList<>(deployments.values()));
   }
 
   @Override
   public ServiceResult<Deployment> getDeployed(String deploymentName) {
+    logger.debug("Looking up Deployment for name: {}", deploymentName);
+    logger.debug("Deployments keySet: {}", Arrays.toString(deployments.keySet().toArray()));
     if (deployments.containsKey(deploymentName)) {
       return Success.of(deployments.get(deploymentName));
     } else {
@@ -142,6 +165,8 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
 
   @Override
   public void reinitializeWithWorkingDirectory(File workingDirectory) {
+    logger.info("Reinitializing JarDeploymentService with new working directory: {}",
+        workingDirectory);
     if (deployments.isEmpty()) {
       this.jarDeployer = new JarDeployer(workingDirectory);
     } else {
@@ -151,16 +176,13 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
   }
 
   @Override
-  public Map<Path, File> backupJars(Path backupDirectory) throws IOException {
-    return jarDeployer.backupJars(backupDirectory);
-  }
-
-  @Override
   public void loadJarsFromWorkingDirectory() {
+    logger.debug("Loading jars from Working Directory");
     Map<String, DeployedJar> latestVersionOfJarsOnDisk = jarDeployer.getLatestVersionOfJarsOnDisk();
     try {
       jarDeployer.registerNewVersions(latestVersionOfJarsOnDisk);
       for (DeployedJar deployedJar : latestVersionOfJarsOnDisk.values()) {
+        logger.debug("Deploying DeployedJar: {} from working directory", deployedJar);
         Deployment deployment = createDeployment(deployedJar);
         deployments.put(deployment.getDeploymentName(), deployment);
       }
@@ -172,6 +194,9 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
 
   @Override
   public void close() {
+    logger
+        .debug("Closing LegacyJarDeploymentService. The following Deployments will be removed: {}",
+            Arrays.toString(deployments.keySet().toArray()));
     deployments.keySet().forEach(this::undeployByDeploymentName);
   }
 

@@ -19,10 +19,13 @@ package org.apache.geode.deployment.internal;
 import java.io.File;
 import java.util.ServiceLoader;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.deployment.JarDeploymentService;
 import org.apache.geode.internal.cache.client.protocol.exception.ServiceLoadingFailureException;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Factory responsible for loading and holding the singleton instance of the
@@ -33,6 +36,8 @@ import org.apache.geode.internal.cache.client.protocol.exception.ServiceLoadingF
  */
 @Experimental
 public class JarDeploymentServiceFactory {
+
+  private static final Logger logger = LogService.getLogger();
 
   @Immutable
   private static final JarDeploymentService jarDeploymentService = createJarDeploymentService();

@@ -15,10 +15,7 @@
 package org.apache.geode.deployment;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.api.ClusterManagementService;
@@ -98,15 +95,6 @@ public interface JarDeploymentService {
    *        have been deployed.
    */
   void reinitializeWithWorkingDirectory(File workingDirectory);
-
-  /**
-   * Backs up jars by copying them from the working directory to the backupDirectory.
-   *
-   * @param backupDirectory a {@link Path} to a backup directory where jars should be copied to.
-   * @return a {@link Map} of {@link Path}s of the backup files to the original {@link File}s.
-   * @throws IOException if copying to the backupDirectory fails.
-   */
-  Map<Path, File> backupJars(Path backupDirectory) throws IOException;
 
   /**
    * Deploys all jars currently sitting in the working directory that are not officially deployed.

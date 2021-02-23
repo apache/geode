@@ -93,34 +93,21 @@ public class Failure<SuccessType> implements ServiceResult<SuccessType> {
     }
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public <T> T map(Function<SuccessType, T> successFunction, Function<String, T> errorFunction) {
     return errorFunction.apply(errorMessage);
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public SuccessType getMessage() {
     throw new RuntimeException("This Result is not of type Success.");
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public String getErrorMessage() {
     return errorMessage;
   }
 
-  /**
-   *
-   * {@inheritDoc}
-   */
   public ServiceResult<SuccessType> ifFailure(
       Consumer<? super String> consumer) {
     if (isFailure()) {
@@ -129,9 +116,6 @@ public class Failure<SuccessType> implements ServiceResult<SuccessType> {
     return this;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public boolean isFailure() {
     return true;

@@ -23,7 +23,7 @@ import java.util.Map;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.classloader.ClassPathLoader;
 
-public class ClassLoadUtil {
+public class ClassLoadUtils {
 
   @Immutable
   private static final Map<String, Class> PRIMITIVE_TYPES = primitiveTypes();

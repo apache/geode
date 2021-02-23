@@ -61,7 +61,7 @@ import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.ClassLoadUtil;
+import org.apache.geode.internal.ClassLoadUtils;
 import org.apache.geode.internal.CopyOnWriteHashSet;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
@@ -312,7 +312,7 @@ public class FilterProfile implements DataSerializableFixedID {
     Class filterClass;
     InterestFilter filter;
     try {
-      filterClass = ClassLoadUtil.classFromName((String) interest);
+      filterClass = ClassLoadUtils.classFromName((String) interest);
       filter = (InterestFilter) filterClass.newInstance();
     } catch (ClassNotFoundException cnfe) {
       throw new RuntimeException(String.format("Class %s not found in classpath.",
