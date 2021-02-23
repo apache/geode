@@ -32,10 +32,6 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 
-/**
- * Test that the bucket size does not go negative when we fault out and in a delta object.
- *
- */
 
 public class DeltaFaultInDUnitTest extends JUnit4CacheTestCase {
 
@@ -45,7 +41,7 @@ public class DeltaFaultInDUnitTest extends JUnit4CacheTestCase {
   }
 
   @Test
-  public void test() throws Exception {
+  public void bucketSizeShould_notGoNegative_onFaultInDeltaObject() throws Exception {
     final Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
