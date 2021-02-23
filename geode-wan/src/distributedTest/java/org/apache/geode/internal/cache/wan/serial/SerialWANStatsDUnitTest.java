@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.RejectedExecutionException;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -372,11 +373,10 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
 
     vm2.invoke(() -> WANTestBase.createReplicatedRegion(regionName, null, isOffHeap()));
 
-    startSenderInVMs("ln", vm4, vm5);
-
     vm4.invoke(() -> WANTestBase.createReplicatedRegion(regionName, "ln", isOffHeap()));
     vm5.invoke(() -> WANTestBase.createReplicatedRegion(regionName, "ln", isOffHeap()));
 
+    startSenderInVMs("ln", vm4, vm5);
 
     final Map<Object, Object> keyValues = new LinkedHashMap<>();
     int entries = 2200;
@@ -385,26 +385,28 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     }
 
     int eventsPerTransaction = 11;
+    System.out.println("Starting puts");
     AsyncInvocation<Void> inv1 =
         vm4.invokeAsync(
             () -> WANTestBase.doPutsInsideTransactions(regionName, keyValues,
                 eventsPerTransaction));
 
     // wait for batches to be distributed and then stop the sender
+    System.out.println("Waiting for some batches to be distributed");
     vm4.invoke(() -> await()
         .until(() -> WANTestBase.getSenderStats("ln", -1).get(4) > 0));
+    System.out
+        .println("Some batches distributed: " + vm4.invoke(() -> getSenderStats("ln", -1).get(4)));
+
+    addIgnoredException("Exception occurred in CacheListener");
+    addIgnoredException(RejectedExecutionException.class);
 
     System.out.println("Stopping sender");
     stopSenderInVMsAsync("ln", vm4, vm5);
-    // Senders must be stopped sequentially. Otherwise, we could have incomplete transactions
-    // in the queue because there could be events stored in tmpQueuedEvents while the
-    // sender is being stopped. Those will not have been dropped and therefore not
-    // sent to the other sender to remove them from the queue.
-    // vm4.invoke(() -> stopSender("ln"));
-    // vm5.invoke(() -> stopSender("ln"));
     System.out.println("Stopped sender");
 
     inv1.await();
+    System.out.println("Puts completed");
 
     vm4.invoke(() -> WANTestBase.validateRegionSize(regionName, entries));
     vm5.invoke(() -> WANTestBase.validateRegionSize(regionName, entries));
@@ -525,11 +527,10 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
 
     vm2.invoke(() -> WANTestBase.createReplicatedRegion(regionName, null, isOffHeap()));
 
-    startSenderInVMs("ln", vm4, vm5);
-
     vm4.invoke(() -> WANTestBase.createReplicatedRegion(regionName, "ln", isOffHeap()));
     vm5.invoke(() -> WANTestBase.createReplicatedRegion(regionName, "ln", isOffHeap()));
 
+    startSenderInVMs("ln", vm4, vm5);
 
     final Map<Object, Object> keyValues = new LinkedHashMap<>();
     int entries = 2200;

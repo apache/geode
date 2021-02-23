@@ -507,6 +507,10 @@ public class SerialGatewaySenderQueue implements RegionQueue {
           incompleteTransactionIdsInBatch, retries, GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS);
       stats.incBatchesWithIncompleteTransactions();
       logger.info("Incomplete batch: {}", batch);
+    } else {
+      logger.warn("toberal retrieved all events for transaction after {} tries of {}ms",
+          retries, GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS);
+
     }
   }
 

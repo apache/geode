@@ -858,6 +858,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
   private void shutdownListenerExecutor() {
     synchronized (listenerObjectLock) {
       if (this.executor != null) {
+        logger.info("Shutting down executor");
         this.executor.shutdown();
         this.executor = null;
       }

@@ -132,7 +132,7 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
   @Override
   protected boolean enqueueEvent(GatewayQueueEvent gatewayQueueEvent,
       Predicate condition) {
-    boolean queuedEvent = true;
+    boolean queuedEvent = false;
     try {
       if (getSender().beforeEnqueue(gatewayQueueEvent)) {
         long start = getSender().getStatistics().startTime();
