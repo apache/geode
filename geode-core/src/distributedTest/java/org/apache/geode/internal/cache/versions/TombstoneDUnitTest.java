@@ -61,7 +61,6 @@ public class TombstoneDUnitTest implements Serializable {
   private static Cache cache;
   private static Region<String, String> region;
   final String REGION_NAME = "TestRegion";
-  final int EXPIRY_TIME = 600000;
 
   @Rule
   public DistributedRule distributedRule = new DistributedRule();
@@ -175,8 +174,9 @@ public class TombstoneDUnitTest implements Serializable {
       for (int i = 0; i < count; i++) {
         region.destroy("K" + i);
         assertThat(
-            tombstoneSweeper.getOldestTombstoneTime() + EXPIRY_TIME - System.currentTimeMillis())
-                .isGreaterThan(0);
+            tombstoneSweeper.getOldestTombstoneTime()
+                + TombstoneService.REPLICATE_TOMBSTONE_TIMEOUT_DEFAULT - System.currentTimeMillis())
+                    .isGreaterThan(0);
         performGC(1);
       }
 
