@@ -281,7 +281,11 @@ public class DistributionConfigJUnitTest {
       assertThat(checker.getParameterTypes()[0]).as("invalid checker: " + checker.getName())
           .isEqualTo(checker.getReturnType());
 
-      // TODO assert checker and setter accepts this same type of parameter
+      Method setter = setters.get(att);
+      assertThat(checker.getParameterTypes()[0]).as("checker '" + checker.getName()
+          + "' param type is '" + checker.getParameterTypes()[0] + "' but setter '"
+          + setter.getName() + "' param type is '" + setter.getParameterTypes()[0] + "'")
+          .isEqualTo(setter.getParameterTypes()[0]);
     }
   }
 
