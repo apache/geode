@@ -27,11 +27,15 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.internal.execute.FunctionServiceUtils;
-import org.apache.geode.deployment.JarDeploymentService;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.internal.execute.FunctionToFileTracker;
+import org.apache.geode.deployment.internal.JarDeploymentService;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.modules.service.GeodeJBossDeploymentService;
+import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.services.result.impl.Failure;
 import org.apache.geode.services.result.impl.Success;
@@ -43,6 +47,8 @@ public class ModularJarDeploymentService implements JarDeploymentService {
   private final GeodeJBossDeploymentService geodeJBossDeploymentService;
 
   private final Map<String, Deployment> deployments = new ConcurrentHashMap<>();
+
+  private final FunctionToFileTracker functionToFileTracker = new FunctionToFileTracker();
 
   private File workingDirectory = new File(System.getProperty("user.dir"));
 
@@ -63,8 +69,13 @@ public class ModularJarDeploymentService implements JarDeploymentService {
       Deployment oldDeployment =
           deployments.put(deploymentCopy.getDeploymentName(), deploymentCopy);
       if (oldDeployment != null) {
-        FunctionServiceUtils.unregisterRemovedFunctions(oldDeployment.getFile(),
-            deploymentCopy.getFile());
+        try {
+          functionToFileTracker.registerFunctions(deployment);
+        } catch (ClassNotFoundException e) {
+          return Failure.of(e);
+        } finally {
+          flushCaches();
+        }
       }
       return Success.of(deploymentCopy);
     } else {
@@ -89,7 +100,7 @@ public class ModularJarDeploymentService implements JarDeploymentService {
         geodeJBossDeploymentService.unregisterModule(deploymentName);
     if (serviceResult.isSuccessful()) {
       Deployment removedDeployment = deployments.remove(deploymentName);
-      FunctionServiceUtils.unregisterRemovedFunctions(removedDeployment.getFile(), null);
+      functionToFileTracker.unregisterFunctionsForDeployment(removedDeployment);
       return Success.of(removedDeployment);
     } else {
       return Failure.of(serviceResult.getErrorMessage());
@@ -160,6 +171,20 @@ public class ModularJarDeploymentService implements JarDeploymentService {
       return Failure.of(fileName + " not deployed");
     } else {
       return undeployByDeploymentName(deploymentNamesFromFileName.get(0));
+    }
+  }
+
+  /**
+   * Flush the type registry after possibly receiving new types or having old types replaced.
+   */
+  private synchronized void flushCaches() {
+    try {
+      TypeRegistry typeRegistry = ((InternalCache) CacheFactory.getAnyInstance()).getPdxRegistry();
+      if (typeRegistry != null) {
+        typeRegistry.flushCache();
+      }
+    } catch (CacheClosedException ignored) {
+      // That's okay, it just means there was nothing to flush to begin with
     }
   }
 }
