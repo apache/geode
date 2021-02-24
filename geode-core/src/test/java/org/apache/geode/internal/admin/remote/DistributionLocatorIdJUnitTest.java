@@ -68,7 +68,9 @@ public class DistributionLocatorIdJUnitTest {
     assertThat(distributionLocatorId3.getMemberName()).isEqualTo("member3");
     assertThat(distributionLocatorId4.getMemberName()).isEqualTo(DistributionConfig.DEFAULT_NAME);
 
-    assertThat(distributionLocatorId1.detailCompare(distributionLocatorId3)).isTrue();
-    assertThat(distributionLocatorId2.detailCompare(distributionLocatorId4)).isFalse();
+    assertThat(distributionLocatorId1.detailCompare(distributionLocatorId3))
+        .as("Distribution locator IDs 1 and 3 have all parameters the same.").isTrue();
+    assertThat(distributionLocatorId2.detailCompare(distributionLocatorId4))
+        .as("Distribution locator IDs 2 and 4 have all parameters the same.").isFalse();
   }
 }
