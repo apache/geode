@@ -27,12 +27,12 @@ public class RedisKeyCommandsFunctionExecutor extends RedisDataCommandsFunctionE
   }
 
   @Override
-  public boolean del(ByteArrayWrapper key) {
+  public boolean del(RedisKey key) {
     return stripedExecute(key, () -> getRegion().remove(key) != null);
   }
 
   @Override
-  public boolean exists(ByteArrayWrapper key) {
+  public boolean exists(RedisKey key) {
     boolean keyExists = stripedExecute(key, () -> getRedisData(key).exists());
 
     if (keyExists) {
@@ -45,7 +45,7 @@ public class RedisKeyCommandsFunctionExecutor extends RedisDataCommandsFunctionE
   }
 
   @Override
-  public long pttl(ByteArrayWrapper key) {
+  public long pttl(RedisKey key) {
     long result = stripedExecute(key, () -> getRedisData(key).pttl(getRegion(), key));
 
     if (result == -2) {
@@ -58,23 +58,23 @@ public class RedisKeyCommandsFunctionExecutor extends RedisDataCommandsFunctionE
   }
 
   @Override
-  public long internalPttl(ByteArrayWrapper key) {
+  public long internalPttl(RedisKey key) {
     return stripedExecute(key, () -> getRedisData(key).pttl(getRegion(), key));
   }
 
   @Override
-  public int pexpireat(ByteArrayWrapper key, long timestamp) {
+  public int pexpireat(RedisKey key, long timestamp) {
     return stripedExecute(key,
         () -> getRedisData(key).pexpireat(helper, key, timestamp));
   }
 
   @Override
-  public int persist(ByteArrayWrapper key) {
+  public int persist(RedisKey key) {
     return stripedExecute(key, () -> getRedisData(key).persist(getRegion(), key));
   }
 
   @Override
-  public String type(ByteArrayWrapper key) {
+  public String type(RedisKey key) {
     String type = stripedExecute(key, () -> getRedisData(key).type());
 
     if (type.equalsIgnoreCase("none")) {
@@ -87,12 +87,12 @@ public class RedisKeyCommandsFunctionExecutor extends RedisDataCommandsFunctionE
   }
 
   @Override
-  public String internalType(ByteArrayWrapper key) {
+  public String internalType(RedisKey key) {
     return stripedExecute(key, () -> getRedisData(key).type());
   }
 
   @Override
-  public boolean rename(ByteArrayWrapper oldKey, ByteArrayWrapper newKey) {
+  public boolean rename(RedisKey oldKey, RedisKey newKey) {
     // caller has already done all the stripedExecutor locking
     return getRedisData(oldKey).rename(getRegion(), oldKey, newKey);
   }

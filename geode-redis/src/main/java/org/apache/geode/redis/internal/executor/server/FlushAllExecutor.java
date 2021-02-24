@@ -15,7 +15,7 @@
  */
 package org.apache.geode.redis.internal.executor.server;
 
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.executor.key.RedisKeyCommands;
@@ -29,7 +29,7 @@ public class FlushAllExecutor extends AbstractExecutor {
       ExecutionHandlerContext context) {
     RedisKeyCommands redisKeyCommands = getRedisKeyCommands(context);
 
-    for (ByteArrayWrapper skey : context.getRegionProvider().getDataRegion().keySet()) {
+    for (RedisKey skey : context.getRegionProvider().getDataRegion().keySet()) {
       redisKeyCommands.del(skey);
     }
 

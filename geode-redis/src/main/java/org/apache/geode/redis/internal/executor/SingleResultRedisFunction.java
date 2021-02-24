@@ -20,27 +20,25 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.execute.RegionFunctionContextImpl;
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisData;
+import org.apache.geode.redis.internal.data.RedisKey;
 
 public abstract class SingleResultRedisFunction implements InternalFunction<Object[]> {
 
   private final transient PartitionedRegion partitionedRegion;
 
-  public SingleResultRedisFunction(Region<ByteArrayWrapper, RedisData> dataRegion) {
+  public SingleResultRedisFunction(Region<RedisKey, RedisData> dataRegion) {
     this.partitionedRegion = (PartitionedRegion) dataRegion;
   }
 
-  protected abstract Object compute(ByteArrayWrapper key, Object[] args);
+  protected abstract Object compute(RedisKey key, Object[] args);
 
   @Override
   public void execute(FunctionContext<Object[]> context) {
 
-    RegionFunctionContextImpl regionFunctionContext =
-        (RegionFunctionContextImpl) context;
+    RegionFunctionContextImpl regionFunctionContext = (RegionFunctionContextImpl) context;
 
-    ByteArrayWrapper key =
-        (ByteArrayWrapper) regionFunctionContext.getFilter().iterator().next();
+    RedisKey key = (RedisKey) regionFunctionContext.getFilter().iterator().next();
 
     Object[] args = context.getArguments();
 

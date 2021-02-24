@@ -15,9 +15,6 @@
  */
 package org.apache.geode.redis.internal.data;
 
-import static org.apache.geode.redis.internal.RegionProvider.REDIS_REGION_BUCKETS;
-import static org.apache.geode.redis.internal.RegionProvider.REDIS_SLOTS;
-import static org.apache.geode.redis.internal.RegionProvider.REDIS_SLOTS_PER_BUCKET;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -30,8 +27,6 @@ import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.redis.internal.executor.cluster.CRC16;
-import org.apache.geode.redis.internal.executor.cluster.RedisPartitionResolver;
 import org.apache.geode.redis.internal.netty.Coder;
 
 /**
@@ -45,8 +40,6 @@ public class ByteArrayWrapper
    * The data portion of ValueWrapper
    */
   protected byte[] value;
-
-  private transient Object routingId;
 
   /**
    * Empty constructor for serialization
@@ -113,17 +106,6 @@ public class ByteArrayWrapper
   @Override
   public int compareTo(ByteArrayWrapper other) {
     return arrayCmp(value, other.value);
-  }
-
-  /**
-   * Used by the {@link RedisPartitionResolver} to map slots to buckets
-   */
-  public synchronized Object getRoutingId() {
-    if (routingId == null) {
-      routingId = (CRC16.calculate(value) % REDIS_SLOTS) / REDIS_SLOTS_PER_BUCKET;
-    }
-
-    return routingId;
   }
 
   /**

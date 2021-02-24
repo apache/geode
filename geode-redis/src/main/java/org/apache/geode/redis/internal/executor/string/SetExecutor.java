@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
@@ -38,7 +39,7 @@ public class SetExecutor extends StringExecutor {
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
 
-    ByteArrayWrapper keyToSet = command.getKey();
+    RedisKey keyToSet = command.getKey();
     List<byte[]> commandElementsBytes = command.getProcessedCommand();
     List<byte[]> optionalParameterBytes = getOptionalParameters(commandElementsBytes);
     ByteArrayWrapper valueToSet = getValueToSet(commandElementsBytes);
@@ -58,7 +59,7 @@ public class SetExecutor extends StringExecutor {
     return commandElementsBytes.subList(3, commandElementsBytes.size());
   }
 
-  private RedisResponse doSet(ByteArrayWrapper key, ByteArrayWrapper value,
+  private RedisResponse doSet(RedisKey key, ByteArrayWrapper value,
       RedisStringCommands redisStringCommands, SetOptions setOptions) {
 
     boolean setCompletedSuccessfully = redisStringCommands.set(key, value, setOptions);

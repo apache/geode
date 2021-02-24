@@ -17,13 +17,13 @@ package org.apache.geode.redis.internal.executor.cluster;
 
 import org.apache.geode.cache.EntryOperation;
 import org.apache.geode.cache.PartitionResolver;
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisData;
+import org.apache.geode.redis.internal.data.RedisKey;
 
-public class RedisPartitionResolver implements PartitionResolver<ByteArrayWrapper, RedisData> {
+public class RedisPartitionResolver implements PartitionResolver<RedisKey, RedisData> {
 
   @Override
-  public Object getRoutingObject(EntryOperation<ByteArrayWrapper, RedisData> opDetails) {
+  public Object getRoutingObject(EntryOperation<RedisKey, RedisData> opDetails) {
     return opDetails.getKey().getRoutingId();
   }
 

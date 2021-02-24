@@ -41,8 +41,8 @@ import org.apache.geode.cache.partition.PartitionRegionInfo;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.cluster.BucketRetrievalFunction;
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisData;
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
@@ -79,7 +79,7 @@ public class ClusterExecutor extends AbstractExecutor {
 
   @SuppressWarnings("unchecked")
   private RedisResponse getSlots(ExecutionHandlerContext ctx) {
-    Region<ByteArrayWrapper, RedisData> dataRegion = ctx.getRegionProvider().getDataRegion();
+    Region<RedisKey, RedisData> dataRegion = ctx.getRegionProvider().getDataRegion();
 
     // Really only need this in situations where the cluster is empty and no data has been
     // added yet.

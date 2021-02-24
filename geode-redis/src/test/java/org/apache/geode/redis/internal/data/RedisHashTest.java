@@ -106,7 +106,7 @@ public class RedisHashTest {
   @SuppressWarnings("unchecked")
   @Test
   public void hset_stores_delta_that_is_stable() throws IOException {
-    Region<ByteArrayWrapper, RedisData> region = Mockito.mock(Region.class);
+    Region<RedisKey, RedisData> region = Mockito.mock(Region.class);
     RedisHash o1 = createRedisHash("k1", "v1", "k2", "v2");
     ByteArrayWrapper k3 = createByteArrayWrapper("k3");
     ByteArrayWrapper v3 = createByteArrayWrapper("v3");
@@ -128,7 +128,7 @@ public class RedisHashTest {
   @SuppressWarnings("unchecked")
   @Test
   public void hdel_stores_delta_that_is_stable() throws IOException {
-    Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
+    Region<RedisKey, RedisData> region = mock(Region.class);
     RedisHash o1 = createRedisHash("k1", "v1", "k2", "v2");
     ByteArrayWrapper k1 = createByteArrayWrapper("k1");
     ArrayList<ByteArrayWrapper> removes = new ArrayList<>();
@@ -148,7 +148,7 @@ public class RedisHashTest {
   @SuppressWarnings("unchecked")
   @Test
   public void setExpirationTimestamp_stores_delta_that_is_stable() throws IOException {
-    Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
+    Region<RedisKey, RedisData> region = mock(Region.class);
     RedisHash o1 = createRedisHash("k1", "v1", "k2", "v2");
     o1.setExpirationTimestamp(region, null, 999);
     assertThat(o1.hasDelta()).isTrue();

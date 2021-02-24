@@ -15,6 +15,7 @@
 package org.apache.geode.redis.internal.executor.string;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -25,7 +26,7 @@ public class GetExecutor extends StringExecutor {
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
 
-    ByteArrayWrapper key = command.getKey();
+    RedisKey key = command.getKey();
     RedisStringCommands redisStringCommands = getRedisStringCommands(context);
     ByteArrayWrapper result = redisStringCommands.get(key);
 

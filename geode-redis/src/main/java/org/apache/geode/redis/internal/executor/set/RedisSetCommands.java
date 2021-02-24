@@ -25,31 +25,32 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.RedisKey;
 
 public interface RedisSetCommands {
 
-  long sadd(ByteArrayWrapper key, ArrayList<ByteArrayWrapper> membersToAdd);
+  long sadd(RedisKey key, ArrayList<ByteArrayWrapper> membersToAdd);
 
-  long srem(ByteArrayWrapper key, ArrayList<ByteArrayWrapper> membersToRemove);
+  long srem(RedisKey key, ArrayList<ByteArrayWrapper> membersToRemove);
 
-  Set<ByteArrayWrapper> smembers(ByteArrayWrapper key);
+  Set<ByteArrayWrapper> smembers(RedisKey key);
 
-  Set<ByteArrayWrapper> internalsmembers(ByteArrayWrapper key);
+  Set<ByteArrayWrapper> internalsmembers(RedisKey key);
 
-  int scard(ByteArrayWrapper key);
+  int scard(RedisKey key);
 
-  boolean sismember(ByteArrayWrapper key, ByteArrayWrapper member);
+  boolean sismember(RedisKey key, ByteArrayWrapper member);
 
-  Collection<ByteArrayWrapper> srandmember(ByteArrayWrapper key, int count);
+  Collection<ByteArrayWrapper> srandmember(RedisKey key, int count);
 
-  Collection<ByteArrayWrapper> spop(ByteArrayWrapper key, int popCount);
+  Collection<ByteArrayWrapper> spop(RedisKey key, int popCount);
 
-  Pair<BigInteger, List<Object>> sscan(ByteArrayWrapper key, Pattern matchPattern, int count,
+  Pair<BigInteger, List<Object>> sscan(RedisKey key, Pattern matchPattern, int count,
       BigInteger cursor);
 
-  int sunionstore(ByteArrayWrapper destination, ArrayList<ByteArrayWrapper> setKeys);
+  int sunionstore(RedisKey destination, ArrayList<RedisKey> setKeys);
 
-  int sinterstore(ByteArrayWrapper destination, ArrayList<ByteArrayWrapper> setKeys);
+  int sinterstore(RedisKey destination, ArrayList<RedisKey> setKeys);
 
-  int sdiffstore(ByteArrayWrapper destination, ArrayList<ByteArrayWrapper> setKeys);
+  int sdiffstore(RedisKey destination, ArrayList<RedisKey> setKeys);
 }

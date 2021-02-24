@@ -28,6 +28,7 @@ import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.RedisKey;
 
 public class BucketRetrievalFunction implements InternalFunction<Void> {
 
@@ -56,7 +57,7 @@ public class BucketRetrievalFunction implements InternalFunction<Void> {
 
   @Override
   public void execute(FunctionContext<Void> context) {
-    Region<ByteArrayWrapper, ByteArrayWrapper> region =
+    Region<RedisKey, ByteArrayWrapper> region =
         context.getCache().getRegion(RegionProvider.REDIS_DATA_REGION);
 
     LocalDataSet local = (LocalDataSet) PartitionRegionHelper.getLocalPrimaryData(region);

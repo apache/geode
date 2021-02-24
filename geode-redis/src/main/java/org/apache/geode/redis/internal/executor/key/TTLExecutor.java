@@ -17,7 +17,7 @@ package org.apache.geode.redis.internal.executor.key;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
@@ -28,7 +28,7 @@ public class TTLExecutor extends AbstractExecutor {
   @Override
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
-    ByteArrayWrapper key = command.getKey();
+    RedisKey key = command.getKey();
 
     RedisKeyCommands redisKeyCommands = getRedisKeyCommands(context);
     long result = redisKeyCommands.pttl(key);

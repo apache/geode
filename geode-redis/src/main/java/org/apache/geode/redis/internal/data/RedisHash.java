@@ -107,7 +107,7 @@ public class RedisHash extends AbstractRedisData {
     }
   }
 
-  public int hset(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
+  public int hset(Region<RedisKey, RedisData> region, RedisKey key,
       List<ByteArrayWrapper> fieldsToSet, boolean nx) {
     int fieldsAdded = 0;
     AddsDeltaInfo deltaInfo = null;
@@ -140,7 +140,7 @@ public class RedisHash extends AbstractRedisData {
     return fieldsAdded;
   }
 
-  public int hdel(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
+  public int hdel(Region<RedisKey, RedisData> region, RedisKey key,
       List<ByteArrayWrapper> fieldsToRemove) {
     int fieldsRemoved = 0;
     RemsDeltaInfo deltaInfo = null;
@@ -244,7 +244,7 @@ public class RedisHash extends AbstractRedisData {
     return scanResult;
   }
 
-  public long hincrby(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
+  public long hincrby(Region<RedisKey, RedisData> region, RedisKey key,
       ByteArrayWrapper field, long increment) throws NumberFormatException, ArithmeticException {
     ByteArrayWrapper oldValue = hash.get(field);
     if (oldValue == null) {
@@ -279,7 +279,7 @@ public class RedisHash extends AbstractRedisData {
     return value;
   }
 
-  public BigDecimal hincrbyfloat(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
+  public BigDecimal hincrbyfloat(Region<RedisKey, RedisData> region, RedisKey key,
       ByteArrayWrapper field, BigDecimal increment) throws NumberFormatException {
     ByteArrayWrapper oldValue = hash.get(field);
     if (oldValue == null) {

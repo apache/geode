@@ -33,8 +33,8 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.redis.internal.RegionProvider;
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisData;
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.SerializableCallableIF;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -86,9 +86,9 @@ public class RedisPartitionResolverDUnitTest {
       jedis1.set(key, "value-" + i);
     }
 
-    Map<ByteArrayWrapper, Integer> keyToBucketMap1 = getKeyToBucketMap(server1);
-    Map<ByteArrayWrapper, Integer> keyToBucketMap2 = getKeyToBucketMap(server2);
-    Map<ByteArrayWrapper, Integer> keyToBucketMap3 = getKeyToBucketMap(server3);
+    Map<RedisKey, Integer> keyToBucketMap1 = getKeyToBucketMap(server1);
+    Map<RedisKey, Integer> keyToBucketMap2 = getKeyToBucketMap(server2);
+    Map<RedisKey, Integer> keyToBucketMap3 = getKeyToBucketMap(server3);
 
     Set<Integer> buckets1 = new HashSet<>(keyToBucketMap1.values());
     Set<Integer> buckets2 = new HashSet<>(keyToBucketMap2.values());
@@ -119,18 +119,18 @@ public class RedisPartitionResolverDUnitTest {
         (long) redisServerPort3);
   }
 
-  private Map<ByteArrayWrapper, Integer> getKeyToBucketMap(MemberVM vm) {
+  private Map<RedisKey, Integer> getKeyToBucketMap(MemberVM vm) {
     return vm.invoke(
-        (SerializableCallableIF<Map<ByteArrayWrapper, Integer>>) () -> {
-          Region<ByteArrayWrapper, RedisData> region =
+        (SerializableCallableIF<Map<RedisKey, Integer>>) () -> {
+          Region<RedisKey, RedisData> region =
               RedisClusterStartupRule.getCache().getRegion(RegionProvider.REDIS_DATA_REGION);
 
           LocalDataSet local = (LocalDataSet) PartitionRegionHelper.getLocalPrimaryData(region);
-          Map<ByteArrayWrapper, Integer> keyMap = new HashMap<>();
+          Map<RedisKey, Integer> keyMap = new HashMap<>();
 
           for (Object key : local.localKeys()) {
             int id = local.getProxy().getKeyInfo(key).getBucketId();
-            keyMap.put((ByteArrayWrapper) key, id);
+            keyMap.put((RedisKey) key, id);
           }
 
           return keyMap;
