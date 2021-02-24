@@ -128,11 +128,7 @@ public class DistributedCacheOperationTest {
     message.process(dm);
 
     verify(message, never()).basicProcess(dm, region);
-    verify(message).sendReply(
-        eq(sender),
-        eq(processorId),
-        eq(null),
-        eq(dm));
+    verify(message).sendReply(sender, processorId, null, dm);
   }
 
   @Test
@@ -153,11 +149,7 @@ public class DistributedCacheOperationTest {
 
     assertThat(message.closed).isTrue();
     verify(message, never()).basicProcess(dm, region);
-    verify(message).sendReply(
-        eq(sender),
-        eq(processorId),
-        eq(null),
-        eq(dm));
+    verify(message).sendReply(sender, processorId, null, dm);
   }
 
   @Test
@@ -202,18 +194,14 @@ public class DistributedCacheOperationTest {
 
     message.process(dm);
 
-    verify(message, never()).sendReply(
-        eq(sender),
-        eq(processorId),
-        eq(null),
-        eq(dm));
+    verify(message, never()).sendReply(sender, processorId, null, dm);
   }
 
   static class TestOperation extends DistributedCacheOperation {
     boolean endOperationInvoked;
     DistributedRegion region;
 
-    TestOperation(CacheEvent event) {
+    TestOperation(CacheEvent<?, ?> event) {
       super(event);
     }
 
