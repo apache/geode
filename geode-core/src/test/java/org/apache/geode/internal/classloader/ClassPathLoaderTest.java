@@ -41,7 +41,7 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.deployment.JarDeploymentService;
+import org.apache.geode.deployment.internal.JarDeploymentService;
 import org.apache.geode.deployment.internal.JarDeploymentServiceFactory;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.test.compiler.ClassBuilder;

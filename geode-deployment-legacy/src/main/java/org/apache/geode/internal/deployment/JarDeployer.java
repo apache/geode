@@ -19,14 +19,10 @@ import static java.util.stream.Collectors.toSet;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,7 +39,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.internal.utils.JarFileUtils;
 
 public class JarDeployer implements Serializable {
@@ -74,20 +69,19 @@ public class JarDeployer implements Serializable {
    * @return the DeployedJar that was written from jarBytes, or null if those bytes matched the
    *         latest deployed version
    */
-  public DeployedJar deployWithoutRegistering(final File stagedJar)
+  public DeployedJar deployWithoutRegistering(String artifactId, final File stagedJar)
       throws IOException {
     lock.lock();
-    String stagedJarName = stagedJar.getName();
-    String artifactId = JarFileUtils.getArtifactId(stagedJarName);
     try {
-      boolean shouldDeployNewVersion = shouldDeployNewVersion(artifactId, stagedJar);
+      boolean shouldDeployNewVersion =
+          shouldDeployNewVersion(artifactId, stagedJar);
       if (!shouldDeployNewVersion) {
-        logger.debug("No need to deploy a new version of {}", stagedJarName);
+        logger.debug("No need to deploy a new version of {}", stagedJar.getName());
         return null;
       }
 
       verifyWritableDeployDirectory();
-      Path deployedFile = getNextVersionedJarFile(stagedJarName).toPath();
+      Path deployedFile = getNextVersionedJarFile(stagedJar.getName()).toPath();
       FileUtils.copyFile(stagedJar, deployedFile.toFile());
 
       return new DeployedJar(deployedFile.toFile());
@@ -95,44 +89,6 @@ public class JarDeployer implements Serializable {
       lock.unlock();
     }
   }
-
-  /**
-   * Get a list of all currently deployed jars.
-   *
-   * @return The list of DeployedJars
-   */
-  private List<DeployedJar> findDeployedJars() {
-    return new ArrayList<>(getDeployedJars().values());
-  }
-
-  /**
-   * @param backupDirectory path to the directory to backup jars to.
-   * @return a map of paths to the backup to the source file.
-   * @throws IOException if the jars cannot be copied to backupDirectory
-   */
-  public Map<Path, File> backupJars(Path backupDirectory) throws IOException {
-    try {
-      // Suspend any user deployed jar file updates during this backup.
-      lock.lock();
-
-      Map<Path, File> backupDefinition = new HashMap<>();
-
-      List<DeployedJar> jarList = findDeployedJars();
-      for (DeployedJar jar : jarList) {
-        File source = jar.getFile();
-        String sourceFileName = source.getName();
-        Path destination = backupDirectory.resolve(sourceFileName);
-        Files.copy(source.toPath(), destination, StandardCopyOption.COPY_ATTRIBUTES);
-        backupDefinition.put(destination, source);
-        logger.debug("File: " + source.getName() + " backed up to: " + destination);
-      }
-
-      return backupDefinition;
-    } finally {
-      lock.unlock();
-    }
-  }
-
 
   protected File getNextVersionedJarFile(String unversionedJarName) {
     int maxVersion = getMaxVersion(JarFileUtils.getArtifactId(unversionedJarName));
@@ -267,18 +223,14 @@ public class JarDeployer implements Serializable {
   }
 
 
-  public void registerNewVersions(Map<String, DeployedJar> deployedJars)
+  public void registerNewVersions(String artifactId, DeployedJar deployedJar)
       throws ClassNotFoundException {
     lock.lock();
     try {
-      for (Map.Entry<String, DeployedJar> mapEntry : deployedJars.entrySet()) {
-        DeployedJar deployedJar = mapEntry.getValue();
-        if (deployedJar != null) {
-          logger.info("Registering new version of jar: {}", mapEntry);
-          DeployedJar oldJar = this.deployedJars.put(deployedJar.getArtifactId(), deployedJar);
-          ClassPathLoader.getLatest().chainClassloader(deployedJar.getFile(),
-              deployedJar.getArtifactId());
-        }
+      if (deployedJar != null) {
+        logger.info("Registering new version of jar: {}", deployedJar);
+        DeployedJar oldJar = this.deployedJars.put(artifactId, deployedJar);
+        ClassPathLoader.getLatest().chainClassloader(deployedJar.getFile(), artifactId);
       }
     } finally {
       lock.unlock();
@@ -292,39 +244,33 @@ public class JarDeployer implements Serializable {
    * the file, no matter how the original file is named. This is to allow server on startup to
    * know what's the last version that gets deployed without cluster configuration.
    *
-   * @param stagedJarFiles A map of Files which have been staged in another location and are ready
-   *        to be deployed as a unit.
+   * @param stagedJarFile A File which have been staged in another location and is ready
+   *        to be deployed.
    * @return An array of newly created JAR class loaders. Entries will be null for an JARs that were
    *         already deployed.
    * @throws IOException When there's an error saving the JAR file to disk
    */
-  public Map<String, DeployedJar> deploy(final Set<File> stagedJarFiles)
+  public DeployedJar deploy(String artifactId, final File stagedJarFile)
       throws IOException, ClassNotFoundException {
-    Map<String, DeployedJar> deployedJars = new HashMap<>();
 
-    for (File jar : stagedJarFiles) {
-      if (!JarFileUtils.hasValidJarContent(jar)) {
-        throw new IllegalArgumentException(
-            "File does not contain valid JAR content: " + jar.getName());
-      }
+    if (!JarFileUtils.hasValidJarContent(stagedJarFile)) {
+      throw new IllegalArgumentException(
+          "File does not contain valid JAR content: " + stagedJarFile.getName());
     }
 
     lock.lock();
     try {
-      for (File stagedJarFile : stagedJarFiles) {
-        DeployedJar deployedJar = deployWithoutRegistering(stagedJarFile);
-        deployedJars.put(JarFileUtils.getArtifactId(stagedJarFile.getName()), deployedJar);
-      }
+      DeployedJar deployedJar = deployWithoutRegistering(artifactId, stagedJarFile);
+      registerNewVersions(artifactId, deployedJar);
 
-      registerNewVersions(deployedJars);
-      return deployedJars;
+      return deployedJar;
     } finally {
       lock.unlock();
     }
   }
 
-  private boolean shouldDeployNewVersion(String artifactId, File stagedJar) throws IOException {
-    DeployedJar oldDeployedJar = this.deployedJars.get(artifactId);
+  private boolean shouldDeployNewVersion(String deploymentName, File stagedJar) throws IOException {
+    DeployedJar oldDeployedJar = this.deployedJars.get(deploymentName);
 
     if (oldDeployedJar == null) {
       return true;
@@ -347,30 +293,27 @@ public class JarDeployer implements Serializable {
   /**
    * Undeploy the jar file identified by the given artifact ID.
    *
-   * @param deployment The Deployment to undeploy
+   * @param artifactId The artifact to undeploy
    * @return The path to the location on disk where the JAR file had been deployed
    * @throws IOException If there's a problem deleting the file
    */
-  public String undeploy(final Deployment deployment) throws IOException {
+  public String undeploy(String artifactId) throws IOException {
     lock.lock();
-    logger.debug("JarDeployer Undeploying Deployment: {}", deployment);
+    logger.debug("JarDeployer Undeploying artifactId: {}", artifactId);
 
     try {
-      String artifactId = JarFileUtils.getArtifactId(deployment.getFileName());
-      DeployedJar deployedJar = deployedJars.get(artifactId);
-      if (deployedJar == null) {
-        throw new IllegalArgumentException(deployment.getDeploymentName() + " not deployed");
-      }
-
       logger.debug("JarDeployer deployedJars list before remove: {}",
           Arrays.toString(deployedJars.keySet().toArray()));
 
       // remove the deployedJar
-      deployedJars.remove(artifactId);
+      DeployedJar deployedJar = deployedJars.remove(artifactId);
+      if (deployedJar == null) {
+        throw new IllegalArgumentException(artifactId + " not deployed");
+      }
       logger.debug("JarDeployer deployedJars list after remove: {}",
           Arrays.toString(deployedJars.keySet().toArray()));
-      ClassPathLoader.getLatest().unloadClassloaderForArtifact(deployment.getDeploymentName());
-      deleteAllVersionsOfJar(deployment.getFileName());
+      ClassPathLoader.getLatest().unloadClassloaderForArtifact(artifactId);
+      deleteAllVersionsOfJar(deployedJar.getFile().getName());
       return deployedJar.getFileCanonicalPath();
     } finally {
       lock.unlock();

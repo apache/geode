@@ -69,7 +69,7 @@ public class JarDeployerFileTest {
     File version1JarFile = stagedJarFileWithClass(originalJarFileName, "ClassA");
 
     DeployedJar version1DeployedJar =
-        jarDeployer.deployWithoutRegistering(version1JarFile);
+        jarDeployer.deployWithoutRegistering(artifactId, version1JarFile);
 
     String version1DeploymentSequenceIdentifier = ".v1";
     String expectedVersion1DeployedJarFileName =
@@ -84,7 +84,7 @@ public class JarDeployerFileTest {
     File version2JarFile = stagedJarFileWithClass(originalJarFileName, "ClassB");
 
     DeployedJar version2DeployedJar =
-        jarDeployer.deployWithoutRegistering(version2JarFile);
+        jarDeployer.deployWithoutRegistering(artifactId, version2JarFile);
 
     String version2DeploymentSequenceIdentifier = ".v2";
     String expectedVersion2DeployedJarFileName =
@@ -114,7 +114,7 @@ public class JarDeployerFileTest {
     File version1JarFile = stagedJarFileWithClass(version1JarName, "ClassA");
 
     DeployedJar version1DeployedJar =
-        jarDeployer.deployWithoutRegistering(version1JarFile);
+        jarDeployer.deployWithoutRegistering(artifactId, version1JarFile);
 
     assertThat(version1DeployedJar.getFile())
         .as("DeployedJar.getFile() for jar file %s", version1JarName)
@@ -126,7 +126,7 @@ public class JarDeployerFileTest {
     File version2JarFile = stagedJarFileWithClass(version2JarName, "ClassA");
 
     DeployedJar version2DeployedJar =
-        jarDeployer.deployWithoutRegistering(version2JarFile);
+        jarDeployer.deployWithoutRegistering(artifactId, version2JarFile);
 
     assertThat(version2DeployedJar.getFile())
         .as("DeployedJar.getFile() for jar file %s", version2JarName)
@@ -311,23 +311,28 @@ public class JarDeployerFileTest {
     final byte[] jarBytes = classBuilder.createJarFromName("JarDeployerDUnitDTID");
     File jarFile = stagedFileWithContent("JarDeployerIntegrationTest.jar", jarBytes);
 
+    String artifactId = JarFileUtils.getArtifactId(jarFile.getName());
+
     // Test to verify that deployment fails if the directory doesn't exist.
     assertThatThrownBy(
-        () -> jarDeployer.deployWithoutRegistering(jarFile))
-            .isInstanceOf(IOException.class)
-            .hasMessageContaining("Unable to write to deploy directory:");
+        () -> jarDeployer.deployWithoutRegistering(JarFileUtils.getArtifactId(jarFile.getName()),
+            jarFile))
+                .isInstanceOf(IOException.class)
+                .hasMessageContaining("Unable to write to deploy directory:");
   }
 
   @Test
   public void testVersionNumberCreation() throws Exception {
     byte[] jarBytes = classBuilder.createJarFromName("ClassA");
     File jarFile = stagedFileWithContent("myJar.jar", jarBytes);
-    File deployedJarFile = jarDeployer.deployWithoutRegistering(jarFile).getFile();
+    File deployedJarFile = jarDeployer
+        .deployWithoutRegistering(JarFileUtils.getArtifactId(jarFile.getName()), jarFile).getFile();
 
     assertThat(deployedJarFile.getName()).isEqualTo("myJar.v1.jar");
 
     File secondDeployedJarFile =
-        jarDeployer.deployWithoutRegistering(jarFile).getFile();
+        jarDeployer.deployWithoutRegistering(JarFileUtils.getArtifactId(jarFile.getName()), jarFile)
+            .getFile();
 
     assertThat(secondDeployedJarFile.getName()).isEqualTo("myJar.v2.jar");
   }

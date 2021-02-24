@@ -34,7 +34,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
-import org.apache.geode.deployment.JarDeploymentService;
+import org.apache.geode.deployment.internal.JarDeploymentService;
 import org.apache.geode.deployment.internal.JarDeploymentServiceFactory;
 import org.apache.geode.internal.util.CollectionUtils;
 import org.apache.geode.management.configuration.Deployment;

@@ -370,7 +370,6 @@ javadoc/org/apache/geode/cache/execute/FunctionContext.html
 javadoc/org/apache/geode/cache/execute/FunctionException.html
 javadoc/org/apache/geode/cache/execute/FunctionInvocationTargetException.html
 javadoc/org/apache/geode/cache/execute/FunctionService.html
-javadoc/org/apache/geode/cache/execute/FunctionServiceUtil.html
 javadoc/org/apache/geode/cache/execute/RegionFunctionContext.html
 javadoc/org/apache/geode/cache/execute/ResultCollector.html
 javadoc/org/apache/geode/cache/execute/ResultSender.html
@@ -588,10 +587,6 @@ javadoc/org/apache/geode/datasource/PooledDataSourceFactory.html
 javadoc/org/apache/geode/datasource/package-frame.html
 javadoc/org/apache/geode/datasource/package-summary.html
 javadoc/org/apache/geode/datasource/package-tree.html
-javadoc/org/apache/geode/deployment/JarDeploymentService.html
-javadoc/org/apache/geode/deployment/package-frame.html
-javadoc/org/apache/geode/deployment/package-summary.html
-javadoc/org/apache/geode/deployment/package-tree.html
 javadoc/org/apache/geode/distributed/AbstractLauncher.ServiceState.html
 javadoc/org/apache/geode/distributed/AbstractLauncher.Status.html
 javadoc/org/apache/geode/distributed/AbstractLauncher.html

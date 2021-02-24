@@ -33,7 +33,7 @@ import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.internal.execute.FunctionToFileTracker;
-import org.apache.geode.deployment.JarDeploymentService;
+import org.apache.geode.deployment.internal.JarDeploymentService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.deployment.DeployedJar;
 import org.apache.geode.internal.deployment.JarDeployer;
@@ -63,32 +63,23 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
   @Override
   public synchronized ServiceResult<Deployment> deploy(Deployment deployment) {
     try {
-      Map<String, DeployedJar> deployedJars =
-          jarDeployer.deploy(Collections.singleton(deployment.getFile()));
+      DeployedJar deployedJar =
+          jarDeployer.deploy(deployment.getDeploymentName(), deployment.getFile());
       // This means that the jars are already deployed, so we call it a Success.
-      if (deployedJars == null || deployedJars.isEmpty()) {
+      if (deployedJar == null) {
         logger.info("Jar already been deployed: {}", deployment);
         // null is returned when already deployed to satisfy existing public API constraints
         return Success.of(null);
       } else {
         // This will only iterate once since deploy is given a singleton list.
-        for (Map.Entry<String, DeployedJar> deployedJarEntry : deployedJars.entrySet()) {
-          DeployedJar deployedJar = deployedJarEntry.getValue();
-          if (deployedJar == null) {
-            // null is returned when already deployed to satisfy existing public API constraints
-            return Success.of(null);
-          }
-          logger.debug("Adding Deployment: {} with DeployedJar: {}", deployment, deployedJar);
-          Deployment deploymentCopy = new Deployment(deployment, deployedJar.getFile());
-          deploymentCopy.setDeployedTime(Instant.now().toString());
-          deployments.put(deploymentCopy.getDeploymentName(), deploymentCopy);
-          logger.debug("Deployments List size after add: {}", deployments.size());
-          logger.debug("Deployment copy to return: {}", deploymentCopy);
-          functionToFileTracker.registerFunctions(deploymentCopy);
-          return Success.of(deploymentCopy);
-        }
-        // null is returned when already deployed to satisfy existing public API constraints
-        return Success.of(null);
+        logger.debug("Adding Deployment: {} with DeployedJar: {}", deployment, deployedJar);
+        Deployment deploymentCopy = new Deployment(deployment, deployedJar.getFile());
+        deploymentCopy.setDeployedTime(Instant.now().toString());
+        deployments.put(deploymentCopy.getDeploymentName(), deploymentCopy);
+        logger.debug("Deployments List size after add: {}", deployments.size());
+        logger.debug("Deployment copy to return: {}", deploymentCopy);
+        functionToFileTracker.registerFunctions(deploymentCopy);
+        return Success.of(deploymentCopy);
       }
     } catch (IOException | ClassNotFoundException e) {
       return Failure.of(e);
@@ -108,16 +99,14 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
       logger.debug("Deployments List size before undeploy: {}", deployments.size());
       logger.debug("Deployment name being undeployed: {}", deploymentName);
 
-      Deployment deployment = deployments.get(deploymentName);
-      logger.debug("Found deployment to remove: {}", deployment);
+      Deployment removedDeployment = deployments.remove(deploymentName);
+      logger.debug("Removed Deployment: {}", removedDeployment);
 
-      if (deployment == null) {
+      if (removedDeployment == null) {
         return Failure.of("No deployment found for name: " + deploymentName);
       }
-
-      Deployment removedDeployment = deployments.remove(deploymentName);
       logger.debug("Deployments List size after remove: {}", deployments.size());
-      String undeployedPath = jarDeployer.undeploy(deployment);
+      String undeployedPath = jarDeployer.undeploy(removedDeployment.getDeploymentName());
       logger.debug("Jar at path: {} removed by JarDeployer", undeployedPath);
       return Success.of(removedDeployment);
     } catch (IOException e) {
@@ -191,11 +180,16 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
     logger.debug("Loading jars from Working Directory");
     Map<String, DeployedJar> latestVersionOfJarsOnDisk = jarDeployer.getLatestVersionOfJarsOnDisk();
     try {
-      jarDeployer.registerNewVersions(latestVersionOfJarsOnDisk);
-      for (DeployedJar deployedJar : latestVersionOfJarsOnDisk.values()) {
+      List<Deployment> deploymentList = new LinkedList<>();
+      for (Map.Entry<String, DeployedJar> entry : latestVersionOfJarsOnDisk.entrySet()) {
+        DeployedJar deployedJar = entry.getValue();
+        jarDeployer.registerNewVersions(entry.getKey(), deployedJar);
         logger.debug("Deploying DeployedJar: {} from working directory", deployedJar);
         Deployment deployment = createDeployment(deployedJar);
+        deploymentList.add(deployment);
         deployments.put(deployment.getDeploymentName(), deployment);
+      }
+      for (Deployment deployment : deploymentList) {
         functionToFileTracker.registerFunctions(deployment);
       }
     } catch (ClassNotFoundException e) {

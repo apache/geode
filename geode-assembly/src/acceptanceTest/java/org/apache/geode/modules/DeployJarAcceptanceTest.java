@@ -190,7 +190,8 @@ public class DeployJarAcceptanceTest {
 
     System.out.println(GfshScript
         .of(getLocatorGFSHConnectionString(),
-            "create disk-store --name=ExampleDiskStore --dir=/tmp")
+            "create disk-store --name=ExampleDiskStore --dir="
+                + stagingTempDir.newFolder().getCanonicalPath())
         .execute(gfshRule).getOutputText());
 
     System.out.println(GfshScript
