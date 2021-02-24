@@ -124,8 +124,9 @@ public class TombstoneDUnitTest implements Serializable {
     VM server1 = VM.getVM(0);
     VM server2 = VM.getVM(1);
     final int FAR_INTO_THE_FUTURE = 1000000; // 1 million millis into the future
-
     final int count = 10;
+
+    // Create a cache and load some boiler plate entries
     server1.invoke(() -> {
       createCacheAndRegion(RegionShortcut.REPLICATE_PERSISTENT);
       for (int i = 0; i < count; i++) {
@@ -136,19 +137,31 @@ public class TombstoneDUnitTest implements Serializable {
     server2.invoke(() -> createCacheAndRegion(RegionShortcut.REPLICATE));
 
     server1.invoke(() -> {
+
+      // Now that we have a cache and a region specifically with data, we can start the real work
       TombstoneService.TombstoneSweeper tombstoneSweeper =
           ((InternalCache) cache).getTombstoneService().getSweeper((LocalRegion) region);
 
+      // Get one of the entries
       RegionEntry regionEntry = ((LocalRegion) region).getRegionEntry("K0");
+
+      /*
+       * Create a version tag with a timestamp far off in the future...
+       * It should be in the near past, but we are testing that a future tombstone will be cleared
+       */
       VersionTag<?> versionTag = regionEntry.getVersionStamp().asVersionTag();
       versionTag.setVersionTimeStamp(System.currentTimeMillis() + FAR_INTO_THE_FUTURE);
 
+      // Create the forged tombstone with the versionTag from the future
       TombstoneService.Tombstone modifiedTombstone =
           new TombstoneService.Tombstone(regionEntry, (LocalRegion) region,
               versionTag);
+
+      // Add it to the list of tombstones so that when checkOldestUnexpired is called it will see it
       tombstoneSweeper.tombstones.add(modifiedTombstone);
       tombstoneSweeper.checkOldestUnexpired(System.currentTimeMillis());
-      // Send tombstone gc message to vm1.
+
+      // Validate that the tombstone was cleared.
       assertThat(tombstoneSweeper.getOldestTombstoneTime()).isEqualTo(0);
     });
   }

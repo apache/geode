@@ -425,8 +425,8 @@ public class TombstoneService {
     }
 
     @Override
-    protected boolean hasExpired(long msTillHeadTombstoneExpires) {
-      return msTillHeadTombstoneExpires <= 0;
+    protected boolean hasExpired(long msUntilTombstoneExpires) {
+      return msUntilTombstoneExpires <= 0;
     }
 
     @Override
@@ -746,7 +746,7 @@ public class TombstoneService {
     }
 
     @Override
-    protected boolean hasExpired(long msTillHeadTombstoneExpires) {
+    protected boolean hasExpired(long msUntilTombstoneExpires) {
       if (testHook_forceExpirationCount > 0) {
         testHook_forceExpirationCount--;
         return true;
@@ -756,7 +756,7 @@ public class TombstoneService {
        * making the system fault tolerant in the case that there are large clock jumps or
        * unrealistically large timestamps.
        */
-      return msTillHeadTombstoneExpires <= 0 || msTillHeadTombstoneExpires > EXPIRY_TIME;
+      return msUntilTombstoneExpires <= 0 || msUntilTombstoneExpires > EXPIRY_TIME;
     }
 
     @Override
@@ -1130,7 +1130,7 @@ public class TombstoneService {
 
     protected abstract void handleNoUnexpiredTombstones();
 
-    protected abstract boolean hasExpired(long msTillTombstoneExpires);
+    protected abstract boolean hasExpired(long msUntilTombstoneExpires);
 
     protected abstract void expireTombstone(Tombstone tombstone);
 
