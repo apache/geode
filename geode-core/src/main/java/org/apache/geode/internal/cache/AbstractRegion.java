@@ -742,7 +742,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
         if (!isPdxTypesRegion) {
           // Make sure we are distributing to only those senders whose id
           // is available on this region and whose state is running
-          if (allGatewaySenderIds.contains(sender.getId()) && sender.isRunning()) {
+          if (hasRunningGatewaySender(allGatewaySenders, sender)) {
             allRemoteDSIds.add(sender.getRemoteDSId());
           }
         } else { // this else is for PDX region
@@ -1897,13 +1897,12 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     PoolImpl find(String poolName);
   }
 
-  @VisibleForTesting
-  ConcurrentHashMap<RegionEntry, EntryExpiryTask> getEntryExpiryTasks() {
-    return entryExpiryTasks;
+  static boolean hasRunningGatewaySender(Set<GatewaySender> senders, GatewaySender sender) {
+    return senders.contains(sender) && sender.isRunning();
   }
 
   @VisibleForTesting
-  static boolean hasRunningGatewaySender(Set<GatewaySender> senders, GatewaySender sender) {
-    return senders.contains(sender) && sender.isRunning();
+  ConcurrentHashMap<RegionEntry, EntryExpiryTask> getEntryExpiryTasks() {
+    return entryExpiryTasks;
   }
 }
