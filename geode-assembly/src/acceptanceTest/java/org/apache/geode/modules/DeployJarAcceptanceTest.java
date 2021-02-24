@@ -26,7 +26,6 @@ import java.io.IOException;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
@@ -107,7 +106,6 @@ public class DeployJarAcceptanceTest {
   }
 
   @Test
-  @Ignore
   public void testUndeployWithNothingDeployed() {
     assertThat(
         GfshScript.of(getLocatorGFSHConnectionString(),
@@ -182,7 +180,6 @@ public class DeployJarAcceptanceTest {
   }
 
   @Test
-  @Ignore
   public void testDeployPojo() throws IOException {
     JarBuilder jarBuilder = new JarBuilder();
     File functionSource = loadTestResource("/example/test/function/PojoFunction.java");
@@ -192,7 +189,8 @@ public class DeployJarAcceptanceTest {
     jarBuilder.buildJar(outputJar, pojoSource, functionSource);
 
     System.out.println(GfshScript
-        .of(getLocatorGFSHConnectionString(), "create disk-store --name=ExampleDiskStore --dir=/")
+        .of(getLocatorGFSHConnectionString(),
+            "create disk-store --name=ExampleDiskStore --dir=/tmp")
         .execute(gfshRule).getOutputText());
 
     System.out.println(GfshScript
@@ -208,18 +206,19 @@ public class DeployJarAcceptanceTest {
         GfshScript.of(getLocatorGFSHConnectionString(), "execute function --id=PojoFunction")
             .execute(gfshRule).getOutputText());
 
-    System.out.println(GfshScript
+    assertThat(GfshScript
         .of(getLocatorGFSHConnectionString(), "query --query=\"SELECT * FROM /ExampleRegion\"")
-        .execute(gfshRule).getOutputText());
+        .execute(gfshRule).getOutputText()).contains("John");
 
     GfshScript.of(getLocatorGFSHConnectionString(), "stop server --name=server").execute(gfshRule);
 
     GfshScript.of(getLocatorGFSHConnectionString(),
-        "start server --name=server --locators=localhost[10334]  --server-port=40404 --http-service-port=9090 --start-rest-api");
+        "start server --name=server --locators=localhost[10334]  --server-port=40404 --http-service-port=9090 --start-rest-api")
+        .execute(gfshRule);
 
-    System.out.println(GfshScript
+    assertThat(GfshScript
         .of(getLocatorGFSHConnectionString(), "query --query=\"SELECT * FROM /ExampleRegion\"")
-        .execute(gfshRule).getOutputText());
+        .execute(gfshRule).getOutputText()).contains("John");
   }
 
   private File loadTestResource(String fileName) {
