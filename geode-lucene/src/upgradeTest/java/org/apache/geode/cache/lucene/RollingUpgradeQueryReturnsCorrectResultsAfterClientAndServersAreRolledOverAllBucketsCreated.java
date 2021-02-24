@@ -17,6 +17,7 @@ package org.apache.geode.cache.lucene;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import org.apache.geode.cache.RegionShortcut;
@@ -31,6 +32,7 @@ import org.apache.geode.test.dunit.VM;
 public class RollingUpgradeQueryReturnsCorrectResultsAfterClientAndServersAreRolledOverAllBucketsCreated
     extends LuceneSearchWithRollingUpgradeDUnit {
 
+  @Ignore
   @Test
   public void test()
       throws Exception {

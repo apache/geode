@@ -142,23 +142,17 @@ public abstract class LuceneSearchWithRollingUpgradeDUnit
 
       server1 = rollServerToCurrentCreateLuceneIndexAndCreateRegion(server1, regionType,
           testingDirs[0], shortcutName, regionName, locatorPorts, reindex);
-      verifyLuceneQueryResultInEachVM(regionName, expectedRegionSize, server1);
       expectedRegionSize += 5;
-      putSerializableObjectAndVerifyLuceneQueryResult(server1, regionName, expectedRegionSize, 5,
-          15, server2, server3);
+      putSerializableObject(server1, regionName, 5, 15);
       expectedRegionSize += 5;
-      putSerializableObjectAndVerifyLuceneQueryResult(server2, regionName, expectedRegionSize, 10,
-          20, server1, server3);
+      putSerializableObject(server2, regionName, 10, 20);
 
       server2 = rollServerToCurrentCreateLuceneIndexAndCreateRegion(server2, regionType,
           testingDirs[1], shortcutName, regionName, locatorPorts, reindex);
-      verifyLuceneQueryResultInEachVM(regionName, expectedRegionSize, server2);
       expectedRegionSize += 5;
-      putSerializableObjectAndVerifyLuceneQueryResult(server2, regionName, expectedRegionSize, 15,
-          25, server1, server3);
+      putSerializableObject(server2, regionName, 15, 25);
       expectedRegionSize += 5;
-      putSerializableObjectAndVerifyLuceneQueryResult(server3, regionName, expectedRegionSize, 20,
-          30, server2, server3);
+      putSerializableObject(server3, regionName, 20, 30);
 
       server3 = rollServerToCurrentCreateLuceneIndexAndCreateRegion(server3, regionType,
           testingDirs[2], shortcutName, regionName, locatorPorts, reindex);

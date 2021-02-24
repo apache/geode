@@ -238,7 +238,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
     }
   }
 
-  protected void validateAllMembersAreTheSameVersion(PartitionedRegion region) {
+  public void validateAllMembersAreTheSameVersion(PartitionedRegion region) {
     Set<InternalDistributedMember> remoteMembers = region.getRegionAdvisor().adviseAllPRNodes();
     final Version localVersion =
         cache.getDistributionManager().getDistributionManagerId().getVersion();

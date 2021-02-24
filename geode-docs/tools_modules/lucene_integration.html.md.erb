@@ -334,6 +334,7 @@ Lucene indexes created for all members.
 # <a id="LuceneRandC" class="no-quick-link"></a>Requirements and Caveats
 
 - Join queries between regions are not supported.
+- Executing queries is possible after all members are at the same version.
 - Lucene indexes are stored in on-heap memory only.
 - Lucene queries from within transactions are not supported.
 On an attempt to query from within a transaction,

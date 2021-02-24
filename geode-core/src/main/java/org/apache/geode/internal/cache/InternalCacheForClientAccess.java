@@ -94,6 +94,7 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.management.internal.JmxManagerAdvisor;
 import org.apache.geode.management.internal.RestAgent;
@@ -1223,6 +1224,14 @@ public class InternalCacheForClientAccess implements InternalCache {
   @Override
   public void unlockDiskStore(String diskStoreName) {
 
+  }
+
+  @Override
+  public boolean hasMemberOlderThan(KnownVersion version) {
+    return getMembers().stream()
+        .map(InternalDistributedMember.class::cast)
+        .map(InternalDistributedMember::getVersion)
+        .anyMatch(v -> v.compareTo(version) < 0);
   }
 
   @Override

@@ -33,7 +33,7 @@ class DependencyConstraints implements Plugin<Project> {
 
     // These version numbers are consumed by :geode-modules-assembly:distAppServer filtering
     // Some of these are referenced below as well
-    deps.put("antlr.version", "2.7.7")
+    deps.put("antlr.version", "2.7.7")git
     deps.put("commons-io.version", "2.8.0")
     deps.put("commons-lang3.version", "3.11")
     deps.put("commons-validator.version", "1.7")
@@ -220,12 +220,13 @@ class DependencyConstraints implements Plugin<Project> {
       entry('log4j-slf4j-impl')
     }
 
-    dependencySet(group: 'org.apache.lucene', version: '6.6.6') {
+    dependencySet(group: 'org.apache.lucene', version: '7.1.0') {
       entry('lucene-analyzers-common')
       entry('lucene-analyzers-phonetic')
       entry('lucene-core')
       entry('lucene-queryparser')
       entry('lucene-test-framework')
+      entry('lucene-backward-codecs')
     }
 
     dependencySet(group: 'org.hamcrest', version: '2.2') {
