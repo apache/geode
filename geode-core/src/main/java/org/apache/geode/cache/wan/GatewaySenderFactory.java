@@ -68,7 +68,7 @@ public interface GatewaySenderFactory {
    *        to retry to get events from the gateway sender queue
    *        in order not to send a batch with incomplete transactions.
    */
-  GatewaySenderFactory setGetTransactionEventsFromQueueRetries(int retries);
+  GatewaySenderFactory setRetriesForGetTransactionEventsFromQueue(int retries);
 
   /**
    * Adds a <code>GatewayEventFilter</code>

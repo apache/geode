@@ -161,7 +161,7 @@ public interface GatewaySender {
    * Number of times to retry to get events for a transaction from the gateway sender queue when
    * group-transaction-events is set to true.
    *
-   * @see GatewaySenderFactory#setGetTransactionEventsFromQueueRetries(int) for more details.
+   * @see GatewaySenderFactory#setRetriesForGetTransactionEventsFromQueue(int) for more details.
    */
   int GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES =
       Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "get-transaction-events-from-queue-retries",
@@ -438,12 +438,12 @@ public interface GatewaySender {
   boolean mustGroupTransactionEvents();
 
   /**
-   * Returns getTransactionEventsFromQueueRetries int property for this GatewaySender.
+   * Returns retriesForGetTransactionEventsFromQueue int property for this GatewaySender.
    *
-   * @return getTransactionEventsFromQueueRetries int property for this GatewaySender
+   * @return retriesForGetTransactionEventsFromQueue int property for this GatewaySender
    *
    */
-  int getGetTransactionEventsFromQueueRetries();
+  int getRetriesForGetTransactionEventsFromQueue();
 
   /**
    * Returns the number of dispatcher threads working for this <code>GatewaySender</code>. Default

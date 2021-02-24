@@ -75,8 +75,8 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
   }
 
   @Override
-  public GatewaySenderFactory setGetTransactionEventsFromQueueRetries(int retries) {
-    this.attrs.getTransactionEventsFromQueueRetries = retries;
+  public GatewaySenderFactory setRetriesForGetTransactionEventsFromQueue(int retries) {
+    this.attrs.retriesForTransactionEventsFromQueue = retries;
     return this;
   }
 
@@ -406,8 +406,8 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
     }
     this.attrs.eventSubstitutionFilter = senderCreation.getGatewayEventSubstitutionFilter();
     this.attrs.groupTransactionEvents = senderCreation.mustGroupTransactionEvents();
-    this.attrs.getTransactionEventsFromQueueRetries =
-        senderCreation.getGetTransactionEventsFromQueueRetries();
+    this.attrs.retriesForTransactionEventsFromQueue =
+        senderCreation.getRetriesForGetTransactionEventsFromQueue();
     this.attrs.enforceThreadsConnectSameReceiver =
         senderCreation.getEnforceThreadsConnectSameReceiver();
   }

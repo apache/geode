@@ -127,7 +127,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   protected boolean groupTransactionEvents;
 
-  protected int getTransactionEventsFromQueueRetries;
+  protected int retriesForGetTransactionEventsFromQueue;
 
   protected volatile boolean isStopping = false;
 
@@ -266,7 +266,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     this.manualStart = attrs.isManualStart();
     this.isParallel = attrs.isParallel();
     this.groupTransactionEvents = attrs.mustGroupTransactionEvents();
-    this.getTransactionEventsFromQueueRetries = attrs.getTransactionEventsFromQueueRetries;
+    this.retriesForGetTransactionEventsFromQueue = attrs.retriesForTransactionEventsFromQueue;
     this.isForInternalUse = attrs.isForInternalUse();
     this.diskStoreName = attrs.getDiskStoreName();
     this.remoteDSId = attrs.getRemoteDSId();
@@ -570,17 +570,16 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   }
 
   @Override
-  public int getGetTransactionEventsFromQueueRetries() {
-    int retries = this.getTransactionEventsFromQueueRetries;
+  public int getRetriesForGetTransactionEventsFromQueue() {
+    int retries = this.retriesForGetTransactionEventsFromQueue;
     // In case we are stopping allow for some extra retries given that
     // the last batches are about to be sent and there is no
     // risk of filling up the queues with a lot of batches unsent.
     if (isStopping) {
       if (retries == 0) {
-        retries = 30;
-      } else {
-        retries = retries * 10;
+        retries = 1;
       }
+      retries *= 2;
     }
     return retries;
   }
