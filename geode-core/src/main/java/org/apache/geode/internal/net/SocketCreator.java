@@ -28,6 +28,8 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -82,6 +84,8 @@ import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.wan.TransportFilterServerSocket;
 import org.apache.geode.internal.cache.wan.TransportFilterSocketFactory;
 import org.apache.geode.internal.inet.LocalHostUtil;
+import org.apache.geode.internal.net.filewatch.FileWatchingX509ExtendedKeyManager;
+import org.apache.geode.internal.net.filewatch.FileWatchingX509ExtendedTrustManager;
 import org.apache.geode.internal.util.ArgumentRedactor;
 import org.apache.geode.internal.util.PasswordUtil;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -267,17 +271,30 @@ public class SocketCreator extends TcpSocketCreatorImpl {
    * @return new SSLContext configured using the given protocols & properties
    *
    * @throws GeneralSecurityException if security information can not be found
-   * @throws IOException if information can not be loaded
    */
-  private SSLContext createAndConfigureSSLContext() throws GeneralSecurityException, IOException {
+  private SSLContext createAndConfigureSSLContext() throws GeneralSecurityException {
 
     if (sslConfig.useDefaultSSLContext()) {
       return SSLContext.getDefault();
     }
 
     SSLContext newSSLContext = SSLUtil.getSSLContextInstance(sslConfig);
-    KeyManager[] keyManagers = getKeyManagers();
-    TrustManager[] trustManagers = getTrustManagers();
+
+    KeyManager[] keyManagers = null;
+    if (sslConfig.getKeystore() != null) {
+      Path path = Paths.get(sslConfig.getKeystore());
+      keyManagers = new KeyManager[] {
+          FileWatchingX509ExtendedKeyManager.forPath(path, this::getKeyManagers)
+      };
+    }
+
+    TrustManager[] trustManagers = null;
+    if (sslConfig.getTruststore() != null) {
+      Path path = Paths.get(sslConfig.getTruststore());
+      trustManagers = new TrustManager[] {
+          FileWatchingX509ExtendedTrustManager.forPath(path, this::getTrustManagers)
+      };
+    }
 
     newSSLContext.init(keyManagers, trustManagers, null /* use the default secure random */);
     return newSSLContext;
@@ -370,9 +387,6 @@ public class SocketCreator extends TcpSocketCreatorImpl {
 
   private KeyManager[] getKeyManagers() throws KeyStoreException, IOException,
       NoSuchAlgorithmException, CertificateException, UnrecoverableKeyException {
-    if (sslConfig.getKeystore() == null) {
-      return null;
-    }
 
     KeyManager[] keyManagers;
     String keyStoreType = sslConfig.getKeystoreType();

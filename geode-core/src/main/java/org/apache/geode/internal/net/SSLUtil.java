@@ -15,6 +15,8 @@
 package org.apache.geode.internal.net;
 
 import java.io.FileInputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -31,6 +33,8 @@ import javax.net.ssl.X509TrustManager;
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.internal.net.filewatch.FileWatchingX509ExtendedKeyManager;
+import org.apache.geode.internal.net.filewatch.FileWatchingX509ExtendedTrustManager;
 
 public class SSLUtil {
   /**
@@ -99,8 +103,22 @@ public class SSLUtil {
       }
       SSLContext ssl = getSSLContextInstance(sslConfig);
 
-      KeyManager[] keyManagers = getKeyManagers(sslConfig);
-      TrustManager[] trustManagers = getTrustManagers(sslConfig, skipSslVerification);
+      KeyManager[] keyManagers = null;
+      if (sslConfig.getKeystore() != null) {
+        Path path = Paths.get(sslConfig.getKeystore());
+        keyManagers = new KeyManager[] {
+            FileWatchingX509ExtendedKeyManager.forPath(path, () -> getKeyManagers(sslConfig))
+        };
+      }
+
+      TrustManager[] trustManagers = null;
+      if (sslConfig.getTruststore() != null) {
+        Path path = Paths.get(sslConfig.getTruststore());
+        trustManagers = new TrustManager[] {
+            FileWatchingX509ExtendedTrustManager.forPath(path,
+                () -> getTrustManagers(sslConfig, skipSslVerification))
+        };
+      }
 
       ssl.init(keyManagers, trustManagers, new SecureRandom());
       return ssl;
