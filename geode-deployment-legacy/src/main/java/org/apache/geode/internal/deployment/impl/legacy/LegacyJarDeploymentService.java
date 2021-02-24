@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.cache.internal.execute.FunctionToFileTracker;
 import org.apache.geode.deployment.JarDeploymentService;
 import org.apache.geode.internal.deployment.DeployedJar;
 import org.apache.geode.internal.deployment.JarDeployer;
@@ -53,6 +54,7 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
   private final Map<String, Deployment> deployments = new ConcurrentHashMap<>();
   private JarDeployer jarDeployer = new JarDeployer();
 
+  private final FunctionToFileTracker functionToFileTracker = new FunctionToFileTracker();
 
   @Override
   public synchronized ServiceResult<Deployment> deploy(Deployment deployment) {
@@ -78,6 +80,8 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
           deployments.put(deploymentCopy.getDeploymentName(), deploymentCopy);
           logger.debug("Deployments List size after add: {}", deployments.size());
           logger.debug("Deployment copy to return: {}", deploymentCopy);
+
+          functionToFileTracker.registerFunctions();
           return Success.of(deploymentCopy);
         }
         // null is returned when already deployed to satisfy existing public API constraints

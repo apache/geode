@@ -27,7 +27,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.internal.execute.FunctionServiceUtils;
+import org.apache.geode.cache.internal.execute.FunctionToFileTracker;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.utils.JarFileUtils;
@@ -98,7 +98,7 @@ public class DeployedJar {
    *        undeployed.
    */
   protected synchronized void cleanUp(File newVersion) {
-    FunctionServiceUtils.unregisterRemovedFunctions(this.file, newVersion);
+    FunctionToFileTracker.unregisterRemovedFunctions(this.file, newVersion);
     try {
       TypeRegistry typeRegistry = ((InternalCache) CacheFactory.getAnyInstance()).getPdxRegistry();
       if (typeRegistry != null) {

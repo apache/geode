@@ -52,20 +52,20 @@ import org.apache.geode.management.internal.deployment.FunctionScanner;
  * This class is used to register {@link Function}s from deployed jar files. It provides convenience
  * over working with the {@link FunctionService} directly.
  */
-public class FunctionServiceUtils {
+public class FunctionToFileTracker {
 
   private static final Pattern PATTERN_SLASH = Pattern.compile("/");
 
   private static final Logger logger = LogService.getLogger();
 
-  private static final Map<File, List<Function<?>>> fileToFunctionsMap = new ConcurrentHashMap<>();
+  private final Map<File, List<Function<?>>> fileToFunctionsMap = new ConcurrentHashMap<>();
 
   /**
    * Scan the JAR file and attempt to register any function classes found.
    *
    * @param jarFile deployed jar file to scan for {@link Function}s to register.
    */
-  public static synchronized void registerFunctions(File jarFile) throws ClassNotFoundException {
+  public synchronized void registerFunctions(File jarFile) throws ClassNotFoundException {
     logger.debug("Registering functions with DeployedJar: {}", jarFile);
 
     List<Function<?>> registeredFunctions = new LinkedList<>();
@@ -140,7 +140,7 @@ public class FunctionServiceUtils {
    * @param oldJar a previously deployed jar file from which functions maybe have been registered.
    * @param newJar a jar file that replaces oldJar.
    */
-  public static void unregisterRemovedFunctions(File oldJar, File newJar) {
+  public void unregisterRemovedFunctions(File oldJar, File newJar) {
     List<Function<?>> functions = fileToFunctionsMap.remove(oldJar);
     if (functions != null) {
       Stream<String> oldFunctions = functions.stream().map(Function::getId);
@@ -150,8 +150,7 @@ public class FunctionServiceUtils {
         removedFunctions = oldFunctions;
       } else {
         Predicate<String> isRemoved =
-            (String oldFunctionId) -> !FunctionServiceUtils.hasFunctionWithId(newJar,
-                oldFunctionId);
+            (String oldFunctionId) -> !hasFunctionWithId(newJar, oldFunctionId);
 
         removedFunctions = oldFunctions.filter(isRemoved);
       }
@@ -160,7 +159,7 @@ public class FunctionServiceUtils {
     }
   }
 
-  private static boolean hasFunctionWithId(File jarFile, String id) {
+  private boolean hasFunctionWithId(File jarFile, String id) {
     List<Function<?>> functions = fileToFunctionsMap.get(jarFile);
     if (CollectionUtils.isEmpty(functions)) {
       return false;
@@ -169,7 +168,7 @@ public class FunctionServiceUtils {
     return functions.stream().map(Function::getId).anyMatch(functionId -> functionId.equals(id));
   }
 
-  protected static Collection<String> findFunctionsInThisJar(File jarFile) throws IOException {
+  private static Collection<String> findFunctionsInThisJar(File jarFile) throws IOException {
     return new FunctionScanner().findFunctionsInJar(jarFile);
   }
 
@@ -182,7 +181,7 @@ public class FunctionServiceUtils {
    * @return A collection of Objects that implement the Function interface.
    */
   @SuppressWarnings({"deprecation", "unchecked"})
-  private static Collection<Function<?>> getRegisterableFunctionsFromClass(Class<?> clazz) {
+  private Collection<Function<?>> getRegisterableFunctionsFromClass(Class<?> clazz) {
     final List<Function<?>> registerableFunctions = new ArrayList<>();
 
     try {
@@ -229,7 +228,7 @@ public class FunctionServiceUtils {
     return registerableFunctions;
   }
 
-  private static Function<?> newFunction(final Class<Function<?>> clazz,
+  private Function<?> newFunction(final Class<Function<?>> clazz,
       final boolean errorOnNoSuchMethod) {
     try {
       final Constructor<Function<?>> constructor = clazz.getConstructor();

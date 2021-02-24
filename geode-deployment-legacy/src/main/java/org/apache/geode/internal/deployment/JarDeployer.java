@@ -42,7 +42,8 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
-import org.apache.geode.cache.internal.execute.FunctionServiceUtils;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.internal.execute.FunctionToFileTracker;
 import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.configuration.Deployment;
@@ -291,7 +292,7 @@ public class JarDeployer implements Serializable {
         DeployedJar newjar = entry.getKey();
         DeployedJar oldJar = entry.getValue();
 
-        FunctionServiceUtils.registerFunctions(newjar.getFile());
+        FunctionToFileTracker.registerFunctions(newjar.getFile());
 
         if (oldJar != null) {
           oldJar.cleanUp(newjar.getFile());
