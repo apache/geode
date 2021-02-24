@@ -32,25 +32,26 @@ import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 public class BucketRetrievalFunction implements InternalFunction<Void> {
 
   public static final String ID = "REDIS_BUCKET_SLOT_FUNCTION";
-  private static final String hostAddress;
+  private final String hostAddress;
   private final int redisPort;
 
-  static {
-    InetAddress localhost = null;
-    try {
-      localhost = LocalHostUtil.getLocalHost();
-    } catch (Exception ex) {
+  private BucketRetrievalFunction(String address, int redisPort) {
+    if (address == null || address.isEmpty() || address.equals("0.0.0.0")) {
+      InetAddress localhost = null;
+      try {
+        localhost = LocalHostUtil.getLocalHost();
+      } catch (Exception ignored) {
+      }
+      hostAddress = localhost == null ? "localhost" : localhost.getHostAddress();
+    } else {
+      hostAddress = address;
     }
 
-    hostAddress = localhost == null ? "localhost" : localhost.getHostAddress();
-  }
-
-  public BucketRetrievalFunction(int redisPort) {
     this.redisPort = redisPort;
   }
 
-  public static void register(int redisPort) {
-    FunctionService.registerFunction(new BucketRetrievalFunction(redisPort));
+  public static void register(String address, int redisPort) {
+    FunctionService.registerFunction(new BucketRetrievalFunction(address, redisPort));
   }
 
   @Override

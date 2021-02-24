@@ -104,7 +104,7 @@ public class GeodeRedisServer {
         this::allowUnsupportedCommands, this::shutdown, port, bindAddress, redisStats,
         redisCommandExecutor);
 
-    BucketRetrievalFunction.register(nettyRedisServer.getPort());
+    BucketRetrievalFunction.register(bindAddress, nettyRedisServer.getPort());
   }
 
   @VisibleForTesting
