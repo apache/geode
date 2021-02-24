@@ -1254,6 +1254,7 @@ public class CqServiceImpl implements CqService {
 
   private void processEntryEvent(CacheEvent event, Profile localProfile, Profile[] profiles,
       FilterRoutingInfo frInfo) throws CqException {
+
     final boolean isDebugEnabled = logger.isDebugEnabled();
     HashSet<Object> cqUnfilteredEventsSet_newValue = new HashSet<>();
     HashSet<Object> cqUnfilteredEventsSet_oldValue = new HashSet<>();

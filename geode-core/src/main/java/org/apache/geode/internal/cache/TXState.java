@@ -245,7 +245,8 @@ public class TXState implements TXStateInterface {
     boolean isConfigError = false;
     EntryEventImpl lastTransactionEvent = null;
     try {
-      lastTransactionEvent = getLastTransactionEvent();
+      lastTransactionEvent =
+          TXLastEventInTransactionUtils.getLastTransactionEvent(getPendingCallbacks(), getCache());
     } catch (ServiceConfigurationError ex) {
       logger.error(ex.getMessage());
       isConfigError = true;
@@ -253,11 +254,6 @@ public class TXState implements TXStateInterface {
 
     for (EntryEventImpl ee : getPendingCallbacks()) {
       boolean isLastTransactionEvent = isConfigError || ee.equals(lastTransactionEvent);
-      // Change has been applied to cache.
-      FilterRoutingInfo.FilterInfo filterInfo = ee.getLocalFilterInfo();
-      if (filterInfo != null) {
-        filterInfo.setChangeAppliedToCache(true);
-      }
       if (ee.getOperation().isDestroy()) {
         ee.getRegion().invokeTXCallbacks(EnumListenerEvent.AFTER_DESTROY, ee, true,
             isLastTransactionEvent);
@@ -272,10 +268,6 @@ public class TXState implements TXStateInterface {
             isLastTransactionEvent);
       }
     }
-  }
-
-  EntryEventImpl getLastTransactionEvent() {
-    return TXLastEventInTransactionUtils.getLastTransactionEvent(getPendingCallbacks(), getCache());
   }
 
   public void freePendingCallbacks() {
@@ -514,7 +506,6 @@ public class TXState implements TXStateInterface {
       List/* <TXEntryStateWithRegionAndKey> */ entries = generateEventOffsets();
       TXCommitMessage msg = null;
       try {
-
         /*
          * In order to preserve data consistency, we need to: 1. Modify the cache first
          * (applyChanges) 2. Ask for advice on who to send to (buildMessage) 3. Send out to other
@@ -522,8 +513,6 @@ public class TXState implements TXStateInterface {
          *
          * If this is done out of order, we will have problems with GII, split brain, and HA.
          */
-
-        attachFilterProfileInformation(entries);
 
         lockTXRegions(regions);
 
@@ -534,6 +523,9 @@ public class TXState implements TXStateInterface {
           if (this.internalAfterApplyChanges != null) {
             this.internalAfterApplyChanges.run();
           }
+
+          // Process filter events for peer servers
+          attachFilterProfileInformation(entries);
 
           // build and send the message
           msg = buildMessage();

@@ -19,9 +19,12 @@ import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabl
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -29,15 +32,13 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.transaction.Status;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.InOrder;
 
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.EntryNotFoundException;
@@ -93,6 +94,26 @@ public class TXStateTest {
 
     assertThatThrownBy(() -> txState.doAfterCompletionCommit())
         .isSameAs(transactionDataNodeHasDepartedException);
+  }
+
+  @Test
+  public void attacheFilterProfileAfterApplyingChagnes() {
+    TXState txState = spy(new TXState(txStateProxy, false, disabledClock()));
+    ArrayList entries = mock(ArrayList.class);
+    doReturn(entries).when(txState).generateEventOffsets();
+    doNothing().when(txState).attachFilterProfileInformation(entries);
+    doNothing().when(txState).applyChanges(entries);
+    TXCommitMessage txCommitMessage = mock(TXCommitMessage.class);
+    doReturn(txCommitMessage).when(txState).buildMessage();
+
+    txState.commit();
+
+    InOrder inOrder = inOrder(txState, txCommitMessage);
+    inOrder.verify(txState).applyChanges(any());
+    inOrder.verify(txState).attachFilterProfileInformation(any());
+    inOrder.verify(txState).buildMessage();
+    inOrder.verify(txCommitMessage).send(any());
+    inOrder.verify(txState).firePendingCallbacks();
   }
 
   @Test
@@ -368,26 +389,5 @@ public class TXStateTest {
 
     verify(txState, never()).getRecordedResultOrException(event);
     verify(txState).recordEventException(event, exception);
-  }
-
-  @Test
-  public void firePendingCallbacksSetsChangeAppliedToCacheInEventLocalFilterInfo() {
-    TXState txState = spy(new TXState(txStateProxy, true, disabledClock()));
-    FilterRoutingInfo.FilterInfo filterInfo1 = mock(FilterRoutingInfo.FilterInfo.class);
-    FilterRoutingInfo.FilterInfo filterInfo2 = mock(FilterRoutingInfo.FilterInfo.class);
-    EntryEventImpl event1 = mock(EntryEventImpl.class, RETURNS_DEEP_STUBS);
-    EntryEventImpl event2 = mock(EntryEventImpl.class, RETURNS_DEEP_STUBS);
-    List<EntryEventImpl> callbacks = new ArrayList<>();
-    callbacks.add(event1);
-    callbacks.add(event2);
-    doReturn(event2).when(txState).getLastTransactionEvent();
-    when(event1.getLocalFilterInfo()).thenReturn(filterInfo1);
-    when(event2.getLocalFilterInfo()).thenReturn(filterInfo2);
-    doReturn(callbacks).when(txState).getPendingCallbacks();
-
-    txState.firePendingCallbacks();
-
-    verify(filterInfo1).setChangeAppliedToCache(true);
-    verify(filterInfo2).setChangeAppliedToCache(true);
   }
 }

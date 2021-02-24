@@ -12,152 +12,122 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static java.util.Collections.emptySet;
-import static org.apache.geode.internal.util.CollectionUtils.asSet;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.quality.Strictness.STRICT_STUBS;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
-import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
-import org.mockito.stubbing.Answer;
 
 import org.apache.geode.cache.Operation;
 import org.apache.geode.internal.cache.Conflatable;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.FilterProfile;
 import org.apache.geode.internal.cache.FilterRoutingInfo;
-import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
 import org.apache.geode.internal.cache.InternalCacheEvent;
-import org.apache.geode.internal.cache.InternalRegion;
-import org.apache.geode.internal.cache.tier.sockets.ClientRegistrationEventQueueManager.ClientRegistrationEventQueue;
+import org.apache.geode.internal.cache.LocalRegion;
 
 public class ClientRegistrationEventQueueManagerTest {
-
-  private CacheClientNotifier cacheClientNotifier;
-  private CacheClientProxy cacheClientProxy;
-  private ClientProxyMembershipID clientProxyMembershipId;
-  private ClientUpdateMessageImpl clientUpdateMessage;
-  private FilterInfo filterInfo;
-  private FilterProfile filterProfile;
-  private FilterRoutingInfo filterRoutingInfo;
-  private InternalCacheEvent internalCacheEvent;
-  private InternalRegion internalRegion;
-  private Operation operation;
-
-  @Rule
-  public MockitoRule mockitoRule = MockitoJUnit.rule().strictness(STRICT_STUBS);
-
-  @Before
-  public void setUp() {
-    cacheClientNotifier = mock(CacheClientNotifier.class);
-    cacheClientProxy = mock(CacheClientProxy.class);
-    clientProxyMembershipId = mock(ClientProxyMembershipID.class);
-    clientUpdateMessage = mock(ClientUpdateMessageImpl.class);
-    filterInfo = mock(FilterInfo.class);
-    filterProfile = mock(FilterProfile.class);
-    filterRoutingInfo = mock(FilterRoutingInfo.class);
-    internalCacheEvent = mock(InternalCacheEvent.class);
-    internalRegion = mock(InternalRegion.class);
-    operation = mock(Operation.class);
-  }
-
   @Test
   public void messageDeliveredAfterRegisteringOnDrainIfNewFilterIDsIncludesClient() {
-    // this test requires mock of EntryEventImpl instead of InternalCacheEvent
-    EntryEventImpl entryEventImpl = mock(EntryEventImpl.class);
-
-    when(cacheClientNotifier.getClientProxy(clientProxyMembershipId))
-        .thenReturn(cacheClientProxy);
-    when(cacheClientNotifier.getFilterClientIDs(entryEventImpl, filterProfile, filterInfo,
-        clientUpdateMessage))
-            .thenReturn(asSet(clientProxyMembershipId));
-    when(cacheClientProxy.getProxyID())
-        .thenReturn(clientProxyMembershipId);
-    when(entryEventImpl.getOperation())
-        .thenReturn(operation);
-    when(entryEventImpl.getRegion())
-        .thenReturn(internalRegion);
-    when(filterProfile.getFilterRoutingInfoPart2(null, entryEventImpl, true))
-        .thenReturn(filterRoutingInfo);
-    when(filterRoutingInfo.getLocalFilterInfo())
-        .thenReturn(filterInfo);
-    when(internalRegion.getFilterProfile())
-        .thenReturn(filterProfile);
-    when(operation.isEntry())
-        .thenReturn(true);
-
     ClientRegistrationEventQueueManager clientRegistrationEventQueueManager =
         new ClientRegistrationEventQueueManager();
 
-    ClientRegistrationEventQueue clientRegistrationEventQueue =
-        clientRegistrationEventQueueManager.create(clientProxyMembershipId,
+    ClientProxyMembershipID clientProxyMembershipID = mock(ClientProxyMembershipID.class);
+
+    ClientRegistrationEventQueueManager.ClientRegistrationEventQueue clientRegistrationEventQueue =
+        clientRegistrationEventQueueManager.create(clientProxyMembershipID,
             new ConcurrentLinkedQueue<>(), new ReentrantReadWriteLock());
+
+    InternalCacheEvent internalCacheEvent = mock(InternalCacheEvent.class);
+    LocalRegion localRegion = mock(LocalRegion.class);
+    FilterProfile filterProfile = mock(FilterProfile.class);
+    FilterRoutingInfo filterRoutingInfo = mock(FilterRoutingInfo.class);
+    FilterRoutingInfo.FilterInfo filterInfo = mock(FilterRoutingInfo.FilterInfo.class);
+
+    when(filterRoutingInfo.getLocalFilterInfo()).thenReturn(
+        filterInfo);
+    when(filterProfile.getFilterRoutingInfoPart2(null, internalCacheEvent))
+        .thenReturn(filterRoutingInfo);
+    when(localRegion.getFilterProfile()).thenReturn(filterProfile);
+    when(internalCacheEvent.getRegion()).thenReturn(localRegion);
+    when(internalCacheEvent.getOperation()).thenReturn(mock(Operation.class));
+
+    ClientUpdateMessageImpl clientUpdateMessage = mock(ClientUpdateMessageImpl.class);
+
+    CacheClientNotifier cacheClientNotifier = mock(CacheClientNotifier.class);
+    Set<ClientProxyMembershipID> recalculatedFilterClientIDs = new HashSet<>();
+    recalculatedFilterClientIDs.add(clientProxyMembershipID);
+    when(cacheClientNotifier.getFilterClientIDs(internalCacheEvent, filterProfile, filterInfo,
+        clientUpdateMessage))
+            .thenReturn(recalculatedFilterClientIDs);
+    CacheClientProxy cacheClientProxy = mock(CacheClientProxy.class);
+    when(cacheClientProxy.getProxyID()).thenReturn(clientProxyMembershipID);
+    when(cacheClientNotifier.getClientProxy(clientProxyMembershipID)).thenReturn(cacheClientProxy);
 
     // Create empty filter client IDs produced by the "normal" put processing path, so we can test
     // that the event is still delivered if the client finished registering and needs the event.
+    Set<ClientProxyMembershipID> normalPutFilterClientIDs = new HashSet<>();
 
-    clientRegistrationEventQueueManager.add(entryEventImpl, clientUpdateMessage,
-        clientUpdateMessage, emptySet(), cacheClientNotifier);
+    clientRegistrationEventQueueManager
+        .add(internalCacheEvent, clientUpdateMessage, normalPutFilterClientIDs,
+            cacheClientNotifier);
 
     clientRegistrationEventQueueManager.drain(clientRegistrationEventQueue, cacheClientNotifier);
 
     // The client update message should still be delivered because it is now part of the
     // filter clients interested in this event, despite having not been included in the original
     // filter info in the "normal" put processing path.
-    verify(cacheClientProxy).deliverMessage(clientUpdateMessage);
+    verify(cacheClientProxy, times(1)).deliverMessage(clientUpdateMessage);
   }
 
   @Test
   public void clientRemovedFromFilterClientsListIfEventAddedToRegistrationQueue() {
-    // this test requires mock of EntryEventImpl instead of InternalCacheEvent
-    EntryEventImpl entryEventImpl = mock(EntryEventImpl.class);
-
-    when(entryEventImpl.getOperation())
-        .thenReturn(operation);
-    when(operation.isEntry())
-        .thenReturn(true);
-
     ClientRegistrationEventQueueManager clientRegistrationEventQueueManager =
         new ClientRegistrationEventQueueManager();
 
-    clientRegistrationEventQueueManager.create(clientProxyMembershipId,
+    ClientProxyMembershipID clientProxyMembershipID = mock(ClientProxyMembershipID.class);
+
+    clientRegistrationEventQueueManager.create(clientProxyMembershipID,
         new ConcurrentLinkedQueue<>(), new ReentrantReadWriteLock());
+
+    InternalCacheEvent internalCacheEvent = mock(InternalCacheEvent.class);
+    when(internalCacheEvent.getRegion()).thenReturn(mock(LocalRegion.class));
+    when(internalCacheEvent.getOperation()).thenReturn(mock(Operation.class));
+
+    Conflatable conflatable = mock(Conflatable.class);
 
     // Add the registering client to the filter clients. This can happen if the filter info is
     // received but the client is not completely registered yet (queue GII has not been completed).
     // In that case, we want to remove the client from the filter IDs set and add the event
     // to the client's registration queue.
-    Set<ClientProxyMembershipID> filterClientIds = asSet(clientProxyMembershipId);
+    Set<ClientProxyMembershipID> filterClientIDs = new HashSet<>();
+    filterClientIDs.add(clientProxyMembershipID);
 
-    clientRegistrationEventQueueManager.add(entryEventImpl, mock(ClientUpdateMessageImpl.class),
-        mock(Conflatable.class), filterClientIds, mock(CacheClientNotifier.class));
+    CacheClientNotifier cacheClientNotifier = mock(CacheClientNotifier.class);
+
+    clientRegistrationEventQueueManager.add(internalCacheEvent, conflatable, filterClientIDs,
+        cacheClientNotifier);
 
     // The client should no longer be in the filter clients since the event was queued in the
     // client's registration queue.
-    assertThat(filterClientIds).isEmpty();
+    assertThat(filterClientIDs.isEmpty()).isTrue();
   }
 
   @Test
@@ -165,96 +135,108 @@ public class ClientRegistrationEventQueueManagerTest {
     ClientRegistrationEventQueueManager clientRegistrationEventQueueManager =
         new ClientRegistrationEventQueueManager();
 
-    ClientRegistrationEventQueue clientRegistrationEventQueue =
-        clientRegistrationEventQueueManager.create(mock(ClientProxyMembershipID.class),
-            new ConcurrentLinkedQueue<>(), new ReentrantReadWriteLock());
+    ClientProxyMembershipID clientProxyMembershipID = mock(ClientProxyMembershipID.class);
 
-    Collection<HAEventWrapper> haEventWrappers = new ArrayList<>();
+    ClientRegistrationEventQueueManager.ClientRegistrationEventQueue clientRegistrationEventQueue =
+        clientRegistrationEventQueueManager.create(clientProxyMembershipID,
+            new ConcurrentLinkedQueue<>(),
+            new ReentrantReadWriteLock());
+
+    List<HAEventWrapper> haEventWrappers = new ArrayList<>();
+    CacheClientNotifier cacheClientNotifier = mock(CacheClientNotifier.class);
 
     for (int i = 0; i < 5; ++i) {
-      EntryEventImpl entryEventImpl = mock(EntryEventImpl.class);
-
-      when(entryEventImpl.getOperation())
-          .thenReturn(operation);
-      when(operation.isEntry())
-          .thenReturn(true);
-
       HAEventWrapper haEventWrapper = mock(HAEventWrapper.class);
       haEventWrappers.add(haEventWrapper);
-
-      clientRegistrationEventQueueManager.add(entryEventImpl,
-          mock(ClientUpdateMessageImpl.class), haEventWrapper, emptySet(), cacheClientNotifier);
-
-      verify(haEventWrapper).incrementPutInProgressCounter(anyString());
+      InternalCacheEvent internalCacheEvent = mock(InternalCacheEvent.class);
+      when(internalCacheEvent.getRegion()).thenReturn(mock(LocalRegion.class));
+      when(internalCacheEvent.getOperation()).thenReturn(mock(Operation.class));
+      clientRegistrationEventQueueManager.add(internalCacheEvent,
+          haEventWrapper, new HashSet<>(), cacheClientNotifier);
+      verify(haEventWrapper, times(1)).incrementPutInProgressCounter(anyString());
     }
 
     clientRegistrationEventQueueManager.drain(clientRegistrationEventQueue, cacheClientNotifier);
 
     for (HAEventWrapper haEventWrapper : haEventWrappers) {
-      verify(haEventWrapper).decrementPutInProgressCounter();
+      verify(haEventWrapper, times(1)).decrementPutInProgressCounter();
     }
   }
 
   @Test
-  public void addAndDrainQueueContentionTest() throws Exception {
-    ReentrantReadWriteLock readWriteLock = spy(new ReentrantReadWriteLock());
+  public void addAndDrainQueueContentionTest() throws ExecutionException, InterruptedException {
+    ClientProxyMembershipID clientProxyMembershipID = mock(ClientProxyMembershipID.class);
+    ReentrantReadWriteLock mockPutDrainLock = mock(ReentrantReadWriteLock.class);
+    ReentrantReadWriteLock actualPutDrainLock = new ReentrantReadWriteLock();
 
-    when(readWriteLock.writeLock())
-        .thenAnswer((Answer<WriteLock>) invocation -> {
+    when(mockPutDrainLock.readLock())
+        .thenReturn(actualPutDrainLock.readLock());
+
+    when(mockPutDrainLock.writeLock())
+        .thenAnswer(i -> {
           // Force a context switch from drain to put thread so we can ensure the event is not lost
           Thread.sleep(1);
-          return (WriteLock) invocation.callRealMethod();
+          return actualPutDrainLock.writeLock();
         });
 
     ClientRegistrationEventQueueManager clientRegistrationEventQueueManager =
         new ClientRegistrationEventQueueManager();
 
-    ClientRegistrationEventQueue clientRegistrationEventQueue =
-        clientRegistrationEventQueueManager.create(mock(ClientProxyMembershipID.class),
-            new ConcurrentLinkedQueue<>(), readWriteLock);
+    ClientRegistrationEventQueueManager.ClientRegistrationEventQueue clientRegistrationEventQueue =
+        clientRegistrationEventQueueManager.create(clientProxyMembershipID,
+            new ConcurrentLinkedQueue<>(), mockPutDrainLock);
+
+    InternalCacheEvent internalCacheEvent = mock(InternalCacheEvent.class);
+    when(internalCacheEvent.getRegion()).thenReturn(mock(LocalRegion.class));
+    when(internalCacheEvent.getOperation()).thenReturn(mock(Operation.class));
+
+    Conflatable conflatable = mock(Conflatable.class);
+    Set<ClientProxyMembershipID> filterClientIDs = new HashSet<>();
+    CacheClientNotifier cacheClientNotifier = mock(CacheClientNotifier.class);
+    CacheClientProxy cacheClientProxy = mock(CacheClientProxy.class);
+    when(cacheClientNotifier.getClientProxy(clientProxyMembershipID)).thenReturn(cacheClientProxy);
 
     CompletableFuture<Void> addEventsToQueueTask = CompletableFuture.runAsync(() -> {
-      for (int count = 0; count < 1_000; ++count) { // was 100_000
+      for (int numAdds = 0; numAdds < 100000; ++numAdds) {
         // In thread one, we add events to the queue
-        clientRegistrationEventQueueManager.add(entryEventImpl(),
-            mock(ClientUpdateMessageImpl.class), mock(Conflatable.class), emptySet(),
-            cacheClientNotifier);
+        clientRegistrationEventQueueManager
+            .add(internalCacheEvent, conflatable, filterClientIDs, cacheClientNotifier);
       }
     });
 
     CompletableFuture<Void> drainEventsFromQueueTask = CompletableFuture.runAsync(() -> {
       // In thread two, we drain events from the queue
-      clientRegistrationEventQueueManager.drain(clientRegistrationEventQueue,
-          cacheClientNotifier);
+      clientRegistrationEventQueueManager.drain(clientRegistrationEventQueue, cacheClientNotifier);
     });
 
-    CompletableFuture
-        .allOf(addEventsToQueueTask, drainEventsFromQueueTask)
-        .get();
+    CompletableFuture.allOf(addEventsToQueueTask, drainEventsFromQueueTask).get();
 
     assertThat(clientRegistrationEventQueue.isEmpty()).isTrue();
   }
 
   @Test
   public void addEventWithOffheapValueCopiedToHeap() {
-    // this test requires mock of EntryEventImpl instead of InternalCacheEvent
-    EntryEventImpl entryEventImpl = mock(EntryEventImpl.class);
+    EntryEventImpl internalCacheEvent = mock(EntryEventImpl.class);
+    when(internalCacheEvent.getRegion()).thenReturn(mock(LocalRegion.class));
+    Operation mockOperation = mock(Operation.class);
+    when(mockOperation.isEntry()).thenReturn(true);
+    when(internalCacheEvent.getOperation()).thenReturn(mockOperation);
 
-    when(entryEventImpl.getOperation())
-        .thenReturn(operation);
-    when(operation.isEntry())
-        .thenReturn(true);
+    Conflatable conflatable = mock(Conflatable.class);
+    Set<ClientProxyMembershipID> filterClientIDs = new HashSet<>();
+    CacheClientNotifier cacheClientNotifier = mock(CacheClientNotifier.class);
+    ClientProxyMembershipID clientProxyMembershipID = mock(ClientProxyMembershipID.class);
 
     ClientRegistrationEventQueueManager clientRegistrationEventQueueManager =
         new ClientRegistrationEventQueueManager();
 
-    clientRegistrationEventQueueManager.create(mock(ClientProxyMembershipID.class),
+    clientRegistrationEventQueueManager.create(clientProxyMembershipID,
         new ConcurrentLinkedQueue<>(), new ReentrantReadWriteLock());
 
-    clientRegistrationEventQueueManager.add(entryEventImpl, mock(ClientUpdateMessageImpl.class),
-        mock(Conflatable.class), emptySet(), mock(CacheClientNotifier.class));
+    clientRegistrationEventQueueManager
+        .add(internalCacheEvent, conflatable, filterClientIDs, cacheClientNotifier);
 
-    verify(entryEventImpl).copyOffHeapToHeap();
+    verify(internalCacheEvent, times(1)).copyOffHeapToHeap();
   }
 
   @Test
@@ -262,17 +244,24 @@ public class ClientRegistrationEventQueueManagerTest {
     ClientRegistrationEventQueueManager clientRegistrationEventQueueManager =
         new ClientRegistrationEventQueueManager();
 
-    ClientRegistrationEventQueue clientRegistrationEventQueue =
-        clientRegistrationEventQueueManager.create(mock(ClientProxyMembershipID.class),
-            new ConcurrentLinkedQueue<>(), new ReentrantReadWriteLock());
+    CacheClientNotifier cacheClientNotifier = mock(CacheClientNotifier.class);
+    ClientProxyMembershipID clientProxyMembershipID = mock(ClientProxyMembershipID.class);
+
+    ClientRegistrationEventQueueManager.ClientRegistrationEventQueue clientRegistrationEventQueue =
+        clientRegistrationEventQueueManager.create(clientProxyMembershipID,
+            new ConcurrentLinkedQueue<>(),
+            new ReentrantReadWriteLock());
 
     clientRegistrationEventQueueManager.drain(clientRegistrationEventQueue, cacheClientNotifier);
+
+    EntryEventImpl internalCacheEvent = mock(EntryEventImpl.class);
+    Conflatable conflatable = mock(Conflatable.class);
+    Set<ClientProxyMembershipID> filterClientIDs = new HashSet<>();
 
     // Pass a new event to the ClientRegistrationEventQueueManager. This event should not be added
     // to the test client's registration queue, because it should already be removed. We can
     // validate that by asserting that the client's registration queue is empty after the add.
-    clientRegistrationEventQueueManager.add(mock(InternalCacheEvent.class),
-        mock(ClientUpdateMessageImpl.class), mock(Conflatable.class), emptySet(),
+    clientRegistrationEventQueueManager.add(internalCacheEvent, conflatable, filterClientIDs,
         cacheClientNotifier);
 
     assertThat(clientRegistrationEventQueue.isEmpty()).isTrue();
@@ -280,128 +269,100 @@ public class ClientRegistrationEventQueueManagerTest {
 
   @Test
   public void drainThrowsExceptionQueueStillRemoved() {
-    // this test requires mock of EntryEventImpl instead of InternalCacheEvent
-    EntryEventImpl entryEventImpl = mock(EntryEventImpl.class);
-    RuntimeException thrownException = new RuntimeException("thrownException");
-
-    when(cacheClientNotifier.getClientProxy(clientProxyMembershipId))
-        .thenReturn(mock(CacheClientProxy.class));
-    when(entryEventImpl.getOperation())
-        .thenReturn(operation);
-    when(entryEventImpl.getRegion())
-        .thenThrow(thrownException);
-    when(operation.isEntry())
-        .thenReturn(true);
+    CacheClientProxy cacheClientProxy = mock(CacheClientProxy.class);
+    CacheClientNotifier cacheClientNotifier = mock(CacheClientNotifier.class);
+    ClientProxyMembershipID clientProxyMembershipID = mock(ClientProxyMembershipID.class);
+    when(cacheClientNotifier.getClientProxy(clientProxyMembershipID)).thenReturn(cacheClientProxy);
 
     ClientRegistrationEventQueueManager clientRegistrationEventQueueManager =
         new ClientRegistrationEventQueueManager();
 
-    ClientRegistrationEventQueue clientRegistrationEventQueue =
-        clientRegistrationEventQueueManager.create(clientProxyMembershipId,
-            new ConcurrentLinkedQueue<>(), new ReentrantReadWriteLock());
+    ClientRegistrationEventQueueManager.ClientRegistrationEventQueue clientRegistrationEventQueue =
+        clientRegistrationEventQueueManager.create(clientProxyMembershipID,
+            new ConcurrentLinkedQueue<>(),
+            new ReentrantReadWriteLock());
 
-    Set<ClientProxyMembershipID> filterClientIds = new HashSet<>();
+    Conflatable conflatable = mock(Conflatable.class);
+    Set<ClientProxyMembershipID> filterClientIDs = new HashSet<>();
 
-    clientRegistrationEventQueueManager.add(entryEventImpl, clientUpdateMessage,
-        mock(Conflatable.class), filterClientIds, cacheClientNotifier);
+    EntryEventImpl internalCacheEvent = mock(EntryEventImpl.class);
+    RuntimeException testException = new RuntimeException();
+    when(internalCacheEvent.getRegion()).thenThrow(testException);
+    Operation mockOperation = mock(Operation.class);
+    when(mockOperation.isEntry()).thenReturn(true);
+    when(internalCacheEvent.getOperation()).thenReturn(mockOperation);
 
-    Throwable thrown = catchThrowable(() -> {
-      clientRegistrationEventQueueManager.drain(clientRegistrationEventQueue, cacheClientNotifier);
-    });
+    clientRegistrationEventQueueManager.add(internalCacheEvent, conflatable, filterClientIDs,
+        cacheClientNotifier);
 
-    assertThat(thrown).isSameAs(thrownException);
+    assertThatThrownBy(() -> clientRegistrationEventQueueManager.drain(clientRegistrationEventQueue,
+        cacheClientNotifier))
+            .isEqualTo(testException);
 
     // Pass a new event to the ClientRegistrationEventQueueManager. This event should not be added
     // to the test client's registration queue, because it should already be removed. We can
     // validate that by asserting that the client's registration queue is empty after the add.
-    clientRegistrationEventQueueManager.add(entryEventImpl, clientUpdateMessage,
-        mock(Conflatable.class), filterClientIds, cacheClientNotifier);
+    clientRegistrationEventQueueManager.add(internalCacheEvent, conflatable, filterClientIDs,
+        cacheClientNotifier);
 
-    assertThat(clientRegistrationEventQueue.isEmpty())
-        .withFailMessage(clientRegistrationEventQueue + " should be empty.")
-        .isTrue();
+    assertThat(clientRegistrationEventQueue.isEmpty()).isTrue();
   }
 
   @Test
   public void addEventInOriginalFilterIDsButQueueWasRemovedDueToSuccessfulRegistrationSoEventNotRedelivered() {
-    // this test requires mock of EntryEventImpl instead of InternalCacheEvent
-    when(cacheClientNotifier.getClientProxy(clientProxyMembershipId))
-        .thenReturn(cacheClientProxy);
+    ClientProxyMembershipID clientProxyMembershipID = mock(ClientProxyMembershipID.class);
+    CacheClientNotifier cacheClientNotifier = mock(CacheClientNotifier.class);
+    CacheClientProxy cacheClientProxy = mock(CacheClientProxy.class);
+    when(cacheClientNotifier.getClientProxy(clientProxyMembershipID)).thenReturn(cacheClientProxy);
+    Set<ClientProxyMembershipID> originalFilterIDs = new HashSet<>();
+    originalFilterIDs.add(clientProxyMembershipID);
+
+    ClientUpdateMessageImpl clientUpdateMessage = mock(ClientUpdateMessageImpl.class);
+
+    InternalCacheEvent internalCacheEvent = mock(InternalCacheEvent.class);
+    LocalRegion localRegion = mock(LocalRegion.class);
+    FilterProfile filterProfile = mock(FilterProfile.class);
+    FilterRoutingInfo filterRoutingInfo = mock(FilterRoutingInfo.class);
+    FilterRoutingInfo.FilterInfo filterInfo = mock(FilterRoutingInfo.FilterInfo.class);
+
+    when(filterRoutingInfo.getLocalFilterInfo()).thenReturn(
+        filterInfo);
+    when(filterProfile.getFilterRoutingInfoPart2(null, internalCacheEvent))
+        .thenReturn(filterRoutingInfo);
+    when(localRegion.getFilterProfile()).thenReturn(filterProfile);
+    when(internalCacheEvent.getRegion()).thenReturn(localRegion);
+    when(internalCacheEvent.getOperation()).thenReturn(mock(Operation.class));
+
+    Set<ClientProxyMembershipID> recalculatedFilterClientIDs = new HashSet<>();
+    recalculatedFilterClientIDs.add(clientProxyMembershipID);
     when(cacheClientNotifier.getFilterClientIDs(internalCacheEvent, filterProfile, filterInfo,
         clientUpdateMessage))
-            .thenReturn(asSet(clientProxyMembershipId));
-    when(cacheClientProxy.getProxyID())
-        .thenReturn(clientProxyMembershipId);
-    when(internalCacheEvent.getRegion())
-        .thenReturn(internalRegion);
-    when(filterProfile.getFilterRoutingInfoPart2(null, internalCacheEvent, true))
-        .thenReturn(filterRoutingInfo);
-    when(filterRoutingInfo.getLocalFilterInfo())
-        .thenReturn(filterInfo);
-    when(internalRegion.getFilterProfile())
-        .thenReturn(filterProfile);
-
-    ReentrantReadWriteLock readWriteLock = spy(new ReentrantReadWriteLock());
-    ReadLock readLock = spy(readWriteLock.readLock());
-
-    when(readWriteLock.readLock())
-        .thenReturn(readLock);
+            .thenReturn(recalculatedFilterClientIDs);
+    when(cacheClientProxy.getProxyID()).thenReturn(clientProxyMembershipID);
+    when(cacheClientNotifier.getClientProxy(clientProxyMembershipID)).thenReturn(cacheClientProxy);
+    ReentrantReadWriteLock mockReadWriteLock = mock(ReentrantReadWriteLock.class);
 
     ClientRegistrationEventQueueManager clientRegistrationEventQueueManager =
         new ClientRegistrationEventQueueManager();
 
-    ClientRegistrationEventQueue clientRegistrationEventQueue =
-        clientRegistrationEventQueueManager.create(clientProxyMembershipId,
-            new ConcurrentLinkedQueue<>(), readWriteLock);
+    ClientRegistrationEventQueueManager.ClientRegistrationEventQueue clientRegistrationEventQueue =
+        clientRegistrationEventQueueManager.create(clientProxyMembershipID,
+            new ConcurrentLinkedQueue<>(),
+            mockReadWriteLock);
 
-    doAnswer((Answer<Void>) invocation -> {
+    ReentrantReadWriteLock.ReadLock mockReadLock = mock(ReentrantReadWriteLock.ReadLock.class);
+    when(mockReadWriteLock.readLock()).thenReturn(mockReadLock);
+    ReentrantReadWriteLock actualPutDrainLock = new ReentrantReadWriteLock();
+    when(mockReadWriteLock.writeLock()).thenReturn(actualPutDrainLock.writeLock());
+    doAnswer(i -> {
       clientRegistrationEventQueueManager.drain(clientRegistrationEventQueue, cacheClientNotifier);
-      invocation.callRealMethod();
+      actualPutDrainLock.readLock();
       return null;
-    })
-        .when(readLock)
-        .lock();
+    }).when(mockReadLock).lock();
 
     clientRegistrationEventQueueManager.add(internalCacheEvent, clientUpdateMessage,
-        clientUpdateMessage, asSet(clientProxyMembershipId), cacheClientNotifier);
+        originalFilterIDs, cacheClientNotifier);
 
-    verify(cacheClientProxy, never()).deliverMessage(clientUpdateMessage);
-  }
-
-  @Test
-  public void addEventWithClientTombstoneDoesNotExportNewValue() {
-    ClientTombstoneMessage clientTombstoneMessage = mock(ClientTombstoneMessage.class);
-    // this test requires mock of EntryEventImpl instead of InternalCacheEvent
-    EntryEventImpl entryEventImpl = mock(EntryEventImpl.class);
-
-    ClientRegistrationEventQueueManager clientRegistrationEventQueueManager =
-        new ClientRegistrationEventQueueManager();
-
-    clientRegistrationEventQueueManager.add(entryEventImpl, clientTombstoneMessage,
-        clientTombstoneMessage, asSet(mock(ClientProxyMembershipID.class)),
-        mock(CacheClientNotifier.class));
-
-    verify(entryEventImpl, never()).exportNewValue(clientTombstoneMessage);
-  }
-
-  private EntryEventImpl entryEventImpl() {
-    EntryEventImpl entryEventImpl = mock(EntryEventImpl.class);
-    Operation operation = operation();
-
-    when(entryEventImpl.getOperation())
-        .thenReturn(operation);
-    when(entryEventImpl.getRegion())
-        .thenReturn(internalRegion);
-
-    return entryEventImpl;
-  }
-
-  private Operation operation() {
-    Operation operation = mock(Operation.class);
-
-    when(operation.isEntry())
-        .thenReturn(true);
-
-    return operation;
+    verify(cacheClientProxy, times(0)).deliverMessage(clientUpdateMessage);
   }
 }

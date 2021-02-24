@@ -1329,7 +1329,6 @@ public abstract class BaseCommand implements Command {
 
   private static void handleKVList(final LocalRegion region, final List<?> keyList,
       boolean serializeValues, final ServerConnection servConn) throws IOException {
-
     if (region instanceof PartitionedRegion) {
       handleKVKeysPR((PartitionedRegion) region, keyList, serializeValues, servConn);
       return;

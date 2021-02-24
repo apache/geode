@@ -863,20 +863,32 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     }
 
     final List<Integer> bucketIds = new ArrayList<Integer>();
-    PartitionedRegionDataStore dataStore = this.pr.getDataStore();
     final int totalBucketsToQuery = bucketIdsToConsider.size();
-    if (dataStore != null) {
-      for (Integer bid : bucketIdsToConsider) {
-        if (dataStore.isManagingBucket(bid)) {
-          bucketIds.add(Integer.valueOf(bid));
+    if (query.isCqQuery()) {
+      // Execute the query on primary buckets only
+      Set<Integer> localPrimaryBucketIds = this.pr.getDataStore().getAllLocalPrimaryBucketIds();
+      if (!localPrimaryBucketIds.isEmpty()) {
+        for (Integer bid : bucketIdsToConsider) {
+          if (localPrimaryBucketIds.contains(bid)) {
+            bucketIds.add(Integer.valueOf(bid));
+          }
         }
       }
-      if (bucketIds.size() > 0) {
-        ret.put(pr.getMyId(), new ArrayList(bucketIds));
-        // All the buckets are hosted locally.
-        if (bucketIds.size() == totalBucketsToQuery) {
-          return ret;
+    } else {
+      PartitionedRegionDataStore dataStore = this.pr.getDataStore();
+      if (dataStore != null) {
+        for (Integer bid : bucketIdsToConsider) {
+          if (dataStore.isManagingBucket(bid)) {
+            bucketIds.add(Integer.valueOf(bid));
+          }
         }
+      }
+    }
+    if (bucketIds.size() > 0) {
+      ret.put(pr.getMyId(), new ArrayList(bucketIds));
+      // All the buckets are hosted locally.
+      if (bucketIds.size() == totalBucketsToQuery) {
+        return ret;
       }
     }
 
@@ -901,10 +913,19 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
       final List<Integer> buckets = new ArrayList<Integer>();
       for (Integer bid : bucketIdsToConsider) {
         if (!bucketIds.contains(bid)) {
-          final Set owners = getBucketOwners(bid);
-          if (owners.contains(nd)) {
-            buckets.add(bid);
-            bucketIds.add(bid);
+          if (query.isCqQuery()) {
+            // Execute the query on primary buckets only
+            InternalDistributedMember primary = getPrimaryBucketOwner(bid);
+            if (primary.equals(nd)) {
+              buckets.add(bid);
+              bucketIds.add(bid);
+            }
+          } else {
+            final Set owners = getBucketOwners(bid);
+            if (owners.contains(nd)) {
+              buckets.add(bid);
+              bucketIds.add(bid);
+            }
           }
         }
       }
@@ -923,6 +944,10 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
       logger.debug("Node to bucketId map: {}", ret);
     }
     return ret;
+  }
+
+  private InternalDistributedMember getPrimaryBucketOwner(Integer bid) {
+    return pr.getBucketPrimary(bid.intValue());
   }
 
   protected Set<InternalDistributedMember> getBucketOwners(Integer bid) {
