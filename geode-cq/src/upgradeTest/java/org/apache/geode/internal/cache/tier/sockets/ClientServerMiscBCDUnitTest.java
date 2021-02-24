@@ -84,8 +84,10 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTestBase {
   void createClientCacheAndVerifyPingIntervalIsSet(String host, int port) throws Exception {
     // this functionality was introduced in 1.5. If we let the test run in older
     // clients it will throw a NoSuchMethodError
-    if (VersionManager.getInstance().getCurrentVersionOrdinal() >= KnownVersion.GEODE_1_5_0
-        .ordinal()) {
+    if (VersionManager.getInstance().getCurrentVersionOrdinal() >= 80 /*
+                                                                       * KnownVersion.GEODE_1_5_0
+                                                                       * .ordinal()
+                                                                       */) {
       super.createClientCacheAndVerifyPingIntervalIsSet(host, port);
     }
   }
@@ -95,10 +97,10 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTestBase {
    * as its product version.
    */
   @Test
-  public void testClientProtocolVersion() throws Exception {
+  public void testClientProtocolVersion() {
     int serverPort = initServerCache(true);
     VM client1 = Host.getHost(0).getVM(testVersion, 1);
-    String hostname = NetworkUtils.getServerHostName(Host.getHost(0));
+    String hostname = NetworkUtils.getServerHostName();
     short ordinal = client1.invoke("create client1 cache", () -> {
       createClientCache(hostname, serverPort);
       populateCache();
@@ -111,7 +113,7 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTestBase {
         Object versionObject = getter.invoke(distributedMember);
         Method getOrdinal = versionObject.getClass().getMethod("ordinal");
         return (Short) getOrdinal.invoke(versionObject);
-      } catch (NoSuchMethodException e) {
+      } catch (NoSuchMethodException ignore) {
       }
       // newer versions can be accessed directly
       return distributedMember.getVersionOrdinal();

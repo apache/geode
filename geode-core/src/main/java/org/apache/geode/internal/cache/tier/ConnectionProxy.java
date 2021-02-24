@@ -20,7 +20,6 @@ import org.apache.geode.internal.serialization.KnownVersion;
 /**
  * Provides the version of the client.
  */
-@SuppressWarnings("deprecation")
 public interface ConnectionProxy {
   @Immutable
   KnownVersion VERSION = KnownVersion.CURRENT.getClientServerProtocolVersion();
