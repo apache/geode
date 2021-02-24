@@ -30,12 +30,16 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.internal.execute.FunctionToFileTracker;
 import org.apache.geode.deployment.JarDeploymentService;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.deployment.DeployedJar;
 import org.apache.geode.internal.deployment.JarDeployer;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.configuration.Deployment;
+import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.services.result.impl.Failure;
 import org.apache.geode.services.result.impl.Success;
@@ -80,8 +84,7 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
           deployments.put(deploymentCopy.getDeploymentName(), deploymentCopy);
           logger.debug("Deployments List size after add: {}", deployments.size());
           logger.debug("Deployment copy to return: {}", deploymentCopy);
-
-          functionToFileTracker.registerFunctions();
+          functionToFileTracker.registerFunctions(deploymentCopy);
           return Success.of(deploymentCopy);
         }
         // null is returned when already deployed to satisfy existing public API constraints
@@ -89,6 +92,8 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
       }
     } catch (IOException | ClassNotFoundException e) {
       return Failure.of(e);
+    } finally {
+      flushCaches();
     }
   }
 
@@ -117,6 +122,8 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
       return Success.of(removedDeployment);
     } catch (IOException e) {
       return Failure.of(e);
+    } finally {
+      flushCaches();
     }
   }
 
@@ -189,10 +196,13 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
         logger.debug("Deploying DeployedJar: {} from working directory", deployedJar);
         Deployment deployment = createDeployment(deployedJar);
         deployments.put(deployment.getDeploymentName(), deployment);
+        functionToFileTracker.registerFunctions(deployment);
       }
     } catch (ClassNotFoundException e) {
       logger.error(e);
       throw new RuntimeException(e);
+    } finally {
+      flushCaches();
     }
   }
 
@@ -216,5 +226,19 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
         Instant.ofEpochMilli(deployedJar.lastModified()).toString());
     deployment.setFile(deployedJar);
     return deployment;
+  }
+
+  /**
+   * Flush the type registry after possibly receiving new types or having old types replaced.
+   */
+  private synchronized void flushCaches() {
+    try {
+      TypeRegistry typeRegistry = ((InternalCache) CacheFactory.getAnyInstance()).getPdxRegistry();
+      if (typeRegistry != null) {
+        typeRegistry.flushCache();
+      }
+    } catch (CacheClosedException ignored) {
+      // That's okay, it just means there was nothing to flush to begin with
+    }
   }
 }

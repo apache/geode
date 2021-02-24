@@ -121,7 +121,7 @@ public class UndeployFunction implements InternalFunction<Object[]> {
         logger.debug("Undeployed jar: {}", serviceResult.getMessage());
         deploymentInfo = new DeploymentInfo(memberId, serviceResult.getMessage());
       } else {
-        logger.debug("Failed to undeploy jar: {}", serviceResult.getMessage());
+        logger.debug("Failed to undeploy jar: {}", serviceResult.getErrorMessage());
         deploymentInfo =
             new DeploymentInfo(memberId, null, fileName, serviceResult.getErrorMessage());
       }

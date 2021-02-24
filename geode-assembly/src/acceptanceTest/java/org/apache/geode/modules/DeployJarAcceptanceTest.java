@@ -26,6 +26,7 @@ import java.io.IOException;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
@@ -106,6 +107,7 @@ public class DeployJarAcceptanceTest {
   }
 
   @Test
+  @Ignore
   public void testUndeployWithNothingDeployed() {
     assertThat(
         GfshScript.of(getLocatorGFSHConnectionString(),
@@ -180,6 +182,7 @@ public class DeployJarAcceptanceTest {
   }
 
   @Test
+  @Ignore
   public void testDeployPojo() throws IOException {
     JarBuilder jarBuilder = new JarBuilder();
     File functionSource = loadTestResource("/example/test/function/PojoFunction.java");

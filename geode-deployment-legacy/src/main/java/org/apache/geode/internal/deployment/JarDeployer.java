@@ -40,10 +40,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
-import org.apache.geode.cache.execute.Function;
-import org.apache.geode.cache.internal.execute.FunctionToFileTracker;
 import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.configuration.Deployment;
@@ -274,8 +271,6 @@ public class JarDeployer implements Serializable {
       throws ClassNotFoundException {
     lock.lock();
     try {
-      Map<DeployedJar, DeployedJar> newVersionToOldVersion = new HashMap<>();
-
       for (Map.Entry<String, DeployedJar> mapEntry : deployedJars.entrySet()) {
         DeployedJar deployedJar = mapEntry.getValue();
         if (deployedJar != null) {
@@ -283,22 +278,8 @@ public class JarDeployer implements Serializable {
           DeployedJar oldJar = this.deployedJars.put(deployedJar.getArtifactId(), deployedJar);
           ClassPathLoader.getLatest().chainClassloader(deployedJar.getFile(),
               deployedJar.getArtifactId());
-          newVersionToOldVersion.put(deployedJar, oldJar);
         }
       }
-
-      // Finally, unregister functions that were removed
-      for (Map.Entry<DeployedJar, DeployedJar> entry : newVersionToOldVersion.entrySet()) {
-        DeployedJar newjar = entry.getKey();
-        DeployedJar oldJar = entry.getValue();
-
-        FunctionToFileTracker.registerFunctions(newjar.getFile());
-
-        if (oldJar != null) {
-          oldJar.cleanUp(newjar.getFile());
-        }
-      }
-
     } finally {
       lock.unlock();
     }
@@ -359,16 +340,6 @@ public class JarDeployer implements Serializable {
     return true;
   }
 
-  /**
-   * Returns the latest registered {@link DeployedJar} for the given JarName
-   *
-   * @param jarName - the unversioned jar name, e.g. myJar.jar
-   */
-  @VisibleForTesting
-  public DeployedJar getDeployedJar(String jarName) {
-    return this.deployedJars.get(JarFileUtils.getArtifactId(jarName));
-  }
-
   public Map<String, DeployedJar> getDeployedJars() {
     return Collections.unmodifiableMap(this.deployedJars);
   }
@@ -399,7 +370,6 @@ public class JarDeployer implements Serializable {
       logger.debug("JarDeployer deployedJars list after remove: {}",
           Arrays.toString(deployedJars.keySet().toArray()));
       ClassPathLoader.getLatest().unloadClassloaderForArtifact(deployment.getDeploymentName());
-      deployedJar.cleanUp(null);
       deleteAllVersionsOfJar(deployment.getFileName());
       return deployedJar.getFileCanonicalPath();
     } finally {

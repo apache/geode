@@ -25,13 +25,8 @@ import java.util.Arrays;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.internal.MakeNotStatic;
-import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.internal.execute.FunctionToFileTracker;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.utils.JarFileUtils;
-import org.apache.geode.pdx.internal.TypeRegistry;
 
 /**
  * ClassLoader for a single JAR file.
@@ -88,25 +83,6 @@ public class DeployedJar {
       // Ignored
     }
     this.md5hash = digest;
-  }
-
-  /**
-   * Unregisters all functions from this jar if it was undeployed (i.e. newVersion == null), or all
-   * functions not present in the new version if it was redeployed.
-   *
-   * @param newVersion The new version of this jar that was deployed, or null if this jar was
-   *        undeployed.
-   */
-  protected synchronized void cleanUp(File newVersion) {
-    FunctionToFileTracker.unregisterRemovedFunctions(this.file, newVersion);
-    try {
-      TypeRegistry typeRegistry = ((InternalCache) CacheFactory.getAnyInstance()).getPdxRegistry();
-      if (typeRegistry != null) {
-        typeRegistry.flushCache();
-      }
-    } catch (CacheClosedException ignored) {
-      // That's okay, it just means there was nothing to flush to begin with
-    }
   }
 
   /**

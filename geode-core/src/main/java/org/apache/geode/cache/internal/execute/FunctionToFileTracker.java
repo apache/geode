@@ -29,14 +29,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Predicate;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 import org.apache.logging.log4j.Logger;
-import org.apache.shiro.util.CollectionUtils;
 
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
@@ -46,6 +43,7 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.internal.deployment.FunctionScanner;
 
 /**
@@ -58,114 +56,92 @@ public class FunctionToFileTracker {
 
   private static final Logger logger = LogService.getLogger();
 
-  private final Map<File, List<Function<?>>> fileToFunctionsMap = new ConcurrentHashMap<>();
+  private final Map<String, List<Function<?>>> deploymentToFunctionsMap = new ConcurrentHashMap<>();
 
   /**
    * Scan the JAR file and attempt to register any function classes found.
    *
-   * @param jarFile deployed jar file to scan for {@link Function}s to register.
+   * @param deployment deployed jar file to scan for {@link Function}s to register.
    */
-  public synchronized void registerFunctions(File jarFile) throws ClassNotFoundException {
-    logger.debug("Registering functions with DeployedJar: {}", jarFile);
+  public synchronized void registerFunctions(Deployment deployment) throws ClassNotFoundException {
+    logger.debug("Registering functions for: {}", deployment.getFileName());
 
     List<Function<?>> registeredFunctions = new LinkedList<>();
 
-    BufferedInputStream bufferedInputStream;
-    try {
-      bufferedInputStream = new BufferedInputStream(new FileInputStream(jarFile));
+    try (BufferedInputStream bufferedInputStream =
+        new BufferedInputStream(new FileInputStream(deployment.getFile()))) {
+      try (JarInputStream jarInputStream = new JarInputStream(bufferedInputStream)) {
+        try {
+          Collection<String> functionClasses = findFunctionsInThisJar(deployment.getFile());
+          JarEntry jarEntry = jarInputStream.getNextJarEntry();
+          String filePath = deployment.getFile().getAbsolutePath();
+          while (jarEntry != null) {
+            if (jarEntry.getName().endsWith(".class")) {
+              String className = PATTERN_SLASH.matcher(jarEntry.getName()).replaceAll("\\.")
+                  .substring(0, jarEntry.getName().length() - 6);
+
+              if (functionClasses.contains(className)) {
+                logger.debug("Attempting to load class: {}, from JAR file: {}", jarEntry.getName(),
+                    filePath);
+                try {
+                  Collection<Function<?>> functions = loadFunctionFromClassName(className);
+                  unregisterFunctionsForDeployment(deployment);
+                  registeredFunctions.addAll(registerFunction(filePath, functions));
+                } catch (ClassNotFoundException | NoClassDefFoundError cnfex) {
+                  logger.error("Unable to load all classes from JAR file: {}",
+                      filePath, cnfex);
+                  throw cnfex;
+                }
+              } else {
+                logger.debug("No functions found in class: {}, from JAR file: {}",
+                    jarEntry.getName(),
+                    filePath);
+              }
+            }
+            jarEntry = jarInputStream.getNextJarEntry();
+          }
+        } catch (IOException ioex) {
+          logger.error("Exception when trying to read class from ByteArrayInputStream", ioex);
+        }
+      } catch (IOException ioex) {
+        logger.error("Exception attempting to close JAR input stream", ioex);
+      }
     } catch (Exception ex) {
       logger.error("Unable to scan jar file for functions");
       return;
     }
+    deploymentToFunctionsMap.put(deployment.getDeploymentName(), registeredFunctions);
+  }
 
-    JarInputStream jarInputStream = null;
-    try {
-      Collection<String> functionClasses = findFunctionsInThisJar(jarFile);
-      jarInputStream = new JarInputStream(bufferedInputStream);
-      JarEntry jarEntry = jarInputStream.getNextJarEntry();
+  private Collection<Function<?>> loadFunctionFromClassName(String className)
+      throws ClassNotFoundException {
+    Class<?> clazz = ClassPathLoader.getLatest().forName(className);
+    return getRegisterableFunctionsFromClass(clazz);
+  }
 
-      while (jarEntry != null) {
-        if (jarEntry.getName().endsWith(".class")) {
-          final String className = PATTERN_SLASH.matcher(jarEntry.getName()).replaceAll("\\.")
-              .substring(0, jarEntry.getName().length() - 6);
-
-          if (functionClasses.contains(className)) {
-            logger.debug("Attempting to load class: {}, from JAR file: {}", jarEntry.getName(),
-                jarFile.getAbsolutePath());
-            try {
-              Class<?> clazz = ClassPathLoader.getLatest().forName(className);
-              Collection<Function<?>> registerableFunctions =
-                  getRegisterableFunctionsFromClass(clazz);
-              for (Function<?> function : registerableFunctions) {
-                FunctionService.registerFunction(function);
-                logger.debug("Registering function class: {}, from JAR file: {}", className,
-                    jarFile.getAbsolutePath());
-                registeredFunctions.add(function);
-              }
-            } catch (ClassNotFoundException | NoClassDefFoundError cnfex) {
-              logger.error("Unable to load all classes from JAR file: {}",
-                  jarFile.getAbsolutePath(), cnfex);
-              throw cnfex;
-            }
-          } else {
-            logger.debug("No functions found in class: {}, from JAR file: {}", jarEntry.getName(),
-                jarFile.getAbsolutePath());
-          }
-        }
-        jarEntry = jarInputStream.getNextJarEntry();
-      }
-    } catch (IOException ioex) {
-      logger.error("Exception when trying to read class from ByteArrayInputStream", ioex);
-    } finally {
-      if (jarInputStream != null) {
-        try {
-          jarInputStream.close();
-        } catch (IOException ioex) {
-          logger.error("Exception attempting to close JAR input stream", ioex);
-        }
-      }
-      try {
-        bufferedInputStream.close();
-      } catch (IOException ignore) {
-      }
+  private List<Function<?>> registerFunction(String jarFilePath,
+      Collection<Function<?>> functions) {
+    List<Function<?>> registeredFunctions = new ArrayList<>();
+    for (Function<?> function : functions) {
+      FunctionService.registerFunction(function);
+      logger.debug("Registering function class: {}, from JAR file: {}",
+          function.getClass().getName(), jarFilePath);
+      registeredFunctions.add(function);
     }
-
-    fileToFunctionsMap.put(jarFile, registeredFunctions);
+    return registeredFunctions;
   }
 
   /**
    * Unregisters functions from a previously deployed jar that are not present in its replacement.
    * If newJar is null, all functions registered from oldJar will be removed.
    *
-   * @param oldJar a previously deployed jar file from which functions maybe have been registered.
-   * @param newJar a jar file that replaces oldJar.
+   * @param deployment - The new jar deployment.
    */
-  public void unregisterRemovedFunctions(File oldJar, File newJar) {
-    List<Function<?>> functions = fileToFunctionsMap.remove(oldJar);
+  public void unregisterFunctionsForDeployment(Deployment deployment) {
+    List<Function<?>> functions = deploymentToFunctionsMap.remove(deployment.getDeploymentName());
     if (functions != null) {
-      Stream<String> oldFunctions = functions.stream().map(Function::getId);
-
-      Stream<String> removedFunctions;
-      if (newJar == null) {
-        removedFunctions = oldFunctions;
-      } else {
-        Predicate<String> isRemoved =
-            (String oldFunctionId) -> !hasFunctionWithId(newJar, oldFunctionId);
-
-        removedFunctions = oldFunctions.filter(isRemoved);
-      }
-
-      removedFunctions.forEach(FunctionService::unregisterFunction);
+      functions.stream().map(Function::getId).forEach(FunctionService::unregisterFunction);
     }
-  }
-
-  private boolean hasFunctionWithId(File jarFile, String id) {
-    List<Function<?>> functions = fileToFunctionsMap.get(jarFile);
-    if (CollectionUtils.isEmpty(functions)) {
-      return false;
-    }
-
-    return functions.stream().map(Function::getId).anyMatch(functionId -> functionId.equals(id));
   }
 
   private static Collection<String> findFunctionsInThisJar(File jarFile) throws IOException {
