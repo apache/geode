@@ -136,18 +136,12 @@ public class DistributedCacheOperationTest {
   }
 
   @Test
-  public void processSendsReplyIfLocalRegionIsNull() {
+  public void processInvokesBasicProcessIfLocalRegionIsNull() {
     doReturn(null).when(message).getLocalRegionForProcessing(dm);
 
     message.process(dm);
 
-    assertThat(message.closed).isTrue();
-    verify(message, never()).basicProcess(dm, region);
-    verify(message).sendReply(
-        eq(sender),
-        eq(processorId),
-        eq(null),
-        eq(dm));
+    verify(message).basicProcess(dm, null);
   }
 
   @Test
