@@ -39,23 +39,22 @@ import org.apache.geode.cache.CacheEvent;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.DistributedCacheOperation.CacheOperationMessage;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.test.fake.Fakes;
 
 public class DistributedCacheOperationTest {
   private TestCacheOperationMessage message;
   private InternalDistributedMember sender;
-  private ClusterDistributionManager dm;
   private LocalRegion region;
   private VersionTag<?> versionTag;
   private Scope scope;
   private OperationExecutors executors;
+
+  private final ClusterDistributionManager dm = mock(ClusterDistributionManager.class);
   private final int processorId = 1;
 
   @Before
@@ -64,9 +63,6 @@ public class DistributedCacheOperationTest {
     sender = mock(InternalDistributedMember.class);
     versionTag = mock(VersionTag.class);
 
-    GemFireCacheImpl cache = Fakes.cache();
-    InternalDistributedSystem system = cache.getSystem();
-    dm = (ClusterDistributionManager) system.getDistributionManager();
     region = mock(LocalRegion.class);
     executors = mock(OperationExecutors.class);
     scope = mock(Scope.class);
