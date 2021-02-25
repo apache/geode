@@ -1000,7 +1000,7 @@ lib/geode-wan-0.0.0.jar
 lib/gfsh-dependencies.jar
 lib/grumpy-core-0.2.2.jar
 lib/httpclient-4.5.13.jar
-lib/httpcore-4.4.12.jar
+lib/httpcore-4.4.14.jar
 lib/istack-commons-runtime-3.0.9.jar
 lib/jackson-annotations-2.10.5.jar
 lib/jackson-core-2.10.5.jar
