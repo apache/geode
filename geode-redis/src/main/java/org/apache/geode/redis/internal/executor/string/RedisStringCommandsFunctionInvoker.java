@@ -36,10 +36,14 @@ import static org.apache.geode.redis.internal.RedisCommandType.STRLEN;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.VMCachedDeserializable;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.data.RedisString;
 import org.apache.geode.redis.internal.executor.RedisCommandsFunctionInvoker;
 
 /**
@@ -61,6 +65,17 @@ public class RedisStringCommandsFunctionInvoker extends RedisCommandsFunctionInv
 
   @Override
   public ByteArrayWrapper get(RedisKey key) {
+    Object v = null;
+    try {
+      v = ((PartitionedRegion) region).getValueInVM(key);
+    } catch (EntryNotFoundException ignored) {
+    }
+
+    if (v != null) {
+      Object cached = ((VMCachedDeserializable) v).getDeserializedForReading();
+      return ((RedisString) cached).get();
+    }
+
     return invokeCommandFunction(key, GET);
   }
 
