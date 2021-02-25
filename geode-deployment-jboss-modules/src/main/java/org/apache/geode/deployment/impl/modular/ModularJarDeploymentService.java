@@ -70,7 +70,8 @@ public class ModularJarDeploymentService implements JarDeploymentService {
           deployments.put(deploymentCopy.getDeploymentName(), deploymentCopy);
       if (oldDeployment != null) {
         try {
-          functionToFileTracker.registerFunctions(deployment);
+          functionToFileTracker.registerFunctionsFromFile(deployment.getDeploymentName(),
+              deployment.getFile());
         } catch (ClassNotFoundException e) {
           return Failure.of(e);
         } finally {
@@ -100,7 +101,7 @@ public class ModularJarDeploymentService implements JarDeploymentService {
         geodeJBossDeploymentService.unregisterModule(deploymentName);
     if (serviceResult.isSuccessful()) {
       Deployment removedDeployment = deployments.remove(deploymentName);
-      functionToFileTracker.unregisterFunctionsForDeployment(removedDeployment);
+      functionToFileTracker.unregisterFunctionsForDeployment(removedDeployment.getDeploymentName());
       return Success.of(removedDeployment);
     } else {
       return Failure.of(serviceResult.getErrorMessage());
