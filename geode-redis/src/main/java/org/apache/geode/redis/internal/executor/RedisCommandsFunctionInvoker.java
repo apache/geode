@@ -22,6 +22,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.internal.cache.PrimaryBucketLockException;
+import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
 
@@ -39,6 +40,7 @@ public abstract class RedisCommandsFunctionInvoker {
     do {
       SingleResultCollector<T> resultsCollector = new SingleResultCollector<>();
       try {
+        ServerConnection.executeFunctionOnLocalNodeOnly((byte) 1);
         FunctionService
             .onRegion(region)
             .withFilter(Collections.singleton(filter))
