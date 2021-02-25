@@ -78,7 +78,8 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
         deployments.put(deploymentCopy.getDeploymentName(), deploymentCopy);
         logger.debug("Deployments List size after add: {}", deployments.size());
         logger.debug("Deployment copy to return: {}", deploymentCopy);
-        functionToFileTracker.registerFunctions(deploymentCopy);
+        functionToFileTracker.registerFunctionsFromFile(deploymentCopy.getDeploymentName(),
+            deploymentCopy.getFile());
         return Success.of(deploymentCopy);
       }
     } catch (IOException | ClassNotFoundException e) {
@@ -108,6 +109,7 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
       logger.debug("Deployments List size after remove: {}", deployments.size());
       String undeployedPath = jarDeployer.undeploy(removedDeployment.getDeploymentName());
       logger.debug("Jar at path: {} removed by JarDeployer", undeployedPath);
+      functionToFileTracker.unregisterFunctionsForDeployment(removedDeployment.getDeploymentName());
       return Success.of(removedDeployment);
     } catch (IOException e) {
       return Failure.of(e);
@@ -190,7 +192,8 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
         deployments.put(deployment.getDeploymentName(), deployment);
       }
       for (Deployment deployment : deploymentList) {
-        functionToFileTracker.registerFunctions(deployment);
+        functionToFileTracker.registerFunctionsFromFile(deployment.getDeploymentName(),
+            deployment.getFile());
       }
     } catch (ClassNotFoundException e) {
       logger.error(e);

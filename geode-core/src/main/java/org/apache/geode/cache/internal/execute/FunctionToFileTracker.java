@@ -43,7 +43,6 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.internal.deployment.FunctionScanner;
 
 /**
@@ -61,20 +60,23 @@ public class FunctionToFileTracker {
   /**
    * Scan the JAR file and attempt to register any function classes found.
    *
-   * @param deployment deployed jar file to scan for {@link Function}s to register.
+   * @param deploymentName The name of the deployment associated with the jarfile containing
+   *        {@link Function}
+   * @param jarFile The {@link File} that contains {@link Function} that are to be registered
    */
-  public synchronized void registerFunctions(Deployment deployment) throws ClassNotFoundException {
-    logger.debug("Registering functions for: {}", deployment.getFileName());
+  public synchronized void registerFunctionsFromFile(String deploymentName, File jarFile)
+      throws ClassNotFoundException {
+    logger.debug("Registering functions for: {}", jarFile.getName());
 
     List<Function<?>> registeredFunctions = new LinkedList<>();
 
     try (BufferedInputStream bufferedInputStream =
-        new BufferedInputStream(new FileInputStream(deployment.getFile()))) {
+        new BufferedInputStream(new FileInputStream(jarFile))) {
       try (JarInputStream jarInputStream = new JarInputStream(bufferedInputStream)) {
         try {
-          Collection<String> functionClasses = findFunctionsInThisJar(deployment.getFile());
+          Collection<String> functionClasses = findFunctionsInThisJar(jarFile);
           JarEntry jarEntry = jarInputStream.getNextJarEntry();
-          String filePath = deployment.getFile().getAbsolutePath();
+          String filePath = jarFile.getAbsolutePath();
           while (jarEntry != null) {
             if (jarEntry.getName().endsWith(".class")) {
               String className = PATTERN_SLASH.matcher(jarEntry.getName()).replaceAll("\\.")
@@ -85,7 +87,7 @@ public class FunctionToFileTracker {
                     filePath);
                 try {
                   Collection<Function<?>> functions = loadFunctionFromClassName(className);
-                  unregisterFunctionsForDeployment(deployment);
+                  unregisterFunctionsForDeployment(deploymentName);
                   registeredFunctions.addAll(registerFunction(filePath, functions));
                 } catch (ClassNotFoundException | NoClassDefFoundError cnfex) {
                   logger.error("Unable to load all classes from JAR file: {}",
@@ -110,7 +112,9 @@ public class FunctionToFileTracker {
       logger.error("Unable to scan jar file for functions");
       return;
     }
-    deploymentToFunctionsMap.put(deployment.getDeploymentName(), registeredFunctions);
+    if (!registeredFunctions.isEmpty()) {
+      deploymentToFunctionsMap.put(deploymentName, registeredFunctions);
+    }
   }
 
   private Collection<Function<?>> loadFunctionFromClassName(String className)
@@ -135,10 +139,11 @@ public class FunctionToFileTracker {
    * Unregisters functions from a previously deployed jar that are not present in its replacement.
    * If newJar is null, all functions registered from oldJar will be removed.
    *
-   * @param deployment - The new jar deployment.
+   * @param deploymentName - The name of the deployment that linked to the functions that are to be
+   *        unregistered.
    */
-  public void unregisterFunctionsForDeployment(Deployment deployment) {
-    List<Function<?>> functions = deploymentToFunctionsMap.remove(deployment.getDeploymentName());
+  public void unregisterFunctionsForDeployment(String deploymentName) {
+    List<Function<?>> functions = deploymentToFunctionsMap.remove(deploymentName);
     if (functions != null) {
       functions.stream().map(Function::getId).forEach(FunctionService::unregisterFunction);
     }

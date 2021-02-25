@@ -180,6 +180,35 @@ public class DeployJarAcceptanceTest {
   }
 
   @Test
+  public void testDeployAndUndeployFunction() throws IOException {
+    JarBuilder jarBuilder = new JarBuilder();
+    File source = loadTestResource("/example/test/function/ExampleFunction.java");
+
+    File outputJar = new File(stagingTempDir.newFolder(), "function.jar");
+    jarBuilder.buildJar(outputJar, source);
+
+    GfshScript.of(getLocatorGFSHConnectionString(), "deploy --jars=" + outputJar.getCanonicalPath())
+        .execute(gfshRule);
+
+    assertThat(GfshScript.of(getLocatorGFSHConnectionString(), "list functions").execute(gfshRule)
+        .getOutputText()).contains("ExampleFunction");
+
+    assertThat(
+        GfshScript.of(getLocatorGFSHConnectionString(), "execute function --id=ExampleFunction")
+            .execute(gfshRule)
+            .getOutputText()).contains("SUCCESS");
+
+    GfshScript
+        .of(getLocatorGFSHConnectionString(), "undeploy --jars=" + outputJar.getName())
+        .execute(gfshRule);
+
+    assertThat(GfshScript.of(getLocatorGFSHConnectionString(), "list functions").execute(gfshRule)
+        .getOutputText()).doesNotContain("ExampleFunction");
+
+
+  }
+
+  @Test
   public void testDeployPojo() throws IOException {
     JarBuilder jarBuilder = new JarBuilder();
     File functionSource = loadTestResource("/example/test/function/PojoFunction.java");
