@@ -39,7 +39,7 @@ shiro-config-ogdl-1.7.1.jar
 commons-beanutils-1.9.4.jar
 commons-collections-3.2.2.jar
 commons-io-2.6.jar
-httpclient-4.5.10.jar
+httpclient-4.5.13.jar
 commons-logging-1.2.jar
 classgraph-4.8.52.jar
 micrometer-core-1.2.1.jar
