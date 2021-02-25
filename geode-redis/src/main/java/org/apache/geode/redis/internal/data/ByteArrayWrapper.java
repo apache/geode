@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal.data;
 
 import static org.apache.geode.redis.internal.RegionProvider.REDIS_REGION_BUCKETS;
 import static org.apache.geode.redis.internal.RegionProvider.REDIS_SLOTS;
+import static org.apache.geode.redis.internal.RegionProvider.REDIS_SLOTS_PER_BUCKET;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -119,7 +120,7 @@ public class ByteArrayWrapper
    */
   public synchronized Object getRoutingId() {
     if (routingId == null) {
-      routingId = (CRC16.calculate(value) % REDIS_SLOTS) % REDIS_REGION_BUCKETS;
+      routingId = (CRC16.calculate(value) % REDIS_SLOTS) / REDIS_SLOTS_PER_BUCKET;
     }
 
     return routingId;

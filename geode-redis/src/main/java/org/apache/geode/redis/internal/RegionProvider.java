@@ -31,6 +31,7 @@ public class RegionProvider {
   public static final String REDIS_CONFIG_REGION = "__REDIS_CONFIG";
   public static final int REDIS_REGION_BUCKETS = Integer.getInteger("redis.region.buckets", 128);
   public static final int REDIS_SLOTS = Integer.getInteger("redis.slots", 16384);
+  public static final int REDIS_SLOTS_PER_BUCKET = REDIS_SLOTS / REDIS_REGION_BUCKETS;
 
   private final Region<ByteArrayWrapper, RedisData> dataRegion;
   private final Region<String, Object> configRegion;
