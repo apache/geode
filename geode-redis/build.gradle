@@ -31,6 +31,7 @@ facets {
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
   implementation(project(':geode-serialization'))
+  implementation(project(':geode-membership'))
   implementation(project(':geode-logging'))
   implementation(project(':geode-core'))
   implementation(project(':geode-gfsh'))

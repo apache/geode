@@ -17,14 +17,21 @@ package org.apache.geode.redis.internal.cluster;
 
 import java.io.Serializable;
 import java.net.InetAddress;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.LocalDataSet;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.execute.InternalFunction;
+import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
@@ -60,10 +67,22 @@ public class BucketRetrievalFunction implements InternalFunction<Void> {
     Region<RedisKey, ByteArrayWrapper> region =
         context.getCache().getRegion(RegionProvider.REDIS_DATA_REGION);
 
-    LocalDataSet local = (LocalDataSet) PartitionRegionHelper.getLocalPrimaryData(region);
+    String memberId =
+        context.getCache().getDistributedSystem().getDistributedMember().getUniqueId();
+    LocalDataSet localPrimary = (LocalDataSet) PartitionRegionHelper.getLocalPrimaryData(region);
+    RegionAdvisor advisor = ((PartitionedRegion) region).getRegionAdvisor();
+    Map<Integer, List<String>> bucketToSecondaries = new HashMap<>();
 
-    MemberBuckets mb =
-        new MemberBuckets(context.getMemberName(), hostAddress, redisPort, local.getBucketSet());
+    for (Integer bucketId : localPrimary.getBucketSet()) {
+      List<String> a = advisor.getBucketOwners(bucketId).stream()
+          .map(InternalDistributedMember::getId)
+          .filter(x -> !x.equals(memberId))
+          .collect(Collectors.toList());
+      bucketToSecondaries.put(bucketId, a);
+    }
+
+    MemberBuckets mb = new MemberBuckets(memberId, hostAddress, redisPort,
+        localPrimary.getBucketSet(), bucketToSecondaries);
     context.getResultSender().lastResult(mb);
   }
 
@@ -76,13 +95,16 @@ public class BucketRetrievalFunction implements InternalFunction<Void> {
     private final String memberId;
     private final String hostAddress;
     private final int port;
-    private final Set<Integer> bucketIds;
+    private final Set<Integer> primaryBucketIds;
+    private final Map<Integer, List<String>> secondaryBucketMembers;
 
-    public MemberBuckets(String memberId, String hostAddress, int port, Set<Integer> bucketIds) {
+    public MemberBuckets(String memberId, String hostAddress, int port,
+        Set<Integer> primaryBucketIds, Map<Integer, List<String>> secondaryBucketIds) {
       this.memberId = memberId;
       this.hostAddress = hostAddress;
       this.port = port;
-      this.bucketIds = bucketIds;
+      this.primaryBucketIds = primaryBucketIds;
+      this.secondaryBucketMembers = secondaryBucketIds;
     }
 
     public String getMemberId() {
@@ -97,8 +119,12 @@ public class BucketRetrievalFunction implements InternalFunction<Void> {
       return port;
     }
 
-    public Set<Integer> getBucketIds() {
-      return bucketIds;
+    public Set<Integer> getPrimaryBucketIds() {
+      return primaryBucketIds;
+    }
+
+    public Map<Integer, List<String>> getSecondaryBucketMembers() {
+      return secondaryBucketMembers;
     }
   }
 }

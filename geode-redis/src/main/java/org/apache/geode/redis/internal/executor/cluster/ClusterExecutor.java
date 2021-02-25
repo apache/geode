@@ -17,16 +17,16 @@ package org.apache.geode.redis.internal.executor.cluster;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_UNKNOWN_COMMAND;
 import static org.apache.geode.redis.internal.RegionProvider.REDIS_REGION_BUCKETS;
-import static org.apache.geode.redis.internal.RegionProvider.REDIS_SLOTS;
+import static org.apache.geode.redis.internal.RegionProvider.REDIS_SLOTS_PER_BUCKET;
 import static org.apache.geode.redis.internal.cluster.BucketRetrievalFunction.MemberBuckets;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -94,14 +94,20 @@ public class ClusterExecutor extends AbstractExecutor {
     ResultCollector<MemberBuckets, List<MemberBuckets>> resultCollector =
         FunctionService.onMembers(membersWithDataRegion).execute(BucketRetrievalFunction.ID);
 
-    SortedMap<Integer, String> bucketToMemberMap = new TreeMap<>();
+    Map<Integer, String> primaryBucketToMemberMap = new HashMap<>();
+    Map<Integer, List<String>> secondaryBucketToMemberMap = new HashMap<>();
     Map<String, Pair<String, Integer>> memberToHostPortMap = new TreeMap<>();
     int retrievedBucketCount = 0;
+
     for (MemberBuckets m : resultCollector.getResult()) {
       memberToHostPortMap.put(m.getMemberId(), Pair.of(m.getHostAddress(), m.getPort()));
-      for (Integer id : m.getBucketIds()) {
-        bucketToMemberMap.put(id, m.getMemberId());
+      for (Integer id : m.getPrimaryBucketIds()) {
+        primaryBucketToMemberMap.put(id, m.getMemberId());
         retrievedBucketCount++;
+      }
+
+      for (Map.Entry<Integer, List<String>> entry : m.getSecondaryBucketMembers().entrySet()) {
+        secondaryBucketToMemberMap.put(entry.getKey(), entry.getValue());
       }
     }
 
@@ -110,16 +116,25 @@ public class ClusterExecutor extends AbstractExecutor {
           + " != " + REDIS_REGION_BUCKETS);
     }
 
-    int slotsPerBucket = REDIS_SLOTS / REDIS_REGION_BUCKETS;
     int index = 0;
     List<Object> slots = new ArrayList<>();
 
-    for (String member : bucketToMemberMap.values()) {
-      Pair<String, Integer> hostAndPort = memberToHostPortMap.get(member);
-      List<?> entry = Arrays.asList(
-          index * slotsPerBucket,
-          ((index + 1) * slotsPerBucket) - 1,
-          Arrays.asList(hostAndPort.getLeft(), hostAndPort.getRight()));
+    for (int i = 0; i < REDIS_REGION_BUCKETS; i++) {
+      Pair<String, Integer> primaryHostAndPort =
+          memberToHostPortMap.get(primaryBucketToMemberMap.get(i));
+
+      List<Object> entry = new ArrayList<>();
+      entry.add(index * REDIS_SLOTS_PER_BUCKET);
+      entry.add(((index + 1) * REDIS_SLOTS_PER_BUCKET) - 1);
+      entry.add(Arrays.asList(primaryHostAndPort.getLeft(), primaryHostAndPort.getRight()));
+
+      List<String> secondaryMembers = secondaryBucketToMemberMap.get(i);
+      if (secondaryMembers != null) {
+        for (String m : secondaryMembers) {
+          Pair<String, Integer> hostPort = memberToHostPortMap.get(m);
+          entry.add(Arrays.asList(hostPort.getLeft(), hostPort.getRight()));
+        }
+      }
 
       slots.add(entry);
       index++;
