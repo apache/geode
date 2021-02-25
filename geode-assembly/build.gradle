@@ -44,7 +44,9 @@ def dependentProjectNames = [
   ':geode-redis',
   ':geode-serialization',
   ':geode-tcp-server',
-  ':geode-wan'
+  ':geode-wan',
+  ':geode-deployment-jboss-modules',
+  ':geode-jboss-extensions'
 ]
 
 // These other dependencies are explicitly referenced throughout other copySpec

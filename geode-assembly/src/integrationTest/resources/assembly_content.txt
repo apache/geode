@@ -588,6 +588,10 @@ javadoc/org/apache/geode/datasource/package-frame.html
 javadoc/org/apache/geode/datasource/package-summary.html
 javadoc/org/apache/geode/datasource/package-tree.html
 javadoc/org/apache/geode/deployment/NewDeployment.html
+javadoc/org/apache/geode/deployment/impl/modular/ModularJarDeploymentService.html
+javadoc/org/apache/geode/deployment/impl/modular/package-frame.html
+javadoc/org/apache/geode/deployment/impl/modular/package-summary.html
+javadoc/org/apache/geode/deployment/impl/modular/package-tree.html
 javadoc/org/apache/geode/deployment/package-frame.html
 javadoc/org/apache/geode/deployment/package-summary.html
 javadoc/org/apache/geode/deployment/package-tree.html
@@ -834,6 +838,14 @@ javadoc/org/apache/geode/modules/gatewaydelta/GatewayDeltaForwarderCacheListener
 javadoc/org/apache/geode/modules/gatewaydelta/package-frame.html
 javadoc/org/apache/geode/modules/gatewaydelta/package-summary.html
 javadoc/org/apache/geode/modules/gatewaydelta/package-tree.html
+javadoc/org/apache/geode/modules/loader/GeodeModuleLoader.html
+javadoc/org/apache/geode/modules/loader/package-frame.html
+javadoc/org/apache/geode/modules/loader/package-summary.html
+javadoc/org/apache/geode/modules/loader/package-tree.html
+javadoc/org/apache/geode/modules/service/GeodeJBossDeploymentService.html
+javadoc/org/apache/geode/modules/service/package-frame.html
+javadoc/org/apache/geode/modules/service/package-summary.html
+javadoc/org/apache/geode/modules/service/package-tree.html
 javadoc/org/apache/geode/modules/session/bootstrap/AbstractCache.html
 javadoc/org/apache/geode/modules/session/bootstrap/ClientServerCache.html
 javadoc/org/apache/geode/modules/session/bootstrap/LifecycleTypeAdapter.html
@@ -1034,10 +1046,12 @@ lib/geode-connectors-0.0.0.jar
 lib/geode-core-0.0.0.jar
 lib/geode-cq-0.0.0.jar
 lib/geode-dependencies.jar
+lib/geode-deployment-jboss-modules-0.0.0.jar
 lib/geode-deployment-legacy-0.0.0.jar
 lib/geode-dunit-0.0.0.jar
 lib/geode-gfsh-0.0.0.jar
 lib/geode-http-service-0.0.0.jar
+lib/geode-jboss-extensions-0.0.0.jar
 lib/geode-jca-0.0.0.rar
 lib/geode-junit-0.0.0.jar
 lib/geode-log4j-0.0.0.jar
@@ -1418,7 +1432,6 @@ moduleDescriptors/geode-tcp-server/0.0.0/module.xml
 moduleDescriptors/geode-unsafe/0.0.0/module.xml
 moduleDescriptors/geode-wan/0.0.0/module.xml
 moduleDescriptors/jackson/2.12.1/module.xml
-moduleDescriptors/linking/1.15.0-build.0/module.xml
 moduleDescriptors/shiro/1.7.1/module.xml
 moduleDescriptors/springframework/5.3.3/module.xml
 moduleDescriptors/springshell/1.2.0.RELEASE/module.xml
