@@ -131,7 +131,7 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
       int queueSize, CommunicationMode communicationMode, Principal principal) throws IOException {
     DataOutputStream dos = new DataOutputStream(out);
     DataInputStream dis;
-    if (clientVersion.isOlderThan(KnownVersion.CURRENT.getClientServerProtocolVersion())) {
+    if (clientVersion.isOlderThan(KnownVersion.CURRENT)) {
       dis = new VersionedDataInputStream(in, clientVersion);
       dos = new VersionedDataOutputStream(dos, clientVersion);
     } else {

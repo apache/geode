@@ -987,8 +987,13 @@ public abstract class ServerConnection implements Runnable {
   void initializeCommands() {
     // The commands are cached here, but are just referencing the ones stored in the
     // CommandInitializer
-    commands = CommandInitializer.getDefaultInstance()
-        .get(getClientVersion().getClientServerProtocolVersion());
+    KnownVersion clientVersion = getClientVersion();
+    // WAN uses KnownVersion.CURRENT, but that might not have a command table, so we look
+    // for one that does
+    if (!clientVersion.hasClientServerProtocolChange()) {
+      clientVersion = clientVersion.getClientServerProtocolVersion();
+    }
+    commands = CommandInitializer.getDefaultInstance().get(clientVersion);
   }
 
   private Command getCommand(Integer messageType) {
