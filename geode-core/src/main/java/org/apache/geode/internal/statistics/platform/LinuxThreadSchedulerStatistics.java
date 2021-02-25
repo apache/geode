@@ -30,7 +30,6 @@ import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
-import org.apache.geode.StatisticsTypeFactory;
 
 public class LinuxThreadSchedulerStatistics {
 
@@ -45,18 +44,16 @@ public class LinuxThreadSchedulerStatistics {
    *
    * @return a {@link Sampler} to be invoked when samples are needed
    */
-  public static Sampler create(final StatisticsTypeFactory statisticsTypeFactory,
-      final StatisticsFactory statisticsFactory) {
-    return create(statisticsTypeFactory, statisticsFactory, SCHEDSTAT_PATH);
+  public static Sampler create(final StatisticsFactory statisticsFactory) {
+    return create(statisticsFactory, SCHEDSTAT_PATH);
   }
 
   // visible for testing
   @NotNull
-  static Sampler create(final StatisticsTypeFactory statisticsTypeFactory,
-      final StatisticsFactory statisticsFactory,
+  static Sampler create(final StatisticsFactory statisticsFactory,
       final Path path) {
     if (Files.exists(path)) {
-      return new WorkingSampler(statisticsTypeFactory, statisticsFactory, path);
+      return new WorkingSampler(statisticsFactory, path);
     } else {
       return () -> {
       }; // no-op
@@ -86,11 +83,10 @@ public class LinuxThreadSchedulerStatistics {
     private final StatisticsFactory statisticsFactory;
     private final Path path;
 
-    public WorkingSampler(final StatisticsTypeFactory statisticsTypeFactory,
-        final StatisticsFactory statisticsFactory,
+    public WorkingSampler(final StatisticsFactory statisticsFactory,
         final Path path) {
       statisticsType =
-          statisticsTypeFactory.createType("LinuxThreadScheduler",
+          statisticsFactory.createType("LinuxThreadScheduler",
               "Per-CPU Linux scheduler statistics from /proc/schedstat",
               new StatisticDescriptor[] {
                   /*
@@ -99,14 +95,14 @@ public class LinuxThreadSchedulerStatistics {
                    * ...except the units are corrected here because of this change
                    * https://lkml.org/lkml/2019/7/24/906
                    */
-                  statisticsTypeFactory.createLongGauge(RUNNING_TIME_NANOS,
+                  statisticsFactory.createLongGauge(RUNNING_TIME_NANOS,
                       "sum of all time spent running by tasks on this processor", "nanoseconds"),
-                  statisticsTypeFactory.createLongGauge(QUEUED_TIME_NANOS,
+                  statisticsFactory.createLongGauge(QUEUED_TIME_NANOS,
                       "sum of all time spent waiting to run by tasks on this processor",
                       "nanoseconds"),
-                  statisticsTypeFactory.createLongGauge(TASKS_SCHEDULED_COUNT,
+                  statisticsFactory.createLongGauge(TASKS_SCHEDULED_COUNT,
                       "# of tasks (not necessarily unique) given to the processor", "tasks"),
-                  statisticsTypeFactory.createDoubleGauge(MEAN_TASK_QUEUED_TIME_NANOS, "",
+                  statisticsFactory.createDoubleGauge(MEAN_TASK_QUEUED_TIME_NANOS, "",
                       "nanoseconds/task")
               });
 
@@ -131,7 +127,7 @@ public class LinuxThreadSchedulerStatistics {
     }
 
     private void parse(final Stream<String> lines) {
-      // Parser lambda demanands final variables. Atomics work fine.
+      // Parser lambda demands final variables. Atomics work fine.
       final AtomicInteger lineNumber = new AtomicInteger(0);
       final AtomicBoolean terminated = new AtomicBoolean(false);
 

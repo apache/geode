@@ -28,9 +28,7 @@ import org.junit.Test;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
-import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.internal.statistics.LocalStatisticsFactory;
-import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 import org.apache.geode.internal.statistics.platform.LinuxThreadSchedulerStatistics.WorkingSampler;
 
 public class LinuxThreadSchedulerStatisticsTest {
@@ -42,12 +40,10 @@ public class LinuxThreadSchedulerStatisticsTest {
   private static final URL SCHEDSTAT_VALID_URL =
       LinuxThreadSchedulerStatisticsTest.class.getResource("schedstat-valid-1");
 
-  StatisticsTypeFactory statisticsTypeFactory;
   StatisticsFactory statisticsFactory;
 
   @Before
   public void before() {
-    statisticsTypeFactory = StatisticsTypeFactoryImpl.singleton();
     statisticsFactory = new LocalStatisticsFactory(new CancelCriterion() {
       @Override
       public String cancelInProgress() {
@@ -65,7 +61,7 @@ public class LinuxThreadSchedulerStatisticsTest {
   public void createsNoOpSamplerForNonExistentSchedstatFile() {
     final LinuxThreadSchedulerStatistics.Sampler sampler =
         LinuxThreadSchedulerStatistics
-            .create(statisticsTypeFactory, statisticsFactory, NON_EXISTENT_FILE_PATH);
+            .create(statisticsFactory, NON_EXISTENT_FILE_PATH);
     /*
      * this assertion assumes that WorkingSampler is the only one
      * working implementation of the Sampler interface
@@ -92,8 +88,17 @@ public class LinuxThreadSchedulerStatisticsTest {
     validateStatistics(sampler, "cpu1", 25690060435L, 41061208584L, 56293L, 729419.4408541026);
   }
 
+  @Test
+  public void ignoresDomainStatistics() throws URISyntaxException {
+    final LinuxThreadSchedulerStatistics.WorkingSampler sampler =
+        workingSamplerFor(SCHEDSTAT_VALID_URL);
+    sampler.sample();
+    final Statistics domain0Statistics = sampler.statisticsForCpuIds.get("domain0");
+    assertThat(domain0Statistics).isNull();
+  }
+
   private WorkingSampler workingSamplerFor(final URL schedstatURL) throws URISyntaxException {
-    return new WorkingSampler(statisticsTypeFactory, statisticsFactory,
+    return new WorkingSampler(statisticsFactory,
         Paths.get(schedstatURL.toURI()));
   }
 
@@ -101,12 +106,12 @@ public class LinuxThreadSchedulerStatisticsTest {
       final long runningTimeNanos, final long queuedTimeNanos,
       final long tasksScheduledCount,
       final double meanTaskQueuedTimeNanos) {
-    final Statistics cpu0Statistics = sampler.statisticsForCpuIds.get(cpuId);
-    assertThat(cpu0Statistics.getLong(sampler.runningTimeNanosId)).isEqualTo(runningTimeNanos);
-    assertThat(cpu0Statistics.getLong(sampler.queuedTimeNanosId)).isEqualTo(queuedTimeNanos);
-    assertThat(cpu0Statistics.getLong(sampler.tasksScheduledCountId))
+    final Statistics cpuStatistics = sampler.statisticsForCpuIds.get(cpuId);
+    assertThat(cpuStatistics.getLong(sampler.runningTimeNanosId)).isEqualTo(runningTimeNanos);
+    assertThat(cpuStatistics.getLong(sampler.queuedTimeNanosId)).isEqualTo(queuedTimeNanos);
+    assertThat(cpuStatistics.getLong(sampler.tasksScheduledCountId))
         .isEqualTo(tasksScheduledCount);
-    assertThat(cpu0Statistics.getDouble(sampler.meanTaskQueuedTimeNanosId)).isEqualTo(
+    assertThat(cpuStatistics.getDouble(sampler.meanTaskQueuedTimeNanosId)).isEqualTo(
         meanTaskQueuedTimeNanos);
   }
 }
