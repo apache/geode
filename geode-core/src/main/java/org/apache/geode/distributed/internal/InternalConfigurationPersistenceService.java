@@ -401,9 +401,6 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
                   "Exception occurred while attempting to delete a jar from the filesystem: {}",
                   deploymentToRemove, e);
             }
-          } else {
-            logger.error("Could not remove jar for path: {}", jar.getCanonicalPath());
-            throw new RuntimeException("Could not remove jar for path: " + jar.getCanonicalPath());
           }
         }
         configRegion.put(group, configurationCopy);
