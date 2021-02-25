@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
@@ -48,8 +49,10 @@ import org.apache.geode.internal.cache.DistributedTombstoneOperation;
 import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.TombstoneService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
@@ -128,7 +131,7 @@ public class TombstoneDUnitTest implements Serializable {
 
     // Create a cache and load some boiler plate entries
     server1.invoke(() -> {
-      createCacheAndRegion(RegionShortcut.REPLICATE_PERSISTENT);
+      createCacheAndRegion(RegionShortcut.REPLICATE);
       for (int i = 0; i < count; i++) {
         region.put("K" + i, "V" + i);
       }
@@ -167,12 +170,66 @@ public class TombstoneDUnitTest implements Serializable {
   }
 
   @Test
+  public void testWhenAnOutOfRangeTimeStampIsSeenWeExpireItInNonReplicateTombstoneSweeper() {
+    VM server1 = VM.getVM(-1);
+    VM server2 = VM.getVM(1);
+    final int FAR_INTO_THE_FUTURE = 1000000; // 1 million millis into the future
+    final int count = 2000;
+    Logger logger = LogService.getLogger();
+    // Create a cache and load some boiler plate entries
+    server1.invoke(() -> {
+      createCacheAndRegion(RegionShortcut.PARTITION);
+      for (int i = 0; i < count; i++) {
+        region.put("K" + i, "V" + i);
+      }
+    });
+
+    server2.invoke(() -> createCacheAndRegion(RegionShortcut.PARTITION));
+
+    server1.invoke(() -> {
+
+      // Now that we have a cache and a region specifically with data, we can start the real work
+      TombstoneService.TombstoneSweeper tombstoneSweeper =
+          ((InternalCache) cache).getTombstoneService().getSweeper((LocalRegion) region);
+
+      // Get one of the entries
+
+      PartitionedRegion partitionedRegion = (PartitionedRegion)region;
+      RegionEntry regionEntry = partitionedRegion.getBucketRegion("K0").getRegionEntry("K0");
+
+      /*
+       * Create a version tag with a timestamp far off in the future...
+       * It should be in the near past, but we are testing that a future tombstone will be cleared
+       */
+
+      VersionTag<?> versionTag = regionEntry.getVersionStamp().asVersionTag();
+      versionTag.setVersionTimeStamp(System.currentTimeMillis() + FAR_INTO_THE_FUTURE);
+
+      // Create the forged tombstone with the versionTag from the future
+      TombstoneService.Tombstone modifiedTombstone =
+          new TombstoneService.Tombstone(regionEntry, (LocalRegion) region,
+              versionTag);
+
+      // Add it to the list of tombstones so that when checkOldestUnexpired is called it will see it
+      tombstoneSweeper.tombstones.add(modifiedTombstone);
+      tombstoneSweeper.checkOldestUnexpired(System.currentTimeMillis());
+
+      // Validate that the tombstone was cleared.
+      assertThat(tombstoneSweeper.getOldestTombstoneTime()).isEqualTo(0);
+    });
+  }
+
+
+
+
+
+  @Test
   public void testGetOldestTombstoneTimeForReplicateTombstoneSweeper() {
     VM server1 = VM.getVM(0);
     VM server2 = VM.getVM(1);
     final int count = 10;
     server1.invoke(() -> {
-      createCacheAndRegion(RegionShortcut.REPLICATE_PERSISTENT);
+      createCacheAndRegion(RegionShortcut.REPLICATE);
       for (int i = 0; i < count; i++) {
         region.put("K" + i, "V" + i);
       }
@@ -246,7 +303,7 @@ public class TombstoneDUnitTest implements Serializable {
     VM server2 = VM.getVM(1);
 
     server1.invoke(() -> {
-      createCacheAndRegion(REPLICATE_PERSISTENT);
+      createCacheAndRegion(REPLICATE);
       region.put("K1", "V1");
       region.put("K2", "V2");
     });

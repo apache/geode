@@ -426,7 +426,12 @@ public class TombstoneService {
 
     @Override
     protected boolean hasExpired(long msUntilTombstoneExpires) {
-      return msUntilTombstoneExpires <= 0;
+    /*
+     * In case the tombstone expiration time would be too far out lets cap it. This is just
+     * making the system fault tolerant in the case that there are large clock jumps or
+     * unrealistically large timestamps.
+     */
+      return msUntilTombstoneExpires <= 0 || msUntilTombstoneExpires > EXPIRY_TIME;
     }
 
     @Override
