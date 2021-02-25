@@ -325,9 +325,16 @@ public class JarDeployer implements Serializable {
    */
   public void deleteAllVersionsOfJar(String jarName) {
     lock.lock();
-    String artifactId = JarFileUtils.getArtifactId(jarName);
+    logger.info("Deleting all versions of jar: {}", jarName);
+    String artifactId = JarFileUtils.toArtifactId(jarName);
+    if (artifactId == null) {
+      artifactId = JarFileUtils.getArtifactId(jarName);
+    }
+    logger.debug("ArtifactId to delete: {}", artifactId);
     try {
       for (File file : this.deployDirectory.listFiles()) {
+        logger.debug("File in deploy directory: {} with artifactId: {}", file.getName(),
+            JarFileUtils.toArtifactId(file.getName()));
         if (artifactId.equals(JarFileUtils.toArtifactId(file.getName()))) {
           logger.info("Deleting: {}", file.getAbsolutePath());
           FileUtils.deleteQuietly(file);
