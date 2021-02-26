@@ -32,6 +32,7 @@ import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.deployment.internal.JarDeploymentServiceFactory;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.management.configuration.Deployment;

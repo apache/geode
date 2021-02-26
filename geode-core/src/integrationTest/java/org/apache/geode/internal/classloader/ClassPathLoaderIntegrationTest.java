@@ -50,6 +50,7 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultSender;
+import org.apache.geode.deployment.internal.JarDeploymentServiceFactory;
 import org.apache.geode.internal.cache.execute.FunctionContextImpl;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.services.result.ServiceResult;

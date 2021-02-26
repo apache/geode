@@ -26,6 +26,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.persistence.PersistentID;
+import org.apache.geode.deployment.internal.JarDeploymentServiceFactory;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.Oplog;
