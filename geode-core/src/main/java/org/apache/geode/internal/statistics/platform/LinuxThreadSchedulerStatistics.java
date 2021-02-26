@@ -30,11 +30,14 @@ import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
+import org.apache.geode.annotations.Immutable;
 
 public class LinuxThreadSchedulerStatistics {
 
   // This is the only version of /proc/schedstat that we can parse (for now)
   public static final String SCHEDSTAT_FORMAT_VERSION = "15";
+
+  @Immutable
   public static final Path SCHEDSTAT_PATH = Paths.get("/proc/schedstat");
 
   private LinuxThreadSchedulerStatistics() {}
