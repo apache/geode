@@ -36,9 +36,9 @@ public class LinuxThreadSchedulerStatisticsTest {
   private static final Path NON_EXISTENT_FILE_PATH =
       Paths.get("this-file-does-not-exist-EpCAd9DKL3TF");
   private static final URL SCHEDSTAT_UNKNOWN_VERSION_URL =
-      LinuxThreadSchedulerStatisticsTest.class.getResource("schedstat-version-16");
+      LinuxThreadSchedulerStatisticsTest.class.getResource("schedstat-version-16.txt");
   private static final URL SCHEDSTAT_VALID_URL =
-      LinuxThreadSchedulerStatisticsTest.class.getResource("schedstat-valid-1");
+      LinuxThreadSchedulerStatisticsTest.class.getResource("schedstat-valid-1.txt");
 
   StatisticsFactory statisticsFactory;
 
