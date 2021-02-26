@@ -170,24 +170,19 @@ VER=geode-serialization/src/main/java/org/apache/geode/internal/serialization/Kn
 [ -r $VER ] || VER=geode-serialization/src/main/java/org/apache/geode/internal/serialization/Version.java
 #add the new ordinal and KnownVersion constants and set them as current&highest
 CURORD=$(cat $VER | awk '/private static final short GEODE_.*_ORDINAL/{print $NF}' | tr -d ';' | sort -n | tail -1)
-NEWORD=$(( CURORD + 5 ))
+NEWORD=$(( CURORD + 10 ))
+LATEST_CLIENT_ORD=$(cat $VER | grep '^ *GEODE_.*ORDINAL,' | tr ')' ' ' | awk '{v=$2}END{print v}')
 sed -e "s#/. NOTE: when adding a new version#private static final short GEODE_${NEWMAJOR}_${NEWMINOR}_0_ORDINAL = ${NEWORD};\\
 \\
   @Immutable\\
   public static final KnownVersion GEODE_${NEWMAJOR}_${NEWMINOR}_0 =\\
       new KnownVersion("'"'"GEODE"'"'", "'"'"${NEWMAJOR}.${NEWMINOR}.0"'"'", (byte) ${NEWMAJOR}, (byte) ${NEWMINOR}, (byte) 0, (byte) 0,\\
-          GEODE_${NEWMAJOR}_${NEWMINOR}_0_ORDINAL);\\
+          GEODE_${NEWMAJOR}_${NEWMINOR}_0_ORDINAL, ${LATEST_CLIENT_ORD});\\
 \\
   /* NOTE: when adding a new version#" \
   -e "/public static final KnownVersion CURRENT/s#GEODE[0-9_]*#GEODE_${NEWMAJOR}_${NEWMINOR}_0#" \
   -e "/public static final int HIGHEST_VERSION/s# = [0-9]*# = ${NEWORD}#" \
   -i.bak $VER
-
-COM=geode-core/src/main/java/org/apache/geode/internal/cache/tier/sockets/CommandInitializer.java
-#add to list of all commands
-sed -e "s#return allCommands#allCommands.put(KnownVersion.GEODE_${NEWMAJOR}_${NEWMINOR}_0, geode18Commands);\\
-    return allCommands#" \
-  -i.bak $COM
 
 #  directory: docs/guide/113
 #  product_version: '1.13.2'
@@ -204,7 +199,7 @@ sed -E \
 #rewrite '/index.html', '/docs/guide/113/about_geode.html'
 sed -E -e "s#docs/guide/[0-9]+#docs/guide/${NEWVERSION_MM_NODOT}#" -i.bak geode-book/redirects.rb
 
-rm gradle.properties.bak ci/pipelines/shared/jinja.variables.yml.bak geode-book/config.yml.bak geode-book/redirects.rb.bak $VER.bak* $COM.bak*
+rm gradle.properties.bak ci/pipelines/shared/jinja.variables.yml.bak geode-book/config.yml.bak geode-book/redirects.rb.bak $VER.bak*
 set -x
 git add .
 git diff --staged --color | cat
