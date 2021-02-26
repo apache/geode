@@ -25,25 +25,19 @@ import java.io.IOException;
 
 import org.junit.After;
 import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.test.compiler.JarBuilder;
-import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 
-public class DeployJarAcceptanceTest {
-
-  @ClassRule
-  public static GfshRule gfshRule = new GfshRule();
-
-  @ClassRule
-  public static TemporaryFolder stagingTempDir = new TemporaryFolder();
-
+public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
   private static File jarFile;
   private static File jarFileV2;
   private static File anotherJarFile;
+
+  public DeployJarAcceptanceTest(String launchCommand) throws IOException {
+    launch(launchCommand);
+  }
 
   @BeforeClass
   public static void setup() throws IOException {
@@ -55,21 +49,12 @@ public class DeployJarAcceptanceTest {
     jarBuilder.buildJarFromClassNames(jarFile, "SomeClass");
     jarBuilder.buildJarFromClassNames(jarFileV2, "SomeClass", "SomeClassVersionTwo");
     jarBuilder.buildJarFromClassNames(anotherJarFile, "SomeOtherClass");
-
-    GfshScript
-        .of("start locator --name=locator", "configure pdx --read-serialized=true",
-            "start server --name=server --locators=localhost[10334]")
-        .execute(gfshRule);
   }
 
   @After
   public void teardown() {
     System.out.println(GfshScript.of(getLocatorGFSHConnectionString(), "undeploy")
         .execute(gfshRule).getOutputText());
-  }
-
-  private String getLocatorGFSHConnectionString() {
-    return "connect --locator=localhost[10334]";
   }
 
   @Test
@@ -209,7 +194,7 @@ public class DeployJarAcceptanceTest {
   }
 
   @Test
-  public void testDeployPojo() throws IOException {
+  public void testDeployPojo() throws IOException, InterruptedException {
     JarBuilder jarBuilder = new JarBuilder();
     File functionSource = loadTestResource("/example/test/function/PojoFunction.java");
     File pojoSource = loadTestResource("/example/test/pojo/ExamplePojo.java");
@@ -242,9 +227,11 @@ public class DeployJarAcceptanceTest {
 
     GfshScript.of(getLocatorGFSHConnectionString(), "stop server --name=server").execute(gfshRule);
 
-    GfshScript.of(getLocatorGFSHConnectionString(),
-        "start server --name=server --locators=localhost[10334]  --server-port=40404 --http-service-port=9090 --start-rest-api")
-        .execute(gfshRule);
+    String stderr = geodeContainer.execInContainer("/geode/bin/gfsh", "-e",
+        "start server --name=server --locators=localhost[10334]  "
+            + "--server-port=40404 --http-service-port=9090 --start-rest-api").getStderr();
+
+    assertThat(stderr).isEmpty();
 
     assertThat(GfshScript
         .of(getLocatorGFSHConnectionString(), "query --query=\"SELECT * FROM /ExampleRegion\"")

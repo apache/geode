@@ -35,36 +35,12 @@ dependencies {
   //a container that has geode-core on the classpath, is prevents duplicating jars. geode-core
   //in particular should not be duplicated in the war.
   providedCompile(project(':geode-common'))
-  providedCompile(project(':geode-core')){
-    exclude module: 'spring-web'
-    exclude module: 'spring-core'
-    exclude module: 'spring-jcl'
-    exclude module: 'spring-aop'
-    exclude module: 'spring-aspects'
-    exclude module: 'spring-beans'
-    exclude module: 'spring-context'
-    exclude module: 'spring-expression'
-  }
+  providedCompile(project(':geode-core'))
   providedCompile(project(':geode-logging'))
-  providedCompile(project(':geode-serialization')){
-    exclude module: 'spring-web'
-    exclude module: 'spring-core'
-    exclude module: 'spring-jcl'
-    exclude module: 'spring-aop'
-    exclude module: 'spring-aspects'
-    exclude module: 'spring-beans'
-    exclude module: 'spring-context'
-    exclude module: 'spring-expression'
-  }
+  providedCompile(project(':geode-serialization'))
   providedCompile(project(':geode-gfsh')) {
     exclude module: 'spring-web'
     exclude module: 'spring-core'
-    exclude module: 'spring-jcl'
-    exclude module: 'spring-aop'
-    exclude module: 'spring-aspects'
-    exclude module: 'spring-beans'
-    exclude module: 'spring-context'
-    exclude module: 'spring-expression'
   }
 
   providedCompile(platform(project(':boms:geode-all-bom')))
@@ -83,7 +59,7 @@ dependencies {
   testImplementation('org.springframework:spring-test')
 
   integrationTestImplementation(project(':geode-dunit'));
-  integrationTestImplementation(project(':frameworks:springframework'))
+
   integrationTestRuntimeOnly(files(war.destinationDir))
 
   distributedTestImplementation(project(':geode-common'))

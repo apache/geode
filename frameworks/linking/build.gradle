@@ -16,17 +16,29 @@
  */
 
 dependencies {
-    api(project(':geode-cq'))
-    api(project(':geode-gfsh'))
-    api(project(':geode-lucene'))
-    api(project(':geode-redis'))
-    api(project(':geode-memcached'))
-    api(project(':geode-wan'))
-    api(project(':geode-connectors'))
-    api(project(':geode-deployment-jboss-modules'))
+  api(project(':geode-cq'))
+  api(project(':geode-gfsh'))
+  api(project(':geode-lucene'))
+  api(project(':geode-redis'))
+  api(project(':geode-memcached'))
+  api(project(':geode-wan'))
+  api(project(':geode-connectors'))
+  api(project(':geode-deployment-jboss-modules'))
 
-    api(project(':geode-log4j')) {
-        ext.optional = true
-    }
+  api(project(':geode-log4j')) {
+    ext.optional = true
+  }
 }
 
+task generateModuleXML() {
+  def apiProjectDeps = getDependentProjectsForConfiguration(['api'])
+  def allProjectDeps = getDependentProjectsForConfiguration(['implementation', 'runtimeOnly', 'compileOnly'])
+
+  allProjectDeps.addAll(apiProjectDeps)
+  // Iterate over runtime classpath dependencies and separate project dependencies from library
+  // dependencies.
+  def (projectDependencies, runtimeList) = generateDependentProjects(allProjectDeps)
+  createModuleXml(null, projectDependencies, apiProjectDeps, runtimeList)
+}
+
+tasks['jar'].dependsOn(generateModuleXML)

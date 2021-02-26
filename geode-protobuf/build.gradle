@@ -51,7 +51,7 @@ dependencies {
   distributedTestImplementation(project(':geode-protobuf:geode-protobuf-test'))
 
   implementation('com.google.protobuf:protobuf-java')
-  implementation(project(':frameworks:shiro'))
+  implementation('org.apache.shiro:shiro-core')
 
   integrationTestImplementation('com.github.stefanbirkner:system-rules') {
     exclude module: 'junit-dep'

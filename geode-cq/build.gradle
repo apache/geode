@@ -38,7 +38,6 @@ dependencies {
 
 
   distributedTestImplementation(project(':geode-gfsh'))
-  distributedTestImplementation(project(':frameworks:springframework'))
   distributedTestImplementation(project(':geode-junit'))
   distributedTestImplementation(project(':geode-dunit'))
   distributedTestImplementation('org.apache.commons:commons-lang3')

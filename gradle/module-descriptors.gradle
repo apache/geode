@@ -15,6 +15,40 @@
 
 import groovy.xml.MarkupBuilder
 
+ext.generateThirdPartyModuleXML = { ->
+  def geodeAssemblyProj = project(":geode-assembly")
+  def moduleDescriptorsRoot = "${geodeAssemblyProj.buildDir}/moduleDescriptors"
+
+  def thirdPartyRoot = file(moduleDescriptorsRoot + "/thirdParty")
+
+  def modulePath = "$moduleDescriptorsRoot/thirdParty/$version"
+  mkdir(modulePath)
+
+  file("$modulePath/module.xml").withWriter { writer ->
+    // Create MarkupBuilder with 4 space indent
+    def xml = new MarkupBuilder(new IndentPrinter(writer, "    ", true))
+
+    xml.doubleQuotes = true
+    xml.mkp.xmlDeclaration(version: '1.0', encoding: 'utf-8')
+
+    xml.'module'('xmlns': 'urn:jboss:module:1.9', 'name': "thirdParty:$version") {
+      xml.'dependencies' {
+        thirdPartyRoot.listFiles().each {
+          def moduleName
+          def moduleVersion
+          if (it.isDirectory()) {
+            moduleName = it.name
+            it.listFiles().each {
+              moduleVersion = it.name
+              xml.'module'(['name': "$moduleName:$moduleVersion", 'services': 'export', 'export': 'true'])
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
 ext.generateProjectRuntimeList = { jar ->
   def apiProjectDeps = ext.getDependentProjectsForConfiguration(['api'])
   def allProjectDeps = ext.getDependentProjectsForConfiguration(['implementation', 'runtimeOnly', 'compileOnly'])
@@ -24,8 +58,12 @@ ext.generateProjectRuntimeList = { jar ->
   // dependencies.
   def (projectDependencies, runtimeList) = ext.generateDependentProjects(allProjectDeps)
 
+  def sourceJarPath;
   if (jar.name.equals("jar")) {
-    ext.createModuleXml(jar.archiveFileName.get(), projectDependencies, apiProjectDeps, runtimeList)
+    if (jar.archiveFileName.get() != null) {
+      sourceJarPath = "../../../lib/${jar.archiveFileName.get()}"
+    }
+    ext.createModuleXml(sourceJarPath, projectDependencies, apiProjectDeps, runtimeList)
   }
   runtimeList
 }
@@ -64,15 +102,23 @@ ext.getDependentProjectsForConfiguration = { configuration ->
 def projectsToExclude = ["geode-pulse", "extensions", "geode-assembly", "geode-assembly-test", "geode-concurrency-test",
                          "geode-experimental-driver", "geode-jmh", "geode-lucene-test", "geode-modules-assembly",
                          "geode-modules-test", "geode-protobuf-test", "geode-pulse-test", "pmd-rules",
-                         "static-analysis", "geode-dunit", "geode-old-versions", "geode-junit", "geode-deployment-legacy"]
+                         "static-analysis", "geode-dunit", "geode-old-versions", "geode-junit",
+                         "geode-deployment-legacy", "geode-modules", "geode-modules-session",
+                         "geode-modules-session-internal", "geode-modules-tomcat7",
+                         "geode-modules-tomcat8", "geode-modules-tomcat9"]
 
-ext.createModuleXml = { sourceJar, projectDependencies, apiProjectDeps, resourceDependencies ->
+ext.createModuleXml = { sourceJarPath, projectDependencies, apiProjectDeps, resourceDependencies ->
+  def moduleName = project.name
+  def moduleVersion = version
   def geodeAssemblyProj = project(":geode-assembly")
   def moduleDescriptorsRoot = "${geodeAssemblyProj.buildDir}/moduleDescriptors"
-  mkdir(moduleDescriptorsRoot)
-  def moduleName = project.name
+  writeModuleXml(moduleName, moduleVersion, moduleDescriptorsRoot, sourceJarPath, projectDependencies, apiProjectDeps, resourceDependencies)
+}
+
+ext.writeModuleXml = { moduleName, moduleVersion, moduleXMLPath, sourceJarPath, projectDependencies, apiProjectDeps, resourceDependencies ->
+  mkdir(moduleXMLPath)
   if (!projectsToExclude.contains(moduleName)) {
-    def modulePath = "$moduleDescriptorsRoot/$moduleName/$version"
+    def modulePath = "$moduleXMLPath/$moduleName/$moduleVersion"
     mkdir(modulePath)
 
     file("$modulePath/module.xml").withWriter { writer ->
@@ -82,28 +128,38 @@ ext.createModuleXml = { sourceJar, projectDependencies, apiProjectDeps, resource
       xml.doubleQuotes = true
       xml.mkp.xmlDeclaration(version: '1.0', encoding: 'utf-8')
 
-      xml.'module'('xmlns': 'urn:jboss:module:1.9', 'name': "$moduleName:$version") {
+      xml.'module'('xmlns': 'urn:jboss:module:1.9', 'name': "$moduleName:$moduleVersion") {
         xml.'resources' {
-          if (sourceJar != null) {
-            xml.'resource-root'(['path': "../../../lib/$sourceJar"])
-          }
-          resourceDependencies.each { resource ->
-            xml.'resource-root'(['path': "../../../lib/$resource"])
+          if (sourceJarPath != null) {
+            xml.'resource-root'(['path': sourceJarPath])
           }
         }
         if (moduleName == 'geode-core') {
           xml.'main-class'(['name': 'org.apache.geode.distributed.ServerLauncher'])
         }
         xml.'dependencies' {
-          if(moduleName.equals('geode-core')) {
-            xml.'module'(['name':'linking', 'services':'import']) {
-            xml.'imports' {
-              xml.'exclude-set' {
-                xml.'path'('name': 'org.springframework')
+          if (moduleXMLPath.contains("thirdParty")) {
+            xml.'module'(['name': 'thirdParty', 'services': 'export', 'export': 'true'])
+          }
+          if (moduleName.equals('geode-core')) {
+            xml.'module'(['name': 'linking', 'services': 'import']) {
+              xml.'imports' {
+                xml.'exclude-set' {
+                  xml.'path'('name': 'org.springframework')
+                }
               }
-            }}
+            }
           }
           xml.'module'(['name': "java.se"])
+          resourceDependencies.each { resource ->
+            def endOfArtifactName = resource.lastIndexOf("-")
+            def startOfExtension = resource.indexOf(".jar")
+            def artifactName = resource.substring(0, endOfArtifactName)
+            def artifactVersion = resource.substring(endOfArtifactName + 1, startOfExtension)
+            def attributes = ['name': "$artifactName:$artifactVersion", 'services': 'import']
+            xml.'module'(attributes)
+            ext.writeModuleXml(artifactName, artifactVersion, moduleXMLPath + "/thirdParty", "../../../../lib/$resource", [], [], [])
+          }
           projectDependencies.each { ProjectDependency project ->
 
             def attributes = ['name': "$project.name:$project.version"]

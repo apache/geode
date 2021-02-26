@@ -21,19 +21,4 @@ subprojects { proj ->
   proj.apply plugin: 'geode-dependency-constraints'
 
   apply from: "${rootDir}/${scriptDir}/module-descriptors.gradle"
-
-  task generateModuleXML(dependsOn: jar) {
-    doLast {
-      def apiProjectDeps = getDependentProjectsForConfiguration(['api'])
-      def allProjectDeps = getDependentProjectsForConfiguration(['implementation', 'runtimeOnly', 'compileOnly'])
-
-      allProjectDeps.addAll(apiProjectDeps)
-      // Iterate over runtime classpath dependencies and separate project dependencies from library
-      // dependencies.
-      def (projectDependencies, runtimeList) = generateDependentProjects(allProjectDeps)
-      createModuleXml(null, projectDependencies, apiProjectDeps, runtimeList)
-    }
-  }
-
-  jar.finalizedBy(generateModuleXML)
 }

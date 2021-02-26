@@ -31,7 +31,6 @@ dependencies {
   compileOnly(project(':geode-gfsh'))
   implementation(project(':geode-logging'))
 
-  implementation(project(':frameworks:springframework'))
 
   api('junit:junit') {
     exclude module: 'hamcrest'
@@ -40,7 +39,8 @@ dependencies {
   api('org.mockito:mockito-core')
 
   api('io.github.classgraph:classgraph')
-  api(project(':frameworks:jackson'))
+  api('com.fasterxml.jackson.core:jackson-annotations')
+  api('com.fasterxml.jackson.core:jackson-databind')
   api('com.github.stefanbirkner:system-rules') {
     exclude module: 'junit-dep'
   }
