@@ -553,7 +553,7 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       fromDataPre_GEODE_1_14_0_0(in, context);
-      this.enforceThreadsConnectSameReceiver = in.readBoolean();
+//      this.enforceThreadsConnectSameReceiver = in.readBoolean();
     }
 
     public void fromDataPre_GEODE_1_14_0_0(DataInput in,
