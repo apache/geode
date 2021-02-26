@@ -195,7 +195,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
           "AgentConfig must not be null");
     }
     this.agentConfig = (AgentConfigImpl) agentConfig;
-    this.mbeanName = MBEAN_NAME_PREFIX + MBeanUtil.makeCompliantMBeanNameProperty("Agent");
+    this.mbeanName = MBEAN_NAME_PREFIX + MBeanUtils.makeCompliantMBeanNameProperty("Agent");
 
     try {
       this.objectName = new ObjectName(this.mbeanName);
@@ -214,9 +214,9 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
     // LOG: create LogWriterAppender and LogWriterLogger
     initLogWriter();
 
-    mBeanServer = MBeanUtil.start();
+    mBeanServer = MBeanUtils.start();
 
-    MBeanUtil.createMBean(this);
+    MBeanUtils.createMBean(this);
 
     initializeHelperMbean();
   }
@@ -276,7 +276,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
     this.agentConfig.validate();
 
     if (mBeanServer == null) {
-      mBeanServer = MBeanUtil.start();
+      mBeanServer = MBeanUtils.start();
     }
 
     try {
@@ -354,7 +354,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
       stopSnmpAdaptor();
 
       // release the MBeanServer for cleanup...
-      MBeanUtil.stop();
+      MBeanUtils.stop();
       mBeanServer = null;
 
       // remove the register shutdown hook which disconnects the Agent from the Distributed System
@@ -913,8 +913,8 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
     }
 
     try {
-      MBeanUtil.unregisterMBean(getHttpAdaptorName());
-      MBeanUtil.unregisterMBean(getXsltProcessorName());
+      MBeanUtils.unregisterMBean(getHttpAdaptorName());
+      MBeanUtils.unregisterMBean(getXsltProcessorName());
     } catch (MalformedObjectNameException e) {
       logger.warn(e.getMessage(), e);
     }
@@ -938,7 +938,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
           && mBeanServer.isRegistered(rmiRegistryNamingName)) {
         String[] empty = new String[0];
         mBeanServer.invoke(rmiRegistryNamingName, "stop", empty, empty);
-        MBeanUtil.unregisterMBean(rmiRegistryNamingName);
+        MBeanUtils.unregisterMBean(rmiRegistryNamingName);
       }
     } catch (MalformedObjectNameException e) {
       logger.warn(e.getMessage(), e);
@@ -953,7 +953,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
     try {
       ObjectName rmiConnectorServerName = getRMIConnectorServerName();
       if (mBeanServer.isRegistered(rmiConnectorServerName)) {
-        MBeanUtil.unregisterMBean(rmiConnectorServerName);
+        MBeanUtils.unregisterMBean(rmiConnectorServerName);
       }
     } catch (MalformedObjectNameException e) {
       logger.warn(e.getMessage(), e);
@@ -973,7 +973,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
     }
 
     try {
-      MBeanUtil.unregisterMBean(getSnmpAdaptorName());
+      MBeanUtils.unregisterMBean(getSnmpAdaptorName());
     } catch (MalformedObjectNameException e) {
       logger.warn(e.getMessage(), e);
     }

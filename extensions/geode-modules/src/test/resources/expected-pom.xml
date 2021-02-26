@@ -48,13 +48,18 @@
   <dependencies>
     <dependency>
       <groupId>org.apache.geode</groupId>
-      <artifactId>geode-core</artifactId>
+      <artifactId>geode-logging</artifactId>
       <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
-      <artifactId>geode-logging</artifactId>
-      <scope>runtime</scope>
+      <artifactId>geode-common</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.geode</groupId>
+      <artifactId>geode-core</artifactId>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>

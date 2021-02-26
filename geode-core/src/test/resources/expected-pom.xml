@@ -250,6 +250,11 @@
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
+      <artifactId>geode-deployment-legacy</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.geode</groupId>
       <artifactId>geode-http-service</artifactId>
       <scope>runtime</scope>
       <optional>true</optional>

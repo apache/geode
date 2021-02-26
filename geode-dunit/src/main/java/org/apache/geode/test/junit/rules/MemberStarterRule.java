@@ -73,7 +73,7 @@ import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.SystemManagementService;
-import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.CliUtils;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.security.SecurityManager;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
@@ -500,7 +500,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
     String examinerDescription = String.format(
         "Expecting exactly %d servers to have an AEQ with id '%s'.", exactServerCount, queueId);
     waitUntilEqual(
-        () -> CliUtil.getMembersWithAsyncEventQueue(getCache(), queueId),
+        () -> CliUtils.getMembersWithAsyncEventQueue(getCache(), queueId),
         membersWithAEQ -> membersWithAEQ.size(),
         exactServerCount,
         examinerDescription,

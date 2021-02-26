@@ -41,7 +41,7 @@ import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
-import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.CliUtils;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.functions.NetstatFunction;
@@ -148,14 +148,14 @@ public class NetstatCommand extends GfshCommand {
         for (Object aResultList : resultList) {
           NetstatFunction.NetstatFunctionResult netstatFunctionResult =
               (NetstatFunction.NetstatFunctionResult) aResultList;
-          CliUtil.DeflaterInflaterData deflaterInflaterData =
+          CliUtils.DeflaterInflaterData deflaterInflaterData =
               netstatFunctionResult.getCompressedBytes();
           try {
             String remoteHost = netstatFunctionResult.getHost();
             List<String> membersList = hostMemberListMap.get(remoteHost);
             resultInfo.append(MessageFormat.format(netstatFunctionResult.getHeaderInfo(),
                 collectionToString(membersList, 120)));
-            CliUtil.DeflaterInflaterData uncompressedBytes = CliUtil.uncompressBytes(
+            CliUtils.DeflaterInflaterData uncompressedBytes = CliUtils.uncompressBytes(
                 deflaterInflaterData.getData(), deflaterInflaterData.getDataLength());
             resultInfo.append(new String(uncompressedBytes.getData()));
           } catch (DataFormatException e) {

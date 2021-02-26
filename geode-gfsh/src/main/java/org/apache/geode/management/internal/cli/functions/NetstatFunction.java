@@ -37,8 +37,8 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.CliUtil.DeflaterInflaterData;
+import org.apache.geode.management.internal.cli.CliUtils;
+import org.apache.geode.management.internal.cli.CliUtils.DeflaterInflaterData;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.i18n.CliStrings;
 
@@ -85,7 +85,7 @@ public class NetstatFunction implements InternalFunction<NetstatFunction.Netstat
     addMemberHostHeader(netstatInfo, "{0}", host, lineSeparator);
 
     NetstatFunctionResult result = new NetstatFunctionResult(host, netstatInfo.toString(),
-        CliUtil.compressBytes(netstatOutput.getBytes()));
+        CliUtils.compressBytes(netstatOutput.getBytes()));
 
     context.getResultSender().lastResult(result);
   }

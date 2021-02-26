@@ -42,13 +42,13 @@ import java.util.stream.Stream;
 
 public class ConfigGroup implements Serializable {
   public String name;
-  private Set<String> jars = new HashSet<>();
+  private Set<String> deploymentNames = new HashSet<>();
   private Set<String> configFiles = new HashSet<>();
   private Set<String> regions = new HashSet<>();
   private String maxLogFileSize;
 
   public ConfigGroup(ConfigGroup that) {
-    this.jars.addAll(that.jars);
+    this.deploymentNames.addAll(that.deploymentNames);
     this.configFiles.addAll(that.configFiles);
     this.regions.addAll(that.regions);
     this.maxLogFileSize = that.maxLogFileSize;
@@ -64,8 +64,8 @@ public class ConfigGroup implements Serializable {
     return this;
   }
 
-  public ConfigGroup jars(String... jars) {
-    this.jars.addAll(Arrays.asList(jars));
+  public ConfigGroup deployments(String... deployments) {
+    this.deploymentNames.addAll(Arrays.asList(deployments));
     return this;
   }
 
@@ -74,13 +74,13 @@ public class ConfigGroup implements Serializable {
     return this;
   }
 
-  public ConfigGroup removeJar(String jar) {
-    this.jars.remove(jar);
+  public ConfigGroup removeDeployment(String deployment) {
+    this.deploymentNames.remove(deployment);
     return this;
   }
 
-  public ConfigGroup addJar(String jar) {
-    this.jars.add(jar);
+  public ConfigGroup addDeployment(String deployment) {
+    this.deploymentNames.add(deployment);
     return this;
   }
 
@@ -89,17 +89,14 @@ public class ConfigGroup implements Serializable {
     return this;
   }
 
-  public Set<String> getJars() {
-    return Collections.unmodifiableSet(this.jars);
+  public Set<String> getDeploymentNames() {
+    return Collections.unmodifiableSet(this.deploymentNames);
   }
 
   public Set<String> getAllFiles() {
     return Collections.unmodifiableSet(
-        Stream.concat(this.jars.stream(), this.configFiles.stream()).collect(Collectors.toSet()));
-  }
-
-  public Set<String> getAllJarFiles() {
-    return this.jars.stream().collect(Collectors.toSet());
+        Stream.concat(this.deploymentNames.stream(), this.configFiles.stream())
+            .collect(Collectors.toSet()));
   }
 
   public Set<String> getRegions() {

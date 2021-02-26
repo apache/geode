@@ -50,7 +50,7 @@ import org.apache.geode.cache.operations.StopCQOperationContext;
 import org.apache.geode.cache.operations.UnregisterInterestOperationContext;
 import org.apache.geode.cache.operations.internal.GetOperationContextImpl;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.ClassLoadUtil;
+import org.apache.geode.internal.ClassLoadUtils;
 import org.apache.geode.internal.cache.operations.ContainsKeyOperationContext;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.security.AccessControl;
@@ -89,7 +89,7 @@ public class AuthorizeRequest {
     }
 
     this.logger = cache.getSecurityLogger();
-    Method authzMethod = ClassLoadUtil.methodFromName(authzFactoryName);
+    Method authzMethod = ClassLoadUtils.methodFromName(authzFactoryName);
     this.authzCallback = (AccessControl) authzMethod.invoke(null, (Object[]) null);
     this.authzCallback.init(principal, dm, cache);
     this.id = null;

@@ -3,7 +3,7 @@ org/apache/geode/management/cli/CommandProcessingException,true,-139877952163957
 org/apache/geode/management/cli/CommandServiceException,true,7316102209844678329
 org/apache/geode/management/cli/Result$Status,false,code:int
 org/apache/geode/management/internal/cli/AbstractCliAroundInterceptor$Response,false,text:java/lang/String
-org/apache/geode/management/internal/cli/CliUtil$DeflaterInflaterData,true,1104813333595216795,data:byte[],dataLength:int
+org/apache/geode/management/internal/cli/CliUtils$DeflaterInflaterData,true,1104813333595216795,data:byte[],dataLength:int
 org/apache/geode/management/internal/cli/commands/CreateJndiBindingCommand$DATASOURCE_TYPE,false,type:java/lang/String
 org/apache/geode/management/internal/cli/commands/ImportClusterConfigurationCommand$Action,false
 org/apache/geode/management/internal/cli/commands/ShowMetricsCommand$Category,false
@@ -12,6 +12,7 @@ org/apache/geode/management/internal/cli/domain/DataCommandRequest,false,command
 org/apache/geode/management/internal/cli/domain/DataCommandResult,true,2601227194108110936,command:java/lang/String,error:java/lang/Throwable,errorString:java/lang/String,getResult:java/lang/Object,hasResultForAggregation:boolean,infoString:java/lang/String,inputKey:java/lang/Object,inputQuery:java/lang/Object,inputValue:java/lang/Object,keyClass:java/lang/String,limit:int,locateEntryLocations:java/util/List,locateEntryResult:org/apache/geode/management/internal/cli/domain/DataCommandResult$KeyInfo,operationCompletedSuccessfully:boolean,putResult:java/lang/Object,queryTraceString:java/lang/String,removeResult:java/lang/Object,selectResult:java/util/List,valueClass:java/lang/String
 org/apache/geode/management/internal/cli/domain/DataCommandResult$KeyInfo,false,host:java/lang/String,locations:java/util/ArrayList,memberId:java/lang/String,memberName:java/lang/String,pid:int
 org/apache/geode/management/internal/cli/domain/DataCommandResult$SelectResultRow,true,1,columnValues:java/util/Map,type:int
+org/apache/geode/management/internal/cli/domain/DeploymentInfo,false,additionalDeploymentInfo:java/lang/String,deploymentName:java/lang/String,fileName:java/lang/String,memberName:java/lang/String
 org/apache/geode/management/internal/cli/domain/DiskStoreDetails,false,allowForceCompaction:java/lang/Boolean,asyncEventQueueDetailsSet:java/util/Set,autoCompact:java/lang/Boolean,cacheServerDetailsSet:java/util/Set,compactionThreshold:java/lang/Integer,diskDirDetailsSet:java/util/Set,diskUsageCriticalPercentage:java/lang/Float,diskUsageWarningPercentage:java/lang/Float,gatewayDetailsSet:java/util/Set,id:java/util/UUID,maxOplogSize:java/lang/Long,memberId:java/lang/String,memberName:java/lang/String,name:java/lang/String,offline:java/lang/Boolean,pdxSerializationMetaDataStored:java/lang/Boolean,queueSize:java/lang/Integer,regionDetailsSet:java/util/Set,timeInterval:java/lang/Long,writeBufferSize:java/lang/Integer
 org/apache/geode/management/internal/cli/domain/DiskStoreDetails$AsyncEventQueueDetails,false,id:java/lang/String
 org/apache/geode/management/internal/cli/domain/DiskStoreDetails$CacheServerDetails,false,bindAddress:java/lang/String,hostName:java/lang/String,port:int
@@ -65,7 +66,7 @@ org/apache/geode/management/internal/cli/functions/GatewayReceiverCreateFunction
 org/apache/geode/management/internal/cli/functions/GatewaySenderCreateFunction,true,8746830191680509335
 org/apache/geode/management/internal/cli/functions/GatewaySenderDestroyFunction,true,1
 org/apache/geode/management/internal/cli/functions/GatewaySenderDestroyFunctionArgs,true,3848480256348119530,id:java/lang/String,ifExists:boolean
-org/apache/geode/management/internal/cli/functions/GatewaySenderFunctionArgs,true,4636678328980816780,alertThreshold:java/lang/Integer,batchSize:java/lang/Integer,batchTimeInterval:java/lang/Integer,diskStoreName:java/lang/String,diskSynchronous:java/lang/Boolean,dispatcherThreads:java/lang/Integer,enableBatchConflation:java/lang/Boolean,enablePersistence:java/lang/Boolean,gatewayEventFilters:java/util/List,gatewayTransportFilters:java/util/List,groupTransactionEvents:java/lang/Boolean,id:java/lang/String,manualStart:java/lang/Boolean,maxQueueMemory:java/lang/Integer,orderPolicy:java/lang/String,parallel:java/lang/Boolean,remoteDSId:java/lang/Integer,socketBufferSize:java/lang/Integer,socketReadTimeout:java/lang/Integer,enforceThreadsConnectSameReceiver:java/lang/Boolean
+org/apache/geode/management/internal/cli/functions/GatewaySenderFunctionArgs,true,4636678328980816780,alertThreshold:java/lang/Integer,batchSize:java/lang/Integer,batchTimeInterval:java/lang/Integer,diskStoreName:java/lang/String,diskSynchronous:java/lang/Boolean,dispatcherThreads:java/lang/Integer,enableBatchConflation:java/lang/Boolean,enablePersistence:java/lang/Boolean,enforceThreadsConnectSameReceiver:java/lang/Boolean,gatewayEventFilters:java/util/List,gatewayTransportFilters:java/util/List,groupTransactionEvents:java/lang/Boolean,id:java/lang/String,manualStart:java/lang/Boolean,maxQueueMemory:java/lang/Integer,orderPolicy:java/lang/String,parallel:java/lang/Boolean,remoteDSId:java/lang/Integer,socketBufferSize:java/lang/Integer,socketReadTimeout:java/lang/Integer
 org/apache/geode/management/internal/cli/functions/GetMemberConfigInformationFunction,true,1
 org/apache/geode/management/internal/cli/functions/GetRegionDescriptionFunction,true,1
 org/apache/geode/management/internal/cli/functions/GetRegionsFunction,true,1
@@ -82,7 +83,7 @@ org/apache/geode/management/internal/cli/functions/ListJndiBindingFunction,true,
 org/apache/geode/management/internal/cli/functions/ManageIndexDefinitionFunction,false
 org/apache/geode/management/internal/cli/functions/NetstatFunction,true,1
 org/apache/geode/management/internal/cli/functions/NetstatFunction$NetstatFunctionArgument,true,1,lineSeparator:java/lang/String,withlsof:boolean
-org/apache/geode/management/internal/cli/functions/NetstatFunction$NetstatFunctionResult,true,1,compressedBytes:org/apache/geode/management/internal/cli/CliUtil$DeflaterInflaterData,headerInfo:java/lang/String,host:java/lang/String
+org/apache/geode/management/internal/cli/functions/NetstatFunction$NetstatFunctionResult,true,1,compressedBytes:org/apache/geode/management/internal/cli/CliUtils$DeflaterInflaterData,headerInfo:java/lang/String,host:java/lang/String
 org/apache/geode/management/internal/cli/functions/RegionAlterFunction,true,-4846425364943216425
 org/apache/geode/management/internal/cli/functions/RegionAttributesWrapper,true,-5517424520268271436,cacheListenerClasses:java/util/List,cacheLoaderClass:org/apache/geode/management/configuration/ClassName,cacheWriterClass:org/apache/geode/management/configuration/ClassName,compressorClass:java/lang/String,keyConstraintClass:java/lang/String,regionAttributes:org/apache/geode/cache/RegionAttributes,valueConstraintClass:java/lang/String
 org/apache/geode/management/internal/cli/functions/RegionCreateFunction,true,8746830191680509335

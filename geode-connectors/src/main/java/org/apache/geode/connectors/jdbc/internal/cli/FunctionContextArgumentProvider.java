@@ -17,7 +17,7 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.CliUtils;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
 /**
@@ -31,7 +31,7 @@ class FunctionContextArgumentProvider {
 
   static String getMemberFromContext(FunctionContext<?> context) {
     InternalCache cache = getCacheFromContext(context);
-    return CliUtil.getMemberNameOrId(cache.getDistributedSystem().getDistributedMember());
+    return CliUtils.getMemberNameOrId(cache.getDistributedSystem().getDistributedMember());
   }
 
   /**
