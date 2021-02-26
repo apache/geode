@@ -35,11 +35,15 @@ import static org.apache.geode.redis.internal.RedisCommandType.STRLEN;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.VMCachedDeserializable;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
@@ -53,6 +57,9 @@ import org.apache.geode.redis.internal.executor.RedisCommandsFunctionInvoker;
  */
 public class RedisStringCommandsFunctionInvoker extends RedisCommandsFunctionInvoker
     implements RedisStringCommands {
+
+  private static final Logger logger = LogService.getLogger();
+  private static final AtomicInteger getInVmCount = new AtomicInteger(0);
 
   public RedisStringCommandsFunctionInvoker(Region<RedisKey, RedisData> region) {
     super(region);
@@ -69,10 +76,15 @@ public class RedisStringCommandsFunctionInvoker extends RedisCommandsFunctionInv
     try {
       v = ((PartitionedRegion) region).getValueInVM(key);
     } catch (EntryNotFoundException ignored) {
+      logger.info("--->>> getValueInVM miss for: {}", key);
     }
 
     if (v != null) {
       Object cached = ((VMCachedDeserializable) v).getDeserializedForReading();
+      int x = getInVmCount.incrementAndGet();
+      if (x % 10000 == 0) {
+        logger.info("--->>> getValueInVM hits: {}", x);
+      }
       return ((RedisString) cached).get();
     }
 
