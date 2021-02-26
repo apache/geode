@@ -102,10 +102,10 @@ echo "============================================================"
 echo "Checking for later versions..."
 echo "============================================================"
 cd ${GEODE_DEVELOP}
-latestnv=$(git tag| grep '^rel/v' | grep -v RC | cut -c6- | egrep '^[0-9]+\.[0-9]+\.[0-9]+$' | awk -F. '/KEYS/{next}{print 1000000*$1+1000*$2+$3,$1"."$2"."$3}' | sort -n | tail -1)
+latestnv=$(git tag| grep '^rel/v' | grep -v RC | cut -c6- | egrep '^[0-9]+\.[0-9]+\.[0-9]+$' | awk -F. '{print 1000000*$1+1000*$2+$3,$1"."$2"."$3}' | sort -n | tail -1)
 latestn=$(echo $latestnv | awk '{print $1}')
 latestv=$(echo $latestnv | awk '{print $2}')
-thisre=$(echo $VERSION | awk -F. '/KEYS/{next}{print 1000000*$1+1000*$2+$3}')
+thisre=$(echo $VERSION | awk -F. '{print 1000000*$1+1000*$2+$3}')
 if [ $latestn -gt $thisre ] ; then
   LATER=$latestv
   echo "Later version $LATER found; $VERSION will not be merged to master or tagged as 'latest' in docker."
@@ -467,15 +467,18 @@ RELEASES_TO_KEEP=3
 set +x
 ls | awk -F. '/KEYS/{next}{print 1000000*$1+1000*$2+$3,$1"."$2"."$3}'| sort -n | awk '{mm=$2;sub(/\.[^.]*$/,"",mm);V[mm]=$2}END{for(v in V){print V[v]}}'|tail -$RELEASES_TO_KEEP > ../keep
 echo Keeping releases: $(cat ../keep)
+rm -f ../did.remove
 (ls | grep -v KEYS; cat ../keep ../keep)|sort|uniq -u|while read oldVersion; do
     set -x
     svn rm $oldVersion
     svn commit -m "remove $oldVersion from mirrors (it is still available at http://archive.apache.org/dist/geode)"
     set +x
-    [ -z "$DID_REMOVE" ] || DID_REMOVE="${DID_REMOVE} and "
-    DID_REMOVE="${DID_REMOVE}${oldVersion}"
+    [ ! -r ../did.remove ] || echo -n " and " >> ../did.remove
+    echo -n $oldVersion >> ../did.remove
 done
-rm ../keep
+touch ../did.remove
+DID_REMOVE=$(cat ../did.remove)
+rm ../keep ../did.remove
 
 
 echo ""
@@ -485,13 +488,14 @@ echo "============================================================"
 cd ${GEODE}/../..
 echo "Next steps:"
 echo "1. Click 'Release' in http://repository.apache.org/ (if you haven't already)"
-echo "2. Go to https://github.com/${GITHUB_USER}/homebrew-core/pull/new/apache-geode-${VERSION} and submit the pull request"
+[ -n "$LATER" ] || echo "2. Go to https://github.com/${GITHUB_USER}/homebrew-core/pull/new/apache-geode-${VERSION} and submit the pull request"
 echo "3. Go to https://github.com/${GITHUB_USER}/geode/pull/new/add-${VERSION}-to-old-versions and create the pull request"
-echo "4. Validate docker image: docker run -it apachegeode/geode"
+[ -n "$LATER" ] && tag=":${VERSION}" || tag=""
+echo "4. Validate docker image: docker run -it apachegeode/geode${tag}"
 echo "5. Bulk-transition JIRA issues fixed in this release to Closed"
 echo "5b.Publish to GitHub (see https://cwiki.apache.org/confluence/display/GEODE/Releasing+Apache+Geode#ReleasingApacheGeode-PublishtoGitHub)"
 echo "6. Wait overnight for apache mirror sites and mavencentral to sync"
-echo "7. Confirm that your homebrew PR passed its PR checks and was merged to master"
+[ -n "$LATER" ] || echo "7. Confirm that your homebrew PR passed its PR checks and was merged to master"
 echo "8. Check that ${VERSION} documentation has been published to https://geode.apache.org/docs/"
 [ -z "$DID_REMOVE" ] || DID_REMOVE=" and ${DID_REMOVE} info has been removed"
 echo "9. Check that ${VERSION} download info has been published to https://geode.apache.org/releases/${DID_REMOVE}"
@@ -499,7 +503,7 @@ MAJOR="${VERSION_MM%.*}"
 MINOR="${VERSION_MM#*.}"
 PATCH="${VERSION##*.}"
 [ "${PATCH}" -ne 0 ] || echo "10. Ask on the dev list for a volunteer to begin the chore of updating 3rd-party dependency versions on develop (see dev-tools/dependencies/README.md)"
-M=$(date --date '+9 months' '+%a, %B %d %Y' 2>/dev/null || date -v +9m "+%a, %B %d %Y" 2>/dev/null || echo "9 months from now")
+M=$(date --date '+18 months' '+%a, %B %d %Y' 2>/dev/null || date -v +9m "+%a, %B %d %Y" 2>/dev/null || echo "18 months from now")
 [ "${PATCH}" -ne 0 ] || echo "11. Mark your calendar for $M (assuming we release Geode ${MAJOR}.$((MINOR + 3)) on that day) to run ${0%/*}/end_of_support.sh -v ${VERSION_MM}"
 [ "${PATCH}" -ne 0 ] || [ -n "$LATER" ] || echo "12. Log in to https://hub.docker.com/repository/docker/apachegeode/geode and update the latest Dockerfile linktext and url to ${VERSION_MM}"
 [ -z "$LATER" ] || echo "Manually add '${VERSION}' to settings.gradle in all later support branches"
