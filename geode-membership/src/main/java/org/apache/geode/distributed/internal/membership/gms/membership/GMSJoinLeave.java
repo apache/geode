@@ -1413,7 +1413,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
     joinResponse[0] = jrm;
   }
 
-  void processFindCoordinatorMessage(FindCoordinatorRequest<ID> req) {
+  void processFindCoordinatorRequestMessage(FindCoordinatorRequest<ID> req) {
     if (isStopping) {
       return;
     }
@@ -1863,7 +1863,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
     services.getMessenger().addHandler(LeaveRequestMessage.class, this::processLeaveRequestMessage);
     services.getMessenger().addHandler(RemoveMemberMessage.class, this::processRemoveMemberMessage);
     services.getMessenger().addHandler(FindCoordinatorRequest.class,
-        this::processFindCoordinatorMessage);
+        this::processFindCoordinatorRequestMessage);
     services.getMessenger().addHandler(FindCoordinatorResponse.class,
         this::processFindCoordinatorResponseMessage);
     services.getMessenger().addHandler(NetworkPartitionMessage.class,
