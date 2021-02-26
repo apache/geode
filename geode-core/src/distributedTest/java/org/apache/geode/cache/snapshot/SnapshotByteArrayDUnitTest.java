@@ -60,8 +60,8 @@ public class SnapshotByteArrayDUnitTest extends JUnit4CacheTestCase {
           region.put(i, new byte[] {0xf});
         }
 
-        region.getSnapshotService().save(snap, SnapshotFormat.GEMFIRE);
-        region.getSnapshotService().load(snap, SnapshotFormat.GEMFIRE);
+        region.getSnapshotService().save(snap, SnapshotFormat.GEODE);
+        region.getSnapshotService().load(snap, SnapshotFormat.GEODE);
 
         return null;
       }
