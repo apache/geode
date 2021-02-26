@@ -64,6 +64,7 @@ import org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMess
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.logging.internal.OSProcess;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.util.internal.GeodeGlossary;
@@ -1118,6 +1119,10 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
         joinResponse.notifyAll();
       }
     } else {
+
+      // TODO: consider either always doing this or putting it behind a system property flag
+      OSProcess.printStacks(0);
+
       services.getManager().forceDisconnect(reason);
     }
   }
