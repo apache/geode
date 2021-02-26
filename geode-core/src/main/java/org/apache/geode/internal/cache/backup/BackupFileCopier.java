@@ -30,6 +30,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.DiskStore;
+import org.apache.geode.deployment.internal.JarDeploymentService;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.DirectoryHolder;
 import org.apache.geode.internal.cache.DiskStoreImpl;

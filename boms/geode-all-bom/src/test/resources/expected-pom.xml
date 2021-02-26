@@ -398,6 +398,12 @@
         <version>1.11.0.Final</version>
       </dependency>
       <dependency>
+        <groupId>org.jboss.modules</groupId>
+        <artifactId>jboss-modules</artifactId>
+        <version>1.11.0.Final</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
         <groupId>org.jgroups</groupId>
         <artifactId>jgroups</artifactId>
         <version>3.6.14.Final</version>
@@ -760,6 +766,12 @@
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-cq</artifactId>
+        <version>${version}</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.geode</groupId>
+        <artifactId>geode-deployment-legacy</artifactId>
         <version>${version}</version>
         <scope>compile</scope>
       </dependency>
