@@ -135,7 +135,7 @@ echo "============================================================"
 for DIR in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ${GEODE_BENCHMARKS} ; do
     set -x
     cd ${DIR}
-    git tag -s -u ${SIGNING_KEY} rel/v${VERSION} -m "Apache Geode v${VERSION} release" rel/v${FULL_VERSION}
+    git tag -s -u ${SIGNING_KEY} rel/v${VERSION} -m "Apache Geode v${VERSION} release" rel/v${FULL_VERSION}^{}
     git push origin rel/v${VERSION}
     set +x
 done
@@ -163,6 +163,7 @@ done
 
 echo ""
 echo "============================================================"
+GEODE_SHA=$(awk '{print $1}' < $WORKSPACE/dist/release/geode/${VERSION}/apache-geode-${VERSION}.tgz.sha256)
 if [ -n "$LATER" ] ; then
   echo "NOT updating brew to avoid overwriting newer version $LATER"
   echo "============================================================"
@@ -178,7 +179,6 @@ else
       exit 1
   fi
   git checkout -b apache-geode-${VERSION}
-  GEODE_SHA=$(awk '{print $1}' < $WORKSPACE/dist/release/geode/${VERSION}/apache-geode-${VERSION}.tgz.sha256)
   set +x
   sed -e 's# *url ".*#  url "https://www.apache.org/dyn/closer.lua?path=geode/'"${VERSION}"'/apache-geode-'"${VERSION}"'.tgz"#' \
       -e '/ *mirror ".*www.*/d' \
