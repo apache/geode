@@ -16,7 +16,6 @@
 package org.apache.geode.internal.statistics.platform;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.net.URISyntaxException;
@@ -57,8 +56,8 @@ public class LinuxThreadSchedulerStatisticsTest {
     testDir = temporaryFolder.getRoot();
 
     /*
-     Put statistics files (generated indirectly via LocalStatisticsFactory) in temporary
-     folder so they don't intermingle with our source code.
+     * Put statistics files (generated indirectly via LocalStatisticsFactory) in temporary
+     * folder so they don't intermingle with our source code.
      */
     System.setProperty(SimpleStatSampler.ARCHIVE_FILE_NAME_PROPERTY, this.testDir.getAbsolutePath()
         + File.separator + SimpleStatSampler.DEFAULT_ARCHIVE_FILE_NAME);
