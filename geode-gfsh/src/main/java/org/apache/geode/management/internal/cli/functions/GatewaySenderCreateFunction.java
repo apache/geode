@@ -29,7 +29,7 @@ import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.CliUtils;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.management.internal.util.ManagementUtils;
@@ -159,7 +159,7 @@ public class GatewaySenderCreateFunction implements InternalFunction<GatewaySend
             ManagementUtils.forName(gatewayEventFilter,
                 CliStrings.CREATE_GATEWAYSENDER__GATEWAYEVENTFILTER);
         gateway.addGatewayEventFilter(
-            (GatewayEventFilter) CliUtil.newInstance(gatewayEventFilterKlass,
+            (GatewayEventFilter) CliUtils.newInstance(gatewayEventFilterKlass,
                 CliStrings.CREATE_GATEWAYSENDER__GATEWAYEVENTFILTER));
       }
     }
@@ -169,7 +169,7 @@ public class GatewaySenderCreateFunction implements InternalFunction<GatewaySend
       for (String gatewayTransportFilter : gatewayTransportFilters) {
         Class<?> gatewayTransportFilterKlass = ManagementUtils.forName(gatewayTransportFilter,
             CliStrings.CREATE_GATEWAYSENDER__GATEWAYTRANSPORTFILTER);
-        gateway.addGatewayTransportFilter((GatewayTransportFilter) CliUtil.newInstance(
+        gateway.addGatewayTransportFilter((GatewayTransportFilter) CliUtils.newInstance(
             gatewayTransportFilterKlass, CliStrings.CREATE_GATEWAYSENDER__GATEWAYTRANSPORTFILTER));
       }
     }

@@ -26,7 +26,7 @@ import javax.management.remote.JMXServiceURL;
 
 import org.springframework.shell.core.CommandMarker;
 
-import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.CliUtils;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.shell.JmxOperationInvoker;
 import org.apache.geode.management.internal.cli.shell.OperationInvoker;
@@ -96,7 +96,7 @@ public abstract class OfflineGfshCommand implements CommandMarker {
     } catch (IOException io) {
       throw new RuntimeException(
           CliStrings.format(CliStrings.CONNECT__MSG__COULD_NOT_READ_CONFIG_FROM_0,
-              CliUtil.decodeWithDefaultCharSet(url.getPath())),
+              CliUtils.decodeWithDefaultCharSet(url.getPath())),
           io);
     }
 

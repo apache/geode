@@ -25,8 +25,9 @@ evaluationDependsOn(":geode-core")
 dependencies {
   // main
   implementation(platform(project(':boms:geode-all-bom')))
-  implementation(project(':geode-logging'))
+  api(project(':geode-logging'))
   implementation(project(':geode-membership'))
+  api(project(':geode-common'))
   implementation(project(':geode-serialization'))
   implementation('org.slf4j:slf4j-api')
 

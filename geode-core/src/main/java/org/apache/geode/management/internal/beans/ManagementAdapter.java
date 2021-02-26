@@ -107,7 +107,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.ClassLoadUtil;
+import org.apache.geode.internal.ClassLoadUtils;
 import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
@@ -254,7 +254,7 @@ public class ManagementAdapter {
       try {
         ObjectInstance instance = mbeanServer.getObjectInstance(objectName);
         String className = instance.getClassName();
-        Class clazz = ClassLoadUtil.classFromName(className);
+        Class clazz = ClassLoadUtils.classFromName(className);
         Type[] interfaceTypes = clazz.getGenericInterfaces();
 
         FederationComponent federation =
@@ -313,7 +313,7 @@ public class ManagementAdapter {
       try {
         ObjectInstance instance = mbeanServer.getObjectInstance(objectName);
         String className = instance.getClassName();
-        Class clazz = ClassLoadUtil.classFromName(className);
+        Class clazz = ClassLoadUtils.classFromName(className);
         Type[] interfaceTypes = clazz.getGenericInterfaces();
 
         FederationComponent federation =

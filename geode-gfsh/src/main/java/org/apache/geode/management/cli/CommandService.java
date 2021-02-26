@@ -23,7 +23,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.DependenciesNotFoundException;
-import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.CliUtils;
 
 /**
  * Processes remote GemFire Command Line Interface (CLI) commands. Refer to the vFabric GemFire
@@ -123,7 +123,7 @@ public abstract class CommandService {
     }
 
     if (localCommandService == null || !localCommandService.isUsable()) {
-      String nonExistingDependency = CliUtil.cliDependenciesExist(false);
+      String nonExistingDependency = CliUtils.cliDependenciesExist(false);
       if (nonExistingDependency != null) {
         throw new DependenciesNotFoundException(
             String.format(

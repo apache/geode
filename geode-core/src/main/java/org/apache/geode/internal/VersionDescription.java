@@ -26,6 +26,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.TreeMap;
 
+import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.internal.inet.LocalHostUtil;
 
 public class VersionDescription {
