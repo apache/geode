@@ -95,6 +95,11 @@ public class CliStrings {
       "The name of the class implementing CustomExpiry for entry idle time. Append json string for initialization properties.";
   public static final String ENTRY_TTL_CUSTOM_EXPIRY_HELP =
       "The name of the class implementing CustomExpiry for entry time to live. Append json string for initialization properties.";
+  public static final String DEPLOYMENT__NAME = "name";
+  public static final String DEPLOYMENT__NAMES = "names";
+  public static final String DEPLOYMENT__NAME__HELP = "The name for the jar deployment.";
+  public static final String CANNOT_SPECIFY_JARS_AND_DEPLOYMENT_NAMES =
+      "Cannot specify jars and names";
   private static final String LOG_LEVEL_VALUES =
       "Possible values for log-level include: ALL, TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF.";
 

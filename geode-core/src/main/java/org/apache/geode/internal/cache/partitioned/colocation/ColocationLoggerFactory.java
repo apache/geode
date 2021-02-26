@@ -15,8 +15,8 @@
 package org.apache.geode.internal.cache.partitioned.colocation;
 
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.classloader.ClassPathLoader;
 
 @FunctionalInterface
 public interface ColocationLoggerFactory {

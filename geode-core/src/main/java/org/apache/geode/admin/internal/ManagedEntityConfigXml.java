@@ -24,7 +24,7 @@ import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXParseException;
 
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.classloader.ClassPathLoader;
 
 /**
  * The abstract superclass of classes that convert XML into a

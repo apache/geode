@@ -26,6 +26,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,6 +40,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.api.ClusterManagementGetResult;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementRealizationResult;
@@ -55,6 +57,8 @@ public class DeploymentManagementController extends AbstractManagementController
   @Autowired
   private Jackson2ObjectMapperFactoryBean objectMapper;
 
+  private static Logger logger = LogService.getLogger();
+
   @ApiOperation(value = "list deployed")
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
   @GetMapping(Deployment.DEPLOYMENT_ENDPOINT)
@@ -63,7 +67,7 @@ public class DeploymentManagementController extends AbstractManagementController
       @RequestParam(required = false) String group) {
     Deployment deployment = new Deployment();
     if (StringUtils.isNotBlank(id)) {
-      deployment.setFileName(id);
+      deployment.setDeploymentName(id);
     }
     if (StringUtils.isNotBlank(group)) {
       deployment.setGroup(group);
@@ -78,7 +82,7 @@ public class DeploymentManagementController extends AbstractManagementController
       @PathVariable(name = "id") String id) {
     Deployment deployment = new Deployment();
     if (StringUtils.isNotBlank(id)) {
-      deployment.setFileName(id);
+      deployment.setDeploymentName(id);
     }
     return clusterManagementService.get(deployment);
   }
@@ -101,13 +105,13 @@ public class DeploymentManagementController extends AbstractManagementController
       throw new IllegalArgumentException("No file uploaded");
     }
     Path tempDir = FileUploader.createSecuredTempDirectory("uploaded-");
-    File dest = new File(tempDir.toFile(), file.getOriginalFilename());
-    file.transferTo(dest);
+    File targetFile = new File(tempDir.toFile(), file.getOriginalFilename());
+    file.transferTo(targetFile);
     Deployment deployment = new Deployment();
     if (StringUtils.isNotBlank(json)) {
       deployment = objectMapper.getObject().readValue(json, Deployment.class);
     }
-    deployment.setFile(dest);
+    deployment.setFile(targetFile);
     ClusterManagementRealizationResult realizationResult =
         clusterManagementService.create(deployment);
     return new ResponseEntity<>(realizationResult, HttpStatus.CREATED);

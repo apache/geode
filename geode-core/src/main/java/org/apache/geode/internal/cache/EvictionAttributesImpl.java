@@ -27,8 +27,8 @@ import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.EvictionAttributesMutator;
 import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.util.ObjectSizer;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.classloader.ClassPathLoader;
 
 /**
  * Defines the attributes for configuring the eviction controller associated with a

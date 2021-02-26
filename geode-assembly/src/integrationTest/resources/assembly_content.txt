@@ -758,6 +758,7 @@ javadoc/org/apache/geode/management/configuration/Index.html
 javadoc/org/apache/geode/management/configuration/IndexType.html
 javadoc/org/apache/geode/management/configuration/Links.html
 javadoc/org/apache/geode/management/configuration/Member.html
+javadoc/org/apache/geode/management/configuration/MultiJarDeployment.html
 javadoc/org/apache/geode/management/configuration/Pdx.html
 javadoc/org/apache/geode/management/configuration/Region.Eviction.html
 javadoc/org/apache/geode/management/configuration/Region.EvictionAction.html
@@ -966,6 +967,16 @@ javadoc/org/apache/geode/security/SecurityManager.html
 javadoc/org/apache/geode/security/package-frame.html
 javadoc/org/apache/geode/security/package-summary.html
 javadoc/org/apache/geode/security/package-tree.html
+javadoc/org/apache/geode/services/result/Result.html
+javadoc/org/apache/geode/services/result/ServiceResult.html
+javadoc/org/apache/geode/services/result/impl/Failure.html
+javadoc/org/apache/geode/services/result/impl/Success.html
+javadoc/org/apache/geode/services/result/impl/package-frame.html
+javadoc/org/apache/geode/services/result/impl/package-summary.html
+javadoc/org/apache/geode/services/result/impl/package-tree.html
+javadoc/org/apache/geode/services/result/package-frame.html
+javadoc/org/apache/geode/services/result/package-summary.html
+javadoc/org/apache/geode/services/result/package-tree.html
 javadoc/overview-frame.html
 javadoc/overview-summary.html
 javadoc/overview-tree.html
@@ -995,6 +1006,7 @@ lib/geode-connectors-0.0.0.jar
 lib/geode-core-0.0.0.jar
 lib/geode-cq-0.0.0.jar
 lib/geode-dependencies.jar
+lib/geode-deployment-legacy-0.0.0.jar
 lib/geode-gfsh-0.0.0.jar
 lib/geode-http-service-0.0.0.jar
 lib/geode-jca-0.0.0.rar

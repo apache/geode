@@ -73,7 +73,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.ClassLoadUtil;
+import org.apache.geode.internal.ClassLoadUtils;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.cache.CacheClientStatus;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor;
@@ -836,7 +836,7 @@ public class CacheClientNotifier {
         String postAuthzFactoryName = sysProps.getProperty(SECURITY_CLIENT_ACCESSOR_PP);
         AccessControl authzCallback = null;
         if (postAuthzFactoryName != null && !postAuthzFactoryName.isEmpty()) {
-          Method authzMethod = ClassLoadUtil.methodFromName(postAuthzFactoryName);
+          Method authzMethod = ClassLoadUtils.methodFromName(postAuthzFactoryName);
           authzCallback = (AccessControl) authzMethod.invoke(null, (Object[]) null);
           authzCallback.init(principal, member, getCache());
         }

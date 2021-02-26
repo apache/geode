@@ -26,7 +26,7 @@ import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.cli.CliFunction;
-import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.CliUtils;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.functions.CliFunctionResult.StatusState;
 
@@ -44,7 +44,7 @@ public class DestroyGatewayReceiverFunction extends CliFunction<Void> {
 
     Cache cache = context.getCache();
     String memberNameOrId =
-        CliUtil.getMemberNameOrId(cache.getDistributedSystem().getDistributedMember());
+        CliUtils.getMemberNameOrId(cache.getDistributedSystem().getDistributedMember());
 
     Set<GatewayReceiver> gatewayReceivers = cache.getGatewayReceivers();
     if (gatewayReceivers != null && !gatewayReceivers.isEmpty()) {

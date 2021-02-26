@@ -26,7 +26,7 @@ dependencies {
     // Geode-common has annotations and other pieces used by geode-logging
     api(project(':geode-common'))
 
-    implementation('org.apache.logging.log4j:log4j-api')
+    api('org.apache.logging.log4j:log4j-api')
 
     testImplementation(project(':geode-junit')) {
         exclude module: 'geode-logging'

@@ -21,7 +21,7 @@ import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
-import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.CliUtils;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 
@@ -39,7 +39,7 @@ public class GatewaySenderDestroyFunction
 
     Cache cache = context.getCache();
     String memberNameOrId =
-        CliUtil.getMemberNameOrId(cache.getDistributedSystem().getDistributedMember());
+        CliUtils.getMemberNameOrId(cache.getDistributedSystem().getDistributedMember());
 
     GatewaySenderDestroyFunctionArgs gatewaySenderDestroyFunctionArgs =
         context.getArguments();

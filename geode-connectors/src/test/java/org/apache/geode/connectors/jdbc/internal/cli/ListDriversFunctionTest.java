@@ -29,14 +29,14 @@ import org.junit.Test;
 
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.cache.execute.FunctionContextImpl;
-import org.apache.geode.internal.util.DriverJarUtil;
+import org.apache.geode.internal.util.DriverJarUtils;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 
 public class ListDriversFunctionTest {
 
   private ListDriversFunction function;
   private FunctionContext<Object[]> context;
-  private DriverJarUtil util;
+  private DriverJarUtils util;
   private List<String> driverNames;
 
 
@@ -46,7 +46,7 @@ public class ListDriversFunctionTest {
     context = mock(FunctionContextImpl.class);
     function = spy(new ListDriversFunction());
     when(context.getMemberName()).thenReturn("Test Member Name");
-    util = mock(DriverJarUtil.class);
+    util = mock(DriverJarUtils.class);
     doReturn(util).when(function).getDriverJarUtil();
 
     driverNames = new ArrayList<>();

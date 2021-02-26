@@ -104,7 +104,8 @@ public class CacheRealizationFunction implements InternalFunction<List> {
         RemoteInputStream jarStream = (RemoteInputStream) context.getArguments().get(2);
         InternalCache cache = (InternalCache) context.getCache();
         context.getResultSender()
-            .lastResult(executeUpdate(context, cache, cacheElement, operation, jarStream));
+            .lastResult(
+                executeUpdate(context.getMemberName(), cache, cacheElement, operation, jarStream));
       } catch (CacheClosedException e) {
         // cache not ready or closed already, no need to log it
         context.getResultSender().lastResult(new RealizationResult()
@@ -142,17 +143,17 @@ public class CacheRealizationFunction implements InternalFunction<List> {
     return runtimeInfo;
   }
 
-  public RealizationResult executeUpdate(FunctionContext<List> context,
+  public RealizationResult executeUpdate(String memberName,
       InternalCache cache, AbstractConfiguration cacheElement,
       CacheElementOperation operation, RemoteInputStream jarStream) throws Exception {
 
     ConfigurationRealizer realizer = realizers.get(cacheElement.getClass());
 
     RealizationResult result = new RealizationResult();
-    result.setMemberName(context.getMemberName());
+    result.setMemberName(memberName);
 
     if (realizer == null || realizer.isReadyOnly()) {
-      return result.setMessage("Server '" + context.getMemberName()
+      return result.setMessage("Server '" + memberName
           + "' needs to be restarted for this configuration change to be realized.");
     }
 
@@ -189,7 +190,7 @@ public class CacheRealizationFunction implements InternalFunction<List> {
         result = realizer.update(cacheElement, cache);
         break;
     }
-    result.setMemberName(context.getMemberName());
+    result.setMemberName(memberName);
     return result;
   }
 

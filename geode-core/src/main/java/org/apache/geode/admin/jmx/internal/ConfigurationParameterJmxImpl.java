@@ -68,10 +68,10 @@ public class ConfigurationParameterJmxImpl
     try {
       super.setValue(value);
     } catch (UnmodifiableConfigurationException e) {
-      MBeanUtil.logStackTrace(Level.WARN, e);
+      MBeanUtils.logStackTrace(Level.WARN, e);
       throw e;
     } catch (java.lang.RuntimeException e) {
-      MBeanUtil.logStackTrace(Level.WARN, e);
+      MBeanUtils.logStackTrace(Level.WARN, e);
       throw e;
     } catch (VirtualMachineError err) {
       SystemFailure.initiateFailure(err);
@@ -85,7 +85,7 @@ public class ConfigurationParameterJmxImpl
       // error condition, so you also need to check to see if the JVM
       // is still usable:
       SystemFailure.checkFailure();
-      MBeanUtil.logStackTrace(Level.ERROR, e);
+      MBeanUtils.logStackTrace(Level.ERROR, e);
       throw e;
     }
   }
