@@ -57,6 +57,7 @@ import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.persistence.PersistentID;
+import org.apache.geode.deployment.internal.JarDeploymentServiceFactory;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.DiskStoreImpl;

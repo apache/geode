@@ -20,6 +20,8 @@ import java.util.List;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.deployment.internal.JarDeploymentService;
+import org.apache.geode.deployment.internal.JarDeploymentServiceFactory;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunction;
