@@ -16,19 +16,24 @@
 package org.apache.geode.internal.statistics.platform;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.internal.statistics.LocalStatisticsFactory;
+import org.apache.geode.internal.statistics.SimpleStatSampler;
 import org.apache.geode.internal.statistics.platform.LinuxThreadSchedulerStatistics.WorkingGatherer;
 
 public class LinuxThreadSchedulerStatisticsTest {
@@ -42,8 +47,22 @@ public class LinuxThreadSchedulerStatisticsTest {
 
   StatisticsFactory statisticsFactory;
 
+  @Rule
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+  private File testDir;
+
   @Before
   public void before() {
+
+    testDir = temporaryFolder.getRoot();
+
+    /*
+     Put statistics files (generated indirectly via LocalStatisticsFactory) in temporary
+     folder so they don't intermingle with our source code.
+     */
+    System.setProperty(SimpleStatSampler.ARCHIVE_FILE_NAME_PROPERTY, this.testDir.getAbsolutePath()
+        + File.separator + SimpleStatSampler.DEFAULT_ARCHIVE_FILE_NAME);
+
     statisticsFactory = new LocalStatisticsFactory(new CancelCriterion() {
       @Override
       public String cancelInProgress() {
