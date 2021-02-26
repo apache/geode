@@ -184,7 +184,11 @@ rat {
     'geode-pulse/src/main/webapp/scripts/multiselect/prettify.js',
 
     // MX4J License
-    'geode-core/src/main/java/org/apache/geode/admin/jmx/internal/MX4JModelMBean.java'
+    'geode-core/src/main/java/org/apache/geode/admin/jmx/internal/MX4JModelMBean.java',
+
+    //Geode Extensions
+    'geode-deployment/geode-deployment-jboss-modules/src/main/resources/geodeExtensions.properties',
+    'geode-deployment/geode-jboss-extensions/src/test/resources/geodeExtensions.properties'
   ]
 }
 

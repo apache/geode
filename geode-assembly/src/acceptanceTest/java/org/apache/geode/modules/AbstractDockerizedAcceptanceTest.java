@@ -42,7 +42,7 @@ public abstract class AbstractDockerizedAcceptanceTest {
   @ClassRule
   public static TemporaryFolder stagingTempDir = new TemporaryFolder();
 
-  private static final String LOCATOR_START_COMMAND =
+  public static final String LOCATOR_START_COMMAND =
       "start locator --name=locator1 --port=10334 --J=-Dgemfire.enable-network-partition-detection=false";
   private static final String SERVER1_START_COMMAND =
       "start server --name=server1 --locators=localhost[10334] --server-port=40404 --http-service-port=9090 --start-rest-api ";
@@ -62,12 +62,12 @@ public abstract class AbstractDockerizedAcceptanceTest {
   private static String currentLaunchCommand;
   private static String previousLocatorGFSHConnectionString;
 
-  static int locatorPort;
-  static int serverPort;
-  static int httpPort;
-  static int redisPort;
-  static int memcachePort;
-  static int jmxHttpPort;
+  static int locatorPort = 10334;
+  static int serverPort = 40404;
+  static int httpPort = 9090;
+  static int redisPort = 6379;
+  static int memcachePort = 5678;
+  static int jmxHttpPort = 7070;
   static String host;
 
   protected String getLocatorGFSHConnectionString() {
@@ -192,6 +192,6 @@ public abstract class AbstractDockerizedAcceptanceTest {
 
   @Parameterized.Parameters
   public static List<String> getStartServerCommand() {
-    return Arrays.asList(MODULAR_LAUNCH_COMMAND);// , NONMODULAR_LAUNCH_COMMAND);
+    return Arrays.asList(MODULAR_LAUNCH_COMMAND, NONMODULAR_LAUNCH_COMMAND);
   }
 }

@@ -71,10 +71,10 @@ public class FunctionToFileTracker {
             filePath);
         try {
           functions.addAll(loadFunctionFromClassName(functionClass));
-        } catch (ClassNotFoundException | NoClassDefFoundError cnfex) {
+        } catch (ClassNotFoundException | NoClassDefFoundError exception) {
           logger.error("Unable to load all classes from JAR file: {}",
-              filePath, cnfex);
-          throw cnfex;
+              filePath, exception);
+          throw exception;
         }
       }
       registeredFunctions.addAll(registerFunction(filePath, functions));

@@ -68,8 +68,6 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
     jarBuilder.buildJarFromClassNames(myJarV1, "SomeClass");
     jarBuilder.buildJarFromClassNames(myJarV2, "SomeClass", "SomeClassVersionTwo");
     jarBuilder.buildJarFromClassNames(anotherJarFile, "SomeOtherClass");
-
-
   }
 
   @After
@@ -90,7 +88,6 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
 
     System.out.println(GfshScript.of(getLocatorGFSHConnectionString(), "undeploy")
         .execute(gfshRule).getOutputText());
-
   }
 
   @Test
@@ -191,8 +188,10 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
         .of(getLocatorGFSHConnectionString(), "deploy --jars=" + functionJar.getCanonicalPath())
         .execute(gfshRule);
 
-    assertThat(GfshScript.of(getLocatorGFSHConnectionString(), "list functions").execute(gfshRule)
-        .getOutputText()).contains("ExampleFunction");
+    String outputText =
+        GfshScript.of(getLocatorGFSHConnectionString(), "list functions").execute(gfshRule)
+            .getOutputText();
+    assertThat(outputText).contains("ExampleFunction");
 
     assertThat(
         GfshScript.of(getLocatorGFSHConnectionString(), "execute function --id=ExampleFunction")
@@ -361,7 +360,7 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
         .of(getLocatorGFSHConnectionString(), "deploy --jars=" + functionJar.getAbsolutePath())
         .execute(gfshRule).getOutputText());
 
-    if (isModular()) {
+    if (true) {
       assertThat(GfshScript.of(getLocatorGFSHConnectionString(), "list deployed").execute(gfshRule)
           .getOutputText()).doesNotContain("function");
 
@@ -370,6 +369,15 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
           .execute(gfshRule).getOutputText())
               .doesNotContain("ExcludedFunction")
               .doesNotContain("ExampleFunction");
+    } else {
+      assertThat(GfshScript.of(getLocatorGFSHConnectionString(), "list deployed").execute(gfshRule)
+          .getOutputText()).contains("function");
+
+      assertThat(GfshScript
+          .of(getLocatorGFSHConnectionString(), "list functions")
+          .execute(gfshRule).getOutputText())
+              .contains("ExcludedFunction")
+              .contains("ExampleFunction");
     }
   }
 

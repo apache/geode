@@ -19,6 +19,7 @@ package org.apache.geode.deployment.internal.modules.utils;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.jar.JarFile;
 
 import org.jboss.modules.LocalDependencySpecBuilder;
@@ -40,8 +41,13 @@ public class ModuleSpecBuilderUtils {
 
   public static ModuleSpec.Builder addModuleDependencies(ModuleSpec.Builder builder, boolean export,
       String... moduleDependencies) {
+    return addModuleDependencies(builder, export, Arrays.asList(moduleDependencies));
+  }
+
+  public static ModuleSpec.Builder addModuleDependencies(ModuleSpec.Builder builder, boolean export,
+      List<String> moduleDependencies) {
     if (builder != null && moduleDependencies != null) {
-      for (String moduleDependency : new HashSet<>(Arrays.asList(moduleDependencies))) {
+      for (String moduleDependency : new HashSet<>(moduleDependencies)) {
         if (moduleDependency != null) {
           builder.addDependency(new ModuleDependencySpecBuilder()
               .setName(moduleDependency)

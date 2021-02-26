@@ -22,8 +22,10 @@ import static org.mockito.Mockito.mock;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
+import java.util.stream.Collectors;
 
 import org.jboss.modules.ConcreteModuleSpec;
 import org.jboss.modules.ModuleFinder;
@@ -46,9 +48,9 @@ public class GeodeJarModuleFinderTest {
 
   @BeforeClass
   public static void setup() throws IOException {
+    JarBuilder jarBuilder = new JarBuilder();
     moduleLoader = mock(ModuleLoader.class);
     myJar = new File(stagingTempDir.newFolder(), "myJar.jar");
-    JarBuilder jarBuilder = new JarBuilder();
     jarBuilder.buildJarFromClassNames(myJar, "Class");
   }
 
@@ -60,7 +62,9 @@ public class GeodeJarModuleFinderTest {
     ModuleSpec moduleSpec = geodeJarModuleFinder.findModule("my-module", moduleLoader);
     ConcreteModuleSpec concreteModuleSpec = (ConcreteModuleSpec) moduleSpec;
     assertThat(concreteModuleSpec.getName()).isEqualTo("my-module");
-    assertThat(concreteModuleSpec.getDependencies().length).isEqualTo(3);
+    assertThat(Arrays.stream(concreteModuleSpec.getDependencies()).map(Object::toString)
+        .collect(Collectors.toList()))
+            .containsExactlyInAnyOrder("dependency on java.base", "dependency on local resources");
   }
 
   @Test
@@ -73,7 +77,10 @@ public class GeodeJarModuleFinderTest {
     ModuleSpec moduleSpec = geodeJarModuleFinder.findModule("my-module", moduleLoader);
     ConcreteModuleSpec concreteModuleSpec = (ConcreteModuleSpec) moduleSpec;
     assertThat(concreteModuleSpec.getName()).isEqualTo("my-module");
-    assertThat(concreteModuleSpec.getDependencies().length).isEqualTo(4);
+    assertThat(Arrays.stream(concreteModuleSpec.getDependencies()).map(Object::toString)
+        .collect(Collectors.toList()))
+            .containsExactlyInAnyOrder("dependency on java.base", "dependency on local resources",
+                "dependency on my-dependency");
   }
 
   @Test
@@ -114,6 +121,8 @@ public class GeodeJarModuleFinderTest {
     ModuleSpec moduleSpec = geodeJarModuleFinder.findModule("my-module", moduleLoader);
     ConcreteModuleSpec concreteModuleSpec = (ConcreteModuleSpec) moduleSpec;
     assertThat(concreteModuleSpec.getName()).isEqualTo("my-module");
-    assertThat(concreteModuleSpec.getDependencies().length).isEqualTo(3);
+    assertThat(Arrays.stream(concreteModuleSpec.getDependencies()).map(Object::toString)
+        .collect(Collectors.toList()))
+            .containsExactlyInAnyOrder("dependency on java.base", "dependency on local resources");
   }
 }

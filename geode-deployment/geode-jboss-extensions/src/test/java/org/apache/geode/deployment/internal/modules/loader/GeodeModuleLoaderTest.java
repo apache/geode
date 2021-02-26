@@ -21,7 +21,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.stream.Collectors;
 
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
@@ -29,6 +31,7 @@ import org.jboss.modules.ModuleNotFoundException;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
@@ -37,10 +40,10 @@ import org.apache.geode.deployment.internal.modules.finder.GeodeJarModuleFinder;
 import org.apache.geode.test.compiler.JarBuilder;
 
 public class GeodeModuleLoaderTest {
-
   @ClassRule
   public static TemporaryFolder stagingTempDir = new TemporaryFolder();
   private static File myJar;
+
   private GeodeModuleLoader geodeModuleLoader;
 
   @BeforeClass
@@ -93,7 +96,9 @@ public class GeodeModuleLoaderTest {
     geodeModuleLoader.registerModule("my-module", myJar.getPath(), Collections.emptyList());
     Module module = geodeModuleLoader.loadModule("my-module");
     assertThat(module.getName()).isEqualTo("my-module");
-    assertThat(module.getDependencies().length).isEqualTo(3);
+    assertThat(Arrays.stream(module.getDependencies())
+        .map(Object::toString).collect(Collectors.toList()))
+            .containsExactlyInAnyOrder("dependency on java.base", "dependency on local resources");
   }
 
   @Test
@@ -104,7 +109,10 @@ public class GeodeModuleLoaderTest {
         .registerModule("my-module", myJar.getPath(), Collections.singletonList("other-module"));
     Module module = geodeModuleLoader.loadModule("my-module");
     assertThat(module.getName()).isEqualTo("my-module");
-    assertThat(module.getDependencies().length).isEqualTo(4);
+    assertThat(Arrays.stream(geodeModuleLoader.loadModule("my-module").getDependencies())
+        .map(Object::toString).collect(Collectors.toList()))
+            .containsExactlyInAnyOrder("dependency on java.base", "dependency on local resources",
+                "dependency on other-module");
   }
 
   @Test
@@ -121,7 +129,9 @@ public class GeodeModuleLoaderTest {
         .registerModule("my-module", myJar.getPath(), null);
     Module module = geodeModuleLoader.loadModule("my-module");
     assertThat(module.getName()).isEqualTo("my-module");
-    assertThat(module.getDependencies().length).isEqualTo(3);
+    assertThat(Arrays.stream(module.getDependencies())
+        .map(Object::toString).collect(Collectors.toList()))
+            .containsExactlyInAnyOrder("dependency on java.base", "dependency on local resources");
   }
 
   @Test
@@ -147,6 +157,11 @@ public class GeodeModuleLoaderTest {
   }
 
   @Test
+  // TODO: This test is now old. As we can only (from the customer perspective) deploy
+  // GeodeExtensions or Applications.
+  // TODO: We can only register a module as long as it is a GeodeExtension or Application. (the
+  // customer perspective)
+  @Ignore
   public void testRegisterModuleWithGeodeInName() {
     assertThatThrownBy(
         () -> geodeModuleLoader
@@ -180,6 +195,10 @@ public class GeodeModuleLoaderTest {
   }
 
   @Test
+  // TODO: This test is now old. As we can only (from the customer perspective) deploy
+  // GeodeExtensions or Applications.
+  // TODO: We can unregister a module as long as it is a GeodeExtension or Application.
+  @Ignore
   public void testUnRegisterModuleWithGeodeInName() {
     assertThatThrownBy(() -> geodeModuleLoader.unregisterModule("geode-module"))
         .hasMessageContaining("Deployments starting with \"geode-\" are not allowed");
@@ -191,9 +210,14 @@ public class GeodeModuleLoaderTest {
         .registerModule("other-module", myJar.getPath(), Collections.emptyList());
     geodeModuleLoader
         .registerModule("my-module", myJar.getPath(), Collections.singletonList("other-module"));
-    assertThat(geodeModuleLoader.loadModule("my-module").getDependencies().length).isEqualTo(4);
+    assertThat(Arrays.stream(geodeModuleLoader.loadModule("my-module").getDependencies())
+        .map(Object::toString).collect(Collectors.toList()))
+            .containsExactlyInAnyOrder("dependency on java.base", "dependency on local resources",
+                "dependency on other-module");
     geodeModuleLoader.unregisterModule("other-module");
-    assertThat(geodeModuleLoader.loadModule("my-module").getDependencies().length).isEqualTo(3);
+    assertThat(Arrays.stream(geodeModuleLoader.loadModule("my-module").getDependencies())
+        .map(Object::toString).collect(Collectors.toList()))
+            .containsExactlyInAnyOrder("dependency on java.base", "dependency on local resources");
     assertThatThrownBy(() -> geodeModuleLoader.loadModule("other-module"))
         .isInstanceOf(ModuleNotFoundException.class).hasMessageContaining("other-module");
   }
@@ -201,7 +225,7 @@ public class GeodeModuleLoaderTest {
   @Test
   public void testRegisterModuleAsDependencyOfModuleNeitherExist() {
     assertThatThrownBy(
-        () -> geodeModuleLoader.registerModuleAsDependencyOfModule("my-module", "other-module"))
+        () -> geodeModuleLoader.registerModulesAsDependencyOfModule("my-module", "other-module"))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("No such module: my-module");
   }
@@ -211,7 +235,7 @@ public class GeodeModuleLoaderTest {
     geodeModuleLoader.registerModule("my-module", myJar.getPath(), Collections.emptyList());
     geodeModuleLoader.loadModule("my-module");
     assertThatThrownBy(
-        () -> geodeModuleLoader.registerModuleAsDependencyOfModule("my-module", "other-module"))
+        () -> geodeModuleLoader.registerModulesAsDependencyOfModule("my-module", "other-module"))
             .isInstanceOf(ModuleNotFoundException.class)
             .hasMessageContaining("other-module");
   }
@@ -221,7 +245,7 @@ public class GeodeModuleLoaderTest {
     geodeModuleLoader.registerModule("other-module", myJar.getPath(), Collections.emptyList());
     geodeModuleLoader.loadModule("other-module");
     assertThatThrownBy(
-        () -> geodeModuleLoader.registerModuleAsDependencyOfModule("my-module", "other-module"))
+        () -> geodeModuleLoader.registerModulesAsDependencyOfModule("my-module", "other-module"))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("No such module: my-module");
   }
@@ -230,15 +254,20 @@ public class GeodeModuleLoaderTest {
   public void testRegisterModuleAsDependencyOfModule() throws ModuleLoadException {
     geodeModuleLoader.registerModule("other-module", myJar.getPath(), Collections.emptyList());
     geodeModuleLoader.registerModule("my-module", myJar.getPath(), Collections.emptyList());
-    assertThat(geodeModuleLoader.loadModule("my-module").getDependencies().length).isEqualTo(3);
-    geodeModuleLoader.registerModuleAsDependencyOfModule("my-module", "other-module");
-    assertThat(geodeModuleLoader.loadModule("my-module").getDependencies().length).isEqualTo(4);
+    assertThat(Arrays.stream(geodeModuleLoader.loadModule("my-module").getDependencies())
+        .map(Object::toString).collect(Collectors.toList()))
+            .containsExactlyInAnyOrder("dependency on java.base", "dependency on local resources");
+    geodeModuleLoader.registerModulesAsDependencyOfModule("my-module", "other-module");
+    assertThat(Arrays.stream(geodeModuleLoader.loadModule("my-module").getDependencies())
+        .map(Object::toString).collect(Collectors.toList()))
+            .containsExactlyInAnyOrder("dependency on java.base", "dependency on local resources",
+                "dependency on other-module");
   }
 
   @Test
   public void testRegisterModuleAsDependencyOfNullModule() {
     assertThatThrownBy(
-        () -> geodeModuleLoader.registerModuleAsDependencyOfModule(null, "other-module"))
+        () -> geodeModuleLoader.registerModulesAsDependencyOfModule(null, "other-module"))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("Module name cannot be null");
   }
@@ -246,9 +275,9 @@ public class GeodeModuleLoaderTest {
   @Test
   public void testRegisterNullModuleAsDependencyOfModule() {
     assertThatThrownBy(
-        () -> geodeModuleLoader.registerModuleAsDependencyOfModule("my-module", null))
+        () -> geodeModuleLoader.registerModulesAsDependencyOfModule("my-module", null))
             .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("Module to depend on cannot be null");
+            .hasMessageContaining("Modules to depend on cannot be null");
   }
 
   @Test
@@ -256,10 +285,15 @@ public class GeodeModuleLoaderTest {
     geodeModuleLoader.registerModule("other-module", myJar.getPath(), Collections.emptyList());
     geodeModuleLoader.registerModule("my-module", myJar.getPath(), Collections.emptyList());
     geodeModuleLoader.loadModule("my-module");
-    geodeModuleLoader.registerModuleAsDependencyOfModule("my-module", "other-module");
-    assertThat(geodeModuleLoader.loadModule("my-module").getDependencies().length).isEqualTo(4);
+    geodeModuleLoader.registerModulesAsDependencyOfModule("my-module", "other-module");
+    assertThat(Arrays.stream(geodeModuleLoader.loadModule("my-module").getDependencies())
+        .map(Object::toString).collect(Collectors.toList()))
+            .containsExactlyInAnyOrder("dependency on java.base", "dependency on local resources",
+                "dependency on other-module");
     geodeModuleLoader.unregisterModuleDependencyFromModules("other-module");
-    assertThat(geodeModuleLoader.loadModule("my-module").getDependencies().length).isEqualTo(3);
+    assertThat(Arrays.stream(geodeModuleLoader.loadModule("my-module").getDependencies())
+        .map(Object::toString).collect(Collectors.toList()))
+            .containsExactlyInAnyOrder("dependency on java.base", "dependency on local resources");
     assertThat(geodeModuleLoader.loadModule("other-module")).isNotNull();
   }
 
@@ -268,18 +302,27 @@ public class GeodeModuleLoaderTest {
     geodeModuleLoader.registerModule("other-module", myJar.getPath(), Collections.emptyList());
     geodeModuleLoader
         .registerModule("my-module", myJar.getPath(), Collections.singletonList("other-module"));
-    assertThat(geodeModuleLoader.loadModule("my-module").getDependencies().length).isEqualTo(4);
+    assertThat(Arrays.stream(geodeModuleLoader.loadModule("my-module").getDependencies())
+        .map(Object::toString).collect(Collectors.toList()))
+            .containsExactlyInAnyOrder("dependency on java.base", "dependency on local resources",
+                "dependency on other-module");
     geodeModuleLoader.unregisterModuleDependencyFromModules("other-module");
-    assertThat(geodeModuleLoader.loadModule("my-module").getDependencies().length).isEqualTo(3);
+    assertThat(Arrays.stream(geodeModuleLoader.loadModule("my-module").getDependencies())
+        .map(Object::toString).collect(Collectors.toList()))
+            .containsExactlyInAnyOrder("dependency on java.base", "dependency on local resources");
     assertThat(geodeModuleLoader.loadModule("other-module")).isNotNull();
   }
 
   @Test
   public void testUnregisterInvalidModuleDependencyFromModules() throws ModuleLoadException {
     geodeModuleLoader.registerModule("my-module", myJar.getPath(), Collections.emptyList());
-    assertThat(geodeModuleLoader.loadModule("my-module").getDependencies().length).isEqualTo(3);
+    assertThat(Arrays.stream(geodeModuleLoader.loadModule("my-module").getDependencies())
+        .map(Object::toString).collect(Collectors.toList()))
+            .containsExactlyInAnyOrder("dependency on java.base", "dependency on local resources");
     geodeModuleLoader.unregisterModuleDependencyFromModules("wrong-module");
-    assertThat(geodeModuleLoader.loadModule("my-module").getDependencies().length).isEqualTo(3);
+    assertThat(Arrays.stream(geodeModuleLoader.loadModule("my-module").getDependencies())
+        .map(Object::toString).collect(Collectors.toList()))
+            .containsExactlyInAnyOrder("dependency on java.base", "dependency on local resources");
   }
 
   @Test

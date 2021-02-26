@@ -24,13 +24,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.junit.Ignore;
+import org.jboss.modules.filter.PathFilter;
 import org.junit.Test;
 
-public class ModuleSpecUtilTest {
+import org.apache.geode.deployment.internal.modules.utils.ModuleUtils;
+
+public class ModuleSpecUtilsTest {
   @Test
   public void testCreateBuilderWithJavaBase() {
-    ModuleSpec.Builder builder = ModuleSpecUtil.createBuilder("my-module", true);
+    ModuleSpec.Builder builder = ModuleSpecUtils.createBuilder("my-module", true);
     ModuleSpec moduleSpec = builder.create();
     assertThat(moduleSpec.getName()).isEqualTo("my-module");
     assertThat(((ConcreteModuleSpec) moduleSpec).getDependencies().length).isEqualTo(1);
@@ -38,7 +40,7 @@ public class ModuleSpecUtilTest {
 
   @Test
   public void testCreateBuilderWithoutJavaBase() {
-    ModuleSpec.Builder builder = ModuleSpecUtil.createBuilder("my-module", false);
+    ModuleSpec.Builder builder = ModuleSpecUtils.createBuilder("my-module", false);
     ModuleSpec moduleSpec = builder.create();
     assertThat(moduleSpec.getName()).isEqualTo("my-module");
     assertThat(((ConcreteModuleSpec) moduleSpec).getDependencies()).isEmpty();
@@ -46,15 +48,15 @@ public class ModuleSpecUtilTest {
 
   @Test
   public void testCreateBuilderWithNullName() {
-    assertThatThrownBy(() -> ModuleSpecUtil.createBuilder(null, true))
+    assertThatThrownBy(() -> ModuleSpecUtils.createBuilder(null, true))
         .hasMessageContaining("name is null");
   }
 
   @Test
   public void addModuleDependencyToSpec() {
-    ModuleSpec.Builder builder = ModuleSpecUtil.createBuilder("my-module", true);
+    ModuleSpec.Builder builder = ModuleSpecUtils.createBuilder("my-module", true);
     ModuleSpec moduleSpec =
-        ModuleSpecUtil.addModuleDependencyToSpec(builder.create(), "my-dependency");
+        ModuleSpecUtils.addModuleDependencyToSpec(builder.create(), "my-dependency");
 
     assertThat(moduleSpec.getName()).isEqualTo("my-module");
     assertThat(((ConcreteModuleSpec) moduleSpec).getDependencies().length).isEqualTo(2);
@@ -64,104 +66,105 @@ public class ModuleSpecUtilTest {
 
   @Test
   public void addModuleDependencyToNulSpec() {
-    assertThatThrownBy(() -> ModuleSpecUtil.addModuleDependencyToSpec(null, "my-dependency"))
+    assertThatThrownBy(() -> ModuleSpecUtils.addModuleDependencyToSpec(null, "my-dependency"))
         .hasMessageContaining("ModuleSpec cannot be null");
   }
 
   @Test
   public void addNullModuleDependencyToSpec() {
-    ModuleSpec.Builder builder = ModuleSpecUtil.createBuilder("my-module", true);
-    assertThatThrownBy(() -> ModuleSpecUtil.addModuleDependencyToSpec(builder.create(), null))
-        .hasMessageContaining("name is null");
+    ModuleSpec.Builder builder = ModuleSpecUtils.createBuilder("my-module", true);
+    assertThatThrownBy(() -> ModuleSpecUtils.addModuleDependencyToSpec(builder.create(), null))
+        .hasMessageContaining("Dependency names cannot be null");
   }
 
   @Test
-  @Ignore
   public void testAddSystemClasspathDependency() {
-    ModuleSpec moduleSpec = ModuleSpecUtil
-        .addSystemClasspathDependency(ModuleSpecUtil.createBuilder("my-module", true).create());
+    ModuleSpec moduleSpec = ModuleSpecUtils
+        .addSystemClasspathDependency(ModuleSpecUtils.createBuilder("my-module", true).create());
 
     assertThat(moduleSpec.getName()).isEqualTo("my-module");
 
-    assertThat(((ConcreteModuleSpec) moduleSpec).getDependencies().length).isEqualTo(2);
+    assertThat(Arrays.stream(((ConcreteModuleSpec) moduleSpec).getDependencies())
+        .map(Object::toString).collect(Collectors.toList()))
+            .containsExactlyInAnyOrder("dependency on java.base");
   }
 
   @Test
   public void testAddSystemClasspathDependencyToNullSpec() {
-    assertThat(ModuleSpecUtil.addSystemClasspathDependency(null)).isNull();
+    assertThat(ModuleSpecUtils.addSystemClasspathDependency(null)).isNull();
   }
 
   @Test
   public void testRemoveDependencyFromSpec() {
-    ModuleSpec.Builder builder = ModuleSpecUtil.createBuilder("my-module", true);
+    ModuleSpec.Builder builder = ModuleSpecUtils.createBuilder("my-module", true);
     ModuleSpec moduleSpec =
-        ModuleSpecUtil.addModuleDependencyToSpec(builder.create(), "my-dependency");
+        ModuleSpecUtils.addModuleDependencyToSpec(builder.create(), "my-dependency");
 
     assertThat(((ConcreteModuleSpec) moduleSpec).getDependencies().length).isEqualTo(2);
     ModuleSpec moduleSpecAfterRemoval =
-        ModuleSpecUtil.removeDependencyFromSpec(moduleSpec, "my-dependency");
+        ModuleSpecUtils.removeDependencyFromSpec(moduleSpec, "my-dependency");
     assertThat(((ConcreteModuleSpec) moduleSpecAfterRemoval).getDependencies().length).isEqualTo(1);
   }
 
   @Test
   public void testRemoveNonexistentDependencyFromSpec() {
-    ModuleSpec moduleSpec = ModuleSpecUtil.createBuilder("my-module", true).create();
+    ModuleSpec moduleSpec = ModuleSpecUtils.createBuilder("my-module", true).create();
 
     assertThat(((ConcreteModuleSpec) moduleSpec).getDependencies().length).isEqualTo(1);
     ModuleSpec moduleSpecAfterRemoval =
-        ModuleSpecUtil.removeDependencyFromSpec(moduleSpec, "my-dependency");
+        ModuleSpecUtils.removeDependencyFromSpec(moduleSpec, "my-dependency");
     assertThat(((ConcreteModuleSpec) moduleSpecAfterRemoval).getDependencies().length).isEqualTo(1);
   }
 
   @Test
   public void testRemoveNullDependencyFromSpec() {
-    ModuleSpec moduleSpec = ModuleSpecUtil.createBuilder("my-module", true).create();
+    ModuleSpec moduleSpec = ModuleSpecUtils.createBuilder("my-module", true).create();
 
     assertThat(((ConcreteModuleSpec) moduleSpec).getDependencies().length).isEqualTo(1);
-    ModuleSpec moduleSpecAfterRemoval = ModuleSpecUtil.removeDependencyFromSpec(moduleSpec,
+    ModuleSpec moduleSpecAfterRemoval = ModuleSpecUtils.removeDependencyFromSpec(moduleSpec,
         (String) null);
     assertThat(((ConcreteModuleSpec) moduleSpecAfterRemoval).getDependencies().length).isEqualTo(1);
   }
 
   @Test
   public void testRemoveDependencyFromNullSpec() {
-    assertThatThrownBy(() -> ModuleSpecUtil.removeDependencyFromSpec(null, "my-dependencies"))
+    assertThatThrownBy(() -> ModuleSpecUtils.removeDependencyFromSpec(null, "my-dependencies"))
         .hasMessageContaining("ModuleSpec cannot be null");
   }
 
   @Test
   public void testRemoveNullDependencyFromNullSpec() {
-    assertThatThrownBy(() -> ModuleSpecUtil.removeDependencyFromSpec(null, (String) null))
+    assertThatThrownBy(() -> ModuleSpecUtils.removeDependencyFromSpec(null, (String) null))
         .hasMessageContaining("ModuleSpec cannot be null");
   }
 
   @Test
   public void testRemoveDependencyFromNullSpecWithNoDependenciesGiven() {
-    assertThatThrownBy(() -> ModuleSpecUtil.removeDependencyFromSpec(null))
+    assertThatThrownBy(() -> ModuleSpecUtils.removeDependencyFromSpec(null))
         .hasMessageContaining("ModuleSpec cannot be null");
   }
 
   @Test
   public void testRemoveDependencyFromSpecWithNoDependenciesGiven() {
-    ModuleSpec moduleSpec = ModuleSpecUtil.createBuilder("my-module", true).create();
+    ModuleSpec moduleSpec = ModuleSpecUtils.createBuilder("my-module", true).create();
 
-    ModuleSpec moduleSpecAfterRemoval = ModuleSpecUtil.removeDependencyFromSpec(moduleSpec);
+    ModuleSpec moduleSpecAfterRemoval = ModuleSpecUtils.removeDependencyFromSpec(moduleSpec);
     assertThat(moduleSpecAfterRemoval).isEqualTo(moduleSpec);
   }
 
   @Test
   public void testModuleExportsModuleDependencyNotDependent() {
-    ModuleSpec moduleSpec = ModuleSpecUtil.createBuilder("my-module", true).create();
+    ModuleSpec moduleSpec = ModuleSpecUtils.createBuilder("my-module", true).create();
 
     Boolean moduleDependentOnModule =
-        ModuleSpecUtil.moduleExportsModuleDependency(moduleSpec, "my-dependency");
+        ModuleSpecUtils.moduleExportsModuleDependency(moduleSpec, "my-dependency");
 
     assertThat(moduleDependentOnModule).isNull();
   }
 
   @Test
   public void testModuleExportsModuleDependencyDependent() {
-    ModuleSpec.Builder builder = ModuleSpecUtil.createBuilder("my-module", true);
+    ModuleSpec.Builder builder = ModuleSpecUtils.createBuilder("my-module", true);
 
     builder.addDependency(new ModuleDependencySpecBuilder()
         .setName("my-dependency")
@@ -169,36 +172,36 @@ public class ModuleSpecUtilTest {
         .build());
 
     Boolean moduleDependentOnModule =
-        ModuleSpecUtil.moduleExportsModuleDependency(builder.create(), "my-dependency");
+        ModuleSpecUtils.moduleExportsModuleDependency(builder.create(), "my-dependency");
 
     assertThat(moduleDependentOnModule).isFalse();
   }
 
   @Test
   public void testModuleExportsModuleDependencyExports() {
-    ModuleSpec.Builder builder = ModuleSpecUtil.createBuilder("my-module", true);
+    ModuleSpec.Builder builder = ModuleSpecUtils.createBuilder("my-module", true);
 
     ModuleSpec moduleSpec =
-        ModuleSpecUtil.addModuleDependencyToSpec(builder.create(), "my-dependency");
+        ModuleSpecUtils.addModuleDependencyToSpec(builder.create(), "my-dependency");
     Boolean moduleDependentOnModule =
-        ModuleSpecUtil.moduleExportsModuleDependency(moduleSpec, "my-dependency");
+        ModuleSpecUtils.moduleExportsModuleDependency(moduleSpec, "my-dependency");
 
     assertThat(moduleDependentOnModule).isTrue();
   }
 
   @Test
   public void testModuleExportsNullModuleDependency() {
-    ModuleSpec.Builder builder = ModuleSpecUtil.createBuilder("my-module", true);
+    ModuleSpec.Builder builder = ModuleSpecUtils.createBuilder("my-module", true);
 
     Boolean moduleDependentOnModule =
-        ModuleSpecUtil.moduleExportsModuleDependency(builder.create(), null);
+        ModuleSpecUtils.moduleExportsModuleDependency(builder.create(), null);
 
     assertThat(moduleDependentOnModule).isNull();
   }
 
   @Test
   public void testModuleExportsModuleDependencyWithNUllSpec() {
-    assertThatThrownBy(() -> ModuleSpecUtil.moduleExportsModuleDependency(null, "my-dependency"))
+    assertThatThrownBy(() -> ModuleSpecUtils.moduleExportsModuleDependency(null, "my-dependency"))
         .hasMessageContaining("ModuleSpec cannot be null");
   }
 
@@ -209,12 +212,12 @@ public class ModuleSpecUtilTest {
     List<String> pathsToExcludeChildrenOf = new LinkedList<>();
     pathsToExcludeChildrenOf.add("child/path");
 
-    ModuleSpec.Builder builder = ModuleSpecUtil.createBuilder("my-module", true);
+    ModuleSpec.Builder builder = ModuleSpecUtils.createBuilder("my-module", true);
     ModuleSpec moduleSpec =
-        ModuleSpecUtil.addModuleDependencyToSpec(builder.create(), "my-dependency");
+        ModuleSpecUtils.addModuleDependencyToSpec(builder.create(), "my-dependency");
+    PathFilter pathFilter = ModuleUtils.createPathFilter(pathsToExclude, pathsToExcludeChildrenOf);
     ModuleSpec moduleSpecWithExclude =
-        ModuleSpecUtil.addExcludeFilter(moduleSpec, pathsToExclude, pathsToExcludeChildrenOf,
-            "my-dependency");
+        ModuleSpecUtils.addExcludeFilter(moduleSpec, "my-dependency", pathFilter);
 
     ConcreteModuleSpec concreteModuleSpec = (ConcreteModuleSpec) moduleSpecWithExclude;
     assertThat(concreteModuleSpec.getDependencies().length).isEqualTo(2);
@@ -240,11 +243,11 @@ public class ModuleSpecUtilTest {
     pathsToExclude.add("path/to/exclude");
     List<String> pathsToExcludeChildrenOf = new LinkedList<>();
 
-    ModuleSpec.Builder builder = ModuleSpecUtil.createBuilder("my-module", true);
+    ModuleSpec.Builder builder = ModuleSpecUtils.createBuilder("my-module", true);
     ModuleSpec moduleSpec = builder.create();
+    PathFilter pathFilter = ModuleUtils.createPathFilter(pathsToExclude, pathsToExcludeChildrenOf);
     ModuleSpec moduleSpecWithExclude =
-        ModuleSpecUtil.addExcludeFilter(moduleSpec, pathsToExclude, pathsToExcludeChildrenOf,
-            "my-dependency");
+        ModuleSpecUtils.addExcludeFilter(moduleSpec, "my-dependency", pathFilter);
 
     assertThat(moduleSpecWithExclude).isEqualTo(moduleSpec);
   }
@@ -254,9 +257,11 @@ public class ModuleSpecUtilTest {
     List<String> pathsToExclude = new LinkedList<>();
     List<String> pathsToExcludeChildrenOf = new LinkedList<>();
 
+    PathFilter pathFilter = ModuleUtils.createPathFilter(pathsToExclude, pathsToExcludeChildrenOf);
+
     assertThatThrownBy(
-        () -> ModuleSpecUtil.addExcludeFilter(null, pathsToExclude, pathsToExcludeChildrenOf,
-            "my-dependency")).hasMessageContaining("ModuleSpec cannot be null");
+        () -> ModuleSpecUtils.addExcludeFilter(null, "my-dependency", pathFilter))
+            .hasMessageContaining("ModuleSpec cannot be null");
   }
 
   @Test
@@ -264,10 +269,11 @@ public class ModuleSpecUtilTest {
     List<String> pathsToExclude = new LinkedList<>();
     List<String> pathsToExcludeChildrenOf = new LinkedList<>();
 
-    ModuleSpec.Builder builder = ModuleSpecUtil.createBuilder("my-module", true);
-    assertThatThrownBy(() -> ModuleSpecUtil.addExcludeFilter(builder.create(), pathsToExclude,
-        pathsToExcludeChildrenOf,
-        null)).hasMessageContaining("Module to exclude from cannot be null");
+    PathFilter pathFilter = ModuleUtils.createPathFilter(pathsToExclude, pathsToExcludeChildrenOf);
+
+    ModuleSpec.Builder builder = ModuleSpecUtils.createBuilder("my-module", true);
+    assertThatThrownBy(() -> ModuleSpecUtils.addExcludeFilter(builder.create(),
+        null, pathFilter)).hasMessageContaining("Module to exclude from cannot be null");
   }
 
   @Test
@@ -275,12 +281,12 @@ public class ModuleSpecUtilTest {
     List<String> pathsToExcludeChildrenOf = new LinkedList<>();
     pathsToExcludeChildrenOf.add("child/path");
 
-    ModuleSpec.Builder builder = ModuleSpecUtil.createBuilder("my-module", true);
+    ModuleSpec.Builder builder = ModuleSpecUtils.createBuilder("my-module", true);
     ModuleSpec moduleSpec =
-        ModuleSpecUtil.addModuleDependencyToSpec(builder.create(), "my-dependency");
+        ModuleSpecUtils.addModuleDependencyToSpec(builder.create(), "my-dependency");
+    PathFilter pathFilter = ModuleUtils.createPathFilter(null, pathsToExcludeChildrenOf);
     ModuleSpec moduleSpecWithExclude =
-        ModuleSpecUtil.addExcludeFilter(moduleSpec, null, pathsToExcludeChildrenOf,
-            "my-dependency");
+        ModuleSpecUtils.addExcludeFilter(moduleSpec, "my-dependency", pathFilter);
 
     ConcreteModuleSpec concreteModuleSpec = (ConcreteModuleSpec) moduleSpecWithExclude;
     assertThat(concreteModuleSpec.getDependencies().length).isEqualTo(2);
@@ -303,11 +309,12 @@ public class ModuleSpecUtilTest {
     List<String> pathsToExclude = new LinkedList<>();
     pathsToExclude.add("path/to/exclude");
 
-    ModuleSpec.Builder builder = ModuleSpecUtil.createBuilder("my-module", true);
+    ModuleSpec.Builder builder = ModuleSpecUtils.createBuilder("my-module", true);
     ModuleSpec moduleSpec =
-        ModuleSpecUtil.addModuleDependencyToSpec(builder.create(), "my-dependency");
+        ModuleSpecUtils.addModuleDependencyToSpec(builder.create(), "my-dependency");
+    PathFilter pathFilter = ModuleUtils.createPathFilter(pathsToExclude, null);
     ModuleSpec moduleSpecWithExclude =
-        ModuleSpecUtil.addExcludeFilter(moduleSpec, pathsToExclude, null, "my-dependency");
+        ModuleSpecUtils.addExcludeFilter(moduleSpec, "my-dependency", pathFilter);
 
     ConcreteModuleSpec concreteModuleSpec = (ConcreteModuleSpec) moduleSpecWithExclude;
     assertThat(concreteModuleSpec.getDependencies().length).isEqualTo(2);

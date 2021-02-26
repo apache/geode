@@ -18,8 +18,6 @@ package org.apache.geode.deployment.internal.modules.loader;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.jboss.modules.AliasModuleSpec;
 import org.jboss.modules.ConcreteModuleSpec;
@@ -30,7 +28,13 @@ import org.jboss.modules.ModuleFinder;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.ModuleSpec;
+import org.jboss.modules.filter.MultiplePathFilterBuilder;
+import org.jboss.modules.filter.PathFilter;
+import org.jboss.modules.filter.PathFilters;
 
+import org.apache.geode.deployment.internal.modules.extensions.impl.Application;
+import org.apache.geode.deployment.internal.modules.extensions.impl.GeodeExtension;
+import org.apache.geode.deployment.internal.modules.finder.GeodeApplicationModuleFinder;
 import org.apache.geode.deployment.internal.modules.finder.GeodeCompositeModuleFinder;
 import org.apache.geode.deployment.internal.modules.finder.GeodeDelegatingLocalModuleFinder;
 import org.apache.geode.deployment.internal.modules.finder.GeodeJarModuleFinder;
@@ -41,13 +45,11 @@ import org.apache.geode.deployment.internal.modules.finder.GeodeJarModuleFinder;
  */
 public class GeodeModuleLoader extends DelegatingModuleLoader implements AutoCloseable {
 
+  private static final String GEODE_BASE_PACKAGE_PATH = "org/apache/geode";
   private final GeodeCompositeModuleFinder compositeModuleFinder;
   private static final ModuleLoader JDK_MODULE_LOADER =
       new ModuleLoader(JDKModuleFinder.getInstance());
-  private static final String THIRD_PARTY_MODULE_NAME = "external-library-dependencies";
-  private static final String CUSTOM_JAR_DEPLOYMENT_MODULE_NAME = "geode-custom-jar-deployments";
   private static final String CORE_MODULE_NAME = "geode-core";
-  private static final String GEODE_BASE_PACKAGE_PATH = "org/apache/geode";
 
   public GeodeModuleLoader(GeodeCompositeModuleFinder compositeModuleFinder) {
     super(JDK_MODULE_LOADER, new ModuleFinder[] {compositeModuleFinder});
@@ -85,24 +87,19 @@ public class GeodeModuleLoader extends DelegatingModuleLoader implements AutoClo
     if (moduleName == null) {
       throw new IllegalArgumentException("Module name cannot be null");
     }
-    if (moduleName.startsWith("geode-")) {
-      throw new RuntimeException("Deployments starting with \"geode-\" are not allowed.");
-    }
+    // if (moduleName.startsWith("geode-")) {
+    // throw new RuntimeException("Deployment: "+moduleName+" starting with \"geode-\" are not
+    // allowed.");
+    // }
   }
-
 
   @Override
   protected Module preloadModule(String name) throws ModuleLoadException {
     if (name == null) {
       throw new IllegalArgumentException("Module name cannot be null");
     }
-    if (name.contains(CORE_MODULE_NAME) && findLoadedModuleLocal(name) == null
-        && findModule(THIRD_PARTY_MODULE_NAME) != null
-        && findModule(CUSTOM_JAR_DEPLOYMENT_MODULE_NAME) != null) {
+    if (name.contains(CORE_MODULE_NAME) && findLoadedModuleLocal(name) == null) {
       Module coreModule = super.preloadModule(name);
-
-      excludeThirdPartyPathsFromModule(name, CUSTOM_JAR_DEPLOYMENT_MODULE_NAME);
-
       unloadModuleLocal(name, coreModule);
     }
     return super.preloadModule(name);
@@ -113,14 +110,50 @@ public class GeodeModuleLoader extends DelegatingModuleLoader implements AutoClo
 
   }
 
-  public void registerModuleAsDependencyOfModule(String moduleName, String moduleToDependOn)
-      throws ModuleLoadException {
-    compositeModuleFinder.addDependencyToModule(moduleName, moduleToDependOn);
-    relinkModule(moduleName);
-    relinkModule(CORE_MODULE_NAME);
+  public boolean registerApplication(Application application) {
+    try {
+      if (findLoadedModuleLocal(application.getName()) == null) {
+        compositeModuleFinder.addModuleFinder(application.getName(),
+            new GeodeApplicationModuleFinder(application));
+      }
+      registerModulesAsDependencyOfModule(CORE_MODULE_NAME, application.getName());
+    } catch (ModuleLoadException e) {
+      return false;
+    }
+    return true;
   }
 
-  private void relinkModule(String moduleName) throws ModuleLoadException {
+  public boolean registerGeodeExtension(GeodeExtension extension) {
+    try {
+      if (findLoadedModuleLocal(extension.getName()) != null) {
+        unregisterModule(extension.getName());
+      }
+      preloadModule(extension.getName());
+      // compositeModuleFinder.addModuleFinder(extension.getName(),
+      // new LocalModuleFinder(
+      // GeodeExtensionModuleFinder(extension));
+      registerModulesAsDependencyOfModule(CORE_MODULE_NAME, extension.getName());
+    } catch (ModuleLoadException e) {
+      return false;
+    }
+    return true;
+  }
+
+  public void registerModulesAsDependencyOfModule(String moduleName, String... modulesToDependOn)
+      throws ModuleLoadException {
+    compositeModuleFinder.addDependencyToModule(moduleName, createDefaultExportFilter(),
+        modulesToDependOn);
+    relinkModule(moduleName);
+  }
+
+  public void registerModulesAsDependencyOfModule(String moduleName, PathFilter exportFilter,
+      String... modulesToDependOn)
+      throws ModuleLoadException {
+    compositeModuleFinder.addDependencyToModule(moduleName, exportFilter, modulesToDependOn);
+    relinkModule(moduleName);
+  }
+
+  public void relinkModule(String moduleName) throws ModuleLoadException {
     ModuleSpec moduleSpec = findModule(moduleName);
     if (moduleSpec instanceof AliasModuleSpec) {
       AliasModuleSpec aliasModuleSpec = (AliasModuleSpec) moduleSpec;
@@ -140,21 +173,11 @@ public class GeodeModuleLoader extends DelegatingModuleLoader implements AutoClo
     }
   }
 
-  private void excludeThirdPartyPathsFromModule(String moduleToPutExcludeFilterOn,
-      String moduleToExcludeFrom)
-      throws ModuleLoadException {
-    Module thirdPartyModule = loadModule(THIRD_PARTY_MODULE_NAME);
-    Set<String> exportedPaths = thirdPartyModule.getExportedPaths();
-    List<String> restrictPaths =
-        exportedPaths.stream().filter(packageName -> packageName.split("/").length <= 2)
-            .collect(Collectors.toList());
-    List<String> restrictPathsAndChildren =
-        exportedPaths.stream().filter(packageName -> packageName.split("/").length == 3)
-            .collect(Collectors.toList());
-
-    restrictPathsAndChildren.add(GEODE_BASE_PACKAGE_PATH);
-
-    compositeModuleFinder.addExcludeFilterToModule(moduleToPutExcludeFilterOn, moduleToExcludeFrom,
-        restrictPaths, restrictPathsAndChildren);
+  private PathFilter createDefaultExportFilter() {
+    final MultiplePathFilterBuilder exportBuilder = PathFilters.multiplePathFilterBuilder(true);
+    exportBuilder.addFilter(PathFilters.getMetaInfServicesFilter(), true);
+    exportBuilder.addFilter(PathFilters.getMetaInfSubdirectoriesFilter(), true);
+    exportBuilder.addFilter(PathFilters.getMetaInfFilter(), true);
+    return exportBuilder.create();
   }
 }

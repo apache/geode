@@ -25,9 +25,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.internal.execute.FunctionToFileTracker;
@@ -49,74 +49,87 @@ import org.apache.geode.services.result.impl.Success;
  *
  * @since Geode 1.15
  */
-public class ModularJarDeploymentService implements JarDeploymentService {
+public class ModularJarDeploymentService implements JarDeploymentService, ExtensionAware {
 
+  private static final Logger logger = LogService.getLogger();
   private static final String GEODE_CORE_MODULE_NAME = "geode-core";
-  private final Logger logger = LogService.getLogger();
+
+
   private final Map<String, Deployment> deployments = new ConcurrentHashMap<>();
   private final FunctionToFileTracker functionToFileTracker = new FunctionToFileTracker();
-  private final DeploymentService deploymentService;
-  private File workingDirectory = new File(System.getProperty("user.dir"));
+  private final DeploymentService geodeJBossDeploymentService;
+
+  private static File workingDirectory = new File(System.getProperty("user.dir"));
 
   public ModularJarDeploymentService() {
     this(new GeodeJBossDeploymentService());
+    geodeJBossDeploymentService
+        .loadGeodeExtensionsFromPropertiesFile(this.getClass().getClassLoader());
   }
 
-  public ModularJarDeploymentService(DeploymentService deploymentService) {
-    this.deploymentService = deploymentService;
+  @VisibleForTesting
+  protected ModularJarDeploymentService(DeploymentService deploymentService) {
+    this.geodeJBossDeploymentService = deploymentService;
   }
 
   @Override
   public synchronized ServiceResult<Deployment> deploy(Deployment deployment) {
     logger.debug("Deploying: {}", deployment);
+
+    ServiceResult<String> isDeploymentValidResult = validateDeployment(deployment);
+    if (isDeploymentValidResult.isFailure()) {
+      return Failure.of(isDeploymentValidResult.getErrorMessage());
+    }
+
+    Deployment existingDeployment = deployments.get(deployment.getDeploymentName());
+    if (existingDeployment != null
+        && JarFileUtils.hasSameContent(existingDeployment.getFile(), deployment.getFile())) {
+      return Success.of(null);
+    }
+
+    List<String> moduleDependencies = new LinkedList<>(deployment.getModuleDependencyNames());
+    moduleDependencies.add(GEODE_CORE_MODULE_NAME);
+
+    boolean moduleRegistered =
+        geodeJBossDeploymentService
+            .registerModule(deployment.getDeploymentName(), deployment.getFilePath(),
+                moduleDependencies);
+    logger.debug("Register module result: {} for deployment: {}", moduleRegistered,
+        deployment.getDeploymentName());
+
+    if (moduleRegistered) {
+      return registerFunctions(deployment);
+    } else {
+      return Failure.of("Module could not be registered");
+    }
+  }
+
+  private ServiceResult<String> validateDeployment(Deployment deployment) {
     if (deployment == null) {
       return Failure.of("Deployment may not be null");
     }
     if (deployment.getFile() == null) {
       return Failure.of("Cannot deploy Deployment without jar file");
     }
-    String artifactId = JarFileUtils.getArtifactId(deployment.getFileName());
+    return Success.of("true");
+  }
 
-    Deployment existingDeployment = deployments.get(artifactId);
-    if (existingDeployment != null
-        && JarFileUtils.hasSameContent(existingDeployment.getFile(), deployment.getFile())) {
-      return Success.of(null);
-    }
-
-    // Copy the file to the working directory.
+  private ServiceResult<Deployment> registerFunctions(Deployment deployment) {
+    Deployment deploymentCopy = new Deployment(deployment);
+    deploymentCopy.setDeployedTime(Instant.now().toString());
+    logger.debug("Deployments before: {}", deployments.size());
+    deployments.put(deploymentCopy.getDeploymentName(), deploymentCopy);
+    logger.debug("Deployments after: {}", deployments.size());
     try {
-      File deployedFile = new File(workingDirectory, deployment.getFile().getName());
-      FileUtils.copyFile(deployment.getFile(), deployedFile);
-      deployment.setFile(deployedFile);
-    } catch (IOException e) {
+      functionToFileTracker.registerFunctionsFromFile(deployment.getDeploymentName(),
+          deployment.getFile());
+    } catch (ClassNotFoundException | IOException e) {
+      undeployByDeploymentName(deployment.getDeploymentName());
       return Failure.of(e);
+    } finally {
+      flushCaches();
     }
-
-    boolean serviceResult =
-        deploymentService
-            .registerModule(artifactId, deployment.getFilePath(),
-                Collections.singletonList(GEODE_CORE_MODULE_NAME));
-    logger.debug("Register module result: {} for deployment: {}", serviceResult,
-        deployment.getFileName());
-
-    if (serviceResult) {
-      Deployment deploymentCopy = new Deployment(deployment, deployment.getFile());
-      deploymentCopy.setDeployedTime(Instant.now().toString());
-      logger.debug("Deployments before: {}", deployments.size());
-      deployments.put(artifactId, deploymentCopy);
-      logger.debug("Deployments after: {}", deployments.size());
-      try {
-        functionToFileTracker.registerFunctionsFromFile(deployment.getFile());
-      } catch (ClassNotFoundException | IOException e) {
-        undeploy(deployment.getFileName());
-        return Failure.of(e);
-      } finally {
-        flushCaches();
-      }
-      return Success.of(deploymentCopy);
-    } else {
-      return Failure.of("Module could not be registered");
-    }
+    return Success.of(deploymentCopy);
   }
 
   @Override
@@ -130,24 +143,40 @@ public class ModularJarDeploymentService implements JarDeploymentService {
   }
 
   @Override
+  public synchronized ServiceResult<Deployment> undeployByDeploymentName(String deploymentName) {
+    if (!deployments.containsKey(deploymentName)) {
+      return Failure.of("No deployment found for name: " + deploymentName);
+    }
+
+    boolean serviceResult =
+        geodeJBossDeploymentService.unregisterModule(deploymentName);
+    if (serviceResult) {
+      Deployment removedDeployment = deployments.remove(deploymentName);
+      functionToFileTracker.unregisterFunctionsForDeployment(removedDeployment.getDeploymentName());
+      return Success.of(removedDeployment);
+    } else {
+      return Failure.of("Module could not be undeployed");
+    }
+  }
+
+  @Override
   public List<Deployment> listDeployed() {
     return new LinkedList<>(deployments.values());
   }
 
   @Override
-  public ServiceResult<Deployment> getDeployed(String fileName) {
-    String artifactId = JarFileUtils.getArtifactId(fileName);
-    if (!deployments.containsKey(artifactId)) {
-      return Failure.of("No deployment found for name: " + fileName);
+  public ServiceResult<Deployment> getDeployed(String deploymentName) {
+    if (!deployments.containsKey(deploymentName)) {
+      return Failure.of("No deployment found for name: " + deploymentName);
     }
 
-    return Success.of(deployments.get(artifactId));
+    return Success.of(deployments.get(deploymentName));
   }
 
   @Override
   public void reinitializeWithWorkingDirectory(File workingDirectory) {
     if (deployments.isEmpty()) {
-      this.workingDirectory = workingDirectory;
+      ModularJarDeploymentService.workingDirectory = workingDirectory;
     } else {
       throw new RuntimeException(
           "Cannot reinitialize working directory with existing deployments. Please undeploy first.");
@@ -163,7 +192,7 @@ public class ModularJarDeploymentService implements JarDeploymentService {
       ServiceResult<Deployment> serviceResult = deploy(file);
       if (serviceResult.isSuccessful()) {
         Deployment deployment = serviceResult.getMessage();
-        logger.info("Registering new version of jar: {}", deployment.getFileName());
+        logger.info("Registering new version of jar: {}", deployment.getDeploymentName());
       } else {
         logger.error(serviceResult.getErrorMessage());
       }
@@ -212,5 +241,15 @@ public class ModularJarDeploymentService implements JarDeploymentService {
     } catch (CacheClosedException ignored) {
       // That's okay, it just means there was nothing to flush to begin with
     }
+  }
+
+  @Override
+  public boolean registerApplication(String applicationName) {
+    return geodeJBossDeploymentService.registerApplication(applicationName);
+  }
+
+  @Override
+  public boolean registerGeodeExtension(String extensionName) {
+    return false;
   }
 }

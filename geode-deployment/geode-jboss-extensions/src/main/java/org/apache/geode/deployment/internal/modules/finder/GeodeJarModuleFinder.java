@@ -23,7 +23,7 @@ import org.jboss.modules.ModuleFinder;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.ModuleSpec;
-import org.jboss.modules.ModuleSpecUtil;
+import org.jboss.modules.ModuleSpecUtils;
 
 import org.apache.geode.deployment.internal.modules.utils.ModuleSpecBuilderUtils;
 
@@ -63,14 +63,12 @@ public class GeodeJarModuleFinder implements ModuleFinder {
   public ModuleSpec findModule(String name, ModuleLoader delegateLoader)
       throws ModuleLoadException {
     if (name.equals(moduleName)) {
-      ModuleSpec.Builder builder = ModuleSpecUtil.createBuilder(moduleName, true);
+      ModuleSpec.Builder builder = ModuleSpecUtils.createBuilder(moduleName, true);
       builder = ModuleSpecBuilderUtils.addLocalDependencySpec(builder);
       builder = ModuleSpecBuilderUtils.addJarResourceToBuilder(builder, path);
       builder = ModuleSpecBuilderUtils.addModuleDependencies(builder, false, moduleDependencies);
-      builder = ModuleSpecBuilderUtils.addModuleDependencies(builder, true,
-          "geode-custom-jar-deployments");
 
-      ModuleSpec moduleSpec = ModuleSpecUtil.addSystemClasspathDependency(builder.create());
+      ModuleSpec moduleSpec = ModuleSpecUtils.addSystemClasspathDependency(builder.create());
       return moduleSpec;
     } else {
       return null;

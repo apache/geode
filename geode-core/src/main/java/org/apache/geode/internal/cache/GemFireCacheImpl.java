@@ -1413,7 +1413,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
 
     // set ClassPathLoader and then deploy cluster config jars
-    ClassPathLoader.setLatestToDefault(system.getConfig().getDeployWorkingDir());
+    // ClassPathLoader.setLatestToDefault(system.getConfig().getDeployWorkingDir());
 
     try {
       clusterConfigurationLoader.deployJarsReceivedFromClusterConfiguration(configurationResponse);

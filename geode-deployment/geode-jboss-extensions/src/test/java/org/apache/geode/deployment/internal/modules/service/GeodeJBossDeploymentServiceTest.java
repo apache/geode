@@ -25,11 +25,13 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
+import org.jboss.modules.ModuleLoadException;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.deployment.internal.modules.extensions.TestExtensionsContainer;
 import org.apache.geode.deployment.internal.modules.loader.GeodeModuleLoader;
 import org.apache.geode.test.compiler.JarBuilder;
 
@@ -41,10 +43,15 @@ public class GeodeJBossDeploymentServiceTest {
   private static File myJar;
 
   @BeforeClass
-  public static void setup() throws IOException {
+  public static void setup() throws IOException, ModuleLoadException {
     JarBuilder jarBuilder = new JarBuilder();
     GeodeModuleLoader geodeModuleLoader = mock(GeodeModuleLoader.class);
-    geodeJBossDeploymentService = new GeodeJBossDeploymentService(geodeModuleLoader);
+    TestExtensionsContainer testExtensionsContainer =
+        new TestExtensionsContainer(geodeModuleLoader);
+    geodeJBossDeploymentService =
+        new GeodeJBossDeploymentService(geodeModuleLoader, testExtensionsContainer);
+    geodeJBossDeploymentService.loadGeodeExtensionsFromPropertiesFile(
+        GeodeJBossDeploymentServiceTest.class.getClassLoader());
     myJar = new File(stagingTempDir.newFolder(), "myJar.jar");
     jarBuilder.buildJarFromClassNames(myJar, "Class1");
   }

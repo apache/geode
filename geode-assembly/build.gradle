@@ -595,8 +595,6 @@ distributions {
           }.flatten()
         }
 
-        from project(':frameworks:geode-extensions').tasks.named('jar')
-        from project(':frameworks:geode-custom-jar-deployments').tasks.named('jar')
         from project(':geode-deployment:geode-deployment-jboss-modules').tasks.named('jar')
         from project(':geode-deployment:geode-jboss-extensions').tasks.named('jar')
 
@@ -679,8 +677,6 @@ distributions {
           }.flatten()
         }
 
-        from project(':frameworks:geode-extensions').tasks.named('jar')
-        from project(':frameworks:geode-custom-jar-deployments').tasks.named('jar')
         from project(':geode-deployment:geode-deployment-jboss-modules').tasks.named('jar')
         from project(':geode-deployment:geode-jboss-extensions').tasks.named('jar')
 
