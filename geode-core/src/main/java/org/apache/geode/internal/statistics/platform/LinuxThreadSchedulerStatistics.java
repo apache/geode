@@ -40,20 +40,22 @@ public class LinuxThreadSchedulerStatistics {
   private LinuxThreadSchedulerStatistics() {}
 
   /**
-   * Create a new {@link Sampler} for "/proc/schedstat"
+   * Create a new {@link Gatherer} for "/proc/schedstat"
    *
-   * @return a {@link Sampler} to be invoked when samples are needed
+   * @return a {@link Gatherer} to be invoked when samples are needed
    */
-  public static Sampler create(final StatisticsFactory statisticsFactory) {
-    return create(statisticsFactory, SCHEDSTAT_PATH);
+  public static Gatherer create(final StatisticsFactory statisticsFactory,
+      final StatisticsProducer statisticsProducer) {
+    return create(statisticsFactory, statisticsProducer, SCHEDSTAT_PATH);
   }
 
   // visible for testing
   @NotNull
-  static Sampler create(final StatisticsFactory statisticsFactory,
+  static LinuxThreadSchedulerStatistics.Gatherer create(final StatisticsFactory statisticsFactory,
+      final StatisticsProducer statisticsProducer,
       final Path path) {
     if (Files.exists(path)) {
-      return new WorkingSampler(statisticsFactory, path);
+      return new WorkingGatherer(statisticsFactory, statisticsProducer, path);
     } else {
       return () -> {
       }; // no-op
@@ -61,11 +63,16 @@ public class LinuxThreadSchedulerStatistics {
   }
 
   @FunctionalInterface
-  public interface Sampler {
+  public interface StatisticsProducer {
+    Statistics create(StatisticsType type, String textId);
+  }
+
+  @FunctionalInterface
+  public interface Gatherer {
     void sample();
   }
 
-  static class WorkingSampler implements Sampler {
+  static class WorkingGatherer implements Gatherer {
 
     private static final String RUNNING_TIME_NANOS = "runningTimeNanos";
     private static final String QUEUED_TIME_NANOS = "queuedTimeNanos";
@@ -80,10 +87,11 @@ public class LinuxThreadSchedulerStatistics {
     final HashMap<String, Statistics> statisticsForCpuIds = new HashMap<>();
 
     private final StatisticsType statisticsType;
-    private final StatisticsFactory statisticsFactory;
+    private final StatisticsProducer statisticsProducer;
     private final Path path;
 
-    public WorkingSampler(final StatisticsFactory statisticsFactory,
+    public WorkingGatherer(final StatisticsFactory statisticsFactory,
+        final StatisticsProducer statisticsProducer,
         final Path path) {
       statisticsType =
           statisticsFactory.createType("LinuxThreadScheduler",
@@ -111,7 +119,7 @@ public class LinuxThreadSchedulerStatistics {
       tasksScheduledCountId = statisticsType.nameToId(TASKS_SCHEDULED_COUNT);
       meanTaskQueuedTimeNanosId = statisticsType.nameToId(MEAN_TASK_QUEUED_TIME_NANOS);
 
-      this.statisticsFactory = statisticsFactory;
+      this.statisticsProducer = statisticsProducer;
 
       this.path = path;
     }
@@ -186,7 +194,7 @@ public class LinuxThreadSchedulerStatistics {
     private Statistics getStatisticsFor(final String cpuId) {
       // memoize this function so we only create statistics once per CPU
       return statisticsForCpuIds.computeIfAbsent(cpuId,
-          cpuId2 -> statisticsFactory.createAtomicStatistics(statisticsType, cpuId2));
+          cpuId2 -> statisticsProducer.create(statisticsType, cpuId2));
     }
 
     private void failParsing(final AtomicBoolean terminated) {

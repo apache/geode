@@ -29,7 +29,7 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.internal.statistics.LocalStatisticsFactory;
-import org.apache.geode.internal.statistics.platform.LinuxThreadSchedulerStatistics.WorkingSampler;
+import org.apache.geode.internal.statistics.platform.LinuxThreadSchedulerStatistics.WorkingGatherer;
 
 public class LinuxThreadSchedulerStatisticsTest {
 
@@ -59,20 +59,21 @@ public class LinuxThreadSchedulerStatisticsTest {
 
   @Test
   public void createsNoOpSamplerForNonExistentSchedstatFile() {
-    final LinuxThreadSchedulerStatistics.Sampler sampler =
+    final LinuxThreadSchedulerStatistics.Gatherer gatherer =
         LinuxThreadSchedulerStatistics
-            .create(statisticsFactory, NON_EXISTENT_FILE_PATH);
+            .create(statisticsFactory, statisticsFactory::createAtomicStatistics,
+                NON_EXISTENT_FILE_PATH);
     /*
      * this assertion assumes that WorkingSampler is the only one
      * working implementation of the Sampler interface
      */
-    assertThat(sampler).isNotInstanceOf(LinuxThreadSchedulerStatistics.WorkingSampler.class);
-    sampler.sample(); // verify we don't throw an exception from sample()
+    assertThat(gatherer).isNotInstanceOf(LinuxThreadSchedulerStatistics.WorkingGatherer.class);
+    gatherer.sample(); // verify we don't throw an exception from sample()
   }
 
   @Test
   public void ignoresUnknownVersion() throws URISyntaxException {
-    final LinuxThreadSchedulerStatistics.WorkingSampler sampler =
+    final WorkingGatherer sampler =
         workingSamplerFor(SCHEDSTAT_UNKNOWN_VERSION_URL);
     sampler.sample();
     final Statistics cpuStatistics = sampler.statisticsForCpuIds.get("cpu0");
@@ -81,7 +82,7 @@ public class LinuxThreadSchedulerStatisticsTest {
 
   @Test
   public void processesCorrectInput() throws URISyntaxException {
-    final LinuxThreadSchedulerStatistics.WorkingSampler sampler =
+    final WorkingGatherer sampler =
         workingSamplerFor(SCHEDSTAT_VALID_URL);
     sampler.sample();
     validateStatistics(sampler, "cpu0", 15690060435L, 31061208584L, 46293L, 670969.878469747);
@@ -90,19 +91,21 @@ public class LinuxThreadSchedulerStatisticsTest {
 
   @Test
   public void ignoresDomainStatistics() throws URISyntaxException {
-    final LinuxThreadSchedulerStatistics.WorkingSampler sampler =
+    final WorkingGatherer sampler =
         workingSamplerFor(SCHEDSTAT_VALID_URL);
     sampler.sample();
     final Statistics domain0Statistics = sampler.statisticsForCpuIds.get("domain0");
     assertThat(domain0Statistics).isNull();
   }
 
-  private WorkingSampler workingSamplerFor(final URL schedstatURL) throws URISyntaxException {
-    return new WorkingSampler(statisticsFactory,
+  private LinuxThreadSchedulerStatistics.WorkingGatherer workingSamplerFor(final URL schedstatURL)
+      throws URISyntaxException {
+    return new LinuxThreadSchedulerStatistics.WorkingGatherer(statisticsFactory,
+        statisticsFactory::createAtomicStatistics,
         Paths.get(schedstatURL.toURI()));
   }
 
-  private void validateStatistics(final WorkingSampler sampler, final String cpuId,
+  private void validateStatistics(final WorkingGatherer sampler, final String cpuId,
       final long runningTimeNanos, final long queuedTimeNanos,
       final long tasksScheduledCount,
       final double meanTaskQueuedTimeNanos) {

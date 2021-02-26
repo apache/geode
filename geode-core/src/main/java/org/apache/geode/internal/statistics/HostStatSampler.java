@@ -31,6 +31,7 @@ import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.io.MainWithChildrenRollingFileHandler;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.process.UncheckedPidUnavailableException;
+import org.apache.geode.internal.statistics.platform.LinuxThreadSchedulerStatistics;
 import org.apache.geode.internal.statistics.platform.OsStatisticsFactory;
 import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
 import org.apache.geode.logging.internal.executors.LoggingThread;
@@ -41,7 +42,6 @@ import org.apache.geode.util.internal.GeodeGlossary;
 /**
  * HostStatSampler implements a thread which will monitor, sample, and archive statistics. It only
  * has the common functionality that any sampler needs.
- *
  */
 public abstract class HostStatSampler
     implements Runnable, StatisticsSampler, StatArchiveHandlerConfig {
@@ -92,6 +92,7 @@ public abstract class HostStatSampler
   private final CallbackSampler callbackSampler;
   private final NanoTimer timer;
   private final LogFile logFile;
+  private LinuxThreadSchedulerStatistics.Gatherer linuxThreadSchedulerStatisticsGatherer;
 
   protected HostStatSampler(CancelCriterion stopper, StatSamplerStats samplerStats) {
     this(stopper, samplerStats, new NanoTimer());
@@ -482,6 +483,14 @@ public abstract class HostStatSampler
     long id = getSpecialStatsId();
     this.vmStats = VMStatsContractFactory.create(getStatisticsManager(), id);
     initProcessStats(id);
+    linuxThreadSchedulerStatisticsGatherer =
+        /*
+         * using numericId 1 here because I don't have a meaningful alternative
+         * and 0 causes it to be replaced with process id
+         */
+        LinuxThreadSchedulerStatistics.create(getStatisticsManager(),
+            (type, textId) -> getStatisticsManager()
+                .createOsStatistics(type, textId, 1, OsStatisticsProvider.UNDISPATCHED_STAT_FLAG));
   }
 
   /**
@@ -560,6 +569,7 @@ public abstract class HostStatSampler
       this.vmStats.refresh();
     }
     sampleProcessStats(prepareOnly);
+    linuxThreadSchedulerStatisticsGatherer.sample();
   }
 
   /**

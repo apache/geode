@@ -30,8 +30,19 @@ import org.apache.geode.internal.statistics.platform.ProcessStats;
  * Only Linux OS is currently allowed.
  */
 public class OsStatisticsProvider {
+
+  /**
+   * The {@link #refresh(LocalStatisticsImpl)} method uses these flags to decide what (if any)
+   * method to invoke with the statistics object it is handed. This is an alternative to
+   * polymorphism.
+   *
+   * Every statistics that is created is added to the list, so every kind of statistics has to have
+   * a flag here.
+   */
   private static final int PROCESS_STAT_FLAG = 1;
   private static final int SYSTEM_STAT_FLAG = 2;
+  static final int UNDISPATCHED_STAT_FLAG = 4;
+
   private final boolean osStatsSupported;
 
   public boolean osStatsSupported() {
@@ -84,6 +95,8 @@ public class OsStatisticsProvider {
       refreshProcess(statistics);
     } else if ((flags & SYSTEM_STAT_FLAG) != 0) {
       refreshSystem(statistics);
+    } else if ((flags & UNDISPATCHED_STAT_FLAG) != 0) {
+      // undispatched
     } else {
       throw new RuntimeException(String.format("Unexpected os stats flags %s", flags));
     }
