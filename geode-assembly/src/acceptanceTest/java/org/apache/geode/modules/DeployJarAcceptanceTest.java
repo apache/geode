@@ -229,7 +229,8 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
 
     String stderr = geodeContainer.execInContainer("/geode/bin/gfsh", "-e",
         "start server --name=server --locators=localhost[10334]  "
-            + "--server-port=40404 --http-service-port=9090 --start-rest-api").getStderr();
+            + "--server-port=40404 --http-service-port=9090 --start-rest-api")
+        .getStderr();
 
     assertThat(stderr).isEmpty();
 

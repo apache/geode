@@ -51,7 +51,6 @@ httpclient
 httpcore
 istack-commons-runtime
 j2objc-annotations
-jackson
 jackson-annotations
 jackson-core
 jackson-databind
@@ -127,7 +126,6 @@ ra.jar
 reactive-streams
 reactor-core
 rmiio
-shiro
 shiro-cache
 shiro-config-core
 shiro-config-ogdl
@@ -182,8 +180,6 @@ springfox-spring-web
 springfox-swagger
 springfox-swagger-common
 springfox-swagger-ui
-springframework
-springshell
 swagger-annotations
 swagger-models
 system-rules
