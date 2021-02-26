@@ -137,7 +137,7 @@ set -x
 git add gradle.properties geode-book/config.yml
 if [ $(git diff --staged | wc -l) -gt 0 ] ; then
   git diff --staged --color | cat
-  git commit -m "Bumping version to ${VERSION}${BUILDSUFFIX}"
+  git commit -m "Bumping version to ${VERSION}"
   [ "$NOPUSH" = "true" ] || git push -u origin
 fi
 set +x
@@ -163,7 +163,7 @@ set -x
 git add .
 if [ $(git diff --staged | wc -l) -gt 0 ] ; then
   git diff --staged --color | cat
-  git commit -m "Bumping version to ${VERSION}${BUILDSUFFIX}"
+  git commit -m "Bumping version to ${VERSION}"
   [ "$NOPUSH" = "true" ] || git push -u origin
 fi
 set +x
