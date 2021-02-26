@@ -113,8 +113,9 @@ public class LinuxThreadSchedulerStatistics {
                       "nanoseconds"),
                   statisticsFactory.createLongGauge(TASKS_SCHEDULED_COUNT,
                       "# of tasks (not necessarily unique) given to the processor", "tasks"),
-                  statisticsFactory.createDoubleGauge(MEAN_TASK_QUEUED_TIME_NANOS, "",
-                      "nanoseconds/task")
+                  statisticsFactory.createDoubleGauge(MEAN_TASK_QUEUED_TIME_NANOS,
+                      "average time that a ready-to-run task waited for a CPU, since the last sample",
+                      "nanoseconds")
               });
 
       runningTimeNanosId = statisticsType.nameToId(RUNNING_TIME_NANOS);
