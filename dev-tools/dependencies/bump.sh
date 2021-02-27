@@ -57,4 +57,4 @@ if [ $(git diff | wc -l) -gt 0 ] ; then
   git stash
   git stash drop
 fi
-./gradlew devBuild :geode-assembly:integrationTest --tests AssemblyContentsIntegrationTest --tests GeodeDependencyJarIntegrationTest --tests BundledJarsJUnitTest --tests GemfireCoreClasspathTest
+./gradlew devBuild checkPom :geode-assembly:integrationTest --tests AssemblyContentsIntegrationTest --tests GeodeDependencyJarIntegrationTest --tests BundledJarsJUnitTest --tests GemfireCoreClasspathTest
