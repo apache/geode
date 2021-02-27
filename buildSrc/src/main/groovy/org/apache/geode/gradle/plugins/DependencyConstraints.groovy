@@ -61,7 +61,7 @@ class DependencyConstraints implements Plugin<Project> {
 
     // The jetty version is also hard-coded in geode-assembly:test
     // at o.a.g.sessions.tests.GenericAppServerInstall.java
-    deps.put("jetty.version", "9.4.36.v20210114")
+    deps.put("jetty.version", "9.4.37.v20210219")
 
     // These version numbers are consumed by protobuf configurations that are plugin-specific and not
     // part of the typical Gradle dependency configurations.
