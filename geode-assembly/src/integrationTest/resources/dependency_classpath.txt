@@ -25,7 +25,7 @@ geode-deployment-legacy-0.0.0.jar
 geode-unsafe-0.0.0.jar
 httpclient-4.5.13.jar
 httpcore-4.4.14.jar
-HikariCP-4.0.1.jar
+HikariCP-4.0.2.jar
 commons-lang3-3.11.jar
 jaxb-api-2.3.1.jar
 log4j-jcl-2.14.0.jar
