@@ -95,7 +95,7 @@ public class ServerConnectionFactoryTest {
         () -> new ServerConnectionFactory().makeServerConnection(mock(Socket.class),
             cache, cachedRegionHelper, mock(CacheServerStats.class),
             0, 0, "", CommunicationMode.ProtobufClientServerProtocol.getModeNumber(),
-            mock(AcceptorImpl.class), mock(SecurityService.class)));
+            mock(AcceptorImpl.class), mock(SecurityService.class), null));
 
     assertThat(thrown).isInstanceOf(IOException.class);
   }
@@ -107,7 +107,7 @@ public class ServerConnectionFactoryTest {
         () -> new ServerConnectionFactory().makeServerConnection(mock(Socket.class),
             cache, cachedRegionHelper, mock(CacheServerStats.class),
             0, 0, "", CommunicationMode.ProtobufClientServerProtocol.getModeNumber(),
-            mock(AcceptorImpl.class), mock(SecurityService.class)));
+            mock(AcceptorImpl.class), mock(SecurityService.class), null));
 
     assertThat(thrown).hasRootCauseInstanceOf(ServiceLoadingFailureException.class);
   }
@@ -127,7 +127,7 @@ public class ServerConnectionFactoryTest {
         new ServerConnectionFactory().makeServerConnection(socket,
             cache, cachedRegionHelper, mock(CacheServerStats.class), 0, 0, "",
             communicationMode.getModeNumber(),
-            mock(AcceptorImpl.class), mock(SecurityService.class));
+            mock(AcceptorImpl.class), mock(SecurityService.class), null);
 
     assertThat(serverConnection).isInstanceOf(OriginalServerConnection.class);
   }
@@ -149,7 +149,7 @@ public class ServerConnectionFactoryTest {
         new ServerConnectionFactory().makeServerConnection(socket, cache,
             cachedRegionHelper, mock(CacheServerStats.class), 0, 0, "",
             communicationMode.getModeNumber(),
-            mock(AcceptorImpl.class), mock(SecurityService.class));
+            mock(AcceptorImpl.class), mock(SecurityService.class), null);
 
     assertThat(serverConnection).isInstanceOf(OriginalServerConnection.class);
   }

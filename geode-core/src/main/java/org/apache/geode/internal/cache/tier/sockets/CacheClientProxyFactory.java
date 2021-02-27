@@ -24,7 +24,8 @@ import org.apache.shiro.subject.Subject;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheException;
-import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.classloader.ClassPathLoader;
+import org.apache.geode.internal.net.NioSslEngine;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.statistics.StatisticsClock;
@@ -76,10 +77,12 @@ public class CacheClientProxyFactory {
   public CacheClientProxy create(CacheClientNotifier notifier, Socket socket,
       ClientProxyMembershipID proxyId, boolean isPrimary, byte clientConflation,
       KnownVersion clientVersion, long acceptorId, boolean notifyBySubscription,
-      SecurityService securityService, Subject subject, StatisticsClock statisticsClock)
+      SecurityService securityService, Subject subject, StatisticsClock statisticsClock,
+      NioSslEngine sslEngine)
       throws CacheException {
     return internalFactory.create(notifier, socket, proxyId, isPrimary, clientConflation,
-        clientVersion, acceptorId, notifyBySubscription, securityService, subject, statisticsClock);
+        clientVersion, acceptorId, notifyBySubscription, securityService, subject, statisticsClock,
+        sslEngine);
   }
 
   @FunctionalInterface
@@ -88,7 +91,8 @@ public class CacheClientProxyFactory {
     CacheClientProxy create(CacheClientNotifier notifier, Socket socket,
         ClientProxyMembershipID proxyId, boolean isPrimary, byte clientConflation,
         KnownVersion clientVersion, long acceptorId, boolean notifyBySubscription,
-        SecurityService securityService, Subject subject, StatisticsClock statisticsClock)
+        SecurityService securityService, Subject subject, StatisticsClock statisticsClock,
+        NioSslEngine sslEngine)
         throws CacheException;
   }
 }

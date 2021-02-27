@@ -615,6 +615,7 @@ public class MessageDispatcher extends LoggingThread {
     socketWriteLock.lock();
     try {
       message.setComms(getSocket(), getCommBuffer(), getStatistics());
+      message.setSslEngine(_proxy.getSslEngine());
       message.send();
       getProxy().resetPingCounter();
     } finally {

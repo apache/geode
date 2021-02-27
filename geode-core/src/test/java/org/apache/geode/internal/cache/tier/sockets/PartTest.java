@@ -155,12 +155,12 @@ public class PartTest {
     SocketChannel socketChannel = mock(SocketChannel.class);
     ByteBuffer byteBuffer = mock(ByteBuffer.class);
     doThrow(new BufferOverflowException()).when(heapDataOutputStream).sendTo(eq(socketChannel),
-        eq(byteBuffer));
+        eq(byteBuffer), eq(null));
 
     Part part = new Part();
     part.setPartState(heapDataOutputStream, false);
 
-    Throwable thrown = catchThrowable(() -> part.writeTo(socketChannel, byteBuffer));
+    Throwable thrown = catchThrowable(() -> part.writeTo(socketChannel, byteBuffer, null));
 
     assertThat(thrown).isInstanceOf(BufferOverflowException.class);
     verify(heapDataOutputStream, times(1)).rewind();
@@ -176,7 +176,7 @@ public class PartTest {
     Part part = new Part();
     part.setPartState(heapDataOutputStream, false);
 
-    part.writeTo(socketChannel, byteBuffer);
+    part.writeTo(socketChannel, byteBuffer, null);
 
     verify(heapDataOutputStream, times(1)).rewind();
   }

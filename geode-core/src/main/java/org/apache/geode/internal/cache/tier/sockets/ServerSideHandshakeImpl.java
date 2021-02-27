@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.security.Principal;
 import java.util.Properties;
 
@@ -29,16 +30,19 @@ import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.ByteBufferOutputStream;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.Encryptor;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
+import org.apache.geode.internal.net.ByteBufferSharing;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
 import org.apache.geode.internal.serialization.VersionedDataStream;
 import org.apache.geode.internal.serialization.VersioningIO;
+import org.apache.geode.internal.tcp.ByteBufferInputStream;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
 import org.apache.geode.security.AuthenticationRequiredException;
 
@@ -49,6 +53,7 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
   private final KnownVersion clientVersion;
 
   private final byte replyCode;
+  private ServerConnection connection;
 
   @Override
   protected byte getReplyCode() {
@@ -60,19 +65,30 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
    */
   public ServerSideHandshakeImpl(Socket sock, int timeout, DistributedSystem sys,
       KnownVersion clientVersion, CommunicationMode communicationMode,
-      SecurityService securityService)
+      SecurityService securityService, ServerConnection connection)
       throws IOException, AuthenticationRequiredException {
 
     this.clientVersion = clientVersion;
     system = sys;
     this.securityService = securityService;
     encryptor = new EncryptorImpl(sys.getSecurityLogWriter());
+    this.connection = connection;
 
     int soTimeout = -1;
+    InputStream inputStream = null;
+
     try {
       soTimeout = sock.getSoTimeout();
       sock.setSoTimeout(timeout);
-      InputStream inputStream = sock.getInputStream();
+      if (connection.getSSLEngine() == null) {
+        inputStream = sock.getInputStream();
+      } else {
+        try (
+            final ByteBufferSharing sharedBuffer = connection.getSSLEngine().getUnwrappedBuffer()) {
+          ByteBuffer unwrapbuff = sharedBuffer.getBuffer();
+          inputStream = new ByteBufferInputStream(unwrapbuff);
+        }
+      }
       int valRead = inputStream.read();
       if (valRead == -1) {
         throw new EOFException(
@@ -108,6 +124,16 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
             "ClientProxyMembershipID class could not be found while deserializing the object");
       }
     } finally {
+      if (connection.getSSLEngine() != null) {
+        try (
+            final ByteBufferSharing sharedBuffer = connection.getSSLEngine().getUnwrappedBuffer()) {
+          ByteBuffer sslbuff = sharedBuffer.getBuffer();
+          connection.getSSLEngine().doneReading(sslbuff);
+        }
+        if (inputStream != null) {
+          inputStream.close();
+        }
+      }
       if (soTimeout != -1) {
         try {
           sock.setSoTimeout(soTimeout);
@@ -129,7 +155,18 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
   @Override
   public void handshakeWithClient(OutputStream out, InputStream in, byte endpointType,
       int queueSize, CommunicationMode communicationMode, Principal principal) throws IOException {
-    DataOutputStream dos = new DataOutputStream(out);
+
+    DataOutputStream dos;
+    ByteBufferOutputStream bbos = null;
+
+    if (connection.getSSLEngine() != null) {
+      bbos = new ByteBufferOutputStream(
+          connection.getSSLEngine().getEngine().getSession().getPacketBufferSize());
+      dos = new DataOutputStream(bbos);
+    } else {
+      dos = new DataOutputStream(out);
+    }
+
     DataInputStream dis;
     if (clientVersion.isOlderThan(KnownVersion.CURRENT)) {
       dis = new VersionedDataInputStream(in, clientVersion);
@@ -190,6 +227,16 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
 
     // Flush
     dos.flush();
+
+    if (bbos != null) {
+      bbos.flush();
+      ByteBuffer buffer = bbos.getContentBuffer();
+      try (final ByteBufferSharing outputSharing = connection.getSSLEngine().wrap(buffer)) {
+        final ByteBuffer wrappedBuffer = outputSharing.getBuffer();
+        connection.getSocket().getChannel().write(wrappedBuffer);
+      }
+      bbos.close();
+    }
   }
 
   @Override

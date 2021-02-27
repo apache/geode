@@ -18,8 +18,10 @@ package org.apache.geode.internal.cache.tier.sockets;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.Properties;
 
@@ -29,11 +31,14 @@ import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
+import org.apache.geode.internal.net.ByteBufferSharing;
+import org.apache.geode.internal.net.NioSslEngine;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
 import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.internal.serialization.VersioningIO;
+import org.apache.geode.internal.tcp.ByteBufferInputStream;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 class ClientRegistrationMetadata {
@@ -47,15 +52,28 @@ class ClientRegistrationMetadata {
   private KnownVersion clientVersion;
   private DataInputStream dataInputStream;
   private DataOutputStream dataOutputStream;
+  private final NioSslEngine sslEngine;
 
-  ClientRegistrationMetadata(final InternalCache cache, final Socket socket) {
+  ClientRegistrationMetadata(final InternalCache cache, final Socket socket,
+      final NioSslEngine sslEngine) {
     this.cache = cache;
     this.socket = socket;
     socketMessageWriter = new SocketMessageWriter();
+    this.sslEngine = sslEngine;
   }
 
   boolean initialize() throws IOException {
-    DataInputStream unversionedDataInputStream = new DataInputStream(socket.getInputStream());
+    InputStream inputStream;
+    if (sslEngine == null) {
+      inputStream = socket.getInputStream();
+    } else {
+      try (final ByteBufferSharing sharedBuffer = sslEngine.getUnwrappedBuffer()) {
+        ByteBuffer unwrapbuff = sharedBuffer.getBuffer();
+        inputStream = new ByteBufferInputStream(unwrapbuff);
+      }
+    }
+    DataInputStream unversionedDataInputStream = new DataInputStream(inputStream);
+
     DataOutputStream unversionedDataOutputStream = new DataOutputStream(socket.getOutputStream());
 
     if (getAndValidateClientVersion(socket, unversionedDataInputStream,
@@ -153,7 +171,7 @@ class ClientRegistrationMetadata {
 
     socketMessageWriter.writeException(dataOutputStream,
         CommunicationMode.UnsuccessfulServerToClient.getModeNumber(),
-        unsupportedVersionException, null);
+        unsupportedVersionException, null, sslEngine, socket);
 
     return false;
   }
@@ -183,11 +201,20 @@ class ClientRegistrationMetadata {
         break;
       default:
         socketMessageWriter.writeException(dataOutputStream, Handshake.REPLY_INVALID,
-            new IllegalArgumentException("Invalid conflation byte"), clientVersion);
+            new IllegalArgumentException("Invalid conflation byte"), clientVersion, sslEngine,
+            socket);
 
         return false;
     }
 
     return true;
+  }
+
+  public NioSslEngine getSslEngine() {
+    return this.sslEngine;
+  }
+
+  public Socket getSocket() {
+    return socket;
   }
 }

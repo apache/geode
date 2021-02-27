@@ -89,7 +89,7 @@ public class ProtobufServerConnectionTest {
     ServerConnection serverConnection = new ProtobufServerConnection(socket, cache,
         cachedRegionHelper, mock(CacheServerStats.class), 0, 1024, "",
         CommunicationMode.ProtobufClientServerProtocol.getModeNumber(), acceptor,
-        clientProtocolProcessor, mock(SecurityService.class));
+        clientProtocolProcessor, mock(SecurityService.class), null);
 
     assertThat(serverConnection.getProcessMessages()).isTrue();
 
@@ -104,7 +104,7 @@ public class ProtobufServerConnectionTest {
     ProtobufServerConnection protobufServerConnection = new ProtobufServerConnection(socket, cache,
         cachedRegionHelper, mock(CacheServerStats.class), 0, 1024, "",
         CommunicationMode.ProtobufClientServerProtocol.getModeNumber(), acceptor,
-        mock(ClientProtocolProcessor.class), mock(SecurityService.class));
+        mock(ClientProtocolProcessor.class), mock(SecurityService.class), null);
 
     protobufServerConnection.emergencyClose();
 
@@ -116,7 +116,7 @@ public class ProtobufServerConnectionTest {
     ServerConnection serverConnection = new ProtobufServerConnection(socket, cache,
         cachedRegionHelper, mock(CacheServerStats.class), 0, 1024, "",
         CommunicationMode.ProtobufClientServerProtocol.getModeNumber(), acceptor,
-        mock(ClientProtocolProcessor.class), mock(SecurityService.class));
+        mock(ClientProtocolProcessor.class), mock(SecurityService.class), null);
 
     ArgumentCaptor<ClientProxyMembershipID> clientProxyMembershipIdFromAddConnection =
         forClass(ClientProxyMembershipID.class);
@@ -130,7 +130,7 @@ public class ProtobufServerConnectionTest {
   public void registersClientWithClientHealthMonitor() throws IOException {
     new ProtobufServerConnection(socket, cache, cachedRegionHelper, mock(CacheServerStats.class), 0,
         1024, "", CommunicationMode.ProtobufClientServerProtocol.getModeNumber(), acceptor,
-        mock(ClientProtocolProcessor.class), mock(SecurityService.class));
+        mock(ClientProtocolProcessor.class), mock(SecurityService.class), null);
 
     ArgumentCaptor<ClientProxyMembershipID> clientProxyMembershipIdFromRegisterClient =
         forClass(ClientProxyMembershipID.class);
@@ -145,7 +145,7 @@ public class ProtobufServerConnectionTest {
     ServerConnection serverConnection = new ProtobufServerConnection(socket, cache,
         cachedRegionHelper, mock(CacheServerStats.class), 0, 1024, "",
         CommunicationMode.ProtobufClientServerProtocol.getModeNumber(), acceptor,
-        mock(ClientProtocolProcessor.class), mock(SecurityService.class));
+        mock(ClientProtocolProcessor.class), mock(SecurityService.class), null);
 
     serverConnection.doOneMessage();
 

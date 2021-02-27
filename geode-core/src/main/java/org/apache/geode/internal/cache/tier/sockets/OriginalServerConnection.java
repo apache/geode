@@ -20,6 +20,7 @@ import java.net.Socket;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
+import org.apache.geode.internal.net.NioSslEngine;
 import org.apache.geode.internal.security.SecurityService;
 
 /**
@@ -40,9 +41,9 @@ class OriginalServerConnection extends ServerConnection {
       final CachedRegionHelper cachedRegionHelper, final CacheServerStats stats,
       final int hsTimeout, final int socketBufferSize, final String communicationModeStr,
       final byte communicationMode, final Acceptor acceptor,
-      final SecurityService securityService) {
+      final SecurityService securityService, final NioSslEngine sslEngine) {
     super(socket, internalCache, cachedRegionHelper, stats, hsTimeout, socketBufferSize,
-        communicationModeStr, communicationMode, acceptor, securityService);
+        communicationModeStr, communicationMode, acceptor, securityService, sslEngine);
 
     initStreams(socket, socketBufferSize, stats);
   }
