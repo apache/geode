@@ -553,7 +553,7 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       fromDataPre_GEODE_1_14_0_0(in, context);
-//      this.enforceThreadsConnectSameReceiver = in.readBoolean();
+      this.enforceThreadsConnectSameReceiver = in.readBoolean();
     }
 
     public void fromDataPre_GEODE_1_14_0_0(DataInput in,
@@ -595,14 +595,13 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
         this.serverLocation = new ServerLocation();
         InternalDataSerializer.invokeFromData(this.serverLocation, in);
       }
-//      this.enforceThreadsConnectSameReceiver = in.readBoolean();
     }
 
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       toDataPre_GEODE_1_14_0_0(out, context);
-//      out.writeBoolean(enforceThreadsConnectSameReceiver);
+      out.writeBoolean(enforceThreadsConnectSameReceiver);
     }
 
     public void toDataPre_GEODE_1_14_0_0(DataOutput out,
@@ -641,7 +640,6 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
       if (serverLocationFound) {
         InternalDataSerializer.invokeToData(serverLocation, out);
       }
-//      out.writeBoolean(enforceThreadsConnectSameReceiver);
     }
 
     public void fromDataPre_GFE_8_0_0_0(DataInput in, DeserializationContext context)
