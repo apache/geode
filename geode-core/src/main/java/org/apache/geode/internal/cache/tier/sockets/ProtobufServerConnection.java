@@ -30,6 +30,7 @@ import org.apache.geode.internal.cache.client.protocol.ClientProtocolProcessor;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
+import org.apache.geode.internal.net.NioSslEngine;
 import org.apache.geode.internal.security.SecurityService;
 
 /**
@@ -51,10 +52,11 @@ class ProtobufServerConnection extends ServerConnection {
       final CachedRegionHelper cachedRegionHelper, final CacheServerStats stats,
       final int hsTimeout, final int socketBufferSize, final String communicationModeStr,
       final byte communicationMode, final Acceptor acceptor,
-      final ClientProtocolProcessor clientProtocolProcessor, final SecurityService securityService)
+      final ClientProtocolProcessor clientProtocolProcessor, final SecurityService securityService,
+      final NioSslEngine sslEngine)
       throws IOException {
     super(socket, internalCache, cachedRegionHelper, stats, hsTimeout, socketBufferSize,
-        communicationModeStr, communicationMode, acceptor, securityService);
+        communicationModeStr, communicationMode, acceptor, securityService, sslEngine);
     protocolProcessor = clientProtocolProcessor;
 
     output = new BufferedOutputStream(socket.getOutputStream(), socketBufferSize);

@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.nio.ByteBuffer;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
@@ -30,10 +31,13 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
+import org.apache.geode.internal.net.ByteBufferSharing;
+import org.apache.geode.internal.net.NioSslEngine;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.internal.serialization.VersioningIO;
+import org.apache.geode.internal.tcp.ByteBufferInputStream;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 class ServerSideHandshakeFactory {
@@ -43,9 +47,11 @@ class ServerSideHandshakeFactory {
   static final KnownVersion currentServerVersion = KnownVersion.CURRENT;
 
   ServerSideHandshake readHandshake(Socket socket, int timeout, CommunicationMode communicationMode,
-      DistributedSystem system, SecurityService securityService) throws Exception {
+      DistributedSystem system, SecurityService securityService, ServerConnection connection)
+      throws Exception {
     // Read the version byte from the socket
-    KnownVersion clientVersion = readClientVersion(socket, timeout, communicationMode.isWAN());
+    KnownVersion clientVersion =
+        readClientVersion(socket, timeout, communicationMode.isWAN(), connection);
 
     if (logger.isDebugEnabled()) {
       logger.debug("Client version: {}", clientVersion);
@@ -57,16 +63,28 @@ class ServerSideHandshakeFactory {
     }
 
     return new ServerSideHandshakeImpl(socket, timeout, system, clientVersion, communicationMode,
-        securityService);
+        securityService, connection);
   }
 
-  private KnownVersion readClientVersion(Socket socket, int timeout, boolean isWan)
+  private KnownVersion readClientVersion(Socket socket, int timeout, boolean isWan,
+      ServerConnection connection)
       throws IOException, VersionException {
     int soTimeout = -1;
+    NioSslEngine sslengine = null;
+    InputStream is = null;
+
     try {
       soTimeout = socket.getSoTimeout();
       socket.setSoTimeout(timeout);
-      InputStream is = socket.getInputStream();
+      sslengine = connection.getSSLEngine();
+      if (sslengine == null) {
+        is = socket.getInputStream();
+      } else {
+        try (final ByteBufferSharing sharedBuffer = sslengine.getUnwrappedBuffer()) {
+          ByteBuffer unwrapbuff = sharedBuffer.getBuffer();
+          is = new ByteBufferInputStream(unwrapbuff);
+        }
+      }
       short clientVersionOrdinal = VersioningIO.readOrdinalFromInputStream(is);
       if (clientVersionOrdinal == -1) {
         throw new EOFException(
@@ -93,6 +111,9 @@ class ServerSideHandshakeFactory {
       throw new UnsupportedVersionException(
           KnownVersion.unsupportedVersionMessage(clientVersionOrdinal) + sInfo);
     } finally {
+      if (sslengine != null && is != null) {
+        is.close();
+      }
       if (soTimeout != -1) {
         try {
           socket.setSoTimeout(soTimeout);

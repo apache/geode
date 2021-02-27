@@ -93,7 +93,7 @@ public class OutputCapturingServerConnectionTest {
     ServerConnection serverConnection = new ProtobufServerConnection(socket, cache,
         cachedRegionHelper, mock(CacheServerStats.class), 0, 1024, "",
         CommunicationMode.ProtobufClientServerProtocol.getModeNumber(), acceptor,
-        clientProtocolProcessor, mock(SecurityService.class));
+        clientProtocolProcessor, mock(SecurityService.class), null);
 
     serverConnection.doOneMessage();
 
