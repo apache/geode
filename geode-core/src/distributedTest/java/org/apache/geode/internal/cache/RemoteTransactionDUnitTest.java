@@ -349,7 +349,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         default:
           throw new IllegalStateException();
       }
-      return mgr.getTransactionId();
+      return mgr.suspend();
     }
   };
 
@@ -591,6 +591,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
       @Override
       public Object call() throws Exception {
         TXManagerImpl mgr = getGemfireCache().getTxManager();
+        mgr.resume(txId);
         TXStateProxy tx = mgr.pauseTransaction();
         assertNotNull(tx);
         mgr.unpauseTransaction(tx);
@@ -666,6 +667,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
       @Override
       public Object call() throws Exception {
         CacheTransactionManager mgr = getGemfireCache().getTxManager();
+        mgr.resume(txId);
         mgr.commit();
         verifyAfterCommit(OP.GET);
         return null;
@@ -831,7 +833,6 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
     initAccessorAndDataStore(acc, datastore, 0);
     VM accessor = getVMForTransactions(acc, datastore);
 
-
     final TXId txId = (TXId) accessor.invoke(new DoOpsInTX(OP.PUT));
 
     datastore.invoke(new SerializableCallable() {
@@ -859,6 +860,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
       @Override
       public Object call() throws Exception {
         TXManagerImpl mgr = getGemfireCache().getTxManager();
+        mgr.resume(txId);
         assertNotNull(mgr.getTXState());
         getCache().getLogger().fine("SWAP:accessorTXState:" + mgr.getTXState());
         mgr.commit();
@@ -905,6 +907,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
       @Override
       public Object call() throws Exception {
         CacheTransactionManager mgr = getGemfireCache().getTxManager();
+        mgr.resume(txId);
         mgr.commit();
         verifyAfterCommit(OP.INVALIDATE);
         return null;
@@ -949,6 +952,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
       @Override
       public Object call() throws Exception {
         CacheTransactionManager mgr = getGemfireCache().getTxManager();
+        mgr.resume(txId);
         mgr.commit();
         verifyAfterCommit(OP.DESTROY);
         return null;
@@ -998,7 +1002,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         mgr.unpauseTransaction(tx);
         cust.put(oldCustId, new Customer("foo", "bar"));
         rr.put(oldCustId, new Customer("foo", "bar"));
-        return mgr.getTransactionId();
+        return mgr.suspend();
       }
     });
 
@@ -1031,6 +1035,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
       @Override
       public Object call() throws Exception {
         TXManagerImpl mgr = getGemfireCache().getTxManager();
+        mgr.resume(txId);
         mgr.commit();
         Region<CustId, Customer> cust = getGemfireCache().getRegion(CUSTOMER);
         Region<CustId, Customer> rr = getGemfireCache().getRegion(D_REFERENCE);
@@ -1084,7 +1089,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         assertNotNull(cust.get(custId));
         assertNotNull(ref.get(custId));
         mgr.unpauseTransaction(tx);
-        return mgr.getTransactionId();
+        return mgr.suspend();
       }
     });
     datastore.invoke(new SerializableCallable() {
@@ -1112,6 +1117,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
       @Override
       public Object call() throws Exception {
         TXManagerImpl mgr = getGemfireCache().getTxManager();
+        mgr.resume(txId);
         mgr.commit();
         Region<CustId, Customer> cust = getGemfireCache().getRegion(CUSTOMER);
         Region<CustId, Customer> rr = getGemfireCache().getRegion(D_REFERENCE);
@@ -1163,7 +1169,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         assertNotNull(cust.get(custId1));
         assertNotNull(ref.get(custId2));
         mgr.unpauseTransaction(tx);
-        return mgr.getTransactionId();
+        return mgr.suspend();
       }
     });
     datastore.invoke(new SerializableCallable() {
@@ -1193,6 +1199,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
       @Override
       public Object call() throws Exception {
         TXManagerImpl mgr = getGemfireCache().getTxManager();
+        mgr.resume(txId);
         mgr.commit();
         Region<CustId, Customer> cust = getGemfireCache().getRegion(CUSTOMER);
         Region<CustId, Customer> rr = getGemfireCache().getRegion(D_REFERENCE);
@@ -1361,7 +1368,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         assertEquals(cust.get(custId), customer);
         assertEquals(ref.get(custId), customer);
         mgr.unpauseTransaction(tx);
-        return mgr.getTransactionId();
+        return mgr.suspend();
       }
     });
     datastore.invoke(new SerializableCallable() {
@@ -1389,6 +1396,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
       @Override
       public Object call() throws Exception {
         TXManagerImpl mgr = getGemfireCache().getTxManager();
+        mgr.resume(txId);
         mgr.commit();
         Region<CustId, Customer> cust = getGemfireCache().getRegion(CUSTOMER);
         Region<CustId, Customer> rr = getGemfireCache().getRegion(D_REFERENCE);
@@ -1541,7 +1549,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
     };
     datastore.invoke(addListenersToDataStore);
 
-    accessor.invoke(new DoOpsInTX(op));
+    TXId txId = (TXId) accessor.invoke(new DoOpsInTX(op));
 
     // Invalidate operations don't fire cache writers, so don't assert they were fired.
     if (op != OP.INVALIDATE) {
@@ -1578,6 +1586,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
       @Override
       public Object call() throws Exception {
         CacheTransactionManager mgr = getGemfireCache().getTxManager();
+        mgr.resume(txId);
         mgr.commit();
         return null;
       }
@@ -1927,7 +1936,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
     datastore1.invoke(verifyNoTxState);
     datastore2.invoke(verifyNoTxState);
 
-    taskVM.invoke(new SerializableCallable() {
+    TXId txId = (TXId) taskVM.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
         Region custRegion = getCache().getRegion(CUSTOMER);
@@ -1955,7 +1964,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
             .info("Putting " + custId + ", keyInfo:" + custPR.getKeyInfo(new CustId(remoteKey)));
         orderRegion.put(orderId, new Order("order" + remoteKey));
         assertEquals(6, custRegion.size());
-        return mgr.getTransactionId();
+        return mgr.suspend();
       }
     });
     final Integer txOnDatastore1 = (Integer) datastore1.invoke(getNumberOfTXInProgress);
@@ -1966,6 +1975,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
       @Override
       public Object call() throws Exception {
         CacheTransactionManager mgr = getGemfireCache().getTxManager();
+        mgr.resume(txId);
         mgr.commit();
         return null;
       }
@@ -2090,7 +2100,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
     datastore1.invoke(verifyNoTxState);
     datastore2.invoke(verifyNoTxState);
 
-    accessor.invoke(new SerializableCallable() {
+    TXId txId = (TXId) accessor.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
         Region custRegion = getCache().getRegion(CUSTOMER);
@@ -2149,7 +2159,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
             throw new IllegalArgumentException();
         }
 
-        return null;
+        return mgr.suspend();
       }
     });
     final Integer txOnDatastore1 = (Integer) datastore1.invoke(getNumberOfTXInProgress);
@@ -2160,6 +2170,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
       @Override
       public Object call() throws Exception {
         CacheTransactionManager mgr = getGemfireCache().getTxManager();
+        mgr.resume(txId);
         mgr.commit();
         return null;
       }
@@ -2611,7 +2622,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
     datastore1.invoke(registerFunction);
     datastore2.invoke(registerFunction);
 
-    accessor.invoke(new SerializableCallable() {
+    TXId txId = (TXId) accessor.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
         PartitionedRegion custRegion = (PartitionedRegion) getGemfireCache().getRegion(CUSTOMER);
@@ -2654,7 +2665,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         GemFireCacheImpl.getInstance().getLogger().warning("TX SUSPENDO:" + tx);
         assertNull(custRegion.get(expectedCustId));
         mgr.unpauseTransaction(tx);
-        return null;
+        return mgr.suspend();
       }
     });
 
@@ -2666,6 +2677,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
       @Override
       public Object call() throws Exception {
         CacheTransactionManager mgr = getGemfireCache().getTXMgr();
+        mgr.resume(txId);
         mgr.commit();
         return null;
       }
@@ -2910,7 +2922,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
     datastore1.invoke(registerFunction);
     datastore2.invoke(registerFunction);
 
-    accessor.invoke(new SerializableCallable() {
+    TXId txId = (TXId) accessor.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
         Region custRegion = getGemfireCache().getRegion(CUSTOMER);
@@ -2928,7 +2940,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         TXStateProxy tx = mgr.pauseTransaction();
         assertNull(custRegion.get(expectedCustId));
         mgr.unpauseTransaction(tx);
-        return null;
+        return mgr.suspend();
       }
     });
 
@@ -2941,6 +2953,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
       public Object call() throws Exception {
         Region custRegion = getGemfireCache().getRegion(CUSTOMER);
         CacheTransactionManager mgr = getGemfireCache().getTXMgr();
+        mgr.resume(txId);
         mgr.commit();
         assertEquals(expectedCustomer, custRegion.get(expectedCustId));
         custRegion.destroy(expectedCustId);
@@ -2956,7 +2969,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
     };
     final InternalDistributedMember ds1 = (InternalDistributedMember) datastore1.invoke(getMember);
     final InternalDistributedMember ds2 = (InternalDistributedMember) datastore2.invoke(getMember);
-    accessor.invoke(new SerializableCallable() {
+    TXId txId2 = (TXId) accessor.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
         PartitionedRegion pr = (PartitionedRegion) getGemfireCache().getRegion(CUSTOMER);
@@ -2983,7 +2996,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         TXStateProxy tx = mgr.pauseTransaction();
         assertNull(pr.get(expectedCustId));
         mgr.unpauseTransaction(tx);
-        return null;
+        return mgr.suspend();
       }
     });
     final Integer txOnDatastore1_1 = (Integer) datastore1.invoke(getNumberOfTXInProgress);
@@ -2995,6 +3008,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
       public Object call() throws Exception {
         Region custRegion = getGemfireCache().getRegion(CUSTOMER);
         CacheTransactionManager mgr = getGemfireCache().getTXMgr();
+        mgr.resume(txId2);
         mgr.commit();
         assertEquals(expectedCustomer, custRegion.get(expectedCustId));
         custRegion.destroy(expectedCustId);
@@ -3025,35 +3039,28 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         TXStateProxy tx = mgr.pauseTransaction();
         assertNull(pr.get(expectedCustId));
         mgr.unpauseTransaction(tx);
-        return null;
-      }
-    };
-    SerializableCallable closeTx = new SerializableCallable() {
-      @Override
-      public Object call() throws Exception {
-        Region custRegion = getGemfireCache().getRegion(CUSTOMER);
-        CacheTransactionManager mgr = getGemfireCache().getTXMgr();
-        mgr.commit();
-        assertEquals(expectedCustomer, custRegion.get(expectedCustId));
-        custRegion.destroy(expectedCustId);
-        return null;
+        return mgr.suspend();
       }
     };
 
     if (owner.equals(ds1)) {
-      datastore1.invoke(testFnOnDs);
+      TXId dsTxId = (TXId) datastore1.invoke(testFnOnDs);
+
       final Integer txOnDatastore1_2 = (Integer) datastore1.invoke(getNumberOfTXInProgress);
       final Integer txOnDatastore2_2 = (Integer) datastore2.invoke(getNumberOfTXInProgress);
       assertEquals(0, txOnDatastore1_2 + txOnDatastore2_2);// ds1 has a local transaction, not
                                                            // remote
-      datastore1.invoke(closeTx);
+      CloseFnOnDsTx closeFnOnDsTx = new CloseFnOnDsTx(dsTxId);
+      datastore1.invoke(closeFnOnDsTx);
     } else {
-      datastore2.invoke(testFnOnDs);
+      TXId dsTxId = (TXId) datastore2.invoke(testFnOnDs);
+
       final Integer txOnDatastore1_2 = (Integer) datastore1.invoke(getNumberOfTXInProgress);
       final Integer txOnDatastore2_2 = (Integer) datastore2.invoke(getNumberOfTXInProgress);
       assertEquals(0, txOnDatastore1_2 + txOnDatastore2_2);// ds1 has a local transaction, not
                                                            // remote
-      datastore2.invoke(closeTx);
+      CloseFnOnDsTx closeFnOnDsTx = new CloseFnOnDsTx(dsTxId);
+      datastore2.invoke(closeFnOnDsTx);
     }
 
     // test that function is rejected if function target is not same as txState target
@@ -3082,6 +3089,26 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         return null;
       }
     });
+  }
+
+  protected class CloseFnOnDsTx extends SerializableCallable {
+
+    private final TXId txId;
+
+    CloseFnOnDsTx(TXId txId) {
+      this.txId = txId;
+    }
+
+    @Override
+    public Object call() throws Exception {
+      Region custRegion = getGemfireCache().getRegion(CUSTOMER);
+      CacheTransactionManager mgr = getGemfireCache().getTXMgr();
+      mgr.resume(txId);
+      mgr.commit();
+      assertEquals(expectedCustomer, custRegion.get(expectedCustId));
+      custRegion.destroy(expectedCustId);
+      return null;
+    }
   }
 
   /**
@@ -3241,13 +3268,13 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
 
     });
 
-
-    accessor.invoke(new DoOpsInTX(OP.PUT));
+    TXId putTxId = (TXId) accessor.invoke(new DoOpsInTX(OP.PUT));
 
     accessor.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
         TXManagerImpl mgr = getGemfireCache().getTxManager();
+        mgr.resume(putTxId);
         TXStateProxy tx = mgr.pauseTransaction();
         assertNotNull(tx);
         mgr.unpauseTransaction(tx);
@@ -3256,12 +3283,13 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
       }
     });
 
-    accessor.invoke(new DoOpsInTX(OP.DESTROY));
+    TXId destroyTxId = (TXId) accessor.invoke(new DoOpsInTX(OP.DESTROY));
 
     accessor.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
         TXManagerImpl mgr = getGemfireCache().getTxManager();
+        mgr.resume(destroyTxId);
         TXStateProxy tx = mgr.pauseTransaction();
         assertNotNull(tx);
         mgr.unpauseTransaction(tx);
@@ -3270,13 +3298,13 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
       }
     });
 
-
-    accessor.invoke(new DoOpsInTX(OP.PUT));
+    TXId putTxId2 = (TXId) accessor.invoke(new DoOpsInTX(OP.PUT));
 
     accessor.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
         TXManagerImpl mgr = getGemfireCache().getTxManager();
+        mgr.resume(putTxId2);
         TXStateProxy tx = mgr.pauseTransaction();
         assertNotNull(tx);
         mgr.unpauseTransaction(tx);
@@ -3308,7 +3336,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
     VM datastore = host.getVM(1);
     initAccessorAndDataStore(accessor, datastore, 0);
 
-    accessor.invoke(new DoOpsInTX(OP.PUT));
+    TXId txId = (TXId) accessor.invoke(new DoOpsInTX(OP.PUT));
 
     accessor.invoke(new SerializableCallable() {
 
@@ -3324,6 +3352,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
       @Override
       public Object call() throws Exception {
         TXManagerImpl mgr = getGemfireCache().getTxManager();
+        mgr.resume(txId);
         TXStateProxy tx = mgr.pauseTransaction();
         assertNotNull(tx);
         mgr.unpauseTransaction(tx);
@@ -4166,14 +4195,14 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
     initAccessorAndDataStore(accessor, datastore1, datastore2, 0);
     final CustId custId = new CustId(19);
 
-    datastore1.invoke(new SerializableCallable() {
+    final TXId txId = (TXId) datastore1.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
         Region<CustId, Customer> refRegion = getCache().getRegion(D_REFERENCE);
         assertNull(refRegion.get(custId));
         getCache().getCacheTransactionManager().begin();
         refRegion.put(custId, new Customer("name1", "address1"));
-        return null;
+        return getCache().getCacheTransactionManager().suspend();
       }
     });
     datastore2.invoke(new SerializableCallable() {
@@ -4189,6 +4218,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
       @Override
       public Object call() throws Exception {
         try {
+          getCache().getCacheTransactionManager().resume(txId);
           getCache().getCacheTransactionManager().commit();
           fail("expected commit conflict not thrown");
         } catch (CommitConflictException cc) {
