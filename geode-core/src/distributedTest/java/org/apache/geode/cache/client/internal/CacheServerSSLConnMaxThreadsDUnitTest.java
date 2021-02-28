@@ -42,13 +42,16 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
+import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.apache.geode.test.dunit.VM.getHostName;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -61,6 +64,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
+
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLHandshakeException;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -82,9 +88,13 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.client.NoAvailableServersException;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.test.dunit.AsyncInvocation;
+import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.RMIException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
@@ -333,16 +343,37 @@ public class CacheServerSSLConnMaxThreadsDUnitTest extends JUnit4DistributedTest
   private void doClientRegionTest() {
     Region<String, String> region = clientCache.getRegion("serverRegion");
     assertEquals("servervalue", region.get("serverkey"));
-    region.put("clientkey", "clientvalue");
+    String keyBase = "clientkey";
+    String valueBase = "clientvalue";
+    region.put(keyBase, valueBase);
     assertEquals("clientvalue", region.get("clientkey"));
+  }
+
+  private void doClientRegionTestMulti() {
+    Region<String, String> region = clientCache.getRegion("serverRegion");
+    assertEquals("servervalue", region.get("serverkey"));
+    String keyBase = "clientkey";
+    String valueBase = "clientvalue";
+    for (int i = 0; i < 1000; i++) {
+      region.put(keyBase + i, valueBase + i);
+    }
+    assertEquals("clientvalue988", region.get("clientkey988"));
   }
 
   private void doServerRegionTest() {
     Region<String, String> region = cache.getRegion("serverRegion");
     assertEquals("servervalue", region.get("serverkey"));
     assertEquals("clientvalue", region.get("clientkey"));
+
   }
 
+  private void doServerRegionTestMulti() {
+    Region<String, String> region = cache.getRegion("serverRegion");
+    assertEquals("servervalue", region.get("serverkey"));
+    assertEquals("clientvalue888", region.get("clientkey888"));
+    assertEquals(1001, region.size());
+
+  }
 
   private static void setUpServerVMTask(boolean cacheServerSslenabled, int optionalLocatorPort)
       throws Exception {
@@ -371,6 +402,10 @@ public class CacheServerSSLConnMaxThreadsDUnitTest extends JUnit4DistributedTest
     instance.doClientRegionTest();
   }
 
+  private static void doClientRegionMultiTestTask() {
+    instance.doClientRegionTestMulti();
+  }
+
   private static void verifyServerDoesNotReceiveClientUpdate() {
     instance.doVerifyServerDoesNotReceiveClientUpdate();
   }
@@ -382,6 +417,10 @@ public class CacheServerSSLConnMaxThreadsDUnitTest extends JUnit4DistributedTest
 
   private static void doServerRegionTestTask() {
     instance.doServerRegionTest();
+  }
+
+  private static void doServerRegionMultiTestTask() {
+    instance.doServerRegionTestMulti();
   }
 
   private static Object[] getCacheServerEndPointTask() { // TODO: avoid Object[]
@@ -431,8 +470,8 @@ public class CacheServerSSLConnMaxThreadsDUnitTest extends JUnit4DistributedTest
 
       clientVM.invoke(() -> setUpClientVMTask(hostName, port, cacheClientSslenabled,
           cacheClientSslRequireAuth, CLIENT_KEY_STORE, CLIENT_TRUST_STORE, true));
-      clientVM.invoke(() -> doClientRegionTestTask());
-      serverVM.invoke(() -> doServerRegionTestTask());
+      clientVM.invoke(() -> doClientRegionMultiTestTask());
+      serverVM.invoke(() -> doServerRegionMultiTestTask());
     } finally {
       locator.stop();
     }
@@ -449,43 +488,43 @@ public class CacheServerSSLConnMaxThreadsDUnitTest extends JUnit4DistributedTest
    * blocked and can process the new connection request.
    */
 
-  /*
-   * @Test
-   * public void clientSlowToHandshakeDoesNotBlockServer() throws Throwable {
-   * VM serverVM = getVM(1);
-   * VM clientVM = getVM(2);
-   * VM slowClientVM = getVM(3);
-   *
-   * getBlackboard().initBlackboard();
-   *
-   * // a plain-text socket is used to connect to an ssl server & the handshake
-   * // is never performed. The server will log this exception & it should be ignored
-   * addIgnoredException(SSLHandshakeException.class);
-   *
-   * boolean cacheServerSslenabled = true;
-   * boolean cacheClientSslenabled = true;
-   * boolean cacheClientSslRequireAuth = true;
-   *
-   * serverVM.invoke(() -> setUpServerVMTask(cacheServerSslenabled, 0));
-   * int port = serverVM.invoke(() -> createServerTask());
-   *
-   * String hostName = getHostName();
-   *
-   * AsyncInvocation slowAsync = slowClientVM.invokeAsync(() -> connectToServer(hostName, port));
-   * try {
-   * getBlackboard().waitForGate("serverIsBlocked", 60, TimeUnit.SECONDS);
-   *
-   * clientVM.invoke(() -> setUpClientVMTask(hostName, port, cacheClientSslenabled,
-   * cacheClientSslRequireAuth, CLIENT_KEY_STORE, CLIENT_TRUST_STORE, true));
-   * clientVM.invoke(() -> doClientRegionTestTask());
-   * serverVM.invoke(() -> doServerRegionTestTask());
-   *
-   * } finally {
-   * getBlackboard().signalGate("testIsCompleted");
-   * slowAsync.await();
-   * }
-   * }
-   */
+
+  @Test
+  public void clientSlowToHandshakeDoesNotBlockServer() throws Throwable {
+    VM serverVM = getVM(1);
+    VM clientVM = getVM(2);
+    VM slowClientVM = getVM(3);
+
+    getBlackboard().initBlackboard();
+
+    // a plain-text socket is used to connect to an ssl server & the handshake
+    // is never performed. The server will log this exception & it should be ignored
+    addIgnoredException(SSLHandshakeException.class);
+
+    boolean cacheServerSslenabled = true;
+    boolean cacheClientSslenabled = true;
+    boolean cacheClientSslRequireAuth = true;
+
+    serverVM.invoke(() -> setUpServerVMTask(cacheServerSslenabled, 0));
+    int port = serverVM.invoke(() -> createServerTask());
+
+    String hostName = getHostName();
+
+    AsyncInvocation slowAsync = slowClientVM.invokeAsync(() -> connectToServer(hostName, port));
+    try {
+      getBlackboard().waitForGate("serverIsBlocked", 60, TimeUnit.SECONDS);
+
+      clientVM.invoke(() -> setUpClientVMTask(hostName, port, cacheClientSslenabled,
+          cacheClientSslRequireAuth, CLIENT_KEY_STORE, CLIENT_TRUST_STORE, true));
+      clientVM.invoke(() -> doClientRegionTestTask());
+      serverVM.invoke(() -> doServerRegionTestTask());
+
+    } finally {
+      getBlackboard().signalGate("testIsCompleted");
+      slowAsync.await();
+    }
+  }
+
 
   private void connectToServer(String hostName, int port) throws Exception {
     Socket sock = new Socket();
@@ -498,121 +537,120 @@ public class CacheServerSSLConnMaxThreadsDUnitTest extends JUnit4DistributedTest
     }
   }
 
-  /*
-   * @Test
-   * public void testNonSSLClient() {
-   * VM serverVM = getVM(1);
-   * VM clientVM = getVM(2);
-   *
-   * boolean cacheServerSslenabled = true;
-   * boolean cacheClientSslenabled = false;
-   * boolean cacheClientSslRequireAuth = true;
-   *
-   * serverVM.invoke(() -> setUpServerVMTask(cacheServerSslenabled, 0));
-   * serverVM.invoke(() -> createServerTask());
-   *
-   * Object array[] = serverVM.invoke(() -> getCacheServerEndPointTask());
-   * String hostName = (String) array[0];
-   * int port = (Integer) array[1];
-   *
-   * try (IgnoredException i1 = addIgnoredException(SSLException.class);
-   * IgnoredException i2 = addIgnoredException(IOException.class)) {
-   * clientVM.invoke(() -> setUpClientVMTaskNoSubscription(hostName, port, cacheClientSslenabled,
-   * cacheClientSslRequireAuth, TRUSTED_STORE, TRUSTED_STORE));
-   * clientVM.invoke(() -> doClientRegionTestTask());
-   * serverVM.invoke(() -> doServerRegionTestTask());
-   * fail("Test should fail as non-ssl client is trying to connect to ssl configured server");
-   *
-   * } catch (Exception rmiException) {
-   * assertThat(rmiException).hasRootCauseInstanceOf(AuthenticationRequiredException.class);
-   * }
-   * }
-   *
-   * @Test
-   * public void testSSLClientWithNoAuth() {
-   * VM serverVM = getVM(1);
-   * VM clientVM = getVM(2);
-   *
-   * boolean cacheServerSslenabled = true;
-   * boolean cacheClientSslenabled = true;
-   * boolean cacheClientSslRequireAuth = false;
-   *
-   * addIgnoredException("SSLHandshakeException");
-   * addIgnoredException("ValidatorException");
-   *
-   * serverVM.invoke(() -> setUpServerVMTask(cacheServerSslenabled, 0));
-   * serverVM.invoke(() -> createServerTask());
-   *
-   * Object array[] = serverVM.invoke(() -> getCacheServerEndPointTask());
-   * String hostName = (String) array[0];
-   * int port = (Integer) array[1];
-   *
-   * clientVM.invoke(() -> setUpClientVMTask(hostName, port, cacheClientSslenabled,
-   * cacheClientSslRequireAuth, CLIENT_KEY_STORE, CLIENT_TRUST_STORE, true));
-   * clientVM.invoke(() -> doClientRegionTestTask());
-   * serverVM.invoke(() -> doServerRegionTestTask());
-   * }
-   *
-   * @Test
-   * public void untrustedClientIsRejected() {
-   * VM serverVM = getVM(1);
-   * VM clientVM = getVM(2);
-   *
-   * boolean cacheServerSslenabled = true;
-   * boolean cacheClientSslenabled = true;
-   * boolean cacheClientSslRequireAuth = false;
-   *
-   * serverVM.invoke(() -> setUpServerVMTask(cacheServerSslenabled, 0));
-   * serverVM.invoke(() -> createServerTask());
-   *
-   * Object array[] = serverVM.invoke(() -> getCacheServerEndPointTask());
-   * String hostName = (String) array[0];
-   * int port = (Integer) array[1];
-   *
-   * addIgnoredException("SSLHandshakeException");
-   *
-   * clientVM.invoke(() -> setUpClientVMTask(hostName, port, cacheClientSslenabled,
-   * cacheClientSslRequireAuth, "default.keystore", CLIENT_TRUST_STORE, false));
-   *
-   * try {
-   * clientVM.invoke(() -> doClientRegionTestTask());
-   * fail("client should not have been able to execute a cache operation");
-   * } catch (RMIException e) {
-   * assertThat(e).hasRootCauseInstanceOf(NoAvailableServersException.class);
-   * }
-   * serverVM.invoke(() -> verifyServerDoesNotReceiveClientUpdate());
-   * }
-   *
-   * @Test
-   * public void testSSLClientWithNonSSLServer() {
-   * VM serverVM = getVM(1);
-   * VM clientVM = getVM(2);
-   *
-   * boolean cacheServerSslenabled = false;
-   * boolean cacheClientSslenabled = true;
-   * boolean cacheClientSslRequireAuth = true;
-   *
-   * serverVM.invoke(() -> setUpServerVMTask(cacheServerSslenabled, 0));
-   * serverVM.invoke(() -> createServerTask());
-   *
-   * Object array[] = serverVM.invoke(() -> getCacheServerEndPointTask());
-   * String hostName = (String) array[0];
-   * int port = (Integer) array[1];
-   *
-   * try (IgnoredException i = addIgnoredException(SSLHandshakeException.class)) {
-   * clientVM.invoke(() -> setUpClientVMTask(hostName, port, cacheClientSslenabled,
-   * cacheClientSslRequireAuth, TRUSTED_STORE, TRUSTED_STORE, true));
-   * clientVM.invoke(() -> doClientRegionTestTask());
-   * serverVM.invoke(() -> doServerRegionTestTask());
-   * fail(
-   * "Test should fail as ssl client with ssl enabled is trying to connect to server with ssl disabled"
-   * );
-   *
-   * } catch (Exception e) {
-   * // ignore
-   * assertThat(e).hasRootCauseInstanceOf(NoAvailableServersException.class);
-   * }
-   * }
-   *
-   */
+
+  @Test
+  public void testNonSSLClient() {
+    VM serverVM = getVM(1);
+    VM clientVM = getVM(2);
+
+    boolean cacheServerSslenabled = true;
+    boolean cacheClientSslenabled = false;
+    boolean cacheClientSslRequireAuth = true;
+
+    serverVM.invoke(() -> setUpServerVMTask(cacheServerSslenabled, 0));
+    serverVM.invoke(() -> createServerTask());
+
+    Object array[] = serverVM.invoke(() -> getCacheServerEndPointTask());
+    String hostName = (String) array[0];
+    int port = (Integer) array[1];
+
+    try (IgnoredException i1 = addIgnoredException(SSLException.class);
+        IgnoredException i2 = addIgnoredException(IOException.class)) {
+      clientVM.invoke(() -> setUpClientVMTaskNoSubscription(hostName, port, cacheClientSslenabled,
+          cacheClientSslRequireAuth, TRUSTED_STORE, TRUSTED_STORE));
+      clientVM.invoke(() -> doClientRegionTestTask());
+      serverVM.invoke(() -> doServerRegionTestTask());
+      fail("Test should fail as non-ssl client is trying to connect to ssl configured server");
+
+    } catch (Exception rmiException) {
+      assertThat(rmiException).hasRootCauseInstanceOf(NoAvailableServersException.class);
+    }
+  }
+
+  @Test
+  public void testSSLClientWithNoAuth() {
+    VM serverVM = getVM(1);
+    VM clientVM = getVM(2);
+
+    boolean cacheServerSslenabled = true;
+    boolean cacheClientSslenabled = true;
+    boolean cacheClientSslRequireAuth = false;
+
+    addIgnoredException("SSLHandshakeException");
+    addIgnoredException("ValidatorException");
+
+    serverVM.invoke(() -> setUpServerVMTask(cacheServerSslenabled, 0));
+    serverVM.invoke(() -> createServerTask());
+
+    Object array[] = serverVM.invoke(() -> getCacheServerEndPointTask());
+    String hostName = (String) array[0];
+    int port = (Integer) array[1];
+
+    clientVM.invoke(() -> setUpClientVMTask(hostName, port, cacheClientSslenabled,
+        cacheClientSslRequireAuth, CLIENT_KEY_STORE, CLIENT_TRUST_STORE, true));
+    clientVM.invoke(() -> doClientRegionTestTask());
+    serverVM.invoke(() -> doServerRegionTestTask());
+  }
+
+  @Test
+  public void untrustedClientIsRejected() {
+    VM serverVM = getVM(1);
+    VM clientVM = getVM(2);
+
+    boolean cacheServerSslenabled = true;
+    boolean cacheClientSslenabled = true;
+    boolean cacheClientSslRequireAuth = false;
+
+    serverVM.invoke(() -> setUpServerVMTask(cacheServerSslenabled, 0));
+    serverVM.invoke(() -> createServerTask());
+
+    Object array[] = serverVM.invoke(() -> getCacheServerEndPointTask());
+    String hostName = (String) array[0];
+    int port = (Integer) array[1];
+
+    addIgnoredException("SSLHandshakeException");
+
+    clientVM.invoke(() -> setUpClientVMTask(hostName, port, cacheClientSslenabled,
+        cacheClientSslRequireAuth, "default.keystore", CLIENT_TRUST_STORE, false));
+
+    try {
+      clientVM.invoke(() -> doClientRegionTestTask());
+      fail("client should not have been able to execute a cache operation");
+    } catch (RMIException e) {
+      assertThat(e).hasRootCauseInstanceOf(NoAvailableServersException.class);
+    }
+    serverVM.invoke(() -> verifyServerDoesNotReceiveClientUpdate());
+  }
+
+  @Test
+  public void testSSLClientWithNonSSLServer() {
+    VM serverVM = getVM(1);
+    VM clientVM = getVM(2);
+
+    boolean cacheServerSslenabled = false;
+    boolean cacheClientSslenabled = true;
+    boolean cacheClientSslRequireAuth = true;
+
+    serverVM.invoke(() -> setUpServerVMTask(cacheServerSslenabled, 0));
+    serverVM.invoke(() -> createServerTask());
+
+    Object array[] = serverVM.invoke(() -> getCacheServerEndPointTask());
+    String hostName = (String) array[0];
+    int port = (Integer) array[1];
+
+    try (IgnoredException i = addIgnoredException(SSLHandshakeException.class)) {
+      clientVM.invoke(() -> setUpClientVMTask(hostName, port, cacheClientSslenabled,
+          cacheClientSslRequireAuth, TRUSTED_STORE, TRUSTED_STORE, true));
+      clientVM.invoke(() -> doClientRegionTestTask());
+      serverVM.invoke(() -> doServerRegionTestTask());
+      fail(
+          "Test should fail as ssl client with ssl enabled is trying to connect to server with ssl disabled");
+
+    } catch (Exception e) {
+      // ignore
+      assertThat(e).hasRootCauseInstanceOf(NoAvailableServersException.class);
+    }
+  }
+
+
 }
