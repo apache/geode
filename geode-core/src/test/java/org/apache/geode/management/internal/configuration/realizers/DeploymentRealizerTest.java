@@ -98,14 +98,15 @@ public class DeploymentRealizerTest {
   public void createWithNewJar() throws Exception {
     String canonicalPath = "/home/sweet/home/test/test.jar";
     Deployment expectedDeployment = new Deployment("test.jar", "by", "time");
-    expectedDeployment.setFile(new File(canonicalPath));
+    File file = new File(canonicalPath);
+    expectedDeployment.setFile(file);
     deployment = new Deployment(canonicalPath, "test", Instant.now().toString());
     deployment.setFile(new File("/test/test.jar"));
     doReturn(Success.of(expectedDeployment)).when(realizer).deploy(any(Deployment.class));
 
     RealizationResult realizationResult = realizer.create(deployment, null);
 
-    assertThat(realizationResult.getMessage()).contains(canonicalPath);
+    assertThat(realizationResult.getMessage()).contains(file.getCanonicalPath());
     assertThat(realizationResult.isSuccess()).isTrue();
   }
 
