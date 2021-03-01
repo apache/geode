@@ -1682,11 +1682,10 @@ public class AcceptorImpl implements Acceptor, Runnable {
       throws IOException {
 
     final SocketChannel socketChannel = socket.getChannel();
-    socketChannel.configureBlocking(false);
-
     ByteBuffer inbuffer = sslengine.getHandshakeBuffer();
 
     if (inbuffer.position() == 0) {
+      socketChannel.configureBlocking(false);
       int res = socketChannel.read(inbuffer);
       socketChannel.configureBlocking(true);
       if (res < 0) {
@@ -1709,9 +1708,8 @@ public class AcceptorImpl implements Acceptor, Runnable {
           throw new EOFException();
         }
       }
-    } else {
-      socketChannel.configureBlocking(true);
     }
+
     inbuffer.flip();
     byte modeNumber = 0;
     try (final ByteBufferSharing sharedBuffer = sslengine.unwrap(inbuffer)) {
