@@ -396,7 +396,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
    */
   @Override
   public boolean enqueueEvent(EnumListenerEvent operation, EntryEvent event, Object substituteValue,
-      boolean isLastEventInTransaction, Predicate condition)
+      boolean isLastEventInTransaction, Predicate<GatewayQueueEvent<?, ?>> condition)
       throws IOException, CacheException {
     // There is a case where the event is serialized for processing. The
     // region is not
@@ -877,7 +877,8 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
   }
 
   @Override
-  protected boolean enqueueEvent(GatewayQueueEvent event, Predicate condition) {
+  protected boolean enqueueEvent(GatewayQueueEvent event,
+      Predicate<GatewayQueueEvent<?, ?>> condition) {
     // @TODO This API hasn't been implemented yet
     throw new UnsupportedOperationException();
   }

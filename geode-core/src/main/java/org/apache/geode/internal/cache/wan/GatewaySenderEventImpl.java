@@ -1245,10 +1245,12 @@ public class GatewaySenderEventImpl
     return this.shadowKey;
   }
 
+  @Override
   public boolean isLastEventInTransaction() {
     return isLastEventInTransaction;
   }
 
+  @Override
   public TransactionId getTransactionId() {
     return transactionId;
   }

@@ -16,6 +16,7 @@ package org.apache.geode.cache.wan;
 
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 
 /**
@@ -73,4 +74,16 @@ public interface GatewayQueueEvent<K, V> {
    *         {@link AsyncEventListener#processEvents(java.util.List)} has already returned.
    */
   byte[] getSerializedValue();
+
+  /**
+   * @return the transactionId to which the event belongs or null if the event does not belong
+   *         to a transaction.
+   */
+  TransactionId getTransactionId();
+
+  /**
+   * @return true if the event is the last one in the transaction it belongs to or if the
+   *         event does not belong to a transaction. false, otherwise.
+   */
+  boolean isLastEventInTransaction();
 }

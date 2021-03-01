@@ -60,6 +60,7 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
+import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -1816,17 +1817,17 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     return regionName.substring(1, queueStringStart);
   }
 
-  public boolean isThereEventsMatching(Object object, Predicate condition) {
-    GatewaySenderEventImpl value = (GatewaySenderEventImpl) object;
-    boolean isDREvent = isDREvent(sender.getCache(), value);
+  public boolean isThereEventsMatching(GatewaySenderEventImpl event,
+      Predicate<GatewayQueueEvent<?, ?>> condition) {
+    boolean isDREvent = isDREvent(sender.getCache(), event);
 
-    String regionPath = value.getRegionPath();
-    regionPath = getRegionPathForEventAndType(value, isDREvent, regionPath);
+    String regionPath = event.getRegionPath();
+    regionPath = getRegionPathForEventAndType(event, isDREvent, regionPath);
     if (regionPath == null) {
       return true;
     }
     PartitionedRegion prQ = this.userRegionNameToShadowPRMap.get(regionPath);
-    int bucketId = value.getBucketId();
+    int bucketId = event.getBucketId();
     BucketRegionQueue brq = getBucketRegionQueueByBucketId(prQ, bucketId);
 
     return brq.isThereEventsMatching(condition);

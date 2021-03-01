@@ -56,6 +56,7 @@ import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
+import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.Conflatable;
@@ -859,7 +860,8 @@ public class SerialGatewaySenderQueue implements RegionQueue {
    * If a matching object also fulfills the endPredicate then the method
    * stops looking for more matching objects.
    */
-  List<KeyAndEventPair> getElementsMatching(Predicate condition, Predicate stopCondition,
+  List<KeyAndEventPair> getElementsMatching(Predicate<GatewaySenderEventImpl> condition,
+      Predicate<GatewaySenderEventImpl> stopCondition,
       long lastKey) {
     Object object;
     List elementsMatching = new ArrayList<>();
@@ -875,10 +877,10 @@ public class SerialGatewaySenderQueue implements RegionQueue {
         continue;
       }
 
-      if (condition.test(object)) {
+      if (condition.test((GatewaySenderEventImpl) object)) {
         elementsMatching.add(new KeyAndEventPair(currentKey, (GatewaySenderEventImpl) object));
 
-        if (stopCondition.test(object)) {
+        if (stopCondition.test((GatewaySenderEventImpl) object)) {
           break;
         }
       }
@@ -887,8 +889,8 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     return elementsMatching;
   }
 
-  public boolean isThereEventsMatching(Predicate condition) {
-    Object object;
+  public boolean isThereEventsMatching(Predicate<GatewayQueueEvent<?, ?>> condition) {
+    GatewayQueueEvent<?, ?> object;
     long currentKey = getHeadKey();
     if (currentKey == getTailKey()) {
       return false;

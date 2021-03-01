@@ -99,7 +99,7 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
 
   @Override
   public boolean enqueueEvent(EnumListenerEvent operation, EntryEvent event, Object substituteValue,
-      boolean isLastEventInTransaction, Predicate condition)
+      boolean isLastEventInTransaction, Predicate<GatewayQueueEvent<?, ?>> condition)
       throws IOException, CacheException {
     GatewaySenderEventImpl gatewayQueueEvent;
     Region region = event.getRegion();
@@ -131,14 +131,15 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
 
   @Override
   protected boolean enqueueEvent(GatewayQueueEvent gatewayQueueEvent,
-      Predicate condition) {
+      Predicate<GatewayQueueEvent<?, ?>> condition) {
     boolean queuedEvent = false;
     try {
       if (getSender().beforeEnqueue(gatewayQueueEvent)) {
         long start = getSender().getStatistics().startTime();
         try {
           if (condition != null &&
-              !((ParallelGatewaySenderQueue) this.queue).isThereEventsMatching(gatewayQueueEvent,
+              !((ParallelGatewaySenderQueue) this.queue).isThereEventsMatching(
+                  (GatewaySenderEventImpl) gatewayQueueEvent,
                   condition)) {
             return false;
           }

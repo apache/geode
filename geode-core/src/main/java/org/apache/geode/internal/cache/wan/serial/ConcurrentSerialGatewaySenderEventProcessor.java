@@ -119,7 +119,7 @@ public class ConcurrentSerialGatewaySenderEventProcessor
 
   @Override
   public boolean enqueueEvent(EnumListenerEvent operation, EntryEvent event, Object substituteValue,
-      boolean isLastEventInTransaction, Predicate condition)
+      boolean isLastEventInTransaction, Predicate<GatewayQueueEvent<?, ?>> condition)
       throws IOException, CacheException {
     // Get the appropriate index into the gateways
     int index = Math.abs(getHashCode(((EntryEventImpl) event)) % this.processors.size());
@@ -158,7 +158,7 @@ public class ConcurrentSerialGatewaySenderEventProcessor
   }
 
   public boolean enqueueEvent(EnumListenerEvent operation, EntryEvent event, Object substituteValue,
-      int index, boolean isLastEventInTransaction, Predicate condition)
+      int index, boolean isLastEventInTransaction, Predicate<GatewayQueueEvent<?, ?>> condition)
       throws CacheException, IOException {
     // Get the appropriate gateway
     SerialGatewaySenderEventProcessor serialProcessor = this.processors.get(index);
@@ -423,7 +423,8 @@ public class ConcurrentSerialGatewaySenderEventProcessor
   }
 
   @Override
-  protected boolean enqueueEvent(GatewayQueueEvent event, Predicate condition) {
+  protected boolean enqueueEvent(GatewayQueueEvent event,
+      Predicate<GatewayQueueEvent<?, ?>> condition) {
     for (SerialGatewaySenderEventProcessor serialProcessor : this.processors) {
       // TODO revisit handling of "condition" when the following enqueueEvent() method is supported:
       serialProcessor.enqueueEvent(event, condition);

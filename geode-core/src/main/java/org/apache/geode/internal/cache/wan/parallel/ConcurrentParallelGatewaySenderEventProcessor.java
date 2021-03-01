@@ -140,7 +140,7 @@ public class ConcurrentParallelGatewaySenderEventProcessor
 
   @Override
   public boolean enqueueEvent(EnumListenerEvent operation, EntryEvent event, Object substituteValue,
-      boolean isLastEventInTransaction, Predicate condition)
+      boolean isLastEventInTransaction, Predicate<GatewayQueueEvent<?, ?>> condition)
       throws IOException, CacheException {
     Region region = event.getRegion();
     // int bucketId = PartitionedRegionHelper.getHashKey((EntryOperation)event);
@@ -352,7 +352,8 @@ public class ConcurrentParallelGatewaySenderEventProcessor
   }
 
   @Override
-  protected boolean enqueueEvent(GatewayQueueEvent event, Predicate condition) {
+  protected boolean enqueueEvent(GatewayQueueEvent event,
+      Predicate<GatewayQueueEvent<?, ?>> condition) {
     int pId = ((GatewaySenderEventImpl) event).getBucketId() % this.nDispatcher;
     return this.processors[pId].enqueueEvent(event, condition);
   }

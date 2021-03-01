@@ -37,6 +37,7 @@ import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.internal.cache.execute.BucketMovedException;
 import org.apache.geode.internal.cache.persistence.query.mock.ByteComparator;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
@@ -478,16 +479,15 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     }
   }
 
-  public boolean isThereEventsMatching(Predicate matchingPredicate) {
+  public boolean isThereEventsMatching(Predicate<GatewayQueueEvent<?, ?>> matchingPredicate) {
     getInitializationLock().readLock().lock();
     try {
       if (this.getPartitionedRegion().isDestroyed()) {
         throw new BucketRegionQueueUnavailableException();
       }
-      Iterator<Object> it = this.eventSeqNumDeque.iterator();
-      while (it.hasNext()) {
-        Object object = optimalGet(it.next());
-        if (matchingPredicate.test(object)) {
+      for (Object o : eventSeqNumDeque) {
+        Object object = optimalGet(o);
+        if (matchingPredicate.test((GatewayQueueEvent<?, ?>) object)) {
           return true;
         }
       }
