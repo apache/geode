@@ -194,7 +194,7 @@ public class TombstoneDUnitTest implements Serializable {
 
       // Get one of the entries
 
-      PartitionedRegion partitionedRegion = (PartitionedRegion)region;
+      PartitionedRegion partitionedRegion = (PartitionedRegion) region;
       RegionEntry regionEntry = partitionedRegion.getBucketRegion("K0").getRegionEntry("K0");
 
       /*
@@ -218,8 +218,6 @@ public class TombstoneDUnitTest implements Serializable {
       assertThat(tombstoneSweeper.getOldestTombstoneTime()).isEqualTo(0);
     });
   }
-
-
 
 
 
