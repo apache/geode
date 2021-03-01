@@ -19,7 +19,6 @@ import java.io.NotSerializableException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -143,21 +142,24 @@ public class DirectChannel {
       props.setProperty("membership_port_range_start", "" + range[0]);
       props.setProperty("membership_port_range_end", "" + range[1]);
 
-      InetAddress conduitAddress = address;
-      if (!dc.getMembershipBindAddress().isEmpty()) {
-        try {
-          if (dc.getMembershipBindAddress().equals("*")) {
-            conduitAddress = (new InetSocketAddress(0)).getAddress();
-          } else {
-            conduitAddress = InetAddress.getByName(dc.getMembershipBindAddress());
-          }
-        } catch (UnknownHostException e) {
-          logger.error(
-              "Error when configuring {} as bind address in membership, default address will be used. Exception: {}",
-              dc.getMembershipBindAddress(), e.getMessage());
-        }
-      }
-
+      /*
+       * InetAddress conduitAddress = address;
+       * if (!dc.getMembershipBindAddress().isEmpty()) {
+       * try {
+       * if (dc.getMembershipBindAddress().equals("*")) {
+       * conduitAddress = (new InetSocketAddress(0)).getAddress();
+       * } else {
+       * conduitAddress = InetAddress.getByName(dc.getMembershipBindAddress());
+       * }
+       * } catch (UnknownHostException e) {
+       * logger.error(
+       * "Error when configuring {} as bind address in membership, default address will be used. Exception: {}"
+       * ,
+       * dc.getMembershipBindAddress(), e.getMessage());
+       * }
+       * }
+       */
+      InetAddress conduitAddress = (new InetSocketAddress(0)).getAddress();
       this.conduit =
           new TCPConduit(mgr, port, conduitAddress, isBindAddress, this, bufferPool, props);
       disconnected = false;

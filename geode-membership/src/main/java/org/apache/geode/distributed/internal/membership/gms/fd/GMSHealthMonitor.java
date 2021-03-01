@@ -25,7 +25,6 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -955,21 +954,25 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
   public void started() throws MemberStartupException {
     setLocalAddress(services.getMessenger().getMemberID());
     try {
-      InetAddress address = localAddress.getInetAddress();
-      if (services.getConfig().getMembershipBindAddress() != null
-          && !services.getConfig().getMembershipBindAddress().isEmpty()) {
-        try {
-          if (services.getConfig().getMembershipBindAddress().equals("*")) {
-            address = (new InetSocketAddress(0)).getAddress();
-          } else {
-            address = InetAddress.getByName(services.getConfig().getMembershipBindAddress());
-          }
-        } catch (UnknownHostException e) {
-          logger.error(
-              "Error when configuring {} as bind address in membership, default address will be used. Exception: {}",
-              services.getConfig().getMembershipBindAddress(), e.getMessage());
-        }
-      }
+      /*
+       * InetAddress address = localAddress.getInetAddress();
+       * if (services.getConfig().getMembershipBindAddress() != null
+       * && !services.getConfig().getMembershipBindAddress().isEmpty()) {
+       * try {
+       * if (services.getConfig().getMembershipBindAddress().equals("*")) {
+       * address = (new InetSocketAddress(0)).getAddress();
+       * } else {
+       * address = InetAddress.getByName(services.getConfig().getMembershipBindAddress());
+       * }
+       * } catch (UnknownHostException e) {
+       * logger.error(
+       * "Error when configuring {} as bind address in membership, default address will be used. Exception: {}"
+       * ,
+       * services.getConfig().getMembershipBindAddress(), e.getMessage());
+       * }
+       * }
+       */
+      InetAddress address = (new InetSocketAddress(0)).getAddress();
       serverSocket = createServerSocket(address, services.getConfig().getMembershipPortRange());
     } catch (IOException e) {
       throw new MemberStartupException("Problem creating HealthMonitor socket", e);
