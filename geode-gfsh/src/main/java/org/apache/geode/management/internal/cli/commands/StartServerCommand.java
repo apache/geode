@@ -14,6 +14,9 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+
+import static org.apache.geode.management.internal.cli.commands.StartMemberUtils.resolveWorkingDirectory;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.Inet4Address;
@@ -209,11 +212,11 @@ public class StartServerCommand extends OfflineGfshCommand {
       }
     }
 
-    workingDirectory = StartMemberUtils.resolveWorkingDir(
-        workingDirectory == null ? null : new File(workingDirectory), new File(memberName));
+    String resolvedWorkingDirectory = resolveWorkingDirectory(workingDirectory, memberName);
 
     return doStartServer(memberName, assignBuckets, bindAddress, cacheXmlPathname, classpath,
-        criticalHeapPercentage, criticalOffHeapPercentage, workingDirectory, disableDefaultServer,
+        criticalHeapPercentage, criticalOffHeapPercentage, resolvedWorkingDirectory,
+        disableDefaultServer,
         disableExitWhenOutOfMemory, enableTimeStatistics, evictionHeapPercentage,
         evictionOffHeapPercentage, force, group, hostNameForClients, jmxManagerHostnameForClients,
         includeSystemClasspath, initialHeap, jvmArgsOpts, locators, locatorWaitTime, lockMemory,
