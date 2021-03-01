@@ -350,11 +350,12 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
   }
 
   @ConfigAttributeChecker(name = CLUSTER_SSL_ENABLED)
-  protected Boolean checkClusterSSLEnabled(Boolean value) {
+  protected boolean checkClusterSSLEnabled(boolean value) {
     if (value && getMcastPort() != 0) {
       throw new IllegalArgumentException(
-          String.format("Could not set %s to %s because its value must be false when %s is not 0.",
-              CLUSTER_SSL_ENABLED, value, MCAST_PORT));
+          String.format(
+              "Could not set %s to true because its value must be false when %s is not 0.",
+              CLUSTER_SSL_ENABLED, MCAST_PORT));
     }
     return value;
   }

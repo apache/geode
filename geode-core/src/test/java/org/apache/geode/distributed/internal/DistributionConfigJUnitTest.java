@@ -40,9 +40,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAM
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -104,7 +101,7 @@ public class DistributionConfigJUnitTest {
   @Test
   public void testGetAttributeNames() {
     String[] attNames = AbstractDistributionConfig._getAttNames();
-    assertThat(attNames.length).isEqualTo(170);
+    assertThat(attNames).hasSize(170);
 
     List boolList = new ArrayList();
     List intList = new ArrayList();
@@ -138,19 +135,19 @@ public class DistributionConfigJUnitTest {
 
     // TODO - This makes no sense. One has no idea what the correct expected number of attributes
     // are.
-    assertEquals(36, boolList.size());
-    assertEquals(35, intList.size());
-    assertEquals(89, stringList.size());
-    assertEquals(5, fileList.size());
-    assertEquals(5, otherList.size());
+    assertThat(boolList).hasSize(36);
+    assertThat(intList).hasSize(35);
+    assertThat(stringList).hasSize(89);
+    assertThat(fileList).hasSize(5);
+    assertThat(otherList).hasSize(5);
   }
 
   @Test
   public void testAttributeDesc() {
     String[] attNames = AbstractDistributionConfig._getAttNames();
     for (String attName : attNames) {
-      assertTrue("Does not contain description for attribute " + attName,
-          AbstractDistributionConfig.dcAttDescriptions.containsKey(attName));
+      assertThat(AbstractDistributionConfig.dcAttDescriptions.containsKey(attName))
+          .as("Does not contain description for attribute " + attName).isTrue();
     }
     List<String> attList = Arrays.asList(attNames);
     for (Object attName : AbstractDistributionConfig.dcAttDescriptions.keySet()) {
@@ -162,17 +159,17 @@ public class DistributionConfigJUnitTest {
 
   @Test
   public void sameCount() {
-    assertEquals(attributes.size(), setters.size());
-    assertEquals(setters.size(), getters.size());
+    assertThat(setters).hasSize(attributes.size());
+    assertThat(getters).hasSize(setters.size());
   }
 
   @Test
   public void everyAttrHasValidSetter() {
     for (String attr : attributes.keySet()) {
       Method setter = setters.get(attr);
-      assertNotNull(attr + " should have a setter", setter);
-      assertTrue(setter.getName().startsWith("set"));
-      assertEquals(setter.getParameterCount(), 1);
+      assertThat(setter).as(attr + " should have a setter").isNotNull();
+      assertThat(setter.getName().startsWith("set")).isTrue();
+      assertThat(setter.getParameterCount()).isEqualTo(1);
 
       if (!(attr.equalsIgnoreCase(LOG_LEVEL) || attr.equalsIgnoreCase(SECURITY_LOG_LEVEL))) {
         Class clazz = attributes.get(attr).type();
@@ -215,9 +212,9 @@ public class DistributionConfigJUnitTest {
   public void everyAttrHasValidGetter() {
     for (String attr : attributes.keySet()) {
       Method getter = getters.get(attr);
-      assertNotNull(attr + " should have a getter", getter);
-      assertTrue(getter.getName().startsWith("get"));
-      assertEquals(getter.getParameterCount(), 0);
+      assertThat(getter).as(attr + " should have a getter").isNotNull();
+      assertThat(getter.getName().startsWith("get")).isTrue();
+      assertThat(getter.getParameterCount()).isEqualTo(0);
 
       if (!(attr.equalsIgnoreCase(LOG_LEVEL) || attr.equalsIgnoreCase(SECURITY_LOG_LEVEL))) {
         Class clazz = attributes.get(attr).type();
@@ -225,7 +222,7 @@ public class DistributionConfigJUnitTest {
         if (returnClass.isPrimitive()) {
           returnClass = classMap.get(returnClass);
         }
-        assertEquals(returnClass, clazz);
+        assertThat(clazz).isEqualTo(returnClass);
       }
     }
   }
@@ -235,17 +232,17 @@ public class DistributionConfigJUnitTest {
     for (String attr : getters.keySet()) {
       Method getter = getters.get(attr);
       Method setter = setters.get(attr);
-      assertNotNull("every getter should have a corresponding setter " + attr, setter);
+      assertThat(setter).as("every getter should have a corresponding setter " + attr).isNotNull();
       String setterName = setter.getName();
       String getterName = getter.getName();
-      assertEquals(setterName.substring(setterName.indexOf("set") + 3),
-          getterName.substring(getterName.indexOf("get") + 3));
-      assertEquals(setter.getParameterTypes()[0], getter.getReturnType());
+      assertThat(getterName.substring(getterName.indexOf("get") + 3))
+          .isEqualTo(setterName.substring(setterName.indexOf("set") + 3));
+      assertThat(getter.getReturnType()).isEqualTo(setter.getParameterTypes()[0]);
     }
 
     for (String attr : setters.keySet()) {
       Method getter = getters.get(attr);
-      assertNotNull("every setter should have a corresponding getter: " + attr, getter);
+      assertThat(getter).as("every setter should have a corresponding getter: " + attr).isNotNull();
     }
   }
 
@@ -253,7 +250,7 @@ public class DistributionConfigJUnitTest {
   public void everySetterHasAttributeDefined() {
     for (String attr : setters.keySet()) {
       ConfigAttribute configAttribute = attributes.get(attr);
-      assertNotNull(attr + " should be defined a ConfigAttribute", configAttribute);
+      assertThat(configAttribute).as(attr + " should be defined a ConfigAttribute").isNotNull();
     }
   }
 
@@ -261,29 +258,33 @@ public class DistributionConfigJUnitTest {
   public void everyGetterHasAttributeDefined() {
     for (String attr : getters.keySet()) {
       ConfigAttribute configAttribute = attributes.get(attr);
-      assertNotNull(attr + " should be defined a ConfigAttribute", configAttribute);
+      assertThat(configAttribute).as(attr + " should be defined a ConfigAttribute").isNotNull();
     }
   }
 
   @Test
   public void testGetAttributeObject() {
-    assertEquals(config.getAttributeObject(LOG_LEVEL), "config");
-    assertEquals(config.getAttributeObject(SECURITY_LOG_LEVEL), "config");
-    assertEquals(config.getAttributeObject(REDUNDANCY_ZONE), "");
-    assertEquals(config.getAttributeObject(ENABLE_CLUSTER_CONFIGURATION).getClass(), Boolean.class);
+    assertThat(config.getAttributeObject(LOG_LEVEL)).isEqualTo("config");
+    assertThat(config.getAttributeObject(SECURITY_LOG_LEVEL)).isEqualTo("config");
+    assertThat(config.getAttributeObject(REDUNDANCY_ZONE)).isEqualTo("");
+    assertThat(config.getAttributeObject(ENABLE_CLUSTER_CONFIGURATION).getClass())
+        .isEqualTo(Boolean.class);
   }
 
   @Test
   public void testCheckerChecksValidAttribute() {
     for (String att : checkers.keySet()) {
       System.out.println("att = " + att);
-      assertTrue(attributes.containsKey(att));
+      assertThat(attributes.containsKey(att)).isTrue();
       Method checker = checkers.get(att);
-      assertEquals(checker.getParameterCount(), 1);
-      assertEquals("invalid checker: " + checker.getName(), checker.getReturnType(),
-          checker.getParameterTypes()[0]);
-
-      // TODO assert checker and setter accepts this same type of parameter
+      assertThat(checker.getParameterCount()).isEqualTo(1);
+      assertThat(checker.getParameterTypes()[0]).as("invalid checker: " + checker.getName())
+          .isEqualTo(checker.getReturnType());
+      Method setter = setters.get(att);
+      assertThat(checker.getParameterTypes()[0]).as("checker '" + checker.getName()
+          + "' param type is '" + checker.getParameterTypes()[0] + "' but setter '"
+          + setter.getName() + "' param type is '" + setter.getParameterTypes()[0] + "'")
+          .isEqualTo(setter.getParameterTypes()[0]);
     }
   }
 
@@ -296,9 +297,9 @@ public class DistributionConfigJUnitTest {
         modifiables.add(attName);
       }
     }
-    assertEquals(modifiables.size(), 2);
-    assertEquals(modifiables.get(0), HTTP_SERVICE_PORT);
-    assertEquals(modifiables.get(1), JMX_MANAGER_HTTP_PORT);
+    assertThat(modifiables.size()).isEqualTo(2);
+    assertThat(modifiables.get(0)).isEqualTo(HTTP_SERVICE_PORT);
+    assertThat(modifiables.get(1)).isEqualTo(JMX_MANAGER_HTTP_PORT);
   }
 
   @Test
@@ -313,17 +314,17 @@ public class DistributionConfigJUnitTest {
       }
     }
 
-    assertEquals(modifiables.size(), 10);
-    assertEquals(modifiables.get(0), ARCHIVE_DISK_SPACE_LIMIT);
-    assertEquals(modifiables.get(1), ARCHIVE_FILE_SIZE_LIMIT);
-    assertEquals(modifiables.get(2), HTTP_SERVICE_PORT);
-    assertEquals(modifiables.get(3), JMX_MANAGER_HTTP_PORT);
-    assertEquals(modifiables.get(4), LOG_DISK_SPACE_LIMIT);
-    assertEquals(modifiables.get(5), LOG_FILE_SIZE_LIMIT);
-    assertEquals(modifiables.get(6), LOG_LEVEL);
-    assertEquals(modifiables.get(7), STATISTIC_ARCHIVE_FILE);
-    assertEquals(modifiables.get(8), STATISTIC_SAMPLE_RATE);
-    assertEquals(modifiables.get(9), STATISTIC_SAMPLING_ENABLED);
+    assertThat(modifiables).hasSize(10);
+    assertThat(modifiables.get(0)).isEqualTo(ARCHIVE_DISK_SPACE_LIMIT);
+    assertThat(modifiables.get(1)).isEqualTo(ARCHIVE_FILE_SIZE_LIMIT);
+    assertThat(modifiables.get(2)).isEqualTo(HTTP_SERVICE_PORT);
+    assertThat(modifiables.get(3)).isEqualTo(JMX_MANAGER_HTTP_PORT);
+    assertThat(modifiables.get(4)).isEqualTo(LOG_DISK_SPACE_LIMIT);
+    assertThat(modifiables.get(5)).isEqualTo(LOG_FILE_SIZE_LIMIT);
+    assertThat(modifiables.get(6)).isEqualTo(LOG_LEVEL);
+    assertThat(modifiables.get(7)).isEqualTo(STATISTIC_ARCHIVE_FILE);
+    assertThat(modifiables.get(8)).isEqualTo(STATISTIC_SAMPLE_RATE);
+    assertThat(modifiables.get(9)).isEqualTo(STATISTIC_SAMPLING_ENABLED);
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -339,7 +340,7 @@ public class DistributionConfigJUnitTest {
   @Test
   public void testValidAttributeObject() {
     config.setAttributeObject(HTTP_SERVICE_PORT, 8080, ConfigSource.api());
-    assertEquals(config.getHttpServicePort(), 8080);
+    assertThat(config.getHttpServicePort()).isEqualTo(8080);
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -351,17 +352,17 @@ public class DistributionConfigJUnitTest {
   public void testLogLevel() {
     config.modifiable = true;
     config.setAttribute(LOG_LEVEL, "config", ConfigSource.api());
-    assertEquals(config.getLogLevel(), 700);
+    assertThat(config.getLogLevel()).isEqualTo(700);
 
     config.setAttributeObject(SECURITY_LOG_LEVEL, "debug", ConfigSource.api());
-    assertEquals(config.getSecurityLogLevel(), 500);
+    assertThat(config.getSecurityLogLevel()).isEqualTo(500);
   }
 
   @Test
   public void testLog4jLogLevel() {
     config.modifiable = true;
     config.setAttribute(LOG_LEVEL, "fatal", ConfigSource.api());
-    assertEquals(config.getLogLevel(), 1000);
+    assertThat(config.getLogLevel()).isEqualTo(1000);
   }
 
   @Test
@@ -369,7 +370,7 @@ public class DistributionConfigJUnitTest {
     String address = "81.240.0.1[7056]";
     config.modifiable = true;
     config.setAttributeObject(START_LOCATOR, address, ConfigSource.api());
-    assertEquals(config.getStartLocator(), address);
+    assertThat(config.getStartLocator()).isEqualTo(address);
   }
 
   @Test
@@ -383,12 +384,12 @@ public class DistributionConfigJUnitTest {
   @Test
   public void testAttributesAlwaysModifiable() {
     config.modifiable = false;
-    assertTrue(config.isAttributeModifiable(HTTP_SERVICE_PORT));
-    assertTrue(config.isAttributeModifiable(JMX_MANAGER_HTTP_PORT));
+    assertThat(config.isAttributeModifiable(HTTP_SERVICE_PORT)).isTrue();
+    assertThat(config.isAttributeModifiable(JMX_MANAGER_HTTP_PORT)).isTrue();
 
     config.modifiable = true;
-    assertTrue(config.isAttributeModifiable(HTTP_SERVICE_PORT));
-    assertTrue(config.isAttributeModifiable(JMX_MANAGER_HTTP_PORT));
+    assertThat(config.isAttributeModifiable(HTTP_SERVICE_PORT)).isTrue();
+    assertThat(config.isAttributeModifiable(JMX_MANAGER_HTTP_PORT)).isTrue();
   }
 
   @Test
@@ -402,7 +403,7 @@ public class DistributionConfigJUnitTest {
 
     DistributionConfig config = new DistributionConfigImpl(props);
     // SECURITY_ENABLED_COMPONENTS is automatically added to getSecurityProps
-    assertEquals(config.getSecurityProps().size(), 3);
+    assertThat(config.getSecurityProps().size()).isEqualTo(3);
   }
 
   @Test
@@ -417,7 +418,7 @@ public class DistributionConfigJUnitTest {
 
     DistributionConfig config = new DistributionConfigImpl(props);
     // SECURITY_ENABLED_COMPONENTS is automatically added to getSecurityProps
-    assertEquals(config.getSecurityProps().size(), 4);
+    assertThat(config.getSecurityProps().size()).isEqualTo(4);
   }
 
   @Test
