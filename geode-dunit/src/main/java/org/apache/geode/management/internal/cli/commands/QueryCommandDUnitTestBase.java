@@ -214,7 +214,7 @@ public class QueryCommandDUnitTestBase {
 
   private static void prepareDataForRegionWithSpecialCharacters(String regionPath) {
     InternalCache cache = ClusterStartupRule.getCache();
-    Region dataRegion = cache.getRegion(regionPath);
+    Region<Integer, String> dataRegion = cache.getRegion(regionPath);
 
     dataRegion.put(1, "value$");
     dataRegion.put(2, "value%");
