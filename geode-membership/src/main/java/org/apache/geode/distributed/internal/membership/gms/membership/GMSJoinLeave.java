@@ -577,7 +577,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
    *
    * @param incomingRequest the request to be processed
    */
-  void processMessage(JoinRequestMessage<ID> incomingRequest) {
+  void processJoinRequestMessage(JoinRequestMessage<ID> incomingRequest) {
     if (isStopping) {
       return;
     }
@@ -623,7 +623,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
    *
    * @param incomingRequest the request to be processed
    */
-  void processMessage(LeaveRequestMessage<ID> incomingRequest) {
+  void processLeaveRequestMessage(LeaveRequestMessage<ID> incomingRequest) {
     if (isStopping) {
       return;
     }
@@ -639,10 +639,11 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
 
     ID mbr = incomingRequest.getMemberID();
 
-    logger.info(() -> "JoinLeave.processMessage(LeaveRequestMessage) invoked.  isCoordinator="
-        + isCoordinator
-        + "; isStopping=" + isStopping + "; cancelInProgress="
-        + services.getCancelCriterion().isCancelInProgress());
+    logger.info(
+        () -> "JoinLeave.processLeaveRequestMessage(LeaveRequestMessage) invoked.  isCoordinator="
+            + isCoordinator
+            + "; isStopping=" + isStopping + "; cancelInProgress="
+            + services.getCancelCriterion().isCancelInProgress());
 
     if (!v.contains(mbr) && mbr.getVmViewId() < v.getViewId()) {
       logger.info("ignoring leave request from old member");
@@ -692,7 +693,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
    *
    * @param incomingRequest the request to process
    */
-  void processMessage(RemoveMemberMessage<ID> incomingRequest) {
+  void processRemoveMemberMessage(RemoveMemberMessage<ID> incomingRequest) {
     if (isStopping) {
       return;
     }
@@ -1028,7 +1029,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
     }
   }
 
-  void processMessage(final InstallViewMessage<ID> m) {
+  void processInstallViewMessage(final InstallViewMessage<ID> m) {
     if (isStopping) {
       return;
     }
@@ -1129,7 +1130,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
     }
   }
 
-  void processMessage(ViewAckMessage<ID> m) {
+  void processViewAckMessage(ViewAckMessage<ID> m) {
     if (isStopping) {
       return;
     }
@@ -1371,7 +1372,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
    *
    * @param rsp the response message to process
    */
-  void processMessage(JoinResponseMessage<ID> rsp) {
+  void processJoinResponseMessage(JoinResponseMessage<ID> rsp) {
     if (isStopping) {
       return;
     }
@@ -1412,7 +1413,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
     joinResponse[0] = jrm;
   }
 
-  void processMessage(FindCoordinatorRequest<ID> req) {
+  void processFindCoordinatorRequestMessage(FindCoordinatorRequest<ID> req) {
     if (isStopping) {
       return;
     }
@@ -1430,7 +1431,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
     services.getMessenger().send(resp);
   }
 
-  void processMessage(FindCoordinatorResponse<ID> resp) {
+  void processFindCoordinatorResponseMessage(FindCoordinatorResponse<ID> resp) {
     if (isStopping) {
       return;
     }
@@ -1450,7 +1451,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
           response.getCoordinator());
   }
 
-  void processMessage(NetworkPartitionMessage<ID> msg) {
+  void processNetworkPartitionMessage(NetworkPartitionMessage<ID> msg) {
     if (isStopping) {
       return;
     }
@@ -1771,7 +1772,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
           new RemoveMemberMessage<>(v.getPreferredCoordinators(filter, getMemberID(), 5), m,
               reason);
       msg.setSender(this.localAddress);
-      processMessage(msg);
+      processRemoveMemberMessage(msg);
       if (!this.isCoordinator) {
         msg.setRecipients(v.getPreferredCoordinators(Collections.emptySet(), localAddress,
             MembershipConfig.SMALL_CLUSTER_SIZE + 1));
@@ -1789,7 +1790,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
         new LeaveRequestMessage<>(Collections.singletonList(this.localAddress),
             mbr, reason);
     msg.setSender(mbr);
-    processMessage(msg);
+    processLeaveRequestMessage(msg);
   }
 
   boolean checkIfAvailable(ID fmbr) {
@@ -1855,15 +1856,18 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
               + MembershipConfig.START_LOCATOR + ".");
     }
 
-    services.getMessenger().addHandler(JoinRequestMessage.class, this::processMessage);
-    services.getMessenger().addHandler(JoinResponseMessage.class, this::processMessage);
-    services.getMessenger().addHandler(InstallViewMessage.class, this::processMessage);
-    services.getMessenger().addHandler(ViewAckMessage.class, this::processMessage);
-    services.getMessenger().addHandler(LeaveRequestMessage.class, this::processMessage);
-    services.getMessenger().addHandler(RemoveMemberMessage.class, this::processMessage);
-    services.getMessenger().addHandler(FindCoordinatorRequest.class, this::processMessage);
-    services.getMessenger().addHandler(FindCoordinatorResponse.class, this::processMessage);
-    services.getMessenger().addHandler(NetworkPartitionMessage.class, this::processMessage);
+    services.getMessenger().addHandler(JoinRequestMessage.class, this::processJoinRequestMessage);
+    services.getMessenger().addHandler(JoinResponseMessage.class, this::processJoinResponseMessage);
+    services.getMessenger().addHandler(InstallViewMessage.class, this::processInstallViewMessage);
+    services.getMessenger().addHandler(ViewAckMessage.class, this::processViewAckMessage);
+    services.getMessenger().addHandler(LeaveRequestMessage.class, this::processLeaveRequestMessage);
+    services.getMessenger().addHandler(RemoveMemberMessage.class, this::processRemoveMemberMessage);
+    services.getMessenger().addHandler(FindCoordinatorRequest.class,
+        this::processFindCoordinatorRequestMessage);
+    services.getMessenger().addHandler(FindCoordinatorResponse.class,
+        this::processFindCoordinatorResponseMessage);
+    services.getMessenger().addHandler(NetworkPartitionMessage.class,
+        this::processNetworkPartitionMessage);
 
     long ackCollectionTimeout = config.getMemberTimeout() * 2 * 12437 / 10000;
     if (ackCollectionTimeout < 1500) {
