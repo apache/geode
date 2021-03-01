@@ -107,8 +107,8 @@ import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
- * The ServerLauncher class is a launcher class with main method to start a GemFire Server (implying
- * a GemFire Cache Server process).
+ * The ServerLauncher class is a launcher class with main method to start a Geode Server (implying
+ * a Geode Cache Server process).
  *
  * @see AbstractLauncher
  * @see LocatorLauncher
@@ -125,37 +125,37 @@ public class ServerLauncher extends AbstractLauncher<String> {
   static {
     Map<String, String> help = new HashMap<>();
     help.put("launcher",
-        "A GemFire launcher used to start, stop and determine a Server's status.");
+        "A Geode launcher used to start, stop and determine a Server's status.");
     help.put(Command.START.getName(), String.format(
-        "Starts a Server running in the current working directory listening on the default port (%s) bound to all IP addresses available to the localhost.  The Server must be given a member name in the GemFire cluster.  The default server-bind-address and server-port may be overridden using the corresponding command-line options.",
+        "Starts a Server running in the current working directory listening on the default port (%s) bound to all IP addresses available to the localhost.  The Server must be given a member name in the Geode cluster.  The default server-bind-address and server-port may be overridden using the corresponding command-line options.",
         String.valueOf(getDefaultServerPort())));
     help.put(Command.STATUS.getName(),
         "Displays the status of a Server given any combination of the member name/ID, PID, or the directory in which the Server is running.");
     help.put(Command.STOP.getName(),
         "Stops a running Server given given a member name/ID, PID, or the directory in which the Server is running.");
     help.put(Command.VERSION.getName(),
-        "Displays GemFire product version information.");
+        "Displays Geode product version information.");
     help.put("assign-buckets",
-        "Causes buckets to be assigned to the partitioned regions in the GemFire cache on Server start.");
+        "Causes buckets to be assigned to the partitioned regions in the Geode cache on Server start.");
     help.put("debug", "Displays verbose information during the invocation of the launcher.");
     help.put("delete-pid-file-on-stop",
         "Specifies that this Server's PID file should be deleted on stop.  The default is to not delete this Server's PID file until JVM exit if --delete-pid-file-on-stop is not specified.");
     help.put("dir",
         "Specifies the working directory where the Server is running.  Defaults to the current working directory.");
     help.put("disable-default-server",
-        "Disables the addition of a default GemFire cache server.");
+        "Disables the addition of a default Geode cache server.");
     help.put("force",
         "Enables any existing Server PID file to be overwritten on start.  The default is to throw an error if a PID file already exists and --force is not specified.");
     help.put("help",
-        "Causes GemFire to print out information instead of performing the command. This option is supported by all commands.");
-    help.put("member", "Identifies the Server by member name or ID in the GemFire cluster.");
+        "Causes Geode to print out information instead of performing the command. This option is supported by all commands.");
+    help.put("member", "Identifies the Server by member name or ID in the Geode cluster.");
     help.put(MEMBERSHIP_BIND_ADDRESS,
         "Specifies the IP address to which the UDP membership-related traffic will be bound.");
     help.put("pid", "Indicates the OS process ID of the running Server.");
     help.put("rebalance",
-        "An option to cause the GemFire cache's partitioned regions to be rebalanced on start.");
+        "An option to cause the Geode cache's partitioned regions to be rebalanced on start.");
     help.put("redirect-output",
-        "An option to cause the Server to redirect standard out and standard error to the GemFire log file.");
+        "An option to cause the Server to redirect standard out and standard error to the Geode log file.");
     help.put(SERVER_BIND_ADDRESS,
         "Specifies the IP address on which to bind, or on which the Server is bound, listening for client requests.  Defaults to all IP addresses available to the localhost.");
     help.put("hostname-for-clients",
@@ -250,9 +250,9 @@ public class ServerLauncher extends AbstractLauncher<String> {
   private final Supplier<ControllableProcess> controllableProcessFactory;
 
   /**
-   * Launches a GemFire Server from the command-line configured with the given arguments.
+   * Launches a Geode Server from the command-line configured with the given arguments.
    *
-   * @param args the command-line arguments used to configure the GemFire Server at runtime.
+   * @param args the command-line arguments used to configure the Geode Server at runtime.
    */
   public static void main(final String... args) {
     try {
@@ -268,11 +268,11 @@ public class ServerLauncher extends AbstractLauncher<String> {
   }
 
   /**
-   * Gets the instance of the ServerLauncher used to launch the GemFire Cache Server, or null if
-   * this VM does not have an instance of ServerLauncher indicating no GemFire Cache Server is
+   * Gets the instance of the ServerLauncher used to launch the Geode Cache Server, or null if
+   * this VM does not have an instance of ServerLauncher indicating no Geode Cache Server is
    * running.
    *
-   * @return the instance of ServerLauncher used to launcher a GemFire Cache Server in this VM.
+   * @return the instance of ServerLauncher used to launcher a Geode Cache Server in this VM.
    */
   public static ServerLauncher getInstance() {
     return INSTANCE.get();
@@ -389,10 +389,10 @@ public class ServerLauncher extends AbstractLauncher<String> {
   }
 
   /**
-   * Gets the CacheConfig object used to configure additional GemFire Cache components and features
+   * Gets the CacheConfig object used to configure additional Geode Cache components and features
    * (e.g. PDX).
    *
-   * @return a CacheConfig object with additional GemFire Cache configuration meta-data used on
+   * @return a CacheConfig object with additional Geode Cache configuration meta-data used on
    *         startup to configure the Cache.
    */
   public CacheConfig getCacheConfig() {
@@ -441,7 +441,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
   }
 
   /**
-   * Determines whether a default cache server will be added when the GemFire Server comes online.
+   * Determines whether a default cache server will be added when the Geode Server comes online.
    *
    * @return a boolean value indicating whether to add a default cache server.
    */
@@ -473,10 +473,10 @@ public class ServerLauncher extends AbstractLauncher<String> {
   }
 
   /**
-   * Determines whether a rebalance operation on the cache will occur upon starting the GemFire
+   * Determines whether a rebalance operation on the cache will occur upon starting the Geode
    * server using this launcher.
    *
-   * @return a boolean indicating if the cache will be rebalance when the GemFire server starts.
+   * @return a boolean indicating if the cache will be rebalance when the Geode server starts.
    */
   public boolean isRebalancing() {
     return rebalance;
@@ -523,10 +523,10 @@ public class ServerLauncher extends AbstractLauncher<String> {
   }
 
   /**
-   * Gets the name of this member (this Server) in the GemFire distributed system as determined by
-   * the 'name' GemFire property.
+   * Gets the name of this member (this Server) in the Geode distributed system as determined by
+   * the 'name' Geode property.
    *
-   * @return a String indicating the name of the member (this Server) in the GemFire distributed
+   * @return a String indicating the name of the member (this Server) in the Geode distributed
    *         system.
    */
   @Override
@@ -546,9 +546,9 @@ public class ServerLauncher extends AbstractLauncher<String> {
   }
 
   /**
-   * Gets the GemFire Distributed System (cluster) Properties.
+   * Gets the Geode Distributed System (cluster) Properties.
    *
-   * @return a Properties object containing the configuration settings for the GemFire Distributed
+   * @return a Properties object containing the configuration settings for the Geode Distributed
    *         System (cluster).
    * @see Properties
    */
@@ -560,7 +560,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * Gets the IP address to which the Server is bound listening for and accepting cache client
    * connections. This property should not be confused with 'bindAddress' ServerLauncher property,
    * which is the port for binding the Server's ServerSocket used in distribution and messaging
-   * between the peers of the GemFire distributed system.
+   * between the peers of the Geode distributed system.
    *
    * @return an InetAddress indicating the IP address that the Server is bound to listening for and
    *         accepting cache client connections in a client/server topology.
@@ -624,9 +624,9 @@ public class ServerLauncher extends AbstractLauncher<String> {
   }
 
   /**
-   * Gets the name for a GemFire Server.
+   * Gets the name for a Geode Server.
    *
-   * @return a String indicating the name for a GemFire Server.
+   * @return a String indicating the name for a Geode Server.
    */
   @Override
   public String getServiceName() {
@@ -635,7 +635,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
   /**
    * Gets the location of the Spring XML configuration meta-data file used to bootstrap, configure
-   * and initialize the GemFire Server on start.
+   * and initialize the Geode Server on start.
    * <p>
    *
    * @return a String indicating the location of the Spring XML configuration file.
@@ -646,11 +646,11 @@ public class ServerLauncher extends AbstractLauncher<String> {
   }
 
   /**
-   * Determines whether this GemFire Server was configured and initialized with Spring configuration
+   * Determines whether this Geode Server was configured and initialized with Spring configuration
    * meta-data.
    * <p>
    *
-   * @return a boolean value indicating whether this GemFire Server was configured with Spring
+   * @return a boolean value indicating whether this Geode Server was configured with Spring
    *         configuration meta-data.
    */
   public boolean isSpringXmlLocationSpecified() {
@@ -750,7 +750,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
   }
 
   /**
-   * A Runnable method used to invoke the GemFire server (cache server) with the specified command.
+   * A Runnable method used to invoke the Geode server (cache server) with the specified command.
    * From run, a user can invoke 'start', 'status', 'stop' and 'version'. Note, that 'version' is
    * also a command-line option, but can be treated as a "command" as well.
    *
@@ -791,9 +791,9 @@ public class ServerLauncher extends AbstractLauncher<String> {
   }
 
   /**
-   * Determines whether a GemFire Cache Server can be started with this instance of ServerLauncher.
+   * Determines whether a Geode Cache Server can be started with this instance of ServerLauncher.
    *
-   * @return a boolean indicating whether a GemFire Cache Server can be started with this instance
+   * @return a boolean indicating whether a Geode Cache Server can be started with this instance
    *         of ServerLauncher, which is true if the ServerLauncher has not already started a Server
    *         or a Server is not already running.
    * @see #start()
@@ -803,7 +803,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
   }
 
   /**
-   * Invokes the 'start' command and operation to startup a GemFire server (a cache server). Note,
+   * Invokes the 'start' command and operation to startup a Geode server (a cache server). Note,
    * this method will cause the JVM to block upon server start, providing the calling Thread is a
    * non-daemon Thread.
    *
@@ -957,11 +957,11 @@ public class ServerLauncher extends AbstractLauncher<String> {
   }
 
   /**
-   * Determines whether to continue waiting and keep the GemFire non-Server data member running.
+   * Determines whether to continue waiting and keep the Geode non-Server data member running.
    *
-   * @param cache the Cache associated with this GemFire (non-Server) data member.
-   * @return a boolean value indicating whether the GemFire data member should continue running, as
-   *         determined by the running flag and a connection to the distributed system (GemFire
+   * @param cache the Cache associated with this Geode (non-Server) data member.
+   * @return a boolean value indicating whether the Geode data member should continue running, as
+   *         determined by the running flag and a connection to the distributed system (Geode
    *         cluster).
    */
   boolean isWaiting(final Cache cache) {
@@ -969,7 +969,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
   }
 
   /**
-   * Causes the calling Thread to block until the GemFire Cache Server/Data Member stops.
+   * Causes the calling Thread to block until the Geode Cache Server/Data Member stops.
    */
   public void waitOnServer() {
     assert getCache() != null : "The Cache Server must first be started with a call to start!";
@@ -1137,7 +1137,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
   }
 
   /**
-   * Invokes the 'status' command and operation to check the status of a GemFire server (a cache
+   * Invokes the 'status' command and operation to check the status of a Geode server (a cache
    * server).
    */
   public ServerState status() {
@@ -1145,7 +1145,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     // if this instance is running then return local status
     if (isStartingOrRunning()) {
       debug(
-          "Getting status from the ServerLauncher instance that actually launched the GemFire Cache Server.%n");
+          "Getting status from the ServerLauncher instance that actually launched the Geode Cache Server.%n");
       return new ServerState(this, isRunning() ? Status.ONLINE : Status.STARTING);
     }
     if (isPidInProcess() && launcher != null) {
@@ -1160,7 +1160,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
       debug("Getting Server status using working directory (%1$s)%n", getWorkingDirectory());
       return statusWithWorkingDirectory();
     }
-    debug("This ServerLauncher was not the instance used to launch the GemFire Cache Server, and "
+    debug("This ServerLauncher was not the instance used to launch the Geode Cache Server, and "
         + "neither PID nor working directory were specified; the Server's state is unknown.%n");
 
     return new ServerState(this, Status.NOT_RESPONDING);
@@ -1169,7 +1169,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
   private ServerState statusInProcess() {
     if (isStartingOrRunning()) {
       debug(
-          "Getting status from the ServerLauncher instance that actually launched the GemFire Cache Server.%n");
+          "Getting status from the ServerLauncher instance that actually launched the Geode Cache Server.%n");
       return new ServerState(this, isRunning() ? Status.ONLINE : Status.STARTING);
     }
     return new ServerState(this, Status.NOT_RESPONDING);
@@ -1246,7 +1246,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
   }
 
   /**
-   * Invokes the 'stop' command and operation to stop a GemFire server (a cache server).
+   * Invokes the 'stop' command and operation to stop a Geode server (a cache server).
    */
   public ServerState stop() {
     final ServerLauncher launcher = getInstance();
@@ -1454,7 +1454,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
   /**
    * The Builder class, modeled after the Builder creational design pattern, is used to construct a
-   * properly configured and initialized instance of the ServerLauncher to control and run GemFire
+   * properly configured and initialized instance of the ServerLauncher to control and run Geode
    * servers (in particular, cache servers).
    */
   public static class Builder {
@@ -1750,12 +1750,12 @@ public class ServerLauncher extends AbstractLauncher<String> {
     }
 
     /**
-     * Iterates the list of arguments in search of the Server's GemFire member name. If the argument
+     * Iterates the list of arguments in search of the Server's Geode member name. If the argument
      * does not start with '-' or is not the name of a Server launcher command, then the value is
-     * presumed to be the member name for the Server in GemFire.
+     * presumed to be the member name for the Server in Geode.
      *
      * @param args the array of arguments from which to search for the Server's member name in
-     *        GemFire.
+     *        Geode.
      * @see ServerLauncher.Command#isCommand(String)
      * @see #parseArguments(String...)
      */
@@ -1771,9 +1771,9 @@ public class ServerLauncher extends AbstractLauncher<String> {
     }
 
     /**
-     * Gets the CacheConfig object used to configure PDX on the GemFire Cache by the Builder.
+     * Gets the CacheConfig object used to configure PDX on the Geode Cache by the Builder.
      *
-     * @return the CacheConfig object used to configure PDX on the GemFire Cache by the Builder.
+     * @return the CacheConfig object used to configure PDX on the Geode Cache by the Builder.
      */
     CacheConfig getCacheConfig() {
       return cacheConfig;
@@ -1898,7 +1898,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     }
 
     /**
-     * Sets a boolean value indicating whether to add a default cache when the GemFire Server comes
+     * Sets a boolean value indicating whether to add a default cache when the Geode Server comes
      * online.
      *
      * @param disableDefaultServer a boolean value indicating whether to add a default cache server.
@@ -1911,9 +1911,9 @@ public class ServerLauncher extends AbstractLauncher<String> {
     }
 
     /**
-     * Gets the GemFire Distributed System (cluster) Properties configuration.
+     * Gets the Geode Distributed System (cluster) Properties configuration.
      *
-     * @return a Properties object containing configuration settings for the GemFire Distributed
+     * @return a Properties object containing configuration settings for the Geode Distributed
      *         System (cluster).
      * @see Properties
      */
@@ -1983,10 +1983,10 @@ public class ServerLauncher extends AbstractLauncher<String> {
     }
 
     /**
-     * Determines whether a rebalance operation on the cache will occur upon starting the GemFire
+     * Determines whether a rebalance operation on the cache will occur upon starting the Geode
      * server.
      *
-     * @return a boolean indicating if the cache will be rebalance when the GemFire server starts.
+     * @return a boolean indicating if the cache will be rebalance when the Geode server starts.
      * @see #setRebalance(Boolean)
      */
     public Boolean getRebalance() {
@@ -1995,9 +1995,9 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
     /**
      * Set a boolean value indicating whether a rebalance operation on the cache should occur upon
-     * starting the GemFire server.
+     * starting the Geode server.
      *
-     * @param rebalance a boolean indicating if the cache will be rebalanced when the GemFire server
+     * @param rebalance a boolean indicating if the cache will be rebalanced when the Geode server
      *        starts.
      * @return this Builder instance.
      * @see #getRebalance()
@@ -2008,9 +2008,9 @@ public class ServerLauncher extends AbstractLauncher<String> {
     }
 
     /**
-     * Gets the member name of this Server in GemFire.
+     * Gets the member name of this Server in Geode.
      *
-     * @return a String indicating the member name of this Server in GemFire.
+     * @return a String indicating the member name of this Server in Geode.
      * @see #setMemberName(String)
      */
     public String getMemberName() {
@@ -2018,9 +2018,9 @@ public class ServerLauncher extends AbstractLauncher<String> {
     }
 
     /**
-     * Sets the member name of the Server in GemFire.
+     * Sets the member name of the Server in Geode.
      *
-     * @param memberName a String indicating the member name of this Server in GemFire.
+     * @param memberName a String indicating the member name of this Server in Geode.
      * @return this Builder instance.
      * @throws IllegalArgumentException if the member name is invalid.
      * @see #getMemberName()
@@ -2236,7 +2236,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
     /**
      * Gets the location of the Spring XML configuration meta-data file used to bootstrap, configure
-     * and initialize the GemFire Server on start.
+     * and initialize the Geode Server on start.
      * <p>
      *
      * @return a String indicating the location of the Spring XML configuration file.
@@ -2248,7 +2248,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
     /**
      * Sets the location of the Spring XML configuration meta-data file used to bootstrap, configure
-     * and initialize the GemFire Server on start.
+     * and initialize the Geode Server on start.
      * <p>
      *
      * @param springXmlLocation a String indicating the location of the Spring XML configuration
@@ -2442,11 +2442,11 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
 
     /**
-     * Sets a GemFire Distributed System Property.
+     * Sets a Geode Distributed System Property.
      *
-     * @param propertyName a String indicating the name of the GemFire Distributed System property
+     * @param propertyName a String indicating the name of the Geode Distributed System property
      *        as described in {@link ConfigurationProperties}
-     * @param propertyValue a String value for the GemFire Distributed System property.
+     * @param propertyValue a String value for the Geode Distributed System property.
      * @return this Builder instance.
      */
     public Builder set(final String propertyName, final String propertyValue) {
@@ -2480,9 +2480,9 @@ public class ServerLauncher extends AbstractLauncher<String> {
     }
 
     /**
-     * Sets the GemFire Disk Store to be used to persist PDX type meta-data.
+     * Sets the Geode Disk Store to be used to persist PDX type meta-data.
      *
-     * @param pdxDiskStore a String indicating the name of the GemFire Disk Store to use to store
+     * @param pdxDiskStore a String indicating the name of the Geode Disk Store to use to store
      *        PDX type meta-data
      * @return this Builder instance.
      */
@@ -2517,7 +2517,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     }
 
     /**
-     * Set the PdxSerializer to use to serialize POJOs to the GemFire Cache Region or when sent
+     * Set the PdxSerializer to use to serialize POJOs to the Geode Cache Region or when sent
      * between peers, client/server, or during persistence to disk.
      *
      * @param pdxSerializer the PdxSerializer that is used to serialize application domain objects
@@ -2532,7 +2532,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     /**
      * Validates the configuration settings and properties of this Builder, ensuring that all
      * invariants have been met. Currently, the only invariant constraining the Builder is that the
-     * user must specify the member name for the Server in the GemFire distributed system as a
+     * user must specify the member name for the Server in the Geode distributed system as a
      * command-line argument, or by setting the memberName property programmatically using the
      * corresponding setter method.
      *
@@ -2596,7 +2596,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
     /**
      * Validates the Builder configuration settings and then constructs an instance of the
-     * ServerLauncher class to invoke operations on a GemFire Server.
+     * ServerLauncher class to invoke operations on a Geode Server.
      *
      * @return a newly constructed instance of the ServerLauncher configured with this Builder.
      * @see #validate()
