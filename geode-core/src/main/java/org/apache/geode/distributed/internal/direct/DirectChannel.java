@@ -17,6 +17,7 @@ package org.apache.geode.distributed.internal.direct;
 import java.io.IOException;
 import java.io.NotSerializableException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -142,7 +143,12 @@ public class DirectChannel {
       props.setProperty("membership_port_range_start", "" + range[0]);
       props.setProperty("membership_port_range_end", "" + range[1]);
 
-      this.conduit = new TCPConduit(mgr, port, address, isBindAddress, this, bufferPool, props);
+      InetAddress conduitAddress = address;
+      if (dc.getBindAddress() == null || dc.getBindAddress().isEmpty()) {
+        conduitAddress = (new InetSocketAddress(0)).getAddress();
+      }
+      this.conduit =
+          new TCPConduit(mgr, port, conduitAddress, isBindAddress, this, bufferPool, props);
       disconnected = false;
       disconnectCompleted = false;
       logger.info("GemFire P2P Listener started on {}",

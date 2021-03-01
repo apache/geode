@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
@@ -953,8 +954,12 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
   public void started() throws MemberStartupException {
     setLocalAddress(services.getMessenger().getMemberID());
     try {
-      serverSocket = createServerSocket(localAddress.getInetAddress(),
-          services.getConfig().getMembershipPortRange());
+      InetAddress address = localAddress.getInetAddress();
+      if (services.getConfig().getBindAddress() == null
+          || services.getConfig().getBindAddress().isEmpty()) {
+        address = (new InetSocketAddress(0)).getAddress();
+      }
+      serverSocket = createServerSocket(address, services.getConfig().getMembershipPortRange());
     } catch (IOException e) {
       throw new MemberStartupException("Problem creating HealthMonitor socket", e);
     }
