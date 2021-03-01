@@ -39,23 +39,18 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxWriter;
-import org.apache.geode.test.dunit.DUnitBlackboard;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
+import org.apache.geode.test.dunit.rules.DistributedBlackboard;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 public class RegionConcurrentOperationDUnitTest implements Serializable {
 
-  private static DUnitBlackboard blackboard;
-
   Object key = "KEY";
   String value = "VALUE";
 
-  private static DUnitBlackboard getBlackboard() {
-    if (blackboard == null) {
-      blackboard = new DUnitBlackboard();
-    }
+  private DistributedBlackboard getBlackboard() {
     return blackboard;
   }
 
@@ -67,6 +62,9 @@ public class RegionConcurrentOperationDUnitTest implements Serializable {
 
   @Rule
   public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
+
+  @Rule
+  public DistributedBlackboard blackboard = new DistributedBlackboard();
 
   @After
   public void tearDown() {
