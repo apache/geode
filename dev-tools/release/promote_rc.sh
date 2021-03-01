@@ -417,7 +417,7 @@ else
     -i.bak settings.gradle
 fi
 rm settings.gradle.bak
-if [ $PATCH -eq 0 ] ; then
+if [ -z "$LATER" ] ; then
   #also update benchmark baseline for develop to this new minor
   sed -e "s/^  baseline_version:.*/  baseline_version: '${VERSION}'/" \
     -i.bak ci/pipelines/shared/jinja.variables.yml
