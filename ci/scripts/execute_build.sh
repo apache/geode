@@ -77,11 +77,11 @@ scp ${SSH_OPTIONS} ${SCRIPTDIR}/capture-call-stacks.sh geode@${INSTANCE_IP_ADDRE
 if [[ -n "${PARALLEL_DUNIT}" && "${PARALLEL_DUNIT}" == "true" ]]; then
   PARALLEL_DUNIT="-PparallelDunit -PdunitDockerUser=geode"
   if [ -n "${DUNIT_PARALLEL_FORKS}" ]; then
-    DUNIT_PARALLEL_FORKS="-PdunitParallelForks=${DUNIT_PARALLEL_FORKS}"
+    MAX_WORKERS="--max-workers=${DUNIT_PARALLEL_FORKS}"
   fi
 else
   PARALLEL_DUNIT=""
-  DUNIT_PARALLEL_FORKS=""
+  MAX_WORKERS=""
 fi
 
 # SET_JAVA_HOME="export JAVA_HOME=/usr/lib/jvm/java-${JAVA_BUILD_VERSION}-openjdk-amd64"

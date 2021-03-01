@@ -32,8 +32,6 @@
  *  dunitDockerImage   - The docker image used for running parallel dunits. The
  *                       default image is 'bellsoft/liberica-openjdk-debian:8'. The image is required to
  *                       have 'JAVA_HOME' set as an environment variable.
- *  dunitParallelForks - The number of parallel containers that will be
- *                       launched. The default is 8.
  *  dunitDockerUser    - The user used within the docker container to run tests.
  *                       The default is 'root'.
  *  dunitDockerVolumes - Docker volumes to mount in the docker container in addition to the
@@ -45,7 +43,9 @@ apply plugin: 'geode-dockerized-test'
 
 // TODO: Move all of this into the plugin?
 project.ext.dockerConfig = {
-    maxParallelForks = dunitParallelForks.toInteger()
+    // TODO: Set max forks only if not defined?
+    // TODO: Set max forks very high (say 10000) by default, and let Gradle cap it at --max-workers?
+    maxParallelForks = project.gradle.startParameter.maxWorkerCount
     // If containerJVM is not set, try to use testJVM instead
     if (!project.hasProperty('containerJVM') && project.hasProperty('testJVM')) {
         project.ext.containerJVM = project.testJVM
