@@ -956,7 +956,7 @@ javadoc/package-list
 javadoc/script.js
 javadoc/serialized-form.html
 javadoc/stylesheet.css
-lib/HdrHistogram-2.1.11.jar
+lib/HdrHistogram-2.1.12.jar
 lib/HikariCP-3.4.1.jar
 lib/LatencyUtils-2.0.3.jar
 lib/antlr-2.7.7.jar
@@ -1036,7 +1036,7 @@ lib/lucene-analyzers-phonetic-6.6.6.jar
 lib/lucene-core-6.6.6.jar
 lib/lucene-queries-6.6.6.jar
 lib/lucene-queryparser-6.6.6.jar
-lib/micrometer-core-1.2.1.jar
+lib/micrometer-core-1.6.3.jar
 lib/mx4j-3.0.2.jar
 lib/mx4j-remote-3.0.2.jar
 lib/mx4j-tools-3.0.1.jar
