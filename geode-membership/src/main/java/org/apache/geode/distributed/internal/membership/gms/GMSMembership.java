@@ -1488,7 +1488,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
    * <p>
    * Like isShunned, this method holds the view lock while executing
    *
-   * Concurrency: protected by {@link #latestViewReadLock} ReentrantReadLock
+   * Concurrency: protected by {@link #latestViewReadLock}
    *
    * @param m the member in question
    * @return true if the given member is a surprise member
