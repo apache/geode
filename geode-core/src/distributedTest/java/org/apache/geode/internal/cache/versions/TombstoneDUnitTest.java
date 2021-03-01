@@ -171,7 +171,7 @@ public class TombstoneDUnitTest implements Serializable {
 
   @Test
   public void testWhenAnOutOfRangeTimeStampIsSeenWeExpireItInNonReplicateTombstoneSweeper() {
-    VM server1 = VM.getVM(-1);
+    VM server1 = VM.getVM(0);
     VM server2 = VM.getVM(1);
     final int FAR_INTO_THE_FUTURE = 1000000; // 1 million millis into the future
     final int count = 2000;
