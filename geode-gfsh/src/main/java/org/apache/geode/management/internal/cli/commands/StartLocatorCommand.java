@@ -15,6 +15,8 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.management.internal.cli.commands.StartMemberUtils.resolveWorkingDirectory;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.Inet4Address;
@@ -139,12 +141,12 @@ public class StartLocatorCommand extends OfflineGfshCommand {
       }
     }
 
-    workingDirectory = StartMemberUtils.resolveWorkingDir(
-        workingDirectory == null ? null : new File(workingDirectory), new File(memberName));
+    String resolvedWorkingDirectory = resolveWorkingDirectory(workingDirectory, memberName);
 
     return doStartLocator(memberName, bindAddress, classpath, force, group, hostnameForClients,
         jmxManagerHostnameForClients, includeSystemClasspath, locators, logLevel, mcastBindAddress,
-        mcastPort, port, workingDirectory, gemfirePropertiesFile, gemfireSecurityPropertiesFile,
+        mcastPort, port, resolvedWorkingDirectory, gemfirePropertiesFile,
+        gemfireSecurityPropertiesFile,
         initialHeap, maxHeap, jvmArgsOpts, connect, enableSharedConfiguration,
         loadSharedConfigurationFromDirectory, clusterConfigDir, httpServicePort,
         httpServiceBindAddress, redirectOutput, membershipBindAddress);
