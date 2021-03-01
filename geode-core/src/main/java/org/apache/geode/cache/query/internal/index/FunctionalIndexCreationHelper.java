@@ -462,9 +462,11 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
           expr.generateCanonicalizedExpression(sb, this.context);
           sb.append('[').append('*').append(']');
 
-        } else if (indexingKeys.size() == 1) {
-          expr.generateCanonicalizedExpression(sb, this.context);
-
+          // toberal comment out to map indexes with one key like those with several or *
+          // Will create a CompactMapRangeIndex instead of a CompactRangeIndex which behaves
+          // different with != and nulls
+          // } else if (indexingKeys.size() == 1) {
+          // expr.generateCanonicalizedExpression(sb, this.context);
         } else {
           this.isMapTypeIndex = true;
           this.multiIndexKeysPattern = new String[indexingKeys.size()];

@@ -1555,9 +1555,6 @@ public class CompactRangeIndex extends AbstractIndex {
         throws FunctionDomainException, TypeMismatchException, NameResolutionException,
         QueryInvocationTargetException, IMQException {
       Object indexKey = indexedExpr.evaluate(context);
-      if (IndexManager.NULL.equals(indexKey)) {
-        return;
-      }
       if (indexKey == null) {
         indexKey = IndexManager.NULL;
       }

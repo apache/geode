@@ -622,6 +622,9 @@ public class CompiledComparison extends AbstractCompiledValue
         return indexInfo;
       }
     }
+    if (this._operator == TOK_NE) {
+      return null;
+    }
 
     if (!IndexUtils.indexesEnabled)
       return null;

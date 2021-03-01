@@ -28,7 +28,6 @@ import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.TypeMismatchException;
-import org.apache.geode.cache.query.internal.index.IndexManager;
 
 /**
  * Class Description
@@ -80,6 +79,7 @@ public class CompiledIndexOperation extends AbstractCompiledValue implements Map
     Object rcvr = this.receiver.evaluate(context);
     Object index = this.indexExpr.evaluate(context);
 
+    // toberal UNDEFINED when map is null
     if (rcvr == null || rcvr == QueryService.UNDEFINED) {
       return QueryService.UNDEFINED;
     }
@@ -105,13 +105,10 @@ public class CompiledIndexOperation extends AbstractCompiledValue implements Map
     }
 
     if (rcvr instanceof Map) {
-      if (context instanceof QueryExecutionContext) {
-        return ((Map) rcvr).get(index);
-      }
       if (((Map<?, ?>) rcvr).containsKey(index)) {
         return ((Map) rcvr).get(index);
       }
-      return IndexManager.NULL;
+      return QueryService.UNDEFINED;
     }
     if ((rcvr instanceof List) || rcvr.getClass().isArray() || (rcvr instanceof String)) {
       if (!(index instanceof Integer)) {
