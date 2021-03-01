@@ -32,6 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
@@ -87,7 +88,6 @@ public class FunctionToFileTracker {
                     filePath);
                 try {
                   Collection<Function<?>> functions = loadFunctionFromClassName(className);
-                  unregisterFunctionsForDeployment(deploymentName);
                   registeredFunctions.addAll(registerFunction(filePath, functions));
                 } catch (ClassNotFoundException | NoClassDefFoundError cnfex) {
                   logger.error("Unable to load all classes from JAR file: {}",
@@ -112,9 +112,26 @@ public class FunctionToFileTracker {
       logger.error("Unable to scan jar file for functions");
       return;
     }
+    List<Function<?>> previouslyRegisteredFunctions =
+        deploymentToFunctionsMap.remove(deploymentName);
     if (!registeredFunctions.isEmpty()) {
       deploymentToFunctionsMap.put(deploymentName, registeredFunctions);
     }
+    unregisterUndeployedFunctions(previouslyRegisteredFunctions, registeredFunctions);
+  }
+
+  private void unregisterUndeployedFunctions(List<Function<?>> previouslyRegisteredFunctions,
+      List<Function<?>> registeredFunctions) {
+
+    if (previouslyRegisteredFunctions == null) {
+      return;
+    }
+
+    List<String> currentlyRegisteredFunctionIDs =
+        registeredFunctions.stream().map(Function::getId).collect(Collectors.toList());
+    previouslyRegisteredFunctions.stream().map(Function::getId)
+        .filter(functionId -> !currentlyRegisteredFunctionIDs.contains(functionId))
+        .forEach(FunctionService::unregisterFunction);
   }
 
   private Collection<Function<?>> loadFunctionFromClassName(String className)
