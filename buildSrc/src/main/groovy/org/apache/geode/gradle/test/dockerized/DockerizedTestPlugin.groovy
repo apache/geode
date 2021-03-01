@@ -70,7 +70,7 @@ class DockerizedTestPlugin implements Plugin<Project> {
 
     @Override
     void apply(Project project) {
-        if (!project.hasProperty('dunitDockerImage')) {
+        if (!project.hasProperty('parallelDunit')) {
             return
         }
         config = project.extensions.create("dockerizedTest", DockerizedTestConfig)
