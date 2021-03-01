@@ -48,9 +48,6 @@ import static org.apache.geode.test.dunit.VM.getHostName;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -337,42 +334,40 @@ public class CacheServerSSLConnMaxThreadsDUnitTest extends JUnit4DistributedTest
     ClientRegionFactory<String, String> regionFactory =
         clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY);
     Region<String, String> region = regionFactory.create("serverRegion");
-    assertNotNull(region);
+    assertThat(region).isNotNull();
   }
 
   private void doClientRegionTest() {
     Region<String, String> region = clientCache.getRegion("serverRegion");
-    assertEquals("servervalue", region.get("serverkey"));
+    assertThat(region.get("serverkey")).isEqualTo("servervalue");
     String keyBase = "clientkey";
     String valueBase = "clientvalue";
     region.put(keyBase, valueBase);
-    assertEquals("clientvalue", region.get("clientkey"));
+    assertThat(region.get("clientkey")).isEqualTo("clientvalue");
   }
 
   private void doClientRegionTestMulti() {
     Region<String, String> region = clientCache.getRegion("serverRegion");
-    assertEquals("servervalue", region.get("serverkey"));
+    assertThat(region.get("serverkey")).isEqualTo("servervalue");
     String keyBase = "clientkey";
     String valueBase = "clientvalue";
     for (int i = 0; i < 1000; i++) {
       region.put(keyBase + i, valueBase + i);
     }
-    assertEquals("clientvalue988", region.get("clientkey988"));
+    assertThat(region.get("clientkey988")).isEqualTo("clientvalue988");
   }
 
   private void doServerRegionTest() {
     Region<String, String> region = cache.getRegion("serverRegion");
-    assertEquals("servervalue", region.get("serverkey"));
-    assertEquals("clientvalue", region.get("clientkey"));
-
+    assertThat(region.get("serverkey")).isEqualTo("servervalue");
+    assertThat(region.get("clientkey")).isEqualTo("clientvalue");
   }
 
   private void doServerRegionTestMulti() {
     Region<String, String> region = cache.getRegion("serverRegion");
-    assertEquals("servervalue", region.get("serverkey"));
-    assertEquals("clientvalue888", region.get("clientkey888"));
-    assertEquals(1001, region.size());
-
+    assertThat(region.get("serverkey")).isEqualTo("servervalue");
+    assertThat(region.get("clientkey888")).isEqualTo("clientvalue888");
+    assertThat(region).hasSize(1001);
   }
 
   private static void setUpServerVMTask(boolean cacheServerSslenabled, int optionalLocatorPort)
@@ -412,7 +407,7 @@ public class CacheServerSSLConnMaxThreadsDUnitTest extends JUnit4DistributedTest
 
   private void doVerifyServerDoesNotReceiveClientUpdate() {
     Region<String, String> region = cache.getRegion("serverRegion");
-    assertFalse(region.containsKey("clientkey"));
+    assertThat(region.containsKey("clientkey")).isFalse();
   }
 
   private static void doServerRegionTestTask() {
