@@ -514,32 +514,37 @@ public class TXState implements TXStateInterface {
          *
          * If this is done out of order, we will have problems with GII, split brain, and HA.
          */
-
-        attachFilterProfileInformation(entries);
-
         lockTXRegions(regions);
 
         try {
-          // apply changes to the cache
-          applyChanges(entries);
-          // For internal testing
-          if (this.internalAfterApplyChanges != null) {
-            this.internalAfterApplyChanges.run();
-          }
+          // Take filter registration lock
+          lockFilterRegistrationOnTxRegions();
+          try {
+            // apply changes to the cache
+            applyChanges(entries);
+            // For internal testing
+            if (this.internalAfterApplyChanges != null) {
+              this.internalAfterApplyChanges.run();
+            }
 
-          // build and send the message
-          msg = buildMessage();
-          this.commitMessage = msg;
-          if (this.internalBeforeSend != null) {
-            this.internalBeforeSend.run();
-          }
+            attachFilterProfileInformation(entries);
 
-          msg.send(this.locks.getDistributedLockId());
-          // For internal testing
-          if (this.internalAfterSend != null) {
-            this.internalAfterSend.run();
-          }
+            // build and send the message
+            msg = buildMessage();
+            this.commitMessage = msg;
+            if (this.internalBeforeSend != null) {
+              this.internalBeforeSend.run();
+            }
 
+            msg.send(this.locks.getDistributedLockId());
+            // For internal testing
+            if (this.internalAfterSend != null) {
+              this.internalAfterSend.run();
+            }
+          } finally {
+            // Release filter registration lock
+            unlockFilterRegistrationOnTxRegions();
+          }
           firePendingCallbacks();
           /*
            * This is to prepare the commit message for the caller, make sure all events are in
@@ -579,6 +584,18 @@ public class TXState implements TXStateInterface {
       Map.Entry<InternalRegion, TXRegionState> me = it.next();
       InternalRegion r = me.getKey();
       r.getRegionMap().unlockRegionForAtomicTX(r);
+    }
+  }
+
+  private void lockFilterRegistrationOnTxRegions() {
+    for (InternalRegion region : getRegions()) {
+      region.getFilterProfile().lockFilterRegistrationDuringTx();
+    }
+  }
+
+  private void unlockFilterRegistrationOnTxRegions() {
+    for (InternalRegion region : getRegions()) {
+      region.getFilterProfile().unlockFilterRegistrationDuringTx();
     }
   }
 

@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.Logger;
@@ -92,6 +93,8 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  */
 public class FilterProfile implements DataSerializableFixedID {
   private static final Logger logger = LogService.getLogger();
+
+  private ReentrantReadWriteLock filterRegistrationAndTxCommitLock = new ReentrantReadWriteLock();
 
   /** enumeration of distributed profile operations */
   enum operationType {
@@ -265,44 +268,49 @@ public class FilterProfile implements DataSerializableFixedID {
     Set keysRegistered = new HashSet();
     operationType opType = null;
 
-    Long clientID = getClientIDForMaps(inputClientID);
-    synchronized (this.interestListLock) {
-      switch (typeOfInterest) {
-        case InterestType.KEY:
-          opType = operationType.REGISTER_KEY;
-          Map<Object, Set> koi =
-              updatesAsInvalidates ? getKeysOfInterestInv() : getKeysOfInterest();
-          registerKeyInMap(interest, keysRegistered, clientID, koi);
-          break;
-        case InterestType.REGULAR_EXPRESSION:
-          opType = operationType.REGISTER_PATTERN;
-          if (((String) interest).equals(".*")) {
-            Set akc = updatesAsInvalidates ? getAllKeyClientsInv() : getAllKeyClients();
-            if (akc.add(clientID)) {
-              keysRegistered.add(interest);
+    lockTxCommitDuringFilterRegistration();
+    try {
+      Long clientID = getClientIDForMaps(inputClientID);
+      synchronized (this.interestListLock) {
+        switch (typeOfInterest) {
+          case InterestType.KEY:
+            opType = operationType.REGISTER_KEY;
+            Map<Object, Set> koi =
+                updatesAsInvalidates ? getKeysOfInterestInv() : getKeysOfInterest();
+            registerKeyInMap(interest, keysRegistered, clientID, koi);
+            break;
+          case InterestType.REGULAR_EXPRESSION:
+            opType = operationType.REGISTER_PATTERN;
+            if (((String) interest).equals(".*")) {
+              Set akc = updatesAsInvalidates ? getAllKeyClientsInv() : getAllKeyClients();
+              if (akc.add(clientID)) {
+                keysRegistered.add(interest);
+              }
+            } else {
+              Map<Object, Map<Object, Pattern>> pats =
+                  updatesAsInvalidates ? getPatternsOfInterestInv() : getPatternsOfInterest();
+              registerPatternInMap(interest, keysRegistered, clientID, pats);
             }
-          } else {
-            Map<Object, Map<Object, Pattern>> pats =
-                updatesAsInvalidates ? getPatternsOfInterestInv() : getPatternsOfInterest();
-            registerPatternInMap(interest, keysRegistered, clientID, pats);
+            break;
+          case InterestType.FILTER_CLASS: {
+            opType = operationType.REGISTER_FILTER;
+            Map<Object, Map> filts =
+                updatesAsInvalidates ? getFiltersOfInterestInv() : getFiltersOfInterest();
+            registerFilterClassInMap(interest, clientID, filts);
+            break;
           }
-          break;
-        case InterestType.FILTER_CLASS: {
-          opType = operationType.REGISTER_FILTER;
-          Map<Object, Map> filts =
-              updatesAsInvalidates ? getFiltersOfInterestInv() : getFiltersOfInterest();
-          registerFilterClassInMap(interest, clientID, filts);
-          break;
-        }
 
-        default:
-          throw new InternalGemFireError(
-              "Unknown interest type");
-      } // switch
-      if (this.isLocalProfile && opType != null) {
-        sendProfileOperation(clientID, opType, interest, updatesAsInvalidates);
-      }
-    } // synchronized
+          default:
+            throw new InternalGemFireError(
+                "Unknown interest type");
+        } // switch
+        if (this.isLocalProfile && opType != null) {
+          sendProfileOperation(clientID, opType, interest, updatesAsInvalidates);
+        }
+      } // synchronized
+    } finally {
+      unlockTxCommitDuringFilterRegistration();
+    }
     return keysRegistered;
   }
 
@@ -522,22 +530,27 @@ public class FilterProfile implements DataSerializableFixedID {
       boolean updatesAsInvalidates) {
     Long clientID = getClientIDForMaps(inputClientID);
     Set keysRegistered = new HashSet(keys);
-    synchronized (interestListLock) {
-      Map<Object, Set> koi = updatesAsInvalidates ? getKeysOfInterestInv() : getKeysOfInterest();
-      CopyOnWriteHashSet interestList = (CopyOnWriteHashSet) koi.get(clientID);
-      if (interestList == null) {
-        interestList = new CopyOnWriteHashSet();
-        koi.put(clientID, interestList);
-      } else {
-        // Get the list of keys that will be registered new, not already registered.
-        keysRegistered.removeAll(interestList.getSnapshot());
-      }
-      interestList.addAll(keys);
+    lockTxCommitDuringFilterRegistration();
+    try {
+      synchronized (interestListLock) {
+        Map<Object, Set> koi = updatesAsInvalidates ? getKeysOfInterestInv() : getKeysOfInterest();
+        CopyOnWriteHashSet interestList = (CopyOnWriteHashSet) koi.get(clientID);
+        if (interestList == null) {
+          interestList = new CopyOnWriteHashSet();
+          koi.put(clientID, interestList);
+        } else {
+          // Get the list of keys that will be registered new, not already registered.
+          keysRegistered.removeAll(interestList.getSnapshot());
+        }
+        interestList.addAll(keys);
 
-      if (this.region != null && this.isLocalProfile) {
-        sendProfileOperation(clientID, operationType.REGISTER_KEYS, keys, updatesAsInvalidates);
-      }
-    } // synchronized
+        if (this.region != null && this.isLocalProfile) {
+          sendProfileOperation(clientID, operationType.REGISTER_KEYS, keys, updatesAsInvalidates);
+        }
+      } // synchronized
+    } finally {
+      unlockTxCommitDuringFilterRegistration();
+    }
     return keysRegistered;
   }
 
@@ -800,11 +813,16 @@ public class FilterProfile implements DataSerializableFixedID {
     if (logger.isDebugEnabled()) {
       logger.debug("Adding CQ {} to this members FilterProfile.", cq.getServerCqName());
     }
-    this.cqs.put(cq.getServerCqName(), cq);
-    this.incCqCount();
+    lockTxCommitDuringFilterRegistration();
+    try {
+      this.cqs.put(cq.getServerCqName(), cq);
+      this.incCqCount();
 
-    // cq.setFilterID(cqMap.getWireID(cq.getServerCqName()));
-    this.sendCQProfileOperation(operationType.REGISTER_CQ, cq);
+      // cq.setFilterID(cqMap.getWireID(cq.getServerCqName()));
+      this.sendCQProfileOperation(operationType.REGISTER_CQ, cq);
+    } finally {
+      unlockTxCommitDuringFilterRegistration();
+    }
   }
 
   public void stopCq(ServerCQ cq) {
@@ -2278,5 +2296,21 @@ public class FilterProfile implements DataSerializableFixedID {
   public KnownVersion[] getSerializationVersions() {
     // TODO Auto-generated method stub
     return null;
+  }
+
+  public void lockTxCommitDuringFilterRegistration() {
+    filterRegistrationAndTxCommitLock.writeLock().lock();
+  }
+
+  public void unlockTxCommitDuringFilterRegistration() {
+    filterRegistrationAndTxCommitLock.writeLock().unlock();
+  }
+
+  public void lockFilterRegistrationDuringTx() {
+    filterRegistrationAndTxCommitLock.readLock().lock();
+  }
+
+  public void unlockFilterRegistrationDuringTx() {
+    filterRegistrationAndTxCommitLock.readLock().unlock();
   }
 }
