@@ -61,20 +61,17 @@ public class ClusterExecutor extends AbstractExecutor {
     StringBuilder strArgs = new StringBuilder();
     args.forEach(x -> strArgs.append(new String(x)).append(" "));
 
-    logger.info("CLUSTER args: {}", strArgs);
-
-    RedisResponse response;
     switch (subCommand.toLowerCase()) {
-      case "slots": {
-        response = getSlots(context);
-        break;
-      }
+      case "info":
+        return getInfo(context);
+      case "nodes":
+        return getNodes(context);
+      case "slots":
+        return getSlots(context);
       default: {
-        response = RedisResponse.error(ERROR_UNKNOWN_COMMAND);
+        return RedisResponse.error(ERROR_UNKNOWN_COMMAND);
       }
     }
-
-    return response;
   }
 
   @SuppressWarnings("unchecked")
@@ -141,5 +138,25 @@ public class ClusterExecutor extends AbstractExecutor {
     }
 
     return RedisResponse.array(slots);
+  }
+
+  private RedisResponse getNodes(ExecutionHandlerContext ctx) {
+    return RedisResponse.error("not yet!");
+  }
+
+  private RedisResponse getInfo(ExecutionHandlerContext ctx) {
+    return RedisResponse.bulkString(
+        "cluster_state:ok\r\n"
+            + "cluster_slots_assigned:16384\r\n"
+            + "cluster_slots_ok:16384\r\n"
+            + "cluster_slots_pfail:0\r\n"
+            + "cluster_slots_fail:0\r\n"
+            + "cluster_known_nodes:6\r\n"
+            + "cluster_size:3\r\n"
+            + "cluster_current_epoch:6\r\n"
+            + "cluster_my_epoch:2\r\n"
+            + "cluster_stats_messages_sent:1483972\r\n"
+            + "cluster_stats_messages_received:1483968\r\n"
+    );
   }
 }

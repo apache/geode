@@ -33,6 +33,7 @@ import org.apache.geode.redis.internal.ParameterRequirements.UnspecifiedParamete
 import org.apache.geode.redis.internal.executor.Executor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.executor.UnknownExecutor;
+import org.apache.geode.redis.internal.executor.client.ClientExecutor;
 import org.apache.geode.redis.internal.executor.cluster.ClusterExecutor;
 import org.apache.geode.redis.internal.executor.connection.AuthExecutor;
 import org.apache.geode.redis.internal.executor.connection.EchoExecutor;
@@ -287,6 +288,9 @@ public enum RedisCommandType {
   /*********** Sorted Sets **********/
   ZADD(new ZaddExecutor(), SUPPORTED, new MinimumParameterRequirements(1)),
 
+  /************ CLIENT *************/
+  CLIENT(new ClientExecutor(), UNSUPPORTED, new MinimumParameterRequirements(1)),
+
   /////////// UNIMPLEMENTED /////////////////////
 
   ACL(null, UNIMPLEMENTED),
@@ -298,7 +302,6 @@ public enum RedisCommandType {
   BRPOPLPUSH(null, UNIMPLEMENTED),
   BZPOPMIN(null, UNIMPLEMENTED),
   BZPOPMAX(null, UNIMPLEMENTED),
-  CLIENT(null, UNIMPLEMENTED),
   CONFIG(null, UNIMPLEMENTED),
   DEBUG(null, UNIMPLEMENTED),
   DISCARD(null, UNIMPLEMENTED),
