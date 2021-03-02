@@ -72,31 +72,26 @@ class ServerSideHandshakeFactory {
         throw new EOFException(
             "HandShakeReader: EOF reached before client version could be read");
       }
+      // don't do this check until after we've read the ordinal off the wire
+      if (isWan) {
+        return currentServerVersion;
+      }
       final KnownVersion clientVersion = Versioning.getKnownVersionOrDefault(
-          Versioning.getVersion(clientVersionOrdinal), null);
-      final String message;
-      if (clientVersion == null) {
-        message = KnownVersion.unsupportedVersionMessage(clientVersionOrdinal);
-      } else {
+          Versioning.getVersion(clientVersionOrdinal), KnownVersion.TEST_VERSION);
+      if (clientVersion != KnownVersion.TEST_VERSION) {
         final Map<Integer, Command> commands =
             CommandInitializer.getDefaultInstance().get(clientVersion);
-        if (commands == null) {
-          message = "No commands registered for version " + clientVersion + ".";
-        } else {
+        if (commands != null) {
           return clientVersion;
         }
       }
-      // Allows higher version of wan site to connect to server
-      if (isWan) {
-        return currentServerVersion;
-      } else {
-        SocketAddress sa = socket.getRemoteSocketAddress();
-        String sInfo = "";
-        if (sa != null) {
-          sInfo = " Client: " + sa.toString() + ".";
-        }
-        throw new UnsupportedVersionException(message + sInfo);
+      SocketAddress sa = socket.getRemoteSocketAddress();
+      String sInfo = "";
+      if (sa != null) {
+        sInfo = " Client: " + sa.toString() + ".";
       }
+      throw new UnsupportedVersionException(
+          KnownVersion.unsupportedVersionMessage(clientVersionOrdinal) + sInfo);
     } finally {
       if (soTimeout != -1) {
         try {
