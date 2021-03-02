@@ -284,6 +284,9 @@ public enum RedisCommandType {
   CLUSTER(new ClusterExecutor(), UNSUPPORTED, new MinimumParameterRequirements(1)),
   READONLY(new ReadonlyExecutor(), UNSUPPORTED, new MinimumParameterRequirements(1)),
 
+  /*********** Sorted Sets **********/
+  ZADD(new ZaddExecutor(), SUPPORTED, new MinimumParameterRequirements(1)),
+
   /////////// UNIMPLEMENTED /////////////////////
 
   ACL(null, UNIMPLEMENTED),
@@ -368,7 +371,6 @@ public enum RedisCommandType {
   XACK(null, UNIMPLEMENTED),
   XCLAIM(null, UNIMPLEMENTED),
   XPENDING(null, UNIMPLEMENTED),
-  ZADD(null, UNIMPLEMENTED),
   ZCARD(null, UNIMPLEMENTED),
   ZCOUNT(null, UNIMPLEMENTED),
   ZINCRBY(null, UNIMPLEMENTED),
