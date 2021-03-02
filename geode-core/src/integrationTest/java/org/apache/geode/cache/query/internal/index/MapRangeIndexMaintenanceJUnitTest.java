@@ -423,9 +423,9 @@ public class MapRangeIndexMaintenanceJUnitTest {
     // Commented out because it provokes a stack overflow. Why?
     // long valuesForSunKey = ((CompactMapRangeIndex)
     // keyIndex1).internalIndexStats.getNumberOfValues("SUN");
-    assertEquals(4, keys);
-    assertEquals(3, mapIndexKeys);
-    assertEquals(4, values);
+    assertEquals(5, keys);
+    assertEquals(4, mapIndexKeys);
+    assertEquals(5, values);
   }
 
   public void testQueriesForValueInMapField(Region region, QueryService qs) throws Exception {
@@ -460,9 +460,10 @@ public class MapRangeIndexMaintenanceJUnitTest {
     p5.positions.put(null, "empty");
     region.put(5, p5);
 
-    // One more with empty map
+    // One more with map without the "SUN" key
     Portfolio p6 = new Portfolio(6, 6);
     p6.positions = new HashMap();
+    p6.positions.put("ERIC", "hey");
     region.put(6, p6);
 
     // One more with null map
@@ -476,11 +477,7 @@ public class MapRangeIndexMaintenanceJUnitTest {
         .newQuery(query)
         .execute();
     System.out.println("Query: " + query + ", result: " + result);
-    // Fails with indexes.
-    // With my fix and one key returns 1
-    // With star returns 1
-    // With several keys returns 0
-    // assertEquals(3, result.size());
+    // Used to fail with indexes.
     assertEquals(1, result.size());
 
     query = "select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] != null";
@@ -488,12 +485,10 @@ public class MapRangeIndexMaintenanceJUnitTest {
         .newQuery(query)
         .execute();
     System.out.println("Query: " + query + ", result: " + result);
-    // Fails with indexes
-    // With star returns 2
-    // With several keys returns 2
-    // Flaky with severaly keys and my second fix. Sometimes it returns 2
+    // This check is flaky in develop for test case
+    // testQueriesForValueInMapFieldWithIndexWithOneKey():
+    // - It should return 4 but sometimes it returns 3.
     assertEquals(6, result.size());
-    // assertEquals(2, result.size());
 
     query = "select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 'nothing'";
     result = (SelectResults) qs
@@ -507,12 +502,8 @@ public class MapRangeIndexMaintenanceJUnitTest {
         .newQuery(query)
         .execute();
     System.out.println("Query: " + query + ", result: " + result);
-    // Fails with indexes
-    // With my fix and one key returns 3
-    // With star returns 2
-    // With several keys returns 1
+    // Used to fail with indexes.
     assertEquals(6, result.size());
-    // assertEquals(2, result.size());
 
     query = "select * from " + SEPARATOR + "portfolio p";
     result = (SelectResults) qs

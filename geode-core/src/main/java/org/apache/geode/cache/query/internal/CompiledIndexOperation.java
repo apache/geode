@@ -79,7 +79,6 @@ public class CompiledIndexOperation extends AbstractCompiledValue implements Map
     Object rcvr = this.receiver.evaluate(context);
     Object index = this.indexExpr.evaluate(context);
 
-    // toberal UNDEFINED when map is null
     if (rcvr == null || rcvr == QueryService.UNDEFINED) {
       return QueryService.UNDEFINED;
     }

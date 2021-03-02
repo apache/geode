@@ -145,7 +145,7 @@ public class IndexOperatorJUnitTest {
     map.put("0", new Integer(11));
     map.put("1", new Integer(12));
     Object result = runQuery(map, null);
-    if (result != null)
+    if (result != QueryService.UNDEFINED)
       fail();
   }
 
@@ -171,7 +171,7 @@ public class IndexOperatorJUnitTest {
     map.put("0", new Integer(11));
     map.put("1", new Integer(12));
     Object result = runQuery(map, QueryService.UNDEFINED);
-    if (result != null)
+    if (result != QueryService.UNDEFINED)
       fail();
   }
 
