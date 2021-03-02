@@ -595,7 +595,6 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
         this.serverLocation = new ServerLocation();
         InternalDataSerializer.invokeFromData(this.serverLocation, in);
       }
-      this.enforceThreadsConnectSameReceiver = in.readBoolean();
     }
 
     @Override
@@ -641,7 +640,6 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
       if (serverLocationFound) {
         InternalDataSerializer.invokeToData(serverLocation, out);
       }
-      out.writeBoolean(enforceThreadsConnectSameReceiver);
     }
 
     public void fromDataPre_GFE_8_0_0_0(DataInput in, DeserializationContext context)
