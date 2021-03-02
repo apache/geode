@@ -443,6 +443,7 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
       cmdLine.addAll(arguments);
       createCmd.withCmd(cmdLine);
 
+      System.err.println("UDO --->  DockerizedExecHandle.runContainer: "+cmdLine.toString());
       invokeIfNotNull(testExtension.getBeforeContainerCreate(), createCmd, client);
       String containerId = createCmd.exec().getId();
       invokeIfNotNull(testExtension.getAfterContainerCreate(), containerId, client);
