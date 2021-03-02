@@ -215,24 +215,26 @@ public class PauseGatewaySenderCommandDUnitTest implements Serializable {
 
   /**
    * Test to validate that gateway-sender state is persisted withing cluster configuration
-   * after "pause gateway-sender" command is executed.
+   * after "pause gateway-sender" command is executed. Additionally, check that resume,
+   * stop and start gateway-sender commands work afterwards as expected.
    * This behavior is tested in a following way:
    *
    * 1. Create gateway-sender on all servers with manual-start set to false (gws will be started
    * automatically).
    * 2. Pause gateway-sender using "pause gateway-sender" command.
    * 3. Stop and then start again all servers and verify that gateway-sender remain paused.
+   * 4. Resume gateway-sender and verify it's state
+   * 5. Stop gateway-sender and verify it's state
+   * 6. Start gateway-sender and verify it's state
    */
   @Test
   public void testPauseGatewaySenderWithClusterConfiguration() {
     Integer locator1Port = locatorSite1.getPort();
-
     // setup servers in Site #1
     server1 = clusterStartupRule.startServerVM(3, locator1Port);
     server2 = clusterStartupRule.startServerVM(4, locator1Port);
     server3 = clusterStartupRule.startServerVM(5, locator1Port);
 
-    server1 = clusterStartupRule.startServerVM(3, locator1Port);
     String command = new CommandStringBuilder(CliStrings.CREATE_GATEWAYSENDER)
         .addOption(CliStrings.CREATE_GATEWAYSENDER__ID, "ln")
         .addOption(CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID, "2")
@@ -284,11 +286,77 @@ public class PauseGatewaySenderCommandDUnitTest implements Serializable {
 
     server1.invoke(() -> verifySenderState("ln", true, true));
     server2.invoke(() -> verifySenderState("ln", true, true));
+    server3.invoke(() -> verifySenderState("ln", true, true));
 
     locatorSite1.invoke(
         () -> validateGatewaySenderMXBeanProxy(getMember(server1.getVM()), "ln", true, true));
     locatorSite1.invoke(
         () -> validateGatewaySenderMXBeanProxy(getMember(server2.getVM()), "ln", true, true));
+    locatorSite1.invoke(
+        () -> validateGatewaySenderMXBeanProxy(getMember(server3.getVM()), "ln", true, true));
+
+    // Stop gateway-sender on all members
+    command = new CommandStringBuilder(CliStrings.RESUME_GATEWAYSENDER)
+        .addOption(CliStrings.RESUME_GATEWAYSENDER__ID, "ln")
+        .getCommandString();
+
+    gfsh.executeAndAssertThat(command).statusIsSuccess()
+        .containsOutput("Cluster configuration for group 'cluster' is updated")
+        .hasTableSection().hasColumn("Result")
+        .containsExactlyInAnyOrder("OK", "OK", "OK");
+
+    server1.invoke(() -> verifySenderState("ln", true, false));
+    server2.invoke(() -> verifySenderState("ln", true, false));
+    server3.invoke(() -> verifySenderState("ln", true, false));
+
+    locatorSite1.invoke(
+        () -> validateGatewaySenderMXBeanProxy(getMember(server1.getVM()), "ln", true, false));
+    locatorSite1.invoke(
+        () -> validateGatewaySenderMXBeanProxy(getMember(server2.getVM()), "ln", true, false));
+    locatorSite1.invoke(
+        () -> validateGatewaySenderMXBeanProxy(getMember(server3.getVM()), "ln", true, false));
+
+    // Stop gateway-sender on all members
+    command = new CommandStringBuilder(CliStrings.STOP_GATEWAYSENDER)
+        .addOption(CliStrings.STOP_GATEWAYSENDER__ID, "ln")
+        .getCommandString();
+
+    gfsh.executeAndAssertThat(command).statusIsSuccess()
+        .containsOutput("Cluster configuration for group 'cluster' is updated")
+        .hasTableSection().hasColumn("Result")
+        .containsExactlyInAnyOrder("OK", "OK", "OK");
+
+    server1.invoke(() -> verifySenderState("ln", false, false));
+    server2.invoke(() -> verifySenderState("ln", false, false));
+    server3.invoke(() -> verifySenderState("ln", false, false));
+
+    locatorSite1.invoke(
+        () -> validateGatewaySenderMXBeanProxy(getMember(server1.getVM()), "ln", false, false));
+    locatorSite1.invoke(
+        () -> validateGatewaySenderMXBeanProxy(getMember(server2.getVM()), "ln", false, false));
+    locatorSite1.invoke(
+        () -> validateGatewaySenderMXBeanProxy(getMember(server3.getVM()), "ln", false, false));
+
+    // Resume gateway-sender on all members
+    command = new CommandStringBuilder(CliStrings.START_GATEWAYSENDER)
+        .addOption(CliStrings.START_GATEWAYSENDER__ID, "ln")
+        .getCommandString();
+
+    gfsh.executeAndAssertThat(command).statusIsSuccess()
+        .containsOutput("Cluster configuration for group 'cluster' is updated")
+        .hasTableSection().hasColumn("Result")
+        .containsExactlyInAnyOrder("OK", "OK", "OK");
+
+    server1.invoke(() -> verifySenderState("ln", true, false));
+    server2.invoke(() -> verifySenderState("ln", true, false));
+    server3.invoke(() -> verifySenderState("ln", true, false));
+
+    locatorSite1.invoke(
+        () -> validateGatewaySenderMXBeanProxy(getMember(server1.getVM()), "ln", true, false));
+    locatorSite1.invoke(
+        () -> validateGatewaySenderMXBeanProxy(getMember(server2.getVM()), "ln", true, false));
+    locatorSite1.invoke(
+        () -> validateGatewaySenderMXBeanProxy(getMember(server3.getVM()), "ln", true, false));
   }
 
   /**

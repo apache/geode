@@ -204,9 +204,9 @@ public interface GatewaySender {
   }
 
   /**
-   * When this flag is set then GatewaySender will be started in paused state.
+   * When this flag is set to "true", then GatewaySender will be started in paused state.
    */
-  void setStartEventProcessorInPausedState();
+  void setStartEventProcessorInPausedState(boolean isPaused);
 
   /**
    * Starts this GatewaySender. Once the GatewaySender is running, its configuration cannot be
