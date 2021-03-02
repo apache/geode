@@ -97,7 +97,7 @@ public class DockerizedExecHandleRunner implements Runnable {
   }
 
   public String toString() {
-    return "Handler for " + process.toString();
+    return "Handler for " + process != null ? process.toString() : "Process not started";
   }
 }
 
