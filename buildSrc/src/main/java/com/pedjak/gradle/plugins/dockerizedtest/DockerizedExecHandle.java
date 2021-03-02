@@ -461,7 +461,7 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
 
       return proc;
     } catch (Exception e) {
-      e.printStackTrace();
+      e.printStackTrace(System.err);
       throw new RuntimeException(e);
     }
   }
