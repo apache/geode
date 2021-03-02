@@ -38,9 +38,11 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.executor.CommandFunction;
 import org.apache.geode.redis.internal.executor.RedisCommandsFunctionInvoker;
 
 /**
@@ -51,8 +53,12 @@ import org.apache.geode.redis.internal.executor.RedisCommandsFunctionInvoker;
 public class RedisHashCommandsFunctionInvoker extends RedisCommandsFunctionInvoker
     implements RedisHashCommands {
 
+  private final CommandFunction function;
+
   public RedisHashCommandsFunctionInvoker(Region<RedisKey, RedisData> region) {
     super(region);
+
+    function = (CommandFunction) FunctionService.getFunction(CommandFunction.ID);
   }
 
   @Override
@@ -120,5 +126,9 @@ public class RedisHashCommandsFunctionInvoker extends RedisCommandsFunctionInvok
   @Override
   public BigDecimal hincrbyfloat(RedisKey key, ByteArrayWrapper field, BigDecimal increment) {
     return invokeCommandFunction(key, HINCRBYFLOAT, field, increment);
+  }
+
+  protected <T> T invokeCommandFunction(RedisKey key, Object... arguments) {
+    return function.hackedExecute(key, arguments);
   }
 }

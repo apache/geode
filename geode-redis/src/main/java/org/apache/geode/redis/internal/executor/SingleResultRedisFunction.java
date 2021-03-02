@@ -15,6 +15,8 @@
 
 package org.apache.geode.redis.internal.executor;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -48,6 +50,19 @@ public abstract class SingleResultRedisFunction implements InternalFunction<Obje
     };
 
     partitionedRegion.computeWithPrimaryLocked(key, computation);
+  }
+
+  @SuppressWarnings("unchecked")
+  public <T> T hackedExecute(RedisKey key, Object[] args) {
+    AtomicReference<Object> result = new AtomicReference<>();
+
+    Runnable computation = () -> {
+      result.set(compute(key, args));
+    };
+
+    partitionedRegion.computeWithPrimaryLocked(key, computation);
+
+    return (T) result.get();
   }
 
   @Override

@@ -39,15 +39,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.cache.VMCachedDeserializable;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.data.RedisString;
 import org.apache.geode.redis.internal.executor.RedisCommandsFunctionInvoker;
 
 /**
@@ -72,21 +68,21 @@ public class RedisStringCommandsFunctionInvoker extends RedisCommandsFunctionInv
 
   @Override
   public ByteArrayWrapper get(RedisKey key) {
-    Object v = null;
-    try {
-      v = ((PartitionedRegion) region).getValueInVM(key);
-    } catch (EntryNotFoundException ignored) {
-      logger.info("--->>> getValueInVM miss for: {}", key);
-    }
-
-    if (v != null) {
-      Object cached = ((VMCachedDeserializable) v).getDeserializedForReading();
-      int x = getInVmCount.incrementAndGet();
-      if (x % 10000 == 0) {
-        logger.info("--->>> getValueInVM hits: {}", x);
-      }
-      return ((RedisString) cached).get();
-    }
+    // Object v = null;
+    // try {
+    // v = ((PartitionedRegion) region).getValueInVM(key);
+    // } catch (EntryNotFoundException ignored) {
+    // logger.info("--->>> getValueInVM miss for: {}", key);
+    // }
+    //
+    // if (v != null) {
+    // Object cached = ((VMCachedDeserializable) v).getDeserializedForReading();
+    // int x = getInVmCount.incrementAndGet();
+    // if (x % 10000 == 0) {
+    // logger.info("--->>> getValueInVM hits: {}", x);
+    // }
+    // return ((RedisString) cached).get();
+    // }
 
     return invokeCommandFunction(key, GET);
   }
