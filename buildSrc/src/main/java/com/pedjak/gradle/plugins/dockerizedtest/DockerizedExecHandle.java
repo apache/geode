@@ -23,6 +23,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -294,6 +296,9 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
           new DockerizedExecHandleRunner(this, new CompositeStreamsHandler(), executor);
       executor.execute(new CurrentBuildOperationPreservingRunnable(execHandleRunner));
 
+      Instant startTime = Instant.now();
+      System.out.printf("DHE: start() waiting for %s%n", displayName);
+
       while (stateIn(ExecHandleState.STARTING)) {
         LOGGER.debug("Waiting until process started: {}.", displayName);
         try {
@@ -305,6 +310,8 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
           //ok, wrapping up
         }
       }
+      System.out.printf("DHE: start() %s %s %d ms%n",
+          displayName, state, Duration.between(startTime, Instant.now()).toMillis());
 
       if (execResult != null) {
         execResult.rethrowFailure();
@@ -444,19 +451,27 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
       createCmd.withCmd(cmdLine);
 
       invokeIfNotNull(testExtension.getBeforeContainerCreate(), createCmd, client);
+      System.out.printf("DHE: runContainer() creating container for %s%n", displayName);
+      Instant startTime = Instant.now();
       String containerId = createCmd.exec().getId();
+      System.out.printf("DHE: runContainer() created container %s %d ms: %s%n",
+          containerId, Duration.between(startTime, Instant.now()).toMillis(), displayName);
       invokeIfNotNull(testExtension.getAfterContainerCreate(), containerId, client);
 
       invokeIfNotNull(testExtension.getBeforeContainerStart(), containerId, client);
+      System.out.printf("DHE: runContainer() starting container %s %s%n",
+          containerId, displayName);
+      startTime = Instant.now();
       client.startContainerCmd(containerId).exec();
+      System.out.printf("DHE: runContainer() started container %s %d ms: %s%n",
+          containerId, Duration.between(startTime, Instant.now()).toMillis(), displayName);
       invokeIfNotNull(testExtension.getAfterContainerStart(), containerId, client);
 
       if (!client.inspectContainerCmd(containerId).exec().getState().getRunning()) {
         throw new RuntimeException("Container " + containerId + " not running!");
       }
 
-      Process
-          proc =
+      Process proc =
           new DockerizedProcess(client, containerId, testExtension.getAfterContainerStop());
 
       return proc;
