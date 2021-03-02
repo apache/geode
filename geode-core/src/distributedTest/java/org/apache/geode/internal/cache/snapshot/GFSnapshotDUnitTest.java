@@ -116,7 +116,7 @@ public class GFSnapshotDUnitTest extends JUnit4DistributedTestCase {
     final String memberName = getUniqueName() + "-server";
     File file = temporaryFolder.newFolder(memberName + "-snapshot");
     Cache cache = CacheFactory.getAnyInstance();
-    cache.getSnapshotService().save(file, SnapshotFormat.GEMFIRE);
+    cache.getSnapshotService().save(file, SnapshotFormat.GEODE);
     return file.getAbsolutePath();
   }
 

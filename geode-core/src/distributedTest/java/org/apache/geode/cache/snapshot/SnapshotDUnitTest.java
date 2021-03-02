@@ -79,7 +79,7 @@ public class SnapshotDUnitTest extends JUnit4CacheTestCase {
     dir.mkdir();
 
     // save all regions
-    getCache().getSnapshotService().save(dir, SnapshotFormat.GEMFIRE);
+    getCache().getSnapshotService().save(dir, SnapshotFormat.GEODE);
 
     // update regions with data to be overwritten by import
     updateRegions();
@@ -128,7 +128,7 @@ public class SnapshotDUnitTest extends JUnit4CacheTestCase {
 
     // save all regions
     CacheSnapshotService service = getCache().getSnapshotService();
-    service.save(dir, SnapshotFormat.GEMFIRE);
+    service.save(dir, SnapshotFormat.GEODE);
 
     // update regions with data to be overwritten by importdir
     updateRegions();
@@ -191,9 +191,9 @@ public class SnapshotDUnitTest extends JUnit4CacheTestCase {
   private void loadRegions(File dir, SnapshotOptions options) throws Exception {
     RegionGenerator rgen = new RegionGenerator();
     if (options != null) {
-      getCache().getSnapshotService().load(dir.listFiles(), SnapshotFormat.GEMFIRE, options);
+      getCache().getSnapshotService().load(dir.listFiles(), SnapshotFormat.GEODE, options);
     } else {
-      getCache().getSnapshotService().load(dir, SnapshotFormat.GEMFIRE);
+      getCache().getSnapshotService().load(dir, SnapshotFormat.GEODE);
     }
     for (final RegionType rt : RegionType.values()) {
       for (final SerializationType st : SerializationType.values()) {
@@ -271,7 +271,7 @@ public class SnapshotDUnitTest extends JUnit4CacheTestCase {
       File dir = new File(getDiskDirs()[0], "export");
       dir.mkdir();
 
-      css.save(dir, SnapshotFormat.GEMFIRE, options);
+      css.save(dir, SnapshotFormat.GEODE, options);
     } catch (Exception e) {
       caughtException = true;
     }
@@ -293,13 +293,13 @@ public class SnapshotDUnitTest extends JUnit4CacheTestCase {
 
     // save all regions
     CacheSnapshotService css = getCache().getSnapshotService();
-    css.save(dir, SnapshotFormat.GEMFIRE);
+    css.save(dir, SnapshotFormat.GEODE);
 
     SnapshotOptions<Object, Object> options = css.createOptions().setFilter(oops);
 
     boolean caughtException = false;
     try {
-      css.load(dir.listFiles(), SnapshotFormat.GEMFIRE, options);
+      css.load(dir.listFiles(), SnapshotFormat.GEODE, options);
     } catch (Exception e) {
       caughtException = true;
     }

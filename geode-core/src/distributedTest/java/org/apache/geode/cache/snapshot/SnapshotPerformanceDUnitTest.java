@@ -75,7 +75,7 @@ public class SnapshotPerformanceDUnitTest extends JUnit4CacheTestCase {
     File f = new File(getDiskDirs()[0], region.getName() + ".gfd");
 
     long start = System.currentTimeMillis();
-    region.getSnapshotService().save(f, SnapshotFormat.GEMFIRE);
+    region.getSnapshotService().save(f, SnapshotFormat.GEODE);
     long elapsed = System.currentTimeMillis() - start;
 
     int size = region.size();
@@ -94,7 +94,7 @@ public class SnapshotPerformanceDUnitTest extends JUnit4CacheTestCase {
     File f = new File(getDiskDirs()[0], region.getName() + ".gfd");
 
     long start = System.currentTimeMillis();
-    region.getSnapshotService().load(f, SnapshotFormat.GEMFIRE);
+    region.getSnapshotService().load(f, SnapshotFormat.GEODE);
     long elapsed = System.currentTimeMillis() - start;
 
     int size = region.size();
