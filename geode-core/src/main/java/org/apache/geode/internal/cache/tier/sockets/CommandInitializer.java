@@ -206,6 +206,9 @@ public class CommandInitializer implements CommandRegistry {
 
     allCommands.put(KnownVersion.GEODE_1_14_0, geode18Commands);
 
+    // as of GEODE_1_14_0 we only create new command sets when the
+    // client/server protocol changes
+
     return allCommands;
   }
 
