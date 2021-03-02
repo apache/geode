@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -142,12 +142,12 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
   private final DockerizedTestExtension testExtension;
 
   public DockerizedExecHandle(DockerizedTestExtension testExtension, String displayName,
-                              File directory, String command, List<String> arguments,
-                              Map<String, String> environment, StreamsHandler outputHandler,
-                              StreamsHandler inputHandler,
-                              List<ExecHandleListener> listeners, boolean redirectErrorStream,
-                              int timeoutMillis, boolean daemon,
-                              Executor executor, BuildCancellationToken buildCancellationToken) {
+      File directory, String command, List<String> arguments,
+      Map<String, String> environment, StreamsHandler outputHandler,
+      StreamsHandler inputHandler,
+      List<ExecHandleListener> listeners, boolean redirectErrorStream,
+      int timeoutMillis, boolean daemon,
+      Executor executor, BuildCancellationToken buildCancellationToken) {
     this.displayName = displayName;
     this.directory = directory;
     this.command = command;
@@ -239,8 +239,7 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
       lock.unlock();
     }
 
-    ExecResultImpl
-        newResult =
+    ExecResultImpl newResult =
         new ExecResultImpl(exitValue, execExceptionFor(failureCause, currentState), displayName);
     if (!currentState.isTerminal() && newState != ExecHandleState.DETACHED) {
       try {
@@ -297,12 +296,12 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
       while (stateIn(ExecHandleState.STARTING)) {
         LOGGER.debug("Waiting until process started: {}.", displayName);
         try {
-          if (!stateChanged.await(60, TimeUnit.SECONDS)) {
+          if (!stateChanged.await(30, TimeUnit.SECONDS)) {
             execHandleRunner.abortProcess();
             throw new RuntimeException("Giving up on " + execHandleRunner);
           }
         } catch (InterruptedException e) {
-          //ok, wrapping up
+          // ok, wrapping up
         }
       }
 
@@ -344,7 +343,7 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
         try {
           stateChanged.await();
         } catch (InterruptedException e) {
-          //ok, wrapping up...
+          // ok, wrapping up...
           throw UncheckedException.throwAsUncheckedException(e);
         }
       }
@@ -353,7 +352,8 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
     }
 
     // At this point:
-    // If in daemon mode, the process has started successfully and all streams to the process have been closed
+    // If in daemon mode, the process has started successfully and all streams to the process have
+    // been closed
     // If in fork mode, the process has completed and all cleanup has been done
     // In both cases, all asynchronous work for the process has completed and we're done
 
@@ -425,10 +425,12 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
 
   public Process runContainer() {
     try {
+      System.err.println(System.currentTimeMillis()+" --- DockerizedExecHandle.runContainer --- ");
       DockerClient client = testExtension.getClient();
       CreateContainerCmd createCmd = client.createContainerCmd(testExtension.getImage())
           .withTty(false)
           .withStdinOpen(true)
+          .withAttachStderr(true)
           .withWorkingDir(directory.getAbsolutePath());
 
       createCmd.withEnv(getEnv());
@@ -454,9 +456,10 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
       if (!client.inspectContainerCmd(containerId).exec().getState().getRunning()) {
         throw new RuntimeException("Container " + containerId + " not running!");
       }
+      System.err.println(System.currentTimeMillis()+" --- DockerizedExecHandle.runContainer --- "
+          + client.inspectContainerCmd(containerId).exec().getState().getRunning());
 
-      Process
-          proc =
+      Process proc =
           new DockerizedProcess(client, containerId, testExtension.getAfterContainerStop());
 
       return proc;
@@ -521,9 +524,10 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
     @Override
     public ExecResult assertNormalExitValue() throws ExecException {
       // all exit values are ok
-//            if (exitValue != 0) {
-//                throw new ExecException(format("Process '%s' finished with non-zero exit value %d", displayName, exitValue));
-//            }
+      // if (exitValue != 0) {
+      // throw new ExecException(format("Process '%s' finished with non-zero exit value %d",
+      // displayName, exitValue));
+      // }
       return this;
     }
 
@@ -582,8 +586,7 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
 
     private final CountDownLatch finished = new CountDownLatch(1);
     private AtomicInteger exitCode = new AtomicInteger();
-    private final AttachContainerResultCallback
-        attachContainerResultCallback =
+    private final AttachContainerResultCallback attachContainerResultCallback =
         new AttachContainerResultCallback() {
           @Override
           public void onNext(Frame frame) {
@@ -600,8 +603,7 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
           }
         };
 
-    private final WaitContainerResultCallback
-        waitContainerResultCallback =
+    private final WaitContainerResultCallback waitContainerResultCallback =
         new WaitContainerResultCallback() {
           @Override
           public void onNext(WaitResponse waitResponse) {
@@ -629,7 +631,7 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
         };
 
     public DockerizedProcess(final DockerClient dockerClient, final String containerId,
-                             final Closure afterContainerStop) throws Exception {
+        final Closure afterContainerStop) throws Exception {
       this.dockerClient = dockerClient;
       this.containerId = containerId;
       this.afterContainerStop = afterContainerStop;
