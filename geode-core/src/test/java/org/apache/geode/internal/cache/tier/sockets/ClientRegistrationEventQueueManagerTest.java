@@ -100,7 +100,7 @@ public class ClientRegistrationEventQueueManagerTest {
         .thenReturn(operation);
     when(entryEventImpl.getRegion())
         .thenReturn(internalRegion);
-    when(filterProfile.getFilterRoutingInfoPart2(null, entryEventImpl, true))
+    when(filterProfile.getFilterRoutingInfoPart2(null, entryEventImpl))
         .thenReturn(filterRoutingInfo);
     when(filterRoutingInfo.getLocalFilterInfo())
         .thenReturn(filterInfo);
@@ -334,7 +334,7 @@ public class ClientRegistrationEventQueueManagerTest {
         .thenReturn(clientProxyMembershipId);
     when(internalCacheEvent.getRegion())
         .thenReturn(internalRegion);
-    when(filterProfile.getFilterRoutingInfoPart2(null, internalCacheEvent, true))
+    when(filterProfile.getFilterRoutingInfoPart2(null, internalCacheEvent))
         .thenReturn(filterRoutingInfo);
     when(filterRoutingInfo.getLocalFilterInfo())
         .thenReturn(filterInfo);

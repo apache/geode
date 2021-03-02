@@ -181,7 +181,7 @@ public class ClientRegistrationEventQueueManager {
 
         if (filterProfile != null) {
           FilterRoutingInfo filterRoutingInfo =
-              filterProfile.getFilterRoutingInfoPart2(null, internalCacheEvent, true);
+              filterProfile.getFilterRoutingInfoPart2(null, internalCacheEvent);
 
           if (filterRoutingInfo != null) {
             FilterRoutingInfo.FilterInfo filterInfo = filterRoutingInfo.getLocalFilterInfo();
