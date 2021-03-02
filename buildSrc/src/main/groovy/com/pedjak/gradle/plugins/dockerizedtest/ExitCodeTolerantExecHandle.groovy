@@ -54,8 +54,8 @@ class ExitCodeTolerantExecHandle implements ExecHandle {
         try {
             delegate.start()
         } catch (Exception e) {
-            testWorkerSemaphore.release()
             e.printStackTrace(System.err)
+            testWorkerSemaphore.release()
             throw e
         }
     }

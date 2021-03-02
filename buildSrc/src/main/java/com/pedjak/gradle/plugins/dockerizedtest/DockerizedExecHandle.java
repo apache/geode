@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
@@ -424,13 +425,16 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
   }
 
   public Process runContainer() {
+    Random random = new Random(System.currentTimeMillis());
+    long seed = random.nextLong();
     try {
-      System.err.println(System.currentTimeMillis()+" --- DockerizedExecHandle.runContainer --- ");
+
+      System.err.println(System.currentTimeMillis() + " --- " + seed
+          + "----- DockerizedExecHandle.runContainer --- ");
       DockerClient client = testExtension.getClient();
       CreateContainerCmd createCmd = client.createContainerCmd(testExtension.getImage())
           .withTty(false)
           .withStdinOpen(true)
-          .withAttachStderr(true)
           .withWorkingDir(directory.getAbsolutePath());
 
       createCmd.withEnv(getEnv());
@@ -456,7 +460,8 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
       if (!client.inspectContainerCmd(containerId).exec().getState().getRunning()) {
         throw new RuntimeException("Container " + containerId + " not running!");
       }
-      System.err.println(System.currentTimeMillis()+" --- DockerizedExecHandle.runContainer --- "
+      System.err.println(System.currentTimeMillis() + " --- " + seed
+          + "----- DockerizedExecHandle.runContainer --- "
           + client.inspectContainerCmd(containerId).exec().getState().getRunning());
 
       Process proc =
@@ -464,8 +469,11 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
 
       return proc;
     } catch (Exception e) {
+      System.err.println(System.currentTimeMillis() + " --- " + seed
+          + "----- DockerizedExecHandle.runContainer");
       e.printStackTrace(System.err);
-      throw new RuntimeException(e);
+      throw new RuntimeException(System.currentTimeMillis() + " --- " + seed
+          + "----- DockerizedExecHandle.runContainer",e);
     }
   }
 
@@ -614,11 +622,13 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
               stdOutWriteStream.close();
               stdErrWriteStream.close();
             } catch (Exception e) {
+              e.printStackTrace(System.err);
               LOGGER.debug("Error by detaching streams", e);
             } finally {
               try {
                 invokeIfNotNull(afterContainerStop, containerId, dockerClient);
               } catch (Exception e) {
+                e.printStackTrace(System.err);
                 LOGGER.debug("Exception thrown at invoking afterContainerStop", e);
               } finally {
                 finished.countDown();

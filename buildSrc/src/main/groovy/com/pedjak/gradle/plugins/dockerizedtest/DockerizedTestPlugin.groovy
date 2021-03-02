@@ -102,7 +102,7 @@ class DockerizedTestPlugin implements Plugin<Project> {
     def newProcessBuilderFactory(project, extension, defaultProcessBuilderFactory) {
 
         def executorFactory = new DefaultExecutorFactory()
-        def executor = executorFactory.create("Docker container link")
+        def executor = executorFactory.create("Docker container link",10)
         def buildCancellationToken = new DefaultBuildCancellationToken()
 
         def defaultfilecollectionFactory = new DefaultFileCollectionFactory(project.fileResolver, null)
