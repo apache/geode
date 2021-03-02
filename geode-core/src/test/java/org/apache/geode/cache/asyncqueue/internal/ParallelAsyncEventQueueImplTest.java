@@ -54,8 +54,8 @@ public class ParallelAsyncEventQueueImplTest {
     statisticsClock = mock(StatisticsClock.class);
     statsFactory = mock(StatisticsFactory.class);
     attrs = new GatewaySenderAttributes();
-    attrs.isParallel = true;
-    attrs.id = "AsyncEventQueue_";
+    attrs.setParallel(true);
+    attrs.setId("AsyncEventQueue_");
 
     InternalDistributedSystem system = mock(InternalDistributedSystem.class);
     when(cache.getInternalDistributedSystem()).thenReturn(system);

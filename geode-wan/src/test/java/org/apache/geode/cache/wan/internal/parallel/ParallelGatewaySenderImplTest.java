@@ -53,8 +53,8 @@ public class ParallelGatewaySenderImplTest {
     cache = mock(InternalCache.class);
     statisticsClock = mock(StatisticsClock.class);
     attrs = new GatewaySenderAttributes();
-    attrs.isParallel = true;
-    attrs.id = "sender";
+    attrs.setParallel(true);
+    attrs.setId("sender");
     InternalDistributedSystem system = mock(InternalDistributedSystem.class);
     CancelCriterion cancelCriterion = mock(CancelCriterion.class);
     Statistics stats = mock(Statistics.class);
