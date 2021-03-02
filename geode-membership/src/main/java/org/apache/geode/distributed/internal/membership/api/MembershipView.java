@@ -14,75 +14,53 @@
  */
 package org.apache.geode.distributed.internal.membership.api;
 
+import static java.util.stream.Collectors.toList;
+
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /**
- * The MembershipView class represents a membership view. MembershipViews are typically
- * unmodifiable though you an create and manipulate one for local usel A MembershipView
- * defines who is in the cluster and knows which node created the view. It also knows which
- * members left or were removed when the view was created. MemberIdentifiers in the view
- * are marked with the viewId of the MembershipView in which they joined the cluster.
+ * The MembershipView class represents a membership view. A MembershipView defines who is in the
+ * cluster and knows which node created the view. It also knows which members left or were removed
+ * when the view was created. MemberIdentifiers in the view are marked with the viewId of the
+ * MembershipView in which they joined the cluster.
  */
 public class MembershipView<ID extends MemberIdentifier> {
 
-  private int viewId;
-  private List<ID> members;
-  private Set<ID> shutdownMembers;
-  private Set<ID> crashedMembers;
-  private ID creator;
-  private Set<ID> hashedMembers;
-  private volatile boolean unmodifiable;
-
+  private final int viewId;
+  private final List<ID> members;
+  private final Set<ID> shutdownMembers;
+  private final Set<ID> crashedMembers;
+  private final ID creator;
+  private final Set<ID> hashedMembers;
 
   public MembershipView() {
-    viewId = -1;
-    members = new ArrayList<>(0);
-    this.hashedMembers = new HashSet<>(members);
-    shutdownMembers = Collections.emptySet();
-    crashedMembers = new HashSet<>();
-    creator = null;
+    this(null, -1, Collections.emptyList());
   }
 
-  public MembershipView(ID creator, int viewId,
-      List<ID> members) {
-    this.viewId = viewId;
-    this.members = new ArrayList<>(members);
-    hashedMembers = new HashSet<>(this.members);
-    shutdownMembers = new HashSet<>();
-    crashedMembers = Collections.emptySet();
-    this.creator = creator;
+  public MembershipView(final ID creator, final int viewId, final List<ID> members) {
+    this(creator, viewId, members, Collections.emptySet(), Collections.emptySet());
   }
 
-  /**
-   * Create a new view with the contents of the given view and the specified view ID
-   */
-  public MembershipView(MembershipView<ID> other, int viewId) {
-    this.creator = other.creator;
-    this.viewId = viewId;
-    this.members = new ArrayList<>(other.members);
-    this.hashedMembers = new HashSet<>(other.members);
-    this.shutdownMembers = new HashSet<>(other.shutdownMembers);
-    this.crashedMembers = new HashSet<>(other.crashedMembers);
-  }
-
-  public MembershipView(ID creator, int viewId,
-      List<ID> mbrs, Set<ID> shutdowns,
-      Set<ID> crashes) {
+  public MembershipView(final ID creator, final int viewId, final List<ID> members,
+      final Set<ID> shutdowns, final Set<ID> crashes) {
     this.creator = creator;
     this.viewId = viewId;
-    this.members = mbrs;
-    this.hashedMembers = new HashSet<>(mbrs);
-    this.shutdownMembers = shutdowns;
-    this.crashedMembers = crashes;
-  }
 
-  public void makeUnmodifiable() {
-    unmodifiable = true;
+    /*
+     * Copy each collection, then store the ref to the unmodifiable
+     * wrapper so we can expose it.
+     */
+    this.members = Collections.unmodifiableList(new ArrayList<>(members));
+    this.shutdownMembers = Collections.unmodifiableSet(new HashSet<>(shutdowns));
+    this.crashedMembers = Collections.unmodifiableSet(new HashSet<>(crashes));
+
+    // make this unmodifiable for good measure (even though we don't expose it)
+    this.hashedMembers = Collections.unmodifiableSet(new HashSet<>(members));
   }
 
   public int getViewId() {
@@ -93,55 +71,24 @@ public class MembershipView<ID extends MemberIdentifier> {
     return this.creator;
   }
 
-  public void setCreator(ID creator) {
-    this.creator = creator;
-  }
-
-  public void setViewId(int viewId) {
-    this.viewId = viewId;
-  }
-
-
-
   public List<ID> getMembers() {
-    return Collections.unmodifiableList(this.members);
-  }
-
-  /**
-   * return members that are i this view but not the given old view
-   */
-  public List<ID> getNewMembers(MembershipView<ID> olderView) {
-    List<ID> result = new ArrayList<>(members);
-    result.removeAll(olderView.getMembers());
-    return result;
+    return members;
   }
 
   public Object get(int i) {
     return this.members.get(i);
   }
 
-  public void add(ID mbr) {
-    if (unmodifiable) {
-      throw new IllegalStateException("this membership view is not modifiable");
-    }
-    this.hashedMembers.add(mbr);
-    this.members.add(mbr);
+  public MembershipView<ID> createNewViewWithMember(ID member) {
+    return new MembershipView<>(creator, viewId,
+        Stream.concat(members.stream(), Stream.of(member)).collect(toList()), shutdownMembers,
+        crashedMembers);
   }
 
-  public boolean remove(ID mbr) {
-    if (unmodifiable) {
-      throw new IllegalStateException("this membership view is not modifiable");
-    }
-    this.hashedMembers.remove(mbr);
-    return this.members.remove(mbr);
-  }
-
-  public void removeAll(Collection<ID> ids) {
-    if (unmodifiable) {
-      throw new IllegalStateException("this membership view is not modifiable");
-    }
-    this.hashedMembers.removeAll(ids);
-    ids.forEach(this::remove);
+  public MembershipView<ID> createNewViewWithoutMember(final ID member) {
+    return new MembershipView<>(creator, viewId,
+        members.stream().filter(m -> !m.equals(member)).collect(toList()), shutdownMembers,
+        crashedMembers);
   }
 
   public boolean contains(MemberIdentifier mbr) {
@@ -166,7 +113,7 @@ public class MembershipView<ID extends MemberIdentifier> {
    * Returns the ID from this view that is equal to the argument. If no such ID exists the argument
    * is returned.
    */
-  public synchronized ID getCanonicalID(ID id) {
+  public ID getCanonicalID(ID id) {
     if (hashedMembers.contains(id)) {
       for (ID m : this.members) {
         if (id.equals(m)) {
@@ -176,7 +123,6 @@ public class MembershipView<ID extends MemberIdentifier> {
     }
     return id;
   }
-
 
 
   public ID getCoordinator() {
@@ -191,10 +137,6 @@ public class MembershipView<ID extends MemberIdentifier> {
     return null;
   }
 
-  public Set<ID> getShutdownMembers() {
-    return this.shutdownMembers;
-  }
-
   public Set<ID> getCrashedMembers() {
     return this.crashedMembers;
   }
@@ -206,8 +148,9 @@ public class MembershipView<ID extends MemberIdentifier> {
     sb.append("View[").append(creator).append('|').append(viewId).append("] members: [");
     boolean first = true;
     for (ID mbr : this.members) {
-      if (!first)
+      if (!first) {
         sb.append(", ");
+      }
       sb.append(mbr);
       if (mbr == lead) {
         sb.append("{lead}");
@@ -218,8 +161,9 @@ public class MembershipView<ID extends MemberIdentifier> {
       sb.append("]  shutdown: [");
       first = true;
       for (ID mbr : this.shutdownMembers) {
-        if (!first)
+        if (!first) {
           sb.append(", ");
+        }
         sb.append(mbr);
         first = false;
       }
@@ -228,8 +172,9 @@ public class MembershipView<ID extends MemberIdentifier> {
       sb.append("]  crashed: [");
       first = true;
       for (ID mbr : this.crashedMembers) {
-        if (!first)
+        if (!first) {
           sb.append(", ");
+        }
         sb.append(mbr);
         first = false;
       }
@@ -239,7 +184,7 @@ public class MembershipView<ID extends MemberIdentifier> {
   }
 
   @Override
-  public synchronized boolean equals(Object other) {
+  public boolean equals(Object other) {
     if (other == this) {
       return true;
     }
@@ -250,7 +195,7 @@ public class MembershipView<ID extends MemberIdentifier> {
   }
 
   @Override
-  public synchronized int hashCode() {
+  public int hashCode() {
     return this.members.hashCode();
   }
 
