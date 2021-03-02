@@ -25,29 +25,4 @@ public class P2PReaderExecutorGroupTest {
     assertThat(new P2PReaderExecutorGroup().getGroupName())
         .isEqualTo(P2PReaderExecutorGroup.GROUP_NAME);
   }
-
-  @Test
-  public void verifySuspendLifecycle() {
-    P2PReaderExecutorGroup executor = new P2PReaderExecutorGroup();
-    assertThat(executor.isMonitoringSuspended()).isFalse();
-    executor.suspendMonitoring();
-    assertThat(executor.isMonitoringSuspended()).isTrue();
-    executor.suspendMonitoring();
-    assertThat(executor.isMonitoringSuspended()).isTrue();
-    executor.resumeMonitoring();
-    assertThat(executor.isMonitoringSuspended()).isFalse();
-    executor.resumeMonitoring();
-    assertThat(executor.isMonitoringSuspended()).isFalse();
-    executor.suspendMonitoring();
-    assertThat(executor.isMonitoringSuspended()).isTrue();
-  }
-
-  @Test
-  public void verifyResumeClearsStartTime() {
-    P2PReaderExecutorGroup executor = new P2PReaderExecutorGroup();
-    executor.setStartTime(1);
-    assertThat(executor.getStartTime()).isEqualTo(1);
-    executor.resumeMonitoring();
-    assertThat(executor.getStartTime()).isEqualTo(0);
-  }
 }
