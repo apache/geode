@@ -1043,6 +1043,11 @@ public abstract class BaseCommand implements Command {
   private static void handleSingleton(LocalRegion region, Object entryKey,
       InterestResultPolicy policy, ServerConnection servConn) throws IOException {
     List<Object> keyList = new ArrayList<>(1);
+    keyList.add(entryKey);
+    if (region instanceof PartitionedRegion) {
+      handleListPR((PartitionedRegion) region, keyList, policy, servConn);
+      return;
+    }
     if (region != null) {
       if (region.containsKey(entryKey)
           || sendTombstonesInRIResults(servConn, policy) && region.containsTombstone(entryKey)) {
