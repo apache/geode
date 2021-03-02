@@ -925,8 +925,8 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   }
 
   @Override
-  public void setStartEventProcessorInPausedState() {
-    startEventProcessorInPausedState = true;
+  public void setStartEventProcessorInPausedState(boolean isPaused) {
+    startEventProcessorInPausedState = isPaused;
   }
 
   /**

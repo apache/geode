@@ -352,8 +352,9 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
         sender.start();
         break;
       case PAUSED:
-        sender.setStartEventProcessorInPausedState();
+        sender.setStartEventProcessorInPausedState(true);
         sender.start();
+        sender.setStartEventProcessorInPausedState(false);
         break;
       default:
         // do nothing for STOPPED state, since gateway-sender is already not running

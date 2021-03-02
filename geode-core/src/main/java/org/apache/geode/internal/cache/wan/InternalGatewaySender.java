@@ -46,7 +46,7 @@ public interface InternalGatewaySender extends GatewaySender {
 
   void destroy(boolean initiator);
 
-  void setStartEventProcessorInPausedState();
+  void setStartEventProcessorInPausedState(boolean isPaused);
 
   int getEventQueueSize();
 }
