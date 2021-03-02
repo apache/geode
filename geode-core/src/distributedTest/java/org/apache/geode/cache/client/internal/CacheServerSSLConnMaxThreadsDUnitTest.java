@@ -89,6 +89,7 @@ import org.apache.geode.cache.client.NoAvailableServersException;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.RMIException;
@@ -357,6 +358,19 @@ public class CacheServerSSLConnMaxThreadsDUnitTest extends JUnit4DistributedTest
     assertThat(region.get("clientkey988")).isEqualTo("clientvalue988");
   }
 
+  private void doClientRegionTestMultiTX() {
+    Region<String, String> region = clientCache.getRegion("serverRegion");
+    assertThat(region.get("serverkey")).isEqualTo("servervalue");
+    String keyBase = "clientkey";
+    String valueBase = "clientvalue";
+    for (int i = 0; i < 1000; i++) {
+      clientCache.getCacheTransactionManager().begin();
+      region.put(keyBase + i, valueBase + i);
+      clientCache.getCacheTransactionManager().commit();
+    }
+    assertThat(region.get("clientkey988")).isEqualTo("clientvalue988");
+  }
+
   private void doServerRegionTest() {
     Region<String, String> region = cache.getRegion("serverRegion");
     assertThat(region.get("serverkey")).isEqualTo("servervalue");
@@ -399,6 +413,10 @@ public class CacheServerSSLConnMaxThreadsDUnitTest extends JUnit4DistributedTest
 
   private static void doClientRegionMultiTestTask() {
     instance.doClientRegionTestMulti();
+  }
+
+  private static void doClientRegionMultiTXTestTask() {
+    instance.doClientRegionTestMultiTX();
   }
 
   private static void verifyServerDoesNotReceiveClientUpdate() {
@@ -471,6 +489,42 @@ public class CacheServerSSLConnMaxThreadsDUnitTest extends JUnit4DistributedTest
       locator.stop();
     }
   }
+
+  @Test
+  public void testCacheServerSSLTX() throws Exception {
+    VM serverVM = getVM(1);
+    VM clientVM = getVM(2);
+    VM serverVM2 = getVM(3);
+
+    boolean cacheServerSslenabled = true;
+    boolean cacheClientSslenabled = true;
+    boolean cacheClientSslRequireAuth = true;
+
+    Properties locatorProps = new Properties();
+    String cacheServerSslprotocols = "any";
+    String cacheServerSslciphers = "any";
+    boolean cacheServerSslRequireAuth = true;
+    getNewSSLSettings(locatorProps, cacheServerSslprotocols, cacheServerSslciphers,
+        cacheServerSslRequireAuth);
+    Locator locator = Locator.startLocatorAndDS(0, new File(""), locatorProps);
+    int locatorPort = locator.getPort();
+    try {
+      serverVM.invoke(() -> setUpServerVMTask(cacheServerSslenabled, locatorPort));
+      int port = serverVM.invoke(() -> createServerTask());
+      serverVM2.invoke(() -> setUpServerVMTask(cacheServerSslenabled, locatorPort));
+      serverVM2.invoke(() -> createServerTask());
+
+      String hostName = getHostName();
+
+      clientVM.invoke(() -> setUpClientVMTask(hostName, port, cacheClientSslenabled,
+          cacheClientSslRequireAuth, CLIENT_KEY_STORE, CLIENT_TRUST_STORE, true));
+      clientVM.invoke(() -> doClientRegionMultiTXTestTask());
+      serverVM.invoke(() -> doServerRegionMultiTestTask());
+    } finally {
+      locator.stop();
+    }
+  }
+
 
   /**
    * GEODE-2898: A non-responsive SSL client can block a server's "acceptor" thread
@@ -558,7 +612,7 @@ public class CacheServerSSLConnMaxThreadsDUnitTest extends JUnit4DistributedTest
       fail("Test should fail as non-ssl client is trying to connect to ssl configured server");
 
     } catch (Exception rmiException) {
-      assertThat(rmiException).hasRootCauseInstanceOf(NoAvailableServersException.class);
+      assertThat(rmiException).hasRootCauseInstanceOf(AuthenticationRequiredException.class);
     }
   }
 
