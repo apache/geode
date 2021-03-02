@@ -297,7 +297,7 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
       while (stateIn(ExecHandleState.STARTING)) {
         LOGGER.debug("Waiting until process started: {}.", displayName);
         try {
-          if (!stateChanged.await(30, TimeUnit.SECONDS)) {
+          if (!stateChanged.await(60, TimeUnit.SECONDS)) {
             execHandleRunner.abortProcess();
             throw new RuntimeException("Giving up on " + execHandleRunner);
           }
@@ -443,7 +443,6 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
       cmdLine.addAll(arguments);
       createCmd.withCmd(cmdLine);
 
-      System.err.println("UDO --->  DockerizedExecHandle.runContainer: "+cmdLine.toString());
       invokeIfNotNull(testExtension.getBeforeContainerCreate(), createCmd, client);
       String containerId = createCmd.exec().getId();
       invokeIfNotNull(testExtension.getAfterContainerCreate(), containerId, client);
