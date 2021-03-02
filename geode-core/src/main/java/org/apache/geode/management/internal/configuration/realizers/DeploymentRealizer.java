@@ -15,52 +15,49 @@
 
 package org.apache.geode.management.internal.configuration.realizers;
 
-import org.apache.commons.lang3.NotImplementedException;
-import org.apache.logging.log4j.Logger;
+import java.io.File;
+import java.io.IOException;
+import java.time.Instant;
+import java.util.Map;
 
-import org.apache.geode.annotations.Immutable;
+import org.apache.commons.lang3.NotImplementedException;
+
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.deployment.internal.JarDeploymentServiceFactory;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.DeployedJar;
+import org.apache.geode.internal.JarDeployer;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.runtime.DeploymentInfo;
-import org.apache.geode.services.result.ServiceResult;
 
 public class DeploymentRealizer
     implements ConfigurationRealizer<Deployment, DeploymentInfo> {
-
-  @Immutable
-  private static final Logger logger = LogService.getLogger();
 
   static final String JAR_NOT_DEPLOYED = "Jar file not deployed on the server.";
 
   @Override
   public RealizationResult create(Deployment config, InternalCache cache) throws Exception {
-    ServiceResult<Deployment> deploy = deploy(config);
     RealizationResult result = new RealizationResult();
-    if (deploy.isFailure()) {
-      result.setSuccess(false);
-      result.setMessage(deploy.getErrorMessage());
+    DeployedJar deployedJar = deploy(config.getFile());
+    if (deployedJar == null) {
+      result.setMessage("Already deployed");
     } else {
-      Deployment deployment = deploy.getMessage();
-      if (deployment == null) {
-        result.setMessage("Already deployed");
-      } else {
-        result.setMessage(deployment.getFilePath());
-      }
+      result.setMessage(deployedJar.getFileCanonicalPath());
     }
     return result;
   }
 
   @Override
   public DeploymentInfo get(Deployment config, InternalCache cache) {
+    Map<String, DeployedJar> deployedJars = getDeployedJars();
     DeploymentInfo info = new DeploymentInfo();
-    ServiceResult<Deployment> deployed = getDeployed(config.getDeploymentName());
-    if (deployed.isSuccessful()) {
-      info.setLastModified(deployed.getMessage().getDeployedTime());
-      info.setJarLocation(deployed.getMessage().getFile().getAbsolutePath());
+    String artifactId = JarDeployer.getArtifactId(config.getFileName());
+    DeployedJar deployedJar = deployedJars.get(artifactId);
+    if (deployedJar != null) {
+      File file = deployedJar.getFile();
+      info.setLastModified(getDateString(file.lastModified()));
+      info.setJarLocation(file.getAbsolutePath());
     } else {
       info.setJarLocation(JAR_NOT_DEPLOYED);
     }
@@ -83,12 +80,18 @@ public class DeploymentRealizer
   }
 
   @VisibleForTesting
-  ServiceResult<Deployment> getDeployed(String name) {
-    return JarDeploymentServiceFactory.getJarDeploymentServiceInstance().getDeployed(name);
+  String getDateString(long milliseconds) {
+    return Instant.ofEpochMilli(milliseconds).toString();
   }
 
   @VisibleForTesting
-  ServiceResult<Deployment> deploy(Deployment deployment) {
-    return JarDeploymentServiceFactory.getJarDeploymentServiceInstance().deploy(deployment);
+  Map<String, DeployedJar> getDeployedJars() {
+    JarDeployer jarDeployer = ClassPathLoader.getLatest().getJarDeployer();
+    return jarDeployer.getDeployedJars();
+  }
+
+  @VisibleForTesting
+  DeployedJar deploy(File jarFile) throws IOException, ClassNotFoundException {
+    return ClassPathLoader.getLatest().getJarDeployer().deploy(jarFile);
   }
 }

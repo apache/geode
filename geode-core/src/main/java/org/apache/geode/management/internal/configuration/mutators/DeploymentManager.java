@@ -36,7 +36,7 @@ public class DeploymentManager implements ConfigurationManager<Deployment> {
 
   @Override
   public void add(Deployment config, String groupName) throws Exception {
-    persistenceService.addJarsToThisLocator(config.getDeploymentName(),
+    persistenceService.addJarsToThisLocator(
         Collections.singletonList(config.getFile().getAbsolutePath()),
         new String[] {AbstractConfiguration.getGroupName(config.getGroup())});
   }
@@ -59,11 +59,11 @@ public class DeploymentManager implements ConfigurationManager<Deployment> {
     }
 
     return configuration.getDeployments().stream()
-        .filter(deploymentsForName(filter.getDeploymentName()))
+        .filter(deploymentsForJarName(filter.getFileName()))
         .collect(toList());
   }
 
-  private static Predicate<Deployment> deploymentsForName(String deploymentName) {
-    return deploymentName == null ? d -> true : d -> d.getDeploymentName().equals(deploymentName);
+  private static Predicate<Deployment> deploymentsForJarName(String jarFileName) {
+    return jarFileName == null ? d -> true : d -> d.getFileName().equals(jarFileName);
   }
 }

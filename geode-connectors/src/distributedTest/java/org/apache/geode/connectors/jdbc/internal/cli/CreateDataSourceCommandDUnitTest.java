@@ -146,6 +146,7 @@ public class CreateDataSourceCommandDUnitTest {
         "create data-source --name=mySqlDataSource --username=mySqlUser --password=mySqlPass --url=\""
             + URL + "\" --jdbc-driver-class=" + jdbcDriverClassName)
         .statusIsError().doesNotContainOutput("No suitable driver");
+
   }
 
   private void verifyThatNonExistentClassCausesGfshToError() {

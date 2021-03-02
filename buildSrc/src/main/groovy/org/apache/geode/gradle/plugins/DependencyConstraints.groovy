@@ -47,7 +47,7 @@ class DependencyConstraints implements Plugin<Project> {
     deps.put("jboss-modules.version", "1.11.0.Final")
     deps.put("jackson.version", "2.12.1")
     deps.put("springshell.version", "1.2.0.RELEASE")
-    deps.put("springframework.version", "5.3.4")
+    deps.put("springframework.version", "5.3.3")
 
     // These version numbers are used in testing various versions of tomcat and are consumed explicitly
     // in will be called explicitly in the relevant extensions module, and respective configurations
@@ -158,7 +158,6 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'org.eclipse.persistence', name: 'javax.persistence', version: '2.2.1')
         api(group: 'org.httpunit', name: 'httpunit', version: '1.7.3')
         api(group: 'org.iq80.snappy', name: 'snappy', version: '0.4')
-        api(group: 'org.jboss.modules', name: 'jboss-modules', version: get('jboss-modules.version'))
         api(group: 'org.jgroups', name: 'jgroups', version: get('jgroups.version'))
         api(group: 'org.mockito', name: 'mockito-core', version: '3.8.0')
         api(group: 'org.mortbay.jetty', name: 'servlet-api', version: '3.0.20100224')
@@ -269,7 +268,7 @@ class DependencyConstraints implements Plugin<Project> {
       entry('spring-webmvc')
     }
 
-    dependencySet(group: 'org.springframework', version: '5.3.3') {
+    dependencySet(group: 'org.springframework', version: get('springframework.version')) {
       entry('spring-test')
     }
 

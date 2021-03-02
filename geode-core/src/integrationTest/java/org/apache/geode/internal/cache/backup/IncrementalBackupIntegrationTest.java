@@ -30,7 +30,6 @@ import java.io.FileFilter;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -57,9 +56,10 @@ import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.persistence.PersistentID;
-import org.apache.geode.deployment.internal.JarDeploymentServiceFactory;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.DeployedJar;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.lang.SystemUtils;
@@ -67,7 +67,6 @@ import org.apache.geode.internal.process.ProcessStreamReader;
 import org.apache.geode.internal.process.ProcessStreamReader.ReadingMode;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.BackupStatus;
-import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.junit.rules.DiskDirRule;
@@ -334,12 +333,10 @@ public class IncrementalBackupIntegrationTest {
     IOUtils.copyLarge(new ByteArrayInputStream(classBytes), new FileOutputStream(jarFile));
 
     // Deploy a "dummy" jar to the VM.
-    Deployment jarFileDeployment =
-        new Deployment(jarFile.getName(), "test", Instant.now().toString());
-    jarFileDeployment.setFile(jarFile);
-    JarDeploymentServiceFactory.getJarDeploymentServiceInstance().deploy(jarFileDeployment);
+    File deployedJarFile =
+        ClassPathLoader.getLatest().getJarDeployer().deploy(jarFile).getFile();
 
-    assertThat(jarFile).exists();
+    assertThat(deployedJarFile).exists();
 
     // Perform backup. Make sure it is successful.
     validateBackupStatus(performBackup(getBaselinePath()));
@@ -378,11 +375,10 @@ public class IncrementalBackupIntegrationTest {
     createCache();
 
     // Remove the "dummy" jar from the VM.
-    for (Deployment deployment : JarDeploymentServiceFactory.getJarDeploymentServiceInstance()
-        .listDeployed()) {
-      if (deployment.getDeploymentName().startsWith(jarName)) {
-        JarDeploymentServiceFactory.getJarDeploymentServiceInstance()
-            .undeployByDeploymentName(deployment.getDeploymentName());
+    for (DeployedJar jarClassLoader : ClassPathLoader.getLatest().getJarDeployer()
+        .findDeployedJars()) {
+      if (jarClassLoader.getArtifactId().startsWith(jarName)) {
+        ClassPathLoader.getLatest().getJarDeployer().undeploy(jarClassLoader.getDeployedFileName());
       }
     }
 

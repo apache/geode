@@ -16,6 +16,7 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.springframework.shell.core.annotation.CliCommand;
@@ -27,7 +28,6 @@ import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.functions.ListDeployedFunction;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
-import org.apache.geode.management.internal.cli.util.DeploymentInfoTableUtil;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.management.internal.security.ResourceOperation;
@@ -46,7 +46,6 @@ public class ListDeployedCommand extends GfshCommand {
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
-  @SuppressWarnings("unchecked")
   public ResultModel listDeployed(@CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
       help = CliStrings.LIST_DEPLOYED__GROUP__HELP) String[] group) {
 
@@ -61,10 +60,18 @@ public class ListDeployedCommand extends GfshCommand {
     List<CliFunctionResult> functionResults = executeAndGetFunctionResult(this.listDeployedFunction,
         null, targetMembers);
 
-    DeploymentInfoTableUtil.writeDeploymentInfoToTable(
-        new String[] {"Member", "Deployment Name", "JAR", "JAR Location"}, tabularData,
-        DeploymentInfoTableUtil
-            .getDeploymentInfoFromFunctionResults(functionResults));
+    for (CliFunctionResult cliResult : functionResults) {
+      @SuppressWarnings("unchecked")
+      Map<String, String> strings = (Map<String, String>) cliResult.getResultObject();
+      if (strings == null) {
+        continue;
+      }
+      for (Map.Entry<String, String> jar : strings.entrySet()) {
+        tabularData.accumulate("Member", cliResult.getMemberIdOrName());
+        tabularData.accumulate("JAR", jar.getKey());
+        tabularData.accumulate("JAR Location", jar.getValue());
+      }
+    }
 
     if (tabularData.getRowSize() == 0) {
       return ResultModel.createInfo(CliStrings.LIST_DEPLOYED__NO_JARS_FOUND_MESSAGE);

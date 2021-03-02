@@ -28,13 +28,13 @@ import org.junit.Test;
 
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.cache.execute.FunctionContextImpl;
-import org.apache.geode.internal.util.DriverJarUtils;
+import org.apache.geode.internal.util.DriverJarUtil;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 
 public class DeregisterDriverFunctionTest {
   private DeregisterDriverFunction function;
   private FunctionContext<Object[]> context;
-  private DriverJarUtils util;
+  private DriverJarUtil util;
   private final String DRIVER_CLASS_NAME = "Test.Driver.Name";
 
   @SuppressWarnings("unchecked")
@@ -44,7 +44,7 @@ public class DeregisterDriverFunctionTest {
     function = spy(new DeregisterDriverFunction());
     when(context.getArguments()).thenReturn(new Object[] {DRIVER_CLASS_NAME});
     when(context.getMemberName()).thenReturn("Test Member Name");
-    util = mock(DriverJarUtils.class);
+    util = mock(DriverJarUtil.class);
     doReturn(util).when(function).getDriverJarUtil();
   }
 

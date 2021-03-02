@@ -106,11 +106,11 @@ public class CacheServerJmxImpl extends CacheServerImpl
    */
   private void initializeMBean() throws AdminException {
     this.mbeanName = new StringBuffer("GemFire.CacheVm:").append("id=")
-        .append(MBeanUtils.makeCompliantMBeanNameProperty(getId())).append(",type=")
-        .append(MBeanUtils.makeCompliantMBeanNameProperty(getType().getName())).toString();
+        .append(MBeanUtil.makeCompliantMBeanNameProperty(getId())).append(",type=")
+        .append(MBeanUtil.makeCompliantMBeanNameProperty(getType().getName())).toString();
 
     this.objectName =
-        MBeanUtils.createMBean(this, addDynamicAttributes(MBeanUtils.lookupManagedBean(this)));
+        MBeanUtil.createMBean(this, addDynamicAttributes(MBeanUtil.lookupManagedBean(this)));
 
     // Refresh Interval
     AdminDistributedSystemJmxImpl sysJmx = (AdminDistributedSystemJmxImpl) system;
@@ -168,13 +168,13 @@ public class CacheServerJmxImpl extends CacheServerImpl
           managedStatisticsResourcesMap.values();
 
       for (StatisticResourceJmxImpl statisticResource : statisticResources) {
-        MBeanUtils.unregisterMBean(statisticResource);
+        MBeanUtil.unregisterMBean(statisticResource);
       }
 
       this.managedStatisticsResourcesMap.clear();
     }
 
-    MBeanUtils.unregisterMBean(this.managedSystemMemberCache);
+    MBeanUtil.unregisterMBean(this.managedSystemMemberCache);
     this.managedSystemMemberCache = null;
   }
 
@@ -272,7 +272,7 @@ public class CacheServerJmxImpl extends CacheServerImpl
    */
   @Override
   public void _setRefreshInterval(int refreshInterval) {
-    boolean isRegistered = MBeanUtils.isRefreshNotificationRegistered(this,
+    boolean isRegistered = MBeanUtil.isRefreshNotificationRegistered(this,
         RefreshNotificationType.SYSTEM_MEMBER_CONFIG);
 
     if (isRegistered && (getRefreshInterval() == refreshInterval))
@@ -458,7 +458,7 @@ public class CacheServerJmxImpl extends CacheServerImpl
   public List<ManagedResource> cleanupBridgeClientResources(String clientId) {
     List<ManagedResource> returnedResources = new ArrayList<ManagedResource>();
 
-    String compatibleId = "id_" + MBeanUtils.makeCompliantMBeanNameProperty(clientId);
+    String compatibleId = "id_" + MBeanUtil.makeCompliantMBeanNameProperty(clientId);
     synchronized (this.managedStatisticsResourcesMap) {
       Set<Entry<StatResource, StatisticResourceJmxImpl>> entrySet =
           this.managedStatisticsResourcesMap.entrySet();
@@ -500,7 +500,7 @@ public class CacheServerJmxImpl extends CacheServerImpl
 
     if (cleanedUp != null) {
       for (ManagedResource resource : cleanedUp) {
-        MBeanUtils.unregisterMBean(resource);
+        MBeanUtil.unregisterMBean(resource);
       }
     }
 
@@ -567,7 +567,7 @@ public class CacheServerJmxImpl extends CacheServerImpl
       ManagedResource cleanedUp = cacheResource.cleanupRegionResources(event.getRegionPath());
 
       if (cleanedUp != null) {
-        MBeanUtils.unregisterMBean(cleanedUp);
+        MBeanUtil.unregisterMBean(cleanedUp);
       }
     }
 

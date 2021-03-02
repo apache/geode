@@ -63,8 +63,8 @@ public class GemFireHealthJmxImpl extends GemFireHealthImpl implements ManagedRe
 
     super(agent, system);
     this.mbeanName = new StringBuffer().append(MBEAN_NAME_PREFIX).append("GemFireHealth,id=")
-        .append(MBeanUtils.makeCompliantMBeanNameProperty(system.getId())).toString();
-    this.objectName = MBeanUtils.createMBean(this);
+        .append(MBeanUtil.makeCompliantMBeanNameProperty(system.getId())).toString();
+    this.objectName = MBeanUtil.createMBean(this);
   }
 
   ////////////////////// Instance Methods //////////////////////
@@ -134,9 +134,9 @@ public class GemFireHealthJmxImpl extends GemFireHealthImpl implements ManagedRe
    * Ensures that the three primary Health MBeans are registered and returns their ObjectNames.
    */
   protected void ensureMBeansAreRegistered() {
-    MBeanUtils.ensureMBeanIsRegistered(this);
-    MBeanUtils.ensureMBeanIsRegistered((ManagedResource) this.defaultConfig);
-    MBeanUtils.ensureMBeanIsRegistered((ManagedResource) this.dsHealthConfig);
+    MBeanUtil.ensureMBeanIsRegistered(this);
+    MBeanUtil.ensureMBeanIsRegistered((ManagedResource) this.defaultConfig);
+    MBeanUtil.ensureMBeanIsRegistered((ManagedResource) this.dsHealthConfig);
   }
 
   @Override

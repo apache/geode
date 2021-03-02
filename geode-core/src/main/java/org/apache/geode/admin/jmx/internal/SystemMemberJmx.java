@@ -209,7 +209,7 @@ public interface SystemMemberJmx extends SystemMember, NotificationListener {
       int ret = refreshInterval;
 
       try {
-        MBeanUtils.registerRefreshNotification(member, // NotificationListener
+        MBeanUtil.registerRefreshNotification(member, // NotificationListener
             ((ManagedResource) member).getMBeanName(), // User Data
             RefreshNotificationType.SYSTEM_MEMBER_CONFIG, refreshInterval); // int
 
@@ -445,7 +445,7 @@ public interface SystemMemberJmx extends SystemMember, NotificationListener {
      */
     /* default */static void sendNotification(ManagedResource resource, Notification notif) {
       try {
-        if (MBeanUtils.isRegistered(resource.getObjectName())) {
+        if (MBeanUtil.isRegistered(resource.getObjectName())) {
           resource.getModelMBean().sendNotification(notif);
           if (logger.isDebugEnabled()) {
             logger.debug("Sent '{}' notification", notif.getType());

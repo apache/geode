@@ -65,7 +65,7 @@ import org.apache.geode.test.dunit.VM;
  *       server.set(new ServerLauncher.Builder()
  *           .setMemberName("server" + getVMId())
  *           .setDisableDefaultServer(true)
- *           .reinitializeWithWorkingDirectory(temporaryFolder.newFolder("server" + getVMId()).getAbsolutePath())
+ *           .setWorkingDirectory(temporaryFolder.newFolder("server" + getVMId()).getAbsolutePath())
  *           .build());
  *
  *       server.get().start();
