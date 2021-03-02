@@ -83,7 +83,4 @@ public interface InternalCacheEvent extends CacheEvent {
    */
   VersionTag getVersionTag();
 
-  default boolean isTransactional() {
-    return false;
-  }
 }

@@ -3004,9 +3004,4 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       setRegion(getRegion().getPartitionedRegion());
     }
   }
-
-  @Override
-  public boolean isTransactional() {
-    return getTransactionId() != null;
-  }
 }

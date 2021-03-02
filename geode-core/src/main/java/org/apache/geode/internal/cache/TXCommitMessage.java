@@ -731,7 +731,8 @@ public class TXCommitMessage extends PooledDistributionMessage
     boolean isConfigError = false;
     EntryEventImpl lastTransactionEvent = null;
     try {
-      lastTransactionEvent = getLastTransactionEvent(callbacks);
+      lastTransactionEvent =
+          TXLastEventInTransactionUtils.getLastTransactionEvent(callbacks, dm.getCache());
     } catch (ServiceConfigurationError ex) {
       logger.error(ex.getMessage());
       isConfigError = true;
@@ -739,10 +740,6 @@ public class TXCommitMessage extends PooledDistributionMessage
 
     for (EntryEventImpl ee : callbacks) {
       boolean isLastTransactionEvent = isConfigError || ee.equals(lastTransactionEvent);
-      FilterRoutingInfo.FilterInfo filterInfo = ee.getLocalFilterInfo();
-      if (filterInfo != null) {
-        filterInfo.setChangeAppliedToCache(true);
-      }
       try {
         if (ee.getOperation().isDestroy()) {
           ee.getRegion().invokeTXCallbacks(EnumListenerEvent.AFTER_DESTROY, ee, true,
@@ -771,7 +768,6 @@ public class TXCommitMessage extends PooledDistributionMessage
   EntryEventImpl getLastTransactionEvent(List<EntryEventImpl> callbacks) {
     return TXLastEventInTransactionUtils.getLastTransactionEvent(callbacks, dm.getCache());
   }
-
 
   protected void processCacheRuntimeException(CacheRuntimeException problem) {
     if (problem instanceof RegionDestroyedException) { // catch RegionDestroyedException

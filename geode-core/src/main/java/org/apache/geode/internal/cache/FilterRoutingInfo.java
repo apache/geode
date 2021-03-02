@@ -96,10 +96,6 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
     this.hasLocalInterestBeenComputed = true;
   }
 
-  public void setLocalFilterInfo(FilterInfo filterInfo) {
-    localFilterInfo = filterInfo;
-  }
-
   /**
    * returns true if local interest has been computed
    */
@@ -336,9 +332,6 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
     /** To identify where the filter is processed, locally or in remote node */
     public boolean filterProcessedLocally = false;
 
-    /** Used to determine when to computed interested clients for transactional events */
-    private transient boolean changeAppliedToCache = false;
-
     /** adds the content from another FilterInfo object. */
     public void addFilterInfo(FilterInfo other) {
       if (other.cqs != null) {
@@ -535,14 +528,6 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
         }
       }
       return sb.toString();
-    }
-
-    public void setChangeAppliedToCache(boolean changeAppliedToCache) {
-      this.changeAppliedToCache = changeAppliedToCache;
-    }
-
-    public boolean isChangeAppliedToCache() {
-      return changeAppliedToCache;
     }
   }
 
