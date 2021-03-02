@@ -79,6 +79,7 @@ public class DockerizedExecHandleRunner implements Runnable {
         completed(exitValue);
       }
     } catch (Throwable t) {
+      t.printStackTrace(System.err);
       execHandle.failed(t);
     }
   }
