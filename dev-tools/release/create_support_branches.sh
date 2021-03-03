@@ -171,13 +171,12 @@ VER=geode-serialization/src/main/java/org/apache/geode/internal/serialization/Kn
 #add the new ordinal and KnownVersion constants and set them as current&highest
 CURORD=$(cat $VER | awk '/private static final short GEODE_.*_ORDINAL/{print $NF}' | tr -d ';' | sort -n | tail -1)
 NEWORD=$(( CURORD + 10 ))
-LATEST_CLIENT_ORD=$(cat $VER | grep '^ *GEODE_.*ORDINAL,' | tr ')' ' ' | awk '{v=$2}END{print v}')
 sed -e "s#/. NOTE: when adding a new version#private static final short GEODE_${NEWMAJOR}_${NEWMINOR}_0_ORDINAL = ${NEWORD};\\
 \\
   @Immutable\\
   public static final KnownVersion GEODE_${NEWMAJOR}_${NEWMINOR}_0 =\\
       new KnownVersion("'"'"GEODE"'"'", "'"'"${NEWMAJOR}.${NEWMINOR}.0"'"'", (byte) ${NEWMAJOR}, (byte) ${NEWMINOR}, (byte) 0, (byte) 0,\\
-          GEODE_${NEWMAJOR}_${NEWMINOR}_0_ORDINAL, ${LATEST_CLIENT_ORD});\\
+          GEODE_${NEWMAJOR}_${NEWMINOR}_0_ORDINAL);\\
 \\
   /* NOTE: when adding a new version#" \
   -e "/public static final KnownVersion CURRENT/s#GEODE[0-9_]*#GEODE_${NEWMAJOR}_${NEWMINOR}_0#" \

@@ -258,7 +258,7 @@ public class KnownVersion extends AbstractVersion {
       new KnownVersion("GEODE", "1.15.0", (byte) 1, (byte) 15, (byte) 0, (byte) 0,
           GEODE_1_15_0_ORDINAL);
 
-  /* NOTE: when adding a new version bump the ordinal by 5. Ordinals can be short ints */
+  /* NOTE: when adding a new version bump the ordinal by 10. Ordinals can be short ints */
 
   /**
    * The oldest non-deprecated version supported.
