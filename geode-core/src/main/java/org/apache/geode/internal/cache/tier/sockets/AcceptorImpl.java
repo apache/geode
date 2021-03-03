@@ -74,7 +74,6 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionImpl;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LonerDistributionManager;
@@ -361,6 +360,8 @@ public class AcceptorImpl implements Acceptor, Runnable {
 
   private final BufferPool bufferPool;
 
+  private final DistributedMember member;
+
   /**
    * Constructs an AcceptorImpl for use within a CacheServer.
    *
@@ -458,6 +459,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
         connectionListener == null ? new ConnectionListenerAdapter() : connectionListener;
     this.notifyBySubscription = notifyBySubscription;
     this.serverConnectionFactory = serverConnectionFactory;
+    this.member = internalCache.getMyId();
 
     {
       int tmp_maxConnections = maxConnections;
@@ -515,15 +517,8 @@ public class AcceptorImpl implements Acceptor, Runnable {
         tmp_commQ = new LinkedBlockingQueue<>();
         tmp_hs = new HashSet<>(512);
         tmp_timer = new SystemTimer(internalCache.getDistributedSystem());
-        DistributionImpl distribution = (DistributionImpl) internalCache
-            .getInternalDistributedSystem().getDM().getDistribution();
-
-        if (distribution != null) {
-          tmp_buffpool = distribution.getDirectChannel().getConduit().getBufferPool();
-        } else {
-          DistributionManager dm = internalCache.getInternalDistributedSystem().getDM();
-          tmp_buffpool = new BufferPool(dm.getStats());
-        }
+        DistributionManager dm = internalCache.getInternalDistributedSystem().getDM();
+        tmp_buffpool = new BufferPool(dm.getStats());
       }
       selector = tmp_s;
       selectorQueue = tmp_q;
@@ -1552,7 +1547,6 @@ public class AcceptorImpl implements Acceptor, Runnable {
       dos.writeInt(0);
 
       // Write the server's member
-      DistributedMember member = InternalDistributedSystem.getAnyInstance().getDistributedMember();
       HeapDataOutputStream memberDos = new HeapDataOutputStream(KnownVersion.CURRENT);
       DataSerializer.writeObject(member, memberDos);
       DataSerializer.writeByteArray(memberDos.toByteArray(), dos);
@@ -1582,7 +1576,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
       return;
     }
     try (ByteBufferOutputStream bbos =
-        new ByteBufferOutputStream(sslEngine.getEngine().getSession().getPacketBufferSize())) {
+        new ByteBufferOutputStream(sslEngine.getPacketBufferSize())) {
 
       DataOutputStream dos = new DataOutputStream(bbos);
 
@@ -1595,7 +1589,6 @@ public class AcceptorImpl implements Acceptor, Runnable {
       dos.writeInt(0);
 
       // Write the server's member
-      DistributedMember member = InternalDistributedSystem.getAnyInstance().getDistributedMember();
       HeapDataOutputStream memberDos = new HeapDataOutputStream(KnownVersion.CURRENT);
       DataSerializer.writeObject(member, memberDos);
       DataSerializer.writeByteArray(memberDos.toByteArray(), dos);

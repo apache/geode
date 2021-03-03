@@ -264,7 +264,7 @@ public abstract class ServerConnection implements Runnable {
   @MutableForTesting
   private static boolean TEST_VERSION_AFTER_HANDSHAKE_FLAG;
 
-  private NioSslEngine sslEngine;
+  private final NioSslEngine sslEngine;
 
   /**
    * Creates a new {@code ServerConnection} that processes messages received from an edge
@@ -1462,12 +1462,11 @@ public abstract class ServerConnection implements Runnable {
       getAcceptor().decClientServerConnectionCount();
     }
 
-    if (this.sslEngine != null) {
+    if (getSSLEngine() != null) {
       try {
         this.sslEngine.close(theSocket.getChannel());
       } catch (Exception ignored) {
       }
-      this.sslEngine = null;
     }
 
     if (!theSocket.isClosed()) {
@@ -1523,13 +1522,12 @@ public abstract class ServerConnection implements Runnable {
     terminated = true;
     Socket s = theSocket;
     if (s != null) {
-      if (this.sslEngine != null) {
+      if (getSSLEngine() != null) {
         try {
           this.sslEngine.close(s.getChannel());
         } catch (Exception e) {
           // ignore
         }
-        this.sslEngine = null;
       }
       try {
         s.close();
@@ -1863,7 +1861,10 @@ public abstract class ServerConnection implements Runnable {
   }
 
   public NioSslEngine getSSLEngine() {
-    return this.sslEngine;
+    if (this.sslEngine != null && !this.sslEngine.isClosed()) {
+      return this.sslEngine;
+    }
+    return null;
   }
 
   /**
