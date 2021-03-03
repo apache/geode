@@ -222,12 +222,13 @@ public interface PoolFactory {
   boolean DEFAULT_MULTIUSER_AUTHENTICATION = false;
   /**
    * The default value for whether to request locator internal address.
+   * This is used, when client is deployed in internal network.
    * <p>
    * Current value: <code>false</code>.
    *
    * @since Geode 1.14
    */
-  boolean DEFAULT_REQUEST_LOCATOR_INTERNAL_ADDRESS = false;
+  boolean DEFAULT_REQUEST_LOCATOR_INTERNAL_ADDRESS_ENABLED = false;
 
   /**
    * The default value for the socket factory
@@ -594,6 +595,6 @@ public interface PoolFactory {
    * @return a reference to <code>this</code>
    * @since Geode 1.14
    */
-  PoolFactory setRequestLocatorInternalAddress(boolean requestInternal);
+  PoolFactory setRequestLocatorInternalAddressEnabled(boolean requestInternal);
 
 }

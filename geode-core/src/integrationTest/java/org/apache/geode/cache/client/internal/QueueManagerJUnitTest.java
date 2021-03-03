@@ -491,7 +491,7 @@ public class QueueManagerJUnitTest {
     }
 
     @Override
-    public boolean getRequestLocatorInternalAddress() {
+    public boolean isRequestLocatorInternalAddressEnabled() {
       return false;
     }
 

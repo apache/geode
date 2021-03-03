@@ -689,7 +689,7 @@ public class AutoConnectionSourceImplJUnitTest {
     }
 
     @Override
-    public boolean getRequestLocatorInternalAddress() {
+    public boolean isRequestLocatorInternalAddressEnabled() {
       return false;
     }
 

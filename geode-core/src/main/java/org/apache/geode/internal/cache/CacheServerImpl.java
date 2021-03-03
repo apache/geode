@@ -750,7 +750,6 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     CacheServerProfile bp = (CacheServerProfile) profile;
     bp.setHost(getExternalAddress(false));
     bp.setPort(getPort());
-    bp.setInternalHost(null);
     bp.setGroups(getCombinedGroups());
     bp.setMaxConnections(maxConnections);
     bp.setInitialLoad(loadMonitor.getLastLoad());

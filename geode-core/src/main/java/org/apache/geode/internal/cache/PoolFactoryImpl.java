@@ -278,8 +278,8 @@ public class PoolFactoryImpl implements InternalPoolFactory {
   }
 
   @Override
-  public PoolFactory setRequestLocatorInternalAddress(boolean requestInternal) {
-    attributes.requestLocatorInternalAddress = requestInternal;
+  public PoolFactory setRequestLocatorInternalAddressEnabled(boolean requestInternal) {
+    attributes.requestLocatorInternalAddressEnabled = requestInternal;
     return this;
   }
 
@@ -348,7 +348,7 @@ public class PoolFactoryImpl implements InternalPoolFactory {
     for (InetSocketAddress address : cp.getLocators()) {
       addLocator(address.getHostString(), address.getPort());
     }
-    setRequestLocatorInternalAddress(cp.getRequestLocatorInternalAddress());
+    setRequestLocatorInternalAddressEnabled(cp.isRequestLocatorInternalAddressEnabled());
     attributes.servers.addAll(cp.getServers().stream()
         .map(x -> new HostAndPort(x.getHostString(), x.getPort())).collect(Collectors.toList()));
   }
@@ -447,7 +447,7 @@ public class PoolFactoryImpl implements InternalPoolFactory {
     int subscriptionTimeoutMultipler = DEFAULT_SUBSCRIPTION_TIMEOUT_MULTIPLIER;
     public String serverGroup = DEFAULT_SERVER_GROUP;
     boolean multiuserSecureModeEnabled = DEFAULT_MULTIUSER_AUTHENTICATION;
-    boolean requestLocatorInternalAddress = DEFAULT_REQUEST_LOCATOR_INTERNAL_ADDRESS;
+    boolean requestLocatorInternalAddressEnabled = DEFAULT_REQUEST_LOCATOR_INTERNAL_ADDRESS_ENABLED;
 
     public ArrayList<HostAndPort> locators = new ArrayList<>();
     public ArrayList<HostAndPort> servers = new ArrayList<>();
@@ -591,8 +591,8 @@ public class PoolFactoryImpl implements InternalPoolFactory {
     }
 
     @Override
-    public boolean getRequestLocatorInternalAddress() {
-      return requestLocatorInternalAddress;
+    public boolean isRequestLocatorInternalAddressEnabled() {
+      return requestLocatorInternalAddressEnabled;
     }
 
     @Override
@@ -671,7 +671,7 @@ public class PoolFactoryImpl implements InternalPoolFactory {
       DataSerializer.writePrimitiveInt(statisticInterval, out);
       DataSerializer.writePrimitiveBoolean(multiuserSecureModeEnabled, out);
       DataSerializer.writePrimitiveInt(socketConnectTimeout, out);
-      DataSerializer.writePrimitiveBoolean(requestLocatorInternalAddress, out);
+      DataSerializer.writePrimitiveBoolean(requestLocatorInternalAddressEnabled, out);
     }
 
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
@@ -697,9 +697,9 @@ public class PoolFactoryImpl implements InternalPoolFactory {
       socketConnectTimeout = DataSerializer.readPrimitiveInt(in);
       if (StaticSerialization.getVersionForDataStream(in)
           .isNotOlderThan(KnownVersion.GEODE_1_14_0)) {
-        requestLocatorInternalAddress = DataSerializer.readPrimitiveBoolean(in);
+        requestLocatorInternalAddressEnabled = DataSerializer.readPrimitiveBoolean(in);
       } else {
-        requestLocatorInternalAddress = false;
+        requestLocatorInternalAddressEnabled = false;
       }
     }
 
@@ -713,7 +713,7 @@ public class PoolFactoryImpl implements InternalPoolFactory {
               queueRedundancyLevel, queueMessageTrackingTimeout, queueAckInterval,
               subscriptionTimeoutMultipler, serverGroup, multiuserSecureModeEnabled, locators,
               servers, startDisabled, locatorCallback, gatewaySender, gateway, socketFactory,
-              requestLocatorInternalAddress);
+              requestLocatorInternalAddressEnabled);
     }
 
     @Override
@@ -741,7 +741,7 @@ public class PoolFactoryImpl implements InternalPoolFactory {
           && queueAckInterval == that.queueAckInterval
           && multiuserSecureModeEnabled == that.multiuserSecureModeEnabled
           && startDisabled == that.startDisabled && gateway == that.gateway
-          && requestLocatorInternalAddress == that.requestLocatorInternalAddress
+          && requestLocatorInternalAddressEnabled == that.requestLocatorInternalAddressEnabled
           && Objects.equals(serverGroup, that.serverGroup)
           && Objects.equals(new HashSet<>(locators), new HashSet<>(that.locators))
           && Objects.equals(new HashSet<>(servers), new HashSet<>(that.servers))

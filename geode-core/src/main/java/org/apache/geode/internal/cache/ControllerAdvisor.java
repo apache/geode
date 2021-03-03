@@ -94,6 +94,7 @@ public class ControllerAdvisor extends GridAdvisor {
    * Describes a cache server for distribution purposes.
    */
   public static class ControllerProfile extends GridAdvisor.GridProfile {
+    private String internalHost;
 
     /** for internal use, required for DataSerializer.readObject */
     public ControllerProfile() {}
@@ -104,6 +105,14 @@ public class ControllerAdvisor extends GridAdvisor {
 
     public ControllerProfile(ControllerProfile toCopy) {
       super(toCopy);
+    }
+
+    public void setInternalHost(String internalHost) {
+      this.internalHost = internalHost;
+    }
+
+    public String getInternalHost() {
+      return this.internalHost;
     }
 
     /**
@@ -154,6 +163,7 @@ public class ControllerAdvisor extends GridAdvisor {
     @Override
     public void fillInToString(StringBuilder sb) {
       super.fillInToString(sb);
+      sb.append("; internalHost=").append(getInternalHost());
     }
   }
 }

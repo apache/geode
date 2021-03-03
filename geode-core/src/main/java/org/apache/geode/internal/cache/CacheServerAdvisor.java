@@ -152,7 +152,6 @@ public class CacheServerAdvisor extends GridAdvisor {
       this.initialLoad = new ServerLoad();
       InternalDataSerializer.invokeFromData(initialLoad, in);
       setLoadPollInterval(in.readLong());
-      setInternalHost(null);
     }
 
     @Override

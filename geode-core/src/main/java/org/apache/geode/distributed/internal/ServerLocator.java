@@ -53,7 +53,6 @@ import org.apache.geode.internal.cache.CacheServerAdvisor.CacheServerProfile;
 import org.apache.geode.internal.cache.ControllerAdvisor;
 import org.apache.geode.internal.cache.ControllerAdvisor.ControllerProfile;
 import org.apache.geode.internal.cache.FindDurableQueueProcessor;
-import org.apache.geode.internal.cache.GridAdvisor.GridProfile;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -372,7 +371,6 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
     stats.endLocatorResponse(startTime);
   }
 
-
   private List<ServerLocation> getLocators(boolean requestInternal) {
     if (cachedLocators != null && cachedRequestInternalLocators == requestInternal) {
       return cachedLocators;
@@ -397,7 +395,7 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
     }
   }
 
-  protected static ServerLocation buildServerLocation(GridProfile p,
+  protected static ServerLocation buildServerLocation(ControllerProfile p,
       boolean requestInternal) {
     String host;
     if (requestInternal) {
@@ -408,10 +406,16 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
     return new ServerLocation(host, p.getPort());
   }
 
+  protected static ServerLocation buildServerLocation(CacheServerProfile p) {
+    String host;
+    host = p.getHost();
+    return new ServerLocation(host, p.getPort());
+  }
+
   public void profileCreated(Profile profile) {
     if (profile instanceof CacheServerProfile) {
       CacheServerProfile bp = (CacheServerProfile) profile;
-      ServerLocation location = buildServerLocation(bp, false);
+      ServerLocation location = buildServerLocation(bp);
       String[] groups = bp.getGroups();
       loadSnapshot.addServer(
           location, bp.getDistributedMember().getUniqueId(), groups,
@@ -432,7 +436,7 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
     if (profile instanceof CacheServerProfile) {
       CacheServerProfile bp = (CacheServerProfile) profile;
       // InternalDistributedMember id = bp.getDistributedMember();
-      ServerLocation location = buildServerLocation(bp, false);
+      ServerLocation location = buildServerLocation(bp);
       loadSnapshot.removeServer(location, bp.getDistributedMember().getUniqueId());
       if (logger.isDebugEnabled()) {
         logger.debug("ServerLocator: server departed {}", location);

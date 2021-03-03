@@ -700,8 +700,8 @@ public class ClientCacheFactory {
    *
    * @return a reference to <code>this</code>
    */
-  public ClientCacheFactory setPoolRequestLocatorInternalAddress(boolean requestInternal) {
-    getPoolFactory().setRequestLocatorInternalAddress(requestInternal);
+  public ClientCacheFactory setRequestLocatorInternalAddressEnabled(boolean requestInternal) {
+    getPoolFactory().setRequestLocatorInternalAddressEnabled(requestInternal);
     return this;
   }
 
