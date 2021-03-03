@@ -451,7 +451,6 @@ public class RebalanceOperationPerformer
   @NotNull
   private Function getRebalanceFunction(InternalDistributedMember dsMember) {
     Function rebalanceFunction;
-    System.out.println("NABA " + dsMember.getVersion().toString());
     if (dsMember.getVersion()
         .isOlderThan(KnownVersion.GEODE_1_12_0)) {
       rebalanceFunction =
