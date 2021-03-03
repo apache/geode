@@ -15,7 +15,7 @@
  */
 package org.apache.geode.rest.internal.web.controllers;
 
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -139,58 +139,63 @@ public class RestAPICompatibilityTest {
 
   void executeAndValidatePOSTRESTCalls(int locator) throws Exception {
 
-    CloseableHttpClient httpClient = HttpClients.createDefault();
-    for (Map.Entry<String, String[]> entry : postRESTAPICalls.entrySet()) {
-      // Skip the test is the version is before the REST api was introduced.
-      if (TestVersion.compare(oldVersion, entry.getValue()[2]) < 0) {
-        continue;
-      }
-      HttpPost post =
-          new HttpPost("http://localhost:" + locator + entry.getKey());
-      post.addHeader("Content-Type", "application/json");
-      post.addHeader("Accept", "application/json");
-      StringEntity jsonStringEntity =
-          new StringEntity(entry.getValue()[0], ContentType.DEFAULT_TEXT);
-      post.setEntity(jsonStringEntity);
-      CloseableHttpResponse response = httpClient.execute(post);
+    try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+      for (Map.Entry<String, String[]> entry : postRESTAPICalls.entrySet()) {
+        // Skip the test is the version is before the REST api was introduced.
+        if (TestVersion.compare(oldVersion, entry.getValue()[2]) < 0) {
+          continue;
+        }
+        HttpPost post =
+            new HttpPost("http://localhost:" + locator + entry.getKey());
+        post.addHeader("Content-Type", "application/json");
+        post.addHeader("Accept", "application/json");
+        StringEntity jsonStringEntity =
+            new StringEntity(entry.getValue()[0], ContentType.DEFAULT_TEXT);
+        post.setEntity(jsonStringEntity);
+        CloseableHttpResponse response = httpClient.execute(post);
 
-      HttpEntity entity = response.getEntity();
-      InputStream content = entity.getContent();
+        HttpEntity entity = response.getEntity();
+        InputStream content = entity.getContent();
 
-      BufferedReader reader = new BufferedReader(new InputStreamReader(content));
-      String line;
-      StringBuilder sb = new StringBuilder();
-      while ((line = reader.readLine()) != null) {
-        sb.append(line);
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(content))) {
+          String line;
+          StringBuilder sb = new StringBuilder();
+          while ((line = reader.readLine()) != null) {
+            sb.append(line);
+          }
+          JsonNode jsonObject = mapper.readTree(sb.toString());
+          String statusCode = jsonObject.findValue("statusCode").textValue();
+          assertThat(statusCode).satisfiesAnyOf(
+              value -> assertThat(value).isEqualTo("ACCEPTED"),
+              value -> assertThat(value).contains("OK"));
+          String statusMessage = jsonObject.findValue("statusMessage").textValue();
+          assertThat(statusMessage).contains(entry.getValue()[1]);
+        }
       }
-      JsonNode jsonObject = mapper.readTree(sb.toString());
-      String statusCode = jsonObject.findValue("statusCode").textValue();
-      assertTrue(statusCode.equals("ACCEPTED") || statusCode.contains("OK"));
-      String statusMessage = jsonObject.findValue("statusMessage").textValue();
-      assertTrue(statusMessage.contains(entry.getValue()[1]));
     }
   }
 
   public static void executeAndValidateGETRESTCalls(int locator) throws Exception {
 
-    CloseableHttpClient httpclient = HttpClients.createDefault();
-    for (String[] commandExpectedResponsePair : getRESTAPICalls) {
-      HttpGet get =
-          new HttpGet("http://localhost:" + locator +
-              commandExpectedResponsePair[0]);
-      CloseableHttpResponse response = httpclient.execute(get);
-      HttpEntity entity = response.getEntity();
-      InputStream content = entity.getContent();
-      BufferedReader reader = new BufferedReader(new InputStreamReader(content));
-      String line;
-      StringBuilder sb = new StringBuilder();
-      while ((line = reader.readLine()) != null) {
-        sb.append(line);
+    try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
+      for (String[] commandExpectedResponsePair : getRESTAPICalls) {
+        HttpGet get =
+            new HttpGet("http://localhost:" + locator +
+                commandExpectedResponsePair[0]);
+        CloseableHttpResponse response = httpclient.execute(get);
+        HttpEntity entity = response.getEntity();
+        InputStream content = entity.getContent();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(content))) {
+          String line;
+          StringBuilder sb = new StringBuilder();
+          while ((line = reader.readLine()) != null) {
+            sb.append(line);
+          }
+          JsonNode jsonObject = mapper.readTree(sb.toString());
+          String statusCode = jsonObject.findValue("status").textValue();
+          assertThat(statusCode).contains(commandExpectedResponsePair[1]);
+        }
       }
-      System.out.println("Result : " + sb.toString());
-      JsonNode jsonObject = mapper.readTree(sb.toString());
-      String statusCode = jsonObject.findValue("status").textValue();
-      assertTrue(statusCode.contains(commandExpectedResponsePair[1]));
     }
   }
 }
