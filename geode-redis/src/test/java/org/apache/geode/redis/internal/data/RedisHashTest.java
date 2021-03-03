@@ -187,9 +187,9 @@ public class RedisHashTest {
 
     FIELDS_AND_VALUES_FOR_HASH.forEach((entry) -> {
       if (entry.toString().contains("field")) {
-        assertThat(keyList.contains(entry)).isTrue();
+        assertThat(keyList).contains(entry);
       } else if (entry.toString().contains("value")) {
-        assertThat(keyList.contains(entry)).isFalse();
+        assertThat(keyList).doesNotContain(entry);
       }
     });
 

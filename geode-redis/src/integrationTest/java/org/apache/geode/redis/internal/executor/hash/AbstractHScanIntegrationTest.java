@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.assertj.core.data.Offset;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -264,30 +263,6 @@ public abstract class AbstractHScanIntegrationTest implements RedisPortSupplier 
     assertThat(new HashSet<>(result.getResult())).isEqualTo(entryMap.entrySet());
   }
 
-  @Test
-  // note: As per redis docs, count parameter is not guaranteed to be honored
-  public void givenCount_returnsAllEntriesWithoutDuplicates() {
-    Map<String, String> entryMap = new HashMap<>();
-    entryMap.put("1", "yellow");
-    entryMap.put("2", "green");
-    entryMap.put("3", "orange");
-    jedis.hmset("colors", entryMap);
-
-    ScanParams scanParams = new ScanParams();
-    scanParams.count(1);
-    ScanResult<Map.Entry<String, String>> result;
-    List<Map.Entry<String, String>> allEntries = new ArrayList<>();
-    String cursor = "0";
-
-    do {
-      result = jedis.hscan("colors", cursor, scanParams);
-      allEntries.addAll(result.getResult());
-      cursor = result.getCursor();
-    } while (!result.isCompleteIteration());
-
-    assertThat(allEntries.size()).isCloseTo(3, Offset.offset(1));
-  }
-
 
   @Test
   @SuppressWarnings("unchecked")
@@ -340,7 +315,7 @@ public abstract class AbstractHScanIntegrationTest implements RedisPortSupplier 
   }
 
   @Test
-  public void givenMatch_returnsAllMatchingEntriesWithoutDuplicates() {
+  public void givenMatch_returnsAllMatchingEntries() {
     Map<String, String> entryMap = new HashMap<>();
     entryMap.put("1", "yellow");
     entryMap.put("12", "green");
@@ -376,7 +351,7 @@ public abstract class AbstractHScanIntegrationTest implements RedisPortSupplier 
   }
 
   @Test
-  public void givenMatchAndCount_returnsAllMatchingKeysWithoutDuplicates() {
+  public void givenMatchAndCount_returnsAllMatchingKeys() {
     Map<String, String> entryMap = new HashMap<>();
     entryMap.put("1", "yellow");
     entryMap.put("12", "green");
@@ -483,7 +458,6 @@ public abstract class AbstractHScanIntegrationTest implements RedisPortSupplier 
           int fieldSuffix = i % SIZE_OF_INITIAL_HASH_DATA;
           jedis3.hset(HASH_KEY, BASE_FIELD + fieldSuffix, "new_value_" + i);
         }).run();
-
   }
 
   @Test

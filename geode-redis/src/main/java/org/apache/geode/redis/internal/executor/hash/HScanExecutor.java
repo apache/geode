@@ -57,12 +57,8 @@ public class HScanExecutor extends AbstractScanExecutor {
     int count = DEFAULT_COUNT;
 
     try {
-      cursor = Integer.valueOf(cursorString);
+      cursor = Integer.parseInt(cursorString);
     } catch (NumberFormatException e) {
-      return RedisResponse.error(ERROR_CURSOR);
-    }
-
-    if (cursor > Integer.MAX_VALUE) {
       return RedisResponse.error(ERROR_CURSOR);
     }
 

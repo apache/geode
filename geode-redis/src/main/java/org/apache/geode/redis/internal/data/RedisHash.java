@@ -27,9 +27,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -39,6 +37,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -282,9 +281,7 @@ public class RedisHash extends AbstractRedisData {
 
   public ImmutablePair<Integer, List<Object>> hscan(UUID clientID, Pattern matchPattern,
       int count,
-      int cursorParameter) {
-
-    int startCursor = cursorParameter;
+      int startCursor) {
 
     List<ByteArrayWrapper> keysToScan = getSnapShotOfKeySet(clientID);
 
@@ -381,9 +378,12 @@ public class RedisHash extends AbstractRedisData {
 
   @SuppressWarnings("unchecked")
   private List<ByteArrayWrapper> createKeySnapShot(UUID clientID) {
-    List<ByteArrayWrapper> keySnapShot = new ArrayList<>();
-    List hashKeysAsList = Arrays.asList(hash.keySet().toArray());
-    Collections.copy(keySnapShot, hashKeysAsList);
+
+    List<ByteArrayWrapper> keySnapShot =
+        hash.keySet()
+            .stream()
+            .map(key -> new ByteArrayWrapper(key.toBytes()))
+            .collect(Collectors.toList());
 
     this.hScanSnapShots.put(clientID, keySnapShot);
     this.hScanSnapShotCreationTimes.put(clientID, currentTimeMillis());
@@ -393,7 +393,8 @@ public class RedisHash extends AbstractRedisData {
 
 
   public long hincrby(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
-      ByteArrayWrapper field, long increment) throws NumberFormatException, ArithmeticException {
+      ByteArrayWrapper field, long increment)
+      throws NumberFormatException, ArithmeticException {
     ByteArrayWrapper oldValue = hash.get(field);
     if (oldValue == null) {
       ByteArrayWrapper newValue = new ByteArrayWrapper(Coder.longToBytes(increment));
@@ -428,7 +429,8 @@ public class RedisHash extends AbstractRedisData {
   }
 
   public BigDecimal hincrbyfloat(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
-      ByteArrayWrapper field, BigDecimal increment) throws NumberFormatException {
+      ByteArrayWrapper field, BigDecimal increment)
+      throws NumberFormatException {
     ByteArrayWrapper oldValue = hash.get(field);
     if (oldValue == null) {
       ByteArrayWrapper newValue = new ByteArrayWrapper(Coder.bigDecimalToBytes(increment));

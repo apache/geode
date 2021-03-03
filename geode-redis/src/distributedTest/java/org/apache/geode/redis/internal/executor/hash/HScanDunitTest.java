@@ -54,7 +54,6 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
-import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 public class HScanDunitTest {
 
@@ -63,9 +62,6 @@ public class HScanDunitTest {
 
   @Rule
   public ExecutorServiceRule executor = new ExecutorServiceRule();
-
-  @ClassRule
-  public static GfshCommandRule gfsh = new GfshCommandRule();
 
   private static RedisCommands<String, String> commands;
   private RedisClient redisClient;
@@ -84,7 +80,7 @@ public class HScanDunitTest {
   static int[] redisPorts;
 
   @BeforeClass
-  public static void classSetup() throws Exception {
+  public static void classSetup() {
     int locatorPort;
     locatorProperties = new Properties();
     locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, "15000");
@@ -103,8 +99,6 @@ public class HScanDunitTest {
 
     String redisPort3 = redisPorts[2] + "";
     server3 = redisClusterStartupRule.startServerVM(3, redisPort3, locatorPort);
-
-    gfsh.connectAndVerify(locator);
   }
 
   @Before
@@ -143,7 +137,7 @@ public class HScanDunitTest {
   }
 
   @Test
-  public void should_allow_hscan_iteration_to_complete_successfully_given_server_crashes_during_iteration()
+  public void should_allowHscanIterationToCompleteSuccessfullyGivenServerCrashesDuringIteration()
       throws ExecutionException, InterruptedException {
 
     AtomicBoolean keepCrashingVMs = new AtomicBoolean(true);

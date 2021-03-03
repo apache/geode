@@ -258,7 +258,7 @@ public class CommandFunction extends SingleResultRedisFunction {
       case HSCAN: {
         Pattern pattern = (Pattern) args[1];
         int count = (int) args[2];
-        int cursor = Integer.valueOf(args[3].toString());
+        int cursor = (int) args[3];
         UUID clientID = (UUID) args[4];
         return hashCommands.hscan(key, pattern, count, cursor, clientID);
       }
