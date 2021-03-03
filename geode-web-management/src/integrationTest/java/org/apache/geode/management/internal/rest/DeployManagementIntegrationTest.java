@@ -42,9 +42,7 @@ import org.apache.geode.management.api.EntityInfo;
 import org.apache.geode.management.api.RestTemplateClusterManagementServiceTransport;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Deployment;
-import org.apache.geode.management.runtime.DeploymentInfo;
 import org.apache.geode.test.compiler.JarBuilder;
-import org.apache.geode.test.junit.assertions.ClusterManagementListResultAssert;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
 @RunWith(SpringRunner.class)
@@ -99,13 +97,11 @@ public class DeployManagementIntegrationTest {
     deployment.setGroup("group2");
     assertManagementResult(client.create(deployment)).isSuccessful();
 
-    ClusterManagementListResultAssert<Deployment, DeploymentInfo> deploymentResultAssert =
-        assertManagementListResult(client.list(new Deployment()));
-    deploymentResultAssert.isSuccessful()
+    assertManagementListResult(client.list(new Deployment())).isSuccessful()
         .hasEntityInfo()
         .hasSize(2)
         .extracting(EntityInfo::getId)
-        .containsExactlyInAnyOrder("jar1", "jar2");
+        .containsExactlyInAnyOrder("jar1.jar", "jar2.jar");
   }
 
 

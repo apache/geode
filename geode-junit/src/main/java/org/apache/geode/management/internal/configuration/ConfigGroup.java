@@ -42,13 +42,13 @@ import java.util.stream.Stream;
 
 public class ConfigGroup implements Serializable {
   public String name;
-  private Set<String> deploymentNames = new HashSet<>();
+  private Set<String> jars = new HashSet<>();
   private Set<String> configFiles = new HashSet<>();
   private Set<String> regions = new HashSet<>();
   private String maxLogFileSize;
 
   public ConfigGroup(ConfigGroup that) {
-    this.deploymentNames.addAll(that.deploymentNames);
+    this.jars.addAll(that.jars);
     this.configFiles.addAll(that.configFiles);
     this.regions.addAll(that.regions);
     this.maxLogFileSize = that.maxLogFileSize;
@@ -64,8 +64,8 @@ public class ConfigGroup implements Serializable {
     return this;
   }
 
-  public ConfigGroup deployments(String... deployments) {
-    this.deploymentNames.addAll(Arrays.asList(deployments));
+  public ConfigGroup jars(String... jars) {
+    this.jars.addAll(Arrays.asList(jars));
     return this;
   }
 
@@ -74,13 +74,13 @@ public class ConfigGroup implements Serializable {
     return this;
   }
 
-  public ConfigGroup removeDeployment(String deployment) {
-    this.deploymentNames.remove(deployment);
+  public ConfigGroup removeJar(String jar) {
+    this.jars.remove(jar);
     return this;
   }
 
-  public ConfigGroup addDeployment(String deployment) {
-    this.deploymentNames.add(deployment);
+  public ConfigGroup addJar(String jar) {
+    this.jars.add(jar);
     return this;
   }
 
@@ -89,14 +89,17 @@ public class ConfigGroup implements Serializable {
     return this;
   }
 
-  public Set<String> getDeploymentNames() {
-    return Collections.unmodifiableSet(this.deploymentNames);
+  public Set<String> getJars() {
+    return Collections.unmodifiableSet(this.jars);
   }
 
   public Set<String> getAllFiles() {
     return Collections.unmodifiableSet(
-        Stream.concat(this.deploymentNames.stream(), this.configFiles.stream())
-            .collect(Collectors.toSet()));
+        Stream.concat(this.jars.stream(), this.configFiles.stream()).collect(Collectors.toSet()));
+  }
+
+  public Set<String> getAllJarFiles() {
+    return this.jars.stream().collect(Collectors.toSet());
   }
 
   public Set<String> getRegions() {

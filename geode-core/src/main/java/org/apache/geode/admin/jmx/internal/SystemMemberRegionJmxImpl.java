@@ -55,13 +55,13 @@ public class SystemMemberRegionJmxImpl
 
     GemFireVM vm = cache.getVM();
     this.mbeanName = new StringBuffer("GemFire.Cache:").append("path=")
-        .append(MBeanUtils.makeCompliantMBeanNameProperty(getFullPath())).append(",name=")
-        .append(MBeanUtils.makeCompliantMBeanNameProperty(cache.getName())).append(",id=")
+        .append(MBeanUtil.makeCompliantMBeanNameProperty(getFullPath())).append(",name=")
+        .append(MBeanUtil.makeCompliantMBeanNameProperty(cache.getName())).append(",id=")
         .append(cache.getId()).append(",owner=")
-        .append(MBeanUtils.makeCompliantMBeanNameProperty(vm.getId().toString()))
+        .append(MBeanUtil.makeCompliantMBeanNameProperty(vm.getId().toString()))
         .append(",type=Region").toString();
 
-    this.objectName = MBeanUtils.createMBean(this);
+    this.objectName = MBeanUtil.createMBean(this);
   }
 
   // -------------------------------------------------------------------------
