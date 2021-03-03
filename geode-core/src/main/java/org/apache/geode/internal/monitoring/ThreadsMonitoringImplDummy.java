@@ -32,9 +32,17 @@ public class ThreadsMonitoringImplDummy implements ThreadsMonitoring {
   @Override
   public void endMonitor() {}
 
+  private static class DummyAbstractExecutor extends AbstractExecutor {
+    private static final DummyAbstractExecutor SINGLETON = new DummyAbstractExecutor();
+
+    private DummyAbstractExecutor() {
+      super("dummyExecutorGroup", 0L);
+    }
+  }
+
   @Override
   public AbstractExecutor createAbstractExecutor(Mode mode) {
-    return null;
+    return DummyAbstractExecutor.SINGLETON;
   }
 
   @Override
