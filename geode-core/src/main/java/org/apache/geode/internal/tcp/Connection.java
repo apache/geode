@@ -18,7 +18,6 @@ import static java.lang.Boolean.FALSE;
 import static java.lang.ThreadLocal.withInitial;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER_AUTH_INIT;
 import static org.apache.geode.distributed.internal.DistributionConfigImpl.SECURITY_SYSTEM_PREFIX;
-import static org.apache.geode.internal.monitoring.ThreadsMonitoring.Mode.P2PReaderExecutor;
 import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
 
 import java.io.DataInput;
@@ -80,6 +79,7 @@ import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.SystemTimer.SystemTimerTask;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.monitoring.executor.AbstractExecutor;
+import org.apache.geode.internal.monitoring.executor.P2PReaderExecutorGroup;
 import org.apache.geode.internal.net.BufferPool;
 import org.apache.geode.internal.net.ByteBufferSharing;
 import org.apache.geode.internal.net.NioFilter;
@@ -1594,8 +1594,7 @@ public class Connection implements Runnable {
     // if we're using SSL/TLS the input buffer may already have data to process
     boolean skipInitialRead = getInputBuffer().position() > 0;
     final ThreadsMonitoring threadMonitoring = getThreadMonitoring();
-    final AbstractExecutor threadMonitorExecutor =
-        threadMonitoring.createAbstractExecutor(P2PReaderExecutor);
+    final AbstractExecutor threadMonitorExecutor = new P2PReaderExecutorGroup();
     threadMonitorExecutor.suspendMonitoring();
     threadMonitoring.register(threadMonitorExecutor);
     try {
