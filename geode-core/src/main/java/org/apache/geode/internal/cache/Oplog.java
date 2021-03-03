@@ -6395,20 +6395,12 @@ public class Oplog implements CompactableOplog, Flushable {
    */
   public KnownVersion getProductVersionIfOld() {
     final KnownVersion version = this.gfversion;
-    if (version == null) {
-      // check for the case of diskstore upgrade from 6.6 to >= 7.0
-      if (getParent().isUpgradeVersionOnly()) {
-        // assume previous release version
-        return KnownVersion.GFE_66;
-      } else {
-        return null;
-      }
-    } else if (version == KnownVersion.CURRENT) {
+    if (version == KnownVersion.CURRENT) {
       return null;
-    } else {
-      // version changed so return that for VersionedDataStream
-      return version;
     }
+
+    // version changed so return that for VersionedDataStream
+    return version;
   }
 
   /**
@@ -6417,20 +6409,12 @@ public class Oplog implements CompactableOplog, Flushable {
    */
   public KnownVersion getDataVersionIfOld() {
     final KnownVersion version = this.dataVersion;
-    if (version == null) {
-      // check for the case of diskstore upgrade from 6.6 to >= 7.0
-      if (getParent().isUpgradeVersionOnly()) {
-        // assume previous release version
-        return KnownVersion.GFE_66;
-      } else {
-        return null;
-      }
-    } else if (version == KnownVersion.CURRENT) {
+    if (version == KnownVersion.CURRENT) {
       return null;
-    } else {
-      // version changed so return that for VersionedDataStream
-      return version;
     }
+
+    // version changed so return that for VersionedDataStream
+    return version;
   }
 
   public enum OPLOG_TYPE {

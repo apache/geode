@@ -105,7 +105,7 @@ public abstract class ServerConnection implements Runnable {
   public static boolean allowInternalMessagesWithoutCredentials =
       !Boolean.getBoolean(DISALLOW_INTERNAL_MESSAGES_WITHOUT_CREDENTIALS_NAME);
 
-  private Map commands;
+  private Map<Integer, Command> commands;
 
   protected final SecurityService securityService;
 
@@ -362,8 +362,7 @@ public abstract class ServerConnection implements Runnable {
 
         setHandshake(readHandshake);
         setProxyId(readHandshake.getMembershipId());
-        if (readHandshake.getVersion().isOlderThan(KnownVersion.GFE_65)
-            || getCommunicationMode().isWAN()) {
+        if (getCommunicationMode().isWAN()) {
           try {
             setAuthAttributes();
 
@@ -443,7 +442,7 @@ public abstract class ServerConnection implements Runnable {
     }
   }
 
-  protected Map getCommands() {
+  protected Map<Integer, Command> getCommands() {
     return commands;
   }
 
@@ -840,7 +839,7 @@ public abstract class ServerConnection implements Runnable {
           } else {
             logger.warn(
                 "Failed to bind the subject of uniqueId {} for message {} with {} : Possible re-authentication required",
-                uniqueId, messageType, this.getName());
+                uniqueId, messageType, getName());
             throw new AuthenticationRequiredException("Failed to find the authenticated user.");
           }
         }
@@ -986,13 +985,19 @@ public abstract class ServerConnection implements Runnable {
   }
 
   void initializeCommands() {
-    // The commands are cached here, but are just referencing the ones
-    // stored in the CommandInitializer
-    commands = CommandInitializer.getCommands(this);
+    // The commands are cached here, but are just referencing the ones stored in the
+    // CommandInitializer
+    KnownVersion clientVersion = getClientVersion();
+    // WAN uses KnownVersion.CURRENT, but that might not have a command table, so we look
+    // for one that does
+    if (!clientVersion.hasClientServerProtocolChange()) {
+      clientVersion = clientVersion.getClientServerProtocolVersion();
+    }
+    commands = CommandInitializer.getDefaultInstance().get(clientVersion);
   }
 
   private Command getCommand(Integer messageType) {
-    return (Command) commands.get(messageType);
+    return commands.get(messageType);
   }
 
   public void removeUserAuth(Message message, boolean keepAlive) {
@@ -1127,7 +1132,6 @@ public abstract class ServerConnection implements Runnable {
   public Part updateAndGetSecurityPart() {
     // need to take care all message types here
     if (AcceptorImpl.isAuthenticationRequired()
-        && handshake.getVersion().isNotOlderThan(KnownVersion.GFE_65)
         && !communicationMode.isWAN() && !requestMessage.getAndResetIsMetaRegion()
         && !isInternalMessage(requestMessage, allowInternalMessagesWithoutCredentials)) {
       setSecurityPart();
@@ -1414,11 +1418,22 @@ public abstract class ServerConnection implements Runnable {
       getAcceptor().decClientServerConnectionCount();
     }
 
-    try {
-      theSocket.close();
-    } catch (Exception ignored) {
+    if (!theSocket.isClosed()) {
+      // Here we direct closing of sockets to one of two executors. Use of an executor
+      // keeps us from causing an explosion of new threads when a server is shut down.
+      // Background threads are used in case the close() operation on the socket hangs.
+      final String closerName =
+          communicationMode.isWAN() ? "WANSocketCloser" : "CacheServerSocketCloser";
+      acceptor.getSocketCloser().asyncClose(theSocket, closerName, () -> {
+      },
+          () -> cleanupAfterSocketClose());
+      return true;
     }
+    cleanupAfterSocketClose();
+    return true;
+  }
 
+  protected void cleanupAfterSocketClose() {
     try {
       if (postAuthzRequest != null) {
         postAuthzRequest.close();
@@ -1439,7 +1454,6 @@ public abstract class ServerConnection implements Runnable {
     }
     releaseCommBuffer();
     processMessages = false;
-    return true;
   }
 
   private void releaseCommBuffer() {
@@ -1666,7 +1680,7 @@ public abstract class ServerConnection implements Runnable {
   public long getUniqueId() {
     long uniqueId;
 
-    if (handshake.getVersion().isOlderThan(KnownVersion.GFE_65) || communicationMode.isWAN()) {
+    if (communicationMode.isWAN()) {
       uniqueId = userAuthId;
     } else if (requestMessage.isSecureMode()) {
       uniqueId = messageIdExtractor.getUniqueIdFromMessage(requestMessage,
@@ -1699,7 +1713,7 @@ public abstract class ServerConnection implements Runnable {
       if (isTerminated()) {
         throw new IOException("Server connection is terminated.");
       }
-      logger.debug("Unexpected exception {}", npe);
+      logger.debug("Unexpected exception {}", npe.toString());
     }
     if (uaa == null) {
       throw new AuthenticationRequiredException("User authorization attributes not found.");

@@ -16,6 +16,7 @@ package org.apache.geode.internal.net;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -24,6 +25,8 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
+
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
@@ -66,7 +69,6 @@ public class SocketCloser {
    */
   private final ConcurrentHashMap<String, ExecutorService> asyncCloseExecutors =
       new ConcurrentHashMap<>();
-  private final long asyncClosePoolKeepAliveSeconds;
   private final int asyncClosePoolMaxThreads;
   private final long asyncCloseWaitTime;
   private final TimeUnit asyncCloseWaitUnits;
@@ -91,7 +93,6 @@ public class SocketCloser {
 
   public SocketCloser(long asyncClosePoolKeepAliveSeconds, int asyncClosePoolMaxThreads,
       long asyncCloseWaitTime, TimeUnit asyncCloseWaitUnits) {
-    this.asyncClosePoolKeepAliveSeconds = asyncClosePoolKeepAliveSeconds;
     this.asyncClosePoolMaxThreads = asyncClosePoolMaxThreads;
     this.asyncCloseWaitTime = asyncCloseWaitTime;
     this.asyncCloseWaitUnits = asyncCloseWaitUnits;
@@ -163,60 +164,73 @@ public class SocketCloser {
   }
 
   /**
-   * Closes the specified socket in a background thread. In some cases we see close hang (see bug
-   * 33665). Depending on how the SocketCloser is configured (see ASYNC_CLOSE_WAIT_MILLISECONDS)
+   * Closes the specified socket in a background thread. In some cases we see close hang.
+   * Depending on how the SocketCloser is configured (see ASYNC_CLOSE_WAIT_MILLISECONDS)
    * this method may block for a certain amount of time. If it is called after the SocketCloser is
    * closed then a normal synchronous close is done.
    *
    * @param socket the socket to close
-   * @param address identifies who the socket is connected to
-   * @param extra an optional Runnable with stuff to execute before the socket is closed
+   * @param address key used to determine which executor to use. Usually the address of a peer or
+   *        client
+   * @param runBeforeClose a Runnable with stuff to execute before the socket is closed
    */
-  public void asyncClose(final Socket socket, final String address, final Runnable extra) {
-    if (socket == null || socket.isClosed()) {
+  public void asyncClose(final Socket socket, final String address, final Runnable runBeforeClose) {
+    asyncClose(socket, address, runBeforeClose, () -> {
+    });
+  }
+
+  /**
+   * Closes the specified socket in a background thread. In some cases we see close hang.
+   * Depending on how the SocketCloser is configured (see ASYNC_CLOSE_WAIT_MILLISECONDS)
+   * this method may block for a certain amount of time. If it is called after the SocketCloser is
+   * closed then a normal synchronous close is done.
+   *
+   * @param socket the socket to close
+   * @param address key used to determine which executor to use. Usually the address of a peer or
+   *        client
+   * @param runBeforeClose a Runnable with stuff to execute before the socket is closed
+   * @param runAfterClose a Runnable with stuff to execute after the socket is closed
+   */
+  public void asyncClose(@NotNull final Socket socket, @NotNull final String address,
+      @NotNull final Runnable runBeforeClose,
+      @NotNull final Runnable runAfterClose) {
+    if (socket.isClosed()) {
       return;
     }
     boolean doItInline = false;
     try {
-      Future submittedTask = null;
+      Future submittedTask = CompletableFuture.completedFuture(this);
       closedLock.lock();
       try {
         if (closed) {
           // this SocketCloser has been closed so do a synchronous, inline, close
           doItInline = true;
         } else {
-          submittedTask = asyncExecute(address, new Runnable() {
-            @Override
-            public void run() {
-              Thread.currentThread().setName("AsyncSocketCloser for " + address);
-              try {
-                if (extra != null) {
-                  extra.run();
-                }
-                inlineClose(socket);
-              } finally {
-                Thread.currentThread().setName("unused AsyncSocketCloser");
-              }
+          submittedTask = asyncExecute(address, () -> {
+            Thread.currentThread().setName("AsyncSocketCloser for " + address);
+            try {
+              runBeforeClose.run();
+              inlineClose(socket);
+              runAfterClose.run();
+            } finally {
+              Thread.currentThread().setName("unused AsyncSocketCloser");
             }
           });
         }
       } finally {
         closedLock.unlock();
       }
-      if (submittedTask != null) {
+      if (!doItInline) {
         waitForFutureTaskWithTimeout(submittedTask);
+        return;
       }
     } catch (RejectedExecutionException | OutOfMemoryError ignore) {
       // If we can't start a thread to close the socket just do it inline.
       // See bug 50573.
-      doItInline = true;
     }
-    if (doItInline) {
-      if (extra != null) {
-        extra.run();
-      }
-      inlineClose(socket);
-    }
+    runBeforeClose.run();
+    inlineClose(socket);
+    runAfterClose.run();
   }
 
   private void waitForFutureTaskWithTimeout(Future submittedTask) {

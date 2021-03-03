@@ -46,7 +46,6 @@ public class RedisKeyCommandsFunctionExecutor extends RedisDataCommandsFunctionE
 
   @Override
   public long pttl(ByteArrayWrapper key) {
-
     long result = stripedExecute(key, () -> getRedisData(key).pttl(getRegion(), key));
 
     if (result == -2) {
@@ -85,6 +84,11 @@ public class RedisKeyCommandsFunctionExecutor extends RedisDataCommandsFunctionE
     }
 
     return type;
+  }
+
+  @Override
+  public String internalType(ByteArrayWrapper key) {
+    return stripedExecute(key, () -> getRedisData(key).type());
   }
 
   @Override

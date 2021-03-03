@@ -46,7 +46,7 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
   @Immutable
   private static final KnownVersion currentServerVersion =
       ServerSideHandshakeFactory.currentServerVersion;
-  private KnownVersion clientVersion;
+  private final KnownVersion clientVersion;
 
   private final byte replyCode;
 
@@ -64,9 +64,9 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
       throws IOException, AuthenticationRequiredException {
 
     this.clientVersion = clientVersion;
-    this.system = sys;
+    system = sys;
     this.securityService = securityService;
-    this.encryptor = new EncryptorImpl(sys.getSecurityLogWriter());
+    encryptor = new EncryptorImpl(sys.getSecurityLogWriter());
 
     int soTimeout = -1;
     try {
@@ -78,7 +78,7 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
         throw new EOFException(
             "HandShake: EOF reached before client code could be read");
       }
-      this.replyCode = (byte) valRead;
+      replyCode = (byte) valRead;
       if (replyCode != REPLY_OK) {
         throw new IOException(
             "HandShake reply code is not ok");
@@ -86,26 +86,22 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
       try {
         DataInputStream dataInputStream = new DataInputStream(inputStream);
         DataOutputStream dataOutputStream = new DataOutputStream(sock.getOutputStream());
-        this.clientReadTimeout = dataInputStream.readInt();
+        clientReadTimeout = dataInputStream.readInt();
         if (clientVersion.isOlderThan(KnownVersion.CURRENT)) {
           // versioned streams allow object serialization code to deal with older clients
           dataInputStream = new VersionedDataInputStream(dataInputStream, clientVersion);
           dataOutputStream =
               new VersionedDataOutputStream(dataOutputStream, clientVersion);
         }
-        this.id = ClientProxyMembershipID.readCanonicalized(dataInputStream);
+        id = ClientProxyMembershipID.readCanonicalized(dataInputStream);
+        setOverrides(new byte[] {dataInputStream.readByte()});
         // Note: credentials should always be the last piece in handshake for
         // Diffie-Hellman key exchange to work
-        if (clientVersion.isNotOlderThan(KnownVersion.GFE_603)) {
-          setOverrides(new byte[] {dataInputStream.readByte()});
-        } else {
-          setClientConflation(dataInputStream.readByte());
-        }
-        if (this.clientVersion.isOlderThan(KnownVersion.GFE_65) || communicationMode.isWAN()) {
-          this.credentials =
+        if (communicationMode.isWAN()) {
+          credentials =
               readCredentials(dataInputStream, dataOutputStream, sys, this.securityService);
         } else {
-          this.credentials = this.readCredential(dataInputStream, dataOutputStream, sys);
+          credentials = readCredential(dataInputStream, dataOutputStream, sys);
         }
       } catch (ClassNotFoundException cnfe) {
         throw new IOException(
@@ -122,12 +118,12 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
   }
 
   public KnownVersion getClientVersion() {
-    return this.clientVersion;
+    return clientVersion;
   }
 
   @Override
   public KnownVersion getVersion() {
-    return this.clientVersion;
+    return clientVersion;
   }
 
   @Override
@@ -158,11 +154,11 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
     dos.writeInt(queueSize);
 
     // Write the server's member
-    DistributedMember member = this.system.getDistributedMember();
+    DistributedMember member = system.getDistributedMember();
 
     KnownVersion v = KnownVersion.CURRENT;
     if (dos instanceof VersionedDataStream) {
-      v = (KnownVersion) ((VersionedDataStream) dos).getVersion();
+      v = ((VersionedDataStream) dos).getVersion();
     }
     HeapDataOutputStream hdos = new HeapDataOutputStream(v);
     DataSerializer.writeObject(member, hdos);
@@ -173,28 +169,23 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
     dos.writeUTF("");
 
     // Write delta-propagation property value if this is not WAN.
-    if (!communicationMode.isWAN() && this.clientVersion.isNotOlderThan(KnownVersion.GFE_61)) {
-      dos.writeBoolean(((InternalDistributedSystem) this.system).getConfig().getDeltaPropagation());
+    if (!communicationMode.isWAN()) {
+      dos.writeBoolean(((InternalDistributedSystem) system).getConfig().getDeltaPropagation());
     }
 
-    // Neeraj: Now if the communication mode is GATEWAY_TO_GATEWAY
-    // and principal not equal to null then send the credentials also
-    if (communicationMode.isWAN() && principal != null) {
-      sendCredentialsForWan(dos, dis);
-    }
+    if (communicationMode.isWAN()) {
+      if (principal != null) {
+        sendCredentialsForWan(dos, dis);
+      }
 
-    // Write the distributed system id if this is a 6.6 or greater client
-    // on the remote side of the gateway
-    if (communicationMode.isWAN() && this.clientVersion.isNotOlderThan(KnownVersion.GFE_66)
-        && currentServerVersion.isNotOlderThan(KnownVersion.GFE_66)) {
-      dos.writeByte(((InternalDistributedSystem) this.system).getDistributionManager()
-          .getDistributedSystemId());
-    }
+      dos.writeByte(
+          ((InternalDistributedSystem) system).getDistributionManager().getDistributedSystemId());
 
-    if ((communicationMode.isWAN()) && this.clientVersion.isNotOlderThan(KnownVersion.GFE_80)
-        && currentServerVersion.isNotOlderThan(KnownVersion.GFE_80)) {
-      int pdxSize = PeerTypeRegistration.getPdxRegistrySize();
-      dos.writeInt(pdxSize);
+      if (clientVersion.isNotOlderThan(KnownVersion.GFE_80)
+          && currentServerVersion.isNotOlderThan(KnownVersion.GFE_80)) {
+        int pdxSize = PeerTypeRegistration.getPdxRegistrySize();
+        dos.writeInt(pdxSize);
+      }
     }
 
     // Flush
@@ -208,14 +199,14 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
 
   private void sendCredentialsForWan(OutputStream out, InputStream in) {
     try {
-      Properties wanCredentials = getCredentials(this.id.getDistributedMember());
+      Properties wanCredentials = getCredentials(id.getDistributedMember());
       DataOutputStream dos = new DataOutputStream(out);
       DataInputStream dis = new DataInputStream(in);
-      writeCredentials(dos, dis, wanCredentials, false, this.system.getDistributedMember());
+      writeCredentials(dos, dis, wanCredentials, false, system.getDistributedMember());
     }
     // The exception while getting the credentials is just logged as severe
     catch (Exception e) {
-      this.system.getSecurityLogWriter().severe(
+      system.getSecurityLogWriter().severe(
           String.format("An exception was thrown while sending wan credentials: %s",
               e.getLocalizedMessage()));
     }
@@ -223,6 +214,6 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
 
   @Override
   public int getClientReadTimeout() {
-    return this.clientReadTimeout;
+    return clientReadTimeout;
   }
 }

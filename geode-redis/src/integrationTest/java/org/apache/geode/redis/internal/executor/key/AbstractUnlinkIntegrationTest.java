@@ -15,8 +15,8 @@
 
 package org.apache.geode.redis.internal.executor.key;
 
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -51,9 +51,8 @@ public abstract class AbstractUnlinkIntegrationTest implements RedisPortSupplier
   }
 
   @Test
-  public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.UNLINK))
-        .hasMessageContaining("ERR wrong number of arguments for 'unlink' command");
+  public void errors_GivenTooFewArguments() {
+    assertAtLeastNArgs(jedis, Protocol.Command.UNLINK, 1);
   }
 
   @Test

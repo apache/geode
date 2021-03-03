@@ -21,31 +21,17 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import org.apache.geode.internal.cache.execute.ServerToClientFunctionResultSender;
-import org.apache.geode.internal.cache.tier.sockets.command.ExecuteRegionFunction61;
-import org.apache.geode.internal.cache.tier.sockets.command.ExecuteRegionFunction65;
 import org.apache.geode.internal.cache.tier.sockets.command.ExecuteRegionFunction66;
 
-@RunWith(JUnitParamsRunner.class)
 public class BaseCommandJUnitTest {
 
-  public BaseCommand[] getCommands() {
-    return new BaseCommand[] {(BaseCommand) ExecuteRegionFunction61.getCommand(),
-        (BaseCommand) ExecuteRegionFunction65
-            .getCommand(),
-        (BaseCommand) ExecuteRegionFunction66.getCommand()};
-  }
+  private BaseCommand baseCommand = (BaseCommand) ExecuteRegionFunction66.getCommand();
 
   @Test
-  @Parameters(method = "getCommands")
-  public void whenLastReceivedIsSetThenCheckAndSetLastResultSentIfValidMustReturnTrue(
-      BaseCommand baseCommand) {
-
+  public void whenLastReceivedIsSetThenCheckAndSetLastResultSentIfValidMustReturnTrue() {
     ServerToClientFunctionResultSender resultSender =
         mock(ServerToClientFunctionResultSender.class);
     when(resultSender.isLastResultReceived()).thenReturn(true);
@@ -54,10 +40,7 @@ public class BaseCommandJUnitTest {
   }
 
   @Test
-  @Parameters(method = "getCommands")
-  public void whenLastReceivedIsNotSetThenCheckAndSetLastResultSentIfValidMustReturnFalse(
-      BaseCommand baseCommand) {
-
+  public void whenLastReceivedIsNotSetThenCheckAndSetLastResultSentIfValidMustReturnFalse() {
     ServerToClientFunctionResultSender resultSender =
         mock(ServerToClientFunctionResultSender.class);
     when(resultSender.isLastResultReceived()).thenReturn(false);
@@ -66,10 +49,7 @@ public class BaseCommandJUnitTest {
   }
 
   @Test
-  @Parameters(method = "getCommands")
-  public void whenLastReceivedIsNotSetThenCheckAndSetLastResultSentIfValidMustSetIt(
-      BaseCommand baseCommand) {
-
+  public void whenLastReceivedIsNotSetThenCheckAndSetLastResultSentIfValidMustSetIt() {
     ServerToClientFunctionResultSender resultSender =
         mock(ServerToClientFunctionResultSender.class);
     when(resultSender.isLastResultReceived()).thenReturn(false);
@@ -79,10 +59,7 @@ public class BaseCommandJUnitTest {
   }
 
   @Test
-  @Parameters(method = "getCommands")
-  public void whenLastReceivedIsSetThenCheckAndSetLastResultSentIfValidMustNotSetIt(
-      BaseCommand baseCommand) {
-
+  public void whenLastReceivedIsSetThenCheckAndSetLastResultSentIfValidMustNotSetIt() {
     ServerToClientFunctionResultSender resultSender =
         mock(ServerToClientFunctionResultSender.class);
     when(resultSender.isLastResultReceived()).thenReturn(true);

@@ -112,6 +112,26 @@ public class TXManagerImplTest {
   }
 
   @Test
+  public void testBeginJTAOverflowUniqIdToZero() {
+    TXManagerImpl.INITIAL_UNIQUE_ID_VALUE = Integer.MAX_VALUE;
+    TXManagerImpl txManager = new TXManagerImpl(mock(CachePerfStats.class), cache, disabledClock());
+    txManager.setDistributed(false);
+    TXStateProxy proxy = txManager.beginJTA();
+    assertEquals(1, proxy.getTxId().getUniqId());
+    assertNotNull(txManager);
+    TXManagerImpl.INITIAL_UNIQUE_ID_VALUE = 0;
+  }
+
+  @Test
+  public void testBeginJTAUniqIdIncrement() {
+    TXManagerImpl txManager = new TXManagerImpl(mock(CachePerfStats.class), cache, disabledClock());
+    txManager.setDistributed(false);
+    TXStateProxy proxy = txManager.beginJTA();
+    assertEquals(1, proxy.getTxId().getUniqId());
+    assertNotNull(txManager);
+  }
+
+  @Test
   public void getLockAfterTXStateRemoved() throws InterruptedException {
     TXStateProxy tx = txMgr.getOrSetHostedTXState(txid, msg);
 

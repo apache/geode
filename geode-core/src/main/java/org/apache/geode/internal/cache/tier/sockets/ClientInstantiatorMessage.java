@@ -26,7 +26,6 @@ import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
@@ -56,7 +55,7 @@ public class ClientInstantiatorMessage extends ClientUpdateMessageImpl {
   public ClientInstantiatorMessage(EnumListenerEvent operation, byte[][] instantiator,
       ClientProxyMembershipID memberId, EventID eventIdentifier) {
     super(operation, memberId, eventIdentifier);
-    this.serializedInstantiators = instantiator;
+    serializedInstantiators = instantiator;
   }
 
   /*
@@ -84,16 +83,6 @@ public class ClientInstantiatorMessage extends ClientUpdateMessageImpl {
 
   }
 
-  // /**
-  // * Returns the serialized value of Instantiators.
-  // *
-  // * @return the serialized value of Instantiators
-  // */
-  // public byte[][] getInstantiators()
-  // {
-  // return this.serializedInstantiators;
-  // }
-
   /**
    * Determines whether or not to conflate this message.
    *
@@ -106,33 +95,18 @@ public class ClientInstantiatorMessage extends ClientUpdateMessageImpl {
 
   @Override
   protected Message getMessage(CacheClientProxy proxy, byte[] latestValue) throws IOException {
-    KnownVersion clientVersion = proxy.getVersion();
-    Message message = null;
-    if (clientVersion.isNotOlderThan(KnownVersion.GFE_57)) {
-      message = getGFEMessage(proxy.getProxyID(), null, clientVersion);
-    } else {
-      throw new IOException(
-          "Unsupported client version for server-to-client message creation: " + clientVersion);
-    }
-
-    return message;
-  }
-
-  @Override
-  protected Message getGFEMessage(ClientProxyMembershipID proxy, byte[] latestValue,
-      KnownVersion clientVersion) throws IOException {
-    Message message = null;
-    int instantiatorsLength = this.serializedInstantiators.length;
-    message = new Message(instantiatorsLength + 1, clientVersion); // one for eventID
+    final int instantiatorsLength = serializedInstantiators.length;
+    // one for eventID
+    final Message message = new Message(instantiatorsLength + 1, proxy.getVersion());
     // Set message type
     message.setMessageType(MessageType.REGISTER_INSTANTIATORS);
     for (int i = 0; i < instantiatorsLength - 2; i += 3) {
-      message.addBytesPart(this.serializedInstantiators[i]);
-      message.addBytesPart(this.serializedInstantiators[i + 1]);
-      message.addBytesPart(this.serializedInstantiators[i + 2]);
+      message.addBytesPart(serializedInstantiators[i]);
+      message.addBytesPart(serializedInstantiators[i + 1]);
+      message.addBytesPart(serializedInstantiators[i + 2]);
     }
     message.setTransactionId(0);
-    message.addObjPart(this.getEventId());
+    message.addObjPart(getEventId());
     return message;
   }
 
@@ -152,10 +126,10 @@ public class ClientInstantiatorMessage extends ClientUpdateMessageImpl {
       SerializationContext context) throws IOException {
     // Note: does not call super.toData what a HACK
     out.writeByte(_operation.getEventCode());
-    int instantiatorCount = this.serializedInstantiators.length;
+    int instantiatorCount = serializedInstantiators.length;
     out.writeInt(instantiatorCount);
-    for (int i = 0; i < instantiatorCount; i++) {
-      DataSerializer.writeByteArray(this.serializedInstantiators[i], out);
+    for (final byte[] serializedInstantiator : serializedInstantiators) {
+      DataSerializer.writeByteArray(serializedInstantiator, out);
     }
     context.getSerializer().writeObject(_membershipId, out);
     context.getSerializer().writeObject(_eventIdentifier, out);
@@ -174,12 +148,12 @@ public class ClientInstantiatorMessage extends ClientUpdateMessageImpl {
     // Note: does not call super.fromData what a HACK
     _operation = EnumListenerEvent.getEnumListenerEvent(in.readByte());
     int instantiatorCount = in.readInt(); // is byte suficient for this ?
-    this.serializedInstantiators = new byte[instantiatorCount][];
+    serializedInstantiators = new byte[instantiatorCount][];
     for (int i = 0; i < instantiatorCount; i++) {
-      this.serializedInstantiators[i] = DataSerializer.readByteArray(in);
+      serializedInstantiators[i] = DataSerializer.readByteArray(in);
     }
     _membershipId = ClientProxyMembershipID.readCanonicalized(in);
-    _eventIdentifier = (EventID) context.getDeserializer().readObject(in);
+    _eventIdentifier = context.getDeserializer().readObject(in);
   }
 
   @Override
@@ -202,13 +176,11 @@ public class ClientInstantiatorMessage extends ClientUpdateMessageImpl {
 
   @Override
   public String toString() {
-    StringBuffer buffer = new StringBuffer();
-    buffer.append("ClientInstantiatorMessage[value=")
-        .append(Arrays.deepToString(this.serializedInstantiators))
-        .append(";memberId=")
-        .append(getMembershipId()).append(";eventId=").append(getEventId())
-        .append("]");
-    return buffer.toString();
+    return "ClientInstantiatorMessage[value="
+        + Arrays.deepToString(serializedInstantiators)
+        + ";memberId="
+        + getMembershipId() + ";eventId=" + getEventId()
+        + "]";
   }
 
 }

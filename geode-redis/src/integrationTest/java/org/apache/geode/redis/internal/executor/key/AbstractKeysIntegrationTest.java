@@ -15,8 +15,8 @@
 
 package org.apache.geode.redis.internal.executor.key;
 
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
@@ -48,15 +48,8 @@ public abstract class AbstractKeysIntegrationTest implements RedisPortSupplier {
   }
 
   @Test
-  public void givenPatternNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.KEYS))
-        .hasMessageContaining("ERR wrong number of arguments for 'keys' command");
-  }
-
-  @Test
-  public void givenMoreThanTwoArguments_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.KEYS, "*", "extraArg"))
-        .hasMessageContaining("ERR wrong number of arguments for 'keys' command");
+  public void errors_givenWrongNumberOfArguments() {
+    assertExactNumberOfArgs(jedis, Protocol.Command.KEYS, 1);
   }
 
   @Test

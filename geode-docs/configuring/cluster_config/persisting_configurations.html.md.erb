@@ -54,9 +54,9 @@ This section provides a walk-through example of configuring a simple <%=vars.pro
     Starting a <%=vars.product_name%> Locator in /Users/username/my_geode/locator1...
     .............................
     Locator in /Users/username/my_geode/locator1 on 192.0.2.0[10334] as locator1
-    is currently online.
-    Process ID: 5203
-    Uptime: 15 seconds
+      is currently online.
+    Process ID: 70919
+    Uptime: 12 seconds
     <%=vars.product_name%> Version: <%=vars.product_version%>
     Java Version: 1.<%=vars.min_java_version%>.0_<%=vars.min_java_update%>
     Log File: /Users/username/my_geode/locator1/locator1.log
@@ -64,9 +64,9 @@ This section provides a walk-through example of configuring a simple <%=vars.pro
     -Dgemfire.load-cluster-configuration-from-dir=false
     -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true
     -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
-    Class-Path: /Users/username/Apache_Geode_1.0.0_Linux/lib/geode-dependencies.jar
+    Class-Path: /Users/username/geode<%=vars.product_version_nodot%>/lib/geode-dependencies.jar
 
-    Successfully connected to: [host=192.0.2.0, port=1099]
+    Successfully connected to: JMX Manager [host=192.0.2.0, port=1099]
 
     Cluster configuration service is up and running.
     ```
@@ -80,49 +80,50 @@ This section provides a walk-through example of configuring a simple <%=vars.pro
     Starting a <%=vars.product_name%> Server in /Users/username/my_geode/server1...
     .....
     Server in /Users/username/my_geode/server1 on 192.0.2.0[40404] as server1
-    is currently online.
+      is currently online.
     Process ID: 5627
     Uptime: 2 seconds
     <%=vars.product_name%> Version: <%=vars.product_version%>
     Java Version: 1.<%=vars.min_java_version%>.0_<%=vars.min_java_update%>
     Log File: /Users/username/my_geode/server1/server1.log
+
     JVM Arguments: -Dgemfire.default.locators=192.0.2.0[10334] -Dgemfire.groups=group1
-    -Dgemfire.use-cluster-configuration=true -XX:OnOutOfMemoryError=kill -KILL %p
+    -Dgemfire.start-dev-rest-api=false -Dgemfire.use-cluster-configuration=true
     -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true
-    -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
-    Class-Path: /Users/username/Apache_Geode_1.0.0_Linux/lib/geode-dependencies.jar
+    Class-Path: /Users/username/geode<%=vars.product_version_nodot%>/lib/geode-dependencies.jar
 
     gfsh>start server --name=server2 --groups=group1 --server-port=40405
     Starting a <%=vars.product_name%> Server in /Users/username/my_geode/server2...
     .....
     Server in /Users/username/my_geode/server2 on 192.0.2.0[40405] as server2
-    is currently online.
+      is currently online.
     Process ID: 5634
     Uptime: 2 seconds
     <%=vars.product_name%> Version: <%=vars.product_version%>
     Java Version: 1.<%=vars.min_java_version%>.0_<%=vars.min_java_update%>
     Log File: /Users/username/my_geode/server2/server2.log
+
     JVM Arguments: -Dgemfire.default.locators=192.0.2.0[10334] -Dgemfire.groups=group1
-    -Dgemfire.use-cluster-configuration=true -XX:OnOutOfMemoryError=kill -KILL %p
+    -Dgemfire.start-dev-rest-api=false -Dgemfire.use-cluster-configuration=true
     -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true
     -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
-    Class-Path: /Users/username/Apache_Geode_1.0.0_Linux/lib/geode-dependencies.jar
+    Class-Path: /Users/username/geode<%=vars.product_version_nodot%>/lib/geode-dependencies.jar
 
     gfsh>start server --name=server3 --server-port=40406
     Starting a <%=vars.product_name%> Server in /Users/username/my_geode/server3...
     .....
     Server in /Users/username/my_geode/server3 on 192.0.2.0[40406] as server3
-    is currently online.
+      is currently online.
     Process ID: 5637
     Uptime: 2 seconds
     <%=vars.product_name%> Version: <%=vars.product_version%>
     Java Version: 1.<%=vars.min_java_version%>.0_<%=vars.min_java_update%>
     Log File: /Users/username/my_geode/server3/server3.log
     JVM Arguments: -Dgemfire.default.locators=192.0.2.0[10334]
-    -Dgemfire.use-cluster-configuration=true -XX:OnOutOfMemoryError=kill -KILL %p
+    -Dgemfire.start-dev-rest-api=false -Dgemfire.use-cluster-configuration=true
     -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true
     -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
-    Class-Path: /Users/username/Apache_Geode_1.0.0_Linux/lib/geode-dependencies.jar
+    Class-Path: /Users/username/geode<%=vars.product_version_nodot%>/lib/geode-dependencies.jar
     ```
 
     Note that the `gfsh` commands you used to start `server1` and `server2` specify a group named `group1` while the command for `server3` did not specify a group name.
@@ -131,41 +132,59 @@ This section provides a walk-through example of configuring a simple <%=vars.pro
 
     ``` pre
     gfsh>create region --name=region1 --groups=group1 --type=REPLICATE
-    Member  | Status
-    ------- | --------------------------------------
-    server2 | Region "/region1" created on "server2"
-    server1 | Region "/region1" created on "server1"
+    Member  | Status | Message
+    ------- | ------ | --------------------------------------
+    server1 | OK     | Region "/region1" created on "server1"
+    server2 | OK     | Region "/region1" created on "server2"
+
+    Cluster configuration for group 'group1' is updated.
+
 
     gfsh>create region --name=region2 --type=REPLICATE
-    Member  | Status
-    ------- | --------------------------------------
-    server1 | Region "/region2" created on "server1"
-    server2 | Region "/region2" created on "server2"
-    server3 | Region "/region2" created on "server3"
+    Member  | Status | Message
+    ------- | ------ | --------------------------------------
+    server1 | OK     | Region "/region2" created on "server1"
+    server2 | OK     | Region "/region2" created on "server2"
+    server3 | OK     | Region "/region2" created on "server3"
+
+    Cluster configuration for group 'cluster' is updated.
+
     ```
 
     Note that `region1` is created on all cache servers that specified the group named `group1` when starting the cache server (`server1` and `server2`, in this example). `region2` is created on all members because no group was specified.
 
-6.  Deploy jar files. Use the `gfsh deploy` command to deploy application jar files to all members or to a specified group of members. The following example deploys the `mx4j-3.0.1.jar` and `ra.jar` files from the distribution. (Note: This is only an example, you do not need to deploy these files to use the Cluster Configuration Service. Alternately, you can use any two jar files for this demonstration.)
+6.  Deploy jar files. Use the `gfsh deploy` command to deploy application jar files to all members
+    or to a specified group of members. The following example deploys the `mx4j-3.0.2.jar` and `ra.jar`
+    files from the distribution. (Note: This is only an example, you do not need to deploy these files
+    to use the Cluster Configuration Service. Alternately, you can use any two jar files for this
+    demonstration.)
 
     ``` pre
-    gfsh>deploy --groups=group1 --jars=/lib/mx4j-3.0.1.jar
-    Post substitution: deploy --groups=group1 --jars=/Users/username/Apache_Geode_1.0.0_Linux/lib/mx4j-3.0.1.jar
-    Member  |    Deployed JAR    | Deployed JAR Location
-    ------- | ------------------ | -------------------------------------------------------
-    server1 | mx4j-3.0.1.jar     | /Users/username/my_geode/server1/vf.gf#mx4j-3.0.1.jar#1
-    server2 | mx4j-3.0.1.jar     | /Users/username/my_geode/server2/vf.gf#mx4j-3.0.1.jar#1
+    gfsh>deploy --groups=group1 --jars=/lib/mx4j-3.0.2.jar
+
+    Deploying files: mx4j-3.0.2.jar
+    Total file size is: 0.39MB
+
+    Continue?  (Y/n): y
+    Member  |  Deployed JAR  | Deployed JAR Location
+    ------- | -------------- | ----------------------------------------------------------
+    server1 | mx4j-3.0.2.jar | /Users/username/my_geode/server1/mx4j-3.0.2.v1.jar
+    server2 | mx4j-3.0.2.jar | /Users/username/my_geode/server2/mx4j-3.0.2.v1.jar
 
     gfsh>deploy --jars=/lib/ra.jar
-    Post substitution: deploy --jar=/Users/username/Apache_Geode_1.0.0_Linux/lib/ra.jar
+
+    Deploying files: ra.jar
+    Total file size is: 0.03MB
+
+    Continue?  (Y/n): y
     Member  | Deployed JAR | Deployed JAR Location
-    ------- | ------------ | -----------------------------------------------
-    server1 | ra.jar       | /Users/username/my_geode/server1/vf.gf#ra.jar#1
-    server2 | ra.jar       | /Users/username/my_geode/server1/vf.gf#ra.jar#1
-    server3 | ra.jar       | /Users/username/my_geode/server1/vf.gf#ra.jar#1
+    ------- | ------------ | --------------------------------------------------
+    server1 | ra.jar       | /Users/username/my_geode/server1/ra.v1.jar
+    server2 | ra.jar       | /Users/username/my_geode/server2/ra.v1.jar
+    server3 | ra.jar       | /Users/username/my_geode/server2/ra.v1.jar
     ```
 
-    Note that the `mx4j-3.0.1.jar` file was deployed only to the members of `group1` and the `ra.jar` was deployed to all members.
+    Note that the `mx4j-3.0.2.jar` file was deployed only to the members of `group1` and the `ra.jar` was deployed to all members.
 
 7.  Export the cluster configuration.
     You can use the `gfsh export cluster-configuration` command to create a zip file that contains the cluster's persisted configuration. The zip file contains a copy of the contents of the `cluster_config` directory. For example:
@@ -177,7 +196,7 @@ This section provides a walk-through example of configuring a simple <%=vars.pro
     <%=vars.product_name_long%> writes the cluster configuration to the specified zip file.
 
     ``` pre
-    Downloading cluster configuration : /Users/username/myClConfig.zip
+    File saved to /Users/username/myClConfig.zip
     ```
 
     The remaining steps demonstrate how to use the cluster configuration you just created.
@@ -216,19 +235,20 @@ This section provides a walk-through example of configuring a simple <%=vars.pro
     Starting a <%=vars.product_name%> Locator in /Users/username/new_geode/locator2...
     .............................
     Locator in /Users/username/new_geode/locator2 on 192.0.2.0[10335] as locator2
-    is currently online.
+      is currently online.
     Process ID: 5749
     Uptime: 15 seconds
     <%=vars.product_name%> Version: <%=vars.product_version%>
     Java Version: 1.<%=vars.min_java_version%>.0_<%=vars.min_java_update%>
     Log File: /Users/username/new_geode/locator2/locator2.log
+
     JVM Arguments: -Dgemfire.enable-cluster-configuration=true
     -Dgemfire.load-cluster-configuration-from-dir=false
     -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true
     -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
-    Class-Path: /Users/username/Apache_Geode_1.0.0_Linux/lib/geode-dependencies.jar
+    Class-Path: /Users/username/geode<%=vars.product_version_nodot%>/lib/geode-dependencies.jar
 
-    Successfully connected to: [host=192.0.2.0, port=1099]
+    Successfully connected to: JMX Manager [host=192.0.2.0, port=1099]
 
     Cluster configuration service is up and running.
     ```
@@ -237,6 +257,9 @@ This section provides a walk-through example of configuring a simple <%=vars.pro
 
     ``` pre
     gfsh>import cluster-configuration --zip-file-name=/Users/username/myClConfig.zip
+    This command will replace the existing cluster configuration, if any, The old configuration will be backed up in the working directory.
+
+    Continue?  (Y/n): y
     Cluster configuration successfully imported
     ```
 
@@ -255,11 +278,12 @@ This section provides a walk-through example of configuring a simple <%=vars.pro
     <%=vars.product_name%> Version: <%=vars.product_version%>
     Java Version: 1.<%=vars.min_java_version%>.0_<%=vars.min_java_update%>
     Log File: /Users/username/new_geode/server4/server4.log
+
     JVM Arguments: -Dgemfire.default.locators=192.0.2.0[10335]
-    -Dgemfire.use-cluster-configuration=true -XX:OnOutOfMemoryError=kill -KILL %p
+    -Dgemfire.start-dev-rest-api=false -Dgemfire.use-cluster-configuration=true
     -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true
     -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
-    Class-Path: /Users/username/Apache_Geode_1.0.0_Linux/lib/geode-dependencies.jar
+    Class-Path: /Users/username/geode<%=vars.product_version_nodot%>/lib/geode-dependencies.jar
     ```
 
 15. Start another server that references `group1`:
@@ -276,10 +300,10 @@ This section provides a walk-through example of configuring a simple <%=vars.pro
     Java Version: 1.<%=vars.min_java_version%>.0_<%=vars.min_java_update%>
     Log File: /Users/username/new_geode/server5/server5.log
     JVM Arguments: -Dgemfire.default.locators=192.0.2.0[10335] -Dgemfire.groups=group1
-    -Dgemfire.use-cluster-configuration=true -XX:OnOutOfMemoryError=kill -KILL %p
+    -Dgemfire.start-dev-rest-api=false -Dgemfire.use-cluster-configuration=true
     -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true
     -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
-    Class-Path: /Users/username/Apache_Geode_1.0.0_Linux/lib/geode-dependencies.jar
+    Class-Path: /Users/username/geode<%=vars.product_version_nodot%>/lib/geode-dependencies.jar
     ```
 
 16. Use the `list regions` command to display the configured regions. Note that region1 and region2, which were configured in the original cluster level are available.
@@ -292,11 +316,12 @@ This section provides a walk-through example of configuring a simple <%=vars.pro
     region2
     ```
 
-17. Use the `describe region` command to see which members host each region. Note that region1 is hosted only by server5 because server5 was started using the group1 configuration. region2 is hosted on both server4 and server5 because region2 was created without a group specified.
+17. Use the `describe region` command to see which members host each region. Note that region1 is
+    hosted only by server5 because server5 was started using the group1 configuration. region2 is hosted
+    on both server4 and server5 because region2 was created without a group specified.
 
     ``` pre
     gfsh>describe region --name=region1
-    ..........................................................
     Name            : region1
     Data Policy     : replicate
     Hosting Members : server5
@@ -325,7 +350,9 @@ This section provides a walk-through example of configuring a simple <%=vars.pro
            | scope       | distributed-ack
     ```
 
-    This new cluster uses the same configuration as the original system. You can start any number of servers using this cluster configuration. All servers will receive the cluster-level configuration. Servers that specify `group1` also receive the `group1` configuration.
+    This new cluster uses the same configuration as the original system. You can start any number of
+    servers using this cluster configuration. All servers will receive the cluster-level
+    configuration. Servers that specify `group1` also receive the `group1` configuration.
 
 18. Shut down your cluster using the following commands:
 

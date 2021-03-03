@@ -45,6 +45,18 @@ public interface HealthMonitor<ID extends MemberIdentifier> extends Service<ID> 
   boolean checkIfAvailable(ID mbr, String reason, boolean initiateRemoval);
 
   /**
+   * Check on the health of the given member, initiating suspicion if it fails. Return true if the
+   * member is found to be available, false if it isn't.
+   *
+   * @param reason the reason this check is being performed
+   * @param initiateRemoval if the member should be removed if it is not available
+   * @param assumeMembersInFinalCheckAreAvailable if true, assume that the members in final check
+   *        are available
+   */
+  boolean checkIfAvailable(ID mbr, String reason, boolean initiateRemoval,
+      boolean assumeMembersInFinalCheckAreAvailable);
+
+  /**
    * Invoked by the Manager, this notifies the HealthMonitor that a ShutdownMessage has been
    * received from the given member
    */

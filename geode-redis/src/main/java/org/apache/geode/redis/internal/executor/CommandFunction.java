@@ -16,6 +16,7 @@
 
 package org.apache.geode.redis.internal.executor;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -90,6 +91,8 @@ public class CommandFunction extends SingleResultRedisFunction {
         return keyCommands.exists(key);
       case TYPE:
         return keyCommands.type(key);
+      case INTERNALTYPE:
+        return keyCommands.internalType(key);
       case PEXPIREAT: {
         long timestamp = (long) args[1];
         return keyCommands.pexpireat(key, timestamp);
@@ -167,7 +170,7 @@ public class CommandFunction extends SingleResultRedisFunction {
         return stringCommands.incrby(key, increment);
       }
       case INCRBYFLOAT: {
-        double increment = (double) args[1];
+        BigDecimal increment = (BigDecimal) args[1];
         return stringCommands.incrbyfloat(key, increment);
       }
       case DECRBY: {
@@ -264,7 +267,7 @@ public class CommandFunction extends SingleResultRedisFunction {
       }
       case HINCRBYFLOAT: {
         ByteArrayWrapper field = (ByteArrayWrapper) args[1];
-        double increment = (double) args[2];
+        BigDecimal increment = (BigDecimal) args[2];
         return hashCommands.hincrbyfloat(key, field, increment);
       }
       default:

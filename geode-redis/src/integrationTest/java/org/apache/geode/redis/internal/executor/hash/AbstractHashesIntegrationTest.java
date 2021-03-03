@@ -14,11 +14,11 @@
  */
 package org.apache.geode.redis.internal.executor.hash;
 
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Assertions.offset;
 
-import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -27,6 +27,8 @@ import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.assertj.core.util.Maps;
@@ -39,6 +41,7 @@ import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
+import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
 public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier {
@@ -56,12 +59,8 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   }
 
   @After
-  public void flushAll() {
-    jedis.flushAll();
-  }
-
-  @After
   public void tearDown() {
+    jedis.flushAll();
     jedis.close();
     jedis2.close();
   }
@@ -69,11 +68,12 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   @Test
   public void testHMSet_givenWrongNumberOfArguments() {
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HMSET))
-        .hasMessageContaining("wrong number of arguments");
+        .hasMessage("ERR wrong number of arguments for 'hmset' command");
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HMSET, "1"))
-        .hasMessageContaining("wrong number of arguments");
+        .hasMessage("ERR wrong number of arguments for 'hmset' command");
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HMSET, "1", "2"))
-        .hasMessageContaining("wrong number of arguments");
+        .hasMessage("ERR wrong number of arguments for 'hmset' command");
+    // Redis is somewhat inconsistent with the error response here
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HMSET, "1", "2", "3", "4"))
         .hasMessageContaining("wrong number of arguments");
   }
@@ -81,21 +81,19 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   @Test
   public void testHSet_givenWrongNumberOfArguments() {
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSET))
-        .hasMessageContaining("wrong number of arguments");
+        .hasMessage("ERR wrong number of arguments for 'hset' command");
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSET, "1"))
-        .hasMessageContaining("wrong number of arguments");
+        .hasMessage("ERR wrong number of arguments for 'hset' command");
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSET, "1", "2"))
-        .hasMessageContaining("wrong number of arguments");
+        .hasMessage("ERR wrong number of arguments for 'hset' command");
+    // Redis is somewhat inconsistent with the error response here
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSET, "1", "2", "3", "4"))
         .hasMessageContaining("wrong number of arguments");
   }
 
   @Test
   public void testHGetall_givenWrongNumberOfArguments() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HGETALL))
-        .hasMessageContaining("wrong number of arguments");
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HMSET, "1", "2"))
-        .hasMessageContaining("wrong number of arguments");
+    assertExactNumberOfArgs(jedis, Protocol.Command.HGETALL, 1);
   }
 
   @Test
@@ -109,6 +107,22 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
     String response = jedis.hmset(key, hash);
     assertThat(response).isEqualTo("OK");
     assertThat(jedis.hlen(key)).isEqualTo(hash.size());
+  }
+
+  @Test
+  public void testHMSetErrorMessage_givenIncorrectDataType() {
+    Map<String, String> animalMap = new HashMap<>();
+    animalMap.put("chicken", "eggs");
+
+    jedis.set("farm", "chicken");
+    assertThatThrownBy(() -> jedis.hmset("farm", animalMap))
+        .isInstanceOf(JedisDataException.class)
+        .hasMessageContaining("WRONGTYPE Operation against a key holding the wrong kind of value");
+
+    jedis.sadd("zoo", "elephant");
+    assertThatThrownBy(() -> jedis.hmset("zoo", animalMap))
+        .isInstanceOf(JedisDataException.class)
+        .hasMessageContaining("WRONGTYPE Operation against a key holding the wrong kind of value");
   }
 
   @Test
@@ -133,41 +147,99 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   }
 
   @Test
-  public void testHMGetHDelHGetAllHVals() {
+  public void testHMGet() {
     String key = "key";
-    Map<String, String> hash = new HashMap<String, String>();
-    for (int i = 0; i < 10; i++) {
-      hash.put("field_" + i, "member_" + i);
-    }
+    Map<String, String> hash = setupHash(10);
     jedis.hmset(key, hash);
+
     Set<String> keys = hash.keySet();
-    String[] keyArray = keys.toArray(new String[keys.size()]);
+    String[] keyArray = keys.toArray(new String[0]);
     List<String> retList = jedis.hmget(key, keyArray);
 
-    for (int i = 0; i < keys.size(); i++) {
-      assertThat(hash.get(keyArray[i])).isEqualTo(retList.get(i));
-    }
+    assertThat(retList).containsExactlyInAnyOrderElementsOf(hash.values());
+  }
+
+  @Test
+  public void testHgetall() {
+    String key = "key";
+    Map<String, String> hash = setupHash(10);
+    jedis.hmset(key, hash);
 
     Map<String, String> retMap = jedis.hgetAll(key);
 
     assertThat(retMap).containsExactlyInAnyOrderEntriesOf(hash);
+  }
+
+  @Test
+  public void testHvals() {
+    String key = "key";
+    Map<String, String> hash = setupHash(10);
+    jedis.hmset(key, hash);
 
     List<String> retVals = jedis.hvals(key);
-    Set<String> retSet = new HashSet<String>(retVals);
+    Set<String> retSet = new HashSet<>(retVals);
 
     assertThat(retSet.containsAll(hash.values())).isTrue();
+  }
 
-    jedis.hdel(key, keyArray);
+  @Test
+  public void testHdel_allFields() {
+    String key = "key";
+    Map<String, String> hash = setupHash(10);
+    jedis.hmset(key, hash);
+
+    jedis.hdel(key, hash.keySet().toArray(new String[0]));
     assertThat(jedis.hlen(key)).isEqualTo(0);
+  }
+
+  private Map<String, String> setupHash(int entries) {
+    Map<String, String> hash = new HashMap<>();
+    for (int i = 0; i < entries; i++) {
+      hash.put("field-" + i, "member-" + i);
+    }
+    return hash;
+  }
+
+  @Test
+  public void testHMGet_returnNull_forUnknownFields() {
+    String key = "key";
+    jedis.hset(key, "rooster", "crows");
+    jedis.hset(key, "duck", "quacks");
+
+    List<String> result =
+        jedis.hmget(key, "unknown-1", "rooster", "unknown-2", "duck", "unknown-3");
+    assertThat(result).containsExactly(null, "crows", null, "quacks", null);
+  }
+
+  @Test
+  public void testHMGet_givenTooFewArguments() {
+    assertAtLeastNArgs(jedis, Protocol.Command.HMGET, 2);
+  }
+
+  @Test
+  public void testHMGetErrorMessage_givenIncorrectDataType() {
+    jedis.set("farm", "chicken");
+    assertThatThrownBy(() -> jedis.hmget("farm", "chicken"))
+        .isInstanceOf(JedisDataException.class)
+        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+
+    jedis.sadd("zoo", "elephant");
+    assertThatThrownBy(() -> jedis.hmget("zoo", "chicken"))
+        .isInstanceOf(JedisDataException.class)
+        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
   }
 
   @Test
   public void testHDelErrorMessage_givenIncorrectDataType() {
     jedis.set("farm", "chicken");
-    assertThatThrownBy(() -> {
-      jedis.hdel("farm", "chicken");
-    }).isInstanceOf(JedisDataException.class)
-        .hasMessageContaining("WRONGTYPE Operation against a key holding the wrong kind of value");
+    assertThatThrownBy(() -> jedis.hdel("farm", "chicken"))
+        .isInstanceOf(JedisDataException.class)
+        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+  }
+
+  @Test
+  public void testHdelErrorMessage_givenTooFewArguments() {
+    assertAtLeastNArgs(jedis, Protocol.Command.HDEL, 2);
   }
 
   @Test
@@ -192,15 +264,36 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   public void testHStrLen_failsForNonHashes() {
     jedis.sadd("farm", "chicken");
     assertThatThrownBy(() -> jedis.hstrlen("farm", "chicken"))
-        .hasMessageContaining("WRONGTYPE");
+        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
 
     jedis.set("tractor", "John Deere");
     assertThatThrownBy(() -> jedis.hstrlen("tractor", "chicken"))
-        .hasMessageContaining("WRONGTYPE");
+        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
   }
 
   @Test
-  public void testHkeys() {
+  public void testHStrlen_givenWrongNumberOfArguments() {
+    assertExactNumberOfArgs(jedis, Protocol.Command.HSTRLEN, 2);
+  }
+
+  @Test
+  public void testHKeys_givenWrongNumberOfArguments() {
+    assertExactNumberOfArgs(jedis, Protocol.Command.HKEYS, 1);
+  }
+
+  @Test
+  public void testHKeys_failsGivenWrongType() {
+    jedis.sadd("farm", "chicken");
+    assertThatThrownBy(() -> jedis.hkeys("farm"))
+        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+
+    jedis.set("tractor", "John Deere");
+    assertThatThrownBy(() -> jedis.hkeys("tractor"))
+        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+  }
+
+  @Test
+  public void testHkeys_returnsAllValuesForGivenField() {
     String key = "key";
     Map<String, String> hash = new HashMap<String, String>();
     for (int i = 0; i < 10; i++) {
@@ -215,100 +308,110 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   }
 
   @Test
-  public void testHIncrBy() {
-    String key = "key";
-    String field = "field";
+  public void testHkeys_returnsEmptyForNonExistentField() {
+    String key = "nonexistent";
 
-    Long incr = (long) rand.nextInt(50);
-    if (incr == 0) {
-      incr++;
-    }
-
-    long response1 = jedis.hincrBy(key, field, incr);
-    assertThat(response1).isEqualTo(incr);
-
-    long response2 = jedis.hincrBy("newHash", "newField", incr);
-    assertThat(response2).isEqualTo(incr);
-
-    long response3 = jedis.hincrBy(key, field, incr);
-    assertThat(response3).as(response3 + "=" + 2 * incr)
-        .isEqualTo(2 * incr);
-
-    String field1 = "field1";
-    long myincr = incr;
-    assertThatThrownBy(() -> {
-      jedis.hincrBy(key, field1, Long.MAX_VALUE);
-      jedis.hincrBy(key, field1, myincr);
-    }).isInstanceOf(JedisDataException.class)
-        .hasMessageContaining("ERR increment or decrement would overflow");
+    Set<String> retSet = jedis.hkeys(key);
+    assertThat(retSet).isEmpty();
   }
 
   @Test
-  public void testHIncrFloatBy() {
-    String key = "key";
-    String field = "field";
-
-    DecimalFormat decimalFormat = new DecimalFormat("#.#####");
-    double incr = rand.nextDouble();
-    String incrAsString = decimalFormat.format(incr);
-    incr = Double.valueOf(incrAsString);
-    if (incr == 0) {
-      incr = incr + 1;
-    }
-
-    Double response1 = jedis.hincrByFloat(key, field, incr);
-    assertThat(response1).isEqualTo(incr, offset(.00001));
-
-    assertThat(response1).isEqualTo(Double.valueOf(jedis.hget(key, field)), offset(.00001));
-
-    double response2 = jedis.hincrByFloat("new", "newField", incr);
-
-    assertThat(response2).isEqualTo(incr, offset(.00001));
-
-    Double response3 = jedis.hincrByFloat(key, field, incr);
-    assertThat(response3).isEqualTo(2 * incr, offset(.00001));
-
-    assertThat(response3).isEqualTo(Double.valueOf(jedis.hget(key, field)), offset(.00001));
-
+  public void testHIncrBy_returnsErrorMessageForWrongNumberOfParameters() {
+    assertExactNumberOfArgs(jedis, Protocol.Command.HINCRBY, 3);
   }
 
   @Test
-  public void incrByFloatFailsWithNonFloatFieldValue() {
-    String key = "key";
-    String field = "field";
-    jedis.hset(key, field, "foobar");
-    assertThatThrownBy(() -> {
-      jedis.hincrByFloat(key, field, 1.5);
-    }).isInstanceOf(JedisDataException.class)
-        .hasMessageContaining("ERR hash value is not a float");
+  public void testHIncrBy_failsWhenPerformedOnNonIntegerValue() {
+    jedis.sadd("key", "member");
+    assertThatThrownBy(() -> jedis.hincrBy("key", "somefield", 1))
+        .hasMessageContaining("WRONGTYPE Operation against a key holding the wrong kind of value");
   }
 
   @Test
-  public void testHExists() {
-    String key = Double.valueOf(rand.nextDouble()).toString();
-    String field = Double.valueOf(rand.nextInt(50)).toString() + ".field";
-    String value = Double.valueOf(rand.nextInt(50)).toString() + ".value";
+  public void testHIncrBy_createsAndIncrementsNonExistentField() {
+    jedis.hset("key", "field", "value");
 
-    assertThat(jedis.hexists(key, field)).isFalse();
+    assertThat(jedis.hincrBy("key", "nonexistentfield", 1)).isEqualTo(1);
+    assertThat(jedis.hincrBy("key", "othernonexistentfield", -1)).isEqualTo(-1);
+  }
+
+  @Test
+  public void testHIncrBy_createsAndIncrementsFieldForNonExistentKey() {
+    assertThat(jedis.hincrBy("key1", "field", 1)).isEqualTo(1);
+    assertThat(jedis.hincrBy("key2", "field", -1)).isEqualTo(-1);
+  }
+
+  @Test
+  public void testHIncrBy_incrementsValueByGivenIncrementAtGivenKeyAndField() {
+    String key = "key";
+    String field = "field";
+    jedis.hset(key, field, "10");
+
+    hincrbyAndAssertValueEqualToPreviousValuePlusIncrement(key, field, 10);
+
+    hincrbyAndAssertValueEqualToPreviousValuePlusIncrement(key, field, -5);
+
+    hincrbyAndAssertValueEqualToPreviousValuePlusIncrement(key, field, -20);
+  }
+
+  @Test
+  public void testConcurrentHIncrBy_performsAllIncrBys() {
+    String key = "key";
+    String field = "field";
+    AtomicInteger expectedValue = new AtomicInteger(0);
+
+    jedis.hset(key, field, "0");
+
+    new ConcurrentLoopingThreads(1000,
+        (i) -> {
+          int increment = ThreadLocalRandom.current().nextInt(-50, 50);
+          expectedValue.addAndGet(increment);
+          jedis.hincrBy(key, field, increment);
+        },
+        (i) -> {
+          int increment = ThreadLocalRandom.current().nextInt(-50, 50);
+          expectedValue.addAndGet(increment);
+          jedis2.hincrBy(key, field, increment);
+        }).run();
+
+    assertThat(Integer.parseInt(jedis.hget(key, field))).isEqualTo(expectedValue.get());
+  }
+
+  @Test
+  public void testHExists_isFalseForNonexistentKeyOrField() {
+    jedis.hset("key", "field", "value");
+
+    assertThat(jedis.hexists("nonexistentKey", "someField")).isFalse();
+    assertThat(jedis.hexists("key", "nonexistentField")).isFalse();
+  }
+
+  @Test
+  public void testHExists_isTrueWhenKeyExists_AndFalseWhenKeyIsDeleted() {
+    String key = "key";
+    String field = "field";
+    String value = "value";
 
     jedis.hset(key, field, value);
-
-    assertThat(jedis.hget(key, field)).isEqualTo(value);
-
-    assertThat(jedis.hexists(key, field)).isTrue();
-
-    key = "testObject:" + key;
-
-    value = Double.valueOf(rand.nextInt(50)).toString() + ".value";
-    jedis.hset(key, field, value);
-
     assertThat(jedis.hexists(key, field)).isTrue();
 
     jedis.hdel(key, field);
-
-    assertThat(jedis.hget(key, field)).isNull();
     assertThat(jedis.hexists(key, field)).isFalse();
+  }
 
+  @Test
+  public void testHExists_givenWrongNumberOfArguments() {
+    assertExactNumberOfArgs(jedis, Protocol.Command.HEXISTS, 2);
+  }
+
+  @Test
+  public void testHExists_failsForNonHashes() {
+    jedis.sadd("farm", "chicken");
+    assertThatThrownBy(() -> jedis.hexists("farm", "chicken"))
+        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+
+    jedis.set("tractor", "John Deere");
+    assertThatThrownBy(() -> jedis.hexists("tractor", "chicken"))
+        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -358,11 +461,33 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
     assertThat(result).isEqualTo(0);
 
     assertThat(jedis.hget(key, field)).isEqualTo(value);
+  }
 
-    jedis.hdel(key, field);
+  @Test
+  public void hsetNX_shouldThrowErrorIfKeyIsWrongType() {
+    String string_key = "String_Key";
+    String set_key = "Set_Key";
+    String field = "field";
+    String value = "value";
 
-    assertThat(jedis.hexists(key, field)).isFalse();
+    jedis.set(string_key, value);
+    jedis.sadd(set_key, field);
 
+    assertThatThrownBy(
+        () -> jedis.hsetnx(string_key, field, "something else"))
+            .isInstanceOf(JedisDataException.class)
+            .hasMessageContaining("WRONGTYPE");
+    assertThatThrownBy(
+        () -> jedis.hsetnx(set_key, field, "something else")).isInstanceOf(JedisDataException.class)
+            .hasMessageContaining("WRONGTYPE");
+
+    jedis.del(string_key);
+    jedis.del(set_key);
+  }
+
+  @Test
+  public void hsetnx_shouldThrowError_givenWrongNumberOfArguments() {
+    assertExactNumberOfArgs(jedis, Protocol.Command.HSETNX, 3);
   }
 
   /**
@@ -373,23 +498,76 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
     String key = "HVals_key";
     String field1 = "field_1";
     String field2 = "field_2";
-    String value = "value";
+    String value1 = "value_1";
+    String value2 = "value_2";
 
-    List<String> list = jedis.hvals(key);
-    assertThat(list == null || list.isEmpty()).isTrue();
+    List<String> list = jedis.hvals("non-existent-key");
+    assertThat(list).isEmpty();
 
-    Long result = jedis.hset(key, field1, value);
+    Long result = jedis.hset(key, field1, value1);
     assertThat(result).isEqualTo(1);
 
-    result = jedis.hset(key, field2, value);
+    result = jedis.hset(key, field2, value2);
     assertThat(result).isEqualTo(1);
     list = jedis.hvals(key);
 
-    assertThat(list).isNotNull();
-    assertThat(list).isNotEmpty();
     assertThat(list).hasSize(2);
+    assertThat(list).contains(value1, value2);
+  }
 
-    assertThat(list).contains(value);
+  @Test
+  public void hvalsFailsForNonHash() {
+    jedis.sadd("farm", "chicken");
+    assertThatThrownBy(() -> jedis.hvals("farm"))
+        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+
+    jedis.set("tractor", "John Deere");
+    assertThatThrownBy(() -> jedis.hvals("tractor"))
+        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+  }
+
+  @Test
+  public void hvals_shouldError_givenWrongNumberOfArguments() {
+    assertExactNumberOfArgs(jedis, Protocol.Command.HVALS, 1);
+  }
+
+  @Test
+  public void hget_shouldThrowError_givenWrongNumberOfArguments() {
+    assertExactNumberOfArgs(jedis, Protocol.Command.HGET, 2);
+  }
+
+  @Test
+  public void hgetFailsForNonHash() {
+    jedis.sadd("farm", "chicken");
+    assertThatThrownBy(() -> jedis.hget("farm", "chicken"))
+        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+
+    jedis.set("tractor", "John Deere");
+    assertThatThrownBy(() -> jedis.hget("tractor", "John Deere"))
+        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+  }
+
+  @Test
+  public void hgetReturnsExpectedValue() {
+    String key = "key";
+    String field = "field";
+    String value = "value";
+
+    jedis.hset(key, field, value);
+
+    assertThat(jedis.hget(key, field)).isEqualTo(value);
+  }
+
+  @Test
+  public void hgetReturnsNewValue_whenValueIsUpdated() {
+    String key = "key";
+    String field = "field";
+
+    jedis.hset(key, field, "value");
+    assertThat(jedis.hget(key, field)).isEqualTo("value");
+
+    jedis.hset(key, field, "updatedValue");
+    assertThat(jedis.hget(key, field)).isEqualTo("updatedValue");
   }
 
   /**
@@ -415,9 +593,9 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
     String field2 = "field_2";
     String value = "value";
 
-    Long result = jedis.hlen(key); // check error handling when key does not exist
+    assertThat(jedis.hlen(key)).isEqualTo(0);
 
-    result = jedis.hset(key, field1, value);
+    Long result = jedis.hset(key, field1, value);
     assertThat(result).isEqualTo(1);
 
     result = jedis.hset(key, field2, value);
@@ -426,6 +604,19 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
     result = jedis.hlen(key);
     assertThat(result).isEqualTo(2);
 
+  }
+
+  @Test
+  public void testHLenErrorMessage_givenIncorrectDataType() {
+    jedis.set("farm", "chicken");
+    assertThatThrownBy(() -> jedis.hlen("farm"))
+        .isInstanceOf(JedisDataException.class)
+        .hasMessageContaining("WRONGTYPE Operation against a key holding the wrong kind of value");
+  }
+
+  @Test
+  public void testHLen_givenWrongNumberOfArguments() {
+    assertExactNumberOfArgs(jedis, Protocol.Command.HLEN, 1);
   }
 
   /**
@@ -443,7 +634,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
    * </pre>
    */
   @Test
-  public void testHKeys() {
+  public void testHKeys_returnsFieldsForGivenKey() {
     String key = "HKeys_key";
     String field1 = "field_1";
     String field2 = "field_2";
@@ -588,7 +779,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   }
 
   @Test
-  public void testConcurrentHSet_sameKeyPerClient() throws InterruptedException {
+  public void testConcurrentHSet_sameKeyPerClient() {
     String key1 = "HSET1";
 
     new ConcurrentLoopingThreads(ITERATION_COUNT,
@@ -601,7 +792,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   }
 
   @Test
-  public void testConcurrentHIncr_sameKeyPerClient() throws InterruptedException {
+  public void testConcurrentHIncr_sameKeyPerClient() {
     String key = "KEY";
     String field = "FIELD";
 
@@ -617,7 +808,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   }
 
   @Test
-  public void testConcurrentHIncrByFloat_sameKeyPerClient() throws InterruptedException {
+  public void testConcurrentHIncrByFloat_sameKeyPerClient() {
     String key = "HSET_KEY";
     String field = "HSET_FIELD";
 
@@ -628,7 +819,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
         (i) -> jedis2.hincrByFloat(key, field, 1.0)).run();
 
     String value = jedis.hget(key, field);
-    assertThat(value).isEqualTo(String.format("%.0f", ITERATION_COUNT * 1.5));
+    assertThat(Double.valueOf(value)).isEqualTo(ITERATION_COUNT * 1.5);
   }
 
   @Test
@@ -637,7 +828,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
 
     assertThatThrownBy(
         () -> jedis.hset("key", "field", "something else")).isInstanceOf(JedisDataException.class)
-            .hasMessageContaining("WRONGTYPE");
+            .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -723,5 +914,11 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
       record.put(field, fieldValue);
       jedis.hset(key, field, fieldValue);
     }
+  }
+
+  private void hincrbyAndAssertValueEqualToPreviousValuePlusIncrement(String key, String field,
+      int increment) {
+    int expectedValue = Integer.parseInt(jedis.hget(key, field)) + increment;
+    assertThat(jedis.hincrBy(key, field, increment)).isEqualTo(expectedValue);
   }
 }

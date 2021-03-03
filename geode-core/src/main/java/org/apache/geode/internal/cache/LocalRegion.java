@@ -151,7 +151,6 @@ import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -1733,7 +1732,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         }
         if (extractDelta && ((Delta) value).hasDelta()) {
           try (HeapDataOutputStream hdos = new HeapDataOutputStream(KnownVersion.CURRENT)) {
-            long start = DistributionStats.getStatTime();
             try {
               ((Delta) value).toDelta(hdos);
             } catch (RuntimeException re) {
@@ -1742,7 +1740,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
               throw new DeltaSerializationException("Caught exception while sending delta", e);
             }
             event.setDeltaBytes(hdos.toByteArray());
-            getCachePerfStats().endDeltaPrepared(start);
           }
         }
       }
@@ -8624,6 +8621,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     cmnClearRegion(rEvent, false/* cacheWrite */, false/* useRVV */);
   }
 
+  @Override
   public void handleInterestEvent(InterestRegistrationEvent event) {
     throw new UnsupportedOperationException(
         "Region interest registration is only supported for PartitionedRegions");
@@ -10224,6 +10222,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       long numOverflowBytesOnDisk) {
     getDiskRegion().getStats().incNumEntriesInVM(numEntriesInVM);
     getDiskRegion().getStats().incNumOverflowOnDisk(numOverflowOnDisk);
+    getDiskRegion().getStats().incNumOverflowBytesOnDisk(numOverflowBytesOnDisk);
   }
 
   /**

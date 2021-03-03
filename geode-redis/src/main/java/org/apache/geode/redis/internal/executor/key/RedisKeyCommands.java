@@ -34,4 +34,6 @@ public interface RedisKeyCommands {
   int persist(ByteArrayWrapper key);
 
   String type(ByteArrayWrapper key);
+
+  String internalType(ByteArrayWrapper key);
 }

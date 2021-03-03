@@ -113,8 +113,8 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
       InternalResourceManager irm = getCache().getInternalResourceManager();
       // Reset CRITICAL_UP by informing all that heap usage is now 1 byte (0 would disable).
       irm.getHeapMonitor().updateStateAndSendEvent(NORMAL_HEAP_USED, "test");
-      Set<ResourceListener> listeners = irm.getResourceListeners(ResourceType.HEAP_MEMORY);
-      for (ResourceListener l : listeners) {
+      Set<ResourceListener<?>> listeners = irm.getResourceListeners(ResourceType.HEAP_MEMORY);
+      for (ResourceListener<?> l : listeners) {
         if (l instanceof TestMemoryThresholdListener) {
           ((TestMemoryThresholdListener) l).resetThresholdCalls();
         }

@@ -278,17 +278,16 @@ set +x
 
 if [[ "${GEODE_FORK}" != "${UPSTREAM_FORK}" ]]; then
   echo "Disabling unnecessary jobs for forks."
-  pauseJobs ${META_PIPELINE} set-reaper-pipeline
-  pauseJobs ${META_PIPELINE} set-mass-test-run-pipeline
-  pauseNewJobs ${META_PIPELINE} set-metrics-pipeline
+  pauseJobs ${META_PIPELINE} set-reaper-pipeline set-mass-test-run-pipeline
 elif [[ "$GEODE_FORK" == "${UPSTREAM_FORK}" ]] && [[ "$GEODE_BRANCH" == "develop" ]]; then
   echo "Disabling optional jobs for develop"
-  pauseNewJobs ${META_PIPELINE} set-pr-pipeline set-metrics-pipeline set-examples-pipeline
+  pauseJobs ${META_PIPELINE} set-mass-test-run-pipeline
+  pauseNewJobs ${META_PIPELINE} set-pr-pipeline set-examples-pipeline
 else
   echo "Disabling unnecessary jobs for support branches."
   echo "*** DO NOT RE-ENABLE THESE META-JOBS ***"
-  pauseJobs ${META_PIPELINE} set-images-pipeline set-reaper-pipeline
-  pauseNewJobs ${META_PIPELINE} set-pr-pipeline set-metrics-pipeline set-examples-pipeline
+  pauseJobs ${META_PIPELINE} set-images-pipeline set-reaper-pipeline set-mass-test-run-pipeline
+  pauseNewJobs ${META_PIPELINE} set-pr-pipeline set-examples-pipeline
 fi
 
 unpausePipeline ${META_PIPELINE}

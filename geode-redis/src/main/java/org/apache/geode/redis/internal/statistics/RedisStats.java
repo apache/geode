@@ -44,6 +44,7 @@ public class RedisStats {
   private final GeodeRedisStats geodeRedisStats;
   private final long START_TIME_IN_NANOS;
 
+
   public RedisStats(StatisticsClock clock,
       GeodeRedisStats geodeRedisStats) {
 
@@ -52,7 +53,6 @@ public class RedisStats {
     perSecondExecutor = startPerSecondUpdater();
     START_TIME_IN_NANOS = clock.getTime();
   }
-
 
   public void incCommandsProcessed() {
     commandsProcessed.incrementAndGet();
@@ -197,8 +197,7 @@ public class RedisStats {
 
   private void updateOpsPerformedOverLastSecond() {
     long totalOpsPerformed = getCommandsProcessed();
-    long opsPerformedThisTick = totalOpsPerformed - opsPerformedLastTick;
-    opsPerformedOverLastSecond = opsPerformedThisTick;
+    opsPerformedOverLastSecond = totalOpsPerformed - opsPerformedLastTick;
     opsPerformedLastTick = getCommandsProcessed();
   }
 }

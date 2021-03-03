@@ -16,6 +16,7 @@
 
 package org.apache.geode.redis.internal.executor;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -143,8 +144,8 @@ public class RedisResponse {
     return encode(new UnpooledByteBufAllocator(false)).toString(Charset.defaultCharset());
   }
 
-  public static RedisResponse doubleValue(double numericValue) {
-    return new RedisResponse((bba) -> Coder.getDoubleResponse(bba, numericValue));
+  public static RedisResponse bigDecimal(BigDecimal numericValue) {
+    return new RedisResponse((bba) -> Coder.getBigDecimalResponse(bba, numericValue));
   }
 
 }

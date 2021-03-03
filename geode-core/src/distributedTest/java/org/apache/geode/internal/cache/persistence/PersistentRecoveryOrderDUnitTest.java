@@ -316,7 +316,7 @@ public class PersistentRecoveryOrderDUnitTest extends CacheTestCase {
     vm2.invoke(() -> {
       Properties props = getDistributedSystemProperties();
       props.setProperty(JMX_MANAGER, "true");
-      props.setProperty(JMX_MANAGER_PORT, "1099");
+      props.setProperty(JMX_MANAGER_PORT, String.valueOf(jmxManagerPort));
       props.setProperty(JMX_MANAGER_START, "true");
       props.setProperty(HTTP_SERVICE_PORT, "0");
       getCache(props);
@@ -395,7 +395,7 @@ public class PersistentRecoveryOrderDUnitTest extends CacheTestCase {
     vm3.invoke(() -> {
       Properties props = getDistributedSystemProperties();
       props.setProperty(JMX_MANAGER, "true");
-      props.setProperty(JMX_MANAGER_PORT, "1099");
+      props.setProperty(JMX_MANAGER_PORT, String.valueOf(jmxManagerPort));
       props.setProperty(JMX_MANAGER_START, "true");
       props.setProperty(HTTP_SERVICE_PORT, "0");
       getCache(props);

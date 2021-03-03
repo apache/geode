@@ -39,7 +39,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
 
 /**
  * All keys of the register interest list are being sent as a single part since 6.6. There is no
- * need to send no keys as a separate part.In earlier versions {@link RegisterInterestList61} number
+ * need to send no keys as a separate part. In earlier versions the number
  * of keys & each individual key was sent as a separate part.
  *
  * @since GemFire 6.6

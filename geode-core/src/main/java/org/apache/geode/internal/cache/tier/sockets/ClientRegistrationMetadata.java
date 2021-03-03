@@ -51,7 +51,7 @@ class ClientRegistrationMetadata {
   ClientRegistrationMetadata(final InternalCache cache, final Socket socket) {
     this.cache = cache;
     this.socket = socket;
-    this.socketMessageWriter = new SocketMessageWriter();
+    socketMessageWriter = new SocketMessageWriter();
   }
 
   boolean initialize() throws IOException {
@@ -126,13 +126,11 @@ class ClientRegistrationMetadata {
     if (clientVersion == null) {
       message = KnownVersion.unsupportedVersionMessage(clientVersionOrdinal);
     } else {
-      final Map<Integer, Command> commands = CommandInitializer.getCommands(clientVersion);
+      final Map<Integer, Command> commands =
+          CommandInitializer.getDefaultInstance().get(clientVersion);
       if (commands == null) {
-        message = "Client version {} is not supported";
+        message = "No commands registered for version " + clientVersion + ".";
       } else {
-        if (isVersionOlderThan57(clientVersion)) {
-          throw new IOException(new UnsupportedVersionException(clientVersionOrdinal));
-        }
         if (logger.isDebugEnabled()) {
           logger.debug("{}: Registering client with version: {}", this, clientVersion);
         }
@@ -160,16 +158,8 @@ class ClientRegistrationMetadata {
     return false;
   }
 
-  private boolean doesClientSupportExtractOverrides() {
-    return clientVersion.isNotOlderThan(KnownVersion.GFE_603);
-  }
-
   private boolean oldClientRequiresVersionedStreams(final KnownVersion clientVersion) {
     return KnownVersion.CURRENT.compareTo(clientVersion) > 0;
-  }
-
-  private boolean isVersionOlderThan57(final KnownVersion clientVersion) {
-    return KnownVersion.GFE_57.compareTo(clientVersion) > 0;
   }
 
   private void getAndValidateClientProxyMembershipID()
@@ -183,13 +173,8 @@ class ClientRegistrationMetadata {
 
   private boolean getAndValidateClientConflation()
       throws IOException {
-    if (doesClientSupportExtractOverrides()) {
-      byte[] overrides =
-          Handshake.extractOverrides(new byte[] {(byte) dataInputStream.read()});
-      clientConflation = overrides[0];
-    } else {
-      clientConflation = (byte) dataInputStream.read();
-    }
+    final byte[] overrides = Handshake.extractOverrides(new byte[] {(byte) dataInputStream.read()});
+    clientConflation = overrides[0];
 
     switch (clientConflation) {
       case Handshake.CONFLATION_DEFAULT:

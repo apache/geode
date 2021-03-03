@@ -112,20 +112,20 @@ public class ClientInterestMessageImpl implements ClientMessage {
     this.interestType = interestType;
     this.interestResultPolicy = interestResultPolicy;
     this.isDurable = isDurable;
-    this.forUpdatesAsInvalidates = sendUpdatesAsInvalidates;
+    forUpdatesAsInvalidates = sendUpdatesAsInvalidates;
     this.action = action;
   }
 
   public ClientInterestMessageImpl(DistributedSystem distributedSystem,
       ClientInterestMessageImpl message, Object keyOfInterest) {
-    this.eventId = new EventID(distributedSystem);
-    this.regionName = message.regionName;
+    eventId = new EventID(distributedSystem);
+    regionName = message.regionName;
     this.keyOfInterest = keyOfInterest;
-    this.interestType = message.interestType;
-    this.interestResultPolicy = message.interestResultPolicy;
-    this.isDurable = message.isDurable;
-    this.forUpdatesAsInvalidates = message.forUpdatesAsInvalidates;
-    this.action = message.action;
+    interestType = message.interestType;
+    interestResultPolicy = message.interestResultPolicy;
+    isDurable = message.isDurable;
+    forUpdatesAsInvalidates = message.forUpdatesAsInvalidates;
+    action = message.action;
   }
 
   /**
@@ -135,24 +135,11 @@ public class ClientInterestMessageImpl implements ClientMessage {
 
   @Override
   public Message getMessage(CacheClientProxy proxy, boolean notify) throws IOException {
-    KnownVersion clientVersion = proxy.getVersion();
-    Message message = null;
-    if (clientVersion.isNotOlderThan(KnownVersion.GFE_57)) {
-      message = getGFEMessage();
-    } else {
-      throw new IOException(
-          "Unsupported client version for server-to-client message creation: " + clientVersion);
-    }
-
-    return message;
-  }
-
-  protected Message getGFEMessage() throws IOException {
     Message message = new Message(isRegister() ? 7 : 6, KnownVersion.CURRENT);
     message.setTransactionId(0);
 
     // Set the message type
-    switch (this.action) {
+    switch (action) {
       case REGISTER:
         message.setMessageType(MessageType.CLIENT_REGISTER_INTEREST);
         break;
@@ -160,32 +147,32 @@ public class ClientInterestMessageImpl implements ClientMessage {
         message.setMessageType(MessageType.CLIENT_UNREGISTER_INTEREST);
         break;
       default:
-        String s = "Unknown action: " + this.action;
+        String s = "Unknown action: " + action;
         throw new IOException(s);
     }
 
     // Add the region name
-    message.addStringPart(this.regionName, true);
+    message.addStringPart(regionName, true);
 
     // Add the key
-    message.addStringOrObjPart(this.keyOfInterest);
+    message.addStringOrObjPart(keyOfInterest);
 
     // Add the interest type
-    message.addObjPart(Integer.valueOf(this.interestType));
+    message.addObjPart(interestType);
 
     // Add the interest result policy (if register interest)
     if (isRegister()) {
-      message.addObjPart(Byte.valueOf(this.interestResultPolicy));
+      message.addObjPart(interestResultPolicy);
     }
 
     // Add the isDurable flag
-    message.addObjPart(Boolean.valueOf(this.isDurable));
+    message.addObjPart(isDurable);
 
     // Add the forUpdatesAsInvalidates flag
-    message.addObjPart(Boolean.valueOf(this.forUpdatesAsInvalidates));
+    message.addObjPart(forUpdatesAsInvalidates);
 
     // Add the event id
-    message.addObjPart(this.eventId);
+    message.addObjPart(eventId);
 
     return message;
   }
@@ -211,64 +198,64 @@ public class ClientInterestMessageImpl implements ClientMessage {
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    context.getSerializer().writeObject(this.eventId, out);
-    DataSerializer.writeString(this.regionName, out);
-    context.getSerializer().writeObject(this.keyOfInterest, out);
-    DataSerializer.writePrimitiveBoolean(this.isDurable, out);
-    DataSerializer.writePrimitiveBoolean(this.forUpdatesAsInvalidates, out);
-    DataSerializer.writePrimitiveInt(this.interestType, out);
-    DataSerializer.writePrimitiveByte(this.interestResultPolicy, out);
-    DataSerializer.writePrimitiveByte(this.action, out);
+    context.getSerializer().writeObject(eventId, out);
+    DataSerializer.writeString(regionName, out);
+    context.getSerializer().writeObject(keyOfInterest, out);
+    DataSerializer.writePrimitiveBoolean(isDurable, out);
+    DataSerializer.writePrimitiveBoolean(forUpdatesAsInvalidates, out);
+    DataSerializer.writePrimitiveInt(interestType, out);
+    DataSerializer.writePrimitiveByte(interestResultPolicy, out);
+    DataSerializer.writePrimitiveByte(action, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.eventId = (EventID) context.getDeserializer().readObject(in);
-    this.regionName = DataSerializer.readString(in);
-    this.keyOfInterest = context.getDeserializer().readObject(in);
-    this.isDurable = DataSerializer.readPrimitiveBoolean(in);
-    this.forUpdatesAsInvalidates = DataSerializer.readPrimitiveBoolean(in);
-    this.interestType = DataSerializer.readPrimitiveInt(in);
-    this.interestResultPolicy = DataSerializer.readPrimitiveByte(in);
-    this.action = DataSerializer.readPrimitiveByte(in);
+    eventId = context.getDeserializer().readObject(in);
+    regionName = DataSerializer.readString(in);
+    keyOfInterest = context.getDeserializer().readObject(in);
+    isDurable = DataSerializer.readPrimitiveBoolean(in);
+    forUpdatesAsInvalidates = DataSerializer.readPrimitiveBoolean(in);
+    interestType = DataSerializer.readPrimitiveInt(in);
+    interestResultPolicy = DataSerializer.readPrimitiveByte(in);
+    action = DataSerializer.readPrimitiveByte(in);
   }
 
   @Override
   public EventID getEventId() {
-    return this.eventId;
+    return eventId;
   }
 
   public String getRegionName() {
-    return this.regionName;
+    return regionName;
   }
 
   public Object getKeyOfInterest() {
-    return this.keyOfInterest;
+    return keyOfInterest;
   }
 
   public int getInterestType() {
-    return this.interestType;
+    return interestType;
   }
 
   public byte getInterestResultPolicy() {
-    return this.interestResultPolicy;
+    return interestResultPolicy;
   }
 
   public boolean getIsDurable() {
-    return this.isDurable;
+    return isDurable;
   }
 
   public boolean getForUpdatesAsInvalidates() {
-    return this.forUpdatesAsInvalidates;
+    return forUpdatesAsInvalidates;
   }
 
   public boolean isKeyInterest() {
-    return this.interestType == InterestType.KEY;
+    return interestType == InterestType.KEY;
   }
 
   public boolean isRegister() {
-    return this.action == REGISTER;
+    return action == REGISTER;
   }
 
   @Override
@@ -294,13 +281,13 @@ public class ClientInterestMessageImpl implements ClientMessage {
   public void setLatestValue(Object value) {}
 
   public String toString() {
-    return new StringBuilder().append(getClass().getSimpleName()).append("[").append("eventId=")
-        .append(this.eventId).append("; regionName=").append(this.regionName)
-        .append("; keyOfInterest=").append(this.keyOfInterest).append("; isDurable=")
-        .append(this.isDurable).append("; forUpdatesAsInvalidates=")
-        .append(this.forUpdatesAsInvalidates).append("; interestType=").append(this.interestType)
-        .append("; interestResultPolicy=").append(this.interestResultPolicy).append("; action=")
-        .append(this.action).append("]").toString();
+    return getClass().getSimpleName() + "[" + "eventId="
+        + eventId + "; regionName=" + regionName
+        + "; keyOfInterest=" + keyOfInterest + "; isDurable="
+        + isDurable + "; forUpdatesAsInvalidates="
+        + forUpdatesAsInvalidates + "; interestType=" + interestType
+        + "; interestResultPolicy=" + interestResultPolicy + "; action="
+        + action + "]";
   }
 
   @Override

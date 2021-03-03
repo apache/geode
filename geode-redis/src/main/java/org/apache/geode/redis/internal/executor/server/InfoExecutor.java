@@ -28,6 +28,8 @@ import org.apache.geode.redis.internal.statistics.RedisStats;
 
 public class InfoExecutor extends AbstractExecutor {
 
+  private static final Long ONE_MEGABYTE = 1024 * 1024L;
+
   private DecimalFormat decimalFormat = new DecimalFormat("0.00");
 
   @Override
@@ -139,8 +141,9 @@ public class InfoExecutor extends AbstractExecutor {
     long usedMemory = pr.getDataStore().currentAllocatedMemory();
     final String MEMORY_STRING =
         "# Memory\r\n" +
+            "maxmemory:" + pr.getLocalMaxMemory() * ONE_MEGABYTE + "\r\n" +
             "used_memory:" + usedMemory + "\r\n" +
-            "mem_fragmentation_ratio:0\r\n";
+            "mem_fragmentation_ratio:1.00\r\n";
     return MEMORY_STRING;
   }
 

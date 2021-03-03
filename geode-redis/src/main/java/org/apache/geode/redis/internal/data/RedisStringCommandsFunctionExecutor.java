@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal.data;
 
 import static org.apache.geode.redis.internal.data.RedisString.NULL_REDIS_STRING;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.apache.geode.redis.internal.executor.string.RedisStringCommands;
@@ -64,12 +65,12 @@ public class RedisStringCommandsFunctionExecutor extends RedisDataCommandsFuncti
 
   @Override
   public long incr(ByteArrayWrapper key) {
-    return stripedExecute(key, () -> getRedisString(key, true).incr(getRegion(), key));
+    return stripedExecute(key, () -> getRedisString(key, false).incr(getRegion(), key));
   }
 
   @Override
   public long decr(ByteArrayWrapper key) {
-    return stripedExecute(key, () -> getRedisString(key, true).decr(getRegion(), key));
+    return stripedExecute(key, () -> getRedisString(key, false).decr(getRegion(), key));
   }
 
   @Override
@@ -81,13 +82,13 @@ public class RedisStringCommandsFunctionExecutor extends RedisDataCommandsFuncti
   @Override
   public long incrby(ByteArrayWrapper key, long increment) {
     return stripedExecute(key,
-        () -> getRedisString(key, true).incrby(getRegion(), key, increment));
+        () -> getRedisString(key, false).incrby(getRegion(), key, increment));
   }
 
   @Override
-  public double incrbyfloat(ByteArrayWrapper key, double increment) {
+  public BigDecimal incrbyfloat(ByteArrayWrapper key, BigDecimal increment) {
     return stripedExecute(key,
-        () -> getRedisString(key, true)
+        () -> getRedisString(key, false)
             .incrbyfloat(getRegion(), key, increment));
   }
 
@@ -100,7 +101,7 @@ public class RedisStringCommandsFunctionExecutor extends RedisDataCommandsFuncti
   @Override
   public long decrby(ByteArrayWrapper key, long decrement) {
     return stripedExecute(key,
-        () -> getRedisString(key, true).decrby(getRegion(), key, decrement));
+        () -> getRedisString(key, false).decrby(getRegion(), key, decrement));
   }
 
   @Override
@@ -111,7 +112,7 @@ public class RedisStringCommandsFunctionExecutor extends RedisDataCommandsFuncti
   @Override
   public int setrange(ByteArrayWrapper key, int offset, byte[] value) {
     return stripedExecute(key,
-        () -> getRedisString(key, true)
+        () -> getRedisString(key, false)
             .setrange(getRegion(), key, offset, value));
   }
 
@@ -147,7 +148,7 @@ public class RedisStringCommandsFunctionExecutor extends RedisDataCommandsFuncti
     int byteIndex = (int) (offset / 8);
     byte bitIndex = (byte) (offset % 8);
     return stripedExecute(key,
-        () -> getRedisString(key, true)
+        () -> getRedisString(key, false)
             .setbit(getRegion(), key, value, byteIndex, bitIndex));
   }
 

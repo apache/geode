@@ -38,7 +38,7 @@ dependencies {
   implementation('com.github.docker-java:docker-java:3.2.7')
   implementation('me.champeau.gradle:japicmp-gradle-plugin:0.2.9')
 
-  implementation('junit:junit:4.13.1')
+  implementation('junit:junit:4.13.2')
 
   testAnnotationProcessor(this.project)
 }

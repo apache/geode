@@ -202,6 +202,8 @@ dependencies {
     // find bugs leaks in from spring, needed to remove warnings.
     compileOnly('com.google.code.findbugs:jsr305')
 
+    compileOnly('org.jetbrains:annotations')
+
     //Jgroups is a core component of our membership system.
     implementation('org.jgroups:jgroups')
 

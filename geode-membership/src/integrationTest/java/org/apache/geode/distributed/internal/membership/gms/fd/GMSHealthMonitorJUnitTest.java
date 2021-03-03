@@ -657,6 +657,50 @@ public class GMSHealthMonitorJUnitTest {
   }
 
   @Test
+  public void testMemberIsAvailableWhenInFinalCheck() throws Exception {
+    useGMSHealthMonitorTestClass = true;
+    simulateHeartbeatInGMSHealthMonitorTestClass = false;
+
+    final GMSMembershipView v = installAView();
+    setFailureDetectionPorts(v);
+
+    final MemberIdentifier memberToCheck = gmsHealthMonitor.getNextNeighbor();
+    final GMSHealthMonitorTest testMonitor = (GMSHealthMonitorTest) gmsHealthMonitor;
+    testMonitor.addMemberInFinalCheck(memberToCheck);
+    assertThat(testMonitor.checkIfAvailable(memberToCheck,
+        "Member failed to acknowledge a membership view", false)).isTrue();
+  }
+
+  @Test
+  public void testMemberIsNotAvailableWhenNotAssumingMembersInFinalCheckAreAvailable()
+      throws Exception {
+    useGMSHealthMonitorTestClass = true;
+    simulateHeartbeatInGMSHealthMonitorTestClass = false;
+
+    final GMSMembershipView v = installAView();
+    setFailureDetectionPorts(v);
+
+    final MemberIdentifier memberToCheck = gmsHealthMonitor.getNextNeighbor();
+    when(joinLeave.isMemberLeaving(memberToCheck)).thenReturn(true);
+    final GMSHealthMonitorTest testMonitor = (GMSHealthMonitorTest) gmsHealthMonitor;
+    testMonitor.addMemberInFinalCheck(memberToCheck);
+    assertThat(testMonitor.checkIfAvailable(memberToCheck,
+        "Member failed to acknowledge a membership view", false, false)).isFalse();
+  }
+
+  @Test
+  public void testMemberIsNotAvailableWhenNotInFinalCheck() throws Exception {
+    useGMSHealthMonitorTestClass = true;
+    simulateHeartbeatInGMSHealthMonitorTestClass = false;
+    installAView();
+
+    final MemberIdentifier memberToCheck = gmsHealthMonitor.getNextNeighbor();
+    final GMSHealthMonitorTest testMonitor = (GMSHealthMonitorTest) gmsHealthMonitor;
+    assertThat(testMonitor.checkIfAvailable(memberToCheck,
+        "Member failed to acknowledge a membership view", false, true)).isFalse();
+  }
+
+  @Test
   public void testFailedSelfCheckRemovesMemberAsSuspect() throws Exception {
     useGMSHealthMonitorTestClass = true;
     simulateHeartbeatInGMSHealthMonitorTestClass = false;

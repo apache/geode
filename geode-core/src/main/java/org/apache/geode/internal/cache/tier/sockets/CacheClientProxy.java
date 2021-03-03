@@ -954,7 +954,9 @@ public class CacheClientProxy implements ClientSession {
     String remoteHostAddress = this._remoteHostAddress;
     if (this._socketClosed.compareAndSet(false, true) && remoteHostAddress != null) {
       // Only one thread is expected to close the socket
-      this._cacheClientNotifier.getSocketCloser().asyncClose(this._socket, remoteHostAddress, null);
+      this._cacheClientNotifier.getSocketCloser().asyncClose(this._socket, remoteHostAddress,
+          () -> {
+          });
       getCacheClientNotifier().getAcceptorStats().decCurrentQueueConnections();
       return true;
     }

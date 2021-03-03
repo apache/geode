@@ -60,7 +60,7 @@ public class ImportDataFunction implements InternalFunction<Object[]> {
         options.invokeCallbacks(invokeCallbacks);
         options.setParallelMode(parallel);
         File importFile = new File(importFileName);
-        snapshotService.load(new File(importFileName), SnapshotFormat.GEMFIRE, options);
+        snapshotService.load(new File(importFileName), SnapshotFormat.GEODE, options);
         String successMessage = CliStrings.format(CliStrings.IMPORT_DATA__SUCCESS__MESSAGE,
             importFile.getCanonicalPath(), hostName, regionName);
         result = new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.OK,

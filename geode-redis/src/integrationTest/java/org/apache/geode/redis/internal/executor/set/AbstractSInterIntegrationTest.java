@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor.set;
 
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -51,21 +52,13 @@ public abstract class AbstractSInterIntegrationTest implements RedisPortSupplier
   }
 
   @Test
-  public void sinter_givenKeyProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SINTER))
-        .hasMessageContaining("ERR wrong number of arguments for 'sinter' command");
+  public void sinterErrors_givenTooFewArguments() {
+    assertAtLeastNArgs(jedis, Protocol.Command.SINTER, 1);
   }
 
   @Test
-  public void sinterstore_givenDestinationProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SINTERSTORE))
-        .hasMessageContaining("ERR wrong number of arguments for 'sinterstore' command");
-  }
-
-  @Test
-  public void sinterstore_givenKeyProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SINTERSTORE, "destination"))
-        .hasMessageContaining("ERR wrong number of arguments for 'sinterstore' command");
+  public void sinterstoreErrors_givenTooFewArguments() {
+    assertAtLeastNArgs(jedis, Protocol.Command.SINTERSTORE, 2);
   }
 
   @Test

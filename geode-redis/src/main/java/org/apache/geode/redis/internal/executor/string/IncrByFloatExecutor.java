@@ -14,8 +14,11 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
@@ -35,23 +38,32 @@ public class IncrByFloatExecutor extends StringExecutor {
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
     ByteArrayWrapper key = command.getKey();
-    RedisStringCommands stringCommands = getRedisStringCommands(context);
 
-    byte[] incrArray = commandElems.get(INCREMENT_INDEX);
+    Pair<BigDecimal, RedisResponse> validated =
+        validateIncrByFloatArgument(commandElems.get(INCREMENT_INDEX));
+    if (validated.getRight() != null) {
+      return validated.getRight();
+    }
+
+    RedisStringCommands stringCommands = getRedisStringCommands(context);
+    BigDecimal result = stringCommands.incrbyfloat(key, validated.getLeft());
+
+    return RedisResponse.bigDecimal(result);
+  }
+
+  public static Pair<BigDecimal, RedisResponse> validateIncrByFloatArgument(byte[] incrArray) {
     String doub = Coder.bytesToString(incrArray).toLowerCase();
     if (invalidArgs.matcher(doub).matches()) {
-      return RedisResponse.error(RedisConstants.ERROR_NAN_OR_INFINITY);
+      return Pair.of(null, RedisResponse.error(RedisConstants.ERROR_NAN_OR_INFINITY));
     }
 
-    double increment;
+    BigDecimal increment;
     try {
-      increment = Coder.bytesToDouble(incrArray);
+      increment = Coder.bytesToBigDecimal(incrArray);
     } catch (NumberFormatException e) {
-      return RedisResponse.error(RedisConstants.ERROR_NOT_A_VALID_FLOAT);
+      return Pair.of(null, RedisResponse.error(RedisConstants.ERROR_NOT_A_VALID_FLOAT));
     }
 
-    double result = stringCommands.incrbyfloat(key, increment);
-
-    return RedisResponse.doubleValue(result);
+    return Pair.of(increment, null);
   }
 }

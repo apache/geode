@@ -21,18 +21,12 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 public class KnownVersionJUnitTest {
+
   @Test
-  public void testKnownVersionClass() throws Exception {
-    compare(KnownVersion.GFE_662, KnownVersion.GFE_66);
-    compare(KnownVersion.GFE_6622, KnownVersion.GFE_662);
-    compare(KnownVersion.GFE_71, KnownVersion.GFE_70);
-    compare(KnownVersion.GFE_80, KnownVersion.GFE_70);
-    compare(KnownVersion.GFE_80, KnownVersion.GFE_71);
-    compare(KnownVersion.GFE_81, KnownVersion.GFE_70);
-    compare(KnownVersion.GFE_81, KnownVersion.GFE_71);
-    compare(KnownVersion.GFE_81, KnownVersion.GFE_80);
-    compare(KnownVersion.GFE_82, KnownVersion.GFE_81);
-    compare(KnownVersion.GEODE_1_1_0, KnownVersion.GFE_82);
+  public void testKnownVersionClass() {
+    compare(KnownVersion.GFE_90, KnownVersion.GFE_81);
+    compare(KnownVersion.GEODE_1_1_0, KnownVersion.GFE_90);
+    compare(KnownVersion.GEODE_1_1_1, KnownVersion.GEODE_1_1_0);
     compare(KnownVersion.GEODE_1_2_0, KnownVersion.GEODE_1_1_1);
     compare(KnownVersion.GEODE_1_3_0, KnownVersion.GEODE_1_2_0);
     compare(KnownVersion.GEODE_1_4_0, KnownVersion.GEODE_1_3_0);
@@ -44,19 +38,50 @@ public class KnownVersionJUnitTest {
     compare(KnownVersion.GEODE_1_10_0, KnownVersion.GEODE_1_9_0);
     compare(KnownVersion.GEODE_1_11_0, KnownVersion.GEODE_1_10_0);
     compare(KnownVersion.GEODE_1_12_0, KnownVersion.GEODE_1_11_0);
-    compare(KnownVersion.GEODE_1_13_0, KnownVersion.GEODE_1_12_0);
-    compare(KnownVersion.GEODE_1_14_0, KnownVersion.GEODE_1_13_0);
+    compare(KnownVersion.GEODE_1_12_1, KnownVersion.GEODE_1_12_0);
+    compare(KnownVersion.GEODE_1_13_0, KnownVersion.GEODE_1_12_1);
+    compare(KnownVersion.GEODE_1_13_1, KnownVersion.GEODE_1_13_0);
+    compare(KnownVersion.GEODE_1_14_0, KnownVersion.GEODE_1_13_1);
+    compare(KnownVersion.GEODE_1_15_0, KnownVersion.GEODE_1_14_0);
+  }
+
+  @Test
+  public void testClientServerProtocolVersion() {
+    assertThat(KnownVersion.GEODE_1_7_0.getClientServerProtocolVersion())
+        .isEqualTo(KnownVersion.GEODE_1_7_0);
+    assertThat(KnownVersion.GEODE_1_8_0.getClientServerProtocolVersion())
+        .isEqualTo(KnownVersion.GEODE_1_8_0);
+    assertThat(KnownVersion.GEODE_1_9_0.getClientServerProtocolVersion())
+        .isEqualTo(KnownVersion.GEODE_1_9_0);
+    assertThat(KnownVersion.GEODE_1_10_0.getClientServerProtocolVersion())
+        .isEqualTo(KnownVersion.GEODE_1_10_0);
+    assertThat(KnownVersion.GEODE_1_11_0.getClientServerProtocolVersion())
+        .isEqualTo(KnownVersion.GEODE_1_11_0);
+    assertThat(KnownVersion.GEODE_1_12_0.getClientServerProtocolVersion())
+        .isEqualTo(KnownVersion.GEODE_1_12_0);
+    assertThat(KnownVersion.GEODE_1_12_1.getClientServerProtocolVersion())
+        .isEqualTo(KnownVersion.GEODE_1_12_1);
+    assertThat(KnownVersion.GEODE_1_13_0.getClientServerProtocolVersion())
+        .isEqualTo(KnownVersion.GEODE_1_13_0);
+    assertThat(KnownVersion.GEODE_1_13_1.getClientServerProtocolVersion())
+        .isEqualTo(KnownVersion.GEODE_1_13_1);
+    assertThat(KnownVersion.GEODE_1_14_0.getClientServerProtocolVersion())
+        .isEqualTo(KnownVersion.GEODE_1_14_0);
+    assertThat(KnownVersion.GEODE_1_15_0.getClientServerProtocolVersion())
+        .isEqualTo(KnownVersion.GEODE_1_14_0);
   }
 
   private void compare(KnownVersion later, KnownVersion earlier) {
-    assertTrue(later.compareTo(earlier) > 0);
-    assertTrue(later.equals(later));
-    assertTrue(later.compareTo(later) == 0);
-    assertTrue(earlier.compareTo(later) < 0);
+    assertThat(later).isEqualTo(later);
+    assertThat(later).isNotEqualTo(earlier);
 
-    assertTrue(later.compareTo(Versioning.getVersion(earlier.ordinal())) > 0);
-    assertTrue(later.compareTo(Versioning.getVersion(later.ordinal())) == 0);
-    assertTrue(earlier.compareTo(Versioning.getVersion(later.ordinal())) < 0);
+    assertThat(later).isGreaterThan(earlier);
+    assertThat(later).isEqualByComparingTo(later);
+    assertThat(earlier).isLessThan(later);
+
+    assertThat((Version) later).isGreaterThan(Versioning.getVersion(earlier.ordinal()));
+    assertThat((Version) later).isEqualByComparingTo(Versioning.getVersion(later.ordinal()));
+    assertThat((Version) earlier).isLessThan(Versioning.getVersion(later.ordinal()));
 
     compareNewerVsOlder(later, earlier);
   }
@@ -81,14 +106,6 @@ public class KnownVersionJUnitTest {
     assertTrue(older.isNotNewerThan(newer));
     assertTrue(newer.isNotNewerThan(newer));
     assertFalse(newer.isNotNewerThan(older));
-  }
-
-  @Test
-  public void testIsPre65() {
-    assertTrue(KnownVersion.GFE_61.isOlderThan(KnownVersion.GFE_65));
-    assertFalse(KnownVersion.GFE_65.isOlderThan(KnownVersion.GFE_65));
-    assertFalse(KnownVersion.GFE_70.isOlderThan(KnownVersion.GFE_65));
-    assertFalse(KnownVersion.GEODE_1_1_0.isOlderThan(KnownVersion.GFE_65));
   }
 
   @Test

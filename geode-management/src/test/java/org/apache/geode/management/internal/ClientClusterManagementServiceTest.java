@@ -186,7 +186,8 @@ public class ClientClusterManagementServiceTest {
         service.getFuture(opType, opId);
 
     await().untilAsserted(
-        () -> verify(serviceTransport).submitMessageForGetOperation(same(opType), same(opId)));
+        () -> verify(serviceTransport, atLeastOnce()).submitMessageForGetOperation(same(opType),
+            same(opId)));
     assertThat(future.isDone()).isFalse();
 
     when(successOperationResult.getOperationEnd()).thenReturn(new Date());

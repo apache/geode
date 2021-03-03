@@ -44,12 +44,12 @@ OUTPUT_DIR=${BASE_DIR}/geode-results
 case $ARTIFACT_SLUG in
   windows*)
     JAVA_BUILD_PATH=C:/java8
-    EXEC_COMMAND="bash -c 'export JAVA_HOME=${JAVA_BUILD_PATH}; cd geode; ./gradlew --no-daemon combineReports'"
+    EXEC_COMMAND="bash -c 'export JAVA_HOME=${JAVA_BUILD_PATH}; cd geode; cp -r ../.gradle .gradle_logs; ./gradlew --no-daemon combineReports'"
     ;;
   *)
     # JAVA_BUILD_PATH=/usr/lib/jvm/java-${JAVA_BUILD_VERSION}-openjdk-amd64
     JAVA_BUILD_PATH=/usr/lib/jvm/bellsoft-java${JAVA_BUILD_VERSION}-amd64
-    EXEC_COMMAND="bash -c 'export JAVA_HOME=${JAVA_BUILD_PATH} && cd geode && ./gradlew --no-daemon combineReports'"
+    EXEC_COMMAND="bash -c 'export JAVA_HOME=${JAVA_BUILD_PATH} && cd geode && ./gradlew --no-daemon combineReports && mv ../.gradle .gradle_logs'"
     ;;
 esac
 

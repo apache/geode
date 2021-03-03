@@ -133,6 +133,13 @@ public class TcpServerProductVersionDUnitTest implements Serializable {
       this.locatorProductVersion = locatorProductVersion;
     }
 
+    @Override
+    public String toString() {
+      return "VersionConfiguration{" +
+          "clientProductVersion=" + clientProductVersion +
+          ", locatorProductVersion=" + locatorProductVersion +
+          '}';
+    }
   }
 
   private final VersionConfiguration versions;

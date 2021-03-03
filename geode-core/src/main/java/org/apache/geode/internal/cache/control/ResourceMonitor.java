@@ -32,7 +32,8 @@ interface ResourceMonitor {
    * @param listeners Set of listeners of notify.
    * @param event Event to send to the listeners.
    */
-  void notifyListeners(final Set<ResourceListener> listeners, final ResourceEvent event);
+  void notifyListeners(final Set<ResourceListener<?>> listeners,
+      final ResourceEvent event);
 
   /**
    * Ask the monitor to stop monitoring.

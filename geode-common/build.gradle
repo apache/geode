@@ -26,7 +26,6 @@ dependencies {
   implementation(platform(project(':boms:geode-all-bom')))
   implementation('com.fasterxml.jackson.core:jackson-databind')
 
-
   // test
   testImplementation('junit:junit')
   testImplementation('org.assertj:assertj-core')

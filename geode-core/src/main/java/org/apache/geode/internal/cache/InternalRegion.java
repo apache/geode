@@ -27,6 +27,7 @@ import org.apache.geode.Statistics;
 import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.InterestRegistrationEvent;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
@@ -448,6 +449,8 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
   Set<String> getVisibleAsyncEventQueueIds();
 
   CachePerfStats getRegionPerfStats();
+
+  void handleInterestEvent(InterestRegistrationEvent event);
 
   VersionedObjectList basicRemoveAll(Collection<Object> keys,
       DistributedRemoveAllOperation removeAllOp, List<VersionTag> retryVersions);

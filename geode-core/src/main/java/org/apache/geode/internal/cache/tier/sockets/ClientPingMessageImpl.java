@@ -43,19 +43,6 @@ public class ClientPingMessageImpl implements ClientMessage {
 
   @Override
   public Message getMessage(CacheClientProxy proxy, boolean notify) throws IOException {
-    KnownVersion clientVersion = proxy.getVersion();
-    Message message = null;
-    if (clientVersion.isNotOlderThan(KnownVersion.GFE_6622)) {
-      message = getGFEMessage();
-    } else {
-      throw new IOException(
-          "Unsupported client version for server-to-client message creation: " + clientVersion);
-    }
-
-    return message;
-  }
-
-  protected Message getGFEMessage() throws IOException {
     Message message = new Message(0, KnownVersion.CURRENT);
     message.setMessageType(MessageType.SERVER_TO_CLIENT_PING);
     message.setTransactionId(0);
@@ -106,7 +93,7 @@ public class ClientPingMessageImpl implements ClientMessage {
 
   @Override
   public void setLatestValue(Object value) {
-    return;
+
   }
 
   @Override

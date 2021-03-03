@@ -164,9 +164,7 @@ public class HdelDUnitTest {
         command.run();
         return;
       } catch (RedisException rex) {
-        if (rex.getMessage().contains("Connection reset by peer")) {
-          // ignore it and retry
-        } else {
+        if (!rex.getMessage().contains("Connection reset by peer")) {
           throw rex;
         }
       }

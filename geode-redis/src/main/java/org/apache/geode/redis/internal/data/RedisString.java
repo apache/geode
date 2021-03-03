@@ -19,6 +19,7 @@ package org.apache.geode.redis.internal.data;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -88,18 +89,16 @@ public class RedisString extends AbstractRedisData {
     return longValue;
   }
 
-  public double incrbyfloat(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
-      double increment)
+  public BigDecimal incrbyfloat(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
+      BigDecimal increment)
       throws NumberFormatException, ArithmeticException {
-    double doubleValue = parseValueAsDouble();
-    doubleValue += increment;
-    if (Double.isNaN(doubleValue) || Double.isInfinite(doubleValue)) {
-      throw new ArithmeticException(RedisConstants.ERROR_NAN_OR_INFINITY);
-    }
-    valueSetBytes(Coder.doubleToBytes(doubleValue));
+    BigDecimal bigDecimalValue = parseValueAsBigDecimal();
+    bigDecimalValue = bigDecimalValue.add(increment);
+    valueSetBytes(Coder.bigDecimalToBytes(bigDecimalValue));
+
     // numeric strings are short so no need to use delta
     region.put(key, this);
-    return doubleValue;
+    return bigDecimalValue;
   }
 
   public long decrby(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
@@ -136,17 +135,16 @@ public class RedisString extends AbstractRedisData {
     }
   }
 
-  private double parseValueAsDouble() {
+  private BigDecimal parseValueAsBigDecimal() {
     String valueString = value.toString();
     if (valueString.contains(" ")) {
       throw new NumberFormatException(RedisConstants.ERROR_NOT_A_VALID_FLOAT);
     }
     try {
-      return Coder.stringToDouble(valueString);
+      return new BigDecimal(valueString);
     } catch (NumberFormatException e) {
       throw new NumberFormatException(RedisConstants.ERROR_NOT_A_VALID_FLOAT);
     }
-
   }
 
   public ByteArrayWrapper getrange(long start, long end) {
