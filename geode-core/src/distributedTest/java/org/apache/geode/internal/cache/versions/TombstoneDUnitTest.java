@@ -14,6 +14,9 @@
  */
 package org.apache.geode.internal.cache.versions;
 
+import static org.apache.geode.cache.RegionShortcut.PARTITION;
+import static org.apache.geode.cache.RegionShortcut.REPLICATE;
+import static org.apache.geode.cache.RegionShortcut.REPLICATE_PERSISTENT;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -23,7 +26,6 @@ import java.util.Arrays;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 
-import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
@@ -45,7 +47,6 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.TombstoneService;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -80,12 +81,12 @@ public class TombstoneDUnitTest implements Serializable {
     VM vm1 = VM.getVM(1);
 
     vm0.invoke(() -> {
-      createCacheAndRegion(RegionShortcut.REPLICATE_PERSISTENT);
+      createCacheAndRegion(REPLICATE_PERSISTENT);
       region.put("K1", "V1");
       region.put("K2", "V2");
     });
 
-    vm1.invoke(() -> createCacheAndRegion(RegionShortcut.REPLICATE));
+    vm1.invoke(() -> createCacheAndRegion(REPLICATE));
 
     vm0.invoke(() -> {
       // Send tombstone gc message to vm1.
@@ -121,13 +122,13 @@ public class TombstoneDUnitTest implements Serializable {
 
     // Create a cache and load some boiler plate entries
     server1.invoke(() -> {
-      createCacheAndRegion(RegionShortcut.REPLICATE);
+      createCacheAndRegion(REPLICATE);
       for (int i = 0; i < count; i++) {
         region.put("K" + i, "V" + i);
       }
     });
 
-    server2.invoke(() -> createCacheAndRegion(RegionShortcut.REPLICATE));
+    server2.invoke(() -> createCacheAndRegion(REPLICATE));
 
     server1.invoke(() -> {
 
@@ -165,16 +166,15 @@ public class TombstoneDUnitTest implements Serializable {
     VM server2 = VM.getVM(1);
     final int FAR_INTO_THE_FUTURE = 1000000; // 1 million millis into the future
     final int count = 2000;
-    Logger logger = LogService.getLogger();
     // Create a cache and load some boiler plate entries
     server1.invoke(() -> {
-      createCacheAndRegion(RegionShortcut.PARTITION);
+      createCacheAndRegion(PARTITION);
       for (int i = 0; i < count; i++) {
         region.put("K" + i, "V" + i);
       }
     });
 
-    server2.invoke(() -> createCacheAndRegion(RegionShortcut.PARTITION));
+    server2.invoke(() -> createCacheAndRegion(PARTITION));
 
     server1.invoke(() -> {
 
@@ -217,13 +217,13 @@ public class TombstoneDUnitTest implements Serializable {
     VM server2 = VM.getVM(1);
     final int count = 10;
     server1.invoke(() -> {
-      createCacheAndRegion(RegionShortcut.REPLICATE);
+      createCacheAndRegion(REPLICATE);
       for (int i = 0; i < count; i++) {
         region.put("K" + i, "V" + i);
       }
     });
 
-    server2.invoke(() -> createCacheAndRegion(RegionShortcut.REPLICATE));
+    server2.invoke(() -> createCacheAndRegion(REPLICATE));
 
     server1.invoke(() -> {
       TombstoneService.TombstoneSweeper tombstoneSweeper =
@@ -249,7 +249,7 @@ public class TombstoneDUnitTest implements Serializable {
 
     // Fire up the server and put in some data that is deletable
     server.invoke(() -> {
-      createCacheAndRegion(RegionShortcut.REPLICATE);
+      createCacheAndRegion(REPLICATE);
       cache.addCacheServer().start();
       for (int i = 0; i < 1000; i++) {
         region.put("K" + i, "V" + i);
@@ -292,7 +292,7 @@ public class TombstoneDUnitTest implements Serializable {
       region.put("K2", "V2");
     });
 
-    server2.invoke(() -> createCacheAndRegion(RegionShortcut.REPLICATE));
+    server2.invoke(() -> createCacheAndRegion(REPLICATE));
 
     server1.invoke(() -> {
       // Send tombstone gc message to vm1.
@@ -321,7 +321,7 @@ public class TombstoneDUnitTest implements Serializable {
 
     // Fire up the server and put in some data that is deletable
     server.invoke(() -> {
-      createCacheAndRegion(RegionShortcut.REPLICATE);
+      createCacheAndRegion(REPLICATE);
       cache.addCacheServer().start();
       for (int i = 0; i < 1000; i++) {
         region.put("K" + i, "V" + i);
@@ -355,13 +355,13 @@ public class TombstoneDUnitTest implements Serializable {
     props.setProperty("conserve-sockets", "false");
 
     vm0.invoke(() -> {
-      createCacheAndRegion(RegionShortcut.REPLICATE_PERSISTENT, props);
+      createCacheAndRegion(REPLICATE_PERSISTENT, props);
       region.put("K1", "V1");
       region.put("K2", "V2");
     });
 
     vm1.invoke(() -> {
-      createCacheAndRegion(RegionShortcut.REPLICATE, props);
+      createCacheAndRegion(REPLICATE, props);
       DistributionMessageObserver.setInstance(new RegionObserver());
     });
 
