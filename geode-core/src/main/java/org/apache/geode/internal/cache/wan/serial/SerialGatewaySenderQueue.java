@@ -56,7 +56,6 @@ import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
-import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.Conflatable;
@@ -837,9 +836,9 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
   private List<KeyAndEventPair> peekEventsWithTransactionId(TransactionId transactionId,
       long lastKey) {
-    Predicate<GatewaySenderEventImpl> hasTransactionIdPredicate =
+    Predicate<InternalGatewayQueueEvent> hasTransactionIdPredicate =
         x -> transactionId.equals(x.getTransactionId());
-    Predicate<GatewaySenderEventImpl> isLastEventInTransactionPredicate =
+    Predicate<InternalGatewayQueueEvent> isLastEventInTransactionPredicate =
         x -> x.isLastEventInTransaction();
 
     return getElementsMatching(hasTransactionIdPredicate, isLastEventInTransactionPredicate,
@@ -861,8 +860,8 @@ public class SerialGatewaySenderQueue implements RegionQueue {
    * If a matching object also fulfills the endPredicate then the method
    * stops looking for more matching objects.
    */
-  List<KeyAndEventPair> getElementsMatching(Predicate<GatewaySenderEventImpl> condition,
-      Predicate<GatewaySenderEventImpl> stopCondition,
+  List<KeyAndEventPair> getElementsMatching(Predicate<InternalGatewayQueueEvent> condition,
+      Predicate<InternalGatewayQueueEvent> stopCondition,
       long lastKey) {
     Object object;
     List elementsMatching = new ArrayList<>();
@@ -878,10 +877,10 @@ public class SerialGatewaySenderQueue implements RegionQueue {
         continue;
       }
 
-      if (condition.test((GatewaySenderEventImpl) object)) {
+      if (condition.test((InternalGatewayQueueEvent) object)) {
         elementsMatching.add(new KeyAndEventPair(currentKey, (GatewaySenderEventImpl) object));
 
-        if (stopCondition.test((GatewaySenderEventImpl) object)) {
+        if (stopCondition.test((InternalGatewayQueueEvent) object)) {
           break;
         }
       }

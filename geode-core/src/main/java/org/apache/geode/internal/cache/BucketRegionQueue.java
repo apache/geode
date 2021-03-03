@@ -454,8 +454,8 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
    * If a matching object also fulfills the endPredicate then the method
    * stops looking for more matching objects.
    */
-  public List<Object> getElementsMatching(Predicate<GatewaySenderEventImpl> matchingPredicate,
-      Predicate<GatewaySenderEventImpl> endPredicate) {
+  public List<Object> getElementsMatching(Predicate<InternalGatewayQueueEvent> matchingPredicate,
+      Predicate<InternalGatewayQueueEvent> endPredicate) {
     getInitializationLock().readLock().lock();
     try {
       if (this.getPartitionedRegion().isDestroyed()) {
@@ -466,10 +466,10 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
       while (it.hasNext()) {
         Object key = it.next();
         Object object = optimalGet(key);
-        if (matchingPredicate.test((GatewaySenderEventImpl) object)) {
+        if (matchingPredicate.test((InternalGatewayQueueEvent) object)) {
           elementsMatching.add(object);
           this.eventSeqNumDeque.remove(key);
-          if (endPredicate.test((GatewaySenderEventImpl) object)) {
+          if (endPredicate.test((InternalGatewayQueueEvent) object)) {
             break;
           }
         }

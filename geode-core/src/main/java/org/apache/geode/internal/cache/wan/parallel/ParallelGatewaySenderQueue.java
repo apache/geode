@@ -1590,9 +1590,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     BucketRegionQueue brq = getBucketRegionQueueByBucketId(prQ, bucketId);
 
     try {
-      Predicate<GatewaySenderEventImpl> hasTransactionIdPredicate =
+      Predicate<InternalGatewayQueueEvent> hasTransactionIdPredicate =
           getHasTransactionIdPredicate(transactionId);
-      Predicate<GatewaySenderEventImpl> isLastEventInTransactionPredicate =
+      Predicate<InternalGatewayQueueEvent> isLastEventInTransactionPredicate =
           getIsLastEventInTransactionPredicate();
       objects =
           brq.getElementsMatching(hasTransactionIdPredicate, isLastEventInTransactionPredicate);
@@ -1606,12 +1606,12 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
   }
 
   @VisibleForTesting
-  public static Predicate<GatewaySenderEventImpl> getIsLastEventInTransactionPredicate() {
+  public static Predicate<InternalGatewayQueueEvent> getIsLastEventInTransactionPredicate() {
     return x -> x.isLastEventInTransaction();
   }
 
   @VisibleForTesting
-  public static Predicate<GatewaySenderEventImpl> getHasTransactionIdPredicate(
+  public static Predicate<InternalGatewayQueueEvent> getHasTransactionIdPredicate(
       TransactionId transactionId) {
     return x -> transactionId.equals(x.getTransactionId());
   }
