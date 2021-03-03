@@ -1450,8 +1450,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     return result;
   }
 
-
-  private Object getObject(KeyInfo keyInfo, boolean isCreate, boolean generateCallbacks,
+  @VisibleForTesting
+  Object getObject(KeyInfo keyInfo, boolean isCreate, boolean generateCallbacks,
       Object localValue, boolean disableCopyOnRead, boolean preferCD,
       ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent,
       boolean returnTombstones) {
@@ -1490,10 +1490,16 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     return result;
   }
 
+  @VisibleForTesting
+  Map getGetFutures() {
+    return this.getFutures;
+  }
+
   /**
    * optimized to only allow one thread to do a search/load, other threads wait on a future
    */
-  private Object optimizedGetObject(KeyInfo keyInfo, boolean isCreate, boolean generateCallbacks,
+  @VisibleForTesting
+  Object optimizedGetObject(KeyInfo keyInfo, boolean isCreate, boolean generateCallbacks,
       Object localValue, boolean disableCopyOnRead, boolean preferCD,
       ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent,
       boolean returnTombstones) {
@@ -1506,9 +1512,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         Object[] valueAndVersion = (Object[]) otherFuture.get();
         if (valueAndVersion != null) {
           result = valueAndVersion[0];
-          if (clientEvent != null) {
-            clientEvent.setVersionTag((VersionTag) valueAndVersion[1]);
-          }
+
           if (!preferCD && result instanceof CachedDeserializable) {
             CachedDeserializable cd = (CachedDeserializable) result;
             if (!disableCopyOnRead && (isCopyOnRead() || isProxy())) {
@@ -1520,12 +1524,19 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           } else if (!disableCopyOnRead) {
             result = conditionalCopy(result);
           }
-          // what was a miss is now a hit
-          if (isCreate) {
-            RegionEntry regionEntry = basicGetEntry(keyInfo.getKey());
-            updateStatsForGet(regionEntry, true);
+          // GEODE-8671: for PdxInstance, we need a new reference of it. Don't use the value from
+          // the Future.
+          if (!(result instanceof PdxInstance)) {
+            if (clientEvent != null) {
+              clientEvent.setVersionTag((VersionTag) valueAndVersion[1]);
+            }
+            // what was a miss is now a hit
+            if (isCreate) {
+              RegionEntry regionEntry = basicGetEntry(keyInfo.getKey());
+              updateStatsForGet(regionEntry, true);
+            }
+            return result;
           }
-          return result;
         }
       } catch (InterruptedException ignore) {
         Thread.currentThread().interrupt();
