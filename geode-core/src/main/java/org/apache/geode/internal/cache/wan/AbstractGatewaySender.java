@@ -1108,7 +1108,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
           // Get substitution value to enqueue if necessary
           Object substituteValue = getSubstituteValue(clonedEvent, operation);
 
-          Predicate<GatewayQueueEvent<?, ?>> hasSameTransactionIdPredicate = null;
+          Predicate<InternalGatewayQueueEvent> hasSameTransactionIdPredicate = null;
           // In case the sender is about to be stopped, the event will only
           // be queued if there is any event in the queue with the same
           // transactionId as the one of this event

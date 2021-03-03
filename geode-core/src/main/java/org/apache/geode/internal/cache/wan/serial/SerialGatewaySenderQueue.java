@@ -75,6 +75,7 @@ import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
+import org.apache.geode.internal.cache.wan.InternalGatewayQueueEvent;
 import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -889,14 +890,14 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     return elementsMatching;
   }
 
-  public boolean isThereEventsMatching(Predicate<GatewayQueueEvent<?, ?>> condition) {
-    GatewayQueueEvent<?, ?> object;
+  public boolean isThereEventsMatching(Predicate<InternalGatewayQueueEvent> condition) {
+    InternalGatewayQueueEvent object;
     long currentKey = getHeadKey();
     if (currentKey == getTailKey()) {
       return false;
     }
     while ((currentKey = inc(currentKey)) != getTailKey()) {
-      object = optimalGet(currentKey);
+      object = (InternalGatewayQueueEvent) optimalGet(currentKey);
 
       if (object == null) {
         continue;

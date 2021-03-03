@@ -60,7 +60,6 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
-import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -90,6 +89,7 @@ import org.apache.geode.internal.cache.wan.GatewaySenderConfigurationException;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
+import org.apache.geode.internal.cache.wan.InternalGatewayQueueEvent;
 import org.apache.geode.internal.size.SingleObjectSizer;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.util.concurrent.StoppableCondition;
@@ -1818,7 +1818,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
   }
 
   public boolean isThereEventsMatching(GatewaySenderEventImpl event,
-      Predicate<GatewayQueueEvent<?, ?>> condition) {
+      Predicate<InternalGatewayQueueEvent> condition) {
     boolean isDREvent = isDREvent(sender.getCache(), event);
 
     String regionPath = event.getRegionPath();

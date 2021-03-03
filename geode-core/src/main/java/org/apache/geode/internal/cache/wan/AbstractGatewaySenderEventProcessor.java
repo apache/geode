@@ -192,7 +192,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
    */
   public abstract boolean enqueueEvent(EnumListenerEvent operation, EntryEvent event,
       Object substituteValue, boolean isLastEventInTransaction,
-      Predicate<GatewayQueueEvent<?, ?>> condition) throws IOException, CacheException;
+      Predicate<InternalGatewayQueueEvent> condition) throws IOException, CacheException;
 
   protected abstract void rebalance();
 
@@ -1402,7 +1402,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
   }
 
   protected abstract boolean enqueueEvent(GatewayQueueEvent event,
-      Predicate<GatewayQueueEvent<?, ?>> condition);
+      Predicate<InternalGatewayQueueEvent> condition);
 
   protected class SenderStopperCallable implements Callable<Boolean> {
     private final AbstractGatewaySenderEventProcessor p;

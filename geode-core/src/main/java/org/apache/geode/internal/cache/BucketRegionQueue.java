@@ -37,13 +37,13 @@ import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.TimeoutException;
-import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.internal.cache.execute.BucketMovedException;
 import org.apache.geode.internal.cache.persistence.query.mock.ByteComparator;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
+import org.apache.geode.internal.cache.wan.InternalGatewayQueueEvent;
 import org.apache.geode.internal.cache.wan.parallel.BucketRegionQueueUnavailableException;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
 import org.apache.geode.internal.concurrent.Atomics;
@@ -454,21 +454,22 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
    * If a matching object also fulfills the endPredicate then the method
    * stops looking for more matching objects.
    */
-  public List<Object> getElementsMatching(Predicate matchingPredicate, Predicate endPredicate) {
+  public List<Object> getElementsMatching(Predicate<GatewaySenderEventImpl> matchingPredicate,
+      Predicate<GatewaySenderEventImpl> endPredicate) {
     getInitializationLock().readLock().lock();
     try {
       if (this.getPartitionedRegion().isDestroyed()) {
         throw new BucketRegionQueueUnavailableException();
       }
-      List<Object> elementsMatching = new ArrayList<Object>();
+      List<Object> elementsMatching = new ArrayList();
       Iterator<Object> it = this.eventSeqNumDeque.iterator();
       while (it.hasNext()) {
         Object key = it.next();
         Object object = optimalGet(key);
-        if (matchingPredicate.test(object)) {
+        if (matchingPredicate.test((GatewaySenderEventImpl) object)) {
           elementsMatching.add(object);
           this.eventSeqNumDeque.remove(key);
-          if (endPredicate.test(object)) {
+          if (endPredicate.test((GatewaySenderEventImpl) object)) {
             break;
           }
         }
@@ -479,7 +480,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     }
   }
 
-  public boolean isThereEventsMatching(Predicate<GatewayQueueEvent<?, ?>> matchingPredicate) {
+  public boolean isThereEventsMatching(Predicate<InternalGatewayQueueEvent> matchingPredicate) {
     getInitializationLock().readLock().lock();
     try {
       if (this.getPartitionedRegion().isDestroyed()) {
@@ -487,7 +488,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
       }
       for (Object o : eventSeqNumDeque) {
         Object object = optimalGet(o);
-        if (matchingPredicate.test((GatewayQueueEvent<?, ?>) object)) {
+        if (matchingPredicate.test((InternalGatewayQueueEvent) object)) {
           return true;
         }
       }

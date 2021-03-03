@@ -54,6 +54,7 @@ import org.apache.geode.internal.cache.wan.GatewaySenderEventCallbackArgument;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventCallbackDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
+import org.apache.geode.internal.cache.wan.InternalGatewayQueueEvent;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -396,7 +397,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
    */
   @Override
   public boolean enqueueEvent(EnumListenerEvent operation, EntryEvent event, Object substituteValue,
-      boolean isLastEventInTransaction, Predicate<GatewayQueueEvent<?, ?>> condition)
+      boolean isLastEventInTransaction, Predicate<InternalGatewayQueueEvent> condition)
       throws IOException, CacheException {
     // There is a case where the event is serialized for processing. The
     // region is not
@@ -878,7 +879,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
 
   @Override
   protected boolean enqueueEvent(GatewayQueueEvent event,
-      Predicate<GatewayQueueEvent<?, ?>> condition) {
+      Predicate<InternalGatewayQueueEvent> condition) {
     // @TODO This API hasn't been implemented yet
     throw new UnsupportedOperationException();
   }

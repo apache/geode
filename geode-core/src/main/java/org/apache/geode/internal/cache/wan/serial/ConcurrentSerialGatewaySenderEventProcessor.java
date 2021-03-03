@@ -47,6 +47,7 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
+import org.apache.geode.internal.cache.wan.InternalGatewayQueueEvent;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
@@ -119,7 +120,7 @@ public class ConcurrentSerialGatewaySenderEventProcessor
 
   @Override
   public boolean enqueueEvent(EnumListenerEvent operation, EntryEvent event, Object substituteValue,
-      boolean isLastEventInTransaction, Predicate<GatewayQueueEvent<?, ?>> condition)
+      boolean isLastEventInTransaction, Predicate<InternalGatewayQueueEvent> condition)
       throws IOException, CacheException {
     // Get the appropriate index into the gateways
     int index = Math.abs(getHashCode(((EntryEventImpl) event)) % this.processors.size());
@@ -158,7 +159,7 @@ public class ConcurrentSerialGatewaySenderEventProcessor
   }
 
   public boolean enqueueEvent(EnumListenerEvent operation, EntryEvent event, Object substituteValue,
-      int index, boolean isLastEventInTransaction, Predicate<GatewayQueueEvent<?, ?>> condition)
+      int index, boolean isLastEventInTransaction, Predicate<InternalGatewayQueueEvent> condition)
       throws CacheException, IOException {
     // Get the appropriate gateway
     SerialGatewaySenderEventProcessor serialProcessor = this.processors.get(index);
@@ -424,7 +425,7 @@ public class ConcurrentSerialGatewaySenderEventProcessor
 
   @Override
   protected boolean enqueueEvent(GatewayQueueEvent event,
-      Predicate<GatewayQueueEvent<?, ?>> condition) {
+      Predicate<InternalGatewayQueueEvent> condition) {
     for (SerialGatewaySenderEventProcessor serialProcessor : this.processors) {
       // TODO revisit handling of "condition" when the following enqueueEvent() method is supported:
       serialProcessor.enqueueEvent(event, condition);

@@ -37,6 +37,7 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventCallbackDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
+import org.apache.geode.internal.cache.wan.InternalGatewayQueueEvent;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -99,7 +100,7 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
 
   @Override
   public boolean enqueueEvent(EnumListenerEvent operation, EntryEvent event, Object substituteValue,
-      boolean isLastEventInTransaction, Predicate<GatewayQueueEvent<?, ?>> condition)
+      boolean isLastEventInTransaction, Predicate<InternalGatewayQueueEvent> condition)
       throws IOException, CacheException {
     GatewaySenderEventImpl gatewayQueueEvent;
     Region region = event.getRegion();
@@ -131,7 +132,7 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
 
   @Override
   protected boolean enqueueEvent(GatewayQueueEvent gatewayQueueEvent,
-      Predicate<GatewayQueueEvent<?, ?>> condition) {
+      Predicate<InternalGatewayQueueEvent> condition) {
     boolean queuedEvent = false;
     try {
       if (getSender().beforeEnqueue(gatewayQueueEvent)) {

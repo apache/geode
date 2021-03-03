@@ -48,6 +48,7 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
+import org.apache.geode.internal.cache.wan.InternalGatewayQueueEvent;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -140,7 +141,7 @@ public class ConcurrentParallelGatewaySenderEventProcessor
 
   @Override
   public boolean enqueueEvent(EnumListenerEvent operation, EntryEvent event, Object substituteValue,
-      boolean isLastEventInTransaction, Predicate<GatewayQueueEvent<?, ?>> condition)
+      boolean isLastEventInTransaction, Predicate<InternalGatewayQueueEvent> condition)
       throws IOException, CacheException {
     Region region = event.getRegion();
     // int bucketId = PartitionedRegionHelper.getHashKey((EntryOperation)event);
@@ -353,7 +354,7 @@ public class ConcurrentParallelGatewaySenderEventProcessor
 
   @Override
   protected boolean enqueueEvent(GatewayQueueEvent event,
-      Predicate<GatewayQueueEvent<?, ?>> condition) {
+      Predicate<InternalGatewayQueueEvent> condition) {
     int pId = ((GatewaySenderEventImpl) event).getBucketId() % this.nDispatcher;
     return this.processors[pId].enqueueEvent(event, condition);
   }
