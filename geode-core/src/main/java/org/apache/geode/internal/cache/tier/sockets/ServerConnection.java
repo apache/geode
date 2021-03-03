@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.tier.sockets;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR_PP;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
+import static org.apache.geode.internal.monitoring.ThreadsMonitoring.Mode.ServerConnectionExecutor;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -65,6 +66,8 @@ import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.cache.tier.sockets.command.Default;
 import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.internal.monitoring.executor.AbstractExecutor;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
 import org.apache.geode.internal.security.SecurityService;
@@ -1212,6 +1215,12 @@ public abstract class ServerConnection implements Runnable {
         }
       }
     } else {
+      final ThreadsMonitoring threadMonitoring =
+          getCache().getInternalDistributedSystem().getDM().getThreadMonitoring();
+      final AbstractExecutor threadMonitorExecutor =
+          threadMonitoring.createAbstractExecutor(ServerConnectionExecutor);
+      threadMonitorExecutor.suspendMonitoring();
+      threadMonitoring.register(threadMonitorExecutor);
       try {
         while (processMessages && !crHelper.isShutdown()) {
           try {
@@ -1224,6 +1233,7 @@ public abstract class ServerConnection implements Runnable {
           }
         }
       } finally {
+        threadMonitoring.unregister(threadMonitorExecutor);
         try {
           unsetRequestSpecificTimeout();
           handleTermination();
