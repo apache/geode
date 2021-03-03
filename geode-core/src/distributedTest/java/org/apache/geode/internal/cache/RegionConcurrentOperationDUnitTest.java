@@ -26,7 +26,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -65,13 +64,6 @@ public class RegionConcurrentOperationDUnitTest implements Serializable {
 
   @Rule
   public DistributedBlackboard blackboard = new DistributedBlackboard();
-
-  @After
-  public void tearDown() {
-    if (blackboard != null) {
-      blackboard.initBlackboard();
-    }
-  }
 
   @Test
   public void getOnProxyRegionFromMultipleThreadsReturnsDifferentObjects() throws Exception {
