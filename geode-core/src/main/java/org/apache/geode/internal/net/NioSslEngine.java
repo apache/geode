@@ -71,10 +71,12 @@ public class NioSslEngine implements NioFilter {
 
   private ByteBuffer handshakeBuffer;
 
+  private int packetBufferSize;
+
   NioSslEngine(SSLEngine engine, BufferPool bufferPool) {
     SSLSession session = engine.getSession();
     int appBufferSize = session.getApplicationBufferSize();
-    int packetBufferSize = engine.getSession().getPacketBufferSize();
+    packetBufferSize = engine.getSession().getPacketBufferSize();
     closed = false;
     this.engine = engine;
     this.bufferPool = bufferPool;
@@ -438,11 +440,16 @@ public class NioSslEngine implements NioFilter {
     return inputSharing.open();
   }
 
-  public SSLEngine getEngine() {
-    return engine;
-  }
-
   public ByteBuffer getHandshakeBuffer() {
     return handshakeBuffer;
   }
+
+  public int getPacketBufferSize() {
+    return packetBufferSize;
+  }
+
+  public boolean isClosed() {
+    return closed;
+  }
+
 }

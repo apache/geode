@@ -49,7 +49,7 @@ public class SocketMessageWriter {
     ByteBufferOutputStream bbos = null;
 
     if (sslEngine != null) {
-      bbos = new ByteBufferOutputStream(sslEngine.getEngine().getSession().getPacketBufferSize());
+      bbos = new ByteBufferOutputStream(sslEngine.getPacketBufferSize());
       dos = new DataOutputStream(bbos);
     }
 

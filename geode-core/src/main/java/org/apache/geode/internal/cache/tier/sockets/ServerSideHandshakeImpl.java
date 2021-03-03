@@ -161,7 +161,7 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
 
     if (connection.getSSLEngine() != null) {
       bbos = new ByteBufferOutputStream(
-          connection.getSSLEngine().getEngine().getSession().getPacketBufferSize());
+          connection.getSSLEngine().getPacketBufferSize());
       dos = new DataOutputStream(bbos);
     } else {
       dos = new DataOutputStream(out);
