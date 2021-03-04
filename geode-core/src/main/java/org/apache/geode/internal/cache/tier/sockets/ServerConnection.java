@@ -125,6 +125,13 @@ public abstract class ServerConnection implements Runnable {
 
   private final ProcessingMessageTimer processingMessageTimer = new ProcessingMessageTimer();
 
+  private final ThreadsMonitoring threadMonitoring;
+  /**
+   * The threadMonitorExecutor for this server connection.
+   * This will be null if acceptor is a selector.
+   */
+  protected final AbstractExecutor threadMonitorExecutor;
+
   public static ByteBuffer allocateCommBuffer(int size, Socket sock) {
     // I expect that size will almost always be the same value
     if (sock.getChannel() == null) {
@@ -306,6 +313,16 @@ public abstract class ServerConnection implements Runnable {
       if (isDebugEnabled) {
         logger.debug("While creating server connection", e);
       }
+    }
+    threadMonitoring = getCache().getInternalDistributedSystem().getDM().getThreadMonitoring();
+    if (getAcceptor().isSelector()) {
+      // When a selector is used, the thread pool that is used to process client requests
+      // will automatically register with the thread monitor the thread that is processing
+      // the request. So no need to create a threadMonitorExecutor.
+      threadMonitorExecutor = null;
+    } else {
+      threadMonitorExecutor = threadMonitoring.createAbstractExecutor(ServerConnectionExecutor);
+      suspendThreadMonitoring();
     }
   }
 
@@ -781,6 +798,7 @@ public abstract class ServerConnection implements Runnable {
     }
 
     ThreadState threadState = null;
+    resumeThreadMonitoring();
     try {
       if (message != null) {
         // Since this thread is not interrupted when the cache server is shutdown, test again after
@@ -850,6 +868,7 @@ public abstract class ServerConnection implements Runnable {
         command.execute(message, this, securityService);
       }
     } finally {
+      suspendThreadMonitoring();
       // Keep track of the fact that a message is no longer being
       // processed.
       serverConnectionCollection.connectionsProcessing.decrementAndGet();
@@ -858,6 +877,18 @@ public abstract class ServerConnection implements Runnable {
       if (threadState != null) {
         threadState.clear();
       }
+    }
+  }
+
+  private void suspendThreadMonitoring() {
+    if (threadMonitorExecutor != null) {
+      threadMonitorExecutor.suspendMonitoring();
+    }
+  }
+
+  private void resumeThreadMonitoring() {
+    if (threadMonitorExecutor != null) {
+      threadMonitorExecutor.resumeMonitoring();
     }
   }
 
@@ -1215,11 +1246,6 @@ public abstract class ServerConnection implements Runnable {
         }
       }
     } else {
-      final ThreadsMonitoring threadMonitoring =
-          getCache().getInternalDistributedSystem().getDM().getThreadMonitoring();
-      final AbstractExecutor threadMonitorExecutor =
-          threadMonitoring.createAbstractExecutor(ServerConnectionExecutor);
-      threadMonitorExecutor.suspendMonitoring();
       threadMonitoring.register(threadMonitorExecutor);
       try {
         while (processMessages && !crHelper.isShutdown()) {
