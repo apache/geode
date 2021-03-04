@@ -106,7 +106,6 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
   public void registerCq(ClientProxyMembershipID p_clientProxyId,
       CacheClientNotifier p_cacheClientNotifier,
       int p_cqState) throws CqException, RegionNotFoundException {
-
     CacheClientProxy clientProxy = null;
     this.clientProxyId = p_clientProxyId;
 

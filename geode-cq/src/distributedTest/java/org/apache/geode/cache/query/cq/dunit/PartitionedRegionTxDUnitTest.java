@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.Properties;
 import java.util.concurrent.TimeoutException;
 
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -38,12 +39,15 @@ import org.apache.geode.cache.query.CqEvent;
 import org.apache.geode.cache.query.CqListener;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.DistributionMessageObserver;
+import org.apache.geode.internal.cache.FilterProfile;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXState;
 import org.apache.geode.internal.cache.TXStateInterface;
 import org.apache.geode.internal.cache.TXStateProxyImpl;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.security.query.TestCqListener;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
@@ -60,8 +64,13 @@ public class PartitionedRegionTxDUnitTest implements Serializable {
   @Rule
   public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
 
+  @After
+  public void clearObserver() {
+    DistributionMessageObserver.setInstance(null);
+  }
+
   @Test
-  public void eventsAreGeneratedWhenCQsAreRegisteredDuringCommit() throws Exception {
+  public void verifyNoLockContentionBetweenCqRegistrationAndTxCommit() throws Exception {
     getBlackboard().setMailbox("CqQueryResultCount", 0);
     getBlackboard().setMailbox("CqEvents", 0);
 
@@ -92,6 +101,16 @@ public class PartitionedRegionTxDUnitTest implements Serializable {
 
     AsyncInvocation serverAsync = server1.invokeAsync(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
+      DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
+        @Override
+        public void beforeProcessMessage(ClusterDistributionManager dm,
+            DistributionMessage message) {
+          if (message instanceof FilterProfile.OperationMessage) {
+            getBlackboard().signalGate("RegistrationReqReceived");
+          }
+        }
+      });
+
       TXManagerImpl txManager = (TXManagerImpl) cache.getCacheTransactionManager();
       txManager.begin();
 
@@ -100,13 +119,10 @@ public class PartitionedRegionTxDUnitTest implements Serializable {
 
       ((TXState) txState).setDuringApplyChanges(() -> {
         try {
-          LogService.getLogger().info("##### In DuringApplyChanges...");
           getBlackboard().signalGate("StartCQ");
-          getBlackboard().waitForGate("EndCQ");
-        } catch (TimeoutException e) {
-          e.printStackTrace();
-        } catch (InterruptedException e) {
-          e.printStackTrace();
+          getBlackboard().waitForGate("RegistrationReqReceived");
+        } catch (TimeoutException | InterruptedException e) {
+          // Do nothing
         }
       });
 
@@ -125,20 +141,15 @@ public class PartitionedRegionTxDUnitTest implements Serializable {
       CqAttributes cqAttributes = cqaf.create();
 
       getBlackboard().waitForGate("StartCQ");
-      LogService.getLogger().info("#### Start registering CQ.");
       SelectResults cqResults = queryService
           .newCq("Select * from " + SEPARATOR + REGION_NAME, cqAttributes)
           .executeWithInitialResults();
-      LogService.getLogger().info("#### Finished registering CQ.");
-      getBlackboard().signalGate("EndCQ");
       getBlackboard().setMailbox("CqQueryResultCount", new Integer(cqResults.asList().size()));
     });
 
     GeodeAwaitility.await().untilAsserted(() -> {
       Integer CqQueryResultCount = getBlackboard().getMailbox("CqQueryResultCount");
       Integer CqEvents = getBlackboard().getMailbox("CqEvents");
-      LogService.getLogger()
-          .info("#### CqQueryResultCount :" + CqQueryResultCount + " CqCount is: " + CqEvents);
       assertThat(CqQueryResultCount + CqEvents).isEqualTo(1);
     });
 
@@ -146,7 +157,7 @@ public class PartitionedRegionTxDUnitTest implements Serializable {
   }
 
   @Test
-  public void interestsAreProcessedOnPrimaryNode() throws Exception {
+  public void verifyNoLockContentionBetweenInterestRegistrationAndTxCommit() throws Exception {
     getBlackboard().setMailbox("CqQueryResultCount", 0);
     getBlackboard().setMailbox("CqEvents", 0);
 
@@ -177,6 +188,16 @@ public class PartitionedRegionTxDUnitTest implements Serializable {
 
     AsyncInvocation serverAsync = server1.invokeAsync(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
+      DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
+        @Override
+        public void beforeProcessMessage(ClusterDistributionManager dm,
+            DistributionMessage message) {
+          if (message instanceof FilterProfile.OperationMessage) {
+            getBlackboard().signalGate("RegistrationReqReceived");
+          }
+        }
+      });
+
       TXManagerImpl txManager = (TXManagerImpl) cache.getCacheTransactionManager();
       txManager.begin();
 
@@ -186,11 +207,9 @@ public class PartitionedRegionTxDUnitTest implements Serializable {
       ((TXState) txState).setDuringApplyChanges(() -> {
         try {
           getBlackboard().signalGate("StartReg");
-          getBlackboard().waitForGate("EndReg");
-        } catch (TimeoutException e) {
-          e.printStackTrace();
-        } catch (InterruptedException e) {
-          e.printStackTrace();
+          getBlackboard().waitForGate("RegistrationReqReceived");
+        } catch (TimeoutException | InterruptedException e) {
+          // Do nothing
         }
       });
 
@@ -205,7 +224,6 @@ public class PartitionedRegionTxDUnitTest implements Serializable {
       getBlackboard().waitForGate("StartReg");
       region.registerInterest("Key-5", InterestResultPolicy.KEYS_VALUES);
       region.registerInterest("Key-6", InterestResultPolicy.KEYS_VALUES);
-      getBlackboard().signalGate("EndReg");
 
       GeodeAwaitility.await().untilAsserted(() -> {
         assertThat(region.size()).isEqualTo(1);

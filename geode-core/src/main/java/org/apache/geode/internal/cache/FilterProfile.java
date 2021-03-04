@@ -268,7 +268,8 @@ public class FilterProfile implements DataSerializableFixedID {
     Set keysRegistered = new HashSet();
     operationType opType = null;
 
-    lockTxCommitDuringFilterRegistration();
+    region.getFilterProfile().lockTxCommitDuringFilterRegistration();
+
     try {
       Long clientID = getClientIDForMaps(inputClientID);
       synchronized (this.interestListLock) {
@@ -309,7 +310,7 @@ public class FilterProfile implements DataSerializableFixedID {
         }
       } // synchronized
     } finally {
-      unlockTxCommitDuringFilterRegistration();
+      region.getFilterProfile().unlockTxCommitDuringFilterRegistration();
     }
     return keysRegistered;
   }
@@ -530,7 +531,7 @@ public class FilterProfile implements DataSerializableFixedID {
       boolean updatesAsInvalidates) {
     Long clientID = getClientIDForMaps(inputClientID);
     Set keysRegistered = new HashSet(keys);
-    lockTxCommitDuringFilterRegistration();
+    region.getFilterProfile().lockTxCommitDuringFilterRegistration();
     try {
       synchronized (interestListLock) {
         Map<Object, Set> koi = updatesAsInvalidates ? getKeysOfInterestInv() : getKeysOfInterest();
@@ -549,7 +550,7 @@ public class FilterProfile implements DataSerializableFixedID {
         }
       } // synchronized
     } finally {
-      unlockTxCommitDuringFilterRegistration();
+      region.getFilterProfile().unlockTxCommitDuringFilterRegistration();
     }
     return keysRegistered;
   }
@@ -813,7 +814,7 @@ public class FilterProfile implements DataSerializableFixedID {
     if (logger.isDebugEnabled()) {
       logger.debug("Adding CQ {} to this members FilterProfile.", cq.getServerCqName());
     }
-    lockTxCommitDuringFilterRegistration();
+    region.getFilterProfile().lockTxCommitDuringFilterRegistration();
     try {
       this.cqs.put(cq.getServerCqName(), cq);
       this.incCqCount();
@@ -821,7 +822,7 @@ public class FilterProfile implements DataSerializableFixedID {
       // cq.setFilterID(cqMap.getWireID(cq.getServerCqName()));
       this.sendCQProfileOperation(operationType.REGISTER_CQ, cq);
     } finally {
-      unlockTxCommitDuringFilterRegistration();
+      region.getFilterProfile().unlockTxCommitDuringFilterRegistration();
     }
   }
 
@@ -843,7 +844,12 @@ public class FilterProfile implements DataSerializableFixedID {
   }
 
   void processRegisterCq(String serverCqName, ServerCQ ServerCQ, boolean addToCqMap) {
-    processRegisterCq(serverCqName, ServerCQ, addToCqMap, GemFireCacheImpl.getInstance());
+    region.getFilterProfile().lockTxCommitDuringFilterRegistration();
+    try {
+      processRegisterCq(serverCqName, ServerCQ, addToCqMap, GemFireCacheImpl.getInstance());
+    } finally {
+      region.getFilterProfile().unlockTxCommitDuringFilterRegistration();
+    }
   }
 
 
@@ -1894,6 +1900,7 @@ public class FilterProfile implements DataSerializableFixedID {
         } else {
           cp.hasCacheServer = true;
           FilterProfile fp = cp.filterProfile;
+          fp.region = (LocalRegion) r;
           if (fp == null) { // PR accessors do not keep filter profiles around
             if (logger.isDebugEnabled()) {
               logger.debug("No filter profile to update: {}", this);

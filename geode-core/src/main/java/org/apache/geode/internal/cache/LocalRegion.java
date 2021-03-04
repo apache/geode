@@ -6072,7 +6072,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       }
 
       InternalCacheEvent ice = (InternalCacheEvent) event;
-      if (!isUsedForPartitionedRegionBucket()) {
+      if (!(this instanceof PartitionedRegion || isUsedForPartitionedRegionBucket())) {
         generateLocalFilterRouting(ice);
       }
 
