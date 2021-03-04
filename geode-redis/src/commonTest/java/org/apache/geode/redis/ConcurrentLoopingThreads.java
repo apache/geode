@@ -23,6 +23,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -63,13 +65,19 @@ public class ConcurrentLoopingThreads {
    * operations.
    */
   public void await() {
-    loopingFutures.forEach(loopingThread -> {
-      try {
-        loopingThread.get();
-      } catch (InterruptedException | ExecutionException e) {
-        throw new RuntimeException(e);
+    boolean timeOutExceptionThrown;
+    do {
+      timeOutExceptionThrown = false;
+      for (Future<?> loopingThread : loopingFutures) {
+        try {
+          loopingThread.get(1, TimeUnit.SECONDS);
+        } catch (TimeoutException e) {
+          timeOutExceptionThrown = true;
+        } catch (InterruptedException | ExecutionException e) {
+          throw new RuntimeException(e);
+        }
       }
-    });
+    } while (timeOutExceptionThrown);
   }
 
   /**

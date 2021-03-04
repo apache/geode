@@ -14,10 +14,14 @@
  */
 package org.apache.geode.redis.internal.executor.hash;
 
-import static org.assertj.core.api.Assertions.assertThat;
 
+
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_CURSOR;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.math.BigInteger;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 
 import org.junit.ClassRule;
@@ -37,22 +41,50 @@ public class HScanIntegrationTest extends AbstractHScanIntegrationTest {
     return server.getPort();
   }
 
+
+  // Note: these tests will not pass native redis, so included here in concrete test class
   @Test
-  public void givenDifferentCursorThanSpecifiedByPreviousHscan_returnsAllEntries() {
+  public void givenCursorGreaterThanIntMaxValue_returnsCursorError() {
+    int largestCursorValue = Integer.MAX_VALUE;
+
+    BigInteger tooBigCursor =
+        new BigInteger(String.valueOf(largestCursorValue)).add(BigInteger.valueOf(1));
+
+    assertThatThrownBy(() -> jedis.hscan("a", tooBigCursor.toString()))
+        .hasMessageContaining(ERROR_CURSOR);
+  }
+
+  @Test
+  public void givenCursorLessThanIntMinValue_returnsCursorError() {
+    int smallestCursorValue = Integer.MIN_VALUE;
+
+    BigInteger tooSmallCursor =
+        new BigInteger(String.valueOf(smallestCursorValue)).subtract(BigInteger.valueOf(1));
+
+    assertThatThrownBy(() -> jedis.hscan("a", tooSmallCursor.toString()))
+        .hasMessageContaining(ERROR_CURSOR);
+  }
+
+
+  @Test
+  public void givenCount_shouldReturnExpectedNumberOfEntries() {
     Map<String, String> entryMap = new HashMap<>();
-    for (int i = 0; i < 10; i++) {
-      entryMap.put(String.valueOf(i), String.valueOf(i));
-    }
-    jedis.hmset("a", entryMap);
+    entryMap.put("1", "yellow");
+    entryMap.put("2", "green");
+    entryMap.put("3", "orange");
+    jedis.hmset("colors", entryMap);
+
+    int COUNT_PARAM = 2;
 
     ScanParams scanParams = new ScanParams();
-    scanParams.count(5);
-    ScanResult<Map.Entry<String, String>> result = jedis.hscan("a", "0", scanParams);
-    assertThat(result.isCompleteIteration()).isFalse();
+    scanParams.count(COUNT_PARAM);
+    ScanResult<Map.Entry<String, String>> result;
 
-    result = jedis.hscan("a", "100");
+    String cursor = "0";
 
-    assertThat(result.getResult()).hasSize(10);
-    assertThat(new HashSet<>(result.getResult())).isEqualTo(entryMap.entrySet());
+    result = jedis.hscan("colors", cursor, scanParams);
+
+    assertThat(result.getResult().size()).isEqualTo(COUNT_PARAM);
   }
+
 }
