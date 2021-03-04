@@ -40,6 +40,8 @@ import org.apache.geode.redis.internal.data.RedisKey;
 public class BucketRetrievalFunction implements InternalFunction<Void> {
 
   public static final String ID = "REDIS_BUCKET_SLOT_FUNCTION";
+  public static final Boolean CLUSTER_SLOTS_WITH_REPLICAS =
+      Boolean.getBoolean("redis.cluster-slots-with-replicas");
   private final String hostAddress;
   private final int redisPort;
 
@@ -78,7 +80,10 @@ public class BucketRetrievalFunction implements InternalFunction<Void> {
           .map(InternalDistributedMember::getId)
           .filter(x -> !x.equals(memberId))
           .collect(Collectors.toList());
-      bucketToSecondaries.put(bucketId, a);
+
+      if (CLUSTER_SLOTS_WITH_REPLICAS) {
+        bucketToSecondaries.put(bucketId, a);
+      }
     }
 
     MemberBuckets mb = new MemberBuckets(memberId, hostAddress, redisPort,
