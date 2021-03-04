@@ -18,12 +18,28 @@
 {% from 'shared_jinja.yml' import github_access with context %}
 
 ---
+resource_types:
+- name: concourse-pipeline
+  type: docker-image
+  source:
+    repository: concourse/concourse-pipeline-resource
+    tag: 2.2.0
+
 resources:
+- name: concourse
+  type: concourse-pipeline
+  source:
+    target: ((!concourse-url))
+    insecure: "true"
+    teams:
+    - name: ((!concourse-team))
+      username: ((!concourse-username))
+      password: ((!concourse-password))
 - name: geode-pipeline
   type: git
   source:
     {{ github_access() | indent(4) }}
-    branch: ((geode-build-branch))
+    branch: ((!geode-build-branch))
     paths:
     - ci/pipelines/geode-build/*
     - ci/pipelines/shared/*
@@ -33,14 +49,14 @@ resources:
   type: git
   source:
     {{ github_access() | indent(4) }}
-    branch: ((geode-build-branch))
+    branch: ((!geode-build-branch))
     paths:
     - ci/pipelines/images/*
 - name: geode-reaper-pipeline
   type: git
   source:
     {{ github_access() | indent(4) }}
-    branch: ((geode-build-branch))
+    branch: ((!geode-build-branch))
     paths:
     - ci/pipelines/reaper/*
 - name: geode-mass-test-run-pipeline
@@ -55,21 +71,21 @@ resources:
   type: git
   source:
     {{ github_access() | indent(4) }}
-    branch: ((geode-build-branch))
+    branch: ((!geode-build-branch))
     paths:
     - ci/images/meta-mini/*
 - name: meta-mini-image
   type: docker-image
   source:
-    username: ((docker-username))
-    password: ((docker-password))
-    repository: gcr.io/((gcp-project))/((sanitized-geode-fork))-((sanitized-geode-build-branch))-meta-img
+    username: ((!docker-username))
+    password: ((!docker-password))
+    repository: gcr.io/((!gcp-project))/((!sanitized-geode-fork))-((!sanitized-geode-build-branch))-meta-img
 {% if repository.fork == repository.upstream_fork %}
 - name: geode-examples-pipeline
   type: git
   source:
     {{ github_access() | indent(4) }}
-    branch: ((geode-build-branch))
+    branch: ((!geode-build-branch))
     paths:
     - ci/pipelines/examples/*
     - ci/pipelines/shared/*
@@ -79,7 +95,7 @@ resources:
   type: git
   source:
     {{ github_access() | indent(4) }}
-    branch: ((geode-build-branch))
+    branch: ((!geode-build-branch))
     paths:
     - ci/pipelines/pull-request/*
     - ci/pipelines/shared/*
@@ -90,7 +106,7 @@ resources:
 jobs:
 - name: set-images-pipeline
   serial: true
-  public: ((public-pipelines))
+  public: ((!public-pipelines))
   plan:
   - get: geode-images-pipeline
     trigger: true
@@ -119,13 +135,18 @@ jobs:
         PUBLIC_PIPELINES: ((public-pipelines))
       run:
         path: geode-images-pipeline/ci/pipelines/images/deploy_images_pipeline.sh
-  - set_pipeline: ((pipeline-prefix))images
-    file: results/generated-pipeline.yml
-    var_files:
-      - results/pipeline-vars.yml
+  - put: concourse
+    params:
+      pipelines:
+      - name: ((!pipeline-prefix))images
+        team: ((!concourse-team))
+        config_file: results/generated-pipeline.yml
+        vars_files:
+        - results/pipeline-vars.yml
+
 - name: set-pipeline
   serial: true
-  public: ((public-pipelines))
+  public: ((!public-pipelines))
   plan:
   - get: geode-pipeline
     trigger: true
@@ -158,16 +179,20 @@ jobs:
         SEMVER_PRERELEASE_TOKEN: ((semver-prerelease-token))
       run:
         path: geode-pipeline/ci/pipelines/geode-build/deploy_pipeline.sh
-  - set_pipeline: ((pipeline-prefix))main
-    file: results/generated-pipeline.yml
-    var_files:
-    - results/pipeline-vars.yml
+  - put: concourse
+    params:
+      pipelines:
+      - name: ((!pipeline-prefix))main
+        team: ((!concourse-team))
+        config_file: results/generated-pipeline.yml
+        vars_files:
+        - results/pipeline-vars.yml
 
 
 {% if repository.fork == repository.upstream_fork %}
 - name: set-examples-pipeline
   serial: true
-  public: ((public-pipelines))
+  public: ((!public-pipelines))
   plan:
   - get: geode-examples-pipeline
     trigger: true
@@ -199,14 +224,18 @@ jobs:
         SEMVER_PRERELEASE_TOKEN: ((semver-prerelease-token))
       run:
         path: geode-examples-pipeline/ci/pipelines/examples/deploy_pipeline.sh
-  - set_pipeline: ((pipeline-prefix))examples
-    file: results/generated-pipeline.yml
-    var_files:
-    - results/pipeline-vars.yml
+  - put: concourse
+    params:
+      pipelines:
+      - name: ((!pipeline-prefix))examples
+        team: ((!concourse-team))
+        config_file: results/generated-pipeline.yml
+        vars_files:
+        - results/pipeline-vars.yml
 
 - name: set-pr-pipeline
   serial: true
-  public: ((public-pipelines))
+  public: ((!public-pipelines))
   plan:
   - get: geode-pr-pipeline
     trigger: true
@@ -223,8 +252,8 @@ jobs:
         - name: results
       params:
         OUTPUT_DIRECTORY: results
-        GEODE_BRANCH: ((geode-build-branch))
-        GEODE_FORK: ((geode-fork))
+        GEODE_BRANCH: ((!geode-build-branch))
+        GEODE_FORK: ((!geode-fork))
         GEODE_REPO_NAME: ((geode-repo-name))
         REPOSITORY_PUBLIC: {{ repository.public }}
         ARTIFACT_BUCKET: ((artifact-bucket))
@@ -235,16 +264,20 @@ jobs:
         GRADLE_GLOBAL_ARGS: ((gradle-global-args))
       run:
         path: geode-pr-pipeline/ci/pipelines/pull-request/deploy_pr_pipeline.sh
-  - set_pipeline: ((pipeline-prefix))pr
-    file: results/generated-pipeline.yml
-    var_files:
-    - results/pipeline-vars.yml
+  - put: concourse
+    params:
+      pipelines:
+      - name: ((!pipeline-prefix))pr
+        team: ((!concourse-team))
+        config_file: results/generated-pipeline.yml
+        vars_files:
+        - results/pipeline-vars.yml
 
 {% endif %}
 
 - name: set-reaper-pipeline
   serial: true
-  public: ((public-pipelines))
+  public: ((!public-pipelines))
   plan:
     - get: geode-reaper-pipeline
       trigger: true
@@ -273,10 +306,14 @@ jobs:
           PUBLIC_PIPELINES: ((public-pipelines))
         run:
           path: geode-reaper-pipeline/ci/pipelines/reaper/deploy_reaper_pipeline.sh
-    - set_pipeline: ((pipeline-prefix))reaper
-      file: results/generated-pipeline.yml
-      var_files:
-      - results/pipeline-vars.yml
+    - put: concourse
+      params:
+        pipelines:
+          - name: ((!pipeline-prefix))reaper
+            team: ((!concourse-team))
+            config_file: results/generated-pipeline.yml
+            vars_files:
+              - results/pipeline-vars.yml
 
 - name: set-mass-test-run-pipeline
   serial: true
@@ -321,7 +358,7 @@ jobs:
     - results/pipeline-vars.yml
 
 - name: build-meta-mini-docker-image
-  public: ((public-pipelines))
+  public: ((!public-pipelines))
   serial: true
   plan:
   - in_parallel:
