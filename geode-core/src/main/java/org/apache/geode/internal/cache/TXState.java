@@ -589,13 +589,17 @@ public class TXState implements TXStateInterface {
 
   private void lockFilterRegistrationOnTxRegions() {
     for (InternalRegion region : getRegions()) {
-      region.getFilterProfile().lockFilterRegistrationDuringTx();
+      if (region != null && !region.isDestroyed()) {
+        region.getFilterProfile().lockFilterRegistrationDuringTx();
+      }
     }
   }
 
   private void unlockFilterRegistrationOnTxRegions() {
     for (InternalRegion region : getRegions()) {
-      region.getFilterProfile().unlockFilterRegistrationDuringTx();
+      if (region != null && !region.isDestroyed()) {
+        region.getFilterProfile().unlockFilterRegistrationDuringTx();
+      }
     }
   }
 
