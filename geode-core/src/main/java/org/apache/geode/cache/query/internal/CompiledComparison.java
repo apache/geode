@@ -656,8 +656,6 @@ public class CompiledComparison extends AbstractCompiledValue
       }
 
       // Do not use indexes when map index and != condition
-      // This should be done in the call above so that no index is returned.
-      // Otherwise, there is trouble when releasing the lock in partition regions. Why?
       if (indexData != null && indexData.getIndex() instanceof CompactMapRangeIndex
           && this._operator == TOK_NE) {
         Index prIndex = ((AbstractIndex) indexData.getIndex()).getPRIndex();
