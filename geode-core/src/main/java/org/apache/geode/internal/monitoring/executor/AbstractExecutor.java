@@ -21,7 +21,6 @@ import java.text.SimpleDateFormat;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public abstract class AbstractExecutor {
@@ -38,8 +37,7 @@ public abstract class AbstractExecutor {
     this(groupName, Thread.currentThread().getId());
   }
 
-  @VisibleForTesting
-  AbstractExecutor(String groupName, long threadID) {
+  protected AbstractExecutor(String groupName, long threadID) {
     this.groupName = groupName;
     this.startTime = 0;
     this.numIterationsStuck = 0;

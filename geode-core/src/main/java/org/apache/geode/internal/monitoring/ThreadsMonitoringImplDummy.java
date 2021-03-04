@@ -17,6 +17,7 @@ package org.apache.geode.internal.monitoring;
 
 import java.util.concurrent.ConcurrentMap;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.monitoring.executor.AbstractExecutor;
 
 public class ThreadsMonitoringImplDummy implements ThreadsMonitoring {
@@ -32,9 +33,18 @@ public class ThreadsMonitoringImplDummy implements ThreadsMonitoring {
   @Override
   public void endMonitor() {}
 
+  private static class DummyExecutor extends AbstractExecutor {
+    @Immutable
+    private static final DummyExecutor SINGLETON = new DummyExecutor();
+
+    private DummyExecutor() {
+      super("DummyExecutor", 0L);
+    }
+  }
+
   @Override
   public AbstractExecutor createAbstractExecutor(Mode mode) {
-    return null;
+    return DummyExecutor.SINGLETON;
   }
 
   @Override
