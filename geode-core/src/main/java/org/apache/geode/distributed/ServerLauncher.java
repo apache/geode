@@ -150,7 +150,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
         "Causes Geode to print out information instead of performing the command. This option is supported by all commands.");
     help.put("member", "Identifies the Server by member name or ID in the Geode cluster.");
     help.put(MEMBERSHIP_BIND_ADDRESS,
-        "Specifies the IP address to which the membership-related traffic will be bound.");
+        "Specifies the IP address to which the membership-related traffic will be bound. It only applies to TCP endpoints, UDP membership-related traffic is not affected.");
     help.put("pid", "Indicates the OS process ID of the running Server.");
     help.put("rebalance",
         "An option to cause the Geode cache's partitioned regions to be rebalanced on start.");

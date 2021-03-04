@@ -140,7 +140,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
         "An option to specify the hostname or IP address to send to clients so they can connect to this Locator. The default is to use the IP address to which the Locator is bound.");
     help.put("member", "Identifies the Locator by member name or ID in the Geode cluster.");
     help.put(MEMBERSHIP_BIND_ADDRESS,
-        "Specifies the IP address to which the membership-related traffic will be bound.");
+        "Specifies the IP address to which the membership-related traffic will be bound. It only applies to TCP endpoints, UDP membership-related traffic is not affected.");
     help.put("pid", "Indicates the OS process ID of the running Locator.");
     help.put("port", String.format(
         "Specifies the port on which the Locator is listening for client requests. Defaults to %s.",

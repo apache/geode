@@ -2456,7 +2456,7 @@ public class CliStrings {
   public static final String START_LOCATOR__MEMBERSHIP_BIND_ADDRESS =
       "membership-bind-address";
   public static final String START_LOCATOR__MEMBERSHIP_BIND_ADDRESS__HELP =
-      "Sets the IP address to which the membership-related traffic will be bound.";
+      "Sets the IP address to which the membership-related traffic will be bound. It only applies to TCP endpoints, UDP membership-related traffic is not affected.";
 
   /* 'start manager' command */
   public static final String START_MANAGER = "start manager";
