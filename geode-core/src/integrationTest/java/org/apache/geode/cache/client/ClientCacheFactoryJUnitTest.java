@@ -57,6 +57,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -462,17 +463,20 @@ public class ClientCacheFactoryJUnitTest {
   }
 
   @Test
-  public void testDefaultPoolRequestLocatorInternalAddressEnabled_defaultvalue() throws Exception {
-    clientCache = new ClientCacheFactory().setRequestLocatorInternalAddressEnabled(false)
-        .addPoolServer(InetAddress.getLocalHost().getHostName(), 7777).create();
+  public void testDefaultPoolRequestLocatorInternalAddressEnabled_Defaultvalue() throws Exception {
+    int port = AvailablePortHelper.getRandomAvailableTCPPort();
+    clientCache = new ClientCacheFactory()
+        .addPoolServer(InetAddress.getLocalHost().getHostName(), port).create();
     Pool defaultPool = clientCache.getDefaultPool();
     assertThat(defaultPool.isRequestLocatorInternalAddressEnabled()).isFalse();
   }
 
   @Test
-  public void testDefaultPoolRequestLocatorInternalAddressEnabled() throws Exception {
+  public void testDefaultPoolRequestLocatorInternalAddressEnabledSetInClientCacheFactory()
+      throws Exception {
+    int port = AvailablePortHelper.getRandomAvailableTCPPort();
     clientCache = new ClientCacheFactory().setRequestLocatorInternalAddressEnabled(true)
-        .addPoolServer(InetAddress.getLocalHost().getHostName(), 7777).create();
+        .addPoolServer(InetAddress.getLocalHost().getHostName(), port).create();
     Pool defaultPool = clientCache.getDefaultPool();
     assertThat(defaultPool.isRequestLocatorInternalAddressEnabled()).isTrue();
   }

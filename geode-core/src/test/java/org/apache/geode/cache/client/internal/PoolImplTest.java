@@ -59,7 +59,11 @@ public class PoolImplTest {
     when(serverConnectivityException.getMessage())
         .thenReturn(ConnectionManagerImpl.UNEXPECTED_SOCKET_CLOSED_MSG);
 
-    PoolImpl poolImpl = spy(getPool(PoolFactory.DEFAULT_RETRY_ATTEMPTS, false));
+    final PoolFactoryImpl.PoolAttributes poolAttributes = getPoolAttributes();
+    doReturn(PoolFactory.DEFAULT_RETRY_ATTEMPTS).when(poolAttributes).getRetryAttempts();
+
+    PoolImpl poolImpl = spy(getPool(poolAttributes));
+
     when(poolImpl.getConnectionSource()).thenReturn(connectionSource);
 
     assertThat(poolImpl.calculateRetryAttempts(serverConnectivityException)).isEqualTo(1);
@@ -76,7 +80,11 @@ public class PoolImplTest {
     when(serverConnectivityException.getMessage())
         .thenReturn(ConnectionManagerImpl.BORROW_CONN_ERROR_MSG);
 
-    PoolImpl poolImpl = spy(getPool(PoolFactory.DEFAULT_RETRY_ATTEMPTS, false));
+    final PoolFactoryImpl.PoolAttributes poolAttributes = getPoolAttributes();
+    doReturn(PoolFactory.DEFAULT_RETRY_ATTEMPTS).when(poolAttributes).getRetryAttempts();
+
+    PoolImpl poolImpl = spy(getPool(poolAttributes));
+
     when(poolImpl.getConnectionSource()).thenReturn(connectionSource);
 
     assertThat(poolImpl.calculateRetryAttempts(serverConnectivityException)).isEqualTo(1);
@@ -93,7 +101,10 @@ public class PoolImplTest {
     when(serverConnectivityException.getMessage())
         .thenReturn(ConnectionManagerImpl.SOCKET_TIME_OUT_MSG);
 
-    PoolImpl poolImpl = spy(getPool(PoolFactory.DEFAULT_RETRY_ATTEMPTS, false));
+    final PoolFactoryImpl.PoolAttributes poolAttributes = getPoolAttributes();
+    doReturn(PoolFactory.DEFAULT_RETRY_ATTEMPTS).when(poolAttributes).getRetryAttempts();
+
+    PoolImpl poolImpl = spy(getPool(poolAttributes));
     when(poolImpl.getConnectionSource()).thenReturn(connectionSource);
 
     assertThat(poolImpl.calculateRetryAttempts(serverConnectivityException)).isEqualTo(0);
@@ -110,7 +121,10 @@ public class PoolImplTest {
         mock(ServerConnectivityException.class);
     when(serverConnectivityException.getMessage()).thenReturn("Timeout Exception");
 
-    PoolImpl poolImpl = spy(getPool(retryCount, false));
+    final PoolFactoryImpl.PoolAttributes poolAttributes = getPoolAttributes();
+    doReturn(retryCount).when(poolAttributes).getRetryAttempts();
+
+    PoolImpl poolImpl = spy(getPool(poolAttributes));
     when(poolImpl.getConnectionSource()).thenReturn(connectionSource);
 
     assertThat(poolImpl.calculateRetryAttempts(serverConnectivityException)).isEqualTo(retryCount);
@@ -118,26 +132,31 @@ public class PoolImplTest {
 
   @Test
   public void checkPoolCreatedWithRequestLocatorInternalAddressEnabled_False() {
-    int retryCount = 1;
     boolean requestInternalAddress = false;
 
-    PoolImpl poolImpl = spy(getPool(retryCount, requestInternalAddress));
+    final PoolFactoryImpl.PoolAttributes poolAttributes = getPoolAttributes();
+    doReturn(requestInternalAddress).when(poolAttributes)
+        .isRequestLocatorInternalAddressEnabled();
+
+    PoolImpl poolImpl = spy(getPool(poolAttributes));
 
     assertThat(poolImpl.isRequestLocatorInternalAddressEnabled()).isEqualTo(requestInternalAddress);
   }
 
   @Test
   public void checkPoolCreatedWithRequestLocatorInternalAddressEnabled_True() {
-    int retryCount = 1;
     boolean requestInternalAddress = true;
 
-    PoolImpl poolImpl = spy(getPool(retryCount, requestInternalAddress));
+    final PoolFactoryImpl.PoolAttributes poolAttributes = getPoolAttributes();
+    doReturn(requestInternalAddress).when(poolAttributes)
+        .isRequestLocatorInternalAddressEnabled();
+
+    PoolImpl poolImpl = spy(getPool(poolAttributes));
 
     assertThat(poolImpl.isRequestLocatorInternalAddressEnabled()).isEqualTo(requestInternalAddress);
   }
 
-  private PoolImpl getPool(int retryAttemptsAttribute,
-      boolean requestLocatorInternalAddressEnabled) {
+  private PoolImpl getPool(PoolFactoryImpl.PoolAttributes poolAttributes) {
     final DistributionConfig distributionConfig = mock(DistributionConfig.class);
     doReturn(new SecurableCommunicationChannel[] {}).when(distributionConfig)
         .getSecurableCommunicationChannels();
@@ -146,20 +165,6 @@ public class PoolImplTest {
     properties.put(DURABLE_CLIENT_ID, "1");
 
     final Statistics statistics = mock(Statistics.class);
-
-    final PoolFactoryImpl.PoolAttributes poolAttributes =
-        mock(PoolFactoryImpl.PoolAttributes.class);
-
-    /*
-     * These are the minimum pool attributes required
-     * so that basic validation and setup completes successfully. The values of
-     * these attributes have no importance to the assertions of the test itself.
-     */
-    doReturn(1).when(poolAttributes).getMaxConnections();
-    doReturn((long) 10e8).when(poolAttributes).getPingInterval();
-    doReturn(retryAttemptsAttribute).when(poolAttributes).getRetryAttempts();
-    doReturn(requestLocatorInternalAddressEnabled).when(poolAttributes)
-        .isRequestLocatorInternalAddressEnabled();
 
     final CancelCriterion cancelCriterion = mock(CancelCriterion.class);
 
@@ -180,5 +185,19 @@ public class PoolImplTest {
     return PoolImpl.create(poolManager, "pool", poolAttributes, new LinkedList<HostAndPort>(),
         internalDistributedSystem, internalCache, tMonitoring);
   }
+
+  private PoolFactoryImpl.PoolAttributes getPoolAttributes() {
+    final PoolFactoryImpl.PoolAttributes poolAttributes =
+        mock(PoolFactoryImpl.PoolAttributes.class);
+    /*
+     * These are the minimum pool attributes required
+     * so that basic validation and setup completes successfully. The values of
+     * these attributes have no importance to the assertions of the test itself.
+     */
+    doReturn(1).when(poolAttributes).getMaxConnections();
+    doReturn((long) 10e8).when(poolAttributes).getPingInterval();
+    return poolAttributes;
+  }
+
 
 }

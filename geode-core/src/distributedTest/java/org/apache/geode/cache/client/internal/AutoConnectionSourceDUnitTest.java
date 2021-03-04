@@ -64,7 +64,6 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
   @Override
   public final void postSetUp() {
     addIgnoredException("NoAvailableLocatorsException");
-    addIgnoredException("SocketException");
   }
 
   @After
@@ -456,20 +455,25 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
 
 
   @Test
-  public void testClientGetsLocatorListwithExternalAddress() throws Exception {
+  public void testClientGetsLocatorListWithExternalAddress() throws Exception {
     final String hostName = getServerHostName();
+    final String hostExternalAddress1 = "127.0.0.1";
+    final String hostExternalAddress2 = "127.0.0.2";
+
     VM locator0VM = VM.getVM(0);
     VM locator1VM = VM.getVM(1);
 
     final int locator0Port =
-        locator0VM.invoke("Start Locator1 ", () -> startLocator(hostName, "", "127.0.0.1"));
+        locator0VM.invoke("Start Locator1 ",
+            () -> startLocator(hostName, "", hostExternalAddress1));
     final int locator1Port = locator1VM.invoke("Start Locator2 ",
-        () -> startLocator(hostName, getLocatorString(hostName, locator0Port), "127.0.0.1"));
+        () -> startLocator(hostName, getLocatorString(hostName, locator0Port),
+            hostExternalAddress2));
     assertThat(locator0Port).isGreaterThan(0);
     assertThat(locator1Port).isGreaterThan(0);
 
     startBridgeClient(null, hostName, locator0Port, false);
-    InetSocketAddress locatorToWaitFor = new InetSocketAddress("127.0.0.1", locator1Port);
+    InetSocketAddress locatorToWaitFor = new InetSocketAddress(hostExternalAddress2, locator1Port);
     MyLocatorCallback callback = (MyLocatorCallback) remoteObjects.get(CALLBACK_KEY);
 
     boolean discovered = callback.waitForDiscovery(locatorToWaitFor, MAX_WAIT);
@@ -482,25 +486,30 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
         new InetSocketAddress[] {new InetSocketAddress(hostName, locator0Port)};
 
     InetSocketAddress[] expectedLocators =
-        new InetSocketAddress[] {new InetSocketAddress("127.0.0.1", locator0Port),
-            new InetSocketAddress("127.0.0.1", locator1Port)};
+        new InetSocketAddress[] {new InetSocketAddress(hostExternalAddress1, locator0Port),
+            new InetSocketAddress(hostExternalAddress2, locator1Port)};
 
     final Pool pool = PoolManager.find(POOL_NAME);
 
     verifyLocatorsMatched(initialLocators, pool.getLocators());
-    verifyLocatorsMatched(expectedLocators, pool.getOnlineLocators());
+    verifyLocatorsMatched(expectedLocators, pool.getOnlineLocators(), false);
   }
 
   @Test
-  public void testClientGetsLocatorListwithInternalAddress() throws Exception {
+  public void testClientGetsLocatorListWithInternalAddress() throws Exception {
     final String hostName = getServerHostName();
+    final String hostExternalAddress1 = "127.0.0.1";
+    final String hostExternalAddress2 = "127.0.0.2";
+
     VM locator0VM = VM.getVM(0);
     VM locator1VM = VM.getVM(1);
 
     final int locator0Port =
-        locator0VM.invoke("Start Locator1 ", () -> startLocator(hostName, "", "127.0.0.1"));
+        locator0VM.invoke("Start Locator1 ",
+            () -> startLocator(hostName, "", hostExternalAddress1));
     final int locator1Port = locator1VM.invoke("Start Locator2 ",
-        () -> startLocator(hostName, getLocatorString(hostName, locator0Port), "127.0.0.1"));
+        () -> startLocator(hostName, getLocatorString(hostName, locator0Port),
+            hostExternalAddress2));
     assertThat(locator0Port).isGreaterThan(0);
     assertThat(locator1Port).isGreaterThan(0);
 
@@ -584,12 +593,25 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
 
   private Boolean verifyLocatorsMatched(InetSocketAddress[] expected,
       List<InetSocketAddress> initialLocators) {
+    return verifyLocatorsMatched(expected, initialLocators, true);
+  }
+
+  /**
+   * Assert that Sets of locators are the same.
+   *
+   * In case locators have different hostnames, no need to sort Set according to ports.
+   * So parameter sortSet can be set to false.
+   */
+  private Boolean verifyLocatorsMatched(InetSocketAddress[] expected,
+      List<InetSocketAddress> initialLocators, boolean sortSet) {
 
     if (expected.length != initialLocators.size()) {
       return false;
     }
 
-    Arrays.sort(expected, Comparator.comparing(InetSocketAddress::getPort));
+    if (sortSet) {
+      Arrays.sort(expected, Comparator.comparing(InetSocketAddress::getPort));
+    }
 
     assertThat(initialLocators).containsExactly(expected);
 
