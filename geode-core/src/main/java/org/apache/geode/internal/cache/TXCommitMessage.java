@@ -731,8 +731,7 @@ public class TXCommitMessage extends PooledDistributionMessage
     boolean isConfigError = false;
     EntryEventImpl lastTransactionEvent = null;
     try {
-      lastTransactionEvent =
-          TXLastEventInTransactionUtils.getLastTransactionEvent(callbacks, dm.getCache());
+      lastTransactionEvent = getLastTransactionEvent(callbacks);
     } catch (ServiceConfigurationError ex) {
       logger.error(ex.getMessage());
       isConfigError = true;
