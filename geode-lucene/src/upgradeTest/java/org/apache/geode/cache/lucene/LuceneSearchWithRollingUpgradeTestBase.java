@@ -295,26 +295,12 @@ public abstract class LuceneSearchWithRollingUpgradeTestBase extends JUnit4Distr
   protected Collection executeLuceneQuery(Object luceneQuery)
       throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
     Collection results = null;
-    await().untilAsserted(() -> assertThat(isIndexingFinished(luceneQuery)).isTrue());
+    await().ignoreExceptions().untilAsserted(() -> {
+      luceneQuery.getClass().getMethod("findKeys").invoke(luceneQuery);
+    });
     results = (Collection) luceneQuery.getClass().getMethod("findKeys").invoke(luceneQuery);
 
     return results;
-  }
-
-  protected boolean isIndexingFinished(Object luceneQuery)
-      throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
-    boolean success;
-    try {
-      luceneQuery.getClass().getMethod("findKeys").invoke(luceneQuery);
-      success = true;
-    } catch (Exception ex) {
-      if (!ex.getCause().getMessage().contains("currently indexing")) {
-        throw ex;
-      } else {
-        success = false;
-      }
-    }
-    return success;
   }
 
   protected void verifyLuceneQueryResultInEachVM(String regionName, int expectedRegionSize,

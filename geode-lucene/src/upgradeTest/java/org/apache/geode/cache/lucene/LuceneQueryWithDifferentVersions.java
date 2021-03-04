@@ -17,7 +17,6 @@ package org.apache.geode.cache.lucene;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
-import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
@@ -63,14 +62,14 @@ public class LuceneQueryWithDifferentVersions
       // We must wait for configuration configuration to be ready, or confirm that it is disabled.
       locator1.invoke(
           () -> await()
-              .untilAsserted(() -> assertTrue(
-                  !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
-                      || InternalLocator.getLocator().isSharedConfigurationRunning())));
+              .untilAsserted(() -> await().untilAsserted(() -> {
+                assertThat(InternalLocator.getLocator().isSharedConfigurationRunning()).isTrue();
+              })));
       locator2.invoke(
           () -> await()
-              .untilAsserted(() -> assertTrue(
-                  !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
-                      || InternalLocator.getLocator().isSharedConfigurationRunning())));
+              .untilAsserted(() -> await().untilAsserted(() -> {
+                assertThat(InternalLocator.getLocator().isSharedConfigurationRunning()).isTrue();
+              })));
 
       server1.invoke(() -> createLuceneIndex(cache, regionName, INDEX_NAME));
       server2.invoke(() -> createLuceneIndex(cache, regionName, INDEX_NAME));

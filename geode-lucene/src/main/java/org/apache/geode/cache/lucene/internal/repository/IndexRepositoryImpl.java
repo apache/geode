@@ -147,32 +147,7 @@ public class IndexRepositoryImpl implements IndexRepository {
     long start = stats.startRepositoryQuery();
     long totalHits = 0;
     IndexSearcher searcher = searcherManager.acquire();
-    searcher.setSimilarity(new TFIDFSimilarity() {
-      @Override
-      public float tf(float freq) {
-        return (float) Math.sqrt(freq);
-      }
-
-      @Override
-      public float idf(long docFreq, long docCount) {
-        return (float) Math.sqrt((docCount) / (1 + docFreq) + 1);
-      }
-
-      @Override
-      public float lengthNorm(int length) {
-        return (float) (1 / Math.sqrt(length));
-      }
-
-      @Override
-      public float sloppyFreq(int distance) {
-        return 0;
-      }
-
-      @Override
-      public float scorePayload(int doc, int start, int end, BytesRef payload) {
-        return 1;
-      }
-    });
+    searcher.setSimilarity(new Similarity());
 
     try {
       TopDocs docs = searcher.search(query, limit);
@@ -254,6 +229,33 @@ public class IndexRepositoryImpl implements IndexRepository {
         // ignore
         return 0;
       }
+    }
+  }
+
+  private static class Similarity extends TFIDFSimilarity {
+    @Override
+    public float tf(float freq) {
+      return (float) Math.sqrt(freq);
+    }
+
+    @Override
+    public float idf(long docFreq, long docCount) {
+      return (float) Math.sqrt((docCount) / (1 + docFreq) + 1);
+    }
+
+    @Override
+    public float lengthNorm(int length) {
+      return (float) (1 / Math.sqrt(length));
+    }
+
+    @Override
+    public float sloppyFreq(int distance) {
+      return 0;
+    }
+
+    @Override
+    public float scorePayload(int doc, int start, int end, BytesRef payload) {
+      return 1;
     }
   }
 }

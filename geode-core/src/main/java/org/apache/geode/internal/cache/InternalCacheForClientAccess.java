@@ -1228,10 +1228,7 @@ public class InternalCacheForClientAccess implements InternalCache {
 
   @Override
   public boolean hasMemberOlderThan(KnownVersion version) {
-    return getMembers().stream()
-        .map(InternalDistributedMember.class::cast)
-        .map(InternalDistributedMember::getVersion)
-        .anyMatch(v -> v.compareTo(version) < 0);
+    return delegate.hasMemberOlderThan(version);
   }
 
   @Override
