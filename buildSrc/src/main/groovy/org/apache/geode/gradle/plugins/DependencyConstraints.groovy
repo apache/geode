@@ -33,7 +33,7 @@ class DependencyConstraints implements Plugin<Project> {
 
     // These version numbers are consumed by :geode-modules-assembly:distAppServer filtering
     // Some of these are referenced below as well
-    deps.put("antlr.version", "2.7.7")git
+    deps.put("antlr.version", "2.7.7")
     deps.put("commons-io.version", "2.8.0")
     deps.put("commons-lang3.version", "3.11")
     deps.put("commons-validator.version", "1.7")
