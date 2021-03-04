@@ -544,7 +544,7 @@ jobs:
   - aggregate:
     - get: geode-ci
       passed: &publish-passed-inputs
-      {{- all_gating_jobs() | indent(6) }}
+      - Build
     - get: alpine-tools-image
     - get: geode
       passed: *publish-passed-inputs
