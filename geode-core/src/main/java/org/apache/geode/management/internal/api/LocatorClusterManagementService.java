@@ -47,8 +47,10 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.api.ClusterManagementException;
@@ -558,8 +560,18 @@ public class LocatorClusterManagementService implements ClusterManagementService
     if (targetMembers.size() == 0) {
       return Collections.emptyList();
     }
+    Set<DistributedMember> targetMemberPRE1_12_0 = new HashSet<>();
+    Set<DistributedMember> targetMemberPOST1_12_0 = new HashSet<>();
 
-    Function function = new CacheRealizationFunction();
+    targetMembers.stream().forEach(member -> {
+      if (((InternalDistributedMember) member).getVersionObject()
+          .isOlderThan(Version.GEODE_1_12_0)) {
+        targetMemberPRE1_12_0.add(member);
+      } else {
+        targetMemberPOST1_12_0.add(member);
+      }
+    });
+
 
 
     File file = null;
@@ -568,11 +580,24 @@ public class LocatorClusterManagementService implements ClusterManagementService
     }
 
     if (file == null) {
-      Execution execution = FunctionService.onMembers(targetMembers)
-          .setArguments(Arrays.asList(configuration, operation, null));
-      ((AbstractExecution) execution).setIgnoreDepartedMembers(true);
-      List<?> functionResults = (List<?>) execution.execute(function).getResult();
-      return cleanResults(functionResults);
+      List<?> functionResults = new ArrayList<>();
+      if (targetMemberPRE1_12_0.size() > 0) {
+        Function function =
+            new org.apache.geode.management.internal.cli.functions.CacheRealizationFunction();
+        Execution execution = FunctionService.onMembers(targetMemberPRE1_12_0)
+            .setArguments(Arrays.asList(configuration, operation, null));
+        ((AbstractExecution) execution).setIgnoreDepartedMembers(true);
+        functionResults.addAll(cleanResults((List<?>) execution.execute(function).getResult()));
+      }
+      if (targetMemberPOST1_12_0.size() > 0) {
+        Function function = new CacheRealizationFunction();
+        Execution execution = FunctionService.onMembers(targetMemberPOST1_12_0)
+            .setArguments(Arrays.asList(configuration, operation, null));
+        ((AbstractExecution) execution).setIgnoreDepartedMembers(true);
+        functionResults.addAll(cleanResults((List<?>) execution.execute(function).getResult()));
+      }
+
+      return (List<R>) functionResults;
     }
 
     // if we have file arguments, we need to export the file input stream for each member
@@ -594,7 +619,16 @@ public class LocatorClusterManagementService implements ClusterManagementService
         Execution execution = FunctionService.onMember(member)
             .setArguments(Arrays.asList(configuration, operation, remoteInputStream));
         ((AbstractExecution) execution).setIgnoreDepartedMembers(true);
-        List<R> functionResults = cleanResults((List<?>) execution.execute(function).getResult());
+        List<R> functionResults;
+        if (((InternalDistributedMember) member).getVersionObject()
+            .isOlderThan(Version.GEODE_1_12_0)) {
+          Function function =
+              new org.apache.geode.management.internal.cli.functions.CacheRealizationFunction();
+          functionResults = cleanResults((List<?>) execution.execute(function).getResult());
+        } else {
+          Function function = new CacheRealizationFunction();
+          functionResults = cleanResults((List<?>) execution.execute(function).getResult());
+        }
         results.addAll(functionResults);
       } catch (IOException e) {
         raise(StatusCode.ILLEGAL_ARGUMENT, "Invalid file: " + file.getAbsolutePath());

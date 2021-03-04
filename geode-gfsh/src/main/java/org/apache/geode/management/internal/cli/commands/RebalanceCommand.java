@@ -101,7 +101,8 @@ public class RebalanceCommand extends GfshCommand {
     rsltList.add(6, String.valueOf(results.getPrimaryTransferTimeInMilliseconds()));
     rsltList.add(7, String.valueOf(results.getPrimaryTransfersCompleted()));
     rsltList.add(8, String.valueOf(results.getTimeInMilliseconds()));
-    rsltList.add(9, String.valueOf(results.getNumOfMembers()));
+    rsltList.add(9, results.getNumOfMembers() == -1 ? "Not Available"
+        : String.valueOf(results.getNumOfMembers()));
     String regionName = results.getRegionName();
     if (!regionName.startsWith("/")) {
       regionName = "/" + regionName;
