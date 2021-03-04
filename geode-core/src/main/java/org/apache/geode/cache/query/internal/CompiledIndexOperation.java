@@ -104,7 +104,10 @@ public class CompiledIndexOperation extends AbstractCompiledValue implements Map
     }
 
     if (rcvr instanceof Map) {
-      return ((Map) rcvr).get(index);
+      if (((Map<?, ?>) rcvr).containsKey(index)) {
+        return ((Map) rcvr).get(index);
+      }
+      return QueryService.UNDEFINED;
     }
     if ((rcvr instanceof List) || rcvr.getClass().isArray() || (rcvr instanceof String)) {
       if (!(index instanceof Integer)) {

@@ -370,7 +370,7 @@ public class IndexStatisticsJUnitTest {
 
     assertEquals(0, keyIndexStats.getReadLockCount());
 
-    assertEquals(100, keyIndexStats.getTotalUses());
+    assertEquals(0, keyIndexStats.getTotalUses());
 
     for (int i = 0; i < 50; i++) {
       region.invalidate(Integer.toString(i));

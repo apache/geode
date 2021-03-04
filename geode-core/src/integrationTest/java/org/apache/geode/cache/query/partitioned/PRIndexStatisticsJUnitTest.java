@@ -274,7 +274,7 @@ public class PRIndexStatisticsJUnitTest {
     }
 
     // Both RangeIndex should be used
-    assertEquals(100 /* Execution time */, keyIndexStats.getTotalUses());
+    assertEquals(0, keyIndexStats.getTotalUses());
 
     for (int i = 0; i < 50; i++) {
       region.invalidate(Integer.toString(i));
@@ -585,8 +585,7 @@ public class PRIndexStatisticsJUnitTest {
       query.execute();
     }
 
-    // Both RangeIndex should be used
-    assertEquals((100 /* Execution time */), keyIndexStats.getTotalUses());
+    assertEquals((0 /* Execution time */), keyIndexStats.getTotalUses());
 
     for (int i = 0; i < 50; i++) {
       region.invalidate(Integer.toString(i));
