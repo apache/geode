@@ -461,10 +461,8 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
           expr = mi.getReceiverSansIndexArgs();
           expr.generateCanonicalizedExpression(sb, this.context);
           sb.append('[').append('*').append(']');
-
-        } else if (indexingKeys.size() == 1) {
+        } else if (indexingKeys.size() == 1 && indexingKeys.get(0).hasIdentifierAtLeafNode()) {
           expr.generateCanonicalizedExpression(sb, this.context);
-
         } else {
           this.isMapTypeIndex = true;
           this.multiIndexKeysPattern = new String[indexingKeys.size()];

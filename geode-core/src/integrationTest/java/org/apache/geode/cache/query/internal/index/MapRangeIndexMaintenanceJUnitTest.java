@@ -342,6 +342,155 @@ public class MapRangeIndexMaintenanceJUnitTest {
   }
 
   @Test
+  public void testQueriesForValueInMapFieldWithoutIndex() throws Exception {
+    region =
+        CacheUtils.getCache().createRegionFactory(RegionShortcut.REPLICATE).create("portfolio");
+    qs = CacheUtils.getQueryService();
+    testQueriesForValueInMapField(region, qs);
+  }
+
+  @Test
+  public void testQueriesForValueInMapFieldWithMapIndexWithOneKey() throws Exception {
+    region =
+        CacheUtils.getCache().createRegionFactory(RegionShortcut.REPLICATE).create("portfolio");
+    qs = CacheUtils.getQueryService();
+
+    keyIndex1 = qs.createIndex(INDEX_NAME, "positions['SUN']", SEPARATOR + "portfolio ");
+    assertTrue(keyIndex1 instanceof CompactMapRangeIndex);
+    testQueriesForValueInMapField(region, qs);
+
+    long keys = ((CompactMapRangeIndex) keyIndex1).internalIndexStats.getNumberOfKeys();
+    long mapIndexKeys =
+        ((CompactMapRangeIndex) keyIndex1).internalIndexStats.getNumberOfMapIndexKeys();
+    long values =
+        ((CompactMapRangeIndex) keyIndex1).internalIndexStats.getNumberOfValues();
+    assertEquals(3, keys);
+    assertEquals(1, mapIndexKeys);
+    assertEquals(3, values);
+  }
+
+  @Test
+  public void testQueriesForValueInMapFieldWithMapIndexWithSeveralKeys() throws Exception {
+    region =
+        CacheUtils.getCache().createRegionFactory(RegionShortcut.REPLICATE).create("portfolio");
+    qs = CacheUtils.getQueryService();
+
+    keyIndex1 =
+        qs.createIndex(INDEX_NAME, "positions['SUN', 'ERICSSON']", SEPARATOR + "portfolio ");
+    assertTrue(keyIndex1 instanceof CompactMapRangeIndex);
+    testQueriesForValueInMapField(region, qs);
+
+    long keys = ((CompactMapRangeIndex) keyIndex1).internalIndexStats.getNumberOfKeys();
+    long mapIndexKeys =
+        ((CompactMapRangeIndex) keyIndex1).internalIndexStats.getNumberOfMapIndexKeys();
+    long values =
+        ((CompactMapRangeIndex) keyIndex1).internalIndexStats.getNumberOfValues();
+    assertEquals(3, keys);
+    assertEquals(1, mapIndexKeys);
+    assertEquals(3, values);
+  }
+
+  @Test
+  public void testQueriesForValueInMapFieldWithMapIndexWithStar() throws Exception {
+    region =
+        CacheUtils.getCache().createRegionFactory(RegionShortcut.REPLICATE).create("portfolio");
+    qs = CacheUtils.getQueryService();
+
+    keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", SEPARATOR + "portfolio ");
+    assertTrue(keyIndex1 instanceof CompactMapRangeIndex);
+    testQueriesForValueInMapField(region, qs);
+
+    long keys = ((CompactMapRangeIndex) keyIndex1).internalIndexStats.getNumberOfKeys();
+    long mapIndexKeys =
+        ((CompactMapRangeIndex) keyIndex1).internalIndexStats.getNumberOfMapIndexKeys();
+    long values =
+        ((CompactMapRangeIndex) keyIndex1).internalIndexStats.getNumberOfValues();
+    assertEquals(5, keys);
+    assertEquals(4, mapIndexKeys);
+    assertEquals(5, values);
+  }
+
+  public void testQueriesForValueInMapField(Region region, QueryService qs) throws Exception {
+    // Empty map
+    Portfolio p = new Portfolio(1, 1);
+    p.positions = new HashMap();
+    region.put(1, p);
+
+    // Map is null
+    Portfolio p2 = new Portfolio(2, 2);
+    p2.positions = null;
+    region.put(2, p2);
+
+    // Map with null value for "SUN" key
+    Portfolio p3 = new Portfolio(3, 3);
+    p3.positions = new HashMap();
+    p3.positions.put("IBM", "something");
+    p3.positions.put("SUN", null);
+    region.put(3, p3);
+
+    // Map with not null value for "SUN" key
+    Portfolio p4 = new Portfolio(4, 4);
+    p4.positions = new HashMap();
+    p4.positions.put("SUN", "nothing");
+    region.put(4, p4);
+
+    // Map with null key
+    Portfolio p5 = new Portfolio(5, 5);
+    p5.positions = new HashMap();
+    p5.positions.put("SUN", "more");
+    // The next one causes trouble with gfsh as json cannot show maps with null keys
+    p5.positions.put(null, "empty");
+    region.put(5, p5);
+
+    // One more with map without the "SUN" key
+    Portfolio p6 = new Portfolio(6, 6);
+    p6.positions = new HashMap();
+    p6.positions.put("ERIC", "hey");
+    region.put(6, p6);
+
+    // One more with null map
+    Portfolio p7 = new Portfolio(7, 7);
+    p7.positions = null;
+    region.put(7, p7);
+
+    String query;
+    query = "select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = null";
+    SelectResults result = (SelectResults) qs
+        .newQuery(query)
+        .execute();
+    System.out.println("Query: " + query + ", result: " + result);
+    assertEquals(1, result.size());
+
+    query = "select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] != null";
+    result = (SelectResults) qs
+        .newQuery(query)
+        .execute();
+    System.out.println("Query: " + query + ", result: " + result);
+    assertEquals(6, result.size());
+
+    query = "select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 'nothing'";
+    result = (SelectResults) qs
+        .newQuery(query)
+        .execute();
+    System.out.println("Query: " + query + ", result: " + result);
+    assertEquals(1, result.size());
+
+    query = "select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] != 'nothing'";
+    result = (SelectResults) qs
+        .newQuery(query)
+        .execute();
+    System.out.println("Query: " + query + ", result: " + result);
+    assertEquals(6, result.size());
+
+    query = "select * from " + SEPARATOR + "portfolio p";
+    result = (SelectResults) qs
+        .newQuery(query)
+        .execute();
+    System.out.println("Query: " + query + ", result: " + result);
+    assertEquals(7, result.size());
+  }
+
+  @Test
   public void testNullMapValuesInIndexOnLocalRegionForMap() throws Exception {
     IndexManager.TEST_RANGEINDEX_ONLY = true;
     region =
