@@ -614,6 +614,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
    */
   private void removeWithViewLock(ID dm, boolean crashed, String reason) {
     boolean wasShunned = isShunned(dm);
+
     // Delete resources
     destroyMember(dm, reason);
 
