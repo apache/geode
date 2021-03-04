@@ -151,6 +151,7 @@ public abstract class LocatorTestBase extends JUnit4DistributedTestCase {
     props.put(MCAST_PORT, String.valueOf(0));
     props.put(LOCATORS, otherLocators);
     props.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
+
     props.put(ENABLE_CLUSTER_CONFIGURATION, "false");
     props.put(HTTP_SERVICE_PORT, String.valueOf(httpPort));
     props.put(JMX_MANAGER_PORT, String.valueOf(jmxManagerPort));
@@ -298,10 +299,23 @@ public abstract class LocatorTestBase extends JUnit4DistributedTestCase {
   }
 
   protected void startBridgeClient(final String group, final String host, final int port,
+      boolean requestInternal)
+      throws Exception {
+    startBridgeClient(group, host, port, new String[] {REGION_NAME}, requestInternal);
+  }
+
+  protected void startBridgeClient(final String group, final String host, final int port,
       final String[] regions) throws Exception {
+    startBridgeClient(group, host, port, regions, false);
+  }
+
+  protected void startBridgeClient(final String group, final String host, final int port,
+      final String[] regions, boolean requestInternal) throws Exception {
     PoolFactoryImpl pf = new PoolFactoryImpl(null);
     pf.addLocator(host, port).setServerGroup(group).setPingInterval(200)
-        .setSubscriptionEnabled(true).setSubscriptionRedundancy(-1);
+        .setSubscriptionEnabled(true).setSubscriptionRedundancy(-1)
+        .setRequestLocatorInternalAddressEnabled(requestInternal);
+
     startBridgeClient(pf.getPoolAttributes(), regions);
   }
 
@@ -309,6 +323,7 @@ public abstract class LocatorTestBase extends JUnit4DistributedTestCase {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, String.valueOf(0));
     props.setProperty(LOCATORS, "");
+
     DistributedSystem ds = getSystem(props);
     Cache cache = CacheFactory.create(ds);
     AttributesFactory factory = new AttributesFactory();
@@ -384,9 +399,10 @@ public abstract class LocatorTestBase extends JUnit4DistributedTestCase {
 
     private synchronized boolean waitFor(Set set, InetSocketAddress locator, long time)
         throws InterruptedException {
+
       long remaining = time;
       long endTime = System.currentTimeMillis() + time;
-      while (!set.contains(locator) && remaining >= 0) {
+      while (!set.contains(locator) && remaining > 0) {
         wait(remaining);
         remaining = endTime - System.currentTimeMillis();
       }

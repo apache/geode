@@ -779,7 +779,7 @@ fromData,114
 toData,102
 
 org/apache/geode/internal/cache/CacheServerAdvisor$CacheServerProfile,2
-fromData,59
+fromData,54
 toData,43
 
 org/apache/geode/internal/cache/ClientRegionEventImpl,2

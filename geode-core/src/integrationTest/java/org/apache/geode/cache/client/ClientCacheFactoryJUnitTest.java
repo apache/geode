@@ -460,4 +460,22 @@ public class ClientCacheFactoryJUnitTest {
           .contains("PDX persistence is not supported on client side.")).isTrue();
     }
   }
+
+  @Test
+  public void testDefaultPoolRequestLocatorInternalAddressEnabled_defaultvalue() throws Exception {
+    clientCache = new ClientCacheFactory().setRequestLocatorInternalAddressEnabled(false)
+        .addPoolServer(InetAddress.getLocalHost().getHostName(), 7777).create();
+    Pool defaultPool = clientCache.getDefaultPool();
+    assertThat(defaultPool.isRequestLocatorInternalAddressEnabled()).isFalse();
+  }
+
+  @Test
+  public void testDefaultPoolRequestLocatorInternalAddressEnabled() throws Exception {
+    clientCache = new ClientCacheFactory().setRequestLocatorInternalAddressEnabled(true)
+        .addPoolServer(InetAddress.getLocalHost().getHostName(), 7777).create();
+    Pool defaultPool = clientCache.getDefaultPool();
+    assertThat(defaultPool.isRequestLocatorInternalAddressEnabled()).isTrue();
+  }
+
+
 }
