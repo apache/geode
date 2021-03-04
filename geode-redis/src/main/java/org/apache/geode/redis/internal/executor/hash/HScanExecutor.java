@@ -22,6 +22,7 @@ import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_HASH;
 
 import java.math.BigInteger;
 import java.util.List;
+import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -44,26 +45,25 @@ public class HScanExecutor extends AbstractScanExecutor {
   @Override
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
+
+    final UUID CLIENT_ID = context.getClientUUID();
+
     List<byte[]> commandElems = command.getProcessedCommand();
 
     String cursorString = Coder.bytesToString(commandElems.get(2));
-    BigInteger cursor;
+    int cursor;
     Pattern matchPattern;
     String globPattern = null;
     int count = DEFAULT_COUNT;
 
     try {
-      cursor = new BigInteger(cursorString).abs();
+      cursor = Integer.parseInt(cursorString);
     } catch (NumberFormatException e) {
       return RedisResponse.error(ERROR_CURSOR);
     }
 
-    if (cursor.compareTo(UNSIGNED_LONG_CAPACITY) > 0) {
-      return RedisResponse.error(ERROR_CURSOR);
-    }
-
-    if (!cursor.equals(context.getHscanCursor())) {
-      cursor = new BigInteger("0");
+    if (cursor != context.getHscanCursor()) {
+      cursor = 0;
     }
 
     ByteArrayWrapper key = command.getKey();
@@ -101,23 +101,25 @@ public class HScanExecutor extends AbstractScanExecutor {
         return RedisResponse.error(ERROR_SYNTAX);
       }
     }
-
     try {
       matchPattern = convertGlobToRegex(globPattern);
     } catch (PatternSyntaxException e) {
+
       LogService.getLogger().warn(
           "Could not compile the pattern: '{}' due to the following exception: '{}'. HSCAN will return an empty list.",
           globPattern, e.getMessage());
+
       return RedisResponse.emptyScan();
     }
-
     RedisHashCommands redisHashCommands =
         new RedisHashCommandsFunctionInvoker(context.getRegionProvider().getDataRegion());
-    Pair<BigInteger, List<Object>> scanResult =
-        redisHashCommands.hscan(key, matchPattern, count, cursor);
+
+    Pair<Integer, List<Object>> scanResult =
+        redisHashCommands.hscan(key, matchPattern, count, cursor, CLIENT_ID);
 
     context.setHscanCursor(scanResult.getLeft());
 
-    return RedisResponse.scan(scanResult.getLeft(), scanResult.getRight());
+    return RedisResponse.scan(new BigInteger(String.valueOf(scanResult.getLeft())),
+        scanResult.getRight());
   }
 }

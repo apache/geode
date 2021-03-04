@@ -177,6 +177,8 @@ public enum RedisCommandType {
   HSTRLEN(new HStrLenExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
   HINCRBY(new HIncrByExecutor(), SUPPORTED, new ExactParameterRequirements(4)),
   HVALS(new HValsExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
+  HSCAN(new HScanExecutor(), SUPPORTED, new MinimumParameterRequirements(3),
+      new OddParameterRequirements(ERROR_SYNTAX)),
   HEXISTS(new HExistsExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
   HKEYS(new HKeysExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
 
@@ -237,13 +239,6 @@ public enum RedisCommandType {
   SETBIT(new SetBitExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
   SETEX(new SetEXExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
   SETRANGE(new SetRangeExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
-
-  /***************************************
-   **************** Hashes ***************
-   ***************************************/
-
-  HSCAN(new HScanExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3),
-      new OddParameterRequirements(ERROR_SYNTAX)),
 
   /***************************************
    **************** Sets *****************
