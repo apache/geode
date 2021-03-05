@@ -356,17 +356,17 @@ public class MapRangeIndexMaintenanceJUnitTest {
     qs = CacheUtils.getQueryService();
 
     keyIndex1 = qs.createIndex(INDEX_NAME, "positions['SUN']", SEPARATOR + "portfolio ");
-    assertTrue(keyIndex1 instanceof CompactMapRangeIndex);
+    assertTrue(keyIndex1 instanceof CompactRangeIndex);
     testQueriesForValueInMapField(region, qs);
 
-    long keys = ((CompactMapRangeIndex) keyIndex1).internalIndexStats.getNumberOfKeys();
+    long keys = ((CompactRangeIndex) keyIndex1).internalIndexStats.getNumberOfKeys();
     long mapIndexKeys =
-        ((CompactMapRangeIndex) keyIndex1).internalIndexStats.getNumberOfMapIndexKeys();
+        ((CompactRangeIndex) keyIndex1).internalIndexStats.getNumberOfMapIndexKeys();
     long values =
-        ((CompactMapRangeIndex) keyIndex1).internalIndexStats.getNumberOfValues();
-    assertEquals(3, keys);
-    assertEquals(1, mapIndexKeys);
-    assertEquals(3, values);
+        ((CompactRangeIndex) keyIndex1).internalIndexStats.getNumberOfValues();
+    assertEquals(4, keys);
+    assertEquals(0, mapIndexKeys);
+    assertEquals(7, values);
   }
 
   @Test
@@ -459,6 +459,7 @@ public class MapRangeIndexMaintenanceJUnitTest {
         .newQuery(query)
         .execute();
     System.out.println("Query: " + query + ", result: " + result);
+    // Flaky in testQueriesForValuesInMapFieldWithMapIndexWithOneKey. Somtimes returns 0.
     assertEquals(1, result.size());
 
     query = "select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] != null";
@@ -466,6 +467,8 @@ public class MapRangeIndexMaintenanceJUnitTest {
         .newQuery(query)
         .execute();
     System.out.println("Query: " + query + ", result: " + result);
+    // Flaky in testQueriesForValuesInMapFieldWithMapIndexWithOneKey. Around 25% of the times
+    // returns 4.
     assertEquals(6, result.size());
 
     query = "select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 'nothing'";
@@ -480,6 +483,8 @@ public class MapRangeIndexMaintenanceJUnitTest {
         .newQuery(query)
         .execute();
     System.out.println("Query: " + query + ", result: " + result);
+    // Flaky in testQueriesForValuesInMapFieldWithMapIndexWithOneKey. Around 20% of the times
+    // returns 4.
     assertEquals(6, result.size());
 
     query = "select * from " + SEPARATOR + "portfolio p";

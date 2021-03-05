@@ -342,7 +342,7 @@ public class IndexUseJUnitTest {
 
     evaluateMapTypeIndexUsage("objs.maap['key2']", SEPARATOR + "testRgn objs", queries,
         queriesIndexNotUsed,
-        CompactMapRangeIndex.class);
+        CompactRangeIndex.class);
 
     String query = "SELECT DISTINCT * FROM " + SEPARATOR + "testRgn itr1  WHERE itr1.liist[0] >= 2";
     SelectResults withoutIndex, withIndex;
@@ -353,7 +353,7 @@ public class IndexUseJUnitTest {
 
     Index i2 =
         qs.createIndex("Index2", IndexType.FUNCTIONAL, "objs.liist[0]", SEPARATOR + "testRgn objs");
-    assertTrue(i2 instanceof CompactMapRangeIndex);
+    assertTrue(i2 instanceof CompactRangeIndex);
     CacheUtils.getLogger().info("Executing query: " + query);
     QueryObserverImpl observer = new QueryObserverImpl();
     QueryObserverHolder.setInstance(observer);
@@ -1196,7 +1196,7 @@ public class IndexUseJUnitTest {
     Index i5 = qs.createIndex("Index5", IndexType.FUNCTIONAL, "itr1.testFields['complex']",
         SEPARATOR + "testRgn itr1");
 
-    assertTrue(i1 instanceof CompactMapRangeIndex);
+    assertTrue(i1 instanceof CompactRangeIndex);
 
     // Execute Queries with Indexes
     for (int i = 0; i < queries.length; i++) {
