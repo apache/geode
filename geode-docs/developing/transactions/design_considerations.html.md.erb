@@ -118,15 +118,15 @@ immediately after the commit.
 A transaction disables expiration on any region entries affected
 by the transaction.
 
-## <a id="transactions-nontransactions" class="no-quick-link"></a>Mixing Transactions with Nontransactional Operations
+## <a id="transactions-nontransactions" class="no-quick-link"></a>Mixing Transactions with Non-transactional Operations
 
 For best performance, non-transactional operations do not acquire the exclusive locks used to check
 for conflicts in a transaction. A transaction operating on the same data as a non-transactional actor
 is unable to detect the conflict caused by a non-transactional operation.
 
-A user application should adopt the policy of always using transactions or no transactions at all
-for certain regions or sets of entries, so transactional entries will not be modified by operations
-outside of the transaction.
+If using transactions, an application should adopt the policy of designating certain regions or sets of entries
+exclusively for transactional puts, updates, and deletions, so transactional entries will not be modified by non-transactional
+operations.
 
 If other, non-transactional sources update the keys the transaction is modifying, the changes may
 intermingle with the transaction’s changes. The other sources can include distributions from remote
