@@ -864,7 +864,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
 
     final List<Integer> bucketIds = new ArrayList<Integer>();
     final int totalBucketsToQuery = bucketIdsToConsider.size();
-    if (query.isCqQuery()) {
+    if (query != null && query.isCqQuery()) {
       // Execute the query on primary buckets only
       Set<Integer> localPrimaryBucketIds = this.pr.getDataStore().getAllLocalPrimaryBucketIds();
       if (!localPrimaryBucketIds.isEmpty()) {
@@ -913,7 +913,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
       final List<Integer> buckets = new ArrayList<Integer>();
       for (Integer bid : bucketIdsToConsider) {
         if (!bucketIds.contains(bid)) {
-          if (query.isCqQuery()) {
+          if (query != null && query.isCqQuery()) {
             // Execute the query on primary buckets only
             InternalDistributedMember primary = getPrimaryBucketOwner(bid);
             if (primary.equals(nd)) {
