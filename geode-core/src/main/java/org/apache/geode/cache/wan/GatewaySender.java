@@ -185,16 +185,13 @@ public interface GatewaySender {
           1);
 
   /**
-   * When group-transaction-events is set to true and the gateway sender is stopped,
-   * there is a possibility that the stopping occurs such that for a transaction,
-   * not all events belonging to it reach the queue. The reason would be that
-   * some reach the queue right before the sender is stopped and the rest do not make
-   * it to the queue because the sender is just stopped.
-   * In order to prevent that the queue contains incomplete transactions
-   * due to the above circumstance, this parameter allows for a grace period
-   * of the number of milliseconds set in it before the gateway sender is
-   * actually stopped, in which only events to complete transactions are put in the queue.
-   * Other events received in this period would be dropped.
+   * When group-transaction-events is true and the gateway sender is stopped,
+   * addition to the queue of a group of transaction events might be interrupted.
+   * To ensure that the queue does not contain incomplete transactions, this parameter
+   * allows for a grace period, specified in milliseconds, before the gateway sender is actually
+   * stopped, allowing complete transaction event groups to be queued. Any event received
+   * during the grace period that is not part of a transaction event group in the queue
+   * is dropped.
    */
   int TIME_TO_COMPLETE_TRANSACTIONS_BEFORE_STOP_MS =
       Integer.getInteger(
