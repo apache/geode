@@ -120,7 +120,7 @@ public class OutOfMemoryDUnitTest {
 
     fillMemory(jedis1, MAX_ITERATION_COUNT, false);
 
-    assertThatThrownBy(() -> jedis2.set("oneMoreKey", "value")).hasMessageContaining("OOM");
+    assertThatThrownBy(() -> jedis2.set("oneMoreKey", valueString)).hasMessageContaining("OOM");
   }
 
   @Test
