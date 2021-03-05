@@ -49,6 +49,7 @@ public class FilterProfileJUnitTest {
     when(mockCache.getCacheServers()).thenReturn(Collections.emptyList());
     when(mockRegion.getGemFireCache()).thenReturn(mockCache);
     fprofile = new FilterProfile(mockRegion);
+    when(mockRegion.getFilterProfile()).thenReturn(fprofile);
   }
 
   @Test
