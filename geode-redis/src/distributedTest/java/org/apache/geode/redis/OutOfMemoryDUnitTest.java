@@ -52,7 +52,8 @@ public class OutOfMemoryDUnitTest {
   private static final String LOCAL_HOST = "127.0.0.1";
   public static final int KEY_TTL_SECONDS = 10;
   private static final int MAX_ITERATION_COUNT = 4000;
-  public static final int VALUE_SIZE = 128 * 1024;
+  public static final int LARGE_VALUE_SIZE = 128 * 1024;
+  public static final int SMALL_VALUE_SIZE = 16 * 1024;
   private static final int JEDIS_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
   private static Jedis jedis1;
@@ -67,7 +68,6 @@ public class OutOfMemoryDUnitTest {
 
   private static int redisServerPort1;
   private static int redisServerPort2;
-  private static String valueString = "";
 
   @BeforeClass
   public static void classSetup() {
@@ -92,11 +92,6 @@ public class OutOfMemoryDUnitTest {
 
     jedis1 = new Jedis(LOCAL_HOST, redisServerPort1, JEDIS_TIMEOUT);
     jedis2 = new Jedis(LOCAL_HOST, redisServerPort2, JEDIS_TIMEOUT);
-
-    char[] largeCharData = new char[VALUE_SIZE];
-    Arrays.fill(largeCharData, 'a');
-    valueString = new String(largeCharData);
-
   }
 
   @Before
@@ -118,9 +113,11 @@ public class OutOfMemoryDUnitTest {
     IgnoredException.addIgnoredException(expectedEx);
     IgnoredException.addIgnoredException("LowMemoryException");
 
-    fillMemory(jedis1, MAX_ITERATION_COUNT, false);
+    fillMemory(jedis1, MAX_ITERATION_COUNT, LARGE_VALUE_SIZE, false);
+    fillMemory(jedis1, MAX_ITERATION_COUNT, SMALL_VALUE_SIZE, false);
 
-    assertThatThrownBy(() -> jedis2.set("oneMoreKey", valueString)).hasMessageContaining("OOM");
+    assertThatThrownBy(() -> jedis2.set("oneMoreKey", makeLongStringValue(LARGE_VALUE_SIZE)))
+        .hasMessageContaining("OOM");
   }
 
   @Test
@@ -128,7 +125,8 @@ public class OutOfMemoryDUnitTest {
     IgnoredException.addIgnoredException(expectedEx);
     IgnoredException.addIgnoredException("LowMemoryException");
 
-    fillMemory(jedis1, MAX_ITERATION_COUNT, false);
+    fillMemory(jedis1, MAX_ITERATION_COUNT, LARGE_VALUE_SIZE, false);
+    fillMemory(jedis1, MAX_ITERATION_COUNT, SMALL_VALUE_SIZE, false);
 
     assertThatNoException().isThrownBy(() -> jedis2.del(FILLER_KEY + 1));
   }
@@ -138,7 +136,8 @@ public class OutOfMemoryDUnitTest {
     IgnoredException.addIgnoredException(expectedEx);
     IgnoredException.addIgnoredException("LowMemoryException");
 
-    fillMemory(jedis1, MAX_ITERATION_COUNT, true);
+    fillMemory(jedis1, MAX_ITERATION_COUNT, LARGE_VALUE_SIZE, true);
+    fillMemory(jedis1, MAX_ITERATION_COUNT, SMALL_VALUE_SIZE, true);
 
     GeodeAwaitility.await().until(() -> jedis2.ttl(FILLER_KEY + 1) == -2);
   }
@@ -147,7 +146,8 @@ public class OutOfMemoryDUnitTest {
   // below critical levels. Difficult to do right now because of vagaries of the
   // Java garbage collector.
 
-  private int fillMemory(Jedis jedis, int maxIterations, boolean withExpiration) {
+  private int fillMemory(Jedis jedis, int maxIterations, int valueSize, boolean withExpiration) {
+    String valueString = makeLongStringValue(valueSize);
     int i = 0;
     while (i < maxIterations) {
       try {
@@ -164,6 +164,12 @@ public class OutOfMemoryDUnitTest {
     }
     assertThat(i).isLessThan(maxIterations);
     return i;
+  }
+
+  private static String makeLongStringValue(int requestedSize) {
+    char[] largeCharData = new char[requestedSize];
+    Arrays.fill(largeCharData, 'a');
+    return new String(largeCharData);
   }
 
   // TODO: use this when write testing figured out
