@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.mockito.quality.Strictness.STRICT_STUBS;
+import static org.mockito.quality.Strictness.LENIENT;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -54,7 +54,7 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 public class ServerConnectionIntegrationTest {
 
   @Rule
-  public MockitoRule mockitoRule = MockitoJUnit.rule().strictness(STRICT_STUBS);
+  public MockitoRule mockitoRule = MockitoJUnit.rule().strictness(LENIENT);
 
   private AcceptorImpl acceptor;
   private Socket socket;
