@@ -1127,7 +1127,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
             final ServerConnection sc = (ServerConnection) key.attachment();
             try {
               if (key.isValid() && (key.isReadable() || key.isWritable())) {
-                // this is the only event we currently register for
+
                 try {
                   key.cancel();
                   selectorRegistrations.remove(sc);
@@ -1609,10 +1609,8 @@ public class AcceptorImpl implements Acceptor, Runnable {
       ByteBuffer buffer = bbos.getContentBuffer();
       try (final ByteBufferSharing outputSharing = sslEngine.wrap(buffer)) {
         final ByteBuffer wrappedBuffer = outputSharing.getBuffer();
-        if (socket != null) {
-          while (wrappedBuffer.remaining() > 0) {
-            socket.getChannel().write(wrappedBuffer);
-          }
+        while (wrappedBuffer.remaining() > 0) {
+          socket.getChannel().write(wrappedBuffer);
         }
       }
     }
