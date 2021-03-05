@@ -761,7 +761,9 @@ public class GatewaySenderEventImpl
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     fromDataPre_GEODE_1_15_0_0(in, context);
-    this.operationDetail = in.readInt();
+    if (version >= KnownVersion.GEODE_1_15_0.ordinal()) {
+      this.operationDetail = in.readInt();
+    }
   }
 
   public void fromDataPre_GEODE_1_15_0_0(DataInput in, DeserializationContext context)
