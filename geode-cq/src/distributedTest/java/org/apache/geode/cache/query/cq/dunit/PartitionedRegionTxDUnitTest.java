@@ -19,6 +19,8 @@ import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Properties;
 import java.util.concurrent.TimeoutException;
 
@@ -26,6 +28,8 @@ import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.PartitionAttributesFactory;
@@ -58,11 +62,20 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
 @Category(ClientSubscriptionTest.class)
+@RunWith(Parameterized.class)
 public class PartitionedRegionTxDUnitTest implements Serializable {
   private static volatile DUnitBlackboard blackboard;
 
   @Rule
   public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
+
+  @Parameterized.Parameter
+  public String conserveSockets;
+
+  @Parameterized.Parameters
+  public static Collection<String> data() {
+    return Arrays.asList("true", "false");
+  }
 
   @After
   public void clearObserver() {
@@ -75,9 +88,11 @@ public class PartitionedRegionTxDUnitTest implements Serializable {
     getBlackboard().setMailbox("CqEvents", 0);
 
     String REGION_NAME = "region";
+    Properties properties = new Properties();
+    properties.put("conserve-sockets", conserveSockets);
     MemberVM locator = clusterStartupRule.startLocatorVM(0, new Properties());
-    MemberVM server1 = clusterStartupRule.startServerVM(1, locator.getPort());
-    MemberVM server2 = clusterStartupRule.startServerVM(2, locator.getPort());
+    MemberVM server1 = clusterStartupRule.startServerVM(1, properties, locator.getPort());
+    MemberVM server2 = clusterStartupRule.startServerVM(2, properties, locator.getPort());
     ClientVM client = clusterStartupRule.startClientVM(3,
         cacheRule -> cacheRule.withServerConnection(server2.getPort()).withPoolSubscription(true));
 
@@ -162,9 +177,11 @@ public class PartitionedRegionTxDUnitTest implements Serializable {
     getBlackboard().setMailbox("CqEvents", 0);
 
     String REGION_NAME = "region";
+    Properties properties = new Properties();
+    properties.put("conserve-sockets", conserveSockets);
     MemberVM locator = clusterStartupRule.startLocatorVM(0, new Properties());
-    MemberVM server1 = clusterStartupRule.startServerVM(1, locator.getPort());
-    MemberVM server2 = clusterStartupRule.startServerVM(2, locator.getPort());
+    MemberVM server1 = clusterStartupRule.startServerVM(1, properties, locator.getPort());
+    MemberVM server2 = clusterStartupRule.startServerVM(2, properties, locator.getPort());
     ClientVM client = clusterStartupRule.startClientVM(3,
         cacheRule -> cacheRule.withServerConnection(server2.getPort()).withPoolSubscription(true));
 
