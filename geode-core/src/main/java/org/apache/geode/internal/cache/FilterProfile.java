@@ -268,7 +268,11 @@ public class FilterProfile implements DataSerializableFixedID {
     Set keysRegistered = new HashSet();
     operationType opType = null;
 
-    region.getFilterProfile().lockTxCommitDuringFilterRegistration();
+    // Profiles are managed at cache-advisor and region,
+    // Take tx lock on region profile.
+    if (region != null && region.getFilterProfile() != null) {
+      region.getFilterProfile().lockTxCommitDuringFilterRegistration();
+    }
 
     try {
       Long clientID = getClientIDForMaps(inputClientID);
@@ -310,7 +314,9 @@ public class FilterProfile implements DataSerializableFixedID {
         }
       } // synchronized
     } finally {
-      region.getFilterProfile().unlockTxCommitDuringFilterRegistration();
+      if (region != null && region.getFilterProfile() != null) {
+        region.getFilterProfile().unlockTxCommitDuringFilterRegistration();
+      }
     }
     return keysRegistered;
   }
@@ -531,7 +537,12 @@ public class FilterProfile implements DataSerializableFixedID {
       boolean updatesAsInvalidates) {
     Long clientID = getClientIDForMaps(inputClientID);
     Set keysRegistered = new HashSet(keys);
-    region.getFilterProfile().lockTxCommitDuringFilterRegistration();
+
+    // Profiles are managed at cache-advisor and region,
+    // Take tx lock on region profile.
+    if (region != null && region.getFilterProfile() != null) {
+      region.getFilterProfile().lockTxCommitDuringFilterRegistration();
+    }
     try {
       synchronized (interestListLock) {
         Map<Object, Set> koi = updatesAsInvalidates ? getKeysOfInterestInv() : getKeysOfInterest();
@@ -550,7 +561,9 @@ public class FilterProfile implements DataSerializableFixedID {
         }
       } // synchronized
     } finally {
-      region.getFilterProfile().unlockTxCommitDuringFilterRegistration();
+      if (region != null && region.getFilterProfile() != null) {
+        region.getFilterProfile().unlockTxCommitDuringFilterRegistration();
+      }
     }
     return keysRegistered;
   }
@@ -814,7 +827,11 @@ public class FilterProfile implements DataSerializableFixedID {
     if (logger.isDebugEnabled()) {
       logger.debug("Adding CQ {} to this members FilterProfile.", cq.getServerCqName());
     }
-    region.getFilterProfile().lockTxCommitDuringFilterRegistration();
+    // Profiles are managed at cache-advisor and region,
+    // Take tx lock on region profile.
+    if (region != null && region.getFilterProfile() != null) {
+      region.getFilterProfile().lockTxCommitDuringFilterRegistration();
+    }
     try {
       this.cqs.put(cq.getServerCqName(), cq);
       this.incCqCount();
@@ -822,7 +839,9 @@ public class FilterProfile implements DataSerializableFixedID {
       // cq.setFilterID(cqMap.getWireID(cq.getServerCqName()));
       this.sendCQProfileOperation(operationType.REGISTER_CQ, cq);
     } finally {
-      region.getFilterProfile().unlockTxCommitDuringFilterRegistration();
+      if (region != null && region.getFilterProfile() != null) {
+        region.getFilterProfile().unlockTxCommitDuringFilterRegistration();
+      }
     }
   }
 
@@ -844,11 +863,17 @@ public class FilterProfile implements DataSerializableFixedID {
   }
 
   void processRegisterCq(String serverCqName, ServerCQ ServerCQ, boolean addToCqMap) {
-    region.getFilterProfile().lockTxCommitDuringFilterRegistration();
+    // Profiles are managed at cache-advisor and region,
+    // Take tx lock on region profile.
+    if (region != null && region.getFilterProfile() != null) {
+      region.getFilterProfile().lockTxCommitDuringFilterRegistration();
+    }
     try {
       processRegisterCq(serverCqName, ServerCQ, addToCqMap, GemFireCacheImpl.getInstance());
     } finally {
-      region.getFilterProfile().unlockTxCommitDuringFilterRegistration();
+      if (region != null && region.getFilterProfile() != null) {
+        region.getFilterProfile().unlockTxCommitDuringFilterRegistration();
+      }
     }
   }
 
