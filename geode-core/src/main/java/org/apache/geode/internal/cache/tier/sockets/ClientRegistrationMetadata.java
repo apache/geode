@@ -63,53 +63,61 @@ class ClientRegistrationMetadata {
   }
 
   boolean initialize() throws IOException {
-    InputStream inputStream;
-    if (sslEngine == null) {
-      inputStream = socket.getInputStream();
-    } else {
-      try (final ByteBufferSharing sharedBuffer = sslEngine.getUnwrappedBuffer()) {
-        ByteBuffer unwrapbuff = sharedBuffer.getBuffer();
-        inputStream = new ByteBufferInputStream(unwrapbuff);
-      }
-    }
-    DataInputStream unversionedDataInputStream = new DataInputStream(inputStream);
-
-    DataOutputStream unversionedDataOutputStream = new DataOutputStream(socket.getOutputStream());
-
-    if (getAndValidateClientVersion(socket, unversionedDataInputStream,
-        unversionedDataOutputStream)) {
-      if (oldClientRequiresVersionedStreams(clientVersion)) {
-        dataInputStream =
-            new VersionedDataInputStream(unversionedDataInputStream, clientVersion);
-        dataOutputStream =
-            new VersionedDataOutputStream(unversionedDataOutputStream, clientVersion);
+    InputStream inputStream = null;
+    try {
+      if (sslEngine == null) {
+        inputStream = socket.getInputStream();
       } else {
-        dataInputStream = unversionedDataInputStream;
-        dataOutputStream = unversionedDataOutputStream;
+        try (final ByteBufferSharing sharedBuffer = sslEngine.getUnwrappedBuffer()) {
+          ByteBuffer unwrapbuff = sharedBuffer.getBuffer();
+          inputStream = new ByteBufferInputStream(unwrapbuff);
+        }
+      }
+      DataInputStream unversionedDataInputStream = new DataInputStream(inputStream);
+
+      DataOutputStream unversionedDataOutputStream = new DataOutputStream(socket.getOutputStream());
+
+      if (getAndValidateClientVersion(socket, unversionedDataInputStream,
+          unversionedDataOutputStream)) {
+        if (oldClientRequiresVersionedStreams(clientVersion)) {
+          dataInputStream =
+              new VersionedDataInputStream(unversionedDataInputStream, clientVersion);
+          dataOutputStream =
+              new VersionedDataOutputStream(unversionedDataOutputStream, clientVersion);
+        } else {
+          dataInputStream = unversionedDataInputStream;
+          dataOutputStream = unversionedDataOutputStream;
+        }
+
+        // Read and ignore the reply code. This is used on the client to server
+        // handshake.
+        dataInputStream.readByte(); // replyCode
+
+        // Read the ports and throw them away. We no longer need them
+        int numberOfPorts = dataInputStream.readInt();
+        for (int i = 0; i < numberOfPorts; i++) {
+          dataInputStream.readInt();
+        }
+
+        getAndValidateClientProxyMembershipID();
+
+        if (getAndValidateClientConflation()) {
+          clientCredentials =
+              Handshake.readCredentials(dataInputStream, dataOutputStream,
+                  cache.getDistributedSystem(), cache.getSecurityService());
+
+          return true;
+        }
       }
 
-      // Read and ignore the reply code. This is used on the client to server
-      // handshake.
-      dataInputStream.readByte(); // replyCode
-
-      // Read the ports and throw them away. We no longer need them
-      int numberOfPorts = dataInputStream.readInt();
-      for (int i = 0; i < numberOfPorts; i++) {
-        dataInputStream.readInt();
-      }
-
-      getAndValidateClientProxyMembershipID();
-
-      if (getAndValidateClientConflation()) {
-        clientCredentials =
-            Handshake.readCredentials(dataInputStream, dataOutputStream,
-                cache.getDistributedSystem(), cache.getSecurityService());
-
-        return true;
+      return false;
+    } finally {
+      if (sslEngine != null) {
+        if (inputStream != null) {
+          inputStream.close();
+        }
       }
     }
-
-    return false;
   }
 
   ClientProxyMembershipID getClientProxyMembershipID() {
