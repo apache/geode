@@ -1388,6 +1388,10 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   }
 
   private boolean isShunnedOrNew(final ID m) {
+    final MembershipView<ID> view = latestView;
+    if (m.getVmViewId() <= view.getViewId() && view.contains(m)) {
+      return false;
+    }
     latestViewReadLock.lock();
     try {
       return isShunned(m) || isNew(m);
