@@ -15,7 +15,6 @@
 
 package org.apache.geode.redis;
 
-import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -38,7 +37,6 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
-@SuppressWarnings("unchecked")
 public class OutOfMemoryDUnitTest {
 
   @ClassRule
@@ -59,33 +57,27 @@ public class OutOfMemoryDUnitTest {
   private static Jedis jedis1;
   private static Jedis jedis2;
 
-  private static Properties locatorProperties;
-  private static Properties serverProperties;
-
-  private static MemberVM locator;
   private static MemberVM server1;
   private static MemberVM server2;
 
-  private static int redisServerPort1;
-  private static int redisServerPort2;
-
   @BeforeClass
   public static void classSetup() {
-    IgnoredException.addIgnoredException(expectedEx);
-    locatorProperties = new Properties();
-    serverProperties = new Properties();
-    locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, "15000");
+    Properties serverProperties;
+    MemberVM locator;
+    int redisServerPort1;
+    int redisServerPort2;
 
-    locator = clusterStartUp.startLocatorVM(0, locatorProperties);
+    IgnoredException.addIgnoredException(expectedEx);
+    serverProperties = new Properties();
+
+    locator = clusterStartUp.startLocatorVM(0);
     server1 = clusterStartUp.startRedisVM(1, serverProperties, locator.getPort());
     server2 = clusterStartUp.startRedisVM(2, serverProperties, locator.getPort());
 
-    server1.getVM().invoke(() -> {
-      RedisClusterStartupRule.getCache().getResourceManager().setCriticalHeapPercentage(5.0F);
-    });
-    server2.getVM().invoke(() -> {
-      RedisClusterStartupRule.getCache().getResourceManager().setCriticalHeapPercentage(5.0F);
-    });
+    server1.getVM().invoke(() -> RedisClusterStartupRule.getCache().getResourceManager()
+        .setCriticalHeapPercentage(5.0F));
+    server2.getVM().invoke(() -> RedisClusterStartupRule.getCache().getResourceManager()
+        .setCriticalHeapPercentage(5.0F));
 
     redisServerPort1 = clusterStartUp.getRedisPort(1);
     redisServerPort2 = clusterStartUp.getRedisPort(2);
@@ -113,10 +105,9 @@ public class OutOfMemoryDUnitTest {
     IgnoredException.addIgnoredException(expectedEx);
     IgnoredException.addIgnoredException("LowMemoryException");
 
-    fillMemory(jedis1, MAX_ITERATION_COUNT, LARGE_VALUE_SIZE, false);
-    fillMemory(jedis1, MAX_ITERATION_COUNT, SMALL_VALUE_SIZE, false);
+    fillMemory(jedis1, false);
 
-    assertThatThrownBy(() -> jedis2.set("oneMoreKey", makeLongStringValue(LARGE_VALUE_SIZE)))
+    assertThatThrownBy(() -> jedis2.set("oneMoreKey", makeLongStringValue(2 * LARGE_VALUE_SIZE)))
         .hasMessageContaining("OOM");
   }
 
@@ -125,8 +116,7 @@ public class OutOfMemoryDUnitTest {
     IgnoredException.addIgnoredException(expectedEx);
     IgnoredException.addIgnoredException("LowMemoryException");
 
-    fillMemory(jedis1, MAX_ITERATION_COUNT, LARGE_VALUE_SIZE, false);
-    fillMemory(jedis1, MAX_ITERATION_COUNT, SMALL_VALUE_SIZE, false);
+    fillMemory(jedis1, false);
 
     assertThatNoException().isThrownBy(() -> jedis2.del(FILLER_KEY + 1));
   }
@@ -136,8 +126,7 @@ public class OutOfMemoryDUnitTest {
     IgnoredException.addIgnoredException(expectedEx);
     IgnoredException.addIgnoredException("LowMemoryException");
 
-    fillMemory(jedis1, MAX_ITERATION_COUNT, LARGE_VALUE_SIZE, true);
-    fillMemory(jedis1, MAX_ITERATION_COUNT, SMALL_VALUE_SIZE, true);
+    fillMemory(jedis1, true);
 
     GeodeAwaitility.await().until(() -> jedis2.ttl(FILLER_KEY + 1) == -2);
   }
@@ -146,36 +135,54 @@ public class OutOfMemoryDUnitTest {
   // below critical levels. Difficult to do right now because of vagaries of the
   // Java garbage collector.
 
-  private int fillMemory(Jedis jedis, int maxIterations, int valueSize, boolean withExpiration) {
-    String valueString = makeLongStringValue(valueSize);
+  private void fillMemory(Jedis jedis, boolean withExpiration) {
+    String valueString;
+    int valueSize = LARGE_VALUE_SIZE;
+
+    forceGC(); // Helps ensure we really do fill all available memory
+
+    while (valueSize > 1) {
+      valueString = makeLongStringValue(LARGE_VALUE_SIZE);
+      addMultipleKeys(jedis, valueString, withExpiration);
+      valueSize /= 2;
+    }
+  }
+
+  private void addMultipleKeys(Jedis jedis, String valueString, boolean withExpiration) {
     int i = 0;
-    while (i < maxIterations) {
+    while (i < MAX_ITERATION_COUNT) {
       try {
-        if (withExpiration) {
-          jedis.setex(FILLER_KEY + i, KEY_TTL_SECONDS, valueString);
-        } else {
-          jedis.set(FILLER_KEY + i, valueString);
-        }
+        setRedisKeyAndValue(jedis, withExpiration, valueString, i);
       } catch (JedisException je) {
         assertThat(je).hasMessageContaining("OOM command not allowed");
         break;
       }
       i++;
     }
-    assertThat(i).isLessThan(maxIterations);
-    return i;
+    assertThat(i).isLessThan(MAX_ITERATION_COUNT);
   }
 
-  private static String makeLongStringValue(int requestedSize) {
+  private void setRedisKeyAndValue(Jedis jedis, boolean withExpiration, String valueString,
+      int keyNumber) {
+    if (withExpiration) {
+      jedis.setex(FILLER_KEY + keyNumber, KEY_TTL_SECONDS, valueString);
+    } else {
+      jedis.set(FILLER_KEY + keyNumber, valueString);
+    }
+  }
+
+  private String makeLongStringValue(int requestedSize) {
     char[] largeCharData = new char[requestedSize];
     Arrays.fill(largeCharData, 'a');
     return new String(largeCharData);
   }
 
-  // TODO: use this when write testing figured out
-  private void deleteKeysToClearMemory(Jedis jedis, int keysToDelete) {
-    for (int i = 0; i < keysToDelete; i++) {
-      assertThat(jedis.del(FILLER_KEY + i)).isEqualTo(1);
-    }
+  private void forceGC() {
+    server1.getVM().invoke(() -> {
+      Runtime.getRuntime().gc();
+    });
+    server2.getVM().invoke(() -> {
+      Runtime.getRuntime().gc();
+    });
   }
 }
