@@ -581,6 +581,7 @@ public class PartitionedRegionRebalanceOp {
   public boolean moveBucketForRegion(InternalDistributedMember source,
       InternalDistributedMember target, int bucketId) {
     boolean movedBucket = false;
+    logger.warn("#LRJ moving bucket {} from {} to {}", bucketId, source, target);
     if (getLeaderRegion().getDistributionManager().getId().equals(target)) {
       // invoke directly on local member...
       movedBucket = getLeaderRegion().getDataStore().moveBucket(bucketId, source, false);

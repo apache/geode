@@ -458,7 +458,9 @@ public class TXState implements TXStateInterface {
        * Lock buckets so they can't be rebalanced then perform the conflict check to fix #43489
        */
       try {
+        logger.warn("#LRJ lockBucketRegions start");
         lockBucketRegions();
+        logger.warn("#LRJ lockBucketRegions end");
       } catch (PrimaryBucketException pbe) {
         // not sure what to do here yet
         RuntimeException re = new TransactionDataRebalancedException(

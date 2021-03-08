@@ -1716,8 +1716,9 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    */
   public boolean moveBucket(int bucketId, InternalDistributedMember source,
       final boolean isRebalance) {
-
+    logger.warn("#LRJ moving bucket {} from {} ", bucketId, source);
     if (createRedundantBucket(bucketId, isRebalance, source) != CreateBucketResult.CREATED) {
+      logger.warn("#LRJ createRedundantBucket bucket {} ", bucketId);
       if (logger.isDebugEnabled()) {
         logger.debug("Failed to move bucket {} to {}", bucketId, this);
       }
