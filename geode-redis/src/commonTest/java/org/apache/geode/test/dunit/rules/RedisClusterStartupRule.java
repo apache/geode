@@ -63,6 +63,13 @@ public class RedisClusterStartupRule extends ClusterStartupRule {
     return getRedisPort(getMember(vmNumber));
   }
 
+  public Long getDataStoreBytesInUseForDataRegion(MemberVM vm) {
+    return vm.invoke(() -> {
+      GeodeRedisService service = ClusterStartupRule.getCache().getService(GeodeRedisService.class);
+      return service.getDataStoreBytesInUseForDataRegion();
+    });
+  }
+
   public int getRedisPort(MemberVM vm) {
     return vm.invoke(() -> {
       GeodeRedisService service = ClusterStartupRule.getCache().getService(GeodeRedisService.class);

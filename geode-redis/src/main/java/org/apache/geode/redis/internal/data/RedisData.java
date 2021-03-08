@@ -60,4 +60,8 @@ public interface RedisData extends Delta, DataSerializable {
   boolean rename(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper oldKey,
       ByteArrayWrapper newKey);
 
+  default boolean getForceRecalculateSize() {
+    return true;
+  }
+
 }

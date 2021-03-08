@@ -23,6 +23,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.statistics.StatisticsClockFactory;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
@@ -132,6 +133,13 @@ public class GeodeRedisServer {
   @VisibleForTesting
   public RedisStats getStats() {
     return redisStats;
+  }
+
+  @VisibleForTesting
+  protected Long getDataStoreBytesInUseForDataRegion() {
+    PartitionedRegion dataRegion = (PartitionedRegion) this.getRegionProvider().getDataRegion();
+    long dataStoreBytesInUse = dataRegion.getPrStats().getDataStoreBytesInUse();
+    return dataStoreBytesInUse;
   }
 
   /**
