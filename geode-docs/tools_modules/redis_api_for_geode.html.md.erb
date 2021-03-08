@@ -41,7 +41,7 @@ start server \
   --redis-password=<redisPassword>
 ```
 
-Note: if any of redis-bind-address, redis-password, or redis-port are included, a compatible-with-Redis geode server will be started
+If any of the options `redis-bind-address`, `redis-password`, or `redis-port` are included, a compatible-with-Redis Geode server will be started.
 
 Replace `<serverName>` with the name of your server.
 
@@ -70,7 +70,7 @@ The Redis API for <%=vars.product_name%> currently supports the following comman
 **Note**: These commands are supported for Redis 5.
 
 -   **Connection**: AUTH, PING, QUIT
--   **Hashes**:HDEL, HEXISTS, HGET, HGETALL, HINCRBY, HINCRBYFLOAT, HKEYS, HLEN, HMGET, HMSET, HSCAN, HSET, HSETNX, HSTRLEN, HVALS
+-   **Hashes**: HDEL, HEXISTS, HGET, HGETALL, HINCRBY, HINCRBYFLOAT, HKEYS, HLEN, HMGET, HMSET, HSCAN, HSET, HSETNX, HSTRLEN, HVALS
 -   **Keys**: DEL, EXISTS, EXPIRE, EXPIREAT, KEYS, PERSIST, PEXPIRE, PEXPIREAT, PTTL, RENAME, TTL,
   TYPE
 -   **Publish/Subscribe**: PUBLISH, PSUBSCRIBE, PUNSUBSCRIBE, SUBSCRIBE, UNSUBSCRIBE

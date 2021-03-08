@@ -157,179 +157,182 @@ start server \
 
 | Supported Commands 	| Unsupported Commands<br>(Implemented - not tested) 	|    Commands Not Implemented   	|
 |-----------------------|-------------------------------------------------------|-----------------------------------|
-| APPEND             	| BITCOUNT                                           	| ACL CAT                       	|
-| AUTH               	| BITOP                                              	| ACL DELUSER                   	|
-| DECR               	| BITPOS                                             	| ACL GENPASS                   	|
-| DEL                	| DBSIZE                                             	| ACL GETUSER                   	|
-| EXISTS             	| DECRBY                                                | ACL HELP                      	|
-| EXPIRE             	| ECHO                                               	| ACL LIST                      	|
-| EXPIREAT           	| FLUSHALL                                           	| ACL LOAD                      	|
-| GET                 	| FLUSHDB                                            	| ACL LOG                       	|
-| GETRANGE              | GETBIT                                             	| ACL SAVE                      	|
-| HDEL        	     	| GETSET                                                | ACL SETUSER                   	|
-| HEXISTS           	| HINCRBY                                            	| ACL USERS                     	|
-| HKEYS                	| HSCAN                                                 | ACL WHOAMI                    	|
-| HGET               	| INCR                                                  | BGREWRITEAOF                  	|
-| HGETALL              	| INFO                                                  | BGSAVE                        	|
-| HINCRBY               | MSET                                                  | BITFIELD   
-| HINCRBYFLOAT       	| MSETNX                                                | BLPOP                          	|
-| HMGET             	| PSETEX                                             	| BRPOP                                                                	|
-| HMSET                 | SCAN                                                  | BRPOPLPUSH                    	| 	                     	|
-| HSCAN                 | SCARD                                                 | BZPOPMAX                      	|
-| HSET                  | SDIFF                                                 | BZPOPMIN                      	|
-| HSETNX                | SDIFFSTORE                                            | CLIENT CACHING                	|
-| HSTRLEN               | SELECT                                                | CLIENT GETNAME                	|
-| HLEN                  | SETBIT                                                | CLIENT GETREDIR               	|
-| HVALS                 | SETEX                                                	| CLIENT ID                     
-| INCRBY                | SETRANGE                                              | CLIENT KILL                   	|
-| INCRBYFLOAT           | SHUTDOWN                                              | CLIENT LIST                   	|
-| KEYS                  | SINTER                                                | CLIENT PAUSE                  	|
-| MGET                  | SINTERSTORE                                           | CLIENT REPLY                  	|
-| PERSIST               | SISMEMBER                                             | CLIENT SETNAME                	|
-| PEXPIRE               | SLOWLOG                                               | CLIENT TRACKING               	|
-| PEXPIREAT             | SMOVE                                                 | CLIENT UNBLOCK                	|
-| PING                  | SPOP                                                  | CLUSTER ADDSLOTS              	|
-| PSUBSCRIBE            | SRANDMEMBER                                           | CLUSTER BUMPEPOCH             
-| PTTL                  | SSCAN                                                 | CLUSTER COUNT-FAILURE-REPORTS 	|
-| PUBLISH               | SUNION                                                | CLUSTER COUNTKEYSINSLOT       	|
-| PUNSUBSCRIBE          | SUNIONSTORE                                           | CLUSTER DELSLOTS     	            |
-| QUIT                  | TIME                                                  | CLUSTER FAILOVER              	|
-| RENAME                | UNLINK [1]                                            | CLUSTER FLUSHSLOTS                |
-| SADD                                                                          | CLUSTER FORGET                    |
-| SET                                                                           | CLUSTER GETKEYSINSLOT             |
-| SETNX              	                                         	            | CLUSTER INFO                  	|
-| SMEMBERS                                                       	            | CLUSTER KEYSLOT                   |
-| SREM                                                                          | CLUSTER MEET                      |
-| STRLEN                |                                       	            | CLUSTER MYID                   	|
-| SUBSCRIBE          	|                                         	            | CLUSTER NODES                 	|
-| TTL                   |                                                       | CLUSTER REPLICAS                  |
-| TYPE                  |                                     	                | CLUSTER REPLICATE              	|
-| UNSUBSCRIBE           |                                         	            | CLUSTER RESET                  	|
-|                    	|                                        	            | CLUSTER SAVECONFIG                |
-|                    	|                                                   	| CLUSTER SET-CONFIG-EPOCH          |
-|                    	|                                       	            | CLUSTER SETSLOT                   |
-|                    	|                                      	                | CLUSTER SLAVES                    |
-|                    	|                                      	                | CLUSTER SLOTS                 	|
-|                    	|                                                       | COMMAND                       	|
-|                    	|                                             	        | COMMAND COUNT                 	|
-|                    	|                                                    	| COMMAND GETKEYS               	|
-|                    	|                                                    	| COMMAND INFO                  	|
-|                    	|                                                    	| CONFIG GET                    	|
-|                    	|                                                    	| CONFIG RESETSTAT              	|
-|                    	|                                                    	| CONFIG REWRITE                	|
-|                    	|                                                    	| CONFIG SET                    	|
-|                    	|                                                    	| DEBUG OBJECT                  	|
-|                    	|                                                    	| DEBUG SEGFAULT                	|
-|                    	|                                                    	| DISCARD                       	|
-|                    	|                                                    	| DUMP                          	|
-|                    	|                                                    	| EVAL                          	|
-|                    	|                                                    	| EVALSHA                       	|
-|                    	|                                                    	| EXEC                          	|
-|                    	|                                                    	| GEOADD                        	|
-|                    	|                                                    	| GEODIST                       	|
-|                    	|                                                    	| GEOHASH                       	|
-|                    	|                                                    	| GEOPOS                        	|
-|                    	|                                                    	| GEORADIUS                     	|
-|                    	|                                                    	| GEORADIUSBYMEMBER             	|
-|                    	|                                                    	| LASTSAVE                      	|
-|                    	|                                                    	| LATENCY DOCTOR                	|
-|                    	|                                                    	| LATENCY GRAPH                 	|
-|                    	|                                                    	| LATENCY HELP                  	|
-|                    	|                                                    	| LATENCY HISTORY               	|
-|                    	|                                                    	| LATENCY LATEST                	|
-|                    	|                                                    	| LATENCY RESET                 	|
-|                    	|                                                    	| LINDEX                        	|
-|                    	|                                                    	| LINSERT                       	|
-|                    	|                                                    	| LLEN                          	|
-|                    	|                                                    	| LOLWUT                        	|
-|                    	|                                                    	| LPOP                          	|
-|                    	|                                                    	| LPOS                          	|
-|                    	|                                                    	| LPUSH                         	|
-|                    	|                                                    	| LPUSHX                        	|
-|                    	|                                                    	| LRANGE                        	|
-|                    	|                                                    	| LREM                          	|
-|                    	|                                                    	| LSET                          	|
-|                    	|                                                    	| LTRIM                         	|
-|                    	|                                                    	| MEMORY DOCTOR                 	|
-|                    	|                                                    	| MEMORY HELP                   	|
-|                    	|                                                    	| MEMORY MALLOC-STATS           	|
-|                    	|                                                    	| MEMORY PURGE                  	|
-|                    	|                                                    	| MEMORY STATS                  	|
-|                    	|                                                    	| MEMORY USAGE                  	|
-|                    	|                                                    	| MIGRATE                       	|
-|                    	|                                                    	| MODULE LIST                   	|
-|                    	|                                                    	| MODULE LOAD                   	|
-|                    	|                                                    	| MODULE UNLOAD                 	|
-|                    	|                                                    	| MONITOR                       	|
-|                    	|                                                    	| MOVE                          	|
-|                    	|                                                    	| MULTI                         	|
-|                    	|                                                    	| OBJECT                        	|
-|                    	|                                                    	| PFADD                         	|
-|                    	|                                                    	| PFCOUNT                       	|
-|                    	|                                                    	| PFMERGE                       	|
-|                    	|                                                    	| PSYNC                         	|
-|                    	|                                                    	| PUBSUB                        	|
-|                    	|                                                    	| RANDOMKEY                     	|
-|                    	|                                                    	| READONLY                      	|
-|                    	|                                                    	| READWRITE                     	|
-|                    	|                                                    	| RENAMENX                      	|
-|                    	|                                                    	| REPLICAOF                     	|
-|                    	|                                                    	| RESTORE                       	|
-|                    	|                                                    	| ROLE                          	|
-|                    	|                                                    	| RPOP                          	|
-|                    	|                                                    	| RPOPLPUSH                     	|
-|                    	|                                                    	| RPUSH                         	|
-|                    	|                                                    	| RPUSHX                        	|
-|                    	|                                                    	| SAVE                          	|
-|                    	|                                                    	| SCRIPT DEBUG                  	|
-|                    	|                                                    	| SCRIPT EXISTS                 	|
-|                    	|                                                    	| SCRIPT FLUSH                  	|
-|                    	|                                                    	| SCRIPT KILL                   	|
-|                    	|                                                    	| SCRIPT LOAD                   	|
-|                    	|                                                    	| SLAVEOF                       	|
-|                    	|                                                    	| SORT                          	|
-|                    	|                                                    	| STRALGO LCS                   	|
-|                    	|                                                    	| SWAPDB                        	|
-|                    	|                                                    	| SYNC                          	|
-|                    	|                                                    	| TOUCH                         	|
-|                    	|                                                    	| UNWATCH                        	|
-|                    	|                                                    	| WAIT                          	|
-|                    	|                                                    	| WATCH                         	|
-|                    	|                                                    	| XACK                          	|
-|                    	|                                                    	| XADD                          	|
-|                    	|                                                    	| XCLAIM                        	|
-|                    	|                                                    	| XDEL                          	|
-|                    	|                                                    	| XGROUP                        	|
-|                    	|                                                    	| XINFO                         	|
-|                    	|                                                    	| XLEN                          	|
-|                    	|                                                    	| XPENDING                      	|
-|                    	|                                                    	| XRANGE                        	|
-|                    	|                                                    	| XREAD                         	|
-|                    	|                                                    	| XREADGROUP GROUP              	|
-|                    	|                                                    	| XREVRANGE                     	|
-|                    	|                                                    	| XTRIM                         	|
-|                    	|                                                    	| ZADD                          	|
-|                    	|                                                    	| ZCARD                         	|
-|                    	|                                                    	| ZCOUNT                        	|
-|                    	|                                                    	| ZINCRBY                       	|
-|                    	|                                                    	| ZINTERSTORE                   	|
-|                    	|                                                    	| ZLEXCOUNT                     	|
-|                    	|                                                    	| ZPOPMAX                       	|
-|                    	|                                                    	| ZPOPMIN                       	|
-|                    	|                                                    	| ZRANGE                        	|
-|                    	|                                                    	| ZRANGEBYLEX                   	|
-|                    	|                                                    	| ZRANGEBYSCORE                 	|
-|                    	|                                                    	| ZRANK                         	|
-|                    	|                                                    	| ZREM                          	|
-|                    	|                                                    	| ZREMRANGEBYLEX                	|
-|                    	|                                                    	| ZREMRANGEBYRANK               	|
-|                    	|                                                    	| ZREMRANGEBYSCORE              	|
-|                    	|                                                    	| ZREVRANGE                     	|
-|                    	|                                                    	| ZREVRANGEBYSCORE              	|
-|                    	|                                                    	| ZREVRANK                      	|
-|                    	|                                                    	| ZSCAN                         	|
-|                    	|                                                    	| ZSCORE                        	|
-|                    	|                                                    	| ZUNIONSTORE                   	|
+| APPEND             	| BITCOUNT                                                         	| ACL CAT                       	|
+| AUTH               	| BITOP                                                            	| ACL DELUSER                   	|
+| DECR               	| BITPOS                                                           	| ACL GENPASS                   	|
+| DEL                	| DBSIZE                                                           	| ACL GETUSER                   	|
+| EXISTS             	| DECRBY                                                            | ACL HELP                      	|
+| EXPIRE             	| ECHO                                                             	| ACL LIST                      	|
+| EXPIREAT           	| FLUSHALL                                                         	| ACL LOAD                      	|
+| GET                 	| FLUSHDB                                                          	| ACL LOG                       	|
+| GETRANGE              | GETBIT                                                           	| ACL SAVE                      	|
+| HDEL        	     	| GETSET                                                            | ACL SETUSER                   	|
+| HEXISTS           	| INFO                                                              | ACL USERS                     	|
+| HGET                  | MSET                                                              | ACL WHOAMI                    	|
+| HGETALL             	| MSETNX                                          	                | BGREWRITEAOF          			| 
+| HINCRBY               | PSETEX                                     	                    | BGSAVE                   			|     
+| HINCRBYFLOAT          | SCAN                                                              | BITFIELD                         	|
+| HKEYS          	    | SCARD                                                             | BLPOP                          	|
+| HLEN                  | SDIFF                                                           	| BRPOP                             |
+| HMGET                 | SDIFFSTORE                                                        | BRPOPLPUSH                    	|
+| HMSET              	| SELECT                                                            | BZPOPMAX                  		|	
+| HSCAN                 | SETBIT                                                            | BZPOPMIN                      	|
+| HSET                  | SETEX                                          	                | CLIENT CACHING                	|
+| HSETNX                | SETRANGE                                                          | CLIENT GETNAME                	|
+| HSTRLEN               | SHUTDOWN                                                          | CLIENT GETREDIR               	|
+| HVALS                 | SINTER                                                            | CLIENT ID                         |                          
+| INCR                  | SINTERSTORE                                                       | CLIENT KILL                   	|
+| INCRBY                | SISMEMBER                                                         | CLIENT LIST                   	|
+| INCRBYFLOAT           | SLOWLOG                                                           | CLIENT PAUSE                  	|
+| KEYS                  | SMOVE                                                             | CLIENT REPLY                  	|
+| MGET                  | SPOP                                                              | CLIENT SETNAME                	|
+| PERSIST               | SRANDMEMBER                                                       | CLIENT TRACKING               	|
+| PEXPIRE               | SSCAN                                                             | CLIENT UNBLOCK                	|
+| PEXPIREAT             | SUNION                                                            | CLUSTER ADDSLOTS              	|    
+| PING                  | SUNIONSTORE                                                       | CLUSTER BUMPEPOCH                 |             
+| PSUBSCRIBE            | TIME                                                              | CLUSTER COUNT-FAILURE-REPORTS 	|                
+| PTTL                  | UNLINK [1]                                                        | CLUSTER COUNTKEYSINSLOT       	|                
+| PUBLISH               |                                                                   | CLUSTER DELSLOTS     	            |            
+| PUNSUBSCRIBE          |                                                                   | CLUSTER FAILOVER              	|                
+| QUIT                  |                                                                   | CLUSTER FLUSHSLOTS                |             
+| RENAME                |                                                                  	| CLUSTER FORGET                    | 
+| SADD                  |                                                                  	| CLUSTER GETKEYSINSLOT             | 
+| SET                   |                                                                   | CLUSTER INFO                  	|
+| SETNX              	|                                                                   | CLUSTER KEYSLOT                   |
+| SMEMBERS              |                                                                   | CLUSTER MEET                      | 
+| SREM                  |                                       	                        | CLUSTER MYID                   	|    
+| STRLEN                |                                       	                        | CLUSTER NODES                 	|
+| SUBSCRIBE          	|                                                                   | CLUSTER REPLICAS                  | 
+| TTL                   |                                      	                            | CLUSTER REPLICATE              	|
+| TYPE                  |                                        	                        | CLUSTER RESET                  	|
+| UNSUBSCRIBE           |                                                                   | CLUSTER SAVECONFIG                |
+|                       |             	                                                    | CLUSTER SET-CONFIG-EPOCH          |
+|                       |                 	                                                | CLUSTER SETSLOT                   |
+|                    	|                                        	                        | CLUSTER SLAVES                    |
+|                    	|                                                                   | CLUSTER SLOTS                 	|
+|                    	|                                       	                        | COMMAND                       	|
+|                    	|                                      	                   	        | COMMAND COUNT                 	|
+|                    	|                                      	                          	| COMMAND GETKEYS               	|
+|                    	|                                                                 	| COMMAND INFO                  	|
+|                    	|                                                                 	| CONFIG GET                    	|
+|                    	|                                                                 	| CONFIG RESETSTAT              	|
+|                    	|                                                                 	| CONFIG REWRITE                	|
+|                    	|                                                                 	| CONFIG SET                    	|
+|                    	|                                                                 	| DEBUG OBJECT                  	|
+|                    	|                                                                 	| DEBUG SEGFAULT                	|
+|                    	|                                                                 	| DISCARD                       	|
+|                    	|                                                                 	| DUMP                          	|
+|                    	|                                                                 	| EVAL                          	|
+|                    	|                                                                 	| EVALSHA                       	|
+|                    	|                                                                 	| EXEC                          	|
+|                    	|                                                                 	| GEOADD                        	|
+|                    	|                                                                 	| GEODIST                       	|
+|                    	|                                                                 	| GEOHASH                       	|
+|                    	|                                                                 	| GEOPOS                        	|
+|                    	|                                                                 	| GEORADIUS                     	|
+|                    	|                                                                 	| GEORADIUSBYMEMBER             	|
+|                    	|                                                                 	| LASTSAVE                      	|
+|                    	|                                                                 	| LATENCY DOCTOR                	|
+|                    	|                                                                 	| LATENCY GRAPH                 	|
+|                    	|                                                                 	| LATENCY HELP                  	|
+|                    	|                                                                 	| LATENCY HISTORY               	|
+|                    	|                                                                 	| LATENCY LATEST                	|
+|                    	|                                                                 	| LATENCY RESET                 	|
+|                    	|                                                                 	| LINDEX                        	|
+|                    	|                                                                 	| LINSERT                       	|
+|                    	|                                                                 	| LLEN                          	|
+|                    	|                                                                 	| LOLWUT                        	|
+|                    	|                                                                 	| LPOP                          	|
+|                    	|                                                                 	| LPOS                          	|
+|                    	|                                                                 	| LPUSH                         	|
+|                    	|                                                                 	| LPUSHX                        	|
+|                    	|                                                                 	| LRANGE                        	|
+|                    	|                                                                 	| LREM                          	|
+|                    	|                                                                 	| LSET                          	|
+|                    	|                                                                 	| LTRIM                         	|
+|                    	|                                                                 	| MEMORY DOCTOR                 	|
+|                    	|                                                                 	| MEMORY HELP                   	|
+|                    	|                                                                 	| MEMORY MALLOC-STATS           	|
+|                    	|                                                                 	| MEMORY PURGE                  	|
+|                    	|                                                                 	| MEMORY STATS                  	|
+|                    	|                                                                 	| MEMORY USAGE                  	|
+|                    	|                                                                 	| MIGRATE                       	|
+|                    	|                                                                 	| MODULE LIST                   	|
+|                    	|                                                                 	| MODULE LOAD                   	|
+|                    	|                                                                 	| MODULE UNLOAD                 	|
+|                    	|                                                                 	| MONITOR                       	|
+|                    	|                                                                 	| MOVE                          	|
+|                    	|                                                                 	| MULTI                         	|
+|                    	|                                                                 	| OBJECT                        	|
+|                    	|                                                                 	| PFADD                         	|
+|                    	|                                                                 	| PFCOUNT                       	|
+|                    	|                                                                 	| PFMERGE                       	|
+|                    	|                                                                 	| PSYNC                         	|
+|                    	|                                                                 	| PUBSUB                        	|
+|                    	|                                                                 	| RANDOMKEY                     	|
+|                    	|                                                                 	| READONLY                      	|
+|                    	|                                                                 	| READWRITE                     	|
+|                    	|                                                                 	| RENAMENX                      	|
+|                    	|                                                                 	| REPLICAOF                     	|
+|                    	|                                                                 	| RESTORE                       	|
+|                    	|                                                                 	| ROLE                          	|
+|                    	|                                                                 	| RPOP                          	|
+|                    	|                                                                 	| RPOPLPUSH                     	|
+|                    	|                                                                 	| RPUSH                         	|
+|                    	|                                                                 	| RPUSHX                        	|
+|                    	|                                                                 	| SAVE                          	|
+|                    	|                                                                 	| SCRIPT DEBUG                  	|
+|                    	|                                                                 	| SCRIPT EXISTS                 	|
+|                    	|                                                                 	| SCRIPT FLUSH                  	|
+|                    	|                                                                 	| SCRIPT KILL                   	|
+|                    	|                                                                 	| SCRIPT LOAD                   	|
+|                    	|                                                                 	| SLAVEOF                       	|
+|                    	|                                                                 	| SORT                          	|
+|                    	|                                                                 	| STRALGO LCS                   	|
+|                    	|                                                                 	| SWAPDB                        	|
+|                    	|                                                                 	| SYNC                          	|
+|                    	|                                                                 	| TOUCH                         	|
+|                    	|                                                                 	| UNWATCH                        	|
+|                    	|                                                                 	| WAIT                          	|
+|                    	|                                                                 	| WATCH                         	|
+|                    	|                                                                 	| XACK                          	|
+|                    	|                                                                 	| XADD                          	|
+|                    	|                                                                 	| XCLAIM                        	|
+|                    	|                                                                 	| XDEL                          	|
+|                    	|                                                                 	| XGROUP                        	|
+|                    	|                                                                 	| XINFO                         	|
+|                    	|                                                                 	| XLEN                          	|
+|                    	|                                                                 	| XPENDING                      	|
+|                    	|                                                                 	| XRANGE                        	|
+|                    	|                                                                 	| XREAD                         	|
+|                    	|                                                                 	| XREADGROUP GROUP              	|
+|                    	|                                                                 	| XREVRANGE                     	|
+|                    	|                                                                 	| XTRIM                         	|
+|                    	|                                                                 	| ZADD                          	|
+|                    	|                                                                 	| ZCARD                         	|
+|                    	|                                                                 	| ZCOUNT                        	|
+|                    	|                                                                 	| ZINCRBY                       	|
+|                    	|                                                                 	| ZINTERSTORE                   	|
+|                    	|                                                                 	| ZLEXCOUNT                     	|
+|                    	|                                                                 	| ZPOPMAX                       	|
+|                    	|                                                                 	| ZPOPMIN                       	|
+|                    	|                                                                 	| ZRANGE                        	|
+|                    	|                                                                 	| ZRANGEBYLEX                   	|
+|                    	|                                                                 	| ZRANGEBYSCORE                 	|
+|                    	|                                                                 	| ZRANK                         	|
+|                    	|                                                                 	| ZREM                          	|
+|                    	|                                                                 	| ZREMRANGEBYLEX                	|
+|                    	|                                                                 	| ZREMRANGEBYRANK               	|
+|                    	|                                                                 	| ZREMRANGEBYSCORE              	|
+|                    	|                                                                 	| ZREVRANGE                     	|
+|                    	|                                                                 	| ZREVRANGEBYSCORE              	|
+|                    	|                                                                 	| ZREVRANK                      	|
+|                    	|                                                                 	| ZSCAN                         	|
+|                    	|                                                                 	| ZSCORE                        	|
+|                    	|                                                                 	| ZUNIONSTORE                   	|
+|                    	|                                           
+|                    	|                                           
+|                    	|                                           
 |                    	|                                                    	|              	                    |
 
 **NOTES:**
