@@ -126,7 +126,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     this.hscanCursor = new BigInteger("0");
     redisStats.addClient();
 
-    backgroundExecutor.submit(this::processCommandQueue);
+    // backgroundExecutor.submit(this::processCommandQueue);
   }
 
   public ChannelFuture writeToChannel(RedisResponse response) {
@@ -168,9 +168,11 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
     Command command = (Command) msg;
     command.setChannelHandlerContext(ctx);
-    if (!channelInactive.get()) {
-      commandQueue.put(command);
-    }
+
+    executeCommand(command);
+    // if (!channelInactive.get()) {
+    // commandQueue.put(command);
+    // }
   }
 
   /**
@@ -304,12 +306,12 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
         return;
       }
 
-      if (!getPubSub().findSubscriptionNames(getClient()).isEmpty()) {
-        if (!command.getCommandType().isAllowedWhileSubscribed()) {
-          writeToChannel(RedisResponse
-              .error("only (P)SUBSCRIBE / (P)UNSUBSCRIBE / PING / QUIT allowed in this context"));
-        }
-      }
+      // if (!getPubSub().findSubscriptionNames(getClient()).isEmpty()) {
+      // if (!command.getCommandType().isAllowedWhileSubscribed()) {
+      // writeToChannel(RedisResponse
+      // .error("only (P)SUBSCRIBE / (P)UNSUBSCRIBE / PING / QUIT allowed in this context"));
+      // }
+      // }
 
       final long start = redisStats.startCommand();
       try {
