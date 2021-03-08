@@ -1466,7 +1466,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
         logger.warn("Ignoring the network partition message from a non-member: " + msg.getSender());
       }
     } else {
-      logger.info(
+      logger.debug(
           "Ignoring, likely this message was intended for the previous Membership service... ");
     }
   }
