@@ -47,11 +47,12 @@ public class OutOfMemoryDUnitTest {
 
   private static final String expectedEx = "Member: .*? above .*? critical threshold";
   public static final String FILLER_KEY = "fillerKey-";
+  public static final String PRESSURE_KEY = "pressureKey-";
   private static final String LOCAL_HOST = "127.0.0.1";
   public static final int KEY_TTL_SECONDS = 10;
   private static final int MAX_ITERATION_COUNT = 4000;
   public static final int LARGE_VALUE_SIZE = 128 * 1024;
-  public static final int SMALL_VALUE_SIZE = 16 * 1024;
+  public static final int PRESSURE_VALUE_SIZE = 4 * 1024;
   private static final int JEDIS_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
   private static Jedis jedis1;
@@ -59,6 +60,8 @@ public class OutOfMemoryDUnitTest {
 
   private static MemberVM server1;
   private static MemberVM server2;
+
+  private static Thread memoryPressureThread;
 
   @BeforeClass
   public static void classSetup() {
@@ -84,6 +87,7 @@ public class OutOfMemoryDUnitTest {
 
     jedis1 = new Jedis(LOCAL_HOST, redisServerPort1, JEDIS_TIMEOUT);
     jedis2 = new Jedis(LOCAL_HOST, redisServerPort2, JEDIS_TIMEOUT);
+
   }
 
   @Before
@@ -101,22 +105,29 @@ public class OutOfMemoryDUnitTest {
   }
 
   @Test
-  public void shouldReturnOOMError_forWriteOperations_whenThresholdReached() {
+  public void shouldReturnOOMError_forWriteOperations_whenThresholdReached()
+      throws InterruptedException {
     IgnoredException.addIgnoredException(expectedEx);
     IgnoredException.addIgnoredException("LowMemoryException");
 
-    fillMemory(jedis1, false);
+    memoryPressureThread = new Thread(makeMemoryPressureRunnable());
+    memoryPressureThread.start();
+
+    fillMemory(jedis2, false);
 
     assertThatThrownBy(() -> jedis2.set("oneMoreKey", makeLongStringValue(2 * LARGE_VALUE_SIZE)))
         .hasMessageContaining("OOM");
+
+    memoryPressureThread.interrupt();
+    memoryPressureThread.join();
   }
 
   @Test
-  public void shouldAllowDeleteOperations_afterThresholdReached() {
+  public void shouldAllowDeleteOperations_afterThresholdReached() throws InterruptedException {
     IgnoredException.addIgnoredException(expectedEx);
     IgnoredException.addIgnoredException("LowMemoryException");
 
-    fillMemory(jedis1, false);
+    fillMemory(jedis2, false);
 
     assertThatNoException().isThrownBy(() -> jedis2.del(FILLER_KEY + 1));
   }
@@ -126,7 +137,7 @@ public class OutOfMemoryDUnitTest {
     IgnoredException.addIgnoredException(expectedEx);
     IgnoredException.addIgnoredException("LowMemoryException");
 
-    fillMemory(jedis1, true);
+    fillMemory(jedis2, true);
 
     GeodeAwaitility.await().until(() -> jedis2.ttl(FILLER_KEY + 1) == -2);
   }
@@ -139,9 +150,8 @@ public class OutOfMemoryDUnitTest {
     String valueString;
     int valueSize = LARGE_VALUE_SIZE;
 
-    forceGC(); // Helps ensure we really do fill all available memory
-
     while (valueSize > 1) {
+      forceGC(); // Helps ensure we really do fill all available memory
       valueString = makeLongStringValue(LARGE_VALUE_SIZE);
       addMultipleKeys(jedis, valueString, withExpiration);
       valueSize /= 2;
@@ -171,10 +181,34 @@ public class OutOfMemoryDUnitTest {
     }
   }
 
-  private String makeLongStringValue(int requestedSize) {
+  private static String makeLongStringValue(int requestedSize) {
     char[] largeCharData = new char[requestedSize];
     Arrays.fill(largeCharData, 'a');
     return new String(largeCharData);
+  }
+
+  private static Runnable makeMemoryPressureRunnable() {
+    return new Runnable() {
+      boolean running = true;
+      String pressureValue = makeLongStringValue(PRESSURE_VALUE_SIZE);
+
+      @Override
+      public void run() {
+        int i = 0;
+        while (running) {
+          if (Thread.currentThread().isInterrupted()) {
+            running = false;
+            break;
+          }
+          try {
+            jedis1.set(PRESSURE_KEY + i, pressureValue);
+          } catch (JedisException je) {
+            // Ignore, keep trying to fill memory
+          }
+          i++;
+        }
+      }
+    };
   }
 
   private void forceGC() {
