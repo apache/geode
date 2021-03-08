@@ -1922,12 +1922,14 @@ org/apache/geode/internal/cache/wan/GatewaySenderEventCallbackArgument,2
 fromData,65
 toData,89
 
-org/apache/geode/internal/cache/wan/GatewaySenderEventImpl,6
-fromData,62
+org/apache/geode/internal/cache/wan/GatewaySenderEventImpl,8
+fromData,30
 fromDataPre_GEODE_1_14_0_0,31
+fromDataPre_GEODE_1_15_0_0,62
 fromDataPre_GEODE_1_9_0_0,200
-toData,59
+toData,17
 toDataPre_GEODE_1_14_0_0,18
+toDataPre_GEODE_1_15_0_0,59
 toDataPre_GEODE_1_9_0_0,151
 
 org/apache/geode/internal/cache/wan/GatewaySenderQueueEntrySynchronizationOperation$GatewaySenderQueueEntrySynchronizationEntry,2
