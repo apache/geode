@@ -258,19 +258,6 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   private volatile boolean hasJoined;
 
   /**
-   * Members of the distributed system that we believe have shut down. Keys are instances of
-   * {@link ID}, values are Longs indicating the time this member was
-   * shunned.
-   *
-   * Members are removed after {@link #SHUNNED_SUNSET} seconds have passed.
-   *
-   * Writing to this list needs to be under {@link #latestViewWriteLock}
-   *
-   * @see System#currentTimeMillis()
-   */
-  private final Map<ID, Long> shunnedMembers = new ConcurrentHashMap<>();
-
-  /**
    * Members that have sent a shutdown message. This is used to suppress suspect processing that
    * otherwise becomes pretty aggressive when a member is shutting down.
    */
@@ -285,15 +272,6 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   private final Lock shutdownMembersReadLock = shutdownMembersLock.readLock();
   private final Lock shutdownMembersWriteLock = shutdownMembersLock.writeLock();
 
-  /**
-   * per bug 39552, keep a list of members that have been shunned and for which a message is
-   * printed. Contents of this list are cleared at the same time they are removed from
-   * {@link #shunnedMembers}.
-   *
-   * Writing to this list needs to be under {@link #latestViewWriteLock}
-   */
-  private final Set<ID> shunnedAndWarnedMembers =
-      Collections.newSetFromMap(new ConcurrentHashMap<>());
   /**
    * The identities and birth-times of others that we have allowed into membership at the
    * distributed system level, but have not yet appeared in a view.
@@ -321,14 +299,6 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
    * of suspected members that we use to detect crashes.
    */
   private final Map<ID, Long> suspectedMembers = new ConcurrentHashMap<>();
-
-  /**
-   * Length of time, in seconds, that a member is retained in the zombie set
-   *
-   * @see #shunnedMembers
-   */
-  private static final int SHUNNED_SUNSET = Integer
-      .getInteger(GeodeGlossary.GEMFIRE_PREFIX + "shunned-member-timeout", 300).intValue();
 
   /**
    * Set to true when the service should stop.
@@ -442,14 +412,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
         }
 
         if (shutdownInProgress()) {
-          addShunnedMember(m);
           continue; // no additions processed after shutdown begins
-        } else {
-          boolean wasShunned = endShun(m); // bug #45158 - no longer shun a process that is now in
-          // view
-          if (wasShunned && logger.isDebugEnabled()) {
-            logger.debug("No longer shunning {} as it is in the current membership view", m);
-          }
         }
 
         logger.info("Membership: Processing addition <{}>", m);
@@ -646,11 +609,10 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
 
   /**
    * Remove a member. {@link #latestViewWriteLock} must be held before this method is called. If
-   * member
-   * is not already shunned, the uplevel event handler is invoked.
+   * member is not already shunned, the uplevel event handler is invoked.
    */
   private void removeWithViewLock(ID dm, boolean crashed, String reason) {
-    boolean wasShunned = isShunned(dm);
+    final boolean wasShunned = isShunned(dm);
 
     // Delete resources
     destroyMember(dm, reason);
@@ -695,7 +657,6 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   @Override
   public void startupMessageFailed(ID mbr, String failureMessage) {
     // fix for bug #40666
-    addShunnedMember(mbr);
     listener.memberDeparted(mbr, true,
         "failed to pass startup checks");
   }
@@ -745,7 +706,6 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
             // okay to ignore
           }
         }).start();
-        addShunnedMember(member);
         return false;
       }
 
@@ -844,20 +804,6 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
     dispatchMessage(msg);
   }
 
-  @Override
-  public void warnShun(ID m) {
-    if (!shunnedMembers.containsKey(m)) {
-      return; // not shunned
-    }
-    if (shunnedAndWarnedMembers.contains(m)) {
-      return; // already warned
-    }
-    shunnedAndWarnedMembers.add(m);
-    // issue warning outside of sync since it may cause messaging and we don't
-    // want to hold the view lock while doing that
-    logger.warn("Membership: disregarding shunned member <{}>", m);
-  }
-
   /**
    * Logic for processing a distribution message.
    * <p>
@@ -874,9 +820,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
     // structure.
     if (isShunnedOrNew(m)) {
       if (isShunned(m)) {
-        if (msg instanceof StopShunningMarker) {
-          endShun(m);
-        } else {
+        if (!(msg instanceof StopShunningMarker)) {
           // fix for bug 41538 - sick alert listener causes deadlock
           // due to view latestViewReadWriteLock being held during messaging
           shunned = true;
@@ -893,7 +837,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
 
     if (shunned) { // bug #41538 - shun notification must be outside synchronization to avoid
       // hanging
-      warnShun(m);
+      logger.warn("Membership: disregarding shunned member <{}>", m);
       if (logger.isTraceEnabled()) {
         logger.trace("Membership: Ignoring message from shunned member <{}>:{}", m, msg);
       }
@@ -1427,14 +1371,6 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
       latestViewWriteLock.unlock();
     }
 
-    // Trickiness: there is a minor recursion
-    // with addShunnedMembers, since it will
-    // attempt to destroy really really old members. Performing the check
-    // here breaks the recursion.
-    if (!isShunned(member)) {
-      addShunnedMember(member);
-    }
-
     lifecycleListener.destroyMember(member, reason);
   }
 
@@ -1443,33 +1379,22 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
    *
    * @param m the member in question
    *
-   *        This also checks the time the given member was shunned, and has the side effect of
-   *        removing the member from the list if it was shunned too far in the past.
-   *
    * @return true if the given member is a zombie
    */
   @Override
   public boolean isShunned(ID m) {
-    if (!shunnedMembers.containsKey(m)) {
-      return false;
-    }
-
-    // Make sure that the entry isn't stale...
-    long shunTime = shunnedMembers.get(m).longValue();
-    long now = System.currentTimeMillis();
-    if (shunTime + SHUNNED_SUNSET * 1000L > now) {
-      return true;
-    }
-
-    // Oh, it _is_ stale. Remove it while we're here.
-    endShun(m);
-    return false;
+    final MembershipView<ID> view = latestView;
+    return m.getVmViewId() <= view.getViewId() && !view.contains(m);
   }
 
   private boolean isShunnedOrNew(final ID m) {
+    final MembershipView<ID> view = latestView;
+    if (m.getVmViewId() <= view.getViewId() && view.contains(m)) {
+      return false;
+    }
     latestViewReadLock.lock();
     try {
-      return shunnedMembers.containsKey(m) || isNew(m);
+      return isShunned(m) || isNew(m);
     } finally { // synchronized
       latestViewReadLock.unlock();
     }
@@ -1483,11 +1408,9 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   /**
    * Indicate whether the given member is in the surprise member list
    * <P>
-   * Unlike isShunned, this method will not cause expiry of a surprise member. That must be done
+   * This method will not cause expiry of a surprise member. That must be done
    * during view processing.
    * <p>
-   * Like isShunned, this method holds the view lock while executing
-   *
    * Concurrency: protected by {@link #latestViewReadLock}
    *
    * @param m the member in question
@@ -1533,73 +1456,6 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
    */
   public long getSurpriseMemberTimeout() {
     return this.surpriseMemberTimeout;
-  }
-
-  private boolean endShun(ID m) {
-    boolean wasShunned = (shunnedMembers.remove(m) != null);
-    shunnedAndWarnedMembers.remove(m);
-    return wasShunned;
-  }
-
-  /**
-   * Add the given member to the shunned list. Also, purge any shunned members that are really
-   * really old.
-   * <p>
-   *
-   * @param m the member to add
-   */
-  private void addShunnedMember(ID m) {
-    long deathTime = System.currentTimeMillis() - SHUNNED_SUNSET * 1000L;
-
-    surpriseMembers.remove(m); // for safety
-
-    // Update the shunned set.
-    if (!isShunned(m)) {
-      shunnedMembers.put(m, Long.valueOf(System.currentTimeMillis()));
-    }
-
-    // Remove really really old shunned members.
-    // First, make a copy of the old set. New arrivals _a priori_ don't matter,
-    // and we're going to be updating the list so we don't want to disturb
-    // the iterator.
-    Set<Map.Entry<ID, Long>> oldMembers = new HashSet<>(shunnedMembers.entrySet());
-
-    Set<ID> removedMembers = new HashSet<>();
-
-    for (final Map.Entry<ID, Long> oldMember : oldMembers) {
-      Entry<ID, Long> e = oldMember;
-
-      // Key is the member. Value is the time to remove it.
-      long ll = e.getValue().longValue();
-      if (ll >= deathTime) {
-        continue; // too new.
-      }
-
-      ID mm = e.getKey();
-
-      if (latestView.contains(mm)) {
-        // Fault tolerance: a shunned member can conceivably linger but never
-        // disconnect.
-        //
-        // We may not delete it at the time that we shun it because the view
-        // isn't necessarily stable. (Note that a well-behaved cache member
-        // will depart on its own accord, but we force the issue here.)
-        destroyMember(mm, "shunned but never disconnected");
-      }
-      if (logger.isDebugEnabled()) {
-        logger.debug("Membership: finally removed shunned member entry <{}>", mm);
-      }
-
-      removedMembers.add(mm);
-    }
-
-    // removed timed-out entries from the shunned-members collections
-    if (removedMembers.size() > 0) {
-      for (final ID removedMember : removedMembers) {
-        ID idm = removedMember;
-        endShun(idm);
-      }
-    }
   }
 
   @Override
