@@ -690,7 +690,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   }
 
   protected void preStop() {
-    if (!mustGroupTransactionEvents() || isStopping) {
+    if (!mustGroupTransactionEvents()) {
       return;
     }
     isStopping = true;
@@ -1115,9 +1115,9 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
           if (isStopping && mustGroupTransactionEvents()
               && clonedEvent.getTransactionId() != null) {
             hasSameTransactionIdPredicate =
-                x -> x instanceof GatewaySenderEventImpl && clonedEvent.getTransactionId() != null
+                x -> x != null && clonedEvent.getTransactionId() != null
                     && clonedEvent.getTransactionId()
-                        .equals(((GatewaySenderEventImpl) x).getTransactionId());
+                        .equals((x).getTransactionId());
           }
           if (!ev.enqueueEvent(operation, clonedEvent, substituteValue, isLastEventInTransaction,
               hasSameTransactionIdPredicate)) {

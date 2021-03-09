@@ -149,6 +149,7 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
 
       clearTempEventsAfterSenderStopped();
     } finally {
+      postStop();
       this.getLifeCycleLock().writeLock().unlock();
     }
 

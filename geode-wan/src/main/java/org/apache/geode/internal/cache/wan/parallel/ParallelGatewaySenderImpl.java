@@ -139,6 +139,7 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
       // Keep the eventProcessor around so we can ask it for the regionQueues later.
       // Tests expect to be able to do this.
     } finally {
+      postStop();
       this.getLifeCycleLock().writeLock().unlock();
     }
   }

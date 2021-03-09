@@ -201,14 +201,9 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
   }
 
   protected void setIsStopped(boolean isStopped) {
+    this.isStopped = isStopped;
     if (isStopped) {
-      this.isStopped = true;
       this.failureLogInterval.clear();
-    } else {
-      this.isStopped = isStopped;
-    }
-    if (isStopped) {
-      sender.postStop();
     }
   }
 

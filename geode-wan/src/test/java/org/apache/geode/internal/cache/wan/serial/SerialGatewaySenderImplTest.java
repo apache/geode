@@ -102,6 +102,8 @@ public class SerialGatewaySenderImplTest {
 
     doReturn(null).when(spySerialGatewaySender).getQueues();
 
+    doReturn(true).when(spySerialGatewaySender).mustGroupTransactionEvents();
+
     return spySerialGatewaySender;
   }
 
@@ -132,4 +134,37 @@ public class SerialGatewaySenderImplTest {
     assertThat(serialGatewaySender.getEventProcessor()).isNull();
   }
 
+  @Test
+  public void whenStoppedTwiceCloseInTimeWithGroupTransactionEventsPreStopWaitsTwice() {
+    serialGatewaySender = createSerialGatewaySenderImplSpy();
+
+    long start = System.currentTimeMillis();
+
+    Thread t1 = new Thread(this::stopGatewaySenderAndCheckTime);
+    Thread t2 = new Thread(this::stopGatewaySenderAndCheckTime);
+    t1.start();
+    t2.start();
+    try {
+      t1.join();
+      t2.join();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+
+    long finish = System.currentTimeMillis();
+    long timeElapsed = finish - start;
+
+    // Each call to preStop waits for 1 second but they are not serialized
+    assertThat(timeElapsed).isGreaterThan(1000);
+
+    assertThat(serialGatewaySender.getEventProcessor()).isNull();
+  }
+
+  private void stopGatewaySenderAndCheckTime() {
+    long start = System.currentTimeMillis();
+    serialGatewaySender.stop();
+    long finish = System.currentTimeMillis();
+    long timeElapsed = finish - start;
+    assertThat(timeElapsed).isGreaterThan(1000);
+  }
 }

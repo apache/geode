@@ -461,15 +461,18 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
       if (this.getPartitionedRegion().isDestroyed()) {
         throw new BucketRegionQueueUnavailableException();
       }
-      List<Object> elementsMatching = new ArrayList();
+      List<Object> elementsMatching = new ArrayList<>();
       Iterator<Object> it = this.eventSeqNumDeque.iterator();
       while (it.hasNext()) {
         Object key = it.next();
-        Object object = optimalGet(key);
-        if (matchingPredicate.test((InternalGatewayQueueEvent) object)) {
-          elementsMatching.add(object);
+        Object event = optimalGet(key);
+        if (!(event instanceof InternalGatewayQueueEvent)) {
+          continue;
+        }
+        if (matchingPredicate.test((InternalGatewayQueueEvent) event)) {
+          elementsMatching.add(event);
           this.eventSeqNumDeque.remove(key);
-          if (endPredicate.test((InternalGatewayQueueEvent) object)) {
+          if (endPredicate.test((InternalGatewayQueueEvent) event)) {
             break;
           }
         }
@@ -480,15 +483,18 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     }
   }
 
-  public boolean isThereEventsMatching(Predicate<InternalGatewayQueueEvent> matchingPredicate) {
+  public boolean hasEventsMatching(Predicate<InternalGatewayQueueEvent> matchingPredicate) {
     getInitializationLock().readLock().lock();
     try {
       if (this.getPartitionedRegion().isDestroyed()) {
         throw new BucketRegionQueueUnavailableException();
       }
       for (Object o : eventSeqNumDeque) {
-        Object object = optimalGet(o);
-        if (matchingPredicate.test((InternalGatewayQueueEvent) object)) {
+        Object event = optimalGet(o);
+        if (!(event instanceof InternalGatewayQueueEvent)) {
+          continue;
+        }
+        if (matchingPredicate.test((InternalGatewayQueueEvent) event)) {
           return true;
         }
       }

@@ -845,16 +845,6 @@ public class SerialGatewaySenderQueue implements RegionQueue {
         lastKey);
   }
 
-  static class EventsAndLastKey {
-    public final List<Object> events;
-    public final long lastKey;
-
-    EventsAndLastKey(List<Object> events, long lastKey) {
-      this.events = events;
-      this.lastKey = lastKey;
-    }
-  }
-
   /**
    * This method returns a list of objects that fulfill the matchingPredicate
    * If a matching object also fulfills the endPredicate then the method
@@ -863,8 +853,8 @@ public class SerialGatewaySenderQueue implements RegionQueue {
   List<KeyAndEventPair> getElementsMatching(Predicate<InternalGatewayQueueEvent> condition,
       Predicate<InternalGatewayQueueEvent> stopCondition,
       long lastKey) {
-    Object object;
-    List elementsMatching = new ArrayList<>();
+    InternalGatewayQueueEvent event;
+    List<KeyAndEventPair> elementsMatching = new ArrayList<>();
 
     long currentKey = lastKey;
 
@@ -872,15 +862,15 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       if (extraPeekedIds.contains(currentKey)) {
         continue;
       }
-      object = optimalGet(currentKey);
-      if (object == null) {
+      event = (InternalGatewayQueueEvent) optimalGet(currentKey);
+      if (event == null) {
         continue;
       }
 
-      if (condition.test((InternalGatewayQueueEvent) object)) {
-        elementsMatching.add(new KeyAndEventPair(currentKey, (GatewaySenderEventImpl) object));
+      if (condition.test(event)) {
+        elementsMatching.add(new KeyAndEventPair(currentKey, (GatewaySenderEventImpl) event));
 
-        if (stopCondition.test((InternalGatewayQueueEvent) object)) {
+        if (stopCondition.test(event)) {
           break;
         }
       }
@@ -889,19 +879,19 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     return elementsMatching;
   }
 
-  public boolean isThereEventsMatching(Predicate<InternalGatewayQueueEvent> condition) {
-    InternalGatewayQueueEvent object;
+  public boolean hasEventsMatching(Predicate<InternalGatewayQueueEvent> condition) {
+    InternalGatewayQueueEvent event;
     long currentKey = getHeadKey();
     if (currentKey == getTailKey()) {
       return false;
     }
     while ((currentKey = inc(currentKey)) != getTailKey()) {
-      object = (InternalGatewayQueueEvent) optimalGet(currentKey);
+      event = (InternalGatewayQueueEvent) optimalGet(currentKey);
 
-      if (object == null) {
+      if (event == null) {
         continue;
       }
-      if (condition.test(object)) {
+      if (condition.test(event)) {
         return true;
       }
     }

@@ -143,8 +143,6 @@ public class ConcurrentParallelGatewaySenderEventProcessor
   public boolean enqueueEvent(EnumListenerEvent operation, EntryEvent event, Object substituteValue,
       boolean isLastEventInTransaction, Predicate<InternalGatewayQueueEvent> condition)
       throws IOException, CacheException {
-    Region region = event.getRegion();
-    // int bucketId = PartitionedRegionHelper.getHashKey((EntryOperation)event);
     int bucketId = ((EntryEventImpl) event).getEventId().getBucketID();
     if (bucketId < 0) {
       return true;

@@ -427,7 +427,6 @@ public class ConcurrentSerialGatewaySenderEventProcessor
   protected boolean enqueueEvent(GatewayQueueEvent event,
       Predicate<InternalGatewayQueueEvent> condition) {
     for (SerialGatewaySenderEventProcessor serialProcessor : this.processors) {
-      // TODO revisit handling of "condition" when the following enqueueEvent() method is supported:
       serialProcessor.enqueueEvent(event, condition);
     }
     return true;

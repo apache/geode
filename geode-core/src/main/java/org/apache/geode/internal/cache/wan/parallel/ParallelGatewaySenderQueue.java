@@ -703,16 +703,17 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
     boolean isDREvent = isDREvent(sender.getCache(), value);
 
-    String regionPath = value.getRegionPath();
-    regionPath = getRegionPathForEventAndType(value, isDREvent, regionPath);
-    if (regionPath == null)
+    String regionPath = getRegionPathForEventAndType(value, isDREvent);
+    if (regionPath == null) {
       return false;
+    }
 
     PartitionedRegion prQ = this.userRegionNameToShadowPRMap.get(regionPath);
     int bucketId = value.getBucketId();
     Object key = getKeyForEventAndType(value, isDREvent);
-    if (key == null)
+    if (key == null) {
       return false;
+    }
 
     if (isDebugEnabled) {
       logger.debug("ParallelGatewaySenderOrderedQueue putting key {} : Value : {}", key, value);
@@ -843,12 +844,12 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     return putDone;
   }
 
-  private String getRegionPathForEventAndType(GatewaySenderEventImpl event, boolean isDREvent,
-      String regionPath) {
+  private String getRegionPathForEventAndType(GatewaySenderEventImpl event, boolean isDREvent) {
     boolean isDebugEnabled = logger.isDebugEnabled();
+    String regionPath = event.getRegionPath();
     if (!isDREvent) {
-      Region region = sender.getCache().getRegion(regionPath, true);
-      regionPath = ColocationHelper.getLeaderRegion((PartitionedRegion) region).getFullPath();
+      PartitionedRegion region = (PartitionedRegion) sender.getCache().getRegion(regionPath, true);
+      regionPath = ColocationHelper.getLeaderRegion(region).getFullPath();
     }
     if (isDebugEnabled) {
       logger.debug("Put is for region {}", regionPath);
@@ -1817,12 +1818,11 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     return regionName.substring(1, queueStringStart);
   }
 
-  public boolean isThereEventsMatching(GatewaySenderEventImpl event,
+  public boolean hasEventsMatching(GatewaySenderEventImpl event,
       Predicate<InternalGatewayQueueEvent> condition) {
     boolean isDREvent = isDREvent(sender.getCache(), event);
 
-    String regionPath = event.getRegionPath();
-    regionPath = getRegionPathForEventAndType(event, isDREvent, regionPath);
+    String regionPath = getRegionPathForEventAndType(event, isDREvent);
     if (regionPath == null) {
       return true;
     }
@@ -1830,7 +1830,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     int bucketId = event.getBucketId();
     BucketRegionQueue brq = getBucketRegionQueueByBucketId(prQ, bucketId);
 
-    return brq.isThereEventsMatching(condition);
+    return brq.hasEventsMatching(condition);
   }
 
   // TODO:REF: Name for this class should be appropriate?

@@ -410,7 +410,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
     GatewaySenderEventImpl senderEvent;
 
     if (condition != null &&
-        !((SerialGatewaySenderQueue) queue).isThereEventsMatching(condition)) {
+        !((SerialGatewaySenderQueue) queue).hasEventsMatching(condition)) {
       return false;
     }
 
