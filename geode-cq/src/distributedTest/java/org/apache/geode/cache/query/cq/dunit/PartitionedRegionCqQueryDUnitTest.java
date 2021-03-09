@@ -22,9 +22,12 @@ import static org.apache.geode.test.dunit.Assert.assertNotNull;
 import static org.apache.geode.test.dunit.Assert.assertNull;
 import static org.apache.geode.test.dunit.Assert.assertTrue;
 import static org.apache.geode.test.dunit.Assert.fail;
+import static org.apache.geode.test.dunit.VM.getVM;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -119,6 +122,60 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
       "SELECT ALL * FROM " + SEPARATOR + regions[0] + " p where p.ID > 0"};
 
   private static int bridgeServerPort;
+
+  @Test
+  public void testPutAllWithCQLocalDestroy() throws Exception {
+    VM server1 = getVM(0);
+    VM server2 = getVM(1);
+    VM client = getVM(2);
+
+    final String cqName = "testPutAllWithCQLocalDestroy_0";
+    createServer(server1);
+    createServer(server2);
+    final String host = Host.getHost(0).getHostName();
+    final int port = server2.invoke(() -> PartitionedRegionCqQueryDUnitTest.getCacheServerPort());
+    createClient(client, port, host);
+    createCQ(client, cqName, cqs[0]);
+
+    int numObjects = 1000;
+
+    server1.invoke(() -> {
+      Region region = getCache().getRegion(SEPARATOR + "root" + SEPARATOR + regions[0]);
+      Map buffer = new HashMap();
+      for (int i = 1; i < numObjects; i++) {
+        Portfolio p = new Portfolio(i);
+        buffer.put("" + i, p);
+      }
+      region.putAll(buffer);
+    });
+
+    client.invoke(() -> {
+      QueryService cqService = getCache().getQueryService();
+      CqQuery cqQuery = cqService.getCq(cqName);
+      if (cqQuery == null) {
+        fail("Failed to get CQ " + cqName);
+      }
+      try {
+        cqQuery.executeWithInitialResults();
+      } catch (Exception ex) {
+        fail("Failed to execute  CQ " + cqName, ex);
+      }
+    });
+
+    server1.invoke(() -> {
+      Region region = getCache().getRegion(SEPARATOR + "root" + SEPARATOR + regions[0]);
+      Map buffer = new HashMap();
+      for (int i = 1; i < numObjects; i++) {
+        Portfolio p = new Portfolio(-1 * i);
+        buffer.put("" + i, p);
+      }
+      region.putAll(buffer);
+    });
+
+    cqHelper.closeClient(client);
+    cqHelper.closeServer(server2);
+    cqHelper.closeServer(server1);
+  }
 
   @Test
   public void testCQLeakWithPartitionedRegion() throws Exception {
