@@ -14,10 +14,10 @@
  */
 package org.apache.geode.internal.monitoring.executor;
 
-public class P2PReaderExecutorGroup extends SuspendableExecutor {
-  public static final String GROUP_NAME = "P2PReaderExecutor";
+public class ServerConnectionExecutorGroup extends SuspendableExecutor {
+  public static final String GROUP_NAME = "ServerConnectionExecutor";
 
-  public P2PReaderExecutorGroup() {
+  public ServerConnectionExecutorGroup() {
     super(GROUP_NAME);
   }
 }

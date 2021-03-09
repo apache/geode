@@ -14,10 +14,26 @@
  */
 package org.apache.geode.internal.monitoring.executor;
 
-public class P2PReaderExecutorGroup extends SuspendableExecutor {
-  public static final String GROUP_NAME = "P2PReaderExecutor";
+public abstract class SuspendableExecutor extends AbstractExecutor {
+  private volatile boolean suspended;
 
-  public P2PReaderExecutorGroup() {
-    super(GROUP_NAME);
+  public SuspendableExecutor(String groupName) {
+    super(groupName);
+  }
+
+  @Override
+  public void suspendMonitoring() {
+    suspended = true;
+  }
+
+  @Override
+  public void resumeMonitoring() {
+    setStartTime(0);
+    suspended = false;
+  }
+
+  @Override
+  public boolean isMonitoringSuspended() {
+    return suspended;
   }
 }

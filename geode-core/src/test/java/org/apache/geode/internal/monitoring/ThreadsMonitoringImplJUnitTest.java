@@ -62,6 +62,7 @@ public class ThreadsMonitoringImplJUnitTest {
     assertTrue(threadsMonitoringImpl.startMonitor(Mode.ScheduledThreadExecutor));
     assertTrue(threadsMonitoringImpl.startMonitor(Mode.AGSExecutor));
     assertTrue(threadsMonitoringImpl.startMonitor(Mode.P2PReaderExecutor));
+    assertTrue(threadsMonitoringImpl.startMonitor(Mode.ServerConnectionExecutor));
   }
 
   @Test
