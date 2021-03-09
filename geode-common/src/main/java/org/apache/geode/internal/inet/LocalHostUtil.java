@@ -242,6 +242,10 @@ public class LocalHostUtil {
     return new InetSocketAddress(0).getAddress();
   }
 
+  public static boolean isWildcardAddress(String address) {
+    return (address != null && (address.equals("0.0.0.0") || address.equals("::")));
+  }
+
   /**
    * Returns true if host matches the LOCALHOST.
    */

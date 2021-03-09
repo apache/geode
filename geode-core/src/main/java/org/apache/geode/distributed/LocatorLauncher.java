@@ -1613,7 +1613,12 @@ public class LocatorLauncher extends AbstractLauncher<String> {
         return this;
       } else {
         try {
-          InetAddress address = InetAddress.getByName(addressString);
+          InetAddress address;
+          if (LocalHostUtil.isWildcardAddress(addressString)) {
+            address = LocalHostUtil.getAnyLocalAddress();
+          } else {
+            address = InetAddress.getByName(addressString);
+          }
           if (LocalHostUtil.isLocalHost(address)) {
             this.bindAddress = new HostAddress(addressString);
             return this;
