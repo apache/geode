@@ -14,10 +14,15 @@
  */
 package org.apache.geode.internal.monitoring.executor;
 
-public class P2PReaderExecutorGroup extends SuspendableExecutor {
-  public static final String GROUP_NAME = "P2PReaderExecutor";
+import static org.assertj.core.api.Assertions.assertThat;
 
-  public P2PReaderExecutorGroup() {
-    super(GROUP_NAME);
+import org.junit.Test;
+
+public class ServerConnectionExecutorGroupTest {
+
+  @Test
+  public void testVerifyGroupName() {
+    assertThat(new ServerConnectionExecutorGroup().getGroupName())
+        .isEqualTo(ServerConnectionExecutorGroup.GROUP_NAME);
   }
 }
