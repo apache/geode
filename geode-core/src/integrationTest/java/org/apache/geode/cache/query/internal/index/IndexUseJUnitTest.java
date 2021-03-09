@@ -15,6 +15,7 @@
 package org.apache.geode.cache.query.internal.index;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -353,7 +354,7 @@ public class IndexUseJUnitTest {
 
     Index i2 =
         qs.createIndex("Index2", IndexType.FUNCTIONAL, "objs.liist[0]", SEPARATOR + "testRgn objs");
-    assertTrue(i2 instanceof CompactMapRangeIndex);
+    assertThat(i2).isInstanceOf(CompactMapRangeIndex.class);
     CacheUtils.getLogger().info("Executing query: " + query);
     QueryObserverImpl observer = new QueryObserverImpl();
     QueryObserverHolder.setInstance(observer);
@@ -1196,7 +1197,7 @@ public class IndexUseJUnitTest {
     Index i5 = qs.createIndex("Index5", IndexType.FUNCTIONAL, "itr1.testFields['complex']",
         SEPARATOR + "testRgn itr1");
 
-    assertTrue(i1 instanceof CompactMapRangeIndex);
+    assertThat(i1).isInstanceOf(CompactMapRangeIndex.class);
 
     // Execute Queries with Indexes
     for (int i = 0; i < queries.length; i++) {

@@ -273,7 +273,7 @@ public class PRIndexStatisticsJUnitTest {
       query.execute();
     }
 
-    // Both RangeIndex should be used
+    // Index should not be used
     assertEquals(0, keyIndexStats.getTotalUses());
 
     for (int i = 0; i < 50; i++) {

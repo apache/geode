@@ -219,10 +219,10 @@ public class ResultsCollectionPdxDeserializerWrapper implements SelectResults {
   }
 
   public String toString() {
-    String out = "size: " + size() + "\n";
+    String out = "size: " + size() + System.lineSeparator();
     Iterator iter = iterator();
     while (iter.hasNext()) {
-      out += iter.next() + "\n";
+      out += iter.next() + System.lineSeparator();
     }
     return out;
   }
