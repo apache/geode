@@ -28,6 +28,7 @@ import java.net.Socket;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
@@ -36,10 +37,13 @@ import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
-import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.cache.client.protocol.exception.ServiceLoadingFailureException;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
@@ -61,6 +65,26 @@ public class ServerConnectionFactoryTest {
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
+  private InternalCacheForClientAccess cache;
+  private CachedRegionHelper cachedRegionHelper;
+
+  @Before
+  public void setUp() throws IOException {
+    cache = mock(InternalCacheForClientAccess.class);
+    cachedRegionHelper = mock(CachedRegionHelper.class);
+  }
+
+  private void setupThreadMonitoring() {
+    InternalDistributedSystem internalDistributedSystem = mock(InternalDistributedSystem.class);
+    DistributionManager distributionManager = mock(DistributionManager.class);
+    ThreadsMonitoring threadsMonitoring = mock(ThreadsMonitoring.class);
+
+    when(cachedRegionHelper.getCache()).thenReturn(cache);
+    when(cache.getInternalDistributedSystem()).thenReturn(internalDistributedSystem);
+    when(internalDistributedSystem.getDM()).thenReturn(distributionManager);
+    when(distributionManager.getThreadMonitoring()).thenReturn(threadsMonitoring);
+  }
+
   /**
    * Safeguard that we won't create the new client protocol object unless the feature flag is
    * enabled.
@@ -69,7 +93,7 @@ public class ServerConnectionFactoryTest {
   public void newClientProtocolFailsWithoutSystemPropertySet() {
     Throwable thrown = catchThrowable(
         () -> new ServerConnectionFactory().makeServerConnection(mock(Socket.class),
-            mock(InternalCache.class), mock(CachedRegionHelper.class), mock(CacheServerStats.class),
+            cache, cachedRegionHelper, mock(CacheServerStats.class),
             0, 0, "", CommunicationMode.ProtobufClientServerProtocol.getModeNumber(),
             mock(AcceptorImpl.class), mock(SecurityService.class)));
 
@@ -81,7 +105,7 @@ public class ServerConnectionFactoryTest {
     System.setProperty("geode.feature-protobuf-protocol", "true");
     Throwable thrown = catchThrowable(
         () -> new ServerConnectionFactory().makeServerConnection(mock(Socket.class),
-            mock(InternalCache.class), mock(CachedRegionHelper.class), mock(CacheServerStats.class),
+            cache, cachedRegionHelper, mock(CacheServerStats.class),
             0, 0, "", CommunicationMode.ProtobufClientServerProtocol.getModeNumber(),
             mock(AcceptorImpl.class), mock(SecurityService.class)));
 
@@ -97,10 +121,11 @@ public class ServerConnectionFactoryTest {
     Socket socket = mock(Socket.class);
     when(socket.getInetAddress()).thenReturn(InetAddress.getByName("localhost"));
     when(socket.getInputStream()).thenReturn(mock(InputStream.class));
+    setupThreadMonitoring();
 
     ServerConnection serverConnection =
-        new ServerConnectionFactory().makeServerConnection(socket, mock(InternalCache.class),
-            mock(CachedRegionHelper.class), mock(CacheServerStats.class), 0, 0, "",
+        new ServerConnectionFactory().makeServerConnection(socket,
+            cache, cachedRegionHelper, mock(CacheServerStats.class), 0, 0, "",
             communicationMode.getModeNumber(),
             mock(AcceptorImpl.class), mock(SecurityService.class));
 
@@ -118,10 +143,11 @@ public class ServerConnectionFactoryTest {
     Socket socket = mock(Socket.class);
     when(socket.getInetAddress()).thenReturn(InetAddress.getByName("localhost"));
     when(socket.getInputStream()).thenReturn(mock(InputStream.class));
+    setupThreadMonitoring();
 
     ServerConnection serverConnection =
-        new ServerConnectionFactory().makeServerConnection(socket, mock(InternalCache.class),
-            mock(CachedRegionHelper.class), mock(CacheServerStats.class), 0, 0, "",
+        new ServerConnectionFactory().makeServerConnection(socket, cache,
+            cachedRegionHelper, mock(CacheServerStats.class), 0, 0, "",
             communicationMode.getModeNumber(),
             mock(AcceptorImpl.class), mock(SecurityService.class));
 

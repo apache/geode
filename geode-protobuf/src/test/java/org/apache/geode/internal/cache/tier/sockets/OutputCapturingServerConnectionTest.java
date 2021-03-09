@@ -35,10 +35,13 @@ import org.junit.experimental.categories.Category;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.cache.client.protocol.ClientProtocolProcessor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
@@ -64,9 +67,15 @@ public class OutputCapturingServerConnectionTest {
     socket = mock(Socket.class);
     cache = mock(InternalCacheForClientAccess.class);
     cachedRegionHelper = mock(CachedRegionHelper.class);
+    InternalDistributedSystem internalDistributedSystem = mock(InternalDistributedSystem.class);
+    DistributionManager distributionManager = mock(DistributionManager.class);
+    ThreadsMonitoring threadsMonitoring = mock(ThreadsMonitoring.class);
 
     when(acceptor.getClientHealthMonitor()).thenReturn(mock(ClientHealthMonitor.class));
     when(cachedRegionHelper.getCache()).thenReturn(cache);
+    when(cache.getInternalDistributedSystem()).thenReturn(internalDistributedSystem);
+    when(internalDistributedSystem.getDM()).thenReturn(distributionManager);
+    when(distributionManager.getThreadMonitoring()).thenReturn(threadsMonitoring);
     when(socket.getInetAddress()).thenReturn(mock(InetAddress.class));
     when(socket.getOutputStream()).thenReturn(new ByteArrayOutputStream());
     when(socket.getRemoteSocketAddress()).thenReturn(createUnresolved("localhost", 9071));
