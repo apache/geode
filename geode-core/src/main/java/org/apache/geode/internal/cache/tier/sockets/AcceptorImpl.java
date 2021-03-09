@@ -98,6 +98,8 @@ import org.apache.geode.internal.logging.CoreLoggingExecutors;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.net.BufferPool;
 import org.apache.geode.internal.net.ByteBufferSharing;
+import org.apache.geode.internal.net.NioFilter;
+import org.apache.geode.internal.net.NioPlainEngine;
 import org.apache.geode.internal.net.NioSslEngine;
 import org.apache.geode.internal.net.SocketCloser;
 import org.apache.geode.internal.net.SocketCreator;
@@ -973,6 +975,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
         selector.selectNow(); // clear the cancelled key
         SelectionKey tmpsk = sc.getSelectableChannel().register(tmpSel,
             SelectionKey.OP_WRITE | SelectionKey.OP_READ);
+
         try {
           // it should always be writable
           int events = tmpSel.selectNow();
@@ -982,7 +985,8 @@ public class AcceptorImpl implements Acceptor, Runnable {
             tmpSel.selectNow(); // clear canceled key
             sc.registerWithSelector2(selector);
           } else {
-            if (tmpsk.isValid() && tmpsk.isReadable()) {
+            if (tmpsk.isValid() && (tmpsk.isReadable() || tmpsk.isWritable())) {
+
               try {
                 tmpsk.cancel();
                 tmpSel.selectNow(); // clear canceled key
@@ -1441,18 +1445,18 @@ public class AcceptorImpl implements Acceptor, Runnable {
     // for 'server to client' communication, send it to the CacheClientNotifier
     // for processing.
     final CommunicationMode communicationMode;
-    final NioSslEngine sslengine;
+    final NioFilter ioFilter;
     try {
       if (isSelector()) {
         if (socketCreator.forCluster().useSSL()) {
-          sslengine = createNIOSSLEngine(socket.getChannel());
-          communicationMode = getCommunicationModeForSSLSelector(socket, sslengine);
+          ioFilter = createNIOSSLEngine(socket.getChannel());
+          communicationMode = getCommunicationModeForSSLSelector(socket, ioFilter);
         } else {
-          sslengine = null;
+          ioFilter = new NioPlainEngine(bufferPool);
           communicationMode = getCommunicationModeForSelector(socket);
         }
       } else {
-        sslengine = null;
+        ioFilter = null;
         communicationMode = getCommunicationModeForNonSelector(socket);
       }
       socket.setTcpNoDelay(tcpNoDelay);
@@ -1466,7 +1470,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
 
     // GEODE-3637 - If the communicationMode is client Subscriptions, hand-off the client queue
     // initialization to be done in another threadPool
-    if (handOffQueueInitialization(socket, communicationMode, sslengine)) {
+    if (handOffQueueInitialization(socket, communicationMode, ioFilter)) {
       return;
     }
 
@@ -1485,7 +1489,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
             refuseHandshake(socket.getOutputStream(),
                 String.format("exceeded max-connections %s",
                     maxConnections),
-                REPLY_REFUSED, sslengine, socket);
+                REPLY_REFUSED, ioFilter, socket);
           } catch (Exception ex) {
             logger.debug("rejection message failed", ex);
           }
@@ -1498,7 +1502,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
     ServerConnection serverConn =
         serverConnectionFactory.makeServerConnection(socket, cache, crHelper, stats,
             handshakeTimeout, socketBufferSize, communicationMode.toString(),
-            communicationMode.getModeNumber(), this, securityService, sslengine);
+            communicationMode.getModeNumber(), this, securityService, ioFilter);
 
     synchronized (allSCsLock) {
       allSCs.add(serverConn);
@@ -1524,7 +1528,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
           refuseHandshake(socket.getOutputStream(),
               String.format("exceeded max-connections %s",
                   maxConnections),
-              REPLY_REFUSED, sslengine, socket);
+              REPLY_REFUSED, ioFilter, socket);
 
         } catch (Exception ex) {
           logger.debug("rejection message failed", ex);
@@ -1570,13 +1574,13 @@ public class AcceptorImpl implements Acceptor, Runnable {
 
   @Override
   public void refuseHandshake(OutputStream out, String message, byte exception,
-      NioSslEngine sslEngine, Socket socket) throws IOException {
-    if (sslEngine == null) {
+      NioFilter ioFilter, Socket socket) throws IOException {
+    if (ioFilter == null) {
       refuseHandshake(out, message, exception);
       return;
     }
     try (ByteBufferOutputStream bbos =
-        new ByteBufferOutputStream(sslEngine.getPacketBufferSize())) {
+        new ByteBufferOutputStream(ioFilter.getPacketBufferSize())) {
 
       DataOutputStream dos = new DataOutputStream(bbos);
 
@@ -1607,7 +1611,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
 
       bbos.flush();
       ByteBuffer buffer = bbos.getContentBuffer();
-      try (final ByteBufferSharing outputSharing = sslEngine.wrap(buffer)) {
+      try (final ByteBufferSharing outputSharing = ioFilter.wrap(buffer)) {
         final ByteBuffer wrappedBuffer = outputSharing.getBuffer();
         while (wrappedBuffer.remaining() > 0) {
           socket.getChannel().write(wrappedBuffer);
@@ -1617,12 +1621,12 @@ public class AcceptorImpl implements Acceptor, Runnable {
   }
 
   private boolean handOffQueueInitialization(Socket socket, CommunicationMode communicationMode,
-      NioSslEngine engine) {
+      NioFilter ioFilter) {
     if (communicationMode.isSubscriptionFeed()) {
       boolean isPrimaryServerToClient =
           communicationMode == CommunicationMode.PrimaryServerToClient;
       clientQueueInitPool
-          .execute(new ClientQueueInitializerTask(socket, isPrimaryServerToClient, this, engine));
+          .execute(new ClientQueueInitializerTask(socket, isPrimaryServerToClient, this, ioFilter));
       return true;
     }
     return false;
@@ -1669,9 +1673,10 @@ public class AcceptorImpl implements Acceptor, Runnable {
   }
 
   private CommunicationMode getCommunicationModeForSSLSelector(Socket socket,
-      NioSslEngine sslengine)
+      NioFilter ioFilter)
       throws IOException {
 
+    NioSslEngine sslengine = (NioSslEngine) ioFilter;
     final SocketChannel socketChannel = socket.getChannel();
     ByteBuffer inbuffer = sslengine.getHandshakeBuffer();
 
@@ -2019,14 +2024,14 @@ public class AcceptorImpl implements Acceptor, Runnable {
     private final Socket socket;
     private final boolean isPrimaryServerToClient;
     private final AcceptorImpl acceptor;
-    private final NioSslEngine sslEngine;
+    private final NioFilter ioFilter;
 
     ClientQueueInitializerTask(Socket socket, boolean isPrimaryServerToClient,
-        AcceptorImpl acceptor, NioSslEngine engine) {
+        AcceptorImpl acceptor, NioFilter ioFilter) {
       this.socket = socket;
       this.acceptor = acceptor;
       this.isPrimaryServerToClient = isPrimaryServerToClient;
-      this.sslEngine = engine;
+      this.ioFilter = ioFilter;
     }
 
     @Override
@@ -2035,7 +2040,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
           isPrimaryServerToClient ? "primary" : "secondary", socket);
       try {
         ClientRegistrationMetadata clientRegistrationMetadata =
-            new ClientRegistrationMetadata(acceptor.cache, socket, sslEngine);
+            new ClientRegistrationMetadata(acceptor.cache, socket, ioFilter);
 
         if (clientRegistrationMetadata.initialize()) {
           acceptor.getCacheClientNotifier().registerClient(clientRegistrationMetadata, socket,

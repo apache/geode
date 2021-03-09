@@ -570,7 +570,10 @@ public class Message {
       // Keep track of the fact that we are making progress.
       this.serverConnection.updateProcessingMessage();
       if (this.sslEngine == null) {
-        setSslEngine(this.serverConnection.getSSLEngine());
+        if ((this.serverConnection.getIOFilter() != null)
+            && (this.serverConnection.getIOFilter() instanceof NioSslEngine)) {
+          setSslEngine((NioSslEngine) this.serverConnection.getIOFilter());
+        }
       }
     }
     if (this.socket == null) {
@@ -1126,8 +1129,8 @@ public class Message {
   void setComms(ServerConnection sc, Socket socket, ByteBuffer bb, MessageStats msgStats)
       throws IOException {
     this.serverConnection = sc;
-    if (sc.getSSLEngine() != null) {
-      setSslEngine(sc.getSSLEngine());
+    if ((sc.getIOFilter() != null) && (sc.getIOFilter() instanceof NioSslEngine)) {
+      setSslEngine((NioSslEngine) sc.getIOFilter());
     }
     setComms(socket, bb, msgStats);
   }
@@ -1220,8 +1223,8 @@ public class Message {
   public void receive(ServerConnection sc, int maxMessageLength, Semaphore dataLimiter,
       Semaphore msgLimiter) throws IOException {
     this.serverConnection = sc;
-    if (sc.getSSLEngine() != null) {
-      setSslEngine(sc.getSSLEngine());
+    if ((sc.getIOFilter() != null) && (sc.getIOFilter() instanceof NioSslEngine)) {
+      setSslEngine((NioSslEngine) sc.getIOFilter());
     }
     this.maxIncomingMessageLength = maxMessageLength;
     this.dataLimiter = dataLimiter;

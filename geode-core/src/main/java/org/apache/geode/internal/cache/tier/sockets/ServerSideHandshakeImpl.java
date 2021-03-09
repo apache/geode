@@ -42,7 +42,6 @@ import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
 import org.apache.geode.internal.serialization.VersionedDataStream;
 import org.apache.geode.internal.serialization.VersioningIO;
-import org.apache.geode.internal.tcp.ByteBufferInputStream;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
 import org.apache.geode.security.AuthenticationRequiredException;
 
@@ -80,14 +79,10 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
     try {
       soTimeout = sock.getSoTimeout();
       sock.setSoTimeout(timeout);
-      if (connection.getSSLEngine() == null) {
+      if (connection.getIOFilter() == null) {
         inputStream = sock.getInputStream();
       } else {
-        try (
-            final ByteBufferSharing sharedBuffer = connection.getSSLEngine().getUnwrappedBuffer()) {
-          ByteBuffer unwrapbuff = sharedBuffer.getBuffer();
-          inputStream = new ByteBufferInputStream(unwrapbuff);
-        }
+        inputStream = connection.getIOFilter().getInputStream(sock);
       }
       int valRead = inputStream.read();
       if (valRead == -1) {
@@ -124,15 +119,15 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
             "ClientProxyMembershipID class could not be found while deserializing the object");
       }
     } finally {
-      if (connection.getSSLEngine() != null) {
+      if (connection.getIOFilter() != null) {
         try (
-            final ByteBufferSharing sharedBuffer = connection.getSSLEngine().getUnwrappedBuffer()) {
-          ByteBuffer sslbuff = sharedBuffer.getBuffer();
-          connection.getSSLEngine().doneReading(sslbuff);
+            final ByteBufferSharing sharedBuffer = connection.getIOFilter().getUnwrappedBuffer()) {
+          ByteBuffer iobuff = sharedBuffer.getBuffer();
+          if (iobuff.capacity() > 0) {
+            connection.getIOFilter().doneReading(iobuff);
+          }
         }
-        if (inputStream != null) {
-          inputStream.close();
-        }
+        connection.getIOFilter().closeInputStream(inputStream);
       }
       if (soTimeout != -1) {
         try {
@@ -159,9 +154,9 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
     DataOutputStream dos;
     ByteBufferOutputStream bbos = null;
 
-    if (connection.getSSLEngine() != null) {
+    if (connection.getIOFilter() != null) {
       bbos = new ByteBufferOutputStream(
-          connection.getSSLEngine().getPacketBufferSize());
+          connection.getIOFilter().getPacketBufferSize());
       dos = new DataOutputStream(bbos);
     } else {
       dos = new DataOutputStream(out);
@@ -231,7 +226,7 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
     if (bbos != null) {
       bbos.flush();
       ByteBuffer buffer = bbos.getContentBuffer();
-      try (final ByteBufferSharing outputSharing = connection.getSSLEngine().wrap(buffer)) {
+      try (final ByteBufferSharing outputSharing = connection.getIOFilter().wrap(buffer)) {
         final ByteBuffer wrappedBuffer = outputSharing.getBuffer();
         connection.getSocket().getChannel().write(wrappedBuffer);
       }

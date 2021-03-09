@@ -68,6 +68,7 @@ import org.apache.geode.internal.cache.tier.sockets.command.Default;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.monitoring.executor.AbstractExecutor;
+import org.apache.geode.internal.net.NioFilter;
 import org.apache.geode.internal.net.NioSslEngine;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
@@ -264,7 +265,7 @@ public abstract class ServerConnection implements Runnable {
   @MutableForTesting
   private static boolean TEST_VERSION_AFTER_HANDSHAKE_FLAG;
 
-  private final NioSslEngine sslEngine;
+  private final NioFilter ioFilter;
 
   /**
    * Creates a new {@code ServerConnection} that processes messages received from an edge
@@ -274,7 +275,7 @@ public abstract class ServerConnection implements Runnable {
       final CachedRegionHelper cachedRegionHelper, final CacheServerStats stats,
       final int hsTimeout, final int socketBufferSize, final String communicationModeStr,
       final byte communicationMode, final Acceptor acceptor,
-      final SecurityService securityService, final NioSslEngine sslEngine) {
+      final SecurityService securityService, final NioFilter ioFilter) {
     StringBuilder buffer = new StringBuilder(100);
     if (acceptor.isGatewayReceiver()) {
       buffer.append("GatewayReceiver connection from [");
@@ -297,7 +298,7 @@ public abstract class ServerConnection implements Runnable {
     randomConnectionIdGen = new Random(hashCode());
 
     this.securityService = securityService;
-    this.sslEngine = sslEngine;
+    this.ioFilter = ioFilter;
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
     try {
@@ -671,7 +672,7 @@ public abstract class ServerConnection implements Runnable {
 
   private void refuseHandshake(String message, byte exception) {
     try {
-      acceptor.refuseHandshake(theSocket.getOutputStream(), message, exception, sslEngine,
+      acceptor.refuseHandshake(theSocket.getOutputStream(), message, exception, ioFilter,
           theSocket);
     } catch (IOException ignore) {
     } finally {
@@ -1289,10 +1290,10 @@ public abstract class ServerConnection implements Runnable {
   }
 
   void registerWithSelector2(Selector s) throws ClosedChannelException {
-    if (getSSLEngine() == null) {
-      getSelectableChannel().register(s, SelectionKey.OP_READ, this);
-    } else {
+    if ((getIOFilter() != null) && (getIOFilter() instanceof NioSslEngine)) {
       getSelectableChannel().register(s, SelectionKey.OP_WRITE | SelectionKey.OP_READ, this);
+    } else {
+      getSelectableChannel().register(s, SelectionKey.OP_READ, this);
     }
   }
 
@@ -1462,9 +1463,9 @@ public abstract class ServerConnection implements Runnable {
       getAcceptor().decClientServerConnectionCount();
     }
 
-    if (getSSLEngine() != null) {
+    if (getIOFilter() != null) {
       try {
-        this.sslEngine.close(theSocket.getChannel());
+        getIOFilter().close(theSocket.getChannel());
       } catch (Exception ignored) {
       }
     }
@@ -1522,9 +1523,9 @@ public abstract class ServerConnection implements Runnable {
     terminated = true;
     Socket s = theSocket;
     if (s != null) {
-      if (getSSLEngine() != null) {
+      if (getIOFilter() != null) {
         try {
-          this.sslEngine.close(s.getChannel());
+          getIOFilter().close(s.getChannel());
         } catch (Exception e) {
           // ignore
         }
@@ -1860,11 +1861,8 @@ public abstract class ServerConnection implements Runnable {
     setUserAuthId(uniqueId);
   }
 
-  public NioSslEngine getSSLEngine() {
-    if (this.sslEngine != null && !this.sslEngine.isClosed()) {
-      return this.sslEngine;
-    }
-    return null;
+  public NioFilter getIOFilter() {
+    return this.ioFilter;
   }
 
   /**

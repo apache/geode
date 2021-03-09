@@ -46,6 +46,7 @@ import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.ha.HARegionQueueAttributes;
 import org.apache.geode.internal.cache.ha.HARegionQueueStats;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.net.NioSslEngine;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.logging.internal.executors.LoggingThread;
@@ -615,7 +616,9 @@ public class MessageDispatcher extends LoggingThread {
     socketWriteLock.lock();
     try {
       message.setComms(getSocket(), getCommBuffer(), getStatistics());
-      message.setSslEngine(_proxy.getSslEngine());
+      if ((_proxy.getIOFilter() != null) && (_proxy.getIOFilter() instanceof NioSslEngine)) {
+        message.setSslEngine((NioSslEngine) _proxy.getIOFilter());
+      }
       message.send();
       getProxy().resetPingCounter();
     } finally {

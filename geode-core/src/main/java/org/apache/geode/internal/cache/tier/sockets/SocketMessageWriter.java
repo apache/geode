@@ -32,7 +32,7 @@ import org.apache.geode.internal.ByteBufferOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
 import org.apache.geode.internal.net.ByteBufferSharing;
-import org.apache.geode.internal.net.NioSslEngine;
+import org.apache.geode.internal.net.NioFilter;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.util.internal.GeodeGlossary;
 
@@ -42,14 +42,14 @@ public class SocketMessageWriter {
 
   public void writeHandshakeMessage(DataOutputStream dos, byte type, String p_msg,
       @Nullable KnownVersion clientVersion, byte endpointType, int queueSize,
-      NioSslEngine sslEngine,
+      NioFilter ioFilter,
       Socket socket)
       throws IOException {
     String msg = p_msg;
     ByteBufferOutputStream bbos = null;
 
-    if (sslEngine != null) {
-      bbos = new ByteBufferOutputStream(sslEngine.getPacketBufferSize());
+    if (ioFilter != null) {
+      bbos = new ByteBufferOutputStream(ioFilter.getPacketBufferSize());
       dos = new DataOutputStream(bbos);
     }
 
@@ -101,11 +101,11 @@ public class SocketMessageWriter {
     }
     dos.flush();
 
-    if (sslEngine != null) {
+    if (ioFilter != null) {
       bbos.flush();
       ByteBuffer buffer = bbos.getContentBuffer();
 
-      try (final ByteBufferSharing outputSharing = sslEngine.wrap(buffer)) {
+      try (final ByteBufferSharing outputSharing = ioFilter.wrap(buffer)) {
         final ByteBuffer wrappedBuffer = outputSharing.getBuffer();
         if (socket != null) {
           while (wrappedBuffer.remaining() > 0) {
@@ -125,9 +125,9 @@ public class SocketMessageWriter {
    * @param ex the exception to be written; should not be null
    */
   public void writeException(DataOutputStream dos, byte type, Exception ex,
-      KnownVersion clientVersion, NioSslEngine sslEngine, Socket socket)
+      KnownVersion clientVersion, NioFilter ioFilter, Socket socket)
       throws IOException {
-    writeHandshakeMessage(dos, type, ex.toString(), clientVersion, (byte) 0x00, 0, sslEngine,
+    writeHandshakeMessage(dos, type, ex.toString(), clientVersion, (byte) 0x00, 0, ioFilter,
         socket);
   }
 }

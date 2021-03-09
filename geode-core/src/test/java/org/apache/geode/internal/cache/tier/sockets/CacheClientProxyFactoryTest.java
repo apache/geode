@@ -33,7 +33,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxyFactory.InternalCacheClientProxyFactory;
-import org.apache.geode.internal.net.NioSslEngine;
+import org.apache.geode.internal.net.NioFilter;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.statistics.StatisticsClock;
@@ -108,11 +108,11 @@ public class CacheClientProxyFactoryTest {
         ClientProxyMembershipID proxyId, boolean isPrimary, byte clientConflation,
         KnownVersion clientVersion, long acceptorId, boolean notifyBySubscription,
         SecurityService securityService, Subject subject, StatisticsClock statisticsClock,
-        NioSslEngine sslEngine)
+        NioFilter ioFilter)
         throws CacheException {
       return new SubCacheClientProxy(notifier, socket, proxyId, isPrimary, clientConflation,
           clientVersion, acceptorId, notifyBySubscription, securityService, subject,
-          statisticsClock, sslEngine);
+          statisticsClock, ioFilter);
     }
   }
 
@@ -122,10 +122,10 @@ public class CacheClientProxyFactoryTest {
         ClientProxyMembershipID proxyId, boolean isPrimary, byte clientConflation,
         KnownVersion clientVersion, long acceptorId, boolean notifyBySubscription,
         SecurityService securityService, Subject subject, StatisticsClock statisticsClock,
-        NioSslEngine sslEngine)
+        NioFilter ioFilter)
         throws CacheException {
       super(notifier, socket, proxyId, isPrimary, clientConflation, clientVersion, acceptorId,
-          notifyBySubscription, securityService, subject, statisticsClock, sslEngine);
+          notifyBySubscription, securityService, subject, statisticsClock, ioFilter);
     }
   }
 }

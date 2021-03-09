@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
 import java.net.SocketAddress;
-import java.nio.ByteBuffer;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
@@ -31,13 +30,11 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
-import org.apache.geode.internal.net.ByteBufferSharing;
-import org.apache.geode.internal.net.NioSslEngine;
+import org.apache.geode.internal.net.NioFilter;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.internal.serialization.VersioningIO;
-import org.apache.geode.internal.tcp.ByteBufferInputStream;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 class ServerSideHandshakeFactory {
@@ -70,20 +67,17 @@ class ServerSideHandshakeFactory {
       ServerConnection connection)
       throws IOException, VersionException {
     int soTimeout = -1;
-    NioSslEngine sslengine = null;
+    NioFilter ioFilter = null;
     InputStream is = null;
 
     try {
       soTimeout = socket.getSoTimeout();
       socket.setSoTimeout(timeout);
-      sslengine = connection.getSSLEngine();
-      if (sslengine == null) {
+      ioFilter = connection.getIOFilter();
+      if (ioFilter == null) {
         is = socket.getInputStream();
       } else {
-        try (final ByteBufferSharing sharedBuffer = sslengine.getUnwrappedBuffer()) {
-          ByteBuffer unwrapbuff = sharedBuffer.getBuffer();
-          is = new ByteBufferInputStream(unwrapbuff);
-        }
+        is = ioFilter.getInputStream(socket);
       }
       short clientVersionOrdinal = VersioningIO.readOrdinalFromInputStream(is);
       if (clientVersionOrdinal == -1) {
@@ -111,8 +105,8 @@ class ServerSideHandshakeFactory {
       throw new UnsupportedVersionException(
           KnownVersion.unsupportedVersionMessage(clientVersionOrdinal) + sInfo);
     } finally {
-      if (sslengine != null && is != null) {
-        is.close();
+      if (ioFilter != null) {
+        ioFilter.closeInputStream(is);
       }
       if (soTimeout != -1) {
         try {

@@ -25,7 +25,7 @@ import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.net.NioSslEngine;
+import org.apache.geode.internal.net.NioFilter;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.statistics.StatisticsClock;
@@ -78,11 +78,11 @@ public class CacheClientProxyFactory {
       ClientProxyMembershipID proxyId, boolean isPrimary, byte clientConflation,
       KnownVersion clientVersion, long acceptorId, boolean notifyBySubscription,
       SecurityService securityService, Subject subject, StatisticsClock statisticsClock,
-      NioSslEngine sslEngine)
+      NioFilter ioFilter)
       throws CacheException {
     return internalFactory.create(notifier, socket, proxyId, isPrimary, clientConflation,
         clientVersion, acceptorId, notifyBySubscription, securityService, subject, statisticsClock,
-        sslEngine);
+        ioFilter);
   }
 
   @FunctionalInterface
@@ -92,7 +92,7 @@ public class CacheClientProxyFactory {
         ClientProxyMembershipID proxyId, boolean isPrimary, byte clientConflation,
         KnownVersion clientVersion, long acceptorId, boolean notifyBySubscription,
         SecurityService securityService, Subject subject, StatisticsClock statisticsClock,
-        NioSslEngine sslEngine)
+        NioFilter ioFilter)
         throws CacheException;
   }
 }

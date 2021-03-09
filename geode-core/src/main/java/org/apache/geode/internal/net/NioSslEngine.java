@@ -24,6 +24,8 @@ import static org.apache.geode.internal.net.BufferPool.BufferType.TRACKED_SENDER
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
@@ -43,6 +45,7 @@ import org.apache.geode.GemFireIOException;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.net.BufferPool.BufferType;
 import org.apache.geode.internal.net.ByteBufferSharingImpl.OpenAttemptTimedOut;
+import org.apache.geode.internal.tcp.ByteBufferInputStream;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 
@@ -444,12 +447,26 @@ public class NioSslEngine implements NioFilter {
     return handshakeBuffer;
   }
 
+  @Override
   public int getPacketBufferSize() {
     return packetBufferSize;
   }
 
-  public boolean isClosed() {
-    return closed;
+  @Override
+  public InputStream getInputStream(Socket socket) throws IOException {
+    InputStream is;
+    try (final ByteBufferSharing sharedBuffer = getUnwrappedBuffer()) {
+      ByteBuffer unwrapbuff = sharedBuffer.getBuffer();
+      is = new ByteBufferInputStream(unwrapbuff);
+    }
+    return is;
+  }
+
+  @Override
+  public void closeInputStream(InputStream stream) throws IOException {
+    if (stream != null) {
+      stream.close();
+    }
   }
 
 }

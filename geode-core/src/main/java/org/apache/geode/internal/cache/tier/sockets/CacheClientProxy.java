@@ -77,7 +77,7 @@ import org.apache.geode.internal.cache.tier.sockets.command.Get70;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.logging.LogWriterImpl;
 import org.apache.geode.internal.logging.log4j.LogMarker;
-import org.apache.geode.internal.net.NioSslEngine;
+import org.apache.geode.internal.net.NioFilter;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.serialization.KnownVersion;
@@ -302,7 +302,7 @@ public class CacheClientProxy implements ClientSession {
   private final StatisticsClock statisticsClock;
 
   private final MessageDispatcherFactory messageDispatcherFactory;
-  private final NioSslEngine sslEngine;
+  private final NioFilter ioFilter;
 
   /**
    * Constructor.
@@ -317,13 +317,13 @@ public class CacheClientProxy implements ClientSession {
       ClientProxyMembershipID proxyID, boolean isPrimary, byte clientConflation,
       KnownVersion clientVersion, long acceptorId, boolean notifyBySubscription,
       SecurityService securityService, Subject subject, StatisticsClock statisticsClock,
-      NioSslEngine sslEngine)
+      NioFilter ioFilter)
       throws CacheException {
     this(ccn.getCache(), ccn, socket, proxyID, isPrimary, clientConflation, clientVersion,
         acceptorId, notifyBySubscription, securityService, subject, statisticsClock,
         ccn.getCache().getInternalDistributedSystem().getStatisticsManager(),
         DEFAULT_CACHECLIENTPROXYSTATSFACTORY,
-        DEFAULT_MESSAGEDISPATCHERFACTORY, sslEngine);
+        DEFAULT_MESSAGEDISPATCHERFACTORY, ioFilter);
   }
 
   @VisibleForTesting
@@ -333,7 +333,7 @@ public class CacheClientProxy implements ClientSession {
       SecurityService securityService, Subject subject, StatisticsClock statisticsClock,
       StatisticsFactory statisticsFactory,
       CacheClientProxyStatsFactory cacheClientProxyStatsFactory,
-      MessageDispatcherFactory messageDispatcherFactory, NioSslEngine sslEngine)
+      MessageDispatcherFactory messageDispatcherFactory, NioFilter ioFilter)
       throws CacheException {
     initializeTransientFields(socket, proxyID, isPrimary, clientConflation, clientVersion);
     this._cacheClientNotifier = ccn;
@@ -347,7 +347,7 @@ public class CacheClientProxy implements ClientSession {
     this._statistics =
         cacheClientProxyStatsFactory.create(statisticsFactory, proxyID, _remoteHostAddress);
     this.subject = subject;
-    this.sslEngine = sslEngine;
+    this.ioFilter = ioFilter;
 
     // Create the interest list
     this.cils[RegisterInterestTracker.interestListIndex] =
@@ -2052,7 +2052,7 @@ public class CacheClientProxy implements ClientSession {
     MessageDispatcher create(CacheClientProxy proxy, String name, StatisticsClock statisticsClock);
   }
 
-  public NioSslEngine getSslEngine() {
-    return sslEngine;
+  public NioFilter getIOFilter() {
+    return ioFilter;
   }
 }

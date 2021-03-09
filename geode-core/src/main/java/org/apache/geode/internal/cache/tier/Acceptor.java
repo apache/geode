@@ -26,7 +26,7 @@ import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor;
 import org.apache.geode.internal.cache.tier.sockets.CommBufferPool;
 import org.apache.geode.internal.cache.tier.sockets.ConnectionListener;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.internal.net.NioSslEngine;
+import org.apache.geode.internal.net.NioFilter;
 import org.apache.geode.internal.net.SocketCloser;
 
 /**
@@ -103,7 +103,7 @@ public interface Acceptor extends CommBufferPool {
 
   void refuseHandshake(OutputStream out, String message, byte exception) throws IOException;
 
-  void refuseHandshake(OutputStream out, String message, byte exception, NioSslEngine sslEngine,
+  void refuseHandshake(OutputStream out, String message, byte exception, NioFilter ioFilter,
       Socket socket) throws IOException;
 
   void registerServerConnection(ServerConnection serverConnection);
