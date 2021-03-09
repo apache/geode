@@ -15,12 +15,15 @@
 
 package org.apache.geode.redis;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 
 import java.util.Arrays;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -46,13 +49,13 @@ public class OutOfMemoryDUnitTest {
   public ExecutorServiceRule executor = new ExecutorServiceRule();
 
   private static final String expectedEx = "Member: .*? above .*? critical threshold";
-  public static final String FILLER_KEY = "fillerKey-";
-  public static final String PRESSURE_KEY = "pressureKey-";
+  private static final String FILLER_KEY = "fillerKey-";
+  private static final String PRESSURE_KEY = "pressureKey-";
   private static final String LOCAL_HOST = "127.0.0.1";
-  public static final int KEY_TTL_SECONDS = 10;
+  private static final int KEY_TTL_SECONDS = 10;
   private static final int MAX_ITERATION_COUNT = 4000;
-  public static final int LARGE_VALUE_SIZE = 128 * 1024;
-  public static final int PRESSURE_VALUE_SIZE = 4 * 1024;
+  private static final int LARGE_VALUE_SIZE = 128 * 1024;
+  private static final int PRESSURE_VALUE_SIZE = 4 * 1024;
   private static final int JEDIS_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
   private static Jedis jedis1;
@@ -65,15 +68,11 @@ public class OutOfMemoryDUnitTest {
 
   @BeforeClass
   public static void classSetup() {
-    Properties serverProperties;
-    MemberVM locator;
-    int redisServerPort1;
-    int redisServerPort2;
-
     IgnoredException.addIgnoredException(expectedEx);
-    serverProperties = new Properties();
 
-    locator = clusterStartUp.startLocatorVM(0);
+    MemberVM locator = clusterStartUp.startLocatorVM(0);
+
+    Properties serverProperties = new Properties();
     server1 = clusterStartUp.startRedisVM(1, serverProperties, locator.getPort());
     server2 = clusterStartUp.startRedisVM(2, serverProperties, locator.getPort());
 
@@ -82,12 +81,11 @@ public class OutOfMemoryDUnitTest {
     server2.getVM().invoke(() -> RedisClusterStartupRule.getCache().getResourceManager()
         .setCriticalHeapPercentage(5.0F));
 
-    redisServerPort1 = clusterStartUp.getRedisPort(1);
-    redisServerPort2 = clusterStartUp.getRedisPort(2);
+    int redisServerPort1 = clusterStartUp.getRedisPort(1);
+    int redisServerPort2 = clusterStartUp.getRedisPort(2);
 
     jedis1 = new Jedis(LOCAL_HOST, redisServerPort1, JEDIS_TIMEOUT);
     jedis2 = new Jedis(LOCAL_HOST, redisServerPort2, JEDIS_TIMEOUT);
-
   }
 
   @Before
@@ -139,7 +137,9 @@ public class OutOfMemoryDUnitTest {
 
     fillMemory(jedis2, true);
 
-    GeodeAwaitility.await().until(() -> jedis2.ttl(FILLER_KEY + 1) == -2);
+    await().untilAsserted(() -> {
+      assertThat(jedis2.ttl(FILLER_KEY + 1)).isEqualTo(-2);
+    });
   }
 
   // TODO: test that write operations become allowed after memory has dropped
@@ -159,17 +159,20 @@ public class OutOfMemoryDUnitTest {
   }
 
   private void addMultipleKeys(Jedis jedis, String valueString, boolean withExpiration) {
-    int i = 0;
-    while (i < MAX_ITERATION_COUNT) {
-      try {
-        setRedisKeyAndValue(jedis, withExpiration, valueString, i);
-      } catch (JedisException je) {
-        assertThat(je).hasMessageContaining("OOM command not allowed");
-        break;
+    // count is final because it is never reassigned
+    AtomicInteger count = new AtomicInteger();
+
+    Throwable thrown = catchThrowable(() -> {
+      for (count.set(0); count.get() < MAX_ITERATION_COUNT; count.incrementAndGet()) {
+        setRedisKeyAndValue(jedis, withExpiration, valueString, count.get());
       }
-      i++;
-    }
-    assertThat(i).isLessThan(MAX_ITERATION_COUNT);
+    });
+
+    assertThat(thrown)
+        .isInstanceOf(Exception.class)
+        .hasMessageContaining("OOM command not allowed");
+
+    assertThat(count.get()).isLessThan(MAX_ITERATION_COUNT);
   }
 
   private void setRedisKeyAndValue(Jedis jedis, boolean withExpiration, String valueString,
