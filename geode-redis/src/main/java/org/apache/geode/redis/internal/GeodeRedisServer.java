@@ -62,7 +62,7 @@ public class GeodeRedisServer {
   private final boolean ENABLE_REDIS_UNSUPPORTED_COMMANDS =
       Boolean.getBoolean(ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM);
 
-  private final PassiveExpirationManager passiveExpirationManager;
+  // private final PassiveExpirationManager passiveExpirationManager;
 
   private final NettyRedisServer nettyRedisServer;
 
@@ -96,8 +96,8 @@ public class GeodeRedisServer {
     CommandFunction.register(regionProvider.getDataRegion(), stripedExecutor, redisStats);
     RenameFunction.register(regionProvider.getDataRegion(), stripedExecutor, redisStats);
     RedisCommandFunction.register();
-    passiveExpirationManager =
-        new PassiveExpirationManager(regionProvider.getDataRegion(), redisStats);
+    // passiveExpirationManager =
+    // new PassiveExpirationManager(regionProvider.getDataRegion(), redisStats);
     redisCommandExecutor = LoggingExecutors.newCachedThreadPool("GeodeRedisServer-Command-", true);
     nettyRedisServer = new NettyRedisServer(() -> cache.getInternalDistributedSystem().getConfig(),
         regionProvider, pubSub,
@@ -164,7 +164,7 @@ public class GeodeRedisServer {
   public synchronized void shutdown() {
     if (!shutdown) {
       logger.info("GeodeRedisServer shutting down");
-      passiveExpirationManager.stop();
+      // passiveExpirationManager.stop();
       nettyRedisServer.stop();
       redisCommandExecutor.shutdown();
       redisStats.close();
