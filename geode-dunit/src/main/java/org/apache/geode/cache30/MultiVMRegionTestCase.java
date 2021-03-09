@@ -6250,9 +6250,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
       vm1.invoke("check afterCreate and tombstone count", () -> {
         checkCCRegionTombstoneCount("after create in other vm", 0);
-        assertThat(afterCreates).describedAs("expected " + numEntries + " afterCreates")
-            .isEqualTo(
-                numEntries);
+        await().untilAsserted(() -> assertThat(afterCreates)
+            .describedAs("expected " + numEntries + " afterCreates").isEqualTo(numEntries));
         assertThat(CCRegion.size()).isEqualTo(numEntries);
         try {
           await()
