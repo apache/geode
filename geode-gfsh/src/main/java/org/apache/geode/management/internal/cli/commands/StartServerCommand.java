@@ -16,6 +16,8 @@ package org.apache.geode.management.internal.cli.commands;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.Inet4Address;
+import java.net.Inet6Address;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -33,6 +35,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.AbstractLauncher;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.ServerLauncher;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.internal.process.ProcessStreamReader;
 import org.apache.geode.internal.util.IOUtils;
@@ -59,7 +62,7 @@ public class StartServerCommand extends OfflineGfshCommand {
           specifiedDefaultValue = "true",
           help = CliStrings.START_SERVER__ASSIGN_BUCKETS__HELP) final Boolean assignBuckets,
       @CliOption(key = CliStrings.START_SERVER__BIND_ADDRESS,
-          help = CliStrings.START_SERVER__BIND_ADDRESS__HELP) final String bindAddress,
+          help = CliStrings.START_SERVER__BIND_ADDRESS__HELP) String bindAddress,
       @CliOption(key = CliStrings.START_SERVER__CACHE_XML_FILE,
           optionContext = ConverterHint.FILE_PATH,
           help = CliStrings.START_SERVER__CACHE_XML_FILE__HELP) String cacheXmlPathname,
@@ -193,6 +196,14 @@ public class StartServerCommand extends OfflineGfshCommand {
       if (StringUtils.isBlank(passwordToUse)) {
         return ResultModel
             .createError(CliStrings.START_SERVER__MSG__PASSWORD_MUST_BE_SPECIFIED);
+      }
+    }
+
+    if (bindAddress != null && bindAddress.equals("*")) {
+      if (LocalHostUtil.getAnyLocalAddress() instanceof Inet4Address) {
+        bindAddress = "0.0.0.0";
+      } else if (LocalHostUtil.getAnyLocalAddress() instanceof Inet6Address) {
+        bindAddress = "::";
       }
     }
 
