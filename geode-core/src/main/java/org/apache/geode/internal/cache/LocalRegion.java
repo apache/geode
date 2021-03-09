@@ -7072,7 +7072,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   @Override
   public void cleanupFailedInitialization() {
     isDestroyed = true;
-
+    logger.warn("#LRJ cleanupFailedInitialization set isDestroyed");
     // after isDestroyed is set to true call removeResourceListener
     cache.getInternalResourceManager(false).removeResourceListener(this);
 
@@ -7343,6 +7343,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
 
     if (isDestroyed) {
+      logger.warn("#LRJ checkRegionDestroyed isDestroyed");
       RegionDestroyedException regionDestroyedException;
       if (reinitialized_old) {
         regionDestroyedException = new RegionReinitializedException(toString(), getFullPath());

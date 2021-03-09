@@ -1746,6 +1746,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
               bucketId, this, source);
         }
       }
+      logger.warn("#LRJ removed bucket");
       // TODO rebalance - perhaps we should thow an error if we
       // can't remove the bucket??
     }

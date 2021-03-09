@@ -1444,6 +1444,7 @@ public class TXEntryState implements Releasable {
     try {
       r.checkReadiness();
       RegionEntry re = r.basicGetEntry(key);
+      logger.warn("#LRJ checkForConflict re for key " + key + ": " + (re == null ? "null": re));
       Object curCmtVersionId = null;
       try {
         if ((re == null) || re.isValueNull()) {
