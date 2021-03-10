@@ -29,6 +29,16 @@ public class CommandExecutor extends AbstractExecutor {
 
     List<Object> response = Arrays.asList(
         Arrays.asList(
+            "hmset",
+            -4,
+            Arrays.asList("write", "denyoom", "fast"),
+            1, 1, 1),
+        Arrays.asList(
+            "del",
+            -2,
+            Arrays.asList("write"),
+            1, -1, 1),
+        Arrays.asList(
             "ping",
             -1,
             Arrays.asList("stale", "fast"),
