@@ -716,7 +716,7 @@ public abstract class DistributedCacheOperation {
    * This is similar to CacheClientNotifier.removeDestroyTokensFromCqResultKeys() where the
    * destroyed events for local CQs are handled.
    */
-  protected void removeDestroyTokensFromCqResultKeys(FilterRoutingInfo filterRouting) {
+  void removeDestroyTokensFromCqResultKeys(FilterRoutingInfo filterRouting) {
     for (InternalDistributedMember m : filterRouting.getMembers()) {
       FilterInfo filterInfo = filterRouting.getFilterInfo(m);
       if (filterInfo.getCQs() == null) {

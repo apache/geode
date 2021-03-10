@@ -819,7 +819,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
   }
 
   @Override
-  protected void removeDestroyTokensFromCqResultKeys(FilterRoutingInfo filterRouting) {
+  void removeDestroyTokensFromCqResultKeys(FilterRoutingInfo filterRouting) {
     for (InternalDistributedMember m : filterRouting.getMembers()) {
       FilterInfo filterInfo = filterRouting.getFilterInfo(m);
       if (filterInfo.getCQs() == null) {
@@ -845,13 +845,10 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
           for (int i = 0; i < this.putAllData.length; i++) {
             @Unretained
             EntryEventImpl entryEvent = getEventForPosition(i);
-            if (entryEvent != null) {
-              if (cq != null && cq.getFilterID() != null && cq.getFilterID().equals(cqID)
-                  && (e.getValue().equals(MessageType.LOCAL_DESTROY))
-                  && entryEvent.getKey() != null) {
-                cq.removeFromCqResultKeys(entryEvent.getKey(), true);
-              }
-
+            if (entryEvent != null && entryEvent.getKey() != null && cq != null
+                && cq.getFilterID() != null && cq.getFilterID().equals(cqID)
+                && (e.getValue().equals(MessageType.LOCAL_DESTROY))) {
+              cq.removeFromCqResultKeys(entryEvent.getKey(), true);
             }
           }
         }
