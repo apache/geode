@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -154,6 +156,13 @@ public class PartitionedRegionRebalanceOp {
     InternalResourceManager resourceManager =
         InternalResourceManager.getInternalResourceManager(leaderRegion.getCache());
     MembershipListener listener = new MembershipChangeListener();
+
+    StringWriter sw = new StringWriter();
+    PrintWriter pw = new PrintWriter(sw);
+    new Throwable().printStackTrace(pw);
+    logger.warn("#LRJ PRRebalanceOp.execute stacktrace");
+    logger.warn(sw);
+
     if (isRebalance) {
       InternalResourceManager.getResourceObserver().rebalancingStarted(targetRegion);
     } else {
