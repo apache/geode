@@ -54,7 +54,6 @@ public class ParallelGatewaySenderImplTest {
     attrs = new GatewaySenderAttributes();
     attrs.isParallel = true;
     attrs.id = "sender";
-    attrs.groupTransactionEvents = true;
     InternalDistributedSystem system = mock(InternalDistributedSystem.class);
     CancelCriterion cancelCriterion = mock(CancelCriterion.class);
     Statistics stats = mock(Statistics.class);
@@ -99,6 +98,8 @@ public class ParallelGatewaySenderImplTest {
 
   @Test
   public void whenStoppedTwiceCloseInTimeWithGroupTransactionEventsPreStopWaitsTwice() {
+    attrs.groupTransactionEvents = true;
+    gatewaysender = new ParallelGatewaySenderImpl(cache, statisticsClock, attrs);
     gatewaysender.start();
 
     long start = System.currentTimeMillis();
@@ -116,7 +117,7 @@ public class ParallelGatewaySenderImplTest {
 
     long finish = System.currentTimeMillis();
     long timeElapsed = finish - start;
-    // Each call to preStop waits for 1 second but they are not serialized
+    // Each call to preStop waits for 1 second but these waits execute in parallel
     assertThat(timeElapsed).isGreaterThan(1000);
 
     assertThat(gatewaysender.isRunning()).isEqualTo(false);

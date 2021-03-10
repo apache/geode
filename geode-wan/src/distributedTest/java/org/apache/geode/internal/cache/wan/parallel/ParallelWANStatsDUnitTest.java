@@ -511,7 +511,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     // Wait for customer transactions to finish
     inv1.await();
     int orderEntries = transactionsPerCustomer * customers;
-    int shipmentEntries = orderEntries * 10;
+    int shipmentEntries = orderEntries * shipmentsPerTransaction;
     vm4.invoke(() -> WANTestBase.validateRegionSize(orderRegionName, orderEntries));
     vm5.invoke(() -> WANTestBase.validateRegionSize(orderRegionName, orderEntries));
     vm4.invoke(() -> WANTestBase.validateRegionSize(shipmentRegionName, shipmentEntries));
@@ -565,7 +565,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     // Wait for the customer transactions to finish
     inv1.await();
     int orderEntries = transactionsPerCustomer * customers;
-    int shipmentEntries = orderEntries * 10;
+    int shipmentEntries = orderEntries * shipmentsPerTransaction;
     vm4.invoke(() -> WANTestBase.validateRegionSize(orderRegionName, orderEntries));
     vm5.invoke(() -> WANTestBase.validateRegionSize(orderRegionName, orderEntries));
     vm4.invoke(() -> WANTestBase.validateRegionSize(shipmentRegionName, shipmentEntries));
@@ -644,7 +644,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     // Only complete transactions (1 order + 10 shipments) must be replicated
     int orderRegionSize = vm2.invoke(() -> getRegionSize(orderRegionName));
     int shipmentRegionSize = vm2.invoke(() -> getRegionSize(shipmentRegionName));
-    assertEquals(shipmentRegionSize, 10 * orderRegionSize);
+    assertEquals(shipmentRegionSize, shipmentsPerTransaction * orderRegionSize);
 
     vm2.invoke(() -> WANTestBase.validateRegionSize(orderRegionName, batchesDistributed));
     vm2.invoke(() -> WANTestBase.validateRegionSize(shipmentRegionName,
@@ -655,7 +655,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     int batchesSentTotal = vm4.invoke(() -> WANTestBase.getSenderStats("ln", -1)).get(4) +
         vm5.invoke(() -> WANTestBase.getSenderStats("ln", -1)).get(4);
 
-    // Wait for all batches to be received by the sender
+    // Wait for all batches to be received by the receiver
     vm2.invoke(() -> await()
         .until(() -> WANTestBase.getReceiverStats().get(2) == batchesSentTotal));
 

@@ -376,7 +376,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     int eventsPerTransaction = batchSize + 1;
     // The number of entries must be big enough so that not all entries
     // are replicated before the sender is stopped and also divisible by eventsPerTransaction
-    int entries = 2200;
+    int entries = eventsPerTransaction * 200;
     // Execute some transactions
     AsyncInvocation<Void> inv1 =
         asyncExecuteTransactions(regionName, eventsPerTransaction, entries);
@@ -440,7 +440,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     int eventsPerTransaction = batchSize + 1;
     // The number of entries must be big enough so that not all entries
     // are replicated before the sender is stopped and also divisible by eventsPerTransaction
-    int entries = 2200;
+    int entries = eventsPerTransaction * 200;
     // Execute some transactions
     AsyncInvocation<Void> inv1 =
         asyncExecuteTransactions(regionName, eventsPerTransaction, entries);

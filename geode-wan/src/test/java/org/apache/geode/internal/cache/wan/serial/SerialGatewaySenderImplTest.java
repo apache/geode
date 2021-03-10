@@ -81,6 +81,11 @@ public class SerialGatewaySenderImplTest {
   }
 
   private SerialGatewaySenderImpl createSerialGatewaySenderImplSpy() {
+    return createSerialGatewaySenderImplSpy(false);
+  }
+
+  private SerialGatewaySenderImpl createSerialGatewaySenderImplSpy(
+      boolean mustGroupTransactionEvents) {
     GatewaySenderAdvisor gatewaySenderAdvisor = mock(GatewaySenderAdvisor.class);
     when(gatewaySenderAdvisor.isPrimary()).thenReturn(true);
 
@@ -102,7 +107,9 @@ public class SerialGatewaySenderImplTest {
 
     doReturn(null).when(spySerialGatewaySender).getQueues();
 
-    doReturn(true).when(spySerialGatewaySender).mustGroupTransactionEvents();
+    if (mustGroupTransactionEvents) {
+      doReturn(true).when(spySerialGatewaySender).mustGroupTransactionEvents();
+    }
 
     return spySerialGatewaySender;
   }
@@ -136,7 +143,7 @@ public class SerialGatewaySenderImplTest {
 
   @Test
   public void whenStoppedTwiceCloseInTimeWithGroupTransactionEventsPreStopWaitsTwice() {
-    serialGatewaySender = createSerialGatewaySenderImplSpy();
+    serialGatewaySender = createSerialGatewaySenderImplSpy(true);
 
     long start = System.currentTimeMillis();
 
@@ -154,7 +161,7 @@ public class SerialGatewaySenderImplTest {
     long finish = System.currentTimeMillis();
     long timeElapsed = finish - start;
 
-    // Each call to preStop waits for 1 second but they are not serialized
+    // Each call to preStop waits for 1 second but these waits execute in parallel
     assertThat(timeElapsed).isGreaterThan(1000);
 
     assertThat(serialGatewaySender.getEventProcessor()).isNull();
