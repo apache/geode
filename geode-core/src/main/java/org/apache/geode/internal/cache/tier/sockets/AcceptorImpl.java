@@ -982,7 +982,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
             tmpSel.selectNow(); // clear canceled key
             sc.registerWithSelector2(selector);
           } else {
-            if (tmpsk.isValid() && tmpsk.isReadable()) {
+            if (tmpsk.isValid() && (tmpsk.isReadable() || tmpsk.isWritable())) {
               try {
                 tmpsk.cancel();
                 tmpSel.selectNow(); // clear canceled key
