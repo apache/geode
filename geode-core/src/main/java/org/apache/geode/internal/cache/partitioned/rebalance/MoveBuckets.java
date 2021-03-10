@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.partitioned.rebalance;
 
 import org.apache.geode.internal.cache.partitioned.rebalance.model.Move;
 import org.apache.geode.internal.cache.partitioned.rebalance.model.PartitionedRegionLoadModel;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * A director to move buckets to improve the load balance of a PR. This is most commonly used as an
@@ -55,7 +56,7 @@ public class MoveBuckets extends RebalanceDirectorAdapter {
     }
 
     model.moveBucket(bestMove);
-
+    LogService.getLogger().warn("#LRJ finished moving bucket");
     return true;
   }
 

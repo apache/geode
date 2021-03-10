@@ -834,10 +834,12 @@ public class BucketRegion extends DistributedRegion implements Bucket {
           if (tryLock) {
             boolean locked = primaryMoveReadLock.tryLock();
             if (!locked) {
+              logger.warn("#LRJ failed to get primary bucket move lock");
               parentLock.unlock();
               return false;
             }
           } else {
+            logger.warn("#LRJ got primary bucket move lock, locking...");
             primaryMoveReadLock.lockInterruptibly();
           }
         } else {

@@ -2257,6 +2257,7 @@ public abstract class AbstractRegionMap extends BaseRegionMap
 
     RegionVersionVector vector = r.getVersionVector();
     if (vector != null) {
+      logger.warn("#LRJ lockRegionForAtomixTX rvv locking cache");
       vector.lockForCacheModification();
     }
 

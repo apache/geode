@@ -274,6 +274,7 @@ public class PartitionedRegionRebalanceOp {
       }
       try {
         if (isRebalance) {
+          logger.warn("#LRJ rebalancing finished for region {} ", targetRegion);
           InternalResourceManager.getResourceObserver().rebalancingFinished(targetRegion);
         } else {
           InternalResourceManager.getResourceObserver().recoveryFinished(targetRegion);

@@ -740,6 +740,7 @@ public class TXState implements TXStateInterface {
         Map.Entry<InternalRegion, TXRegionState> me = it.next();
         InternalRegion r = me.getKey();
         if (r instanceof BucketRegion) {
+          logger.warn("#LRJ iterating thru bucket regions: {}", r.getName());
           if (isDistTx() && !((BucketRegion) r).getBucketAdvisor().isPrimary()) {
             // For distTx we skip for taking locks on secondary.
             continue;
@@ -753,6 +754,7 @@ public class TXState implements TXStateInterface {
             // use tryLocks to avoid hanging (bug #41708)
             boolean locked = b.doLockForPrimary(true);
             if (locked) {
+              logger.warn("#LRJ locks acquired and added to set");
               obtained.add(b);
               lockObtained = true;
             } else {
