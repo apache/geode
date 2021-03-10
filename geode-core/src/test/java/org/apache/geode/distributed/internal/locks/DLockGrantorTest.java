@@ -21,7 +21,7 @@ import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.powermock.api.mockito.PowerMockito.when;
+import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -33,13 +33,12 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 
 public class DLockGrantorTest {
   private DLockService dLockService;
-  private DistributionManager distributionManager;
   private DLockGrantor grantor;
 
   @Before
   public void setup() {
     dLockService = mock(DLockService.class, RETURNS_DEEP_STUBS);
-    distributionManager = mock(DistributionManager.class);
+    DistributionManager distributionManager = mock(DistributionManager.class);
     when(dLockService.getDistributionManager()).thenReturn(distributionManager);
     CancelCriterion cancelCriterion = mock(CancelCriterion.class);
     when(distributionManager.getCancelCriterion()).thenReturn(cancelCriterion);
