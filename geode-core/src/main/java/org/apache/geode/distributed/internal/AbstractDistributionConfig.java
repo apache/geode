@@ -104,6 +104,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_RECV_BUFFER_SIZE;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_SEND_BUFFER_SIZE;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_TTL;
+import static org.apache.geode.distributed.ConfigurationProperties.MEMBERSHIP_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.MEMBERSHIP_PORT_RANGE;
 import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.MEMCACHED_BIND_ADDRESS;
@@ -1059,6 +1060,9 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
     m.put(BIND_ADDRESS, String.format(
         "The address server sockets will listen on. An empty string causes the server socket to listen on all local addresses. Defaults to %s.",
         DEFAULT_BIND_ADDRESS));
+
+    m.put(MEMBERSHIP_BIND_ADDRESS,
+        "Specifies the IP address to which the UDP membership-related traffic will be bound.");
 
     m.put(SERVER_BIND_ADDRESS,
         String.format(

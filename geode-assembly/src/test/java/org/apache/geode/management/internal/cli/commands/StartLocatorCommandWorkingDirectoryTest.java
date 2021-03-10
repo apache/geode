@@ -48,7 +48,7 @@ public class StartLocatorCommandWorkingDirectoryTest {
         anyInt(), anyString(), isNull(), isNull(),
         isNull(), isNull(), isNull(), anyBoolean(),
         anyBoolean(), anyBoolean(), isNull(), anyInt(),
-        isNull(), anyBoolean());
+        isNull(), anyBoolean(), isNull());
 
     workingDirectoryCaptor = ArgumentCaptor.forClass(String.class);
   }
@@ -63,7 +63,7 @@ public class StartLocatorCommandWorkingDirectoryTest {
         0, workingDirectory, null, null,
         null, null, null, false,
         false, false, null, 0,
-        null, false);
+        null, false, null);
 
     verifyDoStartLocatorInvoked();
 
@@ -81,7 +81,7 @@ public class StartLocatorCommandWorkingDirectoryTest {
         0, workingDirectory, null, null,
         null, null, null, false,
         false, false, null, 0,
-        null, false);
+        null, false, null);
 
     verifyDoStartLocatorInvoked();
 
@@ -98,7 +98,7 @@ public class StartLocatorCommandWorkingDirectoryTest {
         0, workingDirectory, null, null,
         null, null, null, false,
         false, false, null, 0,
-        null, false);
+        null, false, null);
 
     verifyDoStartLocatorInvoked();
 
@@ -115,7 +115,7 @@ public class StartLocatorCommandWorkingDirectoryTest {
         0, workingDirectory, null, null,
         null, null, null, false,
         false, false, null, 0,
-        null, false);
+        null, false, null);
 
     verifyDoStartLocatorInvoked();
 
@@ -133,7 +133,7 @@ public class StartLocatorCommandWorkingDirectoryTest {
         0, workingDirectory, null, null,
         null, null, null, false,
         false, false, null, 0,
-        null, false);
+        null, false, null);
 
     verifyDoStartLocatorInvoked();
 
@@ -147,6 +147,6 @@ public class StartLocatorCommandWorkingDirectoryTest {
         isNull(), isNull(), anyInt(), anyInt(), workingDirectoryCaptor.capture(),
         isNull(), isNull(), isNull(), isNull(), isNull(),
         anyBoolean(), anyBoolean(), anyBoolean(), isNull(), anyInt(), isNull(),
-        anyBoolean());
+        anyBoolean(), isNull());
   }
 }

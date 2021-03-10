@@ -1277,6 +1277,16 @@ public interface ConfigurationProperties {
    */
   String MAX_WAIT_TIME_RECONNECT = "max-wait-time-reconnect";
   /**
+   * The static String definition of the <i>"membership-bind-address"</i> property <a
+   * name="membership-bind-address"/a>
+   * </p>
+   * <U>Description</U>: Specifies the IP address to which the UDP membership-related traffic
+   * will be bound.
+   * <p>
+   * <U>Default</U>: ""
+   */
+  String MEMBERSHIP_BIND_ADDRESS = "membership-bind-address";
+  /**
    * The static String definition of the <i>"mcast-address"</i> property <a name="mcast-address"/a>
    * <p>
    * <U>Description</U>: The IP address used for multicast networking. If mcast-port is zero, then

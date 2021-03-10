@@ -197,6 +197,11 @@ public class ServiceConfig implements MembershipConfig {
     return dconfig.getStartLocator();
   }
 
+  @Override
+  public String getMembershipBindAddress() {
+    return dconfig.getMembershipBindAddress();
+  }
+
   public boolean getEnableNetworkPartitionDetection() {
     return dconfig.getEnableNetworkPartitionDetection();
   }

@@ -19,6 +19,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.lowerCase;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.MEMBERSHIP_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.internal.lang.StringUtils.wrap;
 import static org.apache.geode.internal.lang.SystemUtils.CURRENT_DIRECTORY;
@@ -139,6 +140,8 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     help.put("hostname-for-clients",
         "An option to specify the hostname or IP address to send to clients so they can connect to this Locator. The default is to use the IP address to which the Locator is bound.");
     help.put("member", "Identifies the Locator by member name or ID in the GemFire cluster.");
+    help.put(MEMBERSHIP_BIND_ADDRESS,
+        "Specifies the IP address to which the UDP membership-related traffic will be bound.");
     help.put("pid", "Indicates the OS process ID of the running Locator.");
     help.put("port", String.format(
         "Specifies the port on which the Locator is listening for client requests. Defaults to %s.",
@@ -155,7 +158,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   static {
     Map<Command, String> usage = new TreeMap<>();
     usage.put(Command.START,
-        "start <member-name> [--bind-address=<IP-address>] [--hostname-for-clients=<IP-address>] [--port=<port>] [--dir=<Locator-working-directory>] [--force] [--debug] [--help]");
+        "start <member-name> [--bind-address=<IP-address>] [--hostname-for-clients=<IP-address>] [--port=<port>] [--dir=<Locator-working-directory>] [--force] [--membership-bind-address=<IP-address>] [--debug] [--help]");
     usage.put(Command.STATUS,
         "status [--bind-address=<IP-address>] [--port=<port>] [--member=<member-ID/Name>] [--pid=<process-ID>] [--dir=<Locator-working-directory>] [--debug] [--help]");
     usage.put(Command.STOP,
@@ -287,6 +290,10 @@ public class LocatorLauncher extends AbstractLauncher<String> {
         return statusInProcess();
       }
     };
+    if (builder.membershipBindAddressSpecified()) {
+      this.distributedSystemProperties.setProperty(MEMBERSHIP_BIND_ADDRESS,
+          builder.getMembershipBindAddress());
+    }
   }
 
   /**
@@ -432,6 +439,25 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    */
   public boolean isRedirectingOutput() {
     return this.redirectOutput;
+  }
+
+  /**
+   * Determines whether the membership-bind-address property is defined or not.
+   *
+   * @return a boolean value indicating if the membership-bind-address property is defined or not.
+   */
+  public boolean membershipBindAddressSpecified() {
+    return (this.distributedSystemProperties.getProperty(MEMBERSHIP_BIND_ADDRESS) != null);
+  }
+
+  /**
+   * Gets the IP address to be used for UDP membership-related traffic binding.
+   *
+   * @return a String containing the IP address to be used for UDP membership-related traffic
+   *         binding.
+   */
+  public String getMembershipBindAddress() {
+    return this.distributedSystemProperties.getProperty(MEMBERSHIP_BIND_ADDRESS);
   }
 
   /**
@@ -1278,6 +1304,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     private Command command;
 
     private HostAddress bindAddress;
+    private String membershipBindAddress;
 
     private Integer pid;
     private Integer port;
@@ -1321,6 +1348,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       parser.accepts("force");
       parser.accepts("help");
       parser.accepts("hostname-for-clients").withRequiredArg().ofType(String.class);
+      parser.accepts(MEMBERSHIP_BIND_ADDRESS).withRequiredArg().ofType(String.class);
       parser.accepts("pid").withRequiredArg().ofType(Integer.class);
       parser.accepts("port").withRequiredArg().ofType(Integer.class);
       parser.accepts("redirect-output");
@@ -1374,6 +1402,11 @@ public class LocatorLauncher extends AbstractLauncher<String> {
           if (options.has("version")) {
             setCommand(Command.VERSION);
           }
+
+          if (options.has(MEMBERSHIP_BIND_ADDRESS)) {
+            setMembershipBindAddress(
+                ObjectUtils.toString(options.valueOf(MEMBERSHIP_BIND_ADDRESS)));
+          }
         }
       } catch (OptionException e) {
         throw new IllegalArgumentException(
@@ -1394,8 +1427,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      */
     protected void parseCommand(final String... args) {
       // search the list of arguments for the command; technically, the command should be the first
-      // argument in the
-      // list, but does it really matter? stop after we find one valid command.
+      // argument in the list, but does it really matter? stop after we find one valid command.
       if (args != null) {
         for (String arg : args) {
           final Command command = Command.valueOfName(arg);
@@ -1761,6 +1793,38 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       }
       this.port = port;
       return this;
+    }
+
+    /**
+     * Sets the IP address to be used for UDP membership-related traffic binding.
+     *
+     * @param membershipBindAddress a String containing the IP address to be used for
+     *        UDP membership-related traffic binding.
+     * @return this Builder instance.
+     * @see #getMembershipBindAddress()
+     */
+    public Builder setMembershipBindAddress(final String membershipBindAddress) {
+      this.membershipBindAddress = membershipBindAddress;
+      return this;
+    }
+
+    /**
+     * Gets the IP address to be used for UDP membership-related traffic binding.
+     *
+     * @return a String containing the IP address to be used for UDP membership-related traffic
+     *         binding.
+     */
+    public String getMembershipBindAddress() {
+      return this.membershipBindAddress;
+    }
+
+    /**
+     * Determines whether the membership-bind-address property is defined or not.
+     *
+     * @return a boolean value indicating if the membership-bind-address property is defined or not.
+     */
+    public boolean membershipBindAddressSpecified() {
+      return this.membershipBindAddress != null;
     }
 
     /**

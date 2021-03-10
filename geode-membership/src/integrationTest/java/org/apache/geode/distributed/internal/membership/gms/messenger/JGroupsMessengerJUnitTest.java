@@ -1205,5 +1205,4 @@ public class JGroupsMessengerJUnitTest {
       return oldMembershipInfo;
     }
   }
-
 }

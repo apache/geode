@@ -2501,6 +2501,10 @@ public class CliStrings {
   public static final String START_LOCATOR__HTTP_SERVICE_BIND_ADDRESS = "http-service-bind-address";
   public static final String START_LOCATOR__HTTP_SERVICE_BIND_ADDRESS__HELP =
       "The IP address on which the HTTP Service will be bound.  By default, the Server is bound to all local addresses.";
+  public static final String START_LOCATOR__MEMBERSHIP_BIND_ADDRESS =
+      "membership-bind-address";
+  public static final String START_LOCATOR__MEMBERSHIP_BIND_ADDRESS__HELP =
+      "Sets the IP address to which the UDP membership-related traffic will be bound.";
   public static final String START_LOCATOR__REDIRECT_OUTPUT = "redirect-output";
   public static final String START_LOCATOR__REDIRECT_OUTPUT__HELP =
       "Causes the member to redirect standard out and standard error to its own log file";
@@ -2605,6 +2609,9 @@ public class CliStrings {
   public static final String START_SERVER__MCAST_PORT = MCAST_PORT;
   public static final String START_SERVER__MCAST_PORT__HELP =
       "Sets the port used for multi-cast networking so the Cache Server can communicate with other members of the Geode cluster.  A zero value disables mcast.";
+  public static final String START_SERVER__MEMBERSHIP_BIND_ADDRESS = "membership-bind-address";
+  public static final String START_SERVER__MEMBERSHIP_BIND_ADDRESS__HELP =
+      "Sets the IP address to which the UDP membership-related traffic will be bound.";
   public static final String START_SERVER__NAME = "name";
   public static final String START_SERVER__NAME__HELP =
       "The member name to give this Cache Server in the Geode cluster.";

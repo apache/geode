@@ -191,6 +191,11 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   private int startLocatorPort;
 
   /**
+   * The IP address to which the UDP membership-related traffic will be bound.
+   */
+  protected String membershipBindAddress = DEFAULT_MEMBERSHIP_BIND_ADDRESS;
+
+  /**
    * Is statistic sampling enabled?
    */
   protected boolean statisticSamplingEnabled = DEFAULT_STATISTIC_SAMPLING_ENABLED;
@@ -689,6 +694,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     roles = other.getRoles();
     mcastAddress = other.getMcastAddress();
     bindAddress = other.getBindAddress();
+    membershipBindAddress = other.getMembershipBindAddress();
     serverBindAddress = other.getServerBindAddress();
     locators = ((DistributionConfigImpl) other).locators;
     locatorWaitTime = other.getLocatorWaitTime();
@@ -1834,6 +1840,11 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   }
 
   @Override
+  public String getMembershipBindAddress() {
+    return membershipBindAddress;
+  }
+
+  @Override
   public File getDeployWorkingDir() {
     return deployWorkingDir;
   }
@@ -2127,6 +2138,11 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
       }
     }
     startLocator = value;
+  }
+
+  @Override
+  public void setMembershipBindAddress(String value) {
+    membershipBindAddress = value;
   }
 
   @Override
