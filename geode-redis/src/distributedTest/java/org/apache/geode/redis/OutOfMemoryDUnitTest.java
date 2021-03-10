@@ -125,21 +125,33 @@ public class OutOfMemoryDUnitTest {
     IgnoredException.addIgnoredException(expectedEx);
     IgnoredException.addIgnoredException("LowMemoryException");
 
+    memoryPressureThread = new Thread(makeMemoryPressureRunnable());
+    memoryPressureThread.start();
+
     fillMemory(jedis2, false);
 
     assertThatNoException().isThrownBy(() -> jedis2.del(FILLER_KEY + 1));
+
+    memoryPressureThread.interrupt();
+    memoryPressureThread.join();
   }
 
   @Test
-  public void shouldAllowExpiration_afterThresholdReached() {
+  public void shouldAllowExpiration_afterThresholdReached() throws InterruptedException {
     IgnoredException.addIgnoredException(expectedEx);
     IgnoredException.addIgnoredException("LowMemoryException");
+
+    memoryPressureThread = new Thread(makeMemoryPressureRunnable());
+    memoryPressureThread.start();
 
     fillMemory(jedis2, true);
 
     await().untilAsserted(() -> {
       assertThat(jedis2.ttl(FILLER_KEY + 1)).isEqualTo(-2);
     });
+
+    memoryPressureThread.interrupt();
+    memoryPressureThread.join();
   }
 
   // TODO: test that write operations become allowed after memory has dropped
