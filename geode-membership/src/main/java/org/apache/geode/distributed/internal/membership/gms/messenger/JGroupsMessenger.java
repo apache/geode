@@ -279,20 +279,11 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
     properties =
         replaceStrings(properties, "UDP_SEND_BUFFER_SIZE", "" + config.getUdpSendBufferSize());
 
-    String str = config.getBindAddress();
     // JGroups UDP protocol requires a bind address
-    if (str == null || str.length() == 0 || LocalHostUtil.isWildcardAddress(str)) {
-      // TODO: Here we are in a case where the value of bind-address is not applicable
-      // because its a wildcard address, null or empty value.
-      // If "membership-bind-address" is defined, use it.
-      // If not, the current value ("LocalHostUtil.getLocalHost().getHostAddress()")
-      try {
-        str = LocalHostUtil.getLocalHost().getHostAddress();
-      } catch (UnknownHostException e) {
-        throw new MembershipConfigurationException(e.getMessage(), e);
-      }
-    }
-    properties = replaceStrings(properties, "BIND_ADDR_SETTING", "bind_addr=\"" + str + "\"");
+    String bindAddressStr =
+        getAddressForUDPBinding(config.getBindAddress(), config.getMembershipBindAddress());
+    properties =
+        replaceStrings(properties, "BIND_ADDR_SETTING", "bind_addr=\"" + bindAddressStr + "\"");
 
     int port = Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "jg-bind-port", 0);
     if (port != 0) {
@@ -323,6 +314,32 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
         throw new MembershipConfigurationException("problem initializing encryption protocol", e);
       }
     }
+  }
+
+  /**
+   * Decides which address will be used to UDP binding.
+   *
+   * @param bindAddress Value of bind-address config parameter
+   * @param membershipBindAddress Value of membership-bind-address config parameter
+   * @return Address that will be used to UDP binding.
+   */
+  String getAddressForUDPBinding(String bindAddress, String membershipBindAddress)
+      throws MembershipConfigurationException {
+    try {
+      if (membershipBindAddress != null && membershipBindAddress.length() > 0) {
+        if (LocalHostUtil.isWildcardAddress(membershipBindAddress)) {
+          throw new MembershipConfigurationException(
+              "'membership-bind-address' cannot be a wildcard address. JGroups UDP protocol requires a bind address.");
+        }
+        return membershipBindAddress;
+      } else if (bindAddress == null || bindAddress.length() == 0
+          || LocalHostUtil.isWildcardAddress(bindAddress)) {
+        return LocalHostUtil.getLocalHost().getHostAddress();
+      }
+    } catch (UnknownHostException e) {
+      throw new MembershipConfigurationException(e.getMessage(), e);
+    }
+    return bindAddress;
   }
 
   @Override

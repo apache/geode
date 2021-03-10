@@ -21,6 +21,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.lowerCase;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.MEMBERSHIP_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.SERVER_BIND_ADDRESS;
 import static org.apache.geode.internal.lang.StringUtils.wrap;
@@ -148,6 +149,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
     help.put("help",
         "Causes GemFire to print out information instead of performing the command. This option is supported by all commands.");
     help.put("member", "Identifies the Server by member name or ID in the GemFire cluster.");
+    help.put(MEMBERSHIP_BIND_ADDRESS,
+        "Specifies the IP address to which the UDP membership-related traffic will be bound.");
     help.put("pid", "Indicates the OS process ID of the running Server.");
     help.put("rebalance",
         "An option to cause the GemFire cache's partitioned regions to be rebalanced on start.");
@@ -169,7 +172,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
   static {
     Map<Command, String> usage = new TreeMap<>();
     usage.put(Command.START,
-        "start <member-name> [--assign-buckets] [--disable-default-server] [--rebalance] [--server-bind-address=<IP-address>] [--server-port=<port>] [--force] [--debug] [--help]");
+        "start <member-name> [--assign-buckets] [--disable-default-server] [--rebalance] [--server-bind-address=<IP-address>] [--server-port=<port>] [--membership-bind-address=<IP-address>] [--force] [--debug] [--help]");
     usage.put(Command.STATUS,
         "status [--member=<member-ID/Name>] [--pid=<process-ID>] [--dir=<Server-working-directory>] [--debug] [--help]");
     usage.put(Command.STOP,
@@ -349,6 +352,11 @@ public class ServerLauncher extends AbstractLauncher<String> {
         builder.isServerBindAddressSetByUser() && this.serverBindAddress != null
             ? this.serverBindAddress.getHostAddress() : null;
 
+    if (builder.membershipBindAddressSpecified()) {
+      this.distributedSystemProperties.setProperty(MEMBERSHIP_BIND_ADDRESS,
+          builder.getMembershipBindAddress());
+    }
+
     ServerLauncherParameters.INSTANCE
         .withPort(serverPort)
         .withMaxThreads(maxThreads)
@@ -483,6 +491,25 @@ public class ServerLauncher extends AbstractLauncher<String> {
    */
   public boolean isRedirectingOutput() {
     return redirectOutput;
+  }
+
+  /**
+   * Determines whether the membership-bind-address property is defined or not.
+   *
+   * @return a boolean value indicating if the membership-bind-address property is defined or not.
+   */
+  public boolean membershipBindAddressSpecified() {
+    return (this.distributedSystemProperties.getProperty(MEMBERSHIP_BIND_ADDRESS) != null);
+  }
+
+  /**
+   * Gets the IP address to be used for UDP membership-related traffic binding.
+   *
+   * @return a String containing the IP address to be used for UDP membership-related traffic
+   *         binding.
+   */
+  public String getMembershipBindAddress() {
+    return this.distributedSystemProperties.getProperty(MEMBERSHIP_BIND_ADDRESS);
   }
 
   /**
@@ -1454,6 +1481,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     private Command command;
 
     private InetAddress serverBindAddress;
+    private String membershipBindAddress;
 
     private Integer pid;
     private Integer serverPort;
@@ -1519,6 +1547,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
       parser.accepts("force");
       parser.accepts("help");
       parser.accepts("member").withRequiredArg().ofType(String.class);
+      parser.accepts(MEMBERSHIP_BIND_ADDRESS).withRequiredArg().ofType(String.class);
       parser.accepts("pid").withRequiredArg().ofType(Integer.class);
       parser.accepts("rebalance");
       parser.accepts("redirect-output");
@@ -1641,6 +1670,11 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
           if (options.has("version")) {
             setCommand(Command.VERSION);
+          }
+
+          if (options.has(MEMBERSHIP_BIND_ADDRESS)) {
+            setMembershipBindAddress(
+                ObjectUtils.toString(options.valueOf(MEMBERSHIP_BIND_ADDRESS)));
           }
         }
 
@@ -1997,6 +2031,38 @@ public class ServerLauncher extends AbstractLauncher<String> {
       }
       this.memberName = memberName;
       return this;
+    }
+
+    /**
+     * Sets the IP address to be used for UDP membership-related traffic binding.
+     *
+     * @param membershipBindAddress a String containing the IP address to be used for
+     *        UDP membership-related traffic binding.
+     * @return this Builder instance.
+     * @see #getMembershipBindAddress()
+     */
+    public Builder setMembershipBindAddress(final String membershipBindAddress) {
+      this.membershipBindAddress = membershipBindAddress;
+      return this;
+    }
+
+    /**
+     * Gets the IP address to be used for UDP membership-related traffic binding.
+     *
+     * @return a String containing the IP address to be used for UDP membership-related traffic
+     *         binding.
+     */
+    public String getMembershipBindAddress() {
+      return this.membershipBindAddress;
+    }
+
+    /**
+     * Determines whether the membership-bind-address property is defined or not.
+     *
+     * @return a boolean value indicating if the membership-bind-address property is defined or not.
+     */
+    public boolean membershipBindAddressSpecified() {
+      return this.membershipBindAddress != null;
     }
 
     /**

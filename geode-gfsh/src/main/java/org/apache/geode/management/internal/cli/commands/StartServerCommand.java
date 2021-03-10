@@ -179,7 +179,9 @@ public class StartServerCommand extends OfflineGfshCommand {
           help = CliStrings.START_SERVER__PASSWORD__HELP) String passwordToUse,
       @CliOption(key = CliStrings.START_SERVER__REDIRECT_OUTPUT, unspecifiedDefaultValue = "false",
           specifiedDefaultValue = "true",
-          help = CliStrings.START_SERVER__REDIRECT_OUTPUT__HELP) final Boolean redirectOutput)
+          help = CliStrings.START_SERVER__REDIRECT_OUTPUT__HELP) final Boolean redirectOutput,
+      @CliOption(key = CliStrings.START_SERVER__MEMBERSHIP_BIND_ADDRESS,
+          help = CliStrings.START_SERVER__MEMBERSHIP_BIND_ADDRESS__HELP) final String membershipBindAddress)
       throws Exception {
     // NOTICE: keep the parameters in alphabetical order based on their CliStrings.START_SERVER_*
     // text
@@ -220,7 +222,8 @@ public class StartServerCommand extends OfflineGfshCommand {
         redisPassword, messageTimeToLive, offHeapMemorySize, gemfirePropertiesFile, rebalance,
         gemfireSecurityPropertiesFile, serverBindAddress, serverPort, socketBufferSize,
         springXmlLocation, statisticsArchivePathname, requestSharedConfiguration, startRestApi,
-        httpServicePort, httpServiceBindAddress, userName, passwordToUse, redirectOutput);
+        httpServicePort, httpServiceBindAddress, userName, passwordToUse, redirectOutput,
+        membershipBindAddress);
   }
 
   ResultModel doStartServer(String memberName, Boolean assignBuckets, String bindAddress,
@@ -239,7 +242,7 @@ public class StartServerCommand extends OfflineGfshCommand {
       Integer serverPort, Integer socketBufferSize, String springXmlLocation,
       String statisticsArchivePathname, Boolean requestSharedConfiguration, Boolean startRestApi,
       String httpServicePort, String httpServiceBindAddress, String userName, String passwordToUse,
-      Boolean redirectOutput)
+      Boolean redirectOutput, String membershipBindAddress)
       throws MalformedObjectNameException, IOException, InterruptedException {
     cacheXmlPathname = CliUtils.resolvePathname(cacheXmlPathname);
 
@@ -348,6 +351,7 @@ public class StartServerCommand extends OfflineGfshCommand {
     if (memberName != null) {
       serverLauncherBuilder.setMemberName(memberName);
     }
+    serverLauncherBuilder.setMembershipBindAddress(membershipBindAddress);
     ServerLauncher serverLauncher = serverLauncherBuilder.build();
 
     String[] serverCommandLine = createStartServerCommandLine(serverLauncher, gemfirePropertiesFile,
@@ -577,6 +581,11 @@ public class StartServerCommand extends OfflineGfshCommand {
     if (launcher.getHostNameForClients() != null) {
       commandLine.add("--" + CliStrings.START_SERVER__HOSTNAME__FOR__CLIENTS + "="
           + launcher.getHostNameForClients());
+    }
+
+    if (launcher.membershipBindAddressSpecified()) {
+      commandLine.add("--" + CliStrings.START_SERVER__MEMBERSHIP_BIND_ADDRESS + "="
+          + launcher.getMembershipBindAddress());
     }
 
     return commandLine.toArray(new String[] {});

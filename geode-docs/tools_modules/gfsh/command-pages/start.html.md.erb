@@ -272,7 +272,7 @@ start locator --name=value [--bind-address=value] [--force(=value)]
  [--connect(=value)] [--enable-cluster-configuration(=value)] [--load-cluster-configuration-from-dir(=value)]
  [--cluster-config-dir=value] [--redirect-output(=value)]
  [--http-service-port=value] [--http-service-bind-address=value] 
- [--J=value(,value)*]
+ [--membership-bind-address=value] [--J=value(,value)*]
 ```
 
 **Parameters, start locator**
@@ -298,7 +298,11 @@ start locator --name=value [--bind-address=value] [--force(=value)]
 </tr>
 <tr>
 <td><span class="keyword parmname">\-\-bind-address</span></td>
-<td>IP address on which the locator will be bound.</td>
+<td>The IP address on which the locator will be bound. The '*' character is accepted for wildcard addresses.
+<div class="note note">
+<b>Note:</b> In case the locator is bound to all local addresses, UDP membership-related traffic will be bound to the local host machine's address.
+</div>
+</td>
 <td>bind to all addresses</td>
 </tr>
 <tr>
@@ -416,6 +420,14 @@ See <a href="../../../configuring/cluster_config/gfsh_persist.html">Overview of 
 <td>the local host machine's address</td>
 </tr>
 <tr>
+<td><span class="keyword parmname">\-\-membership-bind-address</span></td>
+<td>Specifies the IP address to which the UDP membership-related traffic will be bound. If defined, it has precedence over the value of <code>bind-address</code>. Wildcard addresses are not accepted.
+<div class="note note">
+<b>Note:</b> By default, UDP membership-related traffic is bound to <code>bind-address</code> but there is one exception. In case the locator is bound to all local addresses, UDP membership-related traffic will be bound to the local host machine's address by default.
+</div></td>
+<td>uses <code>bind-address</code></td>
+</tr>
+<tr>
 <td><span class="keyword parmname">\-\-J </span></td>
 <td>Argument passed to the JVM on which the Locator will run. For example, specifying <code class="ph codeph">--J=-Dfoo.bar=true</code> sets property &quot;foo.bar&quot; to &quot;true&quot;.
 <div class="note note">
@@ -495,7 +507,7 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
     [--socket-buffer-size=value] [--lock-memory=value] [--off-heap-memory-size=value]
     [--start-rest-api=value] [--redirect-output(=value)]
     [--http-service-port=value] [--http-service-bind-address=value]
-    [--user=value] [--password=value]
+    [--user=value] [--password=value] [--membership-bind-address=value]
 ```
 
 **Parameters, start server**
@@ -526,7 +538,11 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
 </tr>
 <tr>
 <td><span class="keyword parmname">\-\-bind-address</span></td>
-<td>The IP address on which the server will be bound.</td>
+<td>The IP address on which the server will be bound. The '*' character is accepted for wildcard addresses.
+<div class="note note">
+<b>Note:</b> In case the server is bound to all local addresses, UDP membership-related traffic will be bound to the local host machine's address.
+</div>
+</td>
 <td>binds to all local addresses</td>
 </tr>
 <tr>
@@ -603,6 +619,14 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
 <td><span class="keyword parmname">\-\-mcast-port</span></td>
 <td>Sets the port used for multi-cast networking so the Cache Server can locate other members of the <%=vars.product_name%> cluster. A zero value disables mcast.</td>
 <td> </td>
+</tr>
+<tr>
+<td><span class="keyword parmname">\-\-membership-bind-address</span></td>
+<td>Specifies the IP address to which the UDP membership-related traffic will be bound. If defined, it has precedence over the value of <code>bind-address</code>. Wildcard addresses are not accepted.
+<div class="note note">
+<b>Note:</b> By default, UDP membership-related traffic is bound to <code>bind-address</code> but there is one exception. In case the server is bound to all local addresses, UDP membership-related traffic will be bound to the local host machine's address by default.
+</div></td>
+<td>uses <code>bind-address</code></td>
 </tr>
 <tr>
 <td><span class="keyword parmname">\-\-memcached-port</span></td>

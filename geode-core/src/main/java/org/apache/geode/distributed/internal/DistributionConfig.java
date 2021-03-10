@@ -104,6 +104,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_RECV_BUFFER_SIZE;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_SEND_BUFFER_SIZE;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_TTL;
+import static org.apache.geode.distributed.ConfigurationProperties.MEMBERSHIP_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.MEMBERSHIP_PORT_RANGE;
 import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.MEMCACHED_BIND_ADDRESS;
@@ -543,6 +544,29 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    * The default value of the {@link ConfigurationProperties#START_LOCATOR} property
    */
   String DEFAULT_START_LOCATOR = MembershipConfig.DEFAULT_START_LOCATOR;
+
+  /**
+   * The IP address to which the UDP membership-related traffic will be bound.
+   */
+  @ConfigAttribute(type = String.class)
+  String MEMBERSHIP_BIND_ADDRESS_NAME = MEMBERSHIP_BIND_ADDRESS;
+
+  /**
+   * The default value of the {@link ConfigurationProperties#MEMBERSHIP_BIND_ADDRESS} property
+   */
+  String DEFAULT_MEMBERSHIP_BIND_ADDRESS = "";
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#MEMBERSHIP_BIND_ADDRESS} property
+   */
+  @ConfigAttributeGetter(name = MEMBERSHIP_BIND_ADDRESS_NAME)
+  String getMembershipBindAddress();
+
+  /**
+   * Set the value of the {@link ConfigurationProperties#MEMBERSHIP_BIND_ADDRESS} property
+   */
+  @ConfigAttributeSetter(name = MEMBERSHIP_BIND_ADDRESS_NAME)
+  void setMembershipBindAddress(String value);
 
   /**
    * Returns the value of the {@link ConfigurationProperties#DEPLOY_WORKING_DIR} property
