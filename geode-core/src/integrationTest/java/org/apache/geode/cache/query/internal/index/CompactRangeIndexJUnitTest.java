@@ -16,6 +16,7 @@ package org.apache.geode.cache.query.internal.index;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -23,12 +24,14 @@ import static org.junit.Assert.fail;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.util.internal.UncheckedUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -441,6 +444,48 @@ public class CompactRangeIndexJUnitTest {
       }
     }
   }
+
+  /**
+   * Tests adding entries to compact range index where there are undefined and null values
+   * for the key
+   */
+  @Test
+  public void testNullAndUndefinedValuesForMapKeyInCompactRangeIndex() throws Exception {
+    index = utils.createIndex("indexName", "positions['SUN']", SEPARATOR + "exampleRegion");
+    Region<Object, Object> region = utils.getCache().getRegion("exampleRegion");
+
+    // create objects
+    Portfolio p1 = new Portfolio(1);
+    p1.positions = new HashMap<>();
+    p1.positions.put("SUN", "yes");
+    region.put("KEY-" + 1, p1);
+
+    // null value for positions['SUN']
+    Portfolio p2 = new Portfolio(2);
+    p2.positions = new HashMap<>();
+    p2.positions.put("ERIC", 2);
+    region.put("KEY-" + 2, p2);
+
+    // Undefined value for positions['SUN']
+    Portfolio p3 = new Portfolio(3);
+    p3.positions = null;
+    region.put("KEY-" + 3, p3);
+
+    // null value for positions['SUN']
+    Portfolio p4 = new Portfolio(4);
+    p4.positions = new HashMap<>();
+    p4.positions.put("SUN", null);
+    region.put("KEY-" + 4, p4);
+
+    // execute query and check result size
+    QueryService qs = utils.getCache().getQueryService();
+    SelectResults<Object> results = UncheckedUtils.uncheckedCast(qs
+            .newQuery(
+                    "Select * from " + SEPARATOR + "exampleRegion r where r.positions['SUN'] = null")
+            .execute());
+    assertThat(results.size()).isEqualTo(2);
+  }
+
 
   private void putValues(int num) {
     Region region = utils.getRegion("exampleRegion");
