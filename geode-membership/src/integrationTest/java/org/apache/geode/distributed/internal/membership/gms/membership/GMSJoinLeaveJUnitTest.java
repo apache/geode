@@ -849,6 +849,21 @@ public class GMSJoinLeaveJUnitTest {
   }
 
   @Test
+  public void testNetworkPartitionDetectedWithNullView() throws Exception {
+    initMocks(true);
+    prepareAndInstallView(mockMembers[0], createMemberList(mockMembers[0], gmsJoinLeaveMemberId));
+
+    NetworkPartitionMessage message = new NetworkPartitionMessage();
+    message.setSender(gmsJoinLeaveMemberId);
+
+
+    // this creates a NPE that must be handled appropriately
+    gmsJoinLeave.currentView = null;
+    gmsJoinLeave.processNetworkPartitionMessage(message);
+
+  }
+
+  @Test
   public void testNetworkPartitionDetected() throws Exception {
     initMocks(true);
     prepareAndInstallView(mockMembers[0], createMemberList(mockMembers[0], gmsJoinLeaveMemberId));
