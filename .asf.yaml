@@ -54,4 +54,4 @@ notifications:
     commits: commits@geode.apache.org
     issues: issues@geode.apache.org
     pullrequests: notifications@geode.apache.org
-    jira_options: link label comment
+    jira_options: link label
