@@ -16,6 +16,7 @@
 package org.apache.geode.redis.internal.executor.server;
 
 import org.junit.ClassRule;
+import redis.clients.jedis.Jedis;
 
 import org.apache.geode.NativeRedisTestRule;
 
@@ -26,5 +27,15 @@ public class InfoStatsNativeRedisAcceptanceTest extends AbstractRedisInfoStatsIn
   @Override
   public int getPort() {
     return redis.getPort();
+  }
+
+  @Override
+  public int getExposedPort() {
+    return redis.getExposedPort();
+  }
+
+  @Override
+  public void configureMaxMemory(Jedis jedis) {
+    jedis.configSet("maxmemory", "10mb");
   }
 }
