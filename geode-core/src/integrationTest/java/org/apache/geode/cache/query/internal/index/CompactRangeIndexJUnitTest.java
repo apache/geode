@@ -31,7 +31,6 @@ import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.geode.util.internal.UncheckedUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,6 +47,7 @@ import org.apache.geode.cache.query.internal.DefaultQuery.TestHook;
 import org.apache.geode.cache.query.internal.ExecutionContext;
 import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
+import org.apache.geode.util.internal.UncheckedUtils;
 
 @Category({OQLIndexTest.class})
 public class CompactRangeIndexJUnitTest {
@@ -460,13 +460,13 @@ public class CompactRangeIndexJUnitTest {
     p1.positions.put("SUN", "yes");
     region.put("KEY-" + 1, p1);
 
-    // null value for positions['SUN']
+    // Equivalent to having a null value for positions['SUN'] when querying
     Portfolio p2 = new Portfolio(2);
     p2.positions = new HashMap<>();
     p2.positions.put("ERIC", 2);
     region.put("KEY-" + 2, p2);
 
-    // Undefined value for positions['SUN']
+    // Undefined value for positions['SUN'] when querying
     Portfolio p3 = new Portfolio(3);
     p3.positions = null;
     region.put("KEY-" + 3, p3);
@@ -480,9 +480,9 @@ public class CompactRangeIndexJUnitTest {
     // execute query and check result size
     QueryService qs = utils.getCache().getQueryService();
     SelectResults<Object> results = UncheckedUtils.uncheckedCast(qs
-            .newQuery(
-                    "Select * from " + SEPARATOR + "exampleRegion r where r.positions['SUN'] = null")
-            .execute());
+        .newQuery(
+            "Select * from " + SEPARATOR + "exampleRegion r where r.positions['SUN'] = null")
+        .execute());
     assertThat(results.size()).isEqualTo(2);
   }
 

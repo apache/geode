@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.internal.types;
 
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Comparator;
@@ -24,7 +25,7 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.internal.index.IndexManager;
 
 public class ExtendedNumericComparatorTest {
-  Comparator comparator = TypeUtils.getExtendedNumericComparator();
+  Comparator<Object> comparator = uncheckedCast(TypeUtils.getExtendedNumericComparator());
 
   @Test
   public void nullIsGreaterThanUndefined() {
