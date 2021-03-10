@@ -514,14 +514,15 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
     persistenceAdvisorObserver.observe(regionPath);
 
     boolean equal = false;
+    boolean splitBrainHappened = false;
+    PersistentMemberID myId = getPersistentID();
     for (Map.Entry<InternalDistributedMember, PersistentMemberState> entry : remoteStates
         .getStateOnPeers().entrySet()) {
       InternalDistributedMember member = entry.getKey();
       PersistentMemberID remoteId = remoteStates.getPersistentIds().get(member);
 
-      PersistentMemberID myId = getPersistentID();
-      PersistentMemberState stateOnPeer = entry.getValue();
 
+      PersistentMemberState stateOnPeer = entry.getValue();
       if (PersistentMemberState.REVOKED.equals(stateOnPeer)) {
         throw new RevokedPersistentDataException(
             String.format(
@@ -534,6 +535,7 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
             "Region %s remote member %s with persistent data %s was not part of the same distributed system as the local data from %s",
             regionPath, member, remoteId, myId);
         logger.info(message);
+        splitBrainHappened = true;
         replicates.remove(member);
       }
 
@@ -552,6 +554,10 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
           throw new ConflictingPersistentDataException(message);
         }
       }
+    }
+    if (replicates.isEmpty() && splitBrainHappened) {
+      throw new ConflictingPersistentDataException(String
+          .format("Region %s from %s is split-brained from all other members.", regionPath, myId));
     }
     return equal;
   }

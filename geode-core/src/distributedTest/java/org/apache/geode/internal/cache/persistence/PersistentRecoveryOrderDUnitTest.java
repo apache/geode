@@ -881,6 +881,32 @@ public class PersistentRecoveryOrderDUnitTest extends CacheTestCase {
     });
   }
 
+  @Test
+  public void testRecoverableSplitBrain() {
+    vm2.invoke(() -> {
+      createReplicateRegion(regionName, getDiskDirs(getVMId()));
+    });
+    vm0.invoke(() -> {
+      createReplicateRegion(regionName, getDiskDirs(getVMId()));
+      putEntry("A", "B");
+      getCache().getRegion(regionName).close();
+    });
+
+    vm1.invoke(() -> {
+      createReplicateRegion(regionName, getDiskDirs(getVMId()));
+      updateEntry("A", "C");
+      getCache().getRegion(regionName).close();
+    });
+
+    // VM0 doesn't know that VM1 ever existed so it will start up.
+    vm0.invoke(() -> createReplicateRegion(regionName, getDiskDirs(getVMId())));
+
+    vm1.invoke(() -> {
+      createReplicateRegion(regionName, getDiskDirs(getVMId()));
+      validateEntry("A", "C");
+    });
+  }
+
   /**
    * Test to make sure that if if a member crashes while a GII is in progress, we wait for the
    * member to come back for starting.
