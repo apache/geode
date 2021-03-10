@@ -41,7 +41,6 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.DistributedPutAllOperation.EntryVersionsList;
 import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
-import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.cache.partitioned.RemoveAllPRMessage;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -589,38 +588,18 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
   }
 
   @Override
-  void removeDestroyTokensFromCqResultKeys(FilterRoutingInfo filterRouting) {
-    for (InternalDistributedMember m : filterRouting.getMembers()) {
-      FilterInfo filterInfo = filterRouting.getFilterInfo(m);
-      if (filterInfo.getCQs() == null) {
-        continue;
-      }
-
-      CacheDistributionAdvisor.CacheProfile cf =
-          (CacheDistributionAdvisor.CacheProfile) ((Bucket) getRegion()).getPartitionedRegion()
-              .getCacheDistributionAdvisor().getProfile(m);
-
-      if (cf == null || cf.filterProfile == null || cf.filterProfile.isLocalProfile()
-          || cf.filterProfile.getCqMap().isEmpty()) {
-        continue;
-      }
-
-      for (Object value : cf.filterProfile.getCqMap().values()) {
-        ServerCQ cq = (ServerCQ) value;
-
-        for (Map.Entry<Long, Integer> e : filterInfo.getCQs().entrySet()) {
-          Long cqID = e.getKey();
-          // For the CQs satisfying the event with destroy CQEvent, remove
-          // the entry from CQ cache.
-          for (int i = 0; i < this.removeAllData.length; i++) {
-            @Unretained
-            EntryEventImpl entryEvent = getEventForPosition(i);
-            if (entryEvent != null && entryEvent.getKey() != null && cq != null
-                && cq.getFilterID() != null && cq.getFilterID().equals(cqID)
-                && (e.getValue().equals(MessageType.LOCAL_DESTROY))) {
-              cq.removeFromCqResultKeys(entryEvent.getKey(), true);
-            }
-          }
+  void doRemoveDestroyTokensFromCqResultKeys(FilterInfo filterInfo, ServerCQ cq) {
+    for (Map.Entry<Long, Integer> e : filterInfo.getCQs().entrySet()) {
+      Long cqID = e.getKey();
+      // For the CQs satisfying the event with destroy CQEvent, remove
+      // the entry from CQ cache.
+      for (int i = 0; i < this.removeAllData.length; i++) {
+        @Unretained
+        EntryEventImpl entryEvent = getEventForPosition(i);
+        if (entryEvent != null && entryEvent.getKey() != null && cq != null
+            && cq.getFilterID() != null && cq.getFilterID().equals(cqID)
+            && e.getValue() != null && e.getValue().equals(MessageType.LOCAL_DESTROY)) {
+          cq.removeFromCqResultKeys(entryEvent.getKey(), true);
         }
       }
     }

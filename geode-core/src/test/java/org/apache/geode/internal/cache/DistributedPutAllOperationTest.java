@@ -24,9 +24,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 import org.junit.Test;
 
@@ -35,7 +32,6 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.cache.query.internal.cq.ServerCQ;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.tier.MessageType;
 
 
@@ -53,7 +49,7 @@ public class DistributedPutAllOperationTest {
   }
 
   @Test
-  public void testRemoveDestroyTokensFromCqResultKeys() {
+  public void testDoRemoveDestroyTokensFromCqResultKeys() {
     EntryEventImpl baseEvent = mock(EntryEventImpl.class);
     int putAllPRDataSize = 1;
     DistributedPutAllOperation distributedPutAllOperation =
@@ -62,13 +58,7 @@ public class DistributedPutAllOperationTest {
     Object key = new Object();
     when(entryEvent.getKey()).thenReturn(key);
     distributedPutAllOperation.addEntry(entryEvent);
-    FilterRoutingInfo filterRoutingInfo = mock(FilterRoutingInfo.class);
-    InternalDistributedMember internalDistributedMember = mock(InternalDistributedMember.class);
-    Set<InternalDistributedMember> memberSet = new HashSet<>();
-    memberSet.add(internalDistributedMember);
-    when(filterRoutingInfo.getMembers()).thenReturn(memberSet);
     FilterRoutingInfo.FilterInfo filterInfo = mock(FilterRoutingInfo.FilterInfo.class);
-    when(filterRoutingInfo.getFilterInfo(internalDistributedMember)).thenReturn(filterInfo);
     HashMap hashMap = new HashMap();
     hashMap.put(1L, MessageType.LOCAL_DESTROY);
     when(filterInfo.getCQs()).thenReturn(hashMap);
@@ -86,21 +76,10 @@ public class DistributedPutAllOperationTest {
     PartitionedRegion partitionedRegion = mock(PartitionedRegion.class);
     when(bucketRegion.getPartitionedRegion()).thenReturn(partitionedRegion);
     when(bucketRegion.getKeyInfo(any(), any(), any())).thenReturn(new KeyInfo(key, null, null));
-    CacheDistributionAdvisor cacheDistributionAdvisor = mock(CacheDistributionAdvisor.class);
-    when(partitionedRegion.getCacheDistributionAdvisor()).thenReturn(cacheDistributionAdvisor);
-    CacheDistributionAdvisor.CacheProfile cacheProfile =
-        mock(CacheDistributionAdvisor.CacheProfile.class);
-    FilterProfile filterProfile = mock(FilterProfile.class);
-    cacheProfile.filterProfile = filterProfile;
-    when(filterProfile.isLocalProfile()).thenReturn(false);
     ServerCQ serverCQ = mock(ServerCQ.class);
     when(serverCQ.getFilterID()).thenReturn(new Long(1L));
-    Map cqMap = new HashMap();
-    cqMap.put("1", serverCQ);
-    when(filterProfile.getCqMap()).thenReturn(cqMap);
-    when(cacheDistributionAdvisor.getProfile(internalDistributedMember)).thenReturn(cacheProfile);
     doNothing().when(serverCQ).removeFromCqResultKeys(isA(Object.class), isA(Boolean.class));
-    distributedPutAllOperation.removeDestroyTokensFromCqResultKeys(filterRoutingInfo);
+    distributedPutAllOperation.doRemoveDestroyTokensFromCqResultKeys(filterInfo, serverCQ);
     verify(serverCQ, times(1)).removeFromCqResultKeys(key, true);
   }
 }

@@ -716,10 +716,10 @@ public abstract class DistributedCacheOperation {
    * This is similar to CacheClientNotifier.removeDestroyTokensFromCqResultKeys() where the
    * destroyed events for local CQs are handled.
    */
-  void removeDestroyTokensFromCqResultKeys(FilterRoutingInfo filterRouting) {
+  private void removeDestroyTokensFromCqResultKeys(FilterRoutingInfo filterRouting) {
     for (InternalDistributedMember m : filterRouting.getMembers()) {
       FilterInfo filterInfo = filterRouting.getFilterInfo(m);
-      if (filterInfo.getCQs() == null) {
+      if (filterInfo == null || filterInfo.getCQs() == null) {
         continue;
       }
 
@@ -734,15 +734,20 @@ public abstract class DistributedCacheOperation {
       for (Object value : cf.filterProfile.getCqMap().values()) {
         ServerCQ cq = (ServerCQ) value;
 
-        for (Map.Entry<Long, Integer> e : filterInfo.getCQs().entrySet()) {
-          Long cqID = e.getKey();
-          // For the CQs satisfying the event with destroy CQEvent, remove
-          // the entry form CQ cache.
-          if (cq != null && cq.getFilterID() != null && cq.getFilterID().equals(cqID)
-              && (e.getValue().equals(MessageType.LOCAL_DESTROY))) {
-            cq.removeFromCqResultKeys(((EntryOperation) event).getKey(), true);
-          }
-        }
+        doRemoveDestroyTokensFromCqResultKeys(filterInfo, cq);
+      }
+    }
+  }
+
+  void doRemoveDestroyTokensFromCqResultKeys(FilterInfo filterInfo, ServerCQ cq) {
+    for (Map.Entry<Long, Integer> e : filterInfo.getCQs().entrySet()) {
+      Long cqID = e.getKey();
+      // For the CQs satisfying the event with destroy CQEvent, remove
+      // the entry form CQ cache.
+      if (cq != null && cq.getFilterID() != null && cq.getFilterID().equals(cqID)
+          && e.getValue() != null && e.getValue().equals(MessageType.LOCAL_DESTROY)
+          && ((EntryOperation) event).getKey() != null) {
+        cq.removeFromCqResultKeys(((EntryOperation) event).getKey(), true);
       }
     }
   }
