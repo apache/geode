@@ -51,6 +51,7 @@ import org.xml.sax.ext.DefaultHandler2;
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireException;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheListener;
@@ -174,6 +175,21 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
    * @since GemFire 8.2
    */
   protected Locator documentLocator;
+
+  /**
+   * No arg constructor for {@link CacheXmlParser}.
+   */
+  public CacheXmlParser() {}
+
+  /**
+   * Constructor for {@link CacheXmlParser} which is used in test.
+   *
+   * @param cache Cache
+   */
+  @VisibleForTesting
+  CacheXmlParser(CacheCreation cache) {
+    this.cache = cache;
+  }
 
   ////////////////////// Static Methods //////////////////////
   /**
