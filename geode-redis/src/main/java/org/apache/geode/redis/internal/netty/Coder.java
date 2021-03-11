@@ -88,6 +88,9 @@ public class Coder {
   @MakeImmutable
   public static final byte[] err = stringToBytes("ERR ");
   @MakeImmutable
+  public static final byte[] oom = stringToBytes("OOM ");
+
+  @MakeImmutable
   public static final byte[] wrongType = stringToBytes("WRONGTYPE ");
 
   /**
@@ -273,6 +276,16 @@ public class Coder {
     ByteBuf response = alloc.buffer(errorAr.length + 25);
     response.writeByte(ERROR_ID);
     response.writeBytes(err);
+    response.writeBytes(errorAr);
+    response.writeBytes(CRLFar);
+    return response;
+  }
+
+  public static ByteBuf getOOMResponse(ByteBufAllocator alloc, String error) {
+    byte[] errorAr = stringToBytes(error);
+    ByteBuf response = alloc.buffer(errorAr.length + 25);
+    response.writeByte(ERROR_ID);
+    response.writeBytes(oom);
     response.writeBytes(errorAr);
     response.writeBytes(CRLFar);
     return response;
