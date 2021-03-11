@@ -1689,6 +1689,20 @@ public class Connection implements Runnable {
           }
           return;
         } catch (IOException e) {
+          if (inputBuffer != null) {
+            ByteBuffer poolableBuffer = getBufferPool().getPoolableBuffer(inputBuffer);
+            if (poolableBuffer != inputBuffer) {
+              logger.info(
+                  "BRUCE: caught IOException with buffer {}@{} holding pooled buffer {}@{},\n{}",
+                  inputBuffer, Integer.toHexString(System.identityHashCode(inputBuffer)),
+                  poolableBuffer, Integer.toHexString(System.identityHashCode(poolableBuffer)),
+                  BufferPool.getCallStackAsString(6));
+            } else {
+              logger.info("BRUCE: caught IOException with buffer {}@{},\n{}",
+                  inputBuffer, Integer.toHexString(System.identityHashCode(inputBuffer)),
+                  BufferPool.getCallStackAsString(6));
+            }
+          }
           // "Socket closed" check needed for Solaris jdk 1.4.2_08
           if (!isSocketClosed() && !"Socket closed".equalsIgnoreCase(e.getMessage())) {
             if (logger.isInfoEnabled() && !isIgnorableIOException(e)) {

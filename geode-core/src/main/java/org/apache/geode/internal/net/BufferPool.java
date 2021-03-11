@@ -15,6 +15,7 @@
 
 package org.apache.geode.internal.net;
 
+import java.io.PrintWriter;
 import java.lang.ref.SoftReference;
 import java.nio.ByteBuffer;
 import java.util.IdentityHashMap;
@@ -25,6 +26,7 @@ import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.shared.StringPrintWriter;
 import org.apache.geode.internal.tcp.Connection;
 import org.apache.geode.unsafe.internal.sun.nio.ch.DirectBuffer;
 import org.apache.geode.util.internal.GeodeGlossary;
@@ -103,8 +105,17 @@ public class BufferPool {
         result = acquireLargeBuffer(send, size);
       }
       if (result.capacity() > size) {
+        ByteBuffer poolableBuffer = result;
         result.position(0).limit(size);
         result = result.slice();
+        logger.info("BRUCE: acquiring buffer {}@{} holding pooled buffer {}@{},\n{}",
+            result, Integer.toHexString(System.identityHashCode(result)),
+            poolableBuffer, Integer.toHexString(System.identityHashCode(poolableBuffer)),
+            getCallStackAsString(6));
+      } else {
+        logger.info("BRUCE: acquiring pooled buffer {}@{},\n{}",
+            result, Integer.toHexString(System.identityHashCode(result)),
+            getCallStackAsString(6));
       }
       return result;
     }
@@ -296,17 +307,33 @@ public class BufferPool {
     throw new IllegalArgumentException("Unexpected buffer type " + type.toString());
   }
 
+  public static String getCallStackAsString(int maxframes) {
+    PrintWriter pw = new StringPrintWriter();
+    final StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+    int i = 2;
+    for (; i < stackTrace.length && i < maxframes + 2; i++) {
+      StackTraceElement ste = stackTrace[i];
+      pw.append("\tat " + ste.toString());
+      pw.append('\n');
+    }
+    return pw.toString();
+  }
+
 
   /**
    * Releases a previously acquired buffer.
    */
   private void releaseBuffer(ByteBuffer buffer, boolean send) {
     if (buffer.isDirect()) {
-      buffer = getPoolableBuffer(buffer);
-      BBSoftReference bbRef = new BBSoftReference(buffer, send);
-      if (buffer.capacity() <= SMALL_BUFFER_SIZE) {
+      ByteBuffer poolableBuffer = getPoolableBuffer(buffer);
+      logger.info("BRUCE: releasing buffer {}@{} holding pooled buffer {}@{},\n{}",
+          buffer, Integer.toHexString(System.identityHashCode(buffer)),
+          poolableBuffer, Integer.toHexString(System.identityHashCode(poolableBuffer)),
+          getCallStackAsString(6));
+      BBSoftReference bbRef = new BBSoftReference(poolableBuffer, send);
+      if (poolableBuffer.capacity() <= SMALL_BUFFER_SIZE) {
         bufferSmallQueue.offer(bbRef);
-      } else if (buffer.capacity() <= MEDIUM_BUFFER_SIZE) {
+      } else if (poolableBuffer.capacity() <= MEDIUM_BUFFER_SIZE) {
         bufferMiddleQueue.offer(bbRef);
       } else {
         bufferLargeQueue.offer(bbRef);
