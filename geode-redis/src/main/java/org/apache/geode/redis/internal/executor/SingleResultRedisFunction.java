@@ -27,6 +27,7 @@ import org.apache.geode.redis.internal.data.RedisKey;
 
 public abstract class SingleResultRedisFunction implements InternalFunction<Object[]> {
 
+  private static final long serialVersionUID = 3239452234149879302L;
   private final transient PartitionedRegion partitionedRegion;
 
   public SingleResultRedisFunction(Region<RedisKey, RedisData> dataRegion) {

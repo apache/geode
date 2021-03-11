@@ -40,6 +40,9 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
@@ -67,8 +70,8 @@ public class RedisHash extends AbstractRedisData {
    * to be thread safe with toData.
    */
   @Override
-  public synchronized void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public synchronized void toData(DataOutput out, SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writePrimitiveInt(hash.size(), out);
     for (Map.Entry<byte[], byte[]> entry : hash.entrySet()) {
       byte[] key = entry.getKey();
@@ -76,6 +79,22 @@ public class RedisHash extends AbstractRedisData {
       DataSerializer.writeByteArray(key, out);
       DataSerializer.writeByteArray(value, out);
     }
+  }
+
+  @Override
+  public void fromData(DataInput in, DeserializationContext context)
+      throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
+    int size = DataSerializer.readInteger(in);
+    hash = new Object2ObjectOpenCustomHashMap<>(size, ByteArrays.HASH_STRATEGY);
+    for (int i = 0; i < size; i++) {
+      hash.put(DataSerializer.readByteArray(in), DataSerializer.readByteArray(in));
+    }
+  }
+
+  @Override
+  public int getDSFID() {
+    return REDIS_HASH_ID;
   }
 
   private synchronized byte[] hashPut(byte[] field, byte[] value) {
@@ -89,16 +108,6 @@ public class RedisHash extends AbstractRedisData {
 
   private synchronized byte[] hashRemove(byte[] field) {
     return hash.remove(field);
-  }
-
-  @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
-    int size = DataSerializer.readInteger(in);
-    hash = new Object2ObjectOpenCustomHashMap<>(size, ByteArrays.HASH_STRATEGY);
-    for (int i = 0; i < size; i++) {
-      hash.put(DataSerializer.readByteArray(in), DataSerializer.readByteArray(in));
-    }
   }
 
   @Override
@@ -369,5 +378,10 @@ public class RedisHash extends AbstractRedisData {
   @Override
   public String toString() {
     return "RedisHash{" + super.toString() + ", " + "size=" + hash.size() + "}";
+  }
+
+  @Override
+  public KnownVersion[] getSerializationVersions() {
+    return null;
   }
 }

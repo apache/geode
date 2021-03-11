@@ -25,6 +25,9 @@ import java.util.Objects;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.delta.AppendDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
@@ -606,18 +609,26 @@ public class RedisString extends AbstractRedisData {
    * and call setBytes. So toData will see either the old or new value but
    * not a mix of both.
    */
+
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out, SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writePrimitiveInt(appendSequence, out);
     DataSerializer.writeByteArray(value.toBytes(), out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in, DeserializationContext context)
+      throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     appendSequence = DataSerializer.readPrimitiveInt(in);
     value = new ByteArrayWrapper(DataSerializer.readByteArray(in));
+
+  }
+
+  @Override
+  public int getDSFID() {
+    return REDIS_STRING_ID;
   }
 
   @Override
@@ -716,5 +727,10 @@ public class RedisString extends AbstractRedisData {
 
   protected void valueSetBytes(byte[] bytes) {
     value.setBytes(bytes);
+  }
+
+  @Override
+  public KnownVersion[] getSerializationVersions() {
+    return null;
   }
 }

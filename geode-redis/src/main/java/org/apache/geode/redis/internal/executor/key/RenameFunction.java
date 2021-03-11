@@ -40,6 +40,7 @@ import org.apache.geode.redis.internal.statistics.RedisStats;
 public class RenameFunction implements InternalFunction {
 
   public static final String ID = "REDIS_RENAME_FUNCTION";
+  private static final long serialVersionUID = 7047473969356686453L;
 
   private final transient PartitionedRegion partitionedRegion;
   private final transient CommandHelper commandHelper;

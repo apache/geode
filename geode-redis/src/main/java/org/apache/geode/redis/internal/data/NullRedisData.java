@@ -18,10 +18,12 @@ package org.apache.geode.redis.internal.data;
 
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.io.IOException;
 
 import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * Implements behaviour for when no instance of RedisData exists.
@@ -87,13 +89,23 @@ public class NullRedisData implements RedisData {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public int getDSFID() {
+    return REDIS_NULL_DATA_ID;
+  }
+
+  @Override
+  public void toData(DataOutput out, SerializationContext context) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in, DeserializationContext context) {
     throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public KnownVersion[] getSerializationVersions() {
+    return null;
   }
 
   @Override
@@ -102,12 +114,12 @@ public class NullRedisData implements RedisData {
   }
 
   @Override
-  public void toDelta(DataOutput out) throws IOException {
+  public void toDelta(DataOutput out) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void fromDelta(DataInput in) throws IOException, InvalidDeltaException {
+  public void fromDelta(DataInput in) throws InvalidDeltaException {
     throw new UnsupportedOperationException();
   }
 }

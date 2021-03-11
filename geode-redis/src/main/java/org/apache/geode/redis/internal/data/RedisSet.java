@@ -36,9 +36,12 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
@@ -195,10 +198,23 @@ public class RedisSet extends AbstractRedisData {
    * are modifying this object, the striped executor will not protect toData.
    * So any methods that modify "members" needs to be thread safe with toData.
    */
+
   @Override
-  public synchronized void toData(DataOutput out) throws IOException {
-    super.toData(out);
-    DataSerializer.writeHashSet(members, out);
+  public void toData(DataOutput out, SerializationContext context) throws IOException {
+    super.toData(out, context);
+    InternalDataSerializer.writeHashSet(members, out);
+  }
+
+  @Override
+  public void fromData(DataInput in, DeserializationContext context)
+      throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
+    members = InternalDataSerializer.readHashSet(in);
+  }
+
+  @Override
+  public int getDSFID() {
+    return REDIS_SET_ID;
   }
 
   private synchronized boolean membersAdd(ByteArrayWrapper memberToAdd) {
@@ -218,11 +234,7 @@ public class RedisSet extends AbstractRedisData {
     return members.removeAll(remsDeltaInfo.getRemoves());
   }
 
-  @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
-    members = DataSerializer.readHashSet(in);
-  }
+
 
   /**
    * @param membersToAdd members to add to this set; NOTE this list may by
@@ -308,5 +320,10 @@ public class RedisSet extends AbstractRedisData {
   @Override
   public String toString() {
     return "RedisSet{" + super.toString() + ", " + "members=" + members + '}';
+  }
+
+  @Override
+  public KnownVersion[] getSerializationVersions() {
+    return null;
   }
 }

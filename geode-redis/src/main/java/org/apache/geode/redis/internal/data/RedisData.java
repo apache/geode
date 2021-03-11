@@ -17,11 +17,11 @@
 package org.apache.geode.redis.internal.data;
 
 
-import org.apache.geode.DataSerializable;
 import org.apache.geode.Delta;
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
-public interface RedisData extends Delta, DataSerializable {
+public interface RedisData extends Delta, DataSerializableFixedID {
   NullRedisData NULL_REDIS_DATA = new NullRedisData();
 
   /**
