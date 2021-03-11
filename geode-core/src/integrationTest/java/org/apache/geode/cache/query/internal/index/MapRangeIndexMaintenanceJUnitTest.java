@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -462,30 +463,35 @@ public class MapRangeIndexMaintenanceJUnitTest {
         .newQuery(query)
         .execute());
     assertThat(result.size()).isEqualTo(1);
+    assertThat(result.contains(p3)).isTrue();
 
     query = "select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] != null";
     result = UncheckedUtils.uncheckedCast(qs
         .newQuery(query)
         .execute());
     assertThat(result.size()).isEqualTo(6);
+    assertThat(result.containsAll(Arrays.asList(p, p2, p4, p5, p6, p7))).isTrue();
 
     query = "select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 'nothing'";
     result = UncheckedUtils.uncheckedCast(qs
         .newQuery(query)
         .execute());
     assertThat(result.size()).isEqualTo(1);
+    assertThat(result.contains(p4)).isTrue();
 
     query = "select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] != 'nothing'";
     result = UncheckedUtils.uncheckedCast(qs
         .newQuery(query)
         .execute());
     assertThat(result.size()).isEqualTo(6);
+    assertThat(result.containsAll(Arrays.asList(p, p2, p3, p5, p6, p7))).isTrue();
 
     query = "select * from " + SEPARATOR + "portfolio p";
     result = UncheckedUtils.uncheckedCast(qs
         .newQuery(query)
         .execute());
     assertThat(result.size()).isEqualTo(7);
+    assertThat(result.containsAll(Arrays.asList(p, p2, p3, p4, p5, p6, p7))).isTrue();
   }
 
   @Test
