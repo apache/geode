@@ -41,6 +41,8 @@ start server \
   --redis-password=<redisPassword>
 ```
 
+If any of the options `redis-bind-address`, `redis-password`, or `redis-port` are included, a compatible-with-Redis Geode server will be started.
+
 Replace `<serverName>` with the name of your server.
 
 Replace `<locatorPort>` with your locator port.
@@ -69,26 +71,24 @@ The Redis API for <%=vars.product_name%> currently supports the following comman
 **Note**: SLOWLOG is implemented as a NoOp for compatibility with DataDog.
 
 -   **Connection**: AUTH, PING, QUIT
--   **Hashes**: HGETALL, HMGET, HMSET, HSET, HSETNX, HSTRLEN, HLEN, HVALS
+-   **Hashes**: HDEL, HEXISTS, HGET, HGETALL, HINCRBY, HINCRBYFLOAT, HKEYS, HLEN, HMGET, HMSET, HSCAN, HSET, HSETNX, HSTRLEN, HVALS
 -   **Keys**: DEL, EXISTS, EXPIRE, EXPIREAT, KEYS, PERSIST, PEXPIRE, PEXPIREAT, PTTL, RENAME, TTL,
   TYPE
 -   **Publish/Subscribe**: PUBLISH, PSUBSCRIBE, PUNSUBSCRIBE, SUBSCRIBE, UNSUBSCRIBE
 -   **Server**: SLOWLOG, INFO
 -   **Sets**: SADD, SMEMBERS, SREM
--   **Strings**: APPEND, GET, SET
+-   **Strings**: APPEND, DECR, GET, GETRANGE, INCR, INCRBY, INCRBYFLOAT, MGET, SET, SETNX, STRLEN
 
 The following Redis API for <%=vars.product_name%> commands are **unsupported**. Unsupported
 commands are available to use, but have not been fully tested. There is no guarantee they will work
 exactly as expected.
 
 -   **Connection**: ECHO, SELECT
--   **Hashes**: HDEL, HEXISTS, HGET, HINCRBY, HINCRBYFLOAT, HKEYS, HSCAN
 -   **Keys**: SCAN, UNLINK
 -   **Server**: DBSIZE, FLUSHALL (no async option), FLUSHDB (no async option), SHUTDOWN, TIME
 -   **Sets**: SCARD, SDIFF, SDIFFSTORE, SINTER, SINTERSTORE, SISMEMBER, SMOVE, SPOP, SRANDMEMBER,
   SSCAN, SUNION, SUNIONSTORE
--   **Strings**: BITCOUNT, BITOP, BITPOS, DECR, DECRBY, GETBIT, GETRANGE, GETSET, INCR, INCRBY,
-  INCRBYFLOAT, MGET, MSET, MSETNX, PSETEX, SETBIT, SETEX, SETNX, SETRANGE, STRLEN
+-   **Strings**: BITCOUNT, BITOP, BITPOS, DECRBY, GETBIT, GETSET, MSET, MSETNX, PSETEX, SETBIT, SETEX, SETRANGE
 
 
 If you already have some Geode servers running with Redis enabled, you can execute the following
