@@ -40,6 +40,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.ForcedDisconnectException;
 import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
@@ -233,6 +234,8 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       response = RedisResponse.error(cause.getMessage());
     } else if (cause instanceof RedisDataTypeMismatchException) {
       response = RedisResponse.wrongType(cause.getMessage());
+    } else if (cause instanceof LowMemoryException) {
+      response = RedisResponse.oom(RedisConstants.ERROR_OOM_COMMAND_NOT_ALLOWED);
     } else if (cause instanceof DecoderException
         && cause.getCause() instanceof RedisCommandParserException) {
       response = RedisResponse.error(RedisConstants.PARSING_EXCEPTION_MESSAGE);

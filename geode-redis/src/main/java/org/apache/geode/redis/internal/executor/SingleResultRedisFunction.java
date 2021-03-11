@@ -18,12 +18,12 @@ package org.apache.geode.redis.internal.executor;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.cache.execute.InternalFunction;
+import org.apache.geode.internal.cache.execute.AllowExecutionInLowMemory;
 import org.apache.geode.internal.cache.execute.RegionFunctionContextImpl;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
 
-public abstract class SingleResultRedisFunction implements InternalFunction<Object[]> {
+public abstract class SingleResultRedisFunction implements AllowExecutionInLowMemory {
 
   private static final long serialVersionUID = 3239452234149879302L;
   private final transient PartitionedRegion partitionedRegion;
