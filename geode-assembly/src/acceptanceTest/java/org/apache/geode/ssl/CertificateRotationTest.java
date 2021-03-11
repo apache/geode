@@ -322,9 +322,14 @@ public class CertificateRotationTest {
     region = client.<String, String>createClientRegionFactory(PROXY)
         .create(regionName);
 
-    // wait for the client to start watching for changes to the key store and trust store files
     waitForClientToLogMessage(compile(quote("Started watching " + clientKeyStore.getPath())));
     waitForClientToLogMessage(compile(quote("Started watching " + clientTrustStore.getPath())));
+
+    /*
+     * This sleep is needed to ensure that any updates to the key or trust store file are detected
+     * by the client. Without it, the timestamp on the updated file might be the same as the
+     * timestamp before the update, preventing the client from noticing the change.
+     */
     Thread.sleep(Duration.ofSeconds(5).toMillis());
   }
 

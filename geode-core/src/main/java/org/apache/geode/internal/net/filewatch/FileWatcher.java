@@ -33,15 +33,22 @@ final class FileWatcher implements Runnable {
   private final Path path;
   private final Runnable callback;
 
+  private volatile boolean watching = false;
+
   FileWatcher(Path path, Runnable callback) {
     this.path = path;
     this.callback = callback;
   }
 
+  /**
+   * Returns whether the path is currently being watched for changes.
+   */
+  public boolean isWatching() {
+    return watching;
+  }
+
   @Override
   public void run() {
-    logger.info("Started watching {}", path);
-
     try {
       WatchService watchService = path.getFileSystem().newWatchService();
 
@@ -49,33 +56,41 @@ final class FileWatcher implements Runnable {
       Path parent = path.normalize().toAbsolutePath().getParent();
       parent.register(watchService, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
 
+      watching = true;
+      logger.info("Started watching {}", path);
+
       for (;;) {
         WatchKey key = watchService.take();
 
-        for (WatchEvent<?> event : key.pollEvents()) {
-          Path changed = (Path) event.context();
+        processEvents(key);
 
-          if (!path.getFileName().equals(changed)) {
-            // a different file has changed, ignoring
-            continue;
-          }
-
-          callback.run();
-        }
-
-        boolean valid = key.reset();
-        if (!valid) {
+        if (!key.reset()) {
           logger.warn("Watch key is no longer valid for path {}", path);
-          break;
+          return;
         }
       }
+
     } catch (InterruptedException e) {
       logger.debug("Thread interrupted while watching {}", path);
       Thread.currentThread().interrupt();
     } catch (Exception e) {
       logger.warn("Got exception while watching {}", path, e);
+    } finally {
+      watching = false;
+      logger.info("Stopped watching {}", path);
     }
+  }
 
-    logger.info("Stopped watching {}", path);
+  private void processEvents(WatchKey key) {
+    for (WatchEvent<?> event : key.pollEvents()) {
+      Path changed = (Path) event.context();
+
+      if (!path.getFileName().equals(changed)) {
+        // a different file has changed, ignoring
+        continue;
+      }
+
+      callback.run();
+    }
   }
 }

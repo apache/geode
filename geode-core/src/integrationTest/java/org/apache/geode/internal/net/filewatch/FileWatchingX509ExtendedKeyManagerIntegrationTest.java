@@ -21,7 +21,6 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.security.KeyStore;
-import java.security.cert.X509Certificate;
 import java.time.Duration;
 
 import javax.net.ssl.KeyManager;
@@ -48,7 +47,6 @@ public class FileWatchingX509ExtendedKeyManagerIntegrationTest {
   public ExecutorServiceRule executorService = new ExecutorServiceRule();
 
   private File keyStore;
-  private FileWatchingX509ExtendedKeyManager target;
 
   @Before
   public void createKeyStoreFile() throws Exception {
@@ -59,7 +57,7 @@ public class FileWatchingX509ExtendedKeyManagerIntegrationTest {
   public void initializesKeyManager() throws Exception {
     CertificateMaterial cert = storeCertificate();
 
-    target = new FileWatchingX509ExtendedKeyManager(
+    FileWatchingX509ExtendedKeyManager target = new FileWatchingX509ExtendedKeyManager(
         keyStore.toPath(), this::loadKeyManagerFromStore, executorService.getExecutorService());
 
     assertThat(target.getCertificateChain(alias)).containsExactly(cert.getCertificate());
@@ -69,13 +67,23 @@ public class FileWatchingX509ExtendedKeyManagerIntegrationTest {
   public void updatesKeyManager() throws Exception {
     storeCertificate();
 
-    target = new FileWatchingX509ExtendedKeyManager(
+    FileWatchingX509ExtendedKeyManager target = new FileWatchingX509ExtendedKeyManager(
         keyStore.toPath(), this::loadKeyManagerFromStore, executorService.getExecutorService());
 
-    await()
-        // give the file watcher time to start watching for changes
-        .pollDelay(Duration.ofSeconds(5))
-        .untilAsserted(this::detectsChangeToKeyStoreFile);
+    await().until(target::isWatching);
+
+    /*
+     * Some file systems only have 1-second granularity for file timestamps. This sleep is needed
+     * so that the timestamp AFTER the update will be greater than the timestamp BEFORE the update.
+     * Otherwise, the file watcher cannot detect the change. The sleep duration needs to be several
+     * seconds longer than the granularity since the sleep duration is only approximate.
+     */
+    Thread.sleep(Duration.ofSeconds(5).toMillis());
+
+    CertificateMaterial updated = storeCertificate();
+
+    await().untilAsserted(() -> assertThat(target.getCertificateChain(alias))
+        .containsExactly(updated.getCertificate()));
   }
 
   @Test
@@ -86,17 +94,6 @@ public class FileWatchingX509ExtendedKeyManagerIntegrationTest {
         keyStore.toPath(), () -> keyManagers, executorService.getExecutorService()));
 
     assertThat(thrown).isNotNull();
-  }
-
-  private void detectsChangeToKeyStoreFile() throws Exception {
-    CertificateMaterial updated = storeCertificate();
-
-    await()
-        .atMost(Duration.ofMinutes(1))
-        .untilAsserted(() -> {
-          X509Certificate[] chain = target.getCertificateChain(alias);
-          assertThat(chain).containsExactly(updated.getCertificate());
-        });
   }
 
   private CertificateMaterial storeCertificate() throws Exception {

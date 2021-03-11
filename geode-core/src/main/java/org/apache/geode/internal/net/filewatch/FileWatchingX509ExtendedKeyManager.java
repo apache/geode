@@ -46,6 +46,7 @@ public final class FileWatchingX509ExtendedKeyManager extends X509ExtendedKeyMan
   private final AtomicReference<X509ExtendedKeyManager> keyManager = new AtomicReference<>();
   private final Path keyStorePath;
   private final ThrowingSupplier<KeyManager[]> keyManagerSupplier;
+  private final FileWatcher fileWatcher;
 
   @VisibleForTesting
   FileWatchingX509ExtendedKeyManager(Path keystorePath,
@@ -56,7 +57,8 @@ public final class FileWatchingX509ExtendedKeyManager extends X509ExtendedKeyMan
 
     loadKeyManager();
 
-    executor.submit(new FileWatcher(this.keyStorePath, this::loadKeyManager));
+    fileWatcher = new FileWatcher(this.keyStorePath, this::loadKeyManager);
+    executor.submit(fileWatcher);
   }
 
   /**
@@ -111,6 +113,11 @@ public final class FileWatchingX509ExtendedKeyManager extends X509ExtendedKeyMan
   @Override
   public String[] getServerAliases(String s, Principal[] principals) {
     return keyManager.get().getServerAliases(s, principals);
+  }
+
+  @VisibleForTesting
+  boolean isWatching() {
+    return fileWatcher.isWatching();
   }
 
   private void loadKeyManager() {

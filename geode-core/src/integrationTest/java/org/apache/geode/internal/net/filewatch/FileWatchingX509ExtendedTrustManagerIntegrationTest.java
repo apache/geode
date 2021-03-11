@@ -21,7 +21,6 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.security.KeyStore;
-import java.security.cert.X509Certificate;
 import java.time.Duration;
 
 import javax.net.ssl.TrustManager;
@@ -47,7 +46,6 @@ public class FileWatchingX509ExtendedTrustManagerIntegrationTest {
   public ExecutorServiceRule executorService = new ExecutorServiceRule();
 
   private File trustStore;
-  private FileWatchingX509ExtendedTrustManager target;
 
   @Before
   public void createTrustStoreFile() throws Exception {
@@ -58,7 +56,7 @@ public class FileWatchingX509ExtendedTrustManagerIntegrationTest {
   public void initializesTrustManager() throws Exception {
     CertificateMaterial caCert = storeCa();
 
-    target = new FileWatchingX509ExtendedTrustManager(
+    FileWatchingX509ExtendedTrustManager target = new FileWatchingX509ExtendedTrustManager(
         trustStore.toPath(), this::loadTrustManagerFromStore, executorService.getExecutorService());
 
     assertThat(target.getAcceptedIssuers()).containsExactly(caCert.getCertificate());
@@ -68,13 +66,23 @@ public class FileWatchingX509ExtendedTrustManagerIntegrationTest {
   public void updatesTrustManager() throws Exception {
     storeCa();
 
-    target = new FileWatchingX509ExtendedTrustManager(
+    FileWatchingX509ExtendedTrustManager target = new FileWatchingX509ExtendedTrustManager(
         trustStore.toPath(), this::loadTrustManagerFromStore, executorService.getExecutorService());
 
-    await()
-        // give the file watcher time to start watching for changes
-        .pollDelay(Duration.ofSeconds(5))
-        .untilAsserted(this::detectsChangeToTrustStoreFile);
+    await().until(target::isWatching);
+
+    /*
+     * Some file systems only have 1-second granularity for file timestamps. This sleep is needed
+     * so that the timestamp AFTER the update will be greater than the timestamp BEFORE the update.
+     * Otherwise, the file watcher cannot detect the change. The sleep duration needs to be several
+     * seconds longer than the granularity since the sleep duration is only approximate.
+     */
+    Thread.sleep(Duration.ofSeconds(5).toMillis());
+
+    CertificateMaterial updated = storeCa();
+
+    await().untilAsserted(
+        () -> assertThat(target.getAcceptedIssuers()).containsExactly(updated.getCertificate()));
   }
 
   @Test
@@ -85,17 +93,6 @@ public class FileWatchingX509ExtendedTrustManagerIntegrationTest {
         trustStore.toPath(), () -> trustManagers, executorService.getExecutorService()));
 
     assertThat(thrown).isNotNull();
-  }
-
-  private void detectsChangeToTrustStoreFile() throws Exception {
-    CertificateMaterial updated = storeCa();
-
-    await()
-        .atMost(Duration.ofMinutes(1))
-        .untilAsserted(() -> {
-          X509Certificate[] issuers = target.getAcceptedIssuers();
-          assertThat(issuers).containsExactly(updated.getCertificate());
-        });
   }
 
   private CertificateMaterial storeCa() throws Exception {

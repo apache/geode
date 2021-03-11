@@ -45,6 +45,7 @@ public final class FileWatchingX509ExtendedTrustManager extends X509ExtendedTrus
   private final AtomicReference<X509ExtendedTrustManager> trustManager = new AtomicReference<>();
   private final Path trustStorePath;
   private final ThrowingSupplier<TrustManager[]> trustManagerSupplier;
+  private final FileWatcher fileWatcher;
 
   @VisibleForTesting
   FileWatchingX509ExtendedTrustManager(Path trustStorePath,
@@ -54,7 +55,8 @@ public final class FileWatchingX509ExtendedTrustManager extends X509ExtendedTrus
 
     loadTrustManager();
 
-    executor.submit(new FileWatcher(this.trustStorePath, this::loadTrustManager));
+    fileWatcher = new FileWatcher(this.trustStorePath, this::loadTrustManager);
+    executor.submit(fileWatcher);
   }
 
   /**
@@ -109,6 +111,11 @@ public final class FileWatchingX509ExtendedTrustManager extends X509ExtendedTrus
   @Override
   public X509Certificate[] getAcceptedIssuers() {
     return trustManager.get().getAcceptedIssuers();
+  }
+
+  @VisibleForTesting
+  boolean isWatching() {
+    return fileWatcher.isWatching();
   }
 
   private void loadTrustManager() {
