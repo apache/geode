@@ -15,10 +15,24 @@
 package org.apache.geode.internal.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.HashMap;
+
 import org.junit.Test;
+
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.query.internal.cq.CqService;
+import org.apache.geode.cache.query.internal.cq.ServerCQ;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.cache.tier.MessageType;
 
 
 public class DistributedRemoveAllOperationTest {
@@ -32,5 +46,42 @@ public class DistributedRemoveAllOperationTest {
     when(mockDistributedRemoveAllOperation.getBaseEvent()).thenReturn(mockEntryEventImpl);
 
     assertThat(mockDistributedRemoveAllOperation.getBaseEvent()).isSameAs(mockEntryEventImpl);
+  }
+
+  @Test
+  public void testDoRemoveDestroyTokensFromCqResultKeys() {
+    EntryEventImpl baseEvent = mock(EntryEventImpl.class);
+    EntryEventImpl entryEvent = mock(EntryEventImpl.class);
+    BucketRegion bucketRegion = mock(BucketRegion.class);
+    InternalCache internalCache = mock(InternalCache.class);
+    RegionAttributes regionAttributes = mock(RegionAttributes.class);
+    InternalDistributedSystem internalDistributedSystem = mock(InternalDistributedSystem.class);
+    FilterRoutingInfo.FilterInfo filterInfo = mock(FilterRoutingInfo.FilterInfo.class);
+    CqService cqService = mock(CqService.class);
+    PartitionedRegion partitionedRegion = mock(PartitionedRegion.class);
+    ServerCQ serverCQ = mock(ServerCQ.class);
+    int removeAllPRDataSize = 1;
+    DistributedRemoveAllOperation distributedRemoveAllOperation =
+        new DistributedRemoveAllOperation(baseEvent, removeAllPRDataSize, false);
+    Object key = new Object();
+    when(entryEvent.getKey()).thenReturn(key);
+    distributedRemoveAllOperation.addEntry(entryEvent);
+    HashMap hashMap = new HashMap();
+    hashMap.put(1L, MessageType.LOCAL_DESTROY);
+    when(filterInfo.getCQs()).thenReturn(hashMap);
+    when(baseEvent.getRegion()).thenReturn(bucketRegion);
+    when(bucketRegion.getAttributes()).thenReturn(regionAttributes);
+    when(bucketRegion.getPartitionedRegion()).thenReturn(partitionedRegion);
+    when(bucketRegion.getCache()).thenReturn(internalCache);
+    when(bucketRegion.getKeyInfo(any(), any(), any())).thenReturn(new KeyInfo(key, null, null));
+    when(regionAttributes.getDataPolicy()).thenReturn(DataPolicy.DEFAULT);
+    when(internalCache.getDistributedSystem()).thenReturn(internalDistributedSystem);
+    when(internalCache.getCqService()).thenReturn(cqService);
+    when(serverCQ.getFilterID()).thenReturn(new Long(1L));
+    doNothing().when(serverCQ).removeFromCqResultKeys(isA(Object.class), isA(Boolean.class));
+
+    distributedRemoveAllOperation.doRemoveDestroyTokensFromCqResultKeys(filterInfo, serverCQ);
+
+    verify(serverCQ, times(1)).removeFromCqResultKeys(key, true);
   }
 }

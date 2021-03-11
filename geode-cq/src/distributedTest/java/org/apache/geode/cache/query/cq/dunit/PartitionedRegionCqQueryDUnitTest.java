@@ -22,9 +22,14 @@ import static org.apache.geode.test.dunit.Assert.assertNotNull;
 import static org.apache.geode.test.dunit.Assert.assertNull;
 import static org.apache.geode.test.dunit.Assert.assertTrue;
 import static org.apache.geode.test.dunit.Assert.fail;
+import static org.apache.geode.test.dunit.VM.getVM;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -119,6 +124,137 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
       "SELECT ALL * FROM " + SEPARATOR + regions[0] + " p where p.ID > 0"};
 
   private static int bridgeServerPort;
+
+  @Test
+  public void testPutAllWithCQLocalDestroy() {
+    VM server1 = getVM(0);
+    VM server2 = getVM(1);
+    VM client = getVM(2);
+
+    final String cqName = "testPutAllWithCQLocalDestroy_0";
+    createServer(server1);
+    createServer(server2);
+    final String host = VM.getHostName();
+    final int port = server2.invoke(() -> getCacheServerPort());
+    createClient(client, port, host);
+    createCQ(client, cqName, cqs[0]);
+
+    int numObjects = 1000;
+
+    server1.invoke(() -> {
+      Region<String, Object> region =
+          getCache().getRegion(SEPARATOR + "root" + SEPARATOR + regions[0]);
+      Map<String, Object> buffer = new HashMap();
+      for (int i = 1; i < numObjects; i++) {
+        Portfolio p = new Portfolio(i);
+        buffer.put("" + i, p);
+      }
+      region.putAll(buffer);
+      assertThat(region.size()).isEqualTo(numObjects - 1);
+    });
+
+    client.invoke(() -> {
+      QueryService cqService = getCache().getQueryService();
+      CqQuery cqQuery = cqService.getCq(cqName);
+      assertThat(cqQuery)
+          .withFailMessage("Failed to get CQ " + cqName)
+          .isNotNull();
+      cqQuery.executeWithInitialResults();
+    });
+
+    server1.invoke(() -> {
+      Region<String, Object> region =
+          getCache().getRegion(SEPARATOR + "root" + SEPARATOR + regions[0]);
+      // PutAll with entries that do not satisfy CQ. This is to generate LOCAL_DESTROY CQ event
+      Map<String, Object> buffer = new HashMap();
+      for (int i = 1; i < numObjects; i++) {
+        Portfolio p = new Portfolio(-1 * i);
+        buffer.put("" + i, p);
+      }
+      region.putAll(buffer);
+      assertThat(region.size()).isEqualTo(numObjects - 1);
+    });
+
+    client.invoke(() -> {
+      QueryService cqService = getCache().getQueryService();
+      CqQuery cqQuery = cqService.getCq(cqName);
+      assertThat(cqQuery)
+          .withFailMessage("Failed to get CQ " + cqName)
+          .isNotNull();
+      CqQueryTestListener cqListener =
+          (CqQueryTestListener) cqQuery.getCqAttributes().getCqListener();
+      assertThat(cqListener.getTotalEventCount()).isEqualTo(numObjects - 1);
+    });
+
+    cqHelper.closeClient(client);
+    cqHelper.closeServer(server2);
+    cqHelper.closeServer(server1);
+  }
+
+  @Test
+  public void testRemoveAllWithCQLocalDestroy() {
+    VM server1 = getVM(0);
+    VM server2 = getVM(1);
+    VM client = getVM(2);
+
+    final String cqName = "testRemoveAllWithCQLocalDestroy_0";
+    createServer(server1);
+    createServer(server2);
+    final String host = VM.getHostName();
+    final int port = server2.invoke(() -> getCacheServerPort());
+    createClient(client, port, host);
+    createCQ(client, cqName, cqs[0]);
+
+    int numObjects = 1000;
+
+    server1.invoke(() -> {
+      Region<String, Object> region =
+          getCache().getRegion(SEPARATOR + "root" + SEPARATOR + regions[0]);
+      Map<String, Object> buffer = new HashMap();
+      for (int i = 1; i < numObjects; i++) {
+        Portfolio p = new Portfolio(i);
+        buffer.put("" + i, p);
+      }
+      region.putAll(buffer);
+      assertThat(region.size()).isEqualTo(numObjects - 1);
+    });
+
+    client.invoke(() -> {
+      QueryService cqService = getCache().getQueryService();
+      CqQuery cqQuery = cqService.getCq(cqName);
+      assertThat(cqQuery)
+          .withFailMessage("Failed to get CQ " + cqName)
+          .isNotNull();
+      cqQuery.executeWithInitialResults();
+    });
+
+    server1.invoke(() -> {
+      Region<String, Object> region =
+          getCache().getRegion(SEPARATOR + "root" + SEPARATOR + regions[0]);
+      Set<String> keys = new HashSet<>();
+      for (int i = 1; i < numObjects; i++) {
+        keys.add("" + i);
+      }
+      // This is to generate LOCAL_DESTROY CQ event
+      region.removeAll(keys);
+      assertThat(region.size()).isEqualTo(0);
+    });
+
+    client.invoke(() -> {
+      QueryService cqService = getCache().getQueryService();
+      CqQuery cqQuery = cqService.getCq(cqName);
+      assertThat(cqQuery)
+          .withFailMessage("Failed to get CQ " + cqName)
+          .isNotNull();
+      CqQueryTestListener cqListener =
+          (CqQueryTestListener) cqQuery.getCqAttributes().getCqListener();
+      assertThat(cqListener.getTotalEventCount()).isEqualTo(numObjects - 1);
+    });
+
+    cqHelper.closeClient(client);
+    cqHelper.closeServer(server2);
+    cqHelper.closeServer(server1);
+  }
 
   @Test
   public void testCQLeakWithPartitionedRegion() throws Exception {
