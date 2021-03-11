@@ -113,19 +113,21 @@ public class DistributedCacheOperationTest {
 
   @Test
   public void testDoRemoveDestroyTokensFromCqResultKeys() {
-    EntryEventImpl baseEvent = mock(EntryEventImpl.class);
-    DistributedCacheOperation distributedCacheOperation =
-        new DestroyOperation(baseEvent);
     Object key = new Object();
-    when(baseEvent.getKey()).thenReturn(key);
-    FilterRoutingInfo.FilterInfo filterInfo = mock(FilterRoutingInfo.FilterInfo.class);
     HashMap hashMap = new HashMap();
     hashMap.put(1L, MessageType.LOCAL_DESTROY);
-    when(filterInfo.getCQs()).thenReturn(hashMap);
+    EntryEventImpl baseEvent = mock(EntryEventImpl.class);
     ServerCQ serverCQ = mock(ServerCQ.class);
+    FilterRoutingInfo.FilterInfo filterInfo = mock(FilterRoutingInfo.FilterInfo.class);
+    DistributedCacheOperation distributedCacheOperation =
+        new DestroyOperation(baseEvent);
+    when(baseEvent.getKey()).thenReturn(key);
+    when(filterInfo.getCQs()).thenReturn(hashMap);
     when(serverCQ.getFilterID()).thenReturn(new Long(1L));
     doNothing().when(serverCQ).removeFromCqResultKeys(isA(Object.class), isA(Boolean.class));
+
     distributedCacheOperation.doRemoveDestroyTokensFromCqResultKeys(filterInfo, serverCQ);
+
     verify(serverCQ, times(1)).removeFromCqResultKeys(key, true);
   }
 }

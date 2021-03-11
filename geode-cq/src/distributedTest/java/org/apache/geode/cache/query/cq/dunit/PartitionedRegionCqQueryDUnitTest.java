@@ -164,6 +164,7 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
     server1.invoke(() -> {
       Region<String, Object> region =
           getCache().getRegion(SEPARATOR + "root" + SEPARATOR + regions[0]);
+      // PutAll with entries that do not satisfy CQ. This is to generate LOCAL_DESTROY CQ event
       Map<String, Object> buffer = new HashMap();
       for (int i = 1; i < numObjects; i++) {
         Portfolio p = new Portfolio(-1 * i);
@@ -220,6 +221,7 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
       for (int i = 1; i < numObjects; i++) {
         keys.add("" + i);
       }
+      // This is to generate LOCAL_DESTROY CQ event
       region.removeAll(keys);
     });
 

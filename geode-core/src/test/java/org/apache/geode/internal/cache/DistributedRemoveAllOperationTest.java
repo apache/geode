@@ -51,35 +51,37 @@ public class DistributedRemoveAllOperationTest {
   @Test
   public void testDoRemoveDestroyTokensFromCqResultKeys() {
     EntryEventImpl baseEvent = mock(EntryEventImpl.class);
+    EntryEventImpl entryEvent = mock(EntryEventImpl.class);
+    BucketRegion bucketRegion = mock(BucketRegion.class);
+    InternalCache internalCache = mock(InternalCache.class);
+    RegionAttributes regionAttributes = mock(RegionAttributes.class);
+    InternalDistributedSystem internalDistributedSystem = mock(InternalDistributedSystem.class);
+    FilterRoutingInfo.FilterInfo filterInfo = mock(FilterRoutingInfo.FilterInfo.class);
+    CqService cqService = mock(CqService.class);
+    PartitionedRegion partitionedRegion = mock(PartitionedRegion.class);
+    ServerCQ serverCQ = mock(ServerCQ.class);
     int removeAllPRDataSize = 1;
     DistributedRemoveAllOperation distributedRemoveAllOperation =
         new DistributedRemoveAllOperation(baseEvent, removeAllPRDataSize, false);
-    EntryEventImpl entryEvent = mock(EntryEventImpl.class);
     Object key = new Object();
     when(entryEvent.getKey()).thenReturn(key);
     distributedRemoveAllOperation.addEntry(entryEvent);
-    FilterRoutingInfo.FilterInfo filterInfo = mock(FilterRoutingInfo.FilterInfo.class);
     HashMap hashMap = new HashMap();
     hashMap.put(1L, MessageType.LOCAL_DESTROY);
     when(filterInfo.getCQs()).thenReturn(hashMap);
-    BucketRegion bucketRegion = mock(BucketRegion.class);
     when(baseEvent.getRegion()).thenReturn(bucketRegion);
-    InternalCache internalCache = mock(InternalCache.class);
-    RegionAttributes regionAttributes = mock(RegionAttributes.class);
     when(bucketRegion.getAttributes()).thenReturn(regionAttributes);
-    when(regionAttributes.getDataPolicy()).thenReturn(DataPolicy.DEFAULT);
-    when(bucketRegion.getCache()).thenReturn(internalCache);
-    InternalDistributedSystem internalDistributedSystem = mock(InternalDistributedSystem.class);
-    when(internalCache.getDistributedSystem()).thenReturn(internalDistributedSystem);
-    CqService cqService = mock(CqService.class);
-    when(internalCache.getCqService()).thenReturn(cqService);
-    PartitionedRegion partitionedRegion = mock(PartitionedRegion.class);
     when(bucketRegion.getPartitionedRegion()).thenReturn(partitionedRegion);
+    when(bucketRegion.getCache()).thenReturn(internalCache);
     when(bucketRegion.getKeyInfo(any(), any(), any())).thenReturn(new KeyInfo(key, null, null));
-    ServerCQ serverCQ = mock(ServerCQ.class);
+    when(regionAttributes.getDataPolicy()).thenReturn(DataPolicy.DEFAULT);
+    when(internalCache.getDistributedSystem()).thenReturn(internalDistributedSystem);
+    when(internalCache.getCqService()).thenReturn(cqService);
     when(serverCQ.getFilterID()).thenReturn(new Long(1L));
     doNothing().when(serverCQ).removeFromCqResultKeys(isA(Object.class), isA(Boolean.class));
+
     distributedRemoveAllOperation.doRemoveDestroyTokensFromCqResultKeys(filterInfo, serverCQ);
+
     verify(serverCQ, times(1)).removeFromCqResultKeys(key, true);
   }
 }
