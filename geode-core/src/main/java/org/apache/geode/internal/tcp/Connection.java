@@ -3041,6 +3041,18 @@ public class Connection implements Runnable {
         throw err;
       } catch (Throwable t) {
         logger.fatal("Error deserializing message", t);
+        if (inputBuffer != null) {
+          ByteBuffer poolableBuffer = getBufferPool().getPoolableBuffer(inputBuffer);
+          if (poolableBuffer != inputBuffer) {
+            logger.info(
+                "BRUCE: caught Throwable with buffer {}@{} holding pooled buffer {}@{}",
+                inputBuffer, Integer.toHexString(System.identityHashCode(inputBuffer)),
+                poolableBuffer, Integer.toHexString(System.identityHashCode(poolableBuffer)));
+          } else {
+            logger.info("BRUCE: caught IOException with buffer {}@{}",
+                inputBuffer, Integer.toHexString(System.identityHashCode(inputBuffer)));
+          }
+        }
         // Whenever you catch Error or Throwable, you must also
         // catch VirtualMachineError (see above). However, there is
         // _still_ a possibility that you are dealing with a cascading
