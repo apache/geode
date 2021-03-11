@@ -27,4 +27,9 @@ public class RedisPartitionResolver implements PartitionResolver<ByteArrayWrappe
     return opDetails.getKey().getRoutingId();
   }
 
+  @Override
+  public String getName() {
+    return RedisPartitionResolver.class.getName();
+  }
+
 }
