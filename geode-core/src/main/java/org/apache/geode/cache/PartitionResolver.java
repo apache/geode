@@ -72,9 +72,11 @@ public interface PartitionResolver<K, V> extends CacheCallback {
   Object getRoutingObject(EntryOperation<K, V> opDetails);
 
   /**
-   * Returns the name of the PartitionResolver
+   * Returns the name of the PartitionResolver. By default it will return the class name.
    *
    * @return String name
    */
-  String getName();
+  default String getName() {
+    return getClass().getName();
+  }
 }
