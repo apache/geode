@@ -484,8 +484,9 @@ public class CompactRangeIndexJUnitTest {
             "Select * from " + SEPARATOR + "exampleRegion r where r.positions['SUN'] = null")
         .execute());
     assertThat(results.size()).isEqualTo(2);
+    assertThat(results.contains(p2)).isTrue();
+    assertThat(results.contains(p4)).isTrue();
   }
-
 
   private void putValues(int num) {
     Region region = utils.getRegion("exampleRegion");
