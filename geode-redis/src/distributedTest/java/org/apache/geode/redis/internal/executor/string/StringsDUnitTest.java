@@ -98,7 +98,7 @@ public class StringsDUnitTest {
   }
 
   @Test
-  public void set_shoulddistributeDataAmongMultipleServers_givenMultipleClients() throws Exception {
+  public void set_shoulddistributeDataAmongMultipleServers_givenMultipleClients() {
     List<String> keys = makeStringList(LIST_SIZE, "key1-");
     List<String> values = makeStringList(LIST_SIZE, "values1-");
 
