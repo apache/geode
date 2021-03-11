@@ -326,10 +326,16 @@ public class BufferPool {
   private void releaseBuffer(ByteBuffer buffer, boolean send) {
     if (buffer.isDirect()) {
       ByteBuffer poolableBuffer = getPoolableBuffer(buffer);
-      logger.info("BRUCE: releasing buffer {}@{} holding pooled buffer {}@{},\n{}",
-          buffer, Integer.toHexString(System.identityHashCode(buffer)),
-          poolableBuffer, Integer.toHexString(System.identityHashCode(poolableBuffer)),
-          getCallStackAsString(6));
+      if (buffer != poolableBuffer) {
+        logger.info("BRUCE: releasing buffer {}@{} holding pooled buffer {}@{},\n{}",
+            buffer, Integer.toHexString(System.identityHashCode(buffer)),
+            poolableBuffer, Integer.toHexString(System.identityHashCode(poolableBuffer)),
+            getCallStackAsString(6));
+      } else {
+        logger.info("BRUCE: releasing pooled buffer {}@{},\n{}",
+            buffer, Integer.toHexString(System.identityHashCode(buffer)),
+            getCallStackAsString(6));
+      }
       BBSoftReference bbRef = new BBSoftReference(poolableBuffer, send);
       if (poolableBuffer.capacity() <= SMALL_BUFFER_SIZE) {
         bufferSmallQueue.offer(bbRef);

@@ -1367,6 +1367,8 @@ public class Connection implements Runnable {
       }
 
       // Make sure anyone waiting for a handshake stops waiting
+      logger.info("BRUCE: in connection.close, notifying handshake waiter of failure.  reason={}",
+          reason);
       notifyHandshakeWaiter(false);
       // wait a bit for the our reader thread to exit don't wait if we are the reader thread
       boolean isIBM = false;
@@ -1505,6 +1507,7 @@ public class Connection implements Runnable {
       releaseInputBuffer();
 
       // make sure that if the reader thread exits we notify a thread waiting for the handshake.
+      logger.info("BRUCE: in connection.run, notifying handshake waiter of failure");
       notifyHandshakeWaiter(false);
       readerThread.setName("unused p2p reader");
       synchronized (stateLock) {
@@ -1641,6 +1644,7 @@ public class Connection implements Runnable {
           }
           if (amountRead < 0) {
             readerShuttingDown = true;
+            logger.info("BRUCE: Connection.readMessages encountered EOF");
             try {
               requestClose("SocketChannel.read returned EOF");
             } catch (Exception e) {
@@ -1683,6 +1687,7 @@ public class Connection implements Runnable {
           return;
         } catch (ClosedChannelException e) {
           readerShuttingDown = true;
+          logger.debug("BRUCE: {} Terminated <{}> due to closed channel", p2pReaderName(), this, e);
           try {
             requestClose(String.format("ClosedChannelException in channel read: %s", e));
           } catch (Exception ignored) {
@@ -1745,7 +1750,7 @@ public class Connection implements Runnable {
         }
       }
       if (logger.isDebugEnabled()) {
-        logger.debug("readMessages terminated id={} from {} isHandshakeReader={}", conduitIdStr,
+        logger.debug("readMessages terminated id={} from {} handshakeHasBeenRead={}", conduitIdStr,
             remoteAddr, handshakeHasBeenRead);
       }
     }
@@ -2924,6 +2929,7 @@ public class Connection implements Runnable {
           notifyHandshakeWaiter(true);
         } else {
           // check if we need notifyHandshakeWaiter() call.
+          logger.info("BRUCE: in readHandshakeForReceiver, notifying handshake waiter of failure");
           notifyHandshakeWaiter(false);
           logger.warn("{} timed out during a membership check.",
               p2pReaderName());
