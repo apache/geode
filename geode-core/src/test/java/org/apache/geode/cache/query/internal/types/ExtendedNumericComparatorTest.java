@@ -26,7 +26,6 @@ import org.apache.geode.cache.query.internal.index.IndexManager;
 public class ExtendedNumericComparatorTest {
   Comparator comparator = TypeUtils.getExtendedNumericComparator();
 
-
   @Test
   public void nullIsGreaterThanUndefined() {
     assertThat(comparator.compare(IndexManager.NULL, QueryService.UNDEFINED)).isEqualTo(1);
@@ -49,36 +48,36 @@ public class ExtendedNumericComparatorTest {
 
   @Test
   public void undefinedIsSmallerThanNumber() {
-    assertThat(comparator.compare(QueryService.UNDEFINED, new Integer(3))).isEqualTo(-1);
+    assertThat(comparator.compare(QueryService.UNDEFINED, 3)).isEqualTo(-1);
   }
 
   @Test
   public void numberIsGreaterThanUndefined() {
-    assertThat(comparator.compare(new Integer(3), QueryService.UNDEFINED)).isEqualTo(1);
+    assertThat(comparator.compare(3, QueryService.UNDEFINED)).isEqualTo(1);
   }
 
   @Test
   public void nullIsSmallerThanNumber() {
-    assertThat(comparator.compare(IndexManager.NULL, new Integer(3))).isEqualTo(-1);
+    assertThat(comparator.compare(IndexManager.NULL, 3)).isEqualTo(-1);
   }
 
   @Test
   public void numberIsGreaterThanNull() {
-    assertThat(comparator.compare(new Integer(3), IndexManager.NULL)).isEqualTo(1);
+    assertThat(comparator.compare(3, IndexManager.NULL)).isEqualTo(1);
   }
 
   @Test
   public void numberXisEqualToNumberX() {
-    assertThat(comparator.compare(new Integer(6), new Integer(6))).isEqualTo(0);
+    assertThat(comparator.compare(6, 6)).isEqualTo(0);
   }
 
   @Test
   public void numberXPlusOneIsGreaterThanNumberX() {
-    assertThat(comparator.compare(new Integer(5), new Integer(3))).isEqualTo(1);
+    assertThat(comparator.compare(4, 3)).isEqualTo(1);
   }
 
   @Test
   public void numberXIsSmallerThanNumberXPlusOne() {
-    assertThat(comparator.compare(new Integer(2), new Integer(3))).isEqualTo(-1);
+    assertThat(comparator.compare(2, 3)).isEqualTo(-1);
   }
 }

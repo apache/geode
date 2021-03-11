@@ -15,9 +15,11 @@
 package org.apache.geode.cache.query.internal.index;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -40,6 +42,7 @@ import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.internal.IndexTrackingQueryObserver;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
+import org.apache.geode.util.internal.UncheckedUtils;
 
 @Category({OQLIndexTest.class})
 public class MapRangeIndexMaintenanceJUnitTest {
@@ -356,7 +359,7 @@ public class MapRangeIndexMaintenanceJUnitTest {
     qs = CacheUtils.getQueryService();
 
     keyIndex1 = qs.createIndex(INDEX_NAME, "positions['SUN']", SEPARATOR + "portfolio ");
-    assertTrue(keyIndex1 instanceof CompactRangeIndex);
+    assertThat(keyIndex1).isInstanceOf(CompactRangeIndex.class);
     testQueriesForValueInMapField(region, qs);
 
     long keys = ((CompactRangeIndex) keyIndex1).internalIndexStats.getNumberOfKeys();
@@ -364,9 +367,9 @@ public class MapRangeIndexMaintenanceJUnitTest {
         ((CompactRangeIndex) keyIndex1).internalIndexStats.getNumberOfMapIndexKeys();
     long values =
         ((CompactRangeIndex) keyIndex1).internalIndexStats.getNumberOfValues();
-    assertEquals(4, keys);
-    assertEquals(0, mapIndexKeys);
-    assertEquals(7, values);
+    assertThat(keys).isEqualTo(4);
+    assertThat(mapIndexKeys).isEqualTo(0);
+    assertThat(values).isEqualTo(7);
   }
 
   @Test
@@ -377,7 +380,7 @@ public class MapRangeIndexMaintenanceJUnitTest {
 
     keyIndex1 =
         qs.createIndex(INDEX_NAME, "positions['SUN', 'ERICSSON']", SEPARATOR + "portfolio ");
-    assertTrue(keyIndex1 instanceof CompactMapRangeIndex);
+    assertThat(keyIndex1).isInstanceOf(CompactMapRangeIndex.class);
     testQueriesForValueInMapField(region, qs);
 
     long keys = ((CompactMapRangeIndex) keyIndex1).internalIndexStats.getNumberOfKeys();
@@ -385,9 +388,9 @@ public class MapRangeIndexMaintenanceJUnitTest {
         ((CompactMapRangeIndex) keyIndex1).internalIndexStats.getNumberOfMapIndexKeys();
     long values =
         ((CompactMapRangeIndex) keyIndex1).internalIndexStats.getNumberOfValues();
-    assertEquals(3, keys);
-    assertEquals(1, mapIndexKeys);
-    assertEquals(3, values);
+    assertThat(keys).isEqualTo(3);
+    assertThat(mapIndexKeys).isEqualTo(1);
+    assertThat(values).isEqualTo(3);
   }
 
   @Test
@@ -397,7 +400,7 @@ public class MapRangeIndexMaintenanceJUnitTest {
     qs = CacheUtils.getQueryService();
 
     keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", SEPARATOR + "portfolio ");
-    assertTrue(keyIndex1 instanceof CompactMapRangeIndex);
+    assertThat(keyIndex1).isInstanceOf(CompactMapRangeIndex.class);
     testQueriesForValueInMapField(region, qs);
 
     long keys = ((CompactMapRangeIndex) keyIndex1).internalIndexStats.getNumberOfKeys();
@@ -405,15 +408,16 @@ public class MapRangeIndexMaintenanceJUnitTest {
         ((CompactMapRangeIndex) keyIndex1).internalIndexStats.getNumberOfMapIndexKeys();
     long values =
         ((CompactMapRangeIndex) keyIndex1).internalIndexStats.getNumberOfValues();
-    assertEquals(5, keys);
-    assertEquals(4, mapIndexKeys);
-    assertEquals(5, values);
+    assertThat(keys).isEqualTo(5);
+    assertThat(mapIndexKeys).isEqualTo(4);
+    assertThat(values).isEqualTo(5);
   }
 
-  public void testQueriesForValueInMapField(Region region, QueryService qs) throws Exception {
+  public void testQueriesForValueInMapField(Region<Object, Object> region, QueryService qs)
+      throws Exception {
     // Empty map
     Portfolio p = new Portfolio(1, 1);
-    p.positions = new HashMap();
+    p.positions = new HashMap<>();
     region.put(1, p);
 
     // Map is null
@@ -423,20 +427,20 @@ public class MapRangeIndexMaintenanceJUnitTest {
 
     // Map with null value for "SUN" key
     Portfolio p3 = new Portfolio(3, 3);
-    p3.positions = new HashMap();
+    p3.positions = new HashMap<>();
     p3.positions.put("IBM", "something");
     p3.positions.put("SUN", null);
     region.put(3, p3);
 
     // Map with not null value for "SUN" key
     Portfolio p4 = new Portfolio(4, 4);
-    p4.positions = new HashMap();
+    p4.positions = new HashMap<>();
     p4.positions.put("SUN", "nothing");
     region.put(4, p4);
 
     // Map with null key
     Portfolio p5 = new Portfolio(5, 5);
-    p5.positions = new HashMap();
+    p5.positions = new HashMap<>();
     p5.positions.put("SUN", "more");
     // The next one causes trouble with gfsh as json cannot show maps with null keys
     p5.positions.put(null, "empty");
@@ -444,7 +448,7 @@ public class MapRangeIndexMaintenanceJUnitTest {
 
     // One more with map without the "SUN" key
     Portfolio p6 = new Portfolio(6, 6);
-    p6.positions = new HashMap();
+    p6.positions = new HashMap<>();
     p6.positions.put("ERIC", "hey");
     region.put(6, p6);
 
@@ -455,44 +459,39 @@ public class MapRangeIndexMaintenanceJUnitTest {
 
     String query;
     query = "select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = null";
-    SelectResults result = (SelectResults) qs
+    SelectResults<Object> result = UncheckedUtils.uncheckedCast(qs
         .newQuery(query)
-        .execute();
-    System.out.println("Query: " + query + ", result: " + result);
-    // Flaky in testQueriesForValuesInMapFieldWithMapIndexWithOneKey. Somtimes returns 0.
-    assertEquals(1, result.size());
+        .execute());
+    assertThat(result.size()).isEqualTo(1);
+    assertThat(result.contains(p3)).isTrue();
 
     query = "select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] != null";
-    result = (SelectResults) qs
+    result = UncheckedUtils.uncheckedCast(qs
         .newQuery(query)
-        .execute();
-    System.out.println("Query: " + query + ", result: " + result);
-    // Flaky in testQueriesForValuesInMapFieldWithMapIndexWithOneKey. Around 25% of the times
-    // returns 4.
-    assertEquals(6, result.size());
+        .execute());
+    assertThat(result.size()).isEqualTo(6);
+    assertThat(result.containsAll(Arrays.asList(p, p2, p4, p5, p6, p7))).isTrue();
 
     query = "select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 'nothing'";
-    result = (SelectResults) qs
+    result = UncheckedUtils.uncheckedCast(qs
         .newQuery(query)
-        .execute();
-    System.out.println("Query: " + query + ", result: " + result);
-    assertEquals(1, result.size());
+        .execute());
+    assertThat(result.size()).isEqualTo(1);
+    assertThat(result.contains(p4)).isTrue();
 
     query = "select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] != 'nothing'";
-    result = (SelectResults) qs
+    result = UncheckedUtils.uncheckedCast(qs
         .newQuery(query)
-        .execute();
-    System.out.println("Query: " + query + ", result: " + result);
-    // Flaky in testQueriesForValuesInMapFieldWithMapIndexWithOneKey. Around 20% of the times
-    // returns 4.
-    assertEquals(6, result.size());
+        .execute());
+    assertThat(result.size()).isEqualTo(6);
+    assertThat(result.containsAll(Arrays.asList(p, p2, p3, p5, p6, p7))).isTrue();
 
     query = "select * from " + SEPARATOR + "portfolio p";
-    result = (SelectResults) qs
+    result = UncheckedUtils.uncheckedCast(qs
         .newQuery(query)
-        .execute();
-    System.out.println("Query: " + query + ", result: " + result);
-    assertEquals(7, result.size());
+        .execute());
+    assertThat(result.size()).isEqualTo(7);
+    assertThat(result.containsAll(Arrays.asList(p, p2, p3, p4, p5, p6, p7))).isTrue();
   }
 
   @Test
