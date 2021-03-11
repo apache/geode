@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor.set;
 
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -51,21 +52,13 @@ public abstract class AbstractSDiffIntegrationTest implements RedisPortSupplier 
   }
 
   @Test
-  public void sdiff_givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SDIFF))
-        .hasMessageContaining("ERR wrong number of arguments for 'sdiff' command");
+  public void sdiffErrors_givenTooFewArguments() {
+    assertAtLeastNArgs(jedis, Protocol.Command.SDIFF, 1);
   }
 
   @Test
-  public void sdiffstore_givenDestinationNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SDIFFSTORE))
-        .hasMessageContaining("ERR wrong number of arguments for 'sdiffstore' command");
-  }
-
-  @Test
-  public void sdiffstore_givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SDIFFSTORE, "destination"))
-        .hasMessageContaining("ERR wrong number of arguments for 'sdiffstore' command");
+  public void sdiffstoreErrors_givenTooFewArguments() {
+    assertAtLeastNArgs(jedis, Protocol.Command.SDIFFSTORE, 2);
   }
 
   @Test

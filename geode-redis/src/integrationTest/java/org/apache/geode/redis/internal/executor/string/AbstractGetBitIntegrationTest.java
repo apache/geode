@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -44,21 +45,8 @@ public abstract class AbstractGetBitIntegrationTest implements RedisPortSupplier
   }
 
   @Test
-  public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.GETBIT))
-        .hasMessageContaining("ERR wrong number of arguments for 'getbit' command");
-  }
-
-  @Test
-  public void givenOffsetNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.GETBIT, "key"))
-        .hasMessageContaining("ERR wrong number of arguments for 'getbit' command");
-  }
-
-  @Test
-  public void givenMoreThanThreeArgumentsProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.GETBIT, "key", "4", "extraArg"))
-        .hasMessageContaining("ERR wrong number of arguments for 'getbit' command");
+  public void errors_givenWrongNumberOfArguments() {
+    assertExactNumberOfArgs(jedis, Protocol.Command.GETBIT, 2);
   }
 
   @Test

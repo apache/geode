@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor.set;
 
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -51,21 +52,13 @@ public abstract class AbstractSUnionIntegrationTest implements RedisPortSupplier
   }
 
   @Test
-  public void sunion_givenKeyProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SUNION))
-        .hasMessageContaining("ERR wrong number of arguments for 'sunion' command");
+  public void sunionErrors_givenTooFewArguments() {
+    assertAtLeastNArgs(jedis, Protocol.Command.SUNION, 1);
   }
 
   @Test
-  public void sunionstore_givenDestinationProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SUNIONSTORE))
-        .hasMessageContaining("ERR wrong number of arguments for 'sunionstore' command");
-  }
-
-  @Test
-  public void sunionstore_givenKeyProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SUNIONSTORE, "destination"))
-        .hasMessageContaining("ERR wrong number of arguments for 'sunionstore' command");
+  public void sunionstroreErrors_givenTooFewArgumentst() {
+    assertAtLeastNArgs(jedis, Protocol.Command.SUNIONSTORE, 2);
   }
 
   @Test

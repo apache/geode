@@ -15,8 +15,8 @@
 
 package org.apache.geode.redis.internal.executor.key;
 
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.After;
 import org.junit.Before;
@@ -50,15 +50,8 @@ public abstract class AbstractTypeIntegrationTest implements RedisPortSupplier {
   }
 
   @Test
-  public void shouldThrowError_givenTooFewArgs() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.TYPE))
-        .hasMessageContaining("wrong number of arguments");
-  }
-
-  @Test
-  public void shouldThrowError_givenTooManyArgs() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.TYPE, "orange", "blue"))
-        .hasMessageContaining("wrong number of arguments");
+  public void errors_GivenWrongNumberOfArguments() {
+    assertExactNumberOfArgs(jedis, Protocol.Command.TYPE, 1);
   }
 
   @Test

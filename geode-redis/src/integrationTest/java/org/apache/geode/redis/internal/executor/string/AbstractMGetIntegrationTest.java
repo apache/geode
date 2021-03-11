@@ -14,8 +14,8 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.stream.IntStream;
 
@@ -47,9 +47,8 @@ public abstract class AbstractMGetIntegrationTest implements RedisPortSupplier {
   }
 
   @Test
-  public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.MGET))
-        .hasMessageContaining("ERR wrong number of arguments for 'mget' command");
+  public void errors_givenWrongNumberOfArguments() {
+    assertAtLeastNArgs(jedis, Protocol.Command.MGET, 1);
   }
 
   @Test
