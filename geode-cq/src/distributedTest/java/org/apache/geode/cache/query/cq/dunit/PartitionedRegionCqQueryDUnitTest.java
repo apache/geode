@@ -150,6 +150,7 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
         buffer.put("" + i, p);
       }
       region.putAll(buffer);
+      assertThat(region.size()).isEqualTo(numObjects - 1);
     });
 
     client.invoke(() -> {
@@ -171,6 +172,18 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
         buffer.put("" + i, p);
       }
       region.putAll(buffer);
+      assertThat(region.size()).isEqualTo(numObjects - 1);
+    });
+
+    client.invoke(() -> {
+      QueryService cqService = getCache().getQueryService();
+      CqQuery cqQuery = cqService.getCq(cqName);
+      assertThat(cqQuery)
+          .withFailMessage("Failed to get CQ " + cqName)
+          .isNotNull();
+      CqQueryTestListener cqListener =
+          (CqQueryTestListener) cqQuery.getCqAttributes().getCqListener();
+      assertThat(cqListener.getTotalEventCount()).isEqualTo(numObjects - 1);
     });
 
     cqHelper.closeClient(client);
@@ -203,6 +216,7 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
         buffer.put("" + i, p);
       }
       region.putAll(buffer);
+      assertThat(region.size()).isEqualTo(numObjects - 1);
     });
 
     client.invoke(() -> {
@@ -223,6 +237,18 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
       }
       // This is to generate LOCAL_DESTROY CQ event
       region.removeAll(keys);
+      assertThat(region.size()).isEqualTo(0);
+    });
+
+    client.invoke(() -> {
+      QueryService cqService = getCache().getQueryService();
+      CqQuery cqQuery = cqService.getCq(cqName);
+      assertThat(cqQuery)
+          .withFailMessage("Failed to get CQ " + cqName)
+          .isNotNull();
+      CqQueryTestListener cqListener =
+          (CqQueryTestListener) cqQuery.getCqAttributes().getCqListener();
+      assertThat(cqListener.getTotalEventCount()).isEqualTo(numObjects - 1);
     });
 
     cqHelper.closeClient(client);
