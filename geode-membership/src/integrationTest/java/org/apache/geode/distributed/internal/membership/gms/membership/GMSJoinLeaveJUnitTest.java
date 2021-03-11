@@ -16,6 +16,7 @@ package org.apache.geode.distributed.internal.membership.gms.membership;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
@@ -859,7 +860,7 @@ public class GMSJoinLeaveJUnitTest {
 
     // this creates a NPE that must be handled appropriately
     gmsJoinLeave.currentView = null;
-    gmsJoinLeave.processNetworkPartitionMessage(message);
+    assertThatNoException().isThrownBy(() -> gmsJoinLeave.processNetworkPartitionMessage(message));
 
   }
 
