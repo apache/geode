@@ -19,6 +19,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionFactory;
+import org.apache.geode.management.ManagementException;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.executor.cluster.RedisPartitionResolver;
@@ -37,6 +38,7 @@ public class RegionProvider {
   private final Region<String, Object> configRegion;
 
   public RegionProvider(InternalCache cache) {
+    validateBuckets(REDIS_REGION_BUCKETS);
 
     InternalRegionFactory<ByteArrayWrapper, RedisData> redisDataRegionFactory =
         cache.createInternalRegionFactory(RegionShortcut.PARTITION_REDUNDANT);
@@ -62,5 +64,24 @@ public class RegionProvider {
 
   public Region<String, Object> getConfigRegion() {
     return configRegion;
+  }
+
+  /**
+   * Validates that the value passed in is a power of 2 and that it is not greater than
+   * {@link #REDIS_SLOTS}
+   *
+   * @throws ManagementException if there is a problem with the value
+   */
+  protected static void validateBuckets(int buckets) {
+    if (buckets <= 0 || ((buckets & (buckets - 1)) != 0)) {
+      throw new ManagementException(
+          "Could not start Redis Server - redis region buckets must be a power of 2. Configured value is invalid: "
+              + buckets);
+    }
+
+    if (buckets > REDIS_SLOTS) {
+      throw new ManagementException(
+          "Could not start Redis Server - redis region buckets must <= " + REDIS_SLOTS);
+    }
   }
 }

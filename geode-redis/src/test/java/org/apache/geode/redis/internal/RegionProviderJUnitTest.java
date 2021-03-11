@@ -13,23 +13,30 @@
  * the License.
  */
 
-package org.apache.geode.redis.internal.executor.cluster;
+package org.apache.geode.redis.internal;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.Test;
 
-public class CRC16JUnitTest {
+public class RegionProviderJUnitTest {
 
   @Test
-  public void testBasicCRC16_sameAsRedis() {
-    assertThat(CRC16.calculate(new byte[] {0}, 0, 1)).isEqualTo((short) 0);
-    assertThat(CRC16.calculate(new byte[] {1}, 0, 1)).isEqualTo((short) 0x1021);
-    assertThat(CRC16.calculate("123456789".getBytes(), 0, 9)).isEqualTo((short) 0x31c3);
-    assertThat(CRC16.calculate("---123456789---".getBytes(), 3, 12)).isEqualTo((short) 0x31c3);
-    assertThat(CRC16.calculate("abcdefghijklmnopqrstuvwxyz".getBytes(), 0, 26))
-        .isEqualTo((short) 0x63ac);
-    assertThat(CRC16.calculate("user1000".getBytes(), 0, 8)).isEqualTo((short) 0x4d73);
+  public void testBucket_whenPowerOfTwo() {
+    assertThatNoException().isThrownBy(() -> RegionProvider.validateBuckets(128));
+  }
+
+  @Test
+  public void testException_whenNotPowerOfTwo() {
+    assertThatThrownBy(() -> RegionProvider.validateBuckets(127))
+        .hasMessageContaining("redis region buckets must be a power of 2");
+  }
+
+  @Test
+  public void testException_whenGreaterThanSlots() {
+    assertThatThrownBy(() -> RegionProvider.validateBuckets(32768))
+        .hasMessageContaining("redis region buckets must <= 16384");
   }
 
 }

@@ -128,8 +128,7 @@ public class ByteArrayWrapper
       for (int i = 0; i < value.length; i++) {
         if (value[i] == '{' && startHashtag == Integer.MAX_VALUE) {
           startHashtag = i;
-        }
-        if (value[i] == '}') {
+        } else if (value[i] == '}') {
           endHashtag = i;
           break;
         }
