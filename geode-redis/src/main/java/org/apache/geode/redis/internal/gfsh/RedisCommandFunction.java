@@ -23,6 +23,8 @@ import org.apache.geode.redis.internal.GeodeRedisService;
 
 public class RedisCommandFunction extends CliFunction<Boolean> {
 
+  private static final long serialVersionUID = -6607122865046807926L;
+
   public static void register() {
     FunctionService.registerFunction(new RedisCommandFunction());
   }

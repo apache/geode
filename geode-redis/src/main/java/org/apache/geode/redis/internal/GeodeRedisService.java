@@ -29,6 +29,11 @@ import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.NullRedisData;
+import org.apache.geode.redis.internal.data.RedisHash;
+import org.apache.geode.redis.internal.data.RedisSet;
+import org.apache.geode.redis.internal.data.RedisString;
+import org.apache.geode.redis.internal.executor.string.SetOptions;
 
 public class GeodeRedisService implements CacheService, ResourceEventsListener {
   private static final Logger logger = LogService.getLogger();
@@ -52,7 +57,21 @@ public class GeodeRedisService implements CacheService, ResourceEventsListener {
     InternalDataSerializer.getDSFIDSerializer().registerDSFID(
         DataSerializableFixedID.REDIS_BYTE_ARRAY_WRAPPER,
         ByteArrayWrapper.class);
-
+    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
+        DataSerializableFixedID.REDIS_SET_ID,
+        RedisSet.class);
+    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
+        DataSerializableFixedID.REDIS_STRING_ID,
+        RedisString.class);
+    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
+        DataSerializableFixedID.REDIS_HASH_ID,
+        RedisHash.class);
+    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
+        DataSerializableFixedID.REDIS_NULL_DATA_ID,
+        NullRedisData.class);
+    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
+        DataSerializableFixedID.REDIS_SET_OPTIONS_ID,
+        SetOptions.class);
   }
 
   @Override

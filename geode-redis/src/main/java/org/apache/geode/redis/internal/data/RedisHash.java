@@ -45,6 +45,9 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
@@ -135,16 +138,30 @@ public class RedisHash extends AbstractRedisData {
   }
 
 
+
   /**
    * Since GII (getInitialImage) can come in and call toData while other threads are modifying this
    * object, the striped executor will not protect toData. So any methods that modify "hash" needs
    * to be thread safe with toData.
    */
   @Override
-  public synchronized void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out, SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeHashMap(hash, out);
   }
+
+  @Override
+  public void fromData(DataInput in, DeserializationContext context)
+      throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
+    hash = DataSerializer.readHashMap(in);
+  }
+
+  @Override
+  public int getDSFID() {
+    return REDIS_HASH_ID;
+  }
+
 
   private synchronized ByteArrayWrapper hashPut(ByteArrayWrapper field, ByteArrayWrapper value) {
     return hash.put(field, value);
@@ -159,11 +176,6 @@ public class RedisHash extends AbstractRedisData {
     return hash.remove(field);
   }
 
-  @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
-    hash = DataSerializer.readHashMap(in);
-  }
 
   @Override
   protected void applyDelta(DeltaInfo deltaInfo) {
@@ -498,5 +510,10 @@ public class RedisHash extends AbstractRedisData {
   @Override
   public String toString() {
     return "RedisHash{" + super.toString() + ", " + "hash=" + hash + '}';
+  }
+
+  @Override
+  public KnownVersion[] getSerializationVersions() {
+    return null;
   }
 }
