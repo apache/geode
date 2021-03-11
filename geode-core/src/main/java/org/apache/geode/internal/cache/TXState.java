@@ -738,6 +738,7 @@ public class TXState implements TXStateInterface {
       Set<BucketRegion> obtained = new HashSet<BucketRegion>();
       while (it.hasNext()) {
         Map.Entry<InternalRegion, TXRegionState> me = it.next();
+        logger.warn("#LRJ lockBucketRegions for key: {}", me.getKey());
         InternalRegion r = me.getKey();
         if (r instanceof BucketRegion) {
           logger.warn("#LRJ iterating thru bucket regions: {}", r.getName());
