@@ -30,6 +30,7 @@ import javax.net.ssl.X509ExtendedTrustManager;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.InternalGemFireException;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -122,8 +123,8 @@ public final class FileWatchingX509ExtendedTrustManager extends X509ExtendedTrus
     TrustManager[] trustManagers;
     try {
       trustManagers = trustManagerSupplier.get();
-    } catch (Throwable t) {
-      throw new RuntimeException("Unable to load TrustManager", t);
+    } catch (Exception e) {
+      throw new InternalGemFireException("Unable to load TrustManager", e);
     }
 
     for (TrustManager tm : trustManagers) {

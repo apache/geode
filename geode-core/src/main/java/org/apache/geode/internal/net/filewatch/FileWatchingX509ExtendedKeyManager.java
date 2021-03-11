@@ -31,6 +31,7 @@ import javax.net.ssl.X509ExtendedKeyManager;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.InternalGemFireException;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -124,8 +125,8 @@ public final class FileWatchingX509ExtendedKeyManager extends X509ExtendedKeyMan
     KeyManager[] keyManagers;
     try {
       keyManagers = keyManagerSupplier.get();
-    } catch (Throwable t) {
-      throw new RuntimeException("Unable to load KeyManager", t);
+    } catch (Exception e) {
+      throw new InternalGemFireException("Unable to load KeyManager", e);
     }
 
     for (KeyManager km : keyManagers) {

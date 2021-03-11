@@ -16,5 +16,5 @@ package org.apache.geode.internal.net.filewatch;
 
 @FunctionalInterface
 public interface ThrowingSupplier<T> {
-  T get() throws Throwable;
+  T get() throws Exception;
 }
