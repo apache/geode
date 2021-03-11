@@ -15,6 +15,12 @@
 
 package org.apache.geode.redis.internal.executor.cluster;
 
+/**
+ * Helper class to calculate the CRC-16/XMODEM value of a byte array. This is the same algorithm
+ * that Redis uses.
+ *
+ * Derived from https://www.source-code.biz/snippets/java/crc16/
+ */
 public class CRC16 {
 
   // CCITT/SDLC/HDLC x^16 + x^12 + x^5 + 1 (CRC-16-CCITT)
