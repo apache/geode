@@ -158,7 +158,6 @@ public abstract class AbstractRedisInfoStatsIntegrationTest implements RedisPort
 
   @Test
   public void commandsProcessed_shouldIncrement_givenSuccessfulCommand() {
-    System.out.println("HERE" + getInfo(jedis));
     long initialCommandsProcessed = Long.valueOf(getInfo(jedis).get(COMMANDS_PROCESSED));
     jedis.ttl("key");
 
