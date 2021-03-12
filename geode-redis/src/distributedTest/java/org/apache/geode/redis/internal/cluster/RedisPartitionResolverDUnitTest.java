@@ -76,9 +76,9 @@ public class RedisPartitionResolverDUnitTest {
       jedis1.set(key, "value-" + i);
     }
 
-    Map<ByteArrayWrapper, Integer> keyToBucketMap1 = getKeyToBucketMap(server1);
-    Map<ByteArrayWrapper, Integer> keyToBucketMap2 = getKeyToBucketMap(server2);
-    Map<ByteArrayWrapper, Integer> keyToBucketMap3 = getKeyToBucketMap(server3);
+    Map<String, Integer> keyToBucketMap1 = getKeyToBucketMap(server1);
+    Map<String, Integer> keyToBucketMap2 = getKeyToBucketMap(server2);
+    Map<String, Integer> keyToBucketMap3 = getKeyToBucketMap(server3);
 
     Set<Integer> buckets1 = new HashSet<>(keyToBucketMap1.values());
     Set<Integer> buckets2 = new HashSet<>(keyToBucketMap2.values());
@@ -92,17 +92,17 @@ public class RedisPartitionResolverDUnitTest {
         .isEqualTo(RegionProvider.REDIS_REGION_BUCKETS);
   }
 
-  private Map<ByteArrayWrapper, Integer> getKeyToBucketMap(MemberVM vm) {
-    return vm.invoke((SerializableCallableIF<Map<ByteArrayWrapper, Integer>>) () -> {
+  private Map<String, Integer> getKeyToBucketMap(MemberVM vm) {
+    return vm.invoke((SerializableCallableIF<Map<String, Integer>>) () -> {
       Region<ByteArrayWrapper, RedisData> region =
           RedisClusterStartupRule.getCache().getRegion(RegionProvider.REDIS_DATA_REGION);
 
       LocalDataSet local = (LocalDataSet) PartitionRegionHelper.getLocalPrimaryData(region);
-      Map<ByteArrayWrapper, Integer> keyMap = new HashMap<>();
+      Map<String, Integer> keyMap = new HashMap<>();
 
       for (Object key : local.localKeys()) {
         int id = local.getProxy().getKeyInfo(key).getBucketId();
-        keyMap.put((ByteArrayWrapper) key, id);
+        keyMap.put(new String(((ByteArrayWrapper) key).toBytes()), id);
       }
 
       return keyMap;
