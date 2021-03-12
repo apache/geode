@@ -131,16 +131,6 @@ public abstract class AbstractInfoIntegrationTest implements RedisPortSupplier {
   }
 
   @Test
-  public void shouldReturnTCPPort() {
-    int expectedPort = getPort();
-    String expectedResult = "tcp_port:" + expectedPort;
-
-    String actualResult = jedis.info();
-
-    assertThat(actualResult).contains(expectedResult);
-  }
-
-  @Test
   public void shouldReturnRedisMode() {
     String expectedResult = "redis_mode:standalone";
 
