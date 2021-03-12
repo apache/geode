@@ -26,6 +26,7 @@ import java.time.Duration;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -34,7 +35,6 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.cache.ssl.CertStores;
 import org.apache.geode.cache.ssl.CertificateBuilder;
 import org.apache.geode.cache.ssl.CertificateMaterial;
-import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 public class FileWatchingX509ExtendedTrustManagerIntegrationTest {
   private static final String dummyPassword = "geode";
@@ -42,22 +42,26 @@ public class FileWatchingX509ExtendedTrustManagerIntegrationTest {
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-  @Rule
-  public ExecutorServiceRule executorService = new ExecutorServiceRule();
-
   private File trustStore;
+  private FileWatchingX509ExtendedTrustManager target;
 
   @Before
   public void createTrustStoreFile() throws Exception {
     trustStore = temporaryFolder.newFile("truststore.jks");
   }
 
+  @After
+  public void stopWatchingTrustStore() {
+    if (target != null) {
+      target.stopWatching();
+    }
+  }
+
   @Test
   public void initializesTrustManager() throws Exception {
     CertificateMaterial caCert = storeCa();
 
-    FileWatchingX509ExtendedTrustManager target = new FileWatchingX509ExtendedTrustManager(
-        trustStore.toPath(), this::loadTrustManagerFromStore, executorService.getExecutorService());
+    target = new FileWatchingX509ExtendedTrustManager(trustStore.toPath(), this::loadTrustManager);
 
     assertThat(target.getAcceptedIssuers()).containsExactly(caCert.getCertificate());
   }
@@ -66,10 +70,7 @@ public class FileWatchingX509ExtendedTrustManagerIntegrationTest {
   public void updatesTrustManager() throws Exception {
     storeCa();
 
-    FileWatchingX509ExtendedTrustManager target = new FileWatchingX509ExtendedTrustManager(
-        trustStore.toPath(), this::loadTrustManagerFromStore, executorService.getExecutorService());
-
-    await().until(target::isWatching);
+    target = new FileWatchingX509ExtendedTrustManager(trustStore.toPath(), this::loadTrustManager);
 
     /*
      * Some file systems only have 1-second granularity for file timestamps. This sleep is needed
@@ -90,7 +91,7 @@ public class FileWatchingX509ExtendedTrustManagerIntegrationTest {
     TrustManager[] trustManagers = new TrustManager[] {new NotAnX509ExtendedTrustManager()};
 
     Throwable thrown = catchThrowable(() -> new FileWatchingX509ExtendedTrustManager(
-        trustStore.toPath(), () -> trustManagers, executorService.getExecutorService()));
+        trustStore.toPath(), () -> trustManagers));
 
     assertThat(thrown).isNotNull();
   }
@@ -103,7 +104,7 @@ public class FileWatchingX509ExtendedTrustManagerIntegrationTest {
     return cert;
   }
 
-  private TrustManager[] loadTrustManagerFromStore() {
+  private TrustManager[] loadTrustManager() {
     try {
       KeyStore store = KeyStore.getInstance("JKS");
       try (FileInputStream stream = new FileInputStream(trustStore)) {

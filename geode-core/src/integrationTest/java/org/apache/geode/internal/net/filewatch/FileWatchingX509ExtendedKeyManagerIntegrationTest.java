@@ -26,6 +26,7 @@ import java.time.Duration;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -34,7 +35,6 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.cache.ssl.CertStores;
 import org.apache.geode.cache.ssl.CertificateBuilder;
 import org.apache.geode.cache.ssl.CertificateMaterial;
-import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 public class FileWatchingX509ExtendedKeyManagerIntegrationTest {
   private static final String dummyPassword = "geode";
@@ -43,22 +43,26 @@ public class FileWatchingX509ExtendedKeyManagerIntegrationTest {
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-  @Rule
-  public ExecutorServiceRule executorService = new ExecutorServiceRule();
-
   private File keyStore;
+  private FileWatchingX509ExtendedKeyManager target;
 
   @Before
   public void createKeyStoreFile() throws Exception {
     keyStore = temporaryFolder.newFile("keystore.jks");
   }
 
+  @After
+  public void stopWatchingKeyStore() {
+    if (target != null) {
+      target.stopWatching();
+    }
+  }
+
   @Test
   public void initializesKeyManager() throws Exception {
     CertificateMaterial cert = storeCertificate();
 
-    FileWatchingX509ExtendedKeyManager target = new FileWatchingX509ExtendedKeyManager(
-        keyStore.toPath(), this::loadKeyManagerFromStore, executorService.getExecutorService());
+    target = new FileWatchingX509ExtendedKeyManager(keyStore.toPath(), this::loadKeyManager);
 
     assertThat(target.getCertificateChain(alias)).containsExactly(cert.getCertificate());
   }
@@ -67,10 +71,7 @@ public class FileWatchingX509ExtendedKeyManagerIntegrationTest {
   public void updatesKeyManager() throws Exception {
     storeCertificate();
 
-    FileWatchingX509ExtendedKeyManager target = new FileWatchingX509ExtendedKeyManager(
-        keyStore.toPath(), this::loadKeyManagerFromStore, executorService.getExecutorService());
-
-    await().until(target::isWatching);
+    target = new FileWatchingX509ExtendedKeyManager(keyStore.toPath(), this::loadKeyManager);
 
     /*
      * Some file systems only have 1-second granularity for file timestamps. This sleep is needed
@@ -91,7 +92,7 @@ public class FileWatchingX509ExtendedKeyManagerIntegrationTest {
     KeyManager[] keyManagers = new KeyManager[] {new NotAnX509ExtendedKeyManager()};
 
     Throwable thrown = catchThrowable(() -> new FileWatchingX509ExtendedKeyManager(
-        keyStore.toPath(), () -> keyManagers, executorService.getExecutorService()));
+        keyStore.toPath(), () -> keyManagers));
 
     assertThat(thrown).isNotNull();
   }
@@ -104,7 +105,7 @@ public class FileWatchingX509ExtendedKeyManagerIntegrationTest {
     return cert;
   }
 
-  private KeyManager[] loadKeyManagerFromStore() {
+  private KeyManager[] loadKeyManager() {
     try {
       KeyStore clientKeys = KeyStore.getInstance("JKS");
       try (FileInputStream stream = new FileInputStream(keyStore)) {

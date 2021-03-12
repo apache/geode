@@ -14,14 +14,12 @@
  */
 package org.apache.geode.internal.net.filewatch;
 
-import static java.util.concurrent.Executors.newSingleThreadExecutor;
 
 import java.net.Socket;
 import java.nio.file.Path;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.net.ssl.SSLEngine;
@@ -46,18 +44,18 @@ public final class FileWatchingX509ExtendedTrustManager extends X509ExtendedTrus
   private final AtomicReference<X509ExtendedTrustManager> trustManager = new AtomicReference<>();
   private final Path trustStorePath;
   private final ThrowingSupplier<TrustManager[]> trustManagerSupplier;
-  private final FileWatcher fileWatcher;
+  private final PollingFileWatcher fileWatcher;
 
   @VisibleForTesting
   FileWatchingX509ExtendedTrustManager(Path trustStorePath,
-      ThrowingSupplier<TrustManager[]> trustManagerSupplier, ExecutorService executor) {
+      ThrowingSupplier<TrustManager[]> trustManagerSupplier) {
     this.trustStorePath = trustStorePath;
     this.trustManagerSupplier = trustManagerSupplier;
 
     loadTrustManager();
 
-    fileWatcher = new FileWatcher(this.trustStorePath, this::loadTrustManager);
-    executor.submit(fileWatcher);
+    fileWatcher = new PollingFileWatcher(this.trustStorePath, this::loadTrustManager);
+    fileWatcher.start();
   }
 
   /**
@@ -69,8 +67,8 @@ public final class FileWatchingX509ExtendedTrustManager extends X509ExtendedTrus
    */
   public static FileWatchingX509ExtendedTrustManager forPath(Path path,
       ThrowingSupplier<TrustManager[]> supplier) {
-    return instances.computeIfAbsent(path, (Path p) -> new FileWatchingX509ExtendedTrustManager(p,
-        supplier, newSingleThreadExecutor()));
+    return instances.computeIfAbsent(path,
+        (Path p) -> new FileWatchingX509ExtendedTrustManager(p, supplier));
   }
 
   @Override
@@ -115,8 +113,8 @@ public final class FileWatchingX509ExtendedTrustManager extends X509ExtendedTrus
   }
 
   @VisibleForTesting
-  boolean isWatching() {
-    return fileWatcher.isWatching();
+  void stopWatching() {
+    fileWatcher.stop();
   }
 
   private void loadTrustManager() {

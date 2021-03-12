@@ -14,15 +14,12 @@
  */
 package org.apache.geode.internal.net.filewatch;
 
-import static java.util.concurrent.Executors.newSingleThreadExecutor;
-
 import java.net.Socket;
 import java.nio.file.Path;
 import java.security.Principal;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.net.ssl.KeyManager;
@@ -47,19 +44,18 @@ public final class FileWatchingX509ExtendedKeyManager extends X509ExtendedKeyMan
   private final AtomicReference<X509ExtendedKeyManager> keyManager = new AtomicReference<>();
   private final Path keyStorePath;
   private final ThrowingSupplier<KeyManager[]> keyManagerSupplier;
-  private final FileWatcher fileWatcher;
+  private final PollingFileWatcher fileWatcher;
 
   @VisibleForTesting
   FileWatchingX509ExtendedKeyManager(Path keystorePath,
-      ThrowingSupplier<KeyManager[]> keyManagerSupplier,
-      ExecutorService executor) {
+      ThrowingSupplier<KeyManager[]> keyManagerSupplier) {
     this.keyStorePath = keystorePath;
     this.keyManagerSupplier = keyManagerSupplier;
 
     loadKeyManager();
 
-    fileWatcher = new FileWatcher(this.keyStorePath, this::loadKeyManager);
-    executor.submit(fileWatcher);
+    fileWatcher = new PollingFileWatcher(this.keyStorePath, this::loadKeyManager);
+    fileWatcher.start();
   }
 
   /**
@@ -72,7 +68,7 @@ public final class FileWatchingX509ExtendedKeyManager extends X509ExtendedKeyMan
   public static FileWatchingX509ExtendedKeyManager forPath(Path path,
       ThrowingSupplier<KeyManager[]> supplier) {
     return instances.computeIfAbsent(path,
-        (Path p) -> new FileWatchingX509ExtendedKeyManager(p, supplier, newSingleThreadExecutor()));
+        (Path p) -> new FileWatchingX509ExtendedKeyManager(p, supplier));
   }
 
   @Override
@@ -117,8 +113,8 @@ public final class FileWatchingX509ExtendedKeyManager extends X509ExtendedKeyMan
   }
 
   @VisibleForTesting
-  boolean isWatching() {
-    return fileWatcher.isWatching();
+  void stopWatching() {
+    fileWatcher.stop();
   }
 
   private void loadKeyManager() {
