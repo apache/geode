@@ -459,16 +459,24 @@ public class TXState implements TXStateInterface {
        */
       try {
         lockBucketRegions();
+        if (this.locks == null) {
+          reserveAndCheck();
+        }
       } catch (PrimaryBucketException pbe) {
         // not sure what to do here yet
         RuntimeException re = new TransactionDataRebalancedException(
             "Transactional data moved, due to rebalancing.");
         re.initCause(pbe);
         throw re;
-      }
-
-      if (this.locks == null) {
-        reserveAndCheck();
+      } catch (CommitConflictException cce) {
+        if (cce.getCause() instanceof RegionDestroyedException) {
+          RuntimeException re = new TransactionDataRebalancedException(
+              "Transactional data moved, due to rebalancing.");
+          re.initCause(cce);
+          throw re;
+        } else {
+          throw cce;
+        }
       }
 
       // For internal testing

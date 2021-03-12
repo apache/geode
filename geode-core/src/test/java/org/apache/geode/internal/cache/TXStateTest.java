@@ -43,6 +43,7 @@ import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.FailedSynchronizationException;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.SynchronizationCommitConflictException;
 import org.apache.geode.cache.TransactionDataNodeHasDepartedException;
 import org.apache.geode.cache.TransactionDataRebalancedException;
@@ -389,5 +390,32 @@ public class TXStateTest {
 
     verify(filterInfo1).setChangeAppliedToCache(true);
     verify(filterInfo2).setChangeAppliedToCache(true);
+  }
+
+  @Test
+  public void commitConvertsCommitConflictExceptionToTransactionDataRebalancedExceptionIfCausedByRegionDestroyedExceptionFromReserveAndCheck() {
+    TXState txState = spy(new TXState(txStateProxy, false, disabledClock()));
+    CommitConflictException cce = new CommitConflictException("Conflict caused by cache exception");
+    RegionDestroyedException rde =
+        new RegionDestroyedException("Region was destroyed", "pathToRegion");
+    cce.initCause(rde);
+
+    doThrow(cce).when(txState).reserveAndCheck();
+
+    Throwable caughtException = catchThrowable(txState::commit);
+
+    assertThat(caughtException).isInstanceOf(TransactionDataRebalancedException.class);
+  }
+
+  @Test
+  public void commitThrowsCommitConflictExceptionFromReserveAndCheck() {
+    TXState txState = spy(new TXState(txStateProxy, false, disabledClock()));
+    CommitConflictException cce = new CommitConflictException("Conflict caused by cache exception");
+
+    doThrow(cce).when(txState).reserveAndCheck();
+
+    Throwable caughtException = catchThrowable(txState::commit);
+
+    assertThat(caughtException).isEqualTo(cce);
   }
 }
