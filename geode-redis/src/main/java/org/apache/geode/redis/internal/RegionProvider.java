@@ -30,7 +30,9 @@ public class RegionProvider {
    */
   public static final String REDIS_DATA_REGION = "__REDIS_DATA";
   public static final String REDIS_CONFIG_REGION = "__REDIS_CONFIG";
-  public static final int REDIS_REGION_BUCKETS = Integer.getInteger("redis.region.buckets", 128);
+  public static final String REDIS_REGION_BUCKETS_PARAM = "redis.region.buckets";
+  public static final int REDIS_REGION_BUCKETS =
+      Integer.getInteger(REDIS_REGION_BUCKETS_PARAM, 128);
   public static final int REDIS_SLOTS = Integer.getInteger("redis.slots", 16384);
   public static final int REDIS_SLOTS_PER_BUCKET = REDIS_SLOTS / REDIS_REGION_BUCKETS;
 
@@ -38,7 +40,7 @@ public class RegionProvider {
   private final Region<String, Object> configRegion;
 
   public RegionProvider(InternalCache cache) {
-    validateBuckets(REDIS_REGION_BUCKETS);
+    validateBucketCount(REDIS_REGION_BUCKETS);
 
     InternalRegionFactory<ByteArrayWrapper, RedisData> redisDataRegionFactory =
         cache.createInternalRegionFactory(RegionShortcut.PARTITION_REDUNDANT);
@@ -72,11 +74,12 @@ public class RegionProvider {
    *
    * @throws ManagementException if there is a problem with the value
    */
-  protected static void validateBuckets(int buckets) {
+  protected static void validateBucketCount(int buckets) {
     if (buckets <= 0 || ((buckets & (buckets - 1)) != 0)) {
       throw new ManagementException(
-          "Could not start Redis Server - redis region buckets must be a power of 2. Configured value is invalid: "
-              + buckets);
+          String.format(
+              "Could not start Redis Server - System property '%s' must be a power of 2. Configured value is invalid: %d",
+              REDIS_REGION_BUCKETS_PARAM, buckets));
     }
 
     if (buckets > REDIS_SLOTS) {

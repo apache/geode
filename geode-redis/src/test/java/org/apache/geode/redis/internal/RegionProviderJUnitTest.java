@@ -24,18 +24,18 @@ public class RegionProviderJUnitTest {
 
   @Test
   public void testBucket_whenPowerOfTwo() {
-    assertThatNoException().isThrownBy(() -> RegionProvider.validateBuckets(128));
+    assertThatNoException().isThrownBy(() -> RegionProvider.validateBucketCount(128));
   }
 
   @Test
   public void testException_whenNotPowerOfTwo() {
-    assertThatThrownBy(() -> RegionProvider.validateBuckets(127))
+    assertThatThrownBy(() -> RegionProvider.validateBucketCount(127))
         .hasMessageContaining("redis region buckets must be a power of 2");
   }
 
   @Test
   public void testException_whenGreaterThanSlots() {
-    assertThatThrownBy(() -> RegionProvider.validateBuckets(32768))
+    assertThatThrownBy(() -> RegionProvider.validateBucketCount(32768))
         .hasMessageContaining("redis region buckets must <= 16384");
   }
 
