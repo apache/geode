@@ -30,6 +30,7 @@ import java.util.regex.Pattern;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.statistics.LocalStatisticsImpl;
 import org.apache.geode.util.internal.GeodeGlossary;
@@ -156,14 +157,20 @@ public class LinuxProcFsStatistics {
   }
 
   public static void refreshSystem(LocalStatisticsImpl stats) {
+    refreshSystem(stats, "/proc/stat", "/proc/net/netstat");
+  }
+
+  @VisibleForTesting
+  public static void refreshSystem(LocalStatisticsImpl stats, String statFilePath,
+      String netstatStatsFilePath) {
     if (cpuStatSingleton == null) {
       // stats have been closed or haven't been properly initialized
       return;
     }
     stats.setLong(LinuxSystemStats.processesLONG, getProcessCount());
     stats.setLong(LinuxSystemStats.cpusLONG, sys_cpus);
-    try (FileInputStream fileInputStream = new FileInputStream("/proc/stat");
-        InputStreamReader isr = new InputStreamReader(fileInputStream);
+    try (FileInputStream statFileInputStream = new FileInputStream(statFilePath);
+        InputStreamReader isr = new InputStreamReader(statFileInputStream);
         BufferedReader br = new BufferedReader(isr)) {
 
       String line;
@@ -213,7 +220,7 @@ public class LinuxProcFsStatistics {
     getMemInfo(stats);
     getDiskStats(stats);
     getNetStats(stats);
-    getNetStatStats(stats);
+    getNetStatStats(stats, netstatStatsFilePath);
     if (hasProcVmStat) {
       getVmStats(stats);
     }
@@ -332,10 +339,11 @@ public class LinuxProcFsStatistics {
     }
   }
 
-  private static void getNetStatStats(LocalStatisticsImpl stats) {
+  private static void getNetStatStats(LocalStatisticsImpl stats,
+      String netstatStatsFilePath) {
     SpaceTokenizer headerTokenizer = new SpaceTokenizer();
-    try (FileInputStream fileInputStream = new FileInputStream("/proc/net/netstat");
-        InputStreamReader isr = new InputStreamReader(fileInputStream);
+    try (FileInputStream netstatStatsFileInputStream = new FileInputStream(netstatStatsFilePath);
+        InputStreamReader isr = new InputStreamReader(netstatStatsFileInputStream);
         BufferedReader br = new BufferedReader(isr)) {
 
       String line = br.readLine(); // header;
