@@ -136,6 +136,12 @@ public class NioPlainEngine implements NioFilter {
     return shareBuffer(EMPTY_BUFFER);
   }
 
+  @Override
+  public ByteBufferSharing getUnwrappedBuffer(ByteBuffer unwrappedBuffer) throws IOException {
+    return shareBuffer(unwrappedBuffer);
+  }
+
+
   private ByteBufferSharingNoOp shareBuffer(final ByteBuffer wrappedBuffer) {
     return new ByteBufferSharingNoOp(wrappedBuffer);
   }
@@ -149,5 +155,11 @@ public class NioPlainEngine implements NioFilter {
   public InputStream getInputStream(Socket socket) throws IOException {
     return socket.getInputStream();
   }
+
+  public void initReadBuffer() throws IOException {
+    lastReadPosition = 0;
+    lastProcessedPosition = 0;
+  }
+
 
 }

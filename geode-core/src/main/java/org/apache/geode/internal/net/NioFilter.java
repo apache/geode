@@ -104,6 +104,8 @@ public interface NioFilter {
    */
   ByteBufferSharing getUnwrappedBuffer() throws IOException;
 
+  ByteBufferSharing getUnwrappedBuffer(ByteBuffer unwrappedBuffer) throws IOException;
+
   InputStream getInputStream(Socket socket) throws IOException;
 
   int getPacketBufferSize();
@@ -111,4 +113,7 @@ public interface NioFilter {
   default void closeInputStream(InputStream stream) throws IOException {
     // nothing by default
   }
+
+  void initReadBuffer() throws IOException;
+
 }

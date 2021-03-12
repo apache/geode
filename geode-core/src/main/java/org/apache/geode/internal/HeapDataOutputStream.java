@@ -24,7 +24,7 @@ import java.nio.channels.SocketChannel;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.cache.BytesAndBitsForCompactor;
 import org.apache.geode.internal.net.ByteBufferSharing;
-import org.apache.geode.internal.net.NioSslEngine;
+import org.apache.geode.internal.net.NioFilter;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.tcp.ByteBufferInputStream;
@@ -161,7 +161,7 @@ public class HeapDataOutputStream extends
     return result;
   }
 
-  public void sendTo(SocketChannel chan, ByteBuffer out, NioSslEngine sslEngine)
+  public void sendTo(SocketChannel chan, ByteBuffer out, NioFilter ioFilter)
       throws IOException {
     finishWriting();
     if (size() == 0) {
@@ -170,23 +170,23 @@ public class HeapDataOutputStream extends
     out.clear();
     if (this.chunks != null) {
       for (ByteBuffer bb : this.chunks) {
-        sendChunkTo(bb, chan, out, sslEngine);
+        sendChunkTo(bb, chan, out, ioFilter);
       }
     }
-    sendChunkTo(this.buffer, chan, out, sslEngine);
-    flushBuffer(chan, out, sslEngine);
+    sendChunkTo(this.buffer, chan, out, ioFilter);
+    flushBuffer(chan, out, ioFilter);
   }
 
   /**
    * sends the data from "in" by writing it to "sc" through "out" (out is used to chunk to data and
    * is probably a direct memory buffer).
    */
-  private void sendChunkTo(ByteBuffer in, SocketChannel sc, ByteBuffer out, NioSslEngine sslEngine)
+  private void sendChunkTo(ByteBuffer in, SocketChannel sc, ByteBuffer out, NioFilter ioFilter)
       throws IOException {
     int bytesSent = in.remaining();
     if (in.isDirect()) {
-      flushBuffer(sc, out, sslEngine);
-      writeToSC(sc, in, sslEngine);
+      flushBuffer(sc, out, ioFilter);
+      writeToSC(sc, in, ioFilter);
     } else {
       // copy in to out. If out fills flush it
       int OUT_MAX = out.remaining();
@@ -204,7 +204,7 @@ public class HeapDataOutputStream extends
           out.put(bytes, off, bytesThisTime);
           off += bytesThisTime;
           len -= bytesThisTime;
-          flushBuffer(sc, out, sslEngine);
+          flushBuffer(sc, out, ioFilter);
           OUT_MAX = out.remaining();
         }
         in.position(in.limit());
@@ -417,23 +417,23 @@ public class HeapDataOutputStream extends
     source.sendTo(this.buffer);
   }
 
-  private void flushBuffer(SocketChannel sc, ByteBuffer out, NioSslEngine sslEngine)
+  private void flushBuffer(SocketChannel sc, ByteBuffer out, NioFilter ioFilter)
       throws IOException {
     if (out.position() == 0)
       return;
     out.flip();
-    writeToSC(sc, out, sslEngine);
+    writeToSC(sc, out, ioFilter);
     out.clear();
   }
 
-  private void writeToSC(SocketChannel sc, ByteBuffer out, NioSslEngine sslEngine)
+  private void writeToSC(SocketChannel sc, ByteBuffer out, NioFilter ioFilter)
       throws IOException {
-    if (sslEngine == null) {
+    if (ioFilter == null) {
       while (out.remaining() > 0) {
         sc.write(out);
       }
     } else {
-      try (final ByteBufferSharing outputSharing = sslEngine.wrap(out)) {
+      try (final ByteBufferSharing outputSharing = ioFilter.wrap(out)) {
         final ByteBuffer wrappedBuffer = outputSharing.getBuffer();
         while (wrappedBuffer.remaining() > 0) {
           sc.write(wrappedBuffer);

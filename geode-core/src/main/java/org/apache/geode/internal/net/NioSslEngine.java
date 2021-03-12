@@ -373,6 +373,11 @@ public class NioSslEngine implements NioFilter {
   }
 
   @Override
+  public ByteBufferSharing getUnwrappedBuffer(ByteBuffer unwrappedBuffer) throws IOException {
+    return shareInputBuffer();
+  }
+
+  @Override
   public void doneReadingDirectAck(ByteBuffer unwrappedBuffer) {
     // nothing needs to be done - the next direct-ack message will be
     // read into the same buffer and compaction will be done during
@@ -466,6 +471,14 @@ public class NioSslEngine implements NioFilter {
   public void closeInputStream(InputStream stream) throws IOException {
     if (stream != null) {
       stream.close();
+    }
+  }
+
+  @Override
+  public void initReadBuffer() throws IOException {
+    try (final ByteBufferSharing sharedBuffer = getUnwrappedBuffer()) {
+      ByteBuffer unwrapbuff = sharedBuffer.getBuffer();
+      doneReading(unwrapbuff);
     }
   }
 
