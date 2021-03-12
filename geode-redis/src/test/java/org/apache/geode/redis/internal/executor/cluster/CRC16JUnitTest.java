@@ -18,18 +18,35 @@ package org.apache.geode.redis.internal.executor.cluster;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
+import redis.clients.jedis.util.JedisClusterCRC16;
 
 public class CRC16JUnitTest {
 
   @Test
   public void testBasicCRC16_sameAsRedis() {
-    assertThat(CRC16.calculate(new byte[] {0}, 0, 1)).isEqualTo((short) 0);
-    assertThat(CRC16.calculate(new byte[] {1}, 0, 1)).isEqualTo((short) 0x1021);
-    assertThat(CRC16.calculate("123456789".getBytes(), 0, 9)).isEqualTo((short) 0x31c3);
-    assertThat(CRC16.calculate("---123456789---".getBytes(), 3, 12)).isEqualTo((short) 0x31c3);
-    assertThat(CRC16.calculate("abcdefghijklmnopqrstuvwxyz".getBytes(), 0, 26))
-        .isEqualTo((short) 0x63ac);
-    assertThat(CRC16.calculate("user1000".getBytes(), 0, 8)).isEqualTo((short) 0x4d73);
+    byte[] data = new byte[] {0};
+    assertThat(CRC16.calculate(data, 0, 1))
+        .isEqualTo((short) JedisClusterCRC16.getCRC16(data));
+
+    data = new byte[] {1};
+    assertThat(CRC16.calculate(new byte[] {1}, 0, 1))
+        .isEqualTo((short) JedisClusterCRC16.getCRC16(data));
+
+    data = "123456789".getBytes();
+    assertThat(CRC16.calculate(data, 0, data.length))
+        .isEqualTo((short) JedisClusterCRC16.getCRC16(data));
+
+    data = "---123456789---".getBytes();
+    assertThat(CRC16.calculate(data, 3, 12))
+        .isEqualTo((short) JedisClusterCRC16.getCRC16(data, 3, 12));
+
+    data = "abcdefghijklmnopqrstuvwxyz".getBytes();
+    assertThat(CRC16.calculate(data, 0, data.length))
+        .isEqualTo((short) JedisClusterCRC16.getCRC16(data));
+
+    data = "user1000".getBytes();
+    assertThat(CRC16.calculate(data, 0, data.length))
+        .isEqualTo((short) JedisClusterCRC16.getCRC16(data));
   }
 
 }

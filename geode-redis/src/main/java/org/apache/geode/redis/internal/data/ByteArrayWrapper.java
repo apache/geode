@@ -139,7 +139,8 @@ public class ByteArrayWrapper
         endHashtag = value.length;
       }
 
-      routingId = (CRC16.calculate(value, startHashtag + 1, endHashtag) % REDIS_SLOTS)
+      // & (REDIS_SLOTS - 1) is equivalent to % REDIS_SLOTS but supposedly faster
+      routingId = (CRC16.calculate(value, startHashtag + 1, endHashtag) & (REDIS_SLOTS - 1))
           / REDIS_SLOTS_PER_BUCKET;
     }
 
