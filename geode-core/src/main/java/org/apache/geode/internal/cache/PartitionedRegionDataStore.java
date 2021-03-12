@@ -1553,12 +1553,13 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
       InternalDistributedMember myId =
           this.partitionedRegion.getDistributionManager().getDistributionManagerId();
       Lock primaryMoveReadLock = bucketAdvisor.getPrimaryMoveReadLock();
-
       // Fix for 43613 - don't remove the bucket
       // if we are primary. We hold the lock here
       // to prevent this member from becoming primary until this
       // member is no longer hosting the bucket.
+      logger.warn("#LRJ getting primaryMoveReadLock");
       primaryMoveReadLock.lock();
+      logger.warn("#LRJ got primaryMoveReadLock");
       try {
         // forceRemovePrimary==true will enable remove the bucket even when:
         // 1) it's primary
@@ -1599,6 +1600,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
         bucketAdvisor.getProxyBucketRegion().removeBucket();
       } finally {
         primaryMoveReadLock.unlock();
+        logger.warn("#LRJ unlocking primaryMoveReadLock");
       }
 
       if (logger.isDebugEnabled()) {
