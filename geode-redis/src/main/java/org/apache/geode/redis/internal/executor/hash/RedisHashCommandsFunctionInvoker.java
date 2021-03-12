@@ -39,7 +39,6 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.CommandFunction;
@@ -62,27 +61,27 @@ public class RedisHashCommandsFunctionInvoker extends RedisCommandsFunctionInvok
   }
 
   @Override
-  public int hset(RedisKey key, List<ByteArrayWrapper> fieldsToSet, boolean NX) {
+  public int hset(RedisKey key, List<byte[]> fieldsToSet, boolean NX) {
     return invokeCommandFunction(key, HSET, fieldsToSet, NX);
   }
 
   @Override
-  public int hdel(RedisKey key, List<ByteArrayWrapper> fieldsToRemove) {
+  public int hdel(RedisKey key, List<byte[]> fieldsToRemove) {
     return invokeCommandFunction(key, HDEL, fieldsToRemove);
   }
 
   @Override
-  public Collection<ByteArrayWrapper> hgetall(RedisKey key) {
+  public Collection<byte[]> hgetall(RedisKey key) {
     return invokeCommandFunction(key, HGETALL);
   }
 
   @Override
-  public int hexists(RedisKey key, ByteArrayWrapper field) {
+  public int hexists(RedisKey key, byte[] field) {
     return invokeCommandFunction(key, HEXISTS, field);
   }
 
   @Override
-  public ByteArrayWrapper hget(RedisKey key, ByteArrayWrapper field) {
+  public byte[] hget(RedisKey key, byte[] field) {
     return invokeCommandFunction(key, HGET, field);
   }
 
@@ -92,39 +91,39 @@ public class RedisHashCommandsFunctionInvoker extends RedisCommandsFunctionInvok
   }
 
   @Override
-  public int hstrlen(RedisKey key, ByteArrayWrapper field) {
+  public int hstrlen(RedisKey key, byte[] field) {
     return invokeCommandFunction(key, HSTRLEN, field);
   }
 
   @Override
-  public List<ByteArrayWrapper> hmget(RedisKey key,
-      List<ByteArrayWrapper> fields) {
+  public List<byte[]> hmget(RedisKey key,
+      List<byte[]> fields) {
     return invokeCommandFunction(key, HMGET, fields);
   }
 
   @Override
-  public Collection<ByteArrayWrapper> hvals(RedisKey key) {
+  public Collection<byte[]> hvals(RedisKey key) {
     return invokeCommandFunction(key, HVALS);
   }
 
   @Override
-  public Collection<ByteArrayWrapper> hkeys(RedisKey key) {
+  public Collection<byte[]> hkeys(RedisKey key) {
     return invokeCommandFunction(key, HKEYS);
   }
 
   @Override
-  public Pair<BigInteger, List<Object>> hscan(RedisKey key, Pattern matchPattern,
+  public Pair<BigInteger, List<byte[]>> hscan(RedisKey key, Pattern matchPattern,
       int count, BigInteger cursor) {
     return invokeCommandFunction(key, HSCAN, matchPattern, count, cursor);
   }
 
   @Override
-  public long hincrby(RedisKey key, ByteArrayWrapper field, long increment) {
+  public long hincrby(RedisKey key, byte[] field, long increment) {
     return invokeCommandFunction(key, HINCRBY, field, increment);
   }
 
   @Override
-  public BigDecimal hincrbyfloat(RedisKey key, ByteArrayWrapper field, BigDecimal increment) {
+  public BigDecimal hincrbyfloat(RedisKey key, byte[] field, BigDecimal increment) {
     return invokeCommandFunction(key, HINCRBYFLOAT, field, increment);
   }
 

@@ -42,11 +42,10 @@ public class HGetExecutor extends HashExecutor {
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
-    byte[] byteField = commandElems.get(FIELD_INDEX);
-    ByteArrayWrapper field = new ByteArrayWrapper(byteField);
+    byte[] field = commandElems.get(FIELD_INDEX);
     RedisKey key = command.getKey();
-    RedisHashCommands redisHashCommands = createRedisHashCommands(context);
-    ByteArrayWrapper valueWrapper = redisHashCommands.hget(key, field);
+    RedisHashCommands redisHashCommands = context.getRedisHashCommands();
+    byte[] valueWrapper = redisHashCommands.hget(key, field);
 
     if (valueWrapper != null) {
       return RedisResponse.bulkString(valueWrapper);

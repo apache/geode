@@ -56,11 +56,11 @@ public class RedisHashTest {
   }
 
   private RedisHash createRedisHash(String k1, String v1, String k2, String v2) {
-    ArrayList<ByteArrayWrapper> elements = new ArrayList<>();
-    elements.add(createByteArrayWrapper(k1));
-    elements.add(createByteArrayWrapper(v1));
-    elements.add(createByteArrayWrapper(k2));
-    elements.add(createByteArrayWrapper(v2));
+    ArrayList<byte[]> elements = new ArrayList<>();
+    elements.add(Coder.stringToBytes(k1));
+    elements.add(Coder.stringToBytes(v1));
+    elements.add(Coder.stringToBytes(k2));
+    elements.add(Coder.stringToBytes(v2));
     return new RedisHash(elements);
   }
 
@@ -108,9 +108,9 @@ public class RedisHashTest {
   public void hset_stores_delta_that_is_stable() throws IOException {
     Region<RedisKey, RedisData> region = Mockito.mock(Region.class);
     RedisHash o1 = createRedisHash("k1", "v1", "k2", "v2");
-    ByteArrayWrapper k3 = createByteArrayWrapper("k3");
-    ByteArrayWrapper v3 = createByteArrayWrapper("v3");
-    ArrayList<ByteArrayWrapper> adds = new ArrayList<>();
+    byte[] k3 = Coder.stringToBytes("k3");
+    byte[] v3 = Coder.stringToBytes("v3");
+    ArrayList<byte[]> adds = new ArrayList<>();
     adds.add(k3);
     adds.add(v3);
     o1.hset(region, null, adds, false);
@@ -130,8 +130,8 @@ public class RedisHashTest {
   public void hdel_stores_delta_that_is_stable() throws IOException {
     Region<RedisKey, RedisData> region = mock(Region.class);
     RedisHash o1 = createRedisHash("k1", "v1", "k2", "v2");
-    ByteArrayWrapper k1 = createByteArrayWrapper("k1");
-    ArrayList<ByteArrayWrapper> removes = new ArrayList<>();
+    byte[] k1 = Coder.stringToBytes("k1");
+    ArrayList<byte[]> removes = new ArrayList<>();
     removes.add(k1);
     o1.hdel(region, null, removes);
     assertThat(o1.hasDelta()).isTrue();
