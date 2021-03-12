@@ -218,4 +218,12 @@ public class ResultsCollectionPdxDeserializerWrapper implements SelectResults {
     results.setElementType(elementType);
   }
 
+  public String toString() {
+    String out = "size: " + size() + System.lineSeparator();
+    Iterator iter = iterator();
+    while (iter.hasNext()) {
+      out += iter.next() + System.lineSeparator();
+    }
+    return out;
+  }
 }

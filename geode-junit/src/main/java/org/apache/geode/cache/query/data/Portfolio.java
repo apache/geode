@@ -183,14 +183,17 @@ public class Portfolio implements Serializable, DataSerializable {
 
   public String toString() {
     String out =
-        "Portfolio [ID=" + ID + " status=" + status + " type=" + type + " pkid=" + pkid + "\n ";
-    Iterator iter = positions.entrySet().iterator();
-    while (iter.hasNext()) {
-      Map.Entry entry = (Map.Entry) iter.next();
-      out += entry.getKey() + ":" + entry.getValue() + ", ";
+        "Portfolio [ID=" + ID + " status=" + status + " type=" + type + " pkid=" + pkid
+            + System.lineSeparator();
+    if (positions != null) {
+      Iterator iter = positions.entrySet().iterator();
+      while (iter.hasNext()) {
+        Map.Entry entry = (Map.Entry) iter.next();
+        out += entry.getKey() + ":" + entry.getValue() + ", ";
+      }
+      out += System.lineSeparator() + " P1:" + position1 + ", P2:" + position2;
     }
-    out += "\n P1:" + position1 + ", P2:" + position2;
-    return out + "\n]";
+    return out + System.lineSeparator() + "]";
   }
 
   /**

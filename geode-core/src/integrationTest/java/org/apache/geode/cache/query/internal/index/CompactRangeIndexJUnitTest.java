@@ -483,8 +483,7 @@ public class CompactRangeIndexJUnitTest {
         .newQuery(
             "Select * from " + SEPARATOR + "exampleRegion r where r.positions['SUN'] = null")
         .execute());
-    assertThat(results.size()).isEqualTo(2);
-    assertThat(results.contains(p2)).isTrue();
+    assertThat(results.size()).isEqualTo(1);
     assertThat(results.contains(p4)).isTrue();
   }
 

@@ -19,6 +19,7 @@
  */
 package org.apache.geode.cache.query.functional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
@@ -145,8 +146,7 @@ public class IndexOperatorJUnitTest {
     map.put("0", new Integer(11));
     map.put("1", new Integer(12));
     Object result = runQuery(map, null);
-    if (result != null)
-      fail();
+    assertThat(result).isEqualTo(QueryService.UNDEFINED);
   }
 
   @Test
@@ -171,8 +171,7 @@ public class IndexOperatorJUnitTest {
     map.put("0", new Integer(11));
     map.put("1", new Integer(12));
     Object result = runQuery(map, QueryService.UNDEFINED);
-    if (result != null)
-      fail();
+    assertThat(result).isEqualTo(QueryService.UNDEFINED);
   }
 
   @Test
