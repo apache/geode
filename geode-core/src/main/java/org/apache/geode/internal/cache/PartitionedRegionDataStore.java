@@ -17,6 +17,8 @@ package org.apache.geode.internal.cache;
 import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -1521,6 +1523,12 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    * @return true if the bucket was removed; false if unable to remove or if bucket is not hosted
    */
   public boolean removeBucket(int bucketId, boolean forceRemovePrimary) {
+
+    StringWriter sw = new StringWriter();
+    PrintWriter pw = new PrintWriter(sw);
+    new Throwable().printStackTrace(pw);
+    logger.warn("#LRJ removeBucket stacktrace: " + sw);
+
     waitForInProgressBackup();
 
     // Don't allow the removal of a bucket if we haven't
