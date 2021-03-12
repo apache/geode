@@ -51,12 +51,12 @@ public class CRC16 {
    * @param start starting index into the byte array
    * @param end ending index (exclusive) into the byte array
    */
-  public static short calculate(byte[] data, int start, int end) {
+  public static int calculate(byte[] data, int start, int end) {
     int crc = 0;
     for (int i = start; i < end; i++) {
       crc = ((crc << 8) & 0xFF00) ^ (crcTable[(crc >> 8) ^ (data[i] & 0xFF)] & 0xFFFF);
     }
-    return (short) crc;
+    return crc;
   }
 
   // Reverses the bits of a 16 bit integer.
