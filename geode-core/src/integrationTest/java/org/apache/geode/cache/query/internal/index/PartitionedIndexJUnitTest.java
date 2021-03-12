@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
@@ -23,6 +24,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
@@ -37,13 +39,7 @@ public class PartitionedIndexJUnitTest {
     final int DATA_SIZE_TO_BE_POPULATED = 10000;
     final int THREAD_POOL_SIZE = 20;
 
-    Region region = mock(Region.class);
-    InternalCache cache = mock(InternalCache.class);
-    when(region.getCache()).thenReturn(cache);
-    DistributedSystem distributedSystem = mock(DistributedSystem.class);
-    when(cache.getDistributedSystem()).thenReturn(distributedSystem);
-    PartitionedIndex partitionedIndex = new PartitionedIndex(cache, IndexType.FUNCTIONAL,
-        "dummyString", region, "dummyString", "dummyString", "dummyString");
+    PartitionedIndex partitionedIndex = createPartitionedIndex();
     Runnable populateSetTask = () -> {
       for (int i = 0; i < DATA_SIZE_TO_BE_POPULATED; i++) {
         partitionedIndex.mapIndexKeys.add("" + i);
@@ -65,5 +61,38 @@ public class PartitionedIndexJUnitTest {
 
     assertEquals(DATA_SIZE_TO_BE_POPULATED, partitionedIndex.mapIndexKeys.size());
 
+  }
+
+  @Test
+  public void verifyAddToAndRemoveFromBucketIndexesUpdatesArbitraryBucketIndex() {
+    // Create the PartitionedIndex
+    PartitionedIndex partitionedIndex = createPartitionedIndex();
+
+    // Create the mock Region and Index
+    Region region = mock(Region.class);
+    Index index = mock(Index.class);
+
+    // Add the mock region and index to the bucket indexes
+    partitionedIndex.addToBucketIndexes(region, index);
+
+    // Assert that the arbitraryBucketIndex is set
+    assertThat(partitionedIndex.getBucketIndex()).isEqualTo(index);
+
+    // Remove the mock region and index from the bucket indexes
+    partitionedIndex.removeFromBucketIndexes(region, index);
+
+    // Assert that the arbitraryBucketIndex is null
+    assertThat(partitionedIndex.getBucketIndex()).isNull();
+  }
+
+  private PartitionedIndex createPartitionedIndex() {
+    Region region = mock(Region.class);
+    InternalCache cache = mock(InternalCache.class);
+    when(region.getCache()).thenReturn(cache);
+    DistributedSystem distributedSystem = mock(DistributedSystem.class);
+    when(cache.getDistributedSystem()).thenReturn(distributedSystem);
+    PartitionedIndex partitionedIndex = new PartitionedIndex(cache, IndexType.FUNCTIONAL,
+        "dummyString", region, "dummyString", "dummyString", "dummyString");
+    return partitionedIndex;
   }
 }
