@@ -18,6 +18,7 @@ package org.apache.geode.redis.internal.netty;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.net.SocketAddress;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -51,6 +52,9 @@ import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.data.RedisDataTypeMismatchException;
 import org.apache.geode.redis.internal.executor.CommandFunction;
 import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.hash.HashExecutor;
+import org.apache.geode.redis.internal.executor.hash.RedisHashCommands;
+import org.apache.geode.redis.internal.executor.hash.RedisHashCommandsFunctionInvoker;
 import org.apache.geode.redis.internal.pubsub.PubSub;
 import org.apache.geode.redis.internal.statistics.RedisStats;
 
@@ -79,6 +83,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private final Runnable shutdownInvoker;
   private final RedisStats redisStats;
   private final EventLoopGroup subscriberGroup;
+  private final RedisHashCommandsFunctionInvoker hashCommands;
   private BigInteger scanCursor;
   private BigInteger sscanCursor;
   private BigInteger hscanCursor;
@@ -126,6 +131,8 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     this.hscanCursor = new BigInteger("0");
     redisStats.addClient();
 
+    //TODO - this really should just be a cache wide field, not on the execution context
+    this.hashCommands = new RedisHashCommandsFunctionInvoker(getRegionProvider().getDataRegion());
     // backgroundExecutor.submit(this::processCommandQueue);
   }
 
@@ -133,7 +140,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     return channel.writeAndFlush(response.encode(byteBufAllocator), channel.newPromise())
         .addListener((ChannelFutureListener) f -> {
           response.afterWrite();
-          logResponse(response, channel.remoteAddress().toString(), f.cause());
+          logResponse(response, channel.remoteAddress(), f.cause());
         });
   }
 
@@ -343,7 +350,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     return response;
   }
 
-  private void logResponse(RedisResponse response, String extraMessage, Throwable cause) {
+  private void logResponse(RedisResponse response, Object extraMessage, Throwable cause) {
     if (logger.isDebugEnabled() && response != null) {
       ByteBuf buf = response.encode(new UnpooledByteBufAllocator(false));
       if (cause == null) {
@@ -468,5 +475,9 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     } catch (InterruptedException e) {
       logger.info("Event loop interrupted", e);
     }
+  }
+
+  public RedisHashCommands getRedisHashCommands() {
+    return hashCommands;
   }
 }

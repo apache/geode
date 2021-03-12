@@ -54,8 +54,8 @@ public class HValsExecutor extends HashExecutor {
       ExecutionHandlerContext context) {
     RedisKey key = command.getKey();
 
-    RedisHashCommands redisHashCommands = createRedisHashCommands(context);
-    Collection<ByteArrayWrapper> values = redisHashCommands.hvals(key);
+    RedisHashCommands redisHashCommands = context.getRedisHashCommands();
+    Collection<byte[]> values = redisHashCommands.hvals(key);
 
     if (values.isEmpty()) {
       return RedisResponse.emptyArray();

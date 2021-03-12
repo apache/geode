@@ -29,10 +29,9 @@ public class HStrLenExecutor extends HashExecutor {
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     RedisKey key = command.getKey();
     List<byte[]> commandElems = command.getProcessedCommand();
-    byte[] byteField = commandElems.get(FIELD_INDEX);
-    ByteArrayWrapper field = new ByteArrayWrapper(byteField);
+    byte[] field = commandElems.get(FIELD_INDEX);
 
-    RedisHashCommands redisHashCommands = createRedisHashCommands(context);
+    RedisHashCommands redisHashCommands = context.getRedisHashCommands();
     int len = redisHashCommands.hstrlen(key, field);
 
     return RedisResponse.integer(len);

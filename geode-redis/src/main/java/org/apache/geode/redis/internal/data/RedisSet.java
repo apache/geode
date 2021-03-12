@@ -31,6 +31,8 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -122,7 +124,8 @@ public class RedisSet extends AbstractRedisData {
       }
     }
     if (!popped.isEmpty()) {
-      storeChanges(region, key, new RemsDeltaInfo(popped));
+      storeChanges(region, key, new RemsDeltaInfo(popped.stream().map(ByteArrayWrapper::toBytes).collect(
+          Collectors.toCollection(ArrayList::new))));
     }
     return popped;
   }
@@ -207,7 +210,8 @@ public class RedisSet extends AbstractRedisData {
   }
 
   private synchronized boolean membersAddAll(AddsDeltaInfo addsDeltaInfo) {
-    return members.addAll(addsDeltaInfo.getAdds());
+    return members.addAll(addsDeltaInfo.getAdds().stream().map(ByteArrayWrapper::new).collect(
+        Collectors.toList()));
   }
 
   private synchronized boolean membersRemoveAll(RemsDeltaInfo remsDeltaInfo) {
@@ -233,7 +237,8 @@ public class RedisSet extends AbstractRedisData {
     membersToAdd.removeIf(memberToAdd -> !membersAdd(memberToAdd));
     int membersAdded = membersToAdd.size();
     if (membersAdded != 0) {
-      storeChanges(region, key, new AddsDeltaInfo(membersToAdd));
+      final ArrayList<byte[]> rStream = membersToAdd.stream().map(ByteArrayWrapper::toBytes).collect(Collectors.toCollection(() -> new ArrayList<>()));
+      storeChanges(region, key, new AddsDeltaInfo(rStream));
     }
     return membersAdded;
   }
@@ -251,7 +256,8 @@ public class RedisSet extends AbstractRedisData {
     membersToRemove.removeIf(memberToRemove -> !membersRemove(memberToRemove));
     int membersRemoved = membersToRemove.size();
     if (membersRemoved != 0) {
-      storeChanges(region, key, new RemsDeltaInfo(membersToRemove));
+      storeChanges(region, key, new RemsDeltaInfo(membersToRemove.stream().map(ByteArrayWrapper::toBytes).collect(
+          Collectors.toCollection(ArrayList::new))));
     }
     return membersRemoved;
   }

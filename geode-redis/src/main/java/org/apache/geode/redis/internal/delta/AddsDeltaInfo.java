@@ -24,17 +24,17 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 
 public class AddsDeltaInfo implements DeltaInfo {
-  private final ArrayList<ByteArrayWrapper> deltas;
+  private final ArrayList<byte[]> deltas;
 
-  public AddsDeltaInfo() {
-    this(new ArrayList<>());
+  public AddsDeltaInfo(int size) {
+    this(new ArrayList<>(size));
   }
 
-  public AddsDeltaInfo(ArrayList<ByteArrayWrapper> deltas) {
+  public AddsDeltaInfo(ArrayList<byte[]> deltas) {
     this.deltas = deltas;
   }
 
-  public void add(ByteArrayWrapper delta) {
+  public void add(byte[] delta) {
     deltas.add(delta);
   }
 
@@ -43,7 +43,7 @@ public class AddsDeltaInfo implements DeltaInfo {
     DataSerializer.writeArrayList(deltas, out);
   }
 
-  public ArrayList<ByteArrayWrapper> getAdds() {
+  public ArrayList<byte[]> getAdds() {
     return deltas;
   }
 }

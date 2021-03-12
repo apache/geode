@@ -21,20 +21,19 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 
 public class RemsDeltaInfo implements DeltaInfo {
-  private final ArrayList<ByteArrayWrapper> deltas;
+  private final ArrayList<byte[]> deltas;
 
   public RemsDeltaInfo() {
     this(new ArrayList<>());
   }
 
-  public RemsDeltaInfo(ArrayList<ByteArrayWrapper> deltas) {
+  public RemsDeltaInfo(ArrayList<byte[]> deltas) {
     this.deltas = deltas;
   }
 
-  public void add(ByteArrayWrapper delta) {
+  public void add(byte[] delta) {
     deltas.add(delta);
   }
 
@@ -43,7 +42,7 @@ public class RemsDeltaInfo implements DeltaInfo {
     DataSerializer.writeArrayList(deltas, out);
   }
 
-  public ArrayList<ByteArrayWrapper> getRemoves() {
+  public ArrayList<byte[]> getRemoves() {
     return deltas;
   }
 }

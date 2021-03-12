@@ -55,8 +55,7 @@ public class HIncrByExecutor extends HashExecutor {
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
     RedisKey key = command.getKey();
-    byte[] byteField = commandElems.get(FIELD_INDEX);
-    ByteArrayWrapper field = new ByteArrayWrapper(byteField);
+    byte[] field = commandElems.get(FIELD_INDEX);
 
     byte[] incrArray = commandElems.get(INCREMENT_INDEX);
     long increment;
@@ -66,7 +65,7 @@ public class HIncrByExecutor extends HashExecutor {
       return RedisResponse.error(ERROR_INCREMENT_NOT_USABLE);
     }
 
-    RedisHashCommands redisHashCommands = createRedisHashCommands(context);
+    RedisHashCommands redisHashCommands = context.getRedisHashCommands();
 
     long value = redisHashCommands.hincrby(key, field, increment);
     return RedisResponse.integer(value);

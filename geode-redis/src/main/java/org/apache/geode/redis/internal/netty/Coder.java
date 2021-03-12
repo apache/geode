@@ -185,7 +185,7 @@ public class Coder {
   }
 
   public static ByteBuf getScanResponse(ByteBuf buffer, BigInteger cursor,
-      List<Object> scanResult) {
+      List<?> scanResult) {
     buffer.writeByte(ARRAY_ID);
     buffer.writeBytes(intToBytes(2));
     buffer.writeBytes(CRLFar);
