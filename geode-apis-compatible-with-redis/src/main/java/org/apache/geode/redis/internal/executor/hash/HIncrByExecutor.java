@@ -16,7 +16,6 @@ package org.apache.geode.redis.internal.executor.hash;
 
 import java.util.List;
 
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Coder;
@@ -55,8 +54,7 @@ public class HIncrByExecutor extends HashExecutor {
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
     RedisKey key = command.getKey();
-    byte[] byteField = commandElems.get(FIELD_INDEX);
-    ByteArrayWrapper field = new ByteArrayWrapper(byteField);
+    byte[] field = commandElems.get(FIELD_INDEX);
 
     byte[] incrArray = commandElems.get(INCREMENT_INDEX);
     long increment;
@@ -66,7 +64,7 @@ public class HIncrByExecutor extends HashExecutor {
       return RedisResponse.error(ERROR_INCREMENT_NOT_USABLE);
     }
 
-    RedisHashCommands redisHashCommands = createRedisHashCommands(context);
+    RedisHashCommands redisHashCommands = context.getRedisHashCommands();
 
     long value = redisHashCommands.hincrby(key, field, increment);
     return RedisResponse.integer(value);

@@ -55,6 +55,7 @@ import org.apache.geode.redis.internal.data.RedisDataTypeMismatchException;
 import org.apache.geode.redis.internal.executor.CommandFunction;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.executor.UnknownExecutor;
+import org.apache.geode.redis.internal.executor.hash.RedisHashCommands;
 import org.apache.geode.redis.internal.pubsub.PubSub;
 import org.apache.geode.redis.internal.statistics.RedisStats;
 
@@ -140,7 +141,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     return channel.writeAndFlush(response.encode(byteBufAllocator), channel.newPromise())
         .addListener((ChannelFutureListener) f -> {
           response.afterWrite();
-          logResponse(response, channel.remoteAddress().toString(), f.cause());
+          logResponse(response, channel.remoteAddress(), f.cause());
         });
   }
 
@@ -344,7 +345,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     return response;
   }
 
-  private void logResponse(RedisResponse response, String extraMessage, Throwable cause) {
+  private void logResponse(RedisResponse response, Object extraMessage, Throwable cause) {
     if (logger.isDebugEnabled() && response != null) {
       ByteBuf buf = response.encode(new UnpooledByteBufAllocator(false));
       if (cause == null) {
@@ -477,5 +478,9 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     } catch (InterruptedException e) {
       logger.info("Event loop interrupted", e);
     }
+  }
+
+  public RedisHashCommands getRedisHashCommands() {
+    return regionProvider.getHashCommands();
   }
 }

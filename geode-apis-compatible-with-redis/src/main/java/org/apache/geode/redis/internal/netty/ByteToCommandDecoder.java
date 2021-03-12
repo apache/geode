@@ -62,7 +62,7 @@ public class ByteToCommandDecoder extends ByteToMessageDecoder {
 
   @Override
   protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-    Command c = null;
+    Command c;
     long bytesRead = 0;
     do {
       int startReadIndex = in.readerIndex();
@@ -90,35 +90,37 @@ public class ByteToCommandDecoder extends ByteToMessageDecoder {
       throw new RedisCommandParserException(
           "Expected: " + (char) arrayID + " Actual: " + (char) firstB);
     }
-    ArrayList<byte[]> commandElems = new ArrayList<byte[]>();
+    List<byte[]> commandElems = parseArray(buffer);
 
-    if (!parseArray(commandElems, buffer)) {
+    if (commandElems == null) {
       return null;
     }
 
     return new Command(commandElems);
   }
 
-  private boolean parseArray(ArrayList<byte[]> commandElems, ByteBuf buffer)
+  private List<byte[]> parseArray(ByteBuf buffer)
       throws RedisCommandParserException {
     byte currentChar;
     int arrayLength = parseCurrentNumber(buffer);
     if (arrayLength == Integer.MIN_VALUE || !parseRN(buffer)) {
-      return false;
+      return null;
     }
     if (arrayLength < 0 || arrayLength > 1000000000) {
       throw new RedisCommandParserException("invalid multibulk length");
     }
 
+    List<byte[]> commandElems = new ArrayList<>(arrayLength);
+
     for (int i = 0; i < arrayLength; i++) {
       if (!buffer.isReadable()) {
-        return false;
+        return null;
       }
       currentChar = buffer.readByte();
       if (currentChar == bulkStringID) {
         byte[] newBulkString = parseBulkString(buffer);
         if (newBulkString == null) {
-          return false;
+          return null;
         }
         commandElems.add(newBulkString);
       } else {
@@ -126,7 +128,7 @@ public class ByteToCommandDecoder extends ByteToMessageDecoder {
             "expected: \'$\', got \'" + (char) currentChar + "\'");
       }
     }
-    return true;
+    return commandElems;
   }
 
   /**

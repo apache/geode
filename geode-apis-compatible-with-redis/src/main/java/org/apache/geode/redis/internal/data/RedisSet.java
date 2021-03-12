@@ -31,6 +31,7 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -147,7 +148,7 @@ public class RedisSet extends AbstractRedisData {
       }
     }
     if (!popped.isEmpty()) {
-      storeChanges(region, key, new RemsDeltaInfo(popped));
+      storeChanges(region, key, new RemsDeltaInfo(unwrapByteArrayWrappers(popped)));
     }
     return popped;
   }
@@ -261,15 +262,38 @@ public class RedisSet extends AbstractRedisData {
   }
 
   private synchronized void membersAddAll(AddsDeltaInfo addsDeltaInfo) {
-    ArrayList<ByteArrayWrapper> adds = addsDeltaInfo.getAdds();
+    List<ByteArrayWrapper> adds = wrapByteArrays(addsDeltaInfo.getAdds());
     sizeInBytes += adds.stream().mapToInt(a -> a.length() + PER_MEMBER_OVERHEAD).sum();
     members.addAll(adds);
   }
 
   private synchronized void membersRemoveAll(RemsDeltaInfo remsDeltaInfo) {
-    ArrayList<ByteArrayWrapper> removes = remsDeltaInfo.getRemoves();
+    List<ByteArrayWrapper> removes = wrapByteArrays(remsDeltaInfo.getRemoves());
     sizeInBytes -= removes.stream().mapToInt(a -> a.length() + PER_MEMBER_OVERHEAD).sum();
     members.removeAll(removes);
+  }
+
+  /**
+   * Unwraps all of the byte array wrappers in a list
+   *
+   * Temporary function to continue to use ByteArrayWrappers in RedisSet after
+   * delta info classes have already switched to using plan byte[]
+   */
+  private ArrayList<byte[]> unwrapByteArrayWrappers(ArrayList<ByteArrayWrapper> list) {
+    return list.stream()
+        .map(ByteArrayWrapper::toBytes)
+        .collect(Collectors.toCollection(ArrayList::new));
+  }
+
+  /**
+   * Wraps all of the byte[] values in byte array wrappers in a list
+   *
+   * Temporary function to continue to use ByteArrayWrappers in RedisSet after
+   * delta info classes have already switched to using plan byte[]
+   */
+  private List<ByteArrayWrapper> wrapByteArrays(List<byte[]> list) {
+    return list.stream().map(ByteArrayWrapper::new).collect(
+        Collectors.toList());
   }
 
   /**
@@ -285,7 +309,8 @@ public class RedisSet extends AbstractRedisData {
     membersToAdd.removeIf(memberToAdd -> !membersAdd(memberToAdd));
     int membersAdded = membersToAdd.size();
     if (membersAdded != 0) {
-      storeChanges(region, key, new AddsDeltaInfo(membersToAdd));
+      final ArrayList<byte[]> rStream = unwrapByteArrayWrappers(membersToAdd);
+      storeChanges(region, key, new AddsDeltaInfo(rStream));
     }
     return membersAdded;
   }
@@ -303,7 +328,7 @@ public class RedisSet extends AbstractRedisData {
     membersToRemove.removeIf(memberToRemove -> !membersRemove(memberToRemove));
     int membersRemoved = membersToRemove.size();
     if (membersRemoved != 0) {
-      storeChanges(region, key, new RemsDeltaInfo(membersToRemove));
+      storeChanges(region, key, new RemsDeltaInfo(unwrapByteArrayWrappers(membersToRemove)));
     }
     return membersRemoved;
   }

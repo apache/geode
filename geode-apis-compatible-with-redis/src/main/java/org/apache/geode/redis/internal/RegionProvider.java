@@ -23,6 +23,8 @@ import org.apache.geode.management.ManagementException;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.cluster.RedisPartitionResolver;
+import org.apache.geode.redis.internal.executor.hash.RedisHashCommands;
+import org.apache.geode.redis.internal.executor.hash.RedisHashCommandsFunctionInvoker;
 
 public class RegionProvider {
   /**
@@ -42,6 +44,7 @@ public class RegionProvider {
 
   private final Region<RedisKey, RedisData> dataRegion;
   private final Region<String, Object> configRegion;
+  private final RedisHashCommandsFunctionInvoker hashCommands;
 
   public RegionProvider(InternalCache cache) {
     validateBucketCount(REDIS_REGION_BUCKETS);
@@ -62,6 +65,8 @@ public class RegionProvider {
         cache.createInternalRegionFactory(RegionShortcut.REPLICATE);
     redisConfigRegionFactory.setInternalRegion(true).setIsUsedForMetaRegion(true);
     configRegion = redisConfigRegionFactory.create(REDIS_CONFIG_REGION);
+
+    this.hashCommands = new RedisHashCommandsFunctionInvoker(dataRegion);
   }
 
   public Region<RedisKey, RedisData> getDataRegion() {
@@ -83,5 +88,9 @@ public class RegionProvider {
           "Could not start server compatible with Redis - System property '%s' must be <= %d",
           REDIS_REGION_BUCKETS_PARAM, REDIS_SLOTS));
     }
+  }
+
+  public RedisHashCommands getHashCommands() {
+    return hashCommands;
   }
 }

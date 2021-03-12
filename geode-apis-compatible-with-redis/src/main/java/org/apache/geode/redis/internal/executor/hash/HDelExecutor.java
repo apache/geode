@@ -17,7 +17,6 @@ package org.apache.geode.redis.internal.executor.hash;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
@@ -45,11 +44,11 @@ public class HDelExecutor extends HashExecutor {
   @Override
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
-    List<ByteArrayWrapper> commandElems = command.getProcessedCommandWrappers();
+    List<byte[]> commandElems = command.getProcessedCommand();
 
     RedisKey key = command.getKey();
-    RedisHashCommands redisHashCommands = createRedisHashCommands(context);
-    ArrayList<ByteArrayWrapper> fieldsToDelete =
+    RedisHashCommands redisHashCommands = context.getRedisHashCommands();
+    ArrayList<byte[]> fieldsToDelete =
         new ArrayList<>(commandElems.subList(2, commandElems.size()));
     int numDeleted = redisHashCommands.hdel(key, fieldsToDelete);
 

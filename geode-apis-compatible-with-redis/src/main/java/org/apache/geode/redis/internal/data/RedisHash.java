@@ -27,8 +27,8 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +38,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.regex.Pattern;
 
+import it.unimi.dsi.fastutil.bytes.ByteArrays;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -53,9 +55,10 @@ import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
 import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisHash extends AbstractRedisData {
-  private HashMap<ByteArrayWrapper, ByteArrayWrapper> hash;
-  private final ConcurrentHashMap<UUID, List<ByteArrayWrapper>> hScanSnapShots;
-  private final ConcurrentHashMap<UUID, Long> hScanSnapShotCreationTimes;
+  private Object2ObjectOpenCustomHashMap<byte[], byte[]> hash;
+  private final ConcurrentHashMap<UUID, List<byte[]>> hScanSnapShots = new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<UUID, Long> hScanSnapShotCreationTimes =
+      new ConcurrentHashMap<>();
   private ScheduledExecutorService HSCANSnapshotExpirationExecutor = null;
 
   private int sizeInBytes;
@@ -75,39 +78,33 @@ public class RedisHash extends AbstractRedisData {
   private static final int defaultHscanSnapshotsMillisecondsToLive =
       Integer.getInteger("redis.hscan-snapshot-expiry", 30000);
 
-  private int HSCAN_SNAPSHOTS_EXPIRE_CHECK_FREQUENCY_MILLISECONDS;
-  private int MINIMUM_MILLISECONDS_FOR_HSCAN_SNAPSHOTS_TO_LIVE;
+  private int HSCAN_SNAPSHOTS_EXPIRE_CHECK_FREQUENCY_MILLISECONDS =
+      defaultHscanSnapshotsExpireCheckFrequency;
+  private int MINIMUM_MILLISECONDS_FOR_HSCAN_SNAPSHOTS_TO_LIVE =
+      defaultHscanSnapshotsMillisecondsToLive;
 
 
   @VisibleForTesting
-  public RedisHash(List<ByteArrayWrapper> fieldsToSet, int hscanSnapShotExpirationCheckFrequency,
+  public RedisHash(List<byte[]> fieldsToSet, int hscanSnapShotExpirationCheckFrequency,
       int minimumLifeForHscanSnaphot) {
-    this();
+    sizeInBytes = BASE_REDIS_HASH_OVERHEAD;
     HSCAN_SNAPSHOTS_EXPIRE_CHECK_FREQUENCY_MILLISECONDS = hscanSnapShotExpirationCheckFrequency;
     MINIMUM_MILLISECONDS_FOR_HSCAN_SNAPSHOTS_TO_LIVE = minimumLifeForHscanSnaphot;
 
-    Iterator<ByteArrayWrapper> iterator = fieldsToSet.iterator();
+    hash = new Object2ObjectOpenCustomHashMap<>(fieldsToSet.size(), ByteArrays.HASH_STRATEGY);
+    Iterator<byte[]> iterator = fieldsToSet.iterator();
     while (iterator.hasNext()) {
       hashPut(iterator.next(), iterator.next());
     }
   }
 
-  public RedisHash(List<ByteArrayWrapper> fieldsToSet) {
+  public RedisHash(List<byte[]> fieldsToSet) {
     this(fieldsToSet,
         defaultHscanSnapshotsExpireCheckFrequency,
         defaultHscanSnapshotsMillisecondsToLive);
   }
 
-  // for serialization
   public RedisHash() {
-    hash = new HashMap<>();
-    hScanSnapShots = new ConcurrentHashMap<>();
-    hScanSnapShotCreationTimes = new ConcurrentHashMap<>();
-
-    HSCAN_SNAPSHOTS_EXPIRE_CHECK_FREQUENCY_MILLISECONDS = defaultHscanSnapshotsExpireCheckFrequency;
-
-    MINIMUM_MILLISECONDS_FOR_HSCAN_SNAPSHOTS_TO_LIVE = defaultHscanSnapshotsMillisecondsToLive;
-
     sizeInBytes = BASE_REDIS_HASH_OVERHEAD;
   }
 
@@ -122,7 +119,7 @@ public class RedisHash extends AbstractRedisData {
   }
 
   @VisibleForTesting
-  public ConcurrentHashMap<UUID, List<ByteArrayWrapper>> getHscanSnapShots() {
+  public ConcurrentHashMap<UUID, List<byte[]>> getHscanSnapShots() {
     return hScanSnapShots;
   }
 
@@ -149,7 +146,13 @@ public class RedisHash extends AbstractRedisData {
   @Override
   public synchronized void toData(DataOutput out, SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeHashMap(hash, out);
+    DataSerializer.writePrimitiveInt(hash.size(), out);
+    for (Map.Entry<byte[], byte[]> entry : hash.entrySet()) {
+      byte[] key = entry.getKey();
+      byte[] value = entry.getValue();
+      DataSerializer.writeByteArray(key, out);
+      DataSerializer.writeByteArray(value, out);
+    }
     DataSerializer.writeInteger(sizeInBytes, out);
   }
 
@@ -157,7 +160,11 @@ public class RedisHash extends AbstractRedisData {
   public void fromData(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    hash = DataSerializer.readHashMap(in);
+    int size = DataSerializer.readInteger(in);
+    hash = new Object2ObjectOpenCustomHashMap<>(size, ByteArrays.HASH_STRATEGY);
+    for (int i = 0; i < size; i++) {
+      hash.put(DataSerializer.readByteArray(in), DataSerializer.readByteArray(in));
+    }
     sizeInBytes = DataSerializer.readInteger(in);
   }
 
@@ -167,29 +174,28 @@ public class RedisHash extends AbstractRedisData {
   }
 
 
-  private synchronized ByteArrayWrapper hashPut(ByteArrayWrapper field, ByteArrayWrapper value) {
+  private synchronized byte[] hashPut(byte[] field, byte[] value) {
     if (hash.isEmpty()) {
       sizeInBytes += SIZE_OF_OVERHEAD_OF_FIRST_PAIR;
     }
 
-    ByteArrayWrapper oldvalue = hash.put(field, value);
+    byte[] oldvalue = hash.put(field, value);
 
     if (oldvalue == null) {
       sizeInBytes += calculateSizeOfNewFieldValuePair(field, value);
     } else {
-      sizeInBytes += value.length() - oldvalue.length();
+      sizeInBytes += value.length - oldvalue.length;
     }
 
     return oldvalue;
   }
 
-  private synchronized ByteArrayWrapper hashPutIfAbsent(ByteArrayWrapper field,
-      ByteArrayWrapper value) {
+  private synchronized byte[] hashPutIfAbsent(byte[] field, byte[] value) {
     if (hash.isEmpty()) {
       sizeInBytes += SIZE_OF_OVERHEAD_OF_FIRST_PAIR;
     }
 
-    ByteArrayWrapper oldvalue = hash.putIfAbsent(field, value);
+    byte[] oldvalue = hash.putIfAbsent(field, value);
 
     if (oldvalue == null) {
       sizeInBytes += calculateSizeOfNewFieldValuePair(field, value);
@@ -197,12 +203,12 @@ public class RedisHash extends AbstractRedisData {
     return oldvalue;
   }
 
-  private int calculateSizeOfNewFieldValuePair(ByteArrayWrapper field, ByteArrayWrapper value) {
-    return HASH_MAP_VALUE_PAIR_OVERHEAD + field.length() + value.length();
+  private int calculateSizeOfNewFieldValuePair(byte[] field, byte[] value) {
+    return HASH_MAP_VALUE_PAIR_OVERHEAD + field.length + value.length;
   }
 
-  private synchronized ByteArrayWrapper hashRemove(ByteArrayWrapper field) {
-    ByteArrayWrapper oldValue = hash.remove(field);
+  private synchronized byte[] hashRemove(byte[] field) {
+    byte[] oldValue = hash.remove(field);
     if (oldValue != null) {
       sizeInBytes -= calculateSizeOfNewFieldValuePair(field, oldValue);
     }
@@ -214,32 +220,33 @@ public class RedisHash extends AbstractRedisData {
     return oldValue;
   }
 
+
   @Override
   protected void applyDelta(DeltaInfo deltaInfo) {
     if (deltaInfo instanceof AddsDeltaInfo) {
       AddsDeltaInfo addsDeltaInfo = (AddsDeltaInfo) deltaInfo;
-      Iterator<ByteArrayWrapper> iterator = addsDeltaInfo.getAdds().iterator();
+      Iterator<byte[]> iterator = addsDeltaInfo.getAdds().iterator();
       while (iterator.hasNext()) {
-        ByteArrayWrapper field = iterator.next();
-        ByteArrayWrapper value = iterator.next();
+        byte[] field = iterator.next();
+        byte[] value = iterator.next();
         hashPut(field, value);
       }
     } else {
       RemsDeltaInfo remsDeltaInfo = (RemsDeltaInfo) deltaInfo;
-      for (ByteArrayWrapper field : remsDeltaInfo.getRemoves()) {
+      for (byte[] field : remsDeltaInfo.getRemoves()) {
         hashRemove(field);
       }
     }
   }
 
   public int hset(Region<RedisKey, RedisData> region, RedisKey key,
-      List<ByteArrayWrapper> fieldsToSet, boolean nx) {
+      List<byte[]> fieldsToSet, boolean nx) {
     int fieldsAdded = 0;
     AddsDeltaInfo deltaInfo = null;
-    Iterator<ByteArrayWrapper> iterator = fieldsToSet.iterator();
+    Iterator<byte[]> iterator = fieldsToSet.iterator();
     while (iterator.hasNext()) {
-      ByteArrayWrapper field = iterator.next();
-      ByteArrayWrapper value = iterator.next();
+      byte[] field = iterator.next();
+      byte[] value = iterator.next();
       boolean added = true;
       boolean newField;
       if (nx) {
@@ -251,7 +258,7 @@ public class RedisHash extends AbstractRedisData {
 
       if (added) {
         if (deltaInfo == null) {
-          deltaInfo = new AddsDeltaInfo();
+          deltaInfo = new AddsDeltaInfo(fieldsToSet.size());
         }
         deltaInfo.add(field);
         deltaInfo.add(value);
@@ -266,11 +273,10 @@ public class RedisHash extends AbstractRedisData {
     return fieldsAdded;
   }
 
-  public int hdel(Region<RedisKey, RedisData> region, RedisKey key,
-      List<ByteArrayWrapper> fieldsToRemove) {
+  public int hdel(Region<RedisKey, RedisData> region, RedisKey key, List<byte[]> fieldsToRemove) {
     int fieldsRemoved = 0;
     RemsDeltaInfo deltaInfo = null;
-    for (ByteArrayWrapper fieldToRemove : fieldsToRemove) {
+    for (byte[] fieldToRemove : fieldsToRemove) {
       if (hashRemove(fieldToRemove) != null) {
         if (deltaInfo == null) {
           deltaInfo = new RemsDeltaInfo();
@@ -283,16 +289,16 @@ public class RedisHash extends AbstractRedisData {
     return fieldsRemoved;
   }
 
-  public Collection<ByteArrayWrapper> hgetall() {
-    ArrayList<ByteArrayWrapper> result = new ArrayList<>();
-    for (Map.Entry<ByteArrayWrapper, ByteArrayWrapper> entry : hash.entrySet()) {
+  public Collection<byte[]> hgetall() {
+    ArrayList<byte[]> result = new ArrayList<>(hash.size());
+    for (Map.Entry<byte[], byte[]> entry : hash.entrySet()) {
       result.add(entry.getKey());
       result.add(entry.getValue());
     }
     return result;
   }
 
-  public int hexists(ByteArrayWrapper field) {
+  public int hexists(byte[] field) {
     if (hash.containsKey(field)) {
       return 1;
     } else {
@@ -300,7 +306,7 @@ public class RedisHash extends AbstractRedisData {
     }
   }
 
-  public ByteArrayWrapper hget(ByteArrayWrapper field) {
+  public byte[] hget(byte[] field) {
     return hash.get(field);
   }
 
@@ -308,36 +314,37 @@ public class RedisHash extends AbstractRedisData {
     return hash.size();
   }
 
-  public int hstrlen(ByteArrayWrapper field) {
-    ByteArrayWrapper entry = hget(field);
-    return entry != null ? entry.length() : 0;
+  public int hstrlen(byte[] field) {
+    byte[] entry = hget(field);
+    return entry != null ? entry.length : 0;
   }
 
-  public List<ByteArrayWrapper> hmget(List<ByteArrayWrapper> fields) {
-    ArrayList<ByteArrayWrapper> results = new ArrayList<>(fields.size());
-    for (ByteArrayWrapper field : fields) {
+  public List<byte[]> hmget(List<byte[]> fields) {
+    ArrayList<byte[]> results = new ArrayList<>(fields.size());
+    for (byte[] field : fields) {
       results.add(hash.get(field));
     }
     return results;
   }
 
-  public Collection<ByteArrayWrapper> hvals() {
+  public Collection<byte[]> hvals() {
     return new ArrayList<>(hash.values());
   }
 
-  public Collection<ByteArrayWrapper> hkeys() {
+  public Collection<byte[]> hkeys() {
     return new ArrayList<>(hash.keySet());
   }
 
-  public ImmutablePair<Integer, List<Object>> hscan(UUID clientID, Pattern matchPattern,
-      int count, int startCursor) {
+  public ImmutablePair<Integer, List<byte[]>> hscan(UUID clientID, Pattern matchPattern,
+      int count,
+      int startCursor) {
 
-    List<ByteArrayWrapper> keysToScan = getSnapShotOfKeySet(clientID);
+    List<byte[]> keysToScan = getSnapShotOfKeySet(clientID);
 
-    Pair<Integer, List<Object>> resultsPair =
+    Pair<Integer, List<byte[]>> resultsPair =
         getResultsPair(keysToScan, startCursor, count, matchPattern);
 
-    List<Object> resultList = resultsPair.getRight();
+    List<byte[]> resultList = resultsPair.getRight();
 
     Integer numberOfIterationsCompleted = resultsPair.getLeft();
 
@@ -360,27 +367,30 @@ public class RedisHash extends AbstractRedisData {
     }
   }
 
-  private Pair<Integer, List<Object>> getResultsPair(List<ByteArrayWrapper> keysSnapShot,
-      int startCursor, int count, Pattern matchPattern) {
+  private Pair<Integer, List<byte[]>> getResultsPair(List<byte[]> keysSnapShot,
+      int startCursor,
+      int count,
+      Pattern matchPattern) {
 
     int indexOfKeys = startCursor;
 
-    List<Object> resultList = new ArrayList<>();
+    List<byte[]> resultList = new ArrayList<>();
 
     for (int index = startCursor; index < keysSnapShot.size(); index++) {
       if ((index - startCursor) == count) {
         break;
       }
 
-      ByteArrayWrapper key = keysSnapShot.get(index);
+      byte[] key = keysSnapShot.get(index);
       indexOfKeys++;
-      ByteArrayWrapper value = hash.get(key);
+
+      byte[] value = hash.get(key);
       if (value == null) {
         continue;
       }
 
       if (matchPattern != null) {
-        if (matchPattern.matcher(key.toString()).matches()) {
+        if (matchPattern.matcher(Coder.bytesToString(key)).matches()) {
           resultList.add(key);
           resultList.add(value);
         }
@@ -396,7 +406,9 @@ public class RedisHash extends AbstractRedisData {
   }
 
   private int getCursorValueToReturn(int startCursor,
-      int numberOfIterationsCompleted, List<ByteArrayWrapper> keySnapshot) {
+      int numberOfIterationsCompleted,
+      List<byte[]> keySnapshot) {
+
     if (startCursor + numberOfIterationsCompleted >= keySnapshot.size()) {
       return 0;
     }
@@ -404,8 +416,8 @@ public class RedisHash extends AbstractRedisData {
     return (startCursor + numberOfIterationsCompleted);
   }
 
-  private List<ByteArrayWrapper> getSnapShotOfKeySet(UUID clientID) {
-    List<ByteArrayWrapper> keySnapShot = hScanSnapShots.get(clientID);
+  private List<byte[]> getSnapShotOfKeySet(UUID clientID) {
+    List<byte[]> keySnapShot = this.hScanSnapShots.get(clientID);
 
     if (keySnapShot == null) {
       if (hScanSnapShots.isEmpty()) {
@@ -416,9 +428,9 @@ public class RedisHash extends AbstractRedisData {
     return keySnapShot;
   }
 
-  private List<ByteArrayWrapper> createKeySnapShot(UUID clientID) {
+  private List<byte[]> createKeySnapShot(UUID clientID) {
 
-    List<ByteArrayWrapper> keySnapShot = new ArrayList<>(hash.keySet());
+    List<byte[]> keySnapShot = new ArrayList<>(hash.keySet());
 
     hScanSnapShots.put(clientID, keySnapShot);
     hScanSnapShotCreationTimes.put(clientID, currentTimeMillis());
@@ -427,12 +439,13 @@ public class RedisHash extends AbstractRedisData {
   }
 
   public long hincrby(Region<RedisKey, RedisData> region, RedisKey key,
-      ByteArrayWrapper field, long increment) throws NumberFormatException, ArithmeticException {
-    ByteArrayWrapper oldValue = hash.get(field);
+      byte[] field, long increment)
+      throws NumberFormatException, ArithmeticException {
+    byte[] oldValue = hash.get(field);
     if (oldValue == null) {
-      ByteArrayWrapper newValue = new ByteArrayWrapper(Coder.longToBytes(increment));
+      byte[] newValue = Coder.longToBytes(increment);
       hashPut(field, newValue);
-      AddsDeltaInfo deltaInfo = new AddsDeltaInfo();
+      AddsDeltaInfo deltaInfo = new AddsDeltaInfo(2);
       deltaInfo.add(field);
       deltaInfo.add(newValue);
       storeChanges(region, key, deltaInfo);
@@ -441,7 +454,7 @@ public class RedisHash extends AbstractRedisData {
 
     long value;
     try {
-      value = Long.parseLong(oldValue.toString());
+      value = Long.parseLong(Coder.bytesToString(oldValue));
     } catch (NumberFormatException ex) {
       throw new NumberFormatException(ERROR_NOT_INTEGER);
     }
@@ -452,9 +465,9 @@ public class RedisHash extends AbstractRedisData {
 
     value += increment;
 
-    ByteArrayWrapper modifiedValue = new ByteArrayWrapper(Coder.longToBytes(value));
+    byte[] modifiedValue = Coder.longToBytes(value);
     hashPut(field, modifiedValue);
-    AddsDeltaInfo deltaInfo = new AddsDeltaInfo();
+    AddsDeltaInfo deltaInfo = new AddsDeltaInfo(2);
     deltaInfo.add(field);
     deltaInfo.add(modifiedValue);
     storeChanges(region, key, deltaInfo);
@@ -462,19 +475,19 @@ public class RedisHash extends AbstractRedisData {
   }
 
   public BigDecimal hincrbyfloat(Region<RedisKey, RedisData> region, RedisKey key,
-      ByteArrayWrapper field, BigDecimal increment) throws NumberFormatException {
-    ByteArrayWrapper oldValue = hash.get(field);
+      byte[] field, BigDecimal increment) throws NumberFormatException {
+    byte[] oldValue = hash.get(field);
     if (oldValue == null) {
-      ByteArrayWrapper newValue = new ByteArrayWrapper(Coder.bigDecimalToBytes(increment));
+      byte[] newValue = Coder.bigDecimalToBytes(increment);
       hashPut(field, newValue);
-      AddsDeltaInfo deltaInfo = new AddsDeltaInfo();
+      AddsDeltaInfo deltaInfo = new AddsDeltaInfo(2);
       deltaInfo.add(field);
       deltaInfo.add(newValue);
       storeChanges(region, key, deltaInfo);
       return increment.stripTrailingZeros();
     }
 
-    String valueS = oldValue.toString();
+    String valueS = Coder.bytesToString(oldValue);
     if (valueS.contains(" ")) {
       throw new NumberFormatException("hash value is not a float");
     }
@@ -488,9 +501,9 @@ public class RedisHash extends AbstractRedisData {
 
     value = value.add(increment);
 
-    ByteArrayWrapper modifiedValue = new ByteArrayWrapper(Coder.bigDecimalToBytes(value));
+    byte[] modifiedValue = Coder.bigDecimalToBytes(value);
     hashPut(field, modifiedValue);
-    AddsDeltaInfo deltaInfo = new AddsDeltaInfo();
+    AddsDeltaInfo deltaInfo = new AddsDeltaInfo(2);
     deltaInfo.add(field);
     deltaInfo.add(modifiedValue);
     storeChanges(region, key, deltaInfo);
@@ -519,7 +532,16 @@ public class RedisHash extends AbstractRedisData {
       return false;
     }
     RedisHash redisHash = (RedisHash) o;
-    return Objects.equals(hash, redisHash.hash);
+    if (hash.size() != redisHash.hash.size()) {
+      return false;
+    }
+
+    for (Map.Entry<byte[], byte[]> entry : hash.entrySet()) {
+      if (!Arrays.equals(redisHash.hash.get(entry.getKey()), (entry.getValue()))) {
+        return false;
+      }
+    }
+    return true;
   }
 
   @Override
@@ -529,7 +551,7 @@ public class RedisHash extends AbstractRedisData {
 
   @Override
   public String toString() {
-    return "RedisHash{" + super.toString() + ", " + "hash=" + hash + '}';
+    return "RedisHash{" + super.toString() + ", " + "size=" + hash.size() + "}";
   }
 
   @Override

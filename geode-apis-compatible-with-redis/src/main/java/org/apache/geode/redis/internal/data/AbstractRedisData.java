@@ -200,7 +200,7 @@ public abstract class AbstractRedisData implements RedisData {
     }
   }
 
-  private ArrayList<ByteArrayWrapper> readArrayList(DataInput in) throws IOException {
+  private <T> ArrayList<T> readArrayList(DataInput in) throws IOException {
     try {
       return DataSerializer.readArrayList(in);
     } catch (ClassNotFoundException e) {

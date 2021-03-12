@@ -37,26 +37,26 @@ public class NullRedisHash extends RedisHash {
 
   @Override
   public int hset(Region<RedisKey, RedisData> region, RedisKey key,
-      List<ByteArrayWrapper> fieldsToSet, boolean nx) {
+      List<byte[]> fieldsToSet, boolean nx) {
     region.put(key, new RedisHash(fieldsToSet));
     return fieldsToSet.size() / 2;
   }
 
   @Override
   public long hincrby(Region<RedisKey, RedisData> region, RedisKey key,
-      ByteArrayWrapper field, long increment)
+      byte[] field, long increment)
       throws NumberFormatException, ArithmeticException {
     region.put(key,
-        new RedisHash(Arrays.asList(field, new ByteArrayWrapper(Coder.longToBytes(increment)))));
+        new RedisHash(Arrays.asList(field, Coder.longToBytes(increment))));
     return increment;
   }
 
   @Override
   public BigDecimal hincrbyfloat(Region<RedisKey, RedisData> region, RedisKey key,
-      ByteArrayWrapper field, BigDecimal increment) throws NumberFormatException {
+      byte[] field, BigDecimal increment) throws NumberFormatException {
     region.put(key,
         new RedisHash(
-            Arrays.asList(field, new ByteArrayWrapper(Coder.bigDecimalToBytes(increment)))));
+            Arrays.asList(field, Coder.bigDecimalToBytes(increment))));
     return increment;
   }
 }
