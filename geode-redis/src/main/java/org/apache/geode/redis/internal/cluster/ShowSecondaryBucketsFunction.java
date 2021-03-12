@@ -15,9 +15,9 @@
 
 package org.apache.geode.redis.internal.cluster;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import org.apache.geode.cache.Region;
@@ -53,7 +53,7 @@ public class ShowSecondaryBucketsFunction implements InternalFunction<Void> {
         context.getCache().getDistributedSystem().getDistributedMember().getUniqueId();
     LocalDataSet localPrimary = (LocalDataSet) PartitionRegionHelper.getLocalPrimaryData(region);
     RegionAdvisor advisor = ((PartitionedRegion) region).getRegionAdvisor();
-    Map<String, Integer> secondariesBucketCount = new HashMap<>();
+    SortedMap<String, Integer> secondariesBucketCount = new TreeMap<>();
 
     for (Integer bucketId : localPrimary.getBucketSet()) {
       List<String> a = advisor.getBucketOwners(bucketId).stream()
