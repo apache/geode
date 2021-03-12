@@ -30,7 +30,7 @@ public class RegionProviderJUnitTest {
   @Test
   public void testException_whenNotPowerOfTwo() {
     assertThatThrownBy(() -> RegionProvider.validateBucketCount(127))
-        .hasMessageContaining("redis region buckets must be a power of 2");
+        .hasMessageContaining("'redis.region.buckets' must be a power of 2");
   }
 
   @Test
