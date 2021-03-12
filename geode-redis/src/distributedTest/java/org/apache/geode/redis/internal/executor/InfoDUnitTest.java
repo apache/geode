@@ -57,8 +57,6 @@ public class InfoDUnitTest {
   private static int redisServerPort1;
   private static int redisServerPort2;
 
-  private static final AtomicInteger numInfoCalled = new AtomicInteger();
-
   @BeforeClass
   public static void classSetup() {
     locatorProperties = new Properties();
@@ -116,7 +114,7 @@ public class InfoDUnitTest {
           int commandsProcessed2 = Integer.valueOf(info2.get(COMMANDS_PROCESSED));
           assertThat(commandsProcessed2).isGreaterThanOrEqualTo(previousCommandsProcessed2.get());
           previousCommandsProcessed2.set(commandsProcessed2);
-        }).runInLockstep();
+        }).run();
   }
 
   /**
@@ -125,7 +123,6 @@ public class InfoDUnitTest {
   static synchronized Map<String, String> getInfo(Jedis jedis) {
     Map<String, String> results = new HashMap<>();
     String rawInfo = jedis.info();
-    numInfoCalled.incrementAndGet();
 
     for (String line : rawInfo.split("\r\n")) {
       int colonIndex = line.indexOf(":");

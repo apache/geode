@@ -68,13 +68,9 @@ public abstract class AbstractRedisInfoStatsIntegrationTest implements RedisPort
 
   private static final AtomicInteger numInfoCalled = new AtomicInteger(0);
 
-  public int getExposedPort() {
-    return -1; // This must be overridden by implementation classes
-  }
+  abstract int getExposedPort();
 
-  public void configureMaxMemory(Jedis jedis) throws Exception {
-    throw new Exception("configureMaxMemory must be overridden");
-  }
+  abstract void configureMaxMemory(Jedis jedis);
 
   // ------------------- Setup -------------------------- //
   @BeforeClass
@@ -128,7 +124,7 @@ public abstract class AbstractRedisInfoStatsIntegrationTest implements RedisPort
   }
 
   @Test
-  public void maxMemoryIsNonZero_whenMaxMemoryIsSet() throws Exception {
+  public void maxMemoryIsNonZero_whenMaxMemoryIsSet() {
     configureMaxMemory(jedis);
 
     assertThat(Long.valueOf(getInfo(jedis).get(MAX_MEMORY))).isGreaterThan(0L);
