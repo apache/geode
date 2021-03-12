@@ -28,6 +28,7 @@ import org.apache.geode.internal.statistics.StatisticsClockFactory;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.cluster.BucketRetrievalFunction;
+import org.apache.geode.redis.internal.cluster.ShowSecondaryBucketsFunction;
 import org.apache.geode.redis.internal.executor.CommandFunction;
 import org.apache.geode.redis.internal.executor.StripedExecutor;
 import org.apache.geode.redis.internal.executor.SynchronizedStripedExecutor;
@@ -105,6 +106,7 @@ public class GeodeRedisServer {
         redisCommandExecutor);
 
     BucketRetrievalFunction.register(bindAddress, nettyRedisServer.getPort());
+    ShowSecondaryBucketsFunction.register();
   }
 
   @VisibleForTesting
