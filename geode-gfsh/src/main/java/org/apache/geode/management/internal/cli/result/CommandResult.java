@@ -74,7 +74,7 @@ public class CommandResult implements Result {
   private void buildCommandOutput() {
     commandOutputIndex = 0;
     commandOutput = new ArrayList<>();
-    TableBuilder.Table resultTable = TableBuilder.newTable();
+    TableBuilder.Table resultTable = new TableBuilder().newTable();
 
     addSpacedRowInTable(resultTable, result.getHeader());
 
@@ -139,7 +139,7 @@ public class CommandResult implements Result {
     Map<String, List<String>> rows = model.getContent();
     if (!rows.isEmpty()) {
       // build table header first
-      rows.keySet().forEach(c -> headerRow.newCenterCol(c));
+      rows.keySet().forEach(headerRow::newCenterCol);
 
       // each row should have the same number of entries, so just look at the first one
       int rowCount = rows.values().iterator().next().size();
@@ -193,10 +193,10 @@ public class CommandResult implements Result {
   }
 
   public static CommandResult createInfo(String info) {
-    return new CommandResult(new ResultModel().createInfo(info));
+    return new CommandResult(ResultModel.createInfo(info));
   }
 
   public static CommandResult createError(String info) {
-    return new CommandResult(new ResultModel().createError(info));
+    return new CommandResult(ResultModel.createError(info));
   }
 }

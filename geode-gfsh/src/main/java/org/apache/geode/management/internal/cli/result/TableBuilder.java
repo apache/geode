@@ -14,6 +14,16 @@
  */
 package org.apache.geode.management.internal.cli.result;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
+import org.apache.commons.lang3.StringUtils;
+
+import org.apache.geode.management.internal.cli.GfshParser;
+import org.apache.geode.management.internal.cli.shell.Gfsh;
+
 /**
  * Helper class to build rows of columnized strings & build a table from those rows.
  *
@@ -53,21 +63,14 @@ package org.apache.geode.management.internal.cli.result;
  *
  * @since GemFire 7.0
  */
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.commons.lang3.StringUtils;
-
-import org.apache.geode.management.internal.cli.GfshParser;
-
 public class TableBuilder {
+  private static final int SCREEN_WIDTH_MARGIN_BUFFER = 5;
 
-  public static Table newTable() {
+  public Table newTable() {
     return new Table();
   }
 
-  public static class Table {
+  public class Table {
     private final List<RowGroup> rowGroups = new ArrayList<>();
     private String columnSeparator = "   ";
     private boolean isTabularResult = false;
@@ -169,7 +172,7 @@ public class TableBuilder {
    *
    * @since GemFire 7.0
    */
-  public static class RowGroup {
+  public class RowGroup {
     private final Table table;
     private final List<Row> rows = new ArrayList<>();
     private int[] colSizes;
@@ -196,9 +199,7 @@ public class TableBuilder {
     }
 
     public void newBlankRow() {
-      Row row = newRow();
-      row.newCenterCol("");
-      row.isBlank = true;
+      newRow().newCenterCol("").isBlank = true;
     }
 
     public String buildRowGroup(boolean isTabularResult) {
@@ -227,8 +228,8 @@ public class TableBuilder {
       }
 
       if (isTabularResult) {
-        localColSizes = TableBuilderHelper.recalculateColSizesForScreen(
-            TableBuilderHelper.getScreenWidth(), localColSizes, getColumnSeparator());
+        localColSizes = recalculateColSizesForScreen(
+            getScreenWidth(), localColSizes, getColumnSeparator());
       }
 
       return localColSizes;
@@ -274,7 +275,7 @@ public class TableBuilder {
     }
   }
 
-  public static class Row {
+  public class Row {
     private final RowGroup rowGroup;
     private final Character rowSeparator;
     private final List<Column> columns = new ArrayList<>();
@@ -322,8 +323,9 @@ public class TableBuilder {
     }
 
     private int getMaxColLength(final int colNum) {
-      if (colNum >= this.columns.size())
+      if (colNum >= this.columns.size()) {
         return 0;
+      }
 
       return this.columns.get(colNum).getLength();
     }
@@ -343,7 +345,7 @@ public class TableBuilder {
           int maxColLength = this.rowGroup.getTable().getMaxLength();
           // Trim only for tabular results
           if (isTabularResult) {
-            maxColLength = TableBuilderHelper.trimWidthForScreen(maxColLength);
+            maxColLength = trimWidthForScreen(maxColLength);
           }
 
           for (int j = 0; j < maxColLength; j++) {
@@ -411,16 +413,17 @@ public class TableBuilder {
       // This can happen because colSizes are re-computed
       // to fit the screen width
       if (this.stringValue.length() > colWidth) {
-        StringBuilder stringBuffer = new StringBuilder();
         int endIndex = colWidth - 2;
-        if (endIndex < 0)
+        if (endIndex < 0) {
           return "";
-        return stringBuffer.append(stringValue.substring(0, endIndex)).append("..").toString();
+        }
+        return stringValue.substring(0, endIndex) + "..";
       }
 
       int numSpaces = colWidth - this.stringValue.length();
-      if (trimIt)
+      if (trimIt) {
         numSpaces = 0;
+      }
 
       StringBuilder stringBuffer = new StringBuilder();
 
@@ -450,18 +453,144 @@ public class TableBuilder {
       }
 
       return stringBuffer.toString();
-
-    }
-
-
-
-    private String buildColumn(int colWidth) {
-      return buildColumn(colWidth, false);
     }
 
     @Override
     public String toString() {
       return "Column [align=" + align + ", stringValue=" + stringValue + "]";
     }
+  }
+
+  public static class ComparableColumn implements Comparable<ComparableColumn> {
+    int length;
+    int originalIndex;
+    boolean markForTrim = false;
+    int trimmedLength = 0;
+
+    @Override
+    public int compareTo(ComparableColumn o) {
+      return length - o.length;
+    }
+
+    public String toString() {
+      return ("OI:" + originalIndex + "<" + length + ">\n");
+    }
+
+  }
+
+  public static class TooManyColumnsException extends RuntimeException {
+    public TooManyColumnsException(String str) {
+      super(str);
+    }
+  }
+
+  public int[] recalculateColSizesForScreen(int screenWidth, int[] colSizes,
+      String colSeparators) {
+
+    if (!shouldTrimColumns()) {
+      // Returning original colSizes since reader is set to external
+      return colSizes;
+    } else {
+      int totalLength = 0;
+      // change the screen width to account for separator chars
+      screenWidth -= (colSizes.length - 1) * colSeparators.length();
+
+      // build sorted list and find total width
+      List<ComparableColumn> stringList = new ArrayList<>();
+      int index = 0;
+      for (int k : colSizes) {
+        ComparableColumn cs = new ComparableColumn();
+        cs.originalIndex = index++;
+        cs.length = k;
+        stringList.add(cs);
+        totalLength += k;
+      }
+
+      // No need to reduce the column width return orig array
+      if (totalLength <= screenWidth) {
+        return colSizes;
+      }
+
+      Collections.sort(stringList);
+
+      // find out columns which need trimming
+      totalLength = 0;
+      int spaceLeft = 0;
+      int totalExtra = 0;
+      for (ComparableColumn s : stringList) {
+        int newLength = totalLength + s.length;
+        // Ensure that the spaceLeft is never < 2 which would prevent displaying a trimmed value
+        // even when there is space available on the screen.
+        if (newLength + SCREEN_WIDTH_MARGIN_BUFFER > screenWidth) {
+          s.markForTrim = true;
+          totalExtra += s.length;
+          if (spaceLeft == 0) {
+            spaceLeft = screenWidth - totalLength;
+          }
+        }
+        totalLength = newLength;
+      }
+
+      stringList.sort(Comparator.comparingInt(o -> o.originalIndex));
+
+      // calculate trimmed width for columns marked for
+      // distribute the trimming as per percentage
+      int[] finalColSizes = new int[colSizes.length];
+      int i = 0;
+      for (ComparableColumn s : stringList) {
+        if (totalLength > screenWidth) {
+          if (s.markForTrim) {
+            s.trimmedLength = (int) Math.floor((spaceLeft * ((double) s.length / totalExtra)));
+          } else {
+            s.trimmedLength = s.length;
+          }
+        } else {
+          s.trimmedLength = s.length;
+        }
+        finalColSizes[i] = s.trimmedLength;
+        i++;
+      }
+
+      totalLength = 0;
+      index = 0;
+      for (int colSize : finalColSizes) {
+        if (colSize != colSizes[index] && colSize < 2) {
+          throw new TooManyColumnsException("Computed ColSize=" + colSize
+              + " Set RESULT_VIEWER to external. This uses the 'less' command (with horizontal scrolling) to see wider results");
+        }
+        totalLength += colSize;
+        index++;
+      }
+      return finalColSizes;
+    }
+  }
+
+  public int trimWidthForScreen(int maxColLength) {
+    if (shouldTrimColumns()) {
+      int screenWidth = getScreenWidth();
+      return Math.min(maxColLength, screenWidth);
+    } else {
+      return maxColLength;
+    }
+  }
+
+  public int getScreenWidth() {
+    Gfsh gfsh = Gfsh.getCurrentInstance();
+    if (gfsh == null) {
+      return Gfsh.DEFAULT_WIDTH;
+    } else {
+      return gfsh.getTerminalWidth();
+    }
+  }
+
+  public boolean shouldTrimColumns() {
+    Gfsh gfsh = Gfsh.getCurrentInstance();
+    if (gfsh == null) {
+      return Boolean.getBoolean("GFSH.TRIMSCRWIDTH");
+    } else {
+      return Gfsh.DEFAULT_APP_RESULT_VIEWER.equals(gfsh.getEnvProperty(Gfsh.ENV_APP_RESULT_VIEWER))
+          && !Gfsh.isInfoResult();
+    }
+
   }
 }

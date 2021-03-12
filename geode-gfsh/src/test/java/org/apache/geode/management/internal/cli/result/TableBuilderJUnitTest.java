@@ -12,14 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal.cli;
+package org.apache.geode.management.internal.cli.result;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.powermock.api.mockito.PowerMockito.spy;
-import static org.powermock.api.mockito.PowerMockito.when;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
 
 import java.util.Arrays;
 import java.util.List;
@@ -28,35 +26,25 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
-import org.junit.runner.RunWith;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
-import org.apache.geode.management.internal.cli.result.TableBuilder;
+import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.result.TableBuilder.Row;
 import org.apache.geode.management.internal.cli.result.TableBuilder.RowGroup;
 import org.apache.geode.management.internal.cli.result.TableBuilder.Table;
-import org.apache.geode.management.internal.cli.result.TableBuilderHelper;
 
-/**
- * Testing TableBuilder and TableBuilderHelper using mocks for Gfsh
- *
- */
-@RunWith(PowerMockRunner.class)
-@PowerMockIgnore("*.IntegrationTest")
-@PrepareForTest(TableBuilderHelper.class)
 public class TableBuilderJUnitTest {
 
   @Rule
   public TestName testName = new TestName();
 
+  private TableBuilder builder;
+  private final int screenWidth = 40;
+
   @Before
-  public void setUp() throws Exception {
-    // This sets up a partial mock for some static methods
-    spy(TableBuilderHelper.class);
-    when(TableBuilderHelper.class, "getScreenWidth").thenReturn(40);
-    when(TableBuilderHelper.class, "shouldTrimColumns").thenReturn(true);
+  public void setUp() {
+    builder = spy(new TableBuilder());
+    doReturn(screenWidth).when(builder).getScreenWidth();
+    doReturn(true).when(builder).shouldTrimColumns();
   }
 
   private Table createTableStructure(int cols, String separator) {
@@ -68,7 +56,7 @@ public class TableBuilderJUnitTest {
   }
 
   private Table createTableStructure(int cols, String separator, String... colNames) {
-    Table resultTable = TableBuilder.newTable();
+    Table resultTable = builder.newTable();
     resultTable.setTabularResult(true);
     resultTable.setColumnSeparator(separator);
 
@@ -85,7 +73,6 @@ public class TableBuilderJUnitTest {
   }
 
   private List<String> validateTable(Table table, boolean shouldTrim) {
-    int screenWidth = TableBuilderHelper.getScreenWidth();
     String st = table.buildTable();
     System.out.println(st);
 
@@ -97,13 +84,11 @@ public class TableBuilderJUnitTest {
           + (s.length() > screenWidth));
 
       if (shouldTrim) {
-        if (s.length() > screenWidth) {
-          fail("Expected length > screenWidth: " + s.length() + " > " + screenWidth);
-        }
+        assertThat(s.length()).isLessThanOrEqualTo(screenWidth);
       } else {
-        if (s.length() != 0 && s.length() <= screenWidth) {
-          fail("Expected length <= screenWidth: " + s.length() + " <= " + screenWidth);
-        }
+        assertThat(s.length()).satisfiesAnyOf(
+            length -> assertThat(length).isZero(),
+            length -> assertThat(length).isGreaterThan(screenWidth));
       }
     }
 
@@ -114,9 +99,7 @@ public class TableBuilderJUnitTest {
    * Test Variations table-wide separator true false
    */
   @Test
-  public void testSanity() throws Exception {
-    assertTrue(TableBuilderHelper.shouldTrimColumns());
-
+  public void testSanity() {
     Table table = createTableStructure(3, "|");
     RowGroup rowGroup = table.getLastRowGroup();
     Row row1 = rowGroup.newRow();
@@ -124,13 +107,11 @@ public class TableBuilderJUnitTest {
 
     List<String> result = validateTable(table, true);
     // Check the last line
-    assertEquals("1     |1     |1", result.get(3));
+    assertThat(result.get(3)).isEqualTo("1     |1     |1");
   }
 
   @Test
-  public void testLastColumnTruncated() throws Exception {
-    assertTrue(TableBuilderHelper.shouldTrimColumns());
-
+  public void testLastColumnTruncated() {
     Table table = createTableStructure(4, "|");
     RowGroup rowGroup = table.getLastRowGroup();
     Row row1 = rowGroup.newRow();
@@ -139,13 +120,11 @@ public class TableBuilderJUnitTest {
 
     List<String> result = validateTable(table, true);
     // Check the last line
-    assertEquals("1     |123456789-|123456789-|123456789..", result.get(3));
+    assertThat(result.get(3)).isEqualTo("1     |123456789-|123456789-|123456789..");
   }
 
   @Test
-  public void testLongestColumnFirstTruncated() throws Exception {
-    assertTrue(TableBuilderHelper.shouldTrimColumns());
-
+  public void testLongestColumnFirstTruncated() {
     Table table = createTableStructure(4, "|");
     RowGroup rowGroup = table.getLastRowGroup();
     Row row1 = rowGroup.newRow();
@@ -154,13 +133,11 @@ public class TableBuilderJUnitTest {
 
     List<String> result = validateTable(table, true);
     // Check the last line
-    assertEquals("1234..|123456789-12345|123456789-|1", result.get(3));
+    assertThat(result.get(3)).isEqualTo("1234..|123456789-12345|123456789-|1");
   }
 
   @Test
-  public void testMultipleColumnsTruncated() throws Exception {
-    assertTrue(TableBuilderHelper.shouldTrimColumns());
-
+  public void testMultipleColumnsTruncated() {
     Table table = createTableStructure(4, "|");
     RowGroup rowGroup = table.getLastRowGroup();
     Row row1 = rowGroup.newRow();
@@ -169,13 +146,11 @@ public class TableBuilderJUnitTest {
 
     List<String> result = validateTable(table, true);
     // Check the last line
-    assertEquals("1     |123456789-|123456789..|1234567..", result.get(3));
+    assertThat(result.get(3)).isEqualTo("1     |123456789-|123456789..|1234567..");
   }
 
   @Test
-  public void testMultipleColumnsTruncatedLongestFirst() throws Exception {
-    assertTrue(TableBuilderHelper.shouldTrimColumns());
-
+  public void testMultipleColumnsTruncatedLongestFirst() {
     Table table = createTableStructure(4, "|");
     RowGroup rowGroup = table.getLastRowGroup();
     Row row1 = rowGroup.newRow();
@@ -184,13 +159,12 @@ public class TableBuilderJUnitTest {
 
     List<String> result = validateTable(table, true);
     // Check the last line
-    assertEquals("123456789..|1234567..|1     |123456789-", result.get(3));
+    assertThat(result.get(3)).isEqualTo("123456789..|1234567..|1     |123456789-");
   }
 
   @Test
-  public void testColumnsWithShortNames() throws Exception {
-    when(TableBuilderHelper.class, "getScreenWidth").thenReturn(9);
-    assertTrue(TableBuilderHelper.shouldTrimColumns());
+  public void testColumnsWithShortNames() {
+    doReturn(9).when(builder).getScreenWidth();
 
     Table table = createTableStructure(3, "|", "A", "A", "A");
     RowGroup rowGroup = table.getLastRowGroup();
@@ -199,13 +173,12 @@ public class TableBuilderJUnitTest {
 
     List<String> result = validateTable(table, true);
     // Check the last line
-    assertEquals("..|..|..", result.get(3));
+    assertThat(result.get(3)).isEqualTo("..|..|..");
   }
 
-  @Test(expected = TableBuilderHelper.TooManyColumnsException.class)
-  public void testExceptionTooSmallWidth() throws Exception {
-    when(TableBuilderHelper.class, "getScreenWidth").thenReturn(7);
-    assertTrue(TableBuilderHelper.shouldTrimColumns());
+  @Test
+  public void testExceptionTooSmallWidth() {
+    doReturn(7).when(builder).getScreenWidth();
 
     Table table = createTableStructure(3, "|", "A", "A", "A");
     RowGroup rowGroup = table.getLastRowGroup();
@@ -213,28 +186,25 @@ public class TableBuilderJUnitTest {
     row1.newLeftCol("12").newLeftCol("12").newLeftCol("12");
 
     // This should throw an exception
-    List<String> result = validateTable(table, true);
+    assertThatThrownBy(() -> validateTable(table, true))
+        .isInstanceOf(TableBuilder.TooManyColumnsException.class);
   }
 
   @Test
-  public void testTooLittleSpaceOnNextToLastColumn() throws Exception {
-    assertTrue(TableBuilderHelper.shouldTrimColumns());
-
+  public void testTooLittleSpaceOnNextToLastColumn() {
     Table table = createTableStructure(4, "|");
     RowGroup rowGroup = table.getLastRowGroup();
     Row row1 = rowGroup.newRow();
     row1.newLeftCol("1").newLeftCol("123456789-").newLeftCol("123456789-123456789-123456789-")
-        .newLeftCol("123456789-123456789-12345");
+        .newLeftCol("123456789-");
 
     List<String> result = validateTable(table, true);
     // Check the last line
-    assertEquals("1     |123456789-|123456789..|1234567..", result.get(3));
+    assertThat(result.get(3)).isEqualTo("1     |123456789-|123456789..|123456789-");
   }
 
   @Test
-  public void testSeparatorWithMultipleChars() throws Exception {
-    assertTrue(TableBuilderHelper.shouldTrimColumns());
-
+  public void testSeparatorWithMultipleChars() {
     Table table = createTableStructure(4, "<|>");
     RowGroup rowGroup = table.getLastRowGroup();
     Row row1 = rowGroup.newRow();
@@ -243,16 +213,14 @@ public class TableBuilderJUnitTest {
 
     List<String> result = validateTable(table, true);
     // Check the last line
-    assertEquals("1     <|>123456789-<|>123456789-<|>123..", result.get(3));
+    assertThat(result.get(3)).isEqualTo("1     <|>123456789-<|>123456789-<|>123..");
   }
 
   /**
    * multiple columns upto 8 : done
    */
   @Test
-  public void testManyColumns() throws Exception {
-    assertTrue(TableBuilderHelper.shouldTrimColumns());
-
+  public void testManyColumns() {
     Table table = createTableStructure(8, "|");
     RowGroup rowGroup = table.getLastRowGroup();
     Row row1 = rowGroup.newRow();
@@ -262,16 +230,12 @@ public class TableBuilderJUnitTest {
 
     List<String> result = validateTable(table, true);
     // Check the last line
-    assertEquals("123456789-|123456789-|..|..|..|..|..|..", result.get(3));
+    assertThat(result.get(3)).isEqualTo("123456789-|123456789-|..|..|..|..|..|..");
   }
 
-  /**
-   * set gfsh env property result_viewer to basic disable for external reader
-   */
   @Test
-  public void testDisableColumnAdjustment() throws Exception {
-    when(TableBuilderHelper.class, "shouldTrimColumns").thenReturn(false);
-    assertFalse(TableBuilderHelper.shouldTrimColumns());
+  public void testDisableColumnAdjustment() {
+    doReturn(false).when(builder).shouldTrimColumns();
 
     Table table = createTableStructure(5, "|");
     RowGroup rowGroup = table.getLastRowGroup();
@@ -281,6 +245,6 @@ public class TableBuilderJUnitTest {
 
     List<String> result = validateTable(table, false);
     // Check the last line
-    assertEquals("1     |123456789-|123456789-|123456789-123456789-12345|1", result.get(3));
+    assertThat(result.get(3)).isEqualTo("1     |123456789-|123456789-|123456789-123456789-12345|1");
   }
 }
