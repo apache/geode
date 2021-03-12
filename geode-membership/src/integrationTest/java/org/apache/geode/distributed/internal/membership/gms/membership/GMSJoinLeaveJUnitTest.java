@@ -16,6 +16,7 @@ package org.apache.geode.distributed.internal.membership.gms.membership;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
@@ -846,6 +847,21 @@ public class GMSJoinLeaveJUnitTest {
     InstallViewMessage installViewMessage = new InstallViewMessage(view, credentials, preparing);
     installViewMessage.setSender(gmsJoinLeaveMemberId);
     return installViewMessage;
+  }
+
+  @Test
+  public void testNetworkPartitionDetectedWithNullView() throws Exception {
+    initMocks(true);
+    prepareAndInstallView(mockMembers[0], createMemberList(mockMembers[0], gmsJoinLeaveMemberId));
+
+    NetworkPartitionMessage message = new NetworkPartitionMessage();
+    message.setSender(gmsJoinLeaveMemberId);
+
+
+    // this creates a NPE that must be handled appropriately
+    gmsJoinLeave.currentView = null;
+    assertThatNoException().isThrownBy(() -> gmsJoinLeave.processNetworkPartitionMessage(message));
+
   }
 
   @Test
