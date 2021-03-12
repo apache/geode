@@ -877,6 +877,7 @@ public class PersistentRecoveryOrderDUnitTest extends CacheTestCase {
           createReplicateRegion(regionName, getDiskDirs(getVMId()));
         });
         assertThat(thrown).isInstanceOf(ConflictingPersistentDataException.class);
+        assertThat(thrown.getMessage()).contains("is split-brained from all other members.");
       }
     });
   }
@@ -894,12 +895,16 @@ public class PersistentRecoveryOrderDUnitTest extends CacheTestCase {
 
     vm1.invoke(() -> {
       createReplicateRegion(regionName, getDiskDirs(getVMId()));
+      validateEntry("A", "B");
       updateEntry("A", "C");
       getCache().getRegion(regionName).close();
     });
 
     // VM0 doesn't know that VM1 ever existed so it will start up.
-    vm0.invoke(() -> createReplicateRegion(regionName, getDiskDirs(getVMId())));
+    vm0.invoke(() -> {
+      createReplicateRegion(regionName, getDiskDirs(getVMId()));
+      validateEntry("A", "C");
+    });
 
     vm1.invoke(() -> {
       createReplicateRegion(regionName, getDiskDirs(getVMId()));
