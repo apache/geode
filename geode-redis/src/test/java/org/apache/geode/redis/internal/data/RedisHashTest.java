@@ -56,7 +56,6 @@ public class RedisHashTest {
   }
 
   @Test
-
   public void confirmToDataIsSynchronized() throws NoSuchMethodException {
     assertThat(Modifier.isSynchronized(RedisHash.class
         .getMethod("toData", DataOutput.class, SerializationContext.class).getModifiers()))
