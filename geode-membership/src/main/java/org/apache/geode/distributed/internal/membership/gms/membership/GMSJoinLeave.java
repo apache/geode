@@ -1457,8 +1457,9 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
     }
     ID sender = msg.getSender();
 
-    if (getView() != null && isJoined) {
-      if (getView().getMembers().contains(sender)) {
+    final GMSMembershipView<ID> view = getView();
+    if (view != null && isJoined) {
+      if (view.getMembers().contains(sender)) {
         String str = "Membership coordinator " + msg.getSender()
             + " has declared that a network partition has occurred";
         forceDisconnect(str);
@@ -1467,7 +1468,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
       }
     } else {
       logger.debug(
-          "Ignoring, likely this message was intended for the previous Membership service... ");
+          "Ignoring, the network partition message, likely this message was intended for the previous Membership service... ");
     }
   }
 
