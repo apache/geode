@@ -406,6 +406,7 @@ public class PartitionedRegionLoadModel {
 
     if (!this.operator.removeBucket(targetMember.getMemberId(), bucket.getId(),
         colocatedRegionSizes)) {
+      logger.warn("#LRJ remoteOverRedundancyBucket called for bucket {}", bucket.getId());
       this.attemptedBucketRemoves.add(bestMove);
     } else {
       this.overRedundancyBuckets.remove(bucket);

@@ -1527,7 +1527,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     StringWriter sw = new StringWriter();
     PrintWriter pw = new PrintWriter(sw);
     new Throwable().printStackTrace(pw);
-    logger.warn("#LRJ removeBucket stacktrace: " + sw);
+    logger.warn("#LRJ local removeBucket stacktrace: " + sw);
 
     waitForInProgressBackup();
 
@@ -1756,6 +1756,12 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
               bucketId, this, source);
         }
       }
+
+      StringWriter sw = new StringWriter();
+      PrintWriter pw = new PrintWriter(sw);
+      new Throwable().printStackTrace(pw);
+      logger.warn("#LRJ moveBucket stacktrace: " + sw);
+
       logger.warn("#LRJ removed bucket");
       // TODO rebalance - perhaps we should thow an error if we
       // can't remove the bucket??
