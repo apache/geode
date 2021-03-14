@@ -66,7 +66,7 @@ public class InequalityQueryWithRebalanceDistributedTest implements Serializable
   }
 
   @Test
-  public void testArbitraryBucketIndexUpdatedAfterBucketMoved() throws Exception {
+  public void testArbitraryBucketIndexUpdatedAfterBucketMoved() {
     // Start server1
     MemberVM server1 = cluster.startServerVM(1, locator.getPort());
 
@@ -77,10 +77,10 @@ public class InequalityQueryWithRebalanceDistributedTest implements Serializable
     createIndex();
 
     // Load entries
-    server1.invoke(() -> loadRegion());
+    server1.invoke(this::loadRegion);
 
     // Start server2
-    MemberVM server2 = cluster.startServerVM(2, locator.getPort());
+    cluster.startServerVM(2, locator.getPort());
 
     // Wait for server2 to create the region MBean
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + regionName, 2);
@@ -105,7 +105,7 @@ public class InequalityQueryWithRebalanceDistributedTest implements Serializable
   }
 
   private void loadRegion() {
-    Region region = ClusterStartupRule.getCache().getRegion(regionName);
+    Region<Integer, Trade> region = ClusterStartupRule.getCache().getRegion(regionName);
     IntStream.range(0, 10).forEach(i -> region.put(i,
         new Trade(String.valueOf(i), "aId1", i % 2 == 0 ? TradeStatus.OPEN : TradeStatus.CLOSED)));
   }
@@ -122,7 +122,7 @@ public class InequalityQueryWithRebalanceDistributedTest implements Serializable
 
   public enum TradeStatus {
     OPEN,
-    CLOSED;
+    CLOSED
   }
 
   public static class Trade implements PdxSerializable {

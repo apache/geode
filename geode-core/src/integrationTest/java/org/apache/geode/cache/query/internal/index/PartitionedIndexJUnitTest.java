@@ -60,11 +60,10 @@ public class PartitionedIndexJUnitTest {
     }
 
     assertEquals(DATA_SIZE_TO_BE_POPULATED, partitionedIndex.mapIndexKeys.size());
-
   }
 
   @Test
-  public void verifyAddToAndRemoveFromBucketIndexesUpdatesArbitraryBucketIndex() {
+  public void verifyAddToAndRemoveFromBucketIndexesUpdatesArbitraryBucketIndexOneIndexCase() {
     // Create the PartitionedIndex
     PartitionedIndex partitionedIndex = createPartitionedIndex();
 
@@ -72,17 +71,41 @@ public class PartitionedIndexJUnitTest {
     Region region = mock(Region.class);
     Index index = mock(Index.class);
 
-    // Add the mock region and index to the bucket indexes
+    // Add the index to the bucket indexes
     partitionedIndex.addToBucketIndexes(region, index);
 
-    // Assert that the arbitraryBucketIndex is set
+    // Assert that the arbitraryBucketIndex is set to the index
     assertThat(partitionedIndex.getBucketIndex()).isEqualTo(index);
 
-    // Remove the mock region and index from the bucket indexes
+    // Remove the index from the bucket indexes
     partitionedIndex.removeFromBucketIndexes(region, index);
 
     // Assert that the arbitraryBucketIndex is null
     assertThat(partitionedIndex.getBucketIndex()).isNull();
+  }
+
+  @Test
+  public void verifyAddToAndRemoveFromBucketIndexesUpdatesArbitraryBucketIndexTwoIndexesCase() {
+    // Create the PartitionedIndex
+    PartitionedIndex partitionedIndex = createPartitionedIndex();
+
+    // Create the mock Region and Indexes
+    Region region = mock(Region.class);
+    Index index1 = mock(Index.class);
+    Index index2 = mock(Index.class);
+
+    // Add the mock indexes to the bucket indexes
+    partitionedIndex.addToBucketIndexes(region, index1);
+    partitionedIndex.addToBucketIndexes(region, index2);
+
+    // Assert that the arbitraryBucketIndex is set to index1
+    assertThat(partitionedIndex.getBucketIndex()).isEqualTo(index1);
+
+    // Remove index1 from the bucket indexes
+    partitionedIndex.removeFromBucketIndexes(region, index1);
+
+    // Assert that the arbitraryBucketIndex is index2
+    assertThat(partitionedIndex.getBucketIndex()).isEqualTo(index2);
   }
 
   private PartitionedIndex createPartitionedIndex() {
@@ -91,8 +114,7 @@ public class PartitionedIndexJUnitTest {
     when(region.getCache()).thenReturn(cache);
     DistributedSystem distributedSystem = mock(DistributedSystem.class);
     when(cache.getDistributedSystem()).thenReturn(distributedSystem);
-    PartitionedIndex partitionedIndex = new PartitionedIndex(cache, IndexType.FUNCTIONAL,
+    return new PartitionedIndex(cache, IndexType.FUNCTIONAL,
         "dummyString", region, "dummyString", "dummyString", "dummyString");
-    return partitionedIndex;
   }
 }
