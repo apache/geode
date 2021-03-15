@@ -2604,14 +2604,9 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    * <i>Test Method</i> Return the list of all the bucket names in this data store.
    *
    */
-  public List getLocalBucketsListTestOnly() {
-    final List bucketList = new ArrayList();
-    visitBuckets(new BucketVisitor() {
-      @Override
-      public void visit(Integer bucketId, Region r) {
-        bucketList.add(bucketId);
-      }
-    });
+  public List<Integer> getLocalBucketsListTestOnly() {
+    final List<Integer> bucketList = new ArrayList<>();
+    visitBuckets((bucketId, r) -> bucketList.add(bucketId));
     return bucketList;
   }
 
@@ -2635,16 +2630,13 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    * <i>Test Method</i> Return the list of all the non primary bucket ids in this data store.
    *
    */
-  public List getLocalNonPrimaryBucketsListTestOnly() {
-    final List nonPrimaryBucketList = new ArrayList();
-    visitBuckets(new BucketVisitor() {
-      @Override
-      public void visit(Integer bucketId, Region r) {
-        BucketRegion br = (BucketRegion) r;
-        BucketAdvisor ba = (BucketAdvisor) br.getDistributionAdvisor();
-        if (!ba.isPrimary()) {
-          nonPrimaryBucketList.add(bucketId);
-        }
+  public List<Integer> getLocalNonPrimaryBucketsListTestOnly() {
+    final List<Integer> nonPrimaryBucketList = new ArrayList<>();
+    visitBuckets((bucketId, r) -> {
+      BucketRegion br = (BucketRegion) r;
+      BucketAdvisor ba = (BucketAdvisor) br.getDistributionAdvisor();
+      if (!ba.isPrimary()) {
+        nonPrimaryBucketList.add(bucketId);
       }
     });
     return nonPrimaryBucketList;
