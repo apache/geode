@@ -53,6 +53,7 @@ import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.data.RedisDataTypeMismatchException;
 import org.apache.geode.redis.internal.executor.CommandFunction;
 import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.executor.UnknownExecutor;
 import org.apache.geode.redis.internal.pubsub.PubSub;
 import org.apache.geode.redis.internal.statistics.RedisStats;
 
@@ -285,6 +286,8 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
             channel.remoteAddress().toString());
       }
 
+      // Note: Some Redis 6 clients look for an 'unknown command' error when
+      // connecting to Redis <= 5 servers. So we need to check for unknown BEFORE auth.
       if (command.isUnknown()) {
         writeToChannel(command.execute(this));
         return;
@@ -296,15 +299,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       }
 
       if (command.isUnsupported() && !allowUnsupportedCommands()) {
-        writeToChannel(
-            RedisResponse
-                .error(command.getCommandType() + RedisConstants.ERROR_UNSUPPORTED_COMMAND));
-        return;
-      }
-
-      if (command.isUnimplemented()) {
-        logger.info("Failed " + command.getCommandType() + " because it is not implemented.");
-        writeToChannel(RedisResponse.error(command.getCommandType() + " is not implemented."));
+        writeToChannel(new UnknownExecutor().executeCommand(command, this));
         return;
       }
 
@@ -331,7 +326,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     }
   }
 
-  private boolean allowUnsupportedCommands() {
+  public boolean allowUnsupportedCommands() {
     return allowUnsupportedSupplier.get();
   }
 

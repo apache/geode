@@ -35,7 +35,7 @@ public class ShutdownIntegrationTest extends AbstractShutDownIntegrationTest {
 
   @Test
   public void shutdownIsDisabled_whenOnlySupportedCommandsAreAllowed() {
-    server.getServer().setAllowUnsupportedCommands(false);
+    server.getServer().setAllowUnsupportedCommandsSystemProperty(false);
 
     // Unfortunately Jedis' shutdown() doesn't seem to throw a JedisDataException when the command
     // returns an error.

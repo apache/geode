@@ -31,6 +31,7 @@ public class GeodeRedisServerRule extends SerializableExternalResource {
   private GemFireCache cache;
   private GeodeRedisServer server;
   private CacheFactory cacheFactory;
+  private Boolean enableUnsupportedCommands = true;
 
 
   public GeodeRedisServerRule() {
@@ -40,14 +41,20 @@ public class GeodeRedisServerRule extends SerializableExternalResource {
     cacheFactory.set(LOCATORS, "");
   }
 
+  public GeodeRedisServerRule(boolean enableUnsupportedCommands) {
+    cacheFactory = new CacheFactory();
+    cacheFactory.set(LOG_LEVEL, "warn");
+    cacheFactory.set(MCAST_PORT, "0");
+    cacheFactory.set(LOCATORS, "");
+    this.enableUnsupportedCommands = enableUnsupportedCommands;
+  }
+
   @Override
   protected void before() {
     cache = cacheFactory.create();
     server = new GeodeRedisServer("localhost", 0, (InternalCache) cache);
-    server.setAllowUnsupportedCommands(true);
+    server.setAllowUnsupportedCommandsSystemProperty(enableUnsupportedCommands);
   }
-
-
 
   public GeodeRedisServerRule withProperty(String property, String value) {
     cacheFactory.set(property, value);
