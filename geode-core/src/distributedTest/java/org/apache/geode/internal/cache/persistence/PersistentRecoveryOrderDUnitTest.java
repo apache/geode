@@ -877,7 +877,8 @@ public class PersistentRecoveryOrderDUnitTest extends CacheTestCase {
           createReplicateRegion(regionName, getDiskDirs(getVMId()));
         });
         assertThat(thrown).isInstanceOf(ConflictingPersistentDataException.class);
-        assertThat(thrown.getMessage()).contains("is split-brained from all other members.");
+        assertThat(thrown.getMessage())
+            .contains("was not part of the same distributed system as the local data");
       }
     });
   }
