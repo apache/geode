@@ -37,86 +37,73 @@ public class RedisSetCommandsFunctionExecutor extends RedisDataCommandsFunctionE
     super(helper);
   }
 
-  private RedisSet getRedisSet(ByteArrayWrapper key, boolean updateStats) {
+  private RedisSet getRedisSet(RedisKey key, boolean updateStats) {
     return helper.getRedisSet(key, updateStats);
   }
 
   @Override
-  public long sadd(
-      ByteArrayWrapper key,
-      ArrayList<ByteArrayWrapper> membersToAdd) {
+  public long sadd(RedisKey key, ArrayList<ByteArrayWrapper> membersToAdd) {
     return stripedExecute(key,
         () -> getRedisSet(key, false)
             .sadd(membersToAdd,
                 getRegion(), key));
   }
 
-
-
   @Override
-  public int sunionstore(ByteArrayWrapper destination,
-      ArrayList<ByteArrayWrapper> setKeys) {
+  public int sunionstore(RedisKey destination, ArrayList<RedisKey> setKeys) {
     return NULL_REDIS_SET.sunionstore(helper, destination, setKeys);
   }
 
   @Override
-  public int sinterstore(ByteArrayWrapper destination,
-      ArrayList<ByteArrayWrapper> setKeys) {
+  public int sinterstore(RedisKey destination, ArrayList<RedisKey> setKeys) {
     return NULL_REDIS_SET.sinterstore(helper, destination, setKeys);
   }
 
   @Override
-  public int sdiffstore(ByteArrayWrapper destination,
-      ArrayList<ByteArrayWrapper> setKeys) {
+  public int sdiffstore(RedisKey destination, ArrayList<RedisKey> setKeys) {
     return NULL_REDIS_SET.sdiffstore(helper, destination, setKeys);
   }
 
   @Override
-  public long srem(
-      ByteArrayWrapper key,
-      ArrayList<ByteArrayWrapper> membersToRemove) {
+  public long srem(RedisKey key, ArrayList<ByteArrayWrapper> membersToRemove) {
     return stripedExecute(key, () -> getRedisSet(key, false).srem(membersToRemove,
         getRegion(), key));
   }
 
   @Override
-  public Set<ByteArrayWrapper> smembers(
-      ByteArrayWrapper key) {
+  public Set<ByteArrayWrapper> smembers(RedisKey key) {
     return stripedExecute(key, () -> getRedisSet(key, true).smembers());
   }
 
   @Override
-  public Set<ByteArrayWrapper> internalsmembers(
-      ByteArrayWrapper key) {
+  public Set<ByteArrayWrapper> internalsmembers(RedisKey key) {
     return stripedExecute(key, () -> getRedisSet(key, false).smembers());
   }
 
   @Override
-  public int scard(ByteArrayWrapper key) {
+  public int scard(RedisKey key) {
     return stripedExecute(key, () -> getRedisSet(key, true).scard());
   }
 
   @Override
-  public boolean sismember(
-      ByteArrayWrapper key, ByteArrayWrapper member) {
+  public boolean sismember(RedisKey key, ByteArrayWrapper member) {
     return stripedExecute(key, () -> getRedisSet(key, true).sismember(member));
   }
 
   @Override
-  public Collection<ByteArrayWrapper> srandmember(
-      ByteArrayWrapper key, int count) {
+  public Collection<ByteArrayWrapper> srandmember(RedisKey key, int count) {
     return stripedExecute(key, () -> getRedisSet(key, true).srandmember(count));
   }
 
   @Override
-  public Collection<ByteArrayWrapper> spop(
-      ByteArrayWrapper key, int popCount) {
+  public Collection<ByteArrayWrapper> spop(RedisKey key, int popCount) {
     return stripedExecute(key, () -> getRedisSet(key, false)
         .spop(getRegion(), key, popCount));
   }
 
   @Override
-  public Pair<BigInteger, List<Object>> sscan(ByteArrayWrapper key, Pattern matchPattern, int count,
+  public Pair<BigInteger, List<Object>> sscan(RedisKey key, Pattern matchPattern,
+      int count,
       BigInteger cursor) {
     return stripedExecute(key, () -> getRedisSet(key, true).sscan(matchPattern, count, cursor));
   }

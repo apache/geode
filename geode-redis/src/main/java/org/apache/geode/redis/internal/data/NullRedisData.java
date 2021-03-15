@@ -40,10 +40,8 @@ public class NullRedisData implements RedisData {
   }
 
   @Override
-  public void setExpirationTimestamp(Region<ByteArrayWrapper, RedisData> region,
-      ByteArrayWrapper key, long value) {
-
-  }
+  public void setExpirationTimestamp(Region<RedisKey, RedisData> region,
+      RedisKey key, long value) {}
 
   @Override
   public long getExpirationTimestamp() {
@@ -51,7 +49,7 @@ public class NullRedisData implements RedisData {
   }
 
   @Override
-  public int persist(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key) {
+  public int persist(Region<RedisKey, RedisData> region, RedisKey key) {
     return 0;
   }
 
@@ -66,17 +64,17 @@ public class NullRedisData implements RedisData {
   }
 
   @Override
-  public long pttl(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key) {
+  public long pttl(Region<RedisKey, RedisData> region, RedisKey key) {
     return -2;
   }
 
   @Override
-  public int pexpireat(CommandHelper helper, ByteArrayWrapper key, long timestamp) {
+  public int pexpireat(CommandHelper helper, RedisKey key, long timestamp) {
     return 0;
   }
 
   @Override
-  public void doExpiration(CommandHelper helper, ByteArrayWrapper key) {
+  public void doExpiration(CommandHelper helper, RedisKey key) {
     // nothing needed
   }
 
@@ -86,8 +84,7 @@ public class NullRedisData implements RedisData {
   }
 
   @Override
-  public boolean rename(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper oldKey,
-      ByteArrayWrapper newKey) {
+  public boolean rename(Region<RedisKey, RedisData> region, RedisKey oldKey, RedisKey newKey) {
     return false;
   }
 

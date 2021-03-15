@@ -22,13 +22,13 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.internal.cache.PrimaryBucketLockException;
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisData;
+import org.apache.geode.redis.internal.data.RedisKey;
 
 public abstract class RedisCommandsFunctionInvoker {
-  protected final Region<ByteArrayWrapper, RedisData> region;
+  protected final Region<RedisKey, RedisData> region;
 
-  protected RedisCommandsFunctionInvoker(Region<ByteArrayWrapper, RedisData> region) {
+  protected RedisCommandsFunctionInvoker(Region<RedisKey, RedisData> region) {
     this.region = region;
   }
 
@@ -67,8 +67,7 @@ public abstract class RedisCommandsFunctionInvoker {
     } while (true);
   }
 
-  protected <T> T invokeCommandFunction(ByteArrayWrapper key,
-      Object... arguments) {
+  protected <T> T invokeCommandFunction(RedisKey key, Object... arguments) {
     return invoke(CommandFunction.ID, key, arguments);
   }
 }

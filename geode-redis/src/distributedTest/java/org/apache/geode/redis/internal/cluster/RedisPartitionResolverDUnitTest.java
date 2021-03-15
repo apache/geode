@@ -32,8 +32,8 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.redis.internal.RegionProvider;
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisData;
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.SerializableCallableIF;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -94,7 +94,7 @@ public class RedisPartitionResolverDUnitTest {
 
   private Map<String, Integer> getKeyToBucketMap(MemberVM vm) {
     return vm.invoke((SerializableCallableIF<Map<String, Integer>>) () -> {
-      Region<ByteArrayWrapper, RedisData> region =
+      Region<RedisKey, RedisData> region =
           RedisClusterStartupRule.getCache().getRegion(RegionProvider.REDIS_DATA_REGION);
 
       LocalDataSet local = (LocalDataSet) PartitionRegionHelper.getLocalPrimaryData(region);
@@ -102,7 +102,7 @@ public class RedisPartitionResolverDUnitTest {
 
       for (Object key : local.localKeys()) {
         int id = local.getProxy().getKeyInfo(key).getBucketId();
-        keyMap.put(new String(((ByteArrayWrapper) key).toBytes()), id);
+        keyMap.put(key.toString(), id);
       }
 
       return keyMap;

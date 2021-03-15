@@ -137,8 +137,6 @@ public class RedisHash extends AbstractRedisData {
     this.HSCANSnapshotExpirationExecutor = null;
   }
 
-
-
   /**
    * Since GII (getInitialImage) can come in and call toData while other threads are modifying this
    * object, the striped executor will not protect toData. So any methods that modify "hash" needs
@@ -176,7 +174,6 @@ public class RedisHash extends AbstractRedisData {
     return hash.remove(field);
   }
 
-
   @Override
   protected void applyDelta(DeltaInfo deltaInfo) {
     if (deltaInfo instanceof AddsDeltaInfo) {
@@ -195,7 +192,7 @@ public class RedisHash extends AbstractRedisData {
     }
   }
 
-  public int hset(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
+  public int hset(Region<RedisKey, RedisData> region, RedisKey key,
       List<ByteArrayWrapper> fieldsToSet, boolean nx) {
     int fieldsAdded = 0;
     AddsDeltaInfo deltaInfo = null;
@@ -228,7 +225,7 @@ public class RedisHash extends AbstractRedisData {
     return fieldsAdded;
   }
 
-  public int hdel(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
+  public int hdel(Region<RedisKey, RedisData> region, RedisKey key,
       List<ByteArrayWrapper> fieldsToRemove) {
     int fieldsRemoved = 0;
     RemsDeltaInfo deltaInfo = null;
@@ -387,7 +384,6 @@ public class RedisHash extends AbstractRedisData {
     return keySnapShot;
   }
 
-
   @SuppressWarnings("unchecked")
   private List<ByteArrayWrapper> createKeySnapShot(UUID clientID) {
 
@@ -403,8 +399,7 @@ public class RedisHash extends AbstractRedisData {
     return keySnapShot;
   }
 
-
-  public long hincrby(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
+  public long hincrby(Region<RedisKey, RedisData> region, RedisKey key,
       ByteArrayWrapper field, long increment)
       throws NumberFormatException, ArithmeticException {
     ByteArrayWrapper oldValue = hash.get(field);
@@ -440,7 +435,7 @@ public class RedisHash extends AbstractRedisData {
     return value;
   }
 
-  public BigDecimal hincrbyfloat(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
+  public BigDecimal hincrbyfloat(Region<RedisKey, RedisData> region, RedisKey key,
       ByteArrayWrapper field, BigDecimal increment)
       throws NumberFormatException {
     ByteArrayWrapper oldValue = hash.get(field);

@@ -20,7 +20,7 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 
 import java.util.List;
 
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Coder;
@@ -35,7 +35,7 @@ public class ExpireAtExecutor extends AbstractExecutor {
     List<byte[]> commandElems = command.getProcessedCommand();
     int TIMESTAMP_INDEX = 2;
 
-    ByteArrayWrapper wKey = command.getKey();
+    RedisKey wKey = command.getKey();
 
     byte[] timestampByteArray = commandElems.get(TIMESTAMP_INDEX);
     long timestamp;
