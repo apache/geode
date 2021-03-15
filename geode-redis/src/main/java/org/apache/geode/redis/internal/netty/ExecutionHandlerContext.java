@@ -18,7 +18,6 @@ package org.apache.geode.redis.internal.netty;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.net.SocketAddress;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -52,7 +51,6 @@ import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.data.RedisDataTypeMismatchException;
 import org.apache.geode.redis.internal.executor.CommandFunction;
 import org.apache.geode.redis.internal.executor.RedisResponse;
-import org.apache.geode.redis.internal.executor.hash.HashExecutor;
 import org.apache.geode.redis.internal.executor.hash.RedisHashCommands;
 import org.apache.geode.redis.internal.executor.hash.RedisHashCommandsFunctionInvoker;
 import org.apache.geode.redis.internal.pubsub.PubSub;
@@ -131,7 +129,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     this.hscanCursor = new BigInteger("0");
     redisStats.addClient();
 
-    //TODO - this really should just be a cache wide field, not on the execution context
+    // TODO - this really should just be a cache wide field, not on the execution context
     this.hashCommands = new RedisHashCommandsFunctionInvoker(getRegionProvider().getDataRegion());
     // backgroundExecutor.submit(this::processCommandQueue);
   }

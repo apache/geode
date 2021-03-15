@@ -96,7 +96,7 @@ public class RedisHash extends AbstractRedisData {
     super.fromData(in);
     int size = DataSerializer.readInteger(in);
     hash = new Object2ObjectOpenCustomHashMap<>(size, ByteArrays.HASH_STRATEGY);
-    for(int i = 0; i < size; i++) {
+    for (int i = 0; i < size; i++) {
       hash.put(DataSerializer.readByteArray(in), DataSerializer.readByteArray(in));
     }
   }
@@ -349,12 +349,12 @@ public class RedisHash extends AbstractRedisData {
       return false;
     }
     RedisHash redisHash = (RedisHash) o;
-    if(hash.size() != redisHash.hash.size()) {
+    if (hash.size() != redisHash.hash.size()) {
       return false;
     }
 
-    for(Map.Entry<byte[], byte[]> entry : hash.entrySet()) {
-      if(!Arrays.equals(redisHash.hash.get(entry.getKey()), (entry.getValue()))) {
+    for (Map.Entry<byte[], byte[]> entry : hash.entrySet()) {
+      if (!Arrays.equals(redisHash.hash.get(entry.getKey()), (entry.getValue()))) {
         return false;
       }
     }

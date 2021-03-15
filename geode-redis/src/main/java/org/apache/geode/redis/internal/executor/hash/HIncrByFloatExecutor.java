@@ -20,7 +20,6 @@ import java.util.List;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.executor.string.IncrByFloatExecutor;

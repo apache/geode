@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 
 public class AddsDeltaInfo implements DeltaInfo {
   private final ArrayList<byte[]> deltas;

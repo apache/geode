@@ -32,7 +32,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -124,8 +123,9 @@ public class RedisSet extends AbstractRedisData {
       }
     }
     if (!popped.isEmpty()) {
-      storeChanges(region, key, new RemsDeltaInfo(popped.stream().map(ByteArrayWrapper::toBytes).collect(
-          Collectors.toCollection(ArrayList::new))));
+      storeChanges(region, key,
+          new RemsDeltaInfo(popped.stream().map(ByteArrayWrapper::toBytes).collect(
+              Collectors.toCollection(ArrayList::new))));
     }
     return popped;
   }
@@ -237,7 +237,8 @@ public class RedisSet extends AbstractRedisData {
     membersToAdd.removeIf(memberToAdd -> !membersAdd(memberToAdd));
     int membersAdded = membersToAdd.size();
     if (membersAdded != 0) {
-      final ArrayList<byte[]> rStream = membersToAdd.stream().map(ByteArrayWrapper::toBytes).collect(Collectors.toCollection(() -> new ArrayList<>()));
+      final ArrayList<byte[]> rStream = membersToAdd.stream().map(ByteArrayWrapper::toBytes)
+          .collect(Collectors.toCollection(() -> new ArrayList<>()));
       storeChanges(region, key, new AddsDeltaInfo(rStream));
     }
     return membersAdded;
@@ -256,8 +257,9 @@ public class RedisSet extends AbstractRedisData {
     membersToRemove.removeIf(memberToRemove -> !membersRemove(memberToRemove));
     int membersRemoved = membersToRemove.size();
     if (membersRemoved != 0) {
-      storeChanges(region, key, new RemsDeltaInfo(membersToRemove.stream().map(ByteArrayWrapper::toBytes).collect(
-          Collectors.toCollection(ArrayList::new))));
+      storeChanges(region, key,
+          new RemsDeltaInfo(membersToRemove.stream().map(ByteArrayWrapper::toBytes).collect(
+              Collectors.toCollection(ArrayList::new))));
     }
     return membersRemoved;
   }

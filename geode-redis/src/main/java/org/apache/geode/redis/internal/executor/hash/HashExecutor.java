@@ -16,7 +16,6 @@ package org.apache.geode.redis.internal.executor.hash;
 
 
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
-import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 /**
  * Executor for handling HASH datatypes
