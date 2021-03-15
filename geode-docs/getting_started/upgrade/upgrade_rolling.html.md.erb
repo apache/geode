@@ -2,8 +2,25 @@
 title:  Rolling Upgrade
 ---
 
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
 A rolling upgrade eliminates system downtime by keeping your existing distributed system running while you upgrade one member at a time.
-Each upgraded member can communicate with other members that are still running the earlier version of GemFire, so servers can respond to
+Each upgraded member can communicate with other members that are still running the earlier version of <%=vars.product_name%>, so servers can respond to
 client requests even as the upgrade is underway. Interdependent data members can be stopped and started without mutually blocking, a problem
 that can occur when multiple data members are stopped at the same time.
 
@@ -34,7 +51,7 @@ If a rolling update is not possible for your system, follow the [Off-Line Upgrad
 
 **Do not create or destroy regions**
 
-When you perform a rolling upgrade, your online cluster will have a mix of members running different versions of GemFire.
+When you perform a rolling upgrade, your online cluster will have a mix of members running different versions of <%=vars.product_name%>.
 During this time period, do not execute region operations such as region creation or region destruction.
 
 **Region rebalancing affects the restart process**
@@ -47,13 +64,13 @@ The partitioned region attribute `startup-recovery-delay` is described in [Confi
 
 **Checking component versions while upgrading**
 
-During a rolling upgrade, you can check the current GemFire version of all members in the cluster by looking at the server or locator logs.
+During a rolling upgrade, you can check the current <%=vars.product_name%> version of all members in the cluster by looking at the server or locator logs.
 
-  When an upgraded member reconnects to the distributed system, it logs all the members it can see as well as the GemFire version of those members. For example, an upgraded locator will now detect GemFire members running the older version of GemFire (in this case, the version being upgraded-- GFE 9.0.0) :
+  When an upgraded member reconnects to the distributed system, it logs all the members it can see as well as the <%=vars.product_name%> version of those members. For example, an upgraded locator will now detect <%=vars.product_name%> members running the older version of <%=vars.product_name%> (in this case, the version being upgraded, GEODE 1.2.0):
 
 ``` pre
 [info 2013/06/03 10:03:29.206 PDT frodo <vm_1_thr_1_frodo> tid=0x1a]  DistributionManager frodo(locator1:21869:locator)<v16>:28242 started on frodo[15001]. There
-    were 2 other DMs. others: [frodo(server2:21617)<v4>:14973( version:GFE 9.0.0 ), frodo(server1:21069)<v1>:60929( version:GFE 9.0.0 )] (locator)
+    were 2 other DMs. others: [frodo(server2:21617)<v4>:14973( version:GEODE 1.2.0 ), frodo(server1:21069)<v1>:60929( version:Geode 1.2.0 )] (locator)
 ```
 
 After some members have been upgraded, non-upgraded members will log the following message when they receive a new membership view:
@@ -84,7 +101,7 @@ Upgrade locators first, then data members, then clients.
 
 1.  On the machine hosting the first locator you wish to upgrade, open a terminal console.
 
-2.  Start a `gfsh` prompt, using the version from your current GemFire installation, and connect to the currently running locator.
+2.  Start a `gfsh` prompt, using the version from your current <%=vars.product_name%> installation, and connect to the currently running locator.
     For example:
 
     ``` pre
@@ -117,7 +134,7 @@ For example, use the `list members` command to view locators and data members:
     ....
     No longer connected to 172.16.71.1[1099].
     ```
-6. Start `gfsh` from the new GemFire installation.
+6. Start `gfsh` from the new <%=vars.product_name%> installation.
     Verify that you are running the newer version with
 
     ``` pre
@@ -152,11 +169,11 @@ For example, use the `list members` command to view locators and data members:
     -------- | ----------------------------------------------------
     locator1 | 172.16.71.1(locator1:26752:locator)<ec><v17>:1024
     locator2 | 172.16.71.1(locator2:26808:locator)<ec><v30>:1025
-    server1  | 172.16.71.1(server1:26514)<v2>:1026(version:GFE 9.0)
-    server2  | 172.16.71.1(server2:26518)<v3>:1027(version:GFE 9.0)
+    server1  | 172.16.71.1(server1:26514)<v2>:1026(version:GEODE 1.2)
+    server2  | 172.16.71.1(server2:26518)<v3>:1027(version:GEODE 1.2)
     ```
 
-    The server entries show that the servers are running an older version of gemfire, in this case `(version:GFE 9.0)`.
+    The server entries show that the servers are running an older version of <%=vars.product_name%>, in this case `(version:GEODE 1.2)`.
 
 ### <a id="upgrade-servers" class="no-quick-link"></a>Upgrade Servers
 
@@ -172,7 +189,7 @@ After you have upgraded all of the system's locators, upgrade the servers.
     Starting a Geode Server in /Users/share/server1...
     ```
 
-    Use the `list members` command to verify that the server is now running the new version of GemFire:
+    Use the `list members` command to verify that the server is now running the new version of <%=vars.product_name%>:
 
     ```
     gfsh>list members
@@ -181,7 +198,7 @@ After you have upgraded all of the system's locators, upgrade the servers.
     locator1 | 172.16.71.1(locator1:26752:locator)<ec><v17>:1024
     locator2 | 172.16.71.1(locator2:26808:locator)<ec><v30>:1025
     server1  | 172.16.71.1(server1:26835)<v32>:1026
-    server2  | 172.16.71.1(server2:26518)<v3>:1027(version:GFE 9.0)
+    server2  | 172.16.71.1(server2:26518)<v3>:1027(version:GEODE 1.2)
     ```
 
 2. Restore data to the data member. If automatic rebalancing is enabled (partitioned region
@@ -194,7 +211,7 @@ After you have upgraded all of the system's locators, upgrade the servers.
     `show metrics` command with the `--member` option or the `--region` option to verify that the data member is hosting data and that
     the amount of data it is hosting has stabilized.
 
-3. Shut down,restart, and rebalance servers until all data members are running the new version of GemFire.
+3. Shut down,restart, and rebalance servers until all data members are running the new version of <%=vars.product_name%>.
 
 ### <a id="upgrade-clients" class="no-quick-link"></a>Upgrade Clients
 

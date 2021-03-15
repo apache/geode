@@ -2,6 +2,23 @@
 title:  Offline Upgrade
 ---
 
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
 Use the offline upgrade procedure when you cannot, or choose not to, perform a rolling upgrade.
 For example, a rolling upgrade is not possible for a cluster that has partitioned regions without redundancy.
 (Without the redundancy, region entries would be lost when individual servers were taken out of the cluster during a rolling upgrade.)
@@ -11,7 +28,7 @@ For example, a rolling upgrade is not possible for a cluster that has partitione
 **Versions**
 
 For best reliability and performance, all server components of a <%=vars.product_name%> system should run the same version of the software.
-See [Version Compatibilities](upgrade_planning.html#version_compatibilities) for more details on how different versions of GemFire can interoperate.
+See [Version Compatibilities](upgrade_planning.html#version_compatibilities) for more details on how different versions of <%=vars.product_name%> can interoperate.
 
 **Data member interdependencies**
 
@@ -24,7 +41,7 @@ separate command shells so they can start simultaneously and communicate with on
 
 1.  On a machine hosting a locator, open a terminal console.
 
-1.  Start a `gfsh` prompt, using the version from your current GemFire installation, and connect to a currently running locator.
+1.  Start a `gfsh` prompt, using the version from your current <%=vars.product_name%> installation, and connect to a currently running locator.
     For example:
 
     ``` pre
@@ -59,7 +76,7 @@ For example, use the `list members` command to view locators and data members:
     gfsh>quit
     ```
 
-    Since GemFire is a Java process, to check before continuing that all GemFire members successfully stopped,
+    Since <%=vars.product_name%> is a Java process, to check before continuing that all <%=vars.product_name%> members successfully stopped,
 it is useful to use the JDK-included `jps` command to check running java processes:
 
     ``` pre
@@ -72,7 +89,7 @@ it is useful to use the JDK-included `jps` command to check running java process
 1.  Redeploy your environment's configuration files to the new version installation. If you are using the cluster configuration service, one copy of the exported `.zip` configuration file is sufficient, as the first upgraded locator will propagate it to the other members.
 For XML configurations, you should have a copy of the saved configuration files for each data member.
 
-1. On each machine in the cluster, install any updated server code. Point all client applications to the new installation of GemFire.
+1. On each machine in the cluster, install any updated server code. Point all client applications to the new installation of <%=vars.product_name%>.
 
 1. Run the new version of `gfsh`.
 
