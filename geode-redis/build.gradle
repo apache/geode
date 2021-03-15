@@ -42,6 +42,7 @@ dependencies {
 
   testImplementation(project(':geode-junit'))
   testImplementation('org.mockito:mockito-core')
+  testImplementation('redis.clients:jedis')
 
   commonTestImplementation(project(':geode-junit'))
   commonTestImplementation(project(':geode-dunit'))
