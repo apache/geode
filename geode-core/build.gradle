@@ -112,6 +112,7 @@ jar {
     inputs.property("moduleName", moduleName)
     manifest {
         attributes('Automatic-Module-Name': moduleName)
+        attributes('Premain-Class': 'org.apache.geode.internal.size.InstrumentationSingleObjectSizer')
     }
 
 }

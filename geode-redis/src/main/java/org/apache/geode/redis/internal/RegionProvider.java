@@ -27,7 +27,7 @@ public class RegionProvider {
   /**
    * The name of the region that holds data stored in redis.
    */
-  public static final String REDIS_DATA_REGION = "__REDIS_DATA";
+  public static final String REDIS_DATA_REGION = "REDIS_DATA";
   public static final String REDIS_CONFIG_REGION = "__REDIS_CONFIG";
   public static final int REDIS_REGION_BUCKETS = Integer.getInteger("redis.region.buckets", 128);
   public static final int REDIS_SLOTS = Integer.getInteger("redis.slots", 16384);
@@ -40,7 +40,7 @@ public class RegionProvider {
 
     InternalRegionFactory<RedisKey, RedisData> redisDataRegionFactory =
         cache.createInternalRegionFactory(RegionShortcut.PARTITION_REDUNDANT);
-    redisDataRegionFactory.setInternalRegion(true).setIsUsedForMetaRegion(true);
+    // redisDataRegionFactory.setInternalRegion(true).setIsUsedForMetaRegion(true);
 
     PartitionAttributesFactory<RedisKey, RedisData> attributesFactory =
         new PartitionAttributesFactory<>();
