@@ -29,6 +29,7 @@ import org.assertj.core.data.Offset;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 
@@ -60,9 +61,16 @@ public abstract class AbstractRedisInfoStatsIntegrationTest implements RedisPort
   private static final String NETWORK_KB_READ_OVER_LAST_SECOND = "instantaneous_input_kbps";
   private static final String UPTIME_IN_DAYS = "uptime_in_days";
   private static final String UPTIME_IN_SECONDS = "uptime_in_seconds";
+  private static final String USED_MEMORY = "used_memory";
+  private static final String MEMORY_FRAGMENTATION = "mem_fragmentation_ratio";
+  private static final String TCP_PORT = "tcp_port";
+  private static final String MAX_MEMORY = "maxmemory";
 
   private static final AtomicInteger numInfoCalled = new AtomicInteger(0);
 
+  abstract int getExposedPort();
+
+  abstract void configureMaxMemory(Jedis jedis);
 
   // ------------------- Setup -------------------------- //
   @BeforeClass
@@ -108,6 +116,41 @@ public abstract class AbstractRedisInfoStatsIntegrationTest implements RedisPort
   // ------------------- Stats Section -------------------------- //
 
   // note: see AbstractHitsMissesIntegrationTest for testing of hits/misses
+  // note: we are not testing hardcoded values at this time
+
+  @Test
+  public void keysSection_containsNumberOfSetKeys() {
+    assertThat(jedis.info("keyspace")).contains("keys=4");
+  }
+
+  @Test
+  public void maxMemoryIsNonZero_whenMaxMemoryIsSet() {
+    configureMaxMemory(jedis);
+
+    assertThat(Long.valueOf(getInfo(jedis).get(MAX_MEMORY))).isGreaterThan(0L);
+  }
+
+  @Test
+  public void tcpPort_returnsExposedTCPPort() {
+    assertThat(Integer.valueOf(getInfo(jedis).get(TCP_PORT))).isEqualTo(this.getExposedPort());
+  }
+
+  @Test
+  public void usedMemory_shouldBeNonZeroWhenContainsData() {
+    jedis.set("key", "value");
+
+    assertThat(Long.valueOf(getInfo(jedis).get(USED_MEMORY))).isGreaterThan(0);
+  }
+
+  @Ignore // currently we return 1.0
+  @Test
+  public void memFragmentation_shouldBeGreaterThanOne() {
+    for (int i = 0; i < 10000; i++) {
+      jedis.set("key" + i, "value");
+    }
+
+    assertThat(Double.valueOf(getInfo(jedis).get(MEMORY_FRAGMENTATION))).isGreaterThan(1.0);
+  }
 
   @Test
   public void commandsProcessed_shouldIncrement_givenSuccessfulCommand() {
@@ -186,23 +229,6 @@ public abstract class AbstractRedisInfoStatsIntegrationTest implements RedisPort
 
     assertThat(Double.valueOf(getInfo(jedis).get(NETWORK_KB_READ_OVER_LAST_SECOND))).isEqualTo(0);
 
-  }
-
-  // todo test rejected connections
-  @Test
-  public void should_UpdateRejectedConnections() {
-    Jedis jedis2 = new Jedis("localhost", getPort(), TIMEOUT);
-    Jedis jedis3 = new Jedis("localhost", getPort(), TIMEOUT);
-
-    jedis2.ping();
-    jedis3.ping();
-
-    validateConnectedClients(jedis, preTestConnectedClients, 2);
-
-    jedis2.close();
-    jedis3.close();
-
-    validateConnectedClients(jedis, preTestConnectedClients, 0);
   }
 
   // ------------------- Clients Section -------------------------- //
